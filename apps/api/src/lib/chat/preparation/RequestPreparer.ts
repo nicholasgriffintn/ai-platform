@@ -4,6 +4,7 @@ import {
   type ChatHostedToolSettings,
   type ConversationType,
   type Goal,
+  type ChatContextDocument,
   type ModelConfigInfo,
   type ModelConfigItem,
   type PermissionMode,
@@ -32,6 +33,7 @@ import {
   resolveEnabledFunctionToolNames,
   resolveRequestFunctionToolNames,
 } from "~/services/functions/availability";
+import { getConversationBrief } from "~/services/memory-documents";
 import {
   buildSkillAvailabilityInput,
   listSkillAvailability,
@@ -57,11 +59,20 @@ import { sanitiseInput } from "~/utils/sanitise";
 
 import type { ValidationContext } from "../validation/ValidationPipeline";
 import { loadActiveGoal } from "./goal";
+import {
+  bindRunMemoryDocument,
+  loadRunMemoryDocuments,
+  resolveRunMemoryScope,
+} from "./memory-scope";
 import { storeUserTurn } from "./message-store";
 import { buildModelConfigs, clearModelConfigCache } from "./model-configs";
 import { buildProviderContext } from "./provider-context";
 import { resolveScopedSkillCatalog, resolveSkillScope } from "./skills";
-import { buildSystemPrompt } from "./system-prompt";
+import {
+  appendBoundMemoryContext,
+  appendConversationBriefContext,
+  buildSystemPrompt,
+} from "./system-prompt";
 
 const logger = getLogger({ prefix: "lib/chat/preparation/RequestPreparer" });
 
@@ -99,6 +110,7 @@ export interface PreparedRequest {
   memoryScope: MemoryScope;
   connectedConnectorProviders?: RecipeConnectorProvider[];
   contextSkills: Array<{ id: string; name: string }>;
+  contextDocuments: ChatContextDocument[];
 }
 
 interface SavedToolConfiguration {
@@ -151,7 +163,10 @@ export class RequestPreparer {
           persona: undefined,
           metadata: undefined,
         }
-      : { ...options, ...applyProjectCodingEnvironment(options, projectContext) };
+      : {
+          ...options,
+          ...applyProjectCodingEnvironment(options, projectContext),
+        };
 
     return {
       options: scopedOptions,
@@ -160,9 +175,11 @@ export class RequestPreparer {
       repositories,
       projectContext,
       metaAssistant,
-      memoryScope: projectContext
-        ? { type: "project", projectId: projectContext.projectId }
-        : { type: "personal" },
+      memoryScope: await resolveRunMemoryScope({
+        options: scopedOptions,
+        repositories,
+        projectContext,
+      }),
       isProUser: user?.plan_id === "pro",
       platform,
       mode,
@@ -234,7 +251,10 @@ export class RequestPreparer {
           : connected;
       })
       .catch((error) => {
-        logger.warn("Failed to resolve connected recipe providers", { error, userId: user.id });
+        logger.warn("Failed to resolve connected recipe providers", {
+          error,
+          userId: user.id,
+        });
 
         return [];
       });
@@ -423,6 +443,33 @@ export class RequestPreparer {
         );
 
     const activeGoal = await loadActiveGoal(scope.options);
+    let effectiveMemoryScope = memoryScope;
+    let briefDocument: Awaited<ReturnType<typeof getConversationBrief>>["document"] = null;
+
+    if (scope.options.context && scope.options.store !== false) {
+      const storedConversation = await repositories.conversations.getConversation(
+        scope.options.completion_id,
+      );
+
+      if (storedConversation) {
+        const brief = await getConversationBrief(
+          scope.options.context,
+          scope.options.completion_id,
+        );
+
+        briefDocument = brief.document;
+
+        if (briefDocument) {
+          effectiveMemoryScope = bindRunMemoryDocument(memoryScope, {
+            documentId: briefDocument.id,
+            access: "read-write",
+            scopeType: briefDocument.scopeType,
+            scopeId: briefDocument.scopeId,
+            conversationId: scope.options.completion_id,
+          });
+        }
+      }
+    }
 
     const systemPromptTask = buildSystemPrompt({
       options: scope.options,
@@ -433,7 +480,7 @@ export class RequestPreparer {
       userSettings,
       memoryPolicy,
       projectContext,
-      memoryScope,
+      memoryScope: effectiveMemoryScope,
       skills,
       activeGoal,
     });
@@ -442,7 +489,36 @@ export class RequestPreparer {
       await storeMessagesTask;
     }
 
-    const systemPrompt = await systemPromptTask;
+    let systemPrompt = await systemPromptTask;
+    let contextDocuments: ChatContextDocument[] = briefDocument
+      ? [
+          {
+            id: briefDocument.id,
+            kind: "conversation_brief",
+            revision: briefDocument.revision,
+            access: "read-write",
+          },
+        ]
+      : [];
+    const runMemoryDocuments = await loadRunMemoryDocuments(effectiveMemoryScope, repositories);
+
+    systemPrompt = appendConversationBriefContext(systemPrompt, briefDocument);
+
+    const briefDocumentId = contextDocuments[0]?.id;
+    const additionalMemoryDocuments = runMemoryDocuments.filter(
+      ({ document }) => document.id !== briefDocumentId,
+    );
+
+    systemPrompt = appendBoundMemoryContext(systemPrompt, additionalMemoryDocuments);
+    contextDocuments = [
+      ...contextDocuments,
+      ...additionalMemoryDocuments.map(({ access, document }) => ({
+        id: document.id,
+        kind: "memory" as const,
+        revision: document.revision,
+        access,
+      })),
+    ];
 
     const messages = await buildProviderContext({
       conversationManager,
@@ -487,11 +563,12 @@ export class RequestPreparer {
       activeGoal,
       toolOptions: this.resolveToolOptions(scope, savedToolConfigurations, enabledTools),
       requestOptions: scope.options.options,
-      memoryScope,
+      memoryScope: effectiveMemoryScope,
       connectedConnectorProviders,
       contextSkills: skills
         .filter((skill) => skill.state === "ready")
         .map((skill) => ({ id: skill.id, name: skill.name })),
+      contextDocuments,
     };
   }
 }

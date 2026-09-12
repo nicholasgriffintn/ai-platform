@@ -1,3 +1,5 @@
+import { HOSTED_MCP_APPROVAL_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
+
 import { readGoogleThoughtSignature } from "~/lib/providers/utils/googleThoughtSignatures";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { generateId } from "~/utils/id";
@@ -166,15 +168,45 @@ export class StreamingFormatter {
           ? [data.item]
           : [];
     const responseFunctionCalls = responseOutputItems
-      .filter((item: any) => item?.type === "function_call")
-      .map((item: any) => ({
-        id: item.call_id || item.id,
-        type: "function",
-        function: {
-          name: item.name,
-          arguments: item.arguments || "{}",
-        },
-      }))
+      .flatMap((item: any) => {
+        if (item?.type === "function_call") {
+          return [
+            {
+              id: item.call_id || item.id,
+              type: "function",
+              function: {
+                name: item.name,
+                arguments: item.arguments || "{}",
+              },
+            },
+          ];
+        }
+
+        if (
+          item?.type === "mcp_approval_request" &&
+          typeof item.id === "string" &&
+          typeof item.server_label === "string" &&
+          typeof item.name === "string"
+        ) {
+          return [
+            {
+              id: item.id,
+              type: "function",
+              function: {
+                name: HOSTED_MCP_APPROVAL_TOOL_NAME,
+                arguments: JSON.stringify({
+                  approvalRequestId: item.id,
+                  serverLabel: item.server_label,
+                  toolName: item.name,
+                  arguments: item.arguments,
+                }),
+              },
+            },
+          ];
+        }
+
+        return [];
+      })
       .filter((toolCall: any) => toolCall.id && toolCall.function.name);
 
     if (responseFunctionCalls.length > 0) {

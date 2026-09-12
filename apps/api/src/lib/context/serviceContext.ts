@@ -29,6 +29,7 @@ export interface ServiceContext {
   user?: IUser | null;
   requestId?: string;
   connectorRunId: string;
+  connectorApprovalExecutionToken?: string;
   originDeviceId?: string | null;
   executionRunId?: string;
   executionRunAttempt?: number;

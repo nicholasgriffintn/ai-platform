@@ -1,25 +1,15 @@
 import type {
-  SandboxDeliveryPolicy,
-  SandboxEnvironmentCacheRecord,
-  SandboxEnvironmentPreparationMode,
-  SandboxEnvironmentSetup,
-  SandboxPromptStrategy,
-  SandboxTaskType,
-  SandboxTrustLevel,
-  SandboxModelSettings,
+  SandboxExecutionProvider,
   SandboxWorkerExecuteRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveProjectDefaultModelTier } from "~/lib/chat/policy/project-model-tier";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { getGitHubAppInstallationToken } from "~/lib/github";
+import type { SandboxProviderExecuteOptions } from "~/lib/providers/capabilities/sandbox";
 import { filterModelsForUserAccess, getModels } from "~/lib/providers/models";
 import { getExecutableModelsForAccount, resolveTierModel } from "~/lib/providers/models/policy";
+import { resolveSandboxApiBaseUrl } from "~/services/apps/sandbox/urls";
 import { generateJwtToken } from "~/services/auth/jwt";
-import {
-  getGitHubAppConnectionForUserInstallation,
-  getGitHubAppConnectionForUserRepo,
-} from "~/services/github/connections";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -63,37 +53,10 @@ function enforceSandboxModelPolicy(env: IEnv, model: string): string {
   return normalisedModel;
 }
 
-export interface ExecuteSandboxWorkerOptions {
+export interface ExecuteSandboxWorkerOptions extends SandboxProviderExecuteOptions {
   env: IEnv;
   context: ServiceContext;
   user: IUser;
-  repo: string;
-  task: string;
-  model?: string;
-  taskType?: SandboxTaskType;
-  promptStrategy?: SandboxPromptStrategy;
-  deliveryPolicy?: SandboxDeliveryPolicy;
-  shouldCommit?: boolean;
-  environmentSetup?: SandboxEnvironmentSetup;
-  environmentPreparationMode?: SandboxEnvironmentPreparationMode;
-  environmentCache?: SandboxEnvironmentCacheRecord;
-  environmentCacheGeneration?: number;
-  environmentVariables?: Record<string, string>;
-  projectId?: string;
-  timeoutSeconds?: number;
-  inspectionWindowSeconds?: number;
-  trustLevel?: SandboxTrustLevel;
-  modelSettings?: SandboxModelSettings;
-  installationId?: number;
-  stream?: boolean;
-  runId?: string;
-  signal?: AbortSignal;
-}
-
-export function resolveApiBaseUrl(env: IEnv): string {
-  const apiBaseUrl = env.API_BASE_URL?.trim();
-
-  return apiBaseUrl || "https://api.polychat.app";
 }
 
 export async function resolveSandboxModel(params: {
@@ -101,21 +64,27 @@ export async function resolveSandboxModel(params: {
   user: IUser;
   model?: string;
   projectId?: string;
+  executionProvider?: SandboxExecutionProvider;
 }): Promise<string> {
-  const { context, user, model, projectId } = params;
+  const { context, user, model, projectId, executionProvider = "polychat" } = params;
   const settings = await context.repositories.userSettings.getUserSettings(user.id);
-  const requestedModel = model?.trim() || settings?.sandbox_model?.trim();
+  const explicitModel = model?.trim();
+  const requestedModel = explicitModel || settings?.sandbox_model?.trim();
   const visibleModels = await filterModelsForUserAccess(getModels(), context.env, user.id, {
     shouldUseCache: false,
   });
-  const executableModels = getExecutableModelsForAccount(visibleModels, user);
+  const executableModels = Object.fromEntries(
+    Object.entries(getExecutableModelsForAccount(visibleModels, user)).filter(
+      ([, config]) => executionProvider !== "openai" || config.provider === "openai",
+    ),
+  );
 
   if (requestedModel) {
     const selected = Object.entries(executableModels).find(
       ([modelId, config]) => modelId === requestedModel || config.matchingModel === requestedModel,
     );
 
-    if (!selected) {
+    if (!selected && (explicitModel || executionProvider === "polychat")) {
       throw new AssistantError(
         `Sandbox model "${requestedModel}" is not available for this account`,
         ErrorType.AUTHORISATION_ERROR,
@@ -123,7 +92,9 @@ export async function resolveSandboxModel(params: {
       );
     }
 
-    return enforceSandboxModelPolicy(context.env, selected[0]);
+    if (selected) {
+      return enforceSandboxModelPolicy(context.env, selected[0]);
+    }
   }
 
   const tier = await resolveProjectDefaultModelTier(context, projectId);
@@ -137,25 +108,6 @@ export async function resolveSandboxModel(params: {
   }
 
   return enforceSandboxModelPolicy(context.env, selected.id);
-}
-
-async function resolveGitHubToken(params: {
-  context: ServiceContext;
-  userId: number;
-  repo: string;
-  installationId?: number;
-}): Promise<string> {
-  const { context, userId, repo, installationId } = params;
-
-  const githubConnection = installationId
-    ? await getGitHubAppConnectionForUserInstallation(context, userId, installationId, repo)
-    : await getGitHubAppConnectionForUserRepo(context, userId, repo);
-
-  return getGitHubAppInstallationToken({
-    appId: githubConnection.appId,
-    privateKey: githubConnection.privateKey,
-    installationId: githubConnection.installationId,
-  });
 }
 
 export async function executeSandboxWorker(
@@ -176,6 +128,7 @@ export async function executeSandboxWorker(
     environmentCache,
     environmentCacheGeneration,
     environmentVariables,
+    credentialBroker,
     projectId,
     timeoutSeconds,
     inspectionWindowSeconds,
@@ -200,6 +153,7 @@ export async function executeSandboxWorker(
     user,
     model: options.model,
     projectId,
+    executionProvider: "polychat",
   });
   const sandboxToken = await generateJwtToken(
     user,
@@ -207,12 +161,6 @@ export async function executeSandboxWorker(
     SANDBOX_TOKEN_EXPIRATION_SECONDS,
   );
 
-  const githubToken = await resolveGitHubToken({
-    context,
-    userId: user.id,
-    repo,
-    installationId,
-  });
   const workerPayload: SandboxWorkerExecuteRequest = {
     userId: user.id,
     projectId,
@@ -228,11 +176,12 @@ export async function executeSandboxWorker(
     environmentCache,
     environmentCacheGeneration,
     environmentVariables,
+    credentialBroker,
     timeoutSeconds,
     inspectionWindowSeconds,
     trustLevel,
     modelSettings,
-    polychatApiUrl: resolveApiBaseUrl(env),
+    polychatApiUrl: resolveSandboxApiBaseUrl(env),
     installationId,
     runId,
   };
@@ -244,7 +193,6 @@ export async function executeSandboxWorker(
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${sandboxToken}`,
-        "X-GitHub-Token": githubToken,
         ...(stream ? { Accept: "text/event-stream" } : {}),
       },
       body: JSON.stringify(workerPayload),

@@ -1,4 +1,9 @@
-import { INFRA_RECONCILIATION_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
+import {
+  DELEGATION_WAKE_TASK_TYPE,
+  INFRA_RECONCILIATION_TASK_TYPE,
+  TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
+  TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { overageSyncHourIso } from "~/lib/billing/stripeOverageSync";
 import { RepositoryManager } from "~/repositories";
@@ -14,6 +19,30 @@ const logger = getLogger({ prefix: "services/tasks/scheduled" });
 const MIN_NEW_MEMORIES_FOR_SYNTHESIS = 5;
 const SETTLED_TASK_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 const SETTLED_TASK_PURGE_LIMIT = 500;
+const DURABLE_DELIVERY_RECOVERY_DELAY_MS = 5 * 60 * 1000;
+const DURABLE_TASK_TYPES = [
+  DELEGATION_WAKE_TASK_TYPE,
+  TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
+  TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
+] as const;
+
+export async function recoverFailedDurableTasks(env: IEnv, now = new Date()): Promise<number> {
+  const repositories = RepositoryManager.getInstance(env);
+  const cutoff = new Date(now.getTime() - DURABLE_DELIVERY_RECOVERY_DELAY_MS);
+  const recovered = (
+    await Promise.all(
+      DURABLE_TASK_TYPES.map((taskType) =>
+        repositories.tasks.requeueFailedTasksByType(taskType, cutoff),
+      ),
+    )
+  ).flat();
+
+  if (recovered.length > 0) {
+    logger.info("Recovered failed durable tasks", { recovered: recovered.length });
+  }
+
+  return recovered.length;
+}
 
 export async function redispatchPendingTasks(env: IEnv): Promise<number> {
   const repositories = RepositoryManager.getInstance(env);

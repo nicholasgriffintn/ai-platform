@@ -18,6 +18,15 @@ import type {
   RecordOffPlatformUsageRequest,
   Tool,
   UpdateTeammateInput,
+  TeammateConnectionGrant,
+  TeammateConnectionGrantListResponse,
+  UpsertTeammateConnectionGrant,
+  TeammateContext,
+  TeammateContextScope,
+  TeammateComputer,
+  TeammateComputerAction,
+  MemoryDocument,
+  UpdateMemoryDocumentInput,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { useChatStore } from "./chatStore.js";
@@ -231,6 +240,51 @@ class ApiService {
   getTeammate = (teammateId: string): Promise<TeammateResponse> => {
     return this.teammateService.getTeammate(teammateId);
   };
+
+  listTeammateContexts = (teammateId: string): Promise<TeammateContext[]> =>
+    this.teammateService.listTeammateContexts(teammateId);
+
+  ensureTeammateContext = (
+    teammateId: string,
+    scope: TeammateContextScope,
+  ): Promise<TeammateContext> => this.teammateService.ensureTeammateContext(teammateId, scope);
+
+  updateTeammateContextStatus = (
+    contextId: string,
+    status: TeammateContext["status"],
+  ): Promise<TeammateContext> =>
+    this.teammateService.updateTeammateContextStatus(contextId, status);
+
+  listTeammateConnectionGrants = (
+    contextId: string,
+  ): Promise<TeammateConnectionGrantListResponse> =>
+    this.teammateService.listTeammateConnectionGrants(contextId);
+
+  upsertTeammateConnectionGrant = (
+    contextId: string,
+    input: UpsertTeammateConnectionGrant,
+  ): Promise<TeammateConnectionGrant> =>
+    this.teammateService.upsertTeammateConnectionGrant(contextId, input);
+
+  getTeammateContextMemory = (contextId: string): Promise<MemoryDocument> =>
+    this.teammateService.getTeammateContextMemory(contextId);
+
+  updateTeammateContextMemory = (
+    contextId: string,
+    input: Pick<UpdateMemoryDocumentInput, "content" | "changeNote" | "expectedRevision">,
+  ): Promise<MemoryDocument> => this.teammateService.updateTeammateContextMemory(contextId, input);
+
+  getTeammateComputer = (contextId: string): Promise<TeammateComputer> =>
+    this.teammateService.getTeammateComputer(contextId);
+
+  performTeammateComputerAction = (contextId: string, action: TeammateComputerAction) =>
+    this.teammateService.performTeammateComputerAction(contextId, action);
+
+  takeOverTeammateComputer = (contextId: string, recordTeaching = false) =>
+    this.teammateService.takeOverTeammateComputer(contextId, recordTeaching);
+
+  releaseTeammateComputer = (contextId: string, fence: number): Promise<TeammateComputer> =>
+    this.teammateService.releaseTeammateComputer(contextId, fence);
 
   publishTeammateToWorkspace = (
     teammateId: string,

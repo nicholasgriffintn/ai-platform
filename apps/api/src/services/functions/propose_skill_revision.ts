@@ -4,12 +4,12 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { getPersonalSkill, getPersonalSkillState, savePersonalSkillDraft } from "~/services/skills";
+import { buildSkillDocument } from "~/services/skills/document";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { propose_skill_revision as proposeSkillRevisionDescriptor } from "./definitions/propose_skill_revision";
-import { buildSkillDocument } from "./save_skill";
 
 export const propose_skill_revision: ApiToolDefinition = {
   ...proposeSkillRevisionDescriptor,

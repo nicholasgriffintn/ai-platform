@@ -39,3 +39,10 @@ export function getProjectFilesPath(
 ): string {
   return getFilesTabPath(`${getProjectBasePath(workspaceId, projectId)}/files`, tab, itemPath);
 }
+
+export function getOutputPath(pathname: string, outputId: string): string {
+  const projectPath = pathname.match(/^(\/work\/[^/]+\/projects\/[^/]+)(?:\/|$)/u)?.[1];
+  const filesPath = projectPath ? `${projectPath}/files` : getPlacePaths("chat").files;
+
+  return getFilesTabPath(filesPath, "made", encodeURIComponent(outputId));
+}

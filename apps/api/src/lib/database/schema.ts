@@ -468,6 +468,9 @@ export const project = sqliteTable(
     colour: text().default("#2563EB").notNull(),
     default_model_tier: text({ enum: ["low", "medium", "high", "ultra"] }),
     coding_enabled: integer({ mode: "boolean" }).default(false).notNull(),
+    coding_execution_provider: text({ enum: ["polychat", "openai"] })
+      .default("polychat")
+      .notNull(),
     coding_installation_id: integer(),
     coding_repository: text(),
     coding_prompt_strategy: text().default("auto").notNull(),
@@ -572,6 +575,9 @@ export const memoryDocument = sqliteTable(
     id: text().primaryKey(),
     scope_type: text({ enum: ["personal", "project"] }).notNull(),
     scope_id: text().notNull(),
+    kind: text({ enum: ["memory", "conversation_brief", "teammate_context"] })
+      .notNull()
+      .default("memory"),
     name: text().notNull(),
     content: text().default("").notNull(),
     revision: integer().default(1).notNull(),
@@ -611,6 +617,7 @@ export const memoryDocumentRevision = sqliteTable(
     revision: integer().notNull(),
     content: text().default("").notNull(),
     change_note: text(),
+    operation_id: text(),
     created_by: integer()
       .notNull()
       .references(() => user.id),
@@ -623,6 +630,9 @@ export const memoryDocumentRevision = sqliteTable(
       table.document_id,
       table.revision,
     ),
+    documentOperationIdx: uniqueIndex("memory_document_revision_document_operation_idx")
+      .on(table.document_id, table.operation_id)
+      .where(sql`${table.operation_id} IS NOT NULL`),
   }),
 );
 
@@ -662,7 +672,12 @@ export const channelBinding = sqliteTable(
     scope_id: text().notNull(),
     external_id: text().notNull(),
     label: text(),
-    teammate_id: text().references(() => teammates.id, { onDelete: "set null" }),
+    teammate_id: text().references(() => teammates.id, {
+      onDelete: "set null",
+    }),
+    interaction_mode: text({ enum: ["direct", "automated"] })
+      .notNull()
+      .default("automated"),
     created_by: integer()
       .notNull()
       .references(() => user.id),
@@ -681,6 +696,149 @@ export const channelBinding = sqliteTable(
 );
 
 export type ChannelBindingRow = typeof channelBinding.$inferSelect;
+
+export const outboundDelivery = sqliteTable(
+  "outbound_delivery",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    kind: text().notNull(),
+    scope_id: text().notNull(),
+    operation_id: text().notNull(),
+    payload_digest: text().notNull(),
+    payload_json: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    state: text({ enum: ["prepared", "sending", "sent", "indeterminate"] })
+      .notNull()
+      .default("prepared"),
+    execution_token: text(),
+    execution_lease_expires_at: text(),
+    created_at: text().notNull(),
+    updated_at: text().notNull(),
+    sent_at: text(),
+  },
+  (table) => ({
+    ownerStateIdx: index("outbound_delivery_owner_state_idx").on(table.user_id, table.state),
+    operationIdx: uniqueIndex("outbound_delivery_operation_idx").on(
+      table.kind,
+      table.scope_id,
+      table.operation_id,
+    ),
+  }),
+);
+
+export type OutboundDeliveryRow = typeof outboundDelivery.$inferSelect;
+
+export const teammateContext = sqliteTable(
+  "teammate_context",
+  {
+    id: text().primaryKey(),
+    teammate_id: text()
+      .notNull()
+      .references(() => teammates.id, { onDelete: "cascade" }),
+    actor_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    scope_type: text({ enum: ["personal", "project"] }).notNull(),
+    scope_id: text().notNull(),
+    home_conversation_id: text()
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    memory_document_id: text()
+      .notNull()
+      .references(() => memoryDocument.id, { onDelete: "cascade" }),
+    status: text({ enum: ["active", "paused", "archived"] })
+      .notNull()
+      .default("active"),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    identityIdx: uniqueIndex("teammate_context_identity_idx").on(
+      table.teammate_id,
+      table.actor_user_id,
+      table.scope_type,
+      table.scope_id,
+    ),
+    homeConversationIdx: uniqueIndex("teammate_context_home_conversation_idx").on(
+      table.home_conversation_id,
+    ),
+    memoryDocumentIdx: uniqueIndex("teammate_context_memory_document_idx").on(
+      table.memory_document_id,
+    ),
+  }),
+);
+
+export type TeammateContextRow = typeof teammateContext.$inferSelect;
+
+export const teammateConnectionGrant = sqliteTable(
+  "teammate_connection_grant",
+  {
+    id: text().primaryKey(),
+    context_id: text()
+      .notNull()
+      .references(() => teammateContext.id, { onDelete: "cascade" }),
+    connection_id: text()
+      .notNull()
+      .references(() => providerConnection.id, { onDelete: "cascade" }),
+    allowed_operations: text({ mode: "json" }).$type<string[]>().notNull(),
+    revision: integer().notNull().default(1),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    contextConnectionIdx: uniqueIndex("teammate_connection_grant_context_connection_idx").on(
+      table.context_id,
+      table.connection_id,
+    ),
+  }),
+);
+
+export type TeammateConnectionGrantRow = typeof teammateConnectionGrant.$inferSelect;
+
+export const teammateComputer = sqliteTable(
+  "teammate_computer",
+  {
+    id: text().primaryKey(),
+    context_id: text()
+      .notNull()
+      .references(() => teammateContext.id, { onDelete: "cascade" }),
+    provider: text().notNull(),
+    provider_handle: text(),
+    checkpoint_reference: text(),
+    status: text({
+      enum: ["stopped", "provisioning", "ready", "checkpointing", "takeover", "error", "destroyed"],
+    })
+      .notNull()
+      .default("stopped"),
+    lease_kind: text({ enum: ["agent", "user"] }),
+    lease_owner_id: text(),
+    lease_expires_at: text(),
+    lease_fence: integer().notNull().default(0),
+    last_error: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    contextIdx: uniqueIndex("teammate_computer_context_idx").on(table.context_id),
+    leaseIdx: index("teammate_computer_lease_idx").on(table.lease_expires_at),
+  }),
+);
+
+export type TeammateComputerRow = typeof teammateComputer.$inferSelect;
 
 export const teammateFeedback = sqliteTable(
   "teammate_feedback",
@@ -757,7 +915,9 @@ export const projectCapability = sqliteTable(
     project_id: text()
       .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
-    kind: text({ enum: ["app", "recipe", "skill", "tool", "teammate"] }).notNull(),
+    kind: text({
+      enum: ["app", "recipe", "skill", "tool", "teammate"],
+    }).notNull(),
     capability_id: text().notNull(),
     excluded: integer({ mode: "boolean" }).default(false).notNull(),
     configuration: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
@@ -806,6 +966,9 @@ export const conversation = sqliteTable(
     })
       .notNull()
       .default("auto_accept_edits"),
+    brief_document_id: text().references(() => memoryDocument.id, {
+      onDelete: "set null",
+    }),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
@@ -825,6 +988,7 @@ export const conversation = sqliteTable(
     ),
     parentMessageIdIdx: index("conversation_parent_message_id_idx").on(table.parent_message_id),
     projectIdIdx: index("conversation_project_id_idx").on(table.project_id),
+    briefDocumentIdx: index("conversation_brief_document_idx").on(table.brief_document_id),
     userProjectArchivedUpdatedIdx: index("conversation_user_project_archived_updated_idx").on(
       table.user_id,
       table.project_id,
@@ -847,7 +1011,15 @@ export const conversationRun = sqliteTable(
     initiator_user_id: integer()
       .notNull()
       .references(() => user.id),
-    trigger: text({ enum: ["user", "delegation", "handle", "schedule"] })
+    teammate_context_id: text().references(() => teammateContext.id, {
+      onDelete: "set null",
+    }),
+    computer_id: text().references(() => teammateComputer.id, {
+      onDelete: "set null",
+    }),
+    trigger: text({
+      enum: ["user", "delegation", "handle", "schedule", "channel"],
+    })
       .notNull()
       .default("user"),
     status: text({
@@ -856,6 +1028,7 @@ export const conversationRun = sqliteTable(
         "running",
         "awaiting_input",
         "awaiting_approval",
+        "awaiting_takeover",
         "cancelling",
         "succeeded",
         "failed",
@@ -868,10 +1041,12 @@ export const conversationRun = sqliteTable(
     attempt: integer().notNull().default(1),
     event_sequence: integer().notNull().default(0),
     terminal_reason: text(),
+    interaction_kind: text({ enum: ["question", "approval", "takeover"] }),
     last_message_id: text(),
     context_json: text(),
     retry_json: text(),
     provenance_json: text(),
+    resolved_configuration_json: text(),
     created_at: text().notNull(),
     updated_at: text().notNull(),
     started_at: text(),
@@ -948,6 +1123,7 @@ export const delegation = sqliteTable(
         "running",
         "awaiting_input",
         "awaiting_approval",
+        "awaiting_takeover",
         "done",
         "failed",
         "cancelled",
@@ -957,6 +1133,14 @@ export const delegation = sqliteTable(
       .notNull()
       .default("queued"),
     result_json: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
+    memory_bindings_json: text({ mode: "json" })
+      .$type<Array<{ documentId: string; access: "read" | "read-write" }>>()
+      .default([])
+      .notNull(),
+    predecessor_delegation_id: text(),
+    continuation_mode: text({ enum: ["new", "resume", "fresh"] })
+      .notNull()
+      .default("new"),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
@@ -1174,7 +1358,9 @@ export const message = sqliteTable(
     conversation_id: text()
       .notNull()
       .references(() => conversation.id),
-    run_id: text().references(() => conversationRun.id, { onDelete: "set null" }),
+    run_id: text().references(() => conversationRun.id, {
+      onDelete: "set null",
+    }),
     parent_message_id: text(),
     is_archived: integer({ mode: "boolean" }).default(false),
     role: text({
@@ -1276,7 +1462,9 @@ export const userSettings = sqliteTable(
     sandbox_model: text(),
     default_model_tier: text({ enum: ["low", "medium", "high", "ultra"] }),
     default_model_id: text(),
-    default_compute_site: text({ enum: ["hosted", "browser", "device", "machine"] }),
+    default_compute_site: text({
+      enum: ["hosted", "browser", "device", "machine"],
+    }),
     last_model_selection: text({ mode: "json" }).$type<LastModelSelection>(),
     pet_source: text({
       enum: ["preset", "custom"],
@@ -1830,6 +2018,10 @@ export const composioConnectorSession = sqliteTable(
     installation_id: text().references(() => template.id, {
       onDelete: "cascade",
     }),
+    project_id: text(),
+    teammate_context_id: text().references(() => teammateContext.id, {
+      onDelete: "set null",
+    }),
     state: text({ enum: ["active", "claimed", "cleanup_pending"] }).notNull(),
     created_at: text().notNull(),
     expires_at: text().notNull(),
@@ -1864,12 +2056,19 @@ export const connectorOperationApproval = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     run_id: text().notNull(),
+    run_attempt: integer().notNull().default(1),
     completion_id: text().notNull(),
     provider: text().notNull(),
     operation: text().notNull(),
     connected_account_id: text().notNull(),
     channel: text().notNull(),
     argument_digest: text().notNull(),
+    arguments_json: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    authority_revision: integer().notNull().default(0),
+    recipe_id: text(),
+    installation_id: text(),
+    project_id: text(),
+    teammate_context_id: text(),
     state: text({
       enum: ["pending", "approved", "rejected", "consumed"],
     }).notNull(),
@@ -1877,6 +2076,12 @@ export const connectorOperationApproval = sqliteTable(
     expires_at: text().notNull(),
     resolved_at: text(),
     consumed_at: text(),
+    execution_state: text({
+      enum: ["running", "completed", "indeterminate"],
+    }),
+    execution_token: text(),
+    execution_lease_expires_at: text(),
+    execution_result_json: text({ mode: "json" }).$type<Record<string, unknown>>(),
   },
   (table) => ({
     ownerStateIdx: index("connector_operation_approval_owner_state_idx").on(
@@ -2173,10 +2378,17 @@ export const tasks = sqliteTable(
         "realtime_reconciliation",
         "infra_reconciliation",
         "stripe_usage_sync",
+        "task_notification_delivery",
+        "delegation_run",
+        "delegation_wake",
+        "delegation_message",
+        "delegation_expiry",
+        "teammate_run_reconciliation",
+        "teammate_context_cleanup",
       ],
     }).notNull(),
     status: text({
-      enum: ["pending", "queued", "running", "completed", "failed", "cancelled"],
+      enum: ["pending", "queued", "running", "suspended", "completed", "failed", "cancelled"],
     })
       .notNull()
       .default("pending"),
@@ -2501,7 +2713,9 @@ export const projectTask = sqliteTable(
     }),
     goal_id: text(),
     dispatch_task_id: text(),
-    run_id: text().references(() => conversationRun.id, { onDelete: "set null" }),
+    run_id: text().references(() => conversationRun.id, {
+      onDelete: "set null",
+    }),
     completions: text({ mode: "json" }).$type<ProjectTaskCompletion[]>(),
     position: real().default(0).notNull(),
     token_budget: integer(),
@@ -2606,7 +2820,9 @@ export const taskInboxReceipt = sqliteTable(
     dismissed_at: text(),
   },
   (table) => ({
-    pk: primaryKey({ columns: [table.user_id, table.task_id, table.task_version] }),
+    pk: primaryKey({
+      columns: [table.user_id, table.task_id, table.task_version],
+    }),
     taskIdx: index("task_inbox_receipt_task_idx").on(table.task_id, table.task_version),
   }),
 );
@@ -2620,7 +2836,9 @@ export const taskNotificationDelivery = sqliteTable(
     dedupe_key: text().notNull().unique(),
     registration_id: text()
       .notNull()
-      .references(() => taskNotificationRegistration.id, { onDelete: "cascade" }),
+      .references(() => taskNotificationRegistration.id, {
+        onDelete: "cascade",
+      }),
     user_id: integer()
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
@@ -2628,7 +2846,9 @@ export const taskNotificationDelivery = sqliteTable(
       .notNull()
       .references(() => projectTask.id, { onDelete: "cascade" }),
     task_version: integer().notNull(),
-    category: text({ enum: ["decisions", "failures", "completions", "assignments"] }).notNull(),
+    category: text({
+      enum: ["decisions", "failures", "completions", "assignments"],
+    }).notNull(),
     status: text({ enum: ["pending", "delivered", "failed", "obsolete"] })
       .default("pending")
       .notNull(),
@@ -2664,7 +2884,9 @@ export const usageEvent = sqliteTable(
       .references(() => user.id),
     workspace_id: text().references(() => workspace.id),
     project_id: text().references(() => project.id),
-    conversation_id: text().references(() => conversation.id, { onDelete: "set null" }),
+    conversation_id: text().references(() => conversation.id, {
+      onDelete: "set null",
+    }),
     message_id: text(),
     activity_id: text(),
     completion_id: text(),
@@ -2751,7 +2973,9 @@ export const usageReservation = sqliteTable(
     kind: text({ enum: ["realtime", "sandbox", "chat_run"] }).notNull(),
     ref_id: text().notNull(),
     credit_micros: integer().notNull(),
-    status: text({ enum: ["held", "releasing", "settled", "released"] }).notNull(),
+    status: text({
+      enum: ["held", "releasing", "settled", "released"],
+    }).notNull(),
     expires_at: text(),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)

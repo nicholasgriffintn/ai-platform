@@ -1,9 +1,11 @@
 import {
+  createChatCompletionsJsonSchema,
   nextFlowStageId,
   chatRunCommandReceiptResponseSchema,
   PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
   PROJECT_TASK_RUN_TASK_TYPE,
   isTerminalGoalStatus,
+  teammateRunConfigurationSchema,
   type ChatRun,
   type ProjectTask,
   type ProjectTaskBlockedReason,
@@ -25,7 +27,7 @@ import {
 } from "~/services/tasks/task-execution-lease";
 import type { TaskExecutionLease } from "~/services/tasks/TaskHandler";
 import { TaskService } from "~/services/tasks/TaskService";
-import { buildTeammatePersona } from "~/services/teammates/completion-tools";
+import { enqueueTeammateRun } from "~/services/teammates/run-admission";
 import { parseProjectFlow } from "~/services/workspaces/format";
 import type { IEnv, Message } from "~/types";
 import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
@@ -394,7 +396,9 @@ export async function recoverRedeliveredProjectTaskRun(params: {
 
     await releaseDurableRunResources(params.context, recovered, {
       keepInteractionResources:
-        recovered.status === "awaiting_input" || recovered.status === "awaiting_approval",
+        recovered.status === "awaiting_input" ||
+        recovered.status === "awaiting_approval" ||
+        recovered.status === "awaiting_takeover",
     });
 
     recordChatRunOperationalMetric(params.context.env, {
@@ -644,52 +648,104 @@ export async function runProjectTaskDispatch(params: {
     const history = await conversationManager.get(conversationId);
     const resumableRunId =
       !params.resumeInterrupted &&
-      (previousRun?.status === "awaiting_input" || previousRun?.status === "awaiting_approval")
+      (previousRun?.status === "awaiting_input" ||
+        previousRun?.status === "awaiting_approval" ||
+        previousRun?.status === "awaiting_takeover")
         ? previousRun.id
         : undefined;
-    const response = await handleCreateChatCompletions({
-      env,
-      context,
-      user,
-      request: {
-        completion_id: conversationId,
-        command_id: params.dispatchTaskId,
-        command_payload: {
-          approvedTools: params.approvedTools ?? [],
-          dispatchTaskId: params.dispatchTaskId,
-          objective: claimed.objective,
-          projectId: claimed.projectId,
-          stageId: claimed.stageId,
-          taskId: claimed.id,
-        },
-        ...(resumableRunId ? { run_id: resumableRunId } : {}),
-        conversation_type: "task",
-        messages: buildTaskRunMessages(
-          history,
-          buildTaskPrompt({
-            task: claimed,
-            stageInstructions: buildStageInstructions(runtime),
-            contextNotes: buildContextNotes(claimed),
-          }),
-        ),
-        ...(runtime.model ? { model: runtime.model } : {}),
-        mode: runtime.mode,
-        stream: false,
-        store: true,
-        enabled_tools: runtime.enabledTools,
-        approved_tools: params.approvedTools,
-        require_approval_for: runtime.requireApprovalFor,
-        enforce_mode_tool_policy: runtime.enforceModeToolPolicy,
-        durable_execution: {
-          kind: "project_task",
-          dispatchTaskId: params.dispatchTaskId,
-          executionOwnerToken: params.executionLease.ownerToken,
-        },
-        tool_choice: "auto",
-        metadata: { project_id: claimed.projectId },
-        ...(runtime.teammate ? { persona: buildTeammatePersona(runtime.teammate) } : {}),
+    const request = {
+      completion_id: conversationId,
+      command_id: params.dispatchTaskId,
+      command_payload: {
+        approvedTools: params.approvedTools ?? [],
+        dispatchTaskId: params.dispatchTaskId,
+        objective: claimed.objective,
+        projectId: claimed.projectId,
+        stageId: claimed.stageId,
+        taskId: claimed.id,
       },
-    });
+      ...(resumableRunId ? { run_id: resumableRunId } : {}),
+      conversation_type: "task" as const,
+      messages: buildTaskRunMessages(
+        history,
+        buildTaskPrompt({
+          task: claimed,
+          stageInstructions: buildStageInstructions(runtime),
+          contextNotes: buildContextNotes(claimed),
+        }),
+      ),
+      ...(runtime.model ? { model: runtime.model } : {}),
+      mode: runtime.mode,
+      stream: false,
+      store: true,
+      enabled_tools: runtime.enabledTools,
+      approved_tools: params.approvedTools,
+      require_approval_for: runtime.requireApprovalFor,
+      enforce_mode_tool_policy: runtime.enforceModeToolPolicy,
+      durable_execution: {
+        kind: "project_task" as const,
+        dispatchTaskId: params.dispatchTaskId,
+        executionOwnerToken: params.executionLease.ownerToken,
+      },
+      tool_choice: "auto" as const,
+      metadata: { project_id: claimed.projectId },
+    };
+    const previousConfiguration = resumableRunId
+      ? teammateRunConfigurationSchema.safeParse(previousRun?.resolvedConfiguration)
+      : null;
+
+    if (resumableRunId && !previousConfiguration?.success) {
+      throw new AssistantError(
+        "The teammate task run has no resumable configuration",
+        ErrorType.CONFLICT_ERROR,
+        409,
+      );
+    }
+
+    const resumeConfiguration = previousConfiguration?.success
+      ? {
+          ...previousConfiguration.data,
+          usedSteps: previousConfiguration.data.usedSteps + (previousRun?.context?.step ?? 0),
+        }
+      : undefined;
+    const remainingSteps = resumeConfiguration
+      ? resumeConfiguration.maxSteps - resumeConfiguration.usedSteps
+      : undefined;
+
+    if (remainingSteps !== undefined && remainingSteps <= 0) {
+      throw new AssistantError(
+        "The teammate task run has exhausted its step budget",
+        ErrorType.CONFLICT_ERROR,
+        409,
+      );
+    }
+
+    const parsedRequest = createChatCompletionsJsonSchema.parse(request);
+    const response = runtime.teammate
+      ? await enqueueTeammateRun({
+          env,
+          context,
+          body: parsedRequest,
+          teammateId: runtime.teammate.id,
+          user,
+          anonymousUser: undefined,
+          conversationType: "task",
+          invocation: {
+            source: "project_task",
+            taskId: claimed.id,
+            projectId: claimed.projectId,
+          },
+          durableExecution: request.durable_execution,
+          executionPolicy: {
+            model: runtime.model,
+            mode: runtime.mode,
+            skillIds: runtime.skillIds,
+            enabledTools: runtime.enabledTools,
+          },
+          ...(resumeConfiguration ? { resumeConfiguration } : {}),
+          ...(remainingSteps !== undefined ? { maxStepsOverride: remainingSteps } : {}),
+        })
+      : await handleCreateChatCompletions({ env, context, user, request: parsedRequest });
 
     if (response instanceof Response) {
       const receiptResponse = chatRunCommandReceiptResponseSchema.safeParse(
@@ -704,7 +760,8 @@ export async function runProjectTaskDispatch(params: {
         if (
           acceptedRun.status !== "succeeded" &&
           acceptedRun.status !== "awaiting_input" &&
-          acceptedRun.status !== "awaiting_approval"
+          acceptedRun.status !== "awaiting_approval" &&
+          acceptedRun.status !== "awaiting_takeover"
         ) {
           throw new AssistantError(
             `The accepted run cannot be reconciled from ${acceptedRun.status}`,
@@ -803,6 +860,8 @@ export async function runProjectTaskDispatch(params: {
     projection.blockedReason = "awaiting_input";
   } else if (projection.status === "blocked" && pendingApproval) {
     projection.blockedReason = "awaiting_approval";
+  } else if (projection.status === "blocked" && completedRun?.status === "awaiting_takeover") {
+    projection.blockedReason = "awaiting_takeover";
   }
 
   const tokensSpent = claimed.tokensSpent + Math.max(goal?.tokens_spent ?? 0, responseTokens);
@@ -859,7 +918,8 @@ export async function runProjectTaskDispatch(params: {
   });
 
   const notificationKind =
-    projection.blockedReason === "awaiting_input"
+    projection.blockedReason === "awaiting_input" ||
+    projection.blockedReason === "awaiting_takeover"
       ? "input"
       : projection.blockedReason === "awaiting_approval"
         ? "approval"

@@ -19,7 +19,7 @@ import {
 import { requireConversationAccess } from "~/services/conversations/access";
 import { searchPolychat } from "~/services/global-search";
 import { hireTeammate as hireTeammateService } from "~/services/teammates";
-import { requireTeammateAccess } from "~/services/teammates/access";
+import { requireProjectTeammate, requireTeammateAccess } from "~/services/teammates/access";
 import { requireProjectAccess, requireWorkspaceAccess } from "~/services/workspaces/access";
 import type { IFunctionResponse, IUser } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
@@ -417,7 +417,11 @@ export const start_conversation: ApiToolDefinition = {
       : null;
 
     if (args.teammateId) {
-      await requireTeammateAccess(scope.context, args.teammateId, "read", scope.user.id);
+      if (projectId) {
+        await requireProjectTeammate(scope.context, projectId, args.teammateId);
+      } else {
+        await requireTeammateAccess(scope.context, args.teammateId, "read", scope.user.id);
+      }
     }
 
     const conversationId = generateId();

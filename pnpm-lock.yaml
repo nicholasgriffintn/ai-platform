@@ -617,6 +617,28 @@ importers:
         specifier: 'catalog:'
         version: 4.129.0(@cloudflare/workers-types@5.20260905.1)
 
+  apps/computer-worker:
+    dependencies:
+      '@cloudflare/sandbox':
+        specifier: 0.12.9
+        version: 0.12.9
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../../packages/schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../../packages/utility-core
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: 'catalog:'
+        version: 5.20260905.1
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      wrangler:
+        specifier: 'catalog:'
+        version: 4.129.0(@cloudflare/workers-types@5.20260905.1)
+
   apps/desktop:
     dependencies:
       '@ngriffin_uk/polychat-component-account':
@@ -745,6 +767,9 @@ importers:
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../../packages/schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../../packages/utility-core
       zod:
         specifier: 'catalog:'
         version: 4.5.4
@@ -7199,10 +7224,6 @@ packages:
       hono:
         optional: true
 
-  hono@4.13.5:
-    resolution: {integrity: sha512-O6+/eCYRkzzzy0rPWwKLiGBR1nFuUPZynnwjxN1MBA62NNqbT0wQEzQyK2gSO5yDIDB336sXQleAhOHrzlYyKw==}
-    engines: {node: '>=16.9.0'}
-
   hono@4.13.7:
     resolution: {integrity: sha512-c8/gF9ac8Y78/agExVocyLevgR+JlpNB444Py0FSX8pJoPdYUfUzRcXtYEYGwt6l19qIlVZPN5Mfsw9jFShmQQ==}
     engines: {node: '>=16.9.0'}
@@ -10026,7 +10047,7 @@ snapshots:
       '@cloudflare/containers': 0.3.7
       aws4fetch: 1.0.20
       capnweb: 0.8.0
-      hono: 4.13.5
+      hono: 4.13.7
 
   '@cloudflare/unenv-preset@2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260903.1)':
     dependencies:
@@ -14175,8 +14196,6 @@ snapshots:
     optionalDependencies:
       '@hono/standard-validator': 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.7)
       hono: 4.13.7
-
-  hono@4.13.5: {}
 
   hono@4.13.7: {}
 

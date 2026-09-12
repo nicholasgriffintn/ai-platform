@@ -1,11 +1,11 @@
-import type { RecipeConfiguration } from "@ngriffin_uk/polychat-schemas";
 import { z } from "zod";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
+import { parseStoredRecipeInstallationData } from "~/services/apps/recipes/installation-persistence";
+import { createRecipeExecutionTaskData } from "~/services/apps/recipes/task-data";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
 import { sha256Hex } from "~/utils/crypto";
-import { parseJsonRecord } from "~/utils/json";
 import { verifyHmacSha256Webhook } from "~/utils/webhook-signatures";
 
 const triggerMessageSchema = z.object({
@@ -49,23 +49,6 @@ function formatEventInput(triggerSlug: string, data: Record<string, unknown>): s
   ].join("\n");
 }
 
-function parseRecipeConfiguration(value: unknown): RecipeConfiguration {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return {};
-  }
-
-  return Object.fromEntries(
-    Object.entries(value).filter(
-      ([, item]) =>
-        item === null ||
-        typeof item === "string" ||
-        typeof item === "number" ||
-        typeof item === "boolean" ||
-        (Array.isArray(item) && item.every((entry) => typeof entry === "string")),
-    ),
-  );
-}
-
 async function processTriggerMessage(env: IEnv, event: z.infer<typeof triggerMessageSchema>) {
   const context = createServiceContext({ env });
   const trigger = await context.repositories.recipeComposioTriggers.getTriggerByExternalId(
@@ -96,9 +79,8 @@ async function processTriggerMessage(env: IEnv, event: z.infer<typeof triggerMes
     return { accepted: true, queued: false };
   }
 
-  const stored = parseJsonRecord(installation.configuration);
-  const recipeId =
-    typeof stored.recipeId === "string" ? stored.recipeId : installation.capability_id;
+  const stored = parseStoredRecipeInstallationData(installation);
+  const recipeId = stored?.recipeId;
 
   if (!recipeId) {
     return { accepted: true, queued: false };
@@ -112,14 +94,15 @@ async function processTriggerMessage(env: IEnv, event: z.infer<typeof triggerMes
     user_id: trigger.created_by_user_id,
     project_id: trigger.project_id ?? undefined,
     schedule_type: "event_triggered",
-    task_data: {
+    task_data: createRecipeExecutionTaskData({
       recipeId,
       installationId: trigger.installation_id,
+      occurrenceId: `event:${event.id}`,
       projectId: trigger.project_id,
       input: formatEventInput(event.metadata.trigger_slug, event.data),
       channel: "event",
-      configuration: parseRecipeConfiguration(stored.configuration),
-    },
+      configuration: stored.configuration,
+    }),
     metadata: {
       source: "composio",
       eventId: event.id,

@@ -38,6 +38,18 @@ describe("redactSensitiveTokens", () => {
     expect(redacted).toBe("provider echoed [redacted] in the error body");
   });
 
+  it("redacts a caller-provided credential from nested values", () => {
+    const redacted = redactSensitiveTokens(
+      { event: { message: "printed scoped-grant" }, output: ["scoped-grant"] },
+      "scoped-grant",
+    );
+
+    expect(redacted).toEqual({
+      event: { message: "printed [redacted]" },
+      output: ["[redacted]"],
+    });
+  });
+
   it("redacts callback bearer values from request URLs", () => {
     const redacted = redactSensitiveUrl(
       "https://api.example.com/connectors/verify?session_uri=one-time-value&keep=visible",

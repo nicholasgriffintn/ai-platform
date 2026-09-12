@@ -10,6 +10,7 @@ import {
   conversationDelegationsQueryKey,
   conversationHandlesQueryKey,
 } from "../hooks/useDelegations.js";
+import { conversationBriefQueryKey } from "../hooks/useMemoryDocuments.js";
 import {
   projectTaskDetailQueryPrefix,
   projectTasksQueryKey,
@@ -47,6 +48,7 @@ const refreshConversationDetail: SyncBinding["apply"] = (context, event) => {
 
   if (conversationId) {
     invalidate(context, [CHATS_QUERY_KEY, conversationId]);
+    invalidate(context, conversationBriefQueryKey(conversationId));
   }
 };
 

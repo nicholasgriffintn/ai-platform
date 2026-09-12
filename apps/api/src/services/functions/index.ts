@@ -25,11 +25,11 @@ import { generate_pattern } from "./generate_pattern";
 import { get_note } from "./get_note";
 import { complete_goal, set_goal } from "./goal";
 import { get_hacker_news_stories } from "./hacker_news";
+import { hostedMcpApproval } from "./hosted_mcp_approval";
 import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
-import { handleMCPTool } from "./mcp";
 import { search_memories, store_memory } from "./memory";
 import { messageParent } from "./message-parent";
 import { metaTools } from "./meta";
@@ -55,6 +55,7 @@ import { search_documents } from "./search_documents";
 import { second_opinion } from "./second_opinion";
 import { create_speech } from "./speech";
 import { get_task_status } from "./tasks";
+import { use_computer } from "./use_computer";
 import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
@@ -119,6 +120,8 @@ const functionDefinitions: ApiToolDefinition[] = [
   messageParent,
   run_sandbox_task,
   run_prediction,
+  use_computer,
+  hostedMcpApproval,
   ...metaTools,
 ];
 
@@ -240,51 +243,6 @@ export const handleFunctions = async ({
   }
 
   const requestMode = request.request?.tool_policy_mode || request.request?.mode || request.mode;
-
-  if (functionName.startsWith("mcp_")) {
-    const mcpPermissionResult = permissionChecker.checkRequestToolAccess({
-      toolName: functionName,
-      mode: requestMode,
-      user: request.user,
-      toolType: "normal",
-      toolPermissions: ["network"],
-      approvedTools: request.request?.approved_tools,
-      requireApprovalFor: request.request?.require_approval_for,
-      enforceModePolicy: request.request?.enforce_mode_tool_policy,
-    });
-
-    if (!mcpPermissionResult.allowed) {
-      throw new AssistantError(
-        mcpPermissionResult.reason || `Tool "${functionName}" is not allowed in this mode`,
-        ErrorType.AUTHORISATION_ERROR,
-        403,
-        {
-          toolName: functionName,
-          mode: mcpPermissionResult.mode,
-        },
-      );
-    }
-
-    if (mcpPermissionResult.requiresApproval && !mcpPermissionResult.approved) {
-      throw new AssistantError(
-        mcpPermissionResult.reason || `Tool "${functionName}" requires approval before execution`,
-        ErrorType.AUTHORISATION_ERROR,
-        403,
-        {
-          toolName: functionName,
-          mode: mcpPermissionResult.mode,
-          requiresApproval: true,
-        },
-      );
-    }
-
-    request.request = {
-      ...request.request,
-      functionName,
-    };
-
-    return handleMCPTool(completion_id, args, request, app_url, conversationManager);
-  }
 
   const foundFunction = resolveFunctionTool(functionName);
   const permissionResult = permissionChecker.checkRequestToolAccess({

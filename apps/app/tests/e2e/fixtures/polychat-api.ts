@@ -8,9 +8,12 @@ import {
   authoredSkillHistoryResponseSchema,
   authoredSkillVersionedDocumentSchema,
   chatRunCommandReceiptResponseSchema,
+  conversationBriefResponseSchema,
   conversationThreadsResponseSchema,
+  delegationListResponseSchema,
   getChatCompletionResponseSchema,
   listSavedMessagesResponseSchema,
+  projectDetailSchema,
   usageBalanceResponseSchema,
   usageEventsResponseSchema,
   usageSummaryResponseSchema,
@@ -72,6 +75,62 @@ export class PolychatApi {
     await requireSuccessfulResponse(response, "Cancel chat run");
 
     return chatRunCommandReceiptResponseSchema.parse(await response.json()).run;
+  }
+
+  async getConversationBrief(conversationId: string) {
+    const response = await this.request.get(
+      `${API_BASE_URL}/memory/documents/conversations/${conversationId}/brief`,
+      { headers: BROWSER_REQUEST_HEADERS },
+    );
+
+    await requireSuccessfulResponse(response, "Load conversation context");
+
+    return conversationBriefResponseSchema.parse(await response.json());
+  }
+
+  async ensureConversationBrief(conversationId: string) {
+    const response = await this.request.post(
+      `${API_BASE_URL}/memory/documents/conversations/${conversationId}/brief`,
+      { headers: BROWSER_REQUEST_HEADERS },
+    );
+
+    await requireSuccessfulResponse(response, "Create conversation context");
+
+    return conversationBriefResponseSchema.parse(await response.json());
+  }
+
+  async updateConversationBrief(
+    conversationId: string,
+    input: { content: string; expectedRevision: number },
+  ) {
+    const response = await this.request.put(
+      `${API_BASE_URL}/memory/documents/conversations/${conversationId}/brief`,
+      { headers: BROWSER_REQUEST_HEADERS, data: input },
+    );
+
+    await requireSuccessfulResponse(response, "Update conversation context");
+
+    return response;
+  }
+
+  async getDelegations(conversationId: string) {
+    const response = await this.request.get(
+      `${API_BASE_URL}/chat/completions/${conversationId}/delegations`,
+      { headers: BROWSER_REQUEST_HEADERS },
+    );
+
+    await requireSuccessfulResponse(response, "Load delegated work");
+
+    return delegationListResponseSchema.parse(await response.json());
+  }
+
+  async cancelConversationDelegations(conversationId: string): Promise<void> {
+    const response = await this.request.post(
+      `${API_BASE_URL}/chat/completions/${conversationId}/delegations/cancel`,
+      { headers: BROWSER_REQUEST_HEADERS },
+    );
+
+    await requireSuccessfulResponse(response, "Cancel conversation delegations");
   }
 
   async createProjectConversationGroupStatus(projectId: string, name: string) {
@@ -332,6 +391,29 @@ export class PolychatApi {
     return (body.capabilities ?? [])
       .map((capability) => capability.capabilityId)
       .filter((capabilityId): capabilityId is string => typeof capabilityId === "string");
+  }
+
+  async getProjectCapability(projectId: string, kind: string, capabilityId: string) {
+    const response = await this.request.get(`${API_BASE_URL}/projects/${projectId}`, {
+      headers: BROWSER_REQUEST_HEADERS,
+    });
+
+    await requireSuccessfulResponse(response, "Load project capability");
+
+    return projectDetailSchema
+      .parse(await response.json())
+      .capabilities.find(
+        (capability) => capability.kind === kind && capability.capabilityId === capabilityId,
+      );
+  }
+
+  async removeProjectCapability(projectId: string, projectCapabilityId: string): Promise<void> {
+    const response = await this.request.delete(
+      `${API_BASE_URL}/projects/${projectId}/capabilities/${projectCapabilityId}`,
+      { headers: BROWSER_REQUEST_HEADERS },
+    );
+
+    await requireSuccessfulResponse(response, "Remove project capability");
   }
 
   async addProjectCapability(projectId: string, kind: string, capabilityId: string) {

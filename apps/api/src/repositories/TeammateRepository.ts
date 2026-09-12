@@ -106,6 +106,15 @@ export class TeammateRepository extends BaseRepository {
     );
   }
 
+  public async listForWorkspace(workspaceId: string): Promise<Teammate[]> {
+    return this.runQuery<Teammate>(
+      `SELECT * FROM teammates
+       WHERE owner_scope_type = 'workspace' AND owner_scope_id = ?
+       ORDER BY created_at ASC`,
+      [workspaceId],
+    );
+  }
+
   public async getTeammatesByIds(teammateIds: string[]): Promise<Teammate[]> {
     const uniqueIds = [...new Set(teammateIds)];
 
@@ -187,12 +196,21 @@ export class TeammateRepository extends BaseRepository {
   }
 
   public async deleteTeammate(teammateId: string): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("teammates", { id: teammateId });
-
-    if (!query) {
-      return;
-    }
-
-    await this.executeRun(query, values);
+    await this.executeBatch([
+      this.env.DB.prepare(
+        `UPDATE memory_document
+         SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+         WHERE id IN (
+           SELECT memory_document_id FROM teammate_context WHERE teammate_id = ?
+         ) AND deleted_at IS NULL`,
+      ).bind(teammateId),
+      this.env.DB.prepare(
+        `DELETE FROM conversation
+         WHERE id IN (
+           SELECT home_conversation_id FROM teammate_context WHERE teammate_id = ?
+         )`,
+      ).bind(teammateId),
+      this.env.DB.prepare("DELETE FROM teammates WHERE id = ?").bind(teammateId),
+    ]);
   }
 }

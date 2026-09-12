@@ -2,7 +2,7 @@ import type { WorkspaceRole } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Teammate } from "~/lib/database/schema";
-import { requireWorkspaceAccess } from "~/services/workspaces/access";
+import { requireProjectAccess, requireWorkspaceAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 export type TeammateAccessAction = "read" | "write";
@@ -105,6 +105,48 @@ export async function requireTeammateAccess(
   await assertTeammateAccess(context, teammate, action, id);
 
   return teammate;
+}
+
+export async function requireProjectTeammate(
+  context: ServiceContext,
+  projectId: string,
+  teammateId: string,
+): Promise<Teammate> {
+  const { project } = await requireProjectAccess(context, projectId);
+  const [capabilities, workspaceDefaults, teammate] = await Promise.all([
+    context.repositories.workspaces.listProjectCapabilities(projectId),
+    context.repositories.teammates.listWorkspaceDefaults(project.workspace_id),
+    loadTeammate(context, teammateId),
+  ]);
+  const availableIds = resolveProjectTeammateIds({
+    capabilities,
+    workspaceDefaultTeammateIds: workspaceDefaults.map((candidate) => candidate.id),
+  });
+
+  if (!availableIds.includes(teammateId)) {
+    throw new AssistantError(
+      "That teammate is not available in this project",
+      ErrorType.NOT_FOUND,
+      404,
+    );
+  }
+
+  await assertTeammateAvailableToWorkspace(context, teammate, project.workspace_id);
+
+  return teammate;
+}
+
+export async function requireScopedTeammateAccess(
+  context: ServiceContext,
+  teammateId: string,
+  scope: { type: "personal"; id: string } | { type: "project"; id: string },
+  userId?: number,
+): Promise<Teammate> {
+  if (scope.type === "project") {
+    return requireProjectTeammate(context, scope.id, teammateId);
+  }
+
+  return requireTeammateAccess(context, teammateId, "read", userId);
 }
 
 export async function canAccessTeammate(

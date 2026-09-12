@@ -3,7 +3,7 @@ import type { IEnv } from "~/types";
 import type { TaskMessage } from "./TaskService";
 
 export interface TaskResult {
-  status: "success" | "error" | "skipped";
+  status: "success" | "error" | "skipped" | "suspended";
   message?: string;
   data?: Record<string, any>;
 }

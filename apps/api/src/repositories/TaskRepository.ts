@@ -24,7 +24,7 @@ export interface CreateTaskParams {
 }
 
 export interface UpdateTaskParams {
-  status?: "pending" | "queued" | "running" | "completed" | "failed" | "cancelled";
+  status?: "pending" | "queued" | "running" | "suspended" | "completed" | "failed" | "cancelled";
   attempts?: number;
   last_attempted_at?: string;
   completed_at?: string;
@@ -155,6 +155,40 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return result ? result.map((task) => this.parseTask(task)) : [];
   }
 
+  public async requeueFailedTasksByType(
+    taskType: TaskType,
+    cutoff: Date,
+    limit = 100,
+  ): Promise<Task[]> {
+    const tasks = await this.runQuery<Task>(
+      `UPDATE tasks
+       SET status = 'queued',
+           attempts = 0,
+           completed_at = NULL,
+           error_message = NULL,
+           execution_owner_token = NULL,
+           execution_lease_expires_at = NULL,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id IN (
+         SELECT id FROM tasks
+         WHERE task_type = ?
+           AND status = 'failed'
+           AND datetime(updated_at) <= datetime(?)
+         ORDER BY updated_at ASC
+         LIMIT ?
+       )
+       RETURNING *`,
+      [taskType, cutoff.toISOString(), limit],
+    );
+    const recovered = tasks?.map((task) => this.parseTask(task)) ?? [];
+
+    for (const task of recovered) {
+      this.announce(task);
+    }
+
+    return recovered;
+  }
+
   public async updateTask(taskId: string, params: UpdateTaskParams): Promise<Task | null> {
     const fieldsToUpdate = Object.keys(params);
 
@@ -176,6 +210,33 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     this.announce(task);
 
     return task;
+  }
+
+  public async settleSuspendedRecipeTask(params: {
+    taskId: string;
+    userId: number;
+    status: "completed" | "failed" | "cancelled";
+    completedAt: string;
+    errorMessage?: string;
+  }): Promise<Task | null> {
+    const task = await this.runQuery<Task>(
+      `UPDATE tasks
+       SET status = ?, completed_at = ?, error_message = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND user_id = ? AND task_type = 'recipe_execution' AND status = 'suspended'
+       RETURNING *`,
+      [
+        params.status,
+        params.completedAt,
+        params.errorMessage ?? null,
+        params.taskId,
+        params.userId,
+      ],
+      true,
+    );
+
+    this.announce(task);
+
+    return task ? this.parseTask(task) : null;
   }
 
   public async claimTaskForExecution(

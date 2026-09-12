@@ -5,6 +5,7 @@ import type { IEnv } from "~/types";
 import activity from "./activity";
 import admin from "./admin";
 import apps from "./apps";
+import { registerSandboxCredentialBrokerRoutes } from "./apps/sandbox/credential-broker";
 import { registerSandboxPreviewAuthorisationRoute } from "./apps/sandbox/preview-authorisation";
 import audio from "./audio";
 import auth from "./auth";
@@ -40,6 +41,7 @@ import workspaces from "./workspaces/index";
 type ApiApp = Hono<{ Bindings: IEnv }>;
 
 export function registerApiRoutes(app: ApiApp): void {
+  registerSandboxCredentialBrokerRoutes(app);
   registerSandboxPreviewAuthorisationRoute(app);
   app.route("/auth", auth);
   app.route("/activity", activity);

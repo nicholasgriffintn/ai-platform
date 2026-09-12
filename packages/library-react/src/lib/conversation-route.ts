@@ -25,3 +25,11 @@ export function getProjectConversationPath(
 export function isProjectConversationPath(pathname: string): boolean {
   return /^\/work\/[^/]+\/projects\/[^/]+\/chat(\/|$)/.test(pathname);
 }
+
+export function getSiblingConversationPath(pathname: string, conversationId: string): string {
+  const projectChat = pathname.match(/^(\/work\/[^/]+\/projects\/[^/]+\/chat)(?:\/|$)/u);
+
+  return projectChat
+    ? `${projectChat[1]}/${encodeURIComponent(conversationId)}`
+    : getPersonalConversationPath(conversationId);
+}

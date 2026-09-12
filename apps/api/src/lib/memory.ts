@@ -60,6 +60,8 @@ export class MemoryManager {
     metadata: Record<string, string>,
     conversationId?: string,
     userSettings?: IUserSettings,
+    operationId?: string,
+    documentId?: string,
   ): Promise<string | null> {
     const provider = getMemoryProvider({
       env: this.env,
@@ -73,6 +75,8 @@ export class MemoryManager {
       metadata,
       conversationId,
       userSettings,
+      operationId,
+      documentId,
     });
 
     if (result.id && this.memoryScope.type === "project" && this.serviceContext && this.user?.id) {
@@ -133,7 +137,11 @@ export class MemoryManager {
    */
   public async retrieveMemories(
     query: string,
-    opts?: { topK?: number; scoreThreshold?: number; userSettings?: IUserSettings | null },
+    opts?: {
+      topK?: number;
+      scoreThreshold?: number;
+      userSettings?: IUserSettings | null;
+    },
   ): Promise<Array<{ text: string; score: number }>> {
     const normalizedQuery = query.trim();
 
@@ -181,6 +189,7 @@ export class MemoryManager {
     conversationManager: ConversationManager,
     completionId: string,
     userSettings: IUserSettings,
+    operationPrefix: string,
   ): Promise<MemoryEvent[]> {
     const events: MemoryEvent[] = [];
 
@@ -234,6 +243,7 @@ export class MemoryManager {
               },
               completionId,
               userSettings,
+              `${operationPrefix}:classified`,
             );
 
             if (["fact", "schedule", "preference"].includes(category)) {
@@ -281,7 +291,7 @@ export class MemoryManager {
                       (text) => !text.includes("###") && !text.includes("**") && text.length < 200,
                     );
 
-                  for (const altText of normalized) {
+                  for (const [index, altText] of normalized.entries()) {
                     await this.storeMemory(
                       altText,
                       {
@@ -293,6 +303,7 @@ export class MemoryManager {
                       },
                       completionId,
                       userSettings,
+                      `${operationPrefix}:normalised:${index}`,
                     );
                   }
                 } catch (e) {
@@ -368,6 +379,7 @@ export class MemoryManager {
                 },
                 completionId,
                 userSettings,
+                `${operationPrefix}:snapshot`,
               );
               events.push({ type: "snapshot", text, category });
             } catch (e) {

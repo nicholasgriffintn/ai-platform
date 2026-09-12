@@ -44,6 +44,9 @@ export function useRecipeWorkflows({
   const [scheduleRecipe, setScheduleRecipe] = useState<AssistantRecipe | null>(null);
   const [scheduleInstallation, setScheduleInstallation] = useState<RecipeInstallation | null>(null);
   const [scheduleCronExpression, setScheduleCronExpression] = useState("0 9 * * *");
+  const [scheduleTimezone, setScheduleTimezone] = useState(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+  );
   const [schedulePrompt, setSchedulePrompt] = useState("");
   const [scheduleNotifySms, setScheduleNotifySms] = useState(false);
   const [scheduleSmsTarget, setScheduleSmsTarget] = useState("");
@@ -92,12 +95,21 @@ export function useRecipeWorkflows({
       return;
     }
 
+    const existingTriggers = scheduleInstallation?.triggers ?? [];
+    const existingManual = existingTriggers.find((trigger) => trigger.type === "manual");
+    const existingSchedule = existingTriggers.find((trigger) => trigger.type === "schedule");
+    const otherTriggers = existingTriggers.filter(
+      (trigger) => trigger.type !== "manual" && trigger.type !== "schedule",
+    );
     const triggers: RecipeInstallationTrigger[] = [
-      { type: "manual", enabled: true },
+      ...otherTriggers,
+      { type: "manual", enabled: true, ...(existingManual?.id ? { id: existingManual.id } : {}) },
       {
         type: "schedule",
         enabled: true,
+        ...(existingSchedule?.id ? { id: existingSchedule.id } : {}),
         cronExpression: scheduleCronExpression,
+        timezone: scheduleTimezone.trim() || "UTC",
         prompt: schedulePrompt.trim() || undefined,
         notificationChannel: scheduleNotifySms ? "sms" : undefined,
         notificationTarget: scheduleNotifySms ? scheduleSmsTarget.trim() : undefined,
@@ -192,6 +204,7 @@ export function useRecipeWorkflows({
         setScheduleRecipe(savedRecipe);
         setScheduleInstallation(savedInstallation);
         setScheduleCronExpression(scheduleTrigger?.cronExpression ?? "0 9 * * *");
+        setScheduleTimezone(scheduleTrigger?.timezone ?? "UTC");
         setSchedulePrompt(scheduleTrigger?.prompt ?? savedRecipe.setupPrompt);
         setScheduleNotifySms(scheduleTrigger?.notificationChannel === "sms");
         setScheduleSmsTarget(scheduleTrigger?.notificationTarget ?? "");
@@ -222,6 +235,7 @@ export function useRecipeWorkflows({
     setScheduleRecipe(nextRecipe);
     setScheduleInstallation(installation ?? null);
     setScheduleCronExpression(scheduleTrigger?.cronExpression ?? "0 9 * * *");
+    setScheduleTimezone(scheduleTrigger?.timezone ?? "UTC");
     setSchedulePrompt(scheduleTrigger?.prompt ?? nextRecipe.setupPrompt);
     setScheduleNotifySms(scheduleTrigger?.notificationChannel === "sms");
     setScheduleSmsTarget(scheduleTrigger?.notificationTarget ?? "");
@@ -376,10 +390,12 @@ export function useRecipeWorkflows({
       recipe: scheduleRecipe,
       hasExistingSchedule: Boolean(getRecipeScheduleTrigger(scheduleInstallation ?? undefined)),
       cronExpression: scheduleCronExpression,
+      timezone: scheduleTimezone,
       prompt: schedulePrompt,
       notifySms: scheduleNotifySms,
       smsTarget: scheduleSmsTarget,
       setCronExpression: setScheduleCronExpression,
+      setTimezone: setScheduleTimezone,
       setPrompt: setSchedulePrompt,
       setNotifySms: setScheduleNotifySms,
       setSmsTarget: setScheduleSmsTarget,

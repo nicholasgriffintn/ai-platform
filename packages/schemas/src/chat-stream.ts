@@ -39,7 +39,7 @@ export const chatTurnActivityEventSchema = z.discriminatedUnion("kind", [
   turnActivityToolSchema.extend({
     type: z.literal("turn_activity"),
     kind: z.literal("waiting_for_user"),
-    reason: z.enum(["question", "approval", "selection"]),
+    reason: z.enum(["question", "approval", "selection", "takeover"]),
   }),
   z.object({
     type: z.literal("turn_activity"),

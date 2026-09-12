@@ -6,7 +6,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  FormInput,
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
@@ -15,14 +14,9 @@ import {
   type ModelToolDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
-import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-interface McpServerRow {
-  id: string;
-  label: string;
-  url: string;
-}
+import { McpServerFields, type McpServerFieldValue } from "./McpServerFields";
 
 interface ToolConfigurationDialogProps {
   configuration?: Record<string, unknown>;
@@ -40,7 +34,7 @@ export function ToolConfigurationDialog({
   tool,
 }: ToolConfigurationDialogProps) {
   const [vectorStoreIds, setVectorStoreIds] = useState("");
-  const [servers, setServers] = useState<McpServerRow[]>([]);
+  const [servers, setServers] = useState<McpServerFieldValue[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -120,60 +114,7 @@ export function ToolConfigurationDialog({
             <p className="text-xs text-muted-foreground">Enter one ID per line.</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {servers.map((server) => (
-              <div
-                key={server.id}
-                className="grid gap-2 rounded-lg border p-3 sm:grid-cols-[1fr_2fr_auto]"
-              >
-                <FormInput
-                  label="Label"
-                  value={server.label}
-                  onChange={(event) =>
-                    setServers((current) =>
-                      current.map((item) =>
-                        item.id === server.id ? { ...item, label: event.target.value } : item,
-                      ),
-                    )
-                  }
-                />
-                <FormInput
-                  label="Server URL"
-                  type="url"
-                  value={server.url}
-                  onChange={(event) =>
-                    setServers((current) =>
-                      current.map((item) =>
-                        item.id === server.id ? { ...item, url: event.target.value } : item,
-                      ),
-                    )
-                  }
-                />
-                <Button
-                  aria-label={`Remove ${server.label || "MCP server"}`}
-                  className="self-end"
-                  variant="outline"
-                  icon={<Trash2 className="h-4 w-4" />}
-                  disabled={servers.length === 1}
-                  onClick={() =>
-                    setServers((current) => current.filter((item) => item.id !== server.id))
-                  }
-                />
-              </div>
-            ))}
-            <Button
-              variant="secondary"
-              icon={<Plus className="h-4 w-4" />}
-              onClick={() =>
-                setServers((current) => [...current, { id: generateId(), label: "", url: "" }])
-              }
-            >
-              Add server
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              Use an HTTPS endpoint and do not put credentials in the URL.
-            </p>
-          </div>
+          <McpServerFields servers={servers} minimumRows={1} onChange={setServers} />
         )}
 
         {error && (

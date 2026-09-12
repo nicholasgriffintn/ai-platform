@@ -1,6 +1,7 @@
 import type { SandboxPreviewState, SandboxServiceStatus } from "@ngriffin_uk/polychat-schemas";
 
 export const PROJECT_WORKBENCH_PANES = [
+  "context",
   "activity",
   "preview",
   "changes",

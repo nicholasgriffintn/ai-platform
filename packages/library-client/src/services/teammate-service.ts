@@ -4,6 +4,16 @@ import type {
   HireTeammateInput,
   SharedTeammateSummary,
   UpdateTeammateInput,
+  TeammateConnectionGrant,
+  TeammateConnectionGrantListResponse,
+  UpsertTeammateConnectionGrant,
+  TeammateContext,
+  TeammateContextScope,
+  TeammateContextStatus,
+  TeammateComputer,
+  TeammateComputerAction,
+  MemoryDocument,
+  UpdateMemoryDocumentInput,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "../fetch-wrapper.js";
@@ -14,7 +24,6 @@ function toTeammatePayload(data: CreateTeammateInput | UpdateTeammateInput) {
     name: data.name,
     description: data.description,
     avatar_url: data.avatar_url || undefined,
-    servers: data.servers,
     model: data.model,
     temperature: data.temperature,
     max_steps: data.max_steps,
@@ -49,7 +58,10 @@ export class TeammateService {
       console.error("Error getting headers for getTeammate:", error);
     }
 
-    const response = await fetchApi(`/teammates/${teammateId}`, { method: "GET", headers });
+    const response = await fetchApi(`/teammates/${teammateId}`, {
+      method: "GET",
+      headers,
+    });
 
     if (!response.ok) {
       throw await createApiErrorFromResponse(
@@ -59,6 +71,178 @@ export class TeammateService {
     }
 
     return returnFetchedData<TeammateResponse>(response);
+  }
+
+  async listTeammateContexts(teammateId: string): Promise<TeammateContext[]> {
+    const response = await fetchApi(`/teammates/${teammateId}/contexts`, {
+      method: "GET",
+      headers: await this.authHeaders("listTeammateContexts"),
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to load teammate contexts");
+    }
+
+    return (await returnFetchedData<{ contexts: TeammateContext[] }>(response)).contexts;
+  }
+
+  async ensureTeammateContext(
+    teammateId: string,
+    scope: TeammateContextScope,
+  ): Promise<TeammateContext> {
+    const response = await fetchApi(`/teammates/${teammateId}/contexts`, {
+      method: "POST",
+      headers: await this.authHeaders("ensureTeammateContext"),
+      body: { scope },
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to start teammate context");
+    }
+
+    return returnFetchedData<TeammateContext>(response);
+  }
+
+  async updateTeammateContextStatus(
+    contextId: string,
+    status: TeammateContextStatus,
+  ): Promise<TeammateContext> {
+    const response = await fetchApi(`/teammates/contexts/${contextId}`, {
+      method: "PATCH",
+      headers: await this.authHeaders("updateTeammateContextStatus"),
+      body: { status },
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to update teammate context");
+    }
+
+    return returnFetchedData<TeammateContext>(response);
+  }
+
+  async listTeammateConnectionGrants(
+    contextId: string,
+  ): Promise<TeammateConnectionGrantListResponse> {
+    const response = await fetchApi(`/teammates/contexts/${contextId}/connections`, {
+      method: "GET",
+      headers: await this.authHeaders("listTeammateConnectionGrants"),
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to load connection grants");
+    }
+
+    return returnFetchedData<TeammateConnectionGrantListResponse>(response);
+  }
+
+  async getTeammateContextMemory(contextId: string): Promise<MemoryDocument> {
+    const response = await fetchApi(`/teammates/contexts/${contextId}/memory`, {
+      method: "GET",
+      headers: await this.authHeaders("getTeammateContextMemory"),
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to load teammate memory");
+    }
+
+    return returnFetchedData<MemoryDocument>(response);
+  }
+
+  async updateTeammateContextMemory(
+    contextId: string,
+    input: Pick<UpdateMemoryDocumentInput, "content" | "changeNote" | "expectedRevision">,
+  ): Promise<MemoryDocument> {
+    const response = await fetchApi(`/teammates/contexts/${contextId}/memory`, {
+      method: "PUT",
+      headers: await this.authHeaders("updateTeammateContextMemory"),
+      body: input,
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to save teammate memory");
+    }
+
+    return returnFetchedData<MemoryDocument>(response);
+  }
+
+  async upsertTeammateConnectionGrant(
+    contextId: string,
+    input: UpsertTeammateConnectionGrant,
+  ): Promise<TeammateConnectionGrant> {
+    const response = await fetchApi(`/teammates/contexts/${contextId}/connections`, {
+      method: "PUT",
+      headers: await this.authHeaders("upsertTeammateConnectionGrant"),
+      body: input,
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to update connection grant");
+    }
+
+    return returnFetchedData<TeammateConnectionGrant>(response);
+  }
+
+  async getTeammateComputer(contextId: string): Promise<TeammateComputer> {
+    const response = await fetchApi(`/teammates/contexts/${contextId}/computer`, {
+      method: "GET",
+      headers: await this.authHeaders("getTeammateComputer"),
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to load teammate computer");
+    }
+
+    return returnFetchedData<TeammateComputer>(response);
+  }
+
+  async performTeammateComputerAction(contextId: string, action: TeammateComputerAction) {
+    const response = await fetchApi(`/teammates/contexts/${contextId}/computer/actions`, {
+      method: "POST",
+      headers: await this.authHeaders("performTeammateComputerAction"),
+      body: action,
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Teammate computer action failed");
+    }
+
+    return returnFetchedData<{
+      computer: TeammateComputer;
+      observation?: Record<string, unknown>;
+    }>(response);
+  }
+
+  async takeOverTeammateComputer(contextId: string, recordTeaching = false) {
+    const response = await fetchApi(`/teammates/contexts/${contextId}/computer/takeover`, {
+      method: "POST",
+      headers: await this.authHeaders("takeOverTeammateComputer"),
+      body: { recordTeaching },
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Could not take control of the computer");
+    }
+
+    return returnFetchedData<{
+      computer: TeammateComputer;
+      screenUrl: string;
+      expiresAt: string;
+      recordingId?: string;
+    }>(response);
+  }
+
+  async releaseTeammateComputer(contextId: string, fence: number): Promise<TeammateComputer> {
+    const response = await fetchApi(`/teammates/contexts/${contextId}/computer/release`, {
+      method: "POST",
+      headers: await this.authHeaders("releaseTeammateComputer"),
+      body: { fence },
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Could not release the computer");
+    }
+
+    return returnFetchedData<TeammateComputer>(response);
   }
 
   async publishTeammateToWorkspace(
@@ -291,7 +475,9 @@ export class TeammateService {
   }
 
   async getSharedTags(): Promise<string[]> {
-    const response = await fetchApi(`/teammates/shared/tags`, { method: "GET" });
+    const response = await fetchApi(`/teammates/shared/tags`, {
+      method: "GET",
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to get shared teammate tags: ${response.statusText}`);
@@ -326,7 +512,11 @@ export class TeammateService {
 
   async hireTeammate(data: HireTeammateInput): Promise<TeammateResponse> {
     const headers = await this.authHeaders("hireTeammate");
-    const response = await fetchApi("/teammates/hire", { method: "POST", headers, body: data });
+    const response = await fetchApi("/teammates/hire", {
+      method: "POST",
+      headers,
+      body: data,
+    });
 
     if (!response.ok) {
       throw await createApiErrorFromResponse(

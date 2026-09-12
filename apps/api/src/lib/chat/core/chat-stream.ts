@@ -14,7 +14,7 @@ import { watchTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import type { ChatRunLifecycle } from "~/services/chat-runs/lifecycle";
 import { createChatRetryStatePublisher } from "~/services/chat-runs/retry-state";
-import { disposeMCPClients } from "~/services/functions/mcp";
+import { releaseTeammateComputerAgentLease } from "~/services/teammates/computers";
 import { StreamState } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -210,7 +210,15 @@ export function createRunResourceCloser(params: {
         logger.error("Failed to close the connector run", { error });
       }
 
-      await disposeMCPClients(context);
+      const contextId = params.toolRequestContext.request?.teammate_context_id;
+
+      if (contextId && context.executionRunId) {
+        await releaseTeammateComputerAgentLease({
+          context,
+          contextId,
+          runId: context.executionRunId,
+        });
+      }
     })();
 
     return closed;

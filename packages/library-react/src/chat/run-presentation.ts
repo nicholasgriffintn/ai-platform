@@ -14,6 +14,8 @@ export function getChatRunLoadingMessage(status: ChatRun["status"]): string {
       return "Waiting for approval...";
     case "awaiting_input":
       return "Waiting for your answer...";
+    case "awaiting_takeover":
+      return "Waiting for you to take control...";
     case "cancelling":
       return "Stopping task...";
     case "running":
@@ -55,6 +57,12 @@ export function getChatRunPresentation(run: ChatRun): ChatRunPresentation {
       return {
         label: "Approval needed",
         detail: "The task is waiting for approval.",
+        tone: "attention",
+      };
+    case "awaiting_takeover":
+      return {
+        label: "Takeover needed",
+        detail: "The task is waiting for you to take control.",
         tone: "attention",
       };
     case "cancelling":

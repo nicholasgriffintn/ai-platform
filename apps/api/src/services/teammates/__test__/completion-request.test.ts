@@ -100,7 +100,7 @@ describe("prepareTeammateCompletionRequest", () => {
     expect(request.enabled_tools).toEqual(["web_search"]);
   });
 
-  it("lets the caller's tool selection override the saved teammate's", () => {
+  it("does not let the caller widen the saved teammate's tools", () => {
     const body = createChatCompletionsJsonSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Search for something" }],
@@ -124,7 +124,7 @@ describe("prepareTeammateCompletionRequest", () => {
       persona: {},
     });
 
-    expect(request.enabled_tools).toEqual(["code_execution"]);
+    expect(request.enabled_tools).toEqual([]);
   });
 
   it("keeps the caller's streaming choice instead of forcing a buffered turn", () => {
@@ -265,7 +265,7 @@ describe("prepareTeammateCompletionRequest", () => {
     expect(request.denied_tools).toBeUndefined();
   });
 
-  it("keeps a bot teammate away from filing tasks and writing memory", () => {
+  it("preserves a bot teammate's configured tools", () => {
     const body = createChatCompletionsJsonSchema.parse({
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "Brief me" }],
@@ -288,9 +288,8 @@ describe("prepareTeammateCompletionRequest", () => {
       persona: {},
     });
 
-    expect(request.enabled_tools).toEqual(["web_search"]);
-    expect(request.denied_tools).toContain("create_task");
-    expect(request.denied_tools).toContain("store_memory");
+    expect(request.enabled_tools).toEqual(["web_search", "create_task", "store_memory"]);
+    expect(request.denied_tools).toBeUndefined();
   });
 
   it("refuses a denied tool even when the caller asks for it", () => {
@@ -298,6 +297,7 @@ describe("prepareTeammateCompletionRequest", () => {
       model: "mistral-large-latest",
       messages: [{ role: "user", content: "File a task" }],
       enabled_tools: ["create_task"],
+      denied_tools: ["create_task"],
     });
 
     const request = prepareTeammateCompletionRequest({
@@ -317,7 +317,7 @@ describe("prepareTeammateCompletionRequest", () => {
       persona: {},
     });
 
-    expect(request.enabled_tools).toEqual([]);
+    expect(request.enabled_tools).toEqual(["create_task"]);
     expect(
       new PermissionChecker().checkToolAccess({
         toolName: "create_task",

@@ -4,6 +4,36 @@ import type { OutputRecord } from "~/repositories/OutputRepository";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+const HIDDEN_OUTPUT_ERRORS = new Set([
+  ErrorType.NOT_FOUND,
+  ErrorType.FORBIDDEN,
+  ErrorType.AUTHORISATION_ERROR,
+]);
+
+export async function filterAccessibleOutputs(
+  context: ServiceContext,
+  userId: number,
+  outputs: readonly OutputRecord[],
+): Promise<OutputRecord[]> {
+  const accessible = await Promise.all(
+    outputs.map(async (output) => {
+      try {
+        await requireOutputRecordAccess(context, userId, output);
+
+        return output;
+      } catch (error) {
+        if (error instanceof AssistantError && HIDDEN_OUTPUT_ERRORS.has(error.type)) {
+          return null;
+        }
+
+        throw error;
+      }
+    }),
+  );
+
+  return accessible.filter((output): output is OutputRecord => output !== null);
+}
+
 export async function requireConversationScope(
   context: ServiceContext,
   userId: number,

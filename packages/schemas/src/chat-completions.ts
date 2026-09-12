@@ -485,6 +485,9 @@ export const chatCompletionsRequestFieldsSchema = z.object({
   approved_tools: toolIdsSchema
     .optional()
     .describe("Tool IDs pre-approved for approval-gated modes."),
+  denied_tools: toolIdsSchema
+    .optional()
+    .describe("Tool IDs explicitly unavailable for this request."),
   connector_approval_id: connectorApprovalIdSchema
     .optional()
     .describe("One-time approval for the exact connector action in this request."),

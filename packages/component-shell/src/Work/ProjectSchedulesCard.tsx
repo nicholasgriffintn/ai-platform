@@ -182,10 +182,12 @@ export function ProjectSchedulesCard({
         recipe={workflows.scheduleDialog.recipe}
         hasExistingSchedule={workflows.scheduleDialog.hasExistingSchedule}
         cronExpression={workflows.scheduleDialog.cronExpression}
+        timezone={workflows.scheduleDialog.timezone}
         prompt={workflows.scheduleDialog.prompt}
         notifySms={workflows.scheduleDialog.notifySms}
         smsTarget={workflows.scheduleDialog.smsTarget}
         onCronExpressionChange={workflows.scheduleDialog.setCronExpression}
+        onTimezoneChange={workflows.scheduleDialog.setTimezone}
         onPromptChange={workflows.scheduleDialog.setPrompt}
         onNotifySmsChange={workflows.scheduleDialog.setNotifySms}
         onSmsTargetChange={workflows.scheduleDialog.setSmsTarget}

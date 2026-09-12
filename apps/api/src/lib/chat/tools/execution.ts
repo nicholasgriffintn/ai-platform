@@ -3,6 +3,7 @@ import type { ConversationManager } from "~/lib/conversationManager";
 import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
 import { handleFunctions, resolveToolRepeatLimit } from "~/services/functions";
 import type { IRequest, Message } from "~/types";
+import { hasAnyEnabledTool } from "~/utils/enabledTools";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
@@ -72,6 +73,7 @@ export const handleToolCalls = async (
     recoverUnknownToolCalls?: boolean;
     callLedger?: ToolCallLedger;
     onToolExecutionStart?: (tool: { id: string; name: string }) => Promise<void> | void;
+    isExecutionAllowed?: () => Promise<boolean> | boolean;
   },
 ): Promise<Message[]> => {
   const functionResults: Message[] = [];
@@ -112,6 +114,10 @@ export const handleToolCalls = async (
   const toolPermissionsMap = req.request?.tool_permissions_map ?? {};
 
   for (const toolCall of toolCalls) {
+    if (options?.isExecutionAllowed && !(await options.isExecutionAllowed())) {
+      break;
+    }
+
     const functionName = toolCall.function?.name || toolCall.name || "unknown";
     let recordToolCallAttempt: (() => void) | undefined;
     let recordDeterministicFailure: (() => void) | undefined;
@@ -318,6 +324,18 @@ export const handleToolCalls = async (
       let result: any;
 
       try {
+        if (
+          req.request?.enabled_tools &&
+          !hasAnyEnabledTool(req.request.enabled_tools, functionName)
+        ) {
+          throw new AssistantError(
+            `Tool "${functionName}" was not enabled for this run`,
+            ErrorType.TOOL_CALL_ERROR,
+            400,
+            { reason: "unknown_tool" },
+          );
+        }
+
         result = await handleFunctions({
           completion_id,
           tool_call_id: toolCall.id,

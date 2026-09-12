@@ -23,6 +23,13 @@ export const chatContextSkillSchema = z.object({
   revision: z.number().int().positive().optional(),
 });
 
+export const chatContextDocumentSchema = z.object({
+  id: z.string().min(1),
+  kind: z.enum(["conversation_brief", "memory"]),
+  revision: z.number().int().positive(),
+  access: z.enum(["read", "read-write"]),
+});
+
 export const chatContextApprovalSchema = z.object({
   id: z.string().min(1),
   type: z.enum(["approval", "question"]),
@@ -64,6 +71,7 @@ export const chatContextSnapshotSchema = z.object({
     omitted: z.number().int().nonnegative(),
   }),
   sources: z.array(chatContextSourceSchema),
+  documents: z.array(chatContextDocumentSchema).optional(),
   skills: z.array(chatContextSkillSchema),
   approvals: z.array(chatContextApprovalSchema).optional(),
   summary: chatContextSummarySchema.nullable(),
@@ -73,6 +81,7 @@ export const chatContextSnapshotSchema = z.object({
 export type ChatContextUsage = z.infer<typeof chatContextUsageSchema>;
 export type ChatContextSource = z.infer<typeof chatContextSourceSchema>;
 export type ChatContextSkill = z.infer<typeof chatContextSkillSchema>;
+export type ChatContextDocument = z.infer<typeof chatContextDocumentSchema>;
 export type ChatContextApproval = z.infer<typeof chatContextApprovalSchema>;
 export type ChatContextSummary = z.infer<typeof chatContextSummarySchema>;
 export type ChatContextOmission = z.infer<typeof chatContextOmissionSchema>;

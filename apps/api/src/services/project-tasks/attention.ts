@@ -56,6 +56,10 @@ function attentionState(
       return { kind: "approval", category: "decisions", requiresAction: true };
     }
 
+    if (task.blockedReason === "awaiting_takeover") {
+      return { kind: "input", category: "decisions", requiresAction: true };
+    }
+
     return { kind: "blocked", category: "failures", requiresAction: true };
   }
 

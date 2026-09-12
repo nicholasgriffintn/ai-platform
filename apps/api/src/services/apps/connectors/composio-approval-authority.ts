@@ -1,24 +1,14 @@
-import { recipeChatRequestOptionsSchema } from "@ngriffin_uk/polychat-schemas";
-
-import type { ServiceContext } from "~/lib/context/serviceContext";
+import { getConnectorProviderConfig } from "~/lib/providers/capabilities/connectors";
 import type { ComposioConnectorSessionRecord } from "~/repositories/ComposioConnectorSessionRepository";
 import type { ConnectorOperationApprovalRecord } from "~/repositories/ConnectorOperationApprovalRepository";
-import { getRecipeById, parseRecipeInstallationRecord } from "~/services/apps/recipes";
+import { resolveTeammateConnectorAuthority } from "~/services/teammates/connection-authority";
+
+import { buildConnectorApprovalRecipeContext } from "./approval-recipe-context";
 import {
-  buildRecipeConnections,
-  buildRecipeInvocationRuntime,
-} from "~/services/apps/recipes/runtime";
-import { requireProjectAccess } from "~/services/workspaces/access";
-
-import type {
-  ConnectorApprovalExecutionAuthority,
-  ResolveConnectorApprovalAuthority,
-  StoredConnectorOperationCall,
+  rejectConnectorApprovalAuthority,
+  type ResolveConnectorApprovalAuthority,
+  type StoredConnectorOperationCall,
 } from "./connector-approval-authority";
-
-function failAuthority(): never {
-  throw new Error("Connector approval authority does not match the stored action");
-}
 
 function requireSessionMatchesApproval(params: {
   approval: ConnectorOperationApprovalRecord;
@@ -37,88 +27,20 @@ function requireSessionMatchesApproval(params: {
     session.runId !== approval.runId ||
     session.completionId !== approval.completionId ||
     session.connectedAccountId !== approval.connectedAccountId ||
+    (session.recipeId ?? undefined) !== approval.recipeId ||
+    (session.installationId ?? undefined) !== approval.installationId ||
+    (session.projectId ?? undefined) !== approval.projectId ||
+    (session.teammateContextId ?? undefined) !== approval.teammateContextId ||
     !session.allowedOperationIds.includes(approval.operation) ||
     !session.authConfigId ||
     !session.connectedAccountId ||
     (session.state !== "active" && session.state !== "claimed") ||
     session.expiresAt <= new Date().toISOString()
   ) {
-    failAuthority();
+    rejectConnectorApprovalAuthority();
   }
 
   return session;
-}
-
-async function buildRecipeContext(params: {
-  context: ServiceContext;
-  session: ComposioConnectorSessionRecord;
-  userId: number;
-  channel: string;
-}): Promise<{
-  requestOptions: ConnectorApprovalExecutionAuthority["requestOptions"];
-  projectId?: string;
-}> {
-  if (!params.session.recipeId) {
-    if (params.channel !== "web") {
-      failAuthority();
-    }
-
-    return { requestOptions: {} };
-  }
-
-  const recipe = getRecipeById(params.session.recipeId);
-
-  if (!recipe) {
-    failAuthority();
-  }
-
-  let installation = null;
-
-  if (params.session.installationId) {
-    const record = await params.context.repositories.templates.getTemplateById(
-      params.session.installationId,
-    );
-
-    installation = record ? parseRecipeInstallationRecord(record) : null;
-    if (
-      !installation ||
-      installation.userId !== params.userId ||
-      installation.recipeId !== recipe.id ||
-      installation.id !== params.session.installationId
-    ) {
-      failAuthority();
-    }
-
-    if (installation.projectId) {
-      await requireProjectAccess(params.context, installation.projectId);
-    }
-  }
-
-  const runtime = buildRecipeInvocationRuntime({
-    recipe,
-    connections: buildRecipeConnections(recipe),
-    installation,
-    configuration: installation?.configuration,
-  });
-  const channel = recipeChatRequestOptionsSchema.shape.channel.safeParse(params.channel);
-
-  if (!channel.success || channel.data === undefined) {
-    failAuthority();
-  }
-
-  return {
-    requestOptions: {
-      recipe: {
-        id: recipe.id,
-        ...(installation ? { installationId: installation.id } : {}),
-        channel: channel.data,
-        allowedConnectorProviders: runtime.allowedConnectorProviders,
-        allowedConnectorOperations: runtime.allowedConnectorOperations,
-        ...(installation?.configuration ? { configuration: installation.configuration } : {}),
-      },
-    },
-    ...(installation?.projectId ? { projectId: installation.projectId } : {}),
-  };
 }
 
 export const resolveComposioApprovalAuthority: ResolveConnectorApprovalAuthority = async (
@@ -129,14 +51,42 @@ export const resolveComposioApprovalAuthority: ResolveConnectorApprovalAuthority
     call: params.call,
     userId: params.userId,
     session: await params.context.repositories.composioConnectorSessions.getById(
-      params.call.sessionId,
+      params.call.sessionId ?? "",
     ),
   });
-  const recipeContext = await buildRecipeContext({
+  const provider = getConnectorProviderConfig(params.approval.provider);
+
+  if (!provider || provider.auth.authType !== "composio") {
+    rejectConnectorApprovalAuthority();
+  }
+
+  if (params.approval.teammateContextId) {
+    const authority = await resolveTeammateConnectorAuthority({
+      context: params.context,
+      contextId: params.approval.teammateContextId,
+      userId: params.userId,
+      provider: provider.id,
+    });
+
+    if (
+      authority.connectedAccountId !== session.connectedAccountId ||
+      authority.grantRevision !== params.approval.authorityRevision ||
+      !authority.allowedOperations.includes(params.approval.operation)
+    ) {
+      rejectConnectorApprovalAuthority();
+    }
+  } else if (params.approval.authorityRevision !== 0) {
+    rejectConnectorApprovalAuthority();
+  }
+
+  const recipeContext = await buildConnectorApprovalRecipeContext({
     context: params.context,
-    session,
     userId: params.userId,
     channel: params.approval.channel,
+    recipeId: session.recipeId ?? undefined,
+    installationId: session.installationId ?? undefined,
+    projectId: session.projectId ?? undefined,
+    teammateContextId: session.teammateContextId ?? undefined,
   });
 
   return {

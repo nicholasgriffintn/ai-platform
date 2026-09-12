@@ -91,7 +91,7 @@ test.describe("Hiring a teammate", () => {
     await homePage.navigate(`${projectPath}/chat?teammate=${bot.id}`);
     await homePage.sendMessage("File a release task from this bot");
     await expect(homePage.getLatestAssistantMessage()).toContainText(
-      'Tool "create_task" is not available to this teammate',
+      "Project task tools are only available in a project conversation.",
       { timeout: 20_000 },
     );
     const afterResponse = await page.request.get(`${E2E_API_BASE_URL}/projects/${projectId}/tasks`);
@@ -158,7 +158,7 @@ test.describe("Hiring a teammate", () => {
     await capabilitiesPage.deleteTeammateFromLibrary(ROLE.title);
   });
 
-  test("removes task and memory tools when the editor changes a colleague into a bot", async ({
+  test("preserves configured tools when the editor changes invocation behaviour", async ({
     page,
     capabilitiesPage,
   }) => {
@@ -173,10 +173,6 @@ test.describe("Hiring a teammate", () => {
     expect(teammate.enabled_tools).toEqual(expect.arrayContaining(["create_task", "store_memory"]));
     await capabilitiesPage.navigate(`/chat/teammates/${teammate.id}`);
     await chooseDropdownOption(page.getByLabel("Kind", { exact: true }), "Bot");
-    for (const tool of ["create_task", "store_memory"]) {
-      await page.getByPlaceholder("Search tools and skills...").fill(tool);
-      await expect(page.getByText("Nothing matches that search.", { exact: true })).toBeVisible();
-    }
 
     const saved = page.waitForResponse(
       (response) =>
@@ -190,12 +186,12 @@ test.describe("Hiring a teammate", () => {
     expect(response.status()).toBe(200);
     expect(teammateResponseSchema.parse(await response.json())).toMatchObject({
       kind: "bot",
-      enabled_tools: [],
+      enabled_tools: ["create_task", "store_memory"],
     });
     await capabilitiesPage.navigate(`/chat/teammates/${teammate.id}`);
     await expectDropdownValue(page.getByLabel("Kind", { exact: true }), "Bot");
     await expect(page.getByText(/Tools the teammate may call and skills it loads/)).toContainText(
-      "0 selected",
+      "2 selected",
     );
   });
 

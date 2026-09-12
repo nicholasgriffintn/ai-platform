@@ -69,6 +69,7 @@ export interface CreateAuthoredSkillInput {
     projectId: string;
     audit: CreateWorkspaceAuditRecordInput;
   };
+  personalEnabled?: boolean;
 }
 
 export interface AppendAuthoredSkillRevisionInput {
@@ -207,7 +208,7 @@ export class AuthoredSkillRepository extends BaseRepository {
           scope: { type: "user", id: Number(input.scope.id) },
           capabilityKind: "skill",
           capabilityId: input.name,
-          configuration: { enabled: true },
+          configuration: { enabled: input.personalEnabled ?? true },
         });
         const [skillRecords, revisionRecords, configurationRecords] = await this.database.batch([
           skillInsert,

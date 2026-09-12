@@ -46,6 +46,7 @@ export type ProjectTaskRunnerKind = z.infer<typeof projectTaskRunnerKindSchema>;
 export const projectTaskBlockedReasonSchema = z.enum([
   "awaiting_input",
   "awaiting_approval",
+  "awaiting_takeover",
   "stalled",
   "usage_limits",
   "token_budget",
@@ -65,6 +66,7 @@ export const RETRYABLE_PROJECT_TASK_BLOCKED_REASONS: readonly ProjectTaskBlocked
 export const projectTaskBlockedReasonLabels: Record<ProjectTaskBlockedReason, string> = {
   awaiting_input: "Waiting for your answers",
   awaiting_approval: "Waiting for an approval",
+  awaiting_takeover: "Waiting for computer takeover",
   stalled: "Stopped making progress",
   usage_limits: "Stopped at the usage limit",
   token_budget: "Reached its token budget",

@@ -3,7 +3,7 @@ import { isPlainObject } from "./objects";
 const REDACTED = "[redacted]";
 
 const SENSITIVE_FIELD_NAMES =
-  "(?:authorization|api[-_ ]?key|x[-_ ]?api[-_ ]?key|x[-_ ]?goog[-_ ]?api[-_ ]?key|xi[-_ ]?api[-_ ]?key|cf[-_ ]?aig[-_ ]?authorization|token|access[-_ ]?token|refresh[-_ ]?token|secret|secret[-_ ]?key|client[-_ ]?secret)";
+  "(?:authorization|api[-_ ]?key|x[-_ ]?api[-_ ]?key|x[-_ ]?goog[-_ ]?api[-_ ]?key|xi[-_ ]?api[-_ ]?key|cf[-_ ]?aig[-_ ]?authorization|token|access[-_ ]?token|refresh[-_ ]?token|secret|secret[-_ ]?key|client[-_ ]?secret|account[-_ ]?id|connected[-_ ]?account[-_ ]?id)";
 const TOKEN_VALUE = "[^\"'\\s,;}&\\]\\[]{4,}";
 const MIN_SECRET_TOKEN_LENGTH = 24;
 const MIN_SECRET_TOKEN_ENTROPY = 3.5;
@@ -55,8 +55,8 @@ function isLikelySecretToken(value: string): boolean {
   );
 }
 
-function redactString(value: string): string {
-  return value
+function redactString(value: string, sensitiveValue?: string): string {
+  return (sensitiveValue ? value.replaceAll(sensitiveValue, REDACTED) : value)
     .replace(QUOTED_FIELD_PATTERN, `$1${REDACTED}$3`)
     .replace(UNQUOTED_FIELD_PATTERN, `$1${REDACTED}`)
     .replace(AUTHORIZATION_VALUE_PATTERN, `$1 ${REDACTED}`)
@@ -65,9 +65,9 @@ function redactString(value: string): string {
     );
 }
 
-function redactValue(value: unknown, seen: WeakSet<object>): unknown {
+function redactValue(value: unknown, seen: WeakSet<object>, sensitiveValue?: string): unknown {
   if (typeof value === "string") {
-    return redactString(value);
+    return redactString(value, sensitiveValue);
   }
 
   if (!value || typeof value !== "object") {
@@ -80,7 +80,7 @@ function redactValue(value: unknown, seen: WeakSet<object>): unknown {
 
   if (Array.isArray(value)) {
     seen.add(value);
-    const redacted = value.map((item) => redactValue(item, seen));
+    const redacted = value.map((item) => redactValue(item, seen, sensitiveValue));
 
     seen.delete(value);
 
@@ -95,7 +95,9 @@ function redactValue(value: unknown, seen: WeakSet<object>): unknown {
   const redacted: Record<string, unknown> = {};
 
   for (const [key, item] of Object.entries(value)) {
-    redacted[key] = SENSITIVE_OBJECT_KEY_PATTERN.test(key) ? REDACTED : redactValue(item, seen);
+    redacted[key] = SENSITIVE_OBJECT_KEY_PATTERN.test(key)
+      ? REDACTED
+      : redactValue(item, seen, sensitiveValue);
   }
 
   seen.delete(value);
@@ -103,8 +105,8 @@ function redactValue(value: unknown, seen: WeakSet<object>): unknown {
   return redacted;
 }
 
-export function redactSensitiveTokens<T>(value: T): T {
-  return redactValue(value, new WeakSet()) as T;
+export function redactSensitiveTokens<T>(value: T, sensitiveValue?: string): T {
+  return redactValue(value, new WeakSet(), sensitiveValue) as T;
 }
 
 export function redactSensitiveUrl(value: string): string {

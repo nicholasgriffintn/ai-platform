@@ -61,6 +61,7 @@ export * from "./Composer/ChatSettingsPanel.js";
 export * from "./Composer/ComposerShell.js";
 export * from "./Composer/ComposerVoiceControls.js";
 export * from "./ConversationTitleContext.js";
+export * from "./ConversationContextSummary.js";
 export * from "./Live/LiveCameraDialog.js";
 export * from "./Live/LiveProviderPicker.js";
 export * from "./Live/LiveMediaControls.js";

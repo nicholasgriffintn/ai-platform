@@ -20,10 +20,25 @@ export default defineConfig({
     actionTimeout: 10 * 1000,
     baseURL: E2E_APP_BASE_URL,
     permissions: ["clipboard-read", "clipboard-write"],
-    trace: "on-first-retry",
     viewport: { width: 1280, height: 720 },
     screenshot: "only-on-failure",
-    video: "on-first-retry",
+    trace: "on-first-retry",
+    video: {
+      mode: process.env.CI ? "on-first-retry" : "on",
+      size: { width: 640, height: 480 },
+      show: {
+        actions: {
+          duration: 500,
+          position: "top-right",
+          fontSize: 14,
+        },
+        test: {
+          level: "step",
+          position: "top-left",
+          fontSize: 12,
+        },
+      },
+    },
   },
   webServer: [
     {

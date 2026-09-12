@@ -69,11 +69,18 @@ function createContext(
     install?: { id: string } | null;
     departedAuthorIds?: number[];
     projectTeammates?: ReturnType<typeof buildStoredTeammate>[];
-    projectCapabilities?: { kind: string; capability_id: string; configuration: null }[];
+    projectCapabilities?: {
+      kind: string;
+      capability_id: string;
+      configuration: null;
+    }[];
   } = {},
 ) {
   const teammate = overrides.teammate === undefined ? buildStoredTeammate() : overrides.teammate;
-  const currentUser = { id: overrides.currentUserId ?? OWNER_ID, plan_id: "pro" };
+  const currentUser = {
+    id: overrides.currentUserId ?? OWNER_ID,
+    plan_id: "pro",
+  };
   const repositories = {
     teammates: {
       getTeammateById: vi.fn(async () => teammate),
@@ -102,7 +109,10 @@ function createContext(
 
         return overrides.role ? { role: overrides.role } : null;
       }),
-      getProject: vi.fn(async () => ({ id: PROJECT_ID, workspace_id: WORKSPACE_ID })),
+      getProject: vi.fn(async () => ({
+        id: PROJECT_ID,
+        workspace_id: WORKSPACE_ID,
+      })),
       listProjectCapabilities: vi.fn(async () => overrides.projectCapabilities ?? []),
       listWorkspaces: vi.fn(async () => overrides.workspaces ?? []),
       listProjectsWithCapability: vi.fn(async () => overrides.attachedProjects ?? []),
@@ -110,6 +120,9 @@ function createContext(
     },
     teammateFeedback: {
       scorecardsFor: vi.fn(async () => new Map()),
+    },
+    teammateContexts: {
+      listAllForTeammates: vi.fn(async () => []),
     },
     sharedTeammates: {
       getSharedTeammateByTeammateId: vi.fn(async () => overrides.listing ?? null),
@@ -164,7 +177,9 @@ describe("teammate scope authorisation", () => {
       role: "member",
     });
 
-    await expect(getTeammateById(context, TEAMMATE_ID)).resolves.toMatchObject({ id: TEAMMATE_ID });
+    await expect(getTeammateById(context, TEAMMATE_ID)).resolves.toMatchObject({
+      id: TEAMMATE_ID,
+    });
   });
 
   it("refuses a workspace teammate to a non-member", async () => {
@@ -192,9 +207,9 @@ describe("teammate scope authorisation", () => {
       role: "member",
     });
 
-    const updateError = await updateTeammate(context, TEAMMATE_ID, { name: "Repointed" }).catch(
-      (thrown: unknown) => thrown,
-    );
+    const updateError = await updateTeammate(context, TEAMMATE_ID, {
+      name: "Repointed",
+    }).catch((thrown: unknown) => thrown);
     const deleteError = await deleteTeammate(context, TEAMMATE_ID).catch(
       (thrown: unknown) => thrown,
     );
@@ -227,7 +242,10 @@ describe("teammate scope authorisation", () => {
       workspaces: [{ id: WORKSPACE_ID }, { id: "workspace-2" }],
       scopedTeammates: [
         buildStoredTeammate(),
-        buildStoredTeammate({ owner_scope_type: "workspace", owner_scope_id: WORKSPACE_ID }),
+        buildStoredTeammate({
+          owner_scope_type: "workspace",
+          owner_scope_id: WORKSPACE_ID,
+        }),
       ],
     });
 
@@ -363,7 +381,10 @@ describe("publishTeammateToWorkspace", () => {
   });
 
   it("refuses to publish an teammate the person cannot read", async () => {
-    const { context, repositories } = createContext({ currentUserId: OTHER_ID, role: "admin" });
+    const { context, repositories } = createContext({
+      currentUserId: OTHER_ID,
+      role: "admin",
+    });
 
     const error = await publishTeammateToWorkspace(context, TEAMMATE_ID, WORKSPACE_ID).catch(
       (thrown: unknown) => thrown,
@@ -385,17 +406,26 @@ describe("createTeammate", () => {
     await createTeammate(context, { name: "Researcher" });
 
     expect(repositories.teammates.createTeammate).toHaveBeenCalledWith(
-      expect.objectContaining({ ownerScopeType: "user", ownerScopeId: String(OWNER_ID) }),
+      expect.objectContaining({
+        ownerScopeType: "user",
+        ownerScopeId: String(OWNER_ID),
+      }),
     );
   });
 
   it("creates a workspace teammate for an administrator of that workspace", async () => {
     const { context, repositories } = createContext({ role: "admin" });
 
-    await createTeammate(context, { name: "Researcher", workspace_id: WORKSPACE_ID });
+    await createTeammate(context, {
+      name: "Researcher",
+      workspace_id: WORKSPACE_ID,
+    });
 
     expect(repositories.teammates.createTeammate).toHaveBeenCalledWith(
-      expect.objectContaining({ ownerScopeType: "workspace", ownerScopeId: WORKSPACE_ID }),
+      expect.objectContaining({
+        ownerScopeType: "workspace",
+        ownerScopeId: WORKSPACE_ID,
+      }),
     );
   });
 
@@ -460,7 +490,9 @@ describe("deleteTeammate", () => {
       install: { id: "install-1" },
     });
 
-    await expect(deleteTeammate(context, TEAMMATE_ID)).resolves.toEqual({ success: true });
+    await expect(deleteTeammate(context, TEAMMATE_ID)).resolves.toEqual({
+      success: true,
+    });
 
     expect(repositories.sharedTeammates.deleteSharedTeammate).toHaveBeenCalledWith(
       OWNER_ID,
@@ -476,7 +508,9 @@ describe("deleteTeammate", () => {
   it("deletes an unreferenced teammate without touching the marketplace", async () => {
     const { context, repositories } = createContext({});
 
-    await expect(deleteTeammate(context, TEAMMATE_ID)).resolves.toEqual({ success: true });
+    await expect(deleteTeammate(context, TEAMMATE_ID)).resolves.toEqual({
+      success: true,
+    });
 
     expect(repositories.sharedTeammates.deleteSharedTeammate).not.toHaveBeenCalled();
     expect(repositories.sharedTeammates.uninstallTeammate).not.toHaveBeenCalled();

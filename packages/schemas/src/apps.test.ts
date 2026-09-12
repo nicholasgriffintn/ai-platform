@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { contentExtractSchema, recipeInstallationUpdateRequestSchema } from "./apps.js";
+import {
+  contentExtractSchema,
+  recipeInstallationTriggerSchema,
+  recipeInstallationUpdateRequestSchema,
+} from "./apps.js";
 import {
   buildAssistantActionCatalog,
   type AssistantActionTeammateSource,
@@ -51,12 +55,17 @@ describe("embedding request schemas", () => {
     const tooDeep = { first: { second: { third: { fourth: "too deep" } } } };
 
     expect(
-      insertEmbeddingSchema.safeParse({ ...base, metadata: { namespace: "user_kb_999" } }).success,
+      insertEmbeddingSchema.safeParse({
+        ...base,
+        metadata: { namespace: "user_kb_999" },
+      }).success,
     ).toBe(false);
     expect(insertEmbeddingSchema.safeParse({ ...base, metadata: tooDeep }).success).toBe(false);
     expect(
-      insertEmbeddingSchema.safeParse({ ...base, metadata: { note: "x".repeat(8 * 1024) } })
-        .success,
+      insertEmbeddingSchema.safeParse({
+        ...base,
+        metadata: { note: "x".repeat(8 * 1024) },
+      }).success,
     ).toBe(false);
   });
 
@@ -87,6 +96,15 @@ describe("recipe installation update schema", () => {
       status: "paused",
     });
   });
+
+  it("rejects cron fields outside their supported ranges", () => {
+    expect(
+      recipeInstallationTriggerSchema.safeParse({
+        type: "schedule",
+        cronExpression: "99 99 99 99 99",
+      }).success,
+    ).toBe(false);
+  });
 });
 describe("OCR schema", () => {
   it("accepts private inputs and the OCR 4 feature set", () => {
@@ -103,7 +121,10 @@ describe("OCR schema", () => {
           type: "json_schema",
           json_schema: {
             name: "invoice",
-            schema: { type: "object", properties: { total: { type: "number" } } },
+            schema: {
+              type: "object",
+              properties: { total: { type: "number" } },
+            },
           },
         },
         document_annotation_prompt: "Extract the invoice total",
@@ -118,12 +139,18 @@ describe("OCR schema", () => {
   it("accepts explicit public image and document inputs", () => {
     expect(
       ocrSchema.parse({
-        document: { type: "image_url", image_url: "https://example.com/scan.png" },
+        document: {
+          type: "image_url",
+          image_url: "https://example.com/scan.png",
+        },
       }).document.type,
     ).toBe("image_url");
     expect(
       ocrSchema.parse({
-        document: { type: "document_url", document_url: "https://example.com/scan.pdf" },
+        document: {
+          type: "document_url",
+          document_url: "https://example.com/scan.pdf",
+        },
       }).document.type,
     ).toBe("document_url");
   });
@@ -131,12 +158,18 @@ describe("OCR schema", () => {
   it("only accepts supported base64 image data URLs", () => {
     expect(
       ocrSchema.safeParse({
-        document: { type: "image_url", image_url: "data:image/png;base64,iVBORw0KGgo=" },
+        document: {
+          type: "image_url",
+          image_url: "data:image/png;base64,iVBORw0KGgo=",
+        },
       }).success,
     ).toBe(true);
     expect(
       ocrSchema.safeParse({
-        document: { type: "image_url", image_url: "data:image/svg+xml;base64,PHN2Zz4=" },
+        document: {
+          type: "image_url",
+          image_url: "data:image/svg+xml;base64,PHN2Zz4=",
+        },
       }).success,
     ).toBe(false);
     expect(
@@ -201,10 +234,14 @@ describe("embedding provider configuration schemas", () => {
       false,
     );
     expect(
-      updateUserSettingsSchema.safeParse({ s3vectors_bucket_name: "INVALID_BUCKET" }).success,
+      updateUserSettingsSchema.safeParse({
+        s3vectors_bucket_name: "INVALID_BUCKET",
+      }).success,
     ).toBe(false);
     expect(
-      updateUserSettingsSchema.safeParse({ s3vectors_index_name: "../other-index" }).success,
+      updateUserSettingsSchema.safeParse({
+        s3vectors_index_name: "../other-index",
+      }).success,
     ).toBe(false);
     expect(updateUserSettingsSchema.safeParse({ s3vectors_region: "localhost" }).success).toBe(
       false,
@@ -278,7 +315,10 @@ describe("teammate capability descriptors", () => {
 
   it("separates a workspace teammate from a personal one by auth and category", () => {
     const personal = describeTeammate(baseTeammate);
-    const workspace = describeTeammate({ ...baseTeammate, ownerScopeType: "workspace" });
+    const workspace = describeTeammate({
+      ...baseTeammate,
+      ownerScopeType: "workspace",
+    });
 
     expect(personal.capability.authRequirement).toBe("signed_in");
     expect(personal.metadata?.category).toBe("Personal");

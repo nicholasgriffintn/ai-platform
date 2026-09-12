@@ -23,7 +23,10 @@ const unknownToolCall = {
   function: { name: "missing_tool", arguments: "{}" },
 };
 
-const unknownToolTurn: TurnOutput = { content: "", toolCalls: [unknownToolCall] as never };
+const unknownToolTurn: TurnOutput = {
+  content: "",
+  toolCalls: [unknownToolCall] as never,
+};
 
 const recoverableUnknownToolResult = {
   role: "tool",
@@ -53,7 +56,10 @@ function textTurn(content: string): TurnOutput {
 }
 
 function toolTurn(name: string, id = "call-1"): TurnOutput {
-  return { content: "", toolCalls: [{ id, function: { name, arguments: "{}" } }] as never };
+  return {
+    content: "",
+    toolCalls: [{ id, function: { name, arguments: "{}" } }] as never,
+  };
 }
 
 function createTransport(turns: TurnOutput[]) {
@@ -67,7 +73,10 @@ function createTransport(turns: TurnOutput[]) {
     return turn;
   });
 
-  return { transport: { streams: false, runTurn } as ChatTurnTransport, runTurn };
+  return {
+    transport: { streams: false, runTurn } as ChatTurnTransport,
+    runTurn,
+  };
 }
 
 function creditSummary(overrides: Record<string, unknown> = {}) {
@@ -86,7 +95,9 @@ function creditSummary(overrides: Record<string, unknown> = {}) {
 
 function createParams(turns: TurnOutput[], maxSteps = 8) {
   const { transport, runTurn } = createTransport(turns);
-  const sink = { writeEvent: vi.fn<ChatEventSink["writeEvent"]>(async () => {}) };
+  const sink = {
+    writeEvent: vi.fn<ChatEventSink["writeEvent"]>(async () => {}),
+  };
 
   return {
     params: {
@@ -99,7 +110,10 @@ function createParams(turns: TurnOutput[], maxSteps = 8) {
         getUsageLimits: vi.fn(async () => ({ credits: creditSummary() })),
         releaseTurnReservation: vi.fn(),
       } as any,
-      toolRequestContext: { env: { AI: {} }, request: { enabled_tools: [] } } as any,
+      toolRequestContext: {
+        env: { AI: {} },
+        request: { enabled_tools: [] },
+      } as any,
       transport,
       maxSteps,
       env: { AI: {} } as any,
@@ -151,7 +165,9 @@ describe("runAgentLoop", () => {
     const result = await runAgentLoop(params);
 
     expect(result.response.tool_calls).toEqual([
-      expect.objectContaining({ function: { name: "run_script", arguments: "{}" } }),
+      expect.objectContaining({
+        function: { name: "run_script", arguments: "{}" },
+      }),
     ]);
     expect(result.toolResponses).toEqual([]);
     expect(mocks.handleToolCalls).not.toHaveBeenCalled();
@@ -162,7 +178,12 @@ describe("runAgentLoop", () => {
     const { params } = createParams([toolTurn("get_weather"), textTurn("It is sunny.")]);
 
     mocks.handleToolCalls.mockResolvedValueOnce([
-      { role: "tool", name: "get_weather", content: "sunny", status: "success" },
+      {
+        role: "tool",
+        name: "get_weather",
+        content: "sunny",
+        status: "success",
+      },
     ]);
 
     await runAgentLoop(params);
@@ -174,7 +195,12 @@ describe("runAgentLoop", () => {
     const { params, runTurn } = createParams([toolTurn("get_weather"), textTurn("It is sunny.")]);
 
     mocks.handleToolCalls.mockResolvedValueOnce([
-      { role: "tool", name: "get_weather", content: "sunny", status: "success" },
+      {
+        role: "tool",
+        name: "get_weather",
+        content: "sunny",
+        status: "success",
+      },
     ]);
 
     const result = await runAgentLoop(params);
@@ -226,7 +252,10 @@ describe("runAgentLoop", () => {
     expect(result.toolResponses[0]?.content).toBe(fullResult);
     expect(onContextSnapshot).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        usage: expect.objectContaining({ inputTokens: 432, source: "reported" }),
+        usage: expect.objectContaining({
+          inputTokens: 432,
+          source: "reported",
+        }),
         omissions: expect.arrayContaining([
           expect.objectContaining({
             kind: "tool_result",
@@ -245,10 +274,20 @@ describe("runAgentLoop", () => {
     mocks.handleToolCalls.mockImplementationOnce(async () => {
       shouldStop = true;
 
-      return [{ role: "tool", name: "get_weather", content: "sunny", status: "success" }];
+      return [
+        {
+          role: "tool",
+          name: "get_weather",
+          content: "sunny",
+          status: "success",
+        },
+      ];
     });
 
-    const result = await runAgentLoop({ ...params, shouldStop: () => shouldStop });
+    const result = await runAgentLoop({
+      ...params,
+      shouldStop: () => shouldStop,
+    });
 
     expect(runTurn).toHaveBeenCalledTimes(1);
     expect(result.response.status).toBe("stopped");
@@ -272,7 +311,10 @@ describe("runAgentLoop", () => {
       async (...args: Parameters<typeof handleToolCalls>) => {
         const options = args[4];
 
-        await options.onToolExecutionStart({ id: "call-weather", name: "get_weather" });
+        await options.onToolExecutionStart({
+          id: "call-weather",
+          name: "get_weather",
+        });
         await options.onToolResult(toolResult);
 
         return [toolResult];
@@ -329,6 +371,7 @@ describe("runAgentLoop", () => {
       content: "Which environment?",
       status: "pending",
       tool_call_id: "call-question",
+      data: { humanInTheLoop: { type: "question" } },
     };
 
     mocks.handleToolCalls.mockImplementationOnce(
@@ -353,7 +396,10 @@ describe("runAgentLoop", () => {
       reason: "question",
     });
     expect(activities).not.toContainEqual(
-      expect.objectContaining({ kind: "tool_execution_started", toolCallId: "call-question" }),
+      expect.objectContaining({
+        kind: "tool_execution_started",
+        toolCallId: "call-question",
+      }),
     );
   });
 
@@ -438,7 +484,12 @@ describe("runAgentLoop", () => {
         },
       ])
       .mockResolvedValueOnce([
-        { role: "tool", name: "create_qr_code", content: "created", status: "success" },
+        {
+          role: "tool",
+          name: "create_qr_code",
+          content: "created",
+          status: "success",
+        },
       ]);
 
     const result = await runAgentLoop(params);
@@ -496,7 +547,12 @@ describe("runAgentLoop", () => {
     const { params } = createParams([toolTurn("get_weather"), textTurn("I could not check.")]);
 
     mocks.handleToolCalls.mockResolvedValueOnce([
-      { role: "tool", name: "get_weather", content: "upstream is down", status: "error" },
+      {
+        role: "tool",
+        name: "get_weather",
+        content: "upstream is down",
+        status: "error",
+      },
     ]);
 
     const result = await runAgentLoop(params);
@@ -591,6 +647,7 @@ describe("runAgentLoop", () => {
         name: "ask_user",
         content: "Which tone should I use?",
         status: "pending",
+        data: { humanInTheLoop: { type: "question" } },
       },
     ]);
 
@@ -605,7 +662,12 @@ describe("runAgentLoop", () => {
     const { params, runTurn } = createParams([toolTurn("get_weather"), textTurn("Done.")]);
 
     mocks.handleToolCalls.mockResolvedValueOnce([
-      { role: "tool", name: "get_weather", content: "sunny", status: "success" },
+      {
+        role: "tool",
+        name: "get_weather",
+        content: "sunny",
+        status: "success",
+      },
     ]);
     params.conversationManager.getUsageLimits = vi.fn(async () => ({
       credits: creditSummary({ used: 110, state: "reserve" }),
@@ -622,7 +684,12 @@ describe("runAgentLoop", () => {
     const { params, runTurn } = createParams([toolTurn("get_weather")]);
 
     mocks.handleToolCalls.mockResolvedValue([
-      { role: "tool", name: "get_weather", content: "sunny", status: "success" },
+      {
+        role: "tool",
+        name: "get_weather",
+        content: "sunny",
+        status: "success",
+      },
     ]);
     params.conversationManager.getUsageLimits = vi.fn(async () => ({
       credits: creditSummary({ used: 146, state: "exhausted" }),
@@ -656,7 +723,10 @@ describe("runAgentLoop", () => {
 
         allow = true;
 
-        return { allow: false, instruction: "The tests have not been run yet." };
+        return {
+          allow: false,
+          instruction: "The tests have not been run yet.",
+        };
       },
     });
 
@@ -779,7 +849,12 @@ describe("runAgentLoop", () => {
     ]);
 
     mocks.handleToolCalls.mockResolvedValue([
-      { role: "tool", name: "load_skill", content: "loaded", status: "success" },
+      {
+        role: "tool",
+        name: "load_skill",
+        content: "loaded",
+        status: "success",
+      },
     ]);
 
     await runAgentLoop(params);
@@ -799,7 +874,12 @@ describe("runAgentLoop", () => {
 
     mocks.handleToolCalls
       .mockResolvedValueOnce([
-        { role: "tool", name: "load_skill", content: "skill is required", status: "error" },
+        {
+          role: "tool",
+          name: "load_skill",
+          content: "skill is required",
+          status: "error",
+        },
       ])
       .mockResolvedValueOnce([
         {
@@ -824,7 +904,12 @@ describe("runAgentLoop", () => {
     );
 
     mocks.handleToolCalls.mockResolvedValue([
-      { role: "tool", name: "get_weather", content: "sunny", status: "success" },
+      {
+        role: "tool",
+        name: "get_weather",
+        content: "sunny",
+        status: "success",
+      },
     ]);
 
     const result = await runAgentLoop(params);

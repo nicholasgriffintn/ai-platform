@@ -124,6 +124,7 @@ function createContext(
         },
         teammates: {
           getTeammateById: vi.fn().mockResolvedValue(overrides.teammate ?? null),
+          listWorkspaceDefaults: vi.fn().mockResolvedValue([]),
         },
         projectTasks: {
           getTaskById: vi.fn().mockResolvedValue(task),
@@ -202,7 +203,11 @@ describe("projectTaskConversationId", () => {
 describe("buildTaskPrompt", () => {
   it("gives the task conversation the exact task id used by its tools", () => {
     expect(
-      buildTaskPrompt({ task: baseTask, stageInstructions: null, contextNotes: null }),
+      buildTaskPrompt({
+        task: baseTask,
+        stageInstructions: null,
+        contextNotes: null,
+      }),
     ).toContain("Project task ID: task-1");
   });
 
@@ -330,7 +335,9 @@ describe("createProjectTask", () => {
     };
     const { context } = createContext({ flow: JSON.stringify(flow) });
 
-    await createProjectTask(context, "project-1", { objective: "Ship the pricing note" });
+    await createProjectTask(context, "project-1", {
+      objective: "Ship the pricing note",
+    });
 
     expect(context.repositories.projectTasks.createTask).toHaveBeenCalledWith(
       expect.objectContaining({ flowSnapshot: flow, stageId: "build" }),
@@ -353,7 +360,9 @@ describe("createProjectTask", () => {
   it("leaves the origin empty for a task filed from the board", async () => {
     const { context } = createContext({});
 
-    await createProjectTask(context, "project-1", { objective: "Ship the pricing note" });
+    await createProjectTask(context, "project-1", {
+      objective: "Ship the pricing note",
+    });
 
     expect(context.repositories.projectTasks.createTask).toHaveBeenCalledWith(
       expect.objectContaining({ originConversationId: null }),
@@ -398,10 +407,14 @@ describe("updateProjectTask", () => {
   });
 
   it("does not rewrite plan inputs after execution has started", async () => {
-    const { context, updateTask } = createContext({ task: { status: "blocked" } });
+    const { context, updateTask } = createContext({
+      task: { status: "blocked" },
+    });
 
     await expect(
-      updateProjectTask(context, "project-1", "task-1", { objective: "Changed objective" }),
+      updateProjectTask(context, "project-1", "task-1", {
+        objective: "Changed objective",
+      }),
     ).rejects.toMatchObject({ statusCode: 409 });
     expect(updateTask).not.toHaveBeenCalled();
   });
@@ -475,7 +488,11 @@ describe("startProjectTask", () => {
 
     expect(updateTask).toHaveBeenCalledWith(
       "task-1",
-      expect.objectContaining({ status: "queued", runnerIdentityUserId: 7, stageId: "plan" }),
+      expect.objectContaining({
+        status: "queued",
+        runnerIdentityUserId: 7,
+        stageId: "plan",
+      }),
     );
   });
 
@@ -540,7 +557,9 @@ describe("startProjectTask", () => {
 
 describe("deleteProjectTask", () => {
   it("retains a task once it has execution evidence", async () => {
-    const { context } = createContext({ task: { status: "blocked", runId: "run-1" } });
+    const { context } = createContext({
+      task: { status: "blocked", runId: "run-1" },
+    });
 
     await expect(deleteProjectTask(context, "project-1", "task-1")).rejects.toMatchObject({
       statusCode: 409,
@@ -581,7 +600,11 @@ describe("acceptProjectTask", () => {
 
     expect(updateTask).toHaveBeenCalledWith(
       "task-1",
-      expect.objectContaining({ status: "queued", stageId: "build", runnerIdentityUserId: 7 }),
+      expect.objectContaining({
+        status: "queued",
+        stageId: "build",
+        runnerIdentityUserId: 7,
+      }),
     );
     expect(vi.mocked(queueProjectTaskRun)).toHaveBeenCalledTimes(1);
   });
@@ -641,7 +664,9 @@ describe("setProjectFlow", () => {
       ],
     };
 
-    await expect(setProjectFlow(context, "project-1", flow)).resolves.toEqual({ flow });
+    await expect(setProjectFlow(context, "project-1", flow)).resolves.toEqual({
+      flow,
+    });
     expect(context.repositories.workspaces.updateProject).toHaveBeenCalledWith("project-1", {
       flow: JSON.stringify(flow),
     });
@@ -698,7 +723,12 @@ describe("resolveTaskRuntime", () => {
       task: {
         ...baseTask,
         stageId: "build",
-        runner: { kind: "conversation", teammateId: null, model: "gpt-5", mode: null },
+        runner: {
+          kind: "conversation",
+          teammateId: null,
+          model: "gpt-5",
+          mode: null,
+        },
       },
       flow,
     });
@@ -714,14 +744,22 @@ describe("resolveTaskRuntime", () => {
         coding_repository: "nicholasgriffintn/polychat",
       },
     });
-    const runtime = await resolveTaskRuntime({ context, task: baseTask, flow: null });
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: baseTask,
+      flow: null,
+    });
 
     expect(runtime.enabledTools).toContain("run_sandbox_task");
   });
 
   it("withholds the sandbox tool when the project has no coding environment", async () => {
     const { context } = createContext();
-    const runtime = await resolveTaskRuntime({ context, task: baseTask, flow: null });
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: baseTask,
+      flow: null,
+    });
 
     expect(runtime.enabledTools).not.toContain("run_sandbox_task");
   });
@@ -736,7 +774,10 @@ describe("resolveTaskRuntime", () => {
     });
     const runtime = await resolveTaskRuntime({
       context,
-      task: { ...baseTask, constraints: { forbiddenTools: ["run_sandbox_task"], notes: "" } },
+      task: {
+        ...baseTask,
+        constraints: { forbiddenTools: ["run_sandbox_task"], notes: "" },
+      },
       flow: null,
     });
 
@@ -745,7 +786,11 @@ describe("resolveTaskRuntime", () => {
 
   it("asks for no extra approvals when the task has no stage", async () => {
     const { context } = createContext();
-    const runtime = await resolveTaskRuntime({ context, task: baseTask, flow: null });
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: baseTask,
+      flow: null,
+    });
 
     expect(runtime.requireApprovalFor).toEqual([]);
   });
@@ -767,7 +812,12 @@ describe("resolveTaskRuntime", () => {
       context,
       task: {
         ...baseTask,
-        runner: { kind: "conversation", teammateId: "teammate-1", model: null, mode: null },
+        runner: {
+          kind: "conversation",
+          teammateId: "teammate-1",
+          model: null,
+          mode: null,
+        },
       },
       flow: null,
     });
@@ -792,7 +842,12 @@ describe("resolveTaskRuntime", () => {
         context,
         task: {
           ...baseTask,
-          runner: { kind: "conversation", teammateId: "teammate-1", model: null, mode: null },
+          runner: {
+            kind: "conversation",
+            teammateId: "teammate-1",
+            model: null,
+            mode: null,
+          },
         },
         flow: null,
       }),
@@ -819,7 +874,10 @@ describe("resolveTaskRuntime", () => {
         { kind: "teammate", capability_id: "teammate-1" },
         { kind: "skill", capability_id: "research" },
       ],
-      teammate: { ...workspaceTeammate, skill_ids: ["research", "payroll-export"] },
+      teammate: {
+        ...workspaceTeammate,
+        skill_ids: ["research", "payroll-export"],
+      },
     });
 
     const runtime = await resolveTaskRuntime({
@@ -838,7 +896,10 @@ describe("resolveTaskRuntime", () => {
         { kind: "skill", capability_id: "research" },
         { kind: "skill", capability_id: "fact-checking" },
       ],
-      teammate: { ...workspaceTeammate, skill_ids: ["fact-checking", "payroll-export"] },
+      teammate: {
+        ...workspaceTeammate,
+        skill_ids: ["fact-checking", "payroll-export"],
+      },
     });
 
     const runtime = await resolveTaskRuntime({
@@ -897,12 +958,12 @@ describe("resolveTaskRuntime", () => {
   it("refuses a personal attached teammate whose author left the workspace", async () => {
     const { context } = createContext({
       capabilities: [{ kind: "teammate", capability_id: "teammate-1" }],
-      memberships: {},
+      memberships: { 7: true },
       teammate: {
         id: "teammate-1",
-        user_id: 7,
+        user_id: 9,
         owner_scope_type: "user",
-        owner_scope_id: "7",
+        owner_scope_id: "9",
         enabled_tools: null,
       },
     });
@@ -912,7 +973,12 @@ describe("resolveTaskRuntime", () => {
         context,
         task: {
           ...baseTask,
-          runner: { kind: "conversation", teammateId: "teammate-1", model: null, mode: null },
+          runner: {
+            kind: "conversation",
+            teammateId: "teammate-1",
+            model: null,
+            mode: null,
+          },
         },
         flow: null,
       }),
@@ -940,7 +1006,11 @@ describe("ensureProjectTaskConversation", () => {
 
 describe("task dependencies", () => {
   it("refuses to start a task whose dependency is not done", async () => {
-    const blocker = { ...baseTask, id: "task-blocker", status: "running" as ProjectTaskStatus };
+    const blocker = {
+      ...baseTask,
+      id: "task-blocker",
+      status: "running" as ProjectTaskStatus,
+    };
     const { context, updateTask } = createContext({
       task: { dependsOnTaskIds: ["task-blocker"] },
       boardTasks: [blocker, { ...baseTask, dependsOnTaskIds: ["task-blocker"] }],
@@ -952,12 +1022,19 @@ describe("task dependencies", () => {
 
     expect(updateTask).toHaveBeenCalledWith(
       "task-1",
-      expect.objectContaining({ status: "blocked", blockedReason: "dependencies_unmet" }),
+      expect.objectContaining({
+        status: "blocked",
+        blockedReason: "dependencies_unmet",
+      }),
     );
   });
 
   it("starts a task once its dependency is done", async () => {
-    const blocker = { ...baseTask, id: "task-blocker", status: "done" as ProjectTaskStatus };
+    const blocker = {
+      ...baseTask,
+      id: "task-blocker",
+      status: "done" as ProjectTaskStatus,
+    };
     const { context, updateTask } = createContext({
       task: { dependsOnTaskIds: ["task-blocker"] },
       boardTasks: [blocker, { ...baseTask, dependsOnTaskIds: ["task-blocker"] }],
@@ -975,7 +1052,9 @@ describe("task dependencies", () => {
     const { context } = createContext();
 
     await expect(
-      updateProjectTask(context, "project-1", "task-1", { dependsOnTaskIds: ["task-1"] }),
+      updateProjectTask(context, "project-1", "task-1", {
+        dependsOnTaskIds: ["task-1"],
+      }),
     ).rejects.toMatchObject({ statusCode: 400 });
   });
 });
@@ -990,7 +1069,10 @@ describe("task constraints", () => {
     });
     const runtime = await resolveTaskRuntime({
       context,
-      task: { ...baseTask, constraints: { forbiddenTools: ["run_sandbox_task"], notes: null } },
+      task: {
+        ...baseTask,
+        constraints: { forbiddenTools: ["run_sandbox_task"], notes: null },
+      },
       flow: null,
     });
 

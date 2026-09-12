@@ -3,7 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { handleCreateChatCompletions } from "../createChatCompletions";
 
 const { mockConversationManagerGetInstance, mockThreadLease } = vi.hoisted(() => ({
-  mockConversationManagerGetInstance: vi.fn(() => ({ getAllMessages: vi.fn() })),
+  mockConversationManagerGetInstance: vi.fn(() => ({
+    getAllMessages: vi.fn(),
+  })),
   mockThreadLease: {
     assertOwned: vi.fn(async () => undefined),
     release: vi.fn(async () => undefined),
@@ -228,7 +230,11 @@ describe("handleCreateChatCompletions", () => {
         toolResult: authoritativeToolResult as any,
         summaryMessages: [
           { role: "user", content: "Create the stored draft" },
-          { role: "assistant", content: "", tool_calls: [authoritativeToolCall] },
+          {
+            role: "assistant",
+            content: "",
+            tool_calls: [authoritativeToolCall],
+          },
           authoritativeToolResult,
         ] as any,
       });
@@ -240,13 +246,16 @@ describe("handleCreateChatCompletions", () => {
         ensureDatabase: vi.fn(),
         repositories: {
           connectorOperationApprovals: {
-            getByIdForUser: vi.fn().mockResolvedValue({
+            getResumableByIdForUser: vi.fn().mockResolvedValue({
               id: "coa_action",
               state: "approved",
               expiresAt: "2099-01-01T00:00:00.000Z",
               completionId,
               runId: "connector_run_approved",
             }),
+          },
+          teammateContexts: {
+            getByHomeConversationId: vi.fn().mockResolvedValue(null),
           },
         },
       } as any;
@@ -276,7 +285,9 @@ describe("handleCreateChatCompletions", () => {
 
       expect(replayApprovedConnectorOperation).toHaveBeenCalledWith(
         expect.objectContaining({
-          approval: expect.objectContaining({ runId: "connector_run_approved" }),
+          approval: expect.objectContaining({
+            runId: "connector_run_approved",
+          }),
           context,
           user: mockUser,
         }),
@@ -292,7 +303,11 @@ describe("handleCreateChatCompletions", () => {
           approved_tools: [],
           messages: [
             { role: "user", content: "Create the stored draft" },
-            { role: "assistant", content: "", tool_calls: [authoritativeToolCall] },
+            {
+              role: "assistant",
+              content: "",
+              tool_calls: [authoritativeToolCall],
+            },
             authoritativeToolResult,
           ],
         }),

@@ -1,3 +1,5 @@
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
+
 import { base64ToBuffer, bufferToBase64 } from "./base64";
 import { AssistantError, ErrorType } from "./errors";
 import { isPlainObject } from "./objects";
@@ -17,13 +19,7 @@ export function isEncryptedJsonPayload(value: unknown): value is EncryptedJsonPa
   );
 }
 
-export async function sha256Hex(input: string): Promise<string> {
-  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
-
-  return Array.from(new Uint8Array(hash))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
+export { sha256Hex };
 
 async function deriveAesGcmKey(keyMaterial: string): Promise<CryptoKey> {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(keyMaterial));

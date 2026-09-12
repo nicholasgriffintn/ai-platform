@@ -78,17 +78,24 @@ async function createFixture(state: "approved" | "consumed" = "approved") {
     id: "coa_approved",
     userId: 42,
     runId: "connector_run_approved",
+    runAttempt: 1,
     completionId: "completion-approved",
     provider: "gmail",
     operation: "GMAIL_CREATE_DRAFT",
     connectedAccountId: "ca_approved",
     channel: "web",
     argumentDigest,
+    arguments: { subject: "Approved subject" },
+    authorityRevision: 0,
     state,
     createdAt: "2026-08-13T12:00:00.000Z",
     expiresAt: "2099-08-13T12:10:00.000Z",
     resolvedAt: "2026-08-13T12:01:00.000Z",
     consumedAt: state === "consumed" ? "2026-08-13T12:02:00.000Z" : null,
+    executionState: state === "consumed" ? "running" : null,
+    executionToken: state === "consumed" ? "execution-token" : null,
+    executionLeaseExpiresAt: state === "consumed" ? "2099-08-13T12:07:00.000Z" : null,
+    executionResult: null,
   } as const;
   const session = {
     id: "ccs_approved",
@@ -112,6 +119,14 @@ async function createFixture(state: "approved" | "consumed" = "approved") {
     cleanupAfter: null,
   } as const;
   const getByIdForUser = vi.fn().mockResolvedValue(approval);
+  const recordExecutionResult = vi.fn().mockImplementation(({ result }) =>
+    Promise.resolve({
+      ...approval,
+      state: "consumed",
+      executionState: "completed",
+      executionResult: result,
+    }),
+  );
   const user = { id: 42, plan_id: "pro" } as any;
   const context = {
     env: { AI: {} },
@@ -119,9 +134,23 @@ async function createFixture(state: "approved" | "consumed" = "approved") {
     connectorRunId: "connector_run_new",
     requestCache: new Map(),
     repositories: {
-      connectorOperationApprovals: { getByIdForUser },
+      connectorOperationApprovals: {
+        getByIdForUser,
+        recordExecutionResult,
+        recordIndeterminateExecution: vi.fn(),
+      },
+      conversationRuns: {
+        getById: vi.fn().mockResolvedValue({
+          id: approval.runId,
+          attempt: approval.runAttempt,
+          status: "awaiting_approval",
+          interactionKind: "approval",
+          lastMessageId: pendingResult.id,
+        }),
+      },
       composioConnectorSessions: { getById: vi.fn().mockResolvedValue(session) },
       templates: { getTemplateById: vi.fn() },
+      messages: { createProjectedMessage: vi.fn() },
     },
   } as any;
 
@@ -177,7 +206,10 @@ describe("replayApprovedConnectorOperation", () => {
         recoverUnknownToolCalls: false,
       },
     );
-    expect(conversationManager.add).toHaveBeenCalledWith(approval.completionId, executedResult);
+    expect(context.repositories.messages.createProjectedMessage).toHaveBeenCalledWith(
+      approval.completionId,
+      expect.objectContaining({ id: executedResult.id, data: executedResult }),
+    );
     expect(replay.toolCall).toEqual(toolCall);
     expect(replay.toolResult).toEqual(executedResult);
     expect(replay.summaryMessages).toEqual([

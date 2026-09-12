@@ -9,8 +9,8 @@ export function safeParseJson<T = any>(jsonString: string): T | null {
   }
 }
 
-export function parseJsonRecord(value: string | null | undefined): Record<string, unknown> {
-  const parsed = value ? safeParseJson<unknown>(value) : {};
+export function parseJsonRecord(value: unknown): Record<string, unknown> {
+  const parsed = typeof value === "string" ? safeParseJson<unknown>(value) : value;
 
   return isRecord(parsed) ? parsed : {};
 }

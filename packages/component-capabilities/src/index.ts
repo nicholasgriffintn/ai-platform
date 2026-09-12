@@ -6,6 +6,7 @@ export * from "./capability-theme";
 export * from "./Recipes";
 export * from "./ToolForm/FormField";
 export * from "./ToolConfigurationDialog";
+export * from "./McpServerFields";
 export * from "./ToolResultCard";
 export * from "./ToolForm/FormStep";
 export * from "./ToolForm/ToolForm";

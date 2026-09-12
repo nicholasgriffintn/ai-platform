@@ -2,11 +2,15 @@ import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { listComposioConnectedAccounts } from "~/lib/providers/capabilities/connectors/composio/client";
+import { requireActiveExecutionRun } from "~/services/chat-runs/execution-authority";
 import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { isRecord } from "~/utils/objects";
 
-import { getSelectedRecipeConnectorAccountId } from "./accounts";
+import {
+  getSelectedRecipeConnectorAccountId,
+  selectActiveRecipeConnectorAccount,
+} from "./accounts";
 import { discoverComposioRunTools, executeComposioRunTool } from "./composio-run";
 import { getRecipeConnectorAdapter } from "./connector-adapters";
 import type { ConnectorRunScope } from "./connector-run-scope";
@@ -18,12 +22,15 @@ export interface RecipeConnectorOperationRequest {
   operation: string;
   params?: Record<string, unknown>;
   sessionId?: string;
+  connectedAccountId?: string;
 }
 
 export async function getActiveComposioAccountForProvider(params: {
   context: ServiceContext;
   userId: number;
   provider: NonNullable<ReturnType<typeof getRecipeConnectorAdapter>>["provider"];
+  connectedAccountId?: string;
+  requireSelectedAccount?: boolean;
 }) {
   if (params.provider.auth.authType !== "composio") {
     throw new AssistantError("Connector is not managed by Composio", ErrorType.PARAMS_ERROR, 400);
@@ -35,26 +42,18 @@ export async function getActiveComposioAccountForProvider(params: {
     toolkitSlugs: [params.provider.auth.toolkitSlug],
     authConfigIds: params.provider.auth.authConfigs.map((config) => config.id),
   });
-  const activeAccounts = accounts.filter((item) => item.status === "ACTIVE" && !item.isDisabled);
-
-  if (activeAccounts.length === 0) {
-    throw new AssistantError("Connector is not connected", ErrorType.AUTHORISATION_ERROR, 403);
-  }
-
   const selectedAccountId = await getSelectedRecipeConnectorAccountId({
     context: params.context,
     userId: params.userId,
     providerId: params.provider.id,
   });
-  const selectedAccount = activeAccounts.find((account) => account.id === selectedAccountId);
+  const requestedAccountId = params.connectedAccountId ?? selectedAccountId;
 
-  if (selectedAccount) {
-    return selectedAccount;
-  }
-
-  return activeAccounts.reduce((selected, account) =>
-    account.createdAt > selected.createdAt ? account : selected,
-  );
+  return selectActiveRecipeConnectorAccount({
+    accounts,
+    accountId: requestedAccountId,
+    requireExact: Boolean(params.connectedAccountId) || params.requireSelectedAccount === true,
+  });
 }
 
 export async function discoverRecipeConnectorTools(params: {
@@ -67,6 +66,9 @@ export async function discoverRecipeConnectorTools(params: {
   recipeId?: string;
   installationId?: string;
   projectId?: string;
+  teammateContextId?: string;
+  connectedAccountId?: string;
+  requireSelectedAccount?: boolean;
 }) {
   const adapter = getRecipeConnectorAdapter(params.provider);
 
@@ -82,6 +84,8 @@ export async function discoverRecipeConnectorTools(params: {
     context: params.context,
     userId: params.userId,
     provider: adapter.provider,
+    connectedAccountId: params.connectedAccountId,
+    requireSelectedAccount: params.requireSelectedAccount,
   });
 
   return discoverComposioRunTools({
@@ -96,6 +100,7 @@ export async function discoverRecipeConnectorTools(params: {
       recipeId: params.recipeId,
       installationId: params.installationId,
       projectId: params.projectId,
+      teammateContextId: params.teammateContextId,
     },
   });
 }
@@ -137,9 +142,12 @@ export async function executeRecipeConnectorOperation(params: {
           context: params.context,
           userId: params.userId,
           provider: adapter.provider,
+          connectedAccountId: params.request.connectedAccountId,
         });
 
     try {
+      await requireActiveExecutionRun(params.context);
+
       return await executeComposioRunTool({
         context: params.context,
         userId: params.userId,
@@ -187,6 +195,8 @@ export async function executeRecipeConnectorOperation(params: {
   });
 
   try {
+    await requireActiveExecutionRun(params.context);
+
     return await adapter.executeOperation(
       token.accessToken,
       params.request.operation,

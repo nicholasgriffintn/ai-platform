@@ -1,6 +1,5 @@
 import {
   DEFAULT_TEAMMATE_KIND,
-  filterToolIdsForTeammateKind,
   findTeammateRole,
   resolveHiredTeammateBrief,
   type HireTeammateInput,
@@ -51,7 +50,7 @@ export async function hireTeammate(
       kind,
       description: role?.summary ?? DESCRIBED_ROLE_SUMMARY,
       system_prompt: brief,
-      enabled_tools: filterToolIdsForTeammateKind(kind, role?.suggestedTools) ?? [],
+      enabled_tools: role?.suggestedTools ? [...role.suggestedTools] : [],
       mode: role?.mode ?? null,
       ...(params.workspace_id ? { workspace_id: params.workspace_id } : {}),
     },

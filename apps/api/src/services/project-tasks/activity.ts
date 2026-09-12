@@ -103,6 +103,7 @@ function runStatus(status: unknown): ProjectTaskActivityStatus {
       return "active";
     case "awaiting_input":
     case "awaiting_approval":
+    case "awaiting_takeover":
       return "waiting";
     case "succeeded":
       return "succeeded";
@@ -124,6 +125,10 @@ function runTitle(status: ProjectTaskActivityStatus, rawStatus?: unknown): strin
 
   if (rawStatus === "awaiting_approval") {
     return "Run waiting for approval";
+  }
+
+  if (rawStatus === "awaiting_takeover") {
+    return "Run waiting for computer takeover";
   }
 
   if (rawStatus === "cancelling") {

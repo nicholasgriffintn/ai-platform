@@ -14,8 +14,10 @@ import { createServiceContext } from "~/lib/context/serviceContext";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { sseResponse } from "~/lib/http/streaming";
+import type { ConnectorOperationApprovalRecord } from "~/repositories/ConnectorOperationApprovalRepository";
 import { replayApprovedConnectorOperation } from "~/services/apps/connectors/approved-operation-replay";
 import { withThreadLock } from "~/services/conversations/coordinator/client";
+import { prepareTeammateRunResume } from "~/services/teammates/run-resume";
 import type {
   AnonymousUser,
   ChatCompletionParameters,
@@ -50,6 +52,8 @@ export const handleCreateChatCompletions = async (req: {
   const isStreaming = request.stream ?? false;
   let providerMessages = toProviderMessages(chatRequest.messages);
   let connectorReplay: Awaited<ReturnType<typeof replayApprovedConnectorOperation>> | undefined;
+  let connectorApproval: ConnectorOperationApprovalRecord | undefined;
+  let teammateResume: Awaited<ReturnType<typeof prepareTeammateRunResume>> | undefined;
 
   if (providerMessages.length === 0 && !chatRequest.connector_approval_id) {
     throw new AssistantError("Missing required parameter: messages", ErrorType.PARAMS_ERROR);
@@ -66,15 +70,20 @@ export const handleCreateChatCompletions = async (req: {
   }
 
   if (user?.id && chatRequest.connector_approval_id) {
-    const approval = await serviceContext.repositories.connectorOperationApprovals.getByIdForUser(
-      chatRequest.connector_approval_id,
-      user.id,
-    );
+    const approval =
+      await serviceContext.repositories.connectorOperationApprovals.getResumableByIdForUser(
+        chatRequest.connector_approval_id,
+        user.id,
+      );
+
+    connectorApproval = approval ?? undefined;
 
     if (
       !approval ||
-      (approval.state !== "approved" && approval.state !== "consumed") ||
-      (approval.state === "approved" && approval.expiresAt <= new Date().toISOString()) ||
+      (approval.state !== "approved" &&
+        approval.state !== "rejected" &&
+        approval.state !== "consumed") ||
+      (approval.state !== "consumed" && approval.expiresAt <= new Date().toISOString()) ||
       approval.completionId !== completionIdWithFallback
     ) {
       throw new AssistantError(
@@ -86,7 +95,11 @@ export const handleCreateChatCompletions = async (req: {
 
     serviceContext.ensureDatabase();
     connectorReplay = await withThreadLock(
-      { env, conversationId: completionIdWithFallback, kind: "connector_replay" },
+      {
+        env,
+        conversationId: completionIdWithFallback,
+        kind: "connector_replay",
+      },
       (lease) =>
         replayApprovedConnectorOperation({
           approval,
@@ -110,6 +123,48 @@ export const handleCreateChatCompletions = async (req: {
         }),
     );
     providerMessages = toProviderMessages(connectorReplay.summaryMessages);
+
+    if (approval.teammateContextId) {
+      const run = await serviceContext.repositories.conversationRuns.getById(approval.runId);
+
+      if (
+        !run ||
+        run.conversationId !== completionIdWithFallback ||
+        run.teammateContextId !== approval.teammateContextId
+      ) {
+        throw new AssistantError(
+          "The stored teammate run cannot accept this response",
+          ErrorType.CONFLICT_ERROR,
+          409,
+        );
+      }
+
+      teammateResume = await prepareTeammateRunResume({
+        context: serviceContext,
+        run,
+      });
+    }
+  }
+
+  if (
+    user?.id &&
+    chatRequest.completion_id &&
+    !chatRequest.teammate_context_id &&
+    !teammateResume
+  ) {
+    serviceContext.ensureDatabase();
+    const teammateContext =
+      await serviceContext.repositories.teammateContexts.getByHomeConversationId(
+        completionIdWithFallback,
+      );
+
+    if (teammateContext) {
+      throw new AssistantError(
+        "This conversation belongs to a teammate context and must use the teammate endpoint",
+        ErrorType.PARAMS_ERROR,
+        409,
+      );
+    }
   }
 
   const result = await processChatRequest({
@@ -126,6 +181,31 @@ export const handleCreateChatCompletions = async (req: {
           conversation_history_write_mode: "append",
           connector_approval_id: undefined,
           approved_tools: [],
+          run_id: connectorApproval?.runId,
+          options: {
+            ...chatRequest.options,
+            toolInteraction: {
+              toolName: connectorReplay.toolCall.function.name,
+              response: {
+                interactionId: connectorReplay.toolCall.id,
+                resolution: connectorReplay.toolResult.data?.resolution ?? "approved",
+              },
+            },
+          },
+          ...(teammateResume
+            ? {
+                model: teammateResume.configuration.model,
+                mode: teammateResume.configuration.mode,
+                persona: teammateResume.configuration.persona,
+                enabled_tools: teammateResume.configuration.enabledTools,
+                max_steps: teammateResume.maxSteps,
+                teammate_context_id: connectorApproval?.teammateContextId,
+                resolved_configuration: teammateResume.configuration,
+                ...(teammateResume.durableExecution
+                  ? { durable_execution: teammateResume.durableExecution }
+                  : {}),
+              }
+            : {}),
         }
       : {}),
     location: "location" in request ? request.location || undefined : undefined,

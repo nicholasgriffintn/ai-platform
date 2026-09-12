@@ -80,6 +80,7 @@ export interface ProjectRow {
   colour: string;
   default_model_tier?: ModelTier | null;
   coding_enabled?: number;
+  coding_execution_provider?: string;
   coding_installation_id?: number | null;
   coding_repository?: string | null;
   coding_prompt_strategy?: string;
@@ -323,6 +324,19 @@ export class WorkspaceRepository extends BaseRepository {
     await database.batch([
       database
         .prepare(
+          `UPDATE memory_document
+           SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+           WHERE deleted_at IS NULL AND (
+             (scope_type = 'project' AND scope_id IN (${projectIds}))
+             OR id IN (
+               SELECT memory_document_id FROM teammate_context
+               WHERE scope_type = 'project' AND scope_id IN (${projectIds})
+             )
+           )`,
+        )
+        .bind(workspaceId, workspaceId),
+      database
+        .prepare(
           `DELETE FROM capability_configuration
 					 WHERE scope_type = 'project' AND scope_id IN (${projectIds})`,
         )
@@ -480,10 +494,11 @@ export class WorkspaceRepository extends BaseRepository {
       `INSERT INTO project
 				(id, workspace_id, name, description, instructions, colour,
 				 coding_enabled, coding_installation_id, coding_repository,
+				 coding_execution_provider,
 				 coding_prompt_strategy, coding_should_commit, coding_delivery_policy,
 				 coding_environment_setup, coding_environment_cache, coding_cache_generation,
 				 coding_timeout_seconds, coding_inspection_window_seconds, created_by, default_model_tier)
-				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         params.id,
         params.workspaceId,
@@ -494,6 +509,7 @@ export class WorkspaceRepository extends BaseRepository {
         params.codingEnvironment ? 1 : 0,
         params.codingEnvironment?.installationId ?? null,
         params.codingEnvironment?.repository ?? null,
+        params.codingEnvironment?.executionProvider ?? "polychat",
         params.codingEnvironment?.promptStrategy ?? "auto",
         params.codingEnvironment
           ? sandboxDeliveryPolicyCreatesCommit(params.codingEnvironment.deliveryPolicy)
@@ -533,10 +549,11 @@ export class WorkspaceRepository extends BaseRepository {
           `INSERT INTO project
 					 (id, workspace_id, name, description, instructions, colour,
 					  coding_enabled, coding_installation_id, coding_repository,
+					  coding_execution_provider,
 					  coding_prompt_strategy, coding_should_commit, coding_delivery_policy,
 					  coding_environment_setup, coding_environment_cache, coding_cache_generation,
 					  coding_timeout_seconds, coding_inspection_window_seconds, created_by, default_model_tier)
-					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           params.id,
@@ -548,6 +565,7 @@ export class WorkspaceRepository extends BaseRepository {
           params.codingEnvironment ? 1 : 0,
           params.codingEnvironment?.installationId ?? null,
           params.codingEnvironment?.repository ?? null,
+          params.codingEnvironment?.executionProvider ?? "polychat",
           params.codingEnvironment?.promptStrategy ?? "auto",
           params.codingEnvironment
             ? sandboxDeliveryPolicyCreatesCommit(params.codingEnvironment.deliveryPolicy)
@@ -633,6 +651,7 @@ export class WorkspaceRepository extends BaseRepository {
         "colour",
         "default_model_tier",
         "coding_enabled",
+        "coding_execution_provider",
         "coding_installation_id",
         "coding_repository",
         "coding_prompt_strategy",
@@ -936,6 +955,10 @@ export class WorkspaceRepository extends BaseRepository {
          ON state.conversation_id = c.id AND state.user_id = ?
 			 WHERE c.project_id = ? AND c.is_archived = 0
         AND c.type IN (${listedConversationTypesSql})
+        AND NOT EXISTS (
+          SELECT 1 FROM teammate_context tc
+          WHERE tc.home_conversation_id = c.id AND tc.actor_user_id != ?
+        )
         AND NOT (
           COALESCE(datetime(state.snoozed_until) > datetime('now'), 0)
           OR (
@@ -951,7 +974,7 @@ export class WorkspaceRepository extends BaseRepository {
 			 ORDER BY COALESCE(state.is_pinned, 0) DESC,
         COALESCE(c.last_message_at, c.updated_at, c.created_at) DESC, c.id DESC
 			 LIMIT 50`,
-      [userId, projectId],
+      [userId, projectId, userId],
     );
   }
 
@@ -970,6 +993,10 @@ export class WorkspaceRepository extends BaseRepository {
 						AND access_user.plan_id = 'pro'
 						AND wm.user_id IS NOT NULL
 					)
+				)
+				AND NOT EXISTS (
+					SELECT 1 FROM teammate_context tc
+					WHERE tc.home_conversation_id = c.id AND tc.actor_user_id != access_user.id
 				)
 			) AS allowed`,
       [userId, conversationId],

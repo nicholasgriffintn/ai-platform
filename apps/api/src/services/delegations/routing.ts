@@ -15,3 +15,13 @@ export function resolveDelegationExecutionRoute(
 
   return "hosted";
 }
+
+export function canRunDelegationOnMachine(
+  model: ModelConfigItem | null | undefined,
+): model is ModelConfigItem & { machineId: string } {
+  return Boolean(
+    model?.machineId &&
+    model.agent?.capabilities.resumesSessions &&
+    model.agent.capabilities.runsUnattended,
+  );
+}

@@ -1,5 +1,6 @@
 import {
   delegationSchema,
+  delegationMemoryBindingSchema,
   type Delegation,
   type DelegationResult,
 } from "@ngriffin_uk/polychat-schemas";
@@ -21,6 +22,12 @@ function parseResult(value: unknown): DelegationResult | null {
 }
 
 export function formatDelegation(row: DelegationRow): Delegation {
+  const rawMemoryBindings =
+    typeof row.memory_bindings_json === "string"
+      ? safeParseJson<unknown>(row.memory_bindings_json)
+      : row.memory_bindings_json;
+  const memoryBindings = delegationMemoryBindingSchema.array().catch([]).parse(rawMemoryBindings);
+
   return delegationSchema.parse({
     id: row.id,
     parentConversationId: row.parent_conversation_id,
@@ -37,6 +44,9 @@ export function formatDelegation(row: DelegationRow): Delegation {
     },
     state: row.state,
     result: parseResult(row.result_json),
+    memoryBindings,
+    predecessorDelegationId: row.predecessor_delegation_id,
+    continuationMode: row.continuation_mode,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   });

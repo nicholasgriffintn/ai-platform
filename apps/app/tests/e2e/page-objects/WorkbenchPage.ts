@@ -19,14 +19,8 @@ export class WorkbenchPage extends BasePage {
     return this.statusDetail.evaluate((element) => element.scrollWidth > element.clientWidth);
   }
 
-  async statusStripHasPageBackground() {
-    return this.status.locator("..").evaluate((element) => {
-      return getComputedStyle(element).backgroundColor === "rgba(0, 0, 0, 0)";
-    });
-  }
-
   async statusStripHasAttentionBackground() {
-    return this.status.locator("..").evaluate((element) => {
+    return this.status.evaluate((element) => {
       return getComputedStyle(element).backgroundColor !== "rgba(0, 0, 0, 0)";
     });
   }
@@ -35,7 +29,9 @@ export class WorkbenchPage extends BasePage {
     return this.page.getByRole("complementary", { name: "Project workbench", exact: true });
   }
 
-  async selectPane(name: "Activity" | "Changes" | "Files" | "Proof" | "Preview") {
+  async selectPane(
+    name: "Context" | "Activity" | "Changes" | "Files" | "Proof" | "Preview" | "Delegates",
+  ) {
     await this.paneTab(name).click();
   }
 
@@ -98,18 +94,20 @@ export class WorkbenchPage extends BasePage {
   }
 
   get mobileTrigger() {
-    return this.page.getByRole("button", { name: "Workbench", exact: true });
+    return this.page.getByRole("button", { name: "Open workbench panels", exact: true });
   }
 
   get mobileDialog() {
     return this.page.getByRole("dialog", { name: "Project workbench", exact: true });
   }
 
-  paneTab(name: "Activity" | "Changes" | "Files" | "Proof" | "Preview") {
+  paneTab(name: "Context" | "Activity" | "Changes" | "Files" | "Proof" | "Preview" | "Delegates") {
     return this.page.locator('[role="tab"]:visible').filter({ hasText: name });
   }
 
-  panePanel(name: "Activity" | "Changes" | "Files" | "Proof" | "Preview") {
+  panePanel(
+    name: "Context" | "Activity" | "Changes" | "Files" | "Proof" | "Preview" | "Delegates",
+  ) {
     return this.page.getByRole("tabpanel", { name, exact: true });
   }
 
@@ -128,7 +126,7 @@ export class WorkbenchPage extends BasePage {
   }
 
   async collapse() {
-    await this.page.getByRole("button", { name: "Collapse workbench panels", exact: true }).click();
+    await this.page.getByRole("button", { name: "Close workbench panels", exact: true }).click();
   }
 
   async expand() {

@@ -18,7 +18,8 @@ const mocks = vi.hoisted(() => ({
   importComposioOperationFileResults: vi.fn(),
 }));
 
-vi.mock("../accounts", () => ({
+vi.mock("../accounts", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../accounts")>()),
   getSelectedRecipeConnectorAccountId: mocks.getSelectedRecipeConnectorAccountId,
 }));
 
@@ -43,6 +44,7 @@ import {
   closeComposioConnectorRun,
   discoverComposioRunTools,
   executeComposioRunTool,
+  resolveComposioRunAccount,
 } from "../composio-run";
 
 const account = {
@@ -331,5 +333,29 @@ describe("Composio connector run lifecycle", () => {
     } as never;
 
     await expect(closeComposioConnectorRun(runContext)).resolves.toBeUndefined();
+  });
+
+  it("does not substitute another account for an unattended installation", async () => {
+    const runContext = context();
+    const provider = getConnectorProviderConfig("gmail");
+
+    mocks.getSelectedRecipeConnectorAccountId.mockResolvedValueOnce("ca_disconnected");
+
+    await expect(
+      resolveComposioRunAccount({
+        context: runContext,
+        userId: 42,
+        provider,
+        operationId: "GMAIL_FETCH_EMAILS",
+        requireSelectedAccount: true,
+        scope: {
+          completionId: "completion-1",
+          installationId: "installation-1",
+        },
+      }),
+    ).rejects.toMatchObject({
+      message: "The selected connector account is not connected",
+      statusCode: 403,
+    });
   });
 });

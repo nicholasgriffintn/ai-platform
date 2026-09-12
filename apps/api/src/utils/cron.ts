@@ -104,17 +104,60 @@ export function doesCronMatchDate(cronExpression: string, date: Date): boolean {
   );
 }
 
+export function doesCronMatchDateInTimezone(
+  cronExpression: string,
+  date: Date,
+  timezone: string,
+): boolean {
+  if (timezone === "UTC") {
+    return doesCronMatchDate(cronExpression, date);
+  }
+
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  const values = new Map(parts.map((part) => [part.type, part.value]));
+  const local = new Date(
+    Date.UTC(
+      Number(values.get("year")),
+      Number(values.get("month")) - 1,
+      Number(values.get("day")),
+      Number(values.get("hour")),
+      Number(values.get("minute")),
+    ),
+  );
+
+  return doesCronMatchDate(cronExpression, local);
+}
+
 export function getCronMatchingDatesInRange(params: {
   cronExpression: string;
   start: Date;
   end: Date;
   includeStart?: boolean;
+  timezone?: string;
+  maximumMatches?: number;
+  direction?: "forward" | "backward";
 }): Date[] {
   const end = floorToUtcMinute(params.end);
   const firstTime = floorToUtcMinute(params.start).getTime();
   const dates: Date[] = [];
+  const direction = params.direction ?? "forward";
+  const step = direction === "backward" ? -60 * 1000 : 60 * 1000;
+  const initialTime = direction === "backward" ? end.getTime() : firstTime;
+  const boundary = direction === "backward" ? firstTime : end.getTime();
 
-  for (let time = firstTime; time <= end.getTime(); time += 60 * 1000) {
+  for (
+    let time = initialTime;
+    direction === "backward" ? time >= boundary : time <= boundary;
+    time += step
+  ) {
     if (
       time < params.start.getTime() ||
       (!params.includeStart && time === params.start.getTime())
@@ -124,10 +167,18 @@ export function getCronMatchingDatesInRange(params: {
 
     const date = new Date(time);
 
-    if (doesCronMatchDate(params.cronExpression, date)) {
+    if (
+      params.timezone
+        ? doesCronMatchDateInTimezone(params.cronExpression, date, params.timezone)
+        : doesCronMatchDate(params.cronExpression, date)
+    ) {
       dates.push(date);
+
+      if (params.maximumMatches && dates.length >= params.maximumMatches) {
+        break;
+      }
     }
   }
 
-  return dates;
+  return direction === "backward" ? dates.reverse() : dates;
 }

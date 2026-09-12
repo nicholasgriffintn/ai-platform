@@ -93,6 +93,36 @@ export abstract class BaseRepository<Environment extends Pick<IEnv, "DB"> = IEnv
     }
   }
 
+  protected async executeBatch<T = unknown>(
+    statements: D1PreparedStatement[],
+  ): Promise<D1Result<T>[]> {
+    try {
+      const results = await this.env.DB.batch<T>(statements);
+
+      for (const result of results) {
+        recordD1ResultMeta(result.meta);
+
+        if (!result.success) {
+          throw new AssistantError("Database transaction failed", ErrorType.DATABASE_ERROR);
+        }
+      }
+
+      return results;
+    } catch (error: any) {
+      if (error instanceof AssistantError) {
+        throw error;
+      }
+
+      logger.error("Database transaction error:", { error });
+      throw new AssistantError(
+        `Error executing database transaction: ${error.message}`,
+        ErrorType.UNKNOWN_ERROR,
+        500,
+        { originalError: error },
+      );
+    }
+  }
+
   protected buildUpdateQuery(
     table: string,
     updates: Record<string, unknown>,

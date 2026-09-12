@@ -10,15 +10,27 @@ import {
 } from "@ngriffin_uk/polychat-component-content";
 import { delegationListResponseSchema } from "@ngriffin_uk/polychat-schemas";
 
-import { DelegationCard } from "./DelegationCard.js";
+import { ComputerTakeoverView } from "./ComputerTakeoverView.js";
+import { createDelegationFollowUpInteraction, DelegationCard } from "./DelegationCard.js";
 import { DocumentSearchView } from "./DocumentSearchView.js";
 import { ProjectTaskListView } from "./ProjectTaskListView.js";
 import { ResearchView } from "./ResearchView.js";
 import { SandboxView } from "./SandboxView.js";
 
-export { DelegationCard, DocumentSearchView, ProjectTaskListView, ResearchView, SandboxView };
+export {
+  ComputerTakeoverView,
+  DelegationCard,
+  createDelegationFollowUpInteraction,
+  DocumentSearchView,
+  ProjectTaskListView,
+  ResearchView,
+  SandboxView,
+};
 
 export const sharedResponseViews: CustomResponseViewRegistry = {
+  computer_takeover: ({ data, onToolInteraction }) => (
+    <ComputerTakeoverView data={data} onToolInteraction={onToolInteraction} />
+  ),
   approval_request: ({ data, embedded, onToolInteraction }) => (
     <ApprovalRequestView data={data} embedded={embedded} onToolInteraction={onToolInteraction} />
   ),
@@ -48,6 +60,8 @@ export const sharedResponseViews: CustomResponseViewRegistry = {
     return (
       <DelegationCard
         delegations={parsed.data.delegations}
+        teammates={parsed.data.teammates}
+        outputs={parsed.data.outputs}
         onStopAll={
           first && onToolInteraction
             ? () =>
@@ -63,6 +77,35 @@ export const sharedResponseViews: CustomResponseViewRegistry = {
                 void onToolInteraction("delegate", "useAsPrompt", {
                   action: "open",
                   childConversationId: delegation.childConversationId,
+                })
+            : undefined
+        }
+        onResumeDelegation={
+          onToolInteraction
+            ? (delegation) =>
+                void onToolInteraction(
+                  "delegate",
+                  "useAsPrompt",
+                  createDelegationFollowUpInteraction(delegation, "resume"),
+                )
+            : undefined
+        }
+        onStartFreshDelegation={
+          onToolInteraction
+            ? (delegation) =>
+                void onToolInteraction(
+                  "delegate",
+                  "useAsPrompt",
+                  createDelegationFollowUpInteraction(delegation, "fresh"),
+                )
+            : undefined
+        }
+        onOpenOutput={
+          onToolInteraction
+            ? (output) =>
+                void onToolInteraction("delegate", "useAsPrompt", {
+                  action: "output",
+                  outputId: output.id,
                 })
             : undefined
         }

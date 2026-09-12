@@ -76,3 +76,13 @@ export function resolveSandboxDeliveryPolicy(
 export function sandboxDeliveryPolicyCreatesCommit(policy: SandboxDeliveryPolicy): boolean {
   return policy.mode === "review_branch" || policy.mode === "commit_to_branch";
 }
+
+export function sandboxReviewBranchName(runId: string): string {
+  return `polychat/run-${runId}`;
+}
+
+export function isSandboxPullRequestUrl(repo: string, value: string): boolean {
+  const escapedRepo = repo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  return new RegExp(`^https://github\\.com/${escapedRepo}/pull/[1-9]\\d*$`).test(value);
+}

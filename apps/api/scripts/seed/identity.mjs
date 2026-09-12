@@ -355,6 +355,11 @@ export function teammateStatements() {
   const editor = seedId("teammate", "editor");
   const releaseBot = seedId("teammate", "release-bot");
   const researcher = seedId("teammate", "researcher");
+  const contexts = {
+    editor: seedId("teammate-context", "editor-personal"),
+    researcher: seedId("teammate-context", "researcher-personal"),
+    releaseBot: seedId("teammate-context", "release-bot-launch"),
+  };
 
   statements.push(
     insert("teammates", {
@@ -445,5 +450,5 @@ export function teammateStatements() {
     }),
   );
 
-  return { statements, editor, researcher, releaseBot };
+  return { statements, editor, researcher, releaseBot, contexts };
 }

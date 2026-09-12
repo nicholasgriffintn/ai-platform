@@ -1,10 +1,14 @@
 import {
   createSkill,
+  createTeachingSkillDraft,
   deleteSkill,
   fetchPersonalSkills,
   setPersonalSkillEnabled,
 } from "@ngriffin_uk/polychat-library-client";
-import type { SkillAvailabilityResponse } from "@ngriffin_uk/polychat-schemas";
+import type {
+  SkillAvailabilityResponse,
+  TeachingSkillDraftInput,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { capabilityCatalogQueryKey } from "../hooks/useCapabilityCatalog.js";
@@ -60,6 +64,15 @@ export function useAddSkill(projectId?: string) {
 
   return useMutation({
     mutationFn: (content: string) => createSkill(content, projectId),
+    onSuccess: invalidateSkillScope,
+  });
+}
+
+export function useCreateTeachingSkillDraft() {
+  const invalidateSkillScope = useInvalidateSkillScope();
+
+  return useMutation({
+    mutationFn: (input: TeachingSkillDraftInput) => createTeachingSkillDraft(input),
     onSuccess: invalidateSkillScope,
   });
 }

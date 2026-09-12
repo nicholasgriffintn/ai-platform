@@ -17,6 +17,7 @@ export const chatRunStatusSchema = z.enum([
   "running",
   "awaiting_input",
   "awaiting_approval",
+  "awaiting_takeover",
   "cancelling",
   "succeeded",
   "failed",
@@ -25,6 +26,9 @@ export const chatRunStatusSchema = z.enum([
 ]);
 
 export type ChatRunStatus = z.infer<typeof chatRunStatusSchema>;
+
+export const chatRunInteractionKindSchema = z.enum(["question", "approval", "takeover"]);
+export type ChatRunInteractionKind = z.infer<typeof chatRunInteractionKindSchema>;
 
 export const TERMINAL_CHAT_RUN_STATUSES: readonly ChatRunStatus[] = [
   "succeeded",
@@ -38,6 +42,7 @@ const CHAT_RUN_TRANSITIONS: Record<ChatRunStatus, readonly ChatRunStatus[]> = {
   running: [
     "awaiting_input",
     "awaiting_approval",
+    "awaiting_takeover",
     "cancelling",
     "succeeded",
     "failed",
@@ -46,6 +51,7 @@ const CHAT_RUN_TRANSITIONS: Record<ChatRunStatus, readonly ChatRunStatus[]> = {
   ],
   awaiting_input: ["running", "cancelling", "failed", "cancelled", "interrupted"],
   awaiting_approval: ["running", "cancelling", "failed", "cancelled", "interrupted"],
+  awaiting_takeover: ["running", "cancelling", "failed", "cancelled", "interrupted"],
   cancelling: ["cancelled", "failed", "interrupted"],
   succeeded: [],
   failed: [],
@@ -67,7 +73,7 @@ export const chatRunIdSchema = z.string().trim().min(1).max(200);
 export const chatRunCommandKindSchema = z.enum(["turn", "interaction_response", "cancel"]);
 export type ChatRunCommandKind = z.infer<typeof chatRunCommandKindSchema>;
 
-export const chatRunTriggerSchema = z.enum(["user", "delegation", "handle", "schedule"]);
+export const chatRunTriggerSchema = z.enum(["user", "delegation", "handle", "schedule", "channel"]);
 export type ChatRunTrigger = z.infer<typeof chatRunTriggerSchema>;
 
 export const chatRunSchema = z.object({
@@ -80,6 +86,10 @@ export const chatRunSchema = z.object({
   initiatorUserId: z.number().int().positive(),
   trigger: chatRunTriggerSchema.default("user"),
   status: chatRunStatusSchema,
+  interactionKind: chatRunInteractionKindSchema.nullable().optional(),
+  teammateContextId: z.string().min(1).nullable().optional(),
+  computerId: z.string().min(1).nullable().optional(),
+  resolvedConfiguration: z.record(z.string(), z.unknown()).nullable().optional(),
   attempt: z.number().int().positive(),
   createdAt: z.string(),
   updatedAt: z.string(),

@@ -7,12 +7,15 @@ import {
   CanvasSidebarControls,
 } from "@ngriffin_uk/polychat-component-experiences/media";
 import { Button, PageTitle } from "@ngriffin_uk/polychat-component-ui";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useComposerPrefill, useTrackEvent } from "@ngriffin_uk/polychat-library-react";
 import { Image as ImageIcon, MessageCircle } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useParams } from "react-router";
 
 import { useCanvasStudio } from "../Apps/Canvas/useCanvasStudio.js";
 import { ChatSidebar } from "../Chat/ChatSidebar.js";
+import { ConversationWorkbenchLayout } from "../Conversations/ConversationWorkbenchLayout.js";
 import { ConversationProductHeader } from "../Header/ConversationProductHeader.js";
 import { ProductModeHeader } from "../Header/ProductModeHeader.js";
 import { PageShell } from "../Shell/PageShell.js";
@@ -24,6 +27,8 @@ export interface HomePageProps {
 }
 
 export function HomePage({ hostModeConfig }: HomePageProps = {}) {
+  const { completionId } = useParams<"completionId">();
+  const currentConversationId = useChatStore((state) => state.currentConversationId);
   const [isCanvasMode, setIsCanvasMode] = useState(false);
   const { modeConfig: chatModeConfig } = useHomeChatModeConfig();
   const modeConfig = useMemo(
@@ -67,15 +72,23 @@ export function HomePage({ hostModeConfig }: HomePageProps = {}) {
       displayNavBar={false}
       headerContent={<PageTitle title="Conversation" className="sr-only" />}
     >
-      <ConversationSurfaceLayout
-        header={isCanvasMode ? <ProductModeHeader /> : <ConversationProductHeader />}
-      >
-        {isCanvasMode ? (
+      {isCanvasMode ? (
+        <ConversationSurfaceLayout header={<ProductModeHeader />}>
           <CanvasGenerationsView canvas={canvas} />
-        ) : (
+        </ConversationSurfaceLayout>
+      ) : (
+        <ConversationWorkbenchLayout
+          conversationId={currentConversationId}
+          renderHeader={(actions) => (
+            <ConversationProductHeader
+              additionalActions={actions}
+              showProductModeSwitch={!completionId}
+            />
+          )}
+        >
           <HomeConversationThread urlModeConfig={modeConfig} />
-        )}
-      </ConversationSurfaceLayout>
+        </ConversationWorkbenchLayout>
+      )}
     </PageShell>
   );
 }

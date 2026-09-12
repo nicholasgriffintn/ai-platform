@@ -2,7 +2,6 @@ import { isProjectConversationPath } from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
 import { useLocation, useParams } from "react-router";
 
-import { ConversationProductHeader } from "../Header/ConversationProductHeader.js";
 import { WorkAccessGate } from "../Work/WorkAccessGate.js";
 import { useWorkData } from "../Work/WorkDataContext.js";
 import { WorkDataProvider } from "../Work/WorkDataProvider.js";
@@ -24,14 +23,6 @@ function WorkShell({ children, projectId, workspaceId }: WorkShellProps) {
   return (
     <PageShell
       title={isProjectConversation ? undefined : "Work"}
-      headerContent={
-        isProjectConversation ? (
-          <ConversationProductHeader
-            projectColour={projectColour}
-            requestOptions={projectId ? { metadata: { project_id: projectId } } : undefined}
-          />
-        ) : undefined
-      }
       sidebarContent={<WorkSidebar workspaceId={workspaceId} projectId={projectId} />}
       fullBleed
       displayNavBar={false}

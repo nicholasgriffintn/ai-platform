@@ -61,6 +61,9 @@ function createContext(overrides: {
       activities: {
         getActivityByGroup: vi.fn().mockResolvedValue(overrides.activity ?? null),
       },
+      teammateContexts: {
+        getByHomeConversationId: vi.fn().mockResolvedValue(null),
+      },
     },
   } as any;
 }
@@ -136,7 +139,10 @@ describe("conversation goal authorisation", () => {
 
       expect(createConversation).toHaveBeenCalledWith("c-1", owner.id, undefined, {});
       expect(setGoal).toHaveBeenCalledWith(
-        expect.objectContaining({ owner: { conversationId: "c-1" }, objective: "count to 100" }),
+        expect.objectContaining({
+          owner: { conversationId: "c-1" },
+          objective: "count to 100",
+        }),
       );
     });
 

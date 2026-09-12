@@ -4,14 +4,47 @@ import type {
   SandboxRunControlState,
   SandboxRunData,
 } from "@ngriffin_uk/polychat-schemas";
-import type {
-  ProjectWorkbenchServiceItem,
-  ProjectWorkbenchStatus,
+import {
+  PROJECT_WORKBENCH_PANES,
+  type ProjectWorkbenchPane,
+  type ProjectWorkbenchServiceItem,
+  type ProjectWorkbenchStatus,
 } from "@ngriffin_uk/polychat-utility-react";
 
 export interface ProjectWorkbenchPresentation {
   status: ProjectWorkbenchStatus;
   detail?: string;
+}
+
+export function deriveProjectWorkbenchPanes(input: {
+  hasContext: boolean;
+  hasActivity: boolean;
+  hasPreview: boolean;
+  hasChanges: boolean;
+  hasFiles: boolean;
+  hasProof: boolean;
+  hasDelegates: boolean;
+}): ProjectWorkbenchPane[] {
+  return PROJECT_WORKBENCH_PANES.filter((pane) => {
+    switch (pane) {
+      case "context":
+        return input.hasContext;
+      case "activity":
+        return input.hasActivity;
+      case "preview":
+        return input.hasPreview;
+      case "changes":
+        return input.hasChanges;
+      case "files":
+        return input.hasFiles;
+      case "proof":
+        return input.hasProof;
+      case "delegates":
+        return input.hasDelegates;
+    }
+
+    return false;
+  });
 }
 
 export function deriveProjectWorkbenchServices(

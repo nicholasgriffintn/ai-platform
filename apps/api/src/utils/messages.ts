@@ -281,12 +281,31 @@ export function extractChatCompletionNotification(
   const mediaUrls: string[] = [];
 
   for (const choice of response.choices ?? []) {
-    addMediaUrlsFromMessageContent(mediaUrls, choice.message?.content);
-    addMediaUrlsFromData(mediaUrls, choice.message?.data);
+    const notification = extractMessageNotification(choice.message?.content, choice.message?.data);
+
+    for (const mediaUrl of notification.mediaUrls) {
+      addMessagingMediaUrl(mediaUrls, mediaUrl);
+    }
   }
 
   return {
     body: extractChatCompletionText(response, options),
+    mediaUrls,
+  };
+}
+
+export function extractMessageNotification(
+  content: unknown,
+  data?: Record<string, unknown> | null,
+  fallback = "I could not generate a text response.",
+): ChatCompletionNotification {
+  const mediaUrls: string[] = [];
+
+  addMediaUrlsFromMessageContent(mediaUrls, content);
+  addMediaUrlsFromData(mediaUrls, data ?? undefined);
+
+  return {
+    body: extractTextFromMessageContent(content) || fallback,
     mediaUrls,
   };
 }

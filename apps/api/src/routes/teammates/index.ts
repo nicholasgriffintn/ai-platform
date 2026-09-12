@@ -8,6 +8,20 @@ import {
   createChatCompletionsJsonSchema,
   publishTeammateToWorkspaceSchema,
   apiResponseSchema,
+  ensureTeammateContextSchema,
+  teammateConnectionGrantListResponseSchema,
+  teammateConnectionGrantSchema,
+  teammateContextListResponseSchema,
+  teammateContextSchema,
+  updateTeammateContextStatusSchema,
+  upsertTeammateConnectionGrantSchema,
+  teammateComputerActionResponseSchema,
+  teammateComputerActionSchema,
+  teammateComputerSchema,
+  teammateComputerTakeoverInputSchema,
+  teammateComputerTakeoverResponseSchema,
+  memoryDocumentSchema,
+  updateMemoryDocumentSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
@@ -27,9 +41,20 @@ import {
   restoreInheritedTeammateToProject,
   updateTeammate,
   deleteTeammate,
-  getTeammateServers,
-  createTeammateCompletion,
+  enqueueTeammateRun,
   publishTeammateToWorkspace,
+  ensureTeammateContext,
+  listTeammateConnectionGrants,
+  listTeammateContexts,
+  upsertTeammateConnectionGrant,
+  getTeammateComputer,
+  performTeammateComputerAction,
+  releaseTeammateComputer,
+  takeOverTeammateComputer,
+  resumeTeammateRun,
+  getTeammateContextMemory,
+  updateTeammateContextMemory,
+  updateTeammateContextStatus,
 } from "~/services/teammates";
 import type { IEnv } from "~/types";
 
@@ -51,7 +76,9 @@ addRoute(app, "get", "/", {
   summary: "Get all teammates",
   description: "Get all teammates for the current user",
   auth: true,
-  responses: { 200: { description: "Agents", schema: teammateListResponseSchema } },
+  responses: {
+    200: { description: "Agents", schema: teammateListResponseSchema },
+  },
   handler: async ({ serviceContext }) => {
     return getUserTeammates(serviceContext);
   },
@@ -63,7 +90,9 @@ addRoute(app, "post", "/", {
   description: "Create an teammate for the current user",
   auth: true,
   bodySchema: createTeammateSchema,
-  responses: { 200: { description: "Created teammate", schema: teammateResponseSchema } },
+  responses: {
+    200: { description: "Created teammate", schema: teammateResponseSchema },
+  },
   handler: async ({ serviceContext, body }) => {
     return createTeammate(serviceContext, body);
   },
@@ -76,7 +105,9 @@ addRoute(app, "post", "/hire", {
     "Create a teammate from a built-in role, a job description, or both. The role supplies the brief, suggested tools and kind.",
   auth: true,
   bodySchema: hireTeammateSchema,
-  responses: { 200: { description: "Hired teammate", schema: teammateResponseSchema } },
+  responses: {
+    200: { description: "Hired teammate", schema: teammateResponseSchema },
+  },
   handler: async ({ serviceContext, body }) => {
     return hireTeammate(serviceContext, body);
   },
@@ -104,7 +135,10 @@ addRoute(app, "post", "/:teammateId/projects/:projectId/remove", {
   description:
     "Workspace defaults reach every project. This records that one project does not want this teammate, without removing it from the workspace.",
   auth: true,
-  paramSchema: z.object({ teammateId: z.string().min(1), projectId: z.string().min(1) }),
+  paramSchema: z.object({
+    teammateId: z.string().min(1),
+    projectId: z.string().min(1),
+  }),
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
   handler: async ({ serviceContext, params }) => {
     await removeInheritedTeammateFromProject(serviceContext, params.projectId, params.teammateId);
@@ -117,7 +151,10 @@ addRoute(app, "post", "/:teammateId/projects/:projectId/restore", {
   tags: ["teammates"],
   summary: "Give a project back a workspace teammate it had removed",
   auth: true,
-  paramSchema: z.object({ teammateId: z.string().min(1), projectId: z.string().min(1) }),
+  paramSchema: z.object({
+    teammateId: z.string().min(1),
+    projectId: z.string().min(1),
+  }),
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
   handler: async ({ serviceContext, params }) => {
     await restoreInheritedTeammateToProject(serviceContext, params.projectId, params.teammateId);
@@ -128,25 +165,165 @@ addRoute(app, "post", "/:teammateId/projects/:projectId/restore", {
 
 app.route("/shared", sharedTeammates);
 
+addRoute(app, "get", "/:teammateId/contexts", {
+  tags: ["teammates"],
+  summary: "List scoped teammate contexts",
+  auth: true,
+  paramSchema: teammateIdParamSchema,
+  responses: {
+    200: { description: "Contexts", schema: teammateContextListResponseSchema },
+  },
+  handler: async ({ serviceContext, params }) =>
+    listTeammateContexts(serviceContext, params.teammateId),
+});
+
+addRoute(app, "post", "/:teammateId/contexts", {
+  tags: ["teammates"],
+  summary: "Create or find a scoped teammate context",
+  auth: true,
+  paramSchema: teammateIdParamSchema,
+  bodySchema: ensureTeammateContextSchema,
+  responses: { 200: { description: "Context", schema: teammateContextSchema } },
+  handler: async ({ serviceContext, params, body }) =>
+    ensureTeammateContext(serviceContext, params.teammateId, body.scope),
+});
+
+addRoute(app, "patch", "/contexts/:contextId", {
+  tags: ["teammates"],
+  summary: "Update a teammate context lifecycle",
+  auth: true,
+  paramSchema: z.object({ contextId: z.string().min(1) }),
+  bodySchema: updateTeammateContextStatusSchema,
+  responses: { 200: { description: "Context", schema: teammateContextSchema } },
+  handler: async ({ serviceContext, params, body }) =>
+    updateTeammateContextStatus(serviceContext, params.contextId, body.status),
+});
+
+addRoute(app, "get", "/contexts/:contextId/connections", {
+  tags: ["teammates"],
+  summary: "List a teammate context's connection grants",
+  auth: true,
+  paramSchema: z.object({ contextId: z.string().min(1) }),
+  responses: {
+    200: {
+      description: "Connection grants",
+      schema: teammateConnectionGrantListResponseSchema,
+    },
+  },
+  handler: async ({ serviceContext, params }) =>
+    listTeammateConnectionGrants(serviceContext, params.contextId),
+});
+
+addRoute(app, "put", "/contexts/:contextId/connections", {
+  tags: ["teammates"],
+  summary: "Grant exact connection operations to a teammate context",
+  auth: true,
+  paramSchema: z.object({ contextId: z.string().min(1) }),
+  bodySchema: upsertTeammateConnectionGrantSchema,
+  responses: {
+    200: {
+      description: "Connection grant",
+      schema: teammateConnectionGrantSchema,
+    },
+  },
+  handler: async ({ serviceContext, params, body }) =>
+    upsertTeammateConnectionGrant(serviceContext, params.contextId, body),
+});
+
+const teammateContextIdParamSchema = z.object({ contextId: z.string().min(1) });
+
+addRoute(app, "get", "/contexts/:contextId/memory", {
+  tags: ["teammates"],
+  summary: "Get a teammate context's private memory",
+  auth: true,
+  paramSchema: teammateContextIdParamSchema,
+  responses: {
+    200: { description: "Memory document", schema: memoryDocumentSchema },
+  },
+  handler: async ({ serviceContext, params }) =>
+    getTeammateContextMemory(serviceContext, params.contextId),
+});
+
+addRoute(app, "put", "/contexts/:contextId/memory", {
+  tags: ["teammates"],
+  summary: "Save a teammate context memory revision",
+  auth: true,
+  paramSchema: teammateContextIdParamSchema,
+  bodySchema: updateMemoryDocumentSchema.omit({ projectId: true }),
+  responses: {
+    200: { description: "Memory document", schema: memoryDocumentSchema },
+  },
+  handler: async ({ serviceContext, params, body }) =>
+    updateTeammateContextMemory(serviceContext, params.contextId, body),
+});
+
+addRoute(app, "get", "/contexts/:contextId/computer", {
+  tags: ["teammates"],
+  summary: "Get a teammate context's hosted computer",
+  auth: true,
+  paramSchema: teammateContextIdParamSchema,
+  responses: {
+    200: { description: "Computer", schema: teammateComputerSchema },
+  },
+  handler: async ({ serviceContext, params }) =>
+    getTeammateComputer(serviceContext, params.contextId),
+});
+
+addRoute(app, "post", "/contexts/:contextId/computer/actions", {
+  tags: ["teammates"],
+  summary: "Manage a teammate context's hosted computer",
+  auth: true,
+  paramSchema: teammateContextIdParamSchema,
+  bodySchema: teammateComputerActionSchema,
+  responses: {
+    200: {
+      description: "Computer action result",
+      schema: teammateComputerActionResponseSchema,
+    },
+  },
+  handler: async ({ serviceContext, params, body }) =>
+    performTeammateComputerAction(serviceContext, params.contextId, body),
+});
+
+addRoute(app, "post", "/contexts/:contextId/computer/takeover", {
+  tags: ["teammates"],
+  summary: "Take temporary control of a teammate computer",
+  auth: true,
+  paramSchema: teammateContextIdParamSchema,
+  bodySchema: teammateComputerTakeoverInputSchema,
+  responses: {
+    200: {
+      description: "Screen connection",
+      schema: teammateComputerTakeoverResponseSchema,
+    },
+  },
+  handler: async ({ serviceContext, params, body }) =>
+    takeOverTeammateComputer(serviceContext, params.contextId, body.recordTeaching),
+});
+
+addRoute(app, "post", "/contexts/:contextId/computer/release", {
+  tags: ["teammates"],
+  summary: "Release control of a teammate computer",
+  auth: true,
+  paramSchema: teammateContextIdParamSchema,
+  bodySchema: z.object({ fence: z.number().int().positive() }),
+  responses: {
+    200: { description: "Computer", schema: teammateComputerSchema },
+  },
+  handler: async ({ serviceContext, params, body }) =>
+    releaseTeammateComputer(serviceContext, params.contextId, body.fence),
+});
+
 addRoute(app, "get", "/:teammateId", {
   tags: ["teammates"],
   summary: "Get an teammate by ID",
   auth: true,
   paramSchema: teammateIdParamSchema,
-  responses: { 200: { description: "Teammate", schema: teammateResponseSchema } },
+  responses: {
+    200: { description: "Teammate", schema: teammateResponseSchema },
+  },
   handler: async ({ serviceContext, params }) => {
     return getTeammateById(serviceContext, params.teammateId);
-  },
-});
-
-addRoute(app, "get", "/:teammateId/servers", {
-  tags: ["teammates"],
-  summary: "Get servers for an teammate",
-  auth: true,
-  paramSchema: teammateIdParamSchema,
-  responses: { 200: { description: "Success", schema: apiResponseSchema } },
-  handler: async ({ serviceContext, params }) => {
-    return getTeammateServers(serviceContext, params.teammateId);
   },
 });
 
@@ -156,7 +333,9 @@ addRoute(app, "put", "/:teammateId", {
   auth: true,
   paramSchema: teammateIdParamSchema,
   bodySchema: updateTeammateSchema,
-  responses: { 200: { description: "Updated teammate", schema: teammateResponseSchema } },
+  responses: {
+    200: { description: "Updated teammate", schema: teammateResponseSchema },
+  },
   handler: async ({ serviceContext, params, body }) => {
     return updateTeammate(serviceContext, params.teammateId, body);
   },
@@ -183,7 +362,9 @@ addRoute(app, "post", "/:teammateId/publish/workspace", {
   auth: true,
   paramSchema: teammateIdParamSchema,
   bodySchema: publishTeammateToWorkspaceSchema,
-  responses: { 200: { description: "Published teammate", schema: teammateResponseSchema } },
+  responses: {
+    200: { description: "Published teammate", schema: teammateResponseSchema },
+  },
   handler: async ({ serviceContext, params, body }) => {
     return publishTeammateToWorkspace(serviceContext, params.teammateId, body.workspace_id);
   },
@@ -202,7 +383,8 @@ addRoute(app, "post", "/:teammateId/completions", {
       return ResponseFactory.error(raw, "Unauthorized", 401);
     }
 
-    const response = await createTeammateCompletion({
+    const execute = body.options?.toolInteraction ? resumeTeammateRun : enqueueTeammateRun;
+    const response = await execute({
       env: raw.env,
       context: serviceContext,
       body,

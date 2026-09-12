@@ -23,6 +23,8 @@ const delegation = {
   },
   state: "queued" as const,
   result: null,
+  memoryBindings: [],
+  continuationMode: "new" as const,
   createdAt: "2026-09-08T10:00:00.000Z",
   updatedAt: "2026-09-08T10:00:00.000Z",
 };
@@ -34,7 +36,10 @@ describe("delegationSchema", () => {
 
   it("rejects a delegation beyond the depth cap", () => {
     expect(() =>
-      delegationSchema.parse({ ...delegation, depth: DELEGATION_MAX_DEPTH + 1 }),
+      delegationSchema.parse({
+        ...delegation,
+        depth: DELEGATION_MAX_DEPTH + 1,
+      }),
     ).toThrow();
   });
 

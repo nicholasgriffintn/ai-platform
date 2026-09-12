@@ -31,6 +31,7 @@ export {
   mergeSkillLoadToolName,
   mergeSkillSuggestedToolNames,
 } from "./suggested-tools";
+export { createTeachingSkillDraft } from "./teaching";
 export { listScopedSkillSummaries } from "./listing";
 export {
   createPersonalSkill,

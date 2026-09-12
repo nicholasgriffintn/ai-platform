@@ -1,4 +1,7 @@
-import { INTERNAL_SERVICE_AUTHORIZATION_HEADER } from "@ngriffin_uk/polychat-schemas";
+import {
+  INTERNAL_SERVICE_AUTHORIZATION_HEADER,
+  SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX,
+} from "@ngriffin_uk/polychat-schemas";
 import type { Context, Next } from "hono";
 import { parse as parseCookieHeader } from "hono/utils/cookie";
 import { isbot } from "isbot";
@@ -81,7 +84,12 @@ async function isBotCached(userAgent: string, kv: any): Promise<boolean> {
 export async function authMiddleware(context: Context, next: Next) {
   const path = context.req.path;
 
-  if (path === "/status" || path === "/openapi" || path.startsWith("/webhooks/")) {
+  if (
+    path === "/status" ||
+    path === "/openapi" ||
+    path.startsWith("/webhooks/") ||
+    path.startsWith(`${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/`)
+  ) {
     return next();
   }
 

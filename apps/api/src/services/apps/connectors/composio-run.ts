@@ -15,7 +15,10 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { isRecord } from "~/utils/objects";
 
-import { getSelectedRecipeConnectorAccountId } from "./accounts";
+import {
+  getSelectedRecipeConnectorAccountId,
+  selectActiveRecipeConnectorAccount,
+} from "./accounts";
 import {
   assertComposioFileBridgeAvailable,
   createComposioMountFileClient,
@@ -94,6 +97,8 @@ async function persistToolSession(params: {
     completionId: params.scope.completionId,
     recipeId: params.scope.recipeId,
     installationId: params.scope.installationId,
+    projectId: params.scope.projectId,
+    teammateContextId: params.scope.teammateContextId,
     createdAt: new Date(now).toISOString(),
     expiresAt: new Date(now + TOOL_SESSION_TTL_MS).toISOString(),
   });
@@ -104,9 +109,10 @@ async function persistToolSession(params: {
 }
 
 async function deleteUnpersistedSession(context: ServiceContext, remoteSessionId: string) {
-  await deleteComposioToolSession({ env: context.env, sessionId: remoteSessionId }).catch(
-    () => undefined,
-  );
+  await deleteComposioToolSession({
+    env: context.env,
+    sessionId: remoteSessionId,
+  }).catch(() => undefined);
 }
 
 export async function discoverComposioRunTools(params: {
@@ -174,6 +180,8 @@ async function claimSession(params: {
     completionId: params.scope.completionId,
     recipeId: params.scope.recipeId,
     installationId: params.scope.installationId,
+    projectId: params.scope.projectId,
+    teammateContextId: params.scope.teammateContextId,
     claimedAt,
   });
 
@@ -287,7 +295,12 @@ export async function executeComposioRunTool(params: {
     });
 
     logId = result.logId;
-    await recordConnectorActivity({ ...params, session, status: "succeeded", logId });
+    await recordConnectorActivity({
+      ...params,
+      session,
+      status: "succeeded",
+      logId,
+    });
 
     return {
       data,
@@ -300,7 +313,12 @@ export async function executeComposioRunTool(params: {
       logId = error.context.requestId;
     }
 
-    await recordConnectorActivity({ ...params, session, status: "failed", logId });
+    await recordConnectorActivity({
+      ...params,
+      session,
+      status: "failed",
+      logId,
+    });
     throw error;
   }
 }
@@ -352,7 +370,9 @@ export async function resolveComposioRunAccount(params: {
   userId: number;
   provider: ConnectorProviderConfig;
   operationId: string;
+  connectedAccountId?: string;
   sessionId?: string;
+  requireSelectedAccount?: boolean;
   scope: ConnectorRunScope;
 }): Promise<{
   connectedAccount: ComposioConnectedAccount;
@@ -369,24 +389,20 @@ export async function resolveComposioRunAccount(params: {
       toolkitSlugs: [params.provider.auth.toolkitSlug],
       authConfigIds: params.provider.auth.authConfigs.map((config) => config.id),
     });
-    const active = accounts.filter((account) => account.status === "ACTIVE" && !account.isDisabled);
-
-    if (active.length === 0) {
-      throw new AssistantError("Connector is not connected", ErrorType.AUTHORISATION_ERROR, 403);
-    }
-
-    const selectedAccountId = await getSelectedRecipeConnectorAccountId({
-      context: params.context,
-      userId: params.userId,
-      providerId: params.provider.id,
-    });
+    const selectedAccountId =
+      params.connectedAccountId ??
+      (await getSelectedRecipeConnectorAccountId({
+        context: params.context,
+        userId: params.userId,
+        providerId: params.provider.id,
+      }));
 
     return {
-      connectedAccount:
-        active.find((account) => account.id === selectedAccountId) ??
-        active.reduce((selected, account) =>
-          account.createdAt > selected.createdAt ? account : selected,
-        ),
+      connectedAccount: selectActiveRecipeConnectorAccount({
+        accounts,
+        accountId: selectedAccountId,
+        requireExact: Boolean(params.connectedAccountId) || params.requireSelectedAccount === true,
+      }),
     };
   }
 
@@ -398,6 +414,15 @@ export async function resolveComposioRunAccount(params: {
     sessionId: params.sessionId,
     scope: params.scope,
   });
+
+  if (params.connectedAccountId && session.connectedAccountId !== params.connectedAccountId) {
+    throw new AssistantError(
+      "Connector session account does not match the teammate grant",
+      ErrorType.AUTHORISATION_ERROR,
+      403,
+    );
+  }
+
   const accounts = await listComposioConnectedAccounts({
     env: params.context.env,
     userId: params.userId,
@@ -427,7 +452,10 @@ export async function closeComposioConnectorRun(context: ServiceContext): Promis
 
   for (const session of sessions) {
     try {
-      await deleteComposioToolSession({ env: context.env, sessionId: session.remoteSessionId });
+      await deleteComposioToolSession({
+        env: context.env,
+        sessionId: session.remoteSessionId,
+      });
       await context.repositories.composioConnectorSessions.delete(session.id);
       trackedSessions.delete(session.id);
     } catch (error) {

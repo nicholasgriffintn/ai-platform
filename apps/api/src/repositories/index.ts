@@ -27,6 +27,7 @@ import { MemorySynthesisRepository } from "./MemorySynthesisRepository";
 import { MessageRepository } from "./MessageRepository";
 import { MobilePushRepository } from "./MobilePushRepository";
 import { OAuthStateRepository } from "./OAuthStateRepository";
+import { OutboundDeliveryRepository } from "./OutboundDeliveryRepository";
 import { OutputRepository } from "./OutputRepository";
 import { PlanRepository } from "./PlanRepository";
 import { ProjectEnvironmentVariableRepository } from "./ProjectEnvironmentVariableRepository";
@@ -39,6 +40,8 @@ import { SharedTeammateRepository } from "./SharedTeammateRepository";
 import { SourceRepository } from "./SourceRepository";
 import { TaskNotificationRepository } from "./TaskNotificationRepository";
 import { TaskRepository } from "./TaskRepository";
+import { TeammateComputerRepository } from "./TeammateComputerRepository";
+import { TeammateContextRepository } from "./TeammateContextRepository";
 import { TeammateFeedbackRepository } from "./TeammateFeedbackRepository";
 import { TeammateRepository } from "./TeammateRepository";
 import { TemplateRepository } from "./TemplateRepository";
@@ -54,6 +57,8 @@ import { WorkspaceRepository } from "./WorkspaceRepository";
 
 export {
   TeammateRepository,
+  TeammateContextRepository,
+  TeammateComputerRepository,
   ActivityRepository,
   AttentionRepository,
   AnonymousUserRepository,
@@ -78,6 +83,7 @@ export {
   MachineRepository,
   MobilePushRepository,
   OAuthStateRepository,
+  OutboundDeliveryRepository,
   OutputRepository,
   SessionRepository,
   TaskRepository,
@@ -270,6 +276,10 @@ export class RepositoryManager {
     );
   }
 
+  public get outboundDeliveries(): OutboundDeliveryRepository {
+    return this.resolve("outboundDeliveries", (env) => new OutboundDeliveryRepository(env));
+  }
+
   public get messages(): MessageRepository {
     return this.resolve("messages", (env) => new MessageRepository(env));
   }
@@ -319,6 +329,14 @@ export class RepositoryManager {
 
   public get teammates(): TeammateRepository {
     return this.resolve("teammates", (env) => new TeammateRepository(env));
+  }
+
+  public get teammateContexts(): TeammateContextRepository {
+    return this.resolve("teammateContexts", (env) => new TeammateContextRepository(env));
+  }
+
+  public get teammateComputers(): TeammateComputerRepository {
+    return this.resolve("teammateComputers", (env) => new TeammateComputerRepository(env));
   }
 
   public get sharedTeammates(): SharedTeammateRepository {

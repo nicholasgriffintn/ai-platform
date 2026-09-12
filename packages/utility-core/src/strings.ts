@@ -18,6 +18,13 @@ export function parseCommaSeparatedList(value: string): string[] {
     .filter(Boolean);
 }
 
+export function splitNonEmptyLines(value: string): string[] {
+  return value
+    .split(/\r?\n/u)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
 export const parseCommaSeparatedTags = parseCommaSeparatedList;
 
 export function getWordCount(text: string): number {

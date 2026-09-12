@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { agentModeSchema } from "./agent-modes.js";
+import { mcpHttpsUrlSchema } from "./mcp.js";
 import { skillIdSchema } from "./skills.js";
 import { teammateKindSchema } from "./teammate-roles.js";
 import { toolIdsSchema } from "./tool-ids.js";
@@ -8,6 +9,9 @@ import { toolIdsSchema } from "./tool-ids.js";
 const teammateSkillIdsSchema = z.array(skillIdSchema);
 
 export const mcpServerSchema = z.object({
+  label: z.string().trim().min(1).max(80).optional().meta({
+    description: "Stable label for the MCP server",
+  }),
   url: z.url().meta({
     description: "The endpoint URL of the MCP server",
   }),
@@ -20,6 +24,12 @@ export const mcpServerSchema = z.object({
   args: z.array(z.string()).optional().meta({
     description: "Arguments for stdio transports",
   }),
+});
+
+export const teammateMcpServerInputSchema = z.object({
+  label: z.string().trim().min(1).max(80).optional(),
+  url: mcpHttpsUrlSchema,
+  type: z.literal("sse").optional(),
 });
 
 export const fewShotExampleSchema = z.object({
@@ -39,7 +49,8 @@ export const createTeammateSchema = z.object({
   description: z.string().optional().meta({ description: "Optional teammate description" }),
   avatar_url: z.url().nullable().optional().meta({ description: "Optional avatar image URL" }),
   servers: z
-    .array(mcpServerSchema)
+    .array(teammateMcpServerInputSchema)
+    .max(10)
     .optional()
     .meta({ description: "List of MCP server configurations" }),
   model: z.string().optional().meta({ description: "Model ID to use with this teammate" }),
@@ -84,7 +95,11 @@ export const updateTeammateSchema = z
       .nullable()
       .optional()
       .meta({ description: "New avatar URL, or null to remove the existing one" }),
-    servers: z.array(mcpServerSchema).optional().meta({ description: "Updated MCP servers list" }),
+    servers: z
+      .array(teammateMcpServerInputSchema)
+      .max(10)
+      .optional()
+      .meta({ description: "Updated MCP servers list" }),
     model: z.string().optional().meta({ description: "Model ID to use with this teammate" }),
     temperature: z
       .number()
@@ -194,7 +209,7 @@ export const teammateSummarySchema = z.object({
 
 export const teammateSummaryListResponseSchema = z.array(teammateSummarySchema);
 
-export type TeammateMcpServer = z.input<typeof mcpServerSchema>;
+export type TeammateMcpServer = z.infer<typeof teammateMcpServerInputSchema>;
 export type TeammateFewShotExample = z.input<typeof fewShotExampleSchema>;
 export type CreateTeammateInput = z.input<typeof createTeammateSchema>;
 export type UpdateTeammateInput = z.input<typeof updateTeammateSchema>;

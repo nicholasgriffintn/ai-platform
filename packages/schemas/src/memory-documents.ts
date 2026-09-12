@@ -61,12 +61,22 @@ export const memoryDocumentHistoryResponseSchema = z.object({
   revisions: z.array(memoryDocumentRevisionSchema),
 });
 
+export const conversationBriefParamsSchema = z.object({
+  conversationId: z.string().min(1),
+});
+
+export const conversationBriefResponseSchema = z.object({
+  conversationId: z.string().min(1),
+  document: memoryDocumentSchema.nullable(),
+});
+
 export type MemoryDocument = z.infer<typeof memoryDocumentSchema>;
 export type MemoryDocumentSummary = z.infer<typeof memoryDocumentSummarySchema>;
 export type MemoryDocumentRevision = z.infer<typeof memoryDocumentRevisionSchema>;
 export type MemoryDocumentScope = z.infer<typeof memoryDocumentScopeSchema>;
 export type CreateMemoryDocumentInput = z.infer<typeof createMemoryDocumentSchema>;
 export type UpdateMemoryDocumentInput = z.infer<typeof updateMemoryDocumentSchema>;
+export type ConversationBriefResponse = z.infer<typeof conversationBriefResponseSchema>;
 
 export function excerptMemoryDocument(content: string, limit = 220): string {
   const flattened = content.replace(/\s+/gu, " ").trim();

@@ -29,7 +29,9 @@ function createRepository() {
   const bind = vi.fn().mockReturnValue({ all, first, run });
   const prepare = vi.fn().mockReturnValue({ bind });
   const batch = vi.fn().mockResolvedValue([]);
-  const repository = new ConversationRunRepository({ DB: { batch, prepare } } as any);
+  const repository = new ConversationRunRepository({
+    DB: { batch, prepare },
+  } as any);
 
   return { all, batch, bind, first, prepare, repository, run };
 }
@@ -129,6 +131,7 @@ describe("ConversationRunRepository", () => {
       kind: "interaction_response",
       userId: 42,
       runId: "run-1",
+      interactionId: "question-1",
     });
 
     expect(receipt.run.attempt).toBe(2);
@@ -216,7 +219,7 @@ describe("ConversationRunRepository", () => {
 
     expect(receipt.kind).toBe("cancel");
     expect(receipt.run.status).toBe("cancelling");
-    expect(batch.mock.calls[0]?.[0]).toHaveLength(4);
+    expect(batch.mock.calls[0]?.[0]).toHaveLength(5);
   });
 
   it("rejects a new cancellation command after the run has reached a terminal state", async () => {
@@ -262,9 +265,12 @@ describe("ConversationRunRepository", () => {
         status: "succeeded",
         lastMessageId: "assistant-1",
       }),
-    ).resolves.toMatchObject({ status: "succeeded", lastMessageId: "assistant-1" });
+    ).resolves.toMatchObject({
+      status: "succeeded",
+      lastMessageId: "assistant-1",
+    });
 
-    expect(batch.mock.calls[0]?.[0]).toHaveLength(3);
+    expect(batch.mock.calls[0]?.[0]).toHaveLength(4);
     expect(prepare.mock.calls.some(([query]) => query.includes("event_sequence + 1"))).toBe(true);
     expect(
       prepare.mock.calls.some(([query]) => query.includes("INSERT INTO conversation_run_event")),
@@ -325,7 +331,11 @@ describe("ConversationRunRepository", () => {
       step: 2,
       model: "model-1",
       generatedAt: "2026-09-05T02:00:00.000Z",
-      usage: { inputTokens: 120, contextWindow: 32000, source: "estimated" as const },
+      usage: {
+        inputTokens: 120,
+        contextWindow: 32000,
+        source: "estimated" as const,
+      },
       messages: { included: 3, omitted: 0 },
       sources: [],
       skills: [],
@@ -333,7 +343,10 @@ describe("ConversationRunRepository", () => {
       omissions: [],
     };
 
-    first.mockResolvedValueOnce({ ...runRow, context_json: JSON.stringify(context) });
+    first.mockResolvedValueOnce({
+      ...runRow,
+      context_json: JSON.stringify(context),
+    });
 
     await expect(repository.updateContext("run-1", 1, context)).resolves.toMatchObject({
       context,
@@ -360,7 +373,9 @@ describe("ConversationRunRepository", () => {
     };
 
     batch.mockResolvedValueOnce([
-      { results: [{ ...runRow, event_sequence: 2, retry_json: JSON.stringify(retry) }] },
+      {
+        results: [{ ...runRow, event_sequence: 2, retry_json: JSON.stringify(retry) }],
+      },
       { results: [{ id: "event-2" }] },
       { results: [] },
     ]);

@@ -50,7 +50,7 @@ export function resolveMetaModelTool(body, prompt) {
     args = { conversationId, action: "archive" };
   } else if (prompt === "File a release task from this bot") {
     name = "create_task";
-    args = { title: "Forbidden bot release task", objective: "Must never execute" };
+    args = { objective: "Must never execute" };
   } else {
     return null;
   }

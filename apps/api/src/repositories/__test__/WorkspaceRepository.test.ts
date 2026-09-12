@@ -21,7 +21,7 @@ describe("WorkspaceRepository", () => {
     await repository.listProjectConversations("project-1", 123);
 
     expect(calls[0]?.query).toContain("c.type IN ('chat', 'task')");
-    expect(calls[0]?.params).toEqual([123, "project-1"]);
+    expect(calls[0]?.params).toEqual([123, "project-1", 123]);
   });
 
   it("uses ownership only for personal conversations and membership for project conversations", async () => {
@@ -214,9 +214,12 @@ describe("WorkspaceRepository", () => {
 
     await repository.deleteWorkspace("workspace-1");
 
-    expect(statements[0]?.query).toContain("DELETE FROM capability_configuration");
-    expect(statements[0]?.query).toContain("scope_type = 'project'");
-    expect(statements[0]?.params).toEqual(["workspace-1"]);
+    const capabilityConfigurationDelete = statements.find(({ query }) =>
+      query.includes("DELETE FROM capability_configuration"),
+    );
+
+    expect(capabilityConfigurationDelete?.query).toContain("scope_type = 'project'");
+    expect(capabilityConfigurationDelete?.params).toEqual(["workspace-1"]);
     const usageUpdate = statements.find(({ query }) => query.includes("UPDATE usage_event"));
 
     expect(usageUpdate?.query).toContain("workspace_id = NULL, project_id = NULL");

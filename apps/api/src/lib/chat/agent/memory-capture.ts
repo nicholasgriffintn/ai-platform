@@ -1,4 +1,4 @@
-import { MEMORY_STORE_TOOL_NAME } from "~/lib/chat/policy/memory";
+import { MEMORY_STORE_TOOL_NAME, resolveMemoryPolicy } from "~/lib/chat/policy/memory";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
 import { MemoryManager, type MemoryEvent } from "~/lib/memory";
@@ -19,18 +19,23 @@ export interface CaptureRunMemoriesParams {
   model: string;
   platform: Platform;
   toolCalls: readonly ToolCall[];
+  trustedUserInput: boolean;
+  store: boolean;
 }
 
 export async function captureRunMemories(params: CaptureRunMemoriesParams): Promise<Message[]> {
   const user = params.context?.user;
-  const memoriesEnabled =
-    params.userSettings?.memories_save_enabled ||
-    params.userSettings?.memories_chat_history_enabled;
+  const memoryPolicy = resolveMemoryPolicy({
+    user,
+    userSettings: params.userSettings,
+    store: params.store,
+  });
 
   if (
     !user?.id ||
-    user.plan_id !== "pro" ||
-    !memoriesEnabled ||
+    !params.trustedUserInput ||
+    !memoryPolicy.enabled ||
+    (params.memoryScope.type === "bound" && params.memoryScope.documents.length === 0) ||
     hasToolCallNamed(params.toolCalls, MEMORY_STORE_TOOL_NAME)
   ) {
     return [];
@@ -38,9 +43,9 @@ export async function captureRunMemories(params: CaptureRunMemoriesParams): Prom
 
   try {
     const history = await params.conversationManager.get(params.completionId);
-    const lastUserText = getLastUserText(history);
+    const lastUser = getLastUser(history);
 
-    if (!lastUserText.trim()) {
+    if (!lastUser?.text.trim()) {
       return [];
     }
 
@@ -51,11 +56,12 @@ export async function captureRunMemories(params: CaptureRunMemoriesParams): Prom
       params.memoryScope,
     );
     const events = await memoryManager.handleMemory(
-      lastUserText,
+      lastUser.text,
       history,
       params.conversationManager,
       params.completionId,
       params.userSettings,
+      `memory-capture:${params.completionId}:${lastUser.identity}`,
     );
     const messages = events.map((event) => buildMemoryMessage(event, params));
 
@@ -92,7 +98,9 @@ function buildMemoryMessage(event: MemoryEvent, params: CaptureRunMemoriesParams
   };
 }
 
-function getLastUserText(history: readonly { role: string; content: unknown }[]): string {
+function getLastUser(
+  history: readonly { id?: string; role: string; content: unknown }[],
+): { identity: string; text: string } | null {
   for (let index = history.length - 1; index >= 0; index--) {
     const message = history[index];
 
@@ -101,21 +109,22 @@ function getLastUserText(history: readonly { role: string; content: unknown }[])
     }
 
     if (typeof message.content === "string") {
-      return message.content;
+      return { identity: message.id ?? `user-${index}`, text: message.content };
     }
 
     if (Array.isArray(message.content)) {
-      return (
+      const text =
         (
           message.content.find((block) => (block as { type?: string }).type === "text") as
             | { text?: string }
             | undefined
-        )?.text ?? ""
-      );
+        )?.text ?? "";
+
+      return { identity: message.id ?? `user-${index}`, text };
     }
 
-    return "";
+    return { identity: message.id ?? `user-${index}`, text: "" };
   }
 
-  return "";
+  return null;
 }

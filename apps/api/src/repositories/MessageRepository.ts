@@ -61,10 +61,11 @@ export class MessageRepository extends BaseRepository {
     database: D1Database,
     conversationId: string,
     messages: StoredMessageWrite[],
+    conflictMode: "error" | "ignore" = "error",
   ): D1PreparedStatement[] {
     const columns = MESSAGE_INSERT_COLUMNS.join(", ");
     const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
-    const insertSql = `INSERT INTO message (
+    const insertSql = `INSERT${conflictMode === "ignore" ? " OR IGNORE" : ""} INTO message (
 			${columns}, created_at, updated_at
 		) VALUES (${placeholders}, datetime('now'), datetime('now'))`;
 
@@ -134,6 +135,59 @@ export class MessageRepository extends BaseRepository {
         )
         .bind(lastMessage.id, messages.length, conversationId),
     ]);
+  }
+
+  public async createProjectedMessage(
+    conversationId: string,
+    message: StoredMessageWrite,
+  ): Promise<void> {
+    const database = this.env.DB;
+
+    if (!database) {
+      throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+    }
+
+    await database.batch([
+      ...this.buildMessageInsertStatements(database, conversationId, [message], "ignore"),
+      database
+        .prepare(
+          `UPDATE conversation
+           SET last_message_id = (
+                 SELECT id FROM message
+                 WHERE conversation_id = ? AND is_archived = 0
+                 ORDER BY ${MESSAGE_ORDER_BY_DESC}
+                 LIMIT 1
+               ),
+               last_message_at = (
+                 SELECT created_at FROM message
+                 WHERE conversation_id = ? AND is_archived = 0
+                 ORDER BY ${MESSAGE_ORDER_BY_DESC}
+                 LIMIT 1
+               ),
+               message_count = (
+                 SELECT COUNT(*) FROM message
+                 WHERE conversation_id = ? AND is_archived = 0
+               ),
+               updated_at = datetime('now')
+           WHERE id = ?
+             AND EXISTS (
+               SELECT 1 FROM message WHERE id = ? AND conversation_id = ?
+             )`,
+        )
+        .bind(
+          conversationId,
+          conversationId,
+          conversationId,
+          conversationId,
+          message.id,
+          conversationId,
+        ),
+    ]);
+
+    await publishMessageChanged({ env: this.env }, conversationId, {
+      messageId: message.id,
+      role: message.role,
+    });
   }
 
   public async createCompactionAndArchiveMessages(

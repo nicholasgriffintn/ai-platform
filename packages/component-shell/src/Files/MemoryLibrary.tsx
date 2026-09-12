@@ -3,46 +3,23 @@ import {
   CardGridLoadingSkeleton,
   EmptyState,
   FormInput,
-  Label,
-  Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
+  getErrorMessage,
   useMemoryDocument,
   useMemoryDocuments,
-  getErrorMessage,
 } from "@ngriffin_uk/polychat-library-react";
 import { BookOpenText, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { MemoryDocumentEditor } from "./MemoryDocumentEditor.js";
+
 export function MemoryLibrary({ projectId }: { projectId?: string }) {
   const { documents, isLoading, error, create, update, remove } = useMemoryDocuments(projectId);
   const [openName, setOpenName] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
-  const [draft, setDraft] = useState<string | null>(null);
   const openDocument = useMemoryDocument(openName ?? undefined, projectId);
-
-  const save = async () => {
-    if (!openDocument.data || draft === null) {
-      return;
-    }
-
-    try {
-      await update.mutateAsync({
-        name: openDocument.data.name,
-        input: {
-          content: draft,
-          expectedRevision: openDocument.data.revision,
-          ...(projectId ? { projectId } : {}),
-        },
-      });
-      await openDocument.refetch();
-      setDraft(null);
-      toast.success("Saved a new revision");
-    } catch (saveError) {
-      toast.error(getErrorMessage(saveError, "Unable to save this memory"));
-    }
-  };
 
   const createMemory = async () => {
     const name = newName.trim();
@@ -125,7 +102,6 @@ export function MemoryLibrary({ projectId }: { projectId?: string }) {
                     className="min-w-0 flex-1 text-left"
                     aria-expanded={isOpen}
                     onClick={() => {
-                      setDraft(null);
                       setOpenName(isOpen ? null : document.name);
                     }}
                   >
@@ -151,36 +127,27 @@ export function MemoryLibrary({ projectId }: { projectId?: string }) {
                 </div>
 
                 {isOpen && (
-                  <div className="mt-3 space-y-2">
-                    <Label htmlFor={`memory-${document.id}`}>What this remembers</Label>
-                    <Textarea
-                      id={`memory-${document.id}`}
-                      rows={10}
-                      value={draft ?? openDocument.data?.content ?? ""}
-                      disabled={openDocument.isLoading}
-                      onChange={(event) => setDraft(event.target.value)}
+                  <div className="mt-3">
+                    <MemoryDocumentEditor
+                      document={openDocument.data}
+                      isLoading={openDocument.isLoading}
+                      saveDocument={(input) =>
+                        update.mutateAsync({
+                          name: document.name,
+                          input: { ...input, ...(projectId ? { projectId } : {}) },
+                        })
+                      }
+                      loadDocument={async () => {
+                        const result = await openDocument.refetch();
+
+                        if (!result.data) {
+                          throw result.error ?? new Error("Unable to reload this memory document");
+                        }
+
+                        return result.data;
+                      }}
+                      onSaved={() => toast.success("Saved a new revision")}
                     />
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="sm"
-                        isLoading={update.isPending}
-                        disabled={draft === null}
-                        onClick={() => void save()}
-                      >
-                        Save a revision
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        disabled={draft === null}
-                        onClick={() => setDraft(null)}
-                      >
-                        Discard
-                      </Button>
-                    </div>
                   </div>
                 )}
               </li>

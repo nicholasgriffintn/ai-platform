@@ -120,6 +120,17 @@ describe("Auth Middleware", () => {
   });
 
   describe("authMiddleware", () => {
+    it("leaves sandbox credential broker authentication to the broker", async () => {
+      const context = createMockContext();
+
+      context.req.path = "/apps/sandbox/credential-broker/run-123/git/info/refs";
+
+      await authMiddleware(context, mockNext);
+
+      expect(mockNext).toHaveBeenCalledOnce();
+      expect(repositoryCtor).not.toHaveBeenCalled();
+    });
+
     it("should block unknown user agents", async () => {
       const context = createMockContext();
 

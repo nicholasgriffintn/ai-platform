@@ -50,7 +50,7 @@ describe("isPrivateHostname", () => {
   it("catches loopback and local network names", () => {
     expect(isPrivateHostname("localhost")).toBe(true);
     expect(isPrivateHostname("nest.local")).toBe(true);
-    expect(isPrivateHostname("ollama.internal")).toBe(false);
+    expect(isPrivateHostname("ollama.internal")).toBe(true);
   });
 
   it("does not classify a hostname it cannot resolve as safe by accident", () => {

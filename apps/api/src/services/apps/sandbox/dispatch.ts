@@ -1,5 +1,7 @@
 import {
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
+  resolveSandboxExecutionProvider,
+  resolveSandboxTaskProfile,
   sandboxEnvironmentCacheRecordSchema,
   sandboxRunDispatchMessageSchema,
   sandboxRunEventSchema,
@@ -14,9 +16,10 @@ import {
 
 import { MAX_STORED_STREAM_EVENTS } from "~/constants/app";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { executeSandboxProvider } from "~/lib/providers/capabilities/sandbox";
+import { providerLibrary } from "~/lib/providers/library";
 import { createGoalService } from "~/services/goals/createGoalService";
 import { notifyMobileProjectRun } from "~/services/mobile-push";
-import { executeSandboxWorker } from "~/services/sandbox/worker";
 import { TaskService } from "~/services/tasks/TaskService";
 import { persistProjectEnvironmentCacheCandidate } from "~/services/workspaces/environment-cache";
 import type { IEnv, IUser } from "~/types";
@@ -24,6 +27,7 @@ import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 import { parseSseBuffer } from "~/utils/streaming";
 
+import { createSandboxCredentialBrokerAccess } from "./credential-broker-grants";
 import { persistSandboxRunArtifact } from "./run-artifacts";
 import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "./run-coordinator";
 import {
@@ -33,6 +37,7 @@ import {
   type SandboxRunData as PersistedSandboxRunData,
 } from "./run-data";
 import { indexSandboxRunResult } from "./run-indexing";
+import { resolveSandboxApiBaseUrl } from "./urls";
 import { releaseSandboxRunReservation, reserveSandboxRun } from "./usage";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/dispatch" });
@@ -252,32 +257,50 @@ export async function processSandboxRunDispatch(params: {
   });
 
   let workerResponse: Response;
-  const environmentVariables = message.payload.projectId
-    ? await context.repositories.projectEnvironmentVariables.values(
-        message.payload.projectId,
-        (
-          await context.repositories.projectEnvironmentVariables.list(message.payload.projectId)
-        ).map((variable) => variable.name),
-      )
-    : undefined;
+  const executionProvider = resolveSandboxExecutionProvider(message.payload.executionProvider);
+  const taskProfile = resolveSandboxTaskProfile(message.payload);
+  const deliveryPolicy = taskProfile.deliveryPolicy;
+  const environmentVariables =
+    executionProvider === "polychat" && message.payload.projectId
+      ? await context.repositories.projectEnvironmentVariables.values(
+          message.payload.projectId,
+          (
+            await context.repositories.projectEnvironmentVariables.list(message.payload.projectId)
+          ).map((variable) => variable.name),
+        )
+      : undefined;
 
   try {
-    workerResponse = await executeSandboxWorker({
+    const credentialBroker = await createSandboxCredentialBrokerAccess({
       env,
-      context,
-      user,
+      apiBaseUrl: resolveSandboxApiBaseUrl(env),
+      deliveryPolicy,
+      installationId: message.payload.installationId,
       repo: message.payload.repo,
-      task: message.payload.task,
-      taskType: message.payload.taskType,
+      runId: message.runId,
+      timeoutSeconds: message.payload.timeoutSeconds ?? runData.timeoutSeconds,
+      userId: user.id,
+    });
+    const sandboxProvider = providerLibrary.sandbox(executionProvider, {
+      env,
+      serviceContext: context,
+      user,
+    });
+
+    workerResponse = await executeSandboxProvider(sandboxProvider, {
+      repo: message.payload.repo,
+      task: taskProfile.task,
+      taskType: taskProfile.taskType,
       model: message.payload.model,
       promptStrategy: message.payload.promptStrategy,
-      deliveryPolicy: message.payload.deliveryPolicy,
-      shouldCommit: message.payload.shouldCommit,
+      deliveryPolicy,
+      shouldCommit: taskProfile.shouldCommit,
       environmentSetup: message.payload.environmentSetup,
       environmentPreparationMode: message.payload.environmentPreparationMode,
       environmentCache: message.payload.environmentCache,
       environmentCacheGeneration: message.payload.environmentCacheGeneration,
       environmentVariables,
+      credentialBroker,
       projectId: message.payload.projectId,
       timeoutSeconds: message.payload.timeoutSeconds,
       inspectionWindowSeconds: message.payload.inspectionWindowSeconds,

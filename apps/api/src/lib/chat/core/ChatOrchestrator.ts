@@ -17,6 +17,7 @@ import { resolveAccountDefaultComputeSite } from "~/lib/chat/policy/project-mode
 import { resolveTurnStepBudget } from "~/lib/chat/policy/step-budget";
 import { applyTierReasoningEffort } from "~/lib/chat/policy/tier-reasoning";
 import { RequestPreparer, type PreparedRequest } from "~/lib/chat/preparation/RequestPreparer";
+import { watchTurnCancellation } from "~/lib/chat/streaming/turn-cancellation";
 import { ValidationPipeline } from "~/lib/chat/validation/ValidationPipeline";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationManager } from "~/lib/conversationManager";
@@ -33,9 +34,9 @@ import {
   threadLockError,
   type ThreadLease,
 } from "~/services/conversations/coordinator/client";
-import { disposeMCPClients } from "~/services/functions/mcp";
 import { createGoalService } from "~/services/goals/createGoalService";
 import { GOAL_STATUS_MARKER_EVENTS, recordGoalMarker } from "~/services/goals/goalMarker";
+import { releaseTeammateComputerAgentLease } from "~/services/teammates/computers";
 import type { ChatMode, CoreChatOptions, Message } from "~/types";
 import { isAbortError } from "~/utils/abort";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -405,6 +406,7 @@ export class ChatOrchestrator {
       executionCtx: chatOptions.executionCtx,
       contextWindow: primaryModelConfig?.contextWindow,
       contextSkills: prepared.contextSkills,
+      contextDocuments: prepared.contextDocuments,
       runId: runLifecycle?.run.id,
       runAttempt: runLifecycle?.run.attempt,
       onContextSnapshot: runLifecycle
@@ -412,6 +414,9 @@ export class ChatOrchestrator {
         : undefined,
       onRetryState: runLifecycle
         ? (retryState) => runLifecycle.recordRetry(retryState).then(() => undefined)
+        : undefined,
+      isCancellationRequested: runLifecycle
+        ? () => runLifecycle.isCancellationRequested()
         : undefined,
     };
 
@@ -438,18 +443,33 @@ export class ChatOrchestrator {
     }
 
     let runResult: Awaited<ReturnType<typeof runAgentLoop>>;
+    const stopSignal = watchTurnCancellation({
+      env: chatOptions.env,
+      completionId: chatOptions.completion_id,
+      isDetached: () => true,
+      isRunCancellationRequested: runLifecycle
+        ? () => runLifecycle.isCancellationRequested()
+        : undefined,
+    });
 
     try {
-      runResult = await runAgentLoop(runParams);
+      runResult = await runAgentLoop({ ...runParams, shouldStop: stopSignal.shouldStop });
       await runLifecycle?.complete(runResult);
     } finally {
+      stopSignal.stop();
       await conversationManager.releaseTurnReservation();
 
       if (toolRequestContext.context) {
         try {
           await closeComposioConnectorRun(toolRequestContext.context);
         } finally {
-          await disposeMCPClients(toolRequestContext.context);
+          if (chatOptions.teammate_context_id && toolRequestContext.context.executionRunId) {
+            await releaseTeammateComputerAgentLease({
+              context: toolRequestContext.context,
+              contextId: chatOptions.teammate_context_id,
+              runId: toolRequestContext.context.executionRunId,
+            });
+          }
         }
       }
     }

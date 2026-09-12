@@ -10,8 +10,10 @@ import { ChatSidebar } from "../Chat/ChatSidebar.js";
 import { ConversationProductHeader } from "../Header/ConversationProductHeader.js";
 import { ConversationThreadNavigation } from "../Header/ConversationThreadNavigation.js";
 import { PageShell } from "../Shell/PageShell.js";
+import { ConversationWorkbenchLayout } from "./ConversationWorkbenchLayout.js";
 interface ConversationPageProps {
   embedded?: boolean;
+  header?: ReactNode | null;
   title: string;
   modeConfig?: ThreadModeConfig;
   pathConversationId?: string;
@@ -20,6 +22,7 @@ interface ConversationPageProps {
 
 export function ConversationPage({
   embedded = false,
+  header,
   title,
   modeConfig,
   pathConversationId,
@@ -27,24 +30,37 @@ export function ConversationPage({
 }: ConversationPageProps) {
   const effectiveModeConfig = useConversationLaunchModeConfig(modeConfig, pathConversationId);
 
+  if (embedded) {
+    const embeddedHeader =
+      header !== undefined ? (
+        header
+      ) : (
+        <div className="@container flex justify-end px-3">
+          <ConversationThreadNavigation />
+        </div>
+      );
+
+    return <ConversationSurface modeConfig={effectiveModeConfig} header={embeddedHeader} />;
+  }
+
   const content = (
-    <ConversationSurface
-      modeConfig={effectiveModeConfig}
-      header={
-        embedded ? (
-          <div className="@container flex justify-end px-3">
-            <ConversationThreadNavigation />
-          </div>
+    <ConversationWorkbenchLayout
+      conversationId={pathConversationId}
+      renderHeader={(actions) =>
+        header !== undefined ? (
+          header
         ) : (
-          <ConversationProductHeader requestOptions={effectiveModeConfig?.requestOptions} />
+          <ConversationProductHeader
+            additionalActions={actions}
+            requestOptions={effectiveModeConfig?.requestOptions}
+            showProductModeSwitch={!pathConversationId}
+          />
         )
       }
-    />
+    >
+      <ConversationSurface modeConfig={effectiveModeConfig} header={null} />
+    </ConversationWorkbenchLayout>
   );
-
-  if (embedded) {
-    return content;
-  }
 
   return (
     <PageShell

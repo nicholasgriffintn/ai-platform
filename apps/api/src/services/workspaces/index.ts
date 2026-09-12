@@ -18,6 +18,11 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getGitHubAppConnectionForUserInstallation } from "~/services/github/connections";
 import { deleteOutput } from "~/services/outputs";
 import { forgetWorkspaceAudience } from "~/services/sync/audience";
+import { revokeTeammateContextResources } from "~/services/teammates/computers";
+import {
+  archiveProjectTeammateContexts,
+  mutateTeammateContextsWithCleanup,
+} from "~/services/teammates/context-lifecycle";
 import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId, randomHex } from "~/utils/id";
@@ -69,7 +74,11 @@ export async function createWorkspace(context: ServiceContext, input: CreateWork
   const user = requireWorkAccess(context);
   const id = generateId();
 
-  await context.repositories.workspaces.createWorkspace({ id, ...input, userId: user.id });
+  await context.repositories.workspaces.createWorkspace({
+    id,
+    ...input,
+    userId: user.id,
+  });
   await context.repositories.audit.createRecord({
     workspaceId: id,
     actorUserId: user.id,
@@ -178,7 +187,15 @@ export async function removeWorkspaceMember(
     );
   }
 
-  await context.repositories.workspaces.removeMember(workspaceId, memberUserId);
+  const teammateContexts = await context.repositories.teammateContexts.listForWorkspaceProjects(
+    workspaceId,
+    memberUserId,
+  );
+
+  await mutateTeammateContextsWithCleanup(context, teammateContexts, async () => {
+    await context.repositories.teammateContexts.archiveForWorkspaceActor(workspaceId, memberUserId);
+    await context.repositories.workspaces.removeMember(workspaceId, memberUserId);
+  });
   forgetWorkspaceAudience(workspaceId);
   await context.repositories.audit.createRecord({
     workspaceId,
@@ -204,7 +221,15 @@ export async function leaveWorkspace(context: ServiceContext, workspaceId: strin
     );
   }
 
-  await context.repositories.workspaces.removeMember(workspaceId, user.id);
+  const teammateContexts = await context.repositories.teammateContexts.listForWorkspaceProjects(
+    workspaceId,
+    user.id,
+  );
+
+  await mutateTeammateContextsWithCleanup(context, teammateContexts, async () => {
+    await context.repositories.teammateContexts.archiveForWorkspaceActor(workspaceId, user.id);
+    await context.repositories.workspaces.removeMember(workspaceId, user.id);
+  });
   forgetWorkspaceAudience(workspaceId);
   await context.repositories.audit.createRecord({
     workspaceId,
@@ -287,6 +312,11 @@ export async function deleteWorkspace(context: ServiceContext, workspaceId: stri
     // Delete through the capability-aware path before workspace cascades discard provider and R2 IDs.
     await deleteOutput(context, user.id, output.id);
   }
+
+  const teammateContexts =
+    await context.repositories.teammateContexts.listForWorkspaceProjects(workspaceId);
+
+  await revokeTeammateContextResources(context, teammateContexts);
 
   await context.repositories.workspaces.deleteWorkspace(workspaceId);
 
@@ -492,6 +522,7 @@ export async function updateProject(
   const cacheRelevantConfigurationChanged =
     codingEnvironment !== undefined &&
     (project.coding_enabled !== (codingEnvironment ? 1 : 0) ||
+      project.coding_execution_provider !== (codingEnvironment?.executionProvider ?? "polychat") ||
       project.coding_installation_id !== (codingEnvironment?.installationId ?? null) ||
       project.coding_repository?.toLowerCase() !==
         (codingEnvironment?.repository.toLowerCase() ?? null) ||
@@ -505,6 +536,7 @@ export async function updateProject(
       ? {}
       : {
           coding_enabled: codingEnvironment ? 1 : 0,
+          coding_execution_provider: codingEnvironment?.executionProvider ?? "polychat",
           coding_installation_id: codingEnvironment?.installationId ?? null,
           coding_repository: codingEnvironment?.repository ?? null,
           coding_prompt_strategy: codingEnvironment?.promptStrategy ?? "auto",
@@ -649,13 +681,22 @@ export async function removeProjectCapability(
   }
 
   await context.repositories.workspaces.removeProjectCapability(projectId, capabilityId);
+
+  if (capability.kind === "teammate") {
+    await archiveProjectTeammateContexts(context, projectId, capability.capability_id);
+  }
+
   await context.repositories.audit.createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: "project.capability.removed",
     targetType: "project_capability",
     targetId: capabilityId,
-    metadata: { projectId, kind: capability.kind, capabilityId: capability.capability_id },
+    metadata: {
+      projectId,
+      kind: capability.kind,
+      capabilityId: capability.capability_id,
+    },
   });
 
   return getProject(context, projectId);

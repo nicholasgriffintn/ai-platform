@@ -27,9 +27,24 @@ beforeAll(async () => {
 
   await database.prepare("CREATE TABLE conversation (id TEXT PRIMARY KEY)").run();
   await database.prepare("CREATE TABLE conversation_run (id TEXT PRIMARY KEY)").run();
-  await database.prepare("INSERT INTO conversation VALUES ('parent'), ('child')").run();
+  await database
+    .prepare(
+      "INSERT INTO conversation VALUES ('parent'), ('child'), ('child-0'), ('child-1'), ('child-2'), ('child-3'), ('child-4'), ('child-5'), ('child-6'), ('child-7')",
+    )
+    .run();
   await database.prepare("INSERT INTO conversation_run VALUES ('run'), ('other-run')").run();
   await database.prepare(migration.split("--> statement-breakpoint")[0]).run();
+  const continuityMigration = await readFile(
+    new URL("../../../migrations/0045_conversation_briefs.sql", import.meta.url),
+    "utf8",
+  );
+
+  for (const statement of continuityMigration
+    .split("--> statement-breakpoint")
+    .filter((entry) => entry.includes("ALTER TABLE `delegation`"))) {
+    await database.prepare(statement).run();
+  }
+
   repository = new DelegationRepository({ DB: database });
   const baseline = await readFile(
     new URL("../../../migrations/0000_baseline.sql", import.meta.url),
@@ -57,7 +72,7 @@ afterAll(async () => {
 it("enforces concurrent fan-out at insertion and frees capacity only when a run settles", async () => {
   const params = {
     parentConversationId: "parent",
-    childConversationId: "child",
+    childConversationId: "child-0",
     parentRunId: "run",
     depth: 1,
     teammateId: "teammate",
@@ -71,7 +86,11 @@ it("enforces concurrent fan-out at insertion and frees capacity only when a run 
   };
   const results = await Promise.allSettled(
     Array.from({ length: 8 }, (_, index) =>
-      repository.createDelegation({ ...params, id: `delegation-${index}` }),
+      repository.createDelegation({
+        ...params,
+        id: `delegation-${index}`,
+        childConversationId: `child-${index}`,
+      }),
     ),
   );
 
@@ -81,7 +100,7 @@ it("enforces concurrent fan-out at insertion and frees capacity only when a run 
 
   expect(first.state).toBe("queued");
   expect(await repository.claimDelegation(first.id)).toMatchObject({ state: "running" });
-  expect(await repository.claimDelegation(first.id)).toBeNull();
+  expect(await repository.claimDelegation(first.id)).toMatchObject({ state: "running" });
   await repository.updateState(first.id, "done", { summary: "Complete", outputIds: [] });
   expect(
     await repository.updateState(first.id, "expired", {
@@ -110,7 +129,7 @@ it("enforces concurrent fan-out at insertion and frees capacity only when a run 
     repository.createDelegation({
       ...params,
       id: "nested-with-forged-depth",
-      parentConversationId: "child",
+      parentConversationId: first.childConversationId,
       parentRunId: "other-run",
     }),
   ).rejects.toThrow("depth");

@@ -205,7 +205,7 @@ curl -X POST https://api.polychat.app/teammates \\
 ### Use an Teammate
 
 ~~~bash
-curl -X POST https://api.polychat.app/teammates/agent_abc123/completions \\
+curl -X POST https://api.polychat.app/teammates/teammate_abc123/completions \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -218,7 +218,7 @@ curl -X POST https://api.polychat.app/teammates/agent_abc123/completions \\
 ### Update an Teammate
 
 ~~~bash
-curl -X PUT https://api.polychat.app/teammates/agent_abc123 \\
+curl -X PUT https://api.polychat.app/teammates/teammate_abc123 \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type": application/json" \\
   -d '{

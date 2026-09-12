@@ -22,6 +22,7 @@ export class ProviderConnectionRepository extends BaseRepository {
     provider: string;
     kind: string;
     externalId?: string | null;
+    status?: ProviderConnectionRecord["status"];
     encryptedData: Record<string, unknown>;
     metadata?: Record<string, unknown>;
   }): Promise<ProviderConnectionRecord> {
@@ -38,7 +39,7 @@ export class ProviderConnectionRepository extends BaseRepository {
         {
           encrypted_data: input.encryptedData,
           metadata: input.metadata ?? {},
-          status: "connected",
+          status: input.status ?? "connected",
         },
         ["encrypted_data", "metadata", "status"],
         "id = ?",
@@ -61,7 +62,7 @@ export class ProviderConnectionRepository extends BaseRepository {
         provider: input.provider,
         kind: input.kind,
         external_id: input.externalId ?? "",
-        status: "connected",
+        status: input.status ?? "connected",
         encrypted_data: input.encryptedData,
         metadata: input.metadata ?? {},
       },

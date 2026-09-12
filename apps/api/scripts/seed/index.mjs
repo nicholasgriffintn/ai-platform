@@ -1,4 +1,5 @@
 import { chatStatements, guideStatements, SCENARIOS, seedGuideMarkdown } from "./chat.mjs";
+import { continuityStatements } from "./continuity.mjs";
 import {
   API_KEY,
   identityStatements,
@@ -19,6 +20,7 @@ export async function buildSeed({ serverKey }) {
     ...chat.statements,
     ...guideStatements(),
     ...work.statements,
+    ...continuityStatements({ teammates, chat, work }),
     ...usageStatements(),
   ];
 

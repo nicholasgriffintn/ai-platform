@@ -1,7 +1,9 @@
 import { Button, Card, FormInput, FormSelect, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import {
   DEFAULT_SANDBOX_DELIVERY_POLICY,
+  SANDBOX_EXECUTION_PROVIDERS,
   sandboxEnvironmentSetupSchema,
+  type SandboxExecutionProvider,
   type SandboxDeliveryPolicy,
   type SandboxEnvironmentCacheSummary,
   type SandboxEnvironmentSetup,
@@ -19,6 +21,7 @@ export interface CodingRepositoryOption {
 }
 
 export interface ProjectCodingEnvironment {
+  executionProvider: SandboxExecutionProvider;
   installationId: number;
   repository: string;
   deliveryPolicy: SandboxDeliveryPolicy;
@@ -38,6 +41,7 @@ export interface ProjectCodingEnvironmentCardProps {
   cacheMessage?: string;
   isUpdatingCache?: boolean;
   onConnect: (input: {
+    executionProvider: SandboxExecutionProvider;
     installationId: number;
     repository: string;
     deliveryPolicy: SandboxDeliveryPolicy;
@@ -66,6 +70,7 @@ export function ProjectCodingEnvironmentCard({
   onDeleteCache,
 }: ProjectCodingEnvironmentCardProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [executionProvider, setExecutionProvider] = useState<SandboxExecutionProvider>("polychat");
   const [repositoryKey, setRepositoryKey] = useState("");
   const [deliveryMode, setDeliveryMode] = useState<string>(DEFAULT_SANDBOX_DELIVERY_POLICY.mode);
   const [reviewDestination, setReviewDestination] = useState<string>(
@@ -86,6 +91,7 @@ export function ProjectCodingEnvironmentCard({
 
   const beginEditing = () => {
     setRepositoryKey(configuredKey);
+    setExecutionProvider(codingEnvironment?.executionProvider ?? "polychat");
     const policy = codingEnvironment?.deliveryPolicy ?? DEFAULT_SANDBOX_DELIVERY_POLICY;
 
     setDeliveryMode(policy.mode);
@@ -133,11 +139,12 @@ export function ProjectCodingEnvironmentCard({
     }
 
     await onConnect({
+      executionProvider,
       installationId: selectedRepository.installationId,
       repository: selectedRepository.repo,
       deliveryPolicy: selectedDeliveryPolicy,
       environmentSetup,
-      inspectionWindowSeconds,
+      inspectionWindowSeconds: executionProvider === "openai" ? 0 : inspectionWindowSeconds,
     });
     setIsEditing(false);
   };
@@ -174,6 +181,23 @@ export function ProjectCodingEnvironmentCard({
 
       {isEditing ? (
         <div className="space-y-4">
+          <FormSelect
+            label="Execution environment"
+            value={executionProvider}
+            onValueChange={(value) =>
+              setExecutionProvider(value === "openai" ? "openai" : "polychat")
+            }
+            options={SANDBOX_EXECUTION_PROVIDERS.map((provider) => ({
+              value: provider.id,
+              label: provider.label,
+            }))}
+          />
+          <p className="text-xs text-muted-foreground">
+            {
+              SANDBOX_EXECUTION_PROVIDERS.find((provider) => provider.id === executionProvider)
+                ?.description
+            }
+          </p>
           <FormSelect
             label="GitHub repository"
             value={repositoryKey}
@@ -238,21 +262,24 @@ export function ProjectCodingEnvironmentCard({
             </label>
           ) : null}
           <ProjectEnvironmentSetupFields value={environmentSetup} onChange={setEnvironmentSetup} />
-          <FormInput
-            label="Post-run inspection window (seconds)"
-            type="number"
-            min={0}
-            max={300}
-            value={inspectionWindowSeconds}
-            onChange={(event) =>
-              setInspectionWindowSeconds(
-                Math.min(300, Math.max(0, Number.parseInt(event.target.value || "0", 10))),
-              )
-            }
-          />
+          {executionProvider === "polychat" ? (
+            <FormInput
+              label="Post-run inspection window (seconds)"
+              type="number"
+              min={0}
+              max={300}
+              value={inspectionWindowSeconds}
+              onChange={(event) =>
+                setInspectionWindowSeconds(
+                  Math.min(300, Math.max(0, Number.parseInt(event.target.value || "0", 10))),
+                )
+              }
+            />
+          ) : null}
           <p className="text-xs text-muted-foreground">
-            Remote GitHub writes wait for the runner’s approval after validation. Custom
-            instructions never grant remote-write authority.
+            Repository credentials stay in Polychat. Each run receives a short-lived broker grant
+            limited to this repository and delivery policy. Project secrets are not copied into the
+            sandbox.
           </p>
           {errorMessage && (
             <p role="alert" className="text-sm text-failure">
@@ -280,6 +307,11 @@ export function ProjectCodingEnvironmentCard({
             <div className="min-w-0">
               <p className="truncate font-mono text-sm font-medium text-foreground">
                 {codingEnvironment.repository}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {SANDBOX_EXECUTION_PROVIDERS.find(
+                  (provider) => provider.id === codingEnvironment.executionProvider,
+                )?.label ?? "Polychat managed"}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {codingEnvironment.deliveryPolicy.mode === "leave_uncommitted"
@@ -319,7 +351,8 @@ export function ProjectCodingEnvironmentCard({
               </Button>
             )}
           </div>
-          {codingEnvironment.environmentSetup || environmentCache ? (
+          {codingEnvironment.executionProvider === "polychat" &&
+          (codingEnvironment.environmentSetup || environmentCache) ? (
             <div className="rounded-lg border border-border bg-surface-elevated p-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex min-w-0 items-start gap-2.5">

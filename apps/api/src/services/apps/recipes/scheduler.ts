@@ -1,53 +1,34 @@
-import type { RecipeInstallationTrigger } from "@ngriffin_uk/polychat-schemas";
-
 import { RepositoryManager } from "~/repositories";
 import type { TemplateRecord } from "~/repositories/TemplateRepository";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
 import { doesCronMatchDate, getCronMatchingDatesInRange } from "~/utils/cron";
 import { sha256Hex } from "~/utils/crypto";
-import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 
+import { parseStoredRecipeInstallationData } from "./installation-persistence";
 import {
   buildRecipeScheduleState,
   getRecipeScheduleTriggerState,
   setRecipeScheduleLastRun,
-  type RecipeScheduleState,
 } from "./scheduleState";
+import { createRecipeExecutionTaskData } from "./task-data";
+import { normaliseRecipeInstallationTriggers } from "./triggers";
 
 const logger = getLogger({ prefix: "services/apps/recipes/scheduler" });
 const RECIPE_SCHEDULER_POLL_INTERVAL_MINUTES = 15;
 
+export const RECIPE_SCHEDULE_CATCH_UP_POLICY = {
+  maximumOccurrencesPerTrigger: 4,
+  maximumLookbackMinutes: 31 * 24 * 60,
+} as const;
+
 export { doesCronMatchDate };
 
-interface StoredRecipeInstallationData {
-  recipeId: string;
-  status?: "active" | "paused";
-  triggers?: RecipeInstallationTrigger[];
-  configuration?: Record<string, unknown>;
-  scheduleState?: RecipeScheduleState;
-}
-
-function parseStoredInstallation(record: TemplateRecord): StoredRecipeInstallationData | null {
-  const parsed =
-    typeof record.configuration === "string"
-      ? safeParseJson(record.configuration)
-      : (record.configuration as unknown);
-
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    return null;
-  }
-
-  const installation = parsed as StoredRecipeInstallationData;
-
-  return installation.recipeId === record.capability_id ? installation : null;
-}
-
-function getScheduleRunKey(triggerIndex: number, cronExpression: string, date: Date): string {
+function getScheduleRunKey(triggerId: string, date: Date): string {
   const minuteKey = date.toISOString().slice(0, 16);
 
-  return `${triggerIndex}:${cronExpression}:${minuteKey}`;
+  return `${triggerId}:${minuteKey}`;
 }
 
 async function getScheduleTaskId(params: {
@@ -71,10 +52,9 @@ function getScheduleMinuteKey(date: Date): string {
 
 function getLastScheduledMinuteKey(
   runKey: string | undefined,
-  triggerIndex: number,
-  cronExpression: string,
+  triggerId: string,
 ): string | undefined {
-  const prefix = `${triggerIndex}:${cronExpression}:`;
+  const prefix = `${triggerId}:`;
 
   return runKey?.startsWith(prefix) ? runKey.slice(prefix.length) : undefined;
 }
@@ -103,6 +83,7 @@ function getScheduleEvaluationDates(params: {
   windowStart: Date;
   windowEnd: Date;
   notBefore?: Date | null;
+  timezone?: string;
 }): Date[] {
   const start =
     params.notBefore && params.notBefore.getTime() > params.windowStart.getTime()
@@ -118,7 +99,33 @@ function getScheduleEvaluationDates(params: {
     start,
     end: params.windowEnd,
     includeStart: true,
+    timezone: params.timezone,
+    maximumMatches: RECIPE_SCHEDULE_CATCH_UP_POLICY.maximumOccurrencesPerTrigger,
+    direction: "backward",
   });
+}
+
+function getMissedOccurrenceBoundary(params: {
+  evaluationEnd: Date;
+  activationBoundary: Date | null;
+  lastScheduledMinuteKey?: string;
+}): Date {
+  const maximumLookback = new Date(
+    params.evaluationEnd.getTime() -
+      RECIPE_SCHEDULE_CATCH_UP_POLICY.maximumLookbackMinutes * 60 * 1000,
+  );
+  const lastScheduled = params.lastScheduledMinuteKey
+    ? new Date(`${params.lastScheduledMinuteKey}:00.000Z`)
+    : null;
+  const afterLastScheduled =
+    lastScheduled && !Number.isNaN(lastScheduled.getTime())
+      ? new Date(lastScheduled.getTime() + 60 * 1000)
+      : null;
+  const candidates = [maximumLookback, params.activationBoundary, afterLastScheduled].filter(
+    (candidate): candidate is Date => Boolean(candidate),
+  );
+
+  return new Date(Math.max(...candidates.map((candidate) => candidate.getTime())));
 }
 
 export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): Promise<number> {
@@ -131,15 +138,42 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
 
   for (const record of records) {
     try {
-      const installation = parseStoredInstallation(record);
+      const installation = parseStoredRecipeInstallationData(record);
       const createdAt = getCreatedAtDate(record);
 
       if (
         !installation ||
+        record.status !== "active" ||
         installation.status === "paused" ||
         !Array.isArray(installation.triggers)
       ) {
         continue;
+      }
+
+      const normalisedTriggers = await normaliseRecipeInstallationTriggers(
+        installation.triggers,
+        record.id,
+      );
+      const triggerIdsChanged = normalisedTriggers.some(
+        (trigger, index) => trigger.id !== installation.triggers?.[index]?.id,
+      );
+
+      installation.triggers = normalisedTriggers;
+
+      if (triggerIdsChanged) {
+        installation.scheduleState = buildRecipeScheduleState({
+          triggers: installation.triggers,
+          existingState: installation.scheduleState,
+          activatedAt: record.created_at,
+        });
+        const persisted = await repositories.templates.updateTemplate(record.id, {
+          configuration: installation,
+          status: record.status,
+        });
+
+        if (!persisted) {
+          throw new Error("Failed to persist stable recipe trigger identities");
+        }
       }
 
       if (record.project_id) {
@@ -171,7 +205,59 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
       let changed = false;
 
       for (const [index, trigger] of installation.triggers.entries()) {
-        if (trigger.type !== "schedule" || !trigger.enabled || !trigger.cronExpression) {
+        if (!trigger.enabled || !trigger.id) {
+          continue;
+        }
+
+        if (trigger.type === "once") {
+          const scheduledAt = trigger.scheduledAt ? new Date(trigger.scheduledAt) : null;
+
+          if (
+            !scheduledAt ||
+            Number.isNaN(scheduledAt.getTime()) ||
+            scheduledAt > evaluationWindow.end
+          ) {
+            continue;
+          }
+
+          const runKey = getScheduleRunKey(trigger.id, scheduledAt);
+
+          await taskService.enqueueTask({
+            id: await getScheduleTaskId({
+              installationId: record.id,
+              recipeId: installation.recipeId,
+              userId: record.created_by_user_id,
+              runKey,
+            }),
+            task_type: "recipe_execution",
+            user_id: record.created_by_user_id,
+            project_id: record.project_id ?? undefined,
+            task_data: createRecipeExecutionTaskData({
+              recipeId: installation.recipeId,
+              installationId: record.id,
+              occurrenceId: runKey,
+              projectId: record.project_id,
+              input: trigger.prompt,
+              channel: "scheduled",
+              configuration: installation.configuration,
+              notificationChannel: trigger.notificationChannel,
+              notificationTarget: trigger.notificationTarget,
+            }),
+            priority: 5,
+            metadata: {
+              recipeId: installation.recipeId,
+              installationId: record.id,
+              triggerId: trigger.id,
+              runKey,
+            },
+          });
+          trigger.enabled = false;
+          changed = true;
+          scheduledCount++;
+          continue;
+        }
+
+        if (trigger.type !== "schedule" || !trigger.cronExpression) {
           continue;
         }
 
@@ -190,14 +276,18 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
         const activationBoundary = Number.isNaN(activatedAt.getTime()) ? createdAt : activatedAt;
         const lastScheduledMinuteKey = getLastScheduledMinuteKey(
           triggerState.lastRunKey,
-          index,
-          trigger.cronExpression,
+          trigger.id,
         );
         const evaluationDates = getScheduleEvaluationDates({
           cronExpression: trigger.cronExpression,
-          windowStart: evaluationWindow.start,
+          windowStart: getMissedOccurrenceBoundary({
+            evaluationEnd: evaluationWindow.end,
+            activationBoundary,
+            lastScheduledMinuteKey,
+          }),
           windowEnd: evaluationWindow.end,
           notBefore: activationBoundary,
+          timezone: trigger.timezone ?? "UTC",
         });
 
         for (const evaluationDate of evaluationDates) {
@@ -207,7 +297,7 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
             continue;
           }
 
-          const runKey = getScheduleRunKey(index, trigger.cronExpression, evaluationDate);
+          const runKey = getScheduleRunKey(trigger.id, evaluationDate);
 
           await taskService.enqueueTask({
             id: await getScheduleTaskId({
@@ -219,21 +309,22 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
             task_type: "recipe_execution",
             user_id: record.created_by_user_id,
             project_id: record.project_id ?? undefined,
-            task_data: {
+            task_data: createRecipeExecutionTaskData({
               recipeId: installation.recipeId,
               installationId: record.id,
+              occurrenceId: runKey,
               projectId: record.project_id,
               input: trigger.prompt,
               channel: "scheduled",
               configuration: installation.configuration,
               notificationChannel: trigger.notificationChannel,
               notificationTarget: trigger.notificationTarget,
-            },
+            }),
             priority: 5,
             metadata: {
               recipeId: installation.recipeId,
               installationId: record.id,
-              triggerIndex: index,
+              triggerId: trigger.id,
               runKey,
             },
           });
@@ -241,7 +332,9 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
           setRecipeScheduleLastRun({
             state: scheduleState,
             triggerIndex: index,
+            triggerId: trigger.id,
             cronExpression: trigger.cronExpression,
+            timezone: trigger.timezone ?? "UTC",
             activatedAt: triggerState.activatedAt,
             runKey,
           });
@@ -253,7 +346,7 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
       if (changed) {
         await repositories.templates.updateTemplate(record.id, {
           configuration: { ...installation, scheduleState },
-          status: installation.status ?? "active",
+          status: record.status,
         });
       }
     } catch (error) {

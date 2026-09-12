@@ -1,10 +1,14 @@
 import z from "zod/v4";
 
 import { chatRunIdSchema } from "./chat-runs.js";
+import { outputStatusSchema } from "./outputs.js";
+import { creditMicrosFromCredits } from "./pricing/constants.js";
+import { userQuestionSchema } from "./user-questions.js";
 
 export const DELEGATION_MAX_DEPTH = 1 as const;
 export const DELEGATION_MAX_FAN_OUT = 3 as const;
 export const DELEGATION_MAX_CREDIT_SHARE = 0.25 as const;
+export const DELEGATION_DEFAULT_MAX_CREDIT_MICROS = creditMicrosFromCredits(25);
 export const DELEGATION_RUN_TASK_TYPE = "delegation_run" as const;
 export const DELEGATION_WAKE_TASK_TYPE = "delegation_wake" as const;
 export const DELEGATION_MESSAGE_TASK_TYPE = "delegation_message" as const;
@@ -22,6 +26,7 @@ export const delegationStateSchema = z.enum([
   "running",
   "awaiting_input",
   "awaiting_approval",
+  "awaiting_takeover",
   "done",
   "failed",
   "cancelled",
@@ -34,6 +39,7 @@ export const LIVE_DELEGATION_STATES: readonly DelegationState[] = [
   "running",
   "awaiting_input",
   "awaiting_approval",
+  "awaiting_takeover",
 ];
 
 export function isLiveDelegationState(state: DelegationState): boolean {
@@ -50,13 +56,49 @@ export type DelegationBudget = z.infer<typeof delegationBudgetSchema>;
 export const delegationResultSchema = z.object({
   summary: z.string(),
   outputIds: z.array(z.string()),
+  finalMessageId: z.string().min(1).nullable().optional(),
+  citations: z.array(z.string().min(1)).optional(),
+  outstandingQuestions: z.array(userQuestionSchema).optional(),
 });
 export type DelegationResult = z.infer<typeof delegationResultSchema>;
+
+export const delegationMemoryBindingSchema = z.object({
+  documentId: z.string().min(1),
+  access: z.enum(["read", "read-write"]),
+});
+export type DelegationMemoryBinding = z.infer<typeof delegationMemoryBindingSchema>;
+
+export const delegationContinuationSchema = z
+  .object({
+    mode: z.enum(["new", "resume", "fresh"]),
+    strategy: z.enum(["new", "conversation_history", "brief"]),
+    predecessorDelegationId: z.string().min(1).nullable(),
+    bindingConversationId: z.string().min(1).nullable(),
+  })
+  .strict();
+export type DelegationContinuation = z.infer<typeof delegationContinuationSchema>;
+
+export const delegationTeammateReferenceSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  avatarUrl: z.string().nullable(),
+});
+export type DelegationTeammateReference = z.infer<typeof delegationTeammateReferenceSchema>;
+
+export const delegationOutputReferenceSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  kind: z.string().min(1),
+  status: outputStatusSchema,
+});
+export type DelegationOutputReference = z.infer<typeof delegationOutputReferenceSchema>;
 
 export const delegationContextSchema = z.object({
   delegationId: z.string().min(1),
   depth: z.number().int().nonnegative(),
   rootConversationId: z.string().min(1),
+  memoryBindings: z.array(delegationMemoryBindingSchema).default([]),
+  continuation: delegationContinuationSchema.optional(),
 });
 export type DelegationContext = z.infer<typeof delegationContextSchema>;
 
@@ -72,6 +114,9 @@ export const delegationSchema = z.object({
   budget: delegationBudgetSchema,
   state: delegationStateSchema,
   result: delegationResultSchema.nullable(),
+  memoryBindings: z.array(delegationMemoryBindingSchema).default([]),
+  predecessorDelegationId: z.string().min(1).nullable().optional(),
+  continuationMode: z.enum(["new", "resume", "fresh"]).default("new"),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
 });
@@ -102,6 +147,8 @@ export type ConversationHandleListResponse = z.infer<typeof conversationHandleLi
 export const delegationListResponseSchema = z.object({
   delegations: z.array(delegationSchema),
   canControl: z.boolean().optional(),
+  teammates: z.array(delegationTeammateReferenceSchema).optional(),
+  outputs: z.array(delegationOutputReferenceSchema).optional(),
 });
 export type DelegationListResponse = z.infer<typeof delegationListResponseSchema>;
 

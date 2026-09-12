@@ -70,7 +70,10 @@ describe("ConnectorOperationApprovalRepository", () => {
       connectedAccountId: "ca_1",
       channel: "web",
       argumentDigest: "abc123",
+      authorityRevision: 7,
       consumedAt: "2026-08-13T12:00:00.000Z",
+      executionToken: "execution-token",
+      executionLeaseExpiresAt: "2026-08-13T12:05:00.000Z",
     });
 
     expect(prepare).toHaveBeenCalledWith(
@@ -83,6 +86,8 @@ describe("ConnectorOperationApprovalRepository", () => {
     );
     expect(bind).toHaveBeenCalledWith(
       "2026-08-13T12:00:00.000Z",
+      "execution-token",
+      "2026-08-13T12:05:00.000Z",
       "coa_approval",
       42,
       "2026-08-13T12:00:00.000Z",
@@ -93,6 +98,11 @@ describe("ConnectorOperationApprovalRepository", () => {
       "ca_1",
       "web",
       "abc123",
+      7,
+      null,
+      null,
+      null,
+      null,
     );
   });
 

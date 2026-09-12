@@ -19,7 +19,7 @@ extension ChatRun {
     }
 
     var isWaiting: Bool {
-        status == "awaiting_input" || status == "awaiting_approval"
+        status == "awaiting_input" || status == "awaiting_approval" || status == "awaiting_takeover"
     }
 
     var isActive: Bool {
@@ -234,9 +234,10 @@ enum ChatRunReplay {
 
         let transitions: [String: Set<String>] = [
             "accepted": ["running", "cancelling", "failed", "cancelled", "interrupted"],
-            "running": ["awaiting_input", "awaiting_approval", "cancelling", "succeeded", "failed", "cancelled", "interrupted"],
+            "running": ["awaiting_input", "awaiting_approval", "awaiting_takeover", "cancelling", "succeeded", "failed", "cancelled", "interrupted"],
             "awaiting_input": ["running", "cancelling", "failed", "cancelled", "interrupted"],
             "awaiting_approval": ["running", "cancelling", "failed", "cancelled", "interrupted"],
+            "awaiting_takeover": ["running", "cancelling", "failed", "cancelled", "interrupted"],
             "cancelling": ["cancelled", "failed", "interrupted"]
         ]
 

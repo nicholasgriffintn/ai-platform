@@ -1,28 +1,12 @@
 import z from "zod/v4";
 
 import { modelToolIdSchema } from "./apps.js";
+import { mcpToolServerConfigurationSchema } from "./mcp.js";
+
+export { mcpToolServerConfigurationSchema } from "./mcp.js";
 
 export const fileSearchToolConfigurationSchema = z.object({
   vectorStoreIds: z.array(z.string().trim().min(1).max(160)).min(1).max(20),
-});
-
-export const mcpToolServerConfigurationSchema = z.object({
-  label: z.string().trim().min(1).max(80),
-  url: z
-    .string()
-    .trim()
-    .max(2048)
-    .pipe(z.url())
-    .refine(
-      (value) => {
-        const url = new URL(value);
-
-        return url.protocol === "https:" && !url.username && !url.password;
-      },
-      {
-        message: "MCP server URLs must use HTTPS without embedded credentials",
-      },
-    ),
 });
 
 export const mcpToolConfigurationSchema = z.object({

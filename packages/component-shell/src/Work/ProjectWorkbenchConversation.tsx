@@ -9,6 +9,7 @@ import {
   ProjectWorkbenchSection,
   ProjectWorkbenchServices,
   ProjectWorkbenchShell,
+  type ProjectWorkbenchHeaderSlots,
   type ProjectWorkbenchPane,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { buildAgentTraceEntries } from "@ngriffin_uk/polychat-library-chat/agent-trace";
@@ -23,21 +24,36 @@ import {
   useProjectWorkbenchRuns,
   getErrorMessage,
   deriveProjectWorkbenchControlState,
+  deriveProjectWorkbenchPanes,
   deriveProjectWorkbenchPresentation,
   deriveProjectWorkbenchServices,
   formatProjectWorkbenchPreviewFeedback,
   useCancelDelegations,
+  useConversationBrief,
   useDelegations,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { Activity } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 
+import { ConversationBriefPanel } from "../Conversations/ConversationBriefPanel.js";
+import { useConversationBriefAttention } from "../Conversations/useConversationBriefAttention.js";
 import { ProjectDelegatesPanel } from "../Delegations/ProjectDelegatesPanel.js";
 
 export interface ProjectWorkbenchConversationSlots {
   runSteering?: ConversationRunSteering;
   composerBanner?: ReactNode;
+}
+
+interface ProjectWorkbenchConversationProps {
+  projectId: string;
+  conversationId?: string | null;
+  hasCodingEnvironment: boolean;
+  conversationIsStreaming: boolean;
+  conversationMessages?: Message[];
+  task?: ProjectTask;
+  renderHeader: (slots: ProjectWorkbenchHeaderSlots) => ReactNode;
+  children: (slots: ProjectWorkbenchConversationSlots) => ReactNode;
 }
 
 export function ProjectWorkbenchConversation({
@@ -47,16 +63,9 @@ export function ProjectWorkbenchConversation({
   conversationIsStreaming,
   conversationMessages,
   task,
+  renderHeader,
   children,
-}: {
-  projectId: string;
-  conversationId?: string | null;
-  hasCodingEnvironment: boolean;
-  conversationIsStreaming: boolean;
-  conversationMessages?: Message[];
-  task?: ProjectTask;
-  children: (slots: ProjectWorkbenchConversationSlots) => ReactNode;
-}) {
+}: ProjectWorkbenchConversationProps) {
   const runsQuery = useProjectWorkbenchRuns({
     projectId,
     conversationId,
@@ -94,10 +103,26 @@ export function ProjectWorkbenchConversation({
   });
   const delegationsQuery = useDelegations(conversationId ?? "");
   const cancelDelegations = useCancelDelegations();
-  const isWorkbenchEligible = hasCodingEnvironment || runsQuery.runs.length > 0;
+  const brief = useConversationBrief(conversationId ?? undefined);
+  const briefAttention = useConversationBriefAttention(
+    conversationId ?? undefined,
+    brief.data?.document?.revision,
+    brief.isFetched,
+  );
+  const isWorkbenchEligible =
+    Boolean(conversationId) ||
+    hasCodingEnvironment ||
+    runsQuery.runs.length > 0 ||
+    Boolean(brief.data?.document) ||
+    Boolean(delegationsQuery.data?.delegations.length);
 
-  if (!hasCodingEnvironment && (runsQuery.isLoading || !isWorkbenchEligible)) {
-    return children({});
+  if (!hasCodingEnvironment && ((runsQuery.isLoading && brief.isLoading) || !isWorkbenchEligible)) {
+    return (
+      <div className="flex h-full min-h-0 flex-col overflow-hidden">
+        {renderHeader({})}
+        <div className="min-h-0 flex-1">{children({})}</div>
+      </div>
+    );
   }
 
   const presentation = deriveProjectWorkbenchPresentation({
@@ -177,7 +202,19 @@ export function ProjectWorkbenchConversation({
       errorMessage={errorMessage}
     />
   );
+  const recordedFiles = runsQuery.currentRun?.manifest?.changes.files ?? [];
+  const artifacts = runsQuery.currentRun?.manifest?.artifacts ?? [];
+  const availablePanes = deriveProjectWorkbenchPanes({
+    hasContext: Boolean(conversationId),
+    hasActivity: Boolean(runsQuery.currentRun || activityEntries.length > 0 || services.length > 0),
+    hasPreview: previewServices.length > 0,
+    hasChanges: recordedFiles.length > 0 || Boolean(diff.content),
+    hasFiles: recordedFiles.length > 0 || artifacts.length > 0,
+    hasProof: Boolean(runsQuery.currentRun),
+    hasDelegates: Boolean(delegationsQuery.data?.delegations.length),
+  });
   const panels = {
+    context: conversationId ? <ConversationBriefPanel conversationId={conversationId} /> : null,
     activity: (
       <>
         <ProjectWorkbenchServices
@@ -251,11 +288,16 @@ export function ProjectWorkbenchConversation({
     delegates: (
       <ProjectDelegatesPanel
         delegations={delegationsQuery.data?.delegations ?? []}
+        teammates={delegationsQuery.data?.teammates}
+        outputs={delegationsQuery.data?.outputs}
         canControl={delegationsQuery.data?.canControl ?? false}
         onStopAll={() => {
           if (conversationId) {
             void cancelDelegations.mutateAsync(conversationId);
           }
+        }}
+        onFollowUp={(input) => {
+          void controls.addInstruction(input);
         }}
       />
     ),
@@ -263,8 +305,11 @@ export function ProjectWorkbenchConversation({
 
   return (
     <ProjectWorkbenchShell
+      header={renderHeader}
       conversation={children({ runSteering, composerBanner })}
       panels={panels}
+      availablePanes={availablePanes}
+      attention={briefAttention}
       status={presentation.status}
       statusDetail={presentation.detail}
       selectedPane={preferences.selectedPane}

@@ -1,5 +1,6 @@
 import type { Conversation } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { normalizeMessage } from "@ngriffin_uk/polychat-library-chat/messages";
+import { conversationTypeSchema } from "@ngriffin_uk/polychat-schemas";
 
 type ConversationResponse = Omit<Partial<Conversation>, "messages"> & {
   id?: unknown;
@@ -24,7 +25,7 @@ export function normaliseConversationResponse(
   return {
     ...conversation,
     id: typeof conversation.id === "string" ? conversation.id : fallbackId,
-    type: conversation.type === "task" ? "task" : "chat",
+    type: conversationTypeSchema.safeParse(conversation.type).data ?? "chat",
     title: typeof conversation.title === "string" ? conversation.title : fallbackTitle,
     messages: Array.isArray(conversation.messages)
       ? conversation.messages.map((message) => normalizeMessage(message))

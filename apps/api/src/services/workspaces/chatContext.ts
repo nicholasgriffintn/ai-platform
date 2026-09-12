@@ -104,6 +104,7 @@ export async function resolveProjectChatContext(
     sandboxOptions: codingEnvironment
       ? {
           enabled: true,
+          executionProvider: codingEnvironment.executionProvider,
           installationId: codingEnvironment.installationId,
           repo: codingEnvironment.repository,
           taskType: "feature-implementation",

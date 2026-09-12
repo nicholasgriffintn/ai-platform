@@ -18,6 +18,7 @@ import type { MessagingProvider } from "../capabilities/messaging";
 import type { MusicProvider } from "../capabilities/music";
 import type { OcrProvider } from "../capabilities/ocr/types";
 import type { RealtimeProvider } from "../capabilities/realtime";
+import type { SandboxProvider } from "../capabilities/sandbox";
 import type { SpeechProvider } from "../capabilities/speech";
 import type { TranscriptionProvider } from "../capabilities/transcription";
 import type { VideoProvider } from "../capabilities/video";
@@ -34,6 +35,7 @@ export type ProviderCategory =
   | "ocr"
   | "realtime"
   | "research"
+  | "sandbox"
   | "search"
   | "speech"
   | "transcription"
@@ -81,6 +83,7 @@ export type CategoryProviderMap = {
   ocr: OcrProvider;
   realtime: RealtimeProvider;
   research: ResearchProvider;
+  sandbox: SandboxProvider;
   search: SearchProvider;
   speech: SpeechProvider;
   transcription: TranscriptionProvider;

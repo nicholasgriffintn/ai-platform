@@ -1,0 +1,51 @@
+{
+  "name": "assistant-computer-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "*.computer.polychat.app/*",
+      "zone_name": "polychat.app",
+    },
+  ],
+  "vars": {
+    "COMPUTER_SCREEN_HOST": "computer.polychat.app",
+    "SANDBOX_TRANSPORT": "rpc",
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1,
+  },
+  "r2_buckets": [
+    {
+      "binding": "BACKUP_BUCKET",
+      "bucket_name": "assistant-private-assets",
+      "preview_bucket_name": "assistant-private-assets",
+      "remote": true,
+    },
+  ],
+  "containers": [
+    {
+      "class_name": "Computer",
+      "image": "./Dockerfile",
+      "instance_type": "basic",
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "class_name": "Computer",
+        "name": "Computer",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["Computer"],
+    },
+  ],
+}

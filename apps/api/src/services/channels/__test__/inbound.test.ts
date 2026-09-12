@@ -59,6 +59,18 @@ function createContext(
       channelBindings: {
         getById: vi.fn(async () => binding),
       },
+      conversationRuns: {
+        getCommandReceipt: vi.fn(async () => null),
+      },
+      messages: {
+        getRunMessages: vi.fn(async () => []),
+      },
+      outboundDeliveries: {
+        prepare: vi.fn(async () => ({})),
+        begin: vi.fn(async () => "execute"),
+        complete: vi.fn(async () => true),
+        markIndeterminate: vi.fn(async () => undefined),
+      },
     },
     requestCache: new Map(),
   } as any;
@@ -145,7 +157,6 @@ describe("inbound channel messages", () => {
           stream: false,
           max_steps: 3,
           enabled_tools: ["trigger_recipe", "get_task_status", "get_weather"],
-          approved_tools: ["trigger_recipe", "get_task_status", "get_weather"],
           options: {
             channel: {
               id: "sms",

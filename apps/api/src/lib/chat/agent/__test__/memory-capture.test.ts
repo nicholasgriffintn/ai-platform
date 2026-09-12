@@ -29,6 +29,8 @@ function createParams(overrides: Record<string, unknown> = {}) {
     model: "test-model",
     platform: "api",
     toolCalls: [],
+    trustedUserInput: true,
+    store: true,
     ...overrides,
   } as never as Parameters<typeof captureRunMemories>[0] & {
     conversationManager: typeof conversationManager;
@@ -49,7 +51,11 @@ describe("captureRunMemories", () => {
     const messages = await captureRunMemories(params);
 
     expect(messages).toHaveLength(1);
-    expect(messages[0]).toMatchObject({ role: "tool", name: "memory", status: "success" });
+    expect(messages[0]).toMatchObject({
+      role: "tool",
+      name: "memory",
+      status: "success",
+    });
     expect(messages[0].content).toContain("Uses Neovim.");
     expect(params.conversationManager.add).toHaveBeenCalledOnce();
   });
@@ -67,7 +73,9 @@ describe("captureRunMemories", () => {
 
   it("classifies against the scope the request resolved", async () => {
     await captureRunMemories(
-      createParams({ memoryScope: { type: "project", projectId: "project-1" } }),
+      createParams({
+        memoryScope: { type: "project", projectId: "project-1" },
+      }),
     );
 
     expect(mocks.getInstance).toHaveBeenCalledWith(expect.anything(), proUser, expect.anything(), {
@@ -78,6 +86,13 @@ describe("captureRunMemories", () => {
 
   it("stays out of the way for users without memory enabled", async () => {
     const messages = await captureRunMemories(createParams({ userSettings: {} }));
+
+    expect(messages).toEqual([]);
+    expect(mocks.handleMemory).not.toHaveBeenCalled();
+  });
+
+  it("does not persist memory for a temporary run", async () => {
+    const messages = await captureRunMemories(createParams({ store: false }));
 
     expect(messages).toEqual([]);
     expect(mocks.handleMemory).not.toHaveBeenCalled();

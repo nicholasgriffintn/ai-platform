@@ -34,7 +34,11 @@ vi.mock("~/services/tasks/TaskService", () => ({
 
 import { isSupportedCronExpression } from "~/utils/cron";
 
-import { doesCronMatchDate, scheduleDueRecipeExecutions } from "../scheduler";
+import {
+  doesCronMatchDate,
+  RECIPE_SCHEDULE_CATCH_UP_POLICY,
+  scheduleDueRecipeExecutions,
+} from "../scheduler";
 
 function createTestEnv(): IEnv {
   return Object.assign(Object.create(null), {});
@@ -43,6 +47,7 @@ function createTestEnv(): IEnv {
 describe("recipe scheduler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.updateTemplate.mockResolvedValue({ id: "installation-1" });
     mocks.listProjectCapabilities.mockResolvedValue([
       { kind: "recipe", capability_id: "morning-briefing" },
     ]);
@@ -74,19 +79,113 @@ describe("recipe scheduler", () => {
     expect(isSupportedCronExpression("*/0 9 * * *")).toBe(false);
   });
 
+  it("uses explicit Europe/London DST and missed-occurrence semantics", async () => {
+    expect(RECIPE_SCHEDULE_CATCH_UP_POLICY).toEqual({
+      maximumOccurrencesPerTrigger: 4,
+      maximumLookbackMinutes: 44_640,
+    });
+    mocks.listTemplatesByKind.mockResolvedValue([
+      {
+        id: "installation-1",
+        kind: "recipe",
+        created_by_user_id: 42,
+        capability_id: "daily-weather",
+        status: "active",
+        configuration: JSON.stringify({
+          recipeId: "daily-weather",
+          status: "active",
+          triggers: [
+            {
+              id: "dst-schedule",
+              type: "schedule",
+              enabled: true,
+              cronExpression: "30 1 * * *",
+              timezone: "Europe/London",
+            },
+          ],
+          scheduleState: {
+            "dst-schedule": {
+              triggerId: "dst-schedule",
+              cronExpression: "30 1 * * *",
+              timezone: "Europe/London",
+              enabled: true,
+              activatedAt: "2026-10-24T00:30:00.000Z",
+              lastRunKey: "dst-schedule:2026-10-24T00:30",
+            },
+          },
+        }),
+        created_at: "2026-10-24T00:30:00.000Z",
+        updated_at: "2026-10-24T00:30:00.000Z",
+      },
+    ]);
+
+    await expect(
+      scheduleDueRecipeExecutions(createTestEnv(), new Date("2026-10-25T01:45:00.000Z")),
+    ).resolves.toBe(2);
+    expect(mocks.enqueueTask.mock.calls.map(([task]) => task.metadata.runKey)).toEqual([
+      "dst-schedule:2026-10-25T00:30",
+      "dst-schedule:2026-10-25T01:30",
+    ]);
+
+    vi.clearAllMocks();
+    mocks.updateTemplate.mockResolvedValue({ id: "installation-1" });
+    mocks.listTemplatesByKind.mockResolvedValue([
+      {
+        id: "installation-1",
+        kind: "recipe",
+        created_by_user_id: 42,
+        capability_id: "daily-weather",
+        status: "active",
+        configuration: JSON.stringify({
+          recipeId: "daily-weather",
+          status: "active",
+          triggers: [
+            {
+              id: "dst-schedule",
+              type: "schedule",
+              enabled: true,
+              cronExpression: "30 1 * * *",
+              timezone: "Europe/London",
+            },
+          ],
+          scheduleState: {
+            "dst-schedule": {
+              triggerId: "dst-schedule",
+              cronExpression: "30 1 * * *",
+              timezone: "Europe/London",
+              enabled: true,
+              activatedAt: "2026-03-28T01:30:00.000Z",
+              lastRunKey: "dst-schedule:2026-03-28T01:30",
+            },
+          },
+        }),
+        created_at: "2026-03-28T01:30:00.000Z",
+        updated_at: "2026-03-28T01:30:00.000Z",
+      },
+    ]);
+
+    await expect(
+      scheduleDueRecipeExecutions(createTestEnv(), new Date("2026-03-29T01:45:00.000Z")),
+    ).resolves.toBe(0);
+    expect(mocks.enqueueTask).not.toHaveBeenCalled();
+  });
+
   it("enqueues due recipe executions and records the scheduled run key", async () => {
     mocks.listTemplatesByKind.mockResolvedValue([
       {
         id: "installation-1",
+        kind: "recipe",
         created_by_user_id: 42,
         project_id: "project-1",
         capability_id: "morning-briefing",
+        status: "active",
         configuration: JSON.stringify({
           recipeId: "morning-briefing",
           status: "active",
           triggers: [
-            { type: "manual", enabled: true },
+            { id: "manual-1", type: "manual", enabled: true },
             {
+              id: "schedule-1",
               type: "schedule",
               enabled: true,
               cronExpression: "15 9 * * *",
@@ -135,11 +234,13 @@ describe("recipe scheduler", () => {
       expect.objectContaining({
         configuration: expect.objectContaining({
           scheduleState: {
-            "1": {
+            "schedule-1": {
+              triggerId: "schedule-1",
               cronExpression: "15 9 * * *",
+              timezone: "UTC",
               enabled: true,
               activatedAt: "2026-06-07T08:00:00.000Z",
-              lastRunKey: "1:15 9 * * *:2026-06-07T09:15",
+              lastRunKey: "schedule-1:2026-06-07T09:15",
             },
           },
         }),
@@ -152,9 +253,11 @@ describe("recipe scheduler", () => {
     mocks.listTemplatesByKind.mockResolvedValue([
       {
         id: "installation-1",
+        kind: "recipe",
         created_by_user_id: 42,
         project_id: "project-1",
         capability_id: "morning-briefing",
+        status: "active",
         configuration: JSON.stringify({
           recipeId: "morning-briefing",
           status: "active",
@@ -178,13 +281,16 @@ describe("recipe scheduler", () => {
     mocks.listTemplatesByKind.mockResolvedValue([
       {
         id: "installation-1",
+        kind: "recipe",
         created_by_user_id: 42,
         capability_id: "daily-weather",
+        status: "active",
         configuration: JSON.stringify({
           recipeId: "daily-weather",
           status: "active",
           triggers: [
             {
+              id: "daily-schedule",
               type: "schedule",
               enabled: true,
               cronExpression: "5 9 * * *",
@@ -213,7 +319,7 @@ describe("recipe scheduler", () => {
           channel: "scheduled",
         }),
         metadata: expect.objectContaining({
-          runKey: "0:5 9 * * *:2026-06-07T09:05",
+          runKey: "daily-schedule:2026-06-07T09:05",
         }),
       }),
     );
@@ -222,11 +328,13 @@ describe("recipe scheduler", () => {
       expect.objectContaining({
         configuration: expect.objectContaining({
           scheduleState: {
-            "0": {
+            "daily-schedule": {
+              triggerId: "daily-schedule",
               cronExpression: "5 9 * * *",
+              timezone: "UTC",
               enabled: true,
               activatedAt: "2026-06-07T08:00:00.000Z",
-              lastRunKey: "0:5 9 * * *:2026-06-07T09:05",
+              lastRunKey: "daily-schedule:2026-06-07T09:05",
             },
           },
         }),
@@ -238,13 +346,16 @@ describe("recipe scheduler", () => {
     mocks.listTemplatesByKind.mockResolvedValue([
       {
         id: "installation-1",
+        kind: "recipe",
         created_by_user_id: 42,
         capability_id: "daily-weather",
+        status: "active",
         configuration: JSON.stringify({
           recipeId: "daily-weather",
           status: "active",
           triggers: [
             {
+              id: "daily-schedule",
               type: "schedule",
               enabled: true,
               cronExpression: "0 9 * * *",
@@ -266,7 +377,7 @@ describe("recipe scheduler", () => {
     expect(mocks.enqueueTask).toHaveBeenCalledWith(
       expect.objectContaining({
         metadata: expect.objectContaining({
-          runKey: "0:0 9 * * *:2026-06-07T09:00",
+          runKey: "daily-schedule:2026-06-07T09:00",
         }),
       }),
     );
@@ -275,11 +386,13 @@ describe("recipe scheduler", () => {
       expect.objectContaining({
         configuration: expect.objectContaining({
           scheduleState: {
-            "0": {
+            "daily-schedule": {
+              triggerId: "daily-schedule",
               cronExpression: "0 9 * * *",
+              timezone: "UTC",
               enabled: true,
               activatedAt: "2026-06-07T08:00:00.000Z",
-              lastRunKey: "0:0 9 * * *:2026-06-07T09:00",
+              lastRunKey: "daily-schedule:2026-06-07T09:00",
             },
           },
         }),
@@ -291,6 +404,7 @@ describe("recipe scheduler", () => {
     mocks.listTemplatesByKind.mockResolvedValue([
       {
         id: "installation-1",
+        kind: "recipe",
         created_by_user_id: 42,
         capability_id: "daily-weather",
         configuration: JSON.stringify({
@@ -324,6 +438,7 @@ describe("recipe scheduler", () => {
     mocks.listTemplatesByKind.mockResolvedValue([
       {
         id: "installation-1",
+        kind: "recipe",
         created_by_user_id: 42,
         capability_id: "daily-weather",
         configuration: JSON.stringify({
@@ -364,6 +479,7 @@ describe("recipe scheduler", () => {
     mocks.listTemplatesByKind.mockResolvedValue([
       {
         id: "installation-1",
+        kind: "recipe",
         created_by_user_id: 42,
         capability_id: "morning-briefing",
         configuration: JSON.stringify({

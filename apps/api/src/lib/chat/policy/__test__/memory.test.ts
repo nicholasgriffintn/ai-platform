@@ -93,12 +93,26 @@ describe("resolveMemoryPolicy", () => {
         store: true,
       }),
     ).toEqual(["web_search", MEMORY_SEARCH_TOOL_NAME, MEMORY_STORE_TOOL_NAME]);
+
+    expect(
+      mergeEnabledMemoryToolNames({
+        enabledTools: ["web_search", MEMORY_SEARCH_TOOL_NAME, MEMORY_STORE_TOOL_NAME],
+        user: createUser("pro"),
+        userSettings: {
+          memories_save_enabled: true,
+          memories_chat_history_enabled: true,
+        },
+        store: false,
+      }),
+    ).toEqual(["web_search"]);
   });
 });
 
 describe("buildMemoryPromptContext", () => {
   it("carries the synthesis and points at the tool for anything it does not hold", () => {
-    const context = buildMemoryPromptContext({ synthesisText: "Prefers concise answers." });
+    const context = buildMemoryPromptContext({
+      synthesisText: "Prefers concise answers.",
+    });
 
     expect(context).toContain("<memory_synthesis>");
     expect(context).toContain("Prefers concise answers.");

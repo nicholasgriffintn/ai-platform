@@ -39,3 +39,7 @@ export function hasUrlExtension(value: string, extensions: ReadonlySet<string>):
 
   return extension !== undefined && extensions.has(extension);
 }
+
+export function isHttpUrl(value: string): boolean {
+  return /^https?:\/\//iu.test(value);
+}

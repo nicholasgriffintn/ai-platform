@@ -6,6 +6,8 @@ import {
   memoryDocumentNameSchema,
   memoryDocumentSchema,
   updateMemoryDocumentSchema,
+  conversationBriefParamsSchema,
+  conversationBriefResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
@@ -19,6 +21,9 @@ import {
   listMemoryDocumentRevisions,
   listMemoryDocuments,
   updateMemoryDocument,
+  ensureConversationBrief,
+  getConversationBrief,
+  updateConversationBrief,
 } from "~/services/memory-documents";
 
 const app = new Hono();
@@ -51,6 +56,43 @@ addRoute(app, "post", "/", {
   bodySchema: createMemoryDocumentSchema,
   responses: { 200: { description: "Created document", schema: memoryDocumentSchema } },
   handler: async ({ serviceContext, body }) => createMemoryDocument(serviceContext, body),
+});
+
+addRoute(app, "get", "/conversations/:conversationId/brief", {
+  tags: ["memory"],
+  summary: "Read a conversation brief",
+  auth: true,
+  paramSchema: conversationBriefParamsSchema,
+  responses: {
+    200: { description: "Conversation brief", schema: conversationBriefResponseSchema },
+  },
+  handler: async ({ serviceContext, params }) =>
+    getConversationBrief(serviceContext, params.conversationId),
+});
+
+addRoute(app, "post", "/conversations/:conversationId/brief", {
+  tags: ["memory"],
+  summary: "Start a conversation brief",
+  description: "Creates and binds one scoped brief when the conversation does not have one.",
+  auth: true,
+  paramSchema: conversationBriefParamsSchema,
+  responses: {
+    200: { description: "Conversation brief", schema: conversationBriefResponseSchema },
+  },
+  handler: async ({ serviceContext, params }) =>
+    ensureConversationBrief(serviceContext, params.conversationId),
+});
+
+addRoute(app, "put", "/conversations/:conversationId/brief", {
+  tags: ["memory"],
+  summary: "Save a conversation brief",
+  description: "Saves a new revision against the brief bound to this conversation.",
+  auth: true,
+  paramSchema: conversationBriefParamsSchema,
+  bodySchema: updateMemoryDocumentSchema,
+  responses: { 200: { description: "Saved brief", schema: memoryDocumentSchema } },
+  handler: async ({ serviceContext, params, body }) =>
+    updateConversationBrief(serviceContext, params.conversationId, body),
 });
 
 addRoute(app, "get", "/:name", {

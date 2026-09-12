@@ -43,6 +43,7 @@ export function ProjectCodingEnvironmentCard({
       }
       isUpdatingCache={cacheAction.isPending}
       onConnect={async ({
+        executionProvider,
         installationId,
         repository,
         deliveryPolicy,
@@ -53,6 +54,7 @@ export function ProjectCodingEnvironmentCard({
           projectId: project.id,
           input: {
             codingEnvironment: {
+              executionProvider,
               installationId,
               repository,
               promptStrategy: project.codingEnvironment?.promptStrategy ?? "auto",

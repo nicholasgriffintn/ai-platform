@@ -194,7 +194,7 @@ describe("streamAgentSessionRun", () => {
     ).toBe(true);
   });
 
-  it("refuses to adopt a thread that belongs to another driver", async () => {
+  it("refuses to adopt another driver's thread while retaining the authorised directory", async () => {
     const harness = createBackend({
       binding: {
         conversationId: "conversation-1",
@@ -210,7 +210,31 @@ describe("streamAgentSessionRun", () => {
 
     await streamAgentSessionRun(runOptions(harness, "conversation-1"));
 
-    expect(harness.backend.pickAgentDirectory).toHaveBeenCalledTimes(1);
+    expect(harness.backend.pickAgentDirectory).not.toHaveBeenCalled();
+    expect(
+      harness.scripted.sent.some(
+        (message) => (message as { method?: string }).method === "thread/start",
+      ),
+    ).toBe(true);
+  });
+
+  it("starts a fresh native thread when the stored model or permissions no longer match", async () => {
+    const harness = createBackend({
+      binding: {
+        conversationId: "conversation-1",
+        driver: "codex",
+        directoryId: "directory-9",
+        threadId: "incompatible-thread",
+        model: "gpt-5.5",
+        reasoningEffort: null,
+        permissionMode: "full_access",
+        updatedAt: "2026-09-08T00:00:00Z",
+      },
+    });
+
+    await streamAgentSessionRun(runOptions(harness, "conversation-1"));
+
+    expect(harness.backend.pickAgentDirectory).not.toHaveBeenCalled();
     expect(
       harness.scripted.sent.some(
         (message) => (message as { method?: string }).method === "thread/start",

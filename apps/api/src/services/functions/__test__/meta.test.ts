@@ -57,14 +57,21 @@ vi.mock("~/services/teammates", () => ({
 }));
 
 vi.mock("~/services/teammates/access", () => ({
+  requireProjectTeammate: vi.fn(async () => ({ id: "teammate-1" })),
   requireTeammateAccess: vi.fn(async () => ({ id: "teammate-1" })),
 }));
 
 vi.mock("~/services/workspaces/access", () => ({
   requireProjectAccess: vi.fn(async () => ({
-    project: { id: "project-1", name: "Launch week", workspace_id: "workspace-1" },
+    project: {
+      id: "project-1",
+      name: "Launch week",
+      workspace_id: "workspace-1",
+    },
   })),
-  requireWorkspaceAccess: vi.fn(async () => ({ workspace: { id: "workspace-1", name: "Aviary" } })),
+  requireWorkspaceAccess: vi.fn(async () => ({
+    workspace: { id: "workspace-1", name: "Aviary" },
+  })),
 }));
 
 vi.mock("~/services/global-search", () => ({
@@ -91,15 +98,24 @@ function createToolContext(
   const repositories = {
     conversations: {
       getConversation: vi.fn(async () => conversationRow),
-      getUserConversations: vi.fn(async () => ({ conversations: [conversationRow], total: 1 })),
+      getUserConversations: vi.fn(async () => ({
+        conversations: [conversationRow],
+        total: 1,
+      })),
       createConversation: vi.fn(async () => ({ id: "conversation-2" })),
     },
     messages: {
       getConversationMessages: vi.fn(async () => [
         { role: "user", content: "Plan the launch" },
-        { role: "assistant", content: JSON.stringify([{ type: "text", text: "Bundle-first." }]) },
+        {
+          role: "assistant",
+          content: JSON.stringify([{ type: "text", text: "Bundle-first." }]),
+        },
         { role: "tool", content: "ignored" },
       ]),
+    },
+    teammateContexts: {
+      getByHomeConversationId: vi.fn(async () => null),
     },
   };
   const user = { id: 7, plan_id: "pro" };
@@ -171,7 +187,14 @@ describe("meta tools", () => {
 
   it("resolves Work Files from current project context and rejects a missing or revoked project", async () => {
     const result = await open_place.execute(
-      { target: { kind: "place", mode: "work", place: "files", workspaceId: "forged" } },
+      {
+        target: {
+          kind: "place",
+          mode: "work",
+          place: "files",
+          workspaceId: "forged",
+        },
+      },
       createToolContext("meta", { mode: "work", projectId: "project-1" }),
     );
 
@@ -191,7 +214,14 @@ describe("meta tools", () => {
     vi.mocked(requireProjectAccess).mockRejectedValueOnce(new Error("Membership revoked"));
     await expect(
       open_place.execute(
-        { target: { kind: "place", mode: "work", place: "teammates", projectId: "project-1" } },
+        {
+          target: {
+            kind: "place",
+            mode: "work",
+            place: "teammates",
+            projectId: "project-1",
+          },
+        },
         createToolContext("meta"),
       ),
     ).rejects.toThrow("Membership revoked");

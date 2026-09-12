@@ -175,6 +175,10 @@ export class ConversationRepository extends BaseRepository {
          SELECT id, parent_conversation_id FROM conversation
          WHERE project_id IS ? AND (? IS NOT NULL OR user_id = ?)
            AND type IN (${listedConversationTypesSql})
+           AND NOT EXISTS (
+             SELECT 1 FROM teammate_context tc
+             WHERE tc.home_conversation_id = conversation.id AND tc.actor_user_id != ?
+           )
        ), family(id, parent_conversation_id) AS (
          SELECT id, parent_conversation_id FROM scoped WHERE id = ?
          UNION
@@ -186,7 +190,7 @@ export class ConversationRepository extends BaseRepository {
        SELECT c.id, c.title, c.parent_conversation_id, c.created_at, c.is_archived
        FROM conversation c JOIN family f ON c.id = f.id
        ORDER BY c.created_at ASC, c.id ASC`,
-      [projectId, projectId, userId, conversationId, limit],
+      [projectId, projectId, userId, userId, conversationId, limit],
     );
   }
 
@@ -444,6 +448,7 @@ export class ConversationRepository extends BaseRepository {
       "model_id",
       "model_tier",
       "permission_mode",
+      "brief_document_id",
     ];
 
     const result = this.buildUpdateQuery("conversation", updates, allowedFields, "id = ?", [
@@ -455,6 +460,17 @@ export class ConversationRepository extends BaseRepository {
     }
 
     return this.executeRun(result.query, result.values);
+  }
+
+  public async assignBriefDocument(conversationId: string, documentId: string): Promise<boolean> {
+    const result = await this.executeRun(
+      `UPDATE conversation
+       SET brief_document_id = ?, updated_at = datetime('now')
+       WHERE id = ? AND brief_document_id IS NULL`,
+      [documentId, conversationId],
+    );
+
+    return Boolean(result.meta?.changes);
   }
 
   public async deleteConversation(conversationId: string): Promise<void> {
@@ -563,6 +579,10 @@ export class ConversationRepository extends BaseRepository {
 			       )
 			     )
 			   )
+         AND NOT EXISTS (
+           SELECT 1 FROM teammate_context tc
+           WHERE tc.home_conversation_id = c.id AND tc.actor_user_id != ?
+         )
 			   AND (
            ? = ''
            OR c.title LIKE ? ESCAPE '\\'
@@ -578,7 +598,7 @@ export class ConversationRepository extends BaseRepository {
 			 ORDER BY COALESCE(state.is_pinned, 0) DESC,
          COALESCE(c.updated_at, c.created_at) DESC, c.id DESC
 			 LIMIT ?`,
-      [userId, userId, userId, userId, trimmedQuery, searchTerm, userId, searchTerm, limit],
+      [userId, userId, userId, userId, userId, trimmedQuery, searchTerm, userId, searchTerm, limit],
     );
   }
 }

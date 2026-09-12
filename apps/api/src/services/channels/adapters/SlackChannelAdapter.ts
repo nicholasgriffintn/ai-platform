@@ -1,5 +1,6 @@
 import { safeParseJson } from "~/utils/json";
 
+import { requireSuccessfulChannelSend } from "./send-response";
 import type { ChannelAdapter, ChannelIncoming, ChannelReply, ChannelVerification } from "./types";
 
 const SLACK_SIGNATURE_VERSION = "v0";
@@ -107,7 +108,7 @@ export class SlackChannelAdapter implements ChannelAdapter {
   }
 
   async sendReply(reply: ChannelReply, secret: string): Promise<void> {
-    await fetch(SLACK_POST_MESSAGE_URL, {
+    const response = await fetch(SLACK_POST_MESSAGE_URL, {
       method: "POST",
       headers: {
         authorization: `Bearer ${secret}`,
@@ -115,5 +116,7 @@ export class SlackChannelAdapter implements ChannelAdapter {
       },
       body: JSON.stringify({ channel: reply.externalId, text: reply.body }),
     });
+
+    await requireSuccessfulChannelSend(response, "Slack");
   }
 }

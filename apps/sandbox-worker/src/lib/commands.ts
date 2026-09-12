@@ -197,7 +197,10 @@ export async function execOrThrowRedacted(
   }
 }
 
-export function resolveGitHubRepo(repo: string, githubToken?: string): RepoInfo {
+export function resolveGitHubRepo(
+  repo: string,
+  credentialBroker: { baseUrl: string; grant: string },
+): RepoInfo {
   const trimmedRepo = repo.trim();
 
   if (!trimmedRepo) {
@@ -220,10 +223,8 @@ export function resolveGitHubRepo(repo: string, githubToken?: string): RepoInfo 
   const displayName = `${owner}/${safeName}`;
   const targetDir = safeName.replace(/[^A-Za-z0-9_.-]/g, "-");
 
-  const checkoutUrl = `https://github.com/${displayName}.git`;
-  const checkoutAuthHeader = githubToken
-    ? `AUTHORIZATION: basic ${Buffer.from(`x-access-token:${githubToken}`).toString("base64")}`
-    : undefined;
+  const checkoutUrl = `${credentialBroker.baseUrl}/git`;
+  const checkoutAuthHeader = `AUTHORIZATION: Bearer ${credentialBroker.grant}`;
 
   return {
     displayName,

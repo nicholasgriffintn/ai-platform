@@ -4,6 +4,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
 import { requireTeammateAccess, TEAMMATE_CAPABILITY_KIND } from "./access";
+import { archiveProjectTeammateContexts } from "./context-lifecycle";
 
 /**
  * A workspace default reaches every project, so removing one from a single project is recorded
@@ -48,6 +49,7 @@ export async function removeInheritedTeammateFromProject(
     createdBy: user.id,
     excluded: true,
   });
+  await archiveProjectTeammateContexts(context, projectId, teammateId);
 
   await context.repositories.audit.createRecord({
     workspaceId: project.workspace_id,

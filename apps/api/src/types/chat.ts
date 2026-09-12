@@ -216,6 +216,7 @@ export interface IBody {
   role?: ChatRole;
   run_id?: string;
   run_attempt?: number;
+  teammate_context_id?: string;
   [other: string]: any;
 }
 
@@ -238,6 +239,10 @@ type InternalExecutionParams = {
   // Durable product classification chosen by trusted task and recipe entry points.
   conversation_type?: ConversationType;
   trigger?: ChatRunTrigger;
+  teammate_context_id?: string;
+  computer_id?: string;
+  delegation_id?: string;
+  resolved_configuration?: Record<string, unknown>;
   // The persona layered into the generated system prompt, for saved agents.
   persona?: AssistantPersona;
   // Minimum output tokens requested by internal orchestration.

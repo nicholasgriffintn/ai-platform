@@ -22,6 +22,7 @@
     "@ngriffin_uk/polychat-library-client": "workspace:^",
     "@ngriffin_uk/polychat-library-tool-runtime": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "zod": "catalog:"
   },
   "devDependencies": {

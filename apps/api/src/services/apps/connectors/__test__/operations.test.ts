@@ -31,7 +31,8 @@ vi.mock("../composio-run", () => ({
   executeComposioRunTool: mocks.executeComposioRunTool,
 }));
 
-vi.mock("../accounts", () => ({
+vi.mock("../accounts", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../accounts")>()),
   getSelectedRecipeConnectorAccountId: mocks.getSelectedRecipeConnectorAccountId,
 }));
 

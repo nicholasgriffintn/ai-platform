@@ -8,7 +8,6 @@ import { canonicalJson } from "~/utils/canonical-json";
 import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-import { getRecipeConnectorAdapter } from "./connector-adapters";
 import type { ConnectorRunScope } from "./connector-run-scope";
 
 const APPROVAL_TTL_MS = 10 * 60 * 1000;
@@ -17,6 +16,8 @@ export interface ConnectorOperationApprovalDecision {
   required: boolean;
   approved: boolean;
   connectedAccountId?: string;
+  authorityRevision?: number;
+  arguments?: Record<string, unknown>;
   approval?: ConnectorOperationApprovalRecord;
 }
 
@@ -97,25 +98,12 @@ export async function authoriseConnectorOperation(params: {
   operation: string;
   arguments: Record<string, unknown>;
   connectedAccountId?: string;
+  authorityRevision?: number;
   channel: string;
   scope: ConnectorRunScope;
   approvalId?: string;
 }): Promise<ConnectorOperationApprovalDecision> {
   if (!connectorOperationRequiresApproval(params.provider, params.operation)) {
-    return { required: false, approved: true };
-  }
-
-  if (params.channel === "scheduled" || params.channel === "event") {
-    throw new AssistantError(
-      `${params.channel === "event" ? "Event-triggered" : "Scheduled"} recipe runs cannot perform connector write operations`,
-      ErrorType.AUTHORISATION_ERROR,
-      403,
-    );
-  }
-
-  const adapter = getRecipeConnectorAdapter(params.provider);
-
-  if (adapter?.approval?.mode !== "stored-action") {
     return { required: false, approved: true };
   }
 
@@ -127,14 +115,22 @@ export async function authoriseConnectorOperation(params: {
     );
   }
 
-  const argumentDigest = await getConnectorArgumentDigest({
-    provider: params.provider,
-    operation: params.operation,
-    arguments: params.arguments,
-  });
   const now = new Date().toISOString();
 
   if (params.approvalId) {
+    if (!params.context.connectorApprovalExecutionToken) {
+      throw new AssistantError(
+        "Connector approval execution was not durably claimed",
+        ErrorType.AUTHORISATION_ERROR,
+        403,
+      );
+    }
+
+    const argumentDigest = await getConnectorArgumentDigest({
+      provider: params.provider,
+      operation: params.operation,
+      arguments: params.arguments,
+    });
     const approval = await params.context.repositories.connectorOperationApprovals.consume({
       id: params.approvalId,
       userId: params.userId,
@@ -145,7 +141,14 @@ export async function authoriseConnectorOperation(params: {
       connectedAccountId: params.connectedAccountId,
       channel: params.channel,
       argumentDigest,
+      authorityRevision: params.authorityRevision ?? 0,
+      recipeId: params.scope.recipeId,
+      installationId: params.scope.installationId,
+      projectId: params.scope.projectId,
+      teammateContextId: params.scope.teammateContextId,
       consumedAt: now,
+      executionToken: params.context.connectorApprovalExecutionToken,
+      executionLeaseExpiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
     });
 
     if (!approval) {
@@ -163,18 +166,48 @@ export async function authoriseConnectorOperation(params: {
       approved: true,
       connectedAccountId: params.connectedAccountId,
       approval,
+      arguments: approval.arguments,
     };
+  }
+
+  const argumentDigest = await getConnectorArgumentDigest({
+    provider: params.provider,
+    operation: params.operation,
+    arguments: params.arguments,
+  });
+  const run = await params.context.repositories.conversationRuns.getById(
+    params.context.connectorRunId,
+  );
+
+  if (
+    !run ||
+    run.initiatorUserId !== params.userId ||
+    run.conversationId !== params.scope.completionId ||
+    run.status !== "running"
+  ) {
+    throw new AssistantError(
+      "Connector approval requires the active originating run",
+      ErrorType.AUTHORISATION_ERROR,
+      403,
+    );
   }
 
   const approval = await params.context.repositories.connectorOperationApprovals.create({
     userId: params.userId,
     runId: params.context.connectorRunId,
+    runAttempt: run.attempt,
     completionId: params.scope.completionId,
     provider: params.provider,
     operation: params.operation,
     connectedAccountId: params.connectedAccountId,
     channel: params.channel,
     argumentDigest,
+    arguments: params.arguments,
+    authorityRevision: params.authorityRevision ?? 0,
+    recipeId: params.scope.recipeId,
+    installationId: params.scope.installationId,
+    projectId: params.scope.projectId,
+    teammateContextId: params.scope.teammateContextId,
     createdAt: now,
     expiresAt: new Date(Date.now() + APPROVAL_TTL_MS).toISOString(),
   });

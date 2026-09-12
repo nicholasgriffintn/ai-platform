@@ -1,0 +1,23 @@
+{
+  "name": "@assistant/computer-worker",
+  "version": "0.0.1",
+  "private": true,
+  "license": "Apache-2.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "cf-typegen": "wrangler types",
+    "deploy": "pnpm typecheck && wrangler deploy",
+    "dev": "WRANGLER_BUILD_CONDITIONS=workerd,worker,browser wrangler dev src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cloudflare/sandbox": "0.12.9",
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "typescript": "catalog:",
+    "wrangler": "catalog:"
+  }
+}

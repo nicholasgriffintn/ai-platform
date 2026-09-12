@@ -128,16 +128,23 @@ export class TaskExecutor {
         await lease.assertOwned();
         await this.recordExecutionSuccess(executionId, executionTime, result);
 
-        const settled = await this.taskRepository.updateOwnedTask(message.taskId, ownerToken, {
-          status: "completed",
-          completed_at: new Date().toISOString(),
-        });
+        const settled = await this.taskRepository.updateOwnedTask(
+          message.taskId,
+          ownerToken,
+          result.status === "suspended"
+            ? { status: "suspended" }
+            : { status: "completed", completed_at: new Date().toISOString() },
+        );
 
         if (!settled) {
           throw new TaskExecutionOwnershipLostError();
         }
 
-        logger.info(`Task ${message.taskId} completed successfully in ${executionTime}ms`);
+        logger.info(
+          result.status === "suspended"
+            ? `Task ${message.taskId} suspended in ${executionTime}ms`
+            : `Task ${message.taskId} completed successfully in ${executionTime}ms`,
+        );
       } catch (error) {
         const executionTime = Date.now() - startTime;
 
@@ -168,7 +175,6 @@ export class TaskExecutor {
           const newAttempts = (task.attempts || 0) + 1;
 
           if (newAttempts >= (task.max_attempts || 3)) {
-            // Keep the task claim retryable until its handler has durably reconciled external state.
             await handler.onFinalFailure?.(message, this.env, error as Error, executionContext);
 
             const settled = await this.taskRepository.updateOwnedTask(message.taskId, ownerToken, {

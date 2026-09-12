@@ -1,6 +1,7 @@
 import { SKILL_SAVE_TOOL_NAME, type SaveSkillInput } from "@ngriffin_uk/polychat-schemas";
 
 import { createPersonalSkill, publishProjectSkill } from "~/services/skills";
+import { buildSkillDocument } from "~/services/skills/document";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -8,11 +9,7 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { save_skill as saveSkillDescriptor } from "./definitions/save_skill";
 import { resolveRequestProjectId } from "./request-context";
 
-export function buildSkillDocument(input: SaveSkillInput): string {
-  const description = input.description.trim().replace(/\s+/gu, " ");
-
-  return `---\nname: ${input.name}\ndescription: ${JSON.stringify(description)}\n---\n\n${input.instructions.trim()}\n`;
-}
+export { buildSkillDocument };
 
 export const save_skill: ApiToolDefinition = {
   ...saveSkillDescriptor,
@@ -30,7 +27,11 @@ export const save_skill: ApiToolDefinition = {
     }
 
     const projectId = resolveRequestProjectId(request);
-    const content = buildSkillDocument(args);
+    const content = buildSkillDocument({
+      name: args.name,
+      description: args.description,
+      instructions: args.instructions,
+    });
     const skill = projectId
       ? await publishProjectSkill(context, user.id, projectId, { content })
       : await createPersonalSkill(context, user.id, { content });

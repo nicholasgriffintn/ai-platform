@@ -15,7 +15,9 @@ function createDatabase(firstResult: unknown = null, allResults: unknown[] = [])
 describe("ComposioConnectorSessionRepository", () => {
   it("atomically binds a claim to the run, scope, expiry, and operation", async () => {
     const { database, prepare, bind } = createDatabase();
-    const repository = new ComposioConnectorSessionRepository({ DB: database } as any);
+    const repository = new ComposioConnectorSessionRepository({
+      DB: database,
+    } as any);
 
     const result = await repository.claimForExecution({
       id: "ccs_local",
@@ -47,13 +49,17 @@ describe("ComposioConnectorSessionRepository", () => {
       "completion_1",
       "daily-digest",
       "installation_1",
+      null,
+      null,
       "GMAIL_SEND_EMAIL",
     );
   });
 
   it("lists expired and retryable cleanup records with a bounded limit", async () => {
     const { database, prepare, bind } = createDatabase();
-    const repository = new ComposioConnectorSessionRepository({ DB: database } as any);
+    const repository = new ComposioConnectorSessionRepository({
+      DB: database,
+    } as any);
 
     await repository.listCleanupDue({
       now: "2026-08-13T12:00:00.000Z",

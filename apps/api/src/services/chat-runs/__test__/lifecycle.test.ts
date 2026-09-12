@@ -72,7 +72,11 @@ function createLifecycle() {
 
 describe("ChatRunLifecycle", () => {
   it("enrols an authenticated stored turn and starts its accepted run", async () => {
-    const acceptedRun = { ...runningRun, status: "accepted" as const, startedAt: null };
+    const acceptedRun = {
+      ...runningRun,
+      status: "accepted" as const,
+      startedAt: null,
+    };
     const acceptCommand = vi.fn().mockResolvedValue({
       ...receipt(),
       run: acceptedRun,
@@ -89,7 +93,12 @@ describe("ChatRunLifecycle", () => {
             user_id: 7,
           }),
         },
-        projectTasks: { getTaskByConversation: vi.fn().mockResolvedValue(null) },
+        projectTasks: {
+          getTaskByConversation: vi.fn().mockResolvedValue(null),
+        },
+        delegations: {
+          getByChildConversationId: vi.fn().mockResolvedValue(null),
+        },
         conversationRuns: {
           acceptCommand,
           getForInteraction: vi.fn(),
@@ -131,13 +140,24 @@ describe("ChatRunLifecycle", () => {
     await waiting.lifecycle.complete(
       result({
         response: { status: "pending" },
+        pendingInteractionKind: "question",
         finalMessage: undefined,
-        toolResponses: [{ id: "question-1", role: "tool", name: "ask_user", content: "Question" }],
+        toolResponses: [
+          {
+            id: "question-1",
+            role: "tool",
+            name: "ask_user",
+            content: "Question",
+          },
+        ],
       }),
     );
 
     expect(waiting.transition).toHaveBeenCalledWith(
-      expect.objectContaining({ status: "awaiting_input", lastMessageId: "question-1" }),
+      expect.objectContaining({
+        status: "awaiting_input",
+        lastMessageId: "question-1",
+      }),
     );
 
     const completed = createLifecycle();
@@ -145,7 +165,10 @@ describe("ChatRunLifecycle", () => {
     await completed.lifecycle.complete(result());
 
     expect(completed.transition).toHaveBeenCalledWith(
-      expect.objectContaining({ status: "succeeded", lastMessageId: "message-1" }),
+      expect.objectContaining({
+        status: "succeeded",
+        lastMessageId: "message-1",
+      }),
     );
     expect(completed.commandReceipt.run.status).toBe("succeeded");
   });
@@ -173,7 +196,10 @@ describe("ChatRunLifecycle", () => {
           }),
         },
         workspaces: {
-          getProject: vi.fn().mockResolvedValue({ id: "project-1", workspace_id: "workspace-1" }),
+          getProject: vi.fn().mockResolvedValue({
+            id: "project-1",
+            workspace_id: "workspace-1",
+          }),
           getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
           getMembership: vi.fn().mockResolvedValue({ role: "owner" }),
         },
@@ -184,6 +210,9 @@ describe("ChatRunLifecycle", () => {
             runId: null,
           }),
           updateTask: vi.fn().mockResolvedValue({ id: "task-1" }),
+        },
+        delegations: {
+          getByChildConversationId: vi.fn().mockResolvedValue(null),
         },
         conversationRuns: {
           acceptCommand,
@@ -196,7 +225,11 @@ describe("ChatRunLifecycle", () => {
     await acceptChatRun({
       completion_id: "conversation-1",
       command_id: "dispatch-1",
-      command_payload: { projectId: "project-1", taskId: "task-1", stageId: "build" },
+      command_payload: {
+        projectId: "project-1",
+        taskId: "task-1",
+        stageId: "build",
+      },
       context,
       env: context.env,
       messages: [{ role: "user", content: "Build" }],
@@ -216,7 +249,10 @@ describe("ChatRunLifecycle", () => {
     await interrupted.lifecycle.fail(leaseError);
 
     expect(interrupted.transition).toHaveBeenCalledWith(
-      expect.objectContaining({ status: "interrupted", terminalReason: "Lease lost" }),
+      expect.objectContaining({
+        status: "interrupted",
+        terminalReason: "Lease lost",
+      }),
     );
 
     const failed = createLifecycle();
@@ -224,7 +260,10 @@ describe("ChatRunLifecycle", () => {
     await failed.lifecycle.fail(new Error("Provider unavailable"));
 
     expect(failed.transition).toHaveBeenCalledWith(
-      expect.objectContaining({ status: "failed", terminalReason: "Provider unavailable" }),
+      expect.objectContaining({
+        status: "failed",
+        terminalReason: "Provider unavailable",
+      }),
     );
   });
 
@@ -233,6 +272,8 @@ describe("ChatRunLifecycle", () => {
 
     transition.mockResolvedValueOnce(null);
 
-    await expect(lifecycle.complete(result())).rejects.toMatchObject({ statusCode: 409 });
+    await expect(lifecycle.complete(result())).rejects.toMatchObject({
+      statusCode: 409,
+    });
   });
 });

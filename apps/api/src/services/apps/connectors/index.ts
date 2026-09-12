@@ -25,12 +25,13 @@ import { decryptJsonPayload, encryptJsonPayload, type EncryptedJsonPayload } fro
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
 
+import { ensureRecipeConnectorAccountReference } from "./accounts";
+import { RECIPE_CONNECTOR_CONNECTION_KIND } from "./connection-references";
 import {
   getRecipeConnectorProviderConfig,
   getRecipeConnectorProviderConfigs,
 } from "./connector-adapters";
 
-const RECIPE_CONNECTOR_CONNECTION_KIND = "recipe_connector";
 const COMPOSIO_CONNECTION_SESSION_TTL_MS = 60 * 60 * 1000;
 
 export interface ConnectorTokenPayload {
@@ -439,6 +440,13 @@ export async function verifyComposioConnectorAuthorization(params: {
       403,
     );
   }
+
+  await ensureRecipeConnectorAccountReference({
+    context: params.context,
+    userId: params.userId,
+    providerId: provider.id,
+    account: completedAccount,
+  });
 
   const redirectUrl = new URL(
     "/profile?tab=providers&type=connector",

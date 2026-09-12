@@ -12,6 +12,7 @@ import { registerMusicProviders } from "./registry/registrations/music";
 import { registerOcrProviders } from "./registry/registrations/ocr";
 import { registerRealtimeProviders } from "./registry/registrations/realtime";
 import { registerResearchProviders } from "./registry/registrations/research";
+import { registerSandboxProviders } from "./registry/registrations/sandbox";
 import { registerSearchProviders } from "./registry/registrations/search";
 import { registerSpeechProviders } from "./registry/registrations/speech";
 import { registerTranscriptionProviders } from "./registry/registrations/transcription";
@@ -38,6 +39,7 @@ const DEFAULT_BOOTSTRAPPERS: Partial<Record<ProviderCategory, CategoryBootstrapp
   ocr: [registerOcrProviders],
   realtime: [registerRealtimeProviders],
   research: [registerResearchProviders],
+  sandbox: [registerSandboxProviders],
   search: [registerSearchProviders],
   speech: [registerSpeechProviders],
   transcription: [registerTranscriptionProviders],
@@ -134,6 +136,10 @@ export class ProviderLibrary {
 
   research(providerName: string, context?: ProviderFactoryContext) {
     return this.resolve("research", providerName, context);
+  }
+
+  sandbox(providerName: string, context?: ProviderFactoryContext) {
+    return this.resolve("sandbox", providerName, context);
   }
 
   embedding(providerName: string, context?: ProviderFactoryContext) {

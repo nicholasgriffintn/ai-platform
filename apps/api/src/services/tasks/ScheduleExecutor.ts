@@ -9,6 +9,7 @@ import { getLogger } from "~/utils/logger";
 
 import {
   purgeSettledTasks,
+  recoverFailedDurableTasks,
   redispatchPendingTasks,
   scheduleDailySynthesis,
   scheduleInfraReconciliation,
@@ -22,6 +23,7 @@ const logger = getLogger({ prefix: "services/tasks/schedule-executor" });
 export class ScheduleExecutor {
   public static async respondToCronSchedules(env: IEnv, event: ScheduledController): Promise<void> {
     try {
+      await recoverFailedDurableTasks(env);
       await redispatchPendingTasks(env);
     } catch (error) {
       logger.warn("Pending task recovery failed", { error: getErrorMessage(error) });

@@ -31,14 +31,22 @@ import {
   type SandboxTaskType,
   type SandboxTrustLevel,
 } from "./sandbox-constants.js";
+import { sandboxExecutionProviderSchema } from "./sandbox-provider.js";
 import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "./tasks.js";
 
 export const sandboxWebhookCommandSchema = z.enum(["implement", "review", "test", "fix"]);
+export const SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX = "/apps/sandbox/credential-broker" as const;
 export const sandboxRepoSchema = z
   .string()
   .trim()
   .min(1)
   .regex(/^[\w.-]+\/[\w.-]+$/, "repo must be in owner/repo format");
+
+export const sandboxCredentialBrokerAccessSchema = z.object({
+  baseUrl: z.url(),
+  expiresAt: z.string().datetime(),
+  grant: z.string().trim().min(1),
+});
 
 export const githubConnectionSchema = z.object({
   installationId: z.number().int().positive(),
@@ -61,6 +69,7 @@ export const sandboxModelSettingsSchema = z.object({
 });
 
 export const executeSandboxRunSchema = z.object({
+  executionProvider: sandboxExecutionProviderSchema.optional(),
   installationId: z.number().int().positive(),
   repo: sandboxRepoSchema,
   task: z.string().trim().min(1),
@@ -82,6 +91,7 @@ export const executeSandboxRunSchema = z.object({
 });
 
 export const sandboxRunDispatchPayloadSchema = z.object({
+  executionProvider: sandboxExecutionProviderSchema.optional(),
   projectId: z.string().trim().min(1).optional(),
   installationId: z.number().int().positive(),
   repo: sandboxRepoSchema,
@@ -95,7 +105,6 @@ export const sandboxRunDispatchPayloadSchema = z.object({
   environmentPreparationMode: sandboxEnvironmentPreparationModeSchema.optional(),
   environmentCache: sandboxEnvironmentCacheRecordSchema.optional(),
   environmentCacheGeneration: z.number().int().nonnegative().optional(),
-  environmentVariables: z.record(z.string(), z.string()).optional(),
   timeoutSeconds: z.number().int().positive().optional(),
   trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
   modelSettings: sandboxModelSettingsSchema.optional(),
@@ -513,6 +522,7 @@ export const sandboxRunDataSchema = z.object({
   task: z.string().trim().min(1),
   taskType: z.enum(SANDBOX_TASK_TYPES).optional(),
   model: z.string().trim().min(1),
+  executionProvider: sandboxExecutionProviderSchema.optional(),
   trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
   promptStrategy: sandboxPromptStrategySchema.optional(),
   deliveryPolicy: sandboxDeliveryPolicySchema.optional(),
@@ -520,7 +530,6 @@ export const sandboxRunDataSchema = z.object({
   environmentSetup: sandboxEnvironmentSetupSchema.optional(),
   environmentPreparationMode: sandboxEnvironmentPreparationModeSchema.optional(),
   environmentCacheGeneration: z.number().int().nonnegative().optional(),
-  environmentVariables: z.record(z.string(), z.string()).optional(),
   status: sandboxRunStatusSchema,
   startedAt: z.string().trim().min(1),
   updatedAt: z.string().trim().min(1),
@@ -571,6 +580,7 @@ export const sandboxTrustLevelSchema = z.enum(SANDBOX_TRUST_LEVELS);
 export const sandboxRequestOptionsSchema = z
   .object({
     enabled: z.boolean(),
+    executionProvider: sandboxExecutionProviderSchema.optional(),
     repo: z.string().trim().optional(),
     installationId: z.number().int().positive().optional(),
     model: z.string().trim().min(1).optional(),
@@ -681,6 +691,7 @@ export const sandboxWorkerExecuteRequestSchema = z.object({
     .max(SANDBOX_TIMEOUT_MAX_SECONDS)
     .optional(),
   trustLevel: sandboxTrustLevelSchema.optional(),
+  credentialBroker: sandboxCredentialBrokerAccessSchema,
   polychatApiUrl: z.url(),
   installationId: z.number().int().positive().optional(),
   runId: z.string().trim().min(1).optional(),
@@ -698,6 +709,7 @@ export const sandboxRunUsageReportSchema = z.object({
 });
 
 export type SandboxRunUsageReport = z.infer<typeof sandboxRunUsageReportSchema>;
+export type SandboxCredentialBrokerAccess = z.infer<typeof sandboxCredentialBrokerAccessSchema>;
 
 export type GitHubConnectionPayload = z.infer<typeof githubConnectionSchema>;
 export type ExecuteSandboxRunPayload = z.infer<typeof executeSandboxRunSchema>;

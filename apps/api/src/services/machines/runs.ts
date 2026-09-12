@@ -23,17 +23,28 @@ export async function callMachineRun(
 
   if (path === "/create") {
     const input = machineRunRequestSchema.parse(body);
+    const runtimeAvailable = machine.runtimes.some((runtime) => {
+      if ("kind" in input && input.kind === "agent") {
+        return (
+          runtime.kind === "agent" &&
+          runtime.vendor === input.driver &&
+          runtime.readiness.state === "ready" &&
+          runtime.supportsSessions &&
+          machine.capabilities.includes("agent-run")
+        );
+      }
 
-    if (
-      !isMachineOnline(machine) ||
-      !machine.capabilities.includes("model-relay") ||
-      !machine.runtimes.some(
-        (runtime) =>
-          runtime.vendor === input.vendor &&
-          runtime.readiness.status === "ready" &&
-          runtime.models.some((model) => model.nativeId === input.nativeModelId),
-      )
-    ) {
+      return (
+        "vendor" in input &&
+        runtime.kind === "model" &&
+        runtime.vendor === input.vendor &&
+        runtime.readiness.status === "ready" &&
+        runtime.models.some((model) => model.nativeId === input.nativeModelId) &&
+        machine.capabilities.includes("model-relay")
+      );
+    });
+
+    if (!isMachineOnline(machine) || !runtimeAvailable) {
       throw new AssistantError(
         "The model is not available on this machine.",
         ErrorType.PARAMS_ERROR,

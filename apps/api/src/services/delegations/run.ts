@@ -1,6 +1,5 @@
 import {
   createChatCompletionsJsonSchema,
-  DELEGATION_EXPIRY_TASK_TYPE,
   delegationRunTaskDataSchema,
   projectCodingEnvironmentSchema,
   resolveSandboxDeliveryPolicy,
@@ -11,49 +10,70 @@ import {
 
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { findModelConfig } from "~/lib/providers/models";
+import { recoverAcceptedChatCompletionResponse } from "~/services/chat-runs/completion-recovery";
+import { revalidateDelegationMemoryBindings } from "~/services/delegations/memory-bindings";
 import { transitionDelegation } from "~/services/delegations/settle";
-import { notifyMobileWork } from "~/services/mobile-push";
-import { isTaskNotificationPreferenceEnabled } from "~/services/notifications/preferences";
 import { TaskService } from "~/services/tasks/TaskService";
-import { createTeammateCompletion } from "~/services/teammates/createTeammateCompletion";
+import { enqueueTeammateRun } from "~/services/teammates/run-admission";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import type { IEnv } from "~/types";
 import { intersectEnabledTools } from "~/utils/enabledTools";
 import { safeParseJson } from "~/utils/json";
-import { extractTextFromMessageContent } from "~/utils/messages";
 
+import type { TaskResult } from "../tasks/TaskHandler";
 import type { TaskMessage } from "../tasks/TaskService";
-import { resolveDelegationExecutionRoute } from "./routing";
+import { canRunDelegationOnMachine, resolveDelegationExecutionRoute } from "./routing";
 import { scheduleDelegationWake } from "./schedule-wake";
 
-export async function runDelegationTask(message: TaskMessage, env: IEnv) {
+export async function runDelegationTask(
+  message: TaskMessage,
+  env: IEnv,
+): Promise<{ status: TaskResult["status"]; detail: string }> {
   const payload = delegationRunTaskDataSchema.parse(message.task_data);
   const context = createServiceContext({ env });
   const delegation = await context.repositories.delegations.claimDelegation(payload.delegationId);
 
   if (!delegation) {
-    return { status: "skipped" as const, detail: "Delegation is already running or settled" };
+    return {
+      status: "skipped" as const,
+      detail: "Delegation is already running or settled",
+    };
   }
 
   try {
     if (Date.parse(delegation.budget.deadline) <= Date.now()) {
-      await transitionDelegation(context, delegation.id, "expired", {
-        summary: "The delegation deadline passed before it started.",
-        outputIds: [],
-      });
+      await transitionDelegation(
+        context,
+        delegation.id,
+        "expired",
+        {
+          summary: "The delegation deadline passed before it started.",
+          outputIds: [],
+        },
+        message.user_id,
+      );
       await enqueueDelegationWake(context, delegation, message.user_id);
 
-      return { status: "skipped" as const, detail: "Delegation expired before it started" };
+      return {
+        status: "skipped" as const,
+        detail: "Delegation expired before it started",
+      };
     }
 
     const user = await context.repositories.users.getUserById(message.user_id ?? 0);
 
     if (!user) {
-      await transitionDelegation(context, delegation.id, "failed", {
-        summary: "The delegating user no longer exists.",
-        outputIds: [],
-      });
+      await transitionDelegation(
+        context,
+        delegation.id,
+        "failed",
+        {
+          summary: "The delegating user no longer exists.",
+          outputIds: [],
+        },
+        message.user_id,
+      );
       await enqueueDelegationWake(context, delegation, message.user_id);
 
       return { status: "error" as const, detail: "Delegating user not found" };
@@ -80,7 +100,10 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
         "The delegation scope changed before it started.",
       );
 
-      return { status: "error" as const, detail: "Delegation project scope changed" };
+      return {
+        status: "error" as const,
+        detail: "Delegation project scope changed",
+      };
     }
 
     if (payload.projectId) {
@@ -94,7 +117,10 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
           "The delegating user lost access to this project before it started.",
         );
 
-        return { status: "error" as const, detail: "Delegation project access refused" };
+        return {
+          status: "error" as const,
+          detail: "Delegation project access refused",
+        };
       }
     }
 
@@ -106,6 +132,12 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
           payload.enabledTools,
         )
       : payload.enabledTools;
+    const memoryBindings = await revalidateDelegationMemoryBindings({
+      context,
+      userId: user.id,
+      projectId: payload.projectId,
+      bindings: delegation.memoryBindings,
+    });
 
     const teammate = await context.repositories.teammates.getTeammateById(delegation.teammateId);
     const teammateModel = teammate?.model
@@ -136,12 +168,15 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
     }
 
     if (executionRoute === "machine") {
-      const reason =
-        "Use the chat model selector to run this provider. Background delegation is not supported for device providers.";
+      const reason = canRunDelegationOnMachine(resolvedModel)
+        ? null
+        : "This device provider cannot run unattended with a durable session.";
 
-      await settleDelegation(context, delegation, message.user_id, reason);
+      if (reason) {
+        await settleDelegation(context, delegation, message.user_id, reason);
 
-      return { status: "error" as const, detail: reason };
+        return { status: "error" as const, detail: reason };
+      }
     }
 
     let sandboxOptions: SandboxRequestOptions | undefined;
@@ -152,6 +187,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
         : null;
       const codingEnvironment = project
         ? projectCodingEnvironmentSchema.safeParse({
+            executionProvider: project.coding_execution_provider,
             installationId: project.coding_installation_id,
             repository: project.coding_repository,
             promptStrategy: project.coding_prompt_strategy,
@@ -174,7 +210,10 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
           "The sandbox provider needs a connected project repository.",
         );
 
-        return { status: "error" as const, detail: "Sandbox repository is not configured" };
+        return {
+          status: "error" as const,
+          detail: "Sandbox repository is not configured",
+        };
       }
 
       const remainingSeconds = Math.floor(
@@ -187,6 +226,7 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
 
       sandboxOptions = {
         enabled: true,
+        executionProvider: codingEnvironment.data.executionProvider,
         installationId: codingEnvironment.data.installationId,
         repo: codingEnvironment.data.repository,
         deliveryPolicy: codingEnvironment.data.deliveryPolicy,
@@ -198,9 +238,10 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
       };
     }
 
+    const commandId = `delegation_run_${delegation.id}`;
     const body = createChatCompletionsJsonSchema.parse({
       completion_id: delegation.childConversationId,
-      command_id: `delegation_run_${delegation.id}`,
+      command_id: commandId,
       messages: [{ role: "user", content: delegation.goal }],
       stream: false,
       store: true,
@@ -209,12 +250,14 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
         delegationId: delegation.id,
         depth: delegation.depth,
         rootConversationId: delegation.parentConversationId,
+        memoryBindings,
       },
+      permission_mode: parentConversation.permission_mode,
       ...(payload.projectId ? { metadata: { project_id: payload.projectId } } : {}),
       ...(sandboxOptions ? { options: { sandbox: sandboxOptions } } : {}),
     });
 
-    const response = await createTeammateCompletion({
+    const response = await enqueueTeammateRun({
       env,
       context: createServiceContext({ env, user }),
       body,
@@ -231,129 +274,51 @@ export async function runDelegationTask(message: TaskMessage, env: IEnv) {
         kind: "delegation",
         maxCreditMicros: delegation.budget.maxCreditMicros,
       },
+      invocation: { source: "delegation", delegationId: delegation.id },
     });
 
-    if (!(response instanceof Response)) {
-      const firstPendingTool = response.choices.find(
-        (choice) => choice.message.status === "pending",
-      )?.message;
+    if (response instanceof Response) {
+      const recovered = await recoverAcceptedChatCompletionResponse(context, {
+        userId: user.id,
+        commandId,
+        conversationId: delegation.childConversationId,
+      });
 
-      if (firstPendingTool) {
-        const waitingState =
-          firstPendingTool.name === "ask_user" ? "awaiting_input" : "awaiting_approval";
-
-        await transitionDelegation(context, delegation.id, waitingState);
-        await notifyDelegationAttention(context, delegation, message.user_id, waitingState).catch(
-          () => undefined,
-        );
-        await new TaskService(context.env, context.repositories.tasks).enqueueTask({
-          id: `delegation_expiry_${delegation.id}`,
-          task_type: DELEGATION_EXPIRY_TASK_TYPE,
-          user_id: message.user_id,
-          priority: 4,
-          schedule_type: "scheduled",
-          scheduled_at: delegation.budget.deadline,
-          task_data: { delegationId: delegation.id },
-        });
-
-        return {
-          status: "success" as const,
-          detail: `Delegate is ${waitingState.replace("awaiting_", "awaiting ")}.`,
-        };
+      if (!recovered) {
+        throw new Error("The delegate did not return a completed result.");
       }
     }
 
-    if (response instanceof Response) {
-      throw new Error("The delegate did not return a completed result.");
-    }
-
-    const assistantMessages = response.choices
-      .map((choice) => choice.message)
-      .filter((entry) => entry.role === "assistant");
-    const failed = assistantMessages.some(
-      (entry) => entry.status === "failed" || entry.status === "error",
+    const reconciled = await context.repositories.delegations.getById(delegation.id);
+    const failed = Boolean(
+      reconciled && ["failed", "cancelled", "expired"].includes(reconciled.state),
     );
-    const summary = assistantMessages
-      .map((entry) => extractTextFromMessageContent(entry.content))
-      .filter(Boolean)
-      .join("\n")
-      .trim()
-      .slice(0, 2000);
 
-    if (!summary) {
-      throw new Error("The delegate returned no result for its parent.");
-    }
-
-    await transitionDelegation(context, delegation.id, failed ? "failed" : "done", {
-      summary,
-      outputIds: [],
-    });
-    await enqueueDelegationWake(context, delegation, message.user_id);
-
-    return { status: failed ? ("error" as const) : ("success" as const), detail: summary };
+    return {
+      status: failed ? "error" : "success",
+      detail:
+        reconciled?.result?.summary ??
+        (reconciled?.state.startsWith("awaiting_")
+          ? `Delegate is ${reconciled.state.replace("awaiting_", "awaiting ")}.`
+          : "Delegate result reconciliation is queued."),
+    };
   } catch (error) {
     const summary = error instanceof Error ? error.message : "Delegate run failed.";
 
-    await transitionDelegation(context, delegation.id, "failed", {
-      summary: summary.slice(0, 2000),
-      outputIds: [],
-    });
+    await transitionDelegation(
+      context,
+      delegation.id,
+      "failed",
+      {
+        summary: summary.slice(0, 2000),
+        outputIds: [],
+      },
+      message.user_id,
+    );
     await enqueueDelegationWake(context, delegation, message.user_id);
 
-    return { status: "error" as const, detail: summary };
+    return { status: "error", detail: summary };
   }
-}
-
-async function notifyDelegationAttention(
-  context: ReturnType<typeof createServiceContext>,
-  delegation: Awaited<ReturnType<typeof context.repositories.delegations.getById>>,
-  userId: number | null | undefined,
-  state: "awaiting_input" | "awaiting_approval",
-) {
-  if (!delegation || !userId) {
-    return;
-  }
-
-  const parent = await context.repositories.conversations.getConversation(
-    delegation.parentConversationId,
-  );
-  const projectId = typeof parent?.project_id === "string" ? parent.project_id : null;
-
-  if (!projectId) {
-    return;
-  }
-
-  const project = await context.repositories.workspaces.getProject(projectId);
-  const preferences = await context.repositories.taskNotifications.getPreferences(userId);
-  const categoryEnabled = isTaskNotificationPreferenceEnabled(preferences, "decisions");
-
-  if (!project || !categoryEnabled) {
-    return;
-  }
-
-  const membership = await context.repositories.workspaces.getMembership(
-    project.workspace_id,
-    userId,
-  );
-
-  if (!membership) {
-    return;
-  }
-
-  await notifyMobileWork({
-    context,
-    userId,
-    notificationId: `delegation:${delegation.id}:${state}`,
-    kind: state === "awaiting_approval" ? "approval" : "input",
-    target: {
-      workspaceId: project.workspace_id,
-      projectId,
-      conversationId: delegation.parentConversationId,
-      taskId: null,
-      runId: delegation.childConversationId,
-      interactionId: null,
-    },
-  });
 }
 
 async function settleDelegation(
@@ -362,10 +327,16 @@ async function settleDelegation(
   userId: number | undefined,
   summary: string,
 ) {
-  await transitionDelegation(context, delegation.id, "failed", {
-    summary,
-    outputIds: [],
-  });
+  await transitionDelegation(
+    context,
+    delegation.id,
+    "failed",
+    {
+      summary,
+      outputIds: [],
+    },
+    userId,
+  );
   await enqueueDelegationWake(context, delegation, userId);
 }
 

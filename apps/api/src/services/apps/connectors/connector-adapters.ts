@@ -9,6 +9,7 @@ import { resolveComposioApprovalAuthority } from "./composio-approval-authority"
 import type { ResolveConnectorApprovalAuthority } from "./connector-approval-authority";
 import { executeDevinOperation } from "./executors/devin";
 import { executeNetlifyOperation } from "./executors/netlify";
+import { resolveLocalApprovalAuthority } from "./local-approval-authority";
 
 export type ConnectorOperationExecutor = (
   token: string,
@@ -40,7 +41,14 @@ const connectorAdapters: RecipeConnectorAdapter[] = connectorProviders.map((prov
           resolveAuthority: resolveComposioApprovalAuthority,
         },
       }
-    : {}),
+    : provider.auth.authType === "api_key"
+      ? {
+          approval: {
+            mode: "stored-action" as const,
+            resolveAuthority: resolveLocalApprovalAuthority,
+          },
+        }
+      : {}),
 }));
 
 export function getRecipeConnectorAdapters(): readonly RecipeConnectorAdapter[] {

@@ -1,4 +1,7 @@
-import { chatMessageSelectionSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  chatMessageSelectionSchema,
+  HOSTED_MCP_APPROVAL_TOOL_NAME,
+} from "@ngriffin_uk/polychat-schemas";
 import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
 
 import { estimateMessageTokens } from "~/lib/messageTokens";
@@ -834,6 +837,10 @@ export class MessageFormatter {
     }
 
     if (message.role === "tool") {
+      if (message.name === HOSTED_MCP_APPROVAL_TOOL_NAME) {
+        return null;
+      }
+
       if (!message.tool_call_id) {
         return null;
       }
@@ -869,6 +876,12 @@ export class MessageFormatter {
   }
 
   private static formatOpenAIResponsesMessage(message: Message): OpenAIResponsesInputItem[] {
+    const hostedMcpApproval = MessageFormatter.formatHostedMcpApprovalResponse(message);
+
+    if (hostedMcpApproval) {
+      return [hostedMcpApproval];
+    }
+
     const storedOutput = MessageFormatter.getStoredOpenAIResponsesOutput(message);
 
     if (storedOutput) {
@@ -885,6 +898,36 @@ export class MessageFormatter {
     return [messageItem, ...toolCalls].filter(
       (item): item is OpenAIResponsesInputItem => item !== null,
     );
+  }
+
+  private static formatHostedMcpApprovalResponse(
+    message: Message,
+  ): OpenAIResponsesInputItem | null {
+    if (message.role !== "user" || !isRecord(message.data)) {
+      return null;
+    }
+
+    const interaction = message.data.toolInteraction;
+
+    if (!isRecord(interaction) || interaction.toolName !== HOSTED_MCP_APPROVAL_TOOL_NAME) {
+      return null;
+    }
+
+    const response = interaction.response;
+
+    if (
+      !isRecord(response) ||
+      typeof response.interactionId !== "string" ||
+      (response.resolution !== "approved" && response.resolution !== "rejected")
+    ) {
+      return null;
+    }
+
+    return {
+      type: "mcp_approval_response",
+      approval_request_id: response.interactionId,
+      approve: response.resolution === "approved",
+    };
   }
 
   private static formatGoogleAIContent(item: MessageContent): any {

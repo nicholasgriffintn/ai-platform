@@ -1,3 +1,4 @@
+import type { McpServerFieldValue } from "@ngriffin_uk/polychat-component-capabilities";
 import type {
   AgentMode,
   TeammateOwnerScopeType,
@@ -10,12 +11,6 @@ import type {
 import type { ParsedNumberInput } from "@ngriffin_uk/polychat-utility-core";
 
 import type { TeammateFormData } from "../types";
-
-export interface TeammateEditorServer {
-  id: string;
-  url: string;
-  type: "sse" | "stdio";
-}
 
 export interface TeammateEditorExample {
   id: string;
@@ -36,7 +31,7 @@ export interface TeammateEditorValue {
   maxSteps: ParsedNumberInput;
   toolIds: string[];
   skillIds: string[];
-  servers: TeammateEditorServer[];
+  servers: McpServerFieldValue[];
 }
 
 export type TeammateEditorChange = (patch: Partial<TeammateEditorValue>) => void;

@@ -5,7 +5,9 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 
 import { handleCancelChatRun } from "../cancel";
 
-const metrics = vi.hoisted(() => ({ recordTurnCancellationRequested: vi.fn() }));
+const metrics = vi.hoisted(() => ({
+  recordTurnCancellationRequested: vi.fn(),
+}));
 
 vi.mock("~/lib/chat/streaming/continuity-telemetry", () => metrics);
 
@@ -46,6 +48,12 @@ function createContext(currentRun: ChatRun = run) {
       delegations: {
         listByParentRunId: vi.fn().mockResolvedValue([]),
       },
+      connectorOperationApprovals: {
+        deleteUnconsumedForRun: vi.fn().mockResolvedValue(undefined),
+      },
+      composioConnectorSessions: {
+        markRunCleanupPending: vi.fn().mockResolvedValue(undefined),
+      },
     },
   } as unknown as ServiceContext;
 }
@@ -74,7 +82,10 @@ describe("handleCancelChatRun", () => {
     const context = createContext({ ...run, attempt: 2 });
 
     await expect(
-      handleCancelChatRun(context, run.id, { command_id: "cancel-late", expected_attempt: 1 }),
+      handleCancelChatRun(context, run.id, {
+        command_id: "cancel-late",
+        expected_attempt: 1,
+      }),
     ).rejects.toMatchObject({ statusCode: 409 });
     expect(context.repositories.conversationRuns.acceptCancellation).not.toHaveBeenCalled();
   });

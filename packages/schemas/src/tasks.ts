@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { recipeConfigurationSchema } from "./apps.js";
 import {
   DELEGATION_MESSAGE_TASK_TYPE,
   DELEGATION_EXPIRY_TASK_TYPE,
@@ -15,6 +16,8 @@ export const REALTIME_RECONCILIATION_TASK_TYPE = "realtime_reconciliation";
 export const INFRA_RECONCILIATION_TASK_TYPE = "infra_reconciliation";
 export const STRIPE_USAGE_SYNC_TASK_TYPE = "stripe_usage_sync";
 export const TASK_NOTIFICATION_DELIVERY_TASK_TYPE = "task_notification_delivery";
+export const TEAMMATE_RUN_RECONCILIATION_TASK_TYPE = "teammate_run_reconciliation";
+export const TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE = "teammate_context_cleanup";
 
 export const TASK_TYPES = [
   "memory_synthesis",
@@ -39,7 +42,32 @@ export const TASK_TYPES = [
   INFRA_RECONCILIATION_TASK_TYPE,
   STRIPE_USAGE_SYNC_TASK_TYPE,
   TASK_NOTIFICATION_DELIVERY_TASK_TYPE,
+  TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
+  TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
 ] as const;
+
+export const teammateRunReconciliationTaskDataSchema = z.object({
+  runId: z.string().min(1),
+  attempt: z.number().int().positive(),
+});
+
+export const teammateContextCleanupTaskDataSchema = z.object({
+  contextIds: z.array(z.string().min(1)).min(1),
+});
+
+export const recipeExecutionTaskDataSchema = z.object({
+  recipeId: z.string().min(1),
+  installationId: z.string().min(1).optional(),
+  occurrenceId: z.string().min(1).optional(),
+  projectId: z.string().min(1).nullable().optional(),
+  input: z.string().optional(),
+  channel: z
+    .enum(["web", "ios", "sms", "slack", "telegram", "scheduled", "event", "tool"])
+    .optional(),
+  configuration: recipeConfigurationSchema.optional(),
+  notificationChannel: z.enum(["sms", "slack", "telegram"]).optional(),
+  notificationTarget: z.string().min(1).optional(),
+});
 
 export const PUBLIC_TASK_TYPES = ["memory_synthesis"] as const;
 
@@ -49,6 +77,7 @@ export const taskStatusSchema = z.enum([
   "pending",
   "queued",
   "running",
+  "suspended",
   "completed",
   "failed",
   "cancelled",
@@ -170,3 +199,4 @@ export type GetTaskResponse = z.infer<typeof getTaskResponseSchema>;
 export type ListTasksResponse = z.infer<typeof listTasksResponseSchema>;
 export type GetMemorySynthesisResponse = z.infer<typeof getMemorySynthesisResponseSchema>;
 export type TriggerMemorySynthesisRequest = z.infer<typeof triggerMemorySynthesisRequestSchema>;
+export type RecipeExecutionTaskData = z.infer<typeof recipeExecutionTaskDataSchema>;

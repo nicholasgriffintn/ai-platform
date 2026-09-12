@@ -5,6 +5,9 @@ export function normaliseResponsesRequest(body) {
     ...body,
     messages: input.map((item) => ({
       role: item.type === "function_call_output" ? "tool" : item.role,
+      type: item.type,
+      name: item.name,
+      callId: item.call_id,
       content:
         item.type === "function_call_output"
           ? item.output

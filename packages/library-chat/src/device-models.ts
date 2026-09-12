@@ -5,6 +5,7 @@ import type {
   ModelConfig,
   ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
+import { agentModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 export type DeviceModelSource = () => Promise<ModelConfig>;
 
@@ -87,7 +88,31 @@ export function buildMachineModels(machines: readonly MachineRecord[]): ModelCon
     }
 
     for (const runtime of machine.runtimes) {
-      if (runtime.kind !== "model" || runtime.readiness.status !== "ready") {
+      if (runtime.kind === "agent") {
+        if (runtime.readiness.state !== "ready" || !runtime.supportsSessions) {
+          continue;
+        }
+
+        const base = agentModelConfig[`agent/${runtime.vendor}`];
+
+        if (!base) {
+          continue;
+        }
+
+        const id = deviceModelId(runtime.vendor, runtime.vendor, machine.machineId);
+
+        models[id] = {
+          ...base,
+          id,
+          machineId: machine.machineId,
+          description: `Runs on ${machine.label} through ${base.name ?? runtime.vendor}.`,
+          isExecutable: machine.capabilities.includes("agent-run"),
+        };
+
+        continue;
+      }
+
+      if (runtime.readiness.status !== "ready") {
         continue;
       }
 

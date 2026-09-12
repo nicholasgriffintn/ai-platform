@@ -6,31 +6,34 @@ import type {
   ChatRunStatus,
   RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
+import { TEAMMATE_RUN_RECONCILIATION_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 
 import type { AgentLoopExecutionResult } from "~/lib/chat/agent/agent-loop";
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationRunRepository } from "~/repositories/ConversationRunRepository";
+import { reconcileRecipeExecutionTask } from "~/services/apps/recipes/task-reconciliation";
 import { isThreadLeaseOwnershipLostError } from "~/services/conversations/coordinator/client";
 import { publishConversationChanged, publishRunChanged } from "~/services/sync/conversation-events";
-import { withoutOrigin, type SyncPublisher } from "~/services/sync/publish";
+import { withoutOrigin } from "~/services/sync/publish";
 import { TaskExecutionOwnershipLostError } from "~/services/tasks/task-execution-lease";
+import { TaskService } from "~/services/tasks/TaskService";
+import {
+  reconcileTeammateRun,
+  teammateRunNeedsReconciliation,
+} from "~/services/teammates/run-reconciliation";
 import { resolveChatProjectAccess } from "~/services/workspaces/chatProjectAccess";
 import type { CoreChatOptions } from "~/types";
 import { canonicalJson } from "~/utils/canonical-json";
 import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { isRecord } from "~/utils/objects";
+import { getLogger } from "~/utils/logger";
 
 import { buildChatRunCommandPayload } from "./command-payload";
+import { readToolInteractionId } from "./interactions";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
 
-function readInteractionId(options: CoreChatOptions): string | undefined {
-  const response = options.options?.toolInteraction?.response;
-
-  return isRecord(response) && typeof response.interactionId === "string"
-    ? response.interactionId
-    : undefined;
-}
+const logger = getLogger({ prefix: "services/chat-runs/lifecycle" });
 
 function readStageId(options: CoreChatOptions): string | null {
   return typeof options.command_payload?.stageId === "string"
@@ -49,6 +52,10 @@ async function commandDigest(options: CoreChatOptions, runId?: string): Promise<
         persona: options.persona,
         requireApprovalFor: options.require_approval_for,
         trigger: options.trigger,
+        teammateContextId: options.teammate_context_id,
+        computerId: options.computer_id,
+        delegationId: options.delegation_id,
+        resolvedConfiguration: runId ? undefined : options.resolved_configuration,
         toolPolicyMode: options.tool_policy_mode,
       },
       runId,
@@ -58,9 +65,21 @@ async function commandDigest(options: CoreChatOptions, runId?: string): Promise<
 
 function completionStatus(result: AgentLoopExecutionResult): ChatRunStatus {
   if (result.response.status === "pending") {
-    return result.toolResponses.some((message) => message.name === "ask_user")
-      ? "awaiting_input"
-      : "awaiting_approval";
+    if (!result.pendingInteractionKind) {
+      throw new AssistantError(
+        "A suspended run is missing its interaction kind",
+        ErrorType.INTERNAL_ERROR,
+      );
+    }
+
+    switch (result.pendingInteractionKind) {
+      case "question":
+        return "awaiting_input";
+      case "takeover":
+        return "awaiting_takeover";
+      case "approval":
+        return "awaiting_approval";
+    }
   }
 
   if (result.response.status === "stopped") {
@@ -92,6 +111,20 @@ async function authoriseRunScope(options: CoreChatOptions) {
   }
 
   const projectTask = await context.repositories.projectTasks.getTaskByConversation(conversationId);
+  const childDelegation =
+    await context.repositories.delegations.getByChildConversationId(conversationId);
+
+  if (
+    childDelegation &&
+    (options.delegation_id !== childDelegation.id ||
+      options.durable_execution?.kind !== "delegation")
+  ) {
+    throw new AssistantError(
+      "Delegated conversations are read-only outside their delegated run",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
 
   return {
     context,
@@ -109,7 +142,7 @@ async function buildRunCommand(
   options: CoreChatOptions,
   commandId: string,
 ) {
-  const interactionId = readInteractionId(options);
+  const interactionId = readToolInteractionId(options.options);
   const interactionRun = interactionId
     ? await scope.context.repositories.conversationRuns.getForInteraction(
         scope.conversationId,
@@ -128,7 +161,14 @@ async function buildRunCommand(
     projectTaskId: scope.projectTask?.id ?? null,
     stageId: readStageId(options) ?? scope.projectTask?.stageId ?? null,
     ...(options.trigger ? { trigger: options.trigger } : {}),
+    ...(options.teammate_context_id ? { teammateContextId: options.teammate_context_id } : {}),
+    ...(options.computer_id ? { computerId: options.computer_id } : {}),
+    ...(options.delegation_id ? { delegationId: options.delegation_id } : {}),
+    ...(options.resolved_configuration
+      ? { resolvedConfiguration: options.resolved_configuration }
+      : {}),
     ...(requestedRunId ? { runId: requestedRunId } : {}),
+    ...(requestedRunId && interactionId ? { interactionId } : {}),
   };
 }
 
@@ -140,7 +180,7 @@ export class ChatRunLifecycle {
     >,
     readonly receipt: ChatRunCommandReceipt,
     private readonly env?: CoreChatOptions["env"],
-    private readonly publisher?: SyncPublisher,
+    private readonly serviceContext?: ServiceContext,
   ) {}
 
   get run(): ChatRun {
@@ -148,10 +188,60 @@ export class ChatRunLifecycle {
   }
 
   private async announce(run: ChatRun): Promise<void> {
-    const publisher = withoutOrigin(this.publisher ?? { env: this.env });
+    const publisher = withoutOrigin(this.serviceContext ?? { env: this.env });
 
     await publishRunChanged(publisher, run);
     await publishConversationChanged(publisher, run.conversationId, { runId: run.id });
+  }
+
+  private async reconcile(result?: AgentLoopExecutionResult): Promise<void> {
+    if (!this.serviceContext) {
+      return;
+    }
+
+    try {
+      await reconcileRecipeExecutionTask(this.serviceContext, this.run);
+    } catch (error) {
+      logger.warn("Recipe task reconciliation failed", {
+        runId: this.run.id,
+        attempt: this.run.attempt,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
+    if (!teammateRunNeedsReconciliation(this.run)) {
+      return;
+    }
+
+    try {
+      await reconcileTeammateRun(this.serviceContext, this.run, result);
+    } catch (error) {
+      logger.warn("Immediate teammate run reconciliation failed", {
+        runId: this.run.id,
+        attempt: this.run.attempt,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
+    try {
+      await new TaskService(
+        this.serviceContext.env,
+        this.serviceContext.repositories.tasks,
+      ).enqueueTask({
+        id: `teammate_run_reconciliation_${this.run.id}_${this.run.attempt}`,
+        task_type: TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
+        user_id: this.run.initiatorUserId,
+        ...(this.run.projectId ? { project_id: this.run.projectId } : {}),
+        priority: 4,
+        task_data: { runId: this.run.id, attempt: this.run.attempt },
+      });
+    } catch (error) {
+      logger.warn("Teammate run reconciliation remains pending", {
+        runId: this.run.id,
+        attempt: this.run.attempt,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 
   async isCancellationRequested(): Promise<boolean> {
@@ -239,6 +329,7 @@ export class ChatRunLifecycle {
       runId: this.run.id,
       attempt: this.run.attempt,
       status,
+      interactionKind: result.pendingInteractionKind ?? null,
       ...(lastMessageId ? { lastMessageId } : {}),
       ...(status === "failed" ? { terminalReason: "Response failed safety checks" } : {}),
     });
@@ -271,6 +362,7 @@ export class ChatRunLifecycle {
     this.receipt.run = transitioned;
 
     await this.announce(transitioned);
+    await this.reconcile(result);
 
     if (transitioned.status === "cancelled" && transitioned.cancellationRequestedAt && this.env) {
       recordChatRunOperationalMetric(this.env, {
@@ -302,6 +394,7 @@ export class ChatRunLifecycle {
       this.receipt.run = transitioned;
 
       await this.announce(transitioned);
+      await this.reconcile();
 
       if (interrupted && this.env) {
         recordChatRunOperationalMetric(this.env, {
@@ -396,6 +489,10 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
     await publishConversationChanged(publisher, receipt.run.conversationId, {
       runId: receipt.run.id,
     });
+
+    if (receipt.kind === "interaction_response" && teammateRunNeedsReconciliation(receipt.run)) {
+      await reconcileTeammateRun(scope.context, receipt.run);
+    }
   }
 
   if (!receipt.duplicate && scope.projectTask && scope.projectTask.runId !== receipt.run.id) {

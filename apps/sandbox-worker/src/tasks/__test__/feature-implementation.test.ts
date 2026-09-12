@@ -65,6 +65,27 @@ describe("pushBranchToRemote", () => {
     expect(emitted.map((event) => event.type)).toEqual(["commit_push_started", "commit_pushed"]);
   });
 
+  it("can stage a local delivery branch under a run-owned remote ref", async () => {
+    const exec = vi.fn().mockResolvedValue({
+      success: true,
+      exitCode: 0,
+      stdout: "",
+      stderr: "",
+    });
+
+    await pushBranchToRemote({
+      sandbox: { exec } as any,
+      repoTargetDir: "/workspace/repo",
+      branchName: "integration",
+      remoteBranchName: "polychat/run-run-123",
+      executionLogs: [],
+      checkpoint: vi.fn().mockResolvedValue(undefined),
+      emit: vi.fn(),
+    });
+
+    expect(exec.mock.calls[0]?.[0]).toContain("'integration:refs/heads/polychat/run-run-123'");
+  });
+
   it("throws when push fails", async () => {
     const exec = vi.fn().mockResolvedValue({
       success: false,

@@ -103,13 +103,23 @@ function createHarness(params?: {
     removeProjectCapability: vi.fn().mockResolvedValue(undefined),
     listProjectConversations: vi.fn().mockResolvedValue([]),
   };
-  const usageEvents = { summariseWorkspacePeriodBy: vi.fn().mockResolvedValue([]) };
+  const usageEvents = {
+    summariseWorkspacePeriodBy: vi.fn().mockResolvedValue([]),
+  };
   const audit = { createRecord: vi.fn().mockResolvedValue(undefined) };
   const outputs = { listWorkspaceOutputRoots: vi.fn().mockResolvedValue([]) };
   const context = {
     env: { APP_BASE_URL: "https://work.polychat.test/" },
     requireUser: vi.fn().mockReturnValue(user),
-    repositories: { workspaces: repositories, audit, outputs, usageEvents },
+    repositories: {
+      workspaces: repositories,
+      audit,
+      outputs,
+      usageEvents,
+      teammateContexts: {
+        listForWorkspaceProjects: vi.fn().mockResolvedValue([]),
+      },
+    },
   } as unknown as ServiceContext;
 
   return { context, repositories, audit, outputs, usageEvents };
@@ -121,7 +131,9 @@ describe("Work entitlement", () => {
       user: { id: 2, email: "free@example.com", plan_id: "free" },
     });
 
-    await expect(listWorkspaces(context)).rejects.toMatchObject({ statusCode: 403 });
+    await expect(listWorkspaces(context)).rejects.toMatchObject({
+      statusCode: 403,
+    });
     expect(repositories.listWorkspaces).not.toHaveBeenCalled();
   });
 });
@@ -274,7 +286,10 @@ describe("workspace invitation lifecycle", () => {
 
     repositories.getInvitationByTokenHash.mockImplementation(async () => storedInvitation);
     repositories.acceptInvitation.mockImplementation(async () => {
-      storedInvitation = invitation({ status: "accepted", token_hash: "consumed:invitation-1" });
+      storedInvitation = invitation({
+        status: "accepted",
+        token_hash: "consumed:invitation-1",
+      });
     });
 
     const result = await acceptWorkspaceInvitation(context, "a".repeat(64));
@@ -286,7 +301,11 @@ describe("workspace invitation lifecycle", () => {
       }),
       2,
     );
-    expect(result).toMatchObject({ id: WORKSPACE_ID, role: "member", invitations: [] });
+    expect(result).toMatchObject({
+      id: WORKSPACE_ID,
+      role: "member",
+      invitations: [],
+    });
     await expect(acceptWorkspaceInvitation(context, "a".repeat(64))).rejects.toMatchObject({
       type: ErrorType.NOT_FOUND,
       statusCode: 404,
@@ -346,7 +365,9 @@ describe("workspace and project isolation", () => {
         ...project,
         default_model_tier: defaultModelTier,
       });
-      const result = await updateProject(context, PROJECT_ID, { defaultModelTier });
+      const result = await updateProject(context, PROJECT_ID, {
+        defaultModelTier,
+      });
 
       expect(repositories.updateProject).toHaveBeenLastCalledWith(PROJECT_ID, {
         default_model_tier: defaultModelTier,
@@ -577,10 +598,17 @@ describe("project capability ownership", () => {
 describe("workspace spend visibility", () => {
   it.each(["owner", "admin"] as const)("shows only attributed spend to %s", async (role) => {
     const { context, usageEvents } = createHarness({ role });
-    const row = { key: "model", cost_micros: 10000, credit_micros: 1000000, event_count: 2 };
+    const row = {
+      key: "model",
+      cost_micros: 10000,
+      credit_micros: 1000000,
+      event_count: 2,
+    };
 
     usageEvents.summariseWorkspacePeriodBy.mockResolvedValue([row]);
-    const summary = await getWorkspaceUsageSummary(context, WORKSPACE_ID, { period: "2026-09" });
+    const summary = await getWorkspaceUsageSummary(context, WORKSPACE_ID, {
+      period: "2026-09",
+    });
 
     expect(summary.totals).toEqual({
       cost_micros: 10000,
@@ -617,7 +645,9 @@ describe("workspace spend visibility", () => {
 
   it("reports an empty period without manufacturing an allowance", async () => {
     const { context } = createHarness();
-    const summary = await getWorkspaceUsageSummary(context, WORKSPACE_ID, { period: "2026-01" });
+    const summary = await getWorkspaceUsageSummary(context, WORKSPACE_ID, {
+      period: "2026-01",
+    });
 
     expect(summary).toEqual({
       period: "2026-01",

@@ -7,10 +7,6 @@ const { runnerInstances } = vi.hoisted(() => ({
   runnerInstances: [] as Array<{ taskType: string; execute: Mock }>,
 }));
 
-vi.mock("../task-profile", () => ({
-  resolveSandboxTaskProfile: vi.fn(),
-}));
-
 vi.mock("../runners/feature-implementation-runner", () => ({
   AgentTaskRunner: class {
     readonly taskType: string;
@@ -28,7 +24,6 @@ vi.mock("../runners/feature-implementation-runner", () => ({
 }));
 
 import { executeSandboxTask } from "../index";
-import { resolveSandboxTaskProfile } from "../task-profile";
 
 describe("sandbox task runners", () => {
   beforeEach(() => {
@@ -39,12 +34,6 @@ describe("sandbox task runners", () => {
   });
 
   it("resolves the runner selected by the task profile", async () => {
-    vi.mocked(resolveSandboxTaskProfile).mockReturnValue({
-      taskType: "documentation",
-      task: "Write docs for run cancellation",
-      shouldCommit: false,
-      readOnlyCommands: false,
-    });
     const documentationRunner = runnerInstances.find(
       (runner) => runner.taskType === "documentation",
     );
@@ -59,9 +48,9 @@ describe("sandbox task runners", () => {
       {
         userId: 1,
         repo: "owner/repo",
-        task: "ignored",
-        taskType: "feature-implementation",
-        shouldCommit: true,
+        task: "Write docs for run cancellation",
+        taskType: "documentation",
+        shouldCommit: false,
         polychatApiUrl: "https://api.example.com",
       } as any,
       { userToken: "token" },
@@ -76,7 +65,7 @@ describe("sandbox task runners", () => {
       expect.objectContaining({
         params: expect.objectContaining({
           taskType: "documentation",
-          task: "Write docs for run cancellation",
+          task: expect.stringContaining("Documentation request: Write docs for run cancellation"),
           shouldCommit: false,
         }),
       }),

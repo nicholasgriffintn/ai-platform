@@ -5,6 +5,7 @@ import { requireWorkspaceAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { isWorkspaceTeammate, requireTeammateAccess } from "./access";
+import { resolveTeammateMcpServers } from "./mcp-servers";
 import { normaliseTeammateResponse } from "./teammateResponse";
 
 export async function publishTeammateToWorkspace(
@@ -37,7 +38,10 @@ export async function publishTeammateToWorkspace(
     name: source.name,
     description: source.description,
     avatarUrl: source.avatar_url,
-    servers: source.servers,
+    servers: resolveTeammateMcpServers(source.servers).map((server) => ({
+      ...server,
+      type: "sse" as const,
+    })),
     model: source.model,
     temperature: source.temperature,
     maxSteps: source.max_steps,

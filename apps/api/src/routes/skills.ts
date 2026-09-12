@@ -13,6 +13,7 @@ import {
   skillAvailabilitySchema,
   skillIdSchema,
   setSkillEnabledSchema,
+  teachingSkillDraftInputSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
@@ -33,6 +34,7 @@ import {
   rollbackPersonalSkill,
   savePersonalSkillDraft,
   updatePersonalSkill,
+  createTeachingSkillDraft,
 } from "~/services/skills";
 
 const app = new Hono();
@@ -96,6 +98,20 @@ addRoute(app, "post", "/documents", {
     409: { description: "Skill name already exists", schema: errorResponseSchema },
   },
   handler: ({ body, serviceContext, user }) => createPersonalSkill(serviceContext, user.id, body),
+});
+
+addRoute(app, "post", "/teaching-drafts", {
+  auth: true,
+  tags: ["skills"],
+  summary: "Create a disabled personal skill draft from supervised teaching",
+  bodySchema: teachingSkillDraftInputSchema,
+  responses: {
+    200: { description: "Created teaching draft", schema: authoredSkillVersionedDocumentSchema },
+    404: { description: "Teammate context not found", schema: errorResponseSchema },
+    409: { description: "Skill name already exists", schema: errorResponseSchema },
+  },
+  handler: ({ body, serviceContext, user }) =>
+    createTeachingSkillDraft(serviceContext, user.id, body),
 });
 
 addRoute(app, "post", "/documents/import", {

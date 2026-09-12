@@ -1,5 +1,6 @@
 import { apiService } from "@ngriffin_uk/polychat-library-client";
 import {
+  AGENT_RUNTIME_VENDORS,
   machineHeartbeatSchema,
   type MachineHeartbeat,
   type MachineRecord,
@@ -16,6 +17,27 @@ export const MACHINE_HEARTBEAT_INTERVAL_MS = 2 * 60_000;
 
 function checkedAt(): string {
   return new Date().toISOString();
+}
+
+async function inspectAgentRuntime(
+  backend: ConnectedDesktopBackend,
+  vendor: (typeof AGENT_RUNTIME_VENDORS)[number],
+) {
+  const readiness = await backend.probeAgentTool(vendor).catch(() => ({
+    state: "missing" as const,
+    checkedAt: checkedAt(),
+  }));
+  const supportsSessions =
+    readiness.state === "ready"
+      ? await backend.agentSupportsSessions(vendor).catch(() => false)
+      : false;
+
+  return {
+    kind: "agent" as const,
+    vendor,
+    readiness,
+    supportsSessions,
+  };
 }
 
 function advertisedReadiness(readiness: DesktopRuntimeReadiness): DesktopRuntimeReadiness {
@@ -74,8 +96,14 @@ export async function buildMachineHeartbeatPayload(
 ): Promise<MachineHeartbeat> {
   const endpoints = await backend.listEndpoints();
   const modelEndpoints = endpoints.filter((endpoint) => endpoint.kind === "model");
-  const runtimes = await Promise.all(
+  const modelRuntimes = await Promise.all(
     modelEndpoints.map((endpoint) => inspectRuntime(backend, endpoint)),
+  );
+  const agentRuntimes = await Promise.all(
+    AGENT_RUNTIME_VENDORS.map((vendor) => inspectAgentRuntime(backend, vendor)),
+  );
+  const hasAgentRuntime = agentRuntimes.some(
+    (runtime) => runtime.readiness.state === "ready" && runtime.supportsSessions,
   );
 
   return machineHeartbeatSchema.parse({
@@ -83,8 +111,11 @@ export async function buildMachineHeartbeatPayload(
     label: `Polychat Desktop (${diagnostics.platform})`,
     platform: diagnostics.platform,
     appVersion: diagnostics.appVersion,
-    runtimes,
-    capabilities: modelEndpoints.length > 0 ? ["model-run", "model-relay"] : [],
+    runtimes: [...modelRuntimes, ...agentRuntimes],
+    capabilities: [
+      ...(modelEndpoints.length > 0 ? (["model-run", "model-relay"] as const) : []),
+      ...(hasAgentRuntime ? (["agent-run"] as const) : []),
+    ],
   });
 }
 

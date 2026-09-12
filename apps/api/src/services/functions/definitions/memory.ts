@@ -43,6 +43,11 @@ export const store_memory: FunctionToolDescriptor = {
         type: "string",
         description: "Optional memory category such as preference, fact, schedule, or general.",
       },
+      document_id: {
+        type: "string",
+        description:
+          "Optional authorised document ID. Use this when the run exposes more than one writable document.",
+      },
     },
     required: ["text"],
   }),

@@ -1,4 +1,12 @@
-import { sandboxWorkerExecuteRequestSchema, NO_STORE } from "@ngriffin_uk/polychat-schemas";
+import {
+  NO_STORE,
+  SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX,
+  sandboxWorkerExecuteRequestSchema,
+} from "@ngriffin_uk/polychat-schemas";
+import {
+  encodeServerSentEvent,
+  encodeServerSentEventDone,
+} from "@ngriffin_uk/polychat-utility-core";
 
 import { verifySandboxJwt } from "./lib/auth";
 import { SandboxCancellationError } from "./lib/cancellation";
@@ -12,10 +20,6 @@ const SSE_HEADERS = {
   "Cache-Control": NO_STORE,
   Connection: "keep-alive",
 } as const;
-
-function toSseChunk(value: unknown): Uint8Array {
-  return new TextEncoder().encode(`data: ${JSON.stringify(value)}\n\n`);
-}
 
 function isSafePolychatApiUrl(polychatApiUrl: string): boolean {
   try {
@@ -33,6 +37,31 @@ function isSafePolychatApiUrl(polychatApiUrl: string): boolean {
   }
 
   return true;
+}
+
+function isSafeCredentialBrokerUrl(params: {
+  baseUrl: string;
+  polychatApiUrl: string;
+  runId?: string;
+}): boolean {
+  if (!params.runId) {
+    return false;
+  }
+
+  try {
+    const api = new URL(params.polychatApiUrl);
+    const broker = new URL(params.baseUrl);
+
+    return (
+      broker.origin === api.origin &&
+      broker.username === "" &&
+      broker.password === "" &&
+      broker.pathname ===
+        `${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/${encodeURIComponent(params.runId)}`
+    );
+  } catch {
+    return false;
+  }
 }
 
 export default {
@@ -91,12 +120,6 @@ export default {
       return Response.json({ error: "Missing authorization token" }, { status: 401 });
     }
 
-    const githubToken = request.headers.get("X-GitHub-Token")?.trim();
-
-    if (!githubToken) {
-      return Response.json({ error: "Missing GitHub installation token" }, { status: 400 });
-    }
-
     let tokenUserId: number;
 
     try {
@@ -124,11 +147,20 @@ export default {
 
     const secrets: TaskSecrets = {
       userToken,
-      githubToken,
     };
 
     if (!isSafePolychatApiUrl(params.polychatApiUrl)) {
       return Response.json({ error: "Invalid task payload" }, { status: 400 });
+    }
+
+    if (
+      !isSafeCredentialBrokerUrl({
+        baseUrl: params.credentialBroker.baseUrl,
+        polychatApiUrl: params.polychatApiUrl,
+        runId: params.runId,
+      })
+    ) {
+      return Response.json({ error: "Invalid credential broker" }, { status: 400 });
     }
 
     const executeTask = async (emitEvent?: (event: TaskEvent) => Promise<void> | void) => {
@@ -241,7 +273,7 @@ export default {
 
           streamClosed = true;
           try {
-            controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+            controller.enqueue(encodeServerSentEventDone());
             controller.close();
           } catch {
             // Client disconnected before the terminal SSE frame could be sent.
@@ -260,7 +292,7 @@ export default {
           }
 
           safeEnqueue(
-            toSseChunk({
+            encodeServerSentEvent({
               ...event,
               runId: event.runId ?? params.runId,
             }),

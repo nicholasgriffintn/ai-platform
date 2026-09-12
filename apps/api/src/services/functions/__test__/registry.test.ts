@@ -1,4 +1,7 @@
-import { CAPABILITY_DISCOVERY_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
+import {
+  CAPABILITY_DISCOVERY_TOOL_NAME,
+  HOSTED_MCP_APPROVAL_TOOL_NAME,
+} from "@ngriffin_uk/polychat-schemas";
 import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 import { describe, expect, it } from "vitest";
 import z from "zod/v4";
@@ -33,7 +36,9 @@ describe("functions tool registry", () => {
 
   it("describes exactly the tools the registry can execute", () => {
     const executable = sortCopy(
-      listFunctionTools().map((tool) => tool.name),
+      listFunctionTools()
+        .map((tool) => tool.name)
+        .filter((name) => name !== HOSTED_MCP_APPROVAL_TOOL_NAME),
       compareNaturalText,
     );
     const described = sortCopy(
@@ -165,11 +170,15 @@ describe("functions tool registry", () => {
 
     expect(schema.required).not.toContain("limit");
     expect(schema.properties?.limit).toMatchObject({ default: 8 });
-    expect(discovery.inputSchema.parse({ query: "analytics" })).toMatchObject({ limit: 8 });
+    expect(discovery.inputSchema.parse({ query: "analytics" })).toMatchObject({
+      limit: 8,
+    });
   });
 
   it("scopes connector providers to connected accounts for each request", () => {
-    const tools = listFunctionTools({ connectedConnectorProviders: ["gmail", "posthog"] });
+    const tools = listFunctionTools({
+      connectedConnectorProviders: ["gmail", "posthog"],
+    });
     const connector = tools.find((tool) => tool.name === "use_recipe_connector");
 
     expect(connector).toBeDefined();
@@ -179,7 +188,9 @@ describe("functions tool registry", () => {
 
     const schema = z.toJSONSchema(connector.inputSchema);
 
-    expect(schema.properties?.provider).toMatchObject({ enum: ["gmail", "posthog"] });
+    expect(schema.properties?.provider).toMatchObject({
+      enum: ["gmail", "posthog"],
+    });
     expect(schema.properties?.params).toMatchObject({
       description: "Parameters matching the exact schema returned by connector discovery.",
     });
@@ -213,8 +224,14 @@ describe("functions tool registry", () => {
     );
     expect(triggerRecipeSchema.anyOf).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ required: ["recipeId"], additionalProperties: false }),
-        expect.objectContaining({ required: ["query"], additionalProperties: false }),
+        expect.objectContaining({
+          required: ["recipeId"],
+          additionalProperties: false,
+        }),
+        expect.objectContaining({
+          required: ["query"],
+          additionalProperties: false,
+        }),
       ]),
     );
     expect(useRecipeConnectorSchema.additionalProperties).toBe(false);

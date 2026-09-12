@@ -18,6 +18,7 @@ export function resolveProjectCodingEnvironment(
   }
 
   const parsed = projectCodingEnvironmentSchema.safeParse({
+    executionProvider: project.coding_execution_provider,
     installationId: project.coding_installation_id,
     repository: project.coding_repository,
     promptStrategy: project.coding_prompt_strategy,

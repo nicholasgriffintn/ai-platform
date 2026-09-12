@@ -1,13 +1,14 @@
-import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
-
 import {
-  getConnectorProviderConfig,
-  connectorOperationRequiresApproval,
-} from "~/lib/providers/capabilities/connectors";
+  recipeConnectorProviderSchema,
+  teammateRunConfigurationSchema,
+} from "@ngriffin_uk/polychat-schemas";
+
+import { getConnectorProviderConfig } from "~/lib/providers/capabilities/connectors";
 import {
   retainComposioConnectorSession,
   resolveComposioRunAccount,
 } from "~/services/apps/connectors/composio-run";
+import { RECIPE_CONNECTOR_CONNECTION_KIND } from "~/services/apps/connectors/connection-references";
 import { authoriseConnectorOperation } from "~/services/apps/connectors/operation-approvals";
 import {
   discoverRecipeConnectorTools,
@@ -20,6 +21,7 @@ import {
   getRecipeAllowedConnectorProviders,
   getRecipeExecutionChannel,
 } from "~/services/apps/recipes/toolContext";
+import { resolveTeammateConnectorAuthority } from "~/services/teammates/connection-authority";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import {
   resolveAllowedProjectConnectorOperations,
@@ -142,6 +144,20 @@ export const use_recipe_connector: ApiToolDefinition = {
             !recipeAllowedConnectorProviders || recipeAllowedConnectorProviders.includes(candidate),
         )
       : recipeAllowedConnectorProviders;
+    const runConfiguration = teammateRunConfigurationSchema.safeParse(
+      request.request?.resolved_configuration,
+    );
+    const teammateAuthority = request.request?.teammate_context_id
+      ? await resolveTeammateConnectorAuthority({
+          context: request.context,
+          contextId: request.request.teammate_context_id,
+          userId: request.user.id,
+          provider,
+          ...(runConfiguration.success
+            ? { admittedGrants: runConfiguration.data.connectionGrants }
+            : {}),
+        })
+      : undefined;
 
     if (allowedConnectorProviders && !allowedConnectorProviders.includes(provider)) {
       return {
@@ -165,12 +181,18 @@ export const use_recipe_connector: ApiToolDefinition = {
       recipeOperations: recipeAllowedConnectorOperations,
     });
     const providerConfig = getConnectorProviderConfig(provider);
-    const effectiveAllowedOperations =
+    const configuredAllowedOperations =
       allowedConnectorOperations ??
       providerConfig?.operations.map((operation) => operation.id) ??
       [];
+    const effectiveAllowedOperations = teammateAuthority
+      ? configuredAllowedOperations.filter((candidate) =>
+          teammateAuthority.allowedOperations.includes(candidate),
+        )
+      : configuredAllowedOperations;
     const operation = typeof args.operation === "string" ? args.operation.trim() : "";
     const useCase = typeof args.useCase === "string" ? args.useCase.trim() : "";
+    const channel = getRecipeExecutionChannel(request.request?.options) ?? "web";
 
     if (!operation && !useCase) {
       return {
@@ -206,6 +228,9 @@ export const use_recipe_connector: ApiToolDefinition = {
           recipeId: activeRecipe?.id,
           installationId: activeRecipe?.installationId,
           projectId,
+          teammateContextId: request.request?.teammate_context_id,
+          connectedAccountId: teammateAuthority?.connectedAccountId,
+          requireSelectedAccount: channel === "scheduled" || channel === "event",
         });
 
         return {
@@ -217,29 +242,15 @@ export const use_recipe_connector: ApiToolDefinition = {
         };
       } catch (error) {
         if (error instanceof AssistantError) {
-          return buildConnectorToolError({ provider, operation: "discover", error });
+          return buildConnectorToolError({
+            provider,
+            operation: "discover",
+            error,
+          });
         }
 
         throw error;
       }
-    }
-
-    const channel = getRecipeExecutionChannel(request.request?.options) ?? "web";
-
-    if (
-      (channel === "scheduled" || channel === "event") &&
-      connectorOperationRequiresApproval(provider, operation)
-    ) {
-      return {
-        status: "error",
-        name: "use_recipe_connector",
-        content: `${channel === "event" ? "Event-triggered" : "Scheduled"} recipe runs cannot perform connector write operations. Ask the user to run this recipe in chat if an external change is required.`,
-        data: {
-          provider,
-          operation,
-          channel,
-        },
-      };
     }
 
     let data: unknown;
@@ -251,25 +262,43 @@ export const use_recipe_connector: ApiToolDefinition = {
         recipeId: activeRecipe?.id,
         installationId: activeRecipe?.installationId,
         projectId,
+        teammateContextId: request.request?.teammate_context_id,
       };
       const resolvedRunAccount =
-        providerConfig?.auth.authType === "composio" && args.sessionId
+        providerConfig?.auth.authType === "composio"
           ? await resolveComposioRunAccount({
               context: request.context,
               userId: request.user.id,
               provider: providerConfig,
               operationId: operation,
+              connectedAccountId: teammateAuthority?.connectedAccountId,
               sessionId: args.sessionId,
+              requireSelectedAccount: channel === "scheduled" || channel === "event",
               scope,
             })
           : undefined;
+      const localConnection =
+        providerConfig?.auth.authType === "api_key"
+          ? (teammateAuthority?.connection ??
+            (await request.context.repositories.providerConnections.getConnection(
+              request.user.id,
+              provider,
+              RECIPE_CONNECTOR_CONNECTION_KIND,
+            )))
+          : undefined;
+
+      if (localConnection && localConnection.status !== "connected") {
+        throw new AssistantError("Connector is not connected", ErrorType.AUTHORISATION_ERROR, 403);
+      }
+
       const approval = await authoriseConnectorOperation({
         context: request.context,
         userId: request.user.id,
         provider,
         operation,
         arguments: params ?? {},
-        connectedAccountId: resolvedRunAccount?.connectedAccount.id,
+        connectedAccountId: resolvedRunAccount?.connectedAccount.id ?? localConnection?.id,
+        authorityRevision: teammateAuthority?.grantRevision,
         channel,
         scope,
         approvalId: request.request?.connector_approval_id,
@@ -294,11 +323,15 @@ export const use_recipe_connector: ApiToolDefinition = {
             humanInTheLoop: {
               type: "approval",
               status: "pending",
+              interactionId: context.toolCallId,
+              toolName: "use_recipe_connector",
               requires_user_action: true,
             },
           },
         };
       }
+
+      const executionParams = approval.arguments ?? params;
 
       data = await executeRecipeConnectorOperation({
         context: request.context,
@@ -306,8 +339,9 @@ export const use_recipe_connector: ApiToolDefinition = {
         request: {
           provider,
           operation,
-          params,
+          params: executionParams,
           sessionId: typeof args.sessionId === "string" ? args.sessionId : undefined,
+          connectedAccountId: teammateAuthority?.connectedAccountId,
         },
         scope,
       });

@@ -5,13 +5,7 @@ import {
   useLocalConversationScope,
 } from "@ngriffin_uk/polychat-library-react";
 
-export function DelegatePanel({
-  conversationId,
-  canControl = true,
-}: {
-  conversationId: string;
-  canControl?: boolean;
-}) {
+export function DelegatePanel({ conversationId }: { conversationId: string }) {
   const scope = useLocalConversationScope(conversationId);
   const agentApprovals = useConversationAgentApprovals(scope.currentConversationId);
 
@@ -27,16 +21,8 @@ export function DelegatePanel({
             hideInlineResponseControls: true,
             hideVoiceControls: true,
             toolSelectionLocked: true,
-            hideTextInput: !canControl,
-            hideSubmitButton: !canControl,
-            inputPlaceholder: {
-              newConversation: canControl
-                ? "Read this delegate"
-                : "Only the starter can steer this delegate",
-              followUp: canControl
-                ? "Message delegate"
-                : "Only the starter can steer this delegate",
-            },
+            hideTextInput: true,
+            hideSubmitButton: true,
           }}
         />
       </div>

@@ -3,4 +3,5 @@ export interface ConnectorRunScope {
   recipeId?: string;
   installationId?: string;
   projectId?: string;
+  teammateContextId?: string;
 }

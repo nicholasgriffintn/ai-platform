@@ -1,7 +1,9 @@
 import type {
   AuthoredSkillDocument,
+  AuthoredSkillVersionedDocument,
   SkillAvailability,
   SkillAvailabilityResponse,
+  TeachingSkillDraftInput,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service.js";
@@ -60,6 +62,22 @@ export async function createSkill(
   }
 
   return returnFetchedData<AuthoredSkillDocument>(response);
+}
+
+export async function createTeachingSkillDraft(
+  input: TeachingSkillDraftInput,
+): Promise<AuthoredSkillVersionedDocument> {
+  const response = await fetchApi("/skills/teaching-drafts", {
+    method: "POST",
+    headers: await readHeaders(),
+    body: input,
+  });
+
+  if (!response.ok) {
+    throw await createApiErrorFromResponse(response, "Failed to save teaching draft");
+  }
+
+  return returnFetchedData<AuthoredSkillVersionedDocument>(response);
 }
 
 export async function deleteSkill(skillId: string, projectId?: string): Promise<void> {

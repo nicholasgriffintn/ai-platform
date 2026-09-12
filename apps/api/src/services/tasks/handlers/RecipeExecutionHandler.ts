@@ -1,16 +1,23 @@
-import type { RecipeConfiguration } from "@ngriffin_uk/polychat-schemas";
-
-import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import {
-  getMessagingProviderFromStoredCredential,
-  selectConfiguredMessagingDelivery,
-} from "~/lib/providers/capabilities/messaging/delivery";
-import { invokeAssistantRecipe } from "~/services/apps/recipes";
+  recipeExecutionTaskDataSchema,
+  type TeammateInvocation,
+} from "@ngriffin_uk/polychat-schemas";
+
+import { createServiceContext } from "~/lib/context/serviceContext";
+import { invokeAssistantRecipe, parseRecipeInstallationRecord } from "~/services/apps/recipes";
 import {
   executeRecipeInvocationChat,
   recordRecipeInvocationFailure,
 } from "~/services/apps/recipes/execution";
-import type { IEnv, IUser } from "~/types";
+import {
+  deliverRecipeOccurrenceToTeammateHome,
+  ensureRecipeOccurrenceConversation,
+} from "~/services/apps/recipes/occurrences";
+import { deliverRecipeSmsNotification } from "~/services/apps/recipes/sms-notification";
+import { isRunWaitingForDelegations } from "~/services/delegations/wait-policy";
+import { prepareTeammateRun } from "~/services/teammates/execution";
+import { reconcileTeammateRun } from "~/services/teammates/run-reconciliation";
+import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
 import { extractChatCompletionNotification } from "~/utils/messages";
 
@@ -19,74 +26,22 @@ import type { TaskMessage } from "../TaskService";
 
 const logger = getLogger({ prefix: "services/tasks/handlers/RecipeExecutionHandler" });
 
-interface RecipeExecutionTaskData {
-  recipeId: string;
-  projectId?: string | null;
-  input?: string;
-  channel?: "web" | "ios" | "sms" | "slack" | "telegram" | "scheduled" | "event" | "tool";
-  configuration?: RecipeConfiguration;
-  notificationChannel?: "sms";
-  notificationTarget?: string;
-}
-
 function getRecipeExecutionConversationId(taskId: string): string {
   return `recipe_${taskId}`;
 }
 
-async function sendRecipeSmsNotification(params: {
-  env: IEnv;
-  context: ServiceContext;
-  user: IUser;
-  userId: number;
-  to: string;
-  body: string;
-  mediaUrls?: string[];
-}): Promise<void> {
-  const messagingProvider = selectConfiguredMessagingDelivery(
-    await params.context.repositories.userSettings.getUserProviderSettings(params.userId),
-    { mediaUrls: params.mediaUrls, apiBaseUrl: params.env.API_BASE_URL },
-  );
-
-  if (!messagingProvider) {
-    throw new Error("No configured SMS provider can send this scheduled recipe notification");
-  }
-
-  const encryptedValue =
-    await params.context.repositories.userSettings.getProviderApiKeyForSettings({
-      userId: params.userId,
-      providerId: messagingProvider.providerId,
-      providerSettingsId: messagingProvider.id,
-    });
-
-  if (!encryptedValue) {
-    throw new Error("SMS provider credentials are not configured");
-  }
-
-  const provider = getMessagingProviderFromStoredCredential({
-    providerId: messagingProvider.providerId,
-    value: encryptedValue,
-    env: params.env,
-    user: params.user,
-    context: params.context,
-  });
-
-  await provider.send({
-    to: params.to,
-    body: params.body,
-    ...(messagingProvider.mediaUrls?.length ? { mediaUrls: messagingProvider.mediaUrls } : {}),
-  });
-}
-
 export class RecipeExecutionHandler implements TaskHandler {
   public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
-    const data = message.task_data as RecipeExecutionTaskData;
+    const parsedData = recipeExecutionTaskDataSchema.safeParse(message.task_data);
 
-    if (!message.user_id || !data.recipeId) {
+    if (!message.user_id || !parsedData.success) {
       return {
         status: "error",
-        message: "user_id and recipeId are required for recipe execution",
+        message: "Recipe execution task data is invalid",
       };
     }
+
+    const data = parsedData.data;
 
     const baseContext = createServiceContext({ env });
     const user = await baseContext.repositories.users.getUserById(message.user_id);
@@ -106,6 +61,7 @@ export class RecipeExecutionHandler implements TaskHandler {
       input: data.input,
       configuration: data.configuration,
       projectId: data.projectId ?? undefined,
+      installationId: data.installationId,
       requireInstalled: true,
     });
 
@@ -132,8 +88,63 @@ export class RecipeExecutionHandler implements TaskHandler {
       };
     }
 
+    if (invocation.status === "paused") {
+      return {
+        status: "skipped",
+        message: "Recipe execution skipped because the routine is paused",
+        data: invocation,
+      };
+    }
+
     const conversationId = getRecipeExecutionConversationId(message.taskId);
     let execution: Awaited<ReturnType<typeof executeRecipeInvocationChat>>;
+    let teammate:
+      | {
+          id: string;
+          invocation: {
+            source: "routine";
+            installationId: string;
+            occurrenceId: string;
+          };
+        }
+      | undefined;
+    let teammateContext: Awaited<ReturnType<typeof prepareTeammateRun>>["resolution"]["context"] =
+      null;
+
+    if (data.installationId && data.occurrenceId) {
+      const installationRecord = await context.repositories.templates.getTemplateById(
+        data.installationId,
+      );
+      const installation = installationRecord
+        ? parseRecipeInstallationRecord(installationRecord)
+        : null;
+
+      if (installation?.teammateContextId) {
+        const routineInvocation: Extract<TeammateInvocation, { source: "routine" }> = {
+          source: "routine",
+          installationId: data.installationId,
+          occurrenceId: data.occurrenceId,
+        };
+        const prepared = await prepareTeammateRun({ context, invocation: routineInvocation });
+
+        teammate = { id: prepared.teammate.id, invocation: routineInvocation };
+        teammateContext = prepared.resolution.context;
+      }
+    }
+
+    if (teammateContext) {
+      await ensureRecipeOccurrenceConversation({
+        context,
+        user,
+        conversationId,
+        title: `Recipe: ${invocation.recipeTitle || invocation.recipeId}`,
+        projectId: data.projectId ?? undefined,
+      });
+    }
+
+    const occurrenceCommandId = data.occurrenceId
+      ? `recipe_occurrence_${data.occurrenceId}`
+      : undefined;
 
     try {
       execution = await executeRecipeInvocationChat({
@@ -144,6 +155,8 @@ export class RecipeExecutionHandler implements TaskHandler {
         conversationId,
         projectId: data.projectId ?? undefined,
         titleConversation: true,
+        commandId: occurrenceCommandId,
+        teammate,
       });
     } catch (error) {
       const response = await recordRecipeInvocationFailure({
@@ -156,8 +169,28 @@ export class RecipeExecutionHandler implements TaskHandler {
         error,
       });
 
+      const acceptedRun = occurrenceCommandId
+        ? await context.repositories.conversationRuns.getCommandReceipt(
+            message.user_id,
+            occurrenceCommandId,
+          )
+        : null;
+
+      if (teammateContext && data.occurrenceId && !acceptedRun) {
+        await deliverRecipeOccurrenceToTeammateHome({
+          context,
+          user,
+          teammateContext,
+          installationId: data.installationId,
+          occurrenceId: data.occurrenceId,
+          conversationId,
+          recipeTitle: invocation.recipeTitle || invocation.recipeId,
+          failure: response,
+        });
+      }
+
       return {
-        status: "success",
+        status: "error",
         message: "Recipe execution failed and was recorded",
         data: {
           ...invocation,
@@ -168,24 +201,71 @@ export class RecipeExecutionHandler implements TaskHandler {
       };
     }
 
+    const executionRunReceipt = execution.response.run?.run;
+    const executionRun = executionRunReceipt
+      ? await context.repositories.conversationRuns.getById(executionRunReceipt.id)
+      : null;
+
+    if (teammate && executionRun) {
+      await reconcileTeammateRun(context, executionRun);
+    }
+
+    const runStatus = executionRun?.status ?? executionRunReceipt?.status;
+    const waitingForUser =
+      runStatus === "awaiting_input" ||
+      runStatus === "awaiting_approval" ||
+      runStatus === "awaiting_takeover";
+    const completedRunId = executionRun?.id ?? executionRunReceipt?.id;
+    let waitingForDelegations = false;
+
+    if (teammateContext && runStatus === "succeeded" && completedRunId) {
+      waitingForDelegations = await isRunWaitingForDelegations(context, completedRunId);
+    }
+
+    const waitingForRun =
+      waitingForUser ||
+      waitingForDelegations ||
+      runStatus === "accepted" ||
+      runStatus === "running" ||
+      runStatus === "cancelling";
+
+    if (runStatus === "failed" || runStatus === "cancelled" || runStatus === "interrupted") {
+      return {
+        status: "error",
+        message: `Recipe occurrence ended with ${runStatus}`,
+        data: {
+          ...invocation,
+          conversationId: execution.conversationId,
+          response: execution.response,
+          occurrenceStatus: runStatus,
+        },
+      };
+    }
+
     let notificationDelivery:
       | { channel: "sms"; status: "sent" }
       | { channel: "sms"; status: "failed"; error: string }
       | undefined;
 
-    if (data.notificationChannel === "sms" && data.notificationTarget?.trim()) {
+    if (
+      !teammate &&
+      !waitingForRun &&
+      data.notificationChannel === "sms" &&
+      data.notificationTarget?.trim()
+    ) {
       const notification = extractChatCompletionNotification(execution.response, {
         fallback: "Recipe execution completed.",
       });
 
       try {
-        await sendRecipeSmsNotification({
+        await deliverRecipeSmsNotification({
           env,
           context,
-          user: user,
+          user,
           userId: message.user_id,
-          to: data.notificationTarget.trim(),
-          ...notification,
+          taskId: message.taskId,
+          taskData: data,
+          notification,
         });
         notificationDelivery = { channel: "sms", status: "sent" };
       } catch (error) {
@@ -206,12 +286,19 @@ export class RecipeExecutionHandler implements TaskHandler {
     }
 
     return {
-      status: "success",
-      message: "Recipe execution completed",
+      status: waitingForRun ? "suspended" : "success",
+      message: waitingForUser
+        ? "Recipe occurrence is waiting for user action"
+        : waitingForDelegations
+          ? "Recipe occurrence is waiting for delegated work"
+          : waitingForRun
+            ? "Recipe occurrence is still running"
+            : "Recipe execution completed",
       data: {
         ...invocation,
         conversationId: execution.conversationId,
         response: execution.response,
+        ...(runStatus ? { occurrenceStatus: runStatus } : {}),
         ...(notificationDelivery ? { notificationDelivery } : {}),
       },
     };

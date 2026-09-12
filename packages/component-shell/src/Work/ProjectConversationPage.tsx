@@ -1,4 +1,5 @@
 import type { ThreadModeConfig } from "@ngriffin_uk/polychat-component-conversation";
+import type { ProjectWorkbenchHeaderSlots } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useChat,
@@ -21,6 +22,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { ConversationPage } from "../Conversations/ConversationPage.js";
+import { ConversationProductHeader } from "../Header/ConversationProductHeader.js";
 import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl.js";
 import { ProjectFileAsTaskControl } from "./ProjectFileAsTaskControl.js";
 import { ProjectWorkbenchConversation } from "./ProjectWorkbenchConversation.js";
@@ -92,6 +94,18 @@ export function ProjectConversationPage({
     : draftTaskType;
   const codingPresentation = useMemo(() => getProjectCodingPresentation(taskType), [taskType]);
   const recipeManagementPath = getCapabilityLibraryPath(getProjectSurface(workspaceId, projectId));
+  const renderConversationHeader = useCallback(
+    ({ status, actions }: ProjectWorkbenchHeaderSlots) => (
+      <ConversationProductHeader
+        additionalActions={actions}
+        projectColour={project?.colour}
+        requestOptions={{ metadata: { project_id: projectId } }}
+        showProductModeSwitch={!conversationId}
+        status={status}
+      />
+    ),
+    [conversationId, project?.colour, projectId],
+  );
 
   useEffect(() => {
     setDraftTaskType("feature-implementation");
@@ -285,10 +299,12 @@ export function ProjectConversationPage({
       conversationIsStreaming={isStreamLoading}
       conversationMessages={currentConversation?.messages}
       task={conversationTask}
+      renderHeader={renderConversationHeader}
     >
       {({ runSteering, composerBanner }) => (
         <ConversationPage
           embedded
+          header={null}
           pathConversationId={conversationId}
           title={project?.name ?? "Project conversation"}
           modeConfig={{ ...baseModeConfig, composerBanner, runSteering }}

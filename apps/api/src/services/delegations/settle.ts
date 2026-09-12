@@ -14,8 +14,14 @@ export async function transitionDelegation(
   id: string,
   state: DelegationState,
   result: DelegationResult | null = null,
+  deliveryUserId?: number,
 ): Promise<Delegation | null> {
-  const updated = await context.repositories.delegations.updateState(id, state, result);
+  const updated = await context.repositories.delegations.updateState(
+    id,
+    state,
+    result,
+    deliveryUserId,
+  );
 
   if (!updated) {
     return null;

@@ -13,6 +13,13 @@ export async function requireConversationAccess(
     throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
   }
 
+  const teammateContext =
+    await context.repositories.teammateContexts.getByHomeConversationId(conversationId);
+
+  if (teammateContext && teammateContext.actorUserId !== user.id) {
+    throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
+  }
+
   const projectId = conversation.project_id;
 
   if (typeof projectId === "string" && projectId.length > 0) {

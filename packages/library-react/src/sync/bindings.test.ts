@@ -55,12 +55,15 @@ describe("sync bindings", () => {
     expect(invalidatedKeys).toContainEqual(["chats", "remote"]);
   });
 
-  it("keeps a message change off the chat list and the goal", () => {
+  it("refreshes conversation context without refreshing the chat list or goal", () => {
     const { context, invalidatedKeys } = createContext();
 
     applySyncEvent(context, buildEvent("message.changed", { conversationId: "abc" }));
 
-    expect(invalidatedKeys).toEqual([["chats", "abc"]]);
+    expect(invalidatedKeys).toEqual([
+      ["chats", "abc"],
+      ["conversation-brief", "abc"],
+    ]);
   });
 
   it("drops a deleted conversation from the caches rather than refetching it", () => {

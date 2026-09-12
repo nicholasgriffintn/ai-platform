@@ -18,6 +18,7 @@ const ACTIVE_RUN_STATUSES = new Set([
   "running",
   "awaiting_input",
   "awaiting_approval",
+  "awaiting_takeover",
   "cancelling",
 ]);
 

@@ -16,7 +16,7 @@ interface ProjectWorkbenchPreferences {
 function readPreferences(): ProjectWorkbenchPreferences {
   const defaults: ProjectWorkbenchPreferences = {
     selectedPane: "activity",
-    dockCollapsed: false,
+    dockCollapsed: true,
     dockWidth: DEFAULT_DOCK_WIDTH,
   };
 

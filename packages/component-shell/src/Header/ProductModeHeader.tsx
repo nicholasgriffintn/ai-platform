@@ -15,6 +15,7 @@ export interface ProductModeHeaderProps {
   actions?: ReactNode;
   context?: ReactNode;
   projectColour?: string;
+  showProductModeSwitch?: boolean;
   showSidebarToggle?: boolean;
 }
 
@@ -22,10 +23,11 @@ export function ProductModeHeader({
   actions,
   context,
   projectColour,
+  showProductModeSwitch,
   showSidebarToggle = true,
 }: ProductModeHeaderProps) {
   const { pathname } = useLocation();
-  const showProductModeSwitch = isProductModeRoute(pathname);
+  const shouldShowProductModeSwitch = showProductModeSwitch ?? isProductModeRoute(pathname);
   const headerRef = useRef<HTMLElement>(null);
   const isScrolled = useHeaderScrollEdge(headerRef, pathname);
   const { isMobile, sidebarVisible, setSidebarVisible } = useUIStore();
@@ -57,7 +59,7 @@ export function ProductModeHeader({
         </>
       }
       center={
-        showProductModeSwitch ? (
+        shouldShowProductModeSwitch ? (
           <ProductModeSwitch
             activeMode={getProductMode(pathname)}
             className="w-auto shrink-0 @min-[40rem]:w-44"

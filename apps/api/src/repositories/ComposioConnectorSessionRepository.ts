@@ -19,6 +19,8 @@ export interface ComposioConnectorSessionRecord {
   completionId: string | null;
   recipeId: string | null;
   installationId: string | null;
+  projectId: string | null;
+  teammateContextId: string | null;
   state: "active" | "claimed" | "cleanup_pending";
   createdAt: string;
   expiresAt: string;
@@ -52,6 +54,8 @@ function parseSession(record: ComposioConnectorSession): ComposioConnectorSessio
     completionId: record.completion_id,
     recipeId: record.recipe_id,
     installationId: record.installation_id,
+    projectId: record.project_id,
+    teammateContextId: record.teammate_context_id,
     state: record.state,
     createdAt: record.created_at,
     expiresAt: record.expires_at,
@@ -75,6 +79,8 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
     completionId?: string | null;
     recipeId?: string | null;
     installationId?: string | null;
+    projectId?: string | null;
+    teammateContextId?: string | null;
     createdAt?: string;
     expiresAt: string;
   }): Promise<ComposioConnectorSessionRecord> {
@@ -94,6 +100,8 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
         completion_id: input.completionId ?? null,
         recipe_id: input.recipeId ?? null,
         installation_id: input.installationId ?? null,
+        project_id: input.projectId ?? null,
+        teammate_context_id: input.teammateContextId ?? null,
         state: "active",
         created_at: input.createdAt ?? new Date().toISOString(),
         expires_at: input.expiresAt,
@@ -124,6 +132,8 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
     completionId: string;
     recipeId?: string | null;
     installationId?: string | null;
+    projectId?: string | null;
+    teammateContextId?: string | null;
     claimedAt: string;
   }): Promise<ComposioConnectorSessionRecord | null> {
     const result = await this.runQuery<ComposioConnectorSession>(
@@ -133,6 +143,8 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
 			   AND state IN ('active', 'claimed') AND expires_at > ?
 			   AND run_id = ? AND completion_id = ?
 			   AND recipe_id IS ? AND installation_id IS ?
+			   AND project_id IS ?
+			   AND teammate_context_id IS ?
 			   AND EXISTS (
 				 SELECT 1 FROM json_each(allowed_operation_ids) WHERE value = ?
 			   )
@@ -147,6 +159,8 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
         input.completionId,
         input.recipeId ?? null,
         input.installationId ?? null,
+        input.projectId ?? null,
+        input.teammateContextId ?? null,
         input.operationId,
       ],
       true,
@@ -172,6 +186,23 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
            cleanup_after = ?
        WHERE run_id = ? AND state IN ('active', 'claimed')`,
       [input.cleanupAfter, input.runId],
+    );
+  }
+
+  async markContextsCleanupPending(contextIds: string[], cleanupAfter: string): Promise<void> {
+    const ids = [...new Set(contextIds)];
+
+    if (ids.length === 0) {
+      return;
+    }
+
+    await this.executeRun(
+      `UPDATE composio_connector_session
+       SET state = 'cleanup_pending', cleanup_attempts = cleanup_attempts + 1,
+           cleanup_after = ?
+       WHERE teammate_context_id IN (${ids.map(() => "?").join(", ")})
+         AND state IN ('active', 'claimed')`,
+      [cleanupAfter, ...ids],
     );
   }
 

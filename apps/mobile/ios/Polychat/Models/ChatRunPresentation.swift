@@ -31,6 +31,8 @@ struct ChatRunPresentation: Equatable {
             return ChatRunPresentation(label: "Answer needed", detail: "The task is waiting for your answer.", tone: .attention)
         case "awaiting_approval":
             return ChatRunPresentation(label: "Approval needed", detail: "The task is waiting for approval.", tone: .attention)
+        case "awaiting_takeover":
+            return ChatRunPresentation(label: "Takeover needed", detail: "The task is waiting for you to control its computer.", tone: .attention)
         case "cancelling":
             return ChatRunPresentation(label: "Stop requested", detail: "The task owner has not stopped yet.", tone: .attention)
         case "succeeded":

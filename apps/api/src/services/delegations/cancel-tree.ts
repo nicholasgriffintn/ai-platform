@@ -2,6 +2,8 @@ import { isLiveDelegationState, type Delegation } from "@ngriffin_uk/polychat-sc
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 
+import { canControlDelegation } from "./authority";
+import { cancelDelegationChildRun } from "./cancel-child-run";
 import { transitionDelegation } from "./settle";
 
 export async function cancelDelegationTree(
@@ -18,25 +20,27 @@ export async function cancelDelegationTree(
 
       visited.add(delegation.id);
 
-      if (isLiveDelegationState(delegation.state)) {
-        await transitionDelegation(context, delegation.id, "cancelled", {
+      if (!isLiveDelegationState(delegation.state)) {
+        continue;
+      }
+
+      await transitionDelegation(
+        context,
+        delegation.id,
+        "cancelled",
+        {
           summary: "The parent run was cancelled.",
           outputIds: [],
-        });
-      }
-
-      const childRun = await context.repositories.conversationRuns.getLatestForConversation(
-        delegation.childConversationId,
+        },
+        context.requireUser().id,
       );
 
-      if (childRun) {
-        await context.repositories.conversationRuns.transition({
-          runId: childRun.id,
-          attempt: childRun.attempt,
-          status: "cancelled",
-          terminalReason: "The parent run was cancelled",
-        });
-      }
+      await cancelDelegationChildRun(
+        context,
+        delegation,
+        context.requireUser().id,
+        "The parent run was cancelled",
+      );
 
       await cancelChildren(
         await context.repositories.delegations.listByParentConversationId(
@@ -52,12 +56,25 @@ export async function cancelDelegationTree(
 export async function cancelDelegationsForConversation(
   context: ServiceContext,
   parentConversationId: string,
-): Promise<void> {
+  userId: number,
+): Promise<boolean> {
   const delegations =
     await context.repositories.delegations.listByParentConversationId(parentConversationId);
-  const parentRunIds = new Set(delegations.map((delegation) => delegation.parentRunId));
+  const controllable = await Promise.all(
+    delegations.map(async (delegation) => ({
+      delegation,
+      allowed: await canControlDelegation(context, delegation, userId),
+    })),
+  );
+  const parentRunIds = new Set(
+    controllable
+      .filter(({ allowed, delegation }) => allowed && isLiveDelegationState(delegation.state))
+      .map(({ delegation }) => delegation.parentRunId),
+  );
 
   for (const parentRunId of parentRunIds) {
     await cancelDelegationTree(context, parentRunId);
   }
+
+  return parentRunIds.size > 0;
 }

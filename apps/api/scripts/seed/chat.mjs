@@ -12,7 +12,12 @@ import {
 } from "./sql.mjs";
 import { buildThread, toolCall } from "./thread.mjs";
 
-const USAGE = { prompt_tokens: 812, completion_tokens: 344, total_tokens: 1156, cost_usd: 0.0021 };
+const USAGE = {
+  prompt_tokens: 812,
+  completion_tokens: 344,
+  total_tokens: 1156,
+  cost_usd: 0.0021,
+};
 
 export const SCENARIOS = [];
 
@@ -130,7 +135,10 @@ That is 24 items. Nothing on the list is used only once except the hazelnuts, wh
       run: { status: "succeeded" },
     },
     [
-      { role: "user", content: "Roughly how many piano tuners work in London? Show your working." },
+      {
+        role: "user",
+        content: "Roughly how many piano tuners work in London? Show your working.",
+      },
       {
         role: "assistant",
         usage: { ...USAGE, completion_tokens: 610, total_tokens: 1422 },
@@ -150,7 +158,6 @@ That is 24 items. Nothing on the list is used only once except the hazelnuts, wh
       },
     ],
   );
-
   const tools = thread(
     statements,
     {
@@ -181,8 +188,20 @@ That is 24 items. Nothing on the list is used only once except the hazelnuts, wh
         result: {
           location: "Lisbon",
           forecast: [
-            { day: "Saturday", high: 27, low: 18, condition: "Sunny", precipitation: 0 },
-            { day: "Sunday", high: 25, low: 17, condition: "Partly cloudy", precipitation: 10 },
+            {
+              day: "Saturday",
+              high: 27,
+              low: 18,
+              condition: "Sunny",
+              precipitation: 0,
+            },
+            {
+              day: "Sunday",
+              high: 25,
+              low: 17,
+              condition: "Partly cloudy",
+              precipitation: 10,
+            },
           ],
         },
         data: {
@@ -193,8 +212,20 @@ That is 24 items. Nothing on the list is used only once except the hazelnuts, wh
           data: {
             location: "Lisbon",
             forecast: [
-              { day: "Saturday", high: 27, low: 18, condition: "Sunny", precipitation: 0 },
-              { day: "Sunday", high: 25, low: 17, condition: "Partly cloudy", precipitation: 10 },
+              {
+                day: "Saturday",
+                high: 27,
+                low: 18,
+                condition: "Sunny",
+                precipitation: 0,
+              },
+              {
+                day: "Sunday",
+                high: 25,
+                low: 17,
+                condition: "Partly cloudy",
+                precipitation: 10,
+              },
             ],
           },
         },
@@ -395,15 +426,26 @@ The break length is a constant so a long break every four sessions is a two line
       modelId: "gemini-3-pro",
       run: {
         status: "succeeded",
-        provenance: { site: "hosted", vendor: "google-ai-studio", model: "gemini-3-pro" },
+        provenance: {
+          site: "hosted",
+          vendor: "google-ai-studio",
+          model: "gemini-3-pro",
+        },
       },
     },
     [
-      { role: "user", content: "What is the current state of WebGPU support across browsers?" },
+      {
+        role: "user",
+        content: "What is the current state of WebGPU support across browsers?",
+      },
       {
         role: "assistant",
         model: "gemini-3-pro",
-        provenance: { site: "hosted", vendor: "google-ai-studio", model: "gemini-3-pro" },
+        provenance: {
+          site: "hosted",
+          vendor: "google-ai-studio",
+          model: "gemini-3-pro",
+        },
         usage: USAGE,
         citations: ["https://example.com/webgpu-status", "https://example.com/caniuse-webgpu"],
         data: {
@@ -418,7 +460,12 @@ The break length is a constant so a long break every four sessions is a two line
                   title: "WebGPU implementation status",
                 },
               },
-              { web: { uri: "https://example.com/caniuse-webgpu", title: "Can I use WebGPU" } },
+              {
+                web: {
+                  uri: "https://example.com/caniuse-webgpu",
+                  title: "Can I use WebGPU",
+                },
+              },
             ],
             groundingSupports: [
               {
@@ -502,19 +549,33 @@ Everything else, including the section order and the destructive action styling,
       {
         role: "user",
         content: [
-          { type: "text", text: "Read me a two sentence summary of what a Durable Object is." },
+          {
+            type: "text",
+            text: "Read me a two sentence summary of what a Durable Object is.",
+          },
           {
             type: "input_audio",
-            input_audio: { data: SILENT_AUDIO_DATA_URL.split(",")[1], format: "wav" },
+            input_audio: {
+              data: SILENT_AUDIO_DATA_URL.split(",")[1],
+              format: "wav",
+            },
           },
         ],
-        data: { realtime: { turnStartedAt: Date.parse(at({ days: 2, hours: 4 })), sequence: 1 } },
+        data: {
+          realtime: {
+            turnStartedAt: Date.parse(at({ days: 2, hours: 4 })),
+            sequence: 1,
+          },
+        },
       },
       {
         role: "assistant",
         usage: USAGE,
         data: {
-          realtime: { turnStartedAt: Date.parse(at({ days: 2, hours: 4 })), sequence: 2 },
+          realtime: {
+            turnStartedAt: Date.parse(at({ days: 2, hours: 4 })),
+            sequence: 2,
+          },
           speech: {
             audioDataUrl: SILENT_AUDIO_DATA_URL,
             audioMimeType: "audio/wav",
@@ -620,7 +681,11 @@ Everything else, including the section order and the destructive action styling,
         usage: USAGE,
         data: {
           attachments: [
-            { type: "image", url: svgDataUrl("Parrot on a laptop", "#0F766E"), name: "hero.png" },
+            {
+              type: "image",
+              url: svgDataUrl("Parrot on a laptop", "#0F766E"),
+              name: "hero.png",
+            },
           ],
           asyncInvocation: {
             provider: "replicate",
@@ -677,7 +742,10 @@ Everything else, including the section order and the destructive action styling,
               provider: "parallel",
             },
             sources: [
-              { title: "D1 limits", url: "https://developers.cloudflare.com/d1/platform/limits/" },
+              {
+                title: "D1 limits",
+                url: "https://developers.cloudflare.com/d1/platform/limits/",
+              },
               {
                 title: "D1 read replication",
                 url: "https://developers.cloudflare.com/d1/best-practices/read-replication/",
@@ -867,7 +935,11 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       run: {
         status: "awaiting_approval",
         contextJson: contextSnapshot(seedId("chat", "permission-supervised"), {
-          usage: { inputTokens: 1800, contextWindow: 128000, source: "estimated" },
+          usage: {
+            inputTokens: 1800,
+            contextWindow: 128000,
+            source: "estimated",
+          },
           approvals: [
             {
               id: "call_write_1",
@@ -942,7 +1014,11 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
         callId: "call_cmd_1",
         input: { command: "rm -rf dist && pnpm test" },
         result: "Test Files 12 passed (12)\nTests 88 passed (88)",
-        data: { responseType: "text", icon: "terminal", formattedName: "Run command" },
+        data: {
+          responseType: "text",
+          icon: "terminal",
+          formattedName: "Run command",
+        },
       }),
       {
         role: "assistant",
@@ -966,7 +1042,11 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       run: { status: "succeeded" },
     },
     [
-      { role: "user", content: "Let's design the schema for a habit tracker.", isArchived: true },
+      {
+        role: "user",
+        content: "Let's design the schema for a habit tracker.",
+        isArchived: true,
+      },
       {
         role: "assistant",
         content: "Start with users, habits and habit_events. Keep streaks derived.",
@@ -1068,12 +1148,17 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       },
     },
     [
-      { role: "user", content: "Use the code interpreter to plot the usage numbers." },
+      {
+        role: "user",
+        content: "Use the code interpreter to plot the usage numbers.",
+      },
       {
         role: "assistant",
         status: "error",
         content: "",
-        data: { error: "openai error: code_interpreter is not enabled for this model." },
+        data: {
+          error: "openai error: code_interpreter is not enabled for this model.",
+        },
       },
     ],
   );
@@ -1092,7 +1177,10 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       run: { status: "cancelled", terminalReason: "cancelled_by_user" },
     },
     [
-      { role: "user", content: "Write a 2000 word essay on the history of the semicolon." },
+      {
+        role: "user",
+        content: "Write a 2000 word essay on the history of the semicolon.",
+      },
       {
         role: "assistant",
         status: "complete",
@@ -1215,7 +1303,10 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       run: { status: "running", trigger: "delegation" },
     },
     [
-      { role: "user", content: "Draft a 120 word intro for a post on WebSocket back-pressure." },
+      {
+        role: "user",
+        content: "Draft a 120 word intro for a post on WebSocket back-pressure.",
+      },
       {
         role: "assistant",
         mode: "teammate",
@@ -1242,7 +1333,11 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       teammateId: teammate,
       goal: kind === "researcher" ? "Gather sources on WebSocket back-pressure" : "Draft the intro",
       waitFor: "all",
-      budget: { maxCreditMicros: 25_000_000, maxSteps: 12, deadline: ahead({ hours: 22 }) },
+      budget: {
+        maxCreditMicros: 25_000_000,
+        maxSteps: 12,
+        deadline: ahead({ hours: 22 }),
+      },
       state,
       result,
       createdAt: at({ hours: 1, minutes: 59 }),
@@ -1337,7 +1432,10 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       title: "WebSocket back-pressure sources",
       status: "ready",
       sensitivity: "personal",
-      content: { format: "markdown", body: "# Sources\n\n1. MDN bufferedAmount\n2. Node ws drain" },
+      content: {
+        format: "markdown",
+        body: "# Sources\n\n1. MDN bufferedAmount\n2. Node ws drain",
+      },
       created_by_user_id: OWNER.id,
       created_at: at({ minutes: 32 }),
       operation: "created",
@@ -1360,7 +1458,10 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       run: { status: "succeeded" },
     },
     [
-      { role: "user", content: "Find the conversation where I planned dinners." },
+      {
+        role: "user",
+        content: "Find the conversation where I planned dinners.",
+      },
       ...toolCall({
         name: "find_places",
         callId: "call_find_1",
@@ -1379,7 +1480,11 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       {
         role: "assistant",
         model: SEED_MODEL_SMALL,
-        provenance: { site: "hosted", vendor: "workers-ai", model: SEED_MODEL_SMALL },
+        provenance: {
+          site: "hosted",
+          vendor: "workers-ai",
+          model: SEED_MODEL_SMALL,
+        },
         data: {
           metaNavigation: {
             destinations: [
@@ -1413,7 +1518,10 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       run: { status: "succeeded" },
     },
     [
-      { role: "user", content: "Give me a one paragraph explanation of what Polychat is." },
+      {
+        role: "user",
+        content: "Give me a one paragraph explanation of what Polychat is.",
+      },
       {
         role: "assistant",
         usage: USAGE,
@@ -1526,7 +1634,10 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       run: { status: "succeeded" },
     },
     [
-      { role: "user", content: "Should a small team use monorepo or polyrepo?" },
+      {
+        role: "user",
+        content: "Should a small team use monorepo or polyrepo?",
+      },
       {
         role: "assistant",
         usage: USAGE,
@@ -1536,7 +1647,11 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       {
         role: "assistant",
         model: "llama-3.3-70b-instruct",
-        provenance: { site: "hosted", vendor: "workers-ai", model: "llama-3.3-70b-instruct" },
+        provenance: {
+          site: "hosted",
+          vendor: "workers-ai",
+          model: "llama-3.3-70b-instruct",
+        },
         usage: USAGE,
         data: {
           opinion: {
@@ -1564,11 +1679,19 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       createdAt: at({ days: 1, hours: 20 }),
     },
     [
-      { role: "user", content: "Say hello from wherever you are running.", platform: "mobile" },
+      {
+        role: "user",
+        content: "Say hello from wherever you are running.",
+        platform: "mobile",
+      },
       {
         role: "assistant",
         model: "llama-3.2-3b-instruct",
-        provenance: { site: "device", vendor: "apple", model: "llama-3.2-3b-instruct" },
+        provenance: {
+          site: "device",
+          vendor: "apple",
+          model: "llama-3.2-3b-instruct",
+        },
         platform: "mobile",
         content: "Hello from the phone. This reply never left the device.",
       },
@@ -1609,7 +1732,7 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
     }),
   );
 
-  thread(
+  const editorHome = thread(
     statements,
     {
       id: seedId("chat", "teammate"),
@@ -1637,6 +1760,58 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       },
     ],
   );
+
+  conversationIds.editorHome = editorHome.conversationId;
+
+  const computerTakeover = thread(
+    statements,
+    {
+      id: seedId("chat", "computer-takeover"),
+      title: scenario(
+        "Computer",
+        "Hosted teammate takeover",
+        "Open this conversation and press Take control. When the hosted computer service is configured, use the temporary screen and return control to the Editor when finished.",
+        "The pending computer card explains why control is needed. Taking control opens the teammate's isolated screen, and returning it continues the same conversation.",
+      ),
+      createdAt: at({ hours: 2 }),
+      pinned: true,
+      run: {
+        status: "awaiting_takeover",
+        contextJson: contextSnapshot(seedId("chat", "computer-takeover")),
+      },
+    },
+    [
+      {
+        role: "user",
+        content:
+          "Open the release preview and check the final layout. Ask me to take over before interacting with the sign-in form.",
+      },
+      ...toolCall({
+        name: "use_computer",
+        callId: "call_computer_takeover_1",
+        input: {
+          operation: "request_takeover",
+          reason: "Please complete the preview sign-in so I can inspect the authenticated layout.",
+        },
+        result: "Please complete the preview sign-in so I can inspect the authenticated layout.",
+        status: "pending",
+        data: {
+          renderer: "computer_takeover",
+          contextId: teammates.contexts.editor,
+          reason: "Please complete the preview sign-in so I can inspect the authenticated layout.",
+          humanInTheLoop: {
+            type: "takeover",
+            status: "pending",
+            interactionId: "call_computer_takeover_1",
+            toolName: "use_computer",
+            requires_user_action: true,
+          },
+        },
+      }),
+    ],
+  );
+
+  conversationIds.computerTakeover = computerTakeover.conversationId;
 
   thread(
     statements,
@@ -1851,7 +2026,10 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
           aspect_ratio: "16:9",
         },
         output: svgDataUrl("Parrot on a laptop", "#0F766E"),
-        predictionData: { id: seedId("prediction", "hero"), status: "succeeded" },
+        predictionData: {
+          id: seedId("prediction", "hero"),
+          status: "succeeded",
+        },
       },
       revision: 1,
       created_at: at({ days: 1, hours: 9 }),
@@ -1980,7 +2158,12 @@ export function guideStatements() {
         role: "user",
         content: "What is in this seeded database and how do I exercise each feature?",
       },
-      { role: "assistant", content: seedGuideMarkdown(), provenance: null, model: null },
+      {
+        role: "assistant",
+        content: seedGuideMarkdown(),
+        provenance: null,
+        model: null,
+      },
     ],
   );
 

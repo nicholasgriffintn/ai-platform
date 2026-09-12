@@ -33,6 +33,7 @@ interface RevisionContentInput {
 
 interface StoredSkillCreationOptions {
   projectPublication?: CreateAuthoredSkillInput["projectPublication"];
+  personalEnabled?: boolean;
 }
 
 interface StoredSkillMutationOptions {
@@ -221,6 +222,7 @@ async function createRevisionedSkill(
       changeNote: input.changeNote,
       source: input.source,
       projectPublication: options.projectPublication,
+      personalEnabled: options.personalEnabled,
     });
 
     return {

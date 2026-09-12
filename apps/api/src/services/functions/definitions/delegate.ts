@@ -22,12 +22,26 @@ export const delegateInputSchema = z
     goal: z.string().trim().min(1).max(2000),
     wait_for: z.enum(["all", "any", "none"]).default("none"),
     budget: delegationBudgetInputSchema.optional(),
+    child_conversation_id: z.string().min(1).optional(),
+    continuation_mode: z.enum(["resume", "fresh"]).optional(),
+    memory_bindings: z
+      .array(
+        z.object({
+          document_id: z.string().min(1),
+          access: z.enum(["read", "read-write"]).default("read"),
+        }),
+      )
+      .max(20)
+      .optional(),
   })
   .refine((input) => Boolean(input.teammate_id || input.teammate), {
     error: "Choose a saved teammate or describe the teammate to hire",
   })
   .refine((input) => !(input.teammate_id && input.teammate), {
     error: "Choose either a saved teammate or an inline teammate",
+  })
+  .refine((input) => !input.continuation_mode || Boolean(input.child_conversation_id), {
+    error: "Choose a child conversation before selecting how to continue it",
   });
 
 export type DelegateInput = z.infer<typeof delegateInputSchema>;

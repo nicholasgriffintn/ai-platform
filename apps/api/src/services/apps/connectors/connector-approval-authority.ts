@@ -10,13 +10,18 @@ export interface StoredConnectorOperationCall {
   provider: RecipeConnectorProvider;
   operation: string;
   params?: Record<string, unknown>;
-  sessionId: string;
+  sessionId?: string;
 }
 
 export interface ConnectorApprovalExecutionAuthority {
   arguments: Record<string, unknown>;
   requestOptions: { recipe?: RecipeChatRequestOptions };
   projectId?: string;
+  teammateContextId?: string;
+}
+
+export function rejectConnectorApprovalAuthority(): never {
+  throw new Error("Connector approval authority does not match the stored action");
 }
 
 export type ResolveConnectorApprovalAuthority = (params: {

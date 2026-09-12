@@ -1,5 +1,6 @@
 import {
   resolveSandboxDeliveryPolicy,
+  resolveSandboxExecutionProvider,
   sandboxDeliveryPolicyCreatesCommit,
   type ExecuteSandboxRunPayload as ExecuteSandboxRunStreamPayload,
   SANDBOX_RUNS_CAPABILITY_ID,
@@ -42,6 +43,7 @@ export async function executeSandboxRunStream(
   params: ExecuteSandboxRunStreamParams,
 ): Promise<Response> {
   const { env, context: serviceContext, user, payload, projectId, conversationId } = params;
+  const executionProvider = resolveSandboxExecutionProvider(payload.executionProvider);
 
   await assertSandboxRunCanStart({
     context: serviceContext,
@@ -53,6 +55,7 @@ export async function executeSandboxRunStream(
     user,
     model: payload.model,
     projectId,
+    executionProvider,
   });
   const timeoutConfig = buildSandboxTimeoutConfig({
     env,
@@ -83,6 +86,7 @@ export async function executeSandboxRunStream(
     task: payload.task,
     taskType: payload.taskType,
     model,
+    executionProvider,
     trustLevel: payload.trustLevel ?? "balanced",
     promptStrategy: payload.promptStrategy,
     deliveryPolicy,
@@ -141,6 +145,7 @@ export async function executeSandboxRunStream(
       userId: user.id,
       payload: {
         projectId,
+        executionProvider,
         installationId: payload.installationId,
         repo: payload.repo,
         task: payload.task,

@@ -1,3 +1,4 @@
+import { SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX } from "@ngriffin_uk/polychat-schemas";
 import type { Context, Next } from "hono";
 
 import { trackUsageMetric } from "~/lib/monitoring";
@@ -26,23 +27,28 @@ export async function rateLimit(context: Context, next: Next) {
   const userId: string = user?.id;
   const anonymousUserId: string = anonymousUser?.id;
   const clientAddress = context.req.header?.("CF-Connecting-IP") ?? "unknown";
+  const isCredentialBroker = pathname.startsWith(`${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/`);
 
-  const key = userId
-    ? `authenticated-${userId}`
-    : anonymousUserId
-      ? `unauthenticated-${anonymousUserId}`
-      : `unauthenticated-${clientAddress}`;
+  const key = isCredentialBroker
+    ? `sandbox-broker-${clientAddress}`
+    : userId
+      ? `authenticated-${userId}`
+      : anonymousUserId
+        ? `unauthenticated-${anonymousUserId}`
+        : `unauthenticated-${clientAddress}`;
 
-  const rateLimiter = userId ? context.env.PRO_RATE_LIMITER : context.env.FREE_RATE_LIMITER;
+  const rateLimiter =
+    userId || isCredentialBroker ? context.env.PRO_RATE_LIMITER : context.env.FREE_RATE_LIMITER;
 
   const result = await rateLimiter.limit({
     key,
   });
 
   if (!result.success) {
-    const errorMessage = userId
-      ? "Rate limit exceeded: 100 requests per minute"
-      : "Rate limit exceeded: 10 requests per minute. Please authenticate for higher limits.";
+    const errorMessage =
+      userId || isCredentialBroker
+        ? "Rate limit exceeded: 100 requests per minute"
+        : "Rate limit exceeded: 10 requests per minute. Please authenticate for higher limits.";
 
     logger.warn("Rate limit exceeded", {
       userId,

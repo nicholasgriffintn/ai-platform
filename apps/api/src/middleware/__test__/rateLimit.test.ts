@@ -109,6 +109,56 @@ describe("Rate Limit Middleware", () => {
       expect(mockNext).toHaveBeenCalled();
     });
 
+    it("should rate limit credential broker grants without treating them as user credentials", async () => {
+      const requestHeader = vi.fn((name: string) => {
+        if (name === "Authorization") {
+          return "Bearer scoped-broker-grant";
+        }
+
+        return name === "CF-Connecting-IP" ? "203.0.113.10" : undefined;
+      });
+      const getContextVariable = vi.fn().mockReturnValue(null);
+      const context = createMockContext({
+        req: {
+          url: "http://example.com/apps/sandbox/credential-broker/run-123/git/info/refs",
+          path: "/apps/sandbox/credential-broker/run-123/git/info/refs",
+          header: requestHeader,
+        },
+        get: getContextVariable,
+      });
+
+      context.env.PRO_RATE_LIMITER.limit.mockResolvedValue({ success: true });
+
+      await rateLimit(context, mockNext);
+
+      expect(context.env.PRO_RATE_LIMITER.limit).toHaveBeenCalledWith({
+        key: "sandbox-broker-203.0.113.10",
+      });
+      expect(context.env.FREE_RATE_LIMITER.limit).not.toHaveBeenCalled();
+      expect(mockNext).toHaveBeenCalled();
+    });
+
+    it("does not let rotating broker grants evade the source rate limit", async () => {
+      const context = createMockContext({
+        req: {
+          url: "http://example.com/apps/sandbox/credential-broker/run-123/git/info/refs",
+          path: "/apps/sandbox/credential-broker/run-123/git/info/refs",
+          header: vi.fn((name: string) =>
+            name === "CF-Connecting-IP" ? "203.0.113.10" : "Bearer another-grant",
+          ),
+        },
+        get: vi.fn().mockReturnValue(null),
+      });
+
+      context.env.PRO_RATE_LIMITER.limit.mockResolvedValue({ success: true });
+
+      await rateLimit(context, mockNext);
+
+      expect(context.env.PRO_RATE_LIMITER.limit).toHaveBeenCalledWith({
+        key: "sandbox-broker-203.0.113.10",
+      });
+    });
+
     it("should throw rate limit error for authenticated users when limit exceeded", async () => {
       const mockUser = { id: "user-123" };
       const context = createMockContext();

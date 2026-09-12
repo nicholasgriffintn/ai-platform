@@ -2,7 +2,7 @@ import type { ChannelBinding, CreateChannelBindingInput } from "@ngriffin_uk/pol
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ChannelBindingRow } from "~/lib/database/schema";
-import { requireTeammateAccess } from "~/services/teammates/access";
+import { requireProjectTeammate, requireTeammateAccess } from "~/services/teammates/access";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -17,6 +17,7 @@ function toBinding(row: ChannelBindingRow): ChannelBinding {
     externalId: row.external_id,
     label: row.label,
     teammateId: row.teammate_id,
+    interactionMode: row.interaction_mode,
     enabled: Boolean(row.enabled),
     createdAt: row.created_at,
   };
@@ -61,7 +62,11 @@ export async function createChannelBinding(
   }
 
   if (input.teammateId) {
-    await requireTeammateAccess(context, input.teammateId, "read", user.id);
+    if (input.projectId) {
+      await requireProjectTeammate(context, input.projectId, input.teammateId);
+    } else {
+      await requireTeammateAccess(context, input.teammateId, "read", user.id);
+    }
   }
 
   const existing = await context.repositories.channelBindings.getByExternalId(
@@ -84,6 +89,7 @@ export async function createChannelBinding(
     externalId: input.externalId,
     label: input.label ?? null,
     teammateId: input.teammateId ?? null,
+    interactionMode: input.interactionMode ?? "automated",
     createdByUserId: user.id,
   });
 

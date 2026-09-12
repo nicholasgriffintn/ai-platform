@@ -1,3 +1,9 @@
+import {
+  encodeServerSentEvent,
+  encodeServerSentEventComment,
+  encodeServerSentEventDone,
+} from "@ngriffin_uk/polychat-utility-core";
+
 import { sleep } from "~/utils/delay";
 
 interface EventEnvelopeLike {
@@ -20,16 +26,12 @@ export function isTerminalSandboxEventType(type: string): boolean {
   return type === "run_completed" || type === "run_failed" || type === "run_cancelled";
 }
 
-export function toSseChunk(value: unknown): Uint8Array {
-  return new TextEncoder().encode(`data: ${JSON.stringify(value)}\n\n`);
-}
-
 export function toSsePingChunk(): Uint8Array {
-  return new TextEncoder().encode(": ping\n\n");
+  return encodeServerSentEventComment("ping");
 }
 
 export function toSseDoneChunk(): Uint8Array {
-  return new TextEncoder().encode("data: [DONE]\n\n");
+  return encodeServerSentEventDone();
 }
 
 function parseEnvelopeFromSocketMessage(data: unknown): EventEnvelopeLike | null {
@@ -102,7 +104,7 @@ async function consumeSocketEvents(params: {
       }
 
       onEnvelope(envelope);
-      controller.enqueue(toSseChunk(envelope.event));
+      controller.enqueue(encodeServerSentEvent(envelope.event));
       if (isTerminalSandboxEventType(envelope.event.type)) {
         terminalSeen = true;
         done();
@@ -162,7 +164,7 @@ export function createCoordinatorEventSseStream(
 
       for (const envelope of initialEnvelopes) {
         applyEnvelope(envelope);
-        controller.enqueue(toSseChunk(envelope.event));
+        controller.enqueue(encodeServerSentEvent(envelope.event));
         if (isTerminalSandboxEventType(envelope.event.type)) {
           terminalSeen = true;
           break;
@@ -205,7 +207,7 @@ export function createCoordinatorEventSseStream(
 
         for (const envelope of envelopes) {
           applyEnvelope(envelope);
-          controller.enqueue(toSseChunk(envelope.event));
+          controller.enqueue(encodeServerSentEvent(envelope.event));
           if (isTerminalSandboxEventType(envelope.event.type)) {
             terminalSeen = true;
             break;

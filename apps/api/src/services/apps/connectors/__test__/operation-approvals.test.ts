@@ -24,6 +24,15 @@ function context() {
         resolve: mocks.resolve,
         getByIdForUser: mocks.getByIdForUser,
       },
+      conversationRuns: {
+        getById: vi.fn(async () => ({
+          id: "connector_run_1",
+          initiatorUserId: 42,
+          conversationId: "completion_1",
+          status: "running",
+          attempt: 1,
+        })),
+      },
     },
   } as never;
 }
@@ -31,7 +40,10 @@ function context() {
 describe("connector operation approvals", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.create.mockImplementation(async (input) => ({ id: "coa_pending", ...input }));
+    mocks.create.mockImplementation(async (input) => ({
+      id: "coa_pending",
+      ...input,
+    }));
   });
 
   it("binds equivalent argument objects to the same canonical digest", async () => {

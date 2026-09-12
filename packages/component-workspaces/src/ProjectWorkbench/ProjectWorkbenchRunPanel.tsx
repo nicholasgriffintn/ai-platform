@@ -6,7 +6,15 @@ import type {
   SandboxRunManifest,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatDate, formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
-import { Activity, Bot, FileDiff, Files, MonitorPlay, ShieldCheck } from "lucide-react";
+import {
+  Activity,
+  Bot,
+  FileDiff,
+  Files,
+  MonitorPlay,
+  NotebookPen,
+  ShieldCheck,
+} from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { ProjectWorkbenchPane } from "./ProjectWorkbenchShell";
@@ -54,6 +62,7 @@ function PanelMessage({
   message: string;
 }) {
   const Icon = {
+    context: NotebookPen,
     activity: Activity,
     preview: MonitorPlay,
     changes: FileDiff,

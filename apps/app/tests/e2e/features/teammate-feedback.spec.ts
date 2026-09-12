@@ -11,7 +11,7 @@ import { WorkPage } from "../page-objects/WorkPage";
 import { requireSuccessfulResponse } from "../support/api-response";
 import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "../support/environment";
 
-test.describe("Teammate feedback and kind boundaries", () => {
+test.describe("Teammate feedback and invocation behaviour", () => {
   test.use({ persona: "pro" });
 
   test("hires into a project, replaces one person's verdict and counts distinct authorised people", async ({
@@ -20,6 +20,7 @@ test.describe("Teammate feedback and kind boundaries", () => {
     workPage,
     homePage,
     capabilitiesPage,
+    polychatApi,
   }) => {
     await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
     const workspaceId = workPage.currentWorkspaceId();
@@ -52,6 +53,9 @@ test.describe("Teammate feedback and kind boundaries", () => {
       kind: "colleague",
     });
     await dialog.waitFor({ state: "hidden" });
+    expect((await polychatApi.addProjectCapability(projectId, "tool", "save_skill")).status).toBe(
+      200,
+    );
     await capabilitiesPage.navigate(`/work/${workspaceId}/projects/${projectId}/teammates`);
     await expect(capabilitiesPage.capabilityCard(teammate.name)).toBeVisible();
     await workPage.navigate(projectPath);
@@ -161,16 +165,15 @@ test.describe("Teammate feedback and kind boundaries", () => {
     const bot = teammateResponseSchema.parse(await updated.json());
 
     expect(bot.kind).toBe("bot");
-    expect(bot.enabled_tools).not.toContain("create_task");
-    expect(bot.enabled_tools).not.toContain("store_memory");
+    expect(bot.enabled_tools).toEqual(expect.arrayContaining(["create_task", "store_memory"]));
     const repeated = await page.request.put(`${E2E_API_BASE_URL}/teammates/${teammate.id}`, {
       headers,
       data: { enabled_tools: ["create_task", "store_memory"] },
     });
 
-    await requireSuccessfulResponse(repeated, "Keep bot tools restricted on later edits");
+    await requireSuccessfulResponse(repeated, "Keep bot tools on later edits");
     const retained = teammateResponseSchema.parse(await repeated.json());
 
-    expect(retained.enabled_tools).toEqual([]);
+    expect(retained.enabled_tools).toEqual(["create_task", "store_memory"]);
   });
 });

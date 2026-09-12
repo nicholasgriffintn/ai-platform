@@ -137,10 +137,12 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
         recipe={recipeWorkflows.scheduleDialog.recipe}
         hasExistingSchedule={recipeWorkflows.scheduleDialog.hasExistingSchedule}
         cronExpression={recipeWorkflows.scheduleDialog.cronExpression}
+        timezone={recipeWorkflows.scheduleDialog.timezone}
         prompt={recipeWorkflows.scheduleDialog.prompt}
         notifySms={recipeWorkflows.scheduleDialog.notifySms}
         smsTarget={recipeWorkflows.scheduleDialog.smsTarget}
         onCronExpressionChange={recipeWorkflows.scheduleDialog.setCronExpression}
+        onTimezoneChange={recipeWorkflows.scheduleDialog.setTimezone}
         onPromptChange={recipeWorkflows.scheduleDialog.setPrompt}
         onNotifySmsChange={recipeWorkflows.scheduleDialog.setNotifySms}
         onSmsTargetChange={recipeWorkflows.scheduleDialog.setSmsTarget}

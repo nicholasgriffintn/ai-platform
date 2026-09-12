@@ -12,6 +12,8 @@ Keep recipe installations as the only user-facing scheduling resource. A recipe 
 
 Use the existing recipe scheduler to enqueue deterministic `recipe_execution` tasks. The execution handler revalidates the installation and any project capability before invoking the recipe under its owner's current account. Each occurrence produces an attributable conversation for its result; it does not resume an arbitrary conversation or turn conversation history into executable configuration.
 
+Every trigger has a stable identifier. Scheduled occurrences are identified by installation, trigger and scheduled UTC minute, while event occurrences use the provider event identity. Cron triggers always name an IANA timezone; existing schedules become explicit UTC. A missing local time during a daylight-saving transition does not run, while a repeated local time produces two distinct UTC occurrences. After scheduler downtime, enqueue at most the four most recent missed occurrences within 31 days. One-shot triggers enqueue once when due and disable only after their deterministic task is persisted.
+
 Manage schedules only from recipe capability and project Scheduled recipes surfaces. A conversation may display provenance linking it to the recipe installation and task occurrence, but it cannot create, pause, resume, edit or delete a schedule. Do not add a conversation-schedule contract, table, route, repository, task type, due scanner or client state.
 
 Keep event triggers under the same recipe installation and connector-authority model. Project membership permits authorised reads but does not transfer schedule ownership, charging responsibility or another member's connector credentials.

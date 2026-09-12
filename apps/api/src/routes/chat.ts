@@ -99,6 +99,8 @@ import { handleUnshareConversation } from "~/services/completions/unshareConvers
 import { handleUpdateChatCompletion } from "~/services/completions/updateChatCompletion";
 import { requireConversationAccess } from "~/services/conversations/access";
 import { cancelDelegationsForConversation } from "~/services/delegations/cancel-tree";
+import { listDelegationsWithReferences } from "~/services/delegations/list";
+import { resumeStoredTeammateInteraction } from "~/services/teammates/interaction-resume";
 import type { ChatRole, IEnv, IUser, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { readNumericField, readRecordObjectField } from "~/utils/recordFields";
@@ -195,15 +197,17 @@ addRoute(app, "post", "/completions", {
         }
       }
 
-      const response = await handleCreateChatCompletions({
+      const completionContext = {
         env: context.env as IEnv,
-        request: body,
+        context: serviceContext,
         user,
         anonymousUser: anonymousUserContext,
-        context: serviceContext,
         executionCtx: requireCloudflareExecutionContext(context.executionCtx),
         signal: context.req.raw.signal,
-      });
+      };
+      const response =
+        (await resumeStoredTeammateInteraction({ ...completionContext, body })) ??
+        (await handleCreateChatCompletions({ ...completionContext, request: body }));
 
       if (response instanceof Response) {
         return response;
@@ -674,13 +678,11 @@ addRoute(app, "get", "/completions/:completion_id/delegations", {
         completion_id: string;
       };
       const serviceContext = getServiceContext(context);
-      const conversation = await requireConversationAccess(serviceContext, completion_id);
 
-      return ResponseFactory.success(context, {
-        delegations:
-          await serviceContext.repositories.delegations.listByParentConversationId(completion_id),
-        canControl: conversation.user_id === serviceContext.requireUser().id,
-      });
+      await requireConversationAccess(serviceContext, completion_id);
+      const result = await listDelegationsWithReferences(serviceContext, completion_id);
+
+      return ResponseFactory.success(context, result);
     })(raw),
 });
 
@@ -699,17 +701,21 @@ addRoute(app, "post", "/completions/:completion_id/delegations/cancel", {
         completion_id: string;
       };
       const serviceContext = getServiceContext(context);
-      const conversation = await requireConversationAccess(serviceContext, completion_id);
 
-      if (conversation.user_id !== serviceContext.requireUser().id) {
+      await requireConversationAccess(serviceContext, completion_id);
+      const cancelled = await cancelDelegationsForConversation(
+        serviceContext,
+        completion_id,
+        serviceContext.requireUser().id,
+      );
+
+      if (!cancelled) {
         throw new AssistantError(
-          "Only the person who started the delegation can cancel it",
+          "Only the person who started a live delegation can cancel it",
           ErrorType.FORBIDDEN,
           403,
         );
       }
-
-      await cancelDelegationsForConversation(serviceContext, completion_id);
 
       return ResponseFactory.success(context, { cancelled: true });
     })(raw),

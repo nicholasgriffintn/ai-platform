@@ -71,12 +71,14 @@ export function evaluateModelContinuity({
 
   if (activeRunStatus && !isTerminalChatRunStatus(activeRunStatus)) {
     const pendingInteraction =
-      activeRunStatus === "awaiting_approval" || activeRunStatus === "awaiting_input";
+      activeRunStatus === "awaiting_approval" ||
+      activeRunStatus === "awaiting_input" ||
+      activeRunStatus === "awaiting_takeover";
 
     return {
       state: "blocked",
       reason: pendingInteraction
-        ? "Resolve or cancel the current approval or question before changing models. It belongs to the model run that requested it."
+        ? "Resolve or cancel the current approval, question or takeover before changing models. It belongs to the model run that requested it."
         : "Wait for or cancel the current model run before changing models.",
       preserves: ["conversation_history", "compatible_attachments"],
       doesNotCarry: pendingInteraction

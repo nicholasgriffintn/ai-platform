@@ -2,6 +2,7 @@ import type { AgentMessage } from "@ngriffin_uk/polychat-library-agent-core";
 import {
   CHAT_CONTEXT_PROTOCOL_VERSION,
   type ChatContextApproval,
+  type ChatContextDocument,
   type ChatContextOmission,
   type ChatContextSkill,
   type ChatContextSnapshot,
@@ -42,6 +43,7 @@ export interface ContextBudgetInput {
   provider: string;
   generatedAt?: string;
   skills?: readonly ContextBudgetSkill[];
+  documents?: readonly ChatContextDocument[];
 }
 
 export interface ContextBudgetResult {
@@ -570,6 +572,7 @@ export function fitMessagesToContextBudget(input: ContextBudgetInput): ContextBu
       },
       messages: { included: selectedMessages.length, omitted: omitted.length },
       sources,
+      documents: [...(input.documents ?? [])],
       skills: readSkills(input.messages, selectedIndexes, input.skills ?? []),
       approvals: readApprovals(input.messages),
       summary: readSummary(input.messages, selectedIndexes),

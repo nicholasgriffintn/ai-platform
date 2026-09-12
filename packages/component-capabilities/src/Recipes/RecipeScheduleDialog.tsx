@@ -6,10 +6,12 @@ interface RecipeScheduleDialogProps {
   recipe: AssistantRecipe | null;
   hasExistingSchedule: boolean;
   cronExpression: string;
+  timezone: string;
   prompt: string;
   notifySms: boolean;
   smsTarget: string;
   onCronExpressionChange: (cronExpression: string) => void;
+  onTimezoneChange: (timezone: string) => void;
   onPromptChange: (prompt: string) => void;
   onNotifySmsChange: (notifySms: boolean) => void;
   onSmsTargetChange: (smsTarget: string) => void;
@@ -22,10 +24,12 @@ export function RecipeScheduleDialog({
   recipe,
   hasExistingSchedule,
   cronExpression,
+  timezone,
   prompt,
   notifySms,
   smsTarget,
   onCronExpressionChange,
+  onTimezoneChange,
   onPromptChange,
   onNotifySmsChange,
   onSmsTargetChange,
@@ -62,6 +66,18 @@ export function RecipeScheduleDialog({
             Use five fields with numeric values, lists, ranges, steps, or `*`.
           </p>
         )}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="recipe-schedule-timezone">Timezone</Label>
+        <Input
+          id="recipe-schedule-timezone"
+          value={timezone}
+          onChange={(event) => onTimezoneChange(event.target.value)}
+          placeholder="Europe/London"
+        />
+        <p className="text-xs text-muted-foreground">
+          Use an IANA timezone name. Scheduled instants are stored in UTC.
+        </p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="recipe-schedule-prompt">Prompt</Label>

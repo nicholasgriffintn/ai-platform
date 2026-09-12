@@ -67,8 +67,18 @@ describe("buildMachineModels", () => {
       appVersion: "0.1.0",
       lastSeenAt: "2026-09-07T09:00:00.000Z",
       online: true,
-      capabilities: ["model-run"],
+      capabilities: ["model-run", "agent-run"],
       runtimes: [
+        {
+          kind: "agent",
+          vendor: "codex",
+          readiness: {
+            state: "ready",
+            checkedAt: "2026-09-07T09:00:00.000Z",
+            version: "1.0.0",
+          },
+          supportsSessions: true,
+        },
         {
           kind: "model",
           vendor: "ollama",
@@ -111,7 +121,15 @@ describe("buildMachineModels", () => {
     const models = buildMachineModels([machine]);
     const model = models["machine/office-desktop/ollama/gemma3:4b"];
 
-    expect(Object.keys(models)).toEqual(["machine/office-desktop/ollama/gemma3:4b"]);
+    expect(Object.keys(models)).toEqual([
+      "machine/office-desktop/codex/codex",
+      "machine/office-desktop/ollama/gemma3:4b",
+    ]);
+    expect(models["machine/office-desktop/codex/codex"]).toMatchObject({
+      machineId: "office-desktop",
+      kind: "agent",
+      isExecutable: true,
+    });
     expect(model.machineId).toBe("office-desktop");
     expect(model.isExecutable).toBe(false);
     expect(model.description).toContain("Office desktop");

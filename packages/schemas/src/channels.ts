@@ -15,6 +15,7 @@ export const channelBindingSchema = z.object({
   externalId: z.string(),
   label: z.string().nullable(),
   teammateId: z.string().nullable(),
+  interactionMode: z.enum(["direct", "automated"]),
   enabled: z.boolean(),
   createdAt: z.string(),
 });
@@ -30,6 +31,7 @@ export const createChannelBindingSchema = z.object({
   projectId: z.string().min(1).optional(),
   label: z.string().trim().min(1).max(120).optional(),
   teammateId: z.string().min(1).optional(),
+  interactionMode: z.enum(["direct", "automated"]).default("automated"),
 });
 
 export const listChannelBindingsResponseSchema = z.object({
@@ -38,4 +40,4 @@ export const listChannelBindingsResponseSchema = z.object({
 
 export type ChannelBinding = z.infer<typeof channelBindingSchema>;
 export type ChannelBindingScope = z.infer<typeof channelBindingScopeSchema>;
-export type CreateChannelBindingInput = z.infer<typeof createChannelBindingSchema>;
+export type CreateChannelBindingInput = z.input<typeof createChannelBindingSchema>;

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { executeSandboxWorker } from "~/services/sandbox/worker";
 
+import { createSandboxCredentialBrokerAccess } from "../credential-broker-grants";
 import {
   enqueueSandboxRunDispatchTask,
   isSandboxRunDispatchMessage,
@@ -12,6 +13,7 @@ import {
 import { persistSandboxRunArtifact } from "../run-artifacts";
 import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "../run-coordinator";
 import { indexSandboxRunResult } from "../run-indexing";
+import { releaseSandboxRunReservation } from "../usage";
 
 const mockEnqueueTask = vi.fn();
 
@@ -20,6 +22,13 @@ vi.mock("~/lib/context/serviceContext", () => ({
 }));
 vi.mock("~/services/sandbox/worker", () => ({
   executeSandboxWorker: vi.fn(),
+}));
+vi.mock("../credential-broker-grants", () => ({
+  createSandboxCredentialBrokerAccess: vi.fn(async () => ({
+    baseUrl: "https://api.polychat.app/apps/sandbox/credential-broker/run-123",
+    expiresAt: "2026-09-12T12:00:00.000Z",
+    grant: "test-broker-grant",
+  })),
 }));
 vi.mock("../run-coordinator", () => ({
   appendRunCoordinatorEvent: vi.fn(),
@@ -30,6 +39,10 @@ vi.mock("../run-artifacts", () => ({
 }));
 vi.mock("../run-indexing", () => ({
   indexSandboxRunResult: vi.fn(async () => undefined),
+}));
+vi.mock("../usage", () => ({
+  releaseSandboxRunReservation: vi.fn(async () => undefined),
+  reserveSandboxRun: vi.fn(async () => undefined),
 }));
 vi.mock("~/services/tasks/TaskService", () => ({
   TaskService: class {
@@ -199,9 +212,18 @@ describe("sandbox dispatch", () => {
 
     expect(executeSandboxWorker).toHaveBeenCalledWith(
       expect.objectContaining({
+        credentialBroker: {
+          baseUrl: "https://api.polychat.app/apps/sandbox/credential-broker/run-123",
+          expiresAt: "2026-09-12T12:00:00.000Z",
+          grant: "test-broker-grant",
+        },
         runId: "run-123",
         repo: "owner/repo",
       }),
+    );
+    expect(vi.mocked(executeSandboxWorker).mock.calls[0]?.[0]).toHaveProperty(
+      "environmentVariables",
+      undefined,
     );
     expect(mockUpdateActivity).toHaveBeenCalled();
     expect(updateRunCoordinatorControl).toHaveBeenCalledWith(
@@ -226,6 +248,39 @@ describe("sandbox dispatch", () => {
     );
     expect(persistSandboxRunArtifact).toHaveBeenCalled();
     expect(indexSandboxRunResult).toHaveBeenCalled();
+  });
+
+  it("normalises task and delivery policy before granting provider access", async () => {
+    await processSandboxRunDispatch({
+      env: {} as any,
+      message: {
+        kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+        runId: "run-123",
+        recordId: "record-1",
+        userId: 42,
+        payload: {
+          installationId: 99,
+          repo: "owner/repo",
+          task: "Review the authentication changes",
+          taskType: "code-review",
+          shouldCommit: true,
+        },
+      },
+    });
+
+    expect(createSandboxCredentialBrokerAccess).toHaveBeenCalledWith(
+      expect.objectContaining({
+        deliveryPolicy: { mode: "leave_uncommitted" },
+      }),
+    );
+    expect(executeSandboxWorker).toHaveBeenCalledWith(
+      expect.objectContaining({
+        task: expect.stringContaining("Do not modify files or create commits"),
+        taskType: "code-review",
+        deliveryPolicy: { mode: "leave_uncommitted" },
+        shouldCommit: false,
+      }),
+    );
   });
 
   it("marks queued runs as failed when worker startup throws", async () => {
@@ -276,6 +331,44 @@ describe("sandbox dispatch", () => {
       }),
     );
     expect(indexSandboxRunResult).not.toHaveBeenCalled();
+  });
+
+  it("releases the run reservation when broker grant creation fails", async () => {
+    vi.mocked(createSandboxCredentialBrokerAccess).mockRejectedValueOnce(
+      new Error("broker unavailable"),
+    );
+
+    await processSandboxRunDispatch({
+      env: {} as any,
+      message: {
+        kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+        runId: "run-123",
+        recordId: "record-1",
+        userId: 42,
+        payload: {
+          installationId: 99,
+          repo: "owner/repo",
+          task: "Implement feature",
+          model: "mistral-large",
+          shouldCommit: true,
+        },
+      },
+    });
+
+    expect(releaseSandboxRunReservation).toHaveBeenCalledWith(
+      expect.objectContaining({ runId: "run-123" }),
+    );
+    expect(mockUpdateActivity).toHaveBeenLastCalledWith(
+      "record-1",
+      expect.objectContaining({
+        status: "failed",
+        data: expect.objectContaining({
+          status: "failed",
+          error: "broker unavailable",
+        }),
+      }),
+    );
+    expect(executeSandboxWorker).not.toHaveBeenCalled();
   });
 
   it("folds an early infrastructure usage report into terminal persistence", async () => {

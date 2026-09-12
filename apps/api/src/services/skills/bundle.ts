@@ -3,6 +3,7 @@ import {
   authoredSkillResourceSchema,
   type AuthoredSkillResource,
 } from "@ngriffin_uk/polychat-schemas";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 
 import { AssistantError, ErrorType } from "~/utils/errors";
 
@@ -25,12 +26,6 @@ function byteLength(value: string): number {
 
 function canonicalPayload(content: string, resources: readonly AuthoredSkillResource[]) {
   return JSON.stringify({ content, resources });
-}
-
-async function sha256Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
-
-  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 function normaliseResources(resources: readonly AuthoredSkillResource[]): AuthoredSkillResource[] {

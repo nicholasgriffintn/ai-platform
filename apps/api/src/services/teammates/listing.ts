@@ -1,8 +1,4 @@
-import {
-  filterToolIdsForTeammateKind,
-  type TeammateResponse,
-  type TeammateSummary,
-} from "@ngriffin_uk/polychat-schemas";
+import type { TeammateResponse, TeammateSummary } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Teammate } from "~/lib/database/schema";
@@ -79,7 +75,7 @@ function toTeammateSummary(
   executableModels: ReadonlySet<string>,
   scorecards: ReadonlyMap<string, { good: number; bad: number }>,
 ): TeammateSummary {
-  const toolIds = filterToolIdsForTeammateKind(teammate.kind, teammate.enabled_tools) ?? [];
+  const toolIds = teammate.enabled_tools ?? [];
 
   return {
     id: teammate.id,

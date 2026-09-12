@@ -10,6 +10,7 @@ import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { cancelDelegationTree } from "../delegations/cancel-tree";
+import { cleanupCancelledChatRun } from "./cancellation-cleanup";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
 import { requireChatRunAccess } from "./status";
 
@@ -69,10 +70,13 @@ export async function handleCancelChatRun(
     });
   }
 
+  await cleanupCancelledChatRun(context, run);
+
   if (!receipt.duplicate) {
     recordTurnCancellationRequested({ env: context.env, traceId: run.conversationId }, platform);
-    await cancelDelegationTree(context, run.id);
   }
+
+  await cancelDelegationTree(context, run.id);
 
   return { run: receipt };
 }

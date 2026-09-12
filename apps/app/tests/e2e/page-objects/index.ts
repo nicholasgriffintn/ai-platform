@@ -7,3 +7,4 @@ export { CapabilitiesPage } from "./CapabilitiesPage";
 export { PricingPage } from "./PricingPage";
 export { ProfilePage } from "./ProfilePage";
 export { WorkPage } from "./WorkPage";
+export { WorkbenchPage } from "./WorkbenchPage";

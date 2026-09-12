@@ -96,7 +96,6 @@ describe("executeRecipeInvocationChat", () => {
         store: true,
         metadata: { project_id: "project-1" },
         enabled_tools: ["use_recipe_connector"],
-        approved_tools: ["use_recipe_connector"],
         tool_choice: "auto",
         options: expect.objectContaining({
           agent: {

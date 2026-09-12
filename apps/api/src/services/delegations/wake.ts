@@ -1,49 +1,49 @@
-import type { delegationStateSchema } from "@ngriffin_uk/polychat-schemas";
 import {
   createChatCompletionsJsonSchema,
   delegationWakeTaskDataSchema,
+  teammateRunConfigurationSchema,
 } from "@ngriffin_uk/polychat-schemas";
-import type z from "zod/v4";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
+import { enqueueTeammateRun } from "~/services/teammates/run-admission";
+import { prepareTeammateRunResume } from "~/services/teammates/run-resume";
 import type { IEnv } from "~/types";
 
 import type { TaskMessage } from "../tasks/TaskService";
-
-const SETTLED_STATES = new Set<z.infer<typeof delegationStateSchema>>([
-  "done",
-  "failed",
-  "cancelled",
-  "expired",
-]);
+import { deliverDelegationResult } from "./message";
+import { isDelegationGroupReady } from "./wait-policy";
 
 export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
   const payload = delegationWakeTaskDataSchema.parse(message.task_data);
-  const context = createServiceContext({ env });
-  const delegations = await context.repositories.delegations.listByParentRunId(payload.parentRunId);
+  const bootstrapContext = createServiceContext({ env });
+  const delegations = await bootstrapContext.repositories.delegations.listByParentRunId(
+    payload.parentRunId,
+  );
   const first = delegations[0];
 
-  if (!first || first.waitFor === "none") {
-    return { status: "skipped" as const, detail: "Delegation group does not resume its parent" };
+  if (!first) {
+    return { status: "skipped" as const, detail: "Delegation group no longer exists" };
   }
 
-  const hasFailure = delegations.some((delegation) =>
-    ["failed", "cancelled", "expired"].includes(delegation.state),
-  );
-  const ready =
-    first.waitFor === "any"
-      ? delegations.some((delegation) => SETTLED_STATES.has(delegation.state))
-      : hasFailure || delegations.every((delegation) => SETTLED_STATES.has(delegation.state));
-
-  if (!ready) {
-    return { status: "skipped" as const, detail: "Delegation group is still running" };
-  }
-
-  const user = await context.repositories.users.getUserById(message.user_id ?? 0);
+  const user = await bootstrapContext.repositories.users.getUserById(message.user_id ?? 0);
 
   if (!user) {
     return { status: "error" as const, detail: "Delegating user not found" };
+  }
+
+  const context = createServiceContext({ env, user });
+
+  for (const delegation of delegations) {
+    await deliverDelegationResult(context, delegation, user);
+  }
+
+  if (first.waitFor === "none") {
+    return { status: "skipped" as const, detail: "Delegation group does not resume its parent" };
+  }
+
+  if (!isDelegationGroupReady(delegations)) {
+    return { status: "skipped" as const, detail: "Delegation group is still running" };
   }
 
   const body = createChatCompletionsJsonSchema.parse({
@@ -53,23 +53,46 @@ export async function wakeDelegationParent(message: TaskMessage, env: IEnv) {
     messages: [
       {
         role: "user",
-        content: `Delegation results:\n${delegations
-          .map(
-            (delegation) =>
-              `${delegation.teammateId} (${delegation.state}): ${delegation.result?.summary ?? "No summary"}`,
-          )
-          .join("\n")}`,
+        content: "The delegated work has reported back. Review the stored results and continue.",
       },
     ],
     stream: false,
     store: true,
   });
+  const parentRun = await context.repositories.conversationRuns.getById(payload.parentRunId);
+  const parentConfiguration = teammateRunConfigurationSchema.safeParse(
+    parentRun?.resolvedConfiguration,
+  );
+
+  if (
+    parentRun &&
+    parentRun.conversationId === payload.parentConversationId &&
+    parentConfiguration.success
+  ) {
+    const resumed = await prepareTeammateRunResume({ context, run: parentRun });
+
+    await enqueueTeammateRun({
+      env,
+      context,
+      body,
+      teammateId: parentConfiguration.data.teammateId,
+      user,
+      anonymousUser: undefined,
+      trigger: "delegation",
+      maxStepsOverride: resumed.maxSteps,
+      resumeConfiguration: resumed.configuration,
+      continuationRun: parentRun,
+      ...(resumed.durableExecution ? { durableExecution: resumed.durableExecution } : {}),
+    });
+
+    return { status: "success" as const, detail: "Teammate parent resumed" };
+  }
 
   await handleCreateChatCompletions({
     env,
     request: body,
     user,
-    context: createServiceContext({ env, user }),
+    context,
   });
 
   return { status: "success" as const, detail: "Parent resumed" };

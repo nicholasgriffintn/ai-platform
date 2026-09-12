@@ -12,8 +12,16 @@ Delegation creates an ordinary child conversation with a durable delegation reco
 
 Version one allows one delegation depth and three concurrent children. Each delegation carries an explicit credit cap, step cap and deadline. The record is the authority for lifecycle and result projection; the child conversation remains the source of messages and the child run remains the source of execution state.
 
+Settling a delegation always stores its summary, outputs, citations and outstanding questions before scheduling any optional parent continuation. Presentation reads that durable result directly, so a missing model budget can suppress the wake without hiding completed work. Follow-up work creates a fresh delegation and budget, names the predecessor, and explicitly either resumes the selected child conversation or starts a new one.
+
+Conversation briefs and any additional memory bindings are explicit revisioned document references. A child run receives only the resolved bindings recorded on its delegation. It never gains ambient access to other personal or project memory.
+
+Every invocation resolves through the same teammate execution boundary. A teammate context supplies its personal or project home conversation, exact connector account-and-operation grants, assigned routines and optional hosted computer. Colleague and bot remain behaviour choices; they do not grant or remove authority.
+
+Hosted computer use is a separate graphical workload from the coding sandbox. It uses short-lived control leases with monotonically increasing fences, durable profile checkpoints and an explicit user-takeover state. Connector grants and computer leases are revalidated at each I/O boundary rather than trusted from the model prompt or an earlier run snapshot.
+
 The delegate tool and queue path must use the same authorisation, tool intersection, usage admission, cancellation and recovery boundaries as ordinary runs. A delegate cannot create another delegate in version one. Project flows remain the right boundary for durable ordered sequencing; delegation is for bounded fan-out from an active conversation.
 
 ## Consequences
 
-There is one runtime and one event protocol to operate, while parent and child histories remain separately addressable. Delegation adds a join record and lifecycle coordination, but avoids a second progress feed or a compatibility path for the retired runtime. Increasing depth or fan-out is a deliberate contract change with new security and recovery review.
+There is one run engine and one event protocol to operate, while parent, child and teammate-home histories remain separately addressable. Delegation adds join, grant and workload records, but avoids a second execution runtime or a compatibility path for the retired runtime. Increasing depth or fan-out, broadening connector grants, or allowing unattended graphical writes is a deliberate contract change with new security and recovery review.

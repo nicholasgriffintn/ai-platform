@@ -1,7 +1,6 @@
 import z from "zod/v4";
 
 import type { AgentMode } from "./agent-modes.js";
-import { normaliseToolIds } from "./tool-ids.js";
 
 export const TEAMMATE_KINDS = ["colleague", "bot"] as const;
 
@@ -11,34 +10,13 @@ export type TeammateKind = (typeof TEAMMATE_KINDS)[number];
 
 export const DEFAULT_TEAMMATE_KIND: TeammateKind = "colleague";
 
-export const TEAMMATE_BOT_DENIED_TOOLS = ["create_task", "update_task", "store_memory"] as const;
-
 export const TEAMMATE_PERMISSIONS_SENTENCE =
   "Reads run on their own. Anything that writes to another system waits for your approval.";
 
 export function describeTeammateKind(kind: TeammateKind): string {
   return kind === "bot"
-    ? "Answers and reports. It cannot file tasks or add to your memory."
-    : "Works alongside you. It can file tasks and remember what it learns.";
-}
-
-export function filterToolIdsForTeammateKind(
-  kind: TeammateKind,
-  toolIds: readonly string[] | null | undefined,
-): string[] | null {
-  if (!toolIds) {
-    return null;
-  }
-
-  const allowed = normaliseToolIds([...toolIds]);
-
-  if (kind !== "bot") {
-    return allowed;
-  }
-
-  const denied = new Set<string>(TEAMMATE_BOT_DENIED_TOOLS);
-
-  return allowed.filter((toolId) => !denied.has(toolId));
+    ? "Runs unattended when invoked by a routine, channel or delegation, within its current grants."
+    : "Works directly alongside you and can also be invoked for bounded background work.";
 }
 
 export const TEAMMATE_ROLE_CATEGORIES = [

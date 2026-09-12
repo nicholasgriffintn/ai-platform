@@ -1,5 +1,7 @@
 import z from "zod/v4";
 
+import { teachingRecordingIdSchema } from "./teammate-computers.js";
+
 export const SKILL_LOAD_TOOL_NAME = "load_skill";
 export const SKILL_SAVE_TOOL_NAME = "save_skill";
 export const SKILL_REVISE_TOOL_NAME = "propose_skill_revision";
@@ -152,6 +154,15 @@ export const authoredSkillDraftInputSchema = authoredSkillInputSchema.extend({
   changeNote: authoredSkillChangeNoteSchema.optional(),
 });
 
+export const teachingSkillDraftInputSchema = z.object({
+  teammateContextId: z.string().min(1),
+  recordingId: teachingRecordingIdSchema,
+  computerFence: z.number().int().positive(),
+  name: skillIdSchema,
+  description: z.string().trim().min(1).max(1024),
+  steps: z.array(z.string().trim().min(1).max(2000)).max(50).default([]),
+});
+
 export const authoredSkillScopeSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("personal") }),
   z.object({ type: z.literal("project"), projectId: z.string().min(1) }),
@@ -246,6 +257,7 @@ export type SkillAvailabilityResponse = z.infer<typeof skillAvailabilityResponse
 export type SetSkillEnabledInput = z.infer<typeof setSkillEnabledSchema>;
 export type AuthoredSkillInput = z.infer<typeof authoredSkillInputSchema>;
 export type AuthoredSkillDraftInput = z.infer<typeof authoredSkillDraftInputSchema>;
+export type TeachingSkillDraftInput = z.infer<typeof teachingSkillDraftInputSchema>;
 export type AuthoredSkillResource = z.infer<typeof authoredSkillResourceSchema>;
 export type AuthoredSkillScope = z.infer<typeof authoredSkillScopeSchema>;
 export type AuthoredSkill = z.infer<typeof authoredSkillSchema>;

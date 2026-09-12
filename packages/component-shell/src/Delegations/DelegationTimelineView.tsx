@@ -1,5 +1,8 @@
 import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
-import { DelegationCard } from "@ngriffin_uk/polychat-component-conversation";
+import {
+  createDelegationFollowUpInteraction,
+  DelegationCard,
+} from "@ngriffin_uk/polychat-component-conversation";
 import { useCancelDelegations, useDelegations } from "@ngriffin_uk/polychat-library-react";
 import { delegationListResponseSchema } from "@ngriffin_uk/polychat-schemas";
 
@@ -29,6 +32,8 @@ export function DelegationTimelineView({
   return (
     <DelegationCard
       delegations={delegations}
+      teammates={query.data?.teammates ?? (parsed.success ? parsed.data.teammates : undefined)}
+      outputs={query.data?.outputs ?? (parsed.success ? parsed.data.outputs : undefined)}
       onStopAll={
         query.data?.canControl
           ? () => {
@@ -42,6 +47,35 @@ export function DelegationTimelineView({
               void onToolInteraction("delegate", "useAsPrompt", {
                 action: "open",
                 childConversationId: delegation.childConversationId,
+              })
+          : undefined
+      }
+      onResumeDelegation={
+        onToolInteraction
+          ? (delegation) =>
+              void onToolInteraction(
+                "delegate",
+                "useAsPrompt",
+                createDelegationFollowUpInteraction(delegation, "resume"),
+              )
+          : undefined
+      }
+      onStartFreshDelegation={
+        onToolInteraction
+          ? (delegation) =>
+              void onToolInteraction(
+                "delegate",
+                "useAsPrompt",
+                createDelegationFollowUpInteraction(delegation, "fresh"),
+              )
+          : undefined
+      }
+      onOpenOutput={
+        onToolInteraction
+          ? (output) =>
+              void onToolInteraction("delegate", "useAsPrompt", {
+                action: "output",
+                outputId: output.id,
               })
           : undefined
       }

@@ -1,7 +1,7 @@
 import type { TeammateResponse, ModelConfig } from "@ngriffin_uk/polychat-schemas";
 import {
   DEFAULT_TEAMMATE_KIND,
-  filterToolIdsForTeammateKind,
+  getMcpServerDefaultLabel,
   normaliseToolIds,
 } from "@ngriffin_uk/polychat-schemas";
 import {
@@ -63,8 +63,8 @@ export function createTeammateEditorValue(
     skillIds: teammate.skill_ids,
     servers: teammate.servers.map((server) => ({
       id: generateId(),
+      label: server.label ?? getMcpServerDefaultLabel(server.url),
       url: server.url,
-      type: server.type ?? "sse",
     })),
   };
 }
@@ -75,7 +75,6 @@ export function toTeammateFormData(value: TeammateEditorValue): TeammateFormData
     kind: value.kind,
     description: value.description.trim(),
     avatar_url: value.avatarUrl.trim(),
-    servers: value.servers.map((server) => ({ url: server.url.trim(), type: server.type })),
     model: value.model,
     temperature: value.temperature === "" ? null : value.temperature,
     max_steps: getFiniteNumberOrFallback(value.maxSteps, DEFAULT_TEAMMATE_MAX_STEPS),
@@ -84,9 +83,14 @@ export function toTeammateFormData(value: TeammateEditorValue): TeammateFormData
       input: input.trim(),
       output: output.trim(),
     })),
-    enabled_tools: filterToolIdsForTeammateKind(value.kind, normaliseToolIds(value.toolIds)) ?? [],
+    enabled_tools: normaliseToolIds(value.toolIds),
     skill_ids: value.skillIds,
     mode: value.mode,
+    servers: value.servers.map(({ label, url }) => ({
+      label: label.trim(),
+      url: url.trim(),
+      type: "sse",
+    })),
   };
 }
 
@@ -95,12 +99,24 @@ export function validateTeammateEditorValue(value: TeammateEditorValue): string 
     return "Give the teammate a name.";
   }
 
-  if (value.servers.some((server) => !server.url.trim())) {
-    return "Every connection needs a server URL, or remove the empty ones.";
-  }
-
   if (value.examples.some((example) => !example.input.trim() || !example.output.trim())) {
     return "Every example needs both a prompt and a reply, or remove the empty ones.";
+  }
+
+  for (const server of value.servers) {
+    if (!server.label.trim() || !server.url.trim()) {
+      return "Every MCP server needs a label and URL, or remove the empty server.";
+    }
+
+    try {
+      const url = new URL(server.url);
+
+      if (url.protocol !== "https:" || url.username || url.password) {
+        return "MCP server URLs must use HTTPS without embedded credentials.";
+      }
+    } catch {
+      return "Enter a valid MCP server URL.";
+    }
   }
 
   return null;

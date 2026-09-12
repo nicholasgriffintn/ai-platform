@@ -40,6 +40,7 @@ const CANDIDATES_QUERY = `
       CASE
         WHEN pt.status = 'blocked' AND pt.blocked_reason = 'awaiting_approval' THEN 'approval'
         WHEN pt.status = 'blocked' AND pt.blocked_reason = 'awaiting_input' THEN 'input'
+        WHEN pt.status = 'blocked' AND pt.blocked_reason = 'awaiting_takeover' THEN 'input'
         WHEN pt.status = 'blocked' THEN 'failed'
         WHEN pt.status = 'review' THEN 'review'
         WHEN pt.status IN ('queued', 'running') THEN 'running'
@@ -156,6 +157,7 @@ const CANDIDATES_QUERY = `
       CASE
         WHEN d.state = 'awaiting_approval' THEN 'approval'
         WHEN d.state = 'awaiting_input' THEN 'input'
+        WHEN d.state = 'awaiting_takeover' THEN 'input'
         WHEN d.state IN ('failed', 'expired') THEN 'failed'
         WHEN d.state IN ('queued', 'running') THEN 'running'
         ELSE 'completed'
@@ -173,7 +175,7 @@ const CANDIDATES_QUERY = `
       0 AS next_response_arrived,
       d.teammate_id || ': ' || d.goal AS title,
       CASE
-        WHEN d.state IN ('awaiting_approval', 'awaiting_input') THEN 'The delegate needs your response'
+        WHEN d.state IN ('awaiting_approval', 'awaiting_input', 'awaiting_takeover') THEN 'The delegate needs your response'
         WHEN d.state IN ('failed', 'expired') THEN COALESCE(json_extract(d.result_json, '$.summary'), 'The delegation did not complete')
         ELSE NULL
       END AS detail,
@@ -187,9 +189,71 @@ const CANDIDATES_QUERY = `
       ON org.conversation_id = d.parent_conversation_id AND org.user_id = ?
     JOIN user owner ON owner.id = parent.user_id
     WHERE (
-      d.state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval')
+      d.state IN ('queued', 'running', 'awaiting_input', 'awaiting_approval', 'awaiting_takeover')
       OR datetime(COALESCE(d.updated_at, d.created_at)) >= datetime('now', '-7 days')
     )
+
+    UNION ALL
+
+    SELECT
+      'routine:' || json_extract(m.data, '$.teammateActivity.occurrenceId') AS id,
+      CASE
+        WHEN json_extract(m.data, '$.teammateActivity.status') = 'awaiting_approval' THEN 'approval'
+        WHEN json_extract(m.data, '$.teammateActivity.status') IN ('awaiting_input', 'awaiting_takeover') THEN 'input'
+        WHEN json_extract(m.data, '$.teammateActivity.status') IN ('error', 'failed', 'interrupted') THEN 'failed'
+        WHEN json_extract(m.data, '$.teammateActivity.status') IN ('queued', 'running') THEN 'running'
+        ELSE 'completed'
+      END AS kind,
+      'run' AS item_type,
+      json_extract(m.data, '$.teammateActivity.occurrenceId') AS resource_id,
+      p.workspace_id,
+      w.name AS workspace_name,
+      p.id AS project_id,
+      p.name AS project_name,
+      json_extract(m.data, '$.teammateActivity.conversationId') AS conversation_id,
+      tc.actor_user_id AS owner_user_id,
+      COALESCE(owner.name, owner.email) AS owner_name,
+      COALESCE(org.is_unread, 0) AS is_unread,
+      0 AS next_response_arrived,
+      COALESCE(json_extract(m.data, '$.teammateActivity.recipeTitle'), 'Routine') AS title,
+      json_extract(m.data, '$.teammateActivity.summary') AS detail,
+      m.created_at AS occurred_at
+    FROM message m
+    JOIN teammate_context tc
+      ON tc.home_conversation_id = m.conversation_id
+      AND tc.scope_type = 'project'
+    JOIN project p ON p.id = tc.scope_id AND p.archived_at IS NULL
+    JOIN workspace w ON w.id = p.workspace_id
+    JOIN workspace_member viewer ON viewer.workspace_id = p.workspace_id AND viewer.user_id = ?
+    LEFT JOIN conversation_user_state org
+      ON org.conversation_id = tc.home_conversation_id AND org.user_id = ?
+    JOIN user owner ON owner.id = tc.actor_user_id
+    WHERE m.is_archived = 0
+      AND json_valid(m.data)
+      AND json_extract(m.data, '$.teammateActivity.type') = 'routine'
+      AND json_extract(m.data, '$.teammateActivity.occurrenceId') IS NOT NULL
+      AND (
+        json_extract(m.data, '$.teammateActivity.status') IN (
+          'awaiting_approval', 'awaiting_input', 'awaiting_takeover',
+          'error', 'failed', 'interrupted', 'queued', 'running'
+        )
+        OR datetime(m.created_at) >= datetime('now', '-7 days')
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM message newer
+        WHERE newer.conversation_id = m.conversation_id
+          AND newer.is_archived = 0
+          AND json_valid(newer.data)
+          AND json_extract(newer.data, '$.teammateActivity.type') = 'routine'
+          AND json_extract(newer.data, '$.teammateActivity.occurrenceId') =
+              json_extract(m.data, '$.teammateActivity.occurrenceId')
+          AND (newer.created_at > m.created_at OR (newer.created_at = m.created_at AND newer.id > m.id))
+      )
+      AND NOT (
+        COALESCE(datetime(org.snoozed_until) > datetime('now'), 0)
+        OR org.snoozed_next_response_at IS NOT NULL
+      )
   )`;
 
 function filtersQuery(query: WorkAttentionQuery): { sql: string; values: unknown[] } {
@@ -258,7 +322,17 @@ function formatItem(row: AttentionRow): WorkAttentionItem {
 export class AttentionRepository extends BaseRepository {
   async list(userId: number, query: WorkAttentionQuery) {
     const filters = filtersQuery(query);
-    const baseValues = [userId, userId, userId, userId, SANDBOX_RUNS_CAPABILITY_ID, userId, userId];
+    const baseValues = [
+      userId,
+      userId,
+      userId,
+      userId,
+      SANDBOX_RUNS_CAPABILITY_ID,
+      userId,
+      userId,
+      userId,
+      userId,
+    ];
     const [rows, count] = await Promise.all([
       this.runQuery<AttentionRow>(
         `${CANDIDATES_QUERY}
@@ -279,7 +353,17 @@ export class AttentionRepository extends BaseRepository {
   }
 
   async listFacets(userId: number) {
-    const baseValues = [userId, userId, userId, userId, SANDBOX_RUNS_CAPABILITY_ID, userId, userId];
+    const baseValues = [
+      userId,
+      userId,
+      userId,
+      userId,
+      SANDBOX_RUNS_CAPABILITY_ID,
+      userId,
+      userId,
+      userId,
+      userId,
+    ];
     const [workspaces, projects, owners] = await Promise.all([
       this.runQuery<{ id: string; name: string }>(
         `${CANDIDATES_QUERY}

@@ -7,6 +7,7 @@ import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import { StorageService } from "~/lib/storage";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
+import { executeMachineChatResponse } from "~/services/machines/chat-response";
 import type { ChatCompletionParameters, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -59,6 +60,13 @@ export async function getAIResponse(request: ChatCompletionParameters) {
     model: requestedModel,
     provider: requestedProvider,
   });
+
+  if (modelConfig.machineId) {
+    return executeMachineChatResponse(request, {
+      ...modelConfig,
+      machineId: modelConfig.machineId,
+    });
+  }
 
   let provider;
 

@@ -58,14 +58,18 @@ export function mergeEnabledMemoryToolNames(params: {
   userSettings?: MemoryToolSettings;
   store?: boolean;
 }): string[] {
+  const enabledMemoryToolNames = getEnabledMemoryToolNames({
+    user: params.user,
+    userSettings: params.userSettings,
+    store: params.store,
+  });
+
   return Array.from(
     new Set([
-      ...(params.enabledTools ?? []),
-      ...getEnabledMemoryToolNames({
-        user: params.user,
-        userSettings: params.userSettings,
-        store: params.store,
-      }),
+      ...(params.enabledTools ?? []).filter(
+        (toolName) => toolName !== MEMORY_SEARCH_TOOL_NAME && toolName !== MEMORY_STORE_TOOL_NAME,
+      ),
+      ...enabledMemoryToolNames,
     ]),
   );
 }

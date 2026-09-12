@@ -36,6 +36,20 @@ describe("machine heartbeat", () => {
         detail: "http://127.0.0.1:11434 refused the connection",
       }),
       discoverModels: vi.fn(),
+      probeAgentTool: vi.fn().mockImplementation((vendor: string) =>
+        Promise.resolve(
+          vendor === "codex"
+            ? {
+                state: "ready",
+                checkedAt: "2026-09-07T09:00:00.000Z",
+                version: "1.0.0",
+              }
+            : { state: "missing", checkedAt: "2026-09-07T09:00:00.000Z" },
+        ),
+      ),
+      agentSupportsSessions: vi
+        .fn()
+        .mockImplementation((vendor: string) => Promise.resolve(vendor === "codex")),
     } as unknown as ConnectedDesktopBackend;
 
     const payload = await buildMachineHeartbeatPayload(backend, diagnostics);
@@ -44,19 +58,24 @@ describe("machine heartbeat", () => {
     expect(payload).toMatchObject({
       machineId: "machine-1",
       platform: "macos",
-      capabilities: ["model-run", "model-relay"],
-      runtimes: [
-        {
-          kind: "model",
-          vendor: "ollama",
-          readiness: {
-            status: "unreachable",
-            detail: null,
-          },
-          models: [],
-        },
-      ],
+      capabilities: ["model-run", "model-relay", "agent-run"],
     });
+    expect(payload.runtimes).toContainEqual(
+      expect.objectContaining({
+        kind: "model",
+        vendor: "ollama",
+        readiness: expect.objectContaining({ status: "unreachable", detail: null }),
+        models: [],
+      }),
+    );
+    expect(payload.runtimes).toContainEqual(
+      expect.objectContaining({
+        kind: "agent",
+        vendor: "codex",
+        readiness: expect.objectContaining({ state: "ready" }),
+        supportsSessions: true,
+      }),
+    );
     expect(serialised).not.toContain("127.0.0.1");
     expect(serialised).not.toContain("11434");
   });

@@ -27,7 +27,7 @@ export const configure_recipe: FunctionToolDescriptor = {
           properties: {
             type: {
               type: "string",
-              enum: ["manual", "schedule", "natural_language"],
+              enum: ["manual", "schedule", "once"],
             },
             enabled: {
               type: "boolean",
@@ -35,6 +35,14 @@ export const configure_recipe: FunctionToolDescriptor = {
             cronExpression: {
               type: "string",
               description: "Five-field cron expression for schedule triggers.",
+            },
+            scheduledAt: {
+              type: "string",
+              description: "ISO timestamp for a one-shot trigger.",
+            },
+            timezone: {
+              type: "string",
+              description: "IANA timezone used by schedule and one-shot triggers.",
             },
             prompt: {
               type: "string",

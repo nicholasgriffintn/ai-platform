@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { isSupportedCronExpression } from "./cron.js";
 import { documentMetadataSchema } from "./documents.js";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json" with { type: "json" };
 import { externalHttpUrlSchema } from "./navigation.js";
@@ -1275,12 +1276,15 @@ export const recipeConnectorAccountUpdateRequestSchema = z.object({
 
 export const recipeInstallationTriggerSchema = z
   .object({
-    type: z.enum(["manual", "schedule", "natural_language"]),
+    id: z.string().min(1).max(160).optional(),
+    type: z.enum(["manual", "schedule", "once"]),
     enabled: z.boolean().default(true),
     cronExpression: z
       .string()
-      .regex(/^[\d*/, -]+ [\d*/, -]+ [\d*/, -]+ [\d*/, -]+ [\d*/, -]+$/)
+      .refine(isSupportedCronExpression, "Unsupported cron expression")
       .optional(),
+    timezone: z.string().min(1).max(120).default("UTC").optional(),
+    scheduledAt: z.iso.datetime().optional(),
     prompt: z.string().optional(),
     notificationChannel: z.enum(["sms", "slack", "telegram"]).optional(),
     notificationTarget: z.string().optional(),
@@ -1291,6 +1295,14 @@ export const recipeInstallationTriggerSchema = z
         code: "custom",
         path: ["cronExpression"],
         message: "Schedule triggers require a cron expression",
+      });
+    }
+
+    if (trigger.type === "once" && !trigger.scheduledAt) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["scheduledAt"],
+        message: "One-shot triggers require a scheduled instant",
       });
     }
 
@@ -1311,6 +1323,7 @@ export const recipeInstallationSchema = z.object({
   status: z.enum(["active", "paused"]),
   triggers: z.array(recipeInstallationTriggerSchema),
   configuration: recipeConfigurationSchema,
+  teammateContextId: z.string().min(1).nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -1325,6 +1338,7 @@ export const recipeInstallationUpdateRequestSchema = z.object({
   status: z.enum(["active", "paused"]).optional(),
   triggers: z.array(recipeInstallationTriggerSchema).optional(),
   configuration: recipeConfigurationRecordSchema.optional(),
+  teammateContextId: z.string().min(1).nullable().optional(),
 });
 
 export const recipeComposioTriggerCreateRequestSchema = z.object({
@@ -1386,7 +1400,7 @@ export const recipeInvocationResponseSchema = z.object({
   channel: z
     .enum(["web", "ios", "sms", "slack", "telegram", "scheduled", "event", "tool"])
     .default("web"),
-  status: z.enum(["ready", "queued", "blocked", "not_installed"]),
+  status: z.enum(["ready", "queued", "blocked", "paused", "not_installed"]),
   conversationStarter: z.string(),
   messageUrl: z.string(),
   missingConnections: z.array(assistantRecipeConnectionSchema),

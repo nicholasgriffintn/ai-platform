@@ -1,13 +1,19 @@
 import type {
   ConversationChannelRequestOptions,
   RecipeInvocationResponse,
+  TeammateInvocation,
 } from "@ngriffin_uk/polychat-schemas";
-import { createRecipeChatRequestOptions } from "@ngriffin_uk/polychat-schemas";
+import {
+  createChatCompletionsJsonSchema,
+  createRecipeChatRequestOptions,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { getDefaultChatModel } from "~/lib/providers/models";
+import { recoverAcceptedChatCompletionResponse } from "~/services/chat-runs/completion-recovery";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
+import { enqueueTeammateRun } from "~/services/teammates/run-admission";
 import type { CreateChatCompletionsResponse, IEnv, IUser, Message } from "~/types";
 import type { ChatRequestOptions } from "~/types/chat";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -117,43 +123,79 @@ export async function executeRecipeInvocationChat(params: {
   titleConversation?: boolean;
   priorMessages?: Message[];
   channel?: ConversationChannelRequestOptions;
+  commandId?: string;
+  teammate?: { id: string; invocation: TeammateInvocation };
 }): Promise<{
   conversationId: string;
   response: CreateChatCompletionsResponse;
 }> {
   const conversationId = params.conversationId ?? `recipe_${generateId()}`;
   const shouldTitleGeneratedConversation = params.titleConversation ?? !params.conversationId;
-  const response = await handleCreateChatCompletions({
-    env: params.env,
-    context: params.context,
-    user: params.user,
-    request: {
-      completion_id: conversationId,
-      conversation_type: "task",
-      messages: [
-        ...(params.priorMessages ?? []),
-        {
-          role: "user",
-          content: params.invocation.conversationStarter,
-        },
-      ],
-      mode: "agent",
-      stream: false,
-      store: true,
-      enabled_tools: params.invocation.enabledTools,
-      approved_tools: params.invocation.enabledTools,
-      tool_choice: "auto",
-      reasoning: { effort: "none" },
-      metadata: params.projectId ? { project_id: params.projectId } : undefined,
-      options: buildRecipeExecutionOptions(params),
-    },
+  const request = createChatCompletionsJsonSchema.parse({
+    completion_id: conversationId,
+    ...(params.commandId ? { command_id: params.commandId } : {}),
+    messages: [
+      ...(params.priorMessages ?? []),
+      {
+        role: "user",
+        content: params.invocation.conversationStarter,
+      },
+    ],
+    mode: "agent",
+    trigger: "schedule",
+    stream: false,
+    store: true,
+    enabled_tools: params.invocation.enabledTools,
+    tool_choice: "auto",
+    reasoning: { effort: "none" },
+    metadata: params.projectId ? { project_id: params.projectId } : undefined,
+    options: buildRecipeExecutionOptions(params),
   });
+  const response = params.teammate
+    ? await enqueueTeammateRun({
+        env: params.env,
+        context: params.context,
+        body: request,
+        teammateId: params.teammate.id,
+        invocation: params.teammate.invocation,
+        user: params.user,
+        anonymousUser: undefined,
+        conversationType: "task",
+        trigger: "schedule",
+      })
+    : await handleCreateChatCompletions({
+        env: params.env,
+        context: params.context,
+        user: params.user,
+        request: { ...request, conversation_type: "task" },
+      });
+
+  let recoveredResponse: CreateChatCompletionsResponse | null = null;
+
+  if (response instanceof Response && params.commandId) {
+    recoveredResponse =
+      (
+        await recoverAcceptedChatCompletionResponse(params.context, {
+          userId: params.user.id,
+          commandId: params.commandId,
+          conversationId,
+        })
+      )?.response ?? null;
+  }
+
+  let completedResponse: CreateChatCompletionsResponse;
 
   if (response instanceof Response) {
-    throw new AssistantError(
-      "Recipe execution unexpectedly returned a streaming response",
-      ErrorType.INTERNAL_ERROR,
-    );
+    if (!recoveredResponse) {
+      throw new AssistantError(
+        "Recipe execution unexpectedly returned a streaming response",
+        ErrorType.INTERNAL_ERROR,
+      );
+    }
+
+    completedResponse = recoveredResponse;
+  } else {
+    completedResponse = response;
   }
 
   if (shouldTitleGeneratedConversation) {
@@ -170,5 +212,5 @@ export async function executeRecipeInvocationChat(params: {
     }
   }
 
-  return { conversationId, response };
+  return { conversationId, response: completedResponse };
 }

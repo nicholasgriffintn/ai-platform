@@ -1,12 +1,12 @@
 import {
   resolveSandboxDeliveryPolicy,
+  resolveSandboxTaskProfile,
   sandboxDeliveryPolicyCreatesCommit,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { Env, TaskEventEmitter, TaskParams, TaskResult, TaskSecrets } from "../types";
 import { SandboxTaskRunnerRegistry } from "./runner";
 import { AgentTaskRunner } from "./runners/feature-implementation-runner";
-import { resolveSandboxTaskProfile } from "./task-profile";
 
 const runnerRegistry = new SandboxTaskRunnerRegistry();
 

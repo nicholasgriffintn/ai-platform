@@ -370,19 +370,144 @@ const TOOL_CALL_TRIGGERS = [
         reason: "These two disagree most about release risk.",
       }),
   },
+  {
+    marker: "Delegate release continuity to teammate ",
+    name: "delegate",
+    activateThroughDiscovery: true,
+    arguments: (prompt) => {
+      const teammateId = prompt.match(/Delegate release continuity to teammate (\S+)/)?.[1];
+
+      if (!teammateId) {
+        throw new Error("Delegation E2E prompt is missing the teammate ID");
+      }
+
+      return JSON.stringify({
+        teammate_id: teammateId,
+        goal: "Produce the offline release continuity result.",
+        wait_for: "none",
+        budget: { max_steps: 6 },
+      });
+    },
+  },
+  {
+    marker: "Delegate cancellable continuity to teammate ",
+    name: "delegate",
+    activateThroughDiscovery: true,
+    arguments: (prompt) => {
+      const teammateId = prompt.match(/Delegate cancellable continuity to teammate (\S+)/)?.[1];
+
+      if (!teammateId) {
+        throw new Error("Cancellable delegation E2E prompt is missing the teammate ID");
+      }
+
+      return JSON.stringify({
+        teammate_id: teammateId,
+        goal: "Keep this cancellable delegated stream active until it is stopped.",
+        wait_for: "none",
+        budget: { max_steps: 6 },
+      });
+    },
+  },
+  {
+    marker: "Delegate follow-up work to teammate ",
+    name: "delegate",
+    activateThroughDiscovery: true,
+    arguments: (prompt) => {
+      const teammateId = prompt.match(/Delegate follow-up work to teammate (\S+)/)?.[1];
+      const continuation = prompt.match(
+        /(?:Resume child conversation|Start a fresh child conversation from the brief attached to) (\S+) using continuation mode (resume|fresh)/,
+      );
+
+      if (!teammateId || !continuation?.[1] || !continuation[2]) {
+        throw new Error("Delegation follow-up E2E prompt is missing its continuation binding");
+      }
+
+      return JSON.stringify({
+        teammate_id: teammateId,
+        child_conversation_id: continuation[1],
+        continuation_mode: continuation[2],
+        goal: "Confirm the corrected child context.",
+        wait_for: "none",
+        budget: { max_steps: 6 },
+      });
+    },
+  },
+  {
+    marker: "Continue release continuity with teammate ",
+    name: "delegate",
+    activateThroughDiscovery: true,
+    arguments: (prompt) => {
+      const match = prompt.match(/Continue release continuity with teammate (\S+) in child (\S+)/);
+
+      if (!match?.[1] || !match[2]) {
+        throw new Error("Delegation continuation E2E prompt is missing an identity");
+      }
+
+      return JSON.stringify({
+        teammate_id: match[1],
+        child_conversation_id: match[2],
+        continuation_mode: "resume",
+        goal: "Confirm the corrected child context.",
+        wait_for: "none",
+        budget: { max_steps: 6 },
+      });
+    },
+  },
 ];
 
-function resolveToolCallTrigger(prompt) {
-  const trigger = TOOL_CALL_TRIGGERS.find((candidate) => prompt.includes(candidate.marker));
+function hasCompletedToolCall(body, toolName) {
+  const lastUserMessageIndex = (body.messages ?? []).findLastIndex(
+    (message) => message.role === "user",
+  );
+  const responseMessages = (body.messages ?? []).slice(lastUserMessageIndex + 1);
+  const callIds = new Set(
+    responseMessages
+      .filter((message) => message.type === "function_call" && message.name === toolName)
+      .map((message) => message.callId),
+  );
 
-  if (!trigger) {
+  return responseMessages.some(
+    (message) =>
+      (message.role === "tool" && message.name === toolName) ||
+      (message.type === "function_call_output" && callIds.has(message.callId)),
+  );
+}
+
+function requestHasTool(body, toolName) {
+  return (body.tools ?? []).some((tool) => (tool.function?.name ?? tool.name) === toolName);
+}
+
+function resolveToolCallTrigger(body, prompt) {
+  const triggerPrompt =
+    [...(body.messages ?? [])].reverse().find((message) => message.role === "user")?.content ??
+    prompt;
+  const trigger = TOOL_CALL_TRIGGERS.find(
+    (candidate) => typeof triggerPrompt === "string" && triggerPrompt.includes(candidate.marker),
+  );
+
+  if (!trigger || hasCompletedToolCall(body, trigger.name)) {
     return null;
+  }
+
+  if (trigger.activateThroughDiscovery && !requestHasTool(body, trigger.name)) {
+    if (hasCompletedToolCall(body, "discover_capabilities")) {
+      return null;
+    }
+
+    return {
+      id: "e2e-tool-call-discover-capabilities",
+      type: "function",
+      function: {
+        name: "discover_capabilities",
+        arguments: JSON.stringify({ query: trigger.name }),
+      },
+    };
   }
 
   return {
     id: `e2e-tool-call-${trigger.name}`,
     type: "function",
-    function: { name: trigger.name, arguments: trigger.arguments() },
+    function: { name: trigger.name, arguments: trigger.arguments(triggerPrompt) },
   };
 }
 
@@ -819,7 +944,7 @@ async function mockExternalRequest(request) {
       resolveSandboxModelTool(normalised) ??
       resolveMetaModelTool(normalised, prompt) ??
       taskResponse?.toolCall ??
-      resolveToolCallTrigger(prompt);
+      resolveToolCallTrigger(normalised, prompt);
 
     if (toolCall) {
       return responsesToolCallResponse(toolCall, body.model, body.stream);
@@ -827,11 +952,13 @@ async function mockExternalRequest(request) {
 
     const responseText = taskResponse
       ? taskResponse.content
-      : prompt.includes("Polychat sandbox E2E")
-        ? "Update README.md, then validate the change with:\n```sh\nnode verify.cjs\n```"
-        : prompt.includes("You are a title generator")
-          ? "Release validation chat"
-          : `E2E response: ${JSON.stringify(body.input ?? "")}`;
+      : JSON.stringify(body.input).includes("Corrected child continuity note E2E")
+        ? "E2E delegation used the corrected child continuity note."
+        : prompt.includes("Polychat sandbox E2E")
+          ? "Update README.md, then validate the change with:\n```sh\nnode verify.cjs\n```"
+          : prompt.includes("You are a title generator")
+            ? "Release validation chat"
+            : `E2E response: ${JSON.stringify(body.input ?? "")}`;
 
     if (body.stream === true) {
       return openAiResponsesStreamingResponse(responseText);
@@ -869,7 +996,7 @@ async function mockExternalRequest(request) {
   const toolCall =
     resolveSandboxModelTool(body) ??
     resolveMetaModelTool(body, prompt) ??
-    (taskResponse ? taskResponse.toolCall : resolveToolCallTrigger(prompt));
+    (taskResponse ? taskResponse.toolCall : resolveToolCallTrigger(body, prompt));
 
   if (toolCall) {
     return body.stream
@@ -879,11 +1006,13 @@ async function mockExternalRequest(request) {
 
   const content = taskResponse
     ? taskResponse.content
-    : prompt.includes("Polychat sandbox E2E")
-      ? "Update README.md, then validate the change with:\n```sh\nnode verify.cjs\n```"
-      : prompt.includes("You are a title generator")
-        ? "Release validation chat"
-        : `E2E response: ${prompt}`;
+    : JSON.stringify(body.messages).includes("Corrected child continuity note E2E")
+      ? "E2E delegation used the corrected child continuity note."
+      : prompt.includes("Polychat sandbox E2E")
+        ? "Update README.md, then validate the change with:\n```sh\nnode verify.cjs\n```"
+        : prompt.includes("You are a title generator")
+          ? "Release validation chat"
+          : `E2E response: ${prompt}`;
 
   if (url.pathname.includes("v1beta/models/")) {
     return url.pathname.includes("streamGenerateContent")
@@ -896,6 +1025,14 @@ async function mockExternalRequest(request) {
             totalTokenCount: 12,
           },
         });
+  }
+
+  if (body.stream && prompt.includes("Keep this cancellable delegated stream active")) {
+    return streamingResponse(
+      "E2E response: delegated cancellation data so far",
+      " and the delegated stream incorrectly completed",
+      12_000,
+    );
   }
 
   if (body.stream && prompt.includes("Recover this interrupted stream")) {

@@ -14,6 +14,8 @@ export interface MemoryStoreInput {
   text: string;
   metadata: Record<string, string>;
   conversationId?: string;
+  documentId?: string;
+  operationId?: string;
   userSettings?: IUserSettings | null;
 }
 

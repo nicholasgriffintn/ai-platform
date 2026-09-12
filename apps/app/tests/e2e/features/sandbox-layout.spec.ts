@@ -23,6 +23,7 @@ test.describe("Project workbench layout", () => {
     await workPage.navigate(projectUrl);
     await workPage.openNewProjectConversation();
     await expect(workbench.dock).toBeVisible();
+    await expect(page.getByRole("group", { name: "Product mode", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /^Coding task:/ })).toBeVisible();
     await expect(page.getByRole("button", { name: "As task", exact: true })).toHaveCount(0);
     await expect(page.getByRole("main", { name: "Conversation", exact: true })).toBeVisible();
@@ -63,6 +64,7 @@ test.describe("Project workbench layout", () => {
     );
     await workbench.collapse();
     await expect(workbench.dock).not.toBeVisible();
+    await expect(workbench.mobileTrigger).toHaveAttribute("aria-expanded", "false");
     await workbench.reload();
     await expect(workbench.dock).not.toBeVisible();
     await workbench.expand();
@@ -153,6 +155,22 @@ test.describe("Project workbench layout", () => {
       )
       .toEqual({ started: true, completed: false });
     await expect(workbench.status).toContainText("Running", { timeout: 30_000 });
+    await expect(page.getByRole("group", { name: "Product mode", exact: true })).not.toBeVisible();
+    const contextAndTrace = page.getByRole("button", {
+      name: "Context and trace summary",
+      exact: true,
+    });
+
+    await expect(contextAndTrace).toBeVisible();
+    await expect(page.getByRole("button", { name: "View run context", exact: true })).toHaveCount(
+      0,
+    );
+    await expect(
+      page.getByRole("button", { name: "View conversation trace", exact: true }),
+    ).toHaveCount(0);
+    await contextAndTrace.click();
+    await expect(page.getByText("Context & trace", { exact: true })).toBeVisible();
+    await page.keyboard.press("Escape");
     await expect.poll(async () => (await sandbox.latestRun())?.status).toBe("running");
     const runningRun = await sandbox.latestRun();
 
@@ -163,7 +181,9 @@ test.describe("Project workbench layout", () => {
     await expect(workbench.status).toHaveAttribute("title", /observe every workbench state/);
     await expect(workbench.statusDetail).toBeVisible();
     expect(await workbench.statusDetailIsTruncated()).toBe(true);
-    expect(await workbench.statusStripHasPageBackground()).toBe(true);
+    await expect(
+      page.getByRole("button", { name: "Close workbench panels", exact: true }),
+    ).toBeVisible();
 
     await page.setViewportSize({ width: 768, height: 1024 });
     await expect(workbench.statusDetail).toBeVisible();
@@ -187,8 +207,7 @@ test.describe("Project workbench layout", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(workbench.status).toHaveAttribute("title", /observe every workbench state/);
     await expect(workbench.status).toContainText("Running");
-    await expect(workbench.statusDetail).toBeVisible();
-    expect(await workbench.statusDetailIsTruncated()).toBe(true);
+    await expect(workbench.statusDetail).not.toBeVisible();
     await expect(workbench.mobileTrigger).toBeVisible();
     expect(
       await Promise.all(

@@ -49,5 +49,5 @@ export function resolveRequestFunctionToolNames(params: {
     (toolName) => !projectTools || discoveryTools.has(toolName) || projectTools.includes(toolName),
   );
 
-  return [...new Set([...(scopedRequestedTools ?? []), ...baselineTools])];
+  return [...new Set([...(scopedRequestedTools ?? []), ...baselineTools, ...(projectTools ?? [])])];
 }

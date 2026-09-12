@@ -1,4 +1,9 @@
-import type { SandboxDeliveryPolicy, SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
+import type {
+  SandboxCredentialBrokerAccess,
+  SandboxDeliveryPolicy,
+  SandboxTrustLevel,
+} from "@ngriffin_uk/polychat-schemas";
+import { isSandboxPullRequestUrl, sandboxReviewBranchName } from "@ngriffin_uk/polychat-schemas";
 
 import type { TaskEvent } from "../types";
 import {
@@ -10,8 +15,6 @@ import {
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
 import { pushBranchToRemote } from "./push-branch";
 import type { RunControlClient } from "./run-control-client";
-
-const GITHUB_API_BASE = "https://api.github.com";
 
 interface GitHubRepositoryResponse {
   default_branch?: unknown;
@@ -27,32 +30,22 @@ interface GitHubPullRequestResponse {
 }
 
 async function githubRequest(params: {
-  githubToken: string;
+  credentialBroker: SandboxCredentialBrokerAccess;
   path: string;
   method?: "GET" | "POST";
   body?: Record<string, unknown>;
 }): Promise<Response> {
-  return fetch(`${GITHUB_API_BASE}${params.path}`, {
+  return fetch(`${params.credentialBroker.baseUrl}/github${params.path}`, {
     method: params.method ?? "GET",
     headers: {
       Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${params.githubToken}`,
+      Authorization: `Bearer ${params.credentialBroker.grant}`,
       "Content-Type": "application/json",
       "User-Agent": "Polychat-Sandbox",
       "X-GitHub-Api-Version": "2022-11-28",
     },
     body: params.body ? JSON.stringify(params.body) : undefined,
   });
-}
-
-function repositoryPath(repo: string): string {
-  const [owner, name] = repo.split("/");
-
-  if (!owner || !name) {
-    throw new Error("Repository must be in owner/repository format");
-  }
-
-  return `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}`;
 }
 
 async function readJson<T>(response: Response, errorMessage: string): Promise<T> {
@@ -64,12 +57,11 @@ async function readJson<T>(response: Response, errorMessage: string): Promise<T>
 }
 
 export async function getDefaultBranch(params: {
-  repo: string;
-  githubToken: string;
+  credentialBroker: SandboxCredentialBrokerAccess;
 }): Promise<string> {
   const response = await githubRequest({
-    githubToken: params.githubToken,
-    path: repositoryPath(params.repo),
+    credentialBroker: params.credentialBroker,
+    path: "/repository",
   });
   const payload = await readJson<GitHubRepositoryResponse>(
     response,
@@ -84,10 +76,9 @@ export async function getDefaultBranch(params: {
 }
 
 export async function assertDirectBranchIsWritable(params: {
-  repo: string;
   targetBranch: string;
   defaultBranch: string;
-  githubToken: string;
+  credentialBroker: SandboxCredentialBrokerAccess;
 }): Promise<void> {
   if (params.targetBranch.toLowerCase() === "main") {
     throw new Error("Direct delivery cannot target main");
@@ -98,8 +89,8 @@ export async function assertDirectBranchIsWritable(params: {
   }
 
   const response = await githubRequest({
-    githubToken: params.githubToken,
-    path: `${repositoryPath(params.repo)}/branches/${encodeURIComponent(params.targetBranch)}`,
+    credentialBroker: params.credentialBroker,
+    path: `/branches/${encodeURIComponent(params.targetBranch)}`,
   });
   const branch = await readJson<GitHubBranchResponse>(
     response,
@@ -124,7 +115,7 @@ export async function prepareDeliveryBranch(params: {
   }
 
   if (params.policy.mode === "review_branch") {
-    const branchName = `polychat/run-${params.runId}`;
+    const branchName = sandboxReviewBranchName(params.runId);
 
     await execOrThrow(
       params.sandbox,
@@ -163,10 +154,15 @@ export async function prepareGitHubDelivery(params: {
   repo: string;
   runId: string;
   policy: SandboxDeliveryPolicy;
-  githubToken: string;
+  credentialBroker: SandboxCredentialBrokerAccess;
   checkoutAuthHeader?: string;
   executionLogs: string[];
-}): Promise<{ branchName: string; targetBranch: string; defaultBranch?: string }> {
+}): Promise<{
+  branchName: string;
+  remoteBranchName: string;
+  targetBranch: string;
+  defaultBranch?: string;
+}> {
   let defaultBranch: string | undefined;
 
   if (
@@ -174,8 +170,7 @@ export async function prepareGitHubDelivery(params: {
     (params.policy.mode === "review_branch" && params.policy.destination === "pull_request")
   ) {
     defaultBranch = await getDefaultBranch({
-      repo: params.repo,
-      githubToken: params.githubToken,
+      credentialBroker: params.credentialBroker,
     });
   }
 
@@ -185,10 +180,9 @@ export async function prepareGitHubDelivery(params: {
     }
 
     await assertDirectBranchIsWritable({
-      repo: params.repo,
       targetBranch: params.policy.targetBranch,
       defaultBranch,
-      githubToken: params.githubToken,
+      credentialBroker: params.credentialBroker,
     });
   }
 
@@ -209,14 +203,39 @@ export async function prepareGitHubDelivery(params: {
     throw new Error("GitHub delivery target could not be resolved");
   }
 
-  return { branchName, targetBranch, defaultBranch };
+  return {
+    branchName,
+    remoteBranchName:
+      params.policy.mode === "commit_to_branch"
+        ? sandboxReviewBranchName(params.runId)
+        : branchName,
+    targetBranch,
+    defaultBranch,
+  };
+}
+
+async function deliverStagedBranch(params: {
+  credentialBroker: SandboxCredentialBrokerAccess;
+  head: string;
+  target: string;
+}): Promise<void> {
+  const response = await githubRequest({
+    credentialBroker: params.credentialBroker,
+    path: "/deliveries",
+    method: "POST",
+    body: { head: params.head, target: params.target },
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub could not advance the delivery branch (${response.status})`);
+  }
 }
 
 async function findOpenPullRequest(params: {
   repo: string;
   branchName: string;
   baseBranch: string;
-  githubToken: string;
+  credentialBroker: SandboxCredentialBrokerAccess;
 }): Promise<string | undefined> {
   const owner = params.repo.split("/")[0];
   const query = new URLSearchParams({
@@ -226,8 +245,8 @@ async function findOpenPullRequest(params: {
     per_page: "1",
   });
   const response = await githubRequest({
-    githubToken: params.githubToken,
-    path: `${repositoryPath(params.repo)}/pulls?${query.toString()}`,
+    credentialBroker: params.credentialBroker,
+    path: `/pulls?${query.toString()}`,
   });
   const payload = await readJson<GitHubPullRequestResponse[]>(
     response,
@@ -235,7 +254,7 @@ async function findOpenPullRequest(params: {
   );
   const url = payload[0]?.html_url;
 
-  return typeof url === "string" && url.startsWith("https://github.com/") ? url : undefined;
+  return typeof url === "string" && isSandboxPullRequestUrl(params.repo, url) ? url : undefined;
 }
 
 export async function createOrFindPullRequest(params: {
@@ -244,7 +263,7 @@ export async function createOrFindPullRequest(params: {
   baseBranch: string;
   runId: string;
   validationSummary: string;
-  githubToken: string;
+  credentialBroker: SandboxCredentialBrokerAccess;
 }): Promise<string> {
   const existing = await findOpenPullRequest(params);
 
@@ -253,8 +272,8 @@ export async function createOrFindPullRequest(params: {
   }
 
   const response = await githubRequest({
-    githubToken: params.githubToken,
-    path: `${repositoryPath(params.repo)}/pulls`,
+    credentialBroker: params.credentialBroker,
+    path: "/pulls",
     method: "POST",
     body: {
       title: `Polychat coding run ${params.runId}`,
@@ -279,7 +298,7 @@ export async function createOrFindPullRequest(params: {
 
   if (
     typeof pullRequest.html_url !== "string" ||
-    !pullRequest.html_url.startsWith("https://github.com/")
+    !isSandboxPullRequestUrl(params.repo, pullRequest.html_url)
   ) {
     throw new Error("GitHub did not return a valid pull request URL");
   }
@@ -319,11 +338,12 @@ export async function deliverCommitToGitHub(params: {
   runId: string;
   policy: SandboxDeliveryPolicy;
   branchName: string;
+  remoteBranchName: string;
   targetBranch: string;
   defaultBranch?: string;
   commitSha: string;
   validationSummary: string;
-  githubToken: string;
+  credentialBroker: SandboxCredentialBrokerAccess;
   checkoutAuthHeader?: string;
   executionLogs: string[];
   trustLevel: SandboxTrustLevel;
@@ -366,10 +386,9 @@ export async function deliverCommitToGitHub(params: {
       }
 
       await assertDirectBranchIsWritable({
-        repo: params.repo,
         targetBranch: params.targetBranch,
         defaultBranch: params.defaultBranch,
-        githubToken: params.githubToken,
+        credentialBroker: params.credentialBroker,
       });
     }
 
@@ -384,11 +403,20 @@ export async function deliverCommitToGitHub(params: {
       sandbox: params.sandbox,
       repoTargetDir: params.repoTargetDir,
       branchName: params.branchName,
+      remoteBranchName: params.remoteBranchName,
       checkoutAuthHeader: params.checkoutAuthHeader,
       executionLogs: params.executionLogs,
       checkpoint: params.checkpoint,
       emit: params.emit,
     });
+
+    if (params.policy.mode === "commit_to_branch") {
+      await deliverStagedBranch({
+        credentialBroker: params.credentialBroker,
+        head: params.remoteBranchName,
+        target: params.targetBranch,
+      });
+    }
 
     let pullRequestUrl: string | undefined;
 
@@ -403,7 +431,7 @@ export async function deliverCommitToGitHub(params: {
         baseBranch: params.defaultBranch,
         runId: params.runId,
         validationSummary: params.validationSummary,
-        githubToken: params.githubToken,
+        credentialBroker: params.credentialBroker,
       });
     }
 

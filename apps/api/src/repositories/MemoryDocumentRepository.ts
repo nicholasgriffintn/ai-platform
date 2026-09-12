@@ -10,9 +10,11 @@ export interface MemoryDocumentScopeKey {
 }
 
 export interface CreateMemoryDocumentRecord extends MemoryDocumentScopeKey {
+  kind?: "memory" | "conversation_brief" | "teammate_context";
   name: string;
   content: string;
   createdByUserId: number;
+  operationId?: string;
 }
 
 export interface AppendMemoryDocumentRevision {
@@ -21,13 +23,14 @@ export interface AppendMemoryDocumentRevision {
   changeNote?: string | null;
   createdByUserId: number;
   expectedRevision: number;
+  operationId?: string;
 }
 
 export class MemoryDocumentRepository extends BaseRepository {
   public async listDocuments(scope: MemoryDocumentScopeKey): Promise<MemoryDocumentRow[]> {
     return this.runQuery<MemoryDocumentRow>(
       `SELECT * FROM memory_document
-       WHERE scope_type = ? AND scope_id = ? AND deleted_at IS NULL
+       WHERE scope_type = ? AND scope_id = ? AND kind = 'memory' AND deleted_at IS NULL
        ORDER BY name ASC`,
       [scope.scopeType, scope.scopeId],
     );
@@ -39,48 +42,49 @@ export class MemoryDocumentRepository extends BaseRepository {
   ): Promise<MemoryDocumentRow | null> {
     return this.runQuery<MemoryDocumentRow>(
       `SELECT * FROM memory_document
-       WHERE scope_type = ? AND scope_id = ? AND name = ? AND deleted_at IS NULL`,
+       WHERE scope_type = ? AND scope_id = ? AND kind = 'memory' AND name = ? AND deleted_at IS NULL`,
       [scope.scopeType, scope.scopeId, name],
+      true,
+    );
+  }
+
+  public async getDocumentById(documentId: string): Promise<MemoryDocumentRow | null> {
+    return this.runQuery<MemoryDocumentRow>(
+      "SELECT * FROM memory_document WHERE id = ? AND deleted_at IS NULL",
+      [documentId],
       true,
     );
   }
 
   public async createDocument(record: CreateMemoryDocumentRecord): Promise<MemoryDocumentRow> {
     const id = generateId();
-    const insert = this.buildInsertQuery(
-      "memory_document",
-      {
+
+    await this.executeBatch([
+      this.env.DB.prepare(
+        `INSERT INTO memory_document
+           (id, scope_type, scope_id, kind, name, content, revision, created_by)
+         VALUES (?, ?, ?, ?, ?, ?, 1, ?)`,
+      ).bind(
         id,
-        scope_type: record.scopeType,
-        scope_id: record.scopeId,
-        name: record.name,
-        content: record.content,
-        revision: 1,
-        created_by: record.createdByUserId,
-      },
-      { returning: "*" },
-    );
+        record.scopeType,
+        record.scopeId,
+        record.kind ?? "memory",
+        record.name,
+        record.content,
+        record.createdByUserId,
+      ),
+      this.env.DB.prepare(
+        `INSERT INTO memory_document_revision
+           (id, document_id, revision, content, change_note, created_by, operation_id)
+         VALUES (?, ?, 1, ?, 'Created', ?, ?)`,
+      ).bind(generateId(), id, record.content, record.createdByUserId, record.operationId ?? null),
+    ]);
 
-    if (!insert) {
-      throw new AssistantError(
-        "Could not build the memory document insert",
-        ErrorType.INTERNAL_ERROR,
-      );
-    }
-
-    const created = await this.runQuery<MemoryDocumentRow>(insert.query, insert.values, true);
+    const created = await this.getDocumentById(id);
 
     if (!created) {
       throw new AssistantError("Could not create the memory document", ErrorType.DATABASE_ERROR);
     }
-
-    await this.writeRevision({
-      documentId: id,
-      revision: 1,
-      content: record.content,
-      changeNote: "Created",
-      createdByUserId: record.createdByUserId,
-    });
 
     return created;
   }
@@ -89,30 +93,48 @@ export class MemoryDocumentRepository extends BaseRepository {
     input: AppendMemoryDocumentRevision,
   ): Promise<MemoryDocumentRow | null> {
     const nextRevision = input.expectedRevision + 1;
-    const result = await this.executeRun(
-      `UPDATE memory_document
-       SET content = ?, revision = ?, updated_at = CURRENT_TIMESTAMP
-       WHERE id = ? AND revision = ? AND deleted_at IS NULL`,
-      [input.content, nextRevision, input.documentId, input.expectedRevision],
-    );
+    const operationId = input.operationId ?? null;
+    const results = await this.executeBatch([
+      this.env.DB.prepare(
+        `UPDATE memory_document
+         SET content = ?, revision = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ? AND revision = ? AND deleted_at IS NULL
+           AND (? IS NULL OR NOT EXISTS (
+             SELECT 1 FROM memory_document_revision
+             WHERE document_id = ? AND operation_id = ?
+           ))`,
+      ).bind(
+        input.content,
+        nextRevision,
+        input.documentId,
+        input.expectedRevision,
+        operationId,
+        input.documentId,
+        operationId,
+      ),
+      this.env.DB.prepare(
+        `INSERT INTO memory_document_revision
+           (id, document_id, revision, content, change_note, created_by, operation_id)
+         SELECT ?, ?, ?, ?, ?, ?, ?
+         WHERE changes() > 0`,
+      ).bind(
+        generateId(),
+        input.documentId,
+        nextRevision,
+        input.content,
+        input.changeNote ?? null,
+        input.createdByUserId,
+        operationId,
+      ),
+    ]);
 
-    if (!result.meta?.changes) {
-      return null;
+    if (!results[0]?.meta?.changes) {
+      if (!operationId || !(await this.hasOperation(input.documentId, operationId))) {
+        return null;
+      }
     }
 
-    await this.writeRevision({
-      documentId: input.documentId,
-      revision: nextRevision,
-      content: input.content,
-      changeNote: input.changeNote ?? null,
-      createdByUserId: input.createdByUserId,
-    });
-
-    return this.runQuery<MemoryDocumentRow>(
-      "SELECT * FROM memory_document WHERE id = ?",
-      [input.documentId],
-      true,
-    );
+    return this.getDocumentById(input.documentId);
   }
 
   public async softDeleteDocument(documentId: string): Promise<void> {
@@ -138,7 +160,7 @@ export class MemoryDocumentRepository extends BaseRepository {
   ): Promise<MemoryDocumentRow[]> {
     return this.runQuery<MemoryDocumentRow>(
       `SELECT * FROM memory_document
-       WHERE scope_type = ? AND scope_id = ? AND deleted_at IS NULL
+       WHERE scope_type = ? AND scope_id = ? AND kind = 'memory' AND deleted_at IS NULL
          AND (lower(name) LIKE ? OR lower(content) LIKE ?)
        ORDER BY updated_at DESC
        LIMIT ?`,
@@ -146,25 +168,14 @@ export class MemoryDocumentRepository extends BaseRepository {
     );
   }
 
-  private async writeRevision(input: {
-    documentId: string;
-    revision: number;
-    content: string;
-    changeNote: string | null;
-    createdByUserId: number;
-  }): Promise<void> {
-    await this.executeRun(
-      `INSERT INTO memory_document_revision
-         (id, document_id, revision, content, change_note, created_by)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        generateId(),
-        input.documentId,
-        input.revision,
-        input.content,
-        input.changeNote,
-        input.createdByUserId,
-      ],
+  private async hasOperation(documentId: string, operationId: string): Promise<boolean> {
+    const row = await this.runQuery<{ present: number }>(
+      `SELECT 1 AS present FROM memory_document_revision
+       WHERE document_id = ? AND operation_id = ?`,
+      [documentId, operationId],
+      true,
     );
+
+    return row !== null;
   }
 }

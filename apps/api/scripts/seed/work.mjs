@@ -17,7 +17,12 @@ export const LAUNCH_PROJECT_ID = seedId("project", "autumn-launch");
 export const WEBSITE_PROJECT_ID = seedId("project", "website-refresh");
 const ARCHIVED_PROJECT_ID = seedId("project", "pilot");
 const REPOSITORY = "nicholasgriffintn/ai-platform-sandbox-worker-tester";
-const USAGE = { prompt_tokens: 1500, completion_tokens: 620, total_tokens: 2120, cost_usd: 0.004 };
+const USAGE = {
+  prompt_tokens: 1500,
+  completion_tokens: 620,
+  total_tokens: 2120,
+  cost_usd: 0.004,
+};
 
 const FLOW = {
   stages: [
@@ -144,7 +149,10 @@ function sandboxRunData({
       branchName: pullRequest?.branch,
       pullRequestUrl: pullRequest?.url,
       proof: {
-        repository: { baseRevision: "a664f7c9", headRevision: pullRequest?.commit ?? "a664f7c9" },
+        repository: {
+          baseRevision: "a664f7c9",
+          headRevision: pullRequest?.commit ?? "a664f7c9",
+        },
         changedFileCount: files.length,
         changedFiles: files,
         validation,
@@ -393,7 +401,13 @@ export async function workStatements({ serverKey, teammates }) {
       name: "Review new pull requests",
       description:
         "When a pull request opens, the Release bot reviews it and leaves a summary comment.",
-      configuration: { trigger: "pull_request.opened", teammateId: teammates.releaseBot },
+      configuration: {
+        recipeId: "github-pull-request-review",
+        status: "active",
+        triggers: [{ id: "pull-request-opened", type: "manual", enabled: true }],
+        configuration: { reviewers: ["nicholasgriffintn"] },
+        teammateContextId: teammates.contexts.releaseBot,
+      },
       status: "active",
       created_at: at({ days: 20 }),
       updated_at: at({ days: 20 }),
@@ -402,11 +416,26 @@ export async function workStatements({ serverKey, teammates }) {
       id: seedId("template", "weekly-digest"),
       created_by_user_id: OWNER.id,
       workspace_id: WORKSPACE_ID,
+      project_id: LAUNCH_PROJECT_ID,
       kind: "recipe",
       capability_id: "weekly-digest",
       name: "Weekly digest",
       description: "Every Monday summarise the week's tasks into the project memory.",
-      configuration: { schedule: "0 9 * * 1" },
+      configuration: {
+        recipeId: "weekly-digest",
+        status: "paused",
+        triggers: [
+          {
+            id: "monday-digest",
+            type: "schedule",
+            enabled: false,
+            cronExpression: "0 9 * * 1",
+            timezone: "Europe/London",
+          },
+        ],
+        configuration: {},
+        teammateContextId: teammates.contexts.releaseBot,
+      },
       status: "paused",
       created_at: at({ days: 25 }),
       updated_at: at({ days: 3 }),
@@ -419,8 +448,28 @@ export async function workStatements({ serverKey, teammates }) {
       external_id: "987654",
       status: "connected",
       encrypted_data: { installationId: 987654, account: "nicholasgriffintn" },
-      metadata: { repositories: [REPOSITORY], permissions: ["contents", "pull_requests"] },
+      metadata: {
+        repositories: [REPOSITORY],
+        permissions: ["contents", "pull_requests"],
+      },
       created_at: at({ days: 44 }),
+      updated_at: at({ days: 2 }),
+    }),
+    insert("provider_connection", {
+      id: seedId("connection", "github-teammate"),
+      user_id: OWNER.id,
+      provider: "github",
+      kind: "recipe_connector_account",
+      external_id: "acct_seed_github",
+      status: "connected",
+      encrypted_data: {},
+      metadata: {
+        authConfigId: "ac_2Brv6Z938Ypv",
+        status: "ACTIVE",
+        isDisabled: false,
+        alias: "Northstar GitHub",
+      },
+      created_at: at({ days: 20 }),
       updated_at: at({ days: 2 }),
     }),
     insert("channel_binding", {
@@ -431,6 +480,7 @@ export async function workStatements({ serverKey, teammates }) {
       external_id: "C0SEEDLAUNCH",
       label: "#autumn-launch",
       teammate_id: teammates.releaseBot,
+      interaction_mode: "automated",
       created_by: OWNER.id,
       enabled: true,
       created_at: at({ days: 18 }),
@@ -522,7 +572,11 @@ export async function workStatements({ serverKey, teammates }) {
       type: "task",
       projectId: LAUNCH_PROJECT_ID,
       createdAt: at({ hours: 4 }),
-      run: { status: "running", projectTaskId: runningTaskId, stageId: "build" },
+      run: {
+        status: "running",
+        projectTaskId: runningTaskId,
+        stageId: "build",
+      },
     },
     [
       {
@@ -571,7 +625,11 @@ export async function workStatements({ serverKey, teammates }) {
         model: null,
         provenance: null,
       },
-      { role: "assistant", status: "in_progress", content: "Tests are running in the sandbox." },
+      {
+        role: "assistant",
+        status: "in_progress",
+        content: "Tests are running in the sandbox.",
+      },
     ],
   );
 
@@ -1154,6 +1212,9 @@ Start with Free. Upgrade when you hit the allowance.`,
 
   return {
     statements,
-    conversationIds: { running: runningThread.conversationId, done: doneThread.conversationId },
+    conversationIds: {
+      running: runningThread.conversationId,
+      done: doneThread.conversationId,
+    },
   };
 }

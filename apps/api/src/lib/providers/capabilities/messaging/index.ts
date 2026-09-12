@@ -7,6 +7,7 @@ export * from "./credentials";
 export * from "./metadata";
 export * from "./providers";
 export * from "./senders";
+export { MESSAGING_PROVIDER_IDS } from "./types";
 export type * from "./types";
 
 export function getMessagingProvider(

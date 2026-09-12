@@ -123,8 +123,12 @@ export async function executeFeatureImplementation(
   const sandbox = getSandbox(env.Sandbox, runId);
   const client = new PolychatClient(secrets.userToken, env.POLYCHAT_API);
   const executionLogs: string[] = [];
-  const redactionSecrets = Object.values(params.environmentVariables ?? {});
+  const redactionSecrets = [
+    params.credentialBroker.grant,
+    ...Object.values(params.environmentVariables ?? {}),
+  ];
   let branchName: string | undefined;
+  let remoteBranchName: string | undefined;
   let baseRevision: string | undefined;
   let headRevision: string | undefined;
   let commitSha: string | undefined;
@@ -203,7 +207,7 @@ export async function executeFeatureImplementation(
     const taskType = params.taskType || "feature-implementation";
 
     const model = params.model || DEFAULT_MODEL;
-    const repo = resolveGitHubRepo(params.repo, secrets.githubToken);
+    const repo = resolveGitHubRepo(params.repo, params.credentialBroker);
 
     await checkpoint("Sandbox run cancelled before repository clone");
     await emit({
@@ -310,22 +314,19 @@ export async function executeFeatureImplementation(
       : abortSignal;
 
     if (shouldCommit) {
-      if (!secrets.githubToken) {
-        throw new Error("GitHub delivery requires a current installation token");
-      }
-
       const delivery = await prepareGitHubDelivery({
         sandbox,
         repoTargetDir,
         repo: repo.displayName,
         runId,
         policy: deliveryPolicy,
-        githubToken: secrets.githubToken,
+        credentialBroker: params.credentialBroker,
         checkoutAuthHeader: repo.checkoutAuthHeader,
         executionLogs,
       });
 
       branchName = delivery.branchName;
+      remoteBranchName = delivery.remoteBranchName;
       targetBranch = delivery.targetBranch;
       defaultBranch = delivery.defaultBranch;
 
@@ -541,7 +542,7 @@ export async function executeFeatureImplementation(
           headRevision = commitSha ?? headRevision;
         }
 
-        if (!branchName || !targetBranch || !commitSha || !secrets.githubToken) {
+        if (!branchName || !remoteBranchName || !targetBranch || !commitSha) {
           throw new Error("Delivery evidence is incomplete; no GitHub write was attempted");
         }
 
@@ -560,11 +561,12 @@ export async function executeFeatureImplementation(
           runId,
           policy: deliveryPolicy,
           branchName,
+          remoteBranchName,
           targetBranch,
           defaultBranch,
           commitSha,
           validationSummary: qualityGateResult.summary,
-          githubToken: secrets.githubToken,
+          credentialBroker: params.credentialBroker,
           checkoutAuthHeader: repo.checkoutAuthHeader,
           executionLogs,
           trustLevel: params.trustLevel ?? "balanced",

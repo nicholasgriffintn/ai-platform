@@ -8,7 +8,6 @@ import type {
   SendEmail,
 } from "@cloudflare/workers-types";
 import type { ReasoningEffort } from "@ngriffin_uk/polychat-schemas";
-import type { MCPClientManagerOptions } from "agents/mcp/client";
 
 export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclude<keyof T, Keys>> &
   {
@@ -41,6 +40,7 @@ export type IEnv = {
   ANTHROPIC_API_KEY?: string;
   AI_GATEWAY_TOKEN?: string;
   SANDBOX_WORKER?: Fetcher;
+  COMPUTER_WORKER?: Fetcher;
   TRAINING_WORKER?: WorkerCacheFetcher<{ userId: string }>;
   TRAINING_WORKER_TOKEN?: string;
   SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;
@@ -111,7 +111,6 @@ export type IEnv = {
   KIMI_API_KEY?: string;
   TINKER_API_KEY?: string;
   GITHUB_MODELS_API_TOKEN?: string;
-  MCP_STORAGE?: MCPClientManagerOptions["storage"];
   POLLY_ACCESS_KEY_ID?: string;
   POLLY_SECRET_ACCESS_KEY?: string;
   DEEPSEEK_API_KEY?: string;

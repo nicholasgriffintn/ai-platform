@@ -10,6 +10,8 @@ import {
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
   STRIPE_USAGE_SYNC_TASK_TYPE,
   TASK_NOTIFICATION_DELIVERY_TASK_TYPE,
+  TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
+  TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
   USAGE_ROLLUP_TASK_TYPE,
   type TaskType,
 } from "@ngriffin_uk/polychat-schemas";
@@ -38,6 +40,8 @@ import { ReplicatePollingHandler } from "./handlers/ReplicatePollingHandler";
 import { ResearchPollingHandler } from "./handlers/ResearchPollingHandler";
 import { SandboxRunDispatchHandler } from "./handlers/SandboxRunDispatchHandler";
 import { StripeUsageSyncHandler } from "./handlers/StripeUsageSyncHandler";
+import { TeammateContextCleanupHandler } from "./handlers/TeammateContextCleanupHandler";
+import { TeammateRunReconciliationHandler } from "./handlers/TeammateRunReconciliationHandler";
 import { TrainingQualityHandler } from "./handlers/TrainingQualityHandler";
 import { UsageRollupHandler } from "./handlers/UsageRollupHandler";
 import { TaskExecutionLeaseBusyError } from "./task-execution-lease";
@@ -72,6 +76,8 @@ export function createTaskHandlers(): Map<TaskType, TaskHandler> {
     [INFRA_RECONCILIATION_TASK_TYPE, new InfraReconciliationHandler()],
     [STRIPE_USAGE_SYNC_TASK_TYPE, new StripeUsageSyncHandler()],
     [TASK_NOTIFICATION_DELIVERY_TASK_TYPE, new TaskNotificationDeliveryHandler()],
+    [TEAMMATE_RUN_RECONCILIATION_TASK_TYPE, new TeammateRunReconciliationHandler()],
+    [TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE, new TeammateContextCleanupHandler()],
   ]);
 }
 

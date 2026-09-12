@@ -10,7 +10,7 @@ import {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Teammate } from "~/lib/database/schema";
 import { resolveProjectSkillGrants } from "~/services/skills/scope";
-import { assertTeammateAvailableToWorkspace } from "~/services/teammates/access";
+import { requireProjectTeammate } from "~/services/teammates/access";
 import {
   PROJECT_CODING_TOOL_IDS,
   resolveProjectCodingEnvironment,
@@ -18,7 +18,6 @@ import {
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import { toStringArray } from "~/utils/arrays";
 import { intersectEnabledTools, intersectGrantedIds } from "~/utils/enabledTools";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const DEFAULT_TASK_MODE = "teammate";
 
@@ -31,41 +30,6 @@ export interface ResolvedTaskRuntime {
   skillIds: string[];
   requireApprovalFor: ToolPermission[];
   enforceModeToolPolicy: false;
-}
-
-async function resolveProjectTeammate(
-  context: ServiceContext,
-  projectId: string,
-  teammateId: string,
-): Promise<Teammate> {
-  const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
-  const isAttached = capabilities.some(
-    (capability) => capability.kind === "teammate" && capability.capability_id === teammateId,
-  );
-
-  if (!isAttached) {
-    throw new AssistantError(
-      "That teammate is not attached to this project",
-      ErrorType.NOT_FOUND,
-      404,
-    );
-  }
-
-  const teammate = await context.repositories.teammates.getTeammateById(teammateId);
-
-  if (!teammate) {
-    throw new AssistantError("Teammate not found", ErrorType.NOT_FOUND, 404);
-  }
-
-  const project = await context.repositories.workspaces.getProject(projectId);
-
-  if (!project) {
-    throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
-  }
-
-  await assertTeammateAvailableToWorkspace(context, teammate, project.workspace_id);
-
-  return teammate;
 }
 
 export function withoutForbiddenTools(
@@ -102,7 +66,7 @@ export async function resolveTaskRuntime(params: {
   const projectSkillIds = resolveProjectSkillGrants(capabilities);
   const teammateId = stage?.teammateId ?? task.runner?.teammateId ?? null;
   const teammate = teammateId
-    ? await resolveProjectTeammate(context, task.projectId, teammateId)
+    ? await requireProjectTeammate(context, task.projectId, teammateId)
     : null;
   const configuredTools = teammate
     ? intersectEnabledTools(projectTools, teammate.enabled_tools)

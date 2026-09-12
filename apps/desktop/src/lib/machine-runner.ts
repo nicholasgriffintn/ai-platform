@@ -1,14 +1,20 @@
 import type { DesktopBackend, DesktopRun } from "@ngriffin_uk/polychat-library-chat";
+import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import type { MachineRunClient } from "@ngriffin_uk/polychat-library-client/machine-runs";
 import { delay } from "@ngriffin_uk/polychat-library-client/machine-runs";
 import { waitForSyncEvent } from "@ngriffin_uk/polychat-library-client/sync";
-import type { MachineRunClaim, MachineRunUpdate } from "@ngriffin_uk/polychat-schemas";
+import { streamAgentSessionRun } from "@ngriffin_uk/polychat-library-react";
+import type {
+  MachineRunClaim,
+  MachineRunUpdate,
+  ModelConfigItem,
+} from "@ngriffin_uk/polychat-schemas";
 import { buildDeviceSyncTopic } from "@ngriffin_uk/polychat-schemas";
 
 const MACHINE_CLAIM_FALLBACK_MS = 30_000;
 
 async function executeClaim(
-  backend: Pick<DesktopBackend, "listEndpoints" | "discoverModels" | "startModelRun">,
+  backend: DesktopBackend,
   client: MachineRunClient,
   machineId: string,
   claim: NonNullable<MachineRunClaim>,
@@ -71,60 +77,101 @@ async function executeClaim(
       }
     });
     void flushing.catch(() => undefined);
-    const endpoints = (await backend.listEndpoints()).filter(
-      (endpoint) => endpoint.kind === "model" && endpoint.vendor === claim.request.vendor,
-    );
-    let endpointId: string | undefined;
+    if ("kind" in claim.request && claim.request.kind === "agent") {
+      const agentModel: ModelConfigItem = {
+        kind: "agent",
+        matchingModel: claim.request.driver,
+        provider: claim.request.driver,
+        name: claim.request.driver,
+      };
+      let emittedLength = 0;
 
-    for (const endpoint of endpoints) {
+      await streamAgentSessionRun({
+        backend,
+        conversationId: claim.request.conversationId,
+        messages: claim.request.messages.map((message, index): Message => ({
+          id: `${claim.request.id}:${index}`,
+          ...message,
+        })),
+        model: agentModel,
+        onContent: (content) => {
+          pendingText += content.slice(emittedLength);
+          emittedLength = content.length;
+        },
+        onStatus: () => undefined,
+        onApproval: (_approval, answer) => {
+          void answer("decline");
+        },
+        signal: controller.signal,
+        permissionMode: claim.request.permissionMode,
+        reasoningEffort: claim.request.reasoningEffort,
+        selectedModel: claim.request.selectedModel,
+        sessionContinuation: {
+          mode: claim.request.continuationMode,
+          bindingConversationId: claim.request.bindingConversationId,
+          requireBinding: true,
+        },
+      });
+      state = "completed";
+    } else if ("vendor" in claim.request) {
+      const modelRequest = claim.request;
+      const endpoints = (await backend.listEndpoints()).filter(
+        (endpoint) => endpoint.kind === "model" && endpoint.vendor === modelRequest.vendor,
+      );
+      let endpointId: string | undefined;
+
+      for (const endpoint of endpoints) {
+        controller.signal.throwIfAborted();
+        const models = await backend.discoverModels(endpoint.id).catch(() => []);
+
+        if (models.some((model) => model.nativeId === modelRequest.nativeModelId)) {
+          endpointId = endpoint.id;
+          break;
+        }
+      }
+
+      if (!endpointId) {
+        throw new Error("The requested model is no longer installed on this desktop.");
+      }
+
       controller.signal.throwIfAborted();
-      const models = await backend.discoverModels(endpoint.id).catch(() => []);
-
-      if (models.some((model) => model.nativeId === claim.request.nativeModelId)) {
-        endpointId = endpoint.id;
-        break;
-      }
-    }
-
-    if (!endpointId) {
-      throw new Error("The requested model is no longer installed on this desktop.");
-    }
-
-    controller.signal.throwIfAborted();
-    run = await backend.startModelRun({
-      endpointId,
-      nativeModelId: claim.request.nativeModelId,
-      conversationId: claim.request.conversationId,
-      messages: claim.request.messages,
-      maxOutputTokens: null,
-    });
-    if (controller.signal.aborted) {
-      cancel();
-    }
-
-    for await (const event of run.events) {
+      run = await backend.startModelRun({
+        endpointId,
+        nativeModelId: modelRequest.nativeModelId,
+        conversationId: modelRequest.conversationId,
+        messages: modelRequest.messages,
+        maxOutputTokens: null,
+      });
       if (controller.signal.aborted) {
-        break;
+        cancel();
       }
 
-      if (event.type === "text") {
-        pendingText += event.delta;
-        if (pendingText.length > 1_000_000) {
-          throw new Error("The model exceeded the response limit.");
-        }
-      }
-
-      if (event.type === "failed") {
-        throw new Error(event.message);
-      }
-
-      if (event.type === "finished") {
-        if (event.reason !== "complete") {
-          throw new Error("The model run was cancelled.");
+      for await (const event of run.events) {
+        if (controller.signal.aborted) {
+          break;
         }
 
-        state = "completed";
+        if (event.type === "text") {
+          pendingText += event.delta;
+          if (pendingText.length > 1_000_000) {
+            throw new Error("The model exceeded the response limit.");
+          }
+        }
+
+        if (event.type === "failed") {
+          throw new Error(event.message);
+        }
+
+        if (event.type === "finished") {
+          if (event.reason !== "complete") {
+            throw new Error("The model run was cancelled.");
+          }
+
+          state = "completed";
+        }
       }
+    } else {
+      throw new Error("The machine run request is unsupported.");
     }
 
     if (state !== "completed" && !controller.signal.aborted) {
@@ -154,7 +201,7 @@ async function executeClaim(
 }
 
 export async function runMachineConsumer(options: {
-  backend: Pick<DesktopBackend, "listEndpoints" | "discoverModels" | "startModelRun">;
+  backend: DesktopBackend;
   client: MachineRunClient;
   machineId: string;
   signal: AbortSignal;

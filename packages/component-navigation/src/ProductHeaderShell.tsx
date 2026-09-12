@@ -25,7 +25,10 @@ export function ProductHeaderShell({
       ref={headerRef}
       data-content-scrolled={isScrolled || undefined}
       className={cn(
-        "@container relative z-20 grid h-[53px] shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(max-content,1fr)] items-center gap-1 bg-background px-2 min-[769px]:px-4 sm:gap-2",
+        "@container relative z-20 grid h-[53px] shrink-0 items-center gap-1 bg-background px-2 min-[769px]:px-4 sm:gap-2",
+        center
+          ? "grid-cols-[minmax(0,1fr)_auto_minmax(max-content,1fr)]"
+          : "grid-cols-[minmax(0,1fr)_auto]",
         className,
       )}
       style={style}
@@ -33,7 +36,9 @@ export function ProductHeaderShell({
       <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-2 sm:justify-self-stretch">
         {start}
       </div>
-      <div className="polychat-navigation-header-center flex justify-center">{center}</div>
+      {center ? (
+        <div className="polychat-navigation-header-center flex justify-center">{center}</div>
+      ) : null}
       <div className="flex min-w-0 items-center justify-end sm:justify-self-end">{end}</div>
       <div
         aria-hidden="true"

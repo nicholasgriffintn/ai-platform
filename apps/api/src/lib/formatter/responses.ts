@@ -1,4 +1,4 @@
-import type { ModelModalities } from "@ngriffin_uk/polychat-schemas";
+import { HOSTED_MCP_APPROVAL_TOOL_NAME, type ModelModalities } from "@ngriffin_uk/polychat-schemas";
 
 import { buildOpenAIResponseOutputParts } from "~/lib/chat/messages/openai-response-parts";
 import { preprocessQwQResponse } from "~/lib/chat/messages/unterminated-thinking";
@@ -680,16 +680,45 @@ export class ResponseFormatter {
       return [];
     }
 
-    return output
-      .filter((item: any) => item?.type === "function_call" && item.call_id && item.name)
-      .map((item: any) => ({
-        id: item.call_id,
-        type: "function",
-        function: {
-          name: item.name,
-          arguments: item.arguments || "{}",
-        },
-      }));
+    return output.flatMap((item: any) => {
+      if (item?.type === "function_call" && item.call_id && item.name) {
+        return [
+          {
+            id: item.call_id,
+            type: "function",
+            function: {
+              name: item.name,
+              arguments: item.arguments || "{}",
+            },
+          },
+        ];
+      }
+
+      if (
+        item?.type === "mcp_approval_request" &&
+        typeof item.id === "string" &&
+        typeof item.server_label === "string" &&
+        typeof item.name === "string"
+      ) {
+        return [
+          {
+            id: item.id,
+            type: "function",
+            function: {
+              name: HOSTED_MCP_APPROVAL_TOOL_NAME,
+              arguments: JSON.stringify({
+                approvalRequestId: item.id,
+                serverLabel: item.server_label,
+                toolName: item.name,
+                arguments: item.arguments,
+              }),
+            },
+          },
+        ];
+      }
+
+      return [];
+    });
   }
 
   private static extractOpenAIResponsesAnnotations(output: any): any[] {

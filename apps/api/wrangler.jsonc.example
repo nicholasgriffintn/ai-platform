@@ -83,6 +83,10 @@
       "service": "assistant-sandbox-worker"
     },
     {
+      "binding": "COMPUTER_WORKER",
+      "service": "assistant-computer-worker"
+    },
+    {
       "binding": "TRAINING_WORKER",
       "service": "assistant-training-worker"
     }

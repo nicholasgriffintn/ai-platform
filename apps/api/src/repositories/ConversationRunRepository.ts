@@ -1,5 +1,7 @@
 import {
   CHAT_RUN_PROTOCOL_VERSION,
+  LIVE_DELEGATION_STATES,
+  TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
   canTransitionChatRun,
   chatContextSnapshotSchema,
   chatRetrySnapshotSchema,
@@ -7,6 +9,7 @@ import {
   type ChatContextSnapshot,
   type ChatRetrySnapshot,
   type ChatRun,
+  type ChatRunInteractionKind,
   type ChatRunCommandKind,
   type ChatRunCommandReceipt,
   type ChatRunEvent,
@@ -25,14 +28,24 @@ import type { ConversationRunEventRow, ConversationRunRow } from "~/lib/database
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { safeParseJson } from "~/utils/json";
+import { isRecord } from "~/utils/objects";
 
 import { BaseRepository } from "./BaseRepository";
+
+const LIVE_STATE_SQL = LIVE_DELEGATION_STATES.map((state) => `'${state}'`).join(", ");
 
 interface CommandReceiptRow extends ConversationRunRow {
   command_id: string;
   command_kind: ChatRunCommandKind;
   input_digest: string;
   accepted_at: string;
+}
+
+function safeParseRunConfiguration(value: string): Record<string, unknown> | null {
+  const parsed = safeParseJson<unknown>(value);
+
+  return isRecord(parsed) ? parsed : null;
 }
 
 export interface AcceptRunCommandParams {
@@ -45,7 +58,12 @@ export interface AcceptRunCommandParams {
   projectTaskId?: string | null;
   stageId?: string | null;
   runId?: string;
+  interactionId?: string;
   trigger?: ChatRunTrigger;
+  teammateContextId?: string | null;
+  computerId?: string | null;
+  delegationId?: string;
+  resolvedConfiguration?: Record<string, unknown> | null;
 }
 
 export interface AcceptRunCancellationParams {
@@ -101,6 +119,12 @@ function formatRun(row: ConversationRunRow): ChatRun {
     stageId: row.stage_id,
     initiatorUserId: row.initiator_user_id,
     status: row.status,
+    interactionKind: row.interaction_kind,
+    teammateContextId: row.teammate_context_id,
+    computerId: row.computer_id,
+    resolvedConfiguration: row.resolved_configuration_json
+      ? safeParseRunConfiguration(row.resolved_configuration_json)
+      : null,
     attempt: row.attempt,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -200,7 +224,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       `UPDATE conversation_run
        SET context_json = ?, updated_at = ?
        WHERE id = ? AND attempt = ?
-         AND status IN ('accepted', 'running', 'awaiting_input', 'awaiting_approval', 'cancelling')
+         AND status IN ('accepted', 'running', 'awaiting_input', 'awaiting_approval', 'awaiting_takeover', 'cancelling')
        RETURNING *`,
       [JSON.stringify(context), context.generatedAt, runId, attempt],
       true,
@@ -249,7 +273,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       `UPDATE conversation_run
        SET provenance_json = ?, updated_at = ?
        WHERE id = ? AND attempt = ?
-         AND status IN ('accepted', 'running', 'awaiting_input', 'awaiting_approval', 'cancelling')
+         AND status IN ('accepted', 'running', 'awaiting_input', 'awaiting_approval', 'awaiting_takeover', 'cancelling')
        RETURNING *`,
       [JSON.stringify(provenance), new Date().toISOString(), runId, attempt],
       true,
@@ -320,6 +344,8 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
        JOIN conversation_run r ON r.id = m.run_id
        WHERE m.conversation_id = ?
          AND m.tool_call_id = ?
+         AND r.last_message_id = m.id
+         AND r.status IN ('awaiting_input', 'awaiting_approval', 'awaiting_takeover')
        ORDER BY m.created_at DESC, m.id DESC
        LIMIT 1`,
       [conversationId, interactionId],
@@ -367,8 +393,12 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     const runStatement = this.env.DB.prepare(
       `INSERT INTO conversation_run (
          id, conversation_id, project_id, project_task_id, stage_id, initiator_user_id,
+         teammate_context_id, computer_id, resolved_configuration_json,
          status, attempt, event_sequence, trigger, created_at, updated_at
-       ) VALUES (?, ?, ?, ?, ?, ?, 'accepted', 1, 1, ?, ?, ?)
+       ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', 1, 1, ?, ?, ?
+       WHERE ? IS NULL OR EXISTS (
+         SELECT 1 FROM delegation WHERE id = ? AND state = 'running'
+       )
        RETURNING *`,
     ).bind(
       runId,
@@ -377,9 +407,14 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       params.projectTaskId ?? null,
       params.stageId ?? null,
       params.userId,
+      params.teammateContextId ?? null,
+      params.computerId ?? null,
+      params.resolvedConfiguration ? JSON.stringify(params.resolvedConfiguration) : null,
       params.trigger ?? "user",
       now,
       now,
+      params.delegationId ?? null,
+      params.delegationId ?? null,
     );
     const commandStatement = this.env.DB.prepare(
       `INSERT INTO conversation_run_command (
@@ -441,7 +476,10 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       current.projectId !== (params.projectId ?? null) ||
       current.projectTaskId !== (params.projectTaskId ?? null) ||
       current.initiatorUserId !== params.userId ||
-      (current.status !== "awaiting_input" && current.status !== "awaiting_approval")
+      !params.interactionId ||
+      (current.status !== "awaiting_input" &&
+        current.status !== "awaiting_approval" &&
+        current.status !== "awaiting_takeover")
     ) {
       throw new AssistantError(
         "This run cannot accept that response",
@@ -455,8 +493,17 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       `INSERT INTO conversation_run_command (
          id, run_id, user_id, command_id, kind, input_digest, accepted_at
        ) SELECT ?, id, ?, ?, ?, ?, ?
-         FROM conversation_run
+       FROM conversation_run
         WHERE id = ? AND attempt = ? AND status = ?
+          AND EXISTS (
+            SELECT 1 FROM message interaction
+            WHERE interaction.id = conversation_run.last_message_id
+              AND interaction.run_id = conversation_run.id
+              AND interaction.tool_call_id = ?
+          )
+          AND (? IS NULL OR EXISTS (
+            SELECT 1 FROM delegation WHERE id = ? AND state IN (${LIVE_STATE_SQL})
+          ))
        RETURNING id`,
     ).bind(
       generateId(),
@@ -468,17 +515,41 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       params.runId,
       current.attempt,
       current.status,
+      params.interactionId,
+      params.delegationId ?? null,
+      params.delegationId ?? null,
     );
     const nextAttempt = current.attempt + 1;
+    const resolvedConfiguration = params.resolvedConfiguration ?? current.resolvedConfiguration;
     const runStatement = this.env.DB.prepare(
       `UPDATE conversation_run
        SET status = 'running', attempt = attempt + 1, updated_at = ?,
            started_at = COALESCE(started_at, ?), terminal_reason = NULL,
-           context_json = NULL, retry_json = NULL,
+           context_json = NULL, retry_json = NULL, interaction_kind = NULL,
+           resolved_configuration_json = ?,
            event_sequence = event_sequence + 1
        WHERE id = ? AND attempt = ? AND status = ?
+         AND EXISTS (
+           SELECT 1 FROM message interaction
+           WHERE interaction.id = conversation_run.last_message_id
+             AND interaction.run_id = conversation_run.id
+             AND interaction.tool_call_id = ?
+         )
+         AND (? IS NULL OR EXISTS (
+           SELECT 1 FROM delegation WHERE id = ? AND state IN (${LIVE_STATE_SQL})
+         ))
        RETURNING *`,
-    ).bind(now, now, params.runId, current.attempt, current.status);
+    ).bind(
+      now,
+      now,
+      resolvedConfiguration ? JSON.stringify(resolvedConfiguration) : null,
+      params.runId,
+      current.attempt,
+      current.status,
+      params.interactionId,
+      params.delegationId ?? null,
+      params.delegationId ?? null,
+    );
 
     try {
       const event = {
@@ -576,7 +647,8 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     const nextStatus =
       current.status === "accepted" ||
       current.status === "awaiting_input" ||
-      current.status === "awaiting_approval"
+      current.status === "awaiting_approval" ||
+      current.status === "awaiting_takeover"
         ? "cancelled"
         : "cancelling";
     const commandStatement = this.env.DB.prepare(
@@ -598,18 +670,18 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     const runStatement = this.env.DB.prepare(
       `UPDATE conversation_run
        SET status = CASE
-             WHEN status IN ('accepted', 'awaiting_input', 'awaiting_approval') THEN 'cancelled'
+             WHEN status IN ('accepted', 'awaiting_input', 'awaiting_approval', 'awaiting_takeover') THEN 'cancelled'
              ELSE 'cancelling'
            END,
            updated_at = ?,
            completed_at = CASE
-             WHEN status IN ('accepted', 'awaiting_input', 'awaiting_approval') THEN ?
+             WHEN status IN ('accepted', 'awaiting_input', 'awaiting_approval', 'awaiting_takeover') THEN ?
              ELSE completed_at
            END,
            cancellation_requested_at = ?,
            event_sequence = event_sequence + 1
        WHERE id = ? AND attempt = ?
-         AND status IN ('accepted', 'running', 'awaiting_input', 'awaiting_approval')
+         AND status IN ('accepted', 'running', 'awaiting_input', 'awaiting_approval', 'awaiting_takeover')
        RETURNING *`,
     ).bind(now, now, now, params.runId, params.expectedAttempt);
 
@@ -626,6 +698,27 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
         commandStatement,
         runStatement,
         buildInsertRunEventStatement(this.env.DB, event, { ignoreSequenceConflict: true }),
+        this.env.DB.prepare(
+          `INSERT OR IGNORE INTO tasks (
+               id, task_type, user_id, project_id, task_data, schedule_type,
+               priority, created_by, status, attempts, max_attempts
+             )
+             SELECT ?, ?, initiator_user_id, project_id,
+                    json_object('runId', id, 'attempt', attempt),
+                    'immediate', 4, 'system', 'pending', 0, 5
+             FROM conversation_run
+             WHERE id = ? AND attempt = ? AND status = 'cancelled'
+               AND (
+                 json_extract(resolved_configuration_json, '$.invocation.source')
+                     IN ('delegation', 'routine')
+                 OR (trigger = 'schedule' AND conversation_id LIKE 'recipe_%')
+               )`,
+        ).bind(
+          `teammate_run_reconciliation_${params.runId}_${params.expectedAttempt}`,
+          TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
+          params.runId,
+          params.expectedAttempt,
+        ),
         buildTrimRunEventsStatement(this.env.DB, params.runId),
       ];
 
@@ -677,6 +770,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     status: ChatRunStatus;
     terminalReason?: string | null;
     lastMessageId?: string | null;
+    interactionKind?: ChatRunInteractionKind | null;
   }): Promise<ChatRun | null> {
     const current = await this.getById(params.runId);
     const status =
@@ -706,6 +800,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
            completed_at = CASE WHEN ? IS NOT NULL THEN ? ELSE completed_at END,
            terminal_reason = ?,
            last_message_id = COALESCE(?, last_message_id),
+           interaction_kind = ?,
            retry_json = NULL,
            event_sequence = event_sequence + 1
        WHERE id = ? AND attempt = ? AND status = ?
@@ -719,6 +814,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       completedAt,
       terminalReason?.slice(0, 500) ?? null,
       params.lastMessageId ?? null,
+      params.interactionKind ?? null,
       params.runId,
       params.attempt,
       current.status,
@@ -733,12 +829,39 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
         status,
         terminalReason: terminalReason?.slice(0, 500) ?? null,
         lastMessageId: params.lastMessageId ?? null,
+        interactionKind: params.interactionKind ?? null,
       },
       expectedAttempt: params.attempt,
     };
+    const reconciliationTask = this.env.DB.prepare(
+      `INSERT OR IGNORE INTO tasks (
+         id, task_type, user_id, project_id, task_data, schedule_type,
+         priority, created_by, status, attempts, max_attempts
+       )
+       SELECT ?, ?, initiator_user_id, project_id,
+              json_object('runId', id, 'attempt', attempt),
+              'immediate', 4, 'system', 'pending', 0, 5
+       FROM conversation_run
+       WHERE id = ? AND attempt = ?
+         AND status IN (
+           'awaiting_input', 'awaiting_approval', 'awaiting_takeover',
+           'succeeded', 'failed', 'cancelled', 'interrupted'
+         )
+         AND (
+           json_extract(resolved_configuration_json, '$.invocation.source')
+               IN ('delegation', 'routine')
+           OR (trigger = 'schedule' AND conversation_id LIKE 'recipe_%')
+         )`,
+    ).bind(
+      `teammate_run_reconciliation_${params.runId}_${params.attempt}`,
+      TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
+      params.runId,
+      params.attempt,
+    );
     const [runResult] = await this.env.DB.batch([
       updateStatement,
       buildInsertRunEventStatement(this.env.DB, event, { ignoreSequenceConflict: true }),
+      reconciliationTask,
       buildTrimRunEventsStatement(this.env.DB, params.runId),
     ]);
     const transitioned = runResult.results[0] as ConversationRunRow | undefined;

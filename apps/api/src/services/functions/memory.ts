@@ -1,7 +1,7 @@
 import {
   MEMORY_SEARCH_TOOL_NAME,
   MEMORY_STORE_TOOL_NAME,
-  getEnabledMemoryToolNames,
+  resolveMemoryPolicy,
 } from "~/lib/chat/policy/memory";
 import { MemoryManager } from "~/lib/memory";
 import type { IUserSettings } from "~/types";
@@ -27,13 +27,13 @@ async function getMemoryToolSettings(
     return { error: "Memory settings are not available for this request." };
   }
 
-  if (
-    !getEnabledMemoryToolNames({
-      user: context.user,
-      userSettings,
-      store: true,
-    }).includes(toolName)
-  ) {
+  const memoryPolicy = resolveMemoryPolicy({
+    user: context.user,
+    userSettings,
+    store: context.request.request?.store === true,
+  });
+
+  if (!memoryPolicy.toolNames.includes(toolName)) {
     return { userSettings, error: "Memory tool is not enabled for this user." };
   }
 
@@ -131,6 +131,10 @@ export const store_memory: ApiToolDefinition = {
       },
       completionId,
       userSettings,
+      completionId && context.toolCallId
+        ? `memory-tool:${completionId}:${context.toolCallId}`
+        : undefined,
+      typeof args.document_id === "string" ? args.document_id : undefined,
     );
 
     if (!id) {

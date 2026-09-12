@@ -10,6 +10,7 @@ export interface CreateChannelBindingRecord {
   externalId: string;
   label?: string | null;
   teammateId?: string | null;
+  interactionMode: "direct" | "automated";
   createdByUserId: number;
 }
 
@@ -19,8 +20,9 @@ export class ChannelBindingRepository extends BaseRepository {
 
     await this.executeRun(
       `INSERT INTO channel_binding
-         (id, channel, scope_type, scope_id, external_id, label, teammate_id, created_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+         (id, channel, scope_type, scope_id, external_id, label, teammate_id,
+          interaction_mode, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         record.channel,
@@ -29,6 +31,7 @@ export class ChannelBindingRepository extends BaseRepository {
         record.externalId,
         record.label ?? null,
         record.teammateId ?? null,
+        record.interactionMode,
         record.createdByUserId,
       ],
     );

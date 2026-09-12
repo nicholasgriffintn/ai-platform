@@ -11,7 +11,6 @@ export type TaskEventEmitter = (event: TaskEvent) => Promise<void> | void;
 
 export interface TaskSecrets {
   userToken: string;
-  githubToken?: string;
 }
 
 export interface Env {

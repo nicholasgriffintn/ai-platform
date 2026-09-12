@@ -61,6 +61,7 @@ describe("project chat context", () => {
       workspace_id: "workspace-1",
       instructions: "Inspect the demo repository.",
       coding_enabled: 1,
+      coding_execution_provider: "openai",
       coding_installation_id: 123,
       coding_repository: "owner/repository",
       coding_prompt_strategy: "auto",
@@ -75,6 +76,7 @@ describe("project chat context", () => {
     expect(result?.enabledTools).toContain("run_sandbox_task");
     expect(result?.enabledTools).not.toContain("run_code_review");
     expect(result?.sandboxOptions?.repo).toBe("owner/repository");
+    expect(result?.sandboxOptions?.executionProvider).toBe("openai");
   });
 
   it("applies the saved project tier to new and resumed project conversations", async () => {

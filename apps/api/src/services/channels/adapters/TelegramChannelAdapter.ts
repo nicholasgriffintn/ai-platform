@@ -1,5 +1,6 @@
 import { safeParseJson } from "~/utils/json";
 
+import { requireSuccessfulChannelSend } from "./send-response";
 import type { ChannelAdapter, ChannelIncoming, ChannelReply, ChannelVerification } from "./types";
 
 const TELEGRAM_SECRET_HEADER = "x-telegram-bot-api-secret-token";
@@ -76,10 +77,12 @@ export class TelegramChannelAdapter implements ChannelAdapter {
   }
 
   async sendReply(reply: ChannelReply, secret: string): Promise<void> {
-    await fetch(`https://api.telegram.org/bot${secret}/sendMessage`, {
+    const response = await fetch(`https://api.telegram.org/bot${secret}/sendMessage`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ chat_id: reply.externalId, text: reply.body }),
     });
+
+    await requireSuccessfulChannelSend(response, "Telegram");
   }
 }

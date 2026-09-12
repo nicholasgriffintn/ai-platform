@@ -34,6 +34,8 @@ import {
   useIsLoading,
   useConversationScope,
   useConversationStorage,
+  getOutputPath,
+  getSiblingConversationPath,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ChatSuggestion } from "@ngriffin_uk/polychat-library-react";
 import {
@@ -59,7 +61,7 @@ import type {
 } from "@ngriffin_uk/polychat-utility-react";
 import { ChevronDown } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { ConversationComposerDock, ConversationMessageColumn } from "../ConversationColumn.js";
@@ -151,6 +153,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const modeToolInteraction = modeConfig?.onToolInteraction;
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { trackEvent, trackFeatureUsage, trackError } = useTrackEvent();
 
   const { model, chatMode, selectedAssistantAction, setSelectedAssistantAction, computeSite } =
@@ -250,13 +253,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const handleConnectorApproval = useCallback(
     async (approvalId: string, resolution: "approved" | "rejected") => {
       await resolveConnectorOperationApproval(approvalId, resolution);
-      if (resolution === "rejected") {
-        if (currentConversationId) {
-          useStreamActivityStore.getState().clearStreamStatus(currentConversationId);
-        }
-
-        return;
-      }
 
       if (!currentConversationId) {
         throw new Error("The conversation is no longer available");
@@ -270,7 +266,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       });
 
       if (result.status === "error") {
-        throw new Error(result.response || "The approved action could not continue");
+        throw new Error(result.response || "The connector action could not continue");
       }
     },
     [currentConversationId, modeConfig?.requestOptions, respondToExistingConversation],
@@ -786,6 +782,20 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       }
 
       switch (toolName) {
+        case "delegate":
+          if (data.action === "open" && typeof data.childConversationId === "string") {
+            void navigate(getSiblingConversationPath(location.pathname, data.childConversationId));
+          } else if (data.action === "output" && typeof data.outputId === "string") {
+            void navigate(getOutputPath(location.pathname, data.outputId));
+          } else if (
+            (data.action === "resume" || data.action === "fresh") &&
+            typeof data.input === "string"
+          ) {
+            setComposerInput(data.input);
+            chatInputRef.current?.focus();
+          }
+
+          break;
         case "web_search":
           setComposerInput(data.question);
 
@@ -801,6 +811,8 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       sendMessage,
       modeConfig?.requestOptions,
       modeToolInteraction,
+      location.pathname,
+      navigate,
     ],
   );
 

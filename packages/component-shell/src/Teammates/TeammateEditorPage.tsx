@@ -3,6 +3,7 @@ import { BackLink, Card, FormLoadingSkeleton } from "@ngriffin_uk/polychat-compo
 import { isAuthenticationError, NEW_TEAMMATE_ID } from "@ngriffin_uk/polychat-library-react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { TeammateContextsPanel } from "./TeammateContextsPanel.js";
 import { useTeammateEditorController } from "./useTeammateEditorController.js";
 
 export interface TeammateEditorPageProps {
@@ -80,6 +81,18 @@ export function TeammateEditorPage({
         onCancel={controller.cancel}
         onDelete={controller.requestDelete}
       />
+
+      {controller.teammate && (
+        <TeammateContextsPanel
+          teammateId={controller.teammate.id}
+          projectId={projectId}
+          conversationPath={(conversationId) =>
+            projectId
+              ? `${backPath.replace(/\/teammates\/?$/u, "")}/chat/${conversationId}`
+              : `/chat/${conversationId}`
+          }
+        />
+      )}
 
       {controller.teammate && (
         <ConfirmDeleteModal

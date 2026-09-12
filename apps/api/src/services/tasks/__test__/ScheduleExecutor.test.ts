@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   purgeSettledTasks: vi.fn(),
+  recoverFailedDurableTasks: vi.fn(),
   redispatchPendingTasks: vi.fn(),
   scheduleRecipeExecutions: vi.fn(),
   scheduleStripeUsageSync: vi.fn(),
@@ -11,6 +12,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("../scheduledTasks", () => ({
   purgeSettledTasks: mocks.purgeSettledTasks,
+  recoverFailedDurableTasks: mocks.recoverFailedDurableTasks,
   redispatchPendingTasks: mocks.redispatchPendingTasks,
   scheduleDailySynthesis: vi.fn(),
   scheduleRecipeExecutions: mocks.scheduleRecipeExecutions,
@@ -35,9 +37,13 @@ describe("ScheduleExecutor connector maintenance", () => {
     vi.clearAllMocks();
     mocks.scheduleRecipeExecutions.mockResolvedValue(undefined);
     mocks.redispatchPendingTasks.mockResolvedValue(0);
-    mocks.reapComposioConnectorSessions.mockResolvedValue({ deleted: 0, failed: 0 });
+    mocks.reapComposioConnectorSessions.mockResolvedValue({
+      deleted: 0,
+      failed: 0,
+    });
     mocks.deleteExpiredConnectorOperationApprovals.mockResolvedValue(0);
     mocks.purgeSettledTasks.mockResolvedValue(0);
+    mocks.recoverFailedDurableTasks.mockResolvedValue(0);
   });
 
   it("runs both cleanups without allowing either failure to block recipe scheduling", async () => {
@@ -69,7 +75,11 @@ describe("ScheduleExecutor stripe usage sync gating", () => {
     vi.clearAllMocks();
     mocks.scheduleRecipeExecutions.mockResolvedValue(undefined);
     mocks.redispatchPendingTasks.mockResolvedValue(0);
-    mocks.reapComposioConnectorSessions.mockResolvedValue({ deleted: 0, failed: 0 });
+    mocks.reapComposioConnectorSessions.mockResolvedValue({
+      deleted: 0,
+      failed: 0,
+    });
+    mocks.recoverFailedDurableTasks.mockResolvedValue(0);
     mocks.deleteExpiredConnectorOperationApprovals.mockResolvedValue(0);
     mocks.scheduleStripeUsageSync.mockResolvedValue(undefined);
   });

@@ -20,6 +20,11 @@ export interface AgentSessionRunOptions extends DeviceModelRunOptions {
   permissionMode: PermissionMode;
   reasoningEffort: ReasoningEffort | null;
   selectedModel: string | null;
+  sessionContinuation?: {
+    mode: "resume" | "fresh";
+    bindingConversationId: string;
+    requireBinding: boolean;
+  };
   clientVersion?: string;
   onStatus: (message: string) => void;
   onItem?: (item: AgentItem) => void;
@@ -45,6 +50,24 @@ type SessionBackend = Pick<
   | "saveAgentDirectory"
   | "probeAgentTool"
 >;
+
+function isAgentThreadBindingCompatible(
+  binding: AgentThreadBinding | null,
+  params: {
+    conversationId: string;
+    driver: AgentThreadBinding["driver"];
+    model: string | null;
+    permissionMode: PermissionMode;
+  },
+): binding is AgentThreadBinding {
+  return Boolean(
+    binding &&
+    binding.conversationId === params.conversationId &&
+    binding.driver === params.driver &&
+    binding.model === params.model &&
+    binding.permissionMode === params.permissionMode,
+  );
+}
 
 async function resolveDirectoryId(
   backend: SessionBackend,
@@ -80,11 +103,34 @@ export async function streamAgentSessionRun(options: AgentSessionRunOptions): Pr
   }
 
   options.signal.throwIfAborted();
-  const stored = await options.backend.readAgentThread(options.conversationId);
-  const binding = stored?.driver === driver ? stored : null;
+  const bindingConversationId =
+    options.sessionContinuation?.bindingConversationId ?? options.conversationId;
+  const stored = await options.backend.readAgentThread(bindingConversationId);
+  const directoryBinding = stored?.conversationId === bindingConversationId ? stored : null;
+  const resumableBinding = isAgentThreadBindingCompatible(stored, {
+    conversationId: bindingConversationId,
+    driver,
+    model: options.selectedModel,
+    permissionMode: options.permissionMode,
+  })
+    ? stored
+    : null;
+
+  if (options.sessionContinuation?.requireBinding && !directoryBinding) {
+    throw new Error("The native workspace binding is unavailable.");
+  }
+
+  if (
+    options.sessionContinuation?.mode === "resume" &&
+    options.sessionContinuation.requireBinding &&
+    !resumableBinding
+  ) {
+    throw new Error("The native session binding is no longer compatible.");
+  }
+
   const directoryId = await resolveDirectoryId(
     options.backend,
-    binding,
+    directoryBinding,
     options.onStatus,
     modelName,
   );
@@ -97,7 +143,8 @@ export async function streamAgentSessionRun(options: AgentSessionRunOptions): Pr
   );
 
   let text = "";
-  let threadId = binding?.threadId ?? null;
+  let threadId =
+    options.sessionContinuation?.mode === "fresh" ? null : (resumableBinding?.threadId ?? null);
   let failure: string | null = null;
   let settled = false;
   let resolveTurn: (() => void) | undefined;

@@ -1,6 +1,7 @@
 import { delegationExpiryTaskDataSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
+import { cancelDelegationChildRun } from "~/services/delegations/cancel-child-run";
 import { scheduleDelegationWake } from "~/services/delegations/schedule-wake";
 import { transitionDelegation } from "~/services/delegations/settle";
 import { TaskService } from "~/services/tasks/TaskService";
@@ -12,22 +13,42 @@ import type { TaskMessage } from "../TaskService";
 export class DelegationExpiryHandler implements TaskHandler {
   public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
     const payload = delegationExpiryTaskDataSchema.safeParse(message.task_data);
-    const context = createServiceContext({ env });
+    const systemContext = createServiceContext({ env });
 
     if (!payload.success || message.user_id === undefined) {
       return { status: "error", message: "Invalid delegation expiry payload" };
     }
 
+    const user = await systemContext.repositories.users.getUserById(message.user_id);
+
+    if (!user) {
+      return { status: "error", message: "Delegating user not found" };
+    }
+
+    const context = createServiceContext({ env, user });
     const delegation = await context.repositories.delegations.getById(payload.data.delegationId);
 
     if (!delegation || Date.parse(delegation.budget.deadline) > Date.now()) {
       return { status: "skipped", message: "Delegation is no longer due to expire" };
     }
 
-    const updated = await transitionDelegation(context, delegation.id, "expired", {
-      summary: "The delegate deadline passed while it was waiting for a response.",
-      outputIds: [],
-    });
+    await cancelDelegationChildRun(
+      context,
+      delegation,
+      message.user_id,
+      "The delegation deadline passed",
+    );
+
+    const updated = await transitionDelegation(
+      context,
+      delegation.id,
+      "expired",
+      {
+        summary: "The delegate deadline passed while it was waiting for a response.",
+        outputIds: [],
+      },
+      message.user_id,
+    );
 
     if (updated) {
       await scheduleDelegationWake(

@@ -1,6 +1,8 @@
 import z from "zod/v4";
 
 import {
+  agentRuntimeVendorSchema,
+  agentToolStateSchema,
   modelRuntimeCapabilitiesSchema,
   modelRuntimeVendorSchema,
   desktopRuntimeReadinessSchema,
@@ -27,6 +29,17 @@ export const machineModelSchema = z
 
 export type MachineModel = z.infer<typeof machineModelSchema>;
 
+export const machineAgentRuntimeSchema = z
+  .object({
+    kind: z.literal("agent"),
+    vendor: agentRuntimeVendorSchema,
+    readiness: agentToolStateSchema,
+    supportsSessions: z.boolean(),
+  })
+  .strict();
+
+export type MachineAgentRuntime = z.infer<typeof machineAgentRuntimeSchema>;
+
 export const machineModelRuntimeSchema = z
   .object({
     kind: z.literal("model"),
@@ -36,7 +49,7 @@ export const machineModelRuntimeSchema = z
   })
   .strict();
 
-export const machineRuntimeSchema = machineModelRuntimeSchema;
+export const machineRuntimeSchema = z.union([machineModelRuntimeSchema, machineAgentRuntimeSchema]);
 export type MachineRuntime = z.infer<typeof machineRuntimeSchema>;
 
 export const machineHeartbeatSchema = z

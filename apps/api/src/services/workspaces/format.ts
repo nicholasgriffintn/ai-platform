@@ -69,6 +69,7 @@ export function formatWorkspaceInvitation(row: WorkspaceInvitationRow): Workspac
 
 export function formatProjectSummary(row: ProjectRow): ProjectSummary {
   const codingEnvironment = projectCodingEnvironmentSchema.safeParse({
+    executionProvider: row.coding_execution_provider,
     installationId: row.coding_installation_id,
     repository: row.coding_repository,
     promptStrategy: row.coding_prompt_strategy,

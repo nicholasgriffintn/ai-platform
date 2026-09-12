@@ -173,6 +173,7 @@ struct UtilityTests {
     @Test func chatRunPresentationDistinguishesWaitingAndTerminalStates() {
         #expect(ChatRunPresentation.resolve(makeChatRun(status: "awaiting_input")).label == "Answer needed")
         #expect(ChatRunPresentation.resolve(makeChatRun(status: "awaiting_approval")).label == "Approval needed")
+        #expect(ChatRunPresentation.resolve(makeChatRun(status: "awaiting_takeover")).label == "Takeover needed")
         #expect(ChatRunPresentation.resolve(makeChatRun(status: "cancelling")).label == "Stop requested")
         #expect(ChatRunPresentation.resolve(makeChatRun(status: "cancelled")).label == "Task cancelled")
         #expect(ChatRunPresentation.resolve(makeChatRun(status: "failed")).detail == "Provider unavailable")

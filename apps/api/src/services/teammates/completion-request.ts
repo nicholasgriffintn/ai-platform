@@ -1,17 +1,16 @@
 import {
   agentModeSchema,
-  DEFAULT_TEAMMATE_KIND,
-  filterToolIdsForTeammateKind,
   mergeToolIds,
   readToolIds,
   SKILL_LOAD_TOOL_NAME,
-  TEAMMATE_BOT_DENIED_TOOLS,
-  teammateKindSchema,
+  type ChatHostedToolSettings,
+  type McpToolConfiguration,
   type ParsedChatCompletionRequestBody,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { Teammate } from "~/lib/database/schema";
 import type { AssistantPersona, ChatCompletionParameters, Message } from "~/types";
+import { intersectEnabledTools } from "~/utils/enabledTools";
 
 import { readTeammateSkillIds } from "./teammateResponse";
 
@@ -26,7 +25,9 @@ export interface TeammateCompletionRequestInput {
   modelProvider: string;
   formattedTools: NonNullable<ChatCompletionParameters["tools"]>;
   persona: AssistantPersona;
+  mcpServers?: McpToolConfiguration["servers"];
   maxStepsOverride?: number;
+  modeOverride?: string;
 }
 
 type PreparedTeammateCompletionRequest = Omit<ChatCompletionParameters, "env">;
@@ -44,6 +45,8 @@ class TeammateCompletionRequestPreparer {
       ...requestBody
     } = this.input.body;
 
+    const enabledTools = this.resolveEnabledTools();
+
     return {
       ...requestBody,
       messages: requestMessages.map((message): Message => ({
@@ -55,7 +58,9 @@ class TeammateCompletionRequestPreparer {
       provider: this.input.teammate.model ? this.input.modelProvider : this.input.body.provider,
       tools: this.input.formattedTools,
       stream: this.input.body.stream,
-      mode: agentModeSchema.safeParse(this.input.teammate.mode).data ?? "teammate",
+      mode:
+        agentModeSchema.safeParse(this.input.modeOverride ?? this.input.teammate.mode).data ??
+        "teammate",
       tool_policy_mode: "chat",
       max_steps:
         this.input.maxStepsOverride ??
@@ -68,8 +73,9 @@ class TeammateCompletionRequestPreparer {
       top_p: this.input.body.top_p,
       platform: requestPlatform === "obsidian" ? "api" : requestPlatform,
       stop: requestStop ? (Array.isArray(requestStop) ? requestStop : [requestStop]) : undefined,
-      enabled_tools: this.resolveEnabledTools(),
-      denied_tools: this.resolveDeniedTools(),
+      enabled_tools: enabledTools,
+      tool_options: this.resolveToolOptions(enabledTools),
+      denied_tools: this.input.body.denied_tools,
       approved_tools: this.input.body.approved_tools,
       delegation_context: this.input.body.delegation_context,
       use_multi_model: this.input.body.use_multi_model,
@@ -83,25 +89,49 @@ class TeammateCompletionRequestPreparer {
     };
   }
 
-  private resolveTeammateKind() {
-    return teammateKindSchema.safeParse(this.input.teammate.kind).data ?? DEFAULT_TEAMMATE_KIND;
-  }
-
-  private resolveDeniedTools(): string[] | undefined {
-    return this.resolveTeammateKind() === "bot" ? [...TEAMMATE_BOT_DENIED_TOOLS] : undefined;
-  }
-
   private resolveEnabledTools(): string[] | undefined {
-    const requested =
-      this.input.body.enabled_tools ?? readToolIds(this.input.teammate.enabled_tools) ?? undefined;
-    const permitted =
-      filterToolIdsForTeammateKind(this.resolveTeammateKind(), requested) ?? undefined;
+    const stored = readToolIds(this.input.teammate.enabled_tools) ?? undefined;
+    const configured =
+      (this.input.mcpServers?.length ?? 0) > 0 ? mergeToolIds(stored ?? [], "mcp") : stored;
+    const requested = this.input.body.enabled_tools;
+    let permitted =
+      configured && requested
+        ? intersectEnabledTools(configured, requested)
+        : (requested ?? configured);
+
+    if (!this.input.mcpServers?.length && permitted?.includes("mcp")) {
+      permitted = permitted.filter((toolId) => toolId !== "mcp");
+    }
 
     if (!permitted || readTeammateSkillIds(this.input.teammate.skill_ids).length === 0) {
       return permitted;
     }
 
     return mergeToolIds(permitted, SKILL_LOAD_TOOL_NAME);
+  }
+
+  private resolveToolOptions(
+    enabledTools: string[] | undefined,
+  ): ChatHostedToolSettings | undefined {
+    const { mcp_servers: _requestedMcpServers, ...requested } = this.input.body.tool_options ?? {};
+    const mcpEnabled =
+      enabledTools?.includes("mcp") === true &&
+      !this.input.body.denied_tools?.includes("mcp") &&
+      (this.input.mcpServers?.length ?? 0) > 0;
+    const toolOptions: ChatHostedToolSettings = {
+      ...requested,
+      ...(mcpEnabled
+        ? {
+            mcp_servers: this.input.mcpServers?.map((server) => ({
+              require_approval: "always",
+              server_label: server.label,
+              server_url: new URL(server.url).toString(),
+            })),
+          }
+        : {}),
+    };
+
+    return Object.keys(toolOptions).length > 0 ? toolOptions : undefined;
   }
 }
 

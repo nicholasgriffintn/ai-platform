@@ -8,6 +8,7 @@ import {
   type AgentToolCall,
 } from "@ngriffin_uk/polychat-library-agent-core";
 import type {
+  ChatContextDocument,
   ChatContextSnapshot,
   ChatRetrySnapshot,
   RunProvenance,
@@ -77,14 +78,23 @@ const REPEATED_TOOL_CALL_NOTICE =
 const UNKNOWN_TOOL_FINAL_ANSWER_NOTICE =
   "Another unavailable tool was called after a correction. Do not call another tool. Answer the user now using only the information already available.";
 
-function waitingForUserReason(result: Message): "approval" | "question" | "selection" {
+function waitingForUserReason(result: Message): "approval" | "question" | "selection" | "takeover" {
   const humanInTheLoop = readRecordObjectField(result.data, "humanInTheLoop");
+  const interactionType = readStringField(humanInTheLoop, "type");
 
-  if (readStringField(humanInTheLoop, "type") === "selection") {
+  if (interactionType === "selection") {
     return "selection";
   }
 
-  return result.name === "ask_user" ? "question" : "approval";
+  if (interactionType === "takeover") {
+    return "takeover";
+  }
+
+  if (interactionType === "question") {
+    return "question";
+  }
+
+  return "approval";
 }
 
 function shouldAbortAgentTurnError(error: unknown): boolean {
@@ -96,8 +106,11 @@ interface ChatAgentLoopState extends AgentLoopState {
   enabledToolNames: Set<string>;
   unknownToolRecoveryUsed: boolean;
   toolCallLedger: ToolCallLedger;
-  pendingUserAction?: { message: string; kind: "approval" | "question" };
-  waitingForUserAction?: "approval" | "question";
+  pendingUserAction?: {
+    message: string;
+    kind: "approval" | "question" | "takeover";
+  };
+  waitingForUserAction?: "approval" | "question" | "takeover";
   streamedToolInputStep?: number;
   stoppedForUsageLimit?: boolean;
   finalAnswerForced?: boolean;
@@ -157,16 +170,18 @@ export interface AgentLoopExecutionParams {
   deferOutputUntilValidated?: boolean;
   emit?: (event: AgentEvent) => Promise<void>;
   shouldStop?: () => boolean;
+  isCancellationRequested?: () => Promise<boolean>;
   assessFinish?: (context: {
     summary: string;
     step: number;
     commandCount: number;
-    awaitingUserAction?: "approval" | "question";
+    awaitingUserAction?: "approval" | "question" | "takeover";
   }) => Promise<AgentFinishAssessment> | AgentFinishAssessment;
   onToolResult?: (result: Message) => Promise<void> | void;
   shouldReserveGoalFinalisation?: () => boolean;
   contextWindow?: number;
   contextSkills?: readonly ContextBudgetSkill[];
+  contextDocuments?: readonly ChatContextDocument[];
   runId?: string;
   runAttempt?: number;
   provenance?: RunProvenance;
@@ -182,6 +197,7 @@ export interface AgentLoopExecutionResult {
   memoryMessages: Message[];
   guardrailsPassed: boolean;
   guardrailViolations: unknown[];
+  pendingInteractionKind?: "question" | "approval" | "takeover";
 }
 
 export async function runAgentLoop(
@@ -218,6 +234,9 @@ export async function runAgentLoop(
   let guardrailsPassed = true;
   let guardrailViolations: unknown[] = [];
   const providerRetryBudget = createProviderRetryBudget(MAX_PROVIDER_RETRIES_PER_RUN);
+
+  const shouldStop = async () =>
+    params.shouldStop?.() === true || (await params.isCancellationRequested?.()) === true;
 
   const transportContext = {
     env: params.env,
@@ -296,7 +315,10 @@ export async function runAgentLoop(
         state.goalFinalisationRequested = true;
         state.goalFinalisationNotice = GOAL_FINALISATION_NOTICE;
 
-        return { extendBy: 2, reason: "Active goal requires a terminal tool result." };
+        return {
+          extendBy: 2,
+          reason: "Active goal requires a terminal tool result.",
+        };
       }
 
       if (state.finalAnswerForced) {
@@ -305,7 +327,10 @@ export async function runAgentLoop(
 
       state.finalAnswerNotice ??= FINAL_ANSWER_NOTICE;
 
-      return { extendBy: 1, reason: "Step budget reached; asking for a final answer." };
+      return {
+        extendBy: 1,
+        reason: "Step budget reached; asking for a final answer.",
+      };
     },
     getCommandCount: (runtimeState) => runtimeState.commandCount,
     shouldAbortOnTurnError: shouldAbortAgentTurnError,
@@ -361,7 +386,7 @@ export async function runAgentLoop(
       return results;
     },
     resolveTurn: async ({ messages, step }) => {
-      if (params.shouldStop?.()) {
+      if (await shouldStop()) {
         return closingTurn("", "stopped");
       }
 
@@ -432,6 +457,7 @@ export async function runAgentLoop(
         model: params.model,
         provider: params.provider,
         skills: params.contextSkills,
+        documents: params.contextDocuments,
       });
 
       await params.onContextSnapshot?.(contextBudget.snapshot);
@@ -483,13 +509,25 @@ export async function runAgentLoop(
           return closingTurn("", "stopped");
         }
 
-        await writeTurnActivity(sink, { kind: "model_step_finished", step, outcome: "failed" });
+        await writeTurnActivity(sink, {
+          kind: "model_step_finished",
+          step,
+          outcome: "failed",
+        });
         throw error;
       }
 
       if (turn.error) {
-        await writeTurnActivity(sink, { kind: "model_step_finished", step, outcome: "failed" });
+        await writeTurnActivity(sink, {
+          kind: "model_step_finished",
+          step,
+          outcome: "failed",
+        });
         throw new AssistantError(resolveProviderErrorMessage(turn.error), ErrorType.PROVIDER_ERROR);
+      }
+
+      if (await shouldStop()) {
+        return closingTurn("", "stopped");
       }
 
       if (!turn.activityStreamed) {
@@ -514,7 +552,11 @@ export async function runAgentLoop(
       );
 
       if (turn.stopped) {
-        await writeTurnActivity(sink, { kind: "model_step_finished", step, outcome: "cancelled" });
+        await writeTurnActivity(sink, {
+          kind: "model_step_finished",
+          step,
+          outcome: "cancelled",
+        });
         finalStatus = "stopped";
 
         if (!turn.content) {
@@ -525,12 +567,19 @@ export async function runAgentLoop(
           };
         }
 
-        const stoppedMessage = await finalise({ ...turn, toolCalls: [], status: "stopped" });
+        const stoppedMessage = await finalise({
+          ...turn,
+          toolCalls: [],
+          status: "stopped",
+        });
 
         return {
           toolCalls: [],
           text: turn.content,
-          assistantMessage: { role: "assistant", content: stoppedMessage.content },
+          assistantMessage: {
+            role: "assistant",
+            content: stoppedMessage.content,
+          },
         };
       }
 
@@ -586,13 +635,19 @@ export async function runAgentLoop(
       };
     },
     executeToolCalls: async (toolCalls: AgentToolCall[], context) => {
+      if (await shouldStop()) {
+        return;
+      }
+
       const providerToolCalls = providerIO.providerToolCalls(toolCalls);
 
       if (context.state.streamedToolInputStep !== context.step) {
         await emitToolCallEvents(sink, providerToolCalls as unknown as ToolCall[], context.step);
       }
 
-      await sink.writeEvent("tool_response_start", { tool_calls: providerToolCalls });
+      await sink.writeEvent("tool_response_start", {
+        tool_calls: providerToolCalls,
+      });
       const settledToolCallIds = new Set<string>();
 
       const toolResults = await handleToolCalls(
@@ -602,6 +657,7 @@ export async function runAgentLoop(
         context.shared.toolRequestContext,
         {
           persistResults: "immediate",
+          isExecutionAllowed: async () => !(await shouldStop()),
           callLedger: context.state.toolCallLedger,
           recoverUnknownToolCalls: !context.state.unknownToolRecoveryUsed,
           onToolExecutionStart: async (tool) => {
@@ -687,7 +743,8 @@ export async function runAgentLoop(
 
       if (pendingResult) {
         const reason = waitingForUserReason(pendingResult);
-        const kind = reason === "approval" ? "approval" : "question";
+        const kind =
+          reason === "takeover" ? "takeover" : reason === "approval" ? "approval" : "question";
 
         context.state.waitingForUserAction = kind;
         context.state.pendingUserAction = {
@@ -699,7 +756,9 @@ export async function runAgentLoop(
                 ? "This work is waiting for your selection."
                 : kind === "question"
                   ? "This work is waiting for your answer."
-                  : "This action is waiting for user approval.",
+                  : kind === "takeover"
+                    ? "This work is waiting for you to take control."
+                    : "This action is waiting for user approval.",
         };
       }
 
@@ -731,6 +790,9 @@ export async function runAgentLoop(
     model: params.model,
     platform: params.platform,
     toolCalls: allToolCalls,
+    store: params.requestParams.store === true,
+    trustedUserInput:
+      params.requestParams.trigger === undefined || params.requestParams.trigger === "user",
   });
 
   for (const memoryMessage of memoryMessages) {
@@ -762,6 +824,7 @@ export async function runAgentLoop(
     memoryMessages,
     guardrailsPassed,
     guardrailViolations,
+    ...(state.waitingForUserAction ? { pendingInteractionKind: state.waitingForUserAction } : {}),
   };
 }
 

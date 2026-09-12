@@ -231,6 +231,23 @@ export class OutputRepository extends BaseRepository {
     return output && !isOutputDeletionPending(output) ? output : null;
   }
 
+  async getOutputsByIds(outputIds: readonly string[]): Promise<OutputRecord[]> {
+    const ids = [...new Set(outputIds)];
+
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const outputs = await this.runQuery<OutputRecord>(
+      `SELECT * FROM output
+       WHERE id IN (${ids.map(() => "?").join(", ")})
+       ORDER BY created_at ASC, id ASC`,
+      ids,
+    );
+
+    return outputs.filter((output) => !isOutputDeletionPending(output));
+  }
+
   async getPersonalOutput(userId: number, outputId: string): Promise<OutputRecord | null> {
     const output = await this.selectOne({
       id: outputId,
@@ -344,6 +361,17 @@ export class OutputRepository extends BaseRepository {
        ORDER BY created_at ASC`,
       [projectId, ...uniqueRunIds],
     );
+  }
+
+  async listOutputsForRun(runId: string): Promise<OutputRecord[]> {
+    const outputs = await this.runQuery<OutputRecord>(
+      `SELECT * FROM output
+       WHERE json_extract(provenance_json, '$.run.id') = ?
+       ORDER BY created_at ASC, id ASC`,
+      [runId],
+    );
+
+    return outputs.filter((output) => !isOutputDeletionPending(output));
   }
 
   private async listScopedOutputs(

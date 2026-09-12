@@ -31,6 +31,7 @@ const WAITING_FOR_USER_LABELS = {
   question: "Waiting for your answer.",
   approval: "Waiting for your approval.",
   selection: "Waiting for your selection.",
+  takeover: "Waiting for you to take control.",
 } as const;
 
 export function createTurnActivityProjection(): TurnActivityProjection {
