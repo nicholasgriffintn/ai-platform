@@ -1,12 +1,12 @@
 import { sandboxPreviewFrameSource } from "./preview-origin.js";
 
-export const IS_PRODUCTION = import.meta.env.PROD;
-export const IS_DEVELOPMENT = import.meta.env.DEV;
-export const BUILD_MODE = import.meta.env.MODE;
+export const IS_PRODUCTION = import.meta.env?.PROD ?? false;
+export const IS_DEVELOPMENT = import.meta.env?.DEV ?? false;
+export const BUILD_MODE = import.meta.env?.MODE;
 
 const IS_E2E_BUILD = BUILD_MODE === "e2e";
 const PREVIEW_FRAME_SOURCE = sandboxPreviewFrameSource(
-  import.meta.env.VITE_SANDBOX_PREVIEW_HOST,
+  import.meta.env?.VITE_SANDBOX_PREVIEW_HOST,
   IS_DEVELOPMENT || IS_E2E_BUILD,
 );
 
@@ -21,32 +21,32 @@ export const CHATS_QUERY_KEY = "chats";
 export const SHOW_DEV_TOOLS = IS_DEVELOPMENT;
 
 export const API_BASE_URL =
-  import.meta.env.VITE_E2E_API_BASE_URL ||
+  import.meta.env?.VITE_E2E_API_BASE_URL ||
   (IS_PRODUCTION && !IS_E2E_BUILD ? "https://api.polychat.app" : "http://localhost:8787");
 export const WEB_APP_BASE_URL =
-  import.meta.env.VITE_WEB_APP_BASE_URL ||
+  import.meta.env?.VITE_WEB_APP_BASE_URL ||
   (IS_PRODUCTION && !IS_E2E_BUILD ? "https://polychat.app" : "http://localhost:5173");
 export const WS_API_URL =
-  import.meta.env.VITE_E2E_WS_API_URL ||
+  import.meta.env?.VITE_E2E_WS_API_URL ||
   (IS_PRODUCTION && !IS_E2E_BUILD ? "wss://api.polychat.app" : "ws://localhost:8787");
-export const APPLE_SIGN_IN_CLIENT_ID = import.meta.env.VITE_APPLE_CLIENT_ID || "com.polychat.web";
+export const APPLE_SIGN_IN_CLIENT_ID = import.meta.env?.VITE_APPLE_CLIENT_ID || "com.polychat.web";
 
 export const POSTHOG_CONFIG = {
-  apiKey: import.meta.env.VITE_PUBLIC_POSTHOG_KEY || "disabled",
-  apiHost: import.meta.env.VITE_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
+  apiKey: import.meta.env?.VITE_PUBLIC_POSTHOG_KEY || "disabled",
+  apiHost: import.meta.env?.VITE_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
   debug: BUILD_MODE === "development",
-  disabled: IS_E2E_BUILD || !import.meta.env.VITE_PUBLIC_POSTHOG_KEY,
+  disabled: IS_E2E_BUILD || !import.meta.env?.VITE_PUBLIC_POSTHOG_KEY,
 };
 
 export const BEACON_CONFIG = {
-  enabled: !IS_E2E_BUILD && import.meta.env.VITE_ENABLE_BEACON === "true",
-  experimentsEnabled: !IS_E2E_BUILD && import.meta.env.VITE_ENABLE_BEACON_EXPERIMENTS === "true",
-  endpoint: import.meta.env.VITE_BEACON_ENDPOINT || "",
-  siteId: import.meta.env.VITE_BEACON_SITE_ID || "",
-  debug: import.meta.env.VITE_BEACON_DEBUG === "true" || false,
+  enabled: !IS_E2E_BUILD && import.meta.env?.VITE_ENABLE_BEACON === "true",
+  experimentsEnabled: !IS_E2E_BUILD && import.meta.env?.VITE_ENABLE_BEACON_EXPERIMENTS === "true",
+  endpoint: import.meta.env?.VITE_BEACON_ENDPOINT || "",
+  siteId: import.meta.env?.VITE_BEACON_SITE_ID || "",
+  debug: import.meta.env?.VITE_BEACON_DEBUG === "true" || false,
 };
 
-export const CAPTCHA_SITE_KEY = import.meta.env.VITE_CAPTCHA_SITE_KEY || "";
+export const CAPTCHA_SITE_KEY = import.meta.env?.VITE_CAPTCHA_SITE_KEY || "";
 export const ENABLE_CAPTCHA_IN_DEV = false;
 
 const COMMON_CSP = {
@@ -133,9 +133,6 @@ const CSP = {
   scriptSrc: SCRIPT_SRC,
 } as const;
 
-/**
- * Generates the Content Security Policy string from the CSP configuration
- */
 export function generateCSP(): string {
   return Object.entries(CSP)
     .map(([directive, sources]) => {

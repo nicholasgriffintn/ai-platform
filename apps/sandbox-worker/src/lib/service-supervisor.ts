@@ -7,6 +7,7 @@ import {
   type SandboxServiceStatus,
   type SandboxTrustLevel,
 } from "@ngriffin_uk/polychat-schemas";
+import { delay } from "@ngriffin_uk/polychat-utility-core";
 
 import type { TaskEvent } from "../types";
 import { SandboxCancellationError } from "./cancellation";
@@ -16,7 +17,6 @@ import {
   quoteForShell,
   type SandboxProcessInstance,
 } from "./commands";
-import { delay } from "./delay";
 import { hasSandboxErrorCode } from "./errors";
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
 import { listeningPortsFromProcNet, READ_LISTENING_SOCKETS_COMMAND } from "./network-ports";

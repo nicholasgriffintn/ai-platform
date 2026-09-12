@@ -1,4 +1,4 @@
-import { isRecord } from "~/utils/objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export function getStringParam(params: Record<string, unknown>, key: string): string | undefined {
   const value = params[key];

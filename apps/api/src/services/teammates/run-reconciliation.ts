@@ -6,6 +6,7 @@ import {
   type Delegation,
   type DelegationState,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { AgentLoopExecutionResult } from "~/lib/chat/agent/agent-loop";
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -26,7 +27,6 @@ import { TaskService } from "~/services/tasks/TaskService";
 import type { IUser, Message } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { extractMessageNotification } from "~/utils/messages";
-import { isRecord } from "~/utils/objects";
 
 type ResultMessage = Pick<Message, "content" | "data" | "id" | "status" | "citations">;
 type WaitingDelegationState = Extract<

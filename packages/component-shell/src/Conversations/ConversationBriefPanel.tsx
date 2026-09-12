@@ -1,5 +1,6 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
-import { getErrorMessage, useConversationBrief } from "@ngriffin_uk/polychat-library-react";
+import { useConversationBrief } from "@ngriffin_uk/polychat-library-react";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { NotebookPen } from "lucide-react";
 import { toast } from "sonner";
 

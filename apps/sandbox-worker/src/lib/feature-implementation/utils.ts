@@ -1,11 +1,3 @@
-import { truncateForModel as truncateValueForModel } from "@ngriffin_uk/polychat-library-agent-core";
-
-import { MAX_OBSERVATION_CHARS } from "./constants";
-
-export function truncateForModel(value: string, maxChars = MAX_OBSERVATION_CHARS): string {
-  return truncateValueForModel(value, maxChars);
-}
-
 export function normaliseRepoRelativePath(rawPath: string): string {
   const trimmed = rawPath.trim().replace(/^['"`]|['"`]$/g, "");
   const unixPath = trimmed.replace(/\\+/g, "/");
@@ -69,10 +61,6 @@ export function extractRelativePath(repoTargetDir: string, absolutePath: string)
   return absolutePath;
 }
 
-export function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
-}
-
 export function parsePriority(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -95,10 +83,6 @@ export function toPrioritySortValue(priority?: number): number {
   }
 
   return Number.MAX_SAFE_INTEGER;
-}
-
-export function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export function formatStoryLabel(story: { id?: string; title: string }): string {

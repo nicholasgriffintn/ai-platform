@@ -4,9 +4,9 @@ import type {
   GetModelImportJobCommandOutput,
 } from "@aws-sdk/client-bedrock";
 import type { TrainingDeployment, TrainingJob } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Env } from "../types/env.js";
-import { isRecord } from "./objects.js";
 import { splitCsv } from "./strings.js";
 
 export function getBedrockVpcConfig(env: Env) {

@@ -9,11 +9,11 @@ import {
   type ProjectTaskActivityTimeline,
   type ProjectTaskInteraction,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { formatStoredMessage } from "~/lib/conversation/stored-message";
 import type { Message } from "~/types";
-import { isRecord } from "~/utils/objects";
 
 interface ActivityCompletion {
   id: string;

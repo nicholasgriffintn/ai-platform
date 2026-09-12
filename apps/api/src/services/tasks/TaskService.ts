@@ -1,4 +1,5 @@
 import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Task } from "~/lib/database/schema";
 import { addInfraUsage } from "~/lib/usage/requestMeter";
@@ -6,7 +7,6 @@ import type { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv } from "~/types";
 import { normaliseIsoDateTime } from "~/utils/date";
 import { getLogger } from "~/utils/logger";
-import { isRecord } from "~/utils/objects";
 
 const logger = getLogger({ prefix: "services/tasks" });
 

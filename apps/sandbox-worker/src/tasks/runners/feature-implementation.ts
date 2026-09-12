@@ -1,5 +1,6 @@
 import { getSandbox } from "@cloudflare/sandbox";
 import {
+  DEFAULT_SANDBOX_MODEL as DEFAULT_MODEL,
   SANDBOX_RUN_PROOF_MAX_CHANGED_FILES,
   resolveSandboxDeliveryPolicy,
   sandboxDeliveryPolicyCreatesCommit,
@@ -9,13 +10,14 @@ import {
   type SandboxRunProofEvidence,
   type SandboxDeliveryPolicy,
 } from "@ngriffin_uk/polychat-schemas";
+import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 
 import {
   execOrThrow,
   execOrThrowRedacted,
   resolveGitHubRepo,
   buildSummary,
-  truncateLog,
+  MAX_LOG_CHARS,
   quoteForShell,
   buildCommitMessage,
   uniqueOutputLines,
@@ -25,11 +27,7 @@ import { prepareSandboxEnvironment } from "../../lib/environment-setup";
 import { classifySandboxError } from "../../lib/errors";
 import { createExecutionControl } from "../../lib/execution-control";
 import { executeAgentLoop } from "../../lib/feature-implementation/agent-loop";
-import {
-  DEFAULT_MODEL,
-  MAX_COMMANDS,
-  MODEL_RETRY_OPTIONS,
-} from "../../lib/feature-implementation/constants";
+import { MAX_COMMANDS, MODEL_RETRY_OPTIONS } from "../../lib/feature-implementation/constants";
 import { collectRepositoryContext } from "../../lib/feature-implementation/context";
 import { startFileWatcher, type FileWatcher } from "../../lib/feature-implementation/file-watcher";
 import { resolvePromptStrategy } from "../../lib/feature-implementation/prompt-strategy";
@@ -39,7 +37,6 @@ import {
   runQualityGate,
 } from "../../lib/feature-implementation/quality-gate";
 import { runStoryTracker } from "../../lib/feature-implementation/story-tracker";
-import { truncateForModel } from "../../lib/feature-implementation/utils";
 import { deliverCommitToGitHub, prepareGitHubDelivery } from "../../lib/github-delivery";
 import { waitForInspectionWindow } from "../../lib/inspection-window";
 import { redactSandboxOutput } from "../../lib/output-redaction";
@@ -604,7 +601,7 @@ export async function executeFeatureImplementation(
 
     const result: TaskResult = {
       success: true,
-      logs: truncateLog(executionLogs.join("\n")),
+      logs: truncateForModel(executionLogs.join("\n"), MAX_LOG_CHARS),
       diff,
       branchName,
       pullRequestUrl,
@@ -646,7 +643,7 @@ export async function executeFeatureImplementation(
 
     const result: TaskResult = {
       success: false,
-      logs: truncateLog(executionLogs.join("\n")),
+      logs: truncateForModel(executionLogs.join("\n"), MAX_LOG_CHARS),
       branchName,
       pullRequestUrl,
       error: classified.message,

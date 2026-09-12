@@ -4,8 +4,8 @@ import {
   type TrainingDeployment,
   type TrainingDeploymentTarget,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import { isRecord } from "./objects.js";
 import { optionalString } from "./strings.js";
 
 interface DeploymentNameInput {

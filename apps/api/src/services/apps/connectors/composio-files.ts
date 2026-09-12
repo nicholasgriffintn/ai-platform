@@ -1,3 +1,5 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
   createComposioSessionMountDownloadUrl,
@@ -11,7 +13,6 @@ import { requireProjectAccess } from "~/services/workspaces/access";
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { isRecord } from "~/utils/objects";
 
 import {
   COMPOSIO_FILE_MAX_BYTES,

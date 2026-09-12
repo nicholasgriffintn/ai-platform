@@ -3,10 +3,10 @@ import type {
   TrainingInferenceRuntime,
   TrainingJob,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { z } from "zod";
 
 import { toDate } from "../utils/dates.js";
-import { isRecord } from "../utils/objects.js";
 import { optionalString } from "../utils/strings.js";
 
 export class SageMakerApiError extends Error {

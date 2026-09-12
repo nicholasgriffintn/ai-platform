@@ -8,6 +8,7 @@ import {
   CardGridLoadingSkeleton,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useDeleteStrudelPattern,
   useGenerateStrudelPattern,
@@ -15,7 +16,6 @@ import {
   useStrudelPattern,
   useStrudelPatterns,
   useUpdateStrudelPattern,
-  isAuthenticationError,
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
 import { parseCommaSeparatedTags } from "@ngriffin_uk/polychat-utility-core";

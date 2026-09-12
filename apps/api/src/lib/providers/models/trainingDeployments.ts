@@ -8,11 +8,11 @@ import {
   type ModelConfig,
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { hasD1DatabaseBinding, type EnvWithD1Database } from "~/lib/database/bindings";
 import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
-import { isRecord } from "~/utils/objects";
 
 interface TrainingDeploymentRow {
   provider: string;

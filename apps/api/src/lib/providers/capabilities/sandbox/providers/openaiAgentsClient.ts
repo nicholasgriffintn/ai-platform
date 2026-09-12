@@ -1,6 +1,6 @@
+import { sleep } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
-import { sleep } from "~/utils/delay";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { readResponseTextWithinLimit } from "~/utils/http";
 

@@ -1,3 +1,5 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 export function truncateForModel(value: string, maxChars: number): string {
   if (value.length <= maxChars) {
     return value;
@@ -7,8 +9,8 @@ export function truncateForModel(value: string, maxChars: number): string {
 }
 
 export function parseToolCallArguments(value: unknown): Record<string, unknown> {
-  if (value && typeof value === "object" && !Array.isArray(value)) {
-    return value as Record<string, unknown>;
+  if (isRecord(value)) {
+    return value;
   }
 
   if (typeof value !== "string" || !value.trim()) {
@@ -16,11 +18,9 @@ export function parseToolCallArguments(value: unknown): Record<string, unknown> 
   }
 
   try {
-    const parsed = JSON.parse(value);
+    const parsed: unknown = JSON.parse(value);
 
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)
-      : {};
+    return isRecord(parsed) ? parsed : {};
   } catch {
     return {};
   }

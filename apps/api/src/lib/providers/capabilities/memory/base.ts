@@ -1,4 +1,5 @@
 import type { SourceStatus } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { EmbeddingProviderTarget } from "~/lib/providers/capabilities/embedding/helpers";
@@ -9,7 +10,6 @@ import type { IEnv, IUser, IUserSettings, MemoryScope } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
-import { isRecord } from "~/utils/objects";
 import { appendUrlPath } from "~/utils/urls";
 
 import type {

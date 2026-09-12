@@ -1,3 +1,5 @@
+import { deepMergeRecords, isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import {
   MAX_CONTENT_LENGTH,
   MAX_PROVIDER_STREAM_EVENT_LENGTH,
@@ -34,7 +36,6 @@ import {
 import { ToolCallType, type IEnv, type MessagePart, type ToolCall } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
-import { deepMergeRecords, isRecord } from "~/utils/objects";
 
 const logger = getLogger({ prefix: "lib/chat/agent/provider-stream" });
 

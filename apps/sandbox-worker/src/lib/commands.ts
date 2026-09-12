@@ -8,7 +8,7 @@ import {
 
 import { createSandboxOutputRedactor, redactSandboxResult } from "./output-redaction";
 
-const MAX_LOG_CHARS = 80000;
+export const MAX_LOG_CHARS = 80000;
 
 const GITHUB_HTTPS_REPO_REGEX =
   /^https:\/\/github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?\/?$/i;
@@ -432,14 +432,6 @@ export function buildSummary(
   }
 
   return `Implemented "${task}" in ${repo} with ${commandCount} commands.`;
-}
-
-export function truncateLog(logs: string): string {
-  if (logs.length <= MAX_LOG_CHARS) {
-    return logs;
-  }
-
-  return `${logs.slice(0, MAX_LOG_CHARS)}\n... (truncated)`;
 }
 
 export function quoteForShell(value: string): string {

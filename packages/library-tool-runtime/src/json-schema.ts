@@ -1,6 +1,4 @@
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export function flattenObjectRootSchema(schema: Record<string, unknown>): Record<string, unknown> {
   const alternatives = schema.anyOf;

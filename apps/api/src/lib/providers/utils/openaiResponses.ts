@@ -1,4 +1,5 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { isAgentExecutionMode } from "~/lib/chat/policy/mode-metadata";
 import { MessageFormatter } from "~/lib/formatter";
@@ -10,7 +11,7 @@ import { hasModelTextOutput, producesNonTextPrimaryOutput } from "~/lib/provider
 import { shouldSendProviderVerbosity } from "~/lib/providers/models/verbosity";
 import type { ChatCompletionParameters, Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { coerceStringArray, isRecord } from "~/utils/objects";
+import { coerceStringArray } from "~/utils/objects";
 import { type OptionBag, readOptionBag, readRecordOption } from "~/utils/options";
 import { createSamplingParameters, resolveEffectiveMaxTokens } from "~/utils/parameters";
 

@@ -1,5 +1,6 @@
+import { sleep } from "@ngriffin_uk/polychat-utility-core";
+
 import type { IRequest } from "~/types";
-import { sleep } from "~/utils/delay";
 
 import type { ContentExtractParams, ExtractedContentPayload } from "../../types/content-extract";
 

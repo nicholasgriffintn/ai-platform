@@ -19,6 +19,7 @@ import {
   TabsTrigger,
   CardSkeleton,
 } from "@ngriffin_uk/polychat-component-ui";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useDeleteTrainingDeployment,
   useDeployTrainingModel,
@@ -28,8 +29,6 @@ import {
   useTrainingJobs,
   useTrainingModels,
   useStartTrainingJob,
-  getErrorMessage,
-  isAuthenticationError,
 } from "@ngriffin_uk/polychat-library-react";
 import type {
   DeployTrainingModelRequest,
@@ -39,6 +38,7 @@ import type {
   TrainingModelDefinition,
   StartTrainingJobRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Activity, Boxes, ListChecks, Server } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 

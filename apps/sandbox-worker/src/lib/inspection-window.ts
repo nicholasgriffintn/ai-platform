@@ -4,6 +4,7 @@ import {
   type SandboxRunEvent,
   type SandboxTrustLevel,
 } from "@ngriffin_uk/polychat-schemas";
+import { delay } from "@ngriffin_uk/polychat-utility-core";
 
 import { throwIfAborted } from "./cancellation";
 import {
@@ -12,7 +13,6 @@ import {
   runSandboxCommand,
   type SandboxExecInstance,
 } from "./commands";
-import { delay } from "./delay";
 import { redactSandboxOutput } from "./output-redaction";
 import type { RunControlClient } from "./run-control-client";
 import { withSandboxEnvironment } from "./sandbox-environment-runtime";

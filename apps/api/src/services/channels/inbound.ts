@@ -3,6 +3,7 @@ import {
   INBOUND_CHANNEL_IDS,
   type InboundChannelId,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { getInboundChannelProfile } from "~/lib/chat/policy/channels";
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -30,7 +31,6 @@ import type { IEnv, IUser, Message } from "~/types";
 import { sha256Hex } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildInboundMessageContent, extractChatCompletionNotification } from "~/utils/messages";
-import { isRecord } from "~/utils/objects";
 
 import { getChannelAdapter, type ChannelIncomingMessage } from "./adapters";
 import { getChannelSecrets } from "./secrets";

@@ -1,6 +1,4 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
-import { Droplets, Wind } from "lucide-react";
-
 import {
   formatWeatherHour,
   formatWeatherTemperature,
@@ -11,7 +9,9 @@ import {
   resolveWeatherDailyRangeSegments,
   type WeatherDailyForecast,
   type WeatherDailyRangeSegment,
-} from "./weather";
+} from "@ngriffin_uk/polychat-library-chat/weather";
+import { Droplets, Wind } from "lucide-react";
+
 import { getWeatherIcon } from "./weather-icons";
 
 interface WeatherViewProps {

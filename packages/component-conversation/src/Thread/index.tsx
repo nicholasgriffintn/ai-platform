@@ -22,13 +22,11 @@ import {
   useChat,
   useChatManager,
   useChatRunReplay,
-  useCopyToClipboard,
   useModels,
   usePetNudgeSources,
   usePetFollowEnabled,
   useRemoteConversationActivity,
   isModelSubmissionBlocked,
-  getErrorMessage,
   openExternalUrl,
   useComposerDraft,
   useIsLoading,
@@ -54,6 +52,8 @@ import type {
   ModelSelectionChangeHandler,
   ModelSelectorScope,
 } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
+import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
 import type {
   ComposerActionCatalogConfig,
   ComposerAssistantActionCapability,

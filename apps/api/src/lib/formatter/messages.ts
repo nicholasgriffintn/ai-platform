@@ -2,12 +2,11 @@ import {
   chatMessageSelectionSchema,
   HOSTED_MCP_APPROVAL_TOOL_NAME,
 } from "@ngriffin_uk/polychat-schemas";
-import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
+import { escapeHtml, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { estimateMessageTokens } from "~/lib/messageTokens";
 import type { ContentType, Message, MessageContent } from "~/types";
 import { safeParseJson } from "~/utils/json";
-import { isRecord } from "~/utils/objects";
 import { hasToolCalls } from "~/utils/toolCalls";
 
 type OpenAIResponsesInputItem = Record<string, unknown>;

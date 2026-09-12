@@ -1,4 +1,4 @@
-import { isRecord } from "../utils/objects.js";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export interface HuggingFaceHubModelFile {
   path: string;

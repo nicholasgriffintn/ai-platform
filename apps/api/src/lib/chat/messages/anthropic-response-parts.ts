@@ -1,6 +1,7 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import type { MessagePart } from "~/types";
 import { safeParseJson } from "~/utils/json";
-import { isRecord } from "~/utils/objects";
 
 interface AnthropicHostedToolDefinition {
   name: string;

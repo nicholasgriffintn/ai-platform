@@ -4,11 +4,8 @@ import {
   CardGridLoadingSkeleton,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
-import {
-  useFetchArticleReport,
-  useFetchArticleReports,
-  isAuthenticationError,
-} from "@ngriffin_uk/polychat-library-react";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
+import { useFetchArticleReport, useFetchArticleReports } from "@ngriffin_uk/polychat-library-react";
 import { FileText, Plus } from "lucide-react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";

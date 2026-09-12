@@ -70,6 +70,4 @@ export * from "./api-key.js";
 
 export * from "./machine-runs.js";
 
-export * from "./utils/delay.js";
-
 export { machineRunClient } from "./machine-run-service.js";

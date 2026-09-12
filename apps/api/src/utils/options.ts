@@ -1,4 +1,4 @@
-import { isRecord } from "./objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export type OptionBag = Record<string, unknown>;
 

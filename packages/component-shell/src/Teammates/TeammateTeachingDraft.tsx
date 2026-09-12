@@ -1,6 +1,6 @@
 import { Button, Textarea } from "@ngriffin_uk/polychat-component-ui";
-import { getErrorMessage, useCreateTeachingSkillDraft } from "@ngriffin_uk/polychat-library-react";
-import { slugify, splitNonEmptyLines } from "@ngriffin_uk/polychat-utility-core";
+import { useCreateTeachingSkillDraft } from "@ngriffin_uk/polychat-library-react";
+import { getErrorMessage, slugify, splitNonEmptyLines } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 
 export function TeammateTeachingDraft({

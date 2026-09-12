@@ -104,3 +104,37 @@ export function trimTrailingCharacter(value: string, character: string): string 
 
   return end === value.length ? value : value.slice(0, end);
 }
+
+export function truncateText(value: string, maxLength: number): string {
+  if (value.length <= maxLength) {
+    return value;
+  }
+
+  return `${value.slice(0, maxLength).trimEnd()}…`;
+}
+
+export function truncateForModel(value: string, maxChars: number): string {
+  if (value.length <= maxChars) {
+    return value;
+  }
+
+  return `${value.slice(0, maxChars)}\n... (truncated)`;
+}
+
+export function truncateSingleLine(value: string, maxCharacters: number): string {
+  const normalised = value.replace(/\s+/g, " ").trim();
+
+  return normalised.length <= maxCharacters
+    ? normalised
+    : `${normalised.slice(0, Math.max(0, maxCharacters - 3))}...`;
+}
+
+export function truncateToWords(input: string, maxWords: number): string {
+  const matches = input.match(/\S+\s*/g);
+
+  if (!matches || matches.length <= maxWords) {
+    return input;
+  }
+
+  return matches.slice(0, maxWords).join("").trimEnd();
+}

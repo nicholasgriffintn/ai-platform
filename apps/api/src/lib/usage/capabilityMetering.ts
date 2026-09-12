@@ -3,6 +3,7 @@ import {
   rateEntriesFromModelConfig,
   type UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { getModelConfig } from "~/lib/providers/models";
 import type { ProviderCategory, ProviderFactoryContext } from "~/lib/providers/registry/types";
@@ -10,7 +11,6 @@ import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
-import { isRecord } from "~/utils/objects";
 import { findNumericFieldDeep, readNumericField, readStringField } from "~/utils/recordFields";
 
 import { userCreditActor } from "./creditActor";

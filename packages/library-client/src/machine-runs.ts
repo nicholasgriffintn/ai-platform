@@ -64,5 +64,4 @@ export class MachineRunClient {
   }
 }
 
-export { delay } from "./utils/delay.js";
 export type { FetchApiOptions } from "./http.js";

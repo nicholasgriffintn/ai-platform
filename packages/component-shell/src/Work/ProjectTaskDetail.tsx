@@ -5,9 +5,9 @@ import {
   useProjectTask,
   useProjectTasks,
   getProjectConversationPath,
-  getErrorMessage,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";

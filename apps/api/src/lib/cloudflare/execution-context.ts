@@ -1,6 +1,5 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
-
-import { isRecord } from "~/utils/objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export function requireCloudflareExecutionContext(value: unknown): ExecutionContext {
   if (!isCloudflareExecutionContext(value)) {

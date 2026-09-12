@@ -36,11 +36,9 @@ interface PendingRequest {
   timer: ReturnType<typeof setTimeout>;
 }
 
-const DEFAULT_REQUEST_TIMEOUT_MS = 120_000;
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
+const DEFAULT_REQUEST_TIMEOUT_MS = 120_000;
 
 export class JsonRpcClient {
   #transport: JsonRpcTransport;

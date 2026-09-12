@@ -1,5 +1,6 @@
 import type { AgentMessage } from "@ngriffin_uk/polychat-library-agent-core";
 import type { SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
+import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 
 import {
   assertSafeCommand,
@@ -29,7 +30,6 @@ import type {
   RunScriptDecision,
 } from "./tools";
 import type { ExecuteAgentLoopParams } from "./types";
-import { truncateForModel } from "./utils";
 
 export interface AgentLoopMutableState {
   commandCount: number;

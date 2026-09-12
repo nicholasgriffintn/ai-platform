@@ -1,6 +1,7 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import type { ConnectorOperationApprovalRecord } from "~/repositories/ConnectorOperationApprovalRepository";
 import type { Message } from "~/types";
-import { isRecord } from "~/utils/objects";
 
 export type ConnectorApprovalDisplayState =
   | "pending"

@@ -4,11 +4,11 @@ import {
   WorkspaceMemberList,
   WorkspaceMembersSkeleton,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useAuthStatus,
   useWorkspaceMemberMutations,
   useRevokeWorkspaceInvitation,
-  isAuthenticationError,
 } from "@ngriffin_uk/polychat-library-react";
 import { LogOut, UserPlus } from "lucide-react";
 import { useState } from "react";

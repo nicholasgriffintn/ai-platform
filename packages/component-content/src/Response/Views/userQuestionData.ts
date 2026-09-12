@@ -22,9 +22,7 @@ export interface UserQuestionSet {
   resolved: boolean;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 function readOption(value: unknown): UserQuestionOption | null {
   if (!isRecord(value) || typeof value.label !== "string" || !value.label.trim()) {

@@ -4,10 +4,8 @@ import {
   ReplicatePredictionList,
 } from "@ngriffin_uk/polychat-component-experiences/media";
 import { ButtonLink, EmptyState } from "@ngriffin_uk/polychat-component-ui";
-import {
-  useReplicatePredictions,
-  isAuthenticationError,
-} from "@ngriffin_uk/polychat-library-react";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
+import { useReplicatePredictions } from "@ngriffin_uk/polychat-library-react";
 
 import { SignInEmptyState } from "../../Account/SignInEmptyState.js";
 

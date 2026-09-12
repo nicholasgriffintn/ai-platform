@@ -3,6 +3,7 @@ import {
   type TrainingDeployment,
   type TrainingJob,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { SageMakerEnv } from "../types/env.js";
 import type {
@@ -15,7 +16,6 @@ import type {
 } from "../types/providers.js";
 import { signAwsJsonRequest } from "../utils/aws.js";
 import { stringifyEntries } from "../utils/json.js";
-import { isRecord } from "../utils/objects.js";
 import {
   getSageMakerErrorMessage,
   getSageMakerProductionVariantRuntimeConfig,

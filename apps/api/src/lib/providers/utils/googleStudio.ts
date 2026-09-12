@@ -1,9 +1,10 @@
 import { parseToolCallArguments } from "@ngriffin_uk/polychat-library-agent-core";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ChatCompletionParameters, ReasoningEffortLevel } from "~/types";
 import { hasAnyEnabledTool } from "~/utils/enabledTools";
-import { coerceStringArray, isRecord, omitUndefinedValues } from "~/utils/objects";
+import { coerceStringArray, omitUndefinedValues } from "~/utils/objects";
 import { readOptionBag, readRecordOption } from "~/utils/options";
 import { createSamplingParameters, resolveEffectiveMaxTokens } from "~/utils/parameters";
 

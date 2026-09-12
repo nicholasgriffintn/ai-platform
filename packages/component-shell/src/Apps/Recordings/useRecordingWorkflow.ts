@@ -2,11 +2,8 @@ import {
   type RecordingFormData,
   RecordingWorkflowStep,
 } from "@ngriffin_uk/polychat-component-experiences/content";
-import {
-  useProcessRecording,
-  useUploadRecording,
-  getErrorMessage,
-} from "@ngriffin_uk/polychat-library-react";
+import { useProcessRecording, useUploadRecording } from "@ngriffin_uk/polychat-library-react";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 

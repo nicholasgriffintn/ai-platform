@@ -1,6 +1,7 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
-import { isRecord } from "~/utils/objects";
 
 export async function requireSuccessfulChannelSend(
   response: Response,

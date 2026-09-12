@@ -5,13 +5,13 @@ import {
   cn,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useCreateNote,
   useDeleteNote,
   useFetchNote,
   useFetchNotes,
   useUpdateNote,
-  isAuthenticationError,
 } from "@ngriffin_uk/polychat-library-react";
 import type { NoteMetadata } from "@ngriffin_uk/polychat-schemas";
 import { NotebookPen, Plus } from "lucide-react";

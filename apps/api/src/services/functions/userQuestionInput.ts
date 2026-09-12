@@ -1,7 +1,5 @@
 import { USER_QUESTION_MAX_OPTIONS } from "@ngriffin_uk/polychat-schemas";
-import { slugify } from "@ngriffin_uk/polychat-utility-core";
-
-import { isRecord } from "~/utils/objects";
+import { isRecord, slugify } from "@ngriffin_uk/polychat-utility-core";
 
 const QUESTION_ID_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
 

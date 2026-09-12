@@ -1,3 +1,5 @@
+import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+
 import { throwIfAborted } from "../cancellation";
 import {
   assertSafeCommand,
@@ -10,7 +12,6 @@ import { redactSandboxOutput } from "../output-redaction";
 import { withSandboxEnvironment } from "../sandbox-environment-runtime";
 import { MAX_OBSERVATION_CHARS } from "./constants";
 import type { QualityGateCheckResult, QualityGateResult, SandboxExecInstance } from "./types";
-import { truncateForModel } from "./utils";
 
 const VALIDATION_COMMAND_PATTERN =
   /\b(test|tests|lint|typecheck|type-check|check|verify|validate|build|clippy|fmt)\b/i;

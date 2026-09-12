@@ -9,7 +9,6 @@ import {
   projectQueryKey,
   getCapabilityLibraryPath,
   getProjectSurface,
-  getErrorMessage,
   getProjectCodingPresentation,
 } from "@ngriffin_uk/polychat-library-react";
 import {
@@ -17,6 +16,7 @@ import {
   type SandboxTaskType,
   sandboxTaskTypeSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";

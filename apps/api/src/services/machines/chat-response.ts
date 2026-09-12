@@ -7,9 +7,9 @@ import {
   type MachineRunRequest,
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
+import { abortableDelay } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ChatCompletionParameters } from "~/types";
-import { abortableDelay } from "~/utils/abortable-delay";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractTextFromMessageContent } from "~/utils/messages";
 

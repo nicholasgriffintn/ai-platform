@@ -10,11 +10,11 @@ import {
   useTaskAttention,
   useTasks,
   useWorkAttention,
-  getErrorMessage,
   readWorkAttentionQuery,
   workAttentionItemHref,
   writeWorkAttentionFilters,
 } from "@ngriffin_uk/polychat-library-react";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 

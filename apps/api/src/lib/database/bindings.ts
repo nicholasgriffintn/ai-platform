@@ -1,6 +1,5 @@
 import type { D1Database } from "@cloudflare/workers-types";
-
-import { isRecord } from "~/utils/objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export interface EnvWithD1Database {
   DB: D1Database;

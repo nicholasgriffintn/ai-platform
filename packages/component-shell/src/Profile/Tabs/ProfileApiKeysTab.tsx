@@ -1,5 +1,6 @@
 import { ApiKeysPanel, type GeneratedApiKey } from "@ngriffin_uk/polychat-component-account";
-import { useApiKeys, isAuthenticationError, useUIStore } from "@ngriffin_uk/polychat-library-react";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
+import { useApiKeys, useUIStore } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { toast } from "sonner";
 

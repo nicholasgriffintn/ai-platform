@@ -1,4 +1,5 @@
 import type { TaskType } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { createExecutionOutputProvenance } from "~/lib/provenance/output";
@@ -10,7 +11,6 @@ import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { isRecord } from "~/utils/objects";
 
 export interface ExecuteModelGenerationParams {
   modelId: string;

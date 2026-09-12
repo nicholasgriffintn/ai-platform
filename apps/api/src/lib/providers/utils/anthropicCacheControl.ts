@@ -1,4 +1,4 @@
-import { isRecord } from "~/utils/objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export const ANTHROPIC_MAX_CACHE_CONTROL_BLOCKS = 4;
 

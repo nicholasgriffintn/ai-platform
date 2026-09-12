@@ -1,3 +1,4 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AwsClient } from "aws4fetch";
 
 import { trackProviderMetrics } from "~/lib/monitoring";
@@ -6,7 +7,6 @@ import type { ChatCompletionParameters } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { isRecord } from "~/utils/objects";
 
 import { BaseProvider } from "./base";
 

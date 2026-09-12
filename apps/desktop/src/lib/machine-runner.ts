@@ -1,7 +1,6 @@
 import type { DesktopBackend, DesktopRun } from "@ngriffin_uk/polychat-library-chat";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import type { MachineRunClient } from "@ngriffin_uk/polychat-library-client/machine-runs";
-import { delay } from "@ngriffin_uk/polychat-library-client/machine-runs";
 import { waitForSyncEvent } from "@ngriffin_uk/polychat-library-client/sync";
 import { streamAgentSessionRun } from "@ngriffin_uk/polychat-library-react";
 import type {
@@ -10,6 +9,7 @@ import type {
   ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
 import { buildDeviceSyncTopic } from "@ngriffin_uk/polychat-schemas";
+import { delay } from "@ngriffin_uk/polychat-utility-core";
 
 const MACHINE_CLAIM_FALLBACK_MS = 30_000;
 

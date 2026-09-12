@@ -1,11 +1,12 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { formatToolCalls } from "~/lib/chat/tools/provider-tool-definitions";
 import { listFunctionToolDefinitions } from "~/services/functions/definitions";
 import type { ChatCompletionParameters } from "~/types";
 import { hasAnyEnabledTool } from "~/utils/enabledTools";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { coerceStringArray, isRecord } from "~/utils/objects";
+import { coerceStringArray } from "~/utils/objects";
 import { type OptionBag, readOptionBag, readRecordOption } from "~/utils/options";
 import { getToolDefinitionName } from "~/utils/toolNames";
 

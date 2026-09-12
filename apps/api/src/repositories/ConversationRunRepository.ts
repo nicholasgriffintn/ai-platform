@@ -18,6 +18,7 @@ import {
   runProvenanceSchema,
   type RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import {
   buildInsertRunEventStatement,
@@ -29,7 +30,6 @@ import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
-import { isRecord } from "~/utils/objects";
 
 import { BaseRepository } from "./BaseRepository";
 

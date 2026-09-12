@@ -1,3 +1,5 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { getAuxiliaryModel } from "~/lib/providers/models";
 import { MemorySynthesisRepository } from "~/repositories/MemorySynthesisRepository";
@@ -5,7 +7,6 @@ import { SourceRepository, type SourceRecord } from "~/repositories/SourceReposi
 import type { IEnv } from "~/types";
 import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
-import { isRecord } from "~/utils/objects";
 
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";

@@ -1,5 +1,6 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { isRecord } from "~/utils/objects";
 
 export const COMPOSIO_FILE_MAX_BYTES = 25 * 1024 * 1024;
 export const COMPOSIO_FILE_TRANSFER_TIMEOUT_MS = 15_000;

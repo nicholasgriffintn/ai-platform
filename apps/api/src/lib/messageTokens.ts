@@ -1,3 +1,5 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import type { Message } from "~/types";
 
 const TOOL_RESULT_SUMMARY_LIMIT = 400;
@@ -14,10 +16,6 @@ interface MessageTextOptions {
 
 export function estimateTextTokens(text: string): number {
   return Math.ceil(text.length / CHARS_PER_TOKEN);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 export function messageContentToText(

@@ -1,6 +1,4 @@
-import { deepMergeRecords, isRecord } from "@ngriffin_uk/polychat-utility-core";
-
-export { deepMergeRecords, isRecord };
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {

@@ -2,11 +2,11 @@ import {
   TRAINING_WORKER_TOKEN_HEADER,
   TRAINING_WORKER_USER_ID_HEADER,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import type { ZodType } from "zod";
 
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { isRecord } from "~/utils/objects";
 
 const TRAINING_WORKER_ORIGIN = "https://training.worker.internal";
 

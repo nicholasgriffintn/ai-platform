@@ -1,5 +1,6 @@
-import { machineRunClient, delay } from "@ngriffin_uk/polychat-library-client";
+import { machineRunClient } from "@ngriffin_uk/polychat-library-client";
 import { modelRuntimeVendorSchema } from "@ngriffin_uk/polychat-schemas";
+import { delay } from "@ngriffin_uk/polychat-utility-core";
 
 import { toRunMessages } from "../lib/run-messages.js";
 import type { DeviceModelRunOptions } from "./device-run.js";

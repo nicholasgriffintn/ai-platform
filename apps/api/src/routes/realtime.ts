@@ -7,6 +7,7 @@ import {
   realtimeProxyGrantQuerySchema,
   realtimeSessionResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { Hono } from "hono";
 
 import { optionalRepositories } from "~/lib/context/serviceContext";
@@ -39,7 +40,6 @@ import {
 } from "~/services/realtime/sessionUsage";
 import type { IEnv, IUser } from "~/types";
 import { generateId } from "~/utils/id";
-import { isRecord } from "~/utils/objects";
 
 const app = new Hono<{
   Bindings: IEnv;

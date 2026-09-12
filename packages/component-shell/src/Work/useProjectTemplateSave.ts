@@ -1,5 +1,6 @@
-import { useTemplateMutations, getErrorMessage } from "@ngriffin_uk/polychat-library-react";
+import { useTemplateMutations } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectDetail } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { toast } from "sonner";
 
 export function useProjectTemplateSave(workspaceId: string, project: ProjectDetail | null) {

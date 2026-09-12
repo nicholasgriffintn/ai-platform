@@ -1,4 +1,5 @@
 import { rateEntriesFromModelConfig } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { getModelConfig } from "~/lib/providers/models";
 import { userCreditActor } from "~/lib/usage/creditActor";
@@ -8,7 +9,6 @@ import { RepositoryManager } from "~/repositories";
 import type { RealtimeReconciliationPayload } from "~/services/realtime/sessionUsage";
 import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
-import { isRecord } from "~/utils/objects";
 
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";

@@ -32,7 +32,8 @@
   "dependencies": {
     "@ngriffin_uk/polychat-library-agent-core": "workspace:^",
     "@ngriffin_uk/polychat-library-registry": "workspace:^",
-    "@ngriffin_uk/polychat-schemas": "workspace:^"
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",

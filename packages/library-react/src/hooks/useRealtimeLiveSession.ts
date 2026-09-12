@@ -51,10 +51,10 @@ import {
   type RealtimeEventResult,
   type RealtimeTranscriptResult,
 } from "@ngriffin_uk/polychat-library-realtime/messages";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { getErrorMessage } from "../errors.js";
 import {
   createRealtimeSessionController,
   type RealtimeSessionLease,

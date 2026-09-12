@@ -6,17 +6,17 @@ import {
   type CreateTaskInput,
   type CreateTaskIntent,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useCapabilityCatalog,
   useProjectTasks,
   getTeammateEditorPath,
   getProjectSurface,
   getProjectConversationPath,
-  getErrorMessage,
-  isAuthenticationError,
   NEW_TEAMMATE_ID,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

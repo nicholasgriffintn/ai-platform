@@ -5,8 +5,8 @@ import {
   useWorkspace,
   useWorkspaces,
   getProjectChatPath,
-  getErrorMessage,
 } from "@ngriffin_uk/polychat-library-react";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 

@@ -1,6 +1,6 @@
 import type { ComputeSite, UsageEventReason, UsageUnit } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import { isRecord } from "~/utils/objects";
 import { findNumericFieldDeep, readNumericField } from "~/utils/recordFields";
 
 import type { NormalisedTokenUsage } from "./tokenUsage";

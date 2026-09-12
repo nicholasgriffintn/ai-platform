@@ -1,3 +1,5 @@
+import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+
 import {
   MAX_AGENT_STEPS,
   MAX_COMMANDS,
@@ -11,7 +13,6 @@ import {
   type PromptStrategySelection,
 } from "./prompt-strategy";
 import type { ReadFileResult, RepositoryContext } from "./types";
-import { truncateForModel } from "./utils";
 
 function formatRepositoryContext(repoContext: RepositoryContext): string {
   const topLevelText = repoContext.topLevelEntries.length
@@ -187,7 +188,7 @@ export function formatReadObservation(result: ReadFileResult): string {
   if (result.error) {
     return [
       `File read failed for ${result.path}.`,
-      `Error: ${truncateForModel(result.error)}`,
+      `Error: ${truncateForModel(result.error, MAX_OBSERVATION_CHARS)}`,
       "Choose a different path or action.",
     ].join("\n");
   }

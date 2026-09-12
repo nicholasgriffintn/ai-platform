@@ -1,5 +1,5 @@
 import { apiService } from "@ngriffin_uk/polychat-library-client";
-import { useCopyToClipboard } from "@ngriffin_uk/polychat-library-react";
+import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
 import type { ComponentProps } from "react";
 
 import { ChatMessageView } from "../../Message/ChatMessageView.js";

@@ -1,6 +1,6 @@
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
-import { truncateText } from "@ngriffin_uk/polychat-library-react";
+import { truncateText } from "@ngriffin_uk/polychat-utility-core";
 import { useEffect, useRef, useState } from "react";
 
 const MAX_ANNOUNCED_RESPONSE_CHARS = 1000;

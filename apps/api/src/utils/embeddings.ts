@@ -1,5 +1,6 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import { AssistantError, ErrorType } from "./errors";
-import { isRecord } from "./objects";
 
 export function chunkText(text: string, maxChars = 2000): string[] {
   const chunks: string[] = [];

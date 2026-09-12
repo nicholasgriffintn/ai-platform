@@ -1,6 +1,6 @@
 import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
-import catalogue from "./web-llm-catalogue.json";
+import catalogue from "./web-llm-catalogue.json" with { type: "json" };
 
 export const browserModelCatalogue: ModelConfig = Object.fromEntries(
   catalogue.models.map((model) => [

@@ -1,4 +1,5 @@
 import { HOSTED_MCP_APPROVAL_TOOL_NAME, type ModelModalities } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { buildOpenAIResponseOutputParts } from "~/lib/chat/messages/openai-response-parts";
 import { preprocessQwQResponse } from "~/lib/chat/messages/unterminated-thinking";
@@ -16,7 +17,6 @@ import type { IEnv } from "~/types";
 import { base64ToBuffer } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { isRecord } from "~/utils/objects";
 
 import { extractReasoningContentBlocks } from "./content-blocks";
 

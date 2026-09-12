@@ -7,11 +7,11 @@ import {
   CardGridLoadingSkeleton,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useFetchRecording,
   useFetchRecordings,
   useProcessRecording,
-  isAuthenticationError,
 } from "@ngriffin_uk/polychat-library-react";
 import type { Recording } from "@ngriffin_uk/polychat-schemas";
 import { Mic2, Plus } from "lucide-react";

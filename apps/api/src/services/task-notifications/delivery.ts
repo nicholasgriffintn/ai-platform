@@ -4,13 +4,13 @@ import {
   createTaskInboxItemId,
   type TaskNotificationCategory,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { RepositoryManager } from "~/repositories";
 import { isTaskNotificationPreferenceEnabled } from "~/services/notifications/preferences";
 import { attentionState, isTaskInboxEligible } from "~/services/project-tasks/attention";
 import type { IEnv } from "~/types";
 import { getErrorMessage } from "~/utils/errors";
-import { isRecord } from "~/utils/objects";
 
 import type { TaskExecutionContext, TaskHandler, TaskResult } from "../tasks/TaskHandler";
 import type { TaskMessage } from "../tasks/TaskService";

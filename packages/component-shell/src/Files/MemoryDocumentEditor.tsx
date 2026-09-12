@@ -1,10 +1,10 @@
 import { Button, Label, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import {
-  getErrorMessage,
   useMemoryDocumentEditor,
   type SaveMemoryDocumentRevisionInput,
 } from "@ngriffin_uk/polychat-library-react";
 import type { MemoryDocument } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 
 export function MemoryDocumentEditor({
   document,

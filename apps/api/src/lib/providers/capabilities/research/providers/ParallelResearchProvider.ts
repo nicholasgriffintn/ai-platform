@@ -1,3 +1,5 @@
+import { sleep } from "@ngriffin_uk/polychat-utility-core";
+
 import { gatewayId } from "~/constants/app";
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
@@ -15,7 +17,6 @@ import type {
   ResearchTaskHandle,
 } from "~/types";
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
-import { sleep } from "~/utils/delay";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 type ParallelResultPayload = {

@@ -9,11 +9,10 @@ import type {
   SandboxRunInstructionKind,
   SandboxServiceAction,
 } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import type { ProjectWorkbenchApprovalItem } from "@ngriffin_uk/polychat-utility-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-import { getErrorMessage } from "../errors.js";
 
 interface InstructionInput {
   kind: SandboxRunInstructionKind;

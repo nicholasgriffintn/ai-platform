@@ -4,11 +4,8 @@ import {
   ReplicateModelLoadError,
   ReplicateModelLoading,
 } from "@ngriffin_uk/polychat-component-experiences/media";
-import {
-  useReplicateModels,
-  useExecuteReplicateModel,
-  isAuthenticationError,
-} from "@ngriffin_uk/polychat-library-react";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
+import { useReplicateModels, useExecuteReplicateModel } from "@ngriffin_uk/polychat-library-react";
 import { useNavigate } from "react-router";
 
 import { SignInEmptyState } from "../../Account/SignInEmptyState.js";

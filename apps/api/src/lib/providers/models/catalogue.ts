@@ -1,8 +1,7 @@
-import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+import { agentModelConfig, type ModelConfig } from "@ngriffin_uk/polychat-schemas";
 
 import catalogueData from "~/data-model/models";
 
-import { agentModelConfig } from "./agent-catalogue";
 import {
   modelCatalogueSchema,
   resolveCatalogueProvider,

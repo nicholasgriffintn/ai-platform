@@ -1,3 +1,5 @@
+import { truncateToWords } from "@ngriffin_uk/polychat-utility-core";
+
 import type { SpeechProvider } from "./speech";
 
 const defaultSpeechInputLimit = {
@@ -60,14 +62,4 @@ export function prepareSpeechInput(input: string, provider: SpeechProvider): Pre
       maxWords: limit.maxWords,
     },
   };
-}
-
-function truncateToWords(input: string, maxWords: number): string {
-  const matches = input.match(/\S+\s*/g);
-
-  if (!matches || matches.length <= maxWords) {
-    return input;
-  }
-
-  return matches.slice(0, maxWords).join("").trimEnd();
 }

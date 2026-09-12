@@ -5,6 +5,7 @@ import {
   type NoteFormatResponse,
   type NoteUpdateRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { OutputRecord } from "~/repositories/OutputRepository";
@@ -17,7 +18,6 @@ import { requireOutputRecordAccess } from "~/services/outputs/access";
 import type { IEnv, IUser } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { isRecord } from "~/utils/objects";
 
 import { safeParseJson } from "../../../utils/json";
 

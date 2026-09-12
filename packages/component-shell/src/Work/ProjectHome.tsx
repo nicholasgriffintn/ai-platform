@@ -4,11 +4,11 @@ import {
   ProjectHomeActions,
   ProjectOverviewSkeleton,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useArchiveProject,
   getProjectBasePath,
   getProjectConversationPath,
-  isAuthenticationError,
 } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";

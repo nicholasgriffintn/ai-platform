@@ -5,11 +5,10 @@ import {
   useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
 import type { SavedMessage } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { toast } from "sonner";
-
-import { getErrorMessage } from "../errors.js";
 
 export const SAVED_MESSAGES_QUERY_KEY = "saved-messages";
 

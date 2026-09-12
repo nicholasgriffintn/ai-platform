@@ -9,7 +9,7 @@ import {
   ConfirmationDialog,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
-import { isAuthenticationError } from "@ngriffin_uk/polychat-library-react";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import { SearchX } from "lucide-react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";

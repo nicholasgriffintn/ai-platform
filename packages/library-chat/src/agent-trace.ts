@@ -3,7 +3,7 @@ import {
   authoredSkillProvenanceSchema,
   type AuthoredSkillProvenance,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, truncateText } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message, MessageUsage } from "./conversation-types.js";
 
@@ -53,7 +53,7 @@ function readAuthoredSkillProvenance(
 }
 
 function truncateTraceText(value: string, maxLength = 96): string {
-  return value.length > maxLength ? `${value.slice(0, maxLength - 1).trimEnd()}…` : value;
+  return truncateText(value, maxLength);
 }
 
 function readMessageTime(message: Message | undefined): number | undefined {

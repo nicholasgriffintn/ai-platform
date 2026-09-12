@@ -9,9 +9,9 @@ import {
   type ChatContextSource,
   type ChatContextSummary,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { isRecord } from "~/utils/objects";
 
 const DEFAULT_CONTEXT_WINDOW = 8000;
 const DEFAULT_OUTPUT_RESERVE_RATIO = 0.15;

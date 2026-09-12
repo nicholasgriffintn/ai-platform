@@ -1,6 +1,5 @@
 import type { PolychatRetryOptions } from "../polychat-client";
 
-export { DEFAULT_SANDBOX_MODEL as DEFAULT_MODEL } from "@ngriffin_uk/polychat-schemas";
 export const MAX_COMMANDS = 30;
 export const MAX_AGENT_STEPS = 48;
 export const MAX_PARALLEL_COMMANDS = 4;

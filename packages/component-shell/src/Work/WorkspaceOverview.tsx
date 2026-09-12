@@ -5,11 +5,8 @@ import {
   WorkspaceOverviewSkeleton,
   WorkspaceProjectsSection,
 } from "@ngriffin_uk/polychat-component-workspaces";
-import {
-  useTaskAttention,
-  useDeleteWorkspace,
-  isAuthenticationError,
-} from "@ngriffin_uk/polychat-library-react";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
+import { useTaskAttention, useDeleteWorkspace } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 

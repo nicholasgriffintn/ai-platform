@@ -1,4 +1,5 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
 import { createAsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
@@ -14,7 +15,7 @@ import {
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
-import { isRecord, omitUndefinedValues } from "~/utils/objects";
+import { omitUndefinedValues } from "~/utils/objects";
 import {
   createCommonParameters,
   getToolsForProvider,

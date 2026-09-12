@@ -22,7 +22,6 @@ import {
   useProjectWorkbenchPreferences,
   useProjectWorkbenchPreview,
   useProjectWorkbenchRuns,
-  getErrorMessage,
   deriveProjectWorkbenchControlState,
   deriveProjectWorkbenchPanes,
   deriveProjectWorkbenchPresentation,
@@ -33,6 +32,7 @@ import {
   useDelegations,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Activity } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 

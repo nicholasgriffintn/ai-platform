@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@ngriffin_uk/polychat-component-ui";
-import { useRecipeConnectorAccounts, getErrorMessage } from "@ngriffin_uk/polychat-library-react";
+import { useRecipeConnectorAccounts } from "@ngriffin_uk/polychat-library-react";
 import {
   type AssistantRecipe,
   type RecipeComposioTrigger,
@@ -23,6 +23,7 @@ import {
   getRecipeTriggerConfigurationFields,
   type RecipeTriggerConfigurationValue,
 } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useEffect, useMemo, useState } from "react";
 
 import { useRecipeComposioTriggers } from "./useRecipeComposioTriggers.js";

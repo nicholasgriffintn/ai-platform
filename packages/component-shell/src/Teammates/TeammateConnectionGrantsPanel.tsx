@@ -1,9 +1,10 @@
 import { Button, ButtonLink, Checkbox } from "@ngriffin_uk/polychat-component-ui";
-import { getErrorMessage, useTeammateConnectionGrants } from "@ngriffin_uk/polychat-library-react";
+import { useTeammateConnectionGrants } from "@ngriffin_uk/polychat-library-react";
 import type {
   TeammateConnectionGrant,
   TeammateConnectionGrantListResponse,
 } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 
 type Connection = TeammateConnectionGrantListResponse["connections"][number];

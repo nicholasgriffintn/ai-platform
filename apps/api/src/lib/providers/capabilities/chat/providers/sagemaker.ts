@@ -1,3 +1,4 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AwsClient } from "aws4fetch";
 
 import { trackProviderMetrics } from "~/lib/monitoring";
@@ -11,7 +12,7 @@ import {
   formatTextGenerationPrompt,
   stringifyMessageContent,
 } from "~/utils/messages";
-import { isRecord, omitNullishValues } from "~/utils/objects";
+import { omitNullishValues } from "~/utils/objects";
 import { createTextGenerationParameters } from "~/utils/parameters";
 
 import type { AIProvider } from "./base";

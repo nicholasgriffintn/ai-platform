@@ -2,9 +2,8 @@ import {
   encodeServerSentEvent,
   encodeServerSentEventComment,
   encodeServerSentEventDone,
+  sleep,
 } from "@ngriffin_uk/polychat-utility-core";
-
-import { sleep } from "~/utils/delay";
 
 interface EventEnvelopeLike {
   index: number;

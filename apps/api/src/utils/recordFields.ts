@@ -1,4 +1,4 @@
-import { isRecord } from "./objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export function readRecordField(value: unknown, fieldName: string): unknown {
   if (!isRecord(value)) {

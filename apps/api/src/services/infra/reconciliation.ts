@@ -4,11 +4,11 @@ import {
   priceUsage,
   type UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
 import { getLogger } from "~/utils/logger";
-import { isRecord } from "~/utils/objects";
 import { findNumericFieldDeep } from "~/utils/recordFields";
 
 const logger = getLogger({ prefix: "services/infra/reconciliation" });

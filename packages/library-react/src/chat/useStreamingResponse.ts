@@ -34,6 +34,7 @@ import {
   type ChatRun,
   type ChatRunStatus,
 } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import { toast } from "sonner";
@@ -46,7 +47,6 @@ import { normaliseUsageLimits } from "../chat/usage-limits.js";
 import { GOAL_QUERY_KEY } from "../chat/useGoal.js";
 import { USAGE_QUERY_KEYS } from "../chat/useUsage.js";
 import { updateConversationInChatCaches } from "../conversation-cache.js";
-import { getErrorMessage } from "../errors.js";
 import { toRunMessages } from "../lib/run-messages.js";
 import { useConversationScope } from "../state/conversation-scope.js";
 import { useLoadingActions } from "../state/LoadingContext.js";

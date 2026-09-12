@@ -6,10 +6,10 @@ import {
   type ProjectTask,
   type ProjectTaskInteraction,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { isRecord } from "~/utils/objects";
 
 import { readInteractionMessageData } from "./interaction-messages";
 

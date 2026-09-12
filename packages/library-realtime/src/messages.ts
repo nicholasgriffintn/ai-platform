@@ -44,9 +44,7 @@ const REALTIME_EVENT_LABELS: Record<string, string> = {
   "turn.end": "Speech captured",
 };
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 function getString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim().length > 0 ? value : undefined;

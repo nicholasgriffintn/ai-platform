@@ -4,6 +4,7 @@ import {
   ContentLoadingSkeleton,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useCapabilityCatalog,
   type AppProjectScope,
@@ -12,7 +13,6 @@ import {
   getAppPath,
   getCapabilityLibraryPath,
   isExperienceEnabled,
-  isAuthenticationError,
 } from "@ngriffin_uk/polychat-library-react";
 import { Puzzle } from "lucide-react";
 import { useMemo, useState } from "react";

@@ -1,7 +1,10 @@
+import type {
+  WeatherCondition,
+  WeatherDailyForecast,
+  WeatherHourlyForecast,
+} from "@ngriffin_uk/polychat-library-chat/weather";
 import { Cloud, CloudDrizzle, CloudLightning, CloudRain, CloudSnow, Sun } from "lucide-react";
 import type { ComponentType } from "react";
-
-import type { WeatherCondition, WeatherDailyForecast, WeatherHourlyForecast } from "./weather";
 
 export type WeatherIcon = ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
 

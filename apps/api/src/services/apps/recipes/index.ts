@@ -9,6 +9,7 @@ import {
   type RecipeInstallationUpdateRequest,
   type RecipeConnectorManifest,
   recipeConfigurationSchema,
+  isSupportedCronExpression,
   type RecipeCatalogueSummary,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -17,7 +18,6 @@ import type { TemplateRecord } from "~/repositories/TemplateRepository";
 import { TaskService } from "~/services/tasks/TaskService";
 import { requireTeammateContext } from "~/services/teammates/contexts";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { isSupportedCronExpression } from "~/utils/cron";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 

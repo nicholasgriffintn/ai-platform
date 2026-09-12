@@ -3,9 +3,9 @@ import {
   toProviderChatMessages,
   type NormalisedProviderChatMessage,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "~/types";
-import { isRecord } from "~/utils/objects";
 
 export type ProviderMessage = Message & {
   role: Exclude<Message["role"], "compaction" | "goal">;

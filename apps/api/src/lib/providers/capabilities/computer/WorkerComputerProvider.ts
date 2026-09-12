@@ -2,10 +2,10 @@ import {
   teammateComputerTeachingRecordingSchema,
   type TeammateComputerInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { isRecord } from "~/utils/objects";
 
 import type { ComputerProvider, ComputerResource, ComputerScreenConnection } from "./types";
 

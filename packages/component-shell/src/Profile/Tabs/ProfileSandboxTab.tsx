@@ -1,11 +1,11 @@
 import { SandboxConnectionList } from "@ngriffin_uk/polychat-component-account";
 import { ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useConnectSandboxInstallation,
   useDeleteSandboxConnection,
   useSandboxConnections,
   useSandboxInstallConfig,
-  isAuthenticationError,
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
 import { Plus } from "lucide-react";

@@ -1,10 +1,10 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { StreamingFormatter } from "~/lib/formatter";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { mergeStreamedTokenUsage } from "~/lib/usage/tokenUsage";
 import type { ChatCompletionParameters, Message } from "~/types";
-import { isRecord } from "~/utils/objects";
 import { parseSseBuffer } from "~/utils/streaming";
 
 import type { BackendAiGenerationCaptureInput, BackendAnalyticsEnv } from "./types";

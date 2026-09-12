@@ -105,9 +105,7 @@ export const compactionStatusLabels = {
   manualPending: "Compacting context",
 } as const;
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 function isObjectOrArray(value: unknown): value is unknown[] | Record<string, unknown> {
   return Array.isArray(value) || isRecord(value);

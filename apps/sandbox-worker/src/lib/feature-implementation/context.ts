@@ -1,3 +1,5 @@
+import { isRecord, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+
 import { quoteForShell } from "../commands";
 import { safeParseJson } from "../json";
 import {
@@ -18,12 +20,10 @@ import type {
 import {
   extractRelativePath,
   formatStoryLabel,
-  isObjectRecord,
   normaliseRepoRelativePath,
   parsePriority,
   parsePositiveInteger,
   toPrioritySortValue,
-  truncateForModel,
 } from "./utils";
 
 const PRD_FILE_PATH_PATTERNS: RegExp[] = [
@@ -127,7 +127,7 @@ export function parseRalphPrdContext(path: string, rawJson: string): RalphPrdCon
     return null;
   }
 
-  if (!isObjectRecord(parsed)) {
+  if (!isRecord(parsed)) {
     return null;
   }
 
@@ -141,7 +141,7 @@ export function parseRalphPrdContext(path: string, rawJson: string): RalphPrdCon
   const userStoriesRaw = Array.isArray(parsed.userStories) ? parsed.userStories : [];
 
   const userStories = userStoriesRaw.flatMap((story, index) => {
-    if (!isObjectRecord(story)) {
+    if (!isRecord(story)) {
       return [];
     }
 

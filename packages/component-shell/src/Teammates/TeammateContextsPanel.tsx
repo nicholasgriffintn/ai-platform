@@ -2,10 +2,10 @@ import { Button, ButtonLink, Card } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   createTeammateConversationActionPath,
-  getErrorMessage,
   useTeammateContexts,
 } from "@ngriffin_uk/polychat-library-react";
 import type { TeammateContextScope } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Archive, ExternalLink, Pause, Play } from "lucide-react";
 
 import { TeammateComputerPanel } from "./TeammateComputerPanel.js";

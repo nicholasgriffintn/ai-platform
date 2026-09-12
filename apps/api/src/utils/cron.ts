@@ -1,5 +1,3 @@
-export { isSupportedCronExpression } from "@ngriffin_uk/polychat-schemas";
-
 function floorToUtcMinute(date: Date): Date {
   const minute = new Date(date);
 

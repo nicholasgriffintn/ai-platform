@@ -4,8 +4,8 @@ import {
   WorkAccessEmptyState,
   WorkspaceCardGrid,
 } from "@ngriffin_uk/polychat-component-workspaces";
-import { useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { useTaskAttention, isAuthenticationError } from "@ngriffin_uk/polychat-library-react";
+import { isAuthenticationError, useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { useTaskAttention } from "@ngriffin_uk/polychat-library-react";
 import { BriefcaseBusiness, Plus } from "lucide-react";
 import { useState } from "react";
 

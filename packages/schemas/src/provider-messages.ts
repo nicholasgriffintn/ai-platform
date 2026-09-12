@@ -49,9 +49,7 @@ export interface NormalisedProviderChatMessage extends Record<string, unknown> {
   parts?: MessagePart[];
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 function isProviderChatMessageRole(value: unknown): value is ProviderChatMessageRole {
   return (

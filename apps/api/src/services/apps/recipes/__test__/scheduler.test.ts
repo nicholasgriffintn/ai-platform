@@ -32,7 +32,7 @@ vi.mock("~/services/tasks/TaskService", () => ({
   }),
 }));
 
-import { isSupportedCronExpression } from "~/utils/cron";
+import { isSupportedCronExpression } from "@ngriffin_uk/polychat-schemas";
 
 import {
   doesCronMatchDate,

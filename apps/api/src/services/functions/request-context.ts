@@ -1,7 +1,7 @@
 import { parseChatRequestOptions } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { IRequest } from "~/types";
-import { isRecord } from "~/utils/objects";
 
 const RECIPE_CONNECTOR_TOOL_NAME = "use_recipe_connector";
 

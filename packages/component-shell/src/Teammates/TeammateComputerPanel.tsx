@@ -6,7 +6,8 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@ngriffin_uk/polychat-component-ui";
-import { getErrorMessage, useTeammateComputer } from "@ngriffin_uk/polychat-library-react";
+import { useTeammateComputer } from "@ngriffin_uk/polychat-library-react";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { MonitorUp } from "lucide-react";
 import { useState } from "react";
 

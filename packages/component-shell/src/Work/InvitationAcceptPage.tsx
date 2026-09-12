@@ -1,8 +1,7 @@
 import { InvitationAcceptView } from "@ngriffin_uk/polychat-component-workspaces";
-import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { isAuthenticationError, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useAcceptWorkspaceInvitation,
-  isAuthenticationError,
   clearWorkspaceInvitationToken,
   consumeWorkspaceInvitationToken,
   useUIStore,

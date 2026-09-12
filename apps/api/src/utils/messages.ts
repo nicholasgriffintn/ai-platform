@@ -1,8 +1,9 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import { MessageFormatter } from "~/lib/formatter";
 import type { CreateChatCompletionsResponse, Message, MessageContent } from "~/types";
 
 import { AssistantError, ErrorType } from "./errors";
-import { isRecord } from "./objects";
 import { isPashiQrPngUrl } from "./qr";
 
 export function formatMessages(

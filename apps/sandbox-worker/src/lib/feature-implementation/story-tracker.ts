@@ -1,6 +1,8 @@
+import { escapeRegExp, isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import { safeParseJson } from "../json";
 import type { RalphPrdContext, RalphPrdUserStory, SandboxFileInstance } from "./types";
-import { escapeRegExp, formatStoryLabel, isObjectRecord, toPrioritySortValue } from "./utils";
+import { formatStoryLabel, toPrioritySortValue } from "./utils";
 
 function formatIoError(error: unknown): string {
   if (error instanceof Error && error.message.trim()) {
@@ -144,7 +146,7 @@ export async function updatePrdStoryPassStatus(params: {
     };
   }
 
-  if (!isObjectRecord(parsedPrd) || !Array.isArray(parsedPrd.userStories)) {
+  if (!isRecord(parsedPrd) || !Array.isArray(parsedPrd.userStories)) {
     return {
       updated: false,
       reason: "prd.json does not contain a valid userStories array",
@@ -153,7 +155,7 @@ export async function updatePrdStoryPassStatus(params: {
 
   const rawStory = parsedPrd.userStories[story.index];
 
-  if (!isObjectRecord(rawStory)) {
+  if (!isRecord(rawStory)) {
     return {
       updated: false,
       reason: "Selected story index is missing from prd.json",

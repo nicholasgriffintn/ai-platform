@@ -5,6 +5,7 @@ import {
   type MetaNavigationTarget,
   type MetaAssistantUiContext,
 } from "@ngriffin_uk/polychat-schemas";
+import { truncateText as truncate } from "@ngriffin_uk/polychat-utility-core";
 import type z from "zod/v4";
 
 import { isMetaConversationType } from "~/lib/chat/policy/meta-assistant";
@@ -145,10 +146,6 @@ function extractMessageText(row: Record<string, unknown>): string {
   }
 
   return "";
-}
-
-function truncate(text: string, limit: number): string {
-  return text.length > limit ? `${text.slice(0, limit)}…` : text;
 }
 
 async function resolveNavigationTarget(

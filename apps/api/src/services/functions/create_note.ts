@@ -1,6 +1,7 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import { insertEmbedding } from "~/services/apps/embeddings/insert";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { isRecord } from "~/utils/objects";
 import { sanitiseInput } from "~/utils/sanitise";
 
 import type { ApiToolDefinition } from "../../types/functions";

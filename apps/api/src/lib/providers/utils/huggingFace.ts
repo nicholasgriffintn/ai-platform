@@ -1,10 +1,11 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { FetchAIResponseOptions } from "~/lib/providers/lib/fetch";
 import type { ChatCompletionParameters } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
-import { isRecord, omitUndefinedValues } from "~/utils/objects";
+import { omitUndefinedValues } from "~/utils/objects";
 import { readOptionBag, readRecordOption } from "~/utils/options";
 
 export type HuggingFaceLoadingError = {

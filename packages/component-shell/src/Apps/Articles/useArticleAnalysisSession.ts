@@ -3,9 +3,9 @@ import {
   useExtractArticleContent,
   useGenerateReport,
   useSummariseArticle,
-  getErrorMessage,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ArticleInput } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback, useMemo, useState } from "react";
 
 export function useArticleAnalysisSession(projectId?: string) {

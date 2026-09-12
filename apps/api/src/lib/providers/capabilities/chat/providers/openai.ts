@@ -1,3 +1,5 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import { gatewayId } from "~/constants/app";
 import {
   createAsyncInvocationMetadata,
@@ -15,7 +17,6 @@ import { resolvePrivateAssetUrls } from "~/lib/providers/utils/privateAssets";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters, MessageContent } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { isRecord } from "~/utils/objects";
 import {
   createCommonParameters,
   getToolsForProvider,

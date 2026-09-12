@@ -9,6 +9,7 @@ import {
   OutputRevisionReview,
   ShareLinkList,
 } from "@ngriffin_uk/polychat-component-workspaces";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useCreateOutputShare,
   useOutput,
@@ -21,7 +22,6 @@ import {
   useRestoreOutputRevision,
   useSaveDocumentRevision,
   useRunnableTool,
-  isAuthenticationError,
 } from "@ngriffin_uk/polychat-library-react";
 import {
   DOCUMENT_OUTPUT_KIND,

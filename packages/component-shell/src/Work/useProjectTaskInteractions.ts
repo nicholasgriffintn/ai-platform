@@ -1,14 +1,11 @@
 import type { ThreadModeConfig } from "@ngriffin_uk/polychat-component-conversation";
 import { CHATS_QUERY_KEY } from "@ngriffin_uk/polychat-library-client";
-import {
-  getErrorMessage,
-  useProjectTask,
-  useProjectTasks,
-} from "@ngriffin_uk/polychat-library-react";
+import { useProjectTask, useProjectTasks } from "@ngriffin_uk/polychat-library-react";
 import {
   answerUserQuestionsSchema,
   resolveProjectTaskToolApprovalSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { toast } from "sonner";

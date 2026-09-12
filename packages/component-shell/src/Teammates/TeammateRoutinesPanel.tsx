@@ -1,9 +1,9 @@
 import { Checkbox } from "@ngriffin_uk/polychat-component-ui";
 import {
-  getErrorMessage,
   useRecipeInstallations,
   useUpdateRecipeInstallation,
 } from "@ngriffin_uk/polychat-library-react";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 
 export function TeammateRoutinesPanel({
   contextId,

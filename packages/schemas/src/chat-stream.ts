@@ -1,3 +1,4 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 import { normaliseMessageParts, type MessagePart } from "./message-part-utils.js";
@@ -140,10 +141,6 @@ interface PendingToolCall {
   name: string;
   parameterFragments: string[];
   parameters: Record<string, unknown>;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function readStringArrayOrNull(value: unknown): string[] | null | undefined {

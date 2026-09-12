@@ -795,6 +795,9 @@ importers:
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../../packages/schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../../packages/utility-core
       zod:
         specifier: 'catalog:'
         version: 4.5.4
@@ -1579,6 +1582,10 @@ importers:
         version: 4.3.3
 
   packages/library-agent-core:
+    dependencies:
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -1859,6 +1866,9 @@ importers:
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -1917,6 +1927,9 @@ importers:
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^

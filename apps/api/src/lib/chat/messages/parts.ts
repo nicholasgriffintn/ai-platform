@@ -3,9 +3,10 @@ import {
   isCompactionMarkerMessage as isSchemaCompactionMarkerMessage,
   normaliseMessageParts as normaliseSchemaMessageParts,
 } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message, MessageContent, MessagePart } from "~/types";
-import { isRecord, isObjectOrArray } from "~/utils/objects";
+import { isObjectOrArray } from "~/utils/objects";
 
 type UnknownRecord = Record<string, unknown>;
 

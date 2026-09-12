@@ -1,7 +1,7 @@
 import { hostedToolUsageUnit, type UsageUnit } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { MessagePart } from "~/types";
-import { isRecord } from "~/utils/objects";
 import { readNumericField, readStringField } from "~/utils/recordFields";
 
 import { billableTokenQuantities } from "./billableUnits";

@@ -1,4 +1,5 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { gatewayId } from "~/constants/app";
 import { trackProviderMetrics } from "~/lib/monitoring";
@@ -11,7 +12,6 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 import { getLogger } from "~/utils/logger";
 import { buildMultipartInput, type MultipartInputFile } from "~/utils/multipartInput";
-import { isRecord } from "~/utils/objects";
 import {
   createCommonParameters,
   getToolsForProvider,

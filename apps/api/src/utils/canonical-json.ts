@@ -1,4 +1,4 @@
-import { isRecord } from "./objects";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export function canonicalJson(value: unknown): string {
   if (value === null || typeof value === "string" || typeof value === "boolean") {

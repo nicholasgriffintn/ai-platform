@@ -1,7 +1,9 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getPrivateFileResourceFromUrl } from "~/lib/storage/resource-urls";
 import type { IEnv, IUser } from "~/types";
-import { getBooleanRecordValue, getStringRecordValue, isRecord } from "~/utils/objects";
+import { getBooleanRecordValue, getStringRecordValue } from "~/utils/objects";
 import { isPashiQrPngUrl } from "~/utils/qr";
 
 import { providerLibrary } from "../../library";

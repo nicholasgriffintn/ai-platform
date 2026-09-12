@@ -1,4 +1,4 @@
-import { getErrorMessage, truncateText } from "@ngriffin_uk/polychat-library-react";
+import { getErrorMessage, truncateText } from "@ngriffin_uk/polychat-utility-core";
 
 const MESSAGE_LIMIT = 400;
 const REFUSED = "The desktop bridge refused this run.";

@@ -4,6 +4,7 @@ export * from "./collections.js";
 export * from "./colors.js";
 export * from "./crypto.js";
 export * from "./dates.js";
+export * from "./delay.js";
 export * from "./errors.js";
 export * from "./ids.js";
 export * from "./markdown.js";

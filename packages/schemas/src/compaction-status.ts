@@ -28,9 +28,7 @@ export interface NormalisedCompactionStatusMessage {
   usage?: Record<string, unknown>;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 function isMessageContent(value: unknown): value is CompactionStatusMessageContent {
   return typeof value === "string" || Array.isArray(value) || isRecord(value);

@@ -1,9 +1,6 @@
 import { ReplicatePredictionView } from "@ngriffin_uk/polychat-component-experiences/media";
-import {
-  useReplicatePrediction,
-  isAuthenticationError,
-  useUIStore,
-} from "@ngriffin_uk/polychat-library-react";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
+import { useReplicatePrediction, useUIStore } from "@ngriffin_uk/polychat-library-react";
 
 interface ReplicatePredictionDetailProps {
   predictionId: string;

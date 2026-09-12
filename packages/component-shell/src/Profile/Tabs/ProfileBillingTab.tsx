@@ -6,6 +6,7 @@ import {
   UsageSummaryCard,
 } from "@ngriffin_uk/polychat-component-account";
 import { EmptyState, SignInEmptyState } from "@ngriffin_uk/polychat-component-ui";
+import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useBillingPortalAvailability,
   useCancelSubscription,
@@ -18,7 +19,6 @@ import {
   useUsageBalance,
   useUsageEvents,
   useUsageSummary,
-  isAuthenticationError,
   flattenUsageEventPages,
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";

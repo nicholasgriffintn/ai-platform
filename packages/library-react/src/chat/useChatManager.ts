@@ -15,7 +15,7 @@ import {
 import { EMPTY_MODEL_CONFIG } from "@ngriffin_uk/polychat-schemas";
 import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
 import { compactionStatusLabels } from "@ngriffin_uk/polychat-schemas/compaction-status";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
@@ -25,7 +25,6 @@ import {
   isPlaceholderConversationTitle,
 } from "../chat/title-source.js";
 import { upsertConversationInChatCaches } from "../conversation-cache.js";
-import { getErrorMessage } from "../errors.js";
 import { useConversationScope } from "../state/conversation-scope.js";
 import { useLoadingActions } from "../state/LoadingContext.js";
 import { useGenerateTitle } from "./useChat.js";

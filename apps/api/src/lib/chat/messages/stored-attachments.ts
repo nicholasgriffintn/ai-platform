@@ -1,5 +1,6 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 import type { Message, MessageContent } from "~/types";
-import { isRecord } from "~/utils/objects";
 
 function toAttachmentContent(value: unknown): MessageContent | null {
   if (!isRecord(value) || typeof value.type !== "string") {

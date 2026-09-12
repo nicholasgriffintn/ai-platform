@@ -1,3 +1,5 @@
+import { sleep } from "@ngriffin_uk/polychat-utility-core";
+
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
@@ -11,7 +13,6 @@ import type {
   ResearchResultError,
   ResearchTaskHandle,
 } from "~/types";
-import { sleep } from "~/utils/delay";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 type ExaResultPayload = {

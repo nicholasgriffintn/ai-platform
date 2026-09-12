@@ -1,8 +1,7 @@
-import { titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
 
 import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
-import { isRecord } from "~/utils/objects";
 
 import type { ComposioAuthConfigDefinition, ConnectorProviderConfig } from "..";
 

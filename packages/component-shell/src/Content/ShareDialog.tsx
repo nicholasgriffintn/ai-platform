@@ -4,8 +4,8 @@ import {
   type ShareableContentType,
 } from "@ngriffin_uk/polychat-component-content";
 import type { ButtonCollapse } from "@ngriffin_uk/polychat-component-ui";
-import { useCopyToClipboard } from "@ngriffin_uk/polychat-library-react";
 import { capitaliseFirst } from "@ngriffin_uk/polychat-utility-core";
+import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 

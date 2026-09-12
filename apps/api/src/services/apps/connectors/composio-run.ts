@@ -1,4 +1,5 @@
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConnectorProviderConfig } from "~/lib/providers/capabilities/connectors";
@@ -13,7 +14,6 @@ import {
 import type { ComposioConnectorSessionRecord } from "~/repositories/ComposioConnectorSessionRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
-import { isRecord } from "~/utils/objects";
 
 import {
   getSelectedRecipeConnectorAccountId,

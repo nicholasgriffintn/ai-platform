@@ -39,9 +39,7 @@ export class ApiError extends Error {
   }
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 function extractApiErrorCode(parsed: unknown): string | undefined {
   if (!isRecord(parsed)) {
