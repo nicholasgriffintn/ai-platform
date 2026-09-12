@@ -162,7 +162,7 @@ export const TokenizedComposerInput = forwardRef<
       <div
         role="presentation"
         className={cn(
-          "relative min-h-[36px] min-w-0 flex-1 cursor-text",
+          "relative flex min-h-[36px] w-full min-w-0 flex-1 cursor-text flex-col justify-center self-stretch",
           disabled && "pointer-events-none opacity-60",
           className,
         )}
@@ -187,7 +187,7 @@ export const TokenizedComposerInput = forwardRef<
           aria-disabled={disabled}
           contentEditable={!disabled}
           suppressContentEditableWarning
-          className="max-h-[min(18rem,40dvh)] min-h-[36px] w-full overflow-y-auto bg-transparent text-base leading-6 break-words whitespace-pre-wrap outline-none"
+          className="max-h-[min(18rem,40dvh)] min-h-[36px] w-full flex-1 overflow-y-auto bg-transparent text-base leading-6 break-words whitespace-pre-wrap outline-none"
           onInput={(event) =>
             emitCurrentState(
               event.nativeEvent instanceof InputEvent && event.nativeEvent.isComposing,

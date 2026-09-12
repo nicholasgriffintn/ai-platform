@@ -36,14 +36,30 @@ export function ComposerShell({
         {fileInput}
         <div className="relative">
           {suggestions}
-          <div className="flex items-start">
+          <div className="flex items-stretch">
             {leadingControls && (
               <div className="flex min-h-[60px] min-w-0 flex-grow items-center px-4 py-3">
                 {leadingControls}
               </div>
             )}
             {input && (
-              <div data-composer-input-row className="flex min-w-0 flex-grow px-4 py-3">
+              <div
+                data-composer-input-row
+                className="flex min-w-0 flex-1 cursor-text px-4 pt-3 pb-5"
+                onMouseDown={(event) => {
+                  const target = event.target as HTMLElement | null;
+
+                  if (target?.closest("button, a, input, [contenteditable]")) {
+                    return;
+                  }
+
+                  event.preventDefault();
+                  const row = event.currentTarget as HTMLElement;
+                  const editable = row.querySelector<HTMLElement>("[contenteditable]");
+
+                  editable?.focus();
+                }}
+              >
                 {input}
               </div>
             )}
@@ -53,13 +69,15 @@ export function ComposerShell({
               </div>
             )}
             {actions && (
-              <div className="flex flex-shrink-0 items-center gap-1 pt-3 pr-3">{actions}</div>
+              <div className="flex flex-shrink-0 items-start pt-3 pr-3">
+                <div className="flex items-center gap-1">{actions}</div>
+              </div>
             )}
           </div>
         </div>
 
         {(isGeneratingAudio || footerStart || footerEnd) && (
-          <div className="mt-2 border-t border-border px-3 pt-3 pb-3">
+          <div className="border-t border-border px-3 pt-3 pb-3">
             {isGeneratingAudio && (
               <output
                 className="mb-3 flex items-center gap-2 text-xs text-muted-foreground"
