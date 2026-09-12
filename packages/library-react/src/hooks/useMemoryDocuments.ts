@@ -7,6 +7,7 @@ import {
   updateConversationBrief,
   ensureConversationBrief,
   fetchConversationBrief,
+  useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
   CreateMemoryDocumentInput,
@@ -22,10 +23,11 @@ export const conversationBriefQueryKey = (conversationId: string) =>
 
 export function useConversationBrief(conversationId: string | undefined) {
   const queryClient = useQueryClient();
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const query = useQuery({
     queryKey: conversationBriefQueryKey(conversationId ?? ""),
     queryFn: () => fetchConversationBrief(conversationId ?? ""),
-    enabled: Boolean(conversationId),
+    enabled: Boolean(conversationId) && isAuthenticated,
   });
   const ensure = useMutation({
     mutationFn: () => ensureConversationBrief(conversationId ?? ""),

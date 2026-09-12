@@ -2,6 +2,7 @@ import {
   listSavedMessages,
   saveMessage,
   unsaveMessage,
+  useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
 import type { SavedMessage } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -14,10 +15,11 @@ export const SAVED_MESSAGES_QUERY_KEY = "saved-messages";
 
 export function useSavedMessages(enabled = true) {
   const queryClient = useQueryClient();
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const query = useQuery({
     queryKey: [SAVED_MESSAGES_QUERY_KEY],
     queryFn: async (): Promise<SavedMessage[]> => (await listSavedMessages()).messages,
-    enabled,
+    enabled: enabled && isAuthenticated,
     staleTime: 1000 * 30,
   });
   const messages: SavedMessage[] = query.data ?? [];
