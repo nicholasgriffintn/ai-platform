@@ -5,52 +5,53 @@ test.describe("Recovery and unavailable states", () => {
   test.describe("provider failure", () => {
     test.use({ persona: "pro" });
 
-    test("reports one durable failure and accepts the next message", async ({
-      appPage,
-      homePage,
-      page,
-      polychatApi,
-    }) => {
-      await homePage.navigate("/chat");
-      await homePage.selectModel("GPT OSS 120B");
-      const request = await homePage.sendMessageAndRequireCompletion("Trigger an error");
-      const completionId = homePage.completionIdFromRequest(request);
+    test(
+      "reports one durable failure and accepts the next message",
+      { tag: "@release" },
+      async ({ appPage, homePage, page, polychatApi }) => {
+        await homePage.navigate("/chat");
+        await homePage.selectModel("GPT OSS 120B");
+        const request = await homePage.sendMessageAndRequireCompletion("Trigger an error");
+        const completionId = homePage.completionIdFromRequest(request);
 
-      await expect(page.getByText("Task failed", { exact: true })).toBeVisible();
-      await expect(page.getByText(/Deterministic provider failure/)).toBeVisible();
-      await captureVisualSnapshots(page, "release-resilience-provider-failure", {
-        ...DEFAULT_VISUAL_CHECKPOINTS,
-        fullPage: false,
-      });
-      await expect(appPage.notification(/Deterministic provider failure/)).toHaveCount(0);
-      const stored = await polychatApi.getConversation(completionId);
+        await expect(page.getByText("Task failed", { exact: true })).toBeVisible();
+        await expect(page.getByText(/Deterministic provider failure/)).toBeVisible();
+        await captureVisualSnapshots(page, "release-resilience-provider-failure", {
+          ...DEFAULT_VISUAL_CHECKPOINTS,
+          fullPage: false,
+        });
+        await expect(appPage.notification(/Deterministic provider failure/)).toHaveCount(0);
+        const stored = await polychatApi.getConversation(completionId);
 
-      expect(stored.messages?.filter((message) => message.role === "user")).toHaveLength(1);
-      expect(request.messages).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: stored.messages?.find((message) => message.role === "user")?.id,
-          }),
-        ]),
-      );
-      expect(
-        await page
-          .locator('[data-role="user"]')
-          .evaluateAll((messages) => messages.map((message) => message.getAttribute("data-id"))),
-      ).toEqual(stored.messages?.filter((message) => message.role === "user").map(({ id }) => id));
-      await expect(page.locator('[data-role="user"]')).toHaveText(["Trigger an error"]);
-      await expect(homePage.chatInput).toBeEditable();
+        expect(stored.messages?.filter((message) => message.role === "user")).toHaveLength(1);
+        expect(request.messages).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: stored.messages?.find((message) => message.role === "user")?.id,
+            }),
+          ]),
+        );
+        expect(
+          await page
+            .locator('[data-role="user"]')
+            .evaluateAll((messages) => messages.map((message) => message.getAttribute("data-id"))),
+        ).toEqual(
+          stored.messages?.filter((message) => message.role === "user").map(({ id }) => id),
+        );
+        await expect(page.locator('[data-role="user"]')).toHaveText(["Trigger an error"]);
+        await expect(homePage.chatInput).toBeEditable();
 
-      await page.reload();
-      await expect(page.locator('[data-role="user"]')).toHaveText(["Trigger an error"]);
-      await expect(page.getByText("Task failed", { exact: true })).toBeVisible();
+        await page.reload();
+        await expect(page.locator('[data-role="user"]')).toHaveText(["Trigger an error"]);
+        await expect(page.getByText("Task failed", { exact: true })).toBeVisible();
 
-      const previousCount = await homePage.getAssistantMessageCount();
+        const previousCount = await homePage.getAssistantMessageCount();
 
-      await homePage.sendMessage("Recover after the provider error");
-      await homePage.waitForChatResponse(previousCount);
-      await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
-    });
+        await homePage.sendMessage("Recover after the provider error");
+        await homePage.waitForChatResponse(previousCount);
+        await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+      },
+    );
   });
 
   test.describe("shared links", () => {

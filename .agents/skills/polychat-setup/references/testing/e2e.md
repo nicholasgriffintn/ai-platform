@@ -4,7 +4,15 @@ Use Playwright to exercise the real web app, API and sandbox Worker together wit
 
 Mock only outbound third-party services, never Polychat routes. Unexpected external calls fail the test. Use the existing fixtures, including `test.use({ billing })` and `billingState`, for per-identity credit state. Disable external telemetry and captcha in the E2E build.
 
-## Preserve release journeys
+## Keep the release gate small
+
+The full regression suite repeats persona, provider, layout and sandbox scenarios. Run `pnpm test:e2e:release` for the 19 core journeys tagged `@release`; reuse these tests in the full suite instead of copying their assertions into a separate release spec.
+
+Cover logged-out, Free and Pro chat with reload persistence and Work entitlement in the three smoke journeys. Add passkey sign-in, exhausted credits and checkout, image/code/audio attachments, Live cleanup, stream and provider recovery, sharing and branching, workspace creation and membership, durable project tasks, document editing/export/restoration, mobile navigation and one sandbox edit with persisted proof and outsider access denial.
+
+Keep additional personas, formats, providers, configuration permutations, visual audits and long-running sandbox expiry/delivery/recovery cases in `pnpm test:e2e`. Add a release tag only when a core failure is not already caught by an existing journey. Keep the packaged desktop's three startup, sign-in control and network-boundary checks in its native build workflow.
+
+## Preserve regression journeys
 
 | Surface             | Behaviour to preserve                                                                  |
 | ------------------- | -------------------------------------------------------------------------------------- |
@@ -26,6 +34,7 @@ Use containers when development servers are already running. The runner snapshot
 
 ```sh
 pnpm test:e2e:container apps/app/tests/e2e/features/machine-runs.spec.ts
+pnpm test:e2e:container --grep @release
 POLYCHAT_E2E_LIVE_RUNTIMES=1 pnpm test:e2e:container apps/app/tests/e2e/features/machine-models.spec.ts
 ```
 
@@ -39,8 +48,10 @@ pnpm build:e2e
 pnpm test:e2e:release
 ```
 
-Use `pnpm test:e2e:smoke` for the compact logged-out, Free and Pro app/API journeys, or `pnpm test:e2e <spec-path>` for a focused change. `playwright.config.ts` owns runtime startup; do not start alternate servers or reuse a live development database. Root `release:check` is broad release validation, not the default feedback loop.
+Use `pnpm test:e2e:smoke` for the three logged-out, Free and Pro app/API journeys, or `pnpm test:e2e <spec-path>` for a focused change. CI and root `release:check` run the same tagged release suite. `playwright.config.ts` owns runtime startup; do not start alternate servers or reuse a live development database.
 
-Use `pnpm build:e2e:sandbox` to rebuild only the container fixture. Keep sandbox commands, orchestration, coordinator state, policy checks and Workbench reads real; mock GitHub and model providers at their outbound boundaries. Do not connect a live repository or grant external delivery authority for these tests.
+Release validation disables visual uploads and viewport/theme screenshot matrices. Run `pnpm test:e2e:visual` with the visual service configured for the full regression suite and visual comparisons; use `pnpm exec pvc status` to check review status. Functional release validation does not wait on visual review.
+
+Use `pnpm build:e2e:sandbox` to prepare the networking sidecar and rebuild the container fixture. Keep the sidecar image in `support/docker-engine.mjs` aligned with the installed Miniflare version; the build and runtime share that pin. Keep sandbox commands, orchestration, coordinator state, policy checks and Workbench reads real; mock GitHub and model providers at their outbound boundaries. Do not connect a live repository or grant external delivery authority for these tests.
 
 Route opaque `*.localhost` preview origins on the existing API port to the real sandbox gateway. Bind sandbox backups to the API's private assets bucket, matching deployment. Give each runtime a unique sandbox Worker name and remove its container and proxy resources during teardown.

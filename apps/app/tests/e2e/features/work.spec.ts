@@ -2,6 +2,7 @@ import { PolychatApi } from "../fixtures/polychat-api";
 import { expect, provisionPersonaSession, test } from "../fixtures/polychat-test";
 import { createSilentWavFixture } from "../fixtures/test-data";
 import { WorkPage } from "../page-objects";
+import { expectDropdownValue } from "../support/dropdown";
 import { captureVisualSnapshots, DEFAULT_VISUAL_CHECKPOINTS } from "../support/visual-cloud";
 
 test.describe("Work experience", () => {
@@ -592,10 +593,13 @@ test.describe("Work experience", () => {
       ).toBeVisible();
       await workPage.setProjectRoutingPreference("low");
       await workPage.reload();
-      await expect(workPage.projectRoutingPreference()).toHaveValue("low");
+      await expectDropdownValue(workPage.projectRoutingPreference(), /^Low —/);
       await workPage.setProjectRoutingPreference("");
       await workPage.reload();
-      await expect(workPage.projectRoutingPreference()).toHaveValue("");
+      await expectDropdownValue(
+        workPage.projectRoutingPreference(),
+        "Medium — the account default",
+      );
       await captureVisualSnapshots(page, "release-work-project-config", {
         ...DEFAULT_VISUAL_CHECKPOINTS,
         viewports: [{ name: "desktop", width: 1280, height: 720 }],
@@ -608,145 +612,145 @@ test.describe("Work experience", () => {
       ).toHaveCount(0);
     });
 
-    test("accepts an invitation and manages the resulting workspace member", async ({
-      page,
-      browser,
-      homePage,
-      polychatApi,
-      workPage,
-    }, testInfo) => {
-      const invitee = await provisionPersonaSession(
-        "pro",
-        `${testInfo.testId}:invitee:${testInfo.retry}`,
-      );
+    test(
+      "accepts an invitation and manages the resulting workspace member",
+      { tag: "@release" },
+      async ({ page, browser, homePage, polychatApi, workPage }, testInfo) => {
+        const invitee = await provisionPersonaSession(
+          "pro",
+          `${testInfo.testId}:invitee:${testInfo.retry}`,
+        );
 
-      await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
-      const projectId = workPage.currentProjectId();
-      const workspaceId = workPage.currentWorkspaceId();
-      const projectPath = new URL(page.url()).pathname;
-      const projectSettingsPath = `${projectPath}/settings`;
+        await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
+        const projectId = workPage.currentProjectId();
+        const workspaceId = workPage.currentWorkspaceId();
+        const projectPath = new URL(page.url()).pathname;
+        const projectSettingsPath = `${projectPath}/settings`;
 
-      await workPage.openNewProjectConversation();
-      await homePage.selectModel("GPT OSS 120B");
-      const conversationRequest = await homePage.sendMessageAndRequireCompletion(
-        "A project reply saved only by its owner",
-      );
+        await workPage.openNewProjectConversation();
+        await homePage.selectModel("GPT OSS 120B");
+        const conversationRequest = await homePage.sendMessageAndRequireCompletion(
+          "A project reply saved only by its owner",
+        );
 
-      await homePage.waitForChatResponse(0);
-      const conversationId = homePage.completionIdFromRequest(conversationRequest);
-      const messageId = await homePage.getLatestAssistantMessage().getAttribute("data-id");
+        await homePage.waitForChatResponse(0);
+        const conversationId = homePage.completionIdFromRequest(conversationRequest);
+        const messageId = await homePage.getLatestAssistantMessage().getAttribute("data-id");
 
-      if (!messageId) {
-        throw new Error("Project reply has no message id");
-      }
+        if (!messageId) {
+          throw new Error("Project reply has no message id");
+        }
 
-      expect(await polychatApi.saveMessageStatus(conversationId, messageId)).toBe(200);
-      await workPage.navigate(projectPath);
+        expect(await polychatApi.saveMessageStatus(conversationId, messageId)).toBe(200);
+        await workPage.navigate(projectPath);
 
-      await workPage.setProjectRoutingPreference("low");
-      const memberSkill = await polychatApi.createProjectSkill(
-        projectId,
-        "member-visible-skill",
-        "Use the stable member-visible instructions.",
-      );
-      const memberSkillHistory = await polychatApi.getProjectSkillHistory(
-        projectId,
-        memberSkill.name,
-      );
-      const memberSkillRevision = memberSkillHistory.revisions.at(-1);
+        await workPage.setProjectRoutingPreference("low");
+        const memberSkill = await polychatApi.createProjectSkill(
+          projectId,
+          "member-visible-skill",
+          "Use the stable member-visible instructions.",
+        );
+        const memberSkillHistory = await polychatApi.getProjectSkillHistory(
+          projectId,
+          memberSkill.name,
+        );
+        const memberSkillRevision = memberSkillHistory.revisions.at(-1);
 
-      if (!memberSkillRevision) {
-        throw new Error("Created project skill has no initial revision");
-      }
+        if (!memberSkillRevision) {
+          throw new Error("Created project skill has no initial revision");
+        }
 
-      await workPage.openProjectSurface("People");
-      const inviteUrl = await workPage.createMemberInvitation(invitee.email);
+        await workPage.openProjectSurface("People");
+        const inviteUrl = await workPage.createMemberInvitation(invitee.email);
 
-      const inviteeContext = await browser.newContext();
-      const outsider = await provisionPersonaSession(
-        "pro",
-        `${testInfo.testId}:outsider:${testInfo.retry}`,
-      );
-      const outsiderContext = await browser.newContext();
+        const inviteeContext = await browser.newContext();
+        const outsider = await provisionPersonaSession(
+          "pro",
+          `${testInfo.testId}:outsider:${testInfo.retry}`,
+        );
+        const outsiderContext = await browser.newContext();
 
-      try {
-        await inviteeContext.addCookies([
-          {
-            name: "session",
-            value: invitee.sessionToken,
-            domain: "localhost",
-            path: "/",
-            httpOnly: true,
-            sameSite: "Lax",
-            secure: false,
-          },
-        ]);
-        await outsiderContext.addCookies([
-          {
-            name: "session",
-            value: outsider.sessionToken,
-            domain: "localhost",
-            path: "/",
-            httpOnly: true,
-            sameSite: "Lax",
-            secure: false,
-          },
-        ]);
-        const inviteeWorkPage = new WorkPage(await inviteeContext.newPage());
+        try {
+          await inviteeContext.addCookies([
+            {
+              name: "session",
+              value: invitee.sessionToken,
+              domain: "localhost",
+              path: "/",
+              httpOnly: true,
+              sameSite: "Lax",
+              secure: false,
+            },
+          ]);
+          await outsiderContext.addCookies([
+            {
+              name: "session",
+              value: outsider.sessionToken,
+              domain: "localhost",
+              path: "/",
+              httpOnly: true,
+              sameSite: "Lax",
+              secure: false,
+            },
+          ]);
+          const inviteeWorkPage = new WorkPage(await inviteeContext.newPage());
 
-        await inviteeWorkPage.acceptInvitation(inviteUrl);
-        await inviteeWorkPage.navigate(projectSettingsPath);
-        await expect(inviteeWorkPage.projectRoutingPreference()).toHaveValue("low");
-        await expect(inviteeWorkPage.projectRoutingPreference()).toBeDisabled();
-        await expect(
-          inviteeWorkPage.page.getByRole("button", { name: "More project actions" }),
-        ).toHaveCount(0);
-        const inviteeApi = new PolychatApi(inviteeContext.request);
+          await inviteeWorkPage.acceptInvitation(inviteUrl);
+          await inviteeWorkPage.navigate(projectSettingsPath);
+          await expectDropdownValue(inviteeWorkPage.projectRoutingPreference(), /^Low —/);
+          await expect(inviteeWorkPage.projectRoutingPreference()).toBeDisabled();
+          await expect(
+            inviteeWorkPage.page.getByRole("button", { name: "More project actions" }),
+          ).toHaveCount(0);
+          const inviteeApi = new PolychatApi(inviteeContext.request);
 
-        expect((await inviteeApi.listSavedMessages()).messages).toHaveLength(0);
-        expect(await inviteeApi.conversationStatus(conversationId)).toBe(200);
-        expect(await inviteeApi.instantiateStarterStatus(workspaceId)).toBe(403);
-        expect(
-          await new PolychatApi(outsiderContext.request).conversationThreadsStatus(conversationId),
-        ).toBe(404);
-        await inviteeWorkPage.navigate(`/work/${workspaceId}/governance`);
-        await expect(
-          inviteeWorkPage.page.getByRole("button", { name: /^Start Build an internal tool$/ }),
-        ).toHaveCount(0);
-        const visibleSkill = await inviteeApi.getProjectSkill(projectId, memberSkill.name);
+          expect((await inviteeApi.listSavedMessages()).messages).toHaveLength(0);
+          expect(await inviteeApi.conversationStatus(conversationId)).toBe(200);
+          expect(await inviteeApi.instantiateStarterStatus(workspaceId)).toBe(403);
+          expect(
+            await new PolychatApi(outsiderContext.request).conversationThreadsStatus(
+              conversationId,
+            ),
+          ).toBe(404);
+          await inviteeWorkPage.navigate(`/work/${workspaceId}/governance`);
+          await expect(
+            inviteeWorkPage.page.getByRole("button", { name: /^Start Build an internal tool$/ }),
+          ).toHaveCount(0);
+          const visibleSkill = await inviteeApi.getProjectSkill(projectId, memberSkill.name);
 
-        expect(visibleSkill.content).toContain("stable member-visible instructions");
-        expect(await inviteeApi.projectSkillHistoryStatus(projectId, memberSkill.name)).toBe(403);
-        expect(
-          await inviteeApi.projectSkillRevisionStatus(
-            projectId,
-            memberSkill.name,
-            memberSkillRevision.id,
-          ),
-        ).toBe(403);
-        expect(await inviteeApi.projectUpdateStatus(projectId, "ultra")).toBe(403);
-        expect(await inviteeApi.workspaceUsageStatus(workspaceId)).toBe(403);
-        expect(
-          await new PolychatApi(outsiderContext.request).projectUpdateStatus(projectId, "ultra"),
-        ).toBe(404);
-        expect(
-          await new PolychatApi(outsiderContext.request).workspaceUsageStatus(workspaceId),
-        ).toBe(404);
-        expect(await polychatApi.projectUpdateStatus(projectId, "unsupported")).toBe(400);
-      } finally {
-        await inviteeContext.close();
-        await outsiderContext.close();
-      }
+          expect(visibleSkill.content).toContain("stable member-visible instructions");
+          expect(await inviteeApi.projectSkillHistoryStatus(projectId, memberSkill.name)).toBe(403);
+          expect(
+            await inviteeApi.projectSkillRevisionStatus(
+              projectId,
+              memberSkill.name,
+              memberSkillRevision.id,
+            ),
+          ).toBe(403);
+          expect(await inviteeApi.projectUpdateStatus(projectId, "ultra")).toBe(403);
+          expect(await inviteeApi.workspaceUsageStatus(workspaceId)).toBe(403);
+          expect(
+            await new PolychatApi(outsiderContext.request).projectUpdateStatus(projectId, "ultra"),
+          ).toBe(404);
+          expect(
+            await new PolychatApi(outsiderContext.request).workspaceUsageStatus(workspaceId),
+          ).toBe(404);
+          expect(await polychatApi.projectUpdateStatus(projectId, "unsupported")).toBe(400);
+        } finally {
+          await inviteeContext.close();
+          await outsiderContext.close();
+        }
 
-      await workPage.promoteAndRemoveMember(invitee.email);
-      await workPage.navigate(projectSettingsPath);
-      await expect(workPage.projectRoutingPreference()).toHaveValue("low");
-      await polychatApi.deleteProjectSkill(projectId, memberSkill.name);
-      await captureVisualSnapshots(page, "release-work-invitee-cycle", {
-        ...DEFAULT_VISUAL_CHECKPOINTS,
-        viewports: [{ name: "desktop", width: 1280, height: 720 }],
-      });
-    });
+        await workPage.promoteAndRemoveMember(invitee.email);
+        await workPage.navigate(projectSettingsPath);
+        await expectDropdownValue(workPage.projectRoutingPreference(), /^Low —/);
+        await polychatApi.deleteProjectSkill(projectId, memberSkill.name);
+        await captureVisualSnapshots(page, "release-work-invitee-cycle", {
+          ...DEFAULT_VISUAL_CHECKPOINTS,
+          viewports: [{ name: "desktop", width: 1280, height: 720 }],
+        });
+      },
+    );
 
     test("saves, uses and deletes a governed project template", async ({ page, workPage }) => {
       await workPage.open();
@@ -909,21 +913,28 @@ test.describe("Work experience", () => {
       await expect(page.getByRole("button", { name: "Share", exact: true })).toBeVisible();
     });
 
-    test("creates and removes a workspace and project", async ({ page, workPage }) => {
-      await workPage.open();
-      await workPage.createWorkspace("Release lifecycle workspace", "Temporary release workspace");
-      await workPage.createProject(
-        "Release lifecycle project",
-        "Temporary release project",
-        "Keep release answers concise.",
-      );
-      await workPage.archiveProject();
-      await expect(
-        page.getByRole("heading", { name: "Release lifecycle workspace" }),
-      ).toBeVisible();
-      await workPage.deleteWorkspace();
-      await expect(page).toHaveURL(/\/work$/);
-      await expect(page.getByText("Release lifecycle workspace", { exact: true })).toHaveCount(0);
-    });
+    test(
+      "creates and removes a workspace and project",
+      { tag: "@release" },
+      async ({ page, workPage }) => {
+        await workPage.open();
+        await workPage.createWorkspace(
+          "Release lifecycle workspace",
+          "Temporary release workspace",
+        );
+        await workPage.createProject(
+          "Release lifecycle project",
+          "Temporary release project",
+          "Keep release answers concise.",
+        );
+        await workPage.archiveProject();
+        await expect(
+          page.getByRole("heading", { name: "Release lifecycle workspace" }),
+        ).toBeVisible();
+        await workPage.deleteWorkspace();
+        await expect(page).toHaveURL(/\/work$/);
+        await expect(page.getByText("Release lifecycle workspace", { exact: true })).toHaveCount(0);
+      },
+    );
   });
 });

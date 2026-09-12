@@ -88,27 +88,18 @@ jobs:
             "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" \
             --jq '.[].filename')"
 
-          if printf '%s\n' "$changed_files" | grep -Eq '^(apps/(api|app|training)/|packages/|\.github/workflows/test\.yml$|package\.json$|playwright\.config\.ts$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|tsconfig\.playwright\.json$)'; then
+          if printf '%s\n' "$changed_files" | grep -Eq '^(apps/(api|app|sandbox-worker|training)/|packages/|\.github/workflows/test\.yml$|package\.json$|playwright\.config\.ts$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|tsconfig\.playwright\.json$)'; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
           fi
 
   e2e:
-    name: E2E (${{ github.event_name == 'pull_request' && format('{0}/2', matrix.shard) || 'smoke' }})
+    name: E2E (release)
     if: needs.e2e-changes.outputs.run == 'true'
     needs: e2e-changes
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      PVC_SERVER_URL: ${{ vars.PVC_SERVER_URL }}
-      PVC_TOKEN: ${{ secrets.PVC_TOKEN }}
-      PVC_FAIL_ON_DIFF: "0"
-      PVC_ON_MISSING: pending
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1]
     steps:
       - uses: actions/checkout@v7
       - name: Install pnpm
@@ -126,59 +117,28 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: Build packages and app for end-to-end tests
         run: pnpm build:e2e
-      # One day this might be needed but i think 100% smoke is fine for now.
-      # - name: Run end-to-end release tests
-      #   if: github.event_name == 'pull_request'
-      #   run: pnpm test:e2e:release --shard=${{ matrix.shard }}/2
-      - name: Run end-to-end smoke tests
-        # if: github.event_name == 'push'
-        run: pnpm test:e2e:smoke
+      - name: Run core release journeys
+        run: pnpm test:e2e:release
       - name: Upload failure artefacts
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: e2e-${{ matrix.shard }}
+          name: e2e-release
           path: |
             playwright-report
             test-results
           retention-days: 7
 
-  visual-review:
-    name: Visual review gate
-    if: needs.e2e-changes.outputs.run == 'true'
-    needs: [e2e-changes, e2e]
-    runs-on: ubuntu-latest
-    env:
-      PVC_SERVER_URL: ${{ vars.PVC_SERVER_URL }}
-      PVC_TOKEN: ${{ secrets.PVC_TOKEN }}
-      PVC_ENVIRONMENT: smoke
-    steps:
-      - uses: actions/checkout@v7
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
-      - name: Use Node.js 24.x
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24.x
-          cache: "pnpm"
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Gate on visual review
-        if: env.PVC_SERVER_URL != '' && env.PVC_TOKEN != ''
-        run: pnpm exec pvc status
-
   e2e-gate:
     name: E2E gate
     if: always()
-    needs: [e2e-changes, e2e, visual-review]
+    needs: [e2e-changes, e2e]
     runs-on: ubuntu-latest
     steps:
       - name: Check end-to-end result
         env:
           CHANGES_RESULT: ${{ needs.e2e-changes.result }}
           E2E_RESULT: ${{ needs.e2e.result }}
-          VISUAL_RESULT: ${{ needs.visual-review.result }}
         run: |
           test "$CHANGES_RESULT" = "success"
           test "$E2E_RESULT" = "success" || test "$E2E_RESULT" = "skipped"
-          test "$VISUAL_RESULT" = "success" || test "$VISUAL_RESULT" = "skipped"

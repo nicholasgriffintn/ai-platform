@@ -7,7 +7,7 @@ import {
 
 const TEXT_MODEL = "GPT OSS 120B";
 
-test.describe("Release smoke as logged out", () => {
+test.describe("Release smoke as logged out", { tag: "@release" }, () => {
   test.use({ persona: "logged-out" });
 
   test("answers in Chat and protects Work", async ({ homePage, page, workPage }) => {
@@ -16,6 +16,8 @@ test.describe("Release smoke as logged out", () => {
     await homePage.selectModel(TEXT_MODEL);
     await homePage.sendMessageAndRequireCompletion("Check the logged-out release path");
     await homePage.waitForChatResponse(0);
+    await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+    await homePage.reload();
     await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
     await captureVisualSnapshots(
       page,
@@ -36,7 +38,7 @@ test.describe("Release smoke as logged out", () => {
   });
 });
 
-test.describe("Release smoke as Free", () => {
+test.describe("Release smoke as Free", { tag: "@release" }, () => {
   test.use({ persona: "free" });
 
   test("answers in Chat, enforces Work entitlement and syncs providers", async ({
@@ -50,6 +52,8 @@ test.describe("Release smoke as Free", () => {
     await homePage.selectModel(TEXT_MODEL);
     await homePage.sendMessageAndRequireCompletion("Check the Free release path");
     await homePage.waitForChatResponse(0);
+    await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+    await homePage.reload();
     await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
     await captureVisualSnapshots(page, "smoke-free-chat-boundary", DEFAULT_VISUAL_CHECKPOINTS);
 
@@ -65,7 +69,7 @@ test.describe("Release smoke as Free", () => {
   });
 });
 
-test.describe("Release smoke as Pro", () => {
+test.describe("Release smoke as Pro", { tag: "@release" }, () => {
   test.use({ persona: "pro" });
 
   test("opens a Work project and completes its conversation", async ({
@@ -78,6 +82,8 @@ test.describe("Release smoke as Pro", () => {
     await homePage.selectModel(TEXT_MODEL);
     await homePage.sendMessageAndRequireCompletion("Check the Pro Work release path");
     await homePage.waitForChatResponse(0);
+    await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+    await homePage.reload();
     await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
     await captureVisualSnapshots(
       page,

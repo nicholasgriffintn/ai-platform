@@ -221,32 +221,40 @@ for (const persona of ["logged-out", "free"] as const) {
 test.describe("Live sessions as pro", () => {
   test.use({ persona: "pro" });
 
-  test("cleans up a muted Live session", async ({ externalServices, homePage, page }) => {
-    const liveSocket = await externalServices.mockGeminiLiveWebSocket();
+  test(
+    "cleans up a muted Live session",
+    { tag: "@release" },
+    async ({ externalServices, homePage, page }) => {
+      const liveSocket = await externalServices.mockGeminiLiveWebSocket();
+      const providersResponse = page.waitForResponse((response) =>
+        new URL(response.url()).pathname.endsWith("/realtime/providers"),
+      );
 
-    await homePage.navigate("/chat");
-    await homePage.waitForPersonaReady("pro");
+      await homePage.navigate("/chat");
+      await homePage.waitForPersonaReady("pro");
+      expect((await providersResponse).ok()).toBe(true);
 
-    await homePage.selectChatMode("Live");
-    await expect(page).toHaveURL(/\/chat\?mode=live$/);
-    await expect(page.getByRole("heading", { name: "Start a live session" })).toBeVisible();
-    const sessionStatus = await homePage.startAndStopMutedLiveSession();
+      await homePage.selectChatMode("Live");
+      await expect(page).toHaveURL(/\/chat\?mode=live$/);
+      await expect(page.getByRole("heading", { name: "Start a live session" })).toBeVisible();
+      const sessionStatus = await homePage.startAndStopMutedLiveSession();
 
-    expect(sessionStatus).toBe(200);
-    await expect.poll(() => liveSocket.opens).toBe(1);
-    await expect.poll(() => liveSocket.setupMessages.length).toBe(1);
-    expect(liveSocket.setupMessages[0]).toMatchObject({
-      model: "models/gemini-3.1-flash-live-preview",
-    });
-    await expect.poll(() => liveSocket.closes.length).toBe(1);
+      expect(sessionStatus).toBe(200);
+      await expect.poll(() => liveSocket.opens).toBe(1);
+      await expect.poll(() => liveSocket.setupMessages.length).toBe(1);
+      expect(liveSocket.setupMessages[0]).toMatchObject({
+        model: "models/gemini-3.1-flash-live-preview",
+      });
+      await expect.poll(() => liveSocket.closes.length).toBe(1);
 
-    await captureVisualSnapshots(page, "release-chat-mode-live", {
-      ...DEFAULT_VISUAL_CHECKPOINTS,
-      viewports: [{ name: "desktop", width: 1280, height: 720 }],
-    });
-    await homePage.clearChatMode("Live");
-    await expect(homePage.chatInput).toBeEditable();
-  });
+      await captureVisualSnapshots(page, "release-chat-mode-live", {
+        ...DEFAULT_VISUAL_CHECKPOINTS,
+        viewports: [{ name: "desktop", width: 1280, height: 720 }],
+      });
+      await homePage.clearChatMode("Live");
+      await expect(homePage.chatInput).toBeEditable();
+    },
+  );
 });
 
 for (const persona of ["logged-out", "free"] as const) {
@@ -582,7 +590,7 @@ test.describe("Response controls as pro", () => {
 test.describe("Pro message attachments", () => {
   test.use({ persona: "pro" });
 
-  test("sends an image message", async ({ homePage, page }) => {
+  test("sends an image message", { tag: "@release" }, async ({ homePage, page }) => {
     await homePage.navigate("/chat");
     await homePage.selectModel("Llama 4 Scout 17B 16E Instruct");
     await homePage.uploadFile({
@@ -602,7 +610,7 @@ test.describe("Pro message attachments", () => {
     });
   });
 
-  test("sends a code document message", async ({ homePage, page }) => {
+  test("sends a code document message", { tag: "@release" }, async ({ homePage, page }) => {
     await homePage.navigate("/chat");
     await homePage.selectModel(TEXT_MODEL);
     await homePage.uploadFile({
@@ -638,7 +646,7 @@ test.describe("Pro message attachments", () => {
     });
   });
 
-  test("sends an audio message", async ({ homePage, page }) => {
+  test("sends an audio message", { tag: "@release" }, async ({ homePage, page }) => {
     await homePage.navigate("/chat");
     await homePage.selectModel("GPT Audio Mini");
     await homePage.uploadFile({
@@ -701,62 +709,63 @@ test.describe("Pro message attachments", () => {
     );
   });
 
-  test("shows activity after an immediate refresh and loads the answer without another refresh", async ({
-    homePage,
-    page,
-  }) => {
-    let activeReplayRequests = 0;
-    let maximumConcurrentReplayRequests = 0;
+  test(
+    "shows activity after an immediate refresh and loads the answer without another refresh",
+    { tag: "@release" },
+    async ({ homePage, page }) => {
+      let activeReplayRequests = 0;
+      let maximumConcurrentReplayRequests = 0;
 
-    page.on("request", (request) => {
-      if (isChatRunRecoveryRequest(request.url())) {
-        activeReplayRequests += 1;
-        maximumConcurrentReplayRequests = Math.max(
-          maximumConcurrentReplayRequests,
-          activeReplayRequests,
-        );
-      }
-    });
-    page.on("requestfinished", (request) => {
-      if (isChatRunRecoveryRequest(request.url())) {
-        activeReplayRequests -= 1;
-      }
-    });
-    page.on("requestfailed", (request) => {
-      if (isChatRunRecoveryRequest(request.url())) {
-        activeReplayRequests -= 1;
-      }
-    });
+      page.on("request", (request) => {
+        if (isChatRunRecoveryRequest(request.url())) {
+          activeReplayRequests += 1;
+          maximumConcurrentReplayRequests = Math.max(
+            maximumConcurrentReplayRequests,
+            activeReplayRequests,
+          );
+        }
+      });
+      page.on("requestfinished", (request) => {
+        if (isChatRunRecoveryRequest(request.url())) {
+          activeReplayRequests -= 1;
+        }
+      });
+      page.on("requestfailed", (request) => {
+        if (isChatRunRecoveryRequest(request.url())) {
+          activeReplayRequests -= 1;
+        }
+      });
 
-    await homePage.navigate("/chat");
-    await homePage.selectModel(TEXT_MODEL);
-    const request = await homePage.sendMessageAndRequireCompletion(
-      "Start the refresh recovery conversation",
-    );
+      await homePage.navigate("/chat");
+      await homePage.selectModel(TEXT_MODEL);
+      const request = await homePage.sendMessageAndRequireCompletion(
+        "Start the refresh recovery conversation",
+      );
 
-    await homePage.waitForChatResponse(0);
-    const completionId = homePage.completionIdFromRequest(request);
+      await homePage.waitForChatResponse(0);
+      const completionId = homePage.completionIdFromRequest(request);
 
-    await homePage.navigate(`/chat/${completionId}`);
+      await homePage.navigate(`/chat/${completionId}`);
 
-    await homePage.sendMessageAndRequireCompletion(
-      "Recover this interrupted stream after refreshing",
-    );
-    await page.reload();
-    await expect(homePage.getLatestUserMessage()).toContainText("after refreshing");
-    await expect(homePage.stopResponseButton).toBeVisible();
-    await expect(homePage.getLatestAssistantMessage()).toContainText(
-      "the interrupted stream completed",
-      { timeout: 20_000 },
-    );
-    await expect(page.locator('[data-role="user"]')).toHaveText([
-      "Start the refresh recovery conversation",
-      "Recover this interrupted stream after refreshing",
-    ]);
-    await expect(homePage.stopResponseButton).toBeHidden();
-    await expect(homePage.chatInput).toBeEditable();
-    expect(maximumConcurrentReplayRequests).toBeLessThanOrEqual(1);
-  });
+      await homePage.sendMessageAndRequireCompletion(
+        "Recover this interrupted stream after refreshing",
+      );
+      await page.reload();
+      await expect(homePage.getLatestUserMessage()).toContainText("after refreshing");
+      await expect(homePage.stopResponseButton).toBeVisible();
+      await expect(homePage.getLatestAssistantMessage()).toContainText(
+        "the interrupted stream completed",
+        { timeout: 20_000 },
+      );
+      await expect(page.locator('[data-role="user"]')).toHaveText([
+        "Start the refresh recovery conversation",
+        "Recover this interrupted stream after refreshing",
+      ]);
+      await expect(homePage.stopResponseButton).toBeHidden();
+      await expect(homePage.chatInput).toBeEditable();
+      expect(maximumConcurrentReplayRequests).toBeLessThanOrEqual(1);
+    },
+  );
 
   test("stops a recovered run from the refreshed page", async ({ homePage, page }) => {
     await homePage.navigate("/chat");
@@ -899,124 +908,125 @@ test.describe("Pro message attachments", () => {
     }
   });
 
-  test("shares, unshares and navigates a conversation thread family", async ({
-    browser,
-    homePage,
-    page,
-    polychatApi,
-  }, testInfo) => {
-    const threadRequests: string[] = [];
+  test(
+    "shares, unshares and navigates a conversation thread family",
+    { tag: "@release" },
+    async ({ browser, homePage, page, polychatApi }, testInfo) => {
+      const threadRequests: string[] = [];
 
-    page.on("request", (request) => {
-      if (new URL(request.url()).pathname.endsWith("/threads")) {
-        threadRequests.push(request.url());
-      }
-    });
+      page.on("request", (request) => {
+        if (new URL(request.url()).pathname.endsWith("/threads")) {
+          threadRequests.push(request.url());
+        }
+      });
 
-    await homePage.navigate("/chat");
-    await homePage.selectModel(TEXT_MODEL);
-    const parentRequest = await homePage.sendMessageAndRequireCompletion(
-      "Create a conversation for lifecycle actions",
-    );
-
-    await homePage.waitForChatResponse(0);
-    const parentId = homePage.completionIdFromRequest(parentRequest);
-
-    await expect(page.getByRole("button", { name: "Browse conversation threads" })).toHaveCount(0);
-    expect(threadRequests).toHaveLength(0);
-
-    await homePage.shareConversation();
-    const shareLink = await homePage.readShareLink();
-
-    expect(shareLink).toMatch(new RegExp(`^${E2E_APP_BASE_URL}/s/[A-Za-z0-9_-]+$`));
-    await homePage.stopSharingConversation();
-    await homePage.startThreadFromLatestAssistantMessage();
-    await expect(homePage.originalConversationButton).toBeVisible();
-    const childId = (await polychatApi.getConversationThreads(parentId)).threads.find(
-      ({ id }) => id !== parentId,
-    )?.id;
-
-    if (!childId) {
-      throw new Error("Assistant-message thread was not added to the thread family");
-    }
-
-    await homePage.returnToOriginalConversation();
-    await homePage.startThreadFromLatestUserMessageWithModel(
-      "Llama 4 Scout 17B 16E Instruct",
-      "workers-ai",
-    );
-    await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
-    const siblingId = (await polychatApi.getConversationThreads(parentId)).threads.find(
-      ({ id }) => id !== parentId && id !== childId,
-    )?.id;
-
-    if (!siblingId) {
-      throw new Error("User-message thread was not added to the thread family");
-    }
-
-    await polychatApi.updateConversation(parentId, { title: "Release thread parent" });
-    await polychatApi.updateConversation(childId, {
-      title: "Release thread child",
-      archived: true,
-    });
-    await polychatApi.updateConversation(siblingId, { title: "Release thread sibling" });
-    const threadFamily = await polychatApi.getConversationThreads(siblingId);
-
-    expect(new Set(threadFamily.threads.map(({ id }) => id))).toEqual(
-      new Set([parentId, childId, siblingId]),
-    );
-    await homePage.openConversationThreads();
-    await expect(homePage.conversationThread("Release thread sibling")).toContainText("Current");
-    await expect(homePage.conversationThread("Release thread child")).toContainText("Archived");
-    await homePage.selectConversationThread("Release thread child");
-    await homePage.openConversationThreads();
-    await expect(homePage.conversationThread("Release thread child")).toContainText("Archived");
-    await expect(homePage.conversationThread("Release thread child")).toContainText("Current");
-    await homePage.selectConversationThread("Release thread parent");
-    await homePage.openConversationThreads();
-    await expect(homePage.conversationThread("Release thread parent")).toContainText("Current");
-    await homePage.selectConversationThread("Release thread sibling");
-    await homePage.openConversationThreads();
-    await expect(homePage.conversationThread("Release thread sibling")).toContainText("Current");
-    await homePage.closeConversationThreads();
-    await homePage.reload();
-    await homePage.openConversation("Release thread sibling");
-    await homePage.openConversationThreads();
-    await expect(homePage.conversationThread("Release thread sibling")).toContainText("Current");
-    await homePage.closeConversationThreads();
-
-    const otherUser = await provisionPersonaSession(
-      "pro",
-      `${testInfo.testId}:thread-outsider:${testInfo.retry}`,
-    );
-    const otherContext = await browser.newContext();
-
-    try {
-      await otherContext.addCookies([
-        {
-          name: "session",
-          value: otherUser.sessionToken,
-          domain: "localhost",
-          path: "/",
-          httpOnly: true,
-          sameSite: "Lax",
-          secure: false,
-        },
-      ]);
-      expect(await new PolychatApi(otherContext.request).conversationThreadsStatus(parentId)).toBe(
-        404,
+      await homePage.navigate("/chat");
+      await homePage.selectModel(TEXT_MODEL);
+      const parentRequest = await homePage.sendMessageAndRequireCompletion(
+        "Create a conversation for lifecycle actions",
       );
-    } finally {
-      await otherContext.close();
-    }
 
-    expect(await polychatApi.retiredConversationBranchesStatus(parentId)).toBe(404);
+      await homePage.waitForChatResponse(0);
+      const parentId = homePage.completionIdFromRequest(parentRequest);
 
-    await captureVisualSnapshots(page, "release-chat-threading", {
-      ...DEFAULT_VISUAL_CHECKPOINTS,
-      viewports: [{ name: "desktop", width: 1280, height: 720 }],
-    });
-  });
+      await expect(page.getByRole("button", { name: "Browse conversation threads" })).toHaveCount(
+        0,
+      );
+      expect(threadRequests).toHaveLength(0);
+
+      await homePage.shareConversation();
+      const shareLink = await homePage.readShareLink();
+
+      expect(shareLink).toMatch(new RegExp(`^${E2E_APP_BASE_URL}/s/[A-Za-z0-9_-]+$`));
+      await homePage.stopSharingConversation();
+      await homePage.startThreadFromLatestAssistantMessage();
+      await expect(homePage.originalConversationButton).toBeVisible();
+      const childId = (await polychatApi.getConversationThreads(parentId)).threads.find(
+        ({ id }) => id !== parentId,
+      )?.id;
+
+      if (!childId) {
+        throw new Error("Assistant-message thread was not added to the thread family");
+      }
+
+      await homePage.returnToOriginalConversation();
+      await homePage.startThreadFromLatestUserMessageWithModel(
+        "Llama 4 Scout 17B 16E Instruct",
+        "workers-ai",
+      );
+      await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+      const siblingId = (await polychatApi.getConversationThreads(parentId)).threads.find(
+        ({ id }) => id !== parentId && id !== childId,
+      )?.id;
+
+      if (!siblingId) {
+        throw new Error("User-message thread was not added to the thread family");
+      }
+
+      await polychatApi.updateConversation(parentId, { title: "Release thread parent" });
+      await polychatApi.updateConversation(childId, {
+        title: "Release thread child",
+        archived: true,
+      });
+      await polychatApi.updateConversation(siblingId, { title: "Release thread sibling" });
+      const threadFamily = await polychatApi.getConversationThreads(siblingId);
+
+      expect(new Set(threadFamily.threads.map(({ id }) => id))).toEqual(
+        new Set([parentId, childId, siblingId]),
+      );
+      await homePage.openConversationThreads();
+      await expect(homePage.conversationThread("Release thread sibling")).toContainText("Current");
+      await expect(homePage.conversationThread("Release thread child")).toContainText("Archived");
+      await homePage.selectConversationThread("Release thread child");
+      await homePage.openConversationThreads();
+      await expect(homePage.conversationThread("Release thread child")).toContainText("Archived");
+      await expect(homePage.conversationThread("Release thread child")).toContainText("Current");
+      await homePage.selectConversationThread("Release thread parent");
+      await homePage.openConversationThreads();
+      await expect(homePage.conversationThread("Release thread parent")).toContainText("Current");
+      await homePage.selectConversationThread("Release thread sibling");
+      await homePage.openConversationThreads();
+      await expect(homePage.conversationThread("Release thread sibling")).toContainText("Current");
+      await homePage.closeConversationThreads();
+      await homePage.reload();
+      await homePage.openConversation("Release thread sibling");
+      await homePage.openConversationThreads();
+      await expect(homePage.conversationThread("Release thread sibling")).toContainText("Current");
+      await homePage.closeConversationThreads();
+
+      const otherUser = await provisionPersonaSession(
+        "pro",
+        `${testInfo.testId}:thread-outsider:${testInfo.retry}`,
+      );
+      const otherContext = await browser.newContext();
+
+      try {
+        await otherContext.addCookies([
+          {
+            name: "session",
+            value: otherUser.sessionToken,
+            domain: "localhost",
+            path: "/",
+            httpOnly: true,
+            sameSite: "Lax",
+            secure: false,
+          },
+        ]);
+        expect(
+          await new PolychatApi(otherContext.request).conversationThreadsStatus(parentId),
+        ).toBe(404);
+      } finally {
+        await otherContext.close();
+      }
+
+      expect(await polychatApi.retiredConversationBranchesStatus(parentId)).toBe(404);
+
+      await captureVisualSnapshots(page, "release-chat-threading", {
+        ...DEFAULT_VISUAL_CHECKPOINTS,
+        viewports: [{ name: "desktop", width: 1280, height: 720 }],
+      });
+    },
+  );
 
   test("chooses council members from the picker and convenes them", async ({ homePage, page }) => {
     await homePage.navigate("/chat");

@@ -201,30 +201,30 @@ test.describe("Application experience", () => {
   test.describe("responsive navigation", () => {
     test.use({ persona: "pro", viewport: { width: 390, height: 844 } });
 
-    test("opens and closes the mobile sidebar without losing the active surface", async ({
-      appPage,
-      homePage,
-      page,
-    }) => {
-      await homePage.navigate("/chat");
-      await expect(page.getByRole("button", { name: "Show sidebar" })).toBeVisible();
-      await expect(homePage.chatInput).toBeEditable();
+    test(
+      "opens and closes the mobile sidebar without losing the active surface",
+      { tag: "@release" },
+      async ({ appPage, homePage, page }) => {
+        await homePage.navigate("/chat");
+        await expect(page.getByRole("button", { name: "Show sidebar" })).toBeVisible();
+        await expect(homePage.chatInput).toBeEditable();
 
-      await appPage.toggleSidebar();
-      const drawer = page.getByRole("dialog", { name: "Conversations" });
+        await appPage.toggleSidebar();
+        const drawer = page.getByRole("dialog", { name: "Conversations" });
 
-      await expect(drawer).toBeVisible();
-      await expect(appPage.settingsButton).toBeVisible();
-      await captureVisualSnapshots(page, "release-app-mobile-sidebar", {
-        ...DEFAULT_VISUAL_CHECKPOINTS,
-        viewports: [{ name: "mobile", width: 390, height: 844 }],
-      });
+        await expect(drawer).toBeVisible();
+        await expect(appPage.settingsButton).toBeVisible();
+        await captureVisualSnapshots(page, "release-app-mobile-sidebar", {
+          ...DEFAULT_VISUAL_CHECKPOINTS,
+          viewports: [{ name: "mobile", width: 390, height: 844 }],
+        });
 
-      await appPage.toggleSidebar();
-      await expect(drawer).toBeHidden();
-      await expect(page.getByRole("button", { name: "Show sidebar" })).toBeVisible();
-      await expect(homePage.chatInput).toBeEditable();
-    });
+        await appPage.toggleSidebar();
+        await expect(drawer).toBeHidden();
+        await expect(page.getByRole("button", { name: "Show sidebar" })).toBeVisible();
+        await expect(homePage.chatInput).toBeEditable();
+      },
+    );
 
     test("dismisses the mobile sidebar from the keyboard and leaves no hidden residue", async ({
       appPage,
@@ -255,7 +255,7 @@ test.describe("Application experience", () => {
   test.describe("reduced motion", () => {
     test.use({
       persona: "pro",
-      reducedMotion: "reduce",
+      contextOptions: { reducedMotion: "reduce" },
       viewport: { width: 390, height: 844 },
     });
 

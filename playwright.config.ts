@@ -1,7 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices, type ReporterDescription } from "@playwright/test";
 import dotenv from "dotenv";
 
 import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "./apps/app/tests/e2e/support/environment";
@@ -45,7 +45,9 @@ export default defineConfig({
     ["html", { open: "never" }],
     ["json", { outputFile: "test-results/results.json" }],
     ["junit", { outputFile: "test-results/results.xml" }],
-    ["playwright-visual-cloud/reporter"],
+    ...(process.env.PVC_ENVIRONMENT && process.env.PVC_SERVER_URL && process.env.PVC_TOKEN
+      ? [["playwright-visual-cloud/reporter"] satisfies ReporterDescription]
+      : []),
   ],
   projects: [
     {

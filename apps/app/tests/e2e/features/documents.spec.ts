@@ -34,82 +34,82 @@ test.describe("Documents as finished work", () => {
     expect((await polychatApi.getOutput(written.id)).revision).toBe(written.revision + 1);
   });
 
-  test("opens a document a teammate wrote, edits it, and exports the saved version", async ({
-    homePage,
-    page,
-    polychatApi,
-  }) => {
-    const title = "Launch week brief";
-    const outputs = new OutputApi(page.request);
-    const written = await outputs.create({
-      capabilityId: "document-writer",
-      kind: "document",
-      status: "ready",
-      title,
-      content: {
+  test(
+    "opens a document a teammate wrote, edits it, and exports the saved version",
+    { tag: "@release" },
+    async ({ homePage, page, polychatApi }) => {
+      const title = "Launch week brief";
+      const outputs = new OutputApi(page.request);
+      const written = await outputs.create({
+        capabilityId: "document-writer",
+        kind: "document",
+        status: "ready",
+        title,
+        content: {
+          format: "markdown",
+          body: "# Launch week brief\n\nThe first draft, as written.",
+          metadata: {
+            summary: "Approved launch summary",
+            tags: ["release"],
+            sourceType: "assistant",
+          },
+        },
+      });
+
+      expect(written.revision).toBe(1);
+      await homePage.navigate(`/chat/files/made/${written.id}`);
+
+      const editor = page.getByRole("textbox", { name: "Document content" });
+
+      await expect(editor).toHaveValue(/The first draft, as written\./);
+
+      const main = page.getByRole("main");
+
+      await expect(main.getByText("Approved launch summary", { exact: true })).toBeVisible();
+      await expect(main.getByText("release", { exact: true })).toBeVisible();
+      await expect(main.getByText("Words:", { exact: true })).toBeVisible();
+      await expect(main.getByText("1min", { exact: true })).toBeVisible();
+      await editor.fill("# Launch week brief\n\nThe edited draft, as revised.");
+      const saved = page.waitForResponse(
+        (response) =>
+          response.request().method() === "PUT" &&
+          new URL(response.url()).pathname.endsWith(`/outputs/${written.id}`),
+      );
+
+      await page.getByRole("button", { name: "Save", exact: true }).click();
+      expect((await saved).status()).toBe(200);
+      await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
+
+      const revised = await polychatApi.getOutput(written.id);
+
+      expect(revised.revision).toBe(2);
+      expect(revised.content).toEqual({
         format: "markdown",
-        body: "# Launch week brief\n\nThe first draft, as written.",
+        body: "# Launch week brief\n\nThe edited draft, as revised.",
         metadata: {
           summary: "Approved launch summary",
           tags: ["release"],
           sourceType: "assistant",
+          wordCount: 9,
+          readingTime: 1,
         },
-      },
-    });
+      });
 
-    expect(written.revision).toBe(1);
-    await homePage.navigate(`/chat/files/made/${written.id}`);
+      const exported = await polychatApi.exportOutputDocument(written.id);
 
-    const editor = page.getByRole("textbox", { name: "Document content" });
+      expect(exported.status).toBe(200);
+      expect(exported.contentType).toContain("text/markdown");
+      expect(exported.contentDisposition).toContain(documentExportFilename(title));
+      expect(exported.body).toBe("# Launch week brief\n\nThe edited draft, as revised.");
+      const history = new OutputRevisionPage(page);
 
-    await expect(editor).toHaveValue(/The first draft, as written\./);
-
-    const main = page.getByRole("main");
-
-    await expect(main.getByText("Approved launch summary", { exact: true })).toBeVisible();
-    await expect(main.getByText("release", { exact: true })).toBeVisible();
-    await expect(main.getByText("Words:", { exact: true })).toBeVisible();
-    await expect(main.getByText("1min", { exact: true })).toBeVisible();
-    await editor.fill("# Launch week brief\n\nThe edited draft, as revised.");
-    const saved = page.waitForResponse(
-      (response) =>
-        response.request().method() === "PUT" &&
-        new URL(response.url()).pathname.endsWith(`/outputs/${written.id}`),
-    );
-
-    await page.getByRole("button", { name: "Save", exact: true }).click();
-    expect((await saved).status()).toBe(200);
-    await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
-
-    const revised = await polychatApi.getOutput(written.id);
-
-    expect(revised.revision).toBe(2);
-    expect(revised.content).toEqual({
-      format: "markdown",
-      body: "# Launch week brief\n\nThe edited draft, as revised.",
-      metadata: {
-        summary: "Approved launch summary",
-        tags: ["release"],
-        sourceType: "assistant",
-        wordCount: 9,
-        readingTime: 1,
-      },
-    });
-
-    const exported = await polychatApi.exportOutputDocument(written.id);
-
-    expect(exported.status).toBe(200);
-    expect(exported.contentType).toContain("text/markdown");
-    expect(exported.contentDisposition).toContain(documentExportFilename(title));
-    expect(exported.body).toBe("# Launch week brief\n\nThe edited draft, as revised.");
-    const history = new OutputRevisionPage(page);
-
-    await history.compare(1);
-    await history.restore(1);
-    await expect(history.history).toContainText("Current revision 3 · restored from revision 1");
-    await expect(editor).toHaveValue("# Launch week brief\n\nThe first draft, as written.");
-    expect((await polychatApi.getOutput(written.id)).content).toEqual(written.content);
-  });
+      await history.compare(1);
+      await history.restore(1);
+      await expect(history.history).toContainText("Current revision 3 · restored from revision 1");
+      await expect(editor).toHaveValue("# Launch week brief\n\nThe first draft, as written.");
+      expect((await polychatApi.getOutput(written.id)).content).toEqual(written.content);
+    },
+  );
 
   test("keeps rewrites as cancellable drafts and saves fresh descriptions as revisions", async ({
     homePage,

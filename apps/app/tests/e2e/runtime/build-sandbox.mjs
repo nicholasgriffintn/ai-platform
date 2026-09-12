@@ -1,7 +1,10 @@
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
+import { CONTAINER_EGRESS_IMAGE } from "../support/docker-engine.mjs";
 import { SANDBOX_IMAGE } from "./sandbox-runtime.mjs";
+
+execFileSync("docker", ["pull", CONTAINER_EGRESS_IMAGE], { stdio: "inherit" });
 
 execFileSync(
   "docker",

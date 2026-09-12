@@ -1,6 +1,8 @@
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 
+import { toWorkerdSocketAddress } from "../support/docker-engine.mjs";
+
 export const SANDBOX_IMAGE = "polychat-e2e-sandbox:0.12.9";
 export const SANDBOX_REPOSITORY = "nicholasgriffintn/polychat-e2e-fixture";
 const SANDBOX_DELIVERY_REPOSITORIES = [
@@ -40,12 +42,18 @@ export function resolveSandboxContainerEngine() {
   execFileSync("docker", ["image", "inspect", SANDBOX_IMAGE], { stdio: "ignore" });
 
   if (process.env.DOCKER_HOST) {
-    return process.env.DOCKER_HOST;
+    return toWorkerdSocketAddress(process.env.DOCKER_HOST);
   }
 
-  return execFileSync("docker", ["context", "inspect", "--format", "{{.Endpoints.docker.Host}}"], {
-    encoding: "utf8",
-  }).trim();
+  const dockerHost = execFileSync(
+    "docker",
+    ["context", "inspect", "--format", "{{.Endpoints.docker.Host}}"],
+    {
+      encoding: "utf8",
+    },
+  ).trim();
+
+  return toWorkerdSocketAddress(dockerHost);
 }
 
 export function createSandboxWorkerOptions(

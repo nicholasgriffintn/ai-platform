@@ -101,15 +101,19 @@ test.describe("Authentication experience", () => {
   test.describe("pro passkey", () => {
     test.use({ persona: "pro" });
 
-    test("signs in with a registered passkey", async ({ authPage, homePage }) => {
-      await authPage.registerSignOutAndSignInWithPasskey();
-      await expect(authPage.isLoggedIn()).resolves.toBe(true);
-      await homePage.navigate("/chat");
-      await homePage.selectModel("GPT OSS 120B");
-      await homePage.sendMessageAndRequireCompletion("Reply after passkey sign-in");
-      await homePage.waitForChatResponse(0);
-      await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
-    });
+    test(
+      "signs in with a registered passkey",
+      { tag: "@release" },
+      async ({ authPage, homePage }) => {
+        await authPage.registerSignOutAndSignInWithPasskey();
+        await expect(authPage.isLoggedIn()).resolves.toBe(true);
+        await homePage.navigate("/chat");
+        await homePage.selectModel("GPT OSS 120B");
+        await homePage.sendMessageAndRequireCompletion("Reply after passkey sign-in");
+        await homePage.waitForChatResponse(0);
+        await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+      },
+    );
 
     test("signs out from the shell and stays signed out after reload", async ({
       appPage,

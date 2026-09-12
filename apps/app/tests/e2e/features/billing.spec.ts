@@ -229,56 +229,70 @@ test.describe("Credit billing", () => {
       billing: { spentCredits: 200, ledger: FREE_LEDGER },
     });
 
-    test("stops at the ceiling with no reserve and no overage", async ({
-      billingPage,
-      homePage,
-      page,
-    }) => {
-      await billingPage.open();
-      expect(await billingPage.creditsAllowance()).toBe(
-        "200 of 150 included credits used, 0 of reserve remaining",
-      );
-      await expect(billingPage.creditState).toHaveText("Out of credits");
-      await expect(billingPage.creditsFigure("Reserve remaining")).toHaveText("0");
-      await expect(billingPage.overageToggle).toHaveCount(0);
+    test(
+      "stops at the ceiling with no reserve and no overage",
+      { tag: "@release" },
+      async ({ billingPage, homePage, page }) => {
+        const summaryResponse = page.waitForResponse((response) =>
+          new URL(response.url()).pathname.endsWith("/user/usage/summary"),
+        );
 
-      await expect(billingPage.spendSummaryTotals).toHaveText("200 credits · 3 events");
-      await expect(billingPage.spendSummary).toContainText("Models");
-      await expect(billingPage.spendSummary).toContainText("Infrastructure");
+        await billingPage.open();
+        const summary = usageSummaryResponseSchema.parse(await (await summaryResponse).json());
 
-      await expect(billingPage.activeLedgerFilter()).toHaveText("Models");
-      await expect(billingPage.ledgerRows().filter({ hasText: "Cloudflare" })).toHaveCount(0);
+        expect(await billingPage.creditsAllowance()).toBe(
+          "200 of 150 included credits used, 0 of reserve remaining",
+        );
+        await expect(billingPage.creditState).toHaveText("Out of credits");
+        await expect(billingPage.creditsFigure("Reserve remaining")).toHaveText("0");
+        await expect(billingPage.overageToggle).toHaveCount(0);
 
-      await homePage.navigate("/chat");
-      await homePage.selectModel(MODEL);
-      await homePage.sendMessage("Free release turn past the ceiling");
-      await expect(page.getByText(/This month's credits are fully spent/).first()).toBeVisible();
-      await expect(page.getByText("E2E response:")).toHaveCount(0);
-      await expect(homePage.chatInput).toBeEditable();
-    });
+        expect(summary.by_source.find((group) => group.key === "model")).toMatchObject({
+          credits: 180,
+          event_count: 2,
+        });
+        await expect(billingPage.spendSummaryTotals).toHaveText(
+          `${formatCredits(summary.totals.credits)} credits · ${summary.totals.event_count} events`,
+        );
+        await expect(billingPage.spendSummary).toContainText("Models");
+        await expect(billingPage.spendSummary).toContainText("Infrastructure");
 
-    test("rejects foreign Checkout redirects and creates a configured Pro session", async ({
-      polychatApi,
-    }) => {
-      expect(
-        await polychatApi.checkoutStatus({
-          planId: "pro",
-          successUrl: "https://localhost.evil.example/success",
-          cancelUrl: `${E2E_APP_BASE_URL}/pricing`,
-        }),
-      ).toBe(400);
+        await expect(billingPage.activeLedgerFilter()).toHaveText("Models");
+        await expect(billingPage.ledgerRows().filter({ hasText: "Cloudflare" })).toHaveCount(0);
 
-      await expect(
-        polychatApi.createCheckoutSession({
-          planId: "pro",
-          successUrl: `${E2E_APP_BASE_URL}/profile?tab=billing`,
-          cancelUrl: `${E2E_APP_BASE_URL}/pricing`,
-        }),
-      ).resolves.toEqual({
-        session_id: "cs_e2e_pro",
-        url: "https://checkout.stripe.com/c/pay/cs_e2e_pro",
-      });
-    });
+        await homePage.navigate("/chat");
+        await homePage.selectModel(MODEL);
+        await homePage.sendMessage("Free release turn past the ceiling");
+        await expect(page.getByText(/This month's credits are fully spent/).first()).toBeVisible();
+        await expect(page.getByText("E2E response:")).toHaveCount(0);
+        await expect(homePage.chatInput).toBeEditable();
+      },
+    );
+
+    test(
+      "rejects foreign Checkout redirects and creates a configured Pro session",
+      { tag: "@release" },
+      async ({ polychatApi }) => {
+        expect(
+          await polychatApi.checkoutStatus({
+            planId: "pro",
+            successUrl: "https://localhost.evil.example/success",
+            cancelUrl: `${E2E_APP_BASE_URL}/pricing`,
+          }),
+        ).toBe(400);
+
+        await expect(
+          polychatApi.createCheckoutSession({
+            planId: "pro",
+            successUrl: `${E2E_APP_BASE_URL}/profile?tab=billing`,
+            cancelUrl: `${E2E_APP_BASE_URL}/pricing`,
+          }),
+        ).resolves.toEqual({
+          session_id: "cs_e2e_pro",
+          url: "https://checkout.stripe.com/c/pay/cs_e2e_pro",
+        });
+      },
+    );
   });
 
   test.describe("pro account", () => {

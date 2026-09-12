@@ -90,102 +90,102 @@ test.describe("Project task evidence", () => {
     expect(await tasks.borderWidthOf(tasks.noMatches)).toBe("0px");
   });
 
-  test("continues a queued task after its initiating page closes and recovers the exact waiting run", async ({
-    page,
-    workPage,
-    polychatApi,
-  }) => {
-    test.slow();
-    const tasks = new ProjectTasksPage(page);
+  test(
+    "continues a queued task after its initiating page closes and recovers the exact waiting run",
+    { tag: "@release" },
+    async ({ page, workPage, polychatApi }) => {
+      test.slow();
+      const tasks = new ProjectTasksPage(page);
 
-    await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
-    const taskApi = new ProjectTaskApi(page.request, workPage.currentProjectId());
-    const sandbox = new SandboxApi(page.request, workPage.currentProjectId());
-    const runs = new ChatRunApi(page.request);
+      await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
+      const taskApi = new ProjectTaskApi(page.request, workPage.currentProjectId());
+      const sandbox = new SandboxApi(page.request, workPage.currentProjectId());
+      const runs = new ChatRunApi(page.request);
 
-    await sandbox.configureProject();
-    const task = await taskApi.createQuestionTask();
+      await sandbox.configureProject();
+      const task = await taskApi.createQuestionTask();
 
-    await tasks.openBoard();
-    await tasks.reload();
-    await tasks.openTask(task.objective);
-    const taskUrl = page.url();
+      await tasks.openBoard();
+      await tasks.reload();
+      await tasks.openTask(task.objective);
+      const taskUrl = page.url();
 
-    expect((await tasks.start()).ok()).toBe(true);
-    await page.close();
-    await expect
-      .poll(async () => (await taskApi.detail(task.id)).task.blockedReason, {
-        timeout: 20_000,
-      })
-      .toBe("awaiting_input");
-    const detail = await taskApi.detail(task.id);
+      expect((await tasks.start()).ok()).toBe(true);
+      await page.close();
+      await expect
+        .poll(async () => (await taskApi.detail(task.id)).task.blockedReason, {
+          timeout: 20_000,
+        })
+        .toBe("awaiting_input");
+      const detail = await taskApi.detail(task.id);
 
-    await expect
-      .poll(async () => (await polychatApi.getAccountUsageBalance()).credit_micros.reserved)
-      .toBe(0);
+      await expect
+        .poll(async () => (await polychatApi.getAccountUsageBalance()).credit_micros.reserved)
+        .toBe(0);
 
-    expect(detail.pendingQuestions?.questions).toHaveLength(2);
-    expect(detail.task.runId).toBeTruthy();
-    if (!detail.task.runId) {
-      throw new Error("The queued task did not retain its run identity");
-    }
+      expect(detail.pendingQuestions?.questions).toHaveLength(2);
+      expect(detail.task.runId).toBeTruthy();
+      if (!detail.task.runId) {
+        throw new Error("The queued task did not retain its run identity");
+      }
 
-    const snapshot = await runs.snapshot(detail.task.runId);
+      const snapshot = await runs.snapshot(detail.task.runId);
 
-    expect(snapshot.run.status).toBe("awaiting_input");
-    expect(snapshot.run.conversationId).toBe(detail.task.conversationId);
-    const reopenedPage = await page.context().newPage();
-    const reopenedTasks = new ProjectTasksPage(reopenedPage);
+      expect(snapshot.run.status).toBe("awaiting_input");
+      expect(snapshot.run.conversationId).toBe(detail.task.conversationId);
+      const reopenedPage = await page.context().newPage();
+      const reopenedTasks = new ProjectTasksPage(reopenedPage);
 
-    await reopenedTasks.navigate(taskUrl);
-    await expect(
-      reopenedPage.getByRole("heading", { name: task.objective, level: 1 }),
-    ).toBeVisible();
-    await expect(
-      reopenedTasks.plan.getByRole("link", { name: `Run ${detail.task.runId}`, exact: true }),
-    ).toBeVisible();
-    await expect(reopenedTasks.plan.getByText("Executing", { exact: true })).toHaveCount(1);
-    await expect(reopenedTasks.plan.getByText(/1 attempt\b/)).toHaveCount(1);
-    await reopenedTasks.answerQuestions();
-    const workbench = new WorkbenchPage(reopenedPage);
+      await reopenedTasks.navigate(taskUrl);
+      await expect(
+        reopenedPage.getByRole("heading", { name: task.objective, level: 1 }),
+      ).toBeVisible();
+      await expect(
+        reopenedTasks.plan.getByRole("link", { name: `Run ${detail.task.runId}`, exact: true }),
+      ).toBeVisible();
+      await expect(reopenedTasks.plan.getByText("Executing", { exact: true })).toHaveCount(1);
+      await expect(reopenedTasks.plan.getByText(/1 attempt\b/)).toHaveCount(1);
+      await reopenedTasks.answerQuestions();
+      const workbench = new WorkbenchPage(reopenedPage);
 
-    await expect(workbench.dock).toBeVisible();
-    await expect(workbench.status).toContainText("Waiting for input");
-    expect(await workbench.statusStripHasAttentionBackground()).toBe(true);
-    const interaction = new InteractionPage(reopenedPage);
+      await expect(workbench.dock).toBeVisible();
+      await expect(workbench.status).toContainText("Waiting for input");
+      expect(await workbench.statusStripHasAttentionBackground()).toBe(true);
+      const interaction = new InteractionPage(reopenedPage);
 
-    await interaction.answerReleaseQuestions();
-    await interaction.setOffline(true);
-    await interaction.submitAnswers();
-    await expect(interaction.questions.getByRole("alert")).toContainText(
-      "Answers were not submitted",
-      { timeout: 20_000 },
-    );
-    await expect(interaction.questions).not.toContainText("Answers sent");
-    await expect(
-      interaction.questions.getByRole("textbox", {
-        name: "Answer: Which detail should the report emphasise?",
-      }),
-    ).toHaveValue("Recover this interrupted stream with validation evidence");
-    await interaction.setOffline(false);
-    await interaction.submitAnswers();
-    await expect
-      .poll(async () => (await taskApi.detail(task.id)).task.status, { timeout: 20_000 })
-      .toBe("review");
-    const completed = await taskApi.detail(task.id);
+      await interaction.answerReleaseQuestions();
+      await interaction.setOffline(true);
+      await interaction.submitAnswers();
+      await expect(interaction.questions.getByRole("alert")).toContainText(
+        "Answers were not submitted",
+        { timeout: 20_000 },
+      );
+      await expect(interaction.questions).not.toContainText("Answers sent");
+      await expect(
+        interaction.questions.getByRole("textbox", {
+          name: "Answer: Which detail should the report emphasise?",
+        }),
+      ).toHaveValue("Recover this interrupted stream with validation evidence");
+      await interaction.setOffline(false);
+      await interaction.submitAnswers();
+      await expect
+        .poll(async () => (await taskApi.detail(task.id)).task.status, { timeout: 20_000 })
+        .toBe("review");
+      const completed = await taskApi.detail(task.id);
 
-    await expect
-      .poll(async () => (await polychatApi.getAccountUsageBalance()).credit_micros.reserved)
-      .toBe(0);
+      await expect
+        .poll(async () => (await polychatApi.getAccountUsageBalance()).credit_micros.reserved)
+        .toBe(0);
 
-    expect(completed.pendingQuestions).toBeNull();
-    expect(completed.task.conversationId).toBe(detail.task.conversationId);
-    await workbench.reload();
-    await expect(workbench.status).toContainText("Ready for review");
-    await expect(workbench.status).toContainText(task.objective);
-    await reopenedTasks.navigate(taskUrl);
-    await expect(
-      reopenedPage.getByRole("button", { name: "Approve result", exact: true }),
-    ).toBeVisible();
-  });
+      expect(completed.pendingQuestions).toBeNull();
+      expect(completed.task.conversationId).toBe(detail.task.conversationId);
+      await workbench.reload();
+      await expect(workbench.status).toContainText("Ready for review");
+      await expect(workbench.status).toContainText(task.objective);
+      await reopenedTasks.navigate(taskUrl);
+      await expect(
+        reopenedPage.getByRole("button", { name: "Approve result", exact: true }),
+      ).toBeVisible();
+    },
+  );
 });

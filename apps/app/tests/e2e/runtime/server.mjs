@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { Miniflare } from "miniflare";
 
+import { CONTAINER_EGRESS_IMAGE } from "../support/docker-engine.mjs";
 import { resolveMetaModelTool } from "./meta-model.mjs";
 import { resolveProjectTaskModelResponse } from "./project-task-model.mjs";
 import { normaliseResponsesRequest, responsesToolCallResponse } from "./provider-request.mjs";
@@ -1012,7 +1013,12 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
   return {
     host: "127.0.0.1",
     port,
-    containerEngine: resolveSandboxContainerEngine(),
+    containerEngine: {
+      localDocker: {
+        socketPath: resolveSandboxContainerEngine(),
+        containerEgressInterceptorImage: CONTAINER_EGRESS_IMAGE,
+      },
+    },
     workers: [
       {
         name: "api",
