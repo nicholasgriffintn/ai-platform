@@ -339,7 +339,7 @@
       "defaults": {
         "name": "DeepSeek-V3.1",
         "openWeights": true,
-        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "description": "Hybrid-reasoning DeepSeek model with thinking and non-thinking modes",
         "contextWindow": 163840,
         "strengths": [
           "tool_use"
@@ -450,7 +450,7 @@
     "deepseek-v3-2": {
       "defaults": {
         "openWeights": true,
-        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "description": "Hybrid-reasoning DeepSeek model with thinking and non-thinking modes, sparse attention, and tool-use",
         "contextWindow": 163840,
         "strengths": [
           "tool_use"

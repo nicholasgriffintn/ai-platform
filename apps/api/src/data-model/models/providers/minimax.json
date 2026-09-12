@@ -9,7 +9,6 @@
       "model": "minimax/minimax-m2",
       "matchingModel": "MiniMax-M2",
       "overrides": {
-        "description": "Efficient open MiniMax model built for coding agents and tool-heavy workflows",
         "contextWindow": 204800,
         "maxTokens": 131072,
         "strengths": [
@@ -29,7 +28,9 @@
       "matchingModel": "MiniMax-M2.7",
       "overrides": {
         "name": "MiniMax M2.7",
+        "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
         "contextWindow": 204800,
+        "maxTokens": 131072,
         "strengths": [
           "coding",
           "agents",
@@ -47,7 +48,6 @@
       "matchingModel": "MiniMax-M2.1",
       "overrides": {
         "name": "MiniMax-M2.1",
-        "description": "Earlier MiniMax agent model for practical coding and productivity tasks",
         "speed": 4,
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -59,8 +59,6 @@
       "matchingModel": "MiniMax-M2.5",
       "overrides": {
         "name": "MiniMax-M2.5",
-        "description": "Prior MiniMax coding model for agent workflows, office edits, and automation",
-        "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,

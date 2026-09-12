@@ -73,6 +73,7 @@
       "model": "gemma/gemma-3-27b",
       "matchingModel": "gemma-3-27b-it",
       "overrides": {
+        "openWeights": true,
         "description": "Google Gemma 3 multimodal model for chat, reasoning, and image understanding",
         "contextWindow": 40000,
         "knowledgeCutoffDate": "August 2024",
@@ -198,7 +199,6 @@
       "model": "gpt-oss/gpt-oss-120b",
       "matchingModel": "gpt-oss-120b",
       "overrides": {
-        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "maxTokens": 32768,
         "modalities": {
           "input": [
@@ -375,7 +375,6 @@
       "model": "llama/llama-3-3-70b-instruct",
       "matchingModel": "llama-3.3-70b-instruct",
       "overrides": {
-        "description": "Popular open Llama workhorse for multilingual chat, coding, and self-hosting",
         "contextWindow": 100000,
         "maxTokens": 16384,
         "lastUpdated": "December 6, 2024",
@@ -391,8 +390,6 @@
       "matchingModel": "minimax-m2.5",
       "overrides": {
         "name": "MiniMax-M2.5",
-        "description": "Prior MiniMax coding model for agent workflows, office edits, and automation",
-        "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0001938,
@@ -454,7 +451,6 @@
       "unset": [
         "reliability",
         "artificialAnalysis",
-        "strengths",
         "supportsResponseFormat"
       ]
     },
@@ -463,6 +459,8 @@
       "matchingModel": "qwen3-235b-a22b-instruct-2507",
       "overrides": {
         "description": "Qwen3 235B MoE instruct model for long-context multilingual chat and reasoning",
+        "maxTokens": 16384,
+        "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.001026,
@@ -474,7 +472,6 @@
       "matchingModel": "qwen3-coder-30b-a3b-instruct",
       "overrides": {
         "name": "Qwen3-Coder 30B-A3B Instruct",
-        "description": "Smaller Qwen coder for efficient local agents and repo-level fixes",
         "contextWindow": 128000,
         "maxTokens": 32768,
         "contextComplexity": 3,
@@ -569,6 +566,68 @@
         "costPer1kOutputTokens": 0.000513,
         "supportsResponseFormat": false,
         "supportsAttachments": true
+      }
+    },
+    "deepseek-v4.1-flash": {
+      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "matchingModel": "deepseek-v4.1-flash",
+      "overrides": {
+        "contextWindow": 1000000,
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.000255552,
+        "costPer1kOutputTokens": 0.00127776,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5.3": {
+      "model": "glm/glm-5-3",
+      "matchingModel": "glm-5.3",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.00127754,
+        "costPer1kOutputTokens": 0.00511016,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5.3-flash": {
+      "model": "glm/glm-5-3-flash",
+      "matchingModel": "glm-5.3-flash",
+      "overrides": {
+        "contextWindow": 1000000,
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.000127754,
+        "costPer1kOutputTokens": 0.000511016,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

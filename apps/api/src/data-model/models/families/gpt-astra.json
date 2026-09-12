@@ -16,23 +16,32 @@
     "knowledgeCutoffDate": "April 30, 2026",
     "releaseDate": "September 4, 2026",
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": false
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
   },
   "description": "The gpt astra family includes models that produce text.",
   "models": {
     "gpt-6-astra": {
       "defaults": {
         "name": "GPT-6 Astra",
-        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation.",
-        "supportsResponseFormat": true
+        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation."
       }
     },
     "gpt-6-astra-fast": {
       "defaults": {
         "name": "GPT-6 Astra (Fast)",
         "description": "Fast variant of GPT-6 Astra for low-latency assistance and high-volume workloads.",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -49,35 +58,30 @@
     "gpt-6-astra-global": {
       "defaults": {
         "name": "GPT-6 Astra (Global)",
-        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation.",
-        "supportsResponseFormat": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation."
       }
     },
     "gpt-6-astra-us": {
       "defaults": {
         "name": "GPT-6 Astra (US)",
-        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation.",
-        "supportsResponseFormat": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
+        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation."
+      }
+    },
+    "openai-gpt-astra-latest": {
+      "defaults": {
+        "name": "OpenAI GPT Astra Latest",
+        "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
           ],
-          "defaultEffort": "low"
-        }
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 11, 2026"
       }
     }
   }

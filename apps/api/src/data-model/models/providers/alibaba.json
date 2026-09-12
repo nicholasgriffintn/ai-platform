@@ -319,7 +319,6 @@
       "matchingModel": "qwen3-32b",
       "overrides": {
         "contextWindow": 131072,
-        "maxTokens": 16384,
         "speed": 3,
         "lastUpdated": "April 2025",
         "costPer1kInputTokens": 0.0007,
@@ -359,7 +358,6 @@
       "matchingModel": "qwen3-coder-30b-a3b-instruct",
       "overrides": {
         "name": "Qwen3-Coder 30B-A3B Instruct",
-        "description": "Smaller Qwen coder for efficient local agents and repo-level fixes",
         "maxTokens": 65536,
         "speed": 4,
         "lastUpdated": "April 2025",
@@ -375,7 +373,6 @@
       "matchingModel": "qwen3-coder-480b-a35b-instruct",
       "overrides": {
         "name": "Qwen3-Coder 480B-A35B Instruct",
-        "description": "Open Qwen coding heavyweight for repository reasoning and agentic engineering",
         "maxTokens": 65536,
         "speed": 3,
         "releaseDate": "April 2025",
@@ -412,6 +409,7 @@
         "maxTokens": 32768,
         "contextComplexity": 3,
         "speed": 4,
+        "releaseDate": "September 2025",
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.002

@@ -30,7 +30,7 @@
     "deepseek-r1": {
       "defaults": {
         "name": "DeepSeek-R1",
-        "description": "DeepSeek reasoning model for multi-step analysis, math, coding, and tools",
+        "description": "Classic open reasoning model for transparent math, coding, and deliberate problem solving",
         "maxTokens": 32768,
         "contextComplexity": 3,
         "knowledgeCutoffDate": "July 2024",
@@ -123,6 +123,7 @@
         "contextComplexity": 3,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "January 20, 2025",
+        "supportsToolCalls": false,
         "artificialAnalysis": {
           "intelligenceIndex": 12.6,
           "codingIndex": null,

@@ -136,7 +136,7 @@
     "minimax-m2": {
       "defaults": {
         "name": "MiniMax M2",
-        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "description": "Efficient open MiniMax model built for coding agents and tool-heavy workflows",
         "strengths": [
           "tool_use"
         ],
@@ -153,7 +153,7 @@
     },
     "minimax-m2-1": {
       "defaults": {
-        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "description": "Earlier MiniMax agent model for practical coding and productivity tasks",
         "contextWindow": 204800,
         "maxTokens": 131072,
         "strengths": [
@@ -193,8 +193,9 @@
     },
     "minimax-m2-5": {
       "defaults": {
-        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "description": "Prior MiniMax coding model for agent workflows, office edits, and automation",
         "contextWindow": 204800,
+        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],
@@ -260,8 +261,7 @@
     },
     "minimax-m2-7": {
       "defaults": {
-        "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
-        "maxTokens": 131072,
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "strengths": [
           "tool_use"
         ],

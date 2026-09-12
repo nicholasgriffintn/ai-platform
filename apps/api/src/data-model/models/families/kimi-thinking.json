@@ -60,7 +60,7 @@
     "kimi-k2-thinking": {
       "defaults": {
         "name": "Kimi K2 Thinking",
-        "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
+        "description": "Thinking Kimi model for slower research passes, planning, and hard technical questions",
         "contextWindow": 262144,
         "modalities": {
           "input": [

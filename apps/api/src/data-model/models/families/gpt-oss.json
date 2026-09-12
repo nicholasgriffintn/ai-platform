@@ -2,6 +2,14 @@
   "defaults": {
     "openWeights": true,
     "contextWindow": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
     "releaseDate": "August 5, 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -21,15 +29,7 @@
     "gpt-oss-120b": {
       "defaults": {
         "name": "GPT OSS 120B",
-        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
+        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "strengths": [
           "tool_use"
         ],
@@ -48,14 +48,6 @@
         "name": "gpt-oss-120b (free)",
         "description": "gpt-oss-120b (free) accepts text and produces text.",
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -78,19 +70,30 @@
         }
       }
     },
+    "gpt-oss-120b-govcloud": {
+      "defaults": {
+        "name": "gpt-oss-120b (GovCloud)",
+        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 23.8,
+          "codingIndex": 30.4,
+          "agenticIndex": 13.2,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
     "gpt-oss-120b-tee": {
       "defaults": {
         "name": "gpt oss 120b TEE",
         "description": "gpt oss 120b TEE accepts text and produces text.",
         "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "December 29, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -104,15 +107,7 @@
     "gpt-oss-20b": {
       "defaults": {
         "name": "GPT OSS 20B",
-        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
+        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "strengths": [
           "tool_use"
         ],
@@ -131,14 +126,6 @@
         "name": "gpt-oss-20b (free)",
         "description": "gpt-oss-20b (free) accepts text and produces text.",
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -152,6 +139,25 @@
           ],
           "defaultEffort": "none"
         },
+        "artificialAnalysis": {
+          "intelligenceIndex": 14.9,
+          "codingIndex": 20.7,
+          "agenticIndex": 3.1,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "gpt-oss-20b-govcloud": {
+      "defaults": {
+        "name": "gpt-oss-20b (GovCloud)",
+        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": 14.9,
           "codingIndex": 20.7,

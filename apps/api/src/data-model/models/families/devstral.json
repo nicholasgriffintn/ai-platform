@@ -40,9 +40,10 @@
       "defaults": {
         "name": "Devstral 2 123B",
         "openWeights": true,
-        "description": "Mistral coding agent model for repository tasks and software engineering workflows",
+        "description": "Mistral's coding-agent model for repository work, terminal tasks, and software fixes",
         "maxTokens": 8192,
-        "releaseDate": "February 17, 2026",
+        "knowledgeCutoffDate": "December 2025",
+        "releaseDate": "December 9, 2025",
         "supportsResponseFormat": true
       }
     },
