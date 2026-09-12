@@ -52,8 +52,29 @@
       "defaults": {
         "name": "Kimi K2.5",
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
+        "contextWindow": 256000,
+        "maxTokens": 256000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "January 27, 2026",
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

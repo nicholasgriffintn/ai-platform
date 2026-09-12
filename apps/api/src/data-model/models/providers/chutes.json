@@ -589,6 +589,7 @@
       "model": "qwen/qwen3-coder-next",
       "matchingModel": "Qwen/Qwen3-Coder-Next",
       "overrides": {
+        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "maxTokens": 65536,
         "speed": 4,
         "releaseDate": "February 5, 2026",
@@ -598,7 +599,8 @@
       },
       "unset": [
         "openWeights",
-        "reasoningConfig"
+        "reasoningConfig",
+        "knowledgeCutoffDate"
       ]
     },
     "Qwen/Qwen3-Next-80B-A3B-Instruct": {

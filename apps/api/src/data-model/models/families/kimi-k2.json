@@ -84,7 +84,7 @@
     "kimi-k2-5": {
       "defaults": {
         "name": "Kimi K2.5",
-        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
+        "description": "Earlier Kimi frontier model for long-context agents, coding, and multimodal work",
         "maxTokens": 262144,
         "contextComplexity": 4,
         "reliability": 1,

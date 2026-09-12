@@ -8,6 +8,7 @@
       "model": "gpt-oss/gpt-oss-120b",
       "matchingModel": "gpt-oss:120b",
       "overrides": {
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 32768,
         "strengths": [
           "reasoning",
@@ -24,6 +25,7 @@
       "model": "gpt-oss/gpt-oss-20b",
       "matchingModel": "gpt-oss:20b",
       "overrides": {
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 32768,
         "strengths": [
           "reasoning",
@@ -154,6 +156,7 @@
       "matchingModel": "kimi-k2.5",
       "overrides": {
         "name": "kimi-k2.5",
+        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "modalities": {
           "input": [
             "text",
@@ -255,7 +258,7 @@
       "matchingModel": "minimax-m2.5",
       "overrides": {
         "name": "minimax-m2.5",
-        "maxTokens": 131072,
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "speed": 4,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",
@@ -271,7 +274,6 @@
       "matchingModel": "minimax-m2.7",
       "overrides": {
         "name": "minimax-m2.7",
-        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196608,
         "maxTokens": 196608,
         "speed": 2,
@@ -368,6 +370,22 @@
         "contextWindow": 1048576,
         "maxTokens": 131072,
         "lastUpdated": "August 14, 2026"
+      }
+    },
+    "deepseek-v4.1-flash": {
+      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "matchingModel": "deepseek-v4.1-flash",
+      "overrides": {
+        "lastUpdated": "September 10, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

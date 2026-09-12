@@ -150,7 +150,7 @@
       "defaults": {
         "name": "Mistral Small 3.2 24B",
         "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
-        "contextWindow": 131072,
+        "contextWindow": 256000,
         "maxTokens": 16384,
         "modalities": {
           "input": [

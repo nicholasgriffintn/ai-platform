@@ -173,6 +173,7 @@
         "name": "Llama 3.1 70B Instruct",
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "contextWindow": 128000,
+        "maxTokens": 8192,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "July 23, 2024"
       }
@@ -206,7 +207,7 @@
     "llama-3-1-8b-instruct": {
       "defaults": {
         "name": "Llama 3.1 8B Instruct",
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "description": "Compact open Llama model for lightweight chat, drafting, and self-hosting",
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "July 23, 2024"
       }
@@ -420,7 +421,7 @@
     "llama-3-3-70b-instruct": {
       "defaults": {
         "name": "Llama-3.3-70B-Instruct",
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "description": "Popular open Llama workhorse for multilingual chat, coding, and self-hosting",
         "contextWindow": 128000,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "December 6, 2024"
@@ -584,9 +585,9 @@
     "llama-4-maverick-17b-instruct": {
       "defaults": {
         "name": "Llama 4 Maverick 17B Instruct",
-        "description": "Open multimodal Llama model for strong reasoning and fast responses",
+        "description": "Open multimodal Llama for strong reasoning with efficient everyday serving",
         "contextWindow": 1000000,
-        "maxTokens": 16384,
+        "maxTokens": 8192,
         "modalities": {
           "input": [
             "text",
@@ -606,7 +607,7 @@
         "name": "Llama 4 Maverick 17B Instruct (US)",
         "description": "Open multimodal Llama for strong reasoning with efficient everyday serving",
         "contextWindow": 1000000,
-        "maxTokens": 16384,
+        "maxTokens": 8192,
         "modalities": {
           "input": [
             "text",
@@ -748,9 +749,9 @@
     "llama-4-scout-17b-instruct": {
       "defaults": {
         "name": "Llama 4 Scout 17B Instruct",
-        "description": "Open multimodal Llama model for long-context analysis and efficient agents",
-        "contextWindow": 3500000,
-        "maxTokens": 16384,
+        "description": "Open Llama with long-context vision for efficient multimodal agents",
+        "contextWindow": 10000000,
+        "maxTokens": 8192,
         "modalities": {
           "input": [
             "text",
@@ -769,8 +770,8 @@
       "defaults": {
         "name": "Llama 4 Scout 17B Instruct (US)",
         "description": "Open Llama with long-context vision for efficient multimodal agents",
-        "contextWindow": 3500000,
-        "maxTokens": 16384,
+        "contextWindow": 10000000,
+        "maxTokens": 8192,
         "modalities": {
           "input": [
             "text",

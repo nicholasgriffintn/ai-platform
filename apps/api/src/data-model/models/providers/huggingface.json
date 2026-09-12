@@ -62,6 +62,7 @@
       "matchingModel": "Qwen/Qwen3-Coder-480B-A35B-Instruct",
       "overrides": {
         "name": "Qwen3-Coder-480B-A35B-Instruct",
+        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "maxTokens": 66536,
         "strengths": [
           "coding",
@@ -147,6 +148,7 @@
       "matchingModel": "deepseek-ai/DeepSeek-V3.2",
       "overrides": {
         "name": "DeepSeek-V3.2",
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "maxTokens": 65536,
         "lastUpdated": "December 1, 2025",
         "costPer1kInputTokens": 0.00028,
@@ -161,6 +163,7 @@
       "matchingModel": "MiniMaxAI/MiniMax-M2.1",
       "overrides": {
         "name": "MiniMax-M2.1",
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "speed": 4,
         "knowledgeCutoffDate": "October 2025",
         "lastUpdated": "December 23, 2025",
@@ -176,6 +179,7 @@
       "matchingModel": "moonshotai/Kimi-K2-Thinking",
       "overrides": {
         "name": "Kimi-K2-Thinking",
+        "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
         "maxTokens": 262144,
         "speed": 4,
         "lastUpdated": "November 6, 2025",
@@ -191,6 +195,7 @@
       "matchingModel": "moonshotai/Kimi-K2.5",
       "overrides": {
         "name": "Kimi-K2.5",
+        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "modalities": {
           "input": [
             "text",
@@ -303,6 +308,7 @@
       "matchingModel": "zai-org/GLM-4.7",
       "overrides": {
         "name": "GLM-4.7",
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 204800,
         "maxTokens": 131072,
         "speed": 4,
@@ -343,7 +349,9 @@
       "model": "glm/glm-5",
       "matchingModel": "zai-org/GLM-5",
       "overrides": {
-        "maxTokens": 131072,
+        "name": "GLM-5",
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "contextWindow": 202752,
         "speed": 3,
         "releaseDate": "February 11, 2026",
         "lastUpdated": "February 11, 2026",
@@ -377,7 +385,7 @@
       "matchingModel": "MiniMaxAI/MiniMax-M2.5",
       "overrides": {
         "name": "MiniMax-M2.5",
-        "maxTokens": 131072,
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "speed": 4,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -392,8 +400,8 @@
       "matchingModel": "MiniMaxAI/MiniMax-M2.7",
       "overrides": {
         "name": "MiniMax-M2.7",
-        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 204800,
+        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -438,6 +446,7 @@
       "matchingModel": "Qwen/Qwen3-Coder-Next",
       "overrides": {
         "name": "Qwen3-Coder-Next",
+        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "maxTokens": 65536,
         "speed": 4,
         "knowledgeCutoffDate": "April 2025",
@@ -511,7 +520,6 @@
       "model": "deepseek-thinking/deepseek-r1",
       "matchingModel": "deepseek-ai/DeepSeek-R1",
       "overrides": {
-        "description": "Classic open reasoning model for transparent math, coding, and deliberate problem solving",
         "contextWindow": 64000,
         "lastUpdated": "May 29, 2025",
         "costPer1kInputTokens": 0.0007,
@@ -540,7 +548,6 @@
       "model": "gemma/gemma-4-26b-a4b-it",
       "matchingModel": "google/gemma-4-26B-A4B-it",
       "overrides": {
-        "maxTokens": 32768,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00013,
         "costPer1kOutputTokens": 0.0004,
@@ -562,7 +569,6 @@
       "model": "llama/llama-3-3-70b-instruct",
       "matchingModel": "meta-llama/Llama-3.3-70B-Instruct",
       "overrides": {
-        "description": "Popular open Llama workhorse for multilingual chat, coding, and self-hosting",
         "contextWindow": 131072,
         "maxTokens": 4096,
         "lastUpdated": "December 6, 2024",
@@ -575,7 +581,6 @@
       "matchingModel": "MiniMaxAI/MiniMax-M2",
       "overrides": {
         "name": "MiniMax-M2",
-        "description": "Efficient open MiniMax model built for coding agents and tool-heavy workflows",
         "contextWindow": 204800,
         "maxTokens": 131072,
         "speed": 4,
@@ -656,7 +661,6 @@
       "matchingModel": "Qwen/Qwen3-32B",
       "overrides": {
         "contextWindow": 131072,
-        "maxTokens": 16384,
         "speed": 3,
         "lastUpdated": "April 2025",
         "costPer1kInputTokens": 0.00029,
@@ -668,7 +672,6 @@
       "matchingModel": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
       "overrides": {
         "name": "Qwen3-Coder 30B-A3B Instruct",
-        "description": "Smaller Qwen coder for efficient local agents and repo-level fixes",
         "maxTokens": 65536,
         "speed": 4,
         "lastUpdated": "April 2025",
@@ -909,7 +912,6 @@
       "model": "gpt-oss/gpt-oss-120b",
       "matchingModel": "openai/gpt-oss-120b",
       "overrides": {
-        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "maxTokens": 32768,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
@@ -921,6 +923,7 @@
       "model": "gpt-oss/gpt-oss-20b",
       "matchingModel": "openai/gpt-oss-20b",
       "overrides": {
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 32768,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
@@ -1054,6 +1057,7 @@
       "model": "deepseek/deepseek-v3-1",
       "matchingModel": "deepseek-ai/DeepSeek-V3.1",
       "overrides": {
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 131072,
         "maxTokens": 8192,
         "contextComplexity": 3,
@@ -1068,6 +1072,8 @@
       "overrides": {
         "name": "Qwen3 235B-A22B Instruct 2507",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
+        "maxTokens": 16384,
+        "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.000855,
@@ -1082,6 +1088,7 @@
       "matchingModel": "meta-llama/Llama-3.1-8B-Instruct",
       "overrides": {
         "name": "Llama-3.1-8B-Instruct",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "contextWindow": 131072,
         "maxTokens": 4096,
         "lastUpdated": "July 23, 2024",
@@ -1132,6 +1139,7 @@
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
+        "maxTokens": 32768,
         "speed": 3,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -1250,6 +1258,63 @@
       "unset": [
         "knowledgeCutoffDate"
       ]
+    },
+    "deepseek-ai/DeepSeek-V4.1-Flash": {
+      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "overrides": {
+        "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "google/gemma-3-12b-it": {
+      "model": "gemma/gemma-3-12b-it",
+      "matchingModel": "google/gemma-3-12b-it",
+      "overrides": {
+        "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
+        "maxTokens": 131072,
+        "lastUpdated": "March 12, 2025",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.00015,
+        "supportsAttachments": true
+      }
+    },
+    "google/gemma-3-27b-it": {
+      "model": "gemma/gemma-3-27b-it",
+      "matchingModel": "google/gemma-3-27b-it",
+      "overrides": {
+        "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
+        "maxTokens": 131072,
+        "lastUpdated": "March 12, 2025",
+        "costPer1kInputTokens": 0.00008,
+        "costPer1kOutputTokens": 0.00016,
+        "supportsAttachments": true
+      }
+    },
+    "google/gemma-3-4b-it": {
+      "model": "gemma/gemma-3-4b-it",
+      "matchingModel": "google/gemma-3-4b-it",
+      "overrides": {
+        "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
+        "maxTokens": 131072,
+        "lastUpdated": "March 12, 2025",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.0001,
+        "supportsAttachments": true
+      }
     }
   }
 }

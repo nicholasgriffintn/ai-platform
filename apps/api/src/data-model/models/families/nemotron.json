@@ -306,8 +306,7 @@
         "name": "Nemotron 3 Super 120B A12B",
         "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
         "contextWindow": 262144,
-        "releaseDate": "March 11, 2026",
-        "supportsResponseFormat": false
+        "releaseDate": "March 11, 2026"
       }
     },
     "nemotron-3-super-free": {
@@ -611,10 +610,9 @@
     "nvidia-nemotron-nano-12b-v2-vl-bf16": {
       "defaults": {
         "name": "NVIDIA Nemotron Nano 12B v2 VL BF16",
-        "openWeights": false,
         "description": "Nemotron multimodal model for visual reasoning and agentic AI workflows",
         "contextWindow": 128000,
-        "maxTokens": 4096,
+        "maxTokens": 8192,
         "modalities": {
           "input": [
             "text",
@@ -624,27 +622,30 @@
             "text"
           ]
         },
-        "releaseDate": "December 1, 2024",
-        "supportsResponseFormat": true
+        "releaseDate": "October 28, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
       }
     },
     "nvidia-nemotron-nano-3-30b": {
       "defaults": {
         "name": "NVIDIA Nemotron Nano 3 30B",
         "description": "Small Nemotron 3 MoE for efficient coding, math, and long-context agents",
-        "contextWindow": 128000,
-        "maxTokens": 4096,
-        "releaseDate": "December 23, 2025",
+        "contextWindow": 262144,
+        "maxTokens": 8192,
+        "releaseDate": "December 15, 2025",
         "supportsResponseFormat": true
       }
     },
     "nvidia-nemotron-nano-9b-v2": {
       "defaults": {
         "description": "Compact Nemotron model for efficient reasoning and deployable AI agents",
+        "contextWindow": 131072,
         "strengths": [
           "tool_use"
         ],
         "reliability": 1,
+        "releaseDate": "August 18, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": 7.4,
           "codingIndex": null,

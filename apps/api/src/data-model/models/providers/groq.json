@@ -158,6 +158,7 @@
       "model": "gpt-oss/gpt-oss-20b",
       "matchingModel": "openai/gpt-oss-20b",
       "overrides": {
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 65536,
         "isFree": true,
         "strengths": [
@@ -177,7 +178,6 @@
       "model": "gpt-oss/gpt-oss-120b",
       "matchingModel": "openai/gpt-oss-120b",
       "overrides": {
-        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "maxTokens": 65536,
         "isFree": true,
         "strengths": [

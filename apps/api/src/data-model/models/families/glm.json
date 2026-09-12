@@ -277,7 +277,7 @@
     "glm-4-7": {
       "defaults": {
         "name": "GLM 4.7",
-        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "description": "Mature GLM model for dependable coding, reasoning, and structured agent tasks",
         "strengths": [
           "tool_use"
         ],
@@ -351,9 +351,8 @@
     },
     "glm-5": {
       "defaults": {
-        "name": "GLM-5",
-        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 202752,
+        "description": "General GLM flagship for coding, analysis, and tool-heavy engineering workflows",
+        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],
@@ -827,35 +826,6 @@
         }
       }
     },
-    "glm-5-3-flash-2x-usage": {
-      "defaults": {
-        "name": "GLM-5.3-Flash (2x usage)",
-        "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
-        "contextWindow": 1000000,
-        "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "August 26, 2026",
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
     "glm-5-3-flash-eu": {
       "defaults": {
         "name": "GLM-5.3-Flash (EU)",
@@ -960,7 +930,7 @@
         "openWeights": false,
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 1310720,
-        "maxTokens": 128000,
+        "maxTokens": 943718,
         "releaseDate": "August 19, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
