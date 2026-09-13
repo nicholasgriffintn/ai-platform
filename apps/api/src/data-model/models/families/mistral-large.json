@@ -1,5 +1,6 @@
 {
   "defaults": {
+    "openWeights": true,
     "modalities": {
       "input": [
         "text",
@@ -70,9 +71,13 @@
     },
     "mistral-large-3": {
       "defaults": {
-        "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
+        "name": "Mistral Large 3",
+        "description": "Mistral's largest general model for enterprise agents, coding, and multilingual reasoning",
         "contextWindow": 256000,
         "maxTokens": 256000,
+        "knowledgeCutoffDate": "November 2024",
+        "releaseDate": "December 2, 2025",
+        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 15.9,
           "codingIndex": 20.1,
@@ -84,17 +89,25 @@
     "mistral-large-3-675b": {
       "defaults": {
         "name": "mistral-large-3:675b",
-        "openWeights": true,
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
         "contextWindow": 262144,
         "maxTokens": 262144,
         "releaseDate": "December 2, 2025"
       }
     },
+    "mistral-large-3-675b-instruct-2512": {
+      "defaults": {
+        "name": "Mistral Large 3 675B Instruct 2512",
+        "description": "Mistral's largest general model for enterprise agents, coding, and multilingual reasoning",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "knowledgeCutoffDate": "November 2024",
+        "releaseDate": "December 2, 2025"
+      }
+    },
     "mistral-large-latest": {
       "defaults": {
         "name": "Mistral Large",
-        "openWeights": true,
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
         "contextWindow": 262144,
         "maxTokens": 262144,

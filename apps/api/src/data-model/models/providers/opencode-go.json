@@ -15,8 +15,8 @@
         "speed": 4,
         "releaseDate": "July 31, 2026",
         "lastUpdated": "July 31, 2026",
-        "costPer1kInputTokens": 0.00022,
-        "costPer1kOutputTokens": 0.00066,
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -343,8 +343,8 @@
       "overrides": {
         "contextWindow": 1000000,
         "lastUpdated": "August 21, 2026",
-        "costPer1kInputTokens": 0.00022,
-        "costPer1kOutputTokens": 0.00066
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006
       },
       "unset": [
         "knowledgeCutoffDate"
@@ -369,12 +369,25 @@
       ]
     },
     "glm-5.3-flash": {
-      "model": "glm/glm-5-3-flash-2x-usage",
+      "model": "glm/glm-5-3-flash",
       "matchingModel": "glm-5.3-flash",
       "overrides": {
+        "name": "GLM-5.3-Flash (2x usage)",
+        "contextWindow": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "lastUpdated": "August 26, 2026",
-        "costPer1kInputTokens": 0.000075,
-        "costPer1kOutputTokens": 0.00025
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0005
       }
     },
     "grok-4.6": {
@@ -446,13 +459,22 @@
         }
       }
     },
-    "omen-alpha": {
-      "model": "opencode-go/omen-alpha/omen-alpha",
-      "matchingModel": "omen-alpha",
+    "deepseek-v4.1-flash": {
+      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
-        "lastUpdated": "September 4, 2026",
-        "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.00066
+        "contextWindow": 1000000,
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

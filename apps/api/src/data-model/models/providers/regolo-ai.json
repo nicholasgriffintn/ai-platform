@@ -10,6 +10,7 @@
       "matchingModel": "gpt-oss-120b",
       "overrides": {
         "openWeights": false,
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "contextWindow": 128000,
         "maxTokens": 16384,
         "speed": 5,
@@ -25,6 +26,7 @@
       "model": "qwen/qwen3-coder-next",
       "matchingModel": "qwen3-coder-next",
       "overrides": {
+        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "maxTokens": 16384,
         "contextComplexity": 3,
         "speed": 4,
@@ -34,7 +36,8 @@
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "knowledgeCutoffDate"
       ]
     },
     "apertus-70b": {
@@ -124,6 +127,7 @@
       "matchingModel": "gpt-oss-20b",
       "overrides": {
         "name": "GPT-OSS-20B",
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "contextWindow": 128000,
         "maxTokens": 16384,
         "speed": 5,
@@ -142,6 +146,7 @@
       "overrides": {
         "name": "Llama 3.3 70B Instruct",
         "openWeights": false,
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "maxTokens": 16384,
         "releaseDate": "April 28, 2025",
         "lastUpdated": "April 28, 2025",

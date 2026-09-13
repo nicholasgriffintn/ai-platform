@@ -10,7 +10,6 @@
         "text"
       ]
     },
-    "releaseDate": "April 28, 2025",
     "supportsToolCalls": true,
     "supportsAttachments": false,
     "supportsTemperature": true,
@@ -27,15 +26,17 @@
     "palmyra-x4": {
       "defaults": {
         "name": "Palmyra X4",
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "contextWindow": 122880
+        "description": "Enterprise language model for workflow automation, coding, data analysis, and tool use",
+        "contextWindow": 122880,
+        "releaseDate": "October 9, 2024"
       }
     },
     "palmyra-x4-us": {
       "defaults": {
         "name": "Palmyra X4 (US)",
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "contextWindow": 122880
+        "description": "Enterprise language model for workflow automation, coding, data analysis, and tool use",
+        "contextWindow": 122880,
+        "releaseDate": "October 9, 2024"
       }
     },
     "palmyra-x5": {
@@ -49,7 +50,8 @@
       "defaults": {
         "name": "Palmyra X5 (US)",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "contextWindow": 1040000
+        "contextWindow": 1040000,
+        "releaseDate": "April 28, 2025"
       }
     }
   }

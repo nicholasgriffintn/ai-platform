@@ -272,38 +272,6 @@
         }
       }
     },
-    "mistral-large-3": {
-      "defaults": {
-        "name": "Mistral Large 3",
-        "openWeights": true,
-        "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
-        "contextWindow": 256000,
-        "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "releaseDate": "December 2, 2025",
-        "supportsResponseFormat": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 15.9,
-          "codingIndex": 20.1,
-          "agenticIndex": 5.5,
-          "intelligenceIndexVersion": 4.1
-        }
-      }
-    },
     "mistral-medium-2508": {
       "defaults": {
         "name": "Mistral Medium 2508",
@@ -648,37 +616,6 @@
         }
       }
     },
-    "pixtral-large-25-02": {
-      "defaults": {
-        "name": "Pixtral Large (25.02)",
-        "openWeights": false,
-        "description": "Mistral vision-language model for image understanding and multimodal chat",
-        "contextWindow": 128000,
-        "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "tool_use"
-        ],
-        "contextComplexity": 3,
-        "reliability": 1,
-        "releaseDate": "April 8, 2025",
-        "artificialAnalysis": {
-          "intelligenceIndex": 8.1,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
-        }
-      }
-    },
     "saba": {
       "defaults": {
         "name": "Saba",
@@ -739,26 +676,6 @@
         "supportsResponseFormat": true
       }
     },
-    "voxtral-mini-3b-2507": {
-      "defaults": {
-        "name": "Voxtral Mini 3B 2507",
-        "openWeights": false,
-        "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
-        "contextWindow": 128000,
-        "maxTokens": 4096,
-        "modalities": {
-          "input": [
-            "audio",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "December 1, 2024",
-        "supportsResponseFormat": true
-      }
-    },
     "voxtral-small-24b": {
       "defaults": {
         "name": "Voxtral Small 24B",
@@ -778,15 +695,6 @@
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "July 15, 2025",
         "supportsResponseFormat": false,
-        "supportsAttachments": true
-      }
-    },
-    "voxtral-small-24b-2507": {
-      "defaults": {
-        "name": "Voxtral Small 24B 2507",
-        "openWeights": true,
-        "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
-        "supportsResponseFormat": true,
         "supportsAttachments": true
       }
     }

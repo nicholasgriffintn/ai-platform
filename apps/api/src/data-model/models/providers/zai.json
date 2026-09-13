@@ -9,7 +9,6 @@
       "model": "glm/glm-4-7",
       "matchingModel": "glm-4.7",
       "overrides": {
-        "description": "Mature GLM model for dependable coding, reasoning, and structured agent tasks",
         "contextWindow": 204800,
         "maxTokens": 131072,
         "strengths": [
@@ -29,9 +28,7 @@
       "matchingModel": "glm-5",
       "overrides": {
         "name": "GLM 5",
-        "description": "General GLM flagship for coding, analysis, and tool-heavy engineering workflows",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "strengths": [
           "coding",
           "reasoning",
@@ -164,8 +161,7 @@
       "model": "glm-flash/glm-4-7-flash",
       "matchingModel": "glm-4.7-flash",
       "overrides": {
-        "description": "Budget GLM lane for fast coding help, routing, and everyday automation",
-        "contextWindow": 200000,
+        "name": "GLM-4.7-Flash",
         "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "January 19, 2026",

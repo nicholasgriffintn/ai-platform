@@ -1516,8 +1516,8 @@
       "matchingModel": "gpt-5.6-sol@eu",
       "overrides": {
         "lastUpdated": "July 9, 2026",
-        "costPer1kInputTokens": 0.0055,
-        "costPer1kOutputTokens": 0.033,
+        "costPer1kInputTokens": 0.0044,
+        "costPer1kOutputTokens": 0.022,
         "supportsTemperature": false
       }
     },
@@ -2759,6 +2759,7 @@
       "matchingModel": "minimax-m2.7",
       "overrides": {
         "name": "MiniMax-M2.7",
+        "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
         "contextWindow": 200000,
         "maxTokens": 128000,
         "speed": 2,
@@ -3759,6 +3760,26 @@
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v4.1-flash": {
+      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "matchingModel": "deepseek-v4.1-flash",
+      "overrides": {
+        "maxTokens": 393216,
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.00066,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

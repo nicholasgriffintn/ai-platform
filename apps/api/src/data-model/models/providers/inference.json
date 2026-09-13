@@ -60,6 +60,7 @@
       "model": "llama/llama-3-1-8b-instruct",
       "matchingModel": "meta/llama-3.1-8b-instruct",
       "overrides": {
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "contextWindow": 16000,
         "maxTokens": 4096,
         "strengths": [

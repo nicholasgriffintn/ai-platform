@@ -11,7 +11,6 @@
       ]
     },
     "knowledgeCutoffDate": "May 2025",
-    "releaseDate": "July 31, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
@@ -19,6 +18,24 @@
   },
   "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
   "models": {
+    "deepseek-v4-1-flash": {
+      "defaults": {
+        "name": "DeepSeek V4.1 Flash",
+        "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
+        "contextWindow": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 10, 2026",
+        "supportsAttachments": true
+      }
+    },
     "deepseek-v4-flash": {
       "defaults": {
         "name": "DeepSeek V4 Flash",
@@ -41,7 +58,8 @@
       "defaults": {
         "name": "DeepSeek V4 Flash 0731",
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
-        "contextWindow": 1000000
+        "contextWindow": 1000000,
+        "releaseDate": "July 31, 2026"
       }
     },
     "deepseek-v4-flash-0731-eu": {
@@ -50,6 +68,7 @@
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
         "contextWindow": 1048576,
         "maxTokens": 131072,
+        "releaseDate": "July 31, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -68,6 +87,7 @@
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
         "contextWindow": 1048576,
         "maxTokens": 131072,
+        "releaseDate": "July 31, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

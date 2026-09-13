@@ -122,6 +122,7 @@
       "matchingModel": "accounts/fireworks/models/deepseek-v3p1",
       "overrides": {
         "name": "DeepSeek V3.1",
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "maxTokens": 163840,
         "knowledgeCutoffDate": "July 2025",
         "lastUpdated": "August 21, 2025",
@@ -139,6 +140,7 @@
       "matchingModel": "accounts/fireworks/models/deepseek-v3p2",
       "overrides": {
         "name": "DeepSeek V3.2",
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 160000,
         "maxTokens": 160000,
         "knowledgeCutoffDate": "September 2025",
@@ -206,6 +208,7 @@
       "model": "glm/glm-4-7",
       "matchingModel": "accounts/fireworks/models/glm-4p7",
       "overrides": {
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 198000,
         "maxTokens": 198000,
         "speed": 4,
@@ -223,6 +226,7 @@
       "model": "gpt-oss/gpt-oss-120b",
       "matchingModel": "accounts/fireworks/models/gpt-oss-120b",
       "overrides": {
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 32768,
         "speed": 5,
         "lastUpdated": "June 16, 2026",
@@ -237,6 +241,7 @@
       "model": "gpt-oss/gpt-oss-20b",
       "matchingModel": "accounts/fireworks/models/gpt-oss-20b",
       "overrides": {
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 32768,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
@@ -270,27 +275,7 @@
       "model": "kimi/kimi-k2-5",
       "matchingModel": "accounts/fireworks/models/kimi-k2p5",
       "overrides": {
-        "contextWindow": 256000,
-        "maxTokens": 256000,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use"
-        ],
         "speed": 3,
-        "knowledgeCutoffDate": "January 2025",
-        "releaseDate": "January 27, 2026",
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
@@ -302,6 +287,7 @@
       "matchingModel": "accounts/fireworks/models/minimax-m2",
       "overrides": {
         "name": "MiniMax-M2",
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 192000,
         "maxTokens": 192000,
         "speed": 4,
@@ -320,6 +306,7 @@
       "matchingModel": "accounts/fireworks/models/minimax-m2p1",
       "overrides": {
         "name": "MiniMax-M2.1",
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 200000,
         "maxTokens": 200000,
         "speed": 4,
@@ -336,6 +323,7 @@
       "model": "qwen/qwen3-coder-480b-a35b-instruct",
       "matchingModel": "accounts/fireworks/models/qwen3-coder-480b-a35b-instruct",
       "overrides": {
+        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "contextWindow": 256000,
         "maxTokens": 32768,
         "speed": 3,
@@ -354,7 +342,8 @@
       "matchingModel": "accounts/fireworks/models/glm-5",
       "overrides": {
         "name": "GLM 5",
-        "maxTokens": 131072,
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "contextWindow": 202752,
         "speed": 3,
         "releaseDate": "February 11, 2026",
         "lastUpdated": "February 11, 2026",
@@ -400,6 +389,7 @@
       "matchingModel": "accounts/fireworks/models/minimax-m2p5",
       "overrides": {
         "name": "MiniMax-M2.5",
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196608,
         "maxTokens": 196608,
         "speed": 4,
@@ -416,6 +406,7 @@
       "matchingModel": "accounts/fireworks/models/minimax-m2p7",
       "overrides": {
         "name": "MiniMax-M2.7",
+        "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
         "contextWindow": 196608,
         "maxTokens": 196608,
         "speed": 2,
@@ -883,6 +874,33 @@
         "lastUpdated": "September 7, 2026",
         "costPer1kInputTokens": 0.0021,
         "costPer1kOutputTokens": 0.0066
+      }
+    },
+    "accounts/fireworks/models/deepseek-v4p1-flash": {
+      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "matchingModel": "accounts/fireworks/models/deepseek-v4p1-flash",
+      "overrides": {
+        "contextWindow": 1000000,
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.00066,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "accounts/fireworks/models/mistral-large-3-fp8": {
+      "model": "mistral-large/mistral-large-3-675b-instruct-2512",
+      "matchingModel": "accounts/fireworks/models/mistral-large-3-fp8",
+      "overrides": {
+        "lastUpdated": "December 2, 2025",
+        "supportsAttachments": true
       }
     }
   }

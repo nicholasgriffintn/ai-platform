@@ -69,7 +69,6 @@
         },
         "releaseDate": "September 8, 2026",
         "supportsResponseFormat": true,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

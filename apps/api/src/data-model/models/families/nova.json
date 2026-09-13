@@ -115,7 +115,9 @@
         "name": "Nova 2 Lite",
         "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 1000000
+        "contextWindow": 1000000,
+        "maxTokens": 65535,
+        "releaseDate": "December 2, 2025"
       }
     },
     "nova-2-lite-eu": {
@@ -124,7 +126,7 @@
         "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 1000000,
-        "maxTokens": 64000,
+        "maxTokens": 65535,
         "modalities": {
           "input": [
             "text",
@@ -136,7 +138,8 @@
             "text"
           ]
         },
-        "releaseDate": "December 1, 2025",
+        "knowledgeCutoffDate": "October 2025",
+        "releaseDate": "December 2, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -153,7 +156,7 @@
         "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 1000000,
-        "maxTokens": 64000,
+        "maxTokens": 65535,
         "modalities": {
           "input": [
             "text",
@@ -172,7 +175,8 @@
         "contextComplexity": 3,
         "reliability": 3,
         "multimodal": true,
-        "releaseDate": "December 1, 2025",
+        "knowledgeCutoffDate": "October 2025",
+        "releaseDate": "December 2, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -189,7 +193,7 @@
         "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 1000000,
-        "maxTokens": 64000,
+        "maxTokens": 65535,
         "modalities": {
           "input": [
             "text",
@@ -201,7 +205,8 @@
             "text"
           ]
         },
-        "releaseDate": "December 1, 2025",
+        "knowledgeCutoffDate": "October 2025",
+        "releaseDate": "December 2, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -218,7 +223,7 @@
         "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 1000000,
-        "maxTokens": 64000,
+        "maxTokens": 65535,
         "modalities": {
           "input": [
             "text",
@@ -230,7 +235,8 @@
             "text"
           ]
         },
-        "releaseDate": "December 1, 2025",
+        "knowledgeCutoffDate": "October 2025",
+        "releaseDate": "December 2, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",

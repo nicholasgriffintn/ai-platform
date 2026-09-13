@@ -262,6 +262,7 @@
       "model": "deepseek/deepseek-v3-1",
       "matchingModel": "deepseek-v3.1",
       "overrides": {
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 131072,
         "maxTokens": 131072,
         "knowledgeCutoffDate": "July 2024",
@@ -278,6 +279,7 @@
       "matchingModel": "deepseek-v3.2",
       "overrides": {
         "name": "DeepSeek-V3.2",
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 128000,
         "maxTokens": 128000,
         "lastUpdated": "December 1, 2025",
@@ -702,6 +704,7 @@
       "model": "kimi-thinking/kimi-k2-thinking",
       "matchingModel": "kimi-k2-thinking",
       "overrides": {
+        "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
         "maxTokens": 262144,
         "speed": 4,
         "lastUpdated": "December 2, 2025",
@@ -713,6 +716,7 @@
       "model": "kimi-k2/kimi-k2-5",
       "matchingModel": "kimi-k2.5",
       "overrides": {
+        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "modalities": {
           "input": [
             "text",
@@ -759,6 +763,7 @@
       "model": "llama/llama-3-3-70b-instruct",
       "matchingModel": "llama-3.3-70b-instruct",
       "overrides": {
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "maxTokens": 32768,
         "lastUpdated": "December 6, 2024",
         "costPer1kInputTokens": 0.00071,

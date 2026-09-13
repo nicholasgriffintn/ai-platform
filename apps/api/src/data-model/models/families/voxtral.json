@@ -1,33 +1,59 @@
 {
   "defaults": {
-    "openWeights": false,
-    "contextWindow": 0,
-    "maxTokens": 0,
-    "modalities": {
-      "input": [
-        "text"
-      ],
-      "output": [
-        "speech"
-      ]
-    },
-    "supportsToolCalls": false,
-    "supportsAttachments": false,
-    "supportsTemperature": false
+    "openWeights": true,
+    "releaseDate": "July 15, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "description": "The voxtral family includes models that produce audio, speech.",
   "models": {
+    "voxtral-mini-3b-2507": {
+      "defaults": {
+        "name": "Voxtral Mini 3B 2507",
+        "description": "Open audio-language model for speech transcription, audio understanding, and voice-driven tool use",
+        "contextWindow": 32768,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "audio",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "supportsResponseFormat": true
+      }
+    },
     "voxtral-mini-latest": {
       "defaults": {
         "name": "Voxtral Mini",
+        "openWeights": false,
         "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
-        "releaseDate": "February 1, 2026"
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "speech"
+          ]
+        },
+        "releaseDate": "February 1, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsTemperature": false
       }
     },
     "voxtral-mini-tts-latest": {
       "defaults": {
         "name": "Voxtral Mini TTS (latest)",
+        "openWeights": false,
         "description": "Multilingual text-to-speech model with zero-shot voice cloning",
+        "contextWindow": 0,
+        "maxTokens": 0,
         "modalities": {
           "input": [
             "text"
@@ -36,20 +62,34 @@
             "audio"
           ]
         },
-        "releaseDate": "March 1, 2026"
+        "releaseDate": "March 1, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "voxtral-small-24b-2507": {
+      "defaults": {
+        "name": "Voxtral Small 24B 2507",
+        "description": "Open audio-language model for speech transcription, audio understanding, and voice-driven tool use",
+        "contextWindow": 32768,
+        "supportsResponseFormat": true
       }
     },
     "voxtral-small-latest": {
       "defaults": {
         "name": "Voxtral Small",
-        "openWeights": true,
         "description": "Instruct model with native audio input for speech understanding and tool use",
         "contextWindow": 32000,
         "maxTokens": 32000,
-        "releaseDate": "July 15, 2025",
-        "supportsToolCalls": true,
-        "supportsAttachments": true,
-        "supportsTemperature": true
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "speech"
+          ]
+        }
       }
     }
   }

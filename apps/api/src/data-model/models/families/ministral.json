@@ -1,9 +1,10 @@
 {
   "defaults": {
     "openWeights": true,
+    "releaseDate": "December 2, 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": false,
+    "supportsAttachments": true,
     "supportsTemperature": true
   },
   "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
@@ -26,16 +27,13 @@
           ]
         },
         "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "December 2, 2025",
-        "supportsToolCalls": false,
-        "supportsAttachments": true
+        "supportsToolCalls": false
       }
     },
     "ministral-14b-3-0": {
       "defaults": {
         "name": "Ministral 14B 3.0",
-        "openWeights": false,
-        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "description": "Open vision-language model for efficient local deployment, instruction following, and tool use",
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
@@ -45,8 +43,7 @@
           "output": [
             "text"
           ]
-        },
-        "releaseDate": "December 1, 2024"
+        }
       }
     },
     "ministral-3-14b-2512": {
@@ -63,15 +60,13 @@
           "output": [
             "text"
           ]
-        },
-        "releaseDate": "December 2, 2025",
-        "supportsAttachments": true
+        }
       }
     },
     "ministral-3-3b": {
       "defaults": {
         "name": "Ministral 3 3B",
-        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "description": "Compact open vision-language model for edge deployment, instruction following, and tool use",
         "contextWindow": 256000,
         "maxTokens": 8192,
         "modalities": {
@@ -85,11 +80,11 @@
         },
         "strengths": [
           "vision",
-          "tool_use"
+          "tool_use",
+          "document"
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "releaseDate": "December 2, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": 5.6,
           "codingIndex": 4.8,
@@ -112,16 +107,13 @@
           "output": [
             "text"
           ]
-        },
-        "releaseDate": "December 2, 2025",
-        "supportsAttachments": true
+        }
       }
     },
     "ministral-3-8b": {
       "defaults": {
         "name": "Ministral 3 8B",
-        "openWeights": false,
-        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "description": "Compact open vision-language model for edge deployment, instruction following, and tool use",
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
@@ -133,11 +125,11 @@
           ]
         },
         "strengths": [
-          "tool_use"
+          "tool_use",
+          "document"
         ],
         "contextComplexity": 3,
         "reliability": 1,
-        "releaseDate": "December 1, 2024",
         "artificialAnalysis": {
           "intelligenceIndex": 8.9,
           "codingIndex": 11.4,
@@ -160,9 +152,7 @@
           "output": [
             "text"
           ]
-        },
-        "releaseDate": "December 2, 2025",
-        "supportsAttachments": true
+        }
       }
     },
     "ministral-3b": {
@@ -180,7 +170,8 @@
           ]
         },
         "knowledgeCutoffDate": "March 2024",
-        "releaseDate": "October 22, 2024"
+        "releaseDate": "October 22, 2024",
+        "supportsAttachments": false
       }
     },
     "ministral-3b-latest": {
@@ -198,7 +189,8 @@
           ]
         },
         "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "October 1, 2024"
+        "releaseDate": "October 1, 2024",
+        "supportsAttachments": false
       }
     },
     "ministral-8b-latest": {
@@ -216,7 +208,8 @@
           ]
         },
         "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "October 1, 2024"
+        "releaseDate": "October 1, 2024",
+        "supportsAttachments": false
       }
     }
   }

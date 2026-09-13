@@ -9,7 +9,6 @@
       "model": "kimi-thinking/kimi-k2-thinking",
       "matchingModel": "kimi-k2-thinking",
       "overrides": {
-        "description": "Thinking Kimi model for slower research passes, planning, and hard technical questions",
         "maxTokens": 262144,
         "strengths": [
           "reasoning",
@@ -34,7 +33,6 @@
       "model": "kimi-k2/kimi-k2-5",
       "matchingModel": "kimi-k2.5",
       "overrides": {
-        "description": "Earlier Kimi frontier model for long-context agents, coding, and multimodal work",
         "modalities": {
           "input": [
             "text"

@@ -50,6 +50,25 @@
         "costPer1kOutputTokens": 0.00075,
         "supportsToolCalls": false
       }
+    },
+    "mercury-2.5": {
+      "model": "mercury/mercury-2-5",
+      "matchingModel": "mercury-2.5",
+      "overrides": {
+        "description": "Mercury 2.5 is the fastest reasoning LLM, and the latest diffusion LLM (dLLM) from Inception",
+        "knowledgeCutoffDate": "November 1, 2025",
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.00004,
+        "costPer1kOutputTokens": 0.00015,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
     }
   }
 }

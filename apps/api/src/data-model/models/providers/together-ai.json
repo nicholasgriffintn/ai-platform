@@ -184,6 +184,7 @@
       "model": "gpt-oss/gpt-oss-120b",
       "matchingModel": "openai/gpt-oss-120b",
       "overrides": {
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 131072,
         "contextComplexity": 4,
         "speed": 5,
@@ -236,6 +237,7 @@
       "matchingModel": "zai-org/GLM-4.7",
       "overrides": {
         "name": "GLM-4.7",
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 200000,
         "maxTokens": 200000,
         "speed": 4,
@@ -276,8 +278,8 @@
       "matchingModel": "MiniMaxAI/MiniMax-M2.7",
       "overrides": {
         "name": "MiniMax-M2.7",
-        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 202752,
+        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -424,6 +426,7 @@
       "model": "gpt-oss/gpt-oss-20b",
       "matchingModel": "openai/gpt-oss-20b",
       "overrides": {
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 131072,
         "contextComplexity": 4,
         "speed": 5,

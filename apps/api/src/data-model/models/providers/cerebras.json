@@ -19,7 +19,6 @@
       "model": "gpt-oss/gpt-oss-120b",
       "matchingModel": "gpt-oss-120b",
       "overrides": {
-        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "maxTokens": 40960,
         "strengths": [
           "reasoning",

@@ -228,8 +228,9 @@
       "model": "glm/glm-5",
       "matchingModel": "glm-5",
       "overrides": {
+        "name": "GLM-5",
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "February 11, 2026",
@@ -552,6 +553,7 @@
       "model": "kimi-k2/kimi-k2-5",
       "matchingModel": "kimi-k2.5",
       "overrides": {
+        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 65536,
         "modalities": {
           "input": [
@@ -628,7 +630,7 @@
       "matchingModel": "minimax-m2.5",
       "overrides": {
         "name": "MiniMax M2.5",
-        "maxTokens": 131072,
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "speed": 4,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",
@@ -645,8 +647,8 @@
       "matchingModel": "minimax-m2.7",
       "overrides": {
         "name": "MiniMax M2.7",
-        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 204800,
+        "maxTokens": 131072,
         "speed": 2,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "March 18, 2026",
@@ -1083,17 +1085,7 @@
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsTemperature": false
       }
     },
     "muse-spark-1.3": {

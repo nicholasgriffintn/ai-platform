@@ -593,6 +593,7 @@
       "matchingModel": "@cf/zai-org/glm-4.7-flash",
       "overrides": {
         "name": "GLM 4.7 Flash",
+        "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
         "contextWindow": 131072,
         "maxTokens": 131072,
         "strengths": [
@@ -621,7 +622,6 @@
       "model": "gpt-oss/gpt-oss-120b",
       "matchingModel": "@cf/openai/gpt-oss-120b",
       "overrides": {
-        "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "contextWindow": 128000,
         "maxTokens": 16384,
         "strengths": [
@@ -641,6 +641,7 @@
       "model": "gpt-oss/gpt-oss-20b",
       "matchingModel": "@cf/openai/gpt-oss-20b",
       "overrides": {
+        "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "contextWindow": 128000,
         "maxTokens": 16384,
         "strengths": [

@@ -14,14 +14,15 @@
     },
     "strengths": [
       "vision",
-      "tool_use"
+      "tool_use",
+      "document"
     ],
     "contextComplexity": 4,
     "reliability": 1,
-    "releaseDate": "December 2, 2025",
+    "releaseDate": "September 18, 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": false,
+    "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [
@@ -42,7 +43,7 @@
     "magistral-small-1-2": {
       "defaults": {
         "name": "Magistral Small 1.2",
-        "description": "Mistral reasoning model for transparent analysis, math, and complex decisions"
+        "description": "Open multimodal reasoning model for transparent analysis of text and images"
       }
     }
   }

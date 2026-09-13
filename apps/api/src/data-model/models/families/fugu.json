@@ -2,7 +2,6 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 1000000,
-    "releaseDate": "June 15, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
@@ -23,10 +22,37 @@
             "text"
           ]
         },
+        "releaseDate": "June 15, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high",
             "xhigh"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "fugu-max": {
+      "defaults": {
+        "name": "Fugu Max",
+        "description": "Multi-agent model for routing expert agents across complex analytical tasks",
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 11, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "xhigh",
+            "max"
           ],
           "defaultEffort": "high"
         }
@@ -44,6 +70,34 @@
           "output": [
             "text"
           ]
+        },
+        "releaseDate": "June 15, 2026"
+      }
+    },
+    "fugu-ultra-v2": {
+      "defaults": {
+        "name": "Fugu Ultra v2",
+        "description": "Quality-first multi-agent model for hard research, analysis, and competitions",
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 28, 2026",
+        "releaseDate": "September 11, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "high"
         }
       }
     }
