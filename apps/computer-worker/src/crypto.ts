@@ -57,6 +57,7 @@ export interface ScreenAccessPayload {
   resourceId: string;
   fence: number;
   exp: number;
+  viewOnly?: boolean;
   recordingId?: string;
 }
 
@@ -97,6 +98,7 @@ export async function verifyScreenAccess(
       payload.fence <= 0 ||
       typeof payload.exp !== "number" ||
       payload.exp <= Date.now() ||
+      (payload.viewOnly !== undefined && typeof payload.viewOnly !== "boolean") ||
       (payload.recordingId !== undefined &&
         !teachingRecordingIdSchema.safeParse(payload.recordingId).success)
     ) {
@@ -108,6 +110,7 @@ export async function verifyScreenAccess(
       resourceId: payload.resourceId,
       fence: payload.fence,
       exp: payload.exp,
+      ...(payload.viewOnly === true ? { viewOnly: true } : {}),
       ...(typeof payload.recordingId === "string" ? { recordingId: payload.recordingId } : {}),
     };
   } catch {

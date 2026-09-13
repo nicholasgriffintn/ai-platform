@@ -1,13 +1,35 @@
-import { getSandbox, proxyToSandbox } from "@cloudflare/sandbox";
+import { getSandbox } from "@cloudflare/sandbox";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 
 import { startComputer } from "./browser";
 import { RESOURCE_ID_PATTERN, SCREEN_PORT, SCREEN_TTL_MS } from "./constants";
 import { signScreenAccess, verifyScreenAccess } from "./crypto";
-import { readFence } from "./fencing";
+import { ensureInitialisedFence, readFence } from "./fencing";
 import { errorResponse } from "./http";
-import { createTeachingFrameRecorder, startTeachingRecording } from "./teaching-recording";
+import { startTeachingRecording } from "./teaching-recording";
 import type { ComputerRequest, ComputerSandbox, Env } from "./types";
+
+const LOCAL_SCREEN_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
+
+const SCREEN_PROXY_HEADERS = {
+  proxy: "x-sandbox-preview-proxy",
+  port: "x-sandbox-preview-port",
+  token: "x-sandbox-preview-token",
+  sandboxId: "x-sandbox-preview-sandbox-id",
+} as const;
+
+const SDK_PREVIEW_HEADER_NAMES = new Set<string>(Object.values(SCREEN_PROXY_HEADERS));
+
+const FORWARDED_HEADER_PREFIXES = ["cf-", "x-forwarded-"];
+
+const STRIPPED_SCREEN_HEADERS = new Set([
+  "authorization",
+  "cookie",
+  "host",
+  "proxy-authorization",
+  "referer",
+  "x-real-ip",
+]);
 
 function readCookie(request: Request, name: string): string | null {
   const cookie = request.headers.get("Cookie") ?? "";
@@ -24,81 +46,59 @@ function readCookie(request: Request, name: string): string | null {
 }
 
 async function screenExposureToken(resourceId: string): Promise<string> {
-  return `screen_${await sha256Hex(resourceId)}`;
+  return `v${(await sha256Hex(resourceId)).slice(0, 12)}`;
 }
 
-function createScreenWebSocketProxy(
-  response: Response,
-  sandbox: ComputerSandbox,
-  fence: number,
-  expiresAt: number,
-  headers: Headers,
-  recordingId?: string,
-): Response {
-  const upstream = response.webSocket;
+function isLocalScreenHost(host: string): boolean {
+  return LOCAL_SCREEN_HOSTNAMES.has(host.split(":")[0] ?? "");
+}
 
-  if (!upstream) {
-    return new Response(response.body, { status: response.status, headers });
+function screenAccessOrigin(host: string): string {
+  return isLocalScreenHost(host) ? `http://${host}` : `https://${host}`;
+}
+
+const SCREEN_PATH_SEGMENT = "screen";
+
+function screenPath(token: string): string {
+  return `/${SCREEN_PATH_SEGMENT}/${token}`;
+}
+
+function readScreenPath(pathname: string): { token: string; rest: string } | null {
+  const prefix = `/${SCREEN_PATH_SEGMENT}/`;
+
+  if (!pathname.startsWith(prefix)) {
+    return null;
   }
 
-  const pair = new WebSocketPair();
-  const client = pair[0];
-  const server = pair[1];
-  let closed = false;
-  let clientQueue = Promise.resolve();
-  let upstreamQueue = Promise.resolve();
-  const recordFrame = recordingId ? createTeachingFrameRecorder(sandbox, recordingId) : null;
+  const remainder = pathname.slice(prefix.length);
+  const separator = remainder.indexOf("/");
+  const token = separator === -1 ? remainder : remainder.slice(0, separator);
+  const rest = separator === -1 ? "/" : remainder.slice(separator);
 
-  const close = (reason: string) => {
-    if (closed) {
-      return;
+  return token ? { token, rest } : null;
+}
+
+function buildScreenProxyHeaders(request: Request, resourceId: string, token: string): Headers {
+  const headers = new Headers(request.headers);
+
+  for (const name of request.headers.keys()) {
+    const lower = name.toLowerCase();
+
+    if (
+      STRIPPED_SCREEN_HEADERS.has(lower) ||
+      SDK_PREVIEW_HEADER_NAMES.has(lower) ||
+      FORWARDED_HEADER_PREFIXES.some((prefix) => lower.startsWith(prefix))
+    ) {
+      headers.delete(name);
     }
+  }
 
-    closed = true;
-    server.close(1000, reason);
-    upstream.close(1000, reason);
-  };
+  headers.set(SCREEN_PROXY_HEADERS.proxy, "1");
+  headers.set(SCREEN_PROXY_HEADERS.port, String(SCREEN_PORT));
+  headers.set(SCREEN_PROXY_HEADERS.token, token);
+  headers.set(SCREEN_PROXY_HEADERS.sandboxId, resourceId);
 
-  const sessionIsActive = async () =>
-    Date.now() < expiresAt && (await readFence(sandbox)) === fence;
-  const forward = async (destination: WebSocket, data: string | ArrayBuffer) => {
-    if (closed) {
-      return;
-    }
-
-    if (!(await sessionIsActive())) {
-      close("Screen session expired");
-
-      return;
-    }
-
-    destination.send(data);
-  };
-
-  server.accept();
-  server.addEventListener("message", (event) => {
-    clientQueue = clientQueue
-      .then(async () => {
-        if (recordFrame) {
-          await recordFrame(event.data);
-        }
-
-        return forward(upstream, event.data);
-      })
-      .catch(() => close("Screen connection failed"));
-  });
-  upstream.addEventListener("message", (event) => {
-    upstreamQueue = upstreamQueue
-      .then(() => forward(server, event.data))
-      .catch(() => close("Screen connection failed"));
-  });
-  server.addEventListener("close", () => close("Screen closed"));
-  upstream.addEventListener("close", () => close("Screen closed"));
-  server.addEventListener("error", () => close("Screen connection failed"));
-  upstream.addEventListener("error", () => close("Screen connection failed"));
-  setTimeout(() => close("Screen session expired"), Math.max(0, expiresAt - Date.now()));
-
-  return new Response(null, { status: 101, headers, webSocket: client });
+  return headers;
 }
 
 export async function createScreenConnection(
@@ -116,37 +116,91 @@ export async function createScreenConnection(
     await startTeachingRecording(sandbox, input.recordingId);
   }
 
+  return exposeScreen(sandbox, {
+    resourceId: input.resourceId,
+    fence: input.fence ?? 0,
+    recordingId: input.recordingId,
+    host: env.COMPUTER_SCREEN_HOST,
+    secret: env.COMPUTER_SCREEN_SECRET,
+  });
+}
+
+export async function createViewScreenConnection(
+  sandbox: ComputerSandbox,
+  env: Env,
+  resourceId: string,
+): Promise<{ screenUrl: string; expiresAt: string }> {
+  if (!env.COMPUTER_SCREEN_HOST || !env.COMPUTER_SCREEN_SECRET) {
+    throw new Error("Computer screen access is not configured");
+  }
+
+  await startComputer(sandbox);
+
+  return exposeScreen(sandbox, {
+    resourceId,
+    fence: await ensureInitialisedFence(sandbox),
+    viewOnly: true,
+    host: env.COMPUTER_SCREEN_HOST,
+    secret: env.COMPUTER_SCREEN_SECRET,
+  });
+}
+
+async function exposeScreen(
+  sandbox: ComputerSandbox,
+  params: {
+    resourceId: string;
+    fence: number;
+    host: string;
+    secret: string;
+    recordingId?: string;
+    viewOnly?: boolean;
+  },
+): Promise<{ screenUrl: string; expiresAt: string }> {
   const exposed = await sandbox.exposePort(SCREEN_PORT, {
-    hostname: env.COMPUTER_SCREEN_HOST,
+    hostname: params.host,
     name: "computer-screen",
-    token: await screenExposureToken(input.resourceId),
+    token: await screenExposureToken(params.resourceId),
   });
   const expiresAt = new Date(Date.now() + SCREEN_TTL_MS).toISOString();
-  const screenUrl = new URL("/vnc.html", exposed.url);
-  const access = await signScreenAccess(env.COMPUTER_SCREEN_SECRET, {
-    origin: screenUrl.origin,
-    resourceId: input.resourceId,
-    fence: input.fence,
+  const access = await signScreenAccess(params.secret, {
+    origin: screenAccessOrigin(params.host),
+    resourceId: params.resourceId,
+    fence: params.fence,
     exp: Date.parse(expiresAt),
-    ...(input.recordingId ? { recordingId: input.recordingId } : {}),
+    ...(params.viewOnly ? { viewOnly: true } : {}),
+    ...(params.recordingId ? { recordingId: params.recordingId } : {}),
   });
+  const screenBase = isLocalScreenHost(params.host) ? `http://${params.host}` : exposed.url;
+  const screenUrl = new URL(`${screenPath(access)}/vnc.html`, screenBase);
 
   screenUrl.searchParams.set("autoconnect", "1");
   screenUrl.searchParams.set("resize", "scale");
-  screenUrl.searchParams.set("access", access);
+  screenUrl.searchParams.set("path", `${SCREEN_PATH_SEGMENT}/${access}/websockify`);
+
+  if (params.viewOnly) {
+    screenUrl.searchParams.set("view_only", "1");
+  }
 
   return { screenUrl: screenUrl.toString(), expiresAt };
 }
 
 export async function handleScreenRequest(request: Request, env: Env): Promise<Response> {
-  if (!env.COMPUTER_SCREEN_SECRET) {
+  if (!env.COMPUTER_SCREEN_HOST || !env.COMPUTER_SCREEN_SECRET) {
     return errorResponse(503, "Computer screen access is not configured");
   }
 
   const url = new URL(request.url);
-  const access = url.searchParams.get("access") ?? readCookie(request, "computer_screen_access");
+  const screenPathToken = readScreenPath(url.pathname);
+  const access =
+    screenPathToken?.token ??
+    url.searchParams.get("access") ??
+    readCookie(request, "computer_screen_access");
   const screenAccess = access
-    ? await verifyScreenAccess(env.COMPUTER_SCREEN_SECRET, access, url.origin)
+    ? await verifyScreenAccess(
+        env.COMPUTER_SCREEN_SECRET,
+        access,
+        screenAccessOrigin(env.COMPUTER_SCREEN_HOST),
+      )
     : null;
 
   if (!screenAccess || !RESOURCE_ID_PATTERN.test(screenAccess.resourceId)) {
@@ -155,34 +209,41 @@ export async function handleScreenRequest(request: Request, env: Env): Promise<R
 
   const sandbox = getSandbox(env.Computer, screenAccess.resourceId, { normalizeId: true });
 
-  if ((await readFence(sandbox)) !== screenAccess.fence) {
+  if (!screenAccess.viewOnly && (await readFence(sandbox)) !== screenAccess.fence) {
     return errorResponse(401, "Screen session has been revoked");
   }
 
-  const proxyUrl = new URL(url);
+  const exposureToken = await screenExposureToken(screenAccess.resourceId);
+  const proxyScreen = () => {
+    const upstreamUrl = new URL(request.url);
 
-  proxyUrl.searchParams.delete("access");
-  const response = await proxyToSandbox(new Request(proxyUrl, request), { Sandbox: env.Computer });
+    upstreamUrl.pathname = screenPathToken?.rest ?? url.pathname;
 
-  if (!response) {
-    return errorResponse(404, "Screen not found");
-  }
-
-  const headers = new Headers(response.headers);
-
-  if (url.searchParams.has("access")) {
-    headers.append(
-      "Set-Cookie",
-      `computer_screen_access=${access}; Max-Age=${SCREEN_TTL_MS / 1000}; Path=/; Secure; HttpOnly; SameSite=Strict`,
+    return sandbox.fetch(
+      new Request(upstreamUrl, {
+        method: request.method,
+        headers: buildScreenProxyHeaders(request, screenAccess.resourceId, exposureToken),
+        redirect: "manual",
+      }),
     );
+  };
+
+  let response: Response;
+
+  try {
+    response = await proxyScreen();
+
+    if (response.status === 410) {
+      await sandbox.exposePort(SCREEN_PORT, {
+        hostname: env.COMPUTER_SCREEN_HOST,
+        name: "computer-screen",
+        token: exposureToken,
+      });
+      response = await proxyScreen();
+    }
+  } catch {
+    return errorResponse(502, "Screen connection failed");
   }
 
-  return createScreenWebSocketProxy(
-    response,
-    sandbox,
-    screenAccess.fence,
-    screenAccess.exp,
-    headers,
-    screenAccess.recordingId,
-  );
+  return response;
 }

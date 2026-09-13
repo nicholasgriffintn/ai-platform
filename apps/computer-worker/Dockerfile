@@ -22,9 +22,12 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY start-computer.sh /usr/local/bin/start-computer
+COPY health-probe.sh /usr/local/bin/health-probe
 COPY check-paint.py /usr/local/bin/check-paint
+COPY navigate.py /usr/local/bin/navigate
+COPY read-page.py /usr/local/bin/read-page
 
-RUN chmod 0755 /usr/local/bin/start-computer /usr/local/bin/check-paint \
+RUN chmod 0755 /usr/local/bin/start-computer /usr/local/bin/health-probe /usr/local/bin/check-paint /usr/local/bin/navigate /usr/local/bin/read-page \
     && mkdir -p /workspace/profile
 
 EXPOSE 6080

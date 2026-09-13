@@ -63,6 +63,7 @@ export interface ComputerObservation {
   title: string;
   width: number;
   height: number;
+  contextId?: string;
 }
 
 const readDimension = (value: unknown, fallback: number): number =>
@@ -81,6 +82,7 @@ const readComputerObservationData = (data: unknown): Omit<ComputerObservation, "
     title: readOptionalString(data.title) ?? "Hosted computer",
     width: readDimension(data.width, 1440),
     height: readDimension(data.height, 900),
+    ...(typeof data.contextId === "string" && data.contextId ? { contextId: data.contextId } : {}),
   };
 };
 

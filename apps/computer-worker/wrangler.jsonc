@@ -11,6 +11,9 @@
       "zone_name": "polychat.app",
     },
   ],
+  "dev": {
+    "port": 8790,
+  },
   "vars": {
     "COMPUTER_SCREEN_HOST": "computer.polychat.app",
     "SANDBOX_TRANSPORT": "rpc",
@@ -31,7 +34,7 @@
     {
       "class_name": "Computer",
       "image": "./Dockerfile",
-      "instance_type": "basic",
+      "instance_type": "standard-1",
     },
   ],
   "durable_objects": {

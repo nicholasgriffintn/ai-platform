@@ -206,6 +206,58 @@ describe("prepareTeammateCompletionRequest", () => {
     expect(request.mode).toBe("teammate");
   });
 
+  it("runs a hosted-computer teammate in build mode so browser tasks survive the step budget", () => {
+    const body = createChatCompletionsJsonSchema.parse({
+      model: "mistral-large-latest",
+      messages: [{ role: "user", content: "Open a page with the hosted computer" }],
+    });
+
+    const request = prepareTeammateCompletionRequest({
+      teammate: {
+        id: "teammate-123",
+        kind: "colleague" as const,
+        model: null,
+        temperature: null,
+        max_steps: null,
+        enabled_tools: '["use_computer","web_search"]',
+        skill_ids: null,
+        mode: null,
+      },
+      body,
+      modelProvider: "mistral",
+      formattedTools: [],
+      persona: {},
+    });
+
+    expect(request.mode).toBe("build");
+  });
+
+  it("keeps an explicit teammate mode over the hosted-computer default", () => {
+    const body = createChatCompletionsJsonSchema.parse({
+      model: "mistral-large-latest",
+      messages: [{ role: "user", content: "Open a page with the hosted computer" }],
+    });
+
+    const request = prepareTeammateCompletionRequest({
+      teammate: {
+        id: "teammate-123",
+        kind: "colleague" as const,
+        model: null,
+        temperature: null,
+        max_steps: null,
+        enabled_tools: '["use_computer"]',
+        skill_ids: null,
+        mode: "plan",
+      },
+      body,
+      modelProvider: "mistral",
+      formattedTools: [],
+      persona: {},
+    });
+
+    expect(request.mode).toBe("plan");
+  });
+
   it("asks for the teammate's saved skills through the persona and the skill loader", () => {
     const teammate = {
       id: "teammate-123",

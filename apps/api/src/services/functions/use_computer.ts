@@ -1,4 +1,7 @@
-import { computerInputRequiresTakeover } from "~/services/teammates/computer-policy";
+import {
+  computerInputRequiresTakeover,
+  describeComputerTakeoverInput,
+} from "~/services/teammates/computer-policy";
 import {
   operateTeammateComputerAsAgent,
   releaseTeammateComputerAgentLease,
@@ -32,7 +35,7 @@ export const use_computer: ApiToolDefinition = {
       const reason =
         args.operation === "request_takeover"
           ? args.reason
-          : "This computer action may change an external system and needs supervised control.";
+          : `${describeComputerTakeoverInput(args.input)} may change an external system, so it needs supervised control.`;
 
       return {
         status: "pending",
@@ -62,9 +65,15 @@ export const use_computer: ApiToolDefinition = {
         ? { input: args.input }
         : args.operation === "wait"
           ? { input: { type: "wait" as const, durationMs: args.durationMs } }
-          : {}),
+          : args.operation === "read"
+            ? { input: { type: "read" as const } }
+            : {}),
     });
     const screenshot = result.observation.screenshot;
+    const text =
+      typeof result.observation.text === "string" && result.observation.text
+        ? result.observation.text
+        : null;
     const title =
       typeof result.observation.title === "string" ? result.observation.title : "Hosted computer";
     const width = typeof result.observation.width === "number" ? result.observation.width : 1440;
@@ -75,6 +84,7 @@ export const use_computer: ApiToolDefinition = {
       name: descriptor.name,
       content: [
         { type: "text", text: `Active window: ${title}. Viewport: ${width} × ${height}.` },
+        ...(text ? [{ type: "text" as const, text }] : []),
         ...(typeof screenshot === "string"
           ? [
               {
@@ -89,6 +99,7 @@ export const use_computer: ApiToolDefinition = {
         computerId: result.computer.id,
         observation: { title, width, height },
         screenshot: typeof screenshot === "string" ? screenshot : null,
+        text,
         title,
         width,
         height,

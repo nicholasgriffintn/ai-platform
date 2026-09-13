@@ -58,9 +58,7 @@ class TeammateCompletionRequestPreparer {
       provider: this.input.teammate.model ? this.input.modelProvider : this.input.body.provider,
       tools: this.input.formattedTools,
       stream: this.input.body.stream,
-      mode:
-        agentModeSchema.safeParse(this.input.modeOverride ?? this.input.teammate.mode).data ??
-        "teammate",
+      mode: this.resolveMode(enabledTools),
       tool_policy_mode: "chat",
       max_steps:
         this.input.maxStepsOverride ??
@@ -87,6 +85,22 @@ class TeammateCompletionRequestPreparer {
       response_format: this.input.body.response_format,
       tool_choice: requestToolChoice,
     };
+  }
+
+  private resolveMode(enabledTools: string[] | undefined): string {
+    const configured = agentModeSchema.safeParse(
+      this.input.modeOverride ?? this.input.teammate.mode,
+    ).data;
+
+    if (configured) {
+      return configured;
+    }
+
+    if (enabledTools?.includes("use_computer")) {
+      return "build";
+    }
+
+    return "teammate";
   }
 
   private resolveEnabledTools(): string[] | undefined {

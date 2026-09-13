@@ -24,10 +24,14 @@ export function useTeammateComputer(contextId: string | undefined) {
       apiService.takeOverTeammateComputer(contextId ?? "", recordTeaching ?? false),
     onSuccess: ({ computer }) => setComputer(computer),
   });
+  const view = useMutation({
+    mutationFn: () => apiService.viewTeammateComputer(contextId ?? ""),
+    onSuccess: ({ computer }) => setComputer(computer),
+  });
   const release = useMutation({
     mutationFn: (fence: number) => apiService.releaseTeammateComputer(contextId ?? "", fence),
     onSuccess: setComputer,
   });
 
-  return { ...query, action, takeover, release };
+  return { ...query, action, takeover, view, release };
 }

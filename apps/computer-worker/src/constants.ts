@@ -6,3 +6,6 @@ export const SCREEN_TTL_MS = 5 * 60 * 1000;
 export const PROFILE_DIRECTORY = "/workspace/profile";
 export const FENCE_FILE = "/workspace/.computer-fence";
 export const RESOURCE_ID_PATTERN = /^[a-zA-Z0-9_-]{1,200}$/u;
+export const NAVIGATE_TIMEOUT_MS = 90_000;
+export const OBSERVE_TIMEOUT_MS = 30_000;
+export const DEBUGGER_WAIT_TIMEOUT_MS = 20_000;

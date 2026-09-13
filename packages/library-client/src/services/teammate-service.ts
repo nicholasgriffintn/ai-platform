@@ -231,6 +231,24 @@ export class TeammateService {
     }>(response);
   }
 
+  async viewTeammateComputer(contextId: string) {
+    const response = await fetchApi(`/teammates/contexts/${contextId}/computer/view`, {
+      method: "POST",
+      headers: await this.authHeaders("viewTeammateComputer"),
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Could not watch the computer");
+    }
+
+    return returnFetchedData<{
+      computer: TeammateComputer;
+      screenUrl: string;
+      expiresAt: string;
+      recordingId?: string;
+    }>(response);
+  }
+
   async releaseTeammateComputer(contextId: string, fence: number): Promise<TeammateComputer> {
     const response = await fetchApi(`/teammates/contexts/${contextId}/computer/release`, {
       method: "POST",

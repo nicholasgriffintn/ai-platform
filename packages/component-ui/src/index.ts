@@ -8,6 +8,7 @@ export * from "./Button";
 export * from "./Card";
 export * from "./Checkbox";
 export * from "./ConfirmationDialog";
+export * from "./computer-screen";
 export * from "./Dialog";
 export * from "./DropdownMenu";
 export * from "./EmptyState";

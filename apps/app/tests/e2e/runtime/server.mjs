@@ -195,6 +195,58 @@ export default {
 };
 `;
 
+const mockComputerWorker = `
+const OBSERVATION = {
+  title: "Example Domain",
+  screenshot: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+  width: 1440,
+  height: 900,
+};
+
+function screenConnection(viewOnly) {
+  return {
+    screenUrl: "http://localhost:8790/vnc.html?autoconnect=1&resize=scale" +
+      (viewOnly ? "&view_only=1" : "") +
+      "&access=e2e-computer-access",
+    expiresAt: new Date(Date.now() + 300000).toISOString(),
+  };
+}
+
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+
+    if (url.origin !== "https://computer.internal" || request.method !== "POST") {
+      return Response.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const handle = typeof body.resourceId === "string" ? body.resourceId : "e2e-computer";
+
+    switch (url.pathname) {
+      case "/computer/provision":
+        return Response.json({ handle, checkpointReference: null });
+      case "/computer/observe":
+      case "/computer/input":
+        return Response.json(OBSERVATION);
+      case "/computer/screen":
+        return Response.json(screenConnection(false));
+      case "/computer/view-screen":
+        return Response.json(screenConnection(true));
+      case "/computer/revoke-control":
+      case "/computer/restore":
+      case "/computer/stop":
+      case "/computer/destroy":
+        return Response.json({ success: true });
+      case "/computer/checkpoint":
+        return Response.json({ checkpointReference: "e2e-checkpoint-reference" });
+      default:
+        return Response.json({ error: "Not found" }, { status: 404 });
+    }
+  },
+};
+`;
+
 function extractPrompt(body) {
   const content = body.messages?.at(-1)?.content;
 
@@ -450,6 +502,22 @@ const TOOL_CALL_TRIGGERS = [
         goal: "Confirm the corrected child context.",
         wait_for: "none",
         budget: { max_steps: 6 },
+      });
+    },
+  },
+  {
+    marker: "Use the hosted computer to open ",
+    name: "use_computer",
+    arguments: (prompt) => {
+      const url = prompt.match(/Use the hosted computer to open (https?:\/\/[^\s,]+)/)?.[1];
+
+      if (!url) {
+        throw new Error("Computer E2E prompt is missing a destination URL");
+      }
+
+      return JSON.stringify({
+        operation: "input",
+        input: { type: "navigate", url },
       });
     },
   },
@@ -1259,6 +1327,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
           SEND_EMAIL: { name: "external-services", entrypoint: "MockEmail" },
           TRAINING_WORKER: { name: "training" },
           SANDBOX_WORKER: { name: SANDBOX_WORKER_NAME },
+          COMPUTER_WORKER: { name: "computer" },
         },
         outboundService: mockExternalRequest,
       },
@@ -1293,6 +1362,12 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
         script: mockAiWorker,
         compatibilityDate,
         compatibilityFlags: ["service_binding_extra_handlers"],
+      },
+      {
+        name: "computer",
+        modules: true,
+        script: mockComputerWorker,
+        compatibilityDate,
       },
       {
         name: "readiness",

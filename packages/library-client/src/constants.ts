@@ -1,12 +1,16 @@
-import { sandboxPreviewFrameSource } from "./preview-origin.js";
+import { computerScreenFrameSource, previewFrameSource } from "./preview-origin.js";
 
 export const IS_PRODUCTION = import.meta.env?.PROD ?? false;
 export const IS_DEVELOPMENT = import.meta.env?.DEV ?? false;
 export const BUILD_MODE = import.meta.env?.MODE;
 
 const IS_E2E_BUILD = BUILD_MODE === "e2e";
-const PREVIEW_FRAME_SOURCE = sandboxPreviewFrameSource(
+const PREVIEW_FRAME_SOURCE = previewFrameSource(
   import.meta.env?.VITE_SANDBOX_PREVIEW_HOST,
+  IS_DEVELOPMENT || IS_E2E_BUILD,
+);
+const COMPUTER_SCREEN_FRAME_SOURCE = computerScreenFrameSource(
+  import.meta.env?.VITE_COMPUTER_SCREEN_HOST,
   IS_DEVELOPMENT || IS_E2E_BUILD,
 );
 
@@ -61,6 +65,7 @@ const COMMON_CSP = {
     "https://*.hcaptcha.com",
     "https://strudel.cc",
     ...(PREVIEW_FRAME_SOURCE ? [PREVIEW_FRAME_SOURCE] : []),
+    ...(COMPUTER_SCREEN_FRAME_SOURCE ? [COMPUTER_SCREEN_FRAME_SOURCE] : []),
   ],
   styleSrc: ["https://hcaptcha.com", "https://*.hcaptcha.com", "'self'", "'unsafe-inline'"],
   fontSrc: ["'self'", "data:"],

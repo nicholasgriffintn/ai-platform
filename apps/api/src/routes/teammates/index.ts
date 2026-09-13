@@ -51,6 +51,7 @@ import {
   performTeammateComputerAction,
   releaseTeammateComputer,
   takeOverTeammateComputer,
+  getTeammateComputerViewScreen,
   resumeTeammateRun,
   getTeammateContextMemory,
   updateTeammateContextMemory,
@@ -299,6 +300,21 @@ addRoute(app, "post", "/contexts/:contextId/computer/takeover", {
   },
   handler: async ({ serviceContext, params, body }) =>
     takeOverTeammateComputer(serviceContext, params.contextId, body.recordTeaching),
+});
+
+addRoute(app, "post", "/contexts/:contextId/computer/view", {
+  tags: ["teammates"],
+  summary: "Watch a teammate computer without taking control",
+  auth: true,
+  paramSchema: teammateContextIdParamSchema,
+  responses: {
+    200: {
+      description: "View-only screen connection",
+      schema: teammateComputerTakeoverResponseSchema,
+    },
+  },
+  handler: async ({ serviceContext, params }) =>
+    getTeammateComputerViewScreen(serviceContext, params.contextId),
 });
 
 addRoute(app, "post", "/contexts/:contextId/computer/release", {

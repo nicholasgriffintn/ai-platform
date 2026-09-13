@@ -1,1 +1,2 @@
 COMPUTER_SCREEN_SECRET=replace-with-a-long-random-secret
+COMPUTER_SCREEN_HOST=localhost:8790

@@ -7,6 +7,7 @@ import type {
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getComputerProvider } from "~/lib/providers/capabilities/computer";
+import { STALE_COMPUTER_LEASE_ERROR_CODE } from "~/lib/providers/capabilities/computer/types";
 import type { TeammateComputerRecord } from "~/repositories/TeammateComputerRepository";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generatePrefixedId } from "~/utils/id";
@@ -15,6 +16,10 @@ import { requireTeammateContext } from "./contexts";
 
 const USER_CONTROL_LEASE_MS = 5 * 60 * 1000;
 const AGENT_LEASE_MS = 60 * 1000;
+
+function isStaleComputerLease(error: unknown): boolean {
+  return error instanceof AssistantError && error.context?.code === STALE_COMPUTER_LEASE_ERROR_CODE;
+}
 
 async function requireRunningComputerRun(params: {
   context: ServiceContext;
@@ -374,6 +379,20 @@ export async function takeOverTeammateComputer(
   }
 }
 
+export async function getTeammateComputerViewScreen(context: ServiceContext, contextId: string) {
+  const computer = await provisionComputer(context, await requireComputer(context, contextId));
+  const screen = await getComputerProvider(context.env).connectViewScreen({
+    resourceId: computer.id,
+    handle: requireProviderHandle(computer),
+  });
+
+  return {
+    computer: toComputer(computer),
+    screenUrl: screen.screenUrl,
+    expiresAt: screen.expiresAt,
+  };
+}
+
 export async function getTeammateComputerTeachingRecording(
   context: ServiceContext,
   contextId: string,
@@ -463,16 +482,43 @@ export async function operateTeammateComputerAsAgent(params: {
   });
 
   const provider = getComputerProvider(params.context.env);
-  const providerInput = {
-    resourceId: leased.id,
-    handle: requireProviderHandle(leased),
-    fence: leased.lease.fence,
-  };
 
   await requireRunningComputerRun(params);
-  const observation = params.input
-    ? await provider.input({ ...providerInput, input: params.input })
-    : await provider.observe(providerInput);
+  const operate = async (fence: number) => {
+    const providerInput = {
+      resourceId: leased.id,
+      handle: requireProviderHandle(leased),
+      fence,
+    };
+
+    return params.input
+      ? provider.input({ ...providerInput, input: params.input })
+      : provider.observe(providerInput);
+  };
+
+  let observation: Record<string, unknown>;
+
+  try {
+    observation = await operate(leased.lease.fence);
+  } catch (error) {
+    if (!isStaleComputerLease(error)) {
+      throw error;
+    }
+
+    const reacquired = await acquireComputerLease({
+      context: params.context,
+      computer: leased,
+      kind: "agent",
+      ownerId,
+      durationMs: AGENT_LEASE_MS,
+      unavailableMessage: "The computer is under user control",
+    });
+
+    await requireRunningComputerRun(params);
+    observation = await operate(reacquired.lease.fence);
+
+    return { computer: toComputer(reacquired), observation };
+  }
 
   return { computer: toComputer(leased), observation };
 }

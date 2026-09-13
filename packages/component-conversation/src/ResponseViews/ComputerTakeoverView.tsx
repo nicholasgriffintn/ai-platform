@@ -1,6 +1,7 @@
 import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
 import {
   Button,
+  COMPUTER_SCREEN_SANDBOX,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -74,17 +75,20 @@ export function ComputerTakeoverView({
 
     try {
       if (!screen.released) {
-        await computer.release.mutateAsync(screen.fence);
-        setScreen((current) => (current ? { ...current, released: true } : current));
+        await computer.release.mutateAsync(screen.fence).catch(() => undefined);
       }
 
-      await onToolInteraction?.("use_computer", "submitPrompt", {
-        input: "I finished using the hosted computer. Continue from its current state.",
-        interactionId: request.interactionId,
-        resolution: "completed",
-      });
-      setScreen(null);
+      try {
+        await onToolInteraction?.("use_computer", "submitPrompt", {
+          input: "I finished using the hosted computer. Continue from its current state.",
+          interactionId: request.interactionId,
+          resolution: "completed",
+        });
+      } catch {
+        return;
+      }
     } finally {
+      setScreen(null);
       setIsReturning(false);
     }
   };
@@ -111,7 +115,11 @@ export function ComputerTakeoverView({
         </p>
       )}
 
-      <Dialog open={Boolean(screen)} onOpenChange={(open) => !open && void returnControl()}>
+      <Dialog
+        open={Boolean(screen)}
+        onOpenChange={(open) => !open && void returnControl()}
+        width="min(90rem, 98vw)"
+      >
         <DialogContent className="h-[94dvh] overflow-hidden p-0">
           <DialogTitle className="sr-only">Teammate computer</DialogTitle>
           <DialogDescription className="sr-only">
@@ -123,7 +131,7 @@ export function ComputerTakeoverView({
                 title="Teammate computer"
                 src={screen.url}
                 className="size-full border-0 bg-black"
-                sandbox="allow-forms allow-scripts"
+                sandbox={COMPUTER_SCREEN_SANDBOX}
               />
               <Button
                 className="absolute right-4 bottom-4"

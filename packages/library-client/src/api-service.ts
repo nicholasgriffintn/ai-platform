@@ -283,6 +283,9 @@ class ApiService {
   takeOverTeammateComputer = (contextId: string, recordTeaching = false) =>
     this.teammateService.takeOverTeammateComputer(contextId, recordTeaching);
 
+  viewTeammateComputer = (contextId: string) =>
+    this.teammateService.viewTeammateComputer(contextId);
+
   releaseTeammateComputer = (contextId: string, fence: number): Promise<TeammateComputer> =>
     this.teammateService.releaseTeammateComputer(contextId, fence);
 

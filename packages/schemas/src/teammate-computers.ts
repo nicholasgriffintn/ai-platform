@@ -78,6 +78,7 @@ export const teammateComputerInputSchema = z.discriminatedUnion("type", [
     amount: z.number().int().min(1).max(20).default(3),
   }),
   z.object({ type: z.literal("wait"), durationMs: z.number().int().min(100).max(10_000) }),
+  z.object({ type: z.literal("read") }),
 ]);
 
 export const teammateComputerActionResponseSchema = z.object({

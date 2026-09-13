@@ -5,7 +5,7 @@ import { createComputerCheckpoint, restoreComputerCheckpoint } from "./checkpoin
 import { assertFence, revokeComputerControl } from "./fencing";
 import { errorResponse } from "./http";
 import { parseComputerRequest } from "./request";
-import { createScreenConnection } from "./screen";
+import { createScreenConnection, createViewScreenConnection } from "./screen";
 import { readTeachingRecording } from "./teaching-recording";
 import type { Env } from "./types";
 
@@ -33,7 +33,9 @@ export async function handleComputerRequest(request: Request, env: Env): Promise
       });
     }
 
-    if (!["/computer/provision", "/computer/revoke-control"].includes(path)) {
+    if (
+      !["/computer/provision", "/computer/revoke-control", "/computer/view-screen"].includes(path)
+    ) {
       await assertFence(sandbox, input.fence);
     }
 
@@ -72,6 +74,8 @@ export async function handleComputerRequest(request: Request, env: Env): Promise
         return Response.json(await inputComputer(sandbox, input.input));
       case "/computer/screen":
         return Response.json(await createScreenConnection(sandbox, env, input));
+      case "/computer/view-screen":
+        return Response.json(await createViewScreenConnection(sandbox, env, input.resourceId));
       case "/computer/teaching-recording": {
         if (!input.recordingId) {
           return errorResponse(400, "Teaching recording id is required");

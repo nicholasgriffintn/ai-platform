@@ -1,5 +1,6 @@
 import {
   Button,
+  COMPUTER_SCREEN_SANDBOX,
   ConfirmationDialog,
   Dialog,
   DialogContent,
@@ -177,7 +178,7 @@ export function TeammateComputerPanel({ contextId }: { contextId: string }) {
                 title="Teammate computer"
                 src={screen.url}
                 className="min-h-0 flex-1 border-0 bg-black"
-                sandbox="allow-forms allow-scripts"
+                sandbox={COMPUTER_SCREEN_SANDBOX}
               />
               {teaching && screen.recordingId ? (
                 <TeammateTeachingDraft

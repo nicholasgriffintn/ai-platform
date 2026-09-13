@@ -8,6 +8,7 @@ import type { IEnv } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
 import type { ComputerProvider, ComputerResource, ComputerScreenConnection } from "./types";
+import { STALE_COMPUTER_LEASE_ERROR_CODE } from "./types";
 
 export class WorkerComputerProvider implements ComputerProvider {
   constructor(private readonly worker: NonNullable<IEnv["COMPUTER_WORKER"]>) {}
@@ -25,10 +26,18 @@ export class WorkerComputerProvider implements ComputerProvider {
     });
 
     if (!response.ok) {
+      const payload = await response.json().catch(() => null);
+      const message =
+        isRecord(payload) && typeof payload.error === "string"
+          ? payload.error
+          : `Computer provider failed (${response.status})`;
+      const staleLease = message.toLowerCase().includes("stale");
+
       throw new AssistantError(
-        `Computer provider failed (${response.status})`,
-        ErrorType.PROVIDER_ERROR,
-        502,
+        message,
+        staleLease ? ErrorType.CONFLICT_ERROR : ErrorType.PROVIDER_ERROR,
+        staleLease ? 409 : 502,
+        staleLease ? { code: STALE_COMPUTER_LEASE_ERROR_CODE } : {},
       );
     }
 
@@ -81,6 +90,19 @@ export class WorkerComputerProvider implements ComputerProvider {
     recordingId?: string;
   }): Promise<ComputerScreenConnection> {
     const payload = await this.request("/computer/screen", input);
+
+    if (typeof payload.screenUrl !== "string" || typeof payload.expiresAt !== "string") {
+      throw new AssistantError("Computer screen connection is invalid", ErrorType.PROVIDER_ERROR);
+    }
+
+    return { screenUrl: payload.screenUrl, expiresAt: payload.expiresAt };
+  }
+
+  async connectViewScreen(input: {
+    resourceId: string;
+    handle: string;
+  }): Promise<ComputerScreenConnection> {
+    const payload = await this.request("/computer/view-screen", input);
 
     if (typeof payload.screenUrl !== "string" || typeof payload.expiresAt !== "string") {
       throw new AssistantError("Computer screen connection is invalid", ErrorType.PROVIDER_ERROR);

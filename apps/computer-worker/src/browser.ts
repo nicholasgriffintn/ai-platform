@@ -1,140 +1,104 @@
 import type { TeammateComputerInput } from "@ngriffin_uk/polychat-schemas";
-import { isPrivateHostname, isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isPrivateHostname } from "@ngriffin_uk/polychat-utility-core";
 
-import { DEBUGGER_PORT, PAINT_BRIGHTNESS_THRESHOLD, SCREEN_PORT } from "./constants";
+import {
+  DEBUGGER_PORT,
+  DEBUGGER_WAIT_TIMEOUT_MS,
+  NAVIGATE_TIMEOUT_MS,
+  OBSERVE_TIMEOUT_MS,
+  PAINT_BRIGHTNESS_THRESHOLD,
+  SCREEN_PORT,
+} from "./constants";
 import type { ComputerSandbox } from "./types";
 
 const DEBUGGER_BASE_URL = `http://127.0.0.1:${DEBUGGER_PORT}`;
+const PROCESS_PIDFILES = ["chromium", "websockify", "x11vnc", "openbox", "xvfb"] as const;
 
-interface DebuggerTarget {
-  id: string;
-  type: string;
-  title: string;
-  url: string;
+function timeoutError(op: string): Error {
+  return new Error(`${op} timed out`);
 }
 
-async function debuggerRequest<T>(
-  sandbox: ComputerSandbox,
-  path: string,
-  method: "GET" | "PUT" = "GET",
-): Promise<T> {
-  const result = await sandbox.exec(`curl -s -m 10 -X ${method} '${DEBUGGER_BASE_URL}${path}'`, {
-    timeout: 15_000,
-  });
+async function withTimeout<T>(op: string, ms: number, work: Promise<T>): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
 
-  if (!result.success) {
-    throw new Error("Computer browser is not responding");
-  }
-
-  return JSON.parse(result.stdout) as T;
-}
-
-async function listDebuggerTargets(sandbox: ComputerSandbox): Promise<DebuggerTarget[]> {
-  const targets = await debuggerRequest<unknown>(sandbox, "/json/list");
-
-  if (!Array.isArray(targets)) {
-    return [];
-  }
-
-  return targets.flatMap((target) => {
-    if (!isRecord(target) || typeof target.id !== "string") {
-      return [];
+  try {
+    return await Promise.race([
+      work,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(timeoutError(op)), ms);
+      }),
+    ]);
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
     }
+  }
+}
 
-    return [
-      {
-        id: target.id,
-        type: typeof target.type === "string" ? target.type : "",
-        title: typeof target.title === "string" ? target.title : "",
-        url: typeof target.url === "string" ? target.url : "",
-      },
-    ];
-  });
+function quoteShellArg(value: string): string {
+  return `'${value.replaceAll("'", "'\\''")}'`;
 }
 
 async function waitForBrowserDebugger(sandbox: ComputerSandbox): Promise<void> {
-  for (let attempt = 0; attempt < 30; attempt += 1) {
-    const targets = await listDebuggerTargets(sandbox).catch(() => null);
+  const deadline = Date.now() + DEBUGGER_WAIT_TIMEOUT_MS;
 
-    if (targets?.some((target) => target.type === "page")) {
+  while (Date.now() < deadline) {
+    const result = await sandbox
+      .exec(
+        `curl -s -m 2 ${DEBUGGER_BASE_URL}/json/list 2>/dev/null | grep -q '"type"[[:space:]]*:[[:space:]]*"page"'`,
+      )
+      .catch(() => null);
+
+    if (result?.success) {
       return;
     }
 
     await sandbox.exec("sleep 0.5").catch(() => null);
   }
 
-  throw new Error(
-    "Computer browser did not start (debugger unreachable — restart the worker to rebuild the container image)",
-  );
+  throw timeoutError("debugger wait");
 }
 
-async function waitForPageLoad(sandbox: ComputerSandbox, targetId: string): Promise<void> {
-  let stableTitle: string | null = null;
-  let stableCount = 0;
-  let missingCount = 0;
+async function assertComputerHealthy(sandbox: ComputerSandbox): Promise<void> {
+  const result = await sandbox.exec("/usr/local/bin/health-probe").catch(() => null);
 
-  for (let attempt = 0; attempt < 50; attempt += 1) {
-    const targets = await listDebuggerTargets(sandbox).catch(() => []);
-    const target = targets.find((candidate) => candidate.id === targetId);
-
-    if (!target) {
-      missingCount += 1;
-
-      if (missingCount >= 5) {
-        throw new Error("Computer browser closed the page");
-      }
-    } else {
-      missingCount = 0;
-      const title = target.title.trim();
-
-      if (title && title === stableTitle) {
-        stableCount += 1;
-
-        if (stableCount >= 3 && attempt >= 4) {
-          return;
-        }
-      } else {
-        stableTitle = title || null;
-        stableCount = title ? 1 : 0;
-      }
-    }
-
-    await sandbox.exec("sleep 0.5").catch(() => null);
+  if (!result?.success) {
+    throw new Error("Computer display did not start");
   }
 }
 
-async function navigateBrowser(sandbox: ComputerSandbox, rawUrl: string): Promise<void> {
-  const url = new URL(rawUrl);
+async function stopProcessesByPidfile(sandbox: ComputerSandbox): Promise<void> {
+  const names = PROCESS_PIDFILES.join(" ");
 
-  if (url.protocol !== "https:" || isPrivateHostname(url.hostname)) {
-    throw new Error("Only public HTTPS browser destinations are allowed");
-  }
-
-  const created = await debuggerRequest<DebuggerTarget>(
-    sandbox,
-    `/json/new?${encodeURIComponent(url.toString())}`,
-    "PUT",
-  );
-
-  if (!created || typeof created.id !== "string") {
-    throw new Error("Computer browser did not open the destination");
-  }
-
-  const targets = await listDebuggerTargets(sandbox).catch(() => []);
-
-  for (const target of targets) {
-    if (target.type === "page" && target.id !== created.id) {
-      await debuggerRequest(sandbox, `/json/close/${target.id}`).catch(() => null);
-    }
-  }
-
-  await waitForPageLoad(sandbox, created.id);
-  await waitForPaint(sandbox, 30);
+  await sandbox
+    .exec(
+      [
+        "for pf in " + names + "; do",
+        '  pid=$(cat /tmp/computer/$pf.pid 2>/dev/null || echo "")',
+        '  [ -n "$pid" ] && kill -TERM "$pid" 2>/dev/null || true',
+        "done",
+        "for _ in 1 2 3 4 5; do",
+        "  alive=0",
+        "  for pf in " + names + "; do",
+        '    pid=$(cat /tmp/computer/$pf.pid 2>/dev/null || echo "")',
+        '    if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then alive=1; fi',
+        "  done",
+        '  [ "$alive" = 0 ] && break',
+        "  sleep 1",
+        "done",
+        "for pf in " + names + "; do",
+        '  pid=$(cat /tmp/computer/$pf.pid 2>/dev/null || echo "")',
+        '  [ -n "$pid" ] && kill -KILL "$pid" 2>/dev/null || true',
+        "done",
+      ].join("; "),
+      { timeout: 15_000 },
+    )
+    .catch(() => null);
 }
 
 async function capturePaintScore(sandbox: ComputerSandbox): Promise<number | null> {
   const shot = await sandbox
-    .exec("DISPLAY=:99 scrot -o /tmp/computer-screen.png")
+    .exec("DISPLAY=:99 scrot -o /tmp/computer-screen.png", { timeout: 5_000 })
     .catch(() => null);
 
   if (!shot?.success) {
@@ -142,7 +106,7 @@ async function capturePaintScore(sandbox: ComputerSandbox): Promise<number | nul
   }
 
   const scored = await sandbox.exec("python3 /usr/local/bin/check-paint /tmp/computer-screen.png", {
-    timeout: 15_000,
+    timeout: 10_000,
   });
 
   if (!scored.success) {
@@ -154,18 +118,41 @@ async function capturePaintScore(sandbox: ComputerSandbox): Promise<number | nul
   return Number.isFinite(score) ? score : null;
 }
 
-async function waitForPaint(sandbox: ComputerSandbox, attempts: number): Promise<boolean> {
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
-    const score = await capturePaintScore(sandbox);
+async function readScreenshot(sandbox: ComputerSandbox): Promise<string | null> {
+  const screenshot = await sandbox
+    .readFile("/tmp/computer-screen.png", { encoding: "base64" })
+    .catch(() => null);
 
-    if (score !== null && score >= PAINT_BRIGHTNESS_THRESHOLD) {
-      return true;
-    }
-
-    await sandbox.exec("sleep 0.5").catch(() => null);
+  if (!screenshot) {
+    return null;
   }
 
-  return false;
+  return `data:image/png;base64,${screenshot.content}`;
+}
+
+async function navigateBrowser(sandbox: ComputerSandbox, rawUrl: string): Promise<void> {
+  const url = new URL(rawUrl);
+
+  if (url.protocol !== "https:" || isPrivateHostname(url.hostname)) {
+    throw new Error("Only public HTTPS browser destinations are allowed");
+  }
+
+  let result: { success: boolean; stderr: string; stdout: string };
+
+  try {
+    result = await sandbox.exec(
+      `python3 /usr/local/bin/navigate ${quoteShellArg(url.toString())}`,
+      {
+        timeout: NAVIGATE_TIMEOUT_MS,
+      },
+    );
+  } catch {
+    throw timeoutError("navigate");
+  }
+
+  if (!result.success) {
+    throw new Error(result.stderr || "Computer browser could not navigate");
+  }
 }
 
 export async function startComputer(sandbox: ComputerSandbox): Promise<void> {
@@ -184,13 +171,8 @@ export async function startComputer(sandbox: ComputerSandbox): Promise<void> {
       const process = await sandbox.startProcess("start-computer");
 
       await process.waitForPort(SCREEN_PORT, { mode: "tcp", timeout: 30_000 });
-      await sandbox
-        .exec(
-          "for i in 1 2 3 4 5 6 7 8 9 10; do DISPLAY=:99 xdotool getmouselocation >/dev/null 2>&1 && break; sleep 0.5; done; true",
-          { timeout: 10_000 },
-        )
-        .catch(() => null);
       await waitForBrowserDebugger(sandbox);
+      await assertComputerHealthy(sandbox);
 
       return;
     } catch (error) {
@@ -203,58 +185,66 @@ export async function startComputer(sandbox: ComputerSandbox): Promise<void> {
 }
 
 export async function stopComputer(sandbox: ComputerSandbox): Promise<void> {
-  await sandbox.exec(
-    "pkill -x chrome || true; pkill -x chromium || true; pkill -f 'remote-debugging-port=9222' || true; pkill -f '[w]ebsockify.*6080' || true; pkill -x x11vnc || true; pkill -x Xvfb || true; pkill -x openbox || true",
-  );
-  await sandbox.exec("sleep 1").catch(() => null);
-  await sandbox.exec(
-    "rm -f /tmp/.X99-lock; rm -f /tmp/.X11-unix/X99; rm -f /workspace/profile/Singleton*",
-  );
+  await stopProcessesByPidfile(sandbox);
+  await sandbox
+    .exec("rm -f /tmp/.X99-lock; rm -f /tmp/.X11-unix/X99; rm -f /workspace/profile/Singleton*", {
+      timeout: 5_000,
+    })
+    .catch(() => null);
 }
 
 export async function stopScreenServer(sandbox: ComputerSandbox): Promise<void> {
-  await sandbox.exec("pkill -f '[w]ebsockify.*6080' || true");
+  await sandbox.exec("pkill -f '[w]ebsockify.*6080' || true").catch(() => null);
 }
 
 export async function observeComputer(sandbox: ComputerSandbox): Promise<Record<string, unknown>> {
   await startComputer(sandbox);
 
-  let score: number | null = null;
+  const score = await capturePaintScore(sandbox);
 
-  for (let attempt = 0; attempt < 5 && score === null; attempt += 1) {
-    score = await capturePaintScore(sandbox);
-
-    if (score === null) {
-      await sandbox.exec("sleep 0.5").catch(() => null);
-    }
-  }
-
-  if (score !== null && score < PAINT_BRIGHTNESS_THRESHOLD) {
+  if (score === null || score < PAINT_BRIGHTNESS_THRESHOLD) {
     await stopComputer(sandbox).catch(() => null);
     await startComputer(sandbox);
-    await sandbox.exec("rm -f /tmp/computer-screen.png").catch(() => null);
-    score = await capturePaintScore(sandbox);
+    await capturePaintScore(sandbox);
   }
 
-  if (score === null) {
-    throw new Error("Could not observe the computer");
-  }
+  return withTimeout("observe", OBSERVE_TIMEOUT_MS, readObservation(sandbox));
+}
 
-  const titleResult = await sandbox.exec("DISPLAY=:99 xdotool getactivewindow getwindowname");
+async function readObservation(sandbox: ComputerSandbox): Promise<Record<string, unknown>> {
+  const titleResult = await sandbox
+    .exec("DISPLAY=:99 xdotool getactivewindow getwindowname", { timeout: 5_000 })
+    .catch(() => null);
   const title =
-    titleResult.success && titleResult.stdout.trim()
+    titleResult?.success && titleResult.stdout.trim()
       ? titleResult.stdout.trim()
       : "Hosted computer";
-  const screenshot = await sandbox.readFile("/tmp/computer-screen.png", {
-    encoding: "base64",
-  });
+  const screenshot = await readScreenshot(sandbox);
 
   return {
     title,
-    screenshot: `data:image/png;base64,${screenshot.content}`,
+    screenshot,
     width: 1440,
     height: 900,
   };
+}
+
+async function readBrowserPage(sandbox: ComputerSandbox): Promise<Record<string, unknown>> {
+  const result = await sandbox
+    .exec("python3 /usr/local/bin/read-page", { timeout: 15_000 })
+    .catch(() => null);
+
+  if (!result?.success) {
+    throw new Error(result?.stderr || "Could not read the page");
+  }
+
+  const parsed = JSON.parse(result.stdout) as { title?: string; text?: string; error?: string };
+
+  if (parsed.error) {
+    throw new Error(parsed.error);
+  }
+
+  return { title: parsed.title || "Hosted computer", text: parsed.text ?? "" };
 }
 
 export async function inputComputer(
@@ -267,6 +257,10 @@ export async function inputComputer(
     await navigateBrowser(sandbox, input.url);
 
     return observeComputer(sandbox);
+  }
+
+  if (input.type === "read") {
+    return readBrowserPage(sandbox);
   }
 
   let command: string;

@@ -3,6 +3,8 @@ import type {
   TeammateComputerTeachingRecording,
 } from "@ngriffin_uk/polychat-schemas";
 
+export const STALE_COMPUTER_LEASE_ERROR_CODE = "computer_lease_stale";
+
 export interface ComputerResource {
   handle: string;
   checkpointReference?: string | null;
@@ -34,6 +36,10 @@ export interface ComputerProvider {
     handle: string;
     fence: number;
     recordingId?: string;
+  }): Promise<ComputerScreenConnection>;
+  connectViewScreen(input: {
+    resourceId: string;
+    handle: string;
   }): Promise<ComputerScreenConnection>;
   getTeachingRecording(input: {
     resourceId: string;

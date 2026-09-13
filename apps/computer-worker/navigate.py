@@ -38,13 +38,25 @@ def targets():
 def wait_for_title(target_id):
     stable = None
     stable_count = 0
+    missing_count = 0
     start = time.time()
 
     while time.time() - start < TITLE_TIMEOUT_SECONDS:
         title = next(
             (str(target.get("title", "")).strip() for target in targets() if target.get("id") == target_id),
-            "",
+            None,
         )
+
+        if title is None:
+            missing_count += 1
+
+            if missing_count >= 5:
+                raise RuntimeError("Computer browser closed the page")
+
+            time.sleep(0.5)
+            continue
+
+        missing_count = 0
 
         if title and title == stable:
             stable_count += 1

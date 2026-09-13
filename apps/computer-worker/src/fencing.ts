@@ -32,6 +32,19 @@ export async function assertFence(
   }
 }
 
+export async function ensureInitialisedFence(sandbox: ComputerSandbox): Promise<number> {
+  const current = await readFence(sandbox);
+
+  if (current >= 1) {
+    return current;
+  }
+
+  await ensureFenceDirectory(sandbox);
+  await sandbox.writeFile(FENCE_FILE, "1");
+
+  return 1;
+}
+
 export async function revokeComputerControl(
   sandbox: ComputerSandbox,
   fence: number | undefined,
