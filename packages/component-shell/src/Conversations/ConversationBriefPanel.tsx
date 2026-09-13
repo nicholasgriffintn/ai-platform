@@ -1,4 +1,5 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { ApiError } from "@ngriffin_uk/polychat-library-client";
 import { useConversationBrief } from "@ngriffin_uk/polychat-library-react";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { NotebookPen } from "lucide-react";
@@ -9,12 +10,34 @@ import { MemoryDocumentEditor } from "../Files/MemoryDocumentEditor.js";
 export function ConversationBriefPanel({ conversationId }: { conversationId: string }) {
   const brief = useConversationBrief(conversationId);
   const document = brief.data?.document ?? undefined;
+  const isNotFound = brief.error instanceof ApiError && brief.error.status === 404;
+
+  if (brief.isAwaitingRemoteConversation) {
+    return (
+      <div className="h-full">
+        <div className="mb-4">
+          <div className="flex items-center gap-2">
+            <NotebookPen size={16} className="text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Conversation context</h2>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Context becomes available once this conversation has started.
+          </p>
+        </div>
+        <div className="rounded-lg border border-dashed border-border p-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            Send the first message to start this conversation. A brief can be created after that.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (brief.isLoading) {
     return <p className="p-4 text-sm text-muted-foreground">Loading brief…</p>;
   }
 
-  if (brief.error) {
+  if (brief.error && !isNotFound) {
     return (
       <p role="alert" className="p-4 text-sm text-failure">
         {getErrorMessage(brief.error, "Unable to load this conversation brief")}

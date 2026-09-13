@@ -8,6 +8,7 @@ import {
   ensureConversationBrief,
   fetchConversationBrief,
   useChatStore,
+  ApiError,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
   CreateMemoryDocumentInput,
@@ -24,10 +25,31 @@ export const conversationBriefQueryKey = (conversationId: string) =>
 export function useConversationBrief(conversationId: string | undefined) {
   const queryClient = useQueryClient();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const isAwaitingRemoteConversation = useChatStore((state) =>
+    Boolean(conversationId && state.locallyCreatedConversationIds[conversationId]),
+  );
+  const enabled = Boolean(conversationId) && isAuthenticated && !isAwaitingRemoteConversation;
   const query = useQuery({
     queryKey: conversationBriefQueryKey(conversationId ?? ""),
-    queryFn: () => fetchConversationBrief(conversationId ?? ""),
-    enabled: Boolean(conversationId) && isAuthenticated,
+    queryFn: async () => {
+      try {
+        return await fetchConversationBrief(conversationId ?? "");
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 404) {
+          return { conversationId: conversationId ?? "", document: null };
+        }
+
+        throw error;
+      }
+    },
+    enabled,
+    retry: (failureCount, error) => {
+      if (error instanceof ApiError && error.status === 404) {
+        return false;
+      }
+
+      return failureCount < 2;
+    },
   });
   const ensure = useMutation({
     mutationFn: () => ensureConversationBrief(conversationId ?? ""),
@@ -46,7 +68,7 @@ export function useConversationBrief(conversationId: string | undefined) {
     },
   });
 
-  return { ...query, ensure, update };
+  return { ...query, ensure, update, isAwaitingRemoteConversation };
 }
 
 export function useMemoryDocuments(projectId?: string) {
