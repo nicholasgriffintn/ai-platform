@@ -1,9 +1,8 @@
-importScripts("https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-sw.js");
-
-const { registerRoute, setDefaultHandler } = workbox.routing;
-const { CacheFirst, NetworkOnly } = workbox.strategies;
-const { CacheableResponsePlugin } = workbox.cacheableResponse;
-const { ExpirationPlugin } = workbox.expiration;
+const STATIC_CACHE = "polychat-static-v1";
+const LEGACY_CACHES = ["polychat-pwa-v1"];
+const MAX_ENTRIES = 100;
+const MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+const CACHEABLE_DESTINATIONS = new Set(["script", "style", "image", "font"]);
 
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
@@ -60,7 +59,69 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-const CACHE_NAME = "polychat-pwa-v1";
+function isFresh(cachedDateHeader) {
+  if (!cachedDateHeader) {
+    return false;
+  }
+
+  const cachedTime = Date.parse(cachedDateHeader);
+
+  if (Number.isNaN(cachedTime)) {
+    return false;
+  }
+
+  return Date.now() - cachedTime < MAX_AGE_SECONDS * 1000;
+}
+
+async function trimCache(cache) {
+  const keys = await cache.keys();
+
+  if (keys.length <= MAX_ENTRIES) {
+    return;
+  }
+
+  await Promise.all(keys.slice(0, keys.length - MAX_ENTRIES).map((key) => cache.delete(key)));
+}
+
+async function cacheFirst(request) {
+  const cache = await caches.open(STATIC_CACHE);
+  const cached = await cache.match(request);
+
+  if (cached && isFresh(cached.headers.get("date"))) {
+    return cached;
+  }
+
+  try {
+    const response = await fetch(request);
+
+    if (response && (response.status === 200 || response.status === 0)) {
+      await cache.put(request, response.clone());
+      await trimCache(cache);
+    }
+
+    return response;
+  } catch (error) {
+    if (cached) {
+      return cached;
+    }
+
+    throw error;
+  }
+}
+
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+
+  if (request.method !== "GET") {
+    return;
+  }
+
+  if (!CACHEABLE_DESTINATIONS.has(request.destination)) {
+    return;
+  }
+
+  event.respondWith(cacheFirst(request));
+});
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
@@ -69,32 +130,14 @@ self.addEventListener("activate", (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames
-            .filter((cacheName) => cacheName !== CACHE_NAME && !cacheName.startsWith("workbox-"))
+            .filter(
+              (cacheName) =>
+                cacheName !== STATIC_CACHE &&
+                (cacheName.startsWith("workbox-") || LEGACY_CACHES.includes(cacheName)),
+            )
             .map((cacheName) => caches.delete(cacheName)),
         );
       })
       .then(() => clients.claim()),
   );
 });
-
-registerRoute(
-  ({ request }) => request.destination === "assets",
-  new CacheFirst({
-    cacheName: "static-assets",
-    plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new ExpirationPlugin({
-        maxEntries: 100,
-        maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-      }),
-    ],
-  }),
-);
-
-setDefaultHandler(
-  new NetworkOnly({
-    cacheName: "default-cache",
-  }),
-);
