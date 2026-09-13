@@ -18,7 +18,7 @@ function onIdle(callback: () => void): void {
     return;
   }
 
-  window.setTimeout(callback, 3000);
+  setTimeout(callback, 3000);
 }
 
 function ensurePreconnect(href: string): void {

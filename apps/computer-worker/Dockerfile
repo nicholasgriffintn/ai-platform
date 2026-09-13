@@ -4,7 +4,9 @@ USER root
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      chromium \
+      ca-certificates \
+      gnupg \
+      wget \
       novnc \
       openbox \
       scrot \
@@ -12,6 +14,10 @@ RUN apt-get update \
       x11vnc \
       xdotool \
       xvfb \
+    && wget -q -O /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y /tmp/google-chrome.deb \
+    && rm -f /tmp/google-chrome.deb \
+    && ln -sf /usr/bin/google-chrome-stable /usr/bin/chromium \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
