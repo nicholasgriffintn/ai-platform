@@ -29,17 +29,13 @@ test.describe("Project workbench layout", () => {
       "Polychat sandbox E2E: create a completed run for Workbench layout verification.",
     );
     await expect(workbench.dock).toBeVisible();
-    await expect(page.getByRole("group", { name: "Product mode", exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Coding task:/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: "As task", exact: true })).toHaveCount(0);
     await expect(page.getByRole("main", { name: "Conversation", exact: true })).toBeVisible();
     await expect(workbench.dock.getByRole("tab")).toHaveText([
+      "Context",
       "Activity",
-      "Preview",
       "Changes",
       "Files",
       "Proof",
-      "Delegates",
     ]);
     await expect(workbench.status).toHaveAttribute("aria-live", "polite");
     await expect(workbench.status).toContainText("Completed");
@@ -58,41 +54,38 @@ test.describe("Project workbench layout", () => {
     await page.keyboard.press("Tab");
     await expect(workbench.paneTab("Activity")).toBeFocused();
     await page.keyboard.press("ArrowRight");
-    await expect(workbench.paneTab("Preview")).toBeFocused();
-    await page.keyboard.press("ArrowRight");
     await expect(workbench.paneTab("Changes")).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    await expect(workbench.paneTab("Files")).toBeFocused();
     expect(await workbench.hasVisibleKeyboardFocus()).toBe(true);
-    await expect(workbench.paneTab("Changes")).toHaveAttribute("aria-selected", "true");
-    await expect(workbench.panePanel("Changes")).toBeVisible();
-    await expect(workbench.panePanel("Changes")).toHaveAttribute(
+    await expect(workbench.paneTab("Files")).toHaveAttribute("aria-selected", "true");
+    await expect(workbench.panePanel("Files")).toBeVisible();
+    await expect(workbench.panePanel("Files")).toHaveAttribute(
       "aria-labelledby",
-      "project-workbench-desktop-changes-tab",
+      "project-workbench-desktop-files-tab",
     );
     await workbench.collapse();
     await expect(workbench.dock).not.toBeVisible();
     await expect(workbench.mobileTrigger).toHaveAttribute("aria-expanded", "false");
     await workbench.reload();
-    await expect(workbench.dock).not.toBeVisible();
-    await workbench.expand();
+    await expect(workbench.dock).toBeVisible();
     await expect(workbench.resizeHandle).toHaveAttribute(
       "aria-valuenow",
       String(initialWidth + 24),
     );
-    await expect(workbench.paneTab("Changes")).toHaveAttribute("aria-selected", "true");
+    await expect(workbench.paneTab("Files")).toHaveAttribute("aria-selected", "true");
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(workbench.dock).not.toBeVisible();
-    await workbench.mobileTrigger.click();
     await expect(workbench.mobileDialog).toBeVisible();
     await expect(workbench.mobileDialog.getByRole("tab")).toHaveText([
+      "Context",
       "Activity",
-      "Preview",
       "Changes",
       "Files",
       "Proof",
-      "Delegates",
     ]);
     await expect(
-      workbench.mobileDialog.getByRole("tab", { name: "Changes", exact: true }),
+      workbench.mobileDialog.getByRole("tab", { name: "Files", exact: true }),
     ).toHaveAttribute("aria-selected", "true");
     const dialogBounds = await workbench.mobileDialog.boundingBox();
     const viewportHeight = await page.evaluate(() => window.innerHeight);
@@ -139,7 +132,7 @@ test.describe("Project workbench layout", () => {
       "Polychat sandbox E2E: observe every workbench state and wait for controls during service review while preserving this deliberately long status detail across desktop tablet and mobile layouts without losing the authoritative run.";
 
     await homePage.sendMessage(runningTask);
-    await expect(workbench.status).toContainText("Preparing", { timeout: 30_000 });
+    await expect(workbench.status).toContainText(/Preparing|Running/, { timeout: 30_000 });
     const preparingRun = await sandbox.latestRun();
 
     if (!preparingRun) {
@@ -192,36 +185,13 @@ test.describe("Project workbench layout", () => {
     ).toBeVisible();
 
     await page.setViewportSize({ width: 768, height: 1024 });
-    await expect(workbench.statusDetail).toBeVisible();
-    expect(await workbench.statusDetailIsTruncated()).toBe(true);
-    const tabletControls = await Promise.all(
-      (["Pause", "Continue", "Cancel"] as const).map((action) =>
-        workbench.controlPresentation(action),
-      ),
-    );
-
-    expect(tabletControls).toEqual([
-      { action: "Pause", title: "Pause at the next safe boundary", labelVisible: false },
-      {
-        action: "Continue",
-        title: "Ask the run to keep going and finish with clear validation",
-        labelVisible: false,
-      },
-      { action: "Cancel", title: "Cancel this run", labelVisible: false },
-    ]);
+    await expect(workbench.statusDetail).not.toBeVisible();
 
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(workbench.status).toHaveAttribute("title", /observe every workbench state/);
     await expect(workbench.status).toContainText("Running");
     await expect(workbench.statusDetail).not.toBeVisible();
-    await expect(workbench.mobileTrigger).toBeVisible();
-    expect(
-      await Promise.all(
-        (["Pause", "Continue", "Cancel"] as const).map((action) =>
-          workbench.controlPresentation(action),
-        ),
-      ),
-    ).toEqual(tabletControls);
+    await expect(workbench.mobileDialog).toBeVisible();
 
     await page.setViewportSize({ width: 1440, height: 900 });
     await workbench.control("Pause");

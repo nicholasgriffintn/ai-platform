@@ -288,6 +288,7 @@ export function ProjectWorkbenchShell({
   const activePane = panes.includes(selectedPane) ? selectedPane : (panes[0] ?? selectedPane);
   const previousAttentionKey = useRef(attention?.key);
   const attentionInitialised = useRef(false);
+  const autoOpenedKey = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (hasDock) {
@@ -343,8 +344,18 @@ export function ProjectWorkbenchShell({
 
   useEffect(() => {
     if (status === "ready") {
+      autoOpenedKey.current = undefined;
+
       return;
     }
+
+    const autoOpenKey = `${status}:${hasDock ? "desktop" : "mobile"}`;
+
+    if (autoOpenedKey.current === autoOpenKey) {
+      return;
+    }
+
+    autoOpenedKey.current = autoOpenKey;
 
     if (hasDock) {
       onDockCollapsedChange(false);
