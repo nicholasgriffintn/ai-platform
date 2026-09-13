@@ -65,6 +65,8 @@ export function createAgentSessionRegistry() {
         if (resolved === host && hosts.get(key) === current) {
           hosts.delete(key);
         }
+
+        return undefined;
       },
       () => undefined,
     );

@@ -18,7 +18,8 @@ export function MusicTransportControls({
   onStop,
 }: MusicTransportControlsProps) {
   return (
-    <div className="polychat-experience-music-transport" role="group" aria-label="Music transport">
+    <fieldset className="polychat-experience-music-transport">
+      <legend className="sr-only">Music transport</legend>
       <button
         type="button"
         disabled={isLoading || !canPlay}
@@ -28,7 +29,7 @@ export function MusicTransportControls({
         {isLoading ? "Loading…" : isPlaying ? "Stop" : "Play"}
       </button>
       {!canPlay && unavailableReason && <small>{unavailableReason}</small>}
-    </div>
+    </fieldset>
   );
 }
 

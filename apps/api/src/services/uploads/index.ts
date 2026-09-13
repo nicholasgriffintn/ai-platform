@@ -7,7 +7,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { convertBlobToMarkdownViaCloudflare } from "~/lib/documentConverter";
 import { StorageService, type StoredSourceFileResult } from "~/lib/storage";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
@@ -234,7 +234,7 @@ export async function handleFileUpload(
     arrayBuffer = await file.arrayBuffer();
   } catch (bufferError) {
     logger.error("Failed to convert file to arrayBuffer", {
-      error: bufferError instanceof Error ? bufferError.message : String(bufferError),
+      error: getErrorMessage(bufferError),
       stack: bufferError instanceof Error ? bufferError.stack : undefined,
     });
     throw new AssistantError("Failed to process file data", ErrorType.UNKNOWN_ERROR, 500);
@@ -272,7 +272,7 @@ export async function handleFileUpload(
     });
   } catch (storageError) {
     logger.error("Failed to upload file to storage", {
-      error: storageError instanceof Error ? storageError.message : String(storageError),
+      error: getErrorMessage(storageError),
       stack: storageError instanceof Error ? storageError.stack : undefined,
       key,
     });
@@ -302,7 +302,7 @@ export async function handleFileUpload(
       }
     } catch (markdownError) {
       logger.error("Error during markdown conversion", {
-        error: markdownError instanceof Error ? markdownError.message : String(markdownError),
+        error: getErrorMessage(markdownError),
         stack: markdownError instanceof Error ? markdownError.stack : undefined,
       });
     }
@@ -317,7 +317,7 @@ export async function handleFileUpload(
       markdownContent = `${fence}\n${rawText}\n\`\`\``;
     } catch (err) {
       logger.error("Failed to read code file as text", {
-        error: err instanceof Error ? err.message : String(err),
+        error: getErrorMessage(err),
       });
     }
   }

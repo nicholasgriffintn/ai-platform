@@ -1,3 +1,4 @@
+import { getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 import { githubApiRequest } from "./api-client";
@@ -61,7 +62,7 @@ export async function getGitHubAppInstallationToken(params: {
       app_id: appId,
       repo,
       installation_id: installationId,
-      error_message: error instanceof Error ? error.message : String(error),
+      error_message: getErrorMessage(error),
     });
     throw error;
   }

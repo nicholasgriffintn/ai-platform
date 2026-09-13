@@ -1,7 +1,6 @@
 import {
   createMemorySurfaceStorage,
   createSurfaceAction,
-  type SurfaceControls,
 } from "@ngriffin_uk/polychat-library-surface";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -37,20 +36,22 @@ describe("surface controls context", () => {
       notify: createSurfaceAction(() => undefined),
       storage: createMemorySurfaceStorage(),
     };
-    let injectedControls: SurfaceControls<{ route: string }, { name: string }> | undefined;
 
-    function Consumer() {
+    function Consumer({ expected }: { expected: typeof controls }) {
       const surface = useSurfaceControls();
 
-      injectedControls = surface;
-
-      return null;
+      return createElement("span", null, surface === expected ? "controls-match" : "mismatch");
     }
 
-    renderToStaticMarkup(
-      createElement(SurfaceControlsProvider, { controls }, createElement(Consumer)),
+    const html = renderToStaticMarkup(
+      createElement(
+        SurfaceControlsProvider,
+        { controls },
+        createElement(Consumer, { expected: controls }),
+      ),
     );
-    expect(injectedControls).toBe(controls);
+
+    expect(html).toContain("controls-match");
   });
 
   it("fails clearly when the provider is missing", () => {

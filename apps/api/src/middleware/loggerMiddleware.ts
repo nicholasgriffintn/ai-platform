@@ -1,6 +1,7 @@
 import type { Context, Next } from "hono";
 
 import type { IUser } from "~/types";
+import { getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { redactSensitiveUrl } from "~/utils/redaction";
@@ -66,7 +67,7 @@ export const loggerMiddleware = async (c: Context, next: Next) => {
     const errorContext = {
       method,
       url,
-      error: error instanceof Error ? error.message : String(error),
+      error: getErrorMessage(error),
       duration: `${duration / 1000}s`,
       userId,
       userAgent,

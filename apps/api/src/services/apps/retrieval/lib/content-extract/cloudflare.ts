@@ -1,6 +1,7 @@
 import { sleep } from "@ngriffin_uk/polychat-utility-core";
 
 import type { IRequest } from "~/types";
+import { getErrorMessage } from "~/utils/errors";
 
 import type { ContentExtractParams, ExtractedContentPayload } from "../../types/content-extract";
 
@@ -345,7 +346,7 @@ export async function extractWithCloudflare(
     } catch (error) {
       failed_results.push({
         url,
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
     }
   }

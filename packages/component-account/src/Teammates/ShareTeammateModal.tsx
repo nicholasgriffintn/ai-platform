@@ -14,7 +14,7 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import type { SharedTeammateSummary } from "@ngriffin_uk/polychat-schemas";
 import { parseStringArrayValue } from "@ngriffin_uk/polychat-utility-core";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export interface ShareTeammateModalProps {
   open: boolean;
@@ -56,15 +56,20 @@ export function ShareTeammateModal({
   const [shareDescription, setShareDescription] = useState("");
   const [shareCategory, setShareCategory] = useState("");
   const [shareTagsInput, setShareTagsInput] = useState("");
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevTeammate, setPrevTeammate] = useState(teammate);
 
-  useEffect(() => {
+  if (prevOpen !== open || prevTeammate !== teammate) {
+    setPrevOpen(open);
+    setPrevTeammate(teammate);
+
     if (open && teammate) {
       setShareName(teammate.name);
       setShareDescription(teammate.description ?? "");
       setShareCategory("");
       setShareTagsInput("");
     }
-  }, [open, teammate]);
+  }
 
   if (!teammate) {
     return null;

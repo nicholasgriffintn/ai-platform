@@ -159,15 +159,47 @@ interface OutputRendererProps {
   output: unknown;
 }
 
+function getOutputItemKey(item: unknown): string {
+  if (typeof item === "string") {
+    return `output-${item.slice(0, 128)}`;
+  }
+
+  if (isRecord(item)) {
+    const text = getStringProperty(item, "text");
+
+    if (typeof item.type === "string" && text) {
+      return `output-${item.type}-${text.slice(0, 128)}`;
+    }
+
+    for (const nestedKey of ["image_url", "audio_url", "video_url"] as const) {
+      const url = getStringProperty(item[nestedKey], "url");
+
+      if (url) {
+        return `output-${nestedKey}-${url}`;
+      }
+    }
+
+    const url = getStringProperty(item, "url") || getStringProperty(item, "uri");
+
+    if (url) {
+      return `output-url-${url}`;
+    }
+  }
+
+  return `output-${formatUnknownValue(item).slice(0, 128)}`;
+}
+
 function OutputRenderer({ output }: OutputRendererProps) {
   if (Array.isArray(output)) {
     return (
       <div className="space-y-4">
-        {output.map((item, index) => {
+        {output.map((item) => {
+          const itemKey = getOutputItemKey(item);
+
           if (isRecord(item)) {
             if (item.type === "text") {
               return (
-                <div key={index} className="prose max-w-none dark:prose-invert">
+                <div key={itemKey} className="prose max-w-none dark:prose-invert">
                   {getStringProperty(item, "text")}
                 </div>
               );
@@ -177,7 +209,7 @@ function OutputRenderer({ output }: OutputRendererProps) {
               const url = getStringProperty(item.image_url, "url");
 
               if (url) {
-                return <OutputItem key={index} item={url} />;
+                return <OutputItem key={itemKey} item={url} />;
               }
             }
 
@@ -185,7 +217,7 @@ function OutputRenderer({ output }: OutputRendererProps) {
               const url = getStringProperty(item.audio_url, "url");
 
               if (url) {
-                return <OutputItem key={index} item={url} />;
+                return <OutputItem key={itemKey} item={url} />;
               }
             }
 
@@ -193,12 +225,12 @@ function OutputRenderer({ output }: OutputRendererProps) {
               const url = getStringProperty(item.video_url, "url");
 
               if (url) {
-                return <OutputItem key={index} item={url} />;
+                return <OutputItem key={itemKey} item={url} />;
               }
             }
           }
 
-          return <OutputItem key={index} item={item} />;
+          return <OutputItem key={itemKey} item={item} />;
         })}
       </div>
     );
@@ -262,6 +294,7 @@ function OutputItem({ item }: OutputItemProps) {
   if (isVideo) {
     return (
       <div>
+        {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- model-generated video has no captions track available */}
         <video controls className="max-w-full rounded-lg">
           <source src={url} type="video/mp4" />
           Your browser does not support the video tag.
@@ -281,6 +314,7 @@ function OutputItem({ item }: OutputItemProps) {
   if (isAudio) {
     return (
       <div>
+        {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- model-generated audio has no captions track available */}
         <audio controls className="w-full">
           <source src={url} />
           Your browser does not support the audio tag.

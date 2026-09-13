@@ -79,22 +79,21 @@ function UsageCard({
       contentClassName="space-y-3"
     >
       {percentage !== null && (
-        <div
-          className="h-2 w-full overflow-hidden rounded-full bg-selection"
-          role="meter"
+        <meter
+          className="block h-2 w-full [appearance:none] overflow-hidden rounded-full bg-selection"
+          min={0}
+          max={100}
+          value={Math.round(percentage)}
           aria-label={`${used} of ${limit} ${title.toLowerCase()} used today`}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(percentage)}
         >
-          <div
+          <span
             className={cn(
-              "h-full rounded-full transition-[width] duration-500",
+              "block h-full rounded-full transition-[width] duration-500",
               usageToneClasses[tone],
             )}
             style={{ width: `${percentage}%` }}
           />
-        </div>
+        </meter>
       )}
 
       <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4">

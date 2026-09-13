@@ -75,6 +75,11 @@ export function useHomeChatModeConfig(): {
   const [activeModeId, setActiveModeId] = useState<HomeChatModeId>(() =>
     resolveHomeChatModeId(searchParams.has("mode") ? searchParams.get("mode") : homeChatMode),
   );
+  const modeParam = searchParams.has("mode") ? searchParams.get("mode") : homeChatMode;
+  const [prevModeSyncKey, setPrevModeSyncKey] = useState(
+    () =>
+      `${currentConversationId ?? ""}:${conversationModeMetadata?.mode ?? ""}:${modeParam ?? ""}:${homeChatMode}`,
+  );
   const effectiveActiveModeId = !isPro && activeModeId === "live" ? "chat" : activeModeId;
   const hydratedConversationIdRef = useRef<string | undefined>(undefined);
   const liveConversationMode = useMemo(
@@ -157,7 +162,9 @@ export function useHomeChatModeConfig(): {
   }, [flushLiveMessages, liveProvider, realtimeProviderOptions, stopLiveSession]);
   const effectiveLiveProvider = selectedModelLiveProvider ?? liveProvider;
 
-  effectiveLiveProviderRef.current = effectiveLiveProvider ?? undefined;
+  useEffect(() => {
+    effectiveLiveProviderRef.current = effectiveLiveProvider ?? undefined;
+  }, [effectiveLiveProvider]);
   const forceLiveResponseAudio = isComposedRealtimeLiveProvider(
     effectiveLiveProvider ?? "",
     realtimeProviderOptions,
@@ -222,15 +229,15 @@ export function useHomeChatModeConfig(): {
     setModel,
   ]);
 
-  useEffect(() => {
-    if (currentConversationId && conversationModeMetadata) {
-      return;
-    }
+  const modeSyncKey = `${currentConversationId ?? ""}:${conversationModeMetadata?.mode ?? ""}:${modeParam ?? ""}:${homeChatMode}`;
 
-    setActiveModeId(
-      resolveHomeChatModeId(searchParams.has("mode") ? searchParams.get("mode") : homeChatMode),
-    );
-  }, [conversationModeMetadata, currentConversationId, homeChatMode, searchParams]);
+  if (prevModeSyncKey !== modeSyncKey) {
+    setPrevModeSyncKey(modeSyncKey);
+
+    if (!(currentConversationId && conversationModeMetadata)) {
+      setActiveModeId(resolveHomeChatModeId(modeParam));
+    }
+  }
 
   useEffect(() => {
     if (!currentConversationId) {

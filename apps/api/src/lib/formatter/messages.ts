@@ -748,10 +748,14 @@ export class MessageFormatter {
       return "";
     }
 
-    try {
-      return JSON.stringify(value);
-    } catch {
+    if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
       return String(value);
+    }
+
+    try {
+      return JSON.stringify(value) ?? "";
+    } catch {
+      return "";
     }
   }
 

@@ -822,6 +822,7 @@ export function useStreamingResponse(
       recordTurnActivity,
       updateStreamLoadingMessage,
       user?.id,
+      permissionMode,
     ],
   );
 

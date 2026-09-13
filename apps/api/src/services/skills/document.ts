@@ -1,6 +1,8 @@
 import { parse as parseYaml } from "yaml";
 import z from "zod/v4";
 
+import { getErrorMessage } from "~/utils/errors";
+
 export const MAX_USER_SKILL_DOCUMENT_BYTES = 128 * 1024;
 const RESERVED_METADATA_PREFIX = "polychat-";
 
@@ -86,9 +88,7 @@ export function parseSkillDocument(
   try {
     yaml = parseYaml(match[1] ?? "");
   } catch (error) {
-    throw new SkillDocumentError(
-      `SKILL.md contains invalid YAML: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    throw new SkillDocumentError(`SKILL.md contains invalid YAML: ${getErrorMessage(error)}`);
   }
 
   const parsed = agentSkillFrontmatterSchema.safeParse(yaml);

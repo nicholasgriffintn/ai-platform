@@ -48,6 +48,7 @@ export function WeatherView({ data, embedded }: WeatherViewProps) {
             <p className="text-sm font-semibold text-foreground">{locationName}</p>
             <div className="mt-4 flex items-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-border bg-surface-elevated text-foreground">
+                {/* oxlint-disable-next-line react/static-components -- getWeatherIcon returns a stable lucide-react component reference, not a new closure */}
                 <Icon className="h-8 w-8" aria-hidden />
               </div>
               <div>
@@ -102,7 +103,7 @@ export function WeatherView({ data, embedded }: WeatherViewProps) {
                 return (
                   <div
                     className="grid min-w-16 justify-items-center gap-2 rounded-md px-2 py-2 text-center"
-                    key={`${item.time}-${index}`}
+                    key={item.time}
                   >
                     <span className="text-xs font-medium text-muted-foreground">
                       {index === 0 ? "Now" : formatWeatherHour(item.time)}
@@ -122,7 +123,7 @@ export function WeatherView({ data, embedded }: WeatherViewProps) {
           <div className="mt-5 space-y-2 border-t border-border pt-4">
             {dailyForecast.map((item, index) => (
               <DailyForecastRow
-                key={`${item.date}-${index}`}
+                key={item.date}
                 item={item}
                 label={index === 0 ? "Today" : formatWeatherWeekday(item.date)}
                 rangeSegment={dailyRangeSegments[index]}
@@ -152,6 +153,7 @@ function DailyForecastRow({
   return (
     <div className="grid grid-cols-[4rem_2rem_3rem_1fr] items-center gap-2 text-sm">
       <div className="font-semibold text-foreground">{label}</div>
+      {/* oxlint-disable-next-line react/static-components -- getWeatherIcon returns a stable lucide-react component reference, not a new closure */}
       <Icon className="h-4 w-4 text-muted-foreground" aria-hidden />
       <div className="text-xs font-medium text-active-work">
         {precipitation > 0 ? `${precipitation}%` : ""}

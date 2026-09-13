@@ -28,6 +28,7 @@ const TextFallback: FC<{ text: string; provider?: string; size?: number }> = ({
     <div
       className={`rounded-full ${colorClasses} flex items-center justify-center font-semibold`}
       style={{ width: size, height: size, fontSize: size * 0.5 }}
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- icon container has no image src; role=img with aria-label is required
       role="img"
       aria-label={`${text} initial`}
     >
@@ -92,6 +93,7 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
         ref={ref}
         className="relative inline-block"
         style={{ width: containerSize, height: containerSize }}
+        // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- icon container has no image src; role=img with aria-label is required
         role="img"
         aria-label={iconLabel}
         {...rest}
@@ -116,6 +118,7 @@ export const ModelIcon = forwardRef<HTMLDivElement, ModelIconProps>(
               >
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className={mono ? "text-foreground" : ""}>
+                    {/* oxlint-disable-next-line react/static-components -- getLazyIcon returns a cached LazyExoticComponent per icon name, not a new closure */}
                     <IconComponent
                       size={containerSize}
                       style={{

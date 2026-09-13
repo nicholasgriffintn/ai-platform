@@ -1,4 +1,4 @@
-import { isPrivateHostname } from "@ngriffin_uk/polychat-utility-core";
+import { formatUnknownValue, isPrivateHostname } from "@ngriffin_uk/polychat-utility-core";
 
 export { isPrivateHostname };
 
@@ -59,11 +59,11 @@ export function appendQueryParams(baseUrl: URL, params: Record<string, unknown> 
     if (Array.isArray(value)) {
       for (const entry of value) {
         if (entry !== undefined && entry !== null) {
-          baseUrl.searchParams.append(key, String(entry));
+          baseUrl.searchParams.append(key, formatUnknownValue(entry));
         }
       }
     } else {
-      baseUrl.searchParams.set(key, String(value));
+      baseUrl.searchParams.set(key, formatUnknownValue(value));
     }
   }
 }

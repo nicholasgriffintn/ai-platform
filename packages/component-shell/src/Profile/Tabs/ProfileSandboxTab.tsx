@@ -90,6 +90,7 @@ export function ProfileSandboxTab() {
     if (!installConfig?.canAutoConnect) {
       toast.info("GitHub install detected. Open Add connection and save it manually.");
       clearInstallParams();
+      // oxlint-disable-next-line react/set-state-in-effect -- GitHub installation callback arrives via external OAuth redirect URL requiring one-time handling with backend and URL cleanup; state settles after external callback
       setIsConnectionModalOpen(true);
       setForm((prev) => ({ ...prev, installationId: String(installationId) }));
 

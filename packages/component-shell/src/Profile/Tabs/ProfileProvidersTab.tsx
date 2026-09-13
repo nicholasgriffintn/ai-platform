@@ -91,7 +91,7 @@ export function ProfileProvidersTab() {
   const { data: connectorsData, isLoading: isLoadingConnectors } = useRecipeConnectors();
   const connectorSetup = useConnectorSetup();
   const disconnectConnector = useDisconnectRecipeConnector();
-  const connectors = connectorsData?.connectors ?? [];
+  const connectors = useMemo(() => connectorsData?.connectors ?? [], [connectorsData?.connectors]);
   const configuredProviderCount =
     providerSettings.filter((provider) => provider.hasApiKey).length +
     connectors.filter((connector) => connector.status === "connected").length;
@@ -115,27 +115,27 @@ export function ProfileProvidersTab() {
     completeConnectorAuthPopup(searchParams);
   }, [searchParams]);
 
+  const requestedConnectorId = searchParams.get("connector");
+  const requestedConnector =
+    !requestedConnectorId || isLoadingConnectors
+      ? undefined
+      : connectors.find((item) => item.id === requestedConnectorId);
+
+  if (requestedConnector && selectedConnector?.id !== requestedConnector.id) {
+    setSelectedConnector(requestedConnector);
+  }
+
   useEffect(() => {
-    const requestedConnectorId = searchParams.get("connector");
-
-    if (!requestedConnectorId || isLoadingConnectors) {
+    if (!requestedConnector) {
       return;
     }
-
-    const connector = connectors.find((item) => item.id === requestedConnectorId);
-
-    if (!connector) {
-      return;
-    }
-
-    setSelectedConnector(connector);
 
     const nextSearchParams = new URLSearchParams(searchParams);
 
     nextSearchParams.delete("connector");
     nextSearchParams.set("type", "connector");
     setSearchParams(nextSearchParams, { replace: true });
-  }, [connectors, isLoadingConnectors, searchParams, setSearchParams]);
+  }, [requestedConnector, searchParams, setSearchParams]);
 
   const getProviderName = (provider: ProviderSetting) =>
     provider.name || formatProviderLabel(provider.provider_id);

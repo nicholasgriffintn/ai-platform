@@ -16,6 +16,7 @@ import { publishConversationChanged } from "~/services/sync/conversation-events"
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
+import { toStringValue } from "~/utils/strings";
 
 const CONVERSATION_BRIEF_TEMPLATE = `# Objective
 
@@ -59,7 +60,7 @@ export function formatMemoryDocument(row: MemoryDocumentRow): MemoryDocument {
 function conversationScope(conversation: Record<string, unknown>): MemoryDocumentScopeKey {
   return typeof conversation.project_id === "string"
     ? { scopeType: "project", scopeId: conversation.project_id }
-    : { scopeType: "personal", scopeId: String(conversation.user_id) };
+    : { scopeType: "personal", scopeId: toStringValue(conversation.user_id, "") };
 }
 
 function documentMatchesScope(document: MemoryDocumentRow, scope: MemoryDocumentScopeKey): boolean {

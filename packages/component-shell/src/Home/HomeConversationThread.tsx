@@ -19,7 +19,7 @@ import {
   useConversationRoute,
   useConversationScope,
 } from "@ngriffin_uk/polychat-library-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "react-router";
 
 import { DelegatePanel } from "../Delegations/DelegatePanel.js";
@@ -46,11 +46,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
   const agentApprovals = useConversationAgentApprovals(currentConversationId);
   const { mode: retentionMode } = useConversationRetention(modeConfig?.requestOptions);
   const isTemporary = !completionId && retentionMode.retention === "temporary";
-  const [welcomeSeed, setWelcomeSeed] = useState<number | null>(null);
-
-  useEffect(() => {
-    setWelcomeSeed(Math.random());
-  }, []);
+  const [welcomeSeed] = useState(() => Math.random());
   const welcome = useMemo(
     () =>
       createChatWelcome(
@@ -61,7 +57,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
           hasPreviousChats: Boolean(user?.message_count || conversations.length),
           isTemporary,
         },
-        welcomeSeed ?? 0,
+        welcomeSeed,
       ),
     [
       conversations.length,
@@ -74,8 +70,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
     ],
   );
   const hasModeWelcome = Boolean(modeConfig?.welcomeTitle || modeConfig?.welcomeDescription);
-  const isWelcomeLoading =
-    !hasModeWelcome && (welcomeSeed === null || isAuthenticationLoading || areConversationsLoading);
+  const isWelcomeLoading = !hasModeWelcome && (isAuthenticationLoading || areConversationsLoading);
   const showDiscover = !hasModeWelcome && !isAuthenticated && !isAuthenticationLoading;
   const effectiveModeConfig = useMemo<ThreadModeConfig>(
     () => ({

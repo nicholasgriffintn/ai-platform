@@ -36,7 +36,7 @@ function ConnectionGrantEditor({
           size="sm"
           variant="outline"
           disabled={disabled}
-          onClick={() => onSave([...selected].sort())}
+          onClick={() => onSave([...selected].sort((a, b) => a.localeCompare(b)))}
         >
           Save access
         </Button>

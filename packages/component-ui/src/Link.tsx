@@ -17,18 +17,26 @@ export type {
 } from "@ngriffin_uk/polychat-utility-react";
 
 const AnchorLink: LinkComponent = forwardRef<HTMLAnchorElement, LinkRenderProps>(
-  function AnchorLink(props, ref) {
-    return <a ref={ref} {...props} />;
+  function AnchorLink({ children, ...rest }, ref) {
+    return (
+      <a ref={ref} {...rest}>
+        {children}
+      </a>
+    );
   },
 );
 
 /** Without a host router there is no route to compare against, so nothing is ever active. */
 const AnchorNavLink: NavLinkComponent = forwardRef<HTMLAnchorElement, NavLinkRenderProps>(
-  function AnchorNavLink({ className, end: _end, ...props }, ref) {
+  function AnchorNavLink({ children, className, end: _end, ...rest }, ref) {
     const resolvedClassName =
       typeof className === "function" ? className({ isActive: false }) : className;
 
-    return <a ref={ref} className={resolvedClassName} {...props} />;
+    return (
+      <a ref={ref} className={resolvedClassName} {...rest}>
+        {children}
+      </a>
+    );
   },
 );
 

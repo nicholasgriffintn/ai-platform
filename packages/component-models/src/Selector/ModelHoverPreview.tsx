@@ -37,10 +37,12 @@ export function ModelHoverPreview({
   onDismiss,
 }: ModelHoverPreviewProps) {
   const [measuredTop, setMeasuredTop] = useState<number | null>(null);
+  const [prevPreview, setPrevPreview] = useState(preview);
 
-  useLayoutEffect(() => {
+  if (prevPreview !== preview) {
+    setPrevPreview(preview);
     setMeasuredTop(null);
-  }, [preview]);
+  }
 
   useLayoutEffect(() => {
     if (
@@ -65,7 +67,7 @@ export function ModelHoverPreview({
     });
 
     setMeasuredTop((currentTop) => (currentTop === nextTop ? currentTop : nextTop));
-  }, [containerRef, measuredTop, preview]);
+  }, [containerRef, preview]);
 
   if (!preview) {
     return null;
@@ -91,6 +93,7 @@ export function ModelHoverPreview({
   );
 
   return (
+    // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- tooltip preview must track hover to prevent dismissal while reading; role=tooltip with mouse handlers is intentional
     <div
       ref={containerRef}
       style={{

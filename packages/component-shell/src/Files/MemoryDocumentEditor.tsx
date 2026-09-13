@@ -75,6 +75,8 @@ export function MemoryDocumentEditor({
               if (saved) {
                 onSaved?.();
               }
+
+              return saved;
             });
           }}
         >

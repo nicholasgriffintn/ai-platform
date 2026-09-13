@@ -25,6 +25,8 @@ interface FakeAudioProcessingEvent {
   };
 }
 
+type FakeWorkletMessageHandler = (event: { data: { input: Float32Array } }) => void;
+
 class FakeScriptProcessorNode extends FakeAudioNode {
   onaudioprocess: ((event: FakeAudioProcessingEvent) => void) | null = null;
 
@@ -41,8 +43,14 @@ class FakeAudioWorkletNode extends FakeAudioNode {
   static instances: FakeAudioWorkletNode[] = [];
 
   port = {
-    onmessage: null as ((event: MessageEvent<{ input: Float32Array }>) => void) | null,
+    listeners: new Set<FakeWorkletMessageHandler>(),
     postMessage: vi.fn(),
+    addEventListener: (_type: string, listener: FakeWorkletMessageHandler) => {
+      this.port.listeners.add(listener);
+    },
+    removeEventListener: (_type: string, listener: FakeWorkletMessageHandler) => {
+      this.port.listeners.delete(listener);
+    },
   };
 
   constructor(
@@ -55,7 +63,9 @@ class FakeAudioWorkletNode extends FakeAudioNode {
   }
 
   emit(input: Float32Array) {
-    this.port.onmessage?.({ data: { input } } as MessageEvent<{ input: Float32Array }>);
+    for (const listener of this.port.listeners) {
+      listener({ data: { input } });
+    }
   }
 }
 
@@ -155,6 +165,7 @@ describe("realtime audio helpers", () => {
     controller.stop();
 
     expect(worklet.port.postMessage).toHaveBeenCalledWith({ type: "stop" });
+    expect(worklet.port.listeners.size).toBe(0);
     expect(audioContext.close).toHaveBeenCalled();
   });
 

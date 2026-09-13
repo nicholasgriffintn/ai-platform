@@ -17,7 +17,12 @@ export function OutputCardGrid({ outputs }: OutputCardGridProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {outputs.map((item) => (
-        <Link key={item.id} href={item.href} className="group no-underline hover:!no-underline">
+        <Link
+          key={item.id}
+          href={item.href}
+          aria-label={item.title}
+          className="group no-underline hover:!no-underline"
+        >
           <Card className="h-full gap-3 p-5 shadow-none hover:border-border-strong">
             <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
               {item.capabilityId}

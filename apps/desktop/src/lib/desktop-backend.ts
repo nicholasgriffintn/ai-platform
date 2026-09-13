@@ -85,6 +85,7 @@ async function startAgentSession(
   const lines = createAsyncEventQueue<string>();
   const channel = new Channel();
 
+  // oxlint-disable-next-line unicorn/prefer-add-event-listener -- Tauri Channel exposes onmessage assignment as its API, not an EventTarget
   channel.onmessage = (raw) => {
     const event = sessionEventSchema.safeParse(raw);
 
@@ -248,6 +249,7 @@ function startRun(
     queue.close();
   };
 
+  // oxlint-disable-next-line unicorn/prefer-add-event-listener -- Tauri Channel exposes onmessage assignment as its API, not an EventTarget
   channel.onmessage = (raw) => {
     const event = desktopStreamEventSchema.safeParse(raw);
 

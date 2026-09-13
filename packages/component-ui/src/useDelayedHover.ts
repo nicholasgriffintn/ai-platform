@@ -1,7 +1,8 @@
 import { type PointerEventHandler, useCallback, useEffect, useRef, useState } from "react";
 
 export function useDelayedHover({ delayMs, disabled }: { delayMs: number; disabled: boolean }) {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisibleState, setIsVisibleState] = useState(false);
+  const isVisible = disabled ? false : isVisibleState;
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearPending = useCallback(() => {
@@ -13,28 +14,33 @@ export function useDelayedHover({ delayMs, disabled }: { delayMs: number; disabl
 
   const hide = useCallback(() => {
     clearPending();
-    setIsVisible(false);
+    setIsVisibleState(false);
   }, [clearPending]);
 
   const onPointerMove = useCallback<PointerEventHandler<HTMLElement>>(
     (event) => {
-      if (disabled || event.pointerType === "touch" || isVisible || timeoutRef.current !== null) {
+      if (
+        disabled ||
+        event.pointerType === "touch" ||
+        isVisibleState ||
+        timeoutRef.current !== null
+      ) {
         return;
       }
 
       timeoutRef.current = setTimeout(() => {
         timeoutRef.current = null;
-        setIsVisible(true);
+        setIsVisibleState(true);
       }, delayMs);
     },
-    [delayMs, disabled, isVisible],
+    [delayMs, disabled, isVisibleState],
   );
 
   useEffect(() => {
     if (disabled) {
-      hide();
+      clearPending();
     }
-  }, [disabled, hide]);
+  }, [disabled, clearPending]);
 
   useEffect(() => clearPending, [clearPending]);
 

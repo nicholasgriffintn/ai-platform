@@ -25,6 +25,7 @@ export const AppCard = ({
 
   return (
     <Card
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- tile contains headings and paragraphs, so a native <button> (phrasing content only) would be invalid HTML
       role="button"
       tabIndex={isDisabled ? -1 : 0}
       onClick={isDisabled ? undefined : onSelect}

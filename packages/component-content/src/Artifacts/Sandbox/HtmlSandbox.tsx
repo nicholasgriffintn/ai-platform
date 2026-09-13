@@ -49,11 +49,17 @@ export function HtmlSandbox({
 }) {
   const [documentContent, setDocumentContent] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [prevCode, setPrevCode] = useState(code);
+  const [prevCss, setPrevCss] = useState(css);
+
+  if (prevCode !== code || prevCss !== css) {
+    setPrevCode(code);
+    setPrevCss(css);
+    setIsLoading(true);
+  }
 
   useEffect(() => {
     let isMounted = true;
-
-    setIsLoading(true);
 
     const prepareDocument = async () => {
       let doc = HTML_SANDBOX_TEMPLATE;

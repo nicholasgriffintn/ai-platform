@@ -197,6 +197,7 @@ function TierDetail({
             tone.panelIcon,
           )}
         >
+          {/* oxlint-disable-next-line react/static-components -- getModelTierIcon returns a stable lucide-react component reference, not a new closure */}
           <Icon className="h-4 w-4" aria-hidden="true" />
         </div>
         <div className="min-w-0">
@@ -259,9 +260,8 @@ export function ModelTierPicker({
               key={tier ?? INHERITED_MODEL_TIER}
               type="button"
               data-model-option
-              role="option"
               aria-label={`${label} tier`}
-              aria-selected={isSelected}
+              aria-pressed={isSelected}
               aria-disabled={isChoiceDisabled}
               disabled={isChoiceDisabled}
               onMouseEnter={() => setPreviewTier(tier ?? INHERITED_MODEL_TIER)}

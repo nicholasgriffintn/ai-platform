@@ -100,7 +100,7 @@ export function useAutoSave({
     }, delay);
 
     return () => clearTimeout(timeout);
-  }, [text, lastSavedText, delay]);
+  }, [text, lastSavedText, delay, saveNote]);
 
   return {
     isSaving,

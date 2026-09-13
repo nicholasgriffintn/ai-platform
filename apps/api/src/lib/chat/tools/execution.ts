@@ -45,13 +45,15 @@ function buildUnknownToolCorrection(functionName: string): string {
   return `Tool "${functionName}" is not available. Continue using only the tools provided in this request, or answer directly without a tool.`;
 }
 
+const RECOVERABLE_TOOL_CALL_ERROR_TYPES = new Set<string>([ErrorType.TOOL_CALL_ERROR]);
+
 function isRecoverableToolCallError(params: {
   errorType: string;
   toolCallId: unknown;
   functionName: string;
 }): boolean {
   return (
-    params.errorType === ErrorType.TOOL_CALL_ERROR &&
+    RECOVERABLE_TOOL_CALL_ERROR_TYPES.has(params.errorType) &&
     typeof params.toolCallId === "string" &&
     params.toolCallId.length > 0 &&
     params.functionName !== "unknown"

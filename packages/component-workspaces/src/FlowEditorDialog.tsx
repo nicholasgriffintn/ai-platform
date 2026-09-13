@@ -21,7 +21,7 @@ import {
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 import { ArrowDown, ArrowUp, Plus, Settings2, Sparkles, Trash2 } from "lucide-react";
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 
 export interface FlowEditorDialogProps {
   open: boolean;
@@ -82,14 +82,19 @@ export function FlowEditorDialog({
   onSave,
 }: FlowEditorDialogProps) {
   const [stages, setStages] = useState<ProjectFlowStage[]>([]);
+  const [prevFlow, setPrevFlow] = useState<ProjectFlow | null>(null);
+  const [prevOpen, setPrevOpen] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const isNewFlow = flow === null;
 
-  useEffect(() => {
+  if (prevOpen !== open || prevFlow !== flow) {
+    setPrevOpen(open);
+    setPrevFlow(flow);
+
     if (open) {
       setStages(flow?.stages.map((stage) => ({ ...stage })) ?? [newStage()]);
     }
-  }, [flow, open]);
+  }
 
   const updateStage = (index: number, update: Partial<ProjectFlowStage>) => {
     setStages((current) =>

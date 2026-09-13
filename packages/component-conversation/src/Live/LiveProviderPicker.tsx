@@ -58,6 +58,7 @@ export function LiveProviderPicker({
           <button
             key={option.id}
             type="button"
+            // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- card buttons implement the APG radiogroup pattern with rich content; a native radio input cannot contain this layout
             role="radio"
             aria-checked={isSelected}
             disabled={isLocked || !isReady}

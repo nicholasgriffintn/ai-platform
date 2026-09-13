@@ -10,7 +10,7 @@ import type {
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
 import { normaliseTokenUsage, type NormalisedTokenUsage } from "~/lib/usage/tokenUsage";
 import type { ChatCompletionParameters } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
@@ -111,7 +111,7 @@ function trackAiGeneration(
     analytics.captureAiGeneration(input);
   } catch (error) {
     logger.warn("Failed to capture AI generation analytics", {
-      error: error instanceof Error ? error.message : String(error),
+      error: getErrorMessage(error),
     });
   }
 }
@@ -248,10 +248,10 @@ export function trackProviderMetrics<T>({
           provider,
           model,
           settings,
-          error: error instanceof Error ? error.message : String(error),
+          error: getErrorMessage(error),
         },
         status: "error",
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
       throw error;
     });
@@ -378,10 +378,10 @@ export function trackRagMetrics(
         name: "rag",
         value: latency,
         metadata: {
-          error: error instanceof Error ? error.message : String(error),
+          error: getErrorMessage(error),
         },
         status: "error",
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
       throw error;
     });

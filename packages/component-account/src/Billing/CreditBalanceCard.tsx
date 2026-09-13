@@ -52,31 +52,30 @@ export function CreditBalanceCard({ balance }: CreditBalanceCardProps) {
         </div>
       </div>
 
-      <div
-        className="relative mt-4 h-3 overflow-hidden rounded-full bg-selection"
-        role="meter"
+      <meter
+        className="relative mt-4 block h-3 w-full [appearance:none] overflow-hidden rounded-full bg-selection"
+        min={0}
+        max={100}
+        value={Math.round(usedPercentage)}
         aria-label={`${formatCredits(credits.used)} of ${formatCredits(credits.included)} included credits used, ${formatCredits(reserveRemaining)} of reserve remaining`}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(usedPercentage)}
       >
-        <div className="absolute inset-y-0 left-0 flex w-full">
-          <div
+        <span className="absolute inset-y-0 left-0 flex w-full">
+          <span
             className="h-full rounded-full bg-creative transition-[width] duration-500 ease-out"
             style={{ width: `${Math.min(usedPercentage, reserveStartPercentage)}%` }}
           />
           {usedPercentage > reserveStartPercentage && (
-            <div
+            <span
               className="h-full rounded-r-full bg-attention/80 transition-[width] duration-500 ease-out motion-safe:animate-pulse"
               style={{ width: `${usedPercentage - reserveStartPercentage}%` }}
             />
           )}
-        </div>
-        <div
+        </span>
+        <span
           className="absolute inset-y-0 w-0.5 bg-surface"
           style={{ left: `${reserveStartPercentage}%` }}
         />
-      </div>
+      </meter>
 
       <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div>

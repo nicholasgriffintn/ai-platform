@@ -240,7 +240,7 @@ async function startPcm16MicrophoneWorkletStream({
 
   silentOutput.gain.value = 0;
 
-  worklet.port.onmessage = (event: MessageEvent<Pcm16MicrophoneWorkletMessage>) => {
+  const handlePortMessage = (event: MessageEvent<Pcm16MicrophoneWorkletMessage>) => {
     const input = event.data.input;
 
     if (!input) {
@@ -252,14 +252,17 @@ async function startPcm16MicrophoneWorkletStream({
     onChunk(encodePcm16Audio(sampled));
   };
 
+  worklet.port.addEventListener("message", handlePortMessage);
+
   source.connect(worklet);
   worklet.connect(silentOutput);
   silentOutput.connect(audioContext.destination);
 
   return {
     stop: () => {
+      // oxlint-disable-next-line unicorn/require-post-message-target-origin -- MessagePort.postMessage accepts only (message, transfer?) and has no targetOrigin parameter; passing one would throw
       worklet.port.postMessage({ type: "stop" });
-      worklet.port.onmessage = null;
+      worklet.port.removeEventListener("message", handlePortMessage);
       worklet.disconnect();
       source.disconnect();
       silentOutput.disconnect();

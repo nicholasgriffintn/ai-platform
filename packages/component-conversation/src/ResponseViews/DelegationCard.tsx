@@ -36,6 +36,9 @@ const stateBadgeVariants: Record<
   expired: "destructive",
 };
 
+const EMPTY_TEAMMATES: DelegationTeammateReference[] = [];
+const EMPTY_OUTPUTS: DelegationOutputReference[] = [];
+
 export interface DelegationCardProps {
   delegations: Delegation[];
   teammates?: DelegationTeammateReference[];
@@ -71,8 +74,8 @@ export function createDelegationFollowUpInteraction(
 
 export function DelegationCard({
   delegations,
-  teammates = [],
-  outputs = [],
+  teammates = EMPTY_TEAMMATES,
+  outputs = EMPTY_OUTPUTS,
   onStopAll,
   onOpenDelegation,
   onResumeDelegation,

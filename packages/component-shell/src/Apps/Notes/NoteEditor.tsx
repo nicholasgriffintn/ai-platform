@@ -76,6 +76,10 @@ export function NoteEditor({
   const [isSpeechDetected, setIsSpeechDetected] = useState<boolean>(false);
   const [lastSilenceTime, setLastSilenceTime] = useState<number>(0);
   const [currentMetadata, setCurrentMetadata] = useState<NoteMetadataType>(initialMetadata || {});
+  const [prevThemeMode, setPrevThemeMode] = useState(initialThemeMode);
+  const [prevFontFamily, setPrevFontFamily] = useState(initialFontFamily);
+  const [prevFontSize, setPrevFontSize] = useState(initialFontSize);
+  const [prevMetadata, setPrevMetadata] = useState(initialMetadata);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   const generateNotesFromMedia = useGenerateNotesFromMedia();
   const [isMetadataRefreshing, setIsMetadataRefreshing] = useState(false);
@@ -180,21 +184,25 @@ export function NoteEditor({
     setText((current) => (current === lastApplied ? initialText : current));
   }, [initialText]);
 
-  useEffect(() => {
+  if (prevThemeMode !== initialThemeMode) {
+    setPrevThemeMode(initialThemeMode);
     setThemeMode(initialThemeMode);
-  }, [initialThemeMode]);
+  }
 
-  useEffect(() => {
+  if (prevFontFamily !== initialFontFamily) {
+    setPrevFontFamily(initialFontFamily);
     setFontFamily(initialFontFamily);
-  }, [initialFontFamily]);
+  }
 
-  useEffect(() => {
+  if (prevFontSize !== initialFontSize) {
+    setPrevFontSize(initialFontSize);
     setFontSize(initialFontSize);
-  }, [initialFontSize]);
+  }
 
-  useEffect(() => {
+  if (prevMetadata !== initialMetadata) {
+    setPrevMetadata(initialMetadata);
     setCurrentMetadata(initialMetadata || {});
-  }, [initialMetadata]);
+  }
 
   const handleFontFamilyChange = useCallback(
     (value: string) => {

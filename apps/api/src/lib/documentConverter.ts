@@ -2,7 +2,7 @@ import type { MarkdownConversionOptions } from "@ngriffin_uk/polychat-schemas";
 
 import { getMarkdownConverter, isToMarkdownResult } from "~/lib/cloudflare/markdownConversion";
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/documentConverter" });
@@ -104,7 +104,7 @@ export async function convertBlobToMarkdownViaCloudflare(
       return { result: firstResult.data };
     } catch (aiError) {
       throw new AssistantError(
-        `Cloudflare toMarkdown API error: ${aiError instanceof Error ? aiError.message : String(aiError)}`,
+        `Cloudflare toMarkdown API error: ${getErrorMessage(aiError)}`,
         ErrorType.EXTERNAL_API_ERROR,
         500,
       );

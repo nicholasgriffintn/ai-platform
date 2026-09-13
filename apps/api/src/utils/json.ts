@@ -1,6 +1,8 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import type { ZodType } from "zod/v4";
 
+import { getErrorMessage } from "./errors";
+
 export function safeParseJson<T = any>(jsonString: string): T | null {
   try {
     return JSON.parse(jsonString) as T;
@@ -119,7 +121,7 @@ export function parseAIResponseJson<T = any>(response: string | null | undefined
 
       return {
         data: null,
-        error: e instanceof Error ? e.message : String(e),
+        error: getErrorMessage(e),
         partialData,
       };
     }

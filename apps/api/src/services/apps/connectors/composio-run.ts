@@ -12,7 +12,7 @@ import {
   type ComposioConnectedAccount,
 } from "~/lib/providers/capabilities/connectors/composio/client";
 import type { ComposioConnectorSessionRecord } from "~/repositories/ComposioConnectorSessionRepository";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 import {
@@ -360,7 +360,7 @@ async function recordConnectorActivity(params: {
       provider: params.provider.id,
       operation: params.operationId,
       connectorRunId: params.context.connectorRunId,
-      error: error instanceof Error ? error.message : String(error),
+      error: getErrorMessage(error),
     });
   }
 }
@@ -467,9 +467,8 @@ export async function closeComposioConnectorRun(context: ServiceContext): Promis
       } catch (persistenceError) {
         logger.warn("Could not persist Composio connector session cleanup retry", {
           sessionHandle: session.id,
-          cleanupError: error instanceof Error ? error.message : String(error),
-          persistenceError:
-            persistenceError instanceof Error ? persistenceError.message : String(persistenceError),
+          cleanupError: getErrorMessage(error),
+          persistenceError: getErrorMessage(persistenceError),
         });
       }
     }

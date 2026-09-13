@@ -6,6 +6,8 @@ export function getMemoryCategoryClassName(category: string | null | undefined):
       return "bg-success/12 text-success";
     case "schedule":
       return "bg-attention/12 text-attention";
+    case null:
+    case undefined:
     default:
       return "bg-surface-elevated text-foreground";
   }

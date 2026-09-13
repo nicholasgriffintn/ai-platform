@@ -95,6 +95,7 @@ export function GenerationCard({
 
       {preview?.type === "video" && (
         <div className={cn("overflow-hidden rounded-xl border border-border", aspectClass)}>
+          {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- AI-generated video has no captions track available */}
           <video controls className="h-full w-full object-cover">
             <source src={preview.url} type="video/mp4" />
           </video>
@@ -102,6 +103,7 @@ export function GenerationCard({
       )}
 
       {preview?.type === "audio" && (
+        // oxlint-disable-next-line jsx-a11y/media-has-caption -- AI-generated audio has no captions track available
         <audio controls className="w-full">
           <source src={preview.url} />
         </audio>

@@ -263,6 +263,7 @@ export function StrudelStudio({
               <button
                 key={example.id}
                 type="button"
+                aria-label={`Load example pattern ${example.name}`}
                 onClick={() => onSelectExample(example)}
                 className={cn(
                   "w-full cursor-pointer rounded-lg border border-dashed border-border px-4 py-3 text-left transition hover:border-active-work/60",

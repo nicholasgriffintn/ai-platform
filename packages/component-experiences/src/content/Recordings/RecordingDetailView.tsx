@@ -41,6 +41,7 @@ export function RecordingDetailView({ recording, onDownloadTranscript }: Recordi
           </div>
           <div className="mt-6">
             <h3 className="mb-3 text-lg font-semibold text-foreground">Listen</h3>
+            {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- user-provided recording audio has no captions track available; transcript is rendered separately below */}
             <audio controls className="w-full" src={recording.audioUrl}>
               Your browser does not support the audio element.
             </audio>

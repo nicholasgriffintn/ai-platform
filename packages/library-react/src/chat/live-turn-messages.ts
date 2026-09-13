@@ -48,6 +48,26 @@ export function createLiveTurn(now = Date.now()): LiveTurn {
   };
 }
 
+export function markLiveTurnInputStarted(turn: LiveTurn): void {
+  turn.inputStarted = true;
+}
+
+export function markLiveTurnInputTextPresent(turn: LiveTurn): void {
+  turn.inputTextPresent = true;
+}
+
+export function markLiveTurnInputFinal(turn: LiveTurn): void {
+  turn.inputFinal = true;
+}
+
+export function markLiveTurnOutputStarted(turn: LiveTurn): void {
+  turn.outputStarted = true;
+}
+
+export function markLiveTurnOutputFinal(turn: LiveTurn): void {
+  turn.outputFinal = true;
+}
+
 export function createTemporaryLiveTitle(message: Message): string {
   const text = getMessageTextContent(message).replace(/\s+/g, " ").trim();
 

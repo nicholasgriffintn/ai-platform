@@ -1,11 +1,12 @@
 import {
-  getModelTierIcon,
   ModelHoverPreview,
   ModelSelectorPanel,
   ModelSelectorTrigger,
+  getModelTierIcon,
 } from "@ngriffin_uk/polychat-component-models";
 import { ShortcutTooltip } from "@ngriffin_uk/polychat-component-ui";
 import type { ModelSelectionState, ModelTierSelection } from "@ngriffin_uk/polychat-library-react";
+import { createElement } from "react";
 
 import type { ModelSelectorController } from "./useModelSelectorController.js";
 
@@ -24,24 +25,39 @@ export function ModelSelectorView({
   mono,
   selection,
 }: ModelSelectorViewProps) {
+  const {
+    attachTriggerWrapper,
+    cancelHoverPreviewDismiss,
+    closeSelector,
+    dropdownRef,
+    handleInfoHoverEnd,
+    handleInfoHoverStart,
+    handleKeyDown,
+    hoverPreview,
+    hoverPreviewRef,
+    panelLayout,
+    searchInputRef,
+    toggleSelector,
+    triggerRef,
+  } = controller;
   const SelectedTierIcon = getModelTierIcon(selection.modelTier);
 
   const handleModelSelect = (id: string) => {
     if (selection.selectModel(id)) {
-      controller.closeSelector();
+      closeSelector();
     }
   };
 
   const handleTierSelect = (tierSelection: ModelTierSelection) => {
     selection.selectTier(tierSelection);
-    controller.closeSelector();
+    closeSelector();
   };
 
   return (
-    <div ref={controller.attachTriggerWrapper} className="relative">
+    <div ref={attachTriggerWrapper} className="relative">
       <ShortcutTooltip keys={["/model"]} label="Select model">
         <ModelSelectorTrigger
-          ref={controller.triggerRef}
+          ref={triggerRef}
           isOpen={selection.isOpen}
           disabled={isDisabled}
           minimal={minimal}
@@ -57,12 +73,9 @@ export function ModelSelectorView({
           }
           icon={
             selection.model === null ? (
-              <span
-                className="inline-flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center"
-                role="img"
-                aria-label={`${selection.selectedTierLabel} tier icon`}
-              >
-                <SelectedTierIcon className="h-4 w-4" aria-hidden="true" />
+              <span className="inline-flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center">
+                {createElement(SelectedTierIcon, { className: "h-4 w-4", "aria-hidden": true })}
+                <span className="sr-only">{`${selection.selectedTierLabel} tier icon`}</span>
               </span>
             ) : undefined
           }
@@ -70,16 +83,16 @@ export function ModelSelectorView({
           modelProvider={selection.selectedModelInfo?.provider}
           label={selection.triggerLabel}
           title={selection.triggerTitle}
-          onToggle={controller.toggleSelector}
+          onToggle={toggleSelector}
         />
       </ShortcutTooltip>
 
       {selection.isOpen && (
         <ModelSelectorPanel
-          panelRef={controller.dropdownRef}
-          searchInputRef={controller.searchInputRef}
-          layout={controller.panelLayout}
-          onKeyDown={controller.handleKeyDown}
+          panelRef={dropdownRef}
+          searchInputRef={searchInputRef}
+          layout={panelLayout}
+          onKeyDown={handleKeyDown}
           runtimeOptions={selection.runtimeOptions}
           selectedComputeSite={selection.computeSite}
           selectedMachineId={selection.selectedMachineId}
@@ -105,15 +118,15 @@ export function ModelSelectorView({
           mono={mono}
           selectedModelId={selection.selectedModelId}
           onModelSelect={handleModelSelect}
-          onInfoHoverStart={controller.handleInfoHoverStart}
-          onInfoHoverEnd={controller.handleInfoHoverEnd}
+          onInfoHoverStart={handleInfoHoverStart}
+          onInfoHoverEnd={handleInfoHoverEnd}
         />
       )}
       <ModelHoverPreview
-        preview={controller.hoverPreview}
-        containerRef={controller.hoverPreviewRef}
-        onMouseEnter={controller.cancelHoverPreviewDismiss}
-        onDismiss={controller.handleInfoHoverEnd}
+        preview={hoverPreview}
+        containerRef={hoverPreviewRef}
+        onMouseEnter={cancelHoverPreviewDismiss}
+        onDismiss={handleInfoHoverEnd}
       />
     </div>
   );

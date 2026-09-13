@@ -21,15 +21,7 @@ import {
   Save,
   Wand2,
 } from "lucide-react";
-import {
-  type ReactNode,
-  type SyntheticEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type ReactNode, type SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
 
 import { MemoizedMarkdown } from "../markdown";
 import type { ArtifactProps } from "./artifact";
@@ -69,13 +61,18 @@ export const ArtifactDocumentEditor = ({
     left: number;
   } | null>(null);
   const [activeView, setActiveView] = useState<"edit" | "preview">("edit");
-  const outline = useMemo(() => extractMarkdownOutline(content), [content]);
+  const [prevContent, setPrevContent] = useState(artifact.content);
+  const [prevIdentifier, setPrevIdentifier] = useState(artifact.identifier);
 
-  useEffect(() => {
+  if (prevContent !== artifact.content || prevIdentifier !== artifact.identifier) {
+    setPrevContent(artifact.content);
+    setPrevIdentifier(artifact.identifier);
     setContent(artifact.content);
     setSelection(null);
     setActiveView("edit");
-  }, [artifact.content, artifact.identifier]);
+  }
+
+  const outline = useMemo(() => extractMarkdownOutline(content), [content]);
 
   const documentStats = useMemo(
     () => ({

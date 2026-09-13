@@ -59,10 +59,14 @@ export function formatUnknownValue(value: unknown): string {
     return String(value);
   }
 
-  try {
-    return JSON.stringify(value, null, 2) ?? String(value);
-  } catch {
+  if (typeof value === "symbol" || typeof value === "function") {
     return String(value);
+  }
+
+  try {
+    return JSON.stringify(value, null, 2) ?? "";
+  } catch {
+    return "";
   }
 }
 

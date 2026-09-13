@@ -5,7 +5,7 @@ import {
   createSourceAttachment,
   type SourceAttachmentCapabilities,
 } from "@ngriffin_uk/polychat-library-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 interface AttachedSource {
@@ -26,11 +26,13 @@ export function useComposerSources({
   const { data: sources = [], isLoading } = useSources(sourceFilters, { enabled });
   const [attachedSources, setAttachedSources] = useState<AttachedSource[]>([]);
   const [attachingSourceId, setAttachingSourceId] = useState<string | null>(null);
+  const [prevProjectId, setPrevProjectId] = useState(projectId);
 
-  useEffect(() => {
+  if (prevProjectId !== projectId) {
+    setPrevProjectId(projectId);
     setAttachedSources([]);
     setAttachingSourceId(null);
-  }, [projectId]);
+  }
 
   const attachedSourceIds = useMemo(
     () => attachedSources.map((source) => source.sourceId),

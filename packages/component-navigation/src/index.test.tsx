@@ -1,6 +1,6 @@
 import { LinkProvider } from "@ngriffin_uk/polychat-component-ui";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { forwardRef } from "react";
+import { forwardRef, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -140,12 +140,15 @@ describe("ProductModeSwitch", () => {
   });
 
   it("renders through the host link component when one is provided", () => {
-    const HostLink = forwardRef<HTMLAnchorElement, { href: string }>(function HostLink(
-      { href, ...props },
-      ref,
-    ) {
-      return <a ref={ref} data-host-link href={href} {...props} />;
-    });
+    const HostLink = forwardRef<HTMLAnchorElement, { href: string; children?: ReactNode }>(
+      function HostLink({ href, children, ...props }, ref) {
+        return (
+          <a ref={ref} data-host-link href={href} {...props}>
+            {children}
+          </a>
+        );
+      },
+    );
 
     render(
       <LinkProvider Link={HostLink}>

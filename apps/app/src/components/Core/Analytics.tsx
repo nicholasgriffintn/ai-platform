@@ -36,7 +36,6 @@ export function Analytics({
   beaconUserId,
   openFeatureBootstrap,
 }: AnalyticsProps) {
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
   useEffect(() => {
     if (!isEnabled) {
       return;
@@ -76,9 +75,19 @@ export function Analytics({
     });
 
     document.head.appendChild(script);
-  }, [isEnabled]);
+  }, [
+    batchSize,
+    batchTimeout,
+    beaconCdnEndpoint,
+    beaconDebug,
+    beaconEndpoint,
+    beaconSiteId,
+    beaconUserId,
+    directEvents,
+    directPageViews,
+    isEnabled,
+  ]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Only react to enabled state
   useEffect(() => {
     if (!isEnabled || !isExperimentsEnabled) {
       return;
@@ -111,7 +120,15 @@ export function Analytics({
     });
 
     document.head.appendChild(script);
-  }, [isEnabled, isExperimentsEnabled]);
+  }, [
+    beaconCdnEndpoint,
+    beaconDebug,
+    beaconEndpoint,
+    beaconSiteId,
+    isEnabled,
+    isExperimentsEnabled,
+    openFeatureBootstrap,
+  ]);
 
   return null;
 }

@@ -21,7 +21,8 @@ export function useSavedMessages(enabled = true) {
     enabled: enabled && isAuthenticated,
     staleTime: 1000 * 30,
   });
-  const messages: SavedMessage[] = query.data ?? [];
+  const savedData = query.data;
+  const messages: SavedMessage[] = useMemo(() => savedData ?? [], [savedData]);
   const savedIds = useMemo(() => new Set(messages.map((message) => message.messageId)), [messages]);
   const invalidate = () => queryClient.invalidateQueries({ queryKey: [SAVED_MESSAGES_QUERY_KEY] });
 

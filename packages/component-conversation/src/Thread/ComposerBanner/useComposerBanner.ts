@@ -6,7 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { isStealthModel } from "@ngriffin_uk/polychat-schemas";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { isDismissed, useComposerBannerDismissals } from "./dismissal.js";
 import { buildModelReadinessBanner } from "./model-readiness-banner.js";
@@ -48,6 +48,17 @@ export function useComposerBanner({
   const dismissals = useComposerBannerDismissals((state) => state.dismissals);
   const cooldownUntil = useComposerBannerDismissals((state) => state.cooldownUntil);
   const storeDismiss = useComposerBannerDismissals((state) => state.dismiss);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (cooldownUntil <= now) {
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(() => setNow(Date.now()), cooldownUntil - now);
+
+    return () => window.clearTimeout(timeout);
+  }, [cooldownUntil, now]);
 
   const banner = useMemo(() => {
     const candidates: Array<ComposerBannerDescriptor | null> = [
@@ -59,10 +70,7 @@ export function useComposerBanner({
     ];
 
     const suggestionsAllowed =
-      !hideSuggestions &&
-      isAuthenticated &&
-      hasHydratedUserConfiguration &&
-      cooldownUntil <= Date.now();
+      !hideSuggestions && isAuthenticated && hasHydratedUserConfiguration && cooldownUntil <= now;
 
     if (suggestionsAllowed) {
       const messageCount = user?.message_count ?? 0;
@@ -139,6 +147,7 @@ export function useComposerBanner({
     workspacesData,
     dismissals,
     cooldownUntil,
+    now,
   ]);
 
   const dismiss = useCallback(() => {

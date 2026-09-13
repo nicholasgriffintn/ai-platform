@@ -18,6 +18,7 @@ import { isRunWaitingForDelegations } from "~/services/delegations/wait-policy";
 import { prepareTeammateRun } from "~/services/teammates/execution";
 import { reconcileTeammateRun } from "~/services/teammates/run-reconciliation";
 import type { IEnv } from "~/types";
+import { getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 import { extractChatCompletionNotification } from "~/utils/messages";
 
@@ -196,7 +197,7 @@ export class RecipeExecutionHandler implements TaskHandler {
           ...invocation,
           conversationId,
           response,
-          error: error instanceof Error ? error.message : String(error),
+          error: getErrorMessage(error),
         },
       };
     }

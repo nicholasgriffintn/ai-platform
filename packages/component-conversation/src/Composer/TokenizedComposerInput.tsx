@@ -179,6 +179,7 @@ export const TokenizedComposerInput = forwardRef<
         <div
           id={id}
           ref={editableRef}
+          // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- contentEditable token editor renders inline token spans, so native input/textarea cannot represent its content
           role="textbox"
           tabIndex={disabled ? -1 : 0}
           data-dynamic-copy=""

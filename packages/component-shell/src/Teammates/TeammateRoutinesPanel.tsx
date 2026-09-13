@@ -44,9 +44,11 @@ export function TeammateRoutinesPanel({
           return (
             <label
               key={installation.id}
+              htmlFor={`routine-${installation.id}`}
               className="flex cursor-pointer items-start gap-3 rounded-lg border p-3"
             >
               <Checkbox
+                id={`routine-${installation.id}`}
                 checked={checked}
                 disabled={update.isPending || assignedElsewhere}
                 onCheckedChange={(next) =>

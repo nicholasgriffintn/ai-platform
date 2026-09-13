@@ -289,6 +289,7 @@ export const MessageList = ({
           ) : null}
           {showSkeletons
             ? [...Array(SKELETON_COUNT)].map((_, i) => (
+                // oxlint-disable-next-line react/no-array-index-key -- static loading placeholders with no data; keys never reorder
                 <MessageSkeleton key={`skeleton-item-${i}`} />
               ))
             : visibleRows.map(

@@ -83,6 +83,8 @@ import { useAssistantActionSubmit } from "./useAssistantActionSubmit.js";
 import { useAutoPlayResponses } from "./useAutoPlayResponses.js";
 import { useGoalCommands } from "./useGoalCommands.js";
 
+const EMPTY_CONTEXT_ATTACHMENTS: AttachmentData[] = [];
+
 export interface ThreadModeConfig {
   assistantActionRoutes?: {
     recipes?: string;
@@ -156,7 +158,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const location = useLocation();
   const { trackEvent, trackFeatureUsage, trackError } = useTrackEvent();
 
-  const { model, chatMode, selectedAssistantAction, setSelectedAssistantAction, computeSite } =
+  const { model, selectedAssistantAction, setSelectedAssistantAction, computeSite } =
     useChatStore();
   const { currentConversationId, startNewConversation } = useConversationScope();
   const { composerInput, setComposerInput } = useComposerDraft();
@@ -274,6 +276,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
   const chatInputRef = useRef<ChatInputHandle>(null);
   const autoSubmittedKeyRef = useRef<string | null>(null);
+  const prevConversationIdRef = useRef(currentConversationId);
   const { resolveAssistantActionSubmit } = useAssistantActionSubmit({
     ...(modeConfig?.requestOptions?.metadata?.project_id
       ? { projectId: modeConfig.requestOptions.metadata.project_id }
@@ -333,7 +336,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   const handleClearArtifactContextAttachments = useCallback(() => {
     setArtifactContextAttachments([]);
   }, []);
-  const modeContextAttachments = modeConfig?.contextAttachments ?? [];
+  const modeContextAttachments = modeConfig?.contextAttachments ?? EMPTY_CONTEXT_ATTACHMENTS;
   const contextAttachments = useMemo(
     () => [...modeContextAttachments, ...artifactContextAttachments],
     [artifactContextAttachments, modeContextAttachments],
@@ -356,10 +359,14 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   }, [handleClearArtifactContextAttachments, modeConfig]);
 
   useEffect(() => {
-    if (isPanelVisible) {
-      handlePanelClose();
+    if (prevConversationIdRef.current !== currentConversationId) {
+      prevConversationIdRef.current = currentConversationId;
+
+      if (isPanelVisible) {
+        handlePanelClose();
+      }
     }
-  }, [currentConversationId]);
+  }, [currentConversationId, handlePanelClose, isPanelVisible]);
 
   useEffect(() => {
     if (!currentArtifact || !isPanelVisible || isCombinedPanel) {
@@ -615,26 +622,30 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       }
     },
     [
-      composerInput,
-      fileAsTask,
-      model,
-      chatMode,
-      messages,
+      canUseGoals,
       compactConversation,
-      sendMessage,
-      resolveAssistantActionSubmit,
-      modeConfig?.runSteering,
-      trackEvent,
-      trackError,
+      composerInput,
+      computeSite,
       currentConversationId,
-      setComposerInput,
-      setSelectedAssistantAction,
-      selectedAssistantAction,
-      selectedAssistantAction?.item,
-      selectedModelConfig,
-      refetchModels,
-      modeConfig?.analyticsSource,
+      fileAsTask,
+      handleGoalCommand,
+      isComposingGoal,
+      messages,
+      modeConfig,
+      model,
       navigate,
+      refetchModels,
+      resolveAssistantActionSubmit,
+      selectedAssistantAction,
+      selectedModelConfig,
+      sendMessage,
+      setComposingGoal,
+      setComposerInput,
+      setGoalOnConversation,
+      setSelectedAssistantAction,
+      startNewConversation,
+      trackError,
+      trackEvent,
     ],
   );
 

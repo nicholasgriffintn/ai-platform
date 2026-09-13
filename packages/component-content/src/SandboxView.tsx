@@ -19,6 +19,8 @@ export interface SandboxApprovalRequest {
 
 export function SandboxView({ type, data, onResolveApproval }: SandboxViewProps) {
   if (type === "sandbox_plan") {
+    const plan = typeof data.plan === "string" ? data.plan : "";
+
     return (
       <div className="space-y-3 rounded-md border border-border bg-surface-elevated p-3">
         <div className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -26,7 +28,7 @@ export function SandboxView({ type, data, onResolveApproval }: SandboxViewProps)
           <span>Plan</span>
         </div>
         <div className="prose prose-sm max-w-none dark:prose-invert">
-          <MemoizedMarkdown>{String(data.plan ?? "")}</MemoizedMarkdown>
+          <MemoizedMarkdown>{plan}</MemoizedMarkdown>
         </div>
       </div>
     );
@@ -116,6 +118,13 @@ function SandboxEventView({
         ? event.instructionId
         : undefined;
   const command = typeof event.command === "string" ? event.command : undefined;
+  const eventTitle =
+    typeof data.description === "string"
+      ? data.description
+      : typeof data.type === "string"
+        ? data.type
+        : "Sandbox event";
+  const streamLabel = typeof event.stream === "string" ? event.stream : "Output";
 
   const resolveApproval = async (status: "approved" | "rejected") => {
     if (!runId || !approvalId || !onResolveApproval) {
@@ -139,9 +148,7 @@ function SandboxEventView({
         ) : (
           <Terminal className="h-4 w-4 text-active-work" />
         )}
-        <span className="min-w-0 truncate font-medium text-foreground">
-          {String(data.description ?? data.type ?? "Sandbox event")}
-        </span>
+        <span className="min-w-0 truncate font-medium text-foreground">{eventTitle}</span>
       </div>
       {typeof event.command === "string" && event.command.trim() && (
         <code className="block overflow-x-auto rounded border border-border bg-canvas px-2 py-1 text-xs text-foreground">
@@ -151,7 +158,7 @@ function SandboxEventView({
       {typeof event.path === "string" && event.path.trim() && (
         <div className="text-xs text-muted-foreground">{event.path}</div>
       )}
-      {output.trim() && <CodeBlock label={String(event.stream ?? "Output")} value={output} />}
+      {output.trim() && <CodeBlock label={streamLabel} value={output} />}
       {typeof event.error === "string" && event.error.trim() && (
         <div className="rounded border border-failure/30 bg-failure/10 p-2 text-xs text-failure">
           {event.error}

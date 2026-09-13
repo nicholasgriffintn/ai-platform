@@ -20,6 +20,7 @@ const VerifyMagicLink = () => {
   const { refreshAuthStatus } = useAuthStatus();
 
   const token = searchParams.get("token");
+  const missingTokenError = token ? null : "Invalid verification link. Missing required token.";
 
   const { mutate: verify, isPending } = useMutation({
     mutationFn: (magicLinkToken: string) => authService.verifyMagicLink(magicLinkToken),
@@ -40,15 +41,15 @@ const VerifyMagicLink = () => {
   useEffect(() => {
     if (token) {
       verify(token);
-    } else {
-      setError("Invalid verification link. Missing required token.");
     }
   }, [token, verify]);
 
+  const displayError = error ?? missingTokenError;
+
   return (
     <PageShell title="Magic Link Verification" displayNavBar={false}>
-      {error ? (
-        <PageStatus title="Verification Failed" message={error} />
+      {displayError ? (
+        <PageStatus title="Verification Failed" message={displayError} />
       ) : isPending || !token ? (
         <PageStatus
           icon={<Loader2 size={32} className="animate-spin text-active-work" />}

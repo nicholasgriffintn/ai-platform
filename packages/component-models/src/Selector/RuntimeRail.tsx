@@ -31,12 +31,9 @@ export function RuntimeRail({
       aria-label="Model source"
     >
       {searching && (
-        <span
-          role="status"
-          className="shrink-0 rounded-md bg-active-work/10 px-3 py-1 text-xs font-medium text-active-work"
-        >
+        <output className="shrink-0 rounded-md bg-active-work/10 px-3 py-1 text-xs font-medium text-active-work">
           All locations
-        </span>
+        </output>
       )}
       {options.map((option, index) => {
         const isSelected =
@@ -48,6 +45,7 @@ export function RuntimeRail({
           <button
             key={`${option.site}:${option.machineId ?? "default"}`}
             type="button"
+            // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- pill buttons implement the APG radiogroup pattern with roving tabindex; a native radio input cannot replicate this design
             role="radio"
             aria-checked={isSelected}
             disabled={disabled}

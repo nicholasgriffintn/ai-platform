@@ -15,7 +15,7 @@ import {
   useCanvasModels,
   useGenerateCanvasOutputs,
 } from "@ngriffin_uk/polychat-library-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useDrawingStudio } from "./Drawing/useDrawingStudio.js";
 
@@ -168,7 +168,10 @@ export function useCanvasStudio({ enabled = true, projectId }: UseCanvasStudioOp
       .sort(sortRunsDescendingByCreatedAt);
   }, [generations, canvasModelLookup]);
 
-  const optionModels = selectedModels.length > 0 ? selectedModels : (models ?? []);
+  const optionModels = useMemo(
+    () => (selectedModels.length > 0 ? selectedModels : (models ?? [])),
+    [models, selectedModels],
+  );
 
   const aspectRatioOptions = useMemo(
     () => collectFieldEnumOptions(optionModels, "aspect_ratio"),
@@ -187,46 +190,43 @@ export function useCanvasStudio({ enabled = true, projectId }: UseCanvasStudioOp
     [mediaMode, selectedModels],
   );
 
-  useEffect(() => {
-    if (!models || models.length === 0) {
+  if (!models || models.length === 0) {
+    if (selectedModelIds.length !== 0) {
       setSelectedModelIds([]);
-
-      return;
     }
+  } else if (selectedModelIds.some((id) => !models.some((model) => model.id === id))) {
+    const validIds = new Set(models.map((model) => model.id));
 
-    setSelectedModelIds((prev) => {
-      const validIds = new Set(models.map((model) => model.id));
+    setSelectedModelIds(selectedModelIds.filter((id) => validIds.has(id)));
+  }
 
-      return prev.filter((id) => validIds.has(id));
-    });
-  }, [models]);
+  if (aspectRatio !== "" && !aspectRatioOptions.includes(aspectRatio)) {
+    setAspectRatio("");
+  }
 
-  useEffect(() => {
-    if (aspectRatioOptions.length === 0) {
-      setAspectRatio("");
+  if (resolution !== "" && !resolutionOptions.includes(resolution)) {
+    setResolution("");
+  }
 
-      return;
-    }
-
-    setAspectRatio((current) => (current && aspectRatioOptions.includes(current) ? current : ""));
-  }, [aspectRatioOptions]);
-
-  useEffect(() => {
-    if (resolutionOptions.length === 0) {
-      setResolution("");
-
-      return;
-    }
-
-    setResolution((current) => (current && resolutionOptions.includes(current) ? current : ""));
-  }, [resolutionOptions]);
-
-  useEffect(() => {
+  {
     const fieldsByName = new Map(modelOptionFields.map((field) => [field.name, field]));
+    const hasInvalidOption = Object.entries(modelOptionValues).some(([name, value]) => {
+      const field = fieldsByName.get(name);
 
-    setModelOptionValues((current) => {
+      if (!field) {
+        return true;
+      }
+
+      if (field.enum?.length && typeof value === "string") {
+        return !field.enum.map(String).includes(value);
+      }
+
+      return false;
+    });
+
+    if (hasInvalidOption) {
       const next = Object.fromEntries(
-        Object.entries(current).filter(([name, value]) => {
+        Object.entries(modelOptionValues).filter(([name, value]) => {
           const field = fieldsByName.get(name);
 
           if (!field) {
@@ -241,9 +241,9 @@ export function useCanvasStudio({ enabled = true, projectId }: UseCanvasStudioOp
         }),
       );
 
-      return Object.keys(next).length === Object.keys(current).length ? current : next;
-    });
-  }, [modelOptionFields]);
+      setModelOptionValues(next);
+    }
+  }
 
   const handleModeChange = (nextMode: CanvasStudioMode) => {
     setMode(nextMode);

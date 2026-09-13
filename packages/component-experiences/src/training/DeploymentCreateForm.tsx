@@ -10,7 +10,7 @@ import {
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { UploadCloud } from "lucide-react";
 import type { FormEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -50,12 +50,6 @@ export function DeploymentCreateForm({
   const [serverlessMemorySizeInMB, setServerlessMemorySizeInMB] = useState("6144");
   const [serverlessMaxConcurrency, setServerlessMaxConcurrency] = useState("5");
 
-  useEffect(() => {
-    if (!modelId && deployableModels[0]) {
-      setModelId(deployableModels[0].id);
-    }
-  }, [deployableModels, modelId]);
-
   const selectedModel = useMemo(
     () => deployableModels.find((model) => model.id === modelId) ?? deployableModels[0],
     [deployableModels, modelId],
@@ -66,11 +60,15 @@ export function DeploymentCreateForm({
     [jobs, selectedModel],
   );
 
-  useEffect(() => {
-    if (trainingJobName && !deploymentJobs.some((job) => job.jobName === trainingJobName)) {
-      setTrainingJobName("");
-    }
-  }, [deploymentJobs, trainingJobName]);
+  const effectiveTrainingJobName =
+    trainingJobName && deploymentJobs.some((job) => job.jobName === trainingJobName)
+      ? trainingJobName
+      : "";
+
+  const handleModelChange = (nextModelId: string) => {
+    setModelId(nextModelId);
+    setTrainingJobName("");
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -79,7 +77,7 @@ export function DeploymentCreateForm({
     }
 
     const trimmedArtifactsUri = modelArtifactsS3Uri.trim();
-    const trimmedTrainingJobName = trainingJobName.trim();
+    const trimmedTrainingJobName = effectiveTrainingJobName.trim();
     const canDeployBaseModel = canDeployBaseTrainingModelForTarget(selectedModel, deploymentTarget);
     const targetError = getDeploymentTargetError(selectedModel, deploymentTarget);
     const sourceUriError =
@@ -169,7 +167,7 @@ export function DeploymentCreateForm({
         id="deployment-model"
         label="Model"
         value={selectedModel?.id ?? ""}
-        onValueChange={setModelId}
+        onValueChange={handleModelChange}
         options={deployableModels.map((model) => ({
           value: model.id,
           label: getTrainingModelLabel(model),
@@ -206,7 +204,7 @@ export function DeploymentCreateForm({
         <FormSelect
           id="deployment-training-job"
           label="Completed job"
-          value={trainingJobName}
+          value={effectiveTrainingJobName}
           onValueChange={setTrainingJobName}
           options={[
             { value: "", label: "Deploy base model from Hub" },

@@ -1,5 +1,5 @@
 import type { RecordingTranscriptData } from "@ngriffin_uk/polychat-schemas";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 const EMPTY_SPEAKER_NAMES: Record<string, string> = {};
 
@@ -29,9 +29,7 @@ export function TranscriptViewer({
   transcript,
   speakerNames = EMPTY_SPEAKER_NAMES,
 }: TranscriptViewerProps) {
-  const [speakerColors, setSpeakerColors] = useState<Record<string, string>>({});
-
-  useEffect(() => {
+  const speakerColors = useMemo<Record<string, string>>(() => {
     const uniqueSpeakers = [
       ...new Set(
         transcript.segments.map((segment, index) => segment.speaker ?? `Segment ${index + 1}`),
@@ -54,7 +52,7 @@ export function TranscriptViewer({
       speakerColorMap[speaker] = colors[colorKey] || "bg-surface-elevated border-border";
     });
 
-    setSpeakerColors(speakerColorMap);
+    return speakerColorMap;
   }, [transcript.segments]);
 
   const getSpeakerName = (speakerId: string): string => {

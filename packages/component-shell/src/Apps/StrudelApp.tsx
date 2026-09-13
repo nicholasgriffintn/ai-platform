@@ -20,7 +20,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { parseCommaSeparatedTags } from "@ngriffin_uk/polychat-utility-core";
 import { Music2, Plus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
@@ -117,18 +117,19 @@ function PatternEditor({
   const [tagsInput, setTagsInput] = useState("");
   const [prompt, setPrompt] = useState("");
   const [code, setCode] = useState(STARTER_PATTERN);
+  const [prevPattern, setPrevPattern] = useState(pattern);
   const tags = useMemo(() => parseCommaSeparatedTags(tagsInput), [tagsInput]);
 
-  useEffect(() => {
-    if (!pattern) {
-      return;
-    }
+  if (prevPattern !== pattern) {
+    setPrevPattern(pattern);
 
-    setName(pattern.name);
-    setDescription(pattern.description ?? "");
-    setTagsInput((pattern.tags ?? []).join(", "));
-    setCode(pattern.code);
-  }, [pattern]);
+    if (pattern) {
+      setName(pattern.name);
+      setDescription(pattern.description ?? "");
+      setTagsInput((pattern.tags ?? []).join(", "));
+      setCode(pattern.code);
+    }
+  }
 
   const handleGenerate = async () => {
     const result = await generate.mutateAsync({ prompt: prompt.trim() });

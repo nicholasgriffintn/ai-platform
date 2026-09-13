@@ -16,7 +16,7 @@ import { handleCreateChatCompletions } from "~/services/completions/createChatCo
 import { enqueueTeammateRun } from "~/services/teammates/run-admission";
 import type { CreateChatCompletionsResponse, IEnv, IUser, Message } from "~/types";
 import type { ChatRequestOptions } from "~/types/chat";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
@@ -207,7 +207,7 @@ export async function executeRecipeInvocationChat(params: {
       logger.warn("Failed to title generated recipe conversation", {
         conversationId,
         recipeId: params.invocation.recipeId,
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
     }
   }

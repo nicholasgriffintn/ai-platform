@@ -14,9 +14,9 @@ export interface PageHeaderAction {
 export function PageHeaderActions({ actions }: { actions: PageHeaderAction[] }) {
   return (
     <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-      {actions.map((action, index) => (
+      {actions.map((action) => (
         <Button
-          key={`${action.label}-${index}`}
+          key={action.label}
           onClick={action.onClick}
           variant={action.variant || "primary"}
           size="sm"

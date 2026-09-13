@@ -7,6 +7,15 @@ import { DrawingCanvas } from "./DrawingCanvas";
 import { DrawingEditorControls } from "./DrawingEditorControls";
 import { DrawingView } from "./DrawingView";
 
+const DRAWING_LOADING_KEYS = [
+  "drawing-loading-a",
+  "drawing-loading-b",
+  "drawing-loading-c",
+  "drawing-loading-d",
+  "drawing-loading-e",
+  "drawing-loading-f",
+];
+
 export function DrawingWorkspace({ drawing }: { drawing: DrawingStudioState }) {
   if (drawing.isEditorOpen) {
     return (
@@ -82,11 +91,8 @@ export function DrawingWorkspace({ drawing }: { drawing: DrawingStudioState }) {
   if (drawing.isDrawingsLoading) {
     return (
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <div
-            key={`drawing-loading-${index}`}
-            className="h-56 animate-pulse rounded-xl bg-selection"
-          />
+        {DRAWING_LOADING_KEYS.map((skeletonKey) => (
+          <div key={skeletonKey} className="h-56 animate-pulse rounded-xl bg-selection" />
         ))}
       </div>
     );

@@ -1,6 +1,6 @@
 import { Button, Card, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import { Pencil } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 export interface ProjectBriefCardProps {
   canManage: boolean;
@@ -21,9 +21,20 @@ export function ProjectBriefCard({
 }: ProjectBriefCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(instructions);
+  const [prevInstructions, setPrevInstructions] = useState(instructions);
   const briefId = useId();
+  const editRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => setDraft(instructions), [instructions]);
+  if (prevInstructions !== instructions) {
+    setPrevInstructions(instructions);
+    setDraft(instructions);
+  }
+
+  useEffect(() => {
+    if (isEditing) {
+      editRef.current?.focus();
+    }
+  }, [isEditing]);
 
   const cancel = () => {
     setDraft(instructions);
@@ -65,12 +76,12 @@ export function ProjectBriefCard({
             Project brief
           </label>
           <Textarea
+            ref={editRef}
             id={briefId}
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             maxLength={8000}
             rows={8}
-            autoFocus
             placeholder="Add project context, terminology, constraints, and working preferences."
             className="resize-y border-border-strong bg-surface py-2 leading-6"
           />

@@ -14,7 +14,7 @@ import {
   type ModelToolDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { McpServerFields, type McpServerFieldValue } from "./McpServerFields";
 
@@ -36,26 +36,29 @@ export function ToolConfigurationDialog({
   const [vectorStoreIds, setVectorStoreIds] = useState("");
   const [servers, setServers] = useState<McpServerFieldValue[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [prevTool, setPrevTool] = useState(tool);
+  const [prevStoredConfiguration, setPrevStoredConfiguration] = useState(storedConfiguration);
 
-  useEffect(() => {
-    if (!tool) {
-      return;
+  if (prevTool !== tool || prevStoredConfiguration !== storedConfiguration) {
+    setPrevTool(tool);
+    setPrevStoredConfiguration(storedConfiguration);
+
+    if (tool) {
+      const configuration = parseModelToolConfiguration(tool, storedConfiguration ?? {});
+
+      setVectorStoreIds(
+        configuration && "vectorStoreIds" in configuration
+          ? configuration.vectorStoreIds.join("\n")
+          : "",
+      );
+      setServers(
+        configuration && "servers" in configuration
+          ? configuration.servers.map((server) => ({ ...server, id: generateId() }))
+          : [{ id: generateId(), label: "", url: "" }],
+      );
+      setError(null);
     }
-
-    const configuration = parseModelToolConfiguration(tool, storedConfiguration ?? {});
-
-    setVectorStoreIds(
-      configuration && "vectorStoreIds" in configuration
-        ? configuration.vectorStoreIds.join("\n")
-        : "",
-    );
-    setServers(
-      configuration && "servers" in configuration
-        ? configuration.servers.map((server) => ({ ...server, id: generateId() }))
-        : [{ id: generateId(), label: "", url: "" }],
-    );
-    setError(null);
-  }, [storedConfiguration, tool]);
+  }
 
   const submit = async () => {
     if (!tool) {

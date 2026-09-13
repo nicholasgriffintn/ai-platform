@@ -6,7 +6,7 @@ import {
 import type { ButtonCollapse } from "@ngriffin_uk/polychat-component-ui";
 import { capitaliseFirst } from "@ngriffin_uk/polychat-utility-core";
 import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface ShareDialogProps {
@@ -39,12 +39,16 @@ export function ShareDialog({
   const [isUnsharing, setIsUnsharing] = useState(false);
   const [currentShareId, setCurrentShareId] = useState(shareId);
   const [currentIsPublic, setCurrentIsPublic] = useState(isPublic);
+  const [prevShareId, setPrevShareId] = useState(shareId);
+  const [prevIsPublic, setPrevIsPublic] = useState(isPublic);
   const { copied, copy } = useCopyToClipboard();
 
-  useEffect(() => {
+  if (prevShareId !== shareId || prevIsPublic !== isPublic) {
+    setPrevShareId(shareId);
+    setPrevIsPublic(isPublic);
     setCurrentShareId(shareId);
     setCurrentIsPublic(isPublic);
-  }, [isPublic, shareId]);
+  }
 
   const share = async () => {
     try {

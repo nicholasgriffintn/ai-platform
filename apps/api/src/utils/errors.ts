@@ -320,5 +320,13 @@ export function getErrorMessage(error: unknown, fallback = "Unknown error"): str
     return error.message;
   }
 
+  if (typeof error === "string" && error.trim().length > 0) {
+    return error;
+  }
+
+  if (typeof error === "number" || typeof error === "boolean" || typeof error === "bigint") {
+    return String(error);
+  }
+
   return fallback;
 }

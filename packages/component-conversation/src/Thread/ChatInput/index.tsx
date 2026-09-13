@@ -33,7 +33,6 @@ import {
   type ReactNode,
   forwardRef,
   useCallback,
-  useEffect,
   useId,
   useImperativeHandle,
   useLayoutEffect,
@@ -246,11 +245,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       onTranscribe,
     });
     const [selectedAttachments, setSelectedAttachments] = useState<AttachmentData[]>([]);
-    const [placeholderSeed, setPlaceholderSeed] = useState(0);
-
-    useEffect(() => {
-      setPlaceholderSeed(Math.floor(Math.random() * 12));
-    }, []);
+    const [placeholderSeed] = useState(() => Math.floor(Math.random() * 12));
     const { data: apiModels } = useModels();
     const [isUploading, setIsUploading] = useState(false);
     const modelCapabilities = useMemo(
@@ -341,7 +336,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
       composerInputRef.current?.setCursorPosition(requestedComposerCursorPosition);
       setTextareaCursorPosition(requestedComposerCursorPosition);
-      setRequestedComposerCursorPosition(null);
+      queueMicrotask(() => setRequestedComposerCursorPosition(null));
     }, [requestedComposerCursorPosition, setTextareaCursorPosition]);
 
     useImperativeHandle(

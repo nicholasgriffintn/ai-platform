@@ -24,11 +24,10 @@ export default function SharedOutputPage() {
   const [output, setOutput] = useState<SharedOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { data: producingTool } = useRunnableTool(output?.capabilityId ?? null);
+  const missingTokenError = token ? null : "Invalid share link";
 
   useEffect(() => {
     if (!token) {
-      setError("Invalid share link");
-
       return;
     }
 
@@ -39,10 +38,12 @@ export default function SharedOutputPage() {
       });
   }, [token]);
 
-  if (error) {
+  const displayError = error ?? missingTokenError;
+
+  if (displayError) {
     return (
       <PageShell title="Shared output unavailable" displayNavBar={false}>
-        <PageStatus message={error}>
+        <PageStatus message={displayError}>
           <ButtonLink variant="outline" href="/">
             Return home
           </ButtonLink>

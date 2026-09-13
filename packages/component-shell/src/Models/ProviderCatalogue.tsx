@@ -199,7 +199,8 @@ function ProviderFilter({
     );
 
   return (
-    <div role="group" aria-label="Filter by provider" className="flex flex-wrap gap-2">
+    <fieldset className="m-0 flex flex-wrap gap-2 border-0 p-0">
+      <legend className="sr-only">Filter by provider</legend>
       <button
         type="button"
         aria-pressed={selected === null}
@@ -225,7 +226,7 @@ function ProviderFilter({
           </button>
         );
       })}
-    </div>
+    </fieldset>
   );
 }
 

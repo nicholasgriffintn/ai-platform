@@ -161,8 +161,8 @@ export function PetModelAssignments({
                     disabled={disabled}
                     fullWidth={false}
                     className="w-40"
-                    onValueChange={(value) => {
-                      const pet = pets.find((option) => petKey(option) === value);
+                    onValueChange={(nextValue) => {
+                      const pet = pets.find((option) => petKey(option) === nextValue);
 
                       if (pet) {
                         onChange(

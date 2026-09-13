@@ -48,9 +48,9 @@ export const SearchGroundingSection = ({ searchGrounding }: SearchGroundingProps
         {searchGrounding.webSearchQueries && searchGrounding.webSearchQueries?.length > 0 && (
           <div className="mb-2 flex w-full flex-wrap gap-2">
             <span className="text-sm text-muted-foreground">Queries:</span>
-            {searchGrounding.webSearchQueries?.map((query, index) => (
+            {searchGrounding.webSearchQueries?.map((query) => (
               <a
-                key={`query-${index}`}
+                key={query}
                 href={`https://www.google.com/search?q=${encodeURIComponent(query)}`}
                 target="_blank"
                 rel="noopener noreferrer"

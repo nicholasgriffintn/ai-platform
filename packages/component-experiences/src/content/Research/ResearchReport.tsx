@@ -159,9 +159,9 @@ export function ResearchReport({
           </div>
 
           <div className="space-y-4">
-            {displayedEvidence.map((item: ResearchFieldBasis, index: number) => (
+            {displayedEvidence.map((item: ResearchFieldBasis) => (
               <div
-                key={`${item.field}-${index}`}
+                key={item.field}
                 className="rounded-lg border border-border bg-surface-elevated p-4"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -181,9 +181,9 @@ export function ResearchReport({
 
                 {item.citations && item.citations.length > 0 && (
                   <ul className="mt-3 space-y-2">
-                    {item.citations.map((citation: ResearchCitation, citationIndex: number) => (
+                    {item.citations.map((citation: ResearchCitation) => (
                       <li
-                        key={`${item.field}-citation-${citationIndex}`}
+                        key={`${item.field}-${citation.url ?? citation.title ?? citation.excerpts?.[0] ?? "citation"}`}
                         className="rounded-md border border-border bg-surface p-3"
                       >
                         {citation.url ? (

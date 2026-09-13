@@ -66,5 +66,6 @@ export const ToolIcon = ({
 }) => {
   const Icon = resolveToolIcon(icon);
 
+  // oxlint-disable-next-line react/static-components -- resolveToolIcon returns a stable lucide-react component reference from a map, not a new closure
   return <Icon size={size} className={className} />;
 };

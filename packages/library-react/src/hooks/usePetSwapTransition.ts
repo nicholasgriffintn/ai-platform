@@ -19,7 +19,9 @@ export function usePetSwapTransition<T>(
   const displayedIdentityRef = useRef(identity);
   const displayedReadyRef = useRef(ready);
 
-  valueRef.current = value;
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
 
   useEffect(() => {
     if (!ready || !displayedReadyRef.current || !transitionEnabled) {

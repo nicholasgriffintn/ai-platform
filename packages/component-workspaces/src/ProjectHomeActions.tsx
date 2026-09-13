@@ -24,7 +24,8 @@ export function ProjectHomeActions({
   onSaveTemplate,
 }: ProjectHomeActionsProps) {
   return (
-    <div role="group" aria-label="Project actions" className="flex shrink-0 items-center gap-1">
+    <fieldset className="m-0 flex shrink-0 items-center gap-1 border-0 p-0">
+      <legend className="sr-only">Project actions</legend>
       {canManage ? (
         <DropdownMenu
           position="bottom"
@@ -75,6 +76,6 @@ export function ProjectHomeActions({
       >
         New conversation
       </ButtonLink>
-    </div>
+    </fieldset>
   );
 }

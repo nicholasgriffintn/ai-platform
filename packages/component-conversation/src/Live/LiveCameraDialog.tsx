@@ -66,6 +66,7 @@ export function LiveCameraSelector({
         <button
           key={device.deviceId}
           type="button"
+          // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- card buttons implement the APG radiogroup pattern with rich content; a native radio input cannot contain this layout
           role="radio"
           aria-checked={device.deviceId === selectedCameraDeviceId}
           onClick={() => onCameraDeviceChange(device.deviceId)}

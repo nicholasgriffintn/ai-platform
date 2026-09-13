@@ -19,6 +19,7 @@ export function ProviderGlyph({ name, fallback = null, ...props }: ProviderGlyph
 
   return (
     <Suspense fallback={fallback}>
+      {/* oxlint-disable-next-line react/static-components -- getLazyIcon returns a cached LazyExoticComponent per icon name, not a new closure */}
       <Icon {...props} />
     </Suspense>
   );

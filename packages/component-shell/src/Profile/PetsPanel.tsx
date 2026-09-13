@@ -25,7 +25,7 @@ import {
   resolvePetPreset,
   type PetModelOverrides,
 } from "@ngriffin_uk/polychat-schemas";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 const MAX_MEBIBYTES = Math.round(PET_SHEET_MAX_BYTES / 1024 / 1024);
 
@@ -67,18 +67,14 @@ export function PetsPanel() {
     userSettings?.pet_model_overrides ?? EMPTY_PET_MODEL_OVERRIDES,
   );
 
-  useEffect(() => {
-    if (!isGenerateOpen) {
-      setPreviewImage(null);
-      setGenerateError(null);
-    }
-  }, [isGenerateOpen]);
+  if (!isGenerateOpen && (previewImage !== null || generateError !== null)) {
+    setPreviewImage(null);
+    setGenerateError(null);
+  }
 
-  useEffect(() => {
-    if (!isUploadOpen) {
-      setUploadError(null);
-    }
-  }, [isUploadOpen]);
+  if (!isUploadOpen && uploadError !== null) {
+    setUploadError(null);
+  }
 
   const selectedId =
     userSettings?.pet_source === "custom"

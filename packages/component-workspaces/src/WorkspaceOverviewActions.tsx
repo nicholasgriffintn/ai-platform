@@ -15,7 +15,8 @@ export function WorkspaceOverviewActions({
   onInvite,
 }: WorkspaceOverviewActionsProps) {
   return (
-    <div role="group" aria-label="Workspace actions" className="flex shrink-0 items-center gap-1">
+    <fieldset className="m-0 flex shrink-0 items-center gap-1 border-0 p-0">
+      <legend className="sr-only">Workspace actions</legend>
       <DropdownMenu
         position="bottom"
         menuClassName="!left-auto right-0 w-48"
@@ -53,6 +54,6 @@ export function WorkspaceOverviewActions({
       >
         New project
       </Button>
-    </div>
+    </fieldset>
   );
 }

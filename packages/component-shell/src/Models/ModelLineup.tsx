@@ -185,6 +185,7 @@ function TierCard({ tier }: { tier: (typeof MODEL_TIER_DEFINITIONS)[number] }) {
             TIER_ACCENT[tier.id],
           )}
         >
+          {/* oxlint-disable-next-line react/static-components -- getModelTierIcon returns a stable lucide-react component reference, not a new closure */}
           <Icon className="h-4 w-4" aria-hidden="true" />
         </span>
         <div className="min-w-0">

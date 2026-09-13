@@ -93,10 +93,12 @@ export const ModelOption = ({
 
   return (
     <div
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- option card contains nested interactive controls (region select, details button), so native <option> or <button> would be invalid HTML
       role="option"
       tabIndex={disabled ? -1 : 0}
       data-model-option
       data-model-option-row
+      aria-label={getModelDisplayName(model)}
       aria-disabled={disabled || undefined}
       aria-selected={isSelected}
       onClick={selectModel}
@@ -181,6 +183,7 @@ export const ModelOption = ({
             <div
               className="relative flex max-w-[112px] items-center"
               title="Region"
+              role="presentation"
               onClick={(event) => event.stopPropagation()}
               onKeyDown={(event) => event.stopPropagation()}
               onMouseDown={(event) => event.stopPropagation()}

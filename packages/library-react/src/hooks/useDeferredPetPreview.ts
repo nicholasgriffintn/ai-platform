@@ -3,11 +3,18 @@ import { useEffect, useRef, useState } from "react";
 export function useDeferredPetPreview(enabled: boolean) {
   const previewRef = useRef<HTMLSpanElement | null>(null);
   const [ready, setReady] = useState(!enabled);
+  const [prevEnabled, setPrevEnabled] = useState(enabled);
+
+  if (prevEnabled !== enabled) {
+    setPrevEnabled(enabled);
+
+    if (!enabled) {
+      setReady(true);
+    }
+  }
 
   useEffect(() => {
     if (!enabled) {
-      setReady(true);
-
       return undefined;
     }
 

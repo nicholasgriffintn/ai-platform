@@ -23,6 +23,7 @@ export function ConnectorApprovalCard({ data, onResolve }: ConnectorApprovalCard
 
   const expiresAt = approval.expiresAt ? new Date(approval.expiresAt) : undefined;
   const isExpired =
+    // oxlint-disable-next-line react/purity -- approval expiry must be evaluated against the wall clock during render; re-render on new data refreshes the check
     approval.state === "expired" || (expiresAt ? expiresAt.getTime() <= Date.now() : false);
   const localResolution =
     resolution?.approvalId === approval.approvalId ? resolution.state : undefined;

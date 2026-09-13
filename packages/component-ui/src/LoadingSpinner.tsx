@@ -12,9 +12,8 @@ export const LoadingSpinner = ({ message, progress, className = "" }: LoadingSpi
     typeof progress === "number" ? Math.round(clampPercentage(progress)) : undefined;
 
   return (
-    <div
+    <output
       className={`flex flex-col items-center justify-center gap-2 ${className}`}
-      role="status"
       aria-live="polite"
     >
       <div className="relative" aria-hidden="true">
@@ -29,6 +28,6 @@ export const LoadingSpinner = ({ message, progress, className = "" }: LoadingSpi
       {typeof boundedProgress === "number" && (
         <span className="sr-only">{`${message ? ", " : ""}${boundedProgress}% complete`}</span>
       )}
-    </div>
+    </output>
   );
 };

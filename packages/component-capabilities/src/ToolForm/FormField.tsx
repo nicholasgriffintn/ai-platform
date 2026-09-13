@@ -112,12 +112,12 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
 
       case "multiselect":
         return (
-          <div
+          <fieldset
             id={field.id}
-            role="group"
             aria-describedby={describedBy}
-            className="max-h-52 space-y-2 overflow-y-auto rounded-md border border-border-strong bg-surface-elevated p-3"
+            className="m-0 max-h-52 min-w-0 space-y-2 overflow-y-auto rounded-md border border-border-strong bg-surface-elevated p-3"
           >
+            <legend className="sr-only">{field.label}</legend>
             {field.validation?.options?.map((option) => (
               <Label
                 key={option.value}
@@ -134,7 +134,7 @@ export const FormField = ({ field, value, onChange, error }: FormFieldProps) => 
                 {option.label}
               </Label>
             ))}
-          </div>
+          </fieldset>
         );
 
       case "checkbox":

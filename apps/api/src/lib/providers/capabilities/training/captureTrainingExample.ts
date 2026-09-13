@@ -1,5 +1,6 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { CreateTrainingExampleData } from "~/repositories/TrainingExampleRepository";
+import { getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 import {
@@ -85,7 +86,7 @@ export async function captureTrainingExample(
         );
       } catch (error) {
         logger.warn("Failed to generate enhanced metadata, proceeding without it", {
-          error: error instanceof Error ? error.message : String(error),
+          error: getErrorMessage(error),
         });
       }
     }
@@ -115,7 +116,7 @@ export async function captureTrainingExample(
     });
   } catch (error) {
     logger.error("Failed to capture training example", {
-      error: error instanceof Error ? error.message : String(error),
+      error: getErrorMessage(error),
       source,
       appName,
     });

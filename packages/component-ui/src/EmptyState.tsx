@@ -78,8 +78,8 @@ export const EmptyState = ({
       )}
       {suggestions && suggestions.length > 0 && (
         <div className="mt-4 mb-4 flex flex-wrap justify-center gap-2">
-          {suggestions.map((suggestion, index) => (
-            <Button key={index} variant="outline" onClick={suggestion.onClick}>
+          {suggestions.map((suggestion) => (
+            <Button key={suggestion.label} variant="outline" onClick={suggestion.onClick}>
               {suggestion.label}
             </Button>
           ))}

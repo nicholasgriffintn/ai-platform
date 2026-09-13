@@ -28,6 +28,7 @@ import { isConversationUnread } from "~/utils/conversation-organisation";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { safeParseJson } from "~/utils/json";
+import { toStringValue } from "~/utils/strings";
 
 import {
   find_places as findPlacesDescriptor,
@@ -97,7 +98,7 @@ function describeConversation(conversation: MetaFoundConversation): string {
 
 function toFoundConversation(row: Record<string, unknown>): MetaFoundConversation {
   return {
-    id: String(row.id),
+    id: toStringValue(row.id, ""),
     title: typeof row.title === "string" ? row.title : null,
     updatedAt: typeof row.updated_at === "string" ? row.updated_at : null,
     isArchived: row.is_archived === 1 || row.is_archived === true,

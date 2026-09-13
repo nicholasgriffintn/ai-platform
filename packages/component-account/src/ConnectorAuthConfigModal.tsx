@@ -43,6 +43,7 @@ export function ConnectorAuthConfigModal({
               disabled={isLoading}
               onClick={() => onSelect(config.id)}
               className="justify-start"
+              aria-label={`Connect with ${config.name}`}
             >
               <span className="flex w-full items-center justify-between gap-4 text-left">
                 <span>{config.name}</span>

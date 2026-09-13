@@ -26,11 +26,12 @@ export function resolveMemoryPolicy(params: {
   store?: boolean;
 }): MemoryPolicy {
   const { user, userSettings, store } = params;
-  const canUseMemory = store && Boolean(user?.id) && user?.plan_id === "pro";
+  const canUseMemory = store === true && Boolean(user?.id) && user?.plan_id === "pro";
   const canRetrieve =
     canUseMemory &&
-    Boolean(userSettings?.memories_save_enabled || userSettings?.memories_chat_history_enabled);
-  const canStore = canUseMemory && Boolean(userSettings?.memories_save_enabled);
+    (userSettings?.memories_save_enabled === true ||
+      userSettings?.memories_chat_history_enabled === true);
+  const canStore = canUseMemory && userSettings?.memories_save_enabled === true;
   const toolNames = [
     ...(canRetrieve ? [MEMORY_SEARCH_TOOL_NAME] : []),
     ...(canStore ? [MEMORY_STORE_TOOL_NAME] : []),

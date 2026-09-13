@@ -1,7 +1,7 @@
 import { APP_NAME, MAGIC_LINK_EXPIRATION_MINUTES, PROD_HOST } from "~/constants/app";
 import { sendEmail } from "~/services/email";
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/notifications" });
@@ -233,7 +233,7 @@ export async function sendPaymentFailedEmail(env: IEnv, email: string): Promise<
     await sendEmail(env, email, template.subject, template.bodyText, template.bodyHtml);
     logger.info(`Payment failed email sent to ${email}`);
   } catch (error) {
-    logger.error(`Failed to send payment failed email: ${error}`);
+    logger.error(`Failed to send payment failed email: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -253,7 +253,7 @@ export async function sendTrialEndingEmail(env: IEnv, email: string): Promise<vo
     await sendEmail(env, email, template.subject, template.bodyText, template.bodyHtml);
     logger.info(`Trial ending notification email sent to ${email}`);
   } catch (error) {
-    logger.error(`Failed to send trial ending notification email: ${error}`);
+    logger.error(`Failed to send trial ending notification email: ${getErrorMessage(error)}`);
     throw error;
   }
 }
@@ -380,6 +380,9 @@ export async function sendMagicLinkEmail(
     logger.info(`Magic link email sent to ${email}`);
   } catch (error) {
     logger.error("Failed to send magic link email:", { error });
-    throw new AssistantError(`Failed to send magic link: ${error}`, ErrorType.EMAIL_SEND_FAILED);
+    throw new AssistantError(
+      `Failed to send magic link: ${getErrorMessage(error)}`,
+      ErrorType.EMAIL_SEND_FAILED,
+    );
   }
 }

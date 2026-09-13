@@ -7,7 +7,7 @@ import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { captureTrainingExample } from "~/lib/providers/capabilities/training/captureTrainingExample";
 import { getAuxiliaryModel, getModels, filterModelsForUserAccess } from "~/lib/providers/models";
 import type { IEnv, IUser, Message } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 import { formatMessages } from "~/utils/messages";
@@ -198,7 +198,7 @@ export async function generateStrudelCode({
       ErrorType.UNKNOWN_ERROR,
       500,
       {
-        originalError: error instanceof Error ? error.message : String(error),
+        originalError: getErrorMessage(error),
         stack: error instanceof Error ? error.stack : undefined,
       },
     );

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 
 import { useAuthStatus } from "../hooks/useAuth.js";
@@ -20,25 +20,25 @@ export function usePetAnimationEnabled(): boolean {
 export function usePetTravel(enabled: boolean): boolean {
   const location = useLocation();
   const [isTravelling, setIsTravelling] = useState(false);
-  const previousPath = useRef(location.pathname);
+  const [prevPath, setPrevPath] = useState(location.pathname);
+
+  if (prevPath !== location.pathname) {
+    setPrevPath(location.pathname);
+
+    if (enabled) {
+      setIsTravelling(true);
+    }
+  }
 
   useEffect(() => {
-    if (previousPath.current === location.pathname) {
+    if (!isTravelling) {
       return undefined;
     }
-
-    previousPath.current = location.pathname;
-
-    if (!enabled) {
-      return undefined;
-    }
-
-    setIsTravelling(true);
 
     const timeout = window.setTimeout(() => setIsTravelling(false), PET_TRAVEL_MS);
 
     return () => window.clearTimeout(timeout);
-  }, [enabled, location.pathname]);
+  }, [isTravelling, prevPath]);
 
   return isTravelling;
 }

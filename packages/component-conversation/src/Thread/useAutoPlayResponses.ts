@@ -108,7 +108,7 @@ export function useAutoPlayResponses({
         .find((message) => message.role === "assistant");
 
       lastHandledMessageIdRef.current = latestAssistantMessage?.id;
-      stopPlayback();
+      queueMicrotask(() => stopPlayback());
     }
   }, [isEnabled, messages, stopPlayback]);
 
@@ -151,6 +151,7 @@ export function useAutoPlayResponses({
 
     if (existingSpeechSource) {
       lastHandledMessageIdRef.current = latestAssistantMessage.id;
+      // oxlint-disable-next-line react/set-state-in-effect -- synchronises with external HTMLAudioElement; must stop previous playback synchronously before starting new source to preserve ordering
       stopPlayback();
       void playAudioSource(existingSpeechSource).catch(() => {
         toast.error("Failed to play generated speech");

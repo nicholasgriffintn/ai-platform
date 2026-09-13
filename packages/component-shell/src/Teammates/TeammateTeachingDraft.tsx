@@ -57,9 +57,10 @@ export function TeammateTeachingDraft({
           placeholder="prepare-weekly-report"
         />
       </label>
-      <label className="space-y-1 text-xs text-muted-foreground">
+      <label htmlFor="teaching-description" className="space-y-1 text-xs text-muted-foreground">
         When should it be used?
         <Textarea
+          id="teaching-description"
           value={description}
           onChange={(event) => {
             setDescription(event.target.value);
@@ -69,9 +70,13 @@ export function TeammateTeachingDraft({
           rows={3}
         />
       </label>
-      <label className="min-h-0 flex-1 space-y-1 text-xs text-muted-foreground">
+      <label
+        htmlFor="teaching-instructions"
+        className="min-h-0 flex-1 space-y-1 text-xs text-muted-foreground"
+      >
         Reviewer refinements (optional)
         <Textarea
+          id="teaching-instructions"
           className="min-h-48"
           value={instructions}
           onChange={(event) => {

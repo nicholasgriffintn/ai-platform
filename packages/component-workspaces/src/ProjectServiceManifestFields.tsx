@@ -99,7 +99,7 @@ export function ProjectServiceManifestFields({
 
       {services.map((service, index) => (
         <section
-          key={index}
+          key={service.name}
           aria-label={`Service ${index + 1}`}
           className="space-y-3 rounded-lg border border-border bg-surface p-3"
         >
@@ -155,7 +155,7 @@ export function ProjectServiceManifestFields({
                     ? []
                     : [
                         <FormCheckbox
-                          key={candidateIndex}
+                          key={candidate.name}
                           label={candidate.name || `Service ${candidateIndex + 1}`}
                           labelPosition="right"
                           checked={service.dependencies.includes(candidate.name)}

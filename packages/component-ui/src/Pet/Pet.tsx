@@ -78,6 +78,15 @@ export function Pet({
 
   const [flourish, setFlourish] = useState<PetClipName | null>(null);
   const [isHinting, setIsHinting] = useState(false);
+  const [previousPresenceClip, setPreviousPresenceClip] = useState(presence.clip);
+
+  if (previousPresenceClip !== presence.clip) {
+    setPreviousPresenceClip(presence.clip);
+
+    if (presence.clip !== "idle" && flourish !== null) {
+      setFlourish(null);
+    }
+  }
 
   useEffect(() => {
     if (!pet.isReady || !shouldAnimate || presence.clip !== "idle" || flourish !== null) {
@@ -95,12 +104,6 @@ export function Pet({
 
     return () => window.clearTimeout(timeout);
   }, [shouldAnimate, pet.isReady, presence.clip, flourish]);
-
-  useEffect(() => {
-    if (presence.clip !== "idle" && flourish !== null) {
-      setFlourish(null);
-    }
-  }, [presence.clip, flourish]);
 
   const handleClipEnd = useCallback(() => setFlourish(null), []);
 

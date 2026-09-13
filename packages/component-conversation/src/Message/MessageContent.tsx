@@ -202,7 +202,9 @@ const renderTextContent = (
             }
 
             return (
-              <Fragment key={`content-fallback-${i}`}>{`[[CONTENT:${attachment.url}]]`}</Fragment>
+              <Fragment
+                key={`content-fallback-${attachment.url}`}
+              >{`[[CONTENT:${attachment.url}]]`}</Fragment>
             );
           })}
         </div>
@@ -442,7 +444,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
             if (part.type === "reasoning") {
               return (
                 <ReasoningSection
-                  key={`part-reasoning-${index}`}
+                  key={`part-reasoning-${part.text}`}
                   reasoning={{
                     content: part.text,
                     collapsed: part.collapsed ?? true,

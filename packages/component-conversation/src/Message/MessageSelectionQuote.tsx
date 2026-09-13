@@ -81,11 +81,11 @@ export function MessageSelectionQuote({ children, message, onQuote }: MessageSel
     });
     window.getSelection()?.removeAllRanges();
     setActiveSelection(null);
-  }, [activeSelection, message.id, message.role, message.run_id, onQuote]);
+  }, [activeSelection, message.id, message.run_id, onQuote]);
 
   useEffect(() => {
     if (!activeSelection) {
-      return;
+      return undefined;
     }
 
     const handleSelectionChange = () => {
@@ -111,7 +111,7 @@ export function MessageSelectionQuote({ children, message, onQuote }: MessageSel
   }, [activeSelection]);
 
   return (
-    <div ref={rootRef} className="relative" onMouseUp={handleMouseUp}>
+    <div ref={rootRef} className="relative" role="presentation" onMouseUp={handleMouseUp}>
       {children}
       {activeSelection ? (
         <div

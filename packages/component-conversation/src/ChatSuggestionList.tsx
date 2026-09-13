@@ -57,9 +57,8 @@ export function ChatSuggestionList({
 }: ChatSuggestionListProps) {
   if (isLoading) {
     return (
-      <div
-        className="polychat-conversation-suggestion-skeleton"
-        role="status"
+      <output
+        className="polychat-conversation-suggestion-skeleton block"
         aria-label="Loading suggestions"
       >
         <div className="polychat-conversation-suggestion-skeleton-grid" aria-hidden="true">
@@ -68,7 +67,7 @@ export function ChatSuggestionList({
           ))}
         </div>
         <div className="polychat-conversation-suggestion-skeleton-footer" aria-hidden="true" />
-      </div>
+      </output>
     );
   }
 

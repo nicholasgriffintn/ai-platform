@@ -51,8 +51,22 @@ export function ComposerDirectiveMenu({
   const isSlashDirective = directive?.trigger === "/";
   const resultCount = isSlashDirective ? filteredSlashCommands.length : filteredActionItems.length;
   const highlightedIndex = Math.min(activeSuggestionIndex, Math.max(resultCount - 1, 0));
+  const directiveQuery = directive?.query ?? "";
+  const prevScrollSyncRef = useRef<{ query: string; highlightedIndex: number } | null>(null);
 
   useEffect(() => {
+    const prev = prevScrollSyncRef.current;
+
+    prevScrollSyncRef.current = { query: directiveQuery, highlightedIndex };
+
+    if (
+      prev !== null &&
+      prev.query === directiveQuery &&
+      prev.highlightedIndex === highlightedIndex
+    ) {
+      return;
+    }
+
     const list = listRef.current;
     const highlightedRow = list?.querySelector<HTMLElement>(
       '[data-composer-command-highlighted="true"]',
@@ -70,7 +84,7 @@ export function ComposerDirectiveMenu({
     } else if (rowBounds.bottom > listBounds.bottom) {
       list.scrollTop += rowBounds.bottom - listBounds.bottom;
     }
-  }, [directive?.query, highlightedIndex]);
+  }, [directiveQuery, highlightedIndex]);
 
   if (!directive || isDisabled) {
     return null;

@@ -289,12 +289,46 @@ export function ProjectWorkbenchShell({
   const previousAttentionKey = useRef(attention?.key);
   const attentionInitialised = useRef(false);
   const autoOpenedKey = useRef<string | undefined>(undefined);
+  const [prevAttentionMobileKey, setPrevAttentionMobileKey] = useState<string | undefined>(
+    undefined,
+  );
+  const [prevWaitingKey, setPrevWaitingKey] = useState(
+    `${status}:${hasDock ? "desktop" : "mobile"}`,
+  );
+  const [prevAutoKey, setPrevAutoKey] = useState<string | undefined>(undefined);
 
-  useEffect(() => {
-    if (hasDock) {
-      setMobileOpen(false);
+  if (hasDock && mobileOpen) {
+    setMobileOpen(false);
+  }
+
+  if (prevAttentionMobileKey !== attention?.key) {
+    setPrevAttentionMobileKey(attention?.key);
+
+    if (attention && !hasDock) {
+      setMobileOpen(true);
     }
-  }, [hasDock]);
+  }
+
+  const waitingKey = `${status}:${hasDock ? "desktop" : "mobile"}`;
+
+  if (prevWaitingKey !== waitingKey) {
+    setPrevWaitingKey(waitingKey);
+
+    if ((status === "waiting_input" || status === "waiting_approval") && !hasDock) {
+      setMobileOpen(true);
+    }
+  }
+
+  const autoOpenKey =
+    status === "ready" ? undefined : `${status}:${hasDock ? "desktop" : "mobile"}`;
+
+  if (prevAutoKey !== autoOpenKey) {
+    setPrevAutoKey(autoOpenKey);
+
+    if (autoOpenKey && !hasDock) {
+      setMobileOpen(true);
+    }
+  }
 
   useEffect(() => {
     const previous = previousAttentionKey.current;
@@ -309,8 +343,6 @@ export function ProjectWorkbenchShell({
 
         if (hasDock) {
           onDockCollapsedChange(false);
-        } else {
-          setMobileOpen(true);
         }
       }
 
@@ -325,8 +357,6 @@ export function ProjectWorkbenchShell({
 
     if (hasDock) {
       onDockCollapsedChange(false);
-    } else {
-      setMobileOpen(true);
     }
   }, [attention, hasDock, onDockCollapsedChange, onSelectedPaneChange]);
 
@@ -337,8 +367,6 @@ export function ProjectWorkbenchShell({
 
     if (hasDock) {
       onDockCollapsedChange(false);
-    } else {
-      setMobileOpen(true);
     }
   }, [hasDock, onDockCollapsedChange, status]);
 
@@ -349,18 +377,16 @@ export function ProjectWorkbenchShell({
       return;
     }
 
-    const autoOpenKey = `${status}:${hasDock ? "desktop" : "mobile"}`;
+    const nextAutoOpenKey = `${status}:${hasDock ? "desktop" : "mobile"}`;
 
-    if (autoOpenedKey.current === autoOpenKey) {
+    if (autoOpenedKey.current === nextAutoOpenKey) {
       return;
     }
 
-    autoOpenedKey.current = autoOpenKey;
+    autoOpenedKey.current = nextAutoOpenKey;
 
     if (hasDock) {
       onDockCollapsedChange(false);
-    } else {
-      setMobileOpen(true);
     }
   }, [hasDock, onDockCollapsedChange, status]);
 
@@ -428,6 +454,7 @@ export function ProjectWorkbenchShell({
               <>
                 <button
                   type="button"
+                  // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- window splitter pattern requires focusable separator with arrow-key resizing and valuemin/max/now; native hr is non-interactive and cannot host resize activation
                   role="separator"
                   aria-label="Resize workbench panels"
                   aria-orientation="vertical"

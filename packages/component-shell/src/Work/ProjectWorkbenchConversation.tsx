@@ -126,7 +126,7 @@ export function ProjectWorkbenchConversation({
     }
 
     return undefined;
-  }, [briefAttention, task?.blockedReason, task?.id]);
+  }, [briefAttention, task]);
   const isWorkbenchEligible =
     Boolean(effectiveConversationId) ||
     hasCodingEnvironment ||

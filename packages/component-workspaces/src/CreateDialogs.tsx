@@ -9,7 +9,7 @@ import {
   FormInput,
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 
 export interface CreateWorkspaceInput {
   name: string;
@@ -33,6 +33,7 @@ export function CreateWorkspaceDialog({
 }: CreateWorkspaceDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const nameRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -43,7 +44,12 @@ export function CreateWorkspaceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          nameRef.current?.focus();
+        }}
+      >
         <form
           onSubmit={(event) => {
             void handleSubmit(event);
@@ -55,12 +61,12 @@ export function CreateWorkspaceDialog({
             <DialogDescription>Workspaces contain projects, members, and access.</DialogDescription>
           </DialogHeader>
           <FormInput
+            ref={nameRef}
             label="Workspace name"
             value={name}
             onChange={(event) => setName(event.target.value)}
             minLength={2}
             maxLength={80}
-            autoFocus
             required
           />
           <FormInput
@@ -110,6 +116,7 @@ export function CreateProjectDialog({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [instructions, setInstructions] = useState("");
+  const nameRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -118,7 +125,12 @@ export function CreateProjectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          nameRef.current?.focus();
+        }}
+      >
         <form
           onSubmit={(event) => {
             void handleSubmit(event);
@@ -132,12 +144,12 @@ export function CreateProjectDialog({
             </DialogDescription>
           </DialogHeader>
           <FormInput
+            ref={nameRef}
             label="Project name"
             value={name}
             onChange={(event) => setName(event.target.value)}
             minLength={2}
             maxLength={100}
-            autoFocus
             required
           />
           <FormInput

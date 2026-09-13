@@ -20,6 +20,7 @@ export function WorkspaceCardGrid({ workspaces }: { workspaces: WorkspaceCardIte
         <Link
           key={workspace.id}
           href={workspace.href}
+          aria-label={workspace.name}
           className="group no-underline hover:!no-underline"
         >
           <Card className="h-full p-6 transition-colors group-hover:border-border-strong">
@@ -64,6 +65,7 @@ export function ProjectCardGrid({ projects }: { projects: ProjectCardItem[] }) {
         <Link
           key={project.id}
           href={project.href}
+          aria-label={project.name}
           className="group no-underline hover:!no-underline"
         >
           <Card className="h-full p-6 transition-colors group-hover:border-border-strong">

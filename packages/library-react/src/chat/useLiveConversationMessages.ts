@@ -13,6 +13,11 @@ import {
   createLiveTurn,
   createTemporaryLiveTitle,
   DEFAULT_LIVE_CONVERSATION_TITLES,
+  markLiveTurnInputFinal,
+  markLiveTurnInputStarted,
+  markLiveTurnInputTextPresent,
+  markLiveTurnOutputFinal,
+  markLiveTurnOutputStarted,
   orderLiveMessages,
   type LiveTurn,
 } from "../chat/live-turn-messages.js";
@@ -112,7 +117,7 @@ export function useLiveConversationMessages({
   const beginInputTurn = useCallback(() => {
     const turn = createTurn();
 
-    turn.inputStarted = true;
+    markLiveTurnInputStarted(turn);
     currentInputTurnRef.current = turn;
 
     return turn;
@@ -180,7 +185,7 @@ export function useLiveConversationMessages({
           ? currentOutputTurn
           : (turnsRef.current.find((candidate) => !candidate.outputStarted) ?? createTurn());
 
-      turn.outputStarted = true;
+      markLiveTurnOutputStarted(turn);
       currentOutputTurnRef.current = turn;
       bindOutputTurn(turn, identifiers);
 
@@ -514,9 +519,9 @@ export function useLiveConversationMessages({
 
         if (transcript.isFinal) {
           if (role === "user") {
-            turn.inputFinal = true;
+            markLiveTurnInputFinal(turn);
           } else {
-            turn.outputFinal = true;
+            markLiveTurnOutputFinal(turn);
           }
 
           activeMessages.set(turn.id, { message, text: nextText });
@@ -525,7 +530,7 @@ export function useLiveConversationMessages({
         }
 
         if (role === "user") {
-          turn.inputTextPresent = true;
+          markLiveTurnInputTextPresent(turn);
           await upsertLiveMessage(conversationId, message);
           await flushBufferedOutput(conversationId, turn);
         } else if (turn.inputTextPresent) {
@@ -589,8 +594,8 @@ export function useLiveConversationMessages({
         turn,
       });
 
-      turn.inputFinal = true;
-      turn.inputTextPresent = true;
+      markLiveTurnInputFinal(turn);
+      markLiveTurnInputTextPresent(turn);
       inputMessageByTurnRef.current.set(turn.id, { message, text: activeMessage.text });
 
       await upsertLiveMessage(conversationId, message);
@@ -629,7 +634,7 @@ export function useLiveConversationMessages({
         void enqueue(async () => {
           const turn = currentInputTurnRef.current ?? beginInputTurn();
 
-          turn.inputStarted = true;
+          markLiveTurnInputStarted(turn);
           bindInputTurn(turn, event.itemId);
         });
 
@@ -644,7 +649,7 @@ export function useLiveConversationMessages({
               : (turnsRef.current.find((candidate) => !candidate.outputStarted) ??
                 beginInputTurn());
 
-          turn.outputStarted = true;
+          markLiveTurnOutputStarted(turn);
           currentOutputTurnRef.current = turn;
           bindOutputTurn(turn, event);
         });
@@ -679,7 +684,7 @@ export function useLiveConversationMessages({
         }
 
         if (turn.inputTextPresent) {
-          turn.inputFinal = true;
+          markLiveTurnInputFinal(turn);
         }
 
         const message = buildMessageForTurn({
@@ -692,7 +697,7 @@ export function useLiveConversationMessages({
         });
 
         outputMessageByTurnRef.current.set(turn.id, { message, text: outputMessage.text });
-        turn.outputFinal = true;
+        markLiveTurnOutputFinal(turn);
 
         if (turn.inputTextPresent) {
           await upsertLiveMessage(conversationId, message);
@@ -751,11 +756,11 @@ export function useLiveConversationMessages({
 
           activeMessages.set(turn.id, { message, text: activeMessage.text });
           if (role === "user") {
-            turn.inputFinal = true;
-            turn.inputTextPresent = true;
+            markLiveTurnInputFinal(turn);
+            markLiveTurnInputTextPresent(turn);
             await upsertLiveMessage(conversationId, message);
           } else {
-            turn.outputFinal = true;
+            markLiveTurnOutputFinal(turn);
             if (turn.inputTextPresent) {
               await upsertLiveMessage(conversationId, message);
             }

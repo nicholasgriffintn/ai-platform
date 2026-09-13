@@ -11,13 +11,16 @@ import { useState } from "react";
 
 import { DelegatePanel } from "./DelegatePanel.js";
 
+const EMPTY_TEAMMATES: DelegationTeammateReference[] = [];
+const EMPTY_OUTPUTS: DelegationOutputReference[] = [];
+
 export function ProjectDelegatesPanel({
   delegations,
   canControl,
   onStopAll,
   onFollowUp,
-  teammates = [],
-  outputs = [],
+  teammates = EMPTY_TEAMMATES,
+  outputs = EMPTY_OUTPUTS,
 }: {
   delegations: Delegation[];
   canControl: boolean;

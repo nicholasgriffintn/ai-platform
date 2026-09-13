@@ -49,7 +49,7 @@ export class ValidationPipeline {
     options: CoreChatOptions,
     initialContext: ValidationContext = {},
   ): Promise<ValidatorResult> {
-    let currentContext = initialContext;
+    const currentContext = { ...initialContext };
 
     for (const validator of this.validators) {
       const result = await validator.validate(options, currentContext);
@@ -65,7 +65,7 @@ export class ValidationPipeline {
         };
       }
 
-      currentContext = { ...currentContext, ...result.context };
+      Object.assign(currentContext, result.context);
     }
 
     return {

@@ -19,9 +19,9 @@ export function LoadingRegion({
   label: string;
 }) {
   return (
-    <div role="status" aria-label={label} className={className}>
+    <output aria-label={label} className={cn("block", className)}>
       {children}
-    </div>
+    </output>
   );
 }
 

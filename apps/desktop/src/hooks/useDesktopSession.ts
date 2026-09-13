@@ -73,6 +73,7 @@ export function useDesktopSession() {
   }, [adoptToken, forgetSession, setAuthenticatedUserConfiguration]);
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- initial session load syncs with Tauri backend (external system); state settles on async completion
     void load();
   }, [load]);
 

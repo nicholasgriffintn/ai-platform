@@ -1,3 +1,5 @@
+import { getErrorMessage } from "./errors";
+
 export function detectStreaming(body: Record<string, any>, endpoint: string) {
   const isStreaming = body?.stream === true;
   const isEndpointStreaming =
@@ -48,7 +50,7 @@ export function parseSseBuffer(buffer: string, options: SseParserOptions): strin
 
       options.onEvent(parsed);
     } catch (error) {
-      options.onError?.(error instanceof Error ? error : new Error(String(error)));
+      options.onError?.(error instanceof Error ? error : new Error(getErrorMessage(error)));
     }
   }
 

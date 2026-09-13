@@ -16,6 +16,7 @@ const Icon: IconType = forwardRef(({ size = "1em", style, ...rest }, ref) => {
       viewBox="0 0 24 24"
       width={size}
       xmlns="http://www.w3.org/2000/svg"
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- inline SVG artwork has no <img src>; role=img with <title> is the accessible SVG pattern
       role="img"
       aria-labelledby={titleId}
       focusable="false"

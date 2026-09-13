@@ -191,7 +191,11 @@ export function createCoordinatorEventSseStream(
         }
       }
 
-      while (!terminalSeen && !aborted && !signal?.aborted) {
+      while (!terminalSeen) {
+        if (aborted || signal?.aborted) {
+          break;
+        }
+
         const envelopes = await listEvents(after);
 
         if (envelopes.length === 0) {

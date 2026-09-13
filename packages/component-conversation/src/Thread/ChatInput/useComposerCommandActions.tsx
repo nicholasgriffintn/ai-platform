@@ -303,7 +303,6 @@ export function useComposerCommandActions({
     }
   }, [
     chatMode,
-    chatSettings,
     defaultModelId,
     selectModelWithDefaults,
     setChatMode,

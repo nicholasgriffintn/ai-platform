@@ -6,7 +6,7 @@ import type {
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Rocket } from "lucide-react";
 import type { FormEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -40,12 +40,6 @@ export function JobCreateForm({ models, isSubmitting, onSubmit }: JobCreateFormP
   const [entryPoint, setEntryPoint] = useState("");
   const [sourceS3Uri, setSourceS3Uri] = useState("");
   const [hyperparameters, setHyperparameters] = useState("");
-
-  useEffect(() => {
-    if (!modelId && models[0]) {
-      setModelId(models[0].id);
-    }
-  }, [modelId, models]);
 
   const selectedModel = useMemo(
     () => models.find((model) => model.id === modelId) ?? models[0],

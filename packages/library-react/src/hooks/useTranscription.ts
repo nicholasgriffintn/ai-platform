@@ -4,7 +4,7 @@ import {
   preferOpusAudioCodec,
   type RealtimeWebRTCConnection,
 } from "@ngriffin_uk/polychat-library-realtime";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface TranscriptionOptions {
@@ -288,6 +288,9 @@ export function useTranscription({
             configurePeerConnection: preferOpusAudioCodec,
             onIceConnectionStateChange: (peerConnection) => {
               switch (peerConnection.iceConnectionState) {
+                case "new":
+                case "checking":
+                  break;
                 case "connected":
                 case "completed":
                   setStatus("active");
@@ -426,84 +429,87 @@ export function useTranscription({
     }
   };
 
-  const stopTranscription = (showToast = true) => {
-    if (showToast) {
-      setIsTranscribing(false);
-      setStatus("idle");
-    }
-
-    if (connectionTimeoutRef.current) {
-      clearTimeout(connectionTimeoutRef.current);
-      connectionTimeoutRef.current = null;
-    }
-
-    if (connectionMonitorRef.current) {
-      clearInterval(connectionMonitorRef.current);
-      connectionMonitorRef.current = null;
-    }
-
-    if (speechDetectionIntervalRef.current) {
-      clearInterval(speechDetectionIntervalRef.current);
-      speechDetectionIntervalRef.current = null;
-    }
-
-    if (audioContextRef.current?.state !== "closed") {
-      try {
-        void audioContextRef.current?.suspend();
-      } catch (err) {
-        console.error("Error suspending audio context:", err);
+  const stopTranscription = useCallback(
+    (showToast = true) => {
+      if (showToast) {
+        setIsTranscribing(false);
+        setStatus("idle");
       }
-    }
 
-    audioAnalyserRef.current = null;
-
-    if (realtimeConnectionRef.current) {
-      realtimeConnectionRef.current.close();
-      realtimeConnectionRef.current = null;
-      dcRef.current = null;
-      pcRef.current = null;
-    } else if (dcRef.current) {
-      dcRef.current.close();
-      dcRef.current = null;
-    }
-
-    if (!realtimeConnectionRef.current && pcRef.current) {
-      try {
-        pcRef.current.close();
-      } catch (err) {
-        console.error("Error closing peer connection:", err);
-      } finally {
-        pcRef.current = null;
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current);
+        connectionTimeoutRef.current = null;
       }
-    }
 
-    if (mediaStreamRef.current) {
-      const tracks = mediaStreamRef.current.getTracks();
+      if (connectionMonitorRef.current) {
+        clearInterval(connectionMonitorRef.current);
+        connectionMonitorRef.current = null;
+      }
 
-      for (const track of tracks) {
+      if (speechDetectionIntervalRef.current) {
+        clearInterval(speechDetectionIntervalRef.current);
+        speechDetectionIntervalRef.current = null;
+      }
+
+      if (audioContextRef.current?.state !== "closed") {
         try {
-          track.stop();
+          void audioContextRef.current?.suspend();
         } catch (err) {
-          console.error("Error stopping media track:", err);
+          console.error("Error suspending audio context:", err);
         }
       }
 
-      mediaStreamRef.current = null;
-    }
+      audioAnalyserRef.current = null;
 
-    pendingDeltasRef.current.clear();
+      if (realtimeConnectionRef.current) {
+        realtimeConnectionRef.current.close();
+        realtimeConnectionRef.current = null;
+        dcRef.current = null;
+        pcRef.current = null;
+      } else if (dcRef.current) {
+        dcRef.current.close();
+        dcRef.current = null;
+      }
 
-    if (isSpeechActiveRef.current) {
-      isSpeechActiveRef.current = false;
-      onSpeechDetected?.(false);
-    }
-  };
+      if (!realtimeConnectionRef.current && pcRef.current) {
+        try {
+          pcRef.current.close();
+        } catch (err) {
+          console.error("Error closing peer connection:", err);
+        } finally {
+          pcRef.current = null;
+        }
+      }
+
+      if (mediaStreamRef.current) {
+        const tracks = mediaStreamRef.current.getTracks();
+
+        for (const track of tracks) {
+          try {
+            track.stop();
+          } catch (err) {
+            console.error("Error stopping media track:", err);
+          }
+        }
+
+        mediaStreamRef.current = null;
+      }
+
+      pendingDeltasRef.current.clear();
+
+      if (isSpeechActiveRef.current) {
+        isSpeechActiveRef.current = false;
+        onSpeechDetected?.(false);
+      }
+    },
+    [onSpeechDetected],
+  );
 
   useEffect(() => {
     return () => {
       stopTranscription(false);
     };
-  }, []);
+  }, [stopTranscription]);
 
   return {
     isTranscribing,

@@ -136,7 +136,7 @@ export function useConversationLaunchModeConfig(
   }, [
     clearCurrentConversation,
     initializeStore,
-    installRecipe.mutateAsync,
+    installRecipe,
     location.key,
     location.pathname,
     location.search,
@@ -147,7 +147,7 @@ export function useConversationLaunchModeConfig(
     setSelectedTeammateId,
     setSelectedTools,
     startNewConversation,
-    invokeRecipe.mutateAsync,
+    invokeRecipe,
   ]);
 
   return useMemo(() => {

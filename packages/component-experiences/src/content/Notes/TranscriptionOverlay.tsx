@@ -18,20 +18,20 @@ export const TranscriptionOverlay = memo(function TranscriptionOverlay({
   partialTranscript,
 }: TranscriptionOverlayProps) {
   const [silenceDuration, setSilenceDuration] = useState(0);
+  const isSilent = !isSpeechDetected && lastSilenceTime > 0;
+  const displayedSilenceDuration = isSilent ? silenceDuration : 0;
 
   useEffect(() => {
-    if (!isSpeechDetected && lastSilenceTime > 0) {
-      const interval = setInterval(() => {
-        setSilenceDuration(Math.floor((Date.now() - lastSilenceTime) / 1000));
-      }, 1000);
-
-      return () => clearInterval(interval);
+    if (!isSilent) {
+      return undefined;
     }
 
-    setSilenceDuration(0);
+    const interval = setInterval(() => {
+      setSilenceDuration(Math.floor((Date.now() - lastSilenceTime) / 1000));
+    }, 1000);
 
-    return undefined;
-  }, [isSpeechDetected, lastSilenceTime]);
+    return () => clearInterval(interval);
+  }, [isSilent, lastSilenceTime]);
 
   if (!isVisible) {
     return null;
@@ -73,7 +73,7 @@ export const TranscriptionOverlay = memo(function TranscriptionOverlay({
           ) : (
             <span className="flex items-center text-muted-foreground">
               <VolumeX size={14} className="mr-1" />
-              Silence {silenceDuration > 0 ? `(${silenceDuration}s)` : ""}
+              Silence {displayedSilenceDuration > 0 ? `(${displayedSilenceDuration}s)` : ""}
             </span>
           )}
         </div>

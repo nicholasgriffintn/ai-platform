@@ -10,7 +10,7 @@ import {
   SearchInput,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   PET_MODEL_TARGET_GROUPS,
@@ -46,14 +46,19 @@ export function PetModelRuleDialog({
   const [query, setQuery] = useState("");
   const [targetKey, setTargetKey] = useState("");
   const [selectedPetKey, setSelectedPetKey] = useState(defaultPetKey ?? "");
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevDefaultPetKey, setPrevDefaultPetKey] = useState(defaultPetKey);
 
-  useEffect(() => {
+  if (prevOpen !== open || prevDefaultPetKey !== defaultPetKey) {
+    setPrevOpen(open);
+    setPrevDefaultPetKey(defaultPetKey);
+
     if (open) {
       setQuery("");
       setTargetKey("");
       setSelectedPetKey(defaultPetKey ?? "");
     }
-  }, [open, defaultPetKey]);
+  }
 
   const groups = useMemo(() => {
     const normalised = query.trim().toLowerCase();

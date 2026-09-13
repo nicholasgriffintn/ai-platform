@@ -33,6 +33,7 @@ function EnvironmentCommandFields({
     <fieldset className="space-y-2">
       <legend className="text-sm font-medium text-foreground">{label}</legend>
       {commands.map((command, index) => (
+        // oxlint-disable-next-line react/no-array-index-key -- setup commands can repeat verbatim (multiple empty rows), so position is the only unique key
         <div key={index} className="flex items-end gap-2">
           <FormInput
             label={`Command ${index + 1}`}

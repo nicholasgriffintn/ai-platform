@@ -14,13 +14,7 @@ export function useModelSelectorLayout(
   );
 
   useLayoutEffect(() => {
-    if (!isOpen) {
-      setMetrics(null);
-
-      return undefined;
-    }
-
-    if (!wrapper || !shell) {
+    if (!isOpen || !wrapper || !shell) {
       return undefined;
     }
 

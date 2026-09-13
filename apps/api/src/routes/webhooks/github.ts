@@ -9,6 +9,7 @@ import {
   getGitHubAppConnectionForUserInstallation,
 } from "~/services/github/connections";
 import type { IEnv } from "~/types";
+import { getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 import {
@@ -172,7 +173,7 @@ addRoute(github, "post", "/", {
         command: parsedCommand.command,
         repo,
         issue: issueNumber,
-        error_message: error instanceof Error ? error.message : String(error),
+        error_message: getErrorMessage(error),
       });
     }
 

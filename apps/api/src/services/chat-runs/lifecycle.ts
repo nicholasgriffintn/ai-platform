@@ -25,7 +25,7 @@ import { resolveChatProjectAccess } from "~/services/workspaces/chatProjectAcces
 import type { CoreChatOptions } from "~/types";
 import { canonicalJson } from "~/utils/canonical-json";
 import { sha256Hex } from "~/utils/crypto";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
@@ -205,7 +205,7 @@ export class ChatRunLifecycle {
       logger.warn("Recipe task reconciliation failed", {
         runId: this.run.id,
         attempt: this.run.attempt,
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
     }
 
@@ -219,7 +219,7 @@ export class ChatRunLifecycle {
       logger.warn("Immediate teammate run reconciliation failed", {
         runId: this.run.id,
         attempt: this.run.attempt,
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
     }
 
@@ -239,7 +239,7 @@ export class ChatRunLifecycle {
       logger.warn("Teammate run reconciliation remains pending", {
         runId: this.run.id,
         attempt: this.run.attempt,
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
     }
   }

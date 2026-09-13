@@ -1,4 +1,4 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { formatUnknownValue, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
@@ -28,7 +28,10 @@ export function coerceStringRecord(value: unknown): Record<string, string> {
   }
 
   return Object.fromEntries(
-    Object.entries(omitNullishValues(value)).map(([key, entryValue]) => [key, String(entryValue)]),
+    Object.entries(omitNullishValues(value)).map(([key, entryValue]) => [
+      key,
+      formatUnknownValue(entryValue),
+    ]),
   );
 }
 

@@ -1,4 +1,5 @@
 import { FieldType, type ToolFormSchema, type RunnableTool } from "@ngriffin_uk/polychat-schemas";
+import { formatUnknownValue } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 import { listFunctionToolDefinitions } from "~/services/functions/definitions";
@@ -41,8 +42,8 @@ const generateValidationFromSchema = (schema: JsonSchemaProperty) => {
 
   if (schema.enum) {
     validation.options = schema.enum.map((value) => ({
-      label: String(value),
-      value: String(value),
+      label: formatUnknownValue(value),
+      value: formatUnknownValue(value),
     }));
   }
 

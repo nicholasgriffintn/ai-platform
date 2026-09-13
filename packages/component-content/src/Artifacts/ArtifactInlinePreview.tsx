@@ -1,5 +1,5 @@
 import { AppWindow, AlertTriangle, Loader2 } from "lucide-react";
-import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useMemo, useState } from "react";
 
 import type { ArtifactProps } from "./artifact";
 import { isStylesheetArtifact } from "./artifact-kinds";
@@ -31,16 +31,21 @@ export function ArtifactInlinePreview({
 }: ArtifactInlinePreviewProps) {
   const [iframeKey, setIframeKey] = useState(0);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [prevContent, setPrevContent] = useState(artifact.content);
+  const [prevIdentifier, setPrevIdentifier] = useState(artifact.identifier);
+
+  if (prevContent !== artifact.content || prevIdentifier !== artifact.identifier) {
+    setPrevContent(artifact.content);
+    setPrevIdentifier(artifact.identifier);
+    setPreviewError(null);
+    setIframeKey((currentKey) => currentKey + 1);
+  }
+
   const cssArtifact = useMemo(
     () => artifacts.find((item) => isStylesheetArtifact(item)),
     [artifacts],
   );
   const title = artifact.title || artifact.identifier || "Inline artifact";
-
-  useEffect(() => {
-    setPreviewError(null);
-    setIframeKey((currentKey) => currentKey + 1);
-  }, [artifact.content, artifact.identifier]);
 
   return (
     <section

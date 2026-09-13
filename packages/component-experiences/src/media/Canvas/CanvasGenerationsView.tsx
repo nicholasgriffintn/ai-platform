@@ -5,6 +5,15 @@ import { DrawingWorkspace } from "../Drawing/DrawingWorkspace";
 import type { CanvasStudioState } from "./controller";
 import { GenerationCard } from "./GenerationCard";
 
+const LOADING_SKELETON_KEYS = [
+  "canvas-loading-a",
+  "canvas-loading-b",
+  "canvas-loading-c",
+  "canvas-loading-d",
+  "canvas-loading-e",
+  "canvas-loading-f",
+];
+
 export function CanvasGenerationsView({
   canvas,
   className,
@@ -56,11 +65,8 @@ export function CanvasGenerationsView({
 
         {canvas.isModelsLoading && (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div
-                key={`loading-${index}`}
-                className="h-48 animate-pulse rounded-xl bg-selection"
-              />
+            {LOADING_SKELETON_KEYS.map((skeletonKey) => (
+              <div key={skeletonKey} className="h-48 animate-pulse rounded-xl bg-selection" />
             ))}
           </div>
         )}

@@ -1,7 +1,7 @@
 import { createPrivateKey, createSign } from "node:crypto";
 
 import { encodeBase64Url } from "~/utils/base64url";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { stripSurroundingQuotes } from "~/utils/strings";
 
 const APP_JWT_EXP_SECONDS = 9 * 60;
@@ -36,7 +36,7 @@ export function validateGitHubPrivateKey(privateKeyRaw: string): string {
       ErrorType.PARAMS_ERROR,
       400,
       {
-        originalError: error instanceof Error ? error.message : String(error),
+        originalError: getErrorMessage(error),
       },
     );
   }

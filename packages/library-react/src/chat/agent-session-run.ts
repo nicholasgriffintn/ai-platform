@@ -167,6 +167,8 @@ export async function streamAgentSessionRun(options: AgentSessionRunOptions): Pr
       case "thread.started":
         threadId = event.threadId;
         break;
+      case "turn.started":
+        break;
       case "message.delta":
         text += event.delta;
         options.onContent(text);

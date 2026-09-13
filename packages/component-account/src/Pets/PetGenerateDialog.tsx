@@ -11,7 +11,7 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import { PET_DESCRIPTION_MAX_LENGTH, PET_PROMPT_MAX_LENGTH } from "@ngriffin_uk/polychat-schemas";
 import { Loader2, Sparkles } from "lucide-react";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 const EMPTY_SUGGESTIONS: readonly string[] = [];
 
@@ -49,14 +49,17 @@ export function PetGenerateDialog({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [prompt, setPrompt] = useState("");
+  const [prevOpen, setPrevOpen] = useState(open);
 
-  useEffect(() => {
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+
     if (!open) {
       setName("");
       setDescription("");
       setPrompt("");
     }
-  }, [open]);
+  }
 
   const isBusy = isGenerating || isSaving;
 

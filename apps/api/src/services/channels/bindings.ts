@@ -18,7 +18,7 @@ function toBinding(row: ChannelBindingRow): ChannelBinding {
     label: row.label,
     teammateId: row.teammate_id,
     interactionMode: row.interaction_mode,
-    enabled: Boolean(row.enabled),
+    enabled: row.enabled,
     createdAt: row.created_at,
   };
 }

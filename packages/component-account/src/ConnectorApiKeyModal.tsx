@@ -1,5 +1,5 @@
 import { FormDialog, Input, Label } from "@ngriffin_uk/polychat-component-ui";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export interface ConnectorApiKeyModalProps {
   open: boolean;
@@ -19,12 +19,15 @@ export function ConnectorApiKeyModal({
   onSubmit,
 }: ConnectorApiKeyModalProps) {
   const [apiKey, setApiKey] = useState("");
+  const [prevOpen, setPrevOpen] = useState(open);
 
-  useEffect(() => {
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+
     if (!open) {
       setApiKey("");
     }
-  }, [open]);
+  }
 
   const fieldLabel = credentialLabel || "API key";
 

@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useRef } from "react";
+import { type RefObject, useCallback, useEffect, useRef } from "react";
 
 interface CanvasProps {
   canvasRef: RefObject<HTMLCanvasElement | null>;
@@ -27,13 +27,14 @@ export function DrawingCanvas({
 
   useEffect(() => {
     if (!drawingData || !canvasRef?.current) {
-      return;
+      return undefined;
     }
 
+    const canvas = canvasRef.current;
     const image = new Image();
 
-    image.addEventListener("load", () => {
-      const ctx = canvasRef.current?.getContext("2d");
+    const handleLoad = () => {
+      const ctx = canvas.getContext("2d");
 
       if (!ctx) {
         return;
@@ -41,46 +42,54 @@ export function DrawingCanvas({
 
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.drawImage(image, 0, 0);
-    });
+    };
 
+    image.addEventListener("load", handleLoad);
     image.src = drawingData;
-  }, [drawingData]);
 
-  const draw = (e: MouseEvent | TouchEvent) => {
-    if (!isDrawing.current || !canvasRef?.current) {
-      return;
-    }
+    return () => {
+      image.removeEventListener("load", handleLoad);
+    };
+  }, [canvasRef, drawingData]);
 
-    const ctx = canvasRef.current.getContext("2d");
+  const draw = useCallback(
+    (e: MouseEvent | TouchEvent) => {
+      if (!isDrawing.current || !canvasRef?.current) {
+        return;
+      }
 
-    if (!ctx) {
-      return;
-    }
+      const ctx = canvasRef.current.getContext("2d");
 
-    const rect = canvasRef.current.getBoundingClientRect();
-    const scaleX = canvasRef.current.width / rect.width;
-    const scaleY = canvasRef.current.height / rect.height;
+      if (!ctx) {
+        return;
+      }
 
-    const x =
-      (("touches" in e && e.touches[0] ? e.touches[0].clientX : "clientX" in e ? e.clientX : 0) -
-        rect.left) *
-      scaleX;
-    const y =
-      (("touches" in e && e.touches[0] ? e.touches[0].clientY : "clientY" in e ? e.clientY : 0) -
-        rect.top) *
-      scaleY;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const scaleX = canvasRef.current.width / rect.width;
+      const scaleY = canvasRef.current.height / rect.height;
 
-    ctx.beginPath();
-    ctx.moveTo(lastX.current, lastY.current);
-    ctx.lineTo(x, y);
-    ctx.strokeStyle = currentColor;
-    ctx.lineWidth = lineWidth;
-    ctx.lineCap = "round";
-    ctx.stroke();
+      const x =
+        (("touches" in e && e.touches[0] ? e.touches[0].clientX : "clientX" in e ? e.clientX : 0) -
+          rect.left) *
+        scaleX;
+      const y =
+        (("touches" in e && e.touches[0] ? e.touches[0].clientY : "clientY" in e ? e.clientY : 0) -
+          rect.top) *
+        scaleY;
 
-    lastX.current = x;
-    lastY.current = y;
-  };
+      ctx.beginPath();
+      ctx.moveTo(lastX.current, lastY.current);
+      ctx.lineTo(x, y);
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = "round";
+      ctx.stroke();
+
+      lastX.current = x;
+      lastY.current = y;
+    },
+    [canvasRef, currentColor, lineWidth],
+  );
 
   const fill = () => {
     if (!canvasRef?.current) {
@@ -157,7 +166,7 @@ export function DrawingCanvas({
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("touchmove", handleTouchMove);
     };
-  }, [isReadOnly, currentColor, lineWidth, isFillMode]);
+  }, [canvasRef, draw, isReadOnly]);
 
   return (
     <>

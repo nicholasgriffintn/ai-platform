@@ -1,6 +1,7 @@
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, User } from "~/types";
 import { mapWithConcurrency } from "~/utils/async";
+import { toStringValue } from "~/utils/strings";
 
 export interface ExportRow {
   conversation_id: string;
@@ -22,7 +23,7 @@ async function collectConversationRows(
   serviceContext: ServiceContext,
   conversation: Record<string, unknown>,
 ): Promise<ExportRow[]> {
-  const conversationId = String(conversation.id);
+  const conversationId = toStringValue(conversation.id, "");
   const conversationTitle = (conversation.title as string) ?? null;
   const conversationCreatedAt = (conversation.created_at as string) ?? null;
 
@@ -43,7 +44,7 @@ async function collectConversationRows(
       break;
     }
 
-    const endCursor = String(messages[messages.length - 1].id);
+    const endCursor = toStringValue(messages[messages.length - 1].id, "");
 
     if (after && endCursor === after) {
       break;
@@ -54,7 +55,7 @@ async function collectConversationRows(
         conversation_id: conversationId,
         conversation_title: conversationTitle,
         conversation_created_at: conversationCreatedAt,
-        message_id: String(message.id),
+        message_id: toStringValue(message.id, ""),
         message_role: (message.role as string) ?? null,
         message_content:
           typeof message.content === "string"

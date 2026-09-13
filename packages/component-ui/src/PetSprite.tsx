@@ -75,6 +75,7 @@ export function PetSprite({
       key={`${sheetUrl}:${clip.row}`}
       className={cn("polychat-pet", className)}
       style={style}
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
       role="img"
       aria-label={label}
       onAnimationEnd={clip.loop ? undefined : onClipEnd}

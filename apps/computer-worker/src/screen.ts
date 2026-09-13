@@ -83,7 +83,7 @@ function createScreenWebSocketProxy(
           await recordFrame(event.data);
         }
 
-        await forward(upstream, event.data);
+        return forward(upstream, event.data);
       })
       .catch(() => close("Screen connection failed"));
   });

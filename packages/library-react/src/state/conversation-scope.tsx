@@ -1,6 +1,14 @@
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
-import { createContext, type ReactNode, useContext, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 export interface ConversationScope {
   currentConversationId: string | undefined;
@@ -57,8 +65,13 @@ export function useLocalConversationScope(
   const conversationIdRef = useRef(conversationId);
   const onChangeRef = useRef(onChange);
 
-  conversationIdRef.current = conversationId;
-  onChangeRef.current = onChange;
+  useEffect(() => {
+    conversationIdRef.current = conversationId;
+  }, [conversationId]);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   return useMemo<ConversationScope>(() => {
     const update = (id: string | undefined) => {

@@ -104,22 +104,21 @@ export function RecipeCard({
             </div>
             <div className="flex items-center gap-2">
               <span
-                role="img"
-                aria-label={`Status: ${setupStatus}`}
                 title={setupStatus}
                 className={cn(
                   "size-2.5 rounded-full ring-2",
                   isPaused ? "bg-attention" : isConfigured ? "bg-success" : "bg-selection",
                 )}
-              />
+              >
+                <span className="sr-only">Status: {setupStatus}</span>
+              </span>
               {recipe.featured && (
                 <span
-                  role="img"
-                  aria-label="Featured recipe"
                   title="Featured recipe"
                   className="rounded-full bg-failure/12 p-1.5 text-failure"
                 >
-                  <Sparkles className="h-4 w-4" />
+                  <Sparkles className="h-4 w-4" aria-hidden="true" />
+                  <span className="sr-only">Featured recipe</span>
                 </span>
               )}
               {headerAccessory}

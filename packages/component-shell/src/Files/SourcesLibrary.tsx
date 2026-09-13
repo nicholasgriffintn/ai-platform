@@ -17,7 +17,7 @@ import {
   useSources,
 } from "@ngriffin_uk/polychat-library-react";
 import type { SourceKind } from "@ngriffin_uk/polychat-schemas";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { MemorySynthesisPanel } from "./MemorySynthesisPanel.js";
@@ -60,12 +60,15 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
   const collections = sourceCollections?.filter((collection) => collection.kind !== "context");
   const mutations = useSourceMutations();
   const selectedCollection = collections?.find((collection) => collection.id === collectionId);
+  const [prevCreateRequestKey, setPrevCreateRequestKey] = useState(createRequestKey);
 
-  useEffect(() => {
+  if (prevCreateRequestKey !== createRequestKey) {
+    setPrevCreateRequestKey(createRequestKey);
+
     if (createRequestKey) {
       setIsCreateSourceOpen(true);
     }
-  }, [createRequestKey]);
+  }
 
   return (
     <>

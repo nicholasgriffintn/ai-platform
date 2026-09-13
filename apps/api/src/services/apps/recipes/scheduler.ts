@@ -4,6 +4,7 @@ import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
 import { doesCronMatchDate, getCronMatchingDatesInRange } from "~/utils/cron";
 import { sha256Hex } from "~/utils/crypto";
+import { getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 import { parseStoredRecipeInstallationData } from "./installation-persistence";
@@ -351,7 +352,7 @@ export async function scheduleDueRecipeExecutions(env: IEnv, now = new Date()): 
       }
     } catch (error) {
       logger.error(`Failed to schedule recipe executions for installation ${record.id}`, {
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
     }
   }

@@ -34,11 +34,12 @@ export function ProductModeSwitch({ activeMode, className, destinations }: Produ
   ];
 
   return (
-    <div
-      className={["polychat-navigation-mode-switch", className].filter(Boolean).join(" ")}
-      role="group"
-      aria-label="Product mode"
+    <fieldset
+      className={["polychat-navigation-mode-switch border-0 m-0 p-0", className]
+        .filter(Boolean)
+        .join(" ")}
     >
+      <legend className="sr-only">Product mode</legend>
       {modes.map(({ href, icon, label, mode }) => (
         <Link
           key={mode}
@@ -51,6 +52,6 @@ export function ProductModeSwitch({ activeMode, className, destinations }: Produ
           <span className="polychat-navigation-mode-label">{label}</span>
         </Link>
       ))}
-    </div>
+    </fieldset>
   );
 }

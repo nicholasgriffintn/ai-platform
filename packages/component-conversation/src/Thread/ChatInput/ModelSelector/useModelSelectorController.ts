@@ -136,7 +136,7 @@ export function useModelSelectorController({
     const firstOption = dropdownRef.current?.querySelector("[data-model-option]");
 
     (firstOption as HTMLElement | null)?.focus({ preventScroll: true });
-  }, [isMobile, isOpen, panelLayout?.container]);
+  }, [isMobile, isOpen]);
 
   const handleInfoHoverStart = useCallback(
     (modelInfo: ModelConfigItem, anchorRect: DOMRect) => {

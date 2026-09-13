@@ -1,6 +1,7 @@
 import { deleteComposioToolSession } from "~/lib/providers/capabilities/connectors/composio/client";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
+import { getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const CLEANUP_BATCH_SIZE = 50;
@@ -45,7 +46,7 @@ export async function reapComposioConnectorSessions(
       logger.warn("Composio connector session cleanup failed", {
         sessionHandle: claimed.id,
         attempt: claimed.cleanupAttempts + 1,
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
     }
   }

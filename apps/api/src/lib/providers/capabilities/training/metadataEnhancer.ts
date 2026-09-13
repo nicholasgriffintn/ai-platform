@@ -1,4 +1,5 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/training/metadata-enhancer" });
@@ -75,7 +76,7 @@ export class TrainingMetadataEnhancer {
       return metadata;
     } catch (error) {
       logger.error("Failed to enhance metadata", {
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
 
       return metadata;
@@ -107,7 +108,7 @@ export class TrainingMetadataEnhancer {
       };
     } catch (error) {
       logger.error("Failed to build conversation context", {
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
         conversationId,
       });
 

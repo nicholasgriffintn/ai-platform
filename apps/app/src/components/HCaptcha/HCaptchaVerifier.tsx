@@ -20,7 +20,11 @@ declare global {
 
 export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
   const [widgetId, setWidgetId] = useState<number | null>(null);
-  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const [isScriptLoaded, setIsScriptLoaded] = useState(
+    () =>
+      typeof document !== "undefined" &&
+      document.querySelector('script[src*="hcaptcha.com/1/api.js"]') !== null,
+  );
   const [isVerified, setIsVerified] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -88,11 +92,7 @@ export const HCaptchaVerifier = ({ siteKey, onVerify }: HCaptchaProps) => {
       };
     }
 
-    const existingScript = document.querySelector('script[src*="hcaptcha.com/1/api.js"]');
-
-    if (existingScript) {
-      setIsScriptLoaded(true);
-
+    if (document.querySelector('script[src*="hcaptcha.com/1/api.js"]')) {
       return;
     }
 

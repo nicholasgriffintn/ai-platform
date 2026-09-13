@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
-import { useImperativeHandle, type Ref } from "react";
+import { useEffect, useImperativeHandle, type Ref } from "react";
 import type { VListHandle } from "virtua";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -33,12 +33,15 @@ function Harness({
   resetKey?: string;
 }) {
   const stick = useStickToBottom({ enabled: true, rowCount: 4, followKey, resetKey });
+  const { listRef, viewportRef } = stick;
 
-  latest = stick;
+  useEffect(() => {
+    latest = stick;
+  });
 
   return (
-    <section aria-label="viewport" data-testid="viewport" ref={stick.viewportRef}>
-      <FakeList ref={stick.listRef} />
+    <section aria-label="viewport" data-testid="viewport" ref={viewportRef}>
+      <FakeList ref={listRef} />
     </section>
   );
 }

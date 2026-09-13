@@ -48,6 +48,7 @@ function runBootstrap(): { theme: string | undefined; classes: string[]; color: 
 
   meta.setAttribute("name", "theme-color");
   document.head.append(meta);
+  // oxlint-disable-next-line typescript/no-implied-eval -- executes the trusted inline bootstrap script emitted by AppShell
   new Function(THEME_BOOTSTRAP_SCRIPT)();
 
   const root = document.documentElement;

@@ -104,6 +104,7 @@ function SidebarUsageSummary({
               ) : (
                 <div
                   className="h-2 rounded-full bg-selection"
+                  // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- custom usage bar with tone colors and rounded fill cannot be expressed with native meter single-value rendering; aria-valuemin/max/now exposes the value
                   role="meter"
                   aria-label={item.assistiveLabel}
                   aria-valuemin={0}

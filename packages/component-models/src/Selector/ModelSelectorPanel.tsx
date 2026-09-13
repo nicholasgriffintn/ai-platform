@@ -126,9 +126,11 @@ export function ModelSelectorPanel({
   };
 
   const panel = (
+    // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- focusable dialog panel handles tier shortcuts and delegates all other keys; role=dialog with tabIndex is intentional
     <div
       ref={panelRef}
       onKeyDown={handleKeyDown}
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- non-modal popover panel positioned through a portal; native <dialog> top-layer and showModal semantics would break its anchored positioning
       role="dialog"
       tabIndex={-1}
       aria-modal="false"
@@ -233,9 +235,7 @@ export function ModelSelectorPanel({
       </div>
 
       {recentSyncError && (
-        <p role="status" className="px-3 pb-2 text-xs text-attention">
-          {recentSyncError}
-        </p>
+        <output className="block px-3 pb-2 text-xs text-attention">{recentSyncError}</output>
       )}
       {onOpenModelSources && (
         <div className="border-t border-border px-3 py-2">

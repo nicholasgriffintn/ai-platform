@@ -55,10 +55,9 @@ export function GoalStatusCard({
     "border-border bg-surface text-foreground hover:bg-selection rounded-md border px-2 py-1 text-xs font-medium disabled:opacity-50";
 
   return (
-    <div
-      role="status"
+    <output
       aria-label={`${statusLabel}: ${objective}`}
-      className={cn("mb-3 rounded-lg border px-4 py-3 shadow-sm", resolveTone(status))}
+      className={cn("mb-3 block rounded-lg border px-4 py-3 shadow-sm", resolveTone(status))}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2">
@@ -98,6 +97,6 @@ export function GoalStatusCard({
           ) : null}
         </div>
       </div>
-    </div>
+    </output>
   );
 }

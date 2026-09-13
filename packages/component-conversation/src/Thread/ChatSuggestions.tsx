@@ -8,7 +8,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { ComposerCommandAction } from "@ngriffin_uk/polychat-utility-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { ChatSuggestionList } from "../ChatSuggestionList.js";
 
@@ -42,15 +42,11 @@ export const ChatSuggestions = ({
     modelConfig,
   });
 
-  const [seed, setSeed] = useState<number | null>(null);
+  const [seed, setSeed] = useState<number>(() => Math.random());
   const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set());
 
-  useEffect(() => {
-    setSeed(Math.random());
-  }, []);
-
   const generated = useMemo(
-    () => (seed === null ? [] : createChatSuggestions(context, seed, { exclude: seen })),
+    () => createChatSuggestions(context, seed, { exclude: seen }),
     [context, seed, seen],
   );
   const suggestions = suggestionsOverride ?? generated;
@@ -103,7 +99,7 @@ export const ChatSuggestions = ({
     return null;
   }
 
-  if (isLoading || isMobileLoading || isLoadingContext || (!hasOverride && seed === null)) {
+  if (isLoading || isMobileLoading || isLoadingContext) {
     return <ChatSuggestionList suggestions={[]} isLoading onSelect={() => undefined} />;
   }
 

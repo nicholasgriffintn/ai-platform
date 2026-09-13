@@ -2,6 +2,7 @@ import type { SubmitChatCompletionFeedbackInput } from "@ngriffin_uk/polychat-sc
 
 import { gatewayId } from "~/constants/app";
 import type { TrainingExampleRepository } from "~/repositories";
+import { getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({
@@ -57,7 +58,7 @@ export const handleChatCompletionFeedbackSubmission = async (
       });
     } catch (error) {
       logger.error("Failed to send feedback to AI Gateway", {
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
         logId: request.log_id,
       });
     }
@@ -83,7 +84,7 @@ export const handleChatCompletionFeedbackSubmission = async (
     }
   } catch (error) {
     logger.error("Failed to update training example with feedback", {
-      error: error instanceof Error ? error.message : String(error),
+      error: getErrorMessage(error),
       completionId: completion_id,
     });
   }

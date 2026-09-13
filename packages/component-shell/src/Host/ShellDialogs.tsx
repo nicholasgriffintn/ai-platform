@@ -78,7 +78,6 @@ export function ShellDialogs() {
     isLoading,
     onboardingKey,
     setShowModelSources,
-    surface,
     updateUserSettings,
     user,
     userSettings,

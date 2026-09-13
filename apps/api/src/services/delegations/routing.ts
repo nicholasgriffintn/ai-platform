@@ -19,9 +19,10 @@ export function resolveDelegationExecutionRoute(
 export function canRunDelegationOnMachine(
   model: ModelConfigItem | null | undefined,
 ): model is ModelConfigItem & { machineId: string } {
-  return Boolean(
-    model?.machineId &&
-    model.agent?.capabilities.resumesSessions &&
-    model.agent.capabilities.runsUnattended,
+  return (
+    typeof model?.machineId === "string" &&
+    model.machineId.length > 0 &&
+    model.agent?.capabilities.resumesSessions === true &&
+    model.agent.capabilities.runsUnattended === true
   );
 }

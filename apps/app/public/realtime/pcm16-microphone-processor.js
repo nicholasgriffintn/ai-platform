@@ -16,11 +16,12 @@ class Pcm16MicrophoneProcessor extends AudioWorkletProcessor {
     this.offset = 0;
     this.isStopped = false;
 
-    this.port.onmessage = (event) => {
+    this.port.addEventListener("message", (event) => {
       if (event.data?.type === "stop") {
         this.isStopped = true;
       }
-    };
+    });
+    this.port.start();
   }
 
   process(inputs, outputs) {
@@ -52,6 +53,7 @@ class Pcm16MicrophoneProcessor extends AudioWorkletProcessor {
       readOffset += writableLength;
 
       if (this.offset === this.bufferSize) {
+        // oxlint-disable-next-line unicorn/require-post-message-target-origin -- MessagePort.postMessage takes no targetOrigin, unlike Window.postMessage
         this.port.postMessage({ input: this.buffer.slice() });
         this.offset = 0;
       }

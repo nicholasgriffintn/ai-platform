@@ -98,12 +98,13 @@ export const TableView = ({ data }: TableViewProps) => {
         <tbody className="divide-y divide-border">
           {visibleRows.map((row, rowIndex) => (
             <tr
+              // oxlint-disable-next-line react/no-array-index-key -- table rows can be fully duplicated, so content hash plus position is the only unique key
               key={`${headers.map((header) => String(row[header.key])).join("|")}-${rowIndex}`}
               className={rowIndex % 2 === 0 ? undefined : "bg-surface-elevated/60"}
             >
               {headers.map((header) => (
                 <td
-                  key={`${rowIndex}-${header.key}`}
+                  key={header.key}
                   className={`max-w-[24rem] px-3 py-2 align-top text-sm break-words text-muted-foreground ${
                     isNumericColumn(visibleRows, header.key)
                       ? "text-right tabular-nums"

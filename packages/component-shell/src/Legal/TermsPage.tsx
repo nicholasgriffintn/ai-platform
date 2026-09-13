@@ -150,8 +150,10 @@ export function TermsPage() {
 
         <h2>9. Privacy</h2>
         <p>
-          Your use of our Service is also governed by our <Link to="/privacy">Privacy Policy</Link>,
-          which is incorporated into these Terms by reference.
+          Your use of our Service is also governed by our{" "}
+          {/* oxlint-disable-next-line jsx-a11y/anchor-is-valid -- react-router Link uses `to` for client-side navigation, not `href` */}
+          <Link to="/privacy">Privacy Policy</Link>, which is incorporated into these Terms by
+          reference.
         </p>
 
         <h2>10. Governing Law</h2>

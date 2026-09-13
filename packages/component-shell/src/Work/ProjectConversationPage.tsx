@@ -88,6 +88,7 @@ export function ProjectConversationPage({
   const [taskTypesByConversation, setTaskTypesByConversation] = useState<
     Record<string, SandboxTaskType>
   >({});
+  const [prevProjectId, setPrevProjectId] = useState(projectId);
   const previousConversationIdRef = useRef<string | null>(null);
   const taskType = currentConversationId
     ? (taskTypesByConversation[currentConversationId] ?? draftTaskType)
@@ -107,11 +108,11 @@ export function ProjectConversationPage({
     [conversationId, project?.colour, projectId],
   );
 
-  useEffect(() => {
+  if (prevProjectId !== projectId) {
+    setPrevProjectId(projectId);
     setDraftTaskType("feature-implementation");
     setTaskTypesByConversation({});
-    previousConversationIdRef.current = null;
-  }, [projectId]);
+  }
 
   useEffect(() => {
     if (!currentConversationId) {
@@ -127,25 +128,28 @@ export function ProjectConversationPage({
     previousConversationIdRef.current = currentConversationId;
   }, [currentConversationId, taskTypesByConversation]);
 
-  useEffect(() => {
-    if (!currentConversationId) {
-      return;
+  const persistedTaskType = [...(currentConversation?.messages ?? [])]
+    .reverse()
+    .map((message) => sandboxTaskTypeSchema.safeParse(message.data?.codingTaskType))
+    .find((result) => result.success)?.data;
+  const [prevPersistedConversation, setPrevPersistedConversation] = useState(currentConversation);
+  const [prevPersistedConversationId, setPrevPersistedConversationId] =
+    useState(currentConversationId);
+
+  if (
+    prevPersistedConversation !== currentConversation ||
+    prevPersistedConversationId !== currentConversationId
+  ) {
+    setPrevPersistedConversation(currentConversation);
+    setPrevPersistedConversationId(currentConversationId);
+
+    if (currentConversationId && persistedTaskType) {
+      setTaskTypesByConversation((current) => ({
+        ...current,
+        [currentConversationId]: persistedTaskType,
+      }));
     }
-
-    const persistedTaskType = [...(currentConversation?.messages ?? [])]
-      .reverse()
-      .map((message) => sandboxTaskTypeSchema.safeParse(message.data?.codingTaskType))
-      .find((result) => result.success)?.data;
-
-    if (!persistedTaskType) {
-      return;
-    }
-
-    setTaskTypesByConversation((current) => ({
-      ...current,
-      [currentConversationId]: persistedTaskType,
-    }));
-  }, [currentConversation, currentConversationId]);
+  }
 
   const handleTaskTypeChange = useCallback(
     (nextTaskType: SandboxTaskType) => {

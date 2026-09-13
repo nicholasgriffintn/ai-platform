@@ -177,7 +177,7 @@ export function TeammateComputerPanel({ contextId }: { contextId: string }) {
                 title="Teammate computer"
                 src={screen.url}
                 className="min-h-0 flex-1 border-0 bg-black"
-                sandbox="allow-forms allow-same-origin allow-scripts"
+                sandbox="allow-forms allow-scripts"
               />
               {teaching && screen.recordingId ? (
                 <TeammateTeachingDraft

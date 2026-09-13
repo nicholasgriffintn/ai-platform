@@ -1,5 +1,5 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/strudel/feedback" });
@@ -70,7 +70,7 @@ export async function submitStrudelFeedback(
     }
 
     logger.error("Failed to submit Strudel feedback", {
-      error: error instanceof Error ? error.message : String(error),
+      error: getErrorMessage(error),
       generationId,
     });
 

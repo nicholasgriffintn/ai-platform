@@ -46,6 +46,7 @@ export function ComposerShell({
               <div
                 data-composer-input-row
                 className="flex min-w-0 flex-1 cursor-text px-4 pt-3 pb-5"
+                role="presentation"
                 onMouseDown={(event) => {
                   const target = event.target as HTMLElement | null;
 

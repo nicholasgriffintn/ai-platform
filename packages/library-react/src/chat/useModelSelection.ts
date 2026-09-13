@@ -110,6 +110,7 @@ export function useModelSelection({
 }: ModelSelectionOptions = {}): ModelSelectionState {
   const queryClient = useQueryClient();
   const lastUsed = useLastModelSelection();
+  const rememberLastUsed = lastUsed.remember;
   const { trackEvent, trackFeatureUsage } = useTrackEvent();
   const {
     isPro,
@@ -270,6 +271,20 @@ export function useModelSelection({
     [chatSettings, setChatSettings, setModel],
   );
 
+  const enforceHostedSite =
+    isModelListOnlyScope &&
+    !(isLiveScope && isLoadingRealtimeProviders) &&
+    computeSite !== "hosted";
+  const [prevEnforceHostedSite, setPrevEnforceHostedSite] = useState(enforceHostedSite);
+
+  if (prevEnforceHostedSite !== enforceHostedSite) {
+    setPrevEnforceHostedSite(enforceHostedSite);
+
+    if (enforceHostedSite) {
+      setSelectedMachineId(undefined);
+    }
+  }
+
   useEffect(() => {
     if (!isModelListOnlyScope) {
       return;
@@ -281,7 +296,6 @@ export function useModelSelection({
 
     if (computeSite !== "hosted") {
       setComputeSite("hosted");
-      setSelectedMachineId(undefined);
 
       return;
     }
@@ -413,7 +427,7 @@ export function useModelSelection({
       setSelectedMachineId(nextModel.machineId);
       selectModelWithDefaults(newModel);
       onModelChange?.(newModel, nextModel);
-      lastUsed.remember({
+      rememberLastUsed({
         modelId: newModel,
         name: nextModel.name || newModel,
         provider: nextModel.provider,
@@ -432,7 +446,7 @@ export function useModelSelection({
     },
     [
       availableModels,
-      lastUsed.remember,
+      rememberLastUsed,
       runtimeOptionsState.options,
       onBeforeModelChange,
       onModelChange,

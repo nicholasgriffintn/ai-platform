@@ -25,7 +25,12 @@ export function RecordingCardGrid({ recordings, newRecordingHref }: RecordingCar
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {recordings.map((item) => (
-          <Link key={item.id} href={item.href} className="group no-underline hover:!no-underline">
+          <Link
+            key={item.id}
+            href={item.href}
+            aria-label={item.title}
+            className="group no-underline hover:!no-underline"
+          >
             <Card className="h-full gap-3 p-5 shadow-none hover:border-border-strong">
               <div className="aspect-video overflow-hidden rounded-lg bg-selection">
                 {item.imageUrl && (

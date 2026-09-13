@@ -1,7 +1,11 @@
 import { Button, Checkbox, FormSelect, Input, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import type { ReplicateModel, ReplicateInputField } from "@ngriffin_uk/polychat-schemas";
-import { getNumberInputValue, parseNumberInputValue } from "@ngriffin_uk/polychat-utility-core";
-import { useEffect, useId, useState } from "react";
+import {
+  formatUnknownValue,
+  getNumberInputValue,
+  parseNumberInputValue,
+} from "@ngriffin_uk/polychat-utility-core";
+import { useId, useState } from "react";
 
 interface ReplicateModelFormProps {
   model: ReplicateModel;
@@ -9,20 +13,28 @@ interface ReplicateModelFormProps {
   isSubmitting: boolean;
 }
 
+function buildInitialFormData(model: ReplicateModel): Record<string, any> {
+  const initialData: Record<string, any> = {};
+
+  model.inputSchema.fields.forEach((field) => {
+    if (field.default !== undefined) {
+      initialData[field.name] = field.default;
+    }
+  });
+
+  return initialData;
+}
+
 export function ReplicateModelForm({ model, onSubmit, isSubmitting }: ReplicateModelFormProps) {
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, any>>(() => buildInitialFormData(model));
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [prevModel, setPrevModel] = useState(model);
 
-  useEffect(() => {
-    const initialData: Record<string, any> = {};
-
-    model.inputSchema.fields.forEach((field) => {
-      if (field.default !== undefined) {
-        initialData[field.name] = field.default;
-      }
-    });
-    setFormData(initialData);
-  }, [model]);
+  if (model !== prevModel) {
+    setPrevModel(model);
+    setFormData(buildInitialFormData(model));
+    setErrors({});
+  }
 
   const handleChange = (fieldName: string, value: any) => {
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
@@ -222,7 +234,9 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
       )}
 
       {field.default !== undefined && (value === undefined || value === null || value === "") && (
-        <p className="mt-1 text-xs text-muted-foreground">Default: {String(field.default)}</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Default: {formatUnknownValue(field.default)}
+        </p>
       )}
     </div>
   );

@@ -18,7 +18,7 @@ import type {
   ComposerAssistantActionCapability,
   ComposerCommandAction,
 } from "@ngriffin_uk/polychat-utility-react";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import { useComposerCommandActions } from "./useComposerCommandActions.js";
 
@@ -120,10 +120,13 @@ export function useComposerCommandController({
     directiveQuery?.trigger === "/"
       ? commandActions.filteredSlashCommands.length
       : commandActions.filteredActionItems.length;
+  const suggestionResetKey = `${directiveQuery?.trigger ?? ""}:${directiveQuery?.query ?? ""}:${suggestionCount}`;
+  const [prevSuggestionResetKey, setPrevSuggestionResetKey] = useState(suggestionResetKey);
 
-  useEffect(() => {
+  if (prevSuggestionResetKey !== suggestionResetKey) {
+    setPrevSuggestionResetKey(suggestionResetKey);
     setActiveSuggestionIndex(0);
-  }, [directiveQuery?.trigger, directiveQuery?.query, suggestionCount]);
+  }
 
   const applySlashCommand = (command: ComposerCommandAction) => {
     const selection = commandActions.selectSlashCommand(command);

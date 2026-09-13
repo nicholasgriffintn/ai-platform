@@ -27,6 +27,7 @@ export function MediaPreview({
   if (preview.type === "video") {
     return (
       <div className="polychat-experience-media-preview">
+        {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- user-provided video has no captions track available */}
         <video controls aria-label={preview.title}>
           <source src={preview.url} type="video/mp4" />
         </video>
@@ -36,6 +37,7 @@ export function MediaPreview({
 
   return (
     <div className="polychat-experience-media-preview">
+      {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- user-provided audio has no captions track available */}
       <audio controls aria-label={preview.title}>
         <source src={preview.url} />
       </audio>

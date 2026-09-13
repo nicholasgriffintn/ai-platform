@@ -1,3 +1,5 @@
+import { formatUnknownValue } from "@ngriffin_uk/polychat-utility-core";
+
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { safeParseJson } from "~/utils/json";
 import { getStringRecordValue } from "~/utils/objects";
@@ -55,7 +57,7 @@ function normaliseAwsContext(value: string | undefined): Record<string, string> 
 
   const entries = Object.entries(parsed).map(([key, entryValue]) => [
     key.trim(),
-    typeof entryValue === "string" ? entryValue.trim() : String(entryValue).trim(),
+    typeof entryValue === "string" ? entryValue.trim() : formatUnknownValue(entryValue).trim(),
   ]);
 
   if (entries.length > 5) {

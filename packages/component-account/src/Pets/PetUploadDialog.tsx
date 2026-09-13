@@ -9,7 +9,7 @@ import {
   PET_DESCRIPTION_MAX_LENGTH,
   PET_SHEET_MAX_BYTES,
 } from "@ngriffin_uk/polychat-schemas";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export interface PetUploadSubmission {
   name: string;
@@ -37,14 +37,17 @@ export function PetUploadDialog({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [sheet, setSheet] = useState<File | null>(null);
+  const [prevOpen, setPrevOpen] = useState(open);
 
-  useEffect(() => {
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+
     if (!open) {
       setName("");
       setDescription("");
       setSheet(null);
     }
-  }, [open]);
+  }
 
   return (
     <FormDialog

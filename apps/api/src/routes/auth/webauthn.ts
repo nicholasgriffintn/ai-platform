@@ -49,7 +49,7 @@ addRoute(app, "get", "/passkeys", {
           id: passkey.id,
           device_type: passkey.device_type,
           created_at: passkey.created_at,
-          backed_up: Boolean(passkey.backed_up),
+          backed_up: passkey.backed_up,
         })),
       );
     })(raw),

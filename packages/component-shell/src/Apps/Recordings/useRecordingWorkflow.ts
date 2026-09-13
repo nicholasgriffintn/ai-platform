@@ -4,7 +4,7 @@ import {
 } from "@ngriffin_uk/polychat-component-experiences/content";
 import { useProcessRecording, useUploadRecording } from "@ngriffin_uk/polychat-library-react";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 
 type RecordingProcess = "transcribe" | "summarise" | "generate-image";
@@ -90,7 +90,19 @@ export function useRecordingWorkflow(basePath: string, projectId?: string) {
       }
 
       if (name === "numberOfSpeakers") {
-        setFormData((current) => ({ ...current, numberOfSpeakers: Number(value) }));
+        const count = Number(value);
+
+        setFormData((current) => {
+          const speakers = Object.fromEntries(
+            Array.from({ length: count }, (_, index) => {
+              const speakerId = String(index + 1);
+
+              return [speakerId, current.speakers[speakerId] ?? `Speaker ${speakerId}`];
+            }),
+          );
+
+          return { ...current, numberOfSpeakers: count, speakers };
+        });
 
         return;
       }
@@ -103,24 +115,6 @@ export function useRecordingWorkflow(basePath: string, projectId?: string) {
   const handleToggle = useCallback((name: keyof RecordingFormData, checked: boolean) => {
     setFormData((current) => ({ ...current, [name]: checked }));
   }, []);
-
-  useEffect(() => {
-    setFormData((current) => {
-      if (Object.keys(current.speakers).length === current.numberOfSpeakers) {
-        return current;
-      }
-
-      const speakers = Object.fromEntries(
-        Array.from({ length: current.numberOfSpeakers }, (_, index) => {
-          const speakerId = String(index + 1);
-
-          return [speakerId, current.speakers[speakerId] ?? `Speaker ${speakerId}`];
-        }),
-      );
-
-      return { ...current, speakers };
-    });
-  }, [formData.numberOfSpeakers]);
 
   const upload = useCallback(async () => {
     if (!formData.title.trim()) {

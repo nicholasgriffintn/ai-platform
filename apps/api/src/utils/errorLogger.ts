@@ -1,3 +1,4 @@
+import { getErrorMessage } from "./errors";
 import { getLogger } from "./logger";
 
 const errorLogger = getLogger({ prefix: "ERROR_HANDLER" });
@@ -18,7 +19,7 @@ export interface ErrorLogContext {
  */
 export function logError(message: string, error: unknown, context: ErrorLogContext = {}): void {
   const errorDetails = {
-    message: error instanceof Error ? error.message : String(error),
+    message: getErrorMessage(error),
     stack: error instanceof Error ? error.stack : undefined,
     name: error instanceof Error ? error.name : typeof error,
     ...context,

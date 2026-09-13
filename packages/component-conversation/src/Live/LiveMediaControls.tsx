@@ -90,6 +90,7 @@ export function LiveAudioLevelMeter({
 
   return (
     <div
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- custom segmented bar visualization cannot be expressed with native meter single-value rendering; aria-valuenow exposes the level
       role="meter"
       aria-label={label}
       aria-valuemin={0}
@@ -104,14 +105,14 @@ export function LiveAudioLevelMeter({
         isActive && !microphoneEnabled && !isAssistantAudio && "opacity-55",
       )}
     >
-      {AUDIO_LEVEL_BAR_WEIGHTS.map((weight, index) => {
+      {AUDIO_LEVEL_BAR_WEIGHTS.map((weight) => {
         const restingLevel = isActive ? 0.08 : 0.03;
         const weightedLevel = Math.max(restingLevel, Math.min(1, clampedLevel * weight));
         const height = Math.round(6 + weightedLevel * 28);
 
         return (
           <span
-            key={`${weight}-${index}`}
+            key={`audio-level-${weight}`}
             aria-hidden="true"
             className={cn(
               "w-1.5 rounded-full shadow-sm transition-[height,opacity,background-color] duration-100 ease-out",

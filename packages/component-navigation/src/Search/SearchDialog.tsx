@@ -93,11 +93,17 @@ export function SearchDialog({
     requestAnimationFrame(() => inputRef.current?.focus());
   }, [isOpen, onOpened]);
 
-  useEffect(() => {
-    setFocusedIndex((index) => Math.max(0, Math.min(index, results.length - 1)));
-  }, [results.length]);
+  const clampedFocusedIndex = Math.max(0, Math.min(focusedIndex, results.length - 1));
+
+  if (clampedFocusedIndex !== focusedIndex) {
+    setFocusedIndex(clampedFocusedIndex);
+  }
 
   useEffect(() => {
+    if (focusedIndex < 0) {
+      return;
+    }
+
     focusedResultRef.current?.scrollIntoView?.({ block: "nearest" });
   }, [focusedIndex]);
 
@@ -164,12 +170,13 @@ export function SearchDialog({
           </div>
         </div>
 
-        <span className="sr-only" role="status" aria-live="polite">
+        <output className="sr-only" aria-live="polite">
           {getSearchStatusMessage({ resultCount: results.length, isLoading, hasError })}
-        </span>
+        </output>
 
         <div
           id="global-search-results"
+          // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- combobox results with icons and hover states require button options; native select cannot host rich result rows
           role="listbox"
           className="max-h-[min(64vh,560px)] overflow-y-auto p-3"
         >
@@ -184,6 +191,7 @@ export function SearchDialog({
                   id={result.id}
                   ref={focusedIndex === index ? focusedResultRef : undefined}
                   type="button"
+                  // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- rich result rows with icons require button elements; native option cannot contain rich interactive content
                   role="option"
                   aria-selected={focusedIndex === index}
                   className={cn(

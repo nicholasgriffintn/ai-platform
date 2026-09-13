@@ -54,12 +54,20 @@ export function usePetShowreel(
   layout: PetSheetLayout = POLYCHAT_SHEET_LAYOUT,
 ): PetShowreel {
   const [state, setState] = useState<PetShowreel>(RESTING);
+  const [prevActive, setPrevActive] = useState(active);
   const currentRef = useRef<PetShowreel>(RESTING);
+
+  if (prevActive !== active) {
+    setPrevActive(active);
+
+    if (!active) {
+      setState(RESTING);
+    }
+  }
 
   useEffect(() => {
     if (!active) {
       currentRef.current = RESTING;
-      setState(RESTING);
 
       return undefined;
     }

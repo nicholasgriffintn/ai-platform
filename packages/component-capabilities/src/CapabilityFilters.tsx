@@ -53,7 +53,8 @@ export function CapabilityFilters({
         onChange={onQueryChange}
       />
       <div className="space-y-3">
-        <div className="flex flex-wrap gap-1.5" aria-label="Filter capabilities" role="group">
+        <fieldset className="m-0 flex min-w-0 flex-wrap gap-1.5 border-0 p-0">
+          <legend className="sr-only">Filter capabilities</legend>
           <button
             type="button"
             aria-pressed={filters.length === 0}
@@ -87,7 +88,7 @@ export function CapabilityFilters({
               {filter.label}
             </button>
           ))}
-        </div>
+        </fieldset>
         <div className="sm:hidden">
           <FormSelect
             aria-label="Filter capabilities by category"
@@ -96,11 +97,8 @@ export function CapabilityFilters({
             value={category}
           />
         </div>
-        <div
-          className="hidden min-w-0 flex-wrap gap-1.5 sm:flex"
-          aria-label="Filter capabilities by category"
-          role="group"
-        >
+        <fieldset className="m-0 hidden min-w-0 flex-wrap gap-1.5 border-0 p-0 sm:flex">
+          <legend className="sr-only">Filter capabilities by category</legend>
           {categoryFilters.map((filter) => (
             <button
               key={filter.value}
@@ -116,7 +114,7 @@ export function CapabilityFilters({
               {filter.label}
             </button>
           ))}
-        </div>
+        </fieldset>
       </div>
     </div>
   );

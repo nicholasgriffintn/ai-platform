@@ -17,12 +17,12 @@ export class BoundMemoryProvider implements MemoryProvider {
   ) {
     this.capabilities = {
       ...documents.capabilities,
-      reasoning: documents.capabilities.reasoning || Boolean(baseline?.capabilities.reasoning),
+      reasoning: documents.capabilities.reasoning || (baseline?.capabilities.reasoning ?? false),
       conversationIngestion:
         documents.capabilities.conversationIngestion ||
-        Boolean(baseline?.capabilities.conversationIngestion),
+        (baseline?.capabilities.conversationIngestion ?? false),
       externalStorage:
-        documents.capabilities.externalStorage || Boolean(baseline?.capabilities.externalStorage),
+        documents.capabilities.externalStorage || (baseline?.capabilities.externalStorage ?? false),
     };
   }
 

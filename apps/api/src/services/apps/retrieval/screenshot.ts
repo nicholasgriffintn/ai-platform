@@ -1,7 +1,7 @@
 import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { StorageService } from "~/lib/storage";
 import type { IRequest } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { generateId } from "~/utils/id";
 
 export interface CaptureScreenshotParams {
@@ -154,7 +154,7 @@ export const captureScreenshot = async (
 
     return {
       status: "error",
-      error: `Error capturing screenshot: ${error}`,
+      error: `Error capturing screenshot: ${getErrorMessage(error)}`,
     };
   }
 };

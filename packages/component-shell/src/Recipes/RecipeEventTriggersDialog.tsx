@@ -24,7 +24,7 @@ import {
   type RecipeTriggerConfigurationValue,
 } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useRecipeComposioTriggers } from "./useRecipeComposioTriggers.js";
 
@@ -66,28 +66,39 @@ export function RecipeEventTriggersDialog({
       ),
     [accountsQuery.data?.accounts],
   );
-  const triggerTypes = manager.triggerTypes.data?.triggerTypes ?? [];
-  const selectedTriggerType = triggerTypes.find((type) => type.slug === triggerSlug);
-  const configuration = getRecipeTriggerConfigurationFields(
-    selectedTriggerType?.configuration ?? {},
+  const triggerTypes = useMemo(
+    () => manager.triggerTypes.data?.triggerTypes ?? [],
+    [manager.triggerTypes.data?.triggerTypes],
   );
+  const selectedTriggerType = triggerTypes.find((type) => type.slug === triggerSlug);
+  const configuration = useMemo(
+    () => getRecipeTriggerConfigurationFields(selectedTriggerType?.configuration ?? {}),
+    [selectedTriggerType?.configuration],
+  );
+  const [prevActiveAccounts, setPrevActiveAccounts] = useState(activeAccounts);
+  const [prevTriggerTypes, setPrevTriggerTypes] = useState(triggerTypes);
+  const [prevTriggerSlug, setPrevTriggerSlug] = useState(triggerSlug);
 
-  useEffect(() => {
+  if (prevActiveAccounts !== activeAccounts) {
+    setPrevActiveAccounts(activeAccounts);
+
     const selected = activeAccounts.find((account) => account.isSelected) ?? activeAccounts[0];
 
     setAccountId(selected?.id ?? "");
-  }, [activeAccounts]);
+  }
 
-  useEffect(() => {
+  if (prevTriggerTypes !== triggerTypes) {
+    setPrevTriggerTypes(triggerTypes);
     setTriggerSlug(triggerTypes[0]?.slug ?? "");
-  }, [triggerTypes]);
+  }
 
-  useEffect(() => {
+  if (prevTriggerSlug !== triggerSlug) {
+    setPrevTriggerSlug(triggerSlug);
     setConfigurationValues(
       Object.fromEntries(configuration.fields.map((field) => [field.key, field.defaultValue])),
     );
     setValidationError(undefined);
-  }, [triggerSlug]);
+  }
 
   const submit = async () => {
     if (!provider || !accountId || !selectedTriggerType) {

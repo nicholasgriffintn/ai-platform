@@ -20,7 +20,11 @@ export function CardSkeleton({
   return (
     <>
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="rounded-lg border border-border bg-surface p-6">
+        <div
+          // oxlint-disable-next-line react/no-array-index-key -- static loading placeholders with no data; keys never reorder
+          key={index}
+          className="rounded-lg border border-border bg-surface p-6"
+        >
           {showHeader && (
             <div className="mb-4 flex items-center gap-4">
               <Skeleton className="h-12 w-12 rounded-full" />
@@ -33,6 +37,7 @@ export function CardSkeleton({
           <div className="space-y-3">
             {Array.from({ length: contentLines }).map((_line, lineIndex) => (
               <Skeleton
+                // oxlint-disable-next-line react/no-array-index-key -- static loading placeholders with no data; keys never reorder
                 key={lineIndex}
                 className="h-4"
                 style={{

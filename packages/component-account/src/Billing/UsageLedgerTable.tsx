@@ -72,7 +72,8 @@ export function UsageLedgerTable({
       title="Ledger"
       description="Every priced piece of work, line by line. Rows on your own keys show their cost but charge no credits."
     >
-      <div className="flex flex-wrap gap-1" role="group" aria-label="Filter the ledger">
+      <fieldset className="m-0 flex min-w-0 flex-wrap gap-1 border-0 p-0">
+        <legend className="sr-only">Filter the ledger</legend>
         {LEDGER_FILTERS.map((filter) => (
           <button
             key={filter}
@@ -88,7 +89,7 @@ export function UsageLedgerTable({
             {filter === "all" ? "All" : humaniseUsageSource(filter)}
           </button>
         ))}
-      </div>
+      </fieldset>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-8 text-muted-foreground">

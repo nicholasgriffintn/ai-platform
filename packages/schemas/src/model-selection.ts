@@ -448,6 +448,8 @@ export function formatReasoningLabel(value: ReasoningEffort): string {
       return "X-high";
     case "max":
       return "Max";
+    case "ultra":
+      return "Ultra";
     default:
       return value;
   }

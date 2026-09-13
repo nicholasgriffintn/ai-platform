@@ -26,6 +26,7 @@ import { ModelIcon } from "../ModelIcon/ModelIcon";
 import { ModelOption } from "./ModelOption";
 
 const EMPTY_RECENT_MODELS: ModelCatalogItem[] = [];
+const EMPTY_VISIBLE_MODELS: RegionalModelListEntry<ModelCatalogItem>[] = [];
 
 interface ModelsListProps {
   models: ModelCatalogItem[];
@@ -69,7 +70,6 @@ export function ModelsList({
   const [searchPage, setSearchPage] = useState({ key: "", limit: 50 });
   const searchLimit = searchPage.key === searchKey ? searchPage.limit : 50;
   const modelListRef = useRef<HTMLDivElement>(null);
-  const syncedSelectedIdRef = useRef<string | null | undefined>(undefined);
   const selectedModelProvider = useMemo(
     () => getSelectedModelProvider(models, selectedId),
     [models, selectedId],
@@ -108,56 +108,57 @@ export function ModelsList({
     [models, featuredModelIds, recentModels],
   );
 
-  useEffect(() => {
-    if (providerEntries.length === 0) {
-      return;
+  const [prevProviderEntries, setPrevProviderEntries] = useState(providerEntries);
+  const [prevSelectedModelProvider, setPrevSelectedModelProvider] = useState(selectedModelProvider);
+  const [prevSelectedIdForProvider, setPrevSelectedIdForProvider] = useState(selectedId);
+
+  if (
+    prevProviderEntries !== providerEntries ||
+    prevSelectedModelProvider !== selectedModelProvider
+  ) {
+    setPrevProviderEntries(providerEntries);
+    setPrevSelectedModelProvider(selectedModelProvider);
+
+    if (providerEntries.length !== 0) {
+      const providerExists = providerEntries.some(
+        (providerEntry) => providerEntry.key === selectedProvider,
+      );
+
+      if (!providerExists) {
+        const selectedProviderExists = providerEntries.some(
+          (providerEntry) => providerEntry.key === selectedModelProvider,
+        );
+        const fallbackProvider =
+          (selectedProviderExists && selectedModelProvider) ||
+          providerEntries.find((providerEntry) => providerEntry.key === FEATURED_MODEL_GROUP_KEY)
+            ?.key ||
+          providerEntries[0].key;
+
+        setSelectedProvider(fallbackProvider);
+      }
     }
+  }
 
-    const providerExists = providerEntries.some(
-      (providerEntry) => providerEntry.key === selectedProvider,
-    );
+  if (prevSelectedIdForProvider !== selectedId) {
+    setPrevSelectedIdForProvider(selectedId);
 
-    if (providerExists) {
-      return;
+    if (selectedModelProvider) {
+      const selectedProviderExists = providerEntries.some(
+        (providerEntry) => providerEntry.key === selectedModelProvider,
+      );
+
+      if (selectedProviderExists) {
+        setSelectedProvider(selectedModelProvider);
+      }
     }
-
-    const selectedProviderExists = providerEntries.some(
-      (providerEntry) => providerEntry.key === selectedModelProvider,
-    );
-    const fallbackProvider =
-      (selectedProviderExists && selectedModelProvider) ||
-      providerEntries.find((providerEntry) => providerEntry.key === FEATURED_MODEL_GROUP_KEY)
-        ?.key ||
-      providerEntries[0].key;
-
-    setSelectedProvider(fallbackProvider);
-  }, [providerEntries, selectedModelProvider, selectedProvider]);
-
-  useEffect(() => {
-    if (!selectedModelProvider) {
-      return;
-    }
-
-    const selectedProviderExists = providerEntries.some(
-      (providerEntry) => providerEntry.key === selectedModelProvider,
-    );
-
-    if (!selectedProviderExists) {
-      return;
-    }
-
-    if (syncedSelectedIdRef.current === selectedId) {
-      return;
-    }
-
-    syncedSelectedIdRef.current = selectedId;
-
-    setSelectedProvider(selectedModelProvider);
-  }, [providerEntries, selectedId, selectedModelProvider]);
+  }
 
   const selectedProviderEntry =
     providerEntries.find((entry) => entry.key === selectedProvider) || providerEntries[0];
-  const visibleModels = selectedProviderEntry?.models || [];
+  const visibleModels = useMemo(
+    () => selectedProviderEntry?.models ?? EMPTY_VISIBLE_MODELS,
+    [selectedProviderEntry],
+  );
   const { active: visibleActiveModels, deprecated: visibleDeprecatedModels } =
     partitionDeprecatedModelEntries(visibleModels);
   const selectedDeprecatedModel = selectedId
@@ -177,22 +178,24 @@ export function ModelsList({
     ? searchResultEntries.reduce((total, providerEntry) => total + providerEntry.models.length, 0)
     : visibleModels.length;
 
-  useEffect(() => {
-    if (!selectedDeprecatedGroupKey) {
-      return;
+  const [prevDeprecatedGroupKey, setPrevDeprecatedGroupKey] = useState(selectedDeprecatedGroupKey);
+
+  if (prevDeprecatedGroupKey !== selectedDeprecatedGroupKey) {
+    setPrevDeprecatedGroupKey(selectedDeprecatedGroupKey);
+
+    if (selectedDeprecatedGroupKey) {
+      setShowDeprecatedByProvider((prev) => {
+        if (prev[selectedDeprecatedGroupKey]) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          [selectedDeprecatedGroupKey]: true,
+        };
+      });
     }
-
-    setShowDeprecatedByProvider((prev) => {
-      if (prev[selectedDeprecatedGroupKey]) {
-        return prev;
-      }
-
-      return {
-        ...prev,
-        [selectedDeprecatedGroupKey]: true,
-      };
-    });
-  }, [selectedDeprecatedGroupKey, selectedId]);
+  }
 
   useEffect(() => {
     if (isSearchActive || !selectedId) {
@@ -354,7 +357,7 @@ export function ModelsList({
             className="flex-1 overflow-x-hidden overflow-y-auto px-3 py-2"
             onMouseLeave={() => onInfoHoverEnd?.()}
           >
-            <div role="group" aria-label="Available models">
+            <section aria-label="Available models">
               {showAuto ? (
                 autoContent
               ) : isSearchActive ? (
@@ -428,7 +431,7 @@ export function ModelsList({
                   )}
                 </div>
               )}
-            </div>
+            </section>
             {isSearchActive && visibleModelCount > searchLimit && (
               <button
                 type="button"

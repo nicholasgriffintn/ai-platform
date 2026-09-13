@@ -21,3 +21,15 @@ export function stripSurroundingQuotes(value: string): string {
 
   return isQuoted ? trimmed.slice(1, -1).trim() : trimmed;
 }
+
+export function toStringValue(value: unknown, fallback = ""): string {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
+    return String(value);
+  }
+
+  return fallback;
+}

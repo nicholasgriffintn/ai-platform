@@ -2,6 +2,7 @@ import type {
   ModelConfigItem,
   InputSchemaInputFieldDescriptor,
 } from "@ngriffin_uk/polychat-schemas";
+import { formatUnknownValue } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -266,7 +267,7 @@ function buildFieldValue(
 
     if (!enumValues.has(coerced as never)) {
       throw new AssistantError(
-        `Invalid value "${coerced}" for field "${field.name}". Expected one of: ${field.enum.join(", ")}.`,
+        `Invalid value "${formatUnknownValue(coerced)}" for field "${field.name}". Expected one of: ${field.enum.join(", ")}.`,
         ErrorType.PARAMS_ERROR,
       );
     }

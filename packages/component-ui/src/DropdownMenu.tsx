@@ -2,9 +2,11 @@ import {
   createContext,
   cloneElement,
   isValidElement,
+  type FocusEvent as ReactFocusEvent,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
+  useCallback,
   useEffect,
   useContext,
   useId,
@@ -35,28 +37,30 @@ export function DropdownMenu({
   menuClassName = "",
 }: DropdownMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuItemsRef = useRef<HTMLElement[]>([]);
   const [focusIndex, setFocusIndex] = useState(-1);
   const generatedTriggerId = useId();
   const triggerId = buttonProps?.id ?? generatedTriggerId;
+  const closeMenu = useCallback(() => setIsOpen(false), []);
 
   useEffect(() => {
     if (!isOpen) {
+      // oxlint-disable-next-line react/set-state-in-effect -- synchronises focus index with external DOM menu items measured via querySelector; must reset when menu closes to preserve roving tabindex
       setFocusIndex(-1);
 
       return undefined;
     }
 
     menuItemsRef.current = Array.from(
-      menuRef.current?.querySelectorAll<HTMLElement>(
+      containerRef.current?.querySelectorAll<HTMLElement>(
         '[role="menuitem"]:not([aria-disabled="true"]):not(:disabled)',
       ) ?? [],
     );
     setFocusIndex(menuItemsRef.current.length > 0 ? 0 : -1);
 
-    const menuRoot = menuRef.current;
+    const menuRoot = containerRef.current;
     const ownerDocument = menuRoot?.ownerDocument;
 
     if (!menuRoot || !ownerDocument) {
@@ -95,7 +99,7 @@ export function DropdownMenu({
    * The menu renders as a sibling of the trigger, so keys pressed while the
    * trigger still holds focus only reach a handler on their shared wrapper.
    */
-  const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLElement>) => {
     if (!isOpen) {
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         event.preventDefault();
@@ -137,22 +141,37 @@ export function DropdownMenu({
     }
   };
 
+  const handleBlur = (event: ReactFocusEvent<HTMLElement>) => {
+    const container = containerRef.current;
+
+    if (
+      !container ||
+      !(event.relatedTarget instanceof Node) ||
+      !container.contains(event.relatedTarget)
+    ) {
+      setIsOpen(false);
+    }
+  };
+
+  const handleTriggerKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    buttonProps?.onKeyDown?.(event);
+    handleKeyDown(event);
+  };
+
+  const handleTriggerBlur = (event: ReactFocusEvent<HTMLButtonElement>) => {
+    buttonProps?.onBlur?.(event);
+    handleBlur(event);
+  };
+
   return (
-    <div
-      className={`relative ${className}`}
-      ref={menuRef}
-      onKeyDown={handleKeyDown}
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) {
-          setIsOpen(false);
-        }
-      }}
-    >
+    <div className={`relative ${className}`} ref={containerRef}>
       {buttonProps ? (
         <Button
           {...buttonProps}
           id={triggerId}
           onClick={toggleMenu}
+          onKeyDown={handleTriggerKeyDown}
+          onBlur={handleTriggerBlur}
           aria-haspopup="menu"
           aria-expanded={isOpen}
           ref={triggerRef}
@@ -164,6 +183,8 @@ export function DropdownMenu({
           type="button"
           id={triggerId}
           onClick={toggleMenu}
+          onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
           aria-haspopup="menu"
           aria-expanded={isOpen}
           ref={triggerRef}
@@ -178,10 +199,12 @@ export function DropdownMenu({
           className={`absolute bg-popover text-popover-foreground ring-border ${positionClasses[position]} z-50 w-48 rounded-md shadow-[var(--polychat-elevated-shadow)] ring-1 ${menuClassName}`}
           role="menu"
           tabIndex={-1}
+          onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
           aria-orientation="vertical"
           aria-labelledby={triggerId}
         >
-          <DropdownMenuCloseContext value={() => setIsOpen(false)}>
+          <DropdownMenuCloseContext value={closeMenu}>
             <div className="py-1">{children}</div>
           </DropdownMenuCloseContext>
         </div>

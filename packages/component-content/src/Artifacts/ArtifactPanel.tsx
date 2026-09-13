@@ -1,7 +1,7 @@
 import { Button, useOverlayDismiss } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { Code2, Copy, FileText, Play, X } from "lucide-react";
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useCallback, useMemo, useState } from "react";
 
 import { MemoizedMarkdown } from "../markdown";
 import type { ArtifactProps } from "./artifact";
@@ -175,16 +175,12 @@ export const ArtifactPanel = ({
   }, [artifact]);
   const icon = useMemo(() => (isCode ? <Code2 size={20} /> : <FileText size={20} />), [isCode]);
 
-  useEffect(() => {
-    setActiveFileIndex(0);
-  }, [allArtifacts.length]);
+  const [prevArtifactsLength, setPrevArtifactsLength] = useState(allArtifacts.length);
 
-  useEffect(() => {
-    if (activeTab === "preview") {
-      setPreviewError(null);
-      setIframeKey((prev) => prev + 1);
-    }
-  }, [activeTab]);
+  if (prevArtifactsLength !== allArtifacts.length) {
+    setPrevArtifactsLength(allArtifacts.length);
+    setActiveFileIndex(0);
+  }
 
   // Keep the conversation interactive whether the panel overlays it or sits beside it.
   // Focus still moves in, Escape closes, and focus returns to the opener.
@@ -213,6 +209,11 @@ export const ArtifactPanel = ({
 
   const handleSetActiveTab = useCallback((tab: "code" | "preview") => {
     setActiveTab(tab);
+
+    if (tab === "preview") {
+      setPreviewError(null);
+      setIframeKey((prev) => prev + 1);
+    }
   }, []);
 
   if (allArtifacts.length === 0 || !currentArtifact) {
@@ -222,6 +223,7 @@ export const ArtifactPanel = ({
   return (
     <div
       ref={panelRef}
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- slide-over panel positioned with translate transforms and inert; native <dialog> top-layer and showModal semantics are incompatible
       role="dialog"
       aria-labelledby="artifact-panel-title"
       tabIndex={-1}

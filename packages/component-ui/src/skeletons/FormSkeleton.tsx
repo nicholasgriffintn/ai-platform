@@ -11,7 +11,11 @@ export function FormSkeleton({ fields = 3, showButton = true }: FormSkeletonProp
   return (
     <div className="space-y-4">
       {Array.from({ length: fields }).map((_, index) => (
-        <div key={index} className="space-y-2">
+        <div
+          // oxlint-disable-next-line react/no-array-index-key -- static loading placeholders with no data; keys never reorder
+          key={index}
+          className="space-y-2"
+        >
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-10 w-full rounded-md" />
         </div>

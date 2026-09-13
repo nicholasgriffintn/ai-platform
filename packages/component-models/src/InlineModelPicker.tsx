@@ -1,6 +1,6 @@
 import { cn, SearchInput } from "@ngriffin_uk/polychat-component-ui";
 import type { ModelCatalogItem } from "@ngriffin_uk/polychat-schemas";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { ConversationModelOption } from "./Selector/ConversationModelOption";
 
@@ -30,6 +30,12 @@ export function InlineModelPicker({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isSearching = searchQuery.trim().length > 0;
 
+  useEffect(() => {
+    if (isOpen) {
+      dropdownRef.current?.querySelector("input")?.focus();
+    }
+  }, [isOpen]);
+
   return (
     <div ref={dropdownRef} className={cn("w-full", className)}>
       {isOpen && (
@@ -40,7 +46,6 @@ export function InlineModelPicker({
               onChange={onSearchQueryChange}
               placeholder="Search other models"
               className="[&_input]:py-1.5 [&_input]:text-sm"
-              autoFocus
             />
           </div>
           <div className="max-h-[calc(100vh-10rem)] overflow-y-auto p-2 sm:max-h-80">

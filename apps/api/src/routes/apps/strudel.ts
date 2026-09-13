@@ -24,7 +24,7 @@ import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,
 } from "~/services/workspaces/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 
 const app = new Hono();
 
@@ -167,7 +167,7 @@ addRoute(app, "post", "/generate", {
         ErrorType.UNKNOWN_ERROR,
         500,
         {
-          originalError: error instanceof Error ? error.message : String(error),
+          originalError: getErrorMessage(error),
           stack: error instanceof Error ? error.stack : undefined,
         },
       );

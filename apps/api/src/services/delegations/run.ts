@@ -290,9 +290,8 @@ export async function runDelegationTask(
     }
 
     const reconciled = await context.repositories.delegations.getById(delegation.id);
-    const failed = Boolean(
-      reconciled && ["failed", "cancelled", "expired"].includes(reconciled.state),
-    );
+    const failed =
+      reconciled != null && ["failed", "cancelled", "expired"].includes(reconciled.state);
 
     return {
       status: failed ? "error" : "success",

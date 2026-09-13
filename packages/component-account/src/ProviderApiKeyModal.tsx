@@ -7,7 +7,7 @@ import {
   DialogTitle,
   FormInput,
 } from "@ngriffin_uk/polychat-component-ui";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export interface ProviderCredentialsInput {
   apiKey: string;
@@ -57,27 +57,25 @@ export function ProviderApiKeyModal({
   const [apiKey, setApiKey] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const [configurationValues, setConfigurationValues] = useState<Record<string, string>>({});
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevInitialConfigurationValues, setPrevInitialConfigurationValues] = useState(
+    initialConfigurationValues,
+  );
 
-  const isBedrockProvider =
-    providerName.toLowerCase() === "polly" || providerName.toLowerCase() === "bedrock";
-  const usesConfigurationFields = configurationFields.length > 0;
-  const requiresSecretKey = isBedrockProvider;
+  if (prevOpen !== open || prevInitialConfigurationValues !== initialConfigurationValues) {
+    setPrevOpen(open);
+    setPrevInitialConfigurationValues(initialConfigurationValues);
 
-  useEffect(() => {
     if (open) {
       setApiKey("");
       setSecretKey("");
       setConfigurationValues(initialConfigurationValues);
-
-      return;
-    }
-
-    if (!open) {
+    } else {
       setApiKey("");
       setSecretKey("");
       setConfigurationValues({});
     }
-  }, [initialConfigurationValues, open]);
+  }
 
   const updateConfigurationValue = (key: string, value: string) => {
     setConfigurationValues((previous) => ({
@@ -85,6 +83,11 @@ export function ProviderApiKeyModal({
       [key]: value,
     }));
   };
+
+  const isBedrockProvider =
+    providerName.toLowerCase() === "polly" || providerName.toLowerCase() === "bedrock";
+  const usesConfigurationFields = configurationFields.length > 0;
+  const requiresSecretKey = isBedrockProvider;
 
   const hasMissingRequiredConfiguration = configurationFields.some(
     (field) =>

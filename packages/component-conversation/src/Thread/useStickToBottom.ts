@@ -35,6 +35,18 @@ export function useStickToBottom({
   const lastUserIntentAtRef = useRef(0);
   const releasedAtRef = useRef(0);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [prevResetKey, setPrevResetKey] = useState(resetKey);
+  const prevFollowTriggersRef = useRef<{
+    enabled: boolean;
+    followKey: string;
+    resetKey: string;
+    rowCount: number;
+  } | null>(null);
+
+  if (prevResetKey !== resetKey) {
+    setPrevResetKey(resetKey);
+    setShowScrollButton(false);
+  }
 
   useEffect(() => {
     rowCountRef.current = rowCount;
@@ -52,13 +64,23 @@ export function useStickToBottom({
   }, []);
 
   useEffect(() => {
-    isPinnedRef.current = true;
-    releasedAtRef.current = 0;
-    setShowScrollButton(false);
-  }, [resetKey]);
+    const prev = prevFollowTriggersRef.current;
 
-  useEffect(() => {
-    if (!enabled || !isPinnedRef.current) {
+    prevFollowTriggersRef.current = { enabled, followKey, resetKey, rowCount };
+
+    if (prev !== null && prev.resetKey !== resetKey) {
+      isPinnedRef.current = true;
+      releasedAtRef.current = 0;
+    }
+
+    const triggersChanged =
+      prev === null ||
+      prev.enabled !== enabled ||
+      prev.followKey !== followKey ||
+      prev.resetKey !== resetKey ||
+      prev.rowCount !== rowCount;
+
+    if (!enabled || !isPinnedRef.current || !triggersChanged) {
       return;
     }
 

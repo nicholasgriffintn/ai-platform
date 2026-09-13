@@ -1,4 +1,5 @@
 import type { IRequest } from "~/types";
+import { getErrorMessage } from "~/utils/errors";
 
 import { extractWithCloudflare } from "./lib/content-extract/cloudflare";
 import { resolveContentExtractProvider } from "./lib/content-extract/provider";
@@ -36,8 +37,7 @@ export const extractContent = async (
 
     return result;
   } catch (error) {
-    const errorText = String(error);
-    const errorMessage = error instanceof Error ? error.message : errorText;
+    const errorMessage = getErrorMessage(error, "Unknown error");
 
     if (errorMessage === "Tavily API key not configured") {
       return {
@@ -48,7 +48,7 @@ export const extractContent = async (
 
     return {
       status: "error",
-      error: `Error extracting content: ${errorText.replace(/^Error:\s*/, "Error: ")}`,
+      error: `Error extracting content: ${errorMessage.replace(/^Error:\s*/, "Error: ")}`,
     };
   }
 };

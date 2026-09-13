@@ -1,7 +1,7 @@
 import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
 import { getToolFormStepErrors, type RunnableTool } from "@ngriffin_uk/polychat-schemas";
 import { Check } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { getCardGradient, getIcon, getIconContainerClass } from "../capability-theme";
 import { FormStep } from "./FormStep";
@@ -23,10 +23,11 @@ export const ToolForm = ({
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [internalIsSubmitting, setInternalIsSubmitting] = useState(false);
+  const [prevTool, setPrevTool] = useState(tool);
 
-  const isSubmitting = externalIsSubmitting || internalIsSubmitting;
+  if (prevTool !== tool) {
+    setPrevTool(tool);
 
-  useEffect(() => {
     const initialData: Record<string, any> = {};
 
     for (const step of tool.formSchema.steps) {
@@ -38,7 +39,9 @@ export const ToolForm = ({
     }
 
     setFormData(initialData);
-  }, [tool]);
+  }
+
+  const isSubmitting = externalIsSubmitting || internalIsSubmitting;
 
   const handleFieldChange = (id: string, value: any) => {
     setFormData((prev) => ({

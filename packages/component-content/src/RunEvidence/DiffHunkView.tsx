@@ -38,6 +38,7 @@ function DiffLines({ lines }: { lines: string[] }) {
 
     return (
       <div
+        // oxlint-disable-next-line react/no-array-index-key -- diff lines repeat verbatim (blank lines, braces), so position is the only unique key
         key={`${index}-${line}`}
         className={cn("flex gap-2 px-3 font-mono text-xs leading-5", LINE_TONE[kind])}
       >
