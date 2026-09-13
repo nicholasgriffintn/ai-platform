@@ -38,7 +38,7 @@ test.describe("Private sandbox previews", () => {
     await sandbox.configureProject(SUPERVISED_SANDBOX_ENVIRONMENT);
     await workPage.reload();
     await workPage.openNewProjectConversation();
-    await expect(workbench.dock).toBeVisible();
+    await expect(workbench.dock).not.toBeVisible();
     await homePage.selectModel("GPT OSS 120B");
     await homePage.sendMessage(
       "Polychat sandbox E2E: wait for controls while reviewing the service.",

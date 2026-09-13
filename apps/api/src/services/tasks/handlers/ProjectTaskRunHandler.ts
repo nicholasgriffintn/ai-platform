@@ -47,6 +47,7 @@ export class ProjectTaskRunHandler implements TaskHandler {
         runnerIdentityUserId: payload.data.runnerIdentityUserId,
         conversationId: payload.data.conversationId,
         approvedTools: payload.data.approvedTools,
+        interaction: payload.data.interaction,
         resumeInterrupted: execution.isRedelivery,
         executionLease: execution.lease,
       });

@@ -37,6 +37,7 @@ export type IEnv = {
   ACCOUNT_ID: string;
   APP_BASE_URL?: string;
   API_BASE_URL?: string;
+  SANDBOX_API_BASE_URL?: string;
   ANTHROPIC_API_KEY?: string;
   AI_GATEWAY_TOKEN?: string;
   SANDBOX_WORKER?: Fetcher;

@@ -223,8 +223,14 @@ export function resolveGitHubRepo(
   const displayName = `${owner}/${safeName}`;
   const targetDir = safeName.replace(/[^A-Za-z0-9_.-]/g, "-");
 
-  const checkoutUrl = `${credentialBroker.baseUrl}/git`;
-  const checkoutAuthHeader = `AUTHORIZATION: Bearer ${credentialBroker.grant}`;
+  const brokerUrl = new URL(credentialBroker.baseUrl);
+  const usesLocalFixture = brokerUrl.hostname === "host.docker.internal";
+  const checkoutUrl = usesLocalFixture
+    ? `https://github.com/${displayName}.git`
+    : `${credentialBroker.baseUrl}/git`;
+  const checkoutAuthHeader = usesLocalFixture
+    ? undefined
+    : `AUTHORIZATION: Bearer ${credentialBroker.grant}`;
 
   return {
     displayName,

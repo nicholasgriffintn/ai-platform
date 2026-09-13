@@ -228,10 +228,15 @@ export async function respondToProjectTaskQuestions(
   await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
 
-  await answerProjectTaskQuestions({ context, task, input });
+  const { toolCallId } = await answerProjectTaskQuestions({ context, task, input });
 
   try {
-    return await startProjectTask(context, projectId, taskId);
+    return await startProjectTask(context, projectId, taskId, {
+      interaction: {
+        toolName: "ask_user",
+        response: { interactionId: toolCallId, answers: input.answers },
+      },
+    });
   } catch (error) {
     const blocked = await context.repositories.projectTasks.updateTask(taskId, {
       status: "blocked",
@@ -266,6 +271,13 @@ export async function respondToProjectTaskToolApproval(
     const resumed = await startProjectTask(context, projectId, taskId, {
       approvalResolved: true,
       approvedTools: approval.resolution === "approved" ? [approval.toolName] : [],
+      interaction: {
+        toolName: approval.toolName,
+        response: {
+          interactionId: input.interactionId,
+          resolution: input.resolution,
+        },
+      },
     });
 
     await context.repositories.audit.createRecord({
@@ -444,7 +456,11 @@ export async function startProjectTask(
   context: ServiceContext,
   projectId: string,
   taskId: string,
-  options: { approvalResolved?: boolean; approvedTools?: string[] } = {},
+  options: {
+    approvalResolved?: boolean;
+    approvedTools?: string[];
+    interaction?: { toolName: string; response: Record<string, unknown> };
+  } = {},
 ) {
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId);
@@ -525,6 +541,7 @@ export async function startProjectTask(
     runnerIdentityUserId: user.id,
     stageId: task.stageId ?? flow?.stages[0]?.id ?? null,
     approvedTools: options.approvedTools,
+    interaction: options.interaction,
   });
 
   await context.repositories.audit.createRecord({

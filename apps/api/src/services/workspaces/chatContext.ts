@@ -1,4 +1,5 @@
 import {
+  PROJECT_TASK_INTERACTION_TOOL_IDS,
   PROJECT_TASK_TOOL_IDS,
   sandboxDeliveryPolicyCreatesCommit,
   type ChatHostedToolSettings,
@@ -58,7 +59,10 @@ export function applyProjectCodingEnvironment(
 
 export async function resolveProjectChatContext(
   context: ServiceContext,
-  options: Pick<CoreChatOptions, "completion_id" | "enabled_tools" | "metadata" | "options">,
+  options: Pick<
+    CoreChatOptions,
+    "completion_id" | "conversation_type" | "enabled_tools" | "metadata" | "options"
+  >,
 ): Promise<ProjectChatContext | null> {
   const access = await resolveChatProjectAccess(context, options);
 
@@ -74,6 +78,7 @@ export async function resolveProjectChatContext(
   const toolIds = [
     ...projectTools.enabledTools,
     ...PROJECT_TASK_TOOL_IDS,
+    ...(options.conversation_type === "task" ? PROJECT_TASK_INTERACTION_TOOL_IDS : []),
     ...(codingEnvironment ? PROJECT_CODING_TOOL_IDS : []),
   ];
   const recipeId = options.options?.recipe?.id;

@@ -9,6 +9,7 @@ test.describe("Project workbench layout", () => {
   test("keeps ordinary conversations simple and restores keyboard-resized panels across desktop and mobile", async ({
     page,
     workPage,
+    homePage,
   }) => {
     await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
     const projectUrl = page.url();
@@ -22,6 +23,11 @@ test.describe("Project workbench layout", () => {
     await sandbox.configureProject();
     await workPage.navigate(projectUrl);
     await workPage.openNewProjectConversation();
+    await expect(workbench.dock).not.toBeVisible();
+    await homePage.selectModel("GPT OSS 120B");
+    await homePage.sendMessageAndRequireCompletion(
+      "Polychat sandbox E2E: create a completed run for Workbench layout verification.",
+    );
     await expect(workbench.dock).toBeVisible();
     await expect(page.getByRole("group", { name: "Product mode", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /^Coding task:/ })).toBeVisible();
@@ -36,7 +42,7 @@ test.describe("Project workbench layout", () => {
       "Delegates",
     ]);
     await expect(workbench.status).toHaveAttribute("aria-live", "polite");
-    await expect(workbench.status).toHaveText(/Ready:\s+Coding environment configured/);
+    await expect(workbench.status).toContainText("Completed");
     await expect(workbench.resizeHandle).toHaveAttribute("aria-valuenow", /^\d+$/);
     const initialWidth = Number(await workbench.resizeHandle.getAttribute("aria-valuenow"));
 

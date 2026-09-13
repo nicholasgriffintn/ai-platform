@@ -44,7 +44,7 @@ test.describe("Project sandbox environment", () => {
     ).toHaveValue("node -e \"console.log('E2E_RESUME_READY')\"");
     await environment.cancelEdit();
     await workPage.openNewProjectConversation();
-    await expect(workbench.dock).toBeVisible();
+    await expect(workbench.dock).not.toBeVisible();
     await homePage.selectModel("GPT OSS 120B");
     await homePage.sendMessageAndRequireCompletion(
       "Polychat sandbox E2E: update the fixture after environment setup.",
@@ -131,7 +131,7 @@ test.describe("Project sandbox environment", () => {
     });
     await workPage.reload();
     await workPage.openNewProjectConversation();
-    await expect(workbench.dock).toBeVisible();
+    await expect(workbench.dock).not.toBeVisible();
     await homePage.selectModel("GPT OSS 120B");
     await homePage.sendMessage(
       "Polychat sandbox E2E: update README with the queued environment revision.",
@@ -349,7 +349,7 @@ test.describe("Project sandbox environment", () => {
     });
     await workPage.reload();
     await workPage.openNewProjectConversation();
-    await expect(workbench.dock).toBeVisible();
+    await expect(workbench.dock).not.toBeVisible();
     await homePage.selectModel("GPT OSS 120B");
     await homePage.sendMessageAndRequireCompletion(
       "Polychat sandbox E2E: update README after redacted setup.",
@@ -440,7 +440,7 @@ test.describe("Project sandbox environment", () => {
       });
       await workPage.reload();
       await workPage.openNewProjectConversation();
-      await expect(workbench.dock).toBeVisible();
+      await expect(workbench.dock).not.toBeVisible();
       await homePage.selectModel("GPT OSS 120B");
       await homePage.sendMessageAndRequireCompletion(
         "Polychat sandbox E2E: update the fixture after environment setup.",
@@ -494,7 +494,7 @@ test.describe("Project sandbox environment", () => {
       await sandbox.configureProject({ source: "repository" }, 120, scenario.repository);
       await workPage.reload();
       await workPage.openNewProjectConversation();
-      await expect(workbench.dock).toBeVisible();
+      await expect(workbench.dock).not.toBeVisible();
       await homePage.selectModel("GPT OSS 120B");
       await homePage.sendMessageAndRequireCompletion(
         `Polychat sandbox E2E: use ${scenario.repository} and update README after repository setup.`,

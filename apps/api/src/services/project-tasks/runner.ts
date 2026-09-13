@@ -11,6 +11,7 @@ import {
   type ProjectTaskBlockedReason,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { ConversationManager } from "~/lib/conversationManager";
 import { finishUsageReservation } from "~/lib/usage/reservations";
@@ -56,6 +57,7 @@ export async function enqueueProjectTaskRun(
   dispatchTaskId: string,
   conversationId: string | null,
   approvedTools: string[] = [],
+  interaction?: { toolName: string; response: Record<string, unknown> },
 ): Promise<void> {
   const taskService = new TaskService(context.env, context.repositories.tasks);
 
@@ -72,6 +74,7 @@ export async function enqueueProjectTaskRun(
       runnerIdentityUserId,
       conversationId,
       approvedTools,
+      ...(interaction ? { interaction } : {}),
     },
   });
 }
@@ -82,6 +85,7 @@ export async function queueProjectTaskRun(params: {
   runnerIdentityUserId: number;
   stageId?: string | null;
   approvedTools?: string[];
+  interaction?: { toolName: string; response: Record<string, unknown> };
 }): Promise<ProjectTask> {
   const { context, task, runnerIdentityUserId, stageId } = params;
 
@@ -129,6 +133,7 @@ export async function queueProjectTaskRun(params: {
       dispatchTaskId,
       conversationId,
       params.approvedTools,
+      params.interaction,
     );
   } catch (error) {
     await context.repositories.projectTasks.failDispatch({
@@ -260,7 +265,11 @@ export function buildTaskPrompt(params: {
 }
 
 export function buildTaskRunMessages(history: Message[], prompt: string): Message[] {
-  return [...history, { role: "user", content: prompt }];
+  const providerHistory = toProviderMessages(history).map(
+    ({ parts: _parts, ...message }) => message,
+  );
+
+  return [...providerHistory, { role: "user", content: prompt }];
 }
 
 async function blockTask(
@@ -423,6 +432,7 @@ export async function runProjectTaskDispatch(params: {
   runnerIdentityUserId: number;
   conversationId: string | null;
   approvedTools?: string[];
+  interaction?: { toolName: string; response: Record<string, unknown> };
   resumeInterrupted?: boolean;
   executionLease: TaskExecutionLease;
 }): Promise<{ status: "completed" | "blocked" | "skipped"; detail?: string }> {
@@ -680,6 +690,7 @@ export async function runProjectTaskDispatch(params: {
       store: true,
       enabled_tools: runtime.enabledTools,
       approved_tools: params.approvedTools,
+      options: params.interaction ? { toolInteraction: params.interaction } : undefined,
       require_approval_for: runtime.requireApprovalFor,
       enforce_mode_tool_policy: runtime.enforceModeToolPolicy,
       durable_execution: {
@@ -694,7 +705,7 @@ export async function runProjectTaskDispatch(params: {
       ? teammateRunConfigurationSchema.safeParse(previousRun?.resolvedConfiguration)
       : null;
 
-    if (resumableRunId && !previousConfiguration?.success) {
+    if (resumableRunId && !previousConfiguration?.success && runtime.teammate) {
       throw new AssistantError(
         "The teammate task run has no resumable configuration",
         ErrorType.CONFLICT_ERROR,

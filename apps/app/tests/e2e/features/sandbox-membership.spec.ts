@@ -41,7 +41,7 @@ test.describe("Sandbox project authority", () => {
       await memberWork.acceptInvitation(invitation);
       await workPage.navigate(projectUrl);
       await workPage.openNewProjectConversation();
-      await expect(workbench.dock).toBeVisible();
+      await expect(workbench.dock).not.toBeVisible();
       await homePage.selectModel("GPT OSS 120B");
       await homePage.sendMessage(
         "Polychat sandbox E2E: wait for controls while another member reviews the service.",
@@ -177,7 +177,7 @@ test.describe("Sandbox project authority", () => {
       await memberWork.acceptInvitation(invitation);
       await workPage.navigate(projectUrl);
       await workPage.openNewProjectConversation();
-      await expect(workbench.dock).toBeVisible();
+      await expect(workbench.dock).not.toBeVisible();
       await homePage.selectModel("GPT OSS 120B");
       await homePage.sendMessage("Polychat sandbox E2E: wait for reviewed setup approval.");
       await expect.poll(async () => (await sandbox.latestRun())?.runId).toBeTruthy();

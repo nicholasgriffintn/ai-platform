@@ -303,6 +303,16 @@ export function ProjectWorkbenchShell({
     if (!attentionInitialised.current) {
       attentionInitialised.current = true;
 
+      if (attention) {
+        onSelectedPaneChange(attention.pane);
+
+        if (hasDock) {
+          onDockCollapsedChange(false);
+        } else {
+          setMobileOpen(true);
+        }
+      }
+
       return;
     }
 
@@ -319,6 +329,30 @@ export function ProjectWorkbenchShell({
     }
   }, [attention, hasDock, onDockCollapsedChange, onSelectedPaneChange]);
 
+  useEffect(() => {
+    if (status !== "waiting_input" && status !== "waiting_approval") {
+      return;
+    }
+
+    if (hasDock) {
+      onDockCollapsedChange(false);
+    } else {
+      setMobileOpen(true);
+    }
+  }, [hasDock, onDockCollapsedChange, status]);
+
+  useEffect(() => {
+    if (status === "ready") {
+      return;
+    }
+
+    if (hasDock) {
+      onDockCollapsedChange(false);
+    } else {
+      setMobileOpen(true);
+    }
+  }, [hasDock, onDockCollapsedChange, status]);
+
   const { containerRef, effectiveMaxWidth, effectiveWidth, resizeHandleProps } =
     useWorkbenchDockResize({
       width: dockWidth,
@@ -327,7 +361,8 @@ export function ProjectWorkbenchShell({
       minConversationWidth: MIN_CONVERSATION_WIDTH,
       onWidthChange: onDockWidthChange,
     });
-  const panelIsOpen = hasDock ? !dockCollapsed : mobileOpen;
+  const statusRequiresAttention = status === "waiting_input" || status === "waiting_approval";
+  const panelIsOpen = hasDock ? !dockCollapsed || statusRequiresAttention : mobileOpen;
   const panelButton =
     panes.length > 0 ? (
       <Button
@@ -378,7 +413,7 @@ export function ProjectWorkbenchShell({
             {conversation}
           </main>
           <div className="relative hidden min-h-0 lg:flex">
-            {!dockCollapsed && panes.length > 0 ? (
+            {panelIsOpen && panes.length > 0 ? (
               <>
                 <button
                   type="button"

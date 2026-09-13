@@ -43,7 +43,7 @@ test.describe("Sandbox environment snapshots", () => {
     await sandbox.configureProject(CACHED_ENVIRONMENT);
     await workPage.reload();
     await workPage.openNewProjectConversation();
-    await expect(workbench.dock).toBeVisible();
+    await expect(workbench.dock).not.toBeVisible();
     await homePage.selectModel("GPT OSS 120B");
     await homePage.sendMessageAndRequireCompletion(
       "Polychat sandbox E2E: update README after cold setup.",
@@ -66,7 +66,7 @@ test.describe("Sandbox environment snapshots", () => {
     await expect(page.getByText("Environment cache", { exact: true })).toBeVisible();
     await expect(page.getByText(/Repo [a-f0-9]+ · Setup [a-f0-9]+/)).toBeVisible();
     await workPage.openNewProjectConversation();
-    await expect(workbench.dock).toBeVisible();
+    await expect(workbench.dock).not.toBeVisible();
     await homePage.sendMessageAndRequireCompletion(
       "Polychat sandbox E2E: update README after warm resume.",
     );

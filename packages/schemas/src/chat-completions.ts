@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { chatRequestModeSchema } from "./agent-modes.js";
+import { chatRequestModeSchema, toolPermissionSchema } from "./agent-modes.js";
 import {
   recipeChatRequestOptionsSchema,
   recipeConnectorProviderSchema,
@@ -14,6 +14,7 @@ import {
   chatRunTriggerSchema,
 } from "./chat-runs.js";
 import { computeSiteSchema } from "./compute-sites.js";
+import { conversationTypeSchema } from "./conversation-type.js";
 import { delegationContextSchema } from "./delegations.js";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts.js";
 import { chatMessageSelectionSchema } from "./message-selection.js";
@@ -248,7 +249,9 @@ export const chatCompletionMessageSchema = z
 
 export const chatResponseFormatSchema = z.union([
   z.object({ type: z.literal("text").describe("Plain text response format.") }),
-  z.object({ type: z.literal("json_object").describe("JSON object response format.") }),
+  z.object({
+    type: z.literal("json_object").describe("JSON object response format."),
+  }),
   z.object({
     type: z.literal("json_schema").describe("JSON schema response format."),
     json_schema: z
@@ -570,6 +573,38 @@ export const chatCompletionsRequestFieldsSchema = z.object({
   safety_identifier: z.string().optional().describe("Provider safety identifier."),
   store: z.boolean().optional().describe("Whether to store the conversation and response."),
   completion_id: z.string().optional().describe("Existing or new completion ID."),
+  conversation_type: conversationTypeSchema
+    .optional()
+    .describe("The product conversation type that owns this completion."),
+  command_payload: recordSchema
+    .optional()
+    .describe("Durable command metadata for resumable or approval-gated runs."),
+  require_approval_for: z
+    .array(toolPermissionSchema)
+    .optional()
+    .describe("Tool permissions that require explicit user approval for this run."),
+  enforce_mode_tool_policy: z
+    .boolean()
+    .optional()
+    .describe("Whether the selected mode policy must be enforced for this run."),
+  durable_execution: z
+    .discriminatedUnion("kind", [
+      z
+        .object({
+          kind: z.literal("project_task"),
+          dispatchTaskId: z.string().min(1),
+          executionOwnerToken: z.string().min(1),
+        })
+        .strict(),
+      z
+        .object({
+          kind: z.literal("delegation"),
+          maxCreditMicros: z.number().int().positive(),
+        })
+        .strict(),
+    ])
+    .optional()
+    .describe("Durable execution metadata used to resume owned background work."),
   command_id: chatRunCommandIdSchema
     .optional()
     .describe("Idempotency key for accepting this user command."),

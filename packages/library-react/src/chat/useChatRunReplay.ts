@@ -48,6 +48,7 @@ export function useChatRunReplay(
     }
 
     let disposed = false;
+    let synchronising = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let replayIntervalMs = INITIAL_REPLAY_INTERVAL_MS;
     const abortController = new AbortController();
@@ -79,6 +80,12 @@ export function useChatRunReplay(
     };
 
     const synchronise = async () => {
+      if (synchronising) {
+        return;
+      }
+
+      synchronising = true;
+
       try {
         if (snapshotOnlyRef.current[runId]) {
           const fallback = await apiService.getChatRun(runId, abortController.signal);
@@ -179,6 +186,8 @@ export function useChatRunReplay(
         if (currentRun?.id === runId) {
           schedule(currentRun, false);
         }
+      } finally {
+        synchronising = false;
       }
     };
 

@@ -497,8 +497,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
         WHERE id = ? AND attempt = ? AND status = ?
           AND EXISTS (
             SELECT 1 FROM message interaction
-            WHERE interaction.id = conversation_run.last_message_id
-              AND interaction.run_id = conversation_run.id
+            WHERE interaction.run_id = conversation_run.id
               AND interaction.tool_call_id = ?
           )
           AND (? IS NULL OR EXISTS (
@@ -531,8 +530,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
        WHERE id = ? AND attempt = ? AND status = ?
          AND EXISTS (
            SELECT 1 FROM message interaction
-           WHERE interaction.id = conversation_run.last_message_id
-             AND interaction.run_id = conversation_run.id
+           WHERE interaction.run_id = conversation_run.id
              AND interaction.tool_call_id = ?
          )
          AND (? IS NULL OR EXISTS (

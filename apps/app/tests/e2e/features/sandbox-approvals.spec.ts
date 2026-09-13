@@ -31,7 +31,7 @@ test.describe("Sandbox command approval", () => {
       );
       await workPage.reload();
       await workPage.openNewProjectConversation();
-      await expect(workbench.dock).toBeVisible();
+      await expect(workbench.dock).not.toBeVisible();
       await homePage.selectModel("GPT OSS 120B");
       await homePage.sendMessage(
         "Polychat sandbox E2E: update README after the reviewed setup command.",

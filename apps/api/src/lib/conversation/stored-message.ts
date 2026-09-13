@@ -33,25 +33,27 @@ export function formatStoredMessage(dbMessage: Record<string, unknown>): Message
       : dbMessage.provenance_json;
   const provenance = runProvenanceSchema.safeParse(provenanceValue);
   const normalisedParts = normaliseMessageParts(parts, dbMessage.timestamp as number | undefined);
-  const message = {
-    ...dbMessage,
-    id: dbMessage.id,
-    role: dbMessage.role as string,
-    content,
-    model: dbMessage.model as string,
-    name: dbMessage.name as string,
-    tool_calls: toolCalls,
-    citations,
-    status: dbMessage.status as string,
-    timestamp: dbMessage.timestamp as number,
-    platform: dbMessage.platform as string,
-    mode: dbMessage.mode as string,
-    data,
-    parts: normalisedParts,
-    usage: dbMessage.usage ? safeParseJson(dbMessage.usage as string) : undefined,
-    ...(provenance.success ? { provenance: provenance.data } : {}),
-    log_id: dbMessage.log_id as string,
-  } as Message;
+  const message = Object.fromEntries(
+    Object.entries({
+      ...dbMessage,
+      id: dbMessage.id,
+      role: dbMessage.role as string,
+      content,
+      model: dbMessage.model as string,
+      name: dbMessage.name as string,
+      tool_calls: toolCalls,
+      citations,
+      status: dbMessage.status as string,
+      timestamp: dbMessage.timestamp as number,
+      platform: dbMessage.platform as string,
+      mode: dbMessage.mode as string,
+      data,
+      parts: normalisedParts,
+      usage: dbMessage.usage ? safeParseJson(dbMessage.usage as string) : undefined,
+      ...(provenance.success ? { provenance: provenance.data } : {}),
+      log_id: dbMessage.log_id as string,
+    }).filter(([, value]) => value !== null),
+  ) as Message;
 
   if (!message.parts || message.parts.length === 0) {
     message.parts = buildMessageParts(message);

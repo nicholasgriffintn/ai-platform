@@ -6,6 +6,7 @@ import {
   storedChatMessageResponseSchema,
 } from "./chat-runs.js";
 import { normaliseCompactionStatusMessage } from "./compaction-status.js";
+import { conversationTypeSchema } from "./conversation-type.js";
 import { messagePartsSchema } from "./message-parts.js";
 import { modelTierSchema } from "./model-lineup.js";
 import { messageSchema } from "./shared.js";
@@ -28,6 +29,8 @@ export {
   parseChatRequestOptions,
   readRecipeChatRequestOptions,
 } from "./chat-completions.js";
+export { conversationTypeSchema } from "./conversation-type.js";
+export type { ConversationType } from "./conversation-type.js";
 export {
   chatMessageSelectionSchema,
   chatMessageSelectionSourceSchema,
@@ -118,8 +121,6 @@ export const conversationSortBySchema = z.enum(["updated", "created", "title"]);
 
 export const conversationActivityWindowSchema = z.enum(["all", "today", "week", "month"]);
 
-export const conversationTypeSchema = z.enum(["chat", "task", "meta", "delegate"]);
-
 export const LISTED_CONVERSATION_TYPES = ["chat", "task"] as const;
 export type ListedConversationType = (typeof LISTED_CONVERSATION_TYPES)[number];
 
@@ -129,7 +130,6 @@ export type SearchableConversationType = (typeof SEARCHABLE_CONVERSATION_TYPES)[
 export type ConversationArchiveFilter = z.infer<typeof conversationArchiveFilterSchema>;
 export type ConversationSortBy = z.infer<typeof conversationSortBySchema>;
 export type ConversationActivityWindow = z.infer<typeof conversationActivityWindowSchema>;
-export type ConversationType = z.infer<typeof conversationTypeSchema>;
 
 export const bulkArchiveChatCompletionsJsonSchema = z.object({
   archived: z.boolean(),

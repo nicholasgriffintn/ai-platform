@@ -1101,9 +1101,9 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
 		export const toJSONSchema = undefined;
 	`;
   const apiEntryModule = `
-		import api, { MachineRunCoordinator, ConversationCoordinator, SandboxRunCoordinator } from "./api.js";
+		import api, { MachineRunCoordinator, ConversationCoordinator, SandboxRunCoordinator, UserSyncCoordinator } from "./api.js";
 
-		export { MachineRunCoordinator, ConversationCoordinator, SandboxRunCoordinator };
+		export { MachineRunCoordinator, ConversationCoordinator, SandboxRunCoordinator, UserSyncCoordinator };
 
 	function withExternalBindingShape(env) {
 			const ai = env.AI;
@@ -1190,6 +1190,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
           AI_GATEWAY_TOKEN: "e2e-gateway-token",
           ALWAYS_ENABLED_PROVIDERS: "google-ai-studio,groq,mistral,openai,replicate,workers-ai",
           API_BASE_URL: apiBaseUrl,
+          SANDBOX_API_BASE_URL: `http://host.docker.internal:${port}`,
           APP_BASE_URL: appBaseUrl,
           SANDBOX_PREVIEW_HOST: `localhost:${port}`,
           SANDBOX_MAX_CONCURRENT_RUNS: "1000",
@@ -1252,6 +1253,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
             className: "SandboxRunCoordinator",
             useSQLite: true,
           },
+          USER_SYNC_COORDINATOR: { className: "UserSyncCoordinator", useSQLite: true },
         },
         serviceBindings: {
           AI: { name: "external-services", entrypoint: "MockAi" },

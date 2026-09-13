@@ -65,7 +65,7 @@ test.describe("Sandbox service controls", () => {
       await sandbox.configureProject(scenario.environment);
       await workPage.reload();
       await workPage.openNewProjectConversation();
-      await expect(workbench.dock).toBeVisible();
+      await expect(workbench.dock).not.toBeVisible();
       await homePage.selectModel("GPT OSS 120B");
       await homePage.sendMessage("Polychat sandbox E2E: review a failed service startup.");
       if (scenario.name === "unhealthy endpoint") {
@@ -223,7 +223,7 @@ test.describe("Sandbox service controls", () => {
     await sandbox.configureProject(BOUNDED_LOG_SANDBOX_ENVIRONMENT);
     await workPage.reload();
     await workPage.openNewProjectConversation();
-    await expect(workbench.dock).toBeVisible();
+    await expect(workbench.dock).not.toBeVisible();
     await homePage.selectModel("GPT OSS 120B");
     await homePage.sendMessage("Polychat sandbox E2E: wait for controls during service review.");
     await expect.poll(async () => (await sandbox.latestRun())?.runId).toBeTruthy();

@@ -31,6 +31,8 @@ export const PROJECT_TASK_TOOL_IDS = [
   "update_task",
 ] as const;
 
+export const PROJECT_TASK_INTERACTION_TOOL_IDS = ["ask_user", "request_approval"] as const;
+
 export const TERMINAL_PROJECT_TASK_STATUSES: readonly ProjectTaskStatus[] = ["done", "cancelled"];
 
 export function isTerminalProjectTaskStatus(status: ProjectTaskStatus): boolean {
@@ -637,6 +639,12 @@ export const projectTaskRunDispatchPayloadSchema = z.object({
   runnerIdentityUserId: z.number().int().positive(),
   conversationId: z.string().min(1).nullable(),
   approvedTools: z.array(z.string().min(1)).max(8).default([]),
+  interaction: z
+    .object({
+      toolName: z.string().min(1),
+      response: z.record(z.string(), z.unknown()),
+    })
+    .optional(),
 });
 
 export type ProjectTaskRunDispatchPayload = z.infer<typeof projectTaskRunDispatchPayloadSchema>;

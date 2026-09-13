@@ -7,9 +7,17 @@ test.describe("Sandbox Workbench", () => {
   test.use({ persona: "pro" });
 
   for (const scenario of [
-    { name: "JavaScript edit", instruction: "use JavaScript", qualityGate: "passed" },
+    {
+      name: "JavaScript edit",
+      instruction: "use JavaScript",
+      qualityGate: "passed",
+    },
     { name: "Python edit", instruction: "use Python", qualityGate: "passed" },
-    { name: "failed validation", instruction: "fail validation", qualityGate: "failed" },
+    {
+      name: "failed validation",
+      instruction: "fail validation",
+      qualityGate: "failed",
+    },
   ]) {
     test(
       `restores persisted proof and enforces artefact access after ${scenario.name}`,
@@ -23,13 +31,16 @@ test.describe("Sandbox Workbench", () => {
         await sandbox.configureProject();
         await workPage.reload();
         await workPage.openNewProjectConversation();
-        await expect(workbench.dock).toBeVisible();
+        await expect(workbench.dock).not.toBeVisible();
         await homePage.selectModel("GPT OSS 120B");
         await homePage.sendMessageAndRequireCompletion(
           `Polychat sandbox E2E: ${scenario.instruction} to update the fixture README and validate the result.`,
         );
+        await expect(workbench.dock).toBeVisible({ timeout: 20_000 });
         await expect
-          .poll(async () => (await sandbox.latestRun())?.status, { timeout: 90_000 })
+          .poll(async () => (await sandbox.latestRun())?.status, {
+            timeout: 90_000,
+          })
           .toMatch(/^(completed|failed|cancelled)$/);
         const run = await sandbox.latestRun();
         const logs = run?.manifest?.artifacts.find((artifact) => artifact.kind === "logs");

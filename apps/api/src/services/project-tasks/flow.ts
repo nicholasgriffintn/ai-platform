@@ -1,5 +1,6 @@
 import {
   findFlowStage,
+  PROJECT_TASK_INTERACTION_TOOL_IDS,
   PROJECT_TASK_TOOL_IDS,
   type ProjectFlow,
   type ProjectFlowStage,
@@ -80,7 +81,14 @@ export async function resolveTaskRuntime(params: {
     model: task.runner?.model ?? teammate?.model ?? null,
     mode: stage?.mode ?? task.runner?.mode ?? teammate?.mode ?? DEFAULT_TASK_MODE,
     enabledTools: withoutForbiddenTools(
-      [...new Set([...configuredTools, ...PROJECT_TASK_TOOL_IDS, ...codingTools])],
+      [
+        ...new Set([
+          ...configuredTools,
+          ...PROJECT_TASK_TOOL_IDS,
+          ...PROJECT_TASK_INTERACTION_TOOL_IDS,
+          ...codingTools,
+        ]),
+      ],
       task.constraints?.forbiddenTools,
     ),
     skillIds: intersectGrantedIds(projectSkillIds, resolveRequestedSkillIds(stage, teammate)),

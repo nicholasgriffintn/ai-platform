@@ -82,7 +82,7 @@ export async function answerProjectTaskQuestions(params: {
   context: ServiceContext;
   task: ProjectTask;
   input: AnswerUserQuestionsInput;
-}): Promise<void> {
+}): Promise<{ toolCallId: string }> {
   const { context, task } = params;
   const input = answerUserQuestionsSchema.parse(params.input);
 
@@ -198,4 +198,6 @@ export async function answerProjectTaskQuestions(params: {
       });
     },
   );
+
+  return { toolCallId: pending.toolCallId };
 }

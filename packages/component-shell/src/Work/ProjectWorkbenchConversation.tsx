@@ -66,9 +66,10 @@ export function ProjectWorkbenchConversation({
   renderHeader,
   children,
 }: ProjectWorkbenchConversationProps) {
+  const effectiveConversationId = conversationId ?? task?.conversationId;
   const runsQuery = useProjectWorkbenchRuns({
     projectId,
-    conversationId,
+    conversationId: effectiveConversationId,
     conversationIsStreaming,
   });
   const preferences = useProjectWorkbenchPreferences();
@@ -101,16 +102,33 @@ export function ProjectWorkbenchConversation({
     services: previewServices,
     isRunLoading: runsQuery.isLoading,
   });
-  const delegationsQuery = useDelegations(conversationId ?? "");
+  const delegationsQuery = useDelegations(effectiveConversationId ?? "");
   const cancelDelegations = useCancelDelegations();
-  const brief = useConversationBrief(conversationId ?? undefined);
+  const brief = useConversationBrief(effectiveConversationId ?? undefined);
   const briefAttention = useConversationBriefAttention(
-    conversationId ?? undefined,
+    effectiveConversationId ?? undefined,
     brief.data?.document?.revision,
     brief.isFetched,
   );
+  const attention = useMemo(() => {
+    if (briefAttention) {
+      return briefAttention;
+    }
+
+    const blockedReason = task?.blockedReason;
+
+    if (
+      blockedReason === "awaiting_input" ||
+      blockedReason === "awaiting_approval" ||
+      blockedReason === "awaiting_takeover"
+    ) {
+      return task ? { key: `${task.id}:${blockedReason}`, pane: "activity" as const } : undefined;
+    }
+
+    return undefined;
+  }, [briefAttention, task?.blockedReason, task?.id]);
   const isWorkbenchEligible =
-    Boolean(conversationId) ||
+    Boolean(effectiveConversationId) ||
     hasCodingEnvironment ||
     runsQuery.runs.length > 0 ||
     Boolean(brief.data?.document) ||
@@ -205,7 +223,7 @@ export function ProjectWorkbenchConversation({
   const recordedFiles = runsQuery.currentRun?.manifest?.changes.files ?? [];
   const artifacts = runsQuery.currentRun?.manifest?.artifacts ?? [];
   const availablePanes = deriveProjectWorkbenchPanes({
-    hasContext: Boolean(conversationId),
+    hasContext: Boolean(effectiveConversationId),
     hasActivity: Boolean(runsQuery.currentRun || activityEntries.length > 0 || services.length > 0),
     hasPreview: previewServices.length > 0,
     hasChanges: recordedFiles.length > 0 || Boolean(diff.content),
@@ -214,7 +232,9 @@ export function ProjectWorkbenchConversation({
     hasDelegates: Boolean(delegationsQuery.data?.delegations.length),
   });
   const panels = {
-    context: conversationId ? <ConversationBriefPanel conversationId={conversationId} /> : null,
+    context: effectiveConversationId ? (
+      <ConversationBriefPanel conversationId={effectiveConversationId} />
+    ) : null,
     activity: (
       <>
         <ProjectWorkbenchServices
@@ -292,8 +312,8 @@ export function ProjectWorkbenchConversation({
         outputs={delegationsQuery.data?.outputs}
         canControl={delegationsQuery.data?.canControl ?? false}
         onStopAll={() => {
-          if (conversationId) {
-            void cancelDelegations.mutateAsync(conversationId);
+          if (effectiveConversationId) {
+            void cancelDelegations.mutateAsync(effectiveConversationId);
           }
         }}
         onFollowUp={(input) => {
@@ -309,7 +329,7 @@ export function ProjectWorkbenchConversation({
       conversation={children({ runSteering, composerBanner })}
       panels={panels}
       availablePanes={availablePanes}
-      attention={briefAttention}
+      attention={attention}
       status={presentation.status}
       statusDetail={presentation.detail}
       selectedPane={preferences.selectedPane}

@@ -1,5 +1,6 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import {
+  PROJECT_TASK_INTERACTION_TOOL_IDS,
   teammateRunConfigurationSchema,
   readToolIds,
   type ChatRun,
@@ -182,7 +183,12 @@ export async function enqueueTeammateRun({
   const effectiveSkillIds = resumeConfiguration
     ? resumeConfiguration.skillIds.filter((skillId) => liveSkillIds.includes(skillId))
     : liveSkillIds;
-  const currentEnabledTools = readToolIds(teammate.enabled_tools) ?? [];
+  const currentEnabledTools = [
+    ...new Set([
+      ...(readToolIds(teammate.enabled_tools) ?? []),
+      ...(resolvedInvocation?.source === "project_task" ? PROJECT_TASK_INTERACTION_TOOL_IDS : []),
+    ]),
+  ];
   const requestedEnabledTools = executionPolicy?.enabledTools ?? body.enabled_tools;
   const liveEnabledTools = requestedEnabledTools
     ? intersectEnabledTools(currentEnabledTools, requestedEnabledTools)
