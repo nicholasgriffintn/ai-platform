@@ -18,6 +18,7 @@ import { getLogger } from "~/utils/logger";
 
 import { modelConfig } from "./catalogue";
 import { isChatSurfaceModel } from "./chatSurface";
+import { isProviderPlatformEnabled } from "./platformProviders";
 import {
   getExecutableModelsForAccount,
   resolveDefaultChatModel,
@@ -567,15 +568,13 @@ export async function filterModelsForUserAccess(
   options: ModelsOptions = { shouldUseCache: true },
 ): Promise<Record<string, ModelConfigItem>> {
   const allFreeModels = getFreeModels();
-  const alwaysEnabledProvidersEnvVar = env.ALWAYS_ENABLED_PROVIDERS;
-  const alwaysEnabledProviders = new Set(alwaysEnabledProvidersEnvVar?.split(",") || []);
 
   const freeModels: Record<string, ModelConfigItem> = {};
 
   for (const modelId in allFreeModels) {
     const model = allFreeModels[modelId];
 
-    if (alwaysEnabledProviders.has(model.provider)) {
+    if (isProviderPlatformEnabled(model.provider, env)) {
       freeModels[modelId] = model;
     }
   }
@@ -586,7 +585,10 @@ export async function filterModelsForUserAccess(
 
   if (!userId) {
     for (const modelId in allModels) {
-      if (freeModelIds.has(modelId) || alwaysEnabledProviders.has(allModels[modelId].provider)) {
+      if (
+        freeModelIds.has(modelId) ||
+        isProviderPlatformEnabled(allModels[modelId].provider, env)
+      ) {
         filteredModels[modelId] = {
           ...allModels[modelId],
           isPlatformEnabled: true,
@@ -614,7 +616,7 @@ export async function filterModelsForUserAccess(
       const model = allModels[modelId];
       const isFree = freeModelIds.has(modelId);
       const userProvider = enabledProviders.get(model.provider);
-      const isPlatformEnabled = alwaysEnabledProviders.has(model.provider);
+      const isPlatformEnabled = isProviderPlatformEnabled(model.provider, env);
       const isEnabled = isPlatformEnabled || Boolean(userProvider);
 
       if (isFree || isEnabled) {
@@ -632,7 +634,7 @@ export async function filterModelsForUserAccess(
 
     return Object.fromEntries(
       Object.entries(allModels).filter(([modelId, model]) => {
-        return freeModelIds.has(modelId) && alwaysEnabledProviders.has(model.provider);
+        return freeModelIds.has(modelId) && isProviderPlatformEnabled(model.provider, env);
       }),
     );
   }

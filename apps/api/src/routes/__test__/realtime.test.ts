@@ -75,9 +75,7 @@ const testUser: IUser = {
   terms_accepted_at: null,
   plan_id: "pro",
 };
-const testEnv = {
-  ALWAYS_ENABLED_PROVIDERS: "workers-ai",
-} satisfies Pick<IEnv, "ALWAYS_ENABLED_PROVIDERS">;
+const testEnv = {} satisfies Partial<IEnv>;
 
 function makeModel(
   id: string,

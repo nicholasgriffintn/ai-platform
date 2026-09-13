@@ -1188,7 +1188,6 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
         bindings: {
           ACCOUNT_ID: "e2e-account",
           AI_GATEWAY_TOKEN: "e2e-gateway-token",
-          ALWAYS_ENABLED_PROVIDERS: "google-ai-studio,groq,mistral,openai,replicate,workers-ai",
           API_BASE_URL: apiBaseUrl,
           SANDBOX_API_BASE_URL: `http://host.docker.internal:${port}`,
           APP_BASE_URL: appBaseUrl,

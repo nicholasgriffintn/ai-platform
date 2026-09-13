@@ -167,7 +167,6 @@ export type IEnv = {
   PUBLIC_ASSETS_BUCKET?: string;
   SERPER_API_KEY?: string;
   PRIVATE_KEY?: string;
-  ALWAYS_ENABLED_PROVIDERS?: string;
   LOG_LEVEL?: string;
   SENTRY_DSN?: string;
   STRIPE_SECRET_KEY?: string;

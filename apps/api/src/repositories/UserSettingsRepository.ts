@@ -13,6 +13,7 @@ import {
 } from "~/lib/providers/capabilities/messaging/credentials";
 import { isMessagingProviderId } from "~/lib/providers/capabilities/messaging/metadata";
 import { getModels } from "~/lib/providers/models";
+import { isProviderPlatformEnabled } from "~/lib/providers/models/platformProviders";
 import type { IUserSettings } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -621,8 +622,6 @@ export class UserSettingsRepository extends BaseRepository {
     configurableProviderIds: readonly string[],
   ): Promise<void> {
     const providers = configurableProviderIds;
-    const alwaysEnabledProviders = this.env.ALWAYS_ENABLED_PROVIDERS || "";
-    const defaultProviders = alwaysEnabledProviders?.split(",") || [];
 
     const existingQuery = this.buildSelectQuery(
       "provider_settings",
@@ -644,7 +643,7 @@ export class UserSettingsRepository extends BaseRepository {
           id: generateId(),
           user_id: userId,
           provider_id: provider,
-          enabled: defaultProviders.includes(provider) ? 1 : 0,
+          enabled: isProviderPlatformEnabled(provider, this.env) ? 1 : 0,
         }),
       )
       .filter((insert): insert is { query: string; values: unknown[] } => Boolean(insert));

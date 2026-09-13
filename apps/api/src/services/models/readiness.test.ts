@@ -58,7 +58,6 @@ describe("resolveModelReadiness", () => {
   it("attaches readiness to every model returned by the existing catalogue", async () => {
     const env: IEnv = Object.create(null);
 
-    env.ALWAYS_ENABLED_PROVIDERS = "workers-ai";
     const models = await listModels(env);
 
     expect(Object.keys(models).length).toBeGreaterThan(0);

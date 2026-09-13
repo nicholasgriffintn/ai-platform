@@ -55,7 +55,6 @@ function createProvisioningRepository(existingProviders: string[]) {
 
   const repository = new UserSettingsRepository({
     DB: { batch, prepare },
-    ALWAYS_ENABLED_PROVIDERS: "",
   } as unknown as IEnv);
 
   return { batch, prepare, repository };
