@@ -40,15 +40,16 @@ export function useChats(options: ConversationListOptions = {}) {
   const { currentConversationId, isAuthenticated, isPro, locallyCreatedConversationIds, user } =
     useChatStore();
   const localScope = getLocalChatScope(user?.id);
+  const fetchSortBy = options.sortBy === "title" ? "updated" : (options.sortBy ?? "updated");
   const queryOptions = useMemo<Omit<ConversationListOptions, "page">>(
     () => ({
       activity: options.activity ?? "all",
       archived: options.archived ?? "active",
       limit: options.limit ?? DEFAULT_CHAT_LIST_LIMIT,
       query: options.query?.trim() || undefined,
-      sortBy: options.sortBy ?? "updated",
+      sortBy: fetchSortBy,
     }),
-    [options.activity, options.archived, options.limit, options.query, options.sortBy],
+    [options.activity, options.archived, options.limit, options.query, fetchSortBy],
   );
 
   const remoteChatsQuery = useInfiniteQuery({

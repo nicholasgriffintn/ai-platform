@@ -36,8 +36,8 @@ export function useConversationLaunchModeConfig(
     startNewConversation,
   } = useChatStore();
   const { setSelectedTools } = useToolsStore();
-  const installRecipe = useInstallAssistantRecipe();
-  const invokeRecipe = useInvokeAssistantRecipe();
+  const { mutateAsync: installRecipe } = useInstallAssistantRecipe();
+  const { mutateAsync: invokeRecipe } = useInvokeAssistantRecipe();
   const [launch, setLaunch] = useState<ResolvedConversationLaunch>();
   const initialiseSequenceRef = useRef(0);
 
@@ -71,8 +71,8 @@ export function useConversationLaunchModeConfig(
           const projectId = modeConfig?.requestOptions?.metadata?.project_id;
           const response =
             recipeIntent.action === "setup"
-              ? await installRecipe.mutateAsync({ recipeId: recipeIntent.recipeId, projectId })
-              : await invokeRecipe.mutateAsync({ recipeId: recipeIntent.recipeId, projectId });
+              ? await installRecipe({ recipeId: recipeIntent.recipeId, projectId })
+              : await invokeRecipe({ recipeId: recipeIntent.recipeId, projectId });
 
           if (initialiseSequenceRef.current !== sequence) {
             return;

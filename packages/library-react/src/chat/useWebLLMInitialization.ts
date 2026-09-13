@@ -4,27 +4,59 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { useLoadingActions } from "../state/LoadingContext.js";
+import { useWebLLMConsentStore } from "../state/stores/webLLMConsentStore.js";
 import { useWebLLMModels } from "./useWebLLMModels.js";
-import { WebLLMService } from "./web-llm.js";
+import { getCachedWebLLMModels } from "./web-llm-models.js";
+import { pruneStaleWebLLMModels, WebLLMService } from "./web-llm.js";
 
-/**
- * Hook for initializing WebLLM local models.
- * Handles model loading, progress tracking, and error states.
- */
 export function useWebLLMInitialization(apiModels: ModelConfig = {}) {
   const { startLoading, updateLoading, stopLoading } = useLoadingActions();
   const { computeSite, model, setModel } = useChatStore();
   const webLLMModels = useWebLLMModels({ enabled: computeSite === "browser" });
+  const isConsented = useWebLLMConsentStore((state) =>
+    model ? (state.consentedModelIds[model] ?? false) : false,
+  );
+  const pendingModelId = useWebLLMConsentStore((state) => state.pendingModelId);
+  const requestConsent = useWebLLMConsentStore((state) => state.requestConsent);
 
   const [webLLMService] = useState(() => WebLLMService.getInstance());
   const [isInitializing, setIsInitializing] = useState(false);
 
   const matchingModel =
     model === null ? undefined : computeSite === "browser" ? webLLMModels[model] : apiModels[model];
+  const shouldLoadBrowserModel = Boolean(
+    model && computeSite === "browser" && matchingModel?.provider === "web-llm",
+  );
+  const isAwaitingConsent = shouldLoadBrowserModel && !isConsented;
 
   useEffect(() => {
     const loadingId = "model-init";
     let mounted = true;
+
+    if (!shouldLoadBrowserModel) {
+      stopLoading(loadingId);
+      // Idempotent reset for a download superseded mid-flight; React bails out when unchanged.
+      // eslint-disable-next-line react/set-state-in-effect
+      setIsInitializing(false);
+
+      return () => {
+        mounted = false;
+      };
+    }
+
+    if (!isConsented) {
+      if (model && pendingModelId !== model) {
+        requestConsent(model);
+      }
+
+      stopLoading(loadingId);
+      // Idempotent reset while blocked on consent; React bails out when unchanged.
+      setIsInitializing(false);
+
+      return () => {
+        mounted = false;
+      };
+    }
 
     const initializeLocalModel = async () => {
       if (!mounted) {
@@ -52,6 +84,10 @@ export function useWebLLMInitialization(apiModels: ModelConfig = {}) {
               progress.text || `Loading ${matchingModel.name || model}...`,
             );
           });
+
+          if (mounted) {
+            void pruneStaleWebLLMModels(model, Object.keys(getCachedWebLLMModels()));
+          }
         } catch (error) {
           console.error("[useWebLLMInitialization] Failed to initialize WebLLM:", error);
           if (mounted) {
@@ -83,6 +119,10 @@ export function useWebLLMInitialization(apiModels: ModelConfig = {}) {
     computeSite,
     model,
     matchingModel,
+    shouldLoadBrowserModel,
+    isConsented,
+    pendingModelId,
+    requestConsent,
     startLoading,
     updateLoading,
     stopLoading,
@@ -93,5 +133,6 @@ export function useWebLLMInitialization(apiModels: ModelConfig = {}) {
   return {
     webLLMService: webLLMService,
     isInitializing,
+    isAwaitingConsent,
   };
 }

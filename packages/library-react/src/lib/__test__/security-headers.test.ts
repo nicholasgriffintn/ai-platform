@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { applySecurityHeaders } from "../security-headers.js";
+import { applyCacheHeaders, applySecurityHeaders } from "../security-headers.js";
 
 const parseCsp = (headers: Headers) =>
   new Map(
@@ -93,5 +93,30 @@ describe("applySecurityHeaders", () => {
 
     expect(headers.get("Content-Security-Policy")).not.toContain("default-src 'none';");
     expect(parseCsp(headers).get("default-src")).toEqual(["'self'"]);
+  });
+});
+
+describe("applyCacheHeaders", () => {
+  it("marks hashed build assets immutable", () => {
+    const headers = applyCacheHeaders(
+      new Headers(),
+      "https://polychat.app/assets/Thread-pp9l--5X.js",
+    );
+
+    expect(headers.get("Cache-Control")).toBe("public, max-age=31536000, immutable");
+  });
+
+  it("gives icons and manifests a daily revalidation window", () => {
+    const headers = applyCacheHeaders(new Headers(), "https://polychat.app/site.webmanifest");
+
+    expect(headers.get("Cache-Control")).toBe(
+      "public, max-age=86400, stale-while-revalidate=86400",
+    );
+  });
+
+  it("leaves HTML navigations untouched so deploys stay fresh", () => {
+    const headers = applyCacheHeaders(new Headers(), "https://polychat.app/chat");
+
+    expect(headers.get("Cache-Control")).toBeNull();
   });
 });

@@ -3,6 +3,7 @@ import {
   getUsageSummary,
   listUsageEvents,
   getWorkspaceUsageSummary,
+  useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
@@ -35,10 +36,14 @@ export function getUsageBalanceRefreshInterval(
 }
 
 export function useUsageBalance(enabled = true) {
+  const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
+
   return useQuery({
     queryKey: USAGE_QUERY_KEYS.balance,
     queryFn: () => getUsageBalance(),
-    enabled,
+    enabled: enabled && !isAuthenticationLoading,
+    staleTime: USAGE_STALE_TIME,
+    gcTime: 30 * 60 * 1_000,
     refetchInterval: (query) =>
       liveOrPoll(
         query,
@@ -49,17 +54,21 @@ export function useUsageBalance(enabled = true) {
 }
 
 export function useUsageSummary(options: { period?: string; enabled?: boolean } = {}) {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+
   return useQuery({
     queryKey: ["usage", "summary", options.period ?? "current"],
     queryFn: () => getUsageSummary(options.period),
     staleTime: USAGE_STALE_TIME,
-    enabled: options.enabled ?? true,
+    enabled: (options.enabled ?? true) && isAuthenticated,
   });
 }
 
 export function useUsageEvents(
   options: { period?: string; enabled?: boolean; source?: string } = {},
 ) {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+
   return useInfiniteQuery({
     queryKey: ["usage", "events", options.period ?? "current", options.source ?? "all"],
     queryFn: ({ pageParam }) =>
@@ -72,15 +81,17 @@ export function useUsageEvents(
     initialPageParam: undefined as string | undefined,
     getNextPageParam: getNextUsageEventsPageParam,
     staleTime: USAGE_STALE_TIME,
-    enabled: options.enabled ?? true,
+    enabled: (options.enabled ?? true) && isAuthenticated,
   });
 }
 
 export function useWorkspaceUsage(workspaceId: string, period: string, enabled: boolean) {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+
   return useQuery({
     queryKey: ["usage", "workspace", workspaceId, period],
     queryFn: () => getWorkspaceUsageSummary(workspaceId, period),
-    enabled,
+    enabled: enabled && isAuthenticated,
     staleTime: USAGE_STALE_TIME,
   });
 }

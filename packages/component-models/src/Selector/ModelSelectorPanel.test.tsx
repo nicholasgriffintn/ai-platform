@@ -55,12 +55,12 @@ afterEach(() => {
 describe("model picker navigation", () => {
   it("keeps Auto and model categories reachable in the same picker", () => {
     render(<ModelSelectorPanel {...props} />);
-    expect(screen.getByRole("option", { name: "Default tier" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Default tier" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /Featured/ }));
     expect(screen.getByRole("option", { name: /Cloud model/ })).toBeTruthy();
-    expect(screen.queryByRole("option", { name: "Default tier" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Default tier" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Auto" }));
-    expect(screen.getByRole("option", { name: "Default tier" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Default tier" })).toBeTruthy();
     fireEvent.keyDown(screen.getByRole("radio", { name: "Cloud" }), { key: "ArrowRight" });
     expect(props.onComputeSiteChange).toHaveBeenCalledWith("machine", "office");
   });

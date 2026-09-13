@@ -1,4 +1,4 @@
-import { applySecurityHeaders } from "@ngriffin_uk/polychat-library-react";
+import { applyCacheHeaders, applySecurityHeaders } from "@ngriffin_uk/polychat-library-react";
 import { createRequestHandler, RouterContextProvider } from "react-router";
 
 declare global {
@@ -16,6 +16,7 @@ export default {
     const headers = new Headers(response.headers);
 
     applySecurityHeaders(headers, request.url);
+    applyCacheHeaders(headers, request.url);
 
     return new Response(response.body, {
       status: response.status,

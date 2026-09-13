@@ -9,6 +9,7 @@ import {
   useVoiceRecorder,
   useComposerDraft,
   useConversationScope,
+  useStableRandomSeed,
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
 import {
@@ -245,7 +246,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       onTranscribe,
     });
     const [selectedAttachments, setSelectedAttachments] = useState<AttachmentData[]>([]);
-    const [placeholderSeed] = useState(() => Math.floor(Math.random() * 12));
+    const placeholderSeed = Math.floor(useStableRandomSeed() * 12);
     const { data: apiModels } = useModels();
     const [isUploading, setIsUploading] = useState(false);
     const modelCapabilities = useMemo(

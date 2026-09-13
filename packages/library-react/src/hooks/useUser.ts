@@ -1,4 +1,4 @@
-import { apiService } from "@ngriffin_uk/polychat-library-client";
+import { apiService, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { MODELS_QUERY_KEY } from "../chat/useModels.js";
@@ -16,16 +16,18 @@ function invalidateProviderReadiness(queryClient: ReturnType<typeof useQueryClie
 
 export function useUser(options?: { enabled?: boolean }) {
   const queryClient = useQueryClient();
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const enabled = (options?.enabled ?? true) && isAuthenticated;
 
   const { data: providerSettings, isLoading: isLoadingProviderSettings } = useQuery({
     queryKey: USER_QUERY_KEYS.providerSettings,
     queryFn: () => apiService.getProviderSettings(),
-    enabled: options?.enabled ?? true,
+    enabled,
   });
   const { data: providerSyncStatus, isLoading: isLoadingProviderSyncStatus } = useQuery({
     queryKey: USER_QUERY_KEYS.providerSyncStatus,
     queryFn: () => apiService.getProviderSyncStatus(),
-    enabled: options?.enabled ?? true,
+    enabled,
   });
 
   const storeProviderApiKeyMutation = useMutation({

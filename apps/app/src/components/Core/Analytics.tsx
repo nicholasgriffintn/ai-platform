@@ -7,6 +7,33 @@ const SHOULD_TRACK_CLICKS = true;
 const SHOULD_TRACK_USER_TIMINGS = true;
 const RESPECT_DO_NOT_TRACK = false;
 
+function onIdle(callback: () => void): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(() => callback(), { timeout: 8000 });
+
+    return;
+  }
+
+  window.setTimeout(callback, 3000);
+}
+
+function ensurePreconnect(href: string): void {
+  if (document.querySelector(`link[rel="preconnect"][href="${href}"]`)) {
+    return;
+  }
+
+  const link = document.createElement("link");
+
+  link.rel = "preconnect";
+  link.href = href;
+  link.crossOrigin = "anonymous";
+  document.head.appendChild(link);
+}
+
 interface AnalyticsProps {
   isEnabled?: boolean;
   isExperimentsEnabled?: boolean;
@@ -50,31 +77,40 @@ export function Analytics({
 
     window.__BEACON_INITALISED__ = true;
 
-    const script = document.createElement("script");
+    ensurePreconnect(beaconEndpoint);
 
-    script.src = `${beaconEndpoint}/beacon.min.js`;
-    script.async = true;
-
-    script.addEventListener("load", () => {
-      if (window.Beacon) {
-        window.Beacon.init({
-          endpoint: beaconEndpoint,
-          cdnEndpoint: beaconCdnEndpoint,
-          siteId: beaconSiteId,
-          debug: beaconDebug,
-          trackClicks: SHOULD_TRACK_CLICKS,
-          trackUserTimings: SHOULD_TRACK_USER_TIMINGS,
-          respectDoNotTrack: RESPECT_DO_NOT_TRACK,
-          directEvents,
-          directPageViews,
-          batchSize,
-          batchTimeout,
-          userId: beaconUserId || window.__BEACON_USER_ID__,
-        });
+    onIdle(() => {
+      if (document.querySelector(`script[src="${beaconEndpoint}/beacon.min.js"]`)) {
+        return;
       }
-    });
 
-    document.head.appendChild(script);
+      const script = document.createElement("script");
+
+      script.src = `${beaconEndpoint}/beacon.min.js`;
+      script.async = true;
+      script.defer = true;
+
+      script.addEventListener("load", () => {
+        if (window.Beacon) {
+          window.Beacon.init({
+            endpoint: beaconEndpoint,
+            cdnEndpoint: beaconCdnEndpoint,
+            siteId: beaconSiteId,
+            debug: beaconDebug,
+            trackClicks: SHOULD_TRACK_CLICKS,
+            trackUserTimings: SHOULD_TRACK_USER_TIMINGS,
+            respectDoNotTrack: RESPECT_DO_NOT_TRACK,
+            directEvents,
+            directPageViews,
+            batchSize,
+            batchTimeout,
+            userId: beaconUserId || window.__BEACON_USER_ID__,
+          });
+        }
+      });
+
+      document.head.appendChild(script);
+    });
   }, [
     batchSize,
     batchTimeout,
@@ -102,24 +138,31 @@ export function Analytics({
 
     window.__OPEN_FEATURE_INITALISED__ = true;
 
-    const script = document.createElement("script");
-
-    script.src = `${beaconEndpoint}/exp-beacon.min.js`;
-    script.async = true;
-
-    script.addEventListener("load", () => {
-      if (window.BeaconOpenFeature) {
-        void window.BeaconOpenFeature.init({
-          debug: beaconDebug,
-          endpoint: beaconEndpoint,
-          cdnEndpoint: beaconCdnEndpoint,
-          siteId: beaconSiteId,
-          bootstrap: openFeatureBootstrap || window.__BEACON_OPENFEATURE_BOOTSTRAP__,
-        });
+    onIdle(() => {
+      if (document.querySelector(`script[src="${beaconEndpoint}/exp-beacon.min.js"]`)) {
+        return;
       }
-    });
 
-    document.head.appendChild(script);
+      const script = document.createElement("script");
+
+      script.src = `${beaconEndpoint}/exp-beacon.min.js`;
+      script.async = true;
+      script.defer = true;
+
+      script.addEventListener("load", () => {
+        if (window.BeaconOpenFeature) {
+          void window.BeaconOpenFeature.init({
+            debug: beaconDebug,
+            endpoint: beaconEndpoint,
+            cdnEndpoint: beaconCdnEndpoint,
+            siteId: beaconSiteId,
+            bootstrap: openFeatureBootstrap || window.__BEACON_OPENFEATURE_BOOTSTRAP__,
+          });
+        }
+      });
+
+      document.head.appendChild(script);
+    });
   }, [
     beaconCdnEndpoint,
     beaconDebug,

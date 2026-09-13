@@ -24,15 +24,20 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
 import { Loader2, Search, SquarePen } from "lucide-react";
-import { type ReactNode, useCallback, useState } from "react";
+import { type ReactNode, lazy, Suspense, useCallback, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
-import { ConversationGroupsDialog } from "../Conversations/ConversationGroupsDialog.js";
 import { ConversationItemActions } from "../Conversations/ConversationItemActions.js";
 import { DiscoverSidebarSection } from "../Sidebar/DiscoverSidebarSection.js";
 import { PlacesNavLinks } from "../Sidebar/PlacesNavLinks.js";
 import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
 import { SidebarHeader } from "../Sidebar/SidebarHeader.js";
+
+const ConversationGroupsDialog = lazy(() =>
+  import("../Conversations/ConversationGroupsDialog.js").then((module) => ({
+    default: module.ConversationGroupsDialog,
+  })),
+);
 
 export interface ChatSidebarProps {
   contentOverride?: ReactNode;
@@ -355,11 +360,13 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
         onConfirm={confirmDeleteChat}
         isLoading={deleteChat.isPending}
       />
-      <ConversationGroupsDialog
-        conversationId={conversationForGroups}
-        canManageGroups
-        onOpenChange={(open) => !open && setConversationForGroups(null)}
-      />
+      <Suspense fallback={null}>
+        <ConversationGroupsDialog
+          conversationId={conversationForGroups}
+          canManageGroups
+          onOpenChange={(open) => !open && setConversationForGroups(null)}
+        />
+      </Suspense>
     </>
   );
 }

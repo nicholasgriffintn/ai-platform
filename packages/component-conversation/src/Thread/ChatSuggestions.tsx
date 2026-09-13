@@ -3,6 +3,7 @@ import {
   useTrackEvent,
   useChatSuggestionContext,
   createChatSuggestions,
+  useStableRandomSeed,
   type ChatSuggestion,
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
@@ -42,7 +43,8 @@ export const ChatSuggestions = ({
     modelConfig,
   });
 
-  const [seed, setSeed] = useState<number>(() => Math.random());
+  const stableSeed = useStableRandomSeed();
+  const [seed, setSeed] = useState<number>(stableSeed);
   const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set());
 
   const generated = useMemo(

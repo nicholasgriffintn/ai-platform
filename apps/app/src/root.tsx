@@ -16,7 +16,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect } from "react";
-import { Outlet, isRouteErrorResponse, ScrollRestoration } from "react-router";
+import { Outlet, isRouteErrorResponse } from "react-router";
 
 import { AnalyticsBootstrap } from "~/components/Core/AnalyticsBootstrap";
 import { AppShell } from "~/components/Core/AppShell";
@@ -58,7 +58,6 @@ export default function Root() {
       <LoadingProvider>
         <AppInitializer>
           <CaptchaProvider>
-            <ScrollRestoration />
             <AnalyticsBootstrap />
             <Outlet />
             <ServiceWorkerRegistration />

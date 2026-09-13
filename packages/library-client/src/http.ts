@@ -39,6 +39,7 @@ export class ApiError extends Error {
   }
 }
 
+import { DEVICE_SYNC_DEVICE_ID_HEADER } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 function extractApiErrorCode(parsed: unknown): string | undefined {
@@ -181,11 +182,18 @@ export function createPolychatClient(options: PolychatClientOptions): PolychatCl
 
     new Headers(requestInit.headers).forEach((value, key) => headers.set(key, value));
 
-    if (!isFormData(requestInit.body) && !headers.has("Content-Type")) {
+    const method = requestInit.method?.toUpperCase() || "GET";
+    const hasBody = requestInit.body !== null && requestInit.body !== undefined;
+
+    if (!hasBody) {
+      headers.delete("Content-Type");
+    } else if (!isFormData(requestInit.body) && !headers.has("Content-Type")) {
       headers.set("Content-Type", "application/json");
     }
 
-    const method = requestInit.method?.toUpperCase() || "GET";
+    if (SAFE_METHODS.has(method)) {
+      headers.delete(DEVICE_SYNC_DEVICE_ID_HEADER);
+    }
 
     if (!SAFE_METHODS.has(method) && options.getCsrfToken) {
       const csrfToken = await options.getCsrfToken();

@@ -16,14 +16,20 @@ import {
   useCancelDelegations,
   useConversationAgentApprovals,
   useConversationRetention,
+  useStableRandomSeed,
   useConversationRoute,
   useConversationScope,
 } from "@ngriffin_uk/polychat-library-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, lazy, Suspense } from "react";
 import { useParams } from "react-router";
 
-import { DelegatePanel } from "../Delegations/DelegatePanel.js";
 import { HomeDiscover } from "../Discover/HomeDiscover.js";
+
+const DelegatePanel = lazy(() =>
+  import("../Delegations/DelegatePanel.js").then((module) => ({
+    default: module.DelegatePanel,
+  })),
+);
 
 interface HomeConversationThreadProps {
   urlModeConfig?: ThreadModeConfig;
@@ -46,7 +52,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
   const agentApprovals = useConversationAgentApprovals(currentConversationId);
   const { mode: retentionMode } = useConversationRetention(modeConfig?.requestOptions);
   const isTemporary = !completionId && retentionMode.retention === "temporary";
-  const [welcomeSeed] = useState(() => Math.random());
+  const welcomeSeed = useStableRandomSeed();
   const welcome = useMemo(
     () =>
       createChatWelcome(
@@ -130,7 +136,9 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
             </DialogDescription>
           </div>
           {delegateConversationId ? (
-            <DelegatePanel conversationId={delegateConversationId} />
+            <Suspense fallback={null}>
+              <DelegatePanel conversationId={delegateConversationId} />
+            </Suspense>
           ) : null}
         </DialogContent>
       </Dialog>

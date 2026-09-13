@@ -85,3 +85,44 @@ export class WebLLMService {
     });
   }
 }
+
+export async function isWebLLMModelCached(modelId: string): Promise<boolean> {
+  try {
+    const { hasModelInCache } = await import("@mlc-ai/web-llm");
+
+    return await hasModelInCache(modelId);
+  } catch {
+    return false;
+  }
+}
+
+export async function pruneStaleWebLLMModels(
+  keepModelId: string | null,
+  candidateModelIds: readonly string[],
+): Promise<string[]> {
+  const removed: string[] = [];
+  let cache: typeof import("@mlc-ai/web-llm");
+
+  try {
+    cache = await import("@mlc-ai/web-llm");
+  } catch {
+    return removed;
+  }
+
+  for (const modelId of candidateModelIds) {
+    if (modelId === keepModelId) {
+      continue;
+    }
+
+    try {
+      if (await cache.hasModelInCache(modelId)) {
+        await cache.deleteModelAllInfoInCache(modelId);
+        removed.push(modelId);
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return removed;
+}

@@ -1,6 +1,6 @@
 import { Button, ButtonLink, PetSprite } from "@ngriffin_uk/polychat-component-ui";
 import { shouldShowDevTools } from "@ngriffin_uk/polychat-library-client";
-import { PET_CLIPS, PET_SHEET_LAYOUT } from "@ngriffin_uk/polychat-schemas";
+import { PET_ASSET_BASE_URL, PET_CLIPS, PET_SHEET_LAYOUT } from "@ngriffin_uk/polychat-schemas";
 
 import { PageShell } from "../Shell/PageShell.js";
 export interface ErrorRouteProps {
@@ -16,7 +16,7 @@ export function ErrorPage({ message, details, stack }: ErrorRouteProps) {
     <PageShell className="flex h-dvh w-full max-w-full overflow-hidden bg-canvas">
       <div className="w-full flex-1 space-y-3 overflow-auto p-4">
         <PetSprite
-          sheetUrl="/pets/ash.png"
+          sheetUrl={`${PET_ASSET_BASE_URL}/ash.png`}
           layout={PET_SHEET_LAYOUT}
           clip={PET_CLIPS.fret}
           label="Ash, out of sorts"

@@ -45,6 +45,7 @@ addRoute(app, "get", "/", {
       skills,
     };
   },
+  cache: { maxAge: 60, staleWhileRevalidate: 300 },
 });
 
 addRoute(app, "get", "/catalogue", {
@@ -64,6 +65,7 @@ addRoute(app, "get", "/catalogue", {
     tools: listCatalogueTools(),
     recipes: listRecipeCatalogueSummaries(),
   }),
+  cache: { maxAge: 1800, staleWhileRevalidate: 3600 },
 });
 
 export default app;

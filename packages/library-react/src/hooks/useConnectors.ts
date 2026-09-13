@@ -5,6 +5,7 @@ import {
   startRecipeConnector,
   storeRecipeConnectorApiKey,
   updateRecipeConnectorAccount,
+  useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
   RecipeConnectorAccount,
@@ -70,9 +71,12 @@ export function useStoreRecipeConnectorApiKey() {
 }
 
 export function useRecipeConnectorAccounts(provider: RecipeConnectorProvider) {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+
   return useQuery({
     queryKey: recipeConnectorAccountsQueryKey(provider),
     queryFn: () => listRecipeConnectorAccounts(provider),
+    enabled: isAuthenticated,
     staleTime: 30 * 1000,
   });
 }

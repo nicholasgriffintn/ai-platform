@@ -5,7 +5,7 @@
   "error": null,
   "id": "pgj9vggs39rgj0ck65a88bk43w",
   "input": {
-    "file": "https://assistant-assets.nickgriffin.uk/podcasts/0.bikvdc15u5c/recording.mp3",
+    "file": "https://assets.polychat.app/podcasts/0.bikvdc15u5c/recording.mp3",
     "prompt": "LLama, AI, Meta.",
     "language": "en",
     "translate": false,

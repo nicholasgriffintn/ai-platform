@@ -7,3 +7,7 @@ export function getCachedWebLLMModels() {
 export async function loadWebLLMModels() {
   return browserModelCatalogue;
 }
+
+export function getWebLLMModelDisplayName(modelId: string): string {
+  return browserModelCatalogue[modelId]?.name ?? modelId;
+}

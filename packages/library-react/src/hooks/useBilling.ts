@@ -3,6 +3,7 @@ import {
   createBillingPortalSession,
   listPlans,
   setOverageEnabled,
+  useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -12,9 +13,12 @@ const PORTAL_AVAILABILITY_KEY = ["stripe", "portal-available"] as const;
 const OVERAGE_AVAILABILITY_KEY = ["stripe", "overage-available"] as const;
 
 export function useSubscription() {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+
   return useQuery<any>({
     queryKey: ["subscription"],
     queryFn: () => apiService.getSubscription(),
+    enabled: isAuthenticated,
   });
 }
 

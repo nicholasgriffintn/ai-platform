@@ -137,11 +137,19 @@ addRoute(app, "get", "/:petId/sheet", {
     },
   },
   handler: async ({ params, raw, serviceContext }) => {
-    const { data, contentType } = await readPetSheet(serviceContext, params.petId);
+    const { data, contentType, etag } = await readPetSheet(serviceContext, params.petId);
+
+    if (raw.req.header("If-None-Match") === etag) {
+      return raw.newResponse(null, 304, {
+        ETag: etag,
+        "Cache-Control": "private, max-age=3600, stale-while-revalidate=86400",
+      });
+    }
 
     return raw.newResponse(data, 200, {
       "Content-Type": contentType,
-      "Cache-Control": "private, max-age=3600",
+      "Cache-Control": "private, max-age=3600, stale-while-revalidate=86400",
+      ETag: etag,
       "X-Content-Type-Options": "nosniff",
     });
   },

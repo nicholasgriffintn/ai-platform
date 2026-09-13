@@ -1,12 +1,19 @@
-import type { ModelSource } from "@ngriffin_uk/polychat-component-models";
+import type {
+  BrowserModelDownloadProgress,
+  ModelSource,
+} from "@ngriffin_uk/polychat-component-models";
 import {
   useUIStore,
   appendOnboardingSeen,
+  getCachedWebLLMModels,
   MODEL_SOURCES_ONBOARDING_KEYS,
+  pruneStaleWebLLMModels,
   useAuthStatus,
+  useBrowserModelConsent,
   useUser,
+  WebLLMService,
 } from "@ngriffin_uk/polychat-library-react";
-import { lazy, Suspense, useEffect, useMemo, useRef } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useShellHost } from "./ShellHostContext.js";
 
@@ -28,6 +35,12 @@ const ModelSourcesDialog = lazy(() =>
   })),
 );
 
+const BrowserModelConsentDialog = lazy(() =>
+  import("@ngriffin_uk/polychat-component-models").then((module) => ({
+    default: module.BrowserModelConsentDialog,
+  })),
+);
+
 export function ShellDialogs() {
   const host = useShellHost();
   const {
@@ -40,6 +53,23 @@ export function ShellDialogs() {
   } = useUIStore();
   const { isAuthenticated, isLoading, user, userSettings, updateUserSettings } = useAuthStatus();
   const { providerSettings, isLoadingProviderSettings } = useUser({ enabled: isAuthenticated });
+  const {
+    pendingModelId,
+    pendingModelName,
+    confirmPendingBrowserModel,
+    cancelPendingBrowserModel,
+  } = useBrowserModelConsent();
+
+  const handleDownloadBrowserModel = useCallback(
+    async (
+      modelId: string,
+      onProgress: (progress: BrowserModelDownloadProgress) => void,
+    ): Promise<void> => {
+      await WebLLMService.getInstance().init(modelId, onProgress);
+      await pruneStaleWebLLMModels(modelId, Object.keys(getCachedWebLLMModels()));
+    },
+    [],
+  );
   const surface = host.modelSourceSurface ?? "web";
   const onboardingKey = MODEL_SOURCES_ONBOARDING_KEYS[surface];
   const onboardingHandledFor = useRef<string | null>(null);
@@ -136,6 +166,19 @@ export function ShellDialogs() {
             open={showModelSources}
             sources={modelSources}
             onOpenChange={setShowModelSources}
+          />
+        </Suspense>
+      )}
+      {pendingModelId && (
+        <Suspense fallback={null}>
+          <BrowserModelConsentDialog
+            key={pendingModelId}
+            open
+            modelId={pendingModelId}
+            modelName={pendingModelName ?? pendingModelId}
+            onDownload={handleDownloadBrowserModel}
+            onConfirm={confirmPendingBrowserModel}
+            onCancel={cancelPendingBrowserModel}
           />
         </Suspense>
       )}

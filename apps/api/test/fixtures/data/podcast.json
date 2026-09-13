@@ -8,10 +8,10 @@
   },
   {
     "role": "assistant",
-    "content": "Podcast Uploaded [Listen Here](https://assistant-assets.nickgriffin.uk/podcasts/0.rc71krp9ep/recording.mp3)",
+    "content": "Podcast Uploaded [Listen Here](https://assets.polychat.app/podcasts/0.rc71krp9ep/recording.mp3)",
     "name": "podcast_upload",
     "data": {
-      "url": "https://assistant-assets.nickgriffin.uk/podcasts/0.rc71krp9ep/recording.mp3"
+      "url": "https://assets.polychat.app/podcasts/0.rc71krp9ep/recording.mp3"
     },
     "id": "sl1vyn",
     "timestamp": 1731777816963
@@ -25,7 +25,7 @@
       "model": "thomasmol/whisper-diarization",
       "version": "cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f",
       "input": {
-        "file": "https://assistant-assets.nickgriffin.uk/podcasts/0.rc71krp9ep/recording.mp3",
+        "file": "https://assets.polychat.app/podcasts/0.rc71krp9ep/recording.mp3",
         "group_segments": true,
         "language": "en",
         "num_speakers": 2,
@@ -255,7 +255,7 @@
   {
     "role": "assistant",
     "name": "podcast_generate_image",
-    "content": "Podcast Featured Image Uploaded: [0.95w7cvqxyjv](https://assistant-assets.nickgriffin.uk/podcasts/0.95w7cvqxyjv/featured.png)",
+    "content": "Podcast Featured Image Uploaded: [0.95w7cvqxyjv](https://assets.polychat.app/podcasts/0.95w7cvqxyjv/featured.png)",
     "data": {},
     "id": "4wjnc",
     "timestamp": 1731778011517

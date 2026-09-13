@@ -4,6 +4,7 @@ import {
   deleteSkill,
   fetchPersonalSkills,
   setPersonalSkillEnabled,
+  useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
   SkillAvailabilityResponse,
@@ -36,11 +37,12 @@ function useInvalidateSkillScope(projectId?: string) {
 
 export function usePersonalSkills(enabled = true) {
   const queryClient = useQueryClient();
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const query = useQuery({
     queryKey: PERSONAL_SKILLS_QUERY_KEY,
     queryFn: fetchPersonalSkills,
     staleTime: 1000 * 60 * 5,
-    enabled,
+    enabled: enabled && isAuthenticated,
   });
   const setEnabled = useMutation({
     mutationFn: ({ skillId, enabled: nextEnabled }: { skillId: string; enabled: boolean }) =>

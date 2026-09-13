@@ -1,5 +1,5 @@
 const STATIC_CACHE = "polychat-static-v1";
-const LEGACY_CACHES = ["polychat-pwa-v1"];
+const LEGACY_CACHES = new Set(["polychat-pwa-v1"]);
 const MAX_ENTRIES = 100;
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 const CACHEABLE_DESTINATIONS = new Set(["script", "style", "image", "font"]);
@@ -95,8 +95,12 @@ async function cacheFirst(request) {
     const response = await fetch(request);
 
     if (response && (response.status === 200 || response.status === 0)) {
-      await cache.put(request, response.clone());
-      await trimCache(cache);
+      const cacheControl = response.headers.get("cache-control") ?? "";
+
+      if (!cacheControl.includes("no-store")) {
+        await cache.put(request, response.clone());
+        await trimCache(cache);
+      }
     }
 
     return response;
@@ -109,6 +113,18 @@ async function cacheFirst(request) {
   }
 }
 
+function shouldBypass(request, url) {
+  if (url.pathname.startsWith("/__manifest")) {
+    return true;
+  }
+
+  if (url.origin !== self.location.origin) {
+    return true;
+  }
+
+  return false;
+}
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
 
@@ -117,6 +133,16 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (!CACHEABLE_DESTINATIONS.has(request.destination)) {
+    return;
+  }
+
+  const url = new URL(request.url);
+
+  if (shouldBypass(request, url)) {
+    return;
+  }
+
+  if (url.pathname === "/sw.js") {
     return;
   }
 
@@ -133,11 +159,23 @@ self.addEventListener("activate", (event) => {
             .filter(
               (cacheName) =>
                 cacheName !== STATIC_CACHE &&
-                (cacheName.startsWith("workbox-") || LEGACY_CACHES.includes(cacheName)),
+                (cacheName.startsWith("workbox-") || LEGACY_CACHES.has(cacheName)),
             )
             .map((cacheName) => caches.delete(cacheName)),
         );
       })
       .then(() => clients.claim()),
+  );
+
+  event.waitUntil(
+    (async () => {
+      if ("navigationPreload" in self.registration) {
+        try {
+          await self.registration.navigationPreload.enable();
+        } catch {
+          // Navigation preload is best-effort.
+        }
+      }
+    })(),
   );
 });

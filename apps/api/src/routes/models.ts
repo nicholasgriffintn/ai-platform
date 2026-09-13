@@ -53,6 +53,7 @@ addRoute(app, "get", "/", {
     500: { description: "Server error", schema: errorResponseSchema },
   },
   handler: async ({ serviceContext, user }) => listModels(serviceContext.env, user),
+  cache: { maxAge: 60, staleWhileRevalidate: 300 },
 });
 
 addRoute(app, "get", "/catalogue", {
@@ -68,6 +69,7 @@ addRoute(app, "get", "/catalogue", {
     500: { description: "Server error", schema: errorResponseSchema },
   },
   handler: async () => listModelCatalogue(),
+  cache: { maxAge: 1800, staleWhileRevalidate: 3600 },
 });
 
 addRoute(app, "get", "/capabilities", {
@@ -82,6 +84,7 @@ addRoute(app, "get", "/capabilities", {
     500: { description: "Server error", schema: errorResponseSchema },
   },
   handler: async () => listStrengths(),
+  cache: { maxAge: 1800, staleWhileRevalidate: 3600 },
 });
 
 addRoute(app, "get", "/capabilities/:capability", {
@@ -123,6 +126,7 @@ addRoute(app, "get", "/modalities", {
     500: { description: "Server error", schema: errorResponseSchema },
   },
   handler: async () => listModalities(),
+  cache: { maxAge: 1800, staleWhileRevalidate: 3600 },
 });
 
 addRoute(app, "get", "/modalities/:modality", {

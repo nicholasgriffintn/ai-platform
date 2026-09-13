@@ -79,6 +79,17 @@ interface BaseRouteConfig<TBody, TParams, TQuery> {
   querySchema?: ZodType<TQuery>;
   /** OpenAPI response definitions. Keyed by status code. */
   responses?: Record<number, RouteResponseSpec>;
+  /**
+   * Opt-in browser caching for GET JSON responses. Emits a weak ETag,
+   */
+  cache?: RouteCacheConfig;
+}
+
+export interface RouteCacheConfig {
+  /** Browser max-age in seconds. */
+  maxAge: number;
+  /** stale-while-revalidate window in seconds. Defaults to maxAge. */
+  staleWhileRevalidate?: number;
 }
 
 type RouteConfig<TBody, TParams, TQuery> =
@@ -178,6 +189,17 @@ export function addRoute<TBody = unknown, TParams = unknown, TQuery = unknown>(
       params: config.paramSchema ? (c.req.valid("param" as never) as TParams) : undefined,
       query: config.querySchema ? (c.req.valid("query" as never) as TQuery) : undefined,
     };
+    const respond = (result: unknown): Response | Promise<Response> => {
+      if (result instanceof Response) {
+        return result;
+      }
+
+      if (method === "get" && config.cache) {
+        return respondWithRouteCache(c, result, config.cache);
+      }
+
+      return ResponseFactory.success(c, result);
+    };
 
     if (config.auth === true) {
       const result = await config.handler({
@@ -186,11 +208,7 @@ export function addRoute<TBody = unknown, TParams = unknown, TQuery = unknown>(
         anonymousUser: c.get("anonymousUser") as AnonymousUser | undefined,
       });
 
-      if (result instanceof Response) {
-        return result;
-      }
-
-      return ResponseFactory.success(c, result);
+      return respond(result);
     }
 
     if (config.auth === "service") {
@@ -201,11 +219,7 @@ export function addRoute<TBody = unknown, TParams = unknown, TQuery = unknown>(
         service: requireAuthenticatedService(c, config.serviceScope),
       });
 
-      if (result instanceof Response) {
-        return result;
-      }
-
-      return ResponseFactory.success(c, result);
+      return respond(result);
     }
 
     let user = c.get("user") as IUser | undefined;
@@ -226,14 +240,61 @@ export function addRoute<TBody = unknown, TParams = unknown, TQuery = unknown>(
 
     const result = await config.handler(handlerCtx);
 
-    if (result instanceof Response) {
-      return result;
-    }
-
-    return ResponseFactory.success(c, result);
+    return respond(result);
   };
 
   middlewares.push(handler);
 
   app[method](path, ...middlewares);
+}
+
+function weakBodyEtag(body: string): string {
+  let hash = 0x811c9dc5;
+
+  for (let index = 0; index < body.length; index += 1) {
+    hash ^= body.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+
+  return `W/"${(hash >>> 0).toString(16)}-${body.length.toString(16)}"`;
+}
+
+async function respondWithRouteCache(
+  c: Context,
+  data: unknown,
+  cache: RouteCacheConfig,
+): Promise<Response> {
+  const response = ResponseFactory.success(c, data);
+  const body = await response.text();
+  const etag = weakBodyEtag(body);
+  const headers = new Headers(response.headers);
+
+  headers.set("ETag", etag);
+
+  const staleWhileRevalidate = cache.staleWhileRevalidate ?? cache.maxAge;
+
+  headers.set(
+    "Cache-Control",
+    `private, max-age=${cache.maxAge}, stale-while-revalidate=${staleWhileRevalidate}`,
+  );
+
+  const varied = new Set(
+    (headers.get("Vary") ?? "")
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean),
+  );
+
+  varied.add("Origin");
+  varied.add("Authorization");
+  varied.add("Cookie");
+  headers.set("Vary", [...varied].join(", "));
+
+  const ifNoneMatch = c.req.header("If-None-Match");
+
+  if (ifNoneMatch === etag || ifNoneMatch === "*") {
+    return new Response(null, { status: 304, headers });
+  }
+
+  return new Response(body, { status: response.status, headers });
 }

@@ -19,13 +19,13 @@ describe("model selection", () => {
 
     expect(
       screen
-        .getAllByRole("option")
-        .every((option) => option.getAttribute("aria-selected") === "false"),
+        .getAllByRole("button", { name: /tier$/ })
+        .every((tier) => tier.getAttribute("aria-pressed") === "false"),
     ).toBe(true);
     rerender(
       <ModelTierPicker runtime="hosted" selectedTier={null} active onSelectTier={vi.fn()} />,
     );
-    expect(screen.getByRole("option", { name: "Default tier" }).getAttribute("aria-selected")).toBe(
+    expect(screen.getByRole("button", { name: "Default tier" }).getAttribute("aria-pressed")).toBe(
       "true",
     );
   });

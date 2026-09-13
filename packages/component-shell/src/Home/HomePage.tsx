@@ -2,15 +2,11 @@ import {
   ConversationSurfaceLayout,
   type ThreadModeConfig,
 } from "@ngriffin_uk/polychat-component-conversation";
-import {
-  CanvasGenerationsView,
-  CanvasSidebarControls,
-} from "@ngriffin_uk/polychat-component-experiences/media";
 import { Button, PageTitle } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useComposerPrefill, useTrackEvent } from "@ngriffin_uk/polychat-library-react";
 import { Image as ImageIcon, MessageCircle } from "lucide-react";
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { useParams } from "react-router";
 
 import { useCanvasStudio } from "../Apps/Canvas/useCanvasStudio.js";
@@ -21,6 +17,18 @@ import { ProductModeHeader } from "../Header/ProductModeHeader.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { HomeConversationThread } from "./HomeConversationThread.js";
 import { useHomeChatModeConfig } from "./useHomeChatModeConfig.js";
+
+const CanvasGenerationsView = lazy(() =>
+  import("@ngriffin_uk/polychat-component-experiences/media").then((module) => ({
+    default: module.CanvasGenerationsView,
+  })),
+);
+
+const CanvasSidebarControls = lazy(() =>
+  import("@ngriffin_uk/polychat-component-experiences/media").then((module) => ({
+    default: module.CanvasSidebarControls,
+  })),
+);
 
 export interface HomePageProps {
   hostModeConfig?: ThreadModeConfig;
@@ -55,7 +63,13 @@ export function HomePage({ hostModeConfig }: HomePageProps = {}) {
     <PageShell
       sidebarContent={
         <ChatSidebar
-          contentOverride={isCanvasMode ? <CanvasSidebarControls canvas={canvas} /> : undefined}
+          contentOverride={
+            isCanvasMode ? (
+              <Suspense fallback={null}>
+                <CanvasSidebarControls canvas={canvas} />
+              </Suspense>
+            ) : undefined
+          }
           headerActions={
             <Button
               type="button"
@@ -74,7 +88,9 @@ export function HomePage({ hostModeConfig }: HomePageProps = {}) {
     >
       {isCanvasMode ? (
         <ConversationSurfaceLayout header={<ProductModeHeader />}>
-          <CanvasGenerationsView canvas={canvas} />
+          <Suspense fallback={null}>
+            <CanvasGenerationsView canvas={canvas} />
+          </Suspense>
         </ConversationSurfaceLayout>
       ) : (
         <ConversationWorkbenchLayout

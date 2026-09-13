@@ -67,7 +67,7 @@ const COMMON_CSP = {
   imgSrc: [
     "https://appleid.apple.com",
     "openweathermap.org",
-    "assistant-assets.nickgriffin.uk",
+    "assets.polychat.app",
     "icons.duckduckgo.com",
     "avatars.githubusercontent.com/u/",
     "https://logos.composio.dev",
@@ -100,10 +100,10 @@ const COMMON_CSP = {
     "https://us.aws.cdn.hf.co",
     "https://raw.githubusercontent.com",
     "https://cdn-lfs-us-1.hf.co",
-    "https://assistant-assets.nickgriffin.uk",
+    "https://assets.polychat.app",
     "https://strudel.cc",
   ],
-  mediaSrc: ["'self'", "data:", "https://assistant-assets.nickgriffin.uk", API_BASE_URL],
+  mediaSrc: ["'self'", "data:", "https://assets.polychat.app", API_BASE_URL],
   workerSrc: ["'self'", "blob:"],
 } as const;
 

@@ -6,6 +6,12 @@ export const PET_FRAME_WIDTH = 192;
 export const PET_FRAME_HEIGHT = 208;
 export const PET_SHEET_COLUMNS = 8;
 
+export const PET_ASSET_BASE_URL = "https://assets.polychat.app/pets";
+
+export function petPresetSheetUrl(slug: string): string {
+  return `${PET_ASSET_BASE_URL}/${slug}.png`;
+}
+
 export function getPetSpriteHeight(
   size: number,
   frameLayout: { frameWidth: number; frameHeight: number } = {
@@ -151,57 +157,57 @@ export const PET_PRESETS: readonly PetPreset[] = [
     slug: "pip",
     label: "Pip",
     description: "The house poly. Green, curious, slightly too pleased with itself.",
-    sheetUrl: "/pets/pip.png",
+    sheetUrl: `${PET_ASSET_BASE_URL}/pip.png`,
   },
   {
     slug: "ash",
     label: "Ash",
     description: "Muted grey, no crest, no fuss. Moves less than the others and misses nothing.",
-    sheetUrl: "/pets/ash.png",
+    sheetUrl: `${PET_ASSET_BASE_URL}/ash.png`,
   },
   {
     slug: "kea",
     label: "Kea",
     description: "Tropical blue with a red crest and no volume control.",
-    sheetUrl: "/pets/kea.png",
+    sheetUrl: `${PET_ASSET_BASE_URL}/kea.png`,
   },
   {
     slug: "prism",
     label: "Prism",
     description:
       "Violet and faceted. Tilts rather than bobs, and maintains it is abstract, not confused.",
-    sheetUrl: "/pets/prism.png",
+    sheetUrl: `${PET_ASSET_BASE_URL}/prism.png`,
   },
   {
     slug: "bit",
     label: "Bit",
     description: "A terminal with legs. Blinks in phosphor green and has opinions about fonts.",
-    sheetUrl: "/pets/bit.png",
+    sheetUrl: `${PET_ASSET_BASE_URL}/bit.png`,
   },
   {
     slug: "sprocket",
     label: "Sprocket",
     description:
       "Brass and single-lensed, convinced everything would run better with one more gear.",
-    sheetUrl: "/pets/sprocket.png",
+    sheetUrl: `${PET_ASSET_BASE_URL}/sprocket.png`,
   },
   {
     slug: "flask",
     label: "Flask",
     description: "Half full and quietly fizzing. Bobs when it gets excited, which is often.",
-    sheetUrl: "/pets/flask.png",
+    sheetUrl: `${PET_ASSET_BASE_URL}/flask.png`,
   },
   {
     slug: "moss",
     label: "Moss",
     description: "A rock with a sprout and no urgency whatsoever. Moves when it feels like it.",
-    sheetUrl: "/pets/moss.png",
+    sheetUrl: `${PET_ASSET_BASE_URL}/moss.png`,
   },
   {
     slug: "wisp",
     label: "Wisp",
     description: "Present, briefly. Remembers nothing and is at peace with it.",
-    sheetUrl: "/pets/wisp.png",
+    sheetUrl: `${PET_ASSET_BASE_URL}/wisp.png`,
   },
 ];
 

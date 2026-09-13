@@ -50,6 +50,7 @@ import { updateConversationInChatCaches } from "../conversation-cache.js";
 import { toRunMessages } from "../lib/run-messages.js";
 import { useConversationScope } from "../state/conversation-scope.js";
 import { useLoadingActions } from "../state/LoadingContext.js";
+import { useWebLLMConsentStore } from "../state/stores/webLLMConsentStore.js";
 import { useUsageStore } from "../state/usageStore.js";
 import { streamAgentRun } from "./agent-run.js";
 import { streamMachineModelRun } from "./machine-run.js";
@@ -520,6 +521,11 @@ export function useStreamingResponse(
 
           if (!currentModel) {
             throw new Error("Cannot generate local response without a selected model.");
+          }
+
+          if (!useWebLLMConsentStore.getState().hasConsented(currentModel)) {
+            useWebLLMConsentStore.getState().requestConsent(currentModel);
+            throw new Error("Confirm the browser model download before generating a response.");
           }
 
           const handleProgress = (text: string) => {

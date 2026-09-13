@@ -259,7 +259,7 @@ export async function deletePet(context: ServiceContext, petId: string): Promise
 export async function readPetSheet(
   context: ServiceContext,
   petId: string,
-): Promise<{ data: ArrayBuffer; contentType: string }> {
+): Promise<{ data: ArrayBuffer; contentType: string; etag: string }> {
   const user = context.requireUser();
   const record = await context.repositories.userPets.getUserPet(user.id, petId);
 
@@ -277,6 +277,7 @@ export async function readPetSheet(
   return {
     data: await object.arrayBuffer(),
     contentType: record.sheet_key.endsWith(".png") ? "image/png" : "image/webp",
+    etag: `W/"${record.sheet_key}-${record.layout_id}"`,
   };
 }
 

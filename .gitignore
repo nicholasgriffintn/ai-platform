@@ -195,3 +195,6 @@ xcuserdata/
 TestResults/
 
 .worktrees
+
+
+.tmp

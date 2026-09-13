@@ -14,4 +14,5 @@ export * from "./Selector/ModelsList";
 export * from "./Selector/RuntimeRail";
 export * from "./Selector/useHoverPreviewDismiss";
 export * from "./InlineModelPicker";
+export * from "./Browser/BrowserModelConsentDialog";
 export * from "./Onboarding/ModelSourcesDialog";

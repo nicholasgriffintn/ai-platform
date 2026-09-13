@@ -5,6 +5,7 @@ import {
   listAssistantRecipes,
   listRecipeInstallations,
   updateRecipeInstallation,
+  useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
   RecipeConfiguration,
@@ -45,10 +46,13 @@ function upsertRecipeInstallation(
 }
 
 export function useAssistantRecipes({ enabled = true }: { enabled?: boolean } = {}) {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
+
   return useQuery({
     queryKey: ASSISTANT_RECIPES_QUERY_KEY,
     queryFn: listAssistantRecipes,
-    enabled,
+    enabled: enabled && isAuthenticated && !isAuthenticationLoading,
     staleTime: RECIPE_CATALOG_STALE_TIME,
     gcTime: RECIPE_CATALOG_GC_TIME,
   });

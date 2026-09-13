@@ -41,6 +41,7 @@ import {
 import { resolveModelTierLineup } from "../lib/model-lineup-view.js";
 import { getPickerLocationLabel, getPickerModelSite } from "../lib/model-picker.js";
 import { useIsLoading, useLoadingMessage, useLoadingProgress } from "../state/LoadingContext.js";
+import { useWebLLMConsentStore } from "../state/stores/webLLMConsentStore.js";
 import { DEVICE_MODELS_QUERY_KEY } from "./useDeviceModels.js";
 import { useLastModelSelection } from "./useLastModelSelection.js";
 import { useModelPickerCatalogue } from "./useModelPickerCatalogue.js";
@@ -332,6 +333,10 @@ export function useModelSelection({
   ]);
 
   useEffect(() => {
+    if (computeSite === "browser") {
+      return;
+    }
+
     if (computeSite !== "hosted" && model === null && defaultModelId) {
       selectModelWithDefaults(defaultModelId);
       onModelChange?.(defaultModelId, filteredModels[defaultModelId]);
@@ -363,6 +368,22 @@ export function useModelSelection({
 
       if (computeSite === nextComputeSite && selectedMachineId === machineId) {
         void runtimeOptionsState.refresh();
+
+        return;
+      }
+
+      if (nextComputeSite === "browser") {
+        setComputeSite("browser");
+        setSelectedMachineId(undefined);
+        setSelectedTeammateId(null);
+        selectModelWithDefaults(null);
+
+        trackEvent({
+          name: "set_model_source",
+          category: "conversation",
+          label: "model_source",
+          value: nextComputeSite,
+        });
 
         return;
       }
@@ -405,6 +426,17 @@ export function useModelSelection({
       const nextModel = availableModels[newModel];
 
       if (!nextModel || nextModel.isExecutable === false) {
+        return false;
+      }
+
+      if (
+        getPickerModelSite(nextModel) === "browser" &&
+        nextModel.provider === "web-llm" &&
+        !useWebLLMConsentStore.getState().hasConsented(newModel)
+      ) {
+        useWebLLMConsentStore.getState().requestConsent(newModel);
+        setIsOpen(false);
+
         return false;
       }
 

@@ -1,6 +1,7 @@
 import {
   fetchToolConfigurations,
   saveToolConfiguration,
+  useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
   ModelToolConfiguration,
@@ -13,9 +14,11 @@ export const TOOL_CONFIGURATIONS_QUERY_KEY = ["toolConfigurations"];
 
 export function useToolConfigurations() {
   const queryClient = useQueryClient();
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const query = useQuery({
     queryKey: TOOL_CONFIGURATIONS_QUERY_KEY,
     queryFn: fetchToolConfigurations,
+    enabled: isAuthenticated,
   });
   const save = useMutation({
     mutationFn: ({

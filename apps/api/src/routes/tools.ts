@@ -52,6 +52,7 @@ addRoute(app, "get", "/", {
 
     return getAvailableTools(isPro, Boolean(user?.id));
   },
+  cache: { maxAge: 300, staleWhileRevalidate: 600 },
 });
 
 const toolParamsSchema = z.object({ id: z.string().min(1) });

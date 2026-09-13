@@ -42,3 +42,36 @@ export function applySecurityHeaders(headers: Headers, requestUrl: string): Head
 
   return headers;
 }
+
+const HASHED_ASSET_PATTERN =
+  /^\/assets\/.+-[A-Za-z0-9_-]{6,}\.(?:js|css|woff2?|png|svg|ico|webp|avif|mp3|json)$/;
+
+const LONG_LIVED_STATIC_PATHS = new Set([
+  "/site.webmanifest",
+  "/opensearch.xml",
+  "/favicon.ico",
+  "/favicon.svg",
+  "/favicon-96x96.png",
+  "/apple-touch-icon.png",
+  "/sw.js",
+]);
+
+function isLongLivedStaticPath(pathname: string): boolean {
+  if (LONG_LIVED_STATIC_PATHS.has(pathname)) {
+    return true;
+  }
+
+  return pathname.startsWith("/ios/") || pathname.startsWith("/android/");
+}
+
+export function applyCacheHeaders(headers: Headers, requestUrl: string): Headers {
+  const { pathname } = new URL(requestUrl);
+
+  if (HASHED_ASSET_PATTERN.test(pathname)) {
+    headers.set("Cache-Control", "public, max-age=31536000, immutable");
+  } else if (isLongLivedStaticPath(pathname)) {
+    headers.set("Cache-Control", "public, max-age=86400, stale-while-revalidate=86400");
+  }
+
+  return headers;
+}
