@@ -19,6 +19,7 @@ import {
   Bot,
   FileDiff,
   Files,
+  FileText,
   MonitorPlay,
   NotebookPen,
   PanelRightClose,
@@ -70,6 +71,7 @@ const COMPACT_PANE_TABS_WIDTH = 520;
 
 const PANE_PRESENTATION = {
   context: { label: "Context", icon: NotebookPen },
+  artifact: { label: "Artifact", icon: FileText },
   activity: { label: "Activity", icon: Activity },
   preview: { label: "Preview", icon: MonitorPlay },
   changes: { label: "Changes", icon: FileDiff },
@@ -204,14 +206,21 @@ function SelectedPane({
   selectedPane,
   panels,
   idPrefix,
-}: Pick<ProjectWorkbenchShellProps, "selectedPane" | "panels"> & { idPrefix: string }) {
+  flush = false,
+}: Pick<ProjectWorkbenchShellProps, "selectedPane" | "panels"> & {
+  idPrefix: string;
+  flush?: boolean;
+}) {
   return (
     <section
       id={`${idPrefix}-${selectedPane}-panel`}
       role="tabpanel"
       aria-labelledby={`${idPrefix}-${selectedPane}-tab`}
       tabIndex={0}
-      className="polychat-motion-enter min-h-0 flex-1 overflow-auto px-4 py-3 outline-none"
+      className={cn(
+        "polychat-motion-enter min-h-0 flex-1 overflow-auto outline-none",
+        flush ? "p-0" : "px-4 py-3",
+      )}
     >
       {panels[selectedPane] ?? null}
     </section>
@@ -484,6 +493,7 @@ export function ProjectWorkbenchShell({
                     selectedPane={activePane}
                     panels={panels}
                     idPrefix="project-workbench-desktop"
+                    flush={activePane === "artifact"}
                   />
                 </aside>
               </>
@@ -512,6 +522,7 @@ export function ProjectWorkbenchShell({
           selectedPane={activePane}
           panels={panels}
           idPrefix="project-workbench-mobile"
+          flush={activePane === "artifact"}
         />
       </DialogContent>
     </Dialog>

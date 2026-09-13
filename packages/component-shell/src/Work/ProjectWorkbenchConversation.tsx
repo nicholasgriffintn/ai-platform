@@ -1,4 +1,8 @@
-import { RunChangesView, RunFilesView } from "@ngriffin_uk/polychat-component-content";
+import {
+  ArtifactWorkbenchPanel,
+  RunChangesView,
+  RunFilesView,
+} from "@ngriffin_uk/polychat-component-content";
 import { RunActivityPanel } from "@ngriffin_uk/polychat-component-conversation";
 import type { ConversationRunSteering } from "@ngriffin_uk/polychat-component-conversation";
 import {
@@ -15,8 +19,12 @@ import {
 import { buildAgentTraceEntries } from "@ngriffin_uk/polychat-library-chat/agent-trace";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { buildRunActivityEntries } from "@ngriffin_uk/polychat-library-chat/run-activity";
+import { getComputerObservations } from "@ngriffin_uk/polychat-library-chat/tool-results";
 import { getOutputArtifactContent, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
+  ARTIFACT_WORKBENCH_MIN_WIDTH,
+  ArtifactWorkbenchProvider,
+  useArtifactWorkbench,
   useProjectWorkbenchControls,
   useProjectWorkbenchDiff,
   useProjectWorkbenchPreferences,
@@ -39,6 +47,7 @@ import { useMemo, type ReactNode } from "react";
 import { ConversationBriefPanel } from "../Conversations/ConversationBriefPanel.js";
 import { useConversationBriefAttention } from "../Conversations/useConversationBriefAttention.js";
 import { ProjectDelegatesPanel } from "../Delegations/ProjectDelegatesPanel.js";
+import { WorkbenchComputerPreview } from "./WorkbenchComputerPreview.js";
 
 export interface ProjectWorkbenchConversationSlots {
   runSteering?: ConversationRunSteering;
@@ -56,7 +65,15 @@ interface ProjectWorkbenchConversationProps {
   children: (slots: ProjectWorkbenchConversationSlots) => ReactNode;
 }
 
-export function ProjectWorkbenchConversation({
+export function ProjectWorkbenchConversation(props: ProjectWorkbenchConversationProps) {
+  return (
+    <ArtifactWorkbenchProvider>
+      <ProjectWorkbenchConversationInner {...props} />
+    </ArtifactWorkbenchProvider>
+  );
+}
+
+function ProjectWorkbenchConversationInner({
   projectId,
   conversationId,
   hasCodingEnvironment,
@@ -110,6 +127,11 @@ export function ProjectWorkbenchConversation({
     brief.data?.document?.revision,
     brief.isFetched,
   );
+  const computerObservations = useMemo(
+    () => getComputerObservations(conversationMessages),
+    [conversationMessages],
+  );
+  const latestComputerObservation = computerObservations[computerObservations.length - 1];
   const attention = useMemo(() => {
     if (briefAttention) {
       return briefAttention;
@@ -125,8 +147,12 @@ export function ProjectWorkbenchConversation({
       return task ? { key: `${task.id}:${blockedReason}`, pane: "activity" as const } : undefined;
     }
 
+    if (latestComputerObservation) {
+      return { key: `computer:${latestComputerObservation.id}`, pane: "preview" as const };
+    }
+
     return undefined;
-  }, [briefAttention, task]);
+  }, [briefAttention, task, latestComputerObservation]);
   const isWorkbenchEligible =
     Boolean(effectiveConversationId) ||
     hasCodingEnvironment ||
@@ -224,8 +250,9 @@ export function ProjectWorkbenchConversation({
   const artifacts = runsQuery.currentRun?.manifest?.artifacts ?? [];
   const availablePanes = deriveProjectWorkbenchPanes({
     hasContext: Boolean(effectiveConversationId),
+    hasArtifact: false,
     hasActivity: Boolean(runsQuery.currentRun || activityEntries.length > 0 || services.length > 0),
-    hasPreview: previewServices.length > 0,
+    hasPreview: previewServices.length > 0 || computerObservations.length > 0,
     hasChanges: recordedFiles.length > 0 || Boolean(diff.content),
     hasFiles: recordedFiles.length > 0 || artifacts.length > 0,
     hasProof: Boolean(runsQuery.currentRun),
@@ -259,32 +286,37 @@ export function ProjectWorkbenchConversation({
       </>
     ),
     preview: (
-      <ProjectWorkbenchPreview
-        services={previewServices}
-        selectedServiceName={preview.selectedServiceName}
-        preview={preview.preview}
-        state={preview.state}
-        canCreate={preview.canCreate}
-        canSubmitFeedback={canSubmitPreviewFeedback}
-        disabledReason={preview.disabledReason}
-        feedbackDisabledReason={previewFeedbackDisabledReason}
-        isCreating={preview.isCreating}
-        isRevoking={preview.isRevoking}
-        isSubmittingFeedback={controls.isSubmittingInstruction}
-        errorMessage={
-          preview.error
-            ? getErrorMessage(preview.error, "Preview access is temporarily unavailable")
-            : undefined
-        }
-        onSelectedServiceChange={preview.setSelectedServiceName}
-        onCreate={preview.create}
-        onRefresh={preview.refresh}
-        onOpenExternal={preview.openExternal}
-        onRevoke={preview.revoke}
-        onSubmitFeedback={async (feedback) => {
-          await controls.addInstruction(formatProjectWorkbenchPreviewFeedback(feedback));
-        }}
-      />
+      <>
+        {computerObservations.length > 0 ? (
+          <WorkbenchComputerPreview observations={computerObservations} />
+        ) : null}
+        <ProjectWorkbenchPreview
+          services={previewServices}
+          selectedServiceName={preview.selectedServiceName}
+          preview={preview.preview}
+          state={preview.state}
+          canCreate={preview.canCreate}
+          canSubmitFeedback={canSubmitPreviewFeedback}
+          disabledReason={preview.disabledReason}
+          feedbackDisabledReason={previewFeedbackDisabledReason}
+          isCreating={preview.isCreating}
+          isRevoking={preview.isRevoking}
+          isSubmittingFeedback={controls.isSubmittingInstruction}
+          errorMessage={
+            preview.error
+              ? getErrorMessage(preview.error, "Preview access is temporarily unavailable")
+              : undefined
+          }
+          onSelectedServiceChange={preview.setSelectedServiceName}
+          onCreate={preview.create}
+          onRefresh={preview.refresh}
+          onOpenExternal={preview.openExternal}
+          onRevoke={preview.revoke}
+          onSubmitFeedback={async (feedback) => {
+            await controls.addInstruction(formatProjectWorkbenchPreviewFeedback(feedback));
+          }}
+        />
+      </>
     ),
     changes: (
       <RunChangesView
@@ -324,8 +356,8 @@ export function ProjectWorkbenchConversation({
   };
 
   return (
-    <ProjectWorkbenchShell
-      header={renderHeader}
+    <ProjectWorkbenchArtifactShell
+      renderHeader={renderHeader}
       conversation={children({ runSteering, composerBanner })}
       panels={panels}
       availablePanes={availablePanes}
@@ -338,6 +370,90 @@ export function ProjectWorkbenchConversation({
       onDockCollapsedChange={preferences.setDockCollapsed}
       dockWidth={preferences.dockWidth}
       onDockWidthChange={preferences.setDockWidth}
+      runControls={runControls}
+    />
+  );
+}
+
+function ProjectWorkbenchArtifactShell({
+  renderHeader,
+  conversation,
+  panels,
+  availablePanes,
+  attention,
+  status,
+  statusDetail,
+  selectedPane,
+  onSelectedPaneChange,
+  dockCollapsed,
+  onDockCollapsedChange,
+  dockWidth,
+  onDockWidthChange,
+  runControls,
+}: {
+  renderHeader: (slots: ProjectWorkbenchHeaderSlots) => ReactNode;
+  conversation: ReactNode;
+  panels: Partial<Record<ProjectWorkbenchPane, ReactNode>>;
+  availablePanes: readonly ProjectWorkbenchPane[];
+  attention?: { key: string; pane: ProjectWorkbenchPane };
+  status: Parameters<typeof ProjectWorkbenchShell>[0]["status"];
+  statusDetail?: string;
+  selectedPane: ProjectWorkbenchPane;
+  onSelectedPaneChange: (pane: ProjectWorkbenchPane) => void;
+  dockCollapsed: boolean;
+  onDockCollapsedChange: (collapsed: boolean) => void;
+  dockWidth: number;
+  onDockWidthChange: (width: number) => void;
+  runControls?: ReactNode;
+}) {
+  const artifact = useArtifactWorkbench();
+  const hasArtifact = artifact.isPanelVisible && artifact.currentArtifact !== null;
+  const mergedAttention = hasArtifact
+    ? {
+        key: `artifact:${artifact.currentArtifact?.identifier ?? "artifact"}:${artifact.openCount}`,
+        pane: "artifact" as const,
+      }
+    : attention;
+
+  return (
+    <ProjectWorkbenchShell
+      header={renderHeader}
+      conversation={conversation}
+      panels={{
+        ...panels,
+        artifact: hasArtifact ? (
+          <ArtifactWorkbenchPanel
+            artifact={artifact.currentArtifact}
+            artifacts={artifact.currentArtifacts}
+            isCombined={artifact.isCombinedPanel}
+            copied={artifact.copied}
+            onCopy={artifact.copyArtifact}
+            onClose={artifact.closePanel}
+            onAddSelectionToChat={artifact.addArtifactSelection}
+          />
+        ) : undefined,
+      }}
+      availablePanes={(() => {
+        if (!hasArtifact || availablePanes.includes("artifact")) {
+          return availablePanes;
+        }
+
+        const merged = [...availablePanes];
+        const contextIndex = merged.indexOf("context");
+
+        merged.splice(contextIndex >= 0 ? contextIndex + 1 : 0, 0, "artifact");
+
+        return merged;
+      })()}
+      attention={mergedAttention}
+      status={status}
+      statusDetail={statusDetail}
+      selectedPane={selectedPane}
+      onSelectedPaneChange={onSelectedPaneChange}
+      dockCollapsed={dockCollapsed}
+      onDockCollapsedChange={onDockCollapsedChange}
+      dockWidth={hasArtifact ? Math.max(dockWidth, ARTIFACT_WORKBENCH_MIN_WIDTH) : dockWidth}
+      onDockWidthChange={onDockWidthChange}
       runControls={runControls}
     />
   );

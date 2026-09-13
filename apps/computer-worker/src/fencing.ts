@@ -1,12 +1,15 @@
-import { stopScreenServer } from "./browser";
 import { FENCE_FILE } from "./constants";
 import type { ComputerSandbox } from "./types";
 
 export async function readFence(sandbox: ComputerSandbox): Promise<number> {
-  const currentFile = await sandbox.readFile(FENCE_FILE, { encoding: "utf-8" }).catch(() => null);
-  const current = currentFile ? Number.parseInt(currentFile.content, 10) : 0;
+  const result = await sandbox.exec(`cat ${FENCE_FILE} 2>/dev/null || echo 0`).catch(() => null);
+  const current = result && result.success ? Number.parseInt(result.stdout.trim(), 10) : Number.NaN;
 
   return Number.isFinite(current) ? current : 0;
+}
+
+async function ensureFenceDirectory(sandbox: ComputerSandbox): Promise<void> {
+  await sandbox.exec("mkdir -p /workspace").catch(() => null);
 }
 
 export async function assertFence(
@@ -24,6 +27,7 @@ export async function assertFence(
   }
 
   if (!Number.isFinite(current) || fence > current) {
+    await ensureFenceDirectory(sandbox);
     await sandbox.writeFile(FENCE_FILE, String(fence));
   }
 }
@@ -40,8 +44,7 @@ export async function revokeComputerControl(
 
   if (current !== fence + 1) {
     await assertFence(sandbox, fence);
+    await ensureFenceDirectory(sandbox);
     await sandbox.writeFile(FENCE_FILE, String(fence + 1));
   }
-
-  await stopScreenServer(sandbox);
 }

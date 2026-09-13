@@ -52,7 +52,7 @@ export class ValidationPipeline {
     const currentContext = { ...initialContext };
 
     for (const validator of this.validators) {
-      const result = await validator.validate(options, currentContext);
+      const result = await validator.validate(options, { ...currentContext });
 
       if (!result?.validation?.isValid) {
         return {

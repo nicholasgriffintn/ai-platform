@@ -76,6 +76,21 @@ describe("composer command parsing", () => {
     expect(getComposerDirectiveQuery(slashInput, slashInput.length)).not.toBeNull();
   });
 
+  it("ignores slashes used as prose separators", () => {
+    const input =
+      "Using the hosted computer, open AmiAmi / Solaris Japan and report pricing on cool anime figures with screenshots";
+
+    expect(getComposerDirectiveQuery(input, input.length)).toBeNull();
+    expect(getComposerDirectiveQuery("cost is 10 / 2", 13)).toBeNull();
+    expect(getComposerDirectiveQuery("/ ", 2)).toBeNull();
+    expect(getComposerDirectiveQuery("foo / ", 6)).toBeNull();
+  });
+
+  it("still opens slash directives immediately after the trigger", () => {
+    expect(getComposerDirectiveQuery("/", 1)).not.toBeNull();
+    expect(getComposerDirectiveQuery("Please /model", 14)).not.toBeNull();
+  });
+
   it("ignores completed inline mentions when later words are being typed", () => {
     const input = "hey @Daily Weather and";
 

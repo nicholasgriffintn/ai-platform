@@ -4,6 +4,7 @@ import {
   useConversationLaunchModeConfig,
 } from "@ngriffin_uk/polychat-component-conversation";
 import { PageTitle } from "@ngriffin_uk/polychat-component-ui";
+import { useChat } from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
 
 import { ChatSidebar } from "../Chat/ChatSidebar.js";
@@ -29,6 +30,7 @@ export function ConversationPage({
   sidebarContent,
 }: ConversationPageProps) {
   const effectiveModeConfig = useConversationLaunchModeConfig(modeConfig, pathConversationId);
+  const { data: currentConversation } = useChat(pathConversationId ?? undefined);
 
   if (embedded) {
     const embeddedHeader =
@@ -46,6 +48,7 @@ export function ConversationPage({
   const content = (
     <ConversationWorkbenchLayout
       conversationId={pathConversationId}
+      conversationMessages={currentConversation?.messages}
       renderHeader={(actions) =>
         header !== undefined ? (
           header

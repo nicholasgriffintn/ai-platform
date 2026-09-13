@@ -1,7 +1,10 @@
 import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
 import { ResponseView } from "@ngriffin_uk/polychat-component-content";
 import { cn } from "@ngriffin_uk/polychat-component-ui";
-import type { ToolResultDisplay } from "@ngriffin_uk/polychat-library-chat/tool-results";
+import {
+  shouldHideToolChrome,
+  type ToolResultDisplay,
+} from "@ngriffin_uk/polychat-library-chat/tool-results";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -45,6 +48,21 @@ export const ToolResultView = ({
   className,
 }: ToolResultViewProps) => {
   const [showInput, setShowInput] = useState(false);
+
+  if (display.result && shouldHideToolChrome(display.renderer)) {
+    return (
+      <div className={cn("mb-2", className)} data-tool-name={display.name}>
+        <ResponseView
+          result={display.result}
+          responseType={display.responseType}
+          renderer={display.renderer}
+          embedded
+          onToolInteraction={onToolInteraction}
+        />
+      </div>
+    );
+  }
+
   const formattedInput = formatInput(input);
   const isRunning = display.status === "in_progress" || display.status === "pending";
   const tone = display.status ? STATUS_TONE[display.status] : undefined;

@@ -4,7 +4,7 @@ import {
 } from "@ngriffin_uk/polychat-component-conversation";
 import { Button, PageTitle } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { useComposerPrefill, useTrackEvent } from "@ngriffin_uk/polychat-library-react";
+import { useChat, useComposerPrefill, useTrackEvent } from "@ngriffin_uk/polychat-library-react";
 import { Image as ImageIcon, MessageCircle } from "lucide-react";
 import { lazy, Suspense, useMemo, useState } from "react";
 import { useParams } from "react-router";
@@ -37,6 +37,7 @@ export interface HomePageProps {
 export function HomePage({ hostModeConfig }: HomePageProps = {}) {
   const { completionId } = useParams<"completionId">();
   const currentConversationId = useChatStore((state) => state.currentConversationId);
+  const { data: currentConversation } = useChat(currentConversationId ?? undefined);
   const [isCanvasMode, setIsCanvasMode] = useState(false);
   const { modeConfig: chatModeConfig } = useHomeChatModeConfig();
   const modeConfig = useMemo(
@@ -95,6 +96,7 @@ export function HomePage({ hostModeConfig }: HomePageProps = {}) {
       ) : (
         <ConversationWorkbenchLayout
           conversationId={currentConversationId}
+          conversationMessages={currentConversation?.messages}
           renderHeader={(actions) => (
             <ConversationProductHeader
               additionalActions={actions}

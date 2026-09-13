@@ -1,4 +1,4 @@
-import { Button, useOverlayDismiss } from "@ngriffin_uk/polychat-component-ui";
+import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { Code2, Copy, FileText, Play, X } from "lucide-react";
 import { Suspense, lazy, useCallback, useMemo, useState } from "react";
@@ -69,30 +69,31 @@ const ContentViewer = ({
     artifact.language?.toLowerCase() === "md";
 
   return (
-    <div className="flex-1 overflow-auto p-4">
-      <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-        <div>
-          {artifact.language && (
-            <span className="mr-2 rounded bg-surface-elevated px-2 py-1 text-foreground">
-              {artifact.language}
-            </span>
+    <div className="flex-1 overflow-auto p-3">
+      {(artifact.language || showCopyButton) && (
+        <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+          <div>
+            {artifact.language && (
+              <span className="rounded bg-surface-elevated px-2 py-1 text-foreground">
+                {artifact.language}
+              </span>
+            )}
+          </div>
+          {showCopyButton && (
+            <Button
+              variant="icon"
+              size="sm"
+              onClick={onCopy}
+              title={copied ? "Copied!" : "Copy file"}
+              aria-label={copied ? "Copied to clipboard" : "Copy file"}
+            >
+              <Copy size={14} className={copied ? "text-success" : ""} />
+            </Button>
           )}
-          <span className="font-medium">{artifact.title || artifact.identifier}</span>
         </div>
-        {showCopyButton && (
-          <Button
-            variant="icon"
-            size="sm"
-            onClick={onCopy}
-            title={copied ? "Copied!" : "Copy file"}
-            aria-label={copied ? "Copied to clipboard" : "Copy file"}
-          >
-            <Copy size={14} className={copied ? "text-success" : ""} />
-          </Button>
-        )}
-      </div>
-      <div className="artifact-content-full">
-        <div className="prose max-w-none dark:prose-invert">
+      )}
+      <div className="artifact-content-full min-w-0">
+        <div className="prose max-w-none overflow-x-auto dark:prose-invert">
           <MemoizedMarkdown>
             {isMarkdown
               ? artifact.content
@@ -104,12 +105,11 @@ const ContentViewer = ({
   );
 };
 
-export interface ArtifactPanelProps {
+export interface ArtifactWorkbenchPanelProps {
   artifact: ArtifactProps | null;
   artifacts?: ArtifactProps[];
   onClose: () => void;
   onAddSelectionToChat?: (attachment: AttachmentData) => void;
-  isVisible: boolean;
   isCombined?: boolean;
   copied: boolean;
   onCopy: (value: string) => void;
@@ -117,31 +117,39 @@ export interface ArtifactPanelProps {
 
 const EMPTY_ARTIFACTS: ArtifactProps[] = [];
 
-export const ArtifactPanel = ({
+function resolveArtifactList(
+  artifact: ArtifactProps | null,
+  artifacts: ArtifactProps[],
+  isCombined: boolean,
+): ArtifactProps[] {
+  if (isCombined && artifacts.length > 0) {
+    return artifacts;
+  }
+
+  if (artifact) {
+    return [artifact];
+  }
+
+  return [];
+}
+
+const ArtifactPanelContent = ({
   artifact,
   artifacts = EMPTY_ARTIFACTS,
   onClose,
   onAddSelectionToChat,
-  isVisible,
   isCombined = false,
   copied,
   onCopy,
-}: ArtifactPanelProps) => {
+  titleId,
+}: ArtifactWorkbenchPanelProps & { titleId: string }) => {
   const [activeTab, setActiveTab] = useState<"code" | "preview">("code");
   const [activeFileIndex, setActiveFileIndex] = useState(0);
   const [iframeKey, setIframeKey] = useState(0);
   const [previewError, setPreviewError] = useState<string | null>(null);
 
   const allArtifacts = useMemo(() => {
-    if (isCombined && artifacts.length > 0) {
-      return artifacts;
-    }
-
-    if (artifact) {
-      return [artifact];
-    }
-
-    return [];
+    return resolveArtifactList(artifact, artifacts, isCombined);
   }, [artifact, artifacts, isCombined]);
 
   const codeArtifact = useMemo(
@@ -173,7 +181,7 @@ export const ArtifactPanel = ({
 
     return isCodeArtifact(artifact);
   }, [artifact]);
-  const icon = useMemo(() => (isCode ? <Code2 size={20} /> : <FileText size={20} />), [isCode]);
+  const icon = useMemo(() => (isCode ? <Code2 size={16} /> : <FileText size={16} />), [isCode]);
 
   const [prevArtifactsLength, setPrevArtifactsLength] = useState(allArtifacts.length);
 
@@ -181,11 +189,6 @@ export const ArtifactPanel = ({
     setPrevArtifactsLength(allArtifacts.length);
     setActiveFileIndex(0);
   }
-
-  // Keep the conversation interactive whether the panel overlays it or sits beside it.
-  // Focus still moves in, Escape closes, and focus returns to the opener.
-  const isOpen = isVisible && allArtifacts.length > 0;
-  const panelRef = useOverlayDismiss<HTMLDivElement>({ open: isOpen, onClose });
 
   const handleCopyCurrentFile = useCallback(() => {
     if (currentArtifact) {
@@ -221,145 +224,172 @@ export const ArtifactPanel = ({
   }
 
   return (
-    <div
-      ref={panelRef}
-      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- slide-over panel positioned with translate transforms and inert; native <dialog> top-layer and showModal semantics are incompatible
-      role="dialog"
-      aria-labelledby="artifact-panel-title"
-      tabIndex={-1}
-      // Closed, the panel is only translated off-screen, so hide it from tab order too.
-      inert={!isVisible}
-      className={`absolute top-0 right-0 z-50 h-full w-full border-l border-border bg-surface shadow-xl transition-transform duration-300 ease-in-out 2xl:w-[650px] ${isVisible ? "translate-x-0" : "translate-x-full"} `}
-    >
-      <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between border-b border-border p-4">
-          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-foreground">
-            {icon}
-            <span
-              id="artifact-panel-title"
-              className="truncate text-lg font-semibold text-foreground"
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-foreground">
+          {icon}
+          <span id={titleId} className="truncate text-sm font-semibold text-foreground">
+            {allArtifacts.length > 1
+              ? `Combined Artifacts (${allArtifacts.length})`
+              : currentArtifact.title || "Artifact"}
+          </span>
+        </div>
+        <div className="flex flex-shrink-0 items-center gap-0.5">
+          {!showFileTabs && !isDocument && (
+            <Button
+              variant="icon"
+              size="sm"
+              onClick={handleCopyCurrentFile}
+              title={copied ? "Copied!" : "Copy content"}
+              aria-label={copied ? "Copied to clipboard" : "Copy to clipboard"}
             >
-              {allArtifacts.length > 1
-                ? `Combined Artifacts (${allArtifacts.length})`
-                : currentArtifact.title || "Artifact"}
-            </span>
-          </div>
-          <div className="ml-2 flex flex-shrink-0 gap-2">
-            {!showFileTabs && !isDocument && (
+              <Copy size={14} className={copied ? "text-success" : ""} />
+            </Button>
+          )}
+          <Button
+            variant="icon"
+            size="sm"
+            onClick={onClose}
+            title="Close artifact"
+            aria-label="Close artifact"
+          >
+            <X size={14} />
+          </Button>
+        </div>
+      </div>
+
+      {showPreviewTab && (
+        <div className="flex border-b border-border">
+          <button
+            type="button"
+            className={`px-3 py-1.5 text-[13px] font-medium ${
+              activeTab === "code"
+                ? "border-b-2 border-active-work text-active-work"
+                : "text-muted-foreground"
+            }`}
+            onClick={() => handleSetActiveTab("code")}
+          >
+            <div className="flex items-center gap-1.5">
+              <Code2 size={14} />
+              Code
+            </div>
+          </button>
+          <button
+            type="button"
+            className={`px-3 py-1.5 text-[13px] font-medium ${
+              activeTab === "preview"
+                ? "border-b-2 border-active-work text-active-work"
+                : "text-muted-foreground"
+            }`}
+            onClick={() => handleSetActiveTab("preview")}
+          >
+            <div className="flex items-center gap-1.5">
+              <Play size={14} />
+              Preview
+            </div>
+          </button>
+          {activeTab === "preview" && showFileTabs && (
+            <div className="ml-auto flex items-center pr-1">
               <Button
                 variant="icon"
-                onClick={handleCopyCurrentFile}
-                title={copied ? "Copied!" : "Copy content"}
-                aria-label={copied ? "Copied to clipboard" : "Copy to clipboard"}
+                size="sm"
+                onClick={handleCopyAllFiles}
+                title={copied ? "Copied!" : "Copy all files"}
+                aria-label={copied ? "Copied to clipboard" : "Copy all files"}
               >
-                <Copy size={16} className={copied ? "text-success" : ""} />
+                <Copy size={14} className={copied ? "text-success" : ""} />
               </Button>
-            )}
-            <Button variant="icon" onClick={onClose} title="Close panel" aria-label="Close panel">
-              <X size={16} />
-            </Button>
-          </div>
-        </div>
-
-        {showPreviewTab && (
-          <div className="flex border-b border-border">
-            <button
-              type="button"
-              className={`px-4 py-2 text-sm font-medium ${
-                activeTab === "code"
-                  ? "border-b-2 border-active-work text-active-work"
-                  : "text-muted-foreground"
-              }`}
-              onClick={() => handleSetActiveTab("code")}
-            >
-              <div className="flex items-center gap-2">
-                <Code2 size={16} />
-                Code
-              </div>
-            </button>
-            <button
-              type="button"
-              className={`px-4 py-2 text-sm font-medium ${
-                activeTab === "preview"
-                  ? "border-b-2 border-active-work text-active-work"
-                  : "text-muted-foreground"
-              }`}
-              onClick={() => handleSetActiveTab("preview")}
-            >
-              <div className="flex items-center gap-2">
-                <Play size={16} />
-                Preview
-              </div>
-            </button>
-            {activeTab === "preview" && showFileTabs && (
-              <div className="ml-auto pr-2">
-                <Button
-                  variant="icon"
-                  onClick={handleCopyAllFiles}
-                  title={copied ? "Copied!" : "Copy all files"}
-                  aria-label={copied ? "Copied to clipboard" : "Copy all files"}
-                >
-                  <Copy size={16} className={copied ? "text-success" : ""} />
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="flex flex-1 flex-col overflow-hidden bg-surface text-foreground">
-          {(activeTab === "code" || !showPreviewTab) && (
-            <>
-              {showFileTabs && (
-                <FileTabs
-                  artifacts={allArtifacts}
-                  activeIndex={activeFileIndex}
-                  onSelectTab={handleTabSelect}
-                />
-              )}
-
-              {isDocument ? (
-                <ArtifactDocumentEditor
-                  artifact={currentArtifact}
-                  onAddSelectionToChat={onAddSelectionToChat}
-                />
-              ) : (
-                <ContentViewer
-                  artifact={currentArtifact}
-                  showCopyButton={showFileTabs}
-                  onCopy={handleCopyCurrentFile}
-                  copied={copied}
-                />
-              )}
-            </>
-          )}
-
-          {activeTab === "preview" && codeArtifact && (
-            <div className="flex h-full flex-col">
-              <div className="bg-surface-elevated p-2 text-xs text-muted-foreground">
-                Live Preview (React + DOM)
-              </div>
-
-              {previewError && (
-                <div className="m-3 rounded border border-failure/45 bg-failure/12 p-3 text-sm text-failure">
-                  <h4 className="mb-1 font-medium">Error rendering preview:</h4>
-                  <pre className="overflow-auto text-xs whitespace-pre-wrap">{previewError}</pre>
-                </div>
-              )}
-
-              <div className="flex-1 bg-surface">
-                <Suspense fallback={<SandboxLoading />}>
-                  <ArtifactSandbox
-                    code={codeArtifact}
-                    css={cssArtifact}
-                    setPreviewError={setPreviewError}
-                    iframeKey={iframeKey}
-                  />
-                </Suspense>
-              </div>
             </div>
           )}
         </div>
+      )}
+
+      <div className="flex flex-1 flex-col overflow-hidden bg-surface text-foreground">
+        {(activeTab === "code" || !showPreviewTab) && (
+          <>
+            {showFileTabs && (
+              <FileTabs
+                artifacts={allArtifacts}
+                activeIndex={activeFileIndex}
+                onSelectTab={handleTabSelect}
+              />
+            )}
+
+            {isDocument ? (
+              <ArtifactDocumentEditor
+                artifact={currentArtifact}
+                onAddSelectionToChat={onAddSelectionToChat}
+              />
+            ) : (
+              <ContentViewer
+                artifact={currentArtifact}
+                showCopyButton={showFileTabs}
+                onCopy={handleCopyCurrentFile}
+                copied={copied}
+              />
+            )}
+          </>
+        )}
+
+        {activeTab === "preview" && codeArtifact && (
+          <div className="flex h-full flex-col">
+            <div className="bg-surface-elevated p-2 text-xs text-muted-foreground">
+              Live Preview (React + DOM)
+            </div>
+
+            {previewError && (
+              <div className="m-3 rounded border border-failure/45 bg-failure/12 p-3 text-sm text-failure">
+                <h4 className="mb-1 font-medium">Error rendering preview:</h4>
+                <pre className="overflow-auto text-xs whitespace-pre-wrap">{previewError}</pre>
+              </div>
+            )}
+
+            <div className="flex-1 bg-surface">
+              <Suspense fallback={<SandboxLoading />}>
+                <ArtifactSandbox
+                  code={codeArtifact}
+                  css={cssArtifact}
+                  setPreviewError={setPreviewError}
+                  iframeKey={iframeKey}
+                />
+              </Suspense>
+            </div>
+          </div>
+        )}
       </div>
+    </div>
+  );
+};
+
+export const ArtifactWorkbenchPanel = ({
+  artifact,
+  artifacts = EMPTY_ARTIFACTS,
+  onClose,
+  onAddSelectionToChat,
+  isCombined = false,
+  copied,
+  onCopy,
+}: ArtifactWorkbenchPanelProps) => {
+  const allArtifacts = useMemo(() => {
+    return resolveArtifactList(artifact, artifacts, isCombined);
+  }, [artifact, artifacts, isCombined]);
+
+  if (allArtifacts.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <ArtifactPanelContent
+        artifact={artifact}
+        artifacts={artifacts}
+        onClose={onClose}
+        onAddSelectionToChat={onAddSelectionToChat}
+        isCombined={isCombined}
+        copied={copied}
+        onCopy={onCopy}
+        titleId="artifact-workbench-title"
+      />
     </div>
   );
 };

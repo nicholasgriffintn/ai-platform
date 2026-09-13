@@ -2,6 +2,7 @@ import type { SandboxPreviewState, SandboxServiceStatus } from "@ngriffin_uk/pol
 
 export const PROJECT_WORKBENCH_PANES = [
   "context",
+  "artifact",
   "activity",
   "preview",
   "changes",

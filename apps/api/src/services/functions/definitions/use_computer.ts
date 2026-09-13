@@ -6,12 +6,16 @@ import type { FunctionToolDescriptor } from "./types";
 export const use_computer: FunctionToolDescriptor = {
   name: "use_computer",
   description:
-    "Observe or control the hosted computer assigned to this teammate context. Navigation, scrolling and waiting can run unattended. Clicking, typing and key input suspend for supervised takeover because their external effect cannot be verified. Use connector tools for structured external account changes.",
+    "Observe or control the hosted computer assigned to this teammate context. Navigation, scrolling and waiting can run unattended. Use operation wait with durationMs to let pages finish loading. Clicking, typing and key input suspend for supervised takeover because their external effect cannot be verified. Use connector tools for structured external account changes.",
   type: "premium",
   permissions: ["sandbox", "write"],
   inputSchema: z.discriminatedUnion("operation", [
     z.object({ operation: z.literal("observe") }),
     z.object({ operation: z.literal("input"), input: teammateComputerInputSchema }),
+    z.object({
+      operation: z.literal("wait"),
+      durationMs: z.number().int().min(100).max(10_000),
+    }),
     z.object({
       operation: z.literal("request_takeover"),
       reason: z.string().min(1).max(500),

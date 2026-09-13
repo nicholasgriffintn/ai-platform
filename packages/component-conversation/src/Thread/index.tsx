@@ -1,6 +1,5 @@
 import {
   findLatestArtifactByIdentifier,
-  ArtifactPanel,
   type ToolInteractionHandler,
   UserQuestionView,
 } from "@ngriffin_uk/polychat-component-content";
@@ -18,7 +17,7 @@ import {
 import {
   EventCategory,
   useTrackEvent,
-  useArtifactPanel,
+  useArtifactWorkbench,
   useChat,
   useChatManager,
   useChatRunReplay,
@@ -53,7 +52,6 @@ import type {
   ModelSelectorScope,
 } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
-import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
 import type {
   ComposerActionCatalogConfig,
   ComposerAssistantActionCapability,
@@ -151,7 +149,19 @@ interface ConversationThreadProps {
 }
 
 export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
-  const { copied: artifactCopied, copy: copyArtifact } = useCopyToClipboard();
+  const {
+    currentArtifact,
+    isPanelVisible,
+    isCombinedPanel,
+    openArtifact: handleArtifactOpen,
+    replaceArtifact,
+    closePanel: handlePanelClose,
+    artifactAttachments,
+    addArtifactSelection,
+    removeArtifactAttachment,
+    clearArtifactAttachments,
+    registerComposerFocus,
+  } = useArtifactWorkbench();
   const modeToolInteraction = modeConfig?.onToolInteraction;
 
   const navigate = useNavigate();
@@ -217,30 +227,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     [modelReferences, model],
   );
 
-  const {
-    currentArtifact,
-    currentArtifacts,
-    isPanelVisible,
-    isCombinedPanel,
-    openArtifact: handleArtifactOpen,
-    replaceArtifact,
-    closePanel: handlePanelClose,
-  } = useArtifactPanel({
-    onOpen: (artifact, combined) =>
-      trackFeatureUsage("view_artifact", {
-        artifact_type: artifact.type,
-        conversation_id: currentConversationId || "none",
-        combined_view: combined,
-      }),
-    onClose: (artifact) =>
-      trackFeatureUsage("close_artifact", {
-        artifact_type: artifact.type,
-        conversation_id: currentConversationId || "none",
-      }),
-  });
-  const [artifactContextAttachments, setArtifactContextAttachments] = useState<AttachmentData[]>(
-    [],
-  );
   const [autoPlayResponsesEnabled, setAutoPlayResponsesEnabled] = useState(false);
   const effectiveAutoPlayResponsesEnabled =
     autoPlayResponsesEnabled || Boolean(modeConfig?.forceAutoPlayResponses);
@@ -302,44 +288,35 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     setAutoPlayResponsesEnabled(!autoPlayResponsesEnabled);
   }, [autoPlayResponsesEnabled, stopPlayback]);
 
-  const handleAddSelectionToChat = useCallback(
-    (attachment: AttachmentData) => {
-      setArtifactContextAttachments((currentAttachments) => [...currentAttachments, attachment]);
-      chatInputRef.current?.focus();
+  useEffect(() => {
+    registerComposerFocus(() => chatInputRef.current?.focus());
+  }, [registerComposerFocus]);
 
-      trackFeatureUsage("add_selection_to_chat", {
-        conversation_id: currentConversationId || "none",
-        artifact_type: currentArtifact?.type || "unknown",
-      });
-    },
-    [currentArtifact?.type, currentConversationId, trackFeatureUsage],
-  );
-
-  const handleQuoteSelection = useCallback((selection: ChatMessageSelection) => {
-    setArtifactContextAttachments((currentAttachments) => [
-      ...currentAttachments,
-      {
+  const handleQuoteSelection = useCallback(
+    (selection: ChatMessageSelection) => {
+      addArtifactSelection({
         type: "selection",
         name: "Quoted response",
         selection,
-      },
-    ]);
-    chatInputRef.current?.focus();
-  }, []);
+      });
+    },
+    [addArtifactSelection],
+  );
 
-  const handleRemoveArtifactContextAttachment = useCallback((indexToRemove: number) => {
-    setArtifactContextAttachments((currentAttachments) =>
-      currentAttachments.filter((_, index) => index !== indexToRemove),
-    );
-  }, []);
+  const handleRemoveArtifactContextAttachment = useCallback(
+    (indexToRemove: number) => {
+      removeArtifactAttachment(indexToRemove);
+    },
+    [removeArtifactAttachment],
+  );
 
   const handleClearArtifactContextAttachments = useCallback(() => {
-    setArtifactContextAttachments([]);
-  }, []);
+    clearArtifactAttachments();
+  }, [clearArtifactAttachments]);
   const modeContextAttachments = modeConfig?.contextAttachments ?? EMPTY_CONTEXT_ATTACHMENTS;
   const contextAttachments = useMemo(
-    () => [...modeContextAttachments, ...artifactContextAttachments],
-    [artifactContextAttachments, modeContextAttachments],
+    () => [...modeContextAttachments, ...artifactAttachments],
+    [artifactAttachments, modeContextAttachments],
   );
   const handleRemoveContextAttachment = useCallback(
     (indexToRemove: number) => {
@@ -847,9 +824,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
   );
 
   return (
-    <div
-      className={`relative flex h-full min-h-0 w-full flex-col ${isPanelVisible ? "2xl:pr-[650px]" : ""}`}
-    >
+    <div className="relative flex h-full min-h-0 w-full flex-col">
       {showWelcomeScreen ? (
         <div
           data-header-scroll-source
@@ -1018,18 +993,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         />
       </ConversationComposerDock>
 
-      <FooterInfo isPanelVisible={isPanelVisible} />
-
-      <ArtifactPanel
-        copied={artifactCopied}
-        onCopy={copyArtifact}
-        artifact={currentArtifact}
-        artifacts={currentArtifacts}
-        onClose={handlePanelClose}
-        onAddSelectionToChat={handleAddSelectionToChat}
-        isVisible={isPanelVisible}
-        isCombined={isCombinedPanel}
-      />
+      <FooterInfo />
     </div>
   );
 };

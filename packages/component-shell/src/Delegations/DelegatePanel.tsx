@@ -1,5 +1,6 @@
 import { ConversationThread } from "@ngriffin_uk/polychat-component-conversation";
 import {
+  ArtifactWorkbenchProvider,
   ConversationScopeProvider,
   useConversationAgentApprovals,
   useLocalConversationScope,
@@ -11,21 +12,23 @@ export function DelegatePanel({ conversationId }: { conversationId: string }) {
 
   return (
     <ConversationScopeProvider scope={scope}>
-      <div className="relative min-h-0 flex-1 overflow-hidden">
-        <ConversationThread
-          modeConfig={{
-            agentApprovals,
-            hideModelSelector: true,
-            hideChatSettings: true,
-            hideComposerActionMenu: true,
-            hideInlineResponseControls: true,
-            hideVoiceControls: true,
-            toolSelectionLocked: true,
-            hideTextInput: true,
-            hideSubmitButton: true,
-          }}
-        />
-      </div>
+      <ArtifactWorkbenchProvider>
+        <div className="relative min-h-0 flex-1 overflow-hidden">
+          <ConversationThread
+            modeConfig={{
+              agentApprovals,
+              hideModelSelector: true,
+              hideChatSettings: true,
+              hideComposerActionMenu: true,
+              hideInlineResponseControls: true,
+              hideVoiceControls: true,
+              toolSelectionLocked: true,
+              hideTextInput: true,
+              hideSubmitButton: true,
+            }}
+          />
+        </div>
+      </ArtifactWorkbenchProvider>
     </ConversationScopeProvider>
   );
 }

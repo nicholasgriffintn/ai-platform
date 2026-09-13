@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { ArtifactPanel } from "./ArtifactPanel";
+import { ArtifactWorkbenchPanel } from "./ArtifactPanel";
 
-describe("ArtifactPanel", () => {
+describe("ArtifactWorkbenchPanel", () => {
   it("shows stylesheet source without offering to execute it as a component", () => {
     render(
-      <ArtifactPanel
+      <ArtifactWorkbenchPanel
         artifact={{
           identifier: "styles",
           type: "text/css",
@@ -15,13 +15,12 @@ describe("ArtifactPanel", () => {
           content: ".example { color: rebeccapurple; }",
         }}
         copied={false}
-        isVisible
         onClose={vi.fn()}
         onCopy={vi.fn()}
       />,
     );
 
-    expect(screen.getByRole("dialog", { name: "Styles" })).toBeVisible();
+    expect(screen.getAllByText("Styles").length).toBeGreaterThan(0);
     expect(screen.queryByRole("button", { name: "Preview" })).not.toBeInTheDocument();
   });
 });

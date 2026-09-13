@@ -11,6 +11,7 @@ import {
   Bot,
   FileDiff,
   Files,
+  FileText,
   MonitorPlay,
   NotebookPen,
   ShieldCheck,
@@ -63,6 +64,7 @@ function PanelMessage({
 }) {
   const Icon = {
     context: NotebookPen,
+    artifact: FileText,
     activity: Activity,
     preview: MonitorPlay,
     changes: FileDiff,

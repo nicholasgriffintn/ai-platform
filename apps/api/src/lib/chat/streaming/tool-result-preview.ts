@@ -11,11 +11,15 @@ const retainedDataKeys = [
   "approvalRequired",
   "answers",
   "attachments",
+  "computerId",
+  "contextId",
   "error",
   "expiresAt",
   "formattedName",
+  "height",
   "humanInTheLoop",
   "icon",
+  "observation",
   "operation",
   "outputId",
   "provider",
@@ -25,6 +29,8 @@ const retainedDataKeys = [
   "responseType",
   "selection",
   "members",
+  "title",
+  "width",
 ] as const;
 
 function serialisedLength(value: unknown): number {

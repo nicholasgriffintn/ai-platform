@@ -1,5 +1,7 @@
 export const INTERNAL_COMPUTER_ORIGIN = "https://computer.internal";
 export const SCREEN_PORT = 6080;
+export const DEBUGGER_PORT = 9222;
+export const PAINT_BRIGHTNESS_THRESHOLD = 6;
 export const SCREEN_TTL_MS = 5 * 60 * 1000;
 export const PROFILE_DIRECTORY = "/workspace/profile";
 export const FENCE_FILE = "/workspace/.computer-fence";

@@ -47,6 +47,80 @@ export function readToolStreamPreview(
   };
 }
 
+export const COMPUTER_OBSERVATION_RENDERER = "computer_observation";
+
+export const CHROMELESS_TOOL_RENDERERS: ReadonlySet<string> = new Set([
+  COMPUTER_OBSERVATION_RENDERER,
+]);
+
+export function shouldHideToolChrome(renderer: string | undefined): boolean {
+  return typeof renderer === "string" && CHROMELESS_TOOL_RENDERERS.has(renderer);
+}
+
+export interface ComputerObservation {
+  id: string;
+  screenshot: string | null;
+  title: string;
+  width: number;
+  height: number;
+}
+
+const readDimension = (value: unknown, fallback: number): number =>
+  typeof value === "number" && Number.isFinite(value) ? value : fallback;
+
+const readComputerObservationData = (data: unknown): Omit<ComputerObservation, "id"> | null => {
+  if (!isRecord(data) || data.renderer !== COMPUTER_OBSERVATION_RENDERER) {
+    return null;
+  }
+
+  const screenshot =
+    typeof data.screenshot === "string" && data.screenshot ? data.screenshot : null;
+
+  return {
+    screenshot,
+    title: readOptionalString(data.title) ?? "Hosted computer",
+    width: readDimension(data.width, 1440),
+    height: readDimension(data.height, 900),
+  };
+};
+
+export function getComputerObservations(
+  messages: readonly Message[] | undefined,
+): ComputerObservation[] {
+  const observations: ComputerObservation[] = [];
+
+  for (const message of messages ?? []) {
+    const parts = Array.isArray(message.parts) ? message.parts : [];
+
+    for (const part of parts) {
+      if (part.type !== "tool_result") {
+        continue;
+      }
+
+      const observation = readComputerObservationData(isRecord(part.data) ? part.data : undefined);
+
+      if (observation) {
+        observations.push({
+          id: `${message.id}:${part.toolCallId ?? part.name ?? observations.length}`,
+          ...observation,
+        });
+      }
+    }
+
+    if (parts.length === 0 && message.role === "tool") {
+      const observation = readComputerObservationData(
+        isRecord(message.data) ? message.data : undefined,
+      );
+
+      if (observation) {
+        observations.push({ id: message.id, ...observation });
+      }
+    }
+  }
+
+  return observations;
+}
+
 export function isHiddenToolResponse(message: Message): boolean {
   return (
     message.role === "tool" &&
@@ -150,9 +224,11 @@ export function resolveToolResultPartDisplay(part: ToolResultPart): ToolResultDi
 }
 
 export function resolveToolMessageDisplay(message: Message): ToolResultDisplay {
+  const data = isRecord(message.data) ? message.data : undefined;
+
   return buildDisplay({
     name: message.name,
-    data: isRecord(message.data) ? message.data : undefined,
+    data,
     status: message.status,
     content: typeof message.content === "string" ? message.content : "",
   });

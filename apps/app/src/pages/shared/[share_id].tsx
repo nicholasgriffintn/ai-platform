@@ -1,11 +1,13 @@
-import { ArtifactPanel } from "@ngriffin_uk/polychat-component-content";
+import { ArtifactWorkbenchPanel } from "@ngriffin_uk/polychat-component-content";
 import { MessageList } from "@ngriffin_uk/polychat-component-conversation";
 import { PageShell } from "@ngriffin_uk/polychat-component-shell";
 import { ButtonLink, LoadingSpinner, PageStatus } from "@ngriffin_uk/polychat-component-ui";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { ApiError, fetchSharedConversationHistory } from "@ngriffin_uk/polychat-library-client";
-import { useArtifactPanel } from "@ngriffin_uk/polychat-library-react";
-import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
+import {
+  ArtifactWorkbenchProvider,
+  useArtifactWorkbench,
+} from "@ngriffin_uk/polychat-library-react";
 import { PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
@@ -21,14 +23,6 @@ export default function SharedConversationPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const {
-    currentArtifact,
-    currentArtifacts,
-    isPanelVisible,
-    isCombinedPanel,
-    openArtifact,
-    closePanel,
-  } = useArtifactPanel({ closeOnEscape: true });
 
   useEffect(() => {
     const fetchSharedConversation = async () => {
@@ -61,8 +55,6 @@ export default function SharedConversationPage() {
 
     void fetchSharedConversation();
   }, [share_id]);
-
-  const { copied: artifactCopied, copy: copyArtifact } = useCopyToClipboard();
 
   if (isLoading) {
     return (
@@ -103,9 +95,47 @@ export default function SharedConversationPage() {
       fullBleed
       className="flex min-h-screen flex-col bg-canvas"
     >
-      <div
-        className={`flex h-full w-full flex-col ${isPanelVisible ? "pr-[90%] sm:pr-[350px] md:pr-[400px] lg:pr-[650px]" : ""}`}
-      >
+      <ArtifactWorkbenchProvider>
+        <SharedConversationView messages={messages} />
+      </ArtifactWorkbenchProvider>
+    </PageShell>
+  );
+}
+
+function SharedConversationView({ messages }: { messages: Message[] }) {
+  const {
+    currentArtifact,
+    currentArtifacts,
+    isPanelVisible,
+    isCombinedPanel,
+    openArtifact,
+    closePanel,
+    copied,
+    copyArtifact,
+  } = useArtifactWorkbench();
+  const hasArtifact = isPanelVisible && currentArtifact !== null;
+
+  useEffect(() => {
+    if (!hasArtifact) {
+      return undefined;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closePanel();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [closePanel, hasArtifact]);
+
+  return (
+    <div className="flex h-full min-h-0 w-full flex-1">
+      <div className="flex h-full w-full min-w-0 flex-1 flex-col">
         <div className="relative flex-1 overflow-x-hidden overflow-y-scroll">
           <div className="mx-auto flex h-full w-full max-w-3xl grow flex-col gap-8 px-4">
             {messages.length > 0 ? (
@@ -125,15 +155,21 @@ export default function SharedConversationPage() {
         </footer>
       </div>
 
-      <ArtifactPanel
-        copied={artifactCopied}
-        onCopy={copyArtifact}
-        artifact={currentArtifact}
-        artifacts={currentArtifacts}
-        onClose={closePanel}
-        isVisible={isPanelVisible}
-        isCombined={isCombinedPanel}
-      />
-    </PageShell>
+      {hasArtifact ? (
+        <aside
+          aria-label="Artifact"
+          className="h-full w-full shrink-0 border-l border-border bg-surface sm:w-[350px] md:w-[400px] lg:w-[650px]"
+        >
+          <ArtifactWorkbenchPanel
+            artifact={currentArtifact}
+            artifacts={currentArtifacts}
+            isCombined={isCombinedPanel}
+            copied={copied}
+            onCopy={copyArtifact}
+            onClose={closePanel}
+          />
+        </aside>
+      ) : null}
+    </div>
   );
 }

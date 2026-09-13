@@ -9,6 +9,7 @@ export * from "./hooks/useAgentApprovals.js";
 export * from "./hooks/useApiKeys.js";
 export * from "./hooks/useArticles.js";
 export * from "./hooks/useArtifactPanel.js";
+export * from "./hooks/useArtifactWorkbench.js";
 export * from "./hooks/useAssistantActionCatalog.js";
 export * from "./hooks/useAuth.js";
 export * from "./hooks/useBilling.js";

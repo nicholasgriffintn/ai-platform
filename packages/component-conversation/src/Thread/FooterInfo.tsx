@@ -6,18 +6,13 @@ import {
 
 import { ConversationFooterInfo } from "../Composer/ConversationFooterInfo.js";
 
-interface FooterInfoProps {
-  isPanelVisible: boolean;
-}
-
-export const FooterInfo = ({ isPanelVisible }: FooterInfoProps) => {
+export const FooterInfo = () => {
   const { currentConversationId } = useConversationScope();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuthStatus();
   const { isMobile } = useUIStore();
 
   return (
     <ConversationFooterInfo
-      isPanelVisible={isPanelVisible}
       isAuthLoading={isAuthLoading}
       hasConversationContext={isAuthenticated || !!currentConversationId}
       isMobile={isMobile}

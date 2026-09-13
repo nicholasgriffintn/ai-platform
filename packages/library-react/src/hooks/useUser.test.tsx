@@ -22,6 +22,11 @@ vi.mock("@ngriffin_uk/polychat-library-client", () => ({
     storeProviderApiKey: mocks.storeProviderApiKey,
     syncProviders: vi.fn(),
   },
+  useChatStore: (selector?: (state: { isAuthenticated: boolean }) => unknown) => {
+    const state = { isAuthenticated: false };
+
+    return typeof selector === "function" ? selector(state) : state;
+  },
 }));
 
 function createWrapper(queryClient: QueryClient) {

@@ -3,9 +3,12 @@ import { describe, expect, it } from "vitest";
 import type { Message } from "./conversation-types.js";
 import {
   applyToolInteractionResolutions,
+  COMPUTER_OBSERVATION_RENDERER,
+  getComputerObservations,
   getResolvedToolUseIndexes,
   resolveToolMessageDisplay,
   resolveToolResultPartDisplay,
+  shouldHideToolChrome,
 } from "./tool-results.js";
 
 type ToolResultPart = Extract<NonNullable<Message["parts"]>[number], { type: "tool_result" }>;
@@ -219,5 +222,122 @@ describe("applyToolInteractionResolutions", () => {
       ],
     });
     expect(messages[0].status).toBe("pending");
+  });
+});
+
+describe("shouldHideToolChrome", () => {
+  it("hides the tool row for preview renderers only", () => {
+    expect(shouldHideToolChrome(COMPUTER_OBSERVATION_RENDERER)).toBe(true);
+    expect(shouldHideToolChrome("web_search")).toBe(false);
+    expect(shouldHideToolChrome(undefined)).toBe(false);
+  });
+});
+
+describe("getComputerObservations", () => {
+  it("extracts computer observations from tool result parts in order", () => {
+    const messages = [
+      {
+        id: "assistant-1",
+        role: "assistant",
+        content: "",
+        parts: [
+          {
+            type: "tool_result",
+            name: "use_computer",
+            toolCallId: "call-1",
+            status: "success",
+            content: "Active window",
+            data: {
+              renderer: COMPUTER_OBSERVATION_RENDERER,
+              screenshot: "data:image/png;base64,aaa",
+              title: "AmiAmi",
+              width: 1440,
+              height: 900,
+            },
+          },
+          {
+            type: "tool_result",
+            name: "web_search",
+            status: "success",
+            content: "results",
+            data: {},
+          },
+          {
+            type: "tool_result",
+            name: "use_computer",
+            toolCallId: "call-2",
+            status: "success",
+            content: "Active window",
+            data: {
+              renderer: COMPUTER_OBSERVATION_RENDERER,
+              screenshot: null,
+              title: "New tab",
+            },
+          },
+        ],
+      },
+    ] as unknown as Message[];
+
+    expect(getComputerObservations(messages)).toEqual([
+      {
+        id: "assistant-1:call-1",
+        screenshot: "data:image/png;base64,aaa",
+        title: "AmiAmi",
+        width: 1440,
+        height: 900,
+      },
+      {
+        id: "assistant-1:call-2",
+        screenshot: null,
+        title: "New tab",
+        width: 1440,
+        height: 900,
+      },
+    ]);
+  });
+
+  it("reads legacy tool messages without parts", () => {
+    const messages = [
+      {
+        id: "tool-1",
+        role: "tool",
+        name: "use_computer",
+        status: "success",
+        content: "Active window",
+        data: {
+          renderer: COMPUTER_OBSERVATION_RENDERER,
+          screenshot: "data:image/png;base64,bbb",
+          title: "Solaris",
+          width: 1440,
+          height: 900,
+        },
+      },
+    ] as unknown as Message[];
+
+    expect(getComputerObservations(messages)).toEqual([
+      {
+        id: "tool-1",
+        screenshot: "data:image/png;base64,bbb",
+        title: "Solaris",
+        width: 1440,
+        height: 900,
+      },
+    ]);
+  });
+
+  it("ignores results without the computer renderer", () => {
+    const messages = [
+      {
+        id: "assistant-1",
+        role: "assistant",
+        content: "",
+        parts: [
+          { type: "tool_result", name: "use_computer", status: "success", content: "no data" },
+        ],
+      },
+    ] as unknown as Message[];
+
+    expect(getComputerObservations(messages)).toEqual([]);
+    expect(getComputerObservations(undefined)).toEqual([]);
   });
 });

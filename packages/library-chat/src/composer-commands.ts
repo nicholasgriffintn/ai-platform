@@ -29,7 +29,7 @@ interface ComposerDirectiveReplacementOptions {
 }
 
 const MENTION_TRIGGER_PATTERN = /(^|\s)(@[^\s]*)$/;
-const SLASH_TRIGGER_PATTERN = /(^|\s)(\/[^\n]*)$/;
+const SLASH_TRIGGER_PATTERN = /(^|\s)(\/(?!\s)[^\n]*)$/;
 
 export function getComposerDirectiveQuery(
   input: string,

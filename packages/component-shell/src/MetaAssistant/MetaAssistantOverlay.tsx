@@ -8,6 +8,7 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
+  ArtifactWorkbenchProvider,
   buildMetaAssistantUiContext,
   type ChatSuggestion,
   ComposerDraftProvider,
@@ -84,29 +85,31 @@ function MetaAssistantThread({
   return (
     <ConversationScopeProvider scope={scope}>
       <ComposerDraftProvider draft={draft}>
-        <div className="relative min-h-0 flex-1 overflow-hidden">
-          <ConversationThread
-            modeConfig={{
-              agentApprovals,
-              requestOptions: { meta_assistant: { ui_context: uiContext } },
-              welcomeTitle: "This is Poly.",
-              welcomeDescription:
-                "Ask it to find, open, tidy or summarise anything in Polychat. It operates the product; it does not do your outside work.",
-              welcomeSuggestions: META_SUGGESTIONS,
-              welcomeCapabilitySuggestions: false,
-              inputPlaceholder: { newConversation: "Ask Poly…", followUp: "Ask Poly…" },
-              petPresetSlug: POLY_PET_PRESET_SLUG,
-              hideComposerActionMenu: true,
-              hideChatSettings: true,
-              hideInlineResponseControls: true,
-              hideComposerSuggestions: true,
-              hideModelSelector: true,
-              hideVoiceControls: true,
-              toolSelectionLocked: true,
-              analyticsSource: "meta-assistant",
-            }}
-          />
-        </div>
+        <ArtifactWorkbenchProvider>
+          <div className="relative min-h-0 flex-1 overflow-hidden">
+            <ConversationThread
+              modeConfig={{
+                agentApprovals,
+                requestOptions: { meta_assistant: { ui_context: uiContext } },
+                welcomeTitle: "This is Poly.",
+                welcomeDescription:
+                  "Ask it to find, open, tidy or summarise anything in Polychat. It operates the product; it does not do your outside work.",
+                welcomeSuggestions: META_SUGGESTIONS,
+                welcomeCapabilitySuggestions: false,
+                inputPlaceholder: { newConversation: "Ask Poly…", followUp: "Ask Poly…" },
+                petPresetSlug: POLY_PET_PRESET_SLUG,
+                hideComposerActionMenu: true,
+                hideChatSettings: true,
+                hideInlineResponseControls: true,
+                hideComposerSuggestions: true,
+                hideModelSelector: true,
+                hideVoiceControls: true,
+                toolSelectionLocked: true,
+                analyticsSource: "meta-assistant",
+              }}
+            />
+          </div>
+        </ArtifactWorkbenchProvider>
       </ComposerDraftProvider>
     </ConversationScopeProvider>
   );

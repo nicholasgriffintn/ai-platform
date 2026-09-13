@@ -10,6 +10,7 @@ import {
 } from "@ngriffin_uk/polychat-component-content";
 import { delegationListResponseSchema } from "@ngriffin_uk/polychat-schemas";
 
+import { ComputerObservationView } from "./ComputerObservationView.js";
 import { ComputerTakeoverView } from "./ComputerTakeoverView.js";
 import { createDelegationFollowUpInteraction, DelegationCard } from "./DelegationCard.js";
 import { DocumentSearchView } from "./DocumentSearchView.js";
@@ -19,6 +20,7 @@ import { SandboxView } from "./SandboxView.js";
 
 export {
   ComputerTakeoverView,
+  ComputerObservationView,
   DelegationCard,
   createDelegationFollowUpInteraction,
   DocumentSearchView,
@@ -28,6 +30,7 @@ export {
 };
 
 export const sharedResponseViews: CustomResponseViewRegistry = {
+  computer_observation: ({ data }) => <ComputerObservationView data={data} />,
   computer_takeover: ({ data, onToolInteraction }) => (
     <ComputerTakeoverView data={data} onToolInteraction={onToolInteraction} />
   ),

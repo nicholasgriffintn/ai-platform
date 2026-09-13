@@ -22,8 +22,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY start-computer.sh /usr/local/bin/start-computer
+COPY check-paint.py /usr/local/bin/check-paint
 
-RUN chmod 0755 /usr/local/bin/start-computer \
+RUN chmod 0755 /usr/local/bin/start-computer /usr/local/bin/check-paint \
     && mkdir -p /workspace/profile
 
 EXPOSE 6080

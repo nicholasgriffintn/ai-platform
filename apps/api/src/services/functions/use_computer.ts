@@ -58,7 +58,11 @@ export const use_computer: ApiToolDefinition = {
       contextId,
       runId,
       runAttempt,
-      ...(args.operation === "input" ? { input: args.input } : {}),
+      ...(args.operation === "input"
+        ? { input: args.input }
+        : args.operation === "wait"
+          ? { input: { type: "wait" as const, durationMs: args.durationMs } }
+          : {}),
     });
     const screenshot = result.observation.screenshot;
     const title =
@@ -80,7 +84,16 @@ export const use_computer: ApiToolDefinition = {
             ]
           : []),
       ],
-      data: { computerId: result.computer.id, observation: { title, width, height } },
+      data: {
+        renderer: "computer_observation",
+        computerId: result.computer.id,
+        observation: { title, width, height },
+        screenshot: typeof screenshot === "string" ? screenshot : null,
+        title,
+        width,
+        height,
+        contextId,
+      },
     };
   },
 };
