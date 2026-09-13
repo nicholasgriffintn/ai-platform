@@ -16,7 +16,7 @@ export function mergeChatRequestOptions(
   return {
     ...base,
     ...override,
-    ...(hasMetadata ? { metadata: { ...override?.metadata, ...base?.metadata } } : {}),
+    ...(hasMetadata ? { metadata: { ...base?.metadata, ...override?.metadata } } : {}),
     ...(hasNestedOptions ? { options: { ...base?.options, ...override?.options } } : {}),
   };
 }

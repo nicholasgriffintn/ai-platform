@@ -153,22 +153,6 @@ function ProjectWorkbenchConversationInner({
 
     return undefined;
   }, [briefAttention, task, latestComputerObservation]);
-  const isWorkbenchEligible =
-    Boolean(effectiveConversationId) ||
-    hasCodingEnvironment ||
-    runsQuery.runs.length > 0 ||
-    Boolean(brief.data?.document) ||
-    Boolean(delegationsQuery.data?.delegations.length);
-
-  if (!hasCodingEnvironment && ((runsQuery.isLoading && brief.isLoading) || !isWorkbenchEligible)) {
-    return (
-      <div className="flex h-full min-h-0 flex-col overflow-hidden">
-        {renderHeader({})}
-        <div className="min-h-0 flex-1">{children({})}</div>
-      </div>
-    );
-  }
-
   const presentation = deriveProjectWorkbenchPresentation({
     run: runsQuery.currentRun,
     task,

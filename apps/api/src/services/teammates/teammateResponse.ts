@@ -33,8 +33,7 @@ export function normaliseTeammateResponse(teammate: StoredTeammateRow): Teammate
     skill_ids: readTeammateSkillIds(teammate.skill_ids),
     mode: agentModeSchema.safeParse(teammate.mode).data ?? null,
     kind: teammateKindSchema.safeParse(teammate.kind).data ?? DEFAULT_TEAMMATE_KIND,
-    workspace_default:
-      teammate.workspace_default === true || teammate.workspace_default === 1 ? true : false,
+    workspace_default: teammate.workspace_default === true || teammate.workspace_default === 1,
     temperature: Number.isFinite(temperature) ? temperature : null,
   });
 }
