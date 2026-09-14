@@ -58,6 +58,34 @@ export class OllamaMachine {
 
   listEndpoints = async () => [this.endpoint];
 
+  probeAgentTool = async (): Promise<never> => {
+    throw new Error("The Ollama e2e fixture does not support agent tooling");
+  };
+
+  agentSupportsSessions = async (): Promise<never> => {
+    throw new Error("The Ollama e2e fixture does not support agent sessions");
+  };
+
+  startAgentSession = async (): Promise<never> => {
+    throw new Error("The Ollama e2e fixture does not support agent sessions");
+  };
+
+  readAgentThread = async (): Promise<never> => {
+    throw new Error("The Ollama e2e fixture does not support agent sessions");
+  };
+
+  saveAgentThread = async (): Promise<never> => {
+    throw new Error("The Ollama e2e fixture does not support agent sessions");
+  };
+
+  pickAgentDirectory = async (): Promise<never> => {
+    throw new Error("The Ollama e2e fixture does not support agent directories");
+  };
+
+  saveAgentDirectory = async (): Promise<never> => {
+    throw new Error("The Ollama e2e fixture does not support agent directories");
+  };
+
   discoverModels = async (): Promise<DiscoveredModel[]> => {
     const response = await this.runtimeFetch(`${this.endpoint.url}/api/tags`);
 

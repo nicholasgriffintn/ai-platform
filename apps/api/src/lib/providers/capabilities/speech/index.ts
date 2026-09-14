@@ -43,18 +43,3 @@ export function getSpeechProvider(
 ): SpeechProvider {
   return providerLibrary.speech(providerName, context);
 }
-
-/**
- * List all registered speech providers (includes aliases)
- */
-export function listSpeechProviders(): string[] {
-  const summaries = providerLibrary.list("speech");
-  const names = new Set<string>();
-
-  for (const summary of summaries) {
-    names.add(summary.name);
-    summary.aliases?.forEach((alias) => names.add(alias));
-  }
-
-  return Array.from(names).sort();
-}

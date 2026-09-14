@@ -1,8 +1,10 @@
 import type { Context } from "hono";
 
 import { bufferToBase64 } from "~/utils/base64";
+import { timingSafeEqual } from "~/utils/crypto";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
+import { trimSmsBody } from "../sms";
 import type {
   IncomingMessage,
   IncomingMessageMedia,
@@ -10,29 +12,7 @@ import type {
   TwilioSmsCredentials,
 } from "../types";
 
-const SMS_MAX_LENGTH = 1500;
 const TWILIO_MEDIA_HOSTNAME = "api.twilio.com";
-
-function trimSmsBody(body: string): string {
-  return body.length > SMS_MAX_LENGTH ? `${body.slice(0, SMS_MAX_LENGTH - 1)}...` : body;
-}
-
-function timingSafeEqual(left: string, right: string): boolean {
-  const leftBytes = new TextEncoder().encode(left);
-  const rightBytes = new TextEncoder().encode(right);
-
-  if (leftBytes.length !== rightBytes.length) {
-    return false;
-  }
-
-  let diff = 0;
-
-  for (let index = 0; index < leftBytes.length; index += 1) {
-    diff |= leftBytes[index] ^ rightBytes[index];
-  }
-
-  return diff === 0;
-}
 
 function readFormString(form: FormData, key: string): string {
   const value = form.get(key);

@@ -1,6 +1,7 @@
 import { ResearchReport } from "@ngriffin_uk/polychat-component-experiences/content";
 import { useResearchStatus } from "@ngriffin_uk/polychat-library-react";
 import type { ResearchStatus } from "@ngriffin_uk/polychat-schemas";
+import { normalizeStatus } from "@ngriffin_uk/polychat-utility-core";
 
 const providerLabels: Record<string, string> = {
   parallel: "Parallel",
@@ -18,8 +19,6 @@ type AsyncInvocationData = {
   pollIntervalMs?: number;
   status?: string;
 };
-
-const normalizeStatus = (status?: string) => status?.toLowerCase() ?? "";
 
 const ensureInterval = (value?: number | null, fallback = 5000) => {
   const numeric = typeof value === "number" && Number.isFinite(value) ? value : fallback;

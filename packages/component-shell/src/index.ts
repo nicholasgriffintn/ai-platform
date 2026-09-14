@@ -30,6 +30,7 @@ export * from "./Files/MemorySynthesisPanel.js";
 export * from "./Files/OutputsLibrary.js";
 export * from "./Conversations/ConversationBriefPanel.js";
 export * from "./Conversations/ConversationWorkbenchLayout.js";
+export * from "./Conversations/SharedConversationView.js";
 export * from "./Files/SourcesLibrary.js";
 export * from "./Header/ConversationProductHeader.js";
 export * from "./Header/ConversationShareButton.js";

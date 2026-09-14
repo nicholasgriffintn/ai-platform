@@ -85,7 +85,6 @@ export function ProjectHome({
           <ProjectConversationStarter workspaceId={workspaceId} projectId={projectId} />
           <ProjectConversationList
             conversationCount={conversations.length}
-            newConversationHref={`${basePath}/chat`}
             conversations={conversations.map((conversation) => ({
               id: conversation.id,
               title: conversation.title,

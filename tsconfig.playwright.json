@@ -6,7 +6,8 @@
     "lib": ["ES2022", "DOM"],
     "types": ["node", "@playwright/test"],
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true
   },
   "include": ["playwright.config.ts", "apps/app/tests/e2e/**/*.ts"]
 }

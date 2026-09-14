@@ -9,12 +9,7 @@ import {
   type AnalyticsEngineDoubleColumn,
   ANALYTICS_ENGINE_INDEX_COLUMN,
 } from "./dataset-layout";
-import type {
-  AnalyticsEngineMetric,
-  AnalyticsProvider,
-  BackendAnalyticsEnv,
-  BackendAnalyticsEvent,
-} from "./types";
+import type { AnalyticsEngineMetric, AnalyticsProvider, BackendAnalyticsEnv } from "./types";
 
 export function createAnalyticsEngineProvider(
   env: BackendAnalyticsEnv,
@@ -103,14 +98,4 @@ export function writeAnalyticsEngineMetric(
     doubles: analyticsEngineDoubles(metric),
     indexes: [blobs[ANALYTICS_ENGINE_BLOB_COLUMNS.indexOf(ANALYTICS_ENGINE_INDEX_COLUMN)]],
   });
-}
-
-export function analyticsEventFromMetric(metric: AnalyticsEngineMetric): BackendAnalyticsEvent {
-  return {
-    name: metric.name,
-    category: metric.type,
-    distinctId: metric.traceId,
-    value: metric.value,
-    properties: metric.metadata,
-  };
 }

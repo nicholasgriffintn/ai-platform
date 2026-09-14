@@ -181,10 +181,6 @@ function getProviderErrorStatus(error: ProviderErrorLike): number | undefined {
   return typeof error.statusCode === "number" ? error.statusCode : undefined;
 }
 
-export function isRetryableProviderError(error: unknown): boolean {
-  return classifyProviderRetryError(error).retryable;
-}
-
 export function classifyProviderRetryError(error: unknown): ProviderRetryClassification {
   if (!isProviderErrorLike(error)) {
     return { retryable: false, reason: "The provider error is not eligible for retry." };

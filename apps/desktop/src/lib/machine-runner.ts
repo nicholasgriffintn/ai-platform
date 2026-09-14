@@ -13,8 +13,22 @@ import { delay } from "@ngriffin_uk/polychat-utility-core";
 
 const MACHINE_CLAIM_FALLBACK_MS = 30_000;
 
+type MachineRunnerBackend = Pick<
+  DesktopBackend,
+  | "listEndpoints"
+  | "startModelRun"
+  | "discoverModels"
+  | "agentSupportsSessions"
+  | "startAgentSession"
+  | "readAgentThread"
+  | "saveAgentThread"
+  | "pickAgentDirectory"
+  | "saveAgentDirectory"
+  | "probeAgentTool"
+>;
+
 async function executeClaim(
-  backend: DesktopBackend,
+  backend: MachineRunnerBackend,
   client: MachineRunClient,
   machineId: string,
   claim: NonNullable<MachineRunClaim>,
@@ -201,7 +215,7 @@ async function executeClaim(
 }
 
 export async function runMachineConsumer(options: {
-  backend: DesktopBackend;
+  backend: MachineRunnerBackend;
   client: MachineRunClient;
   machineId: string;
   signal: AbortSignal;

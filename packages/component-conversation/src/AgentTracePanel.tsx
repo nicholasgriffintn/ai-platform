@@ -1,10 +1,4 @@
-import {
-  Button,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  cn,
-} from "@ngriffin_uk/polychat-component-ui";
+import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { AgentTraceEntry } from "@ngriffin_uk/polychat-library-chat/agent-trace";
 import {
   formatAgentTraceLatency,
@@ -17,43 +11,6 @@ import { AgentTraceIcon } from "./AgentTraceIcon.js";
 
 interface AgentTracePanelProps {
   entries: AgentTraceEntry[];
-}
-
-interface AgentTraceButtonProps extends AgentTracePanelProps {
-  compactOnMobile?: boolean;
-}
-
-export function AgentTraceButton({ entries, compactOnMobile = false }: AgentTraceButtonProps) {
-  if (entries.length === 0) {
-    return null;
-  }
-
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          collapseLabel={compactOnMobile ? "container" : false}
-          className="flex-shrink-0 text-muted-foreground hover:text-foreground"
-          title="View conversation trace"
-          aria-label="View conversation trace"
-          icon={<Activity className="h-3.5 w-3.5" />}
-        >
-          Trace
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        side="bottom"
-        align="end"
-        sideOffset={8}
-        className="max-h-[min(34rem,72dvh)] w-[min(92vw,36rem)] overflow-y-auto rounded-xl p-0"
-        aria-label="Conversation trace"
-      >
-        <AgentTracePanel entries={entries} />
-      </PopoverContent>
-    </Popover>
-  );
 }
 
 export function AgentTracePanel({ entries }: AgentTracePanelProps) {

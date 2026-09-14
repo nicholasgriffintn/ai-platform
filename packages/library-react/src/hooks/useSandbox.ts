@@ -4,14 +4,12 @@ import {
   deleteSandboxConnection,
   fetchSandboxConnectionRepositories,
   fetchSandboxConnections,
-  updateSandboxConnectionRepositories,
   upsertSandboxConnection,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
   ConnectSandboxInstallationInput,
   CreateSandboxConnectionInput,
   SandboxConnection,
-  SandboxConnectionRepositoriesPayload,
   SandboxInstallConfig,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -58,16 +56,6 @@ export const useSandboxInstallConfig = () => {
     isFetching: canAccessProFeatures ? query.isFetching : false,
     isLoading: canAccessProFeatures ? query.isLoading : false,
   };
-};
-
-export const useSandboxConnectionRepositories = (installationId?: number) => {
-  const canAccessProFeatures = useCanAccessProFeatures();
-
-  return useQuery({
-    queryKey: SANDBOX_QUERY_KEYS.connectionRepositories(installationId ?? 0),
-    queryFn: () => fetchSandboxConnectionRepositories(installationId!),
-    enabled: canAccessProFeatures && Boolean(installationId),
-  });
 };
 
 export function useSandboxRepositoryOptions(connections: SandboxConnection[]) {
@@ -184,27 +172,6 @@ export const useConnectSandboxInstallation = () => {
       });
       void queryClient.invalidateQueries({
         queryKey: SANDBOX_QUERY_KEYS.root,
-      });
-    },
-  });
-};
-
-export const useUpdateSandboxConnectionRepositories = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation<
-    void,
-    Error,
-    { installationId: number; input: SandboxConnectionRepositoriesPayload }
-  >({
-    mutationFn: ({ installationId, input }) =>
-      updateSandboxConnectionRepositories(installationId, input),
-    onSuccess: (_result, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey: SANDBOX_QUERY_KEYS.connections(),
-      });
-      void queryClient.invalidateQueries({
-        queryKey: SANDBOX_QUERY_KEYS.connectionRepositories(variables.installationId),
       });
     },
   });

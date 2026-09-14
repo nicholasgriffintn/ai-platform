@@ -5,8 +5,10 @@ import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { toRunMessages } from "../lib/run-messages.js";
 import { consumeDesktopRun } from "./desktop-run-stream.js";
 
+export type DeviceModelRunBackend = Pick<DesktopBackend, "listEndpoints" | "startModelRun">;
+
 export interface DeviceModelRunOptions {
-  backend: DesktopBackend;
+  backend: DeviceModelRunBackend;
   conversationId: string;
   messages: Message[];
   model: ModelConfigItem;

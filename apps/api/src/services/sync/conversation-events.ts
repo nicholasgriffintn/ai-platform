@@ -1,9 +1,4 @@
-import type {
-  ChatRun,
-  ChatRunEvent,
-  Delegation,
-  DeviceSyncEventType,
-} from "@ngriffin_uk/polychat-schemas";
+import type { ChatRun, Delegation, DeviceSyncEventType } from "@ngriffin_uk/polychat-schemas";
 
 import { conversationAudience, projectAudience } from "./audience";
 import {
@@ -71,36 +66,6 @@ export async function publishRunChanged(publisher: SyncPublisher, run: ChatRun):
     ...fanOut(audience, syncTopic("conversation", run.conversationId), "run.changed", data),
     { audience, topic: syncTopic("run", run.id), type: "run.changed", data },
   ]);
-}
-
-export async function publishRunEvents(
-  publisher: SyncPublisher,
-  conversationId: string,
-  runId: string,
-  events: ChatRunEvent[],
-): Promise<void> {
-  if (events.length === 0) {
-    return;
-  }
-
-  const audience = await conversationAudience(publisher.env, conversationId);
-
-  publishSync(
-    withoutOrigin(publisher),
-    events.flatMap((event) => {
-      const data = { conversationId, runId, event };
-
-      return [
-        {
-          audience,
-          topic: syncTopic("conversation", conversationId),
-          type: "run.event" as const,
-          data,
-        },
-        { audience, topic: syncTopic("run", runId), type: "run.event" as const, data },
-      ];
-    }),
-  );
 }
 
 export async function publishMessageChanged(

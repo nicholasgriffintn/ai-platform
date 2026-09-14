@@ -1,3 +1,4 @@
+import { timingSafeEqual, toHex } from "~/utils/crypto";
 import { safeParseJson } from "~/utils/json";
 
 import { requireSuccessfulChannelSend } from "./send-response";
@@ -8,24 +9,6 @@ const SIGNATURE_TOLERANCE_SECONDS = 5 * 60;
 const SLACK_POST_MESSAGE_URL = "https://slack.com/api/chat.postMessage";
 
 const encoder = new TextEncoder();
-
-function toHex(buffer: ArrayBuffer): string {
-  return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-function timingSafeEqual(left: string, right: string): boolean {
-  if (left.length !== right.length) {
-    return false;
-  }
-
-  let mismatch = 0;
-
-  for (let index = 0; index < left.length; index += 1) {
-    mismatch |= left.charCodeAt(index) ^ right.charCodeAt(index);
-  }
-
-  return mismatch === 0;
-}
 
 /**
  * Slack signs every request with a timestamp and an HMAC over the raw body. Both are checked

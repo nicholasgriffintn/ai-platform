@@ -10,16 +10,12 @@ import {
 import type { CanvasInputField } from "@ngriffin_uk/polychat-schemas/experiences";
 import { Info } from "lucide-react";
 
-import { formatCanvasFieldLabel } from "./utils";
+import { formatCanvasFieldLabel, getFieldTypes } from "./utils";
 
 interface CanvasModelOptionControlsProps {
   fields: CanvasInputField[];
   values: Record<string, string | boolean>;
   onChange: (fieldName: string, value: string | boolean) => void;
-}
-
-function getFieldTypes(field: CanvasInputField): string[] {
-  return Array.isArray(field.type) ? field.type : [field.type];
 }
 
 function getFieldHelpText(field: CanvasInputField): string {

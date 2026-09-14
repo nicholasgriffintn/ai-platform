@@ -34,7 +34,3 @@ export const useSyncStore = create<SyncStore>()((set) => ({
     }),
   noteEvent: (topic) => set({ lastEventAt: Date.now(), lastEventTopic: topic }),
 }));
-
-export function isSyncLive(): boolean {
-  return useSyncStore.getState().status === "open";
-}

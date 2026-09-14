@@ -1,3 +1,4 @@
+import { clampPercentage } from "@ngriffin_uk/polychat-utility-core";
 import type { ProjectWorkbenchPreviewRegion } from "@ngriffin_uk/polychat-utility-react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { useState } from "react";
@@ -7,10 +8,6 @@ export type { ProjectWorkbenchPreviewRegion } from "@ngriffin_uk/polychat-utilit
 interface PreviewPoint {
   x: number;
   y: number;
-}
-
-function clampPercentage(value: number): number {
-  return Math.min(100, Math.max(0, value));
 }
 
 function eventPoint(event: ReactPointerEvent<HTMLElement>): PreviewPoint {

@@ -117,6 +117,8 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: Build packages and app for end-to-end tests
         run: pnpm build:e2e
+      - name: Typecheck end-to-end tests
+        run: pnpm typecheck:e2e
       - name: Run core release journeys
         run: pnpm test:e2e:release
       - name: Upload failure artefacts

@@ -1,6 +1,73 @@
 import { safeParseJson } from "./json";
+import { isPrivateHostname } from "./urls";
 
 const BEARER_CREDENTIAL = /^Bearer +([A-Za-z0-9._~+/-]+=*)$/i;
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+const MAX_REDIRECTS = 5;
+
+export class UnsafeUrlError extends Error {
+  constructor(url: string) {
+    super(`Refusing to fetch non-public URL: ${url}`);
+    this.name = "UnsafeUrlError";
+  }
+}
+
+export function isPublicHttpUrl(url: URL): boolean {
+  return (
+    (url.protocol === "http:" || url.protocol === "https:") && !isPrivateHostname(url.hostname)
+  );
+}
+
+export async function fetchFollowingSafeRedirects(
+  input: string | URL,
+  init: RequestInit = {},
+  maxRedirects = MAX_REDIRECTS,
+): Promise<Response> {
+  const initialUrl = new URL(input.toString());
+  let currentUrl = initialUrl;
+  const currentInit: RequestInit = { ...init };
+  let redirectCount = 0;
+
+  while (true) {
+    if (!isPublicHttpUrl(currentUrl)) {
+      throw new UnsafeUrlError(currentUrl.toString());
+    }
+
+    const response = await fetch(currentUrl.toString(), {
+      ...currentInit,
+      redirect: "manual",
+    });
+
+    if (!REDIRECT_STATUSES.has(response.status)) {
+      return response;
+    }
+
+    const location = response.headers.get("location");
+
+    if (!location) {
+      return response;
+    }
+
+    if (redirectCount >= maxRedirects) {
+      throw new Error(`Too many redirects while fetching ${initialUrl.toString()}`);
+    }
+
+    redirectCount += 1;
+
+    const method = (currentInit.method ?? "GET").toUpperCase();
+
+    if (
+      response.status === 303 ||
+      ((response.status === 301 || response.status === 302) &&
+        method !== "GET" &&
+        method !== "HEAD")
+    ) {
+      Object.assign(currentInit, { method: "GET", body: undefined });
+    }
+
+    currentUrl = new URL(location, currentUrl);
+  }
+}
 
 export class ResponseBodyTooLargeError extends Error {
   constructor(maxBytes: number) {

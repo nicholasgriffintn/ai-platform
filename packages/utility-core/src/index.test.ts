@@ -5,9 +5,12 @@ import {
   clampPercentage,
   compareNaturalText,
   escapeHtml,
+  formatDuration,
   formatRelativeTime,
   formatUnknownValue,
+  humaniseIdentifier,
   joinNonEmptyStrings,
+  normalizeStatus,
   parseCommaSeparatedList,
   parseNumberInputValue,
   parseRecordValue,
@@ -75,6 +78,42 @@ describe("utility-core", () => {
       "&lt;img src=&quot;x&quot; onerror=&#39;alert(1)&#39;&gt;&amp;",
     );
     expect(escapeHtml("&lt;")).toBe("&amp;lt;");
+  });
+});
+
+describe("formatDuration", () => {
+  it("returns an empty string for missing or non-positive durations", () => {
+    expect(formatDuration(undefined)).toBe("");
+    expect(formatDuration(0)).toBe("");
+  });
+
+  it("formats minutes and seconds, optionally padding the minutes", () => {
+    expect(formatDuration(90)).toBe("1:30");
+    expect(formatDuration(90, { padMinutes: true })).toBe("01:30");
+  });
+
+  it("includes hours once the duration reaches an hour", () => {
+    expect(formatDuration(3661)).toBe("1:01:01");
+    expect(formatDuration(3661, { padMinutes: true })).toBe("01:01:01");
+  });
+});
+
+describe("humaniseIdentifier", () => {
+  it("turns identifiers into sentence-case labels", () => {
+    expect(humaniseIdentifier("hosted_tool")).toBe("Hosted tool");
+    expect(humaniseIdentifier("model")).toBe("Model");
+  });
+
+  it("maps wildcards and empty values to General", () => {
+    expect(humaniseIdentifier("*")).toBe("General");
+    expect(humaniseIdentifier("")).toBe("General");
+  });
+});
+
+describe("normalizeStatus", () => {
+  it("lowercases statuses and falls back to an empty string", () => {
+    expect(normalizeStatus("COMPLETED")).toBe("completed");
+    expect(normalizeStatus(undefined)).toBe("");
   });
 });
 

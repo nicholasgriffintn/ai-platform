@@ -24,18 +24,3 @@ export function getResearchProvider(
 ): ResearchProvider {
   return providerLibrary.research(providerName, context);
 }
-
-/**
- * List all registered research providers (including aliases).
- */
-export function listResearchProviders(): string[] {
-  const summaries = providerLibrary.list("research");
-  const names = new Set<string>();
-
-  for (const summary of summaries) {
-    names.add(summary.name);
-    summary.aliases?.forEach((alias) => names.add(alias));
-  }
-
-  return Array.from(names).sort();
-}

@@ -45,13 +45,13 @@ export interface ApiKeysPanelProps {
 }
 
 function formatCreatedAt(dateString: string): string {
-  try {
-    const date = new Date(dateString);
+  const date = new Date(dateString);
 
-    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-  } catch {
+  if (Number.isNaN(date.getTime())) {
     return "Invalid Date";
   }
+
+  return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 }
 
 function GeneratedApiKeyModal({

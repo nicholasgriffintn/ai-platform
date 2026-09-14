@@ -12,6 +12,7 @@ import {
   AGENT_MODEL_GROUP_KEY,
   getSelectedModelProvider,
   groupModelsByProvider,
+  limitModelGroups,
   modelGroupKey,
   partitionDeprecatedModelEntries,
   type ModelProviderListEntry,
@@ -21,7 +22,6 @@ import { scrollIntoContainerView } from "@ngriffin_uk/polychat-utility-react";
 import { Clock3, Sparkles, WandSparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
-import { limitModelGroups } from "../lib/model-groups";
 import { ModelIcon } from "../ModelIcon/ModelIcon";
 import { ModelOption } from "./ModelOption";
 

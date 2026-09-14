@@ -13,6 +13,7 @@ import { getExtensionFromMimeType } from "~/utils/mime";
 import { getStringRecordValue } from "~/utils/objects";
 import { isPashiQrPngUrl } from "~/utils/qr";
 
+import { trimSmsBody } from "../sms";
 import type {
   AwsSmsCredentials,
   IncomingMessage,
@@ -21,7 +22,6 @@ import type {
   MessagingWebhookMessage,
 } from "../types";
 
-const SMS_MAX_LENGTH = 1500;
 const AWS_END_USER_MESSAGING_SERVICE = "sms-voice";
 const AWS_END_USER_MESSAGING_SMS_V2_ENDPOINT_PREFIX = "sms-voice.pinpoint";
 const AWS_END_USER_MESSAGING_TARGET_PREFIX = "PinpointSMSVoiceV2";
@@ -41,10 +41,6 @@ interface SnsEnvelope {
   Subject?: string;
   SubscribeURL?: string;
   Token?: string;
-}
-
-function trimSmsBody(body: string): string {
-  return body.length > SMS_MAX_LENGTH ? `${body.slice(0, SMS_MAX_LENGTH - 1)}...` : body;
 }
 
 function normaliseAwsMediaInput(mediaUrls: string[] | undefined): string | null {

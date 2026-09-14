@@ -13,7 +13,3 @@ export const DISCOVER_SECTIONS: readonly DiscoverSection[] = [
   { id: "pricing", label: "Pricing" },
   { id: "keys", label: "Your keys" },
 ];
-
-export function discoverSectionHref(id: string): string {
-  return `${DISCOVER_PATH}#${id}`;
-}

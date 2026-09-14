@@ -49,18 +49,3 @@ export function getVideoProvider(
 ): VideoProvider {
   return providerLibrary.video(providerName, context);
 }
-
-/**
- * List all registered video providers (includes aliases)
- */
-export function listVideoProviders(): string[] {
-  const summaries = providerLibrary.list("video");
-  const names = new Set<string>();
-
-  for (const summary of summaries) {
-    names.add(summary.name);
-    summary.aliases?.forEach((alias) => names.add(alias));
-  }
-
-  return Array.from(names).sort();
-}

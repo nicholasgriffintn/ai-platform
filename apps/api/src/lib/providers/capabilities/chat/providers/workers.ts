@@ -8,7 +8,7 @@ import { StorageService } from "~/lib/storage";
 import { persistGeneratedOutput } from "~/lib/storage/generated-media";
 import type { ChatCompletionParameters } from "~/types";
 import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 import { getLogger } from "~/utils/logger";
 import { buildMultipartInput, type MultipartInputFile } from "~/utils/multipartInput";
@@ -121,10 +121,6 @@ function decodeBase64ImageData(base64Data: string) {
   }
 
   return Array.from(array);
-}
-
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Unknown error";
 }
 
 type GeneratedOutput = ReadableStream | string | ArrayBuffer | Uint8Array;

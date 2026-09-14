@@ -132,6 +132,21 @@ export function ProjectCodingEnvironmentCard({
   const hasValidEnvironmentSetup =
     environmentSetup === undefined ||
     sandboxEnvironmentSetupSchema.safeParse(environmentSetup).success;
+  const targetBranchError =
+    deliveryMode === "commit_to_branch" && !targetBranch.trim() ? "Enter a target branch." : null;
+  const customInstructionsError =
+    deliveryMode === "custom" && !customInstructions.trim()
+      ? "Describe how the local result should be prepared."
+      : null;
+  const saveDisabledReason = !selectedRepository
+    ? "Choose a repository to save this coding environment."
+    : (targetBranchError ??
+      customInstructionsError ??
+      (!selectedDeliveryPolicy
+        ? "Select a valid delivery policy."
+        : !hasValidEnvironmentSetup
+          ? "Fix the environment setup before saving."
+          : null));
 
   const handleSave = async () => {
     if (!selectedRepository || !selectedDeliveryPolicy) {
@@ -237,13 +252,21 @@ export function ProjectCodingEnvironmentCard({
             />
           ) : null}
           {deliveryMode === "commit_to_branch" ? (
-            <FormInput
-              label="Target branch"
-              value={targetBranch}
-              onChange={(event) => setTargetBranch(event.target.value)}
-              placeholder="release/next"
-              maxLength={200}
-            />
+            <div className="space-y-1.5">
+              <FormInput
+                label="Target branch"
+                value={targetBranch}
+                onChange={(event) => setTargetBranch(event.target.value)}
+                placeholder="release/next"
+                maxLength={200}
+                aria-invalid={targetBranchError !== null}
+              />
+              {targetBranchError ? (
+                <p role="alert" className="text-xs text-attention">
+                  {targetBranchError}
+                </p>
+              ) : null}
+            </div>
           ) : null}
           {deliveryMode === "custom" ? (
             <label
@@ -258,7 +281,13 @@ export function ProjectCodingEnvironmentCard({
                 placeholder="Describe how the local result should be prepared"
                 maxLength={2000}
                 rows={4}
+                aria-invalid={customInstructionsError !== null}
               />
+              {customInstructionsError ? (
+                <p role="alert" className="text-xs text-attention">
+                  {customInstructionsError}
+                </p>
+              ) : null}
             </label>
           ) : null}
           <ProjectEnvironmentSetupFields value={environmentSetup} onChange={setEnvironmentSetup} />
@@ -294,12 +323,16 @@ export function ProjectCodingEnvironmentCard({
               variant="primary"
               size="sm"
               onClick={() => void handleSave()}
-              disabled={!selectedRepository || !selectedDeliveryPolicy || !hasValidEnvironmentSetup}
+              disabled={saveDisabledReason !== null}
+              title={saveDisabledReason ?? undefined}
               isLoading={isSaving}
             >
               Save repository
             </Button>
           </div>
+          {saveDisabledReason ? (
+            <p className="-mt-2 text-right text-xs text-attention">{saveDisabledReason}</p>
+          ) : null}
         </div>
       ) : codingEnvironment ? (
         <div className="space-y-4">

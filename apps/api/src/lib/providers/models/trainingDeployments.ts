@@ -8,11 +8,10 @@ import {
   type ModelConfig,
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { hasD1DatabaseBinding, type EnvWithD1Database } from "~/lib/database/bindings";
 import type { IEnv } from "~/types";
-import { safeParseJson } from "~/utils/json";
+import { parseJsonRecord } from "~/utils/json";
 
 interface TrainingDeploymentRow {
   provider: string;
@@ -221,16 +220,6 @@ function getTrainingDeploymentModelConfig(
   }
 
   return null;
-}
-
-function parseJsonRecord(value: string | null): Record<string, unknown> {
-  if (!value) {
-    return {};
-  }
-
-  const parsed = safeParseJson<unknown>(value);
-
-  return isRecord(parsed) ? parsed : {};
 }
 
 function parseDeploymentTarget(

@@ -1,6 +1,7 @@
 import { Markdown } from "@ngriffin_uk/polychat-component-content";
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import type { Recording } from "@ngriffin_uk/polychat-schemas";
+import { formatDuration } from "@ngriffin_uk/polychat-utility-core";
 import { FileText } from "lucide-react";
 
 import { TranscriptViewer } from "./TranscriptViewer";
@@ -11,16 +12,7 @@ export interface RecordingDetailViewProps {
 }
 
 export function RecordingDetailView({ recording, onDownloadTranscript }: RecordingDetailViewProps) {
-  const formatDuration = (seconds?: number) => {
-    if (!seconds) {
-      return "Unknown duration";
-    }
-
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
+  const duration = formatDuration(recording.duration) || "Unknown duration";
 
   return (
     <div className="space-y-8">
@@ -52,7 +44,7 @@ export function RecordingDetailView({ recording, onDownloadTranscript }: Recordi
           <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
             <span>{new Date(recording.createdAt).toLocaleDateString()}</span>
             <span>•</span>
-            <span>{formatDuration(recording.duration)}</span>
+            <span>{duration}</span>
           </div>
 
           {recording.summary && (

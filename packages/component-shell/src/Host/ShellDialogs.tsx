@@ -4,16 +4,15 @@ import type {
 } from "@ngriffin_uk/polychat-component-models";
 import {
   useUIStore,
-  appendOnboardingSeen,
   getCachedWebLLMModels,
-  MODEL_SOURCES_ONBOARDING_KEYS,
   pruneStaleWebLLMModels,
   useAuthStatus,
   useBrowserModelConsent,
+  useModelSourcesOnboarding,
   useUser,
   WebLLMService,
 } from "@ngriffin_uk/polychat-library-react";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef } from "react";
+import { lazy, Suspense, useCallback, useMemo } from "react";
 
 import { useShellHost } from "./ShellHostContext.js";
 
@@ -43,15 +42,9 @@ const BrowserModelConsentDialog = lazy(() =>
 
 export function ShellDialogs() {
   const host = useShellHost();
-  const {
-    showMetaAssistant,
-    setShowMetaAssistant,
-    showProjectPicker,
-    setShowProjectPicker,
-    showModelSources,
-    setShowModelSources,
-  } = useUIStore();
-  const { isAuthenticated, isLoading, user, userSettings, updateUserSettings } = useAuthStatus();
+  const { showMetaAssistant, setShowMetaAssistant, showProjectPicker, setShowProjectPicker } =
+    useUIStore();
+  const { isAuthenticated } = useAuthStatus();
   const { providerSettings, isLoadingProviderSettings } = useUser({ enabled: isAuthenticated });
   const {
     pendingModelId,
@@ -59,6 +52,9 @@ export function ShellDialogs() {
     confirmPendingBrowserModel,
     cancelPendingBrowserModel,
   } = useBrowserModelConsent();
+  const surface = host.modelSourceSurface ?? "web";
+  const { isOpen: showModelSources, onOpenChange: setShowModelSources } =
+    useModelSourcesOnboarding(surface);
 
   const handleDownloadBrowserModel = useCallback(
     async (
@@ -70,48 +66,6 @@ export function ShellDialogs() {
     },
     [],
   );
-  const surface = host.modelSourceSurface ?? "web";
-  const onboardingKey = MODEL_SOURCES_ONBOARDING_KEYS[surface];
-  const onboardingHandledFor = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      onboardingHandledFor.current = null;
-
-      return;
-    }
-
-    if (isLoading || !user || !userSettings) {
-      return;
-    }
-
-    const accountKey = `${user.id}:${onboardingKey}`;
-
-    if (onboardingHandledFor.current === accountKey) {
-      return;
-    }
-
-    if (userSettings.onboarding_seen?.includes(onboardingKey)) {
-      onboardingHandledFor.current = accountKey;
-
-      return;
-    }
-
-    onboardingHandledFor.current = accountKey;
-    const nextOnboardingSeen = appendOnboardingSeen(userSettings.onboarding_seen, onboardingKey);
-
-    setShowModelSources(true);
-
-    void updateUserSettings({ onboarding_seen: nextOnboardingSeen }).catch(() => undefined);
-  }, [
-    isAuthenticated,
-    isLoading,
-    onboardingKey,
-    setShowModelSources,
-    updateUserSettings,
-    user,
-    userSettings,
-  ]);
 
   const modelSources = useMemo<readonly ModelSource[]>(() => {
     const hasProviderKeys = providerSettings.some((provider) => provider.hasApiKey);

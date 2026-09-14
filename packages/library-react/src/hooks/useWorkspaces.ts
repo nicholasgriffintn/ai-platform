@@ -13,7 +13,6 @@ import {
   revokeWorkspaceInvitation,
   updateProject,
   updateProjectEnvironmentCache,
-  updateWorkspace,
   useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
@@ -25,7 +24,6 @@ import type {
   ProjectSummary,
   SandboxEnvironmentCacheAction,
   UpdateProjectInput,
-  UpdateWorkspaceInput,
   WorkspaceDetail,
   WorkspaceSummary,
 } from "@ngriffin_uk/polychat-schemas";
@@ -234,19 +232,6 @@ export function useCreateWorkspace() {
     onSuccess: (workspace) => {
       queryClient.setQueryData(workspaceQueryKey(workspace.id), workspace);
       addWorkspaceToListCache(queryClient, workspace);
-    },
-  });
-}
-
-export function useUpdateWorkspace() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ workspaceId, input }: { workspaceId: string; input: UpdateWorkspaceInput }) =>
-      updateWorkspace(workspaceId, input),
-    onSuccess: (workspace) => {
-      queryClient.setQueryData(workspaceQueryKey(workspace.id), workspace);
-      upsertWorkspaceInListCache(queryClient, workspace);
     },
   });
 }

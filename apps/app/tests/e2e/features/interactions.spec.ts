@@ -1,5 +1,6 @@
 import { expect, test } from "../fixtures/polychat-test";
 import { InteractionPage } from "../page-objects/InteractionPage";
+import { trackCompletionRequests } from "../support/chat-run-requests";
 
 test.describe("Acknowledged conversation interactions", () => {
   test.use({ persona: "pro" });
@@ -28,13 +29,8 @@ test.describe("Acknowledged conversation interactions", () => {
       await interactions.setOffline(false);
     }
 
-    let approvalSubmissions = 0;
+    const approvalSubmissions = trackCompletionRequests(page);
 
-    page.on("request", (request) => {
-      if (request.method() === "POST" && new URL(request.url()).pathname === "/chat/completions") {
-        approvalSubmissions += 1;
-      }
-    });
     await interactions.doubleClickApproval("Approve");
     await expect(interactions.approvalAction("Approve")).toBeDisabled();
     await expect(interactions.approvalAction("Reject")).toBeDisabled();
@@ -44,7 +40,7 @@ test.describe("Acknowledged conversation interactions", () => {
       { timeout: 15_000 },
     );
     await expect(homePage.stopResponseButton).toBeHidden();
-    expect(approvalSubmissions).toBe(1);
+    expect(approvalSubmissions).toHaveLength(1);
   });
 
   test("keeps question answers editable after a network failure and sends them on retry", async ({

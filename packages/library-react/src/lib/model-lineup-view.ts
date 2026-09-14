@@ -150,17 +150,3 @@ export function resolveModelTierLineup(
 ): ModelTierLineup {
   return resolveLocalModelTierLineup(models, runtime, machineId);
 }
-
-export function mergeModelTierLineups(
-  primary: ModelTierLineup | undefined,
-  fallback: ModelTierLineup,
-): ModelTierLineup {
-  return Object.fromEntries(
-    MODEL_TIERS.map((tier) => [
-      tier,
-      Object.fromEntries(
-        MODEL_TIER_ROLES.map((role) => [role, primary?.[tier][role] ?? fallback[tier][role]]),
-      ),
-    ]),
-  ) as ModelTierLineup;
-}

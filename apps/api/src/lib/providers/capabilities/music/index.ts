@@ -43,18 +43,3 @@ export function getMusicProvider(
 ): MusicProvider {
   return providerLibrary.music(providerName, context);
 }
-
-/**
- * List all registered music providers (includes aliases)
- */
-export function listMusicProviders(): string[] {
-  const summaries = providerLibrary.list("music");
-  const names = new Set<string>();
-
-  for (const summary of summaries) {
-    names.add(summary.name);
-    summary.aliases?.forEach((alias) => names.add(alias));
-  }
-
-  return Array.from(names).sort();
-}

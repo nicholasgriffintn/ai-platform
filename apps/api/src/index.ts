@@ -17,6 +17,7 @@ import { serviceContextMiddleware } from "./lib/context/serviceContext";
 import { isAllowedOrigin } from "./lib/http/origins";
 import { ResponseFactory } from "./lib/http/ResponseFactory";
 import { addRoute } from "./lib/http/routeBuilder";
+import { requireStrictAdmin } from "./middleware/adminMiddleware";
 import { authMiddleware } from "./middleware/auth";
 import { infraMeteringMiddleware } from "./middleware/infraMetering";
 import { loggerMiddleware } from "./middleware/loggerMiddleware";
@@ -255,6 +256,7 @@ addRoute(app, "get", "/metrics", {
   tags: ["system"],
   description: "Get metrics from Analytics Engine",
   querySchema: metricsParamsSchema,
+  middleware: [requireStrictAdmin],
   responses: {
     200: { description: "Metrics retrieved successfully" },
   },

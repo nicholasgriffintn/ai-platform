@@ -1,3 +1,90 @@
+import { useEffect, useState } from "react";
+
+import type { ArtifactProps } from "../artifact";
+
+export const SVG_SANDBOX_TEMPLATE = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .error-container {
+      padding: 16px;
+      background-color: #fff0f0;
+      color: #e00;
+      border-left: 4px solid #e00;
+      margin: 16px;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <CONTENT_PLACEHOLDER>
+</body>
+</html>
+`;
+
+export const HTML_SANDBOX_TEMPLATE = SVG_SANDBOX_TEMPLATE.replace(
+  "</head>",
+  `  <style id="css-content">
+    <CSS_CODE_PLACEHOLDER>
+  </style>
+</head>`,
+);
+
+export function useSandboxDocument({
+  code,
+  css,
+  template,
+}: {
+  code: ArtifactProps;
+  css?: ArtifactProps;
+  template: string;
+}) {
+  const [documentContent, setDocumentContent] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [prevCode, setPrevCode] = useState(code);
+  const [prevCss, setPrevCss] = useState(css);
+
+  if (prevCode !== code || prevCss !== css) {
+    setPrevCode(code);
+    setPrevCss(css);
+    setIsLoading(true);
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const prepareDocument = async () => {
+      let doc = template;
+
+      doc = doc.replace("<CSS_CODE_PLACEHOLDER>", css?.content ?? "");
+      doc = doc.replace("<CONTENT_PLACEHOLDER>", code.content);
+
+      if (isMounted) {
+        setDocumentContent(doc);
+        setIsLoading(false);
+      }
+    };
+
+    void prepareDocument();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [code, css, template]);
+
+  return { documentContent, isLoading };
+}
+
 const ARTIFACT_SANDBOX_CSP = [
   "default-src 'none'",
   "script-src 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",

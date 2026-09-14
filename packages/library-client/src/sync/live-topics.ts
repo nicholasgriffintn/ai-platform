@@ -7,10 +7,6 @@ export function setActiveSyncSocket(socket: DeviceSyncSocket | undefined): void 
   activeSocket = socket;
 }
 
-export function getActiveSyncSocket(): DeviceSyncSocket | undefined {
-  return activeSocket;
-}
-
 export async function waitForSyncEvent(
   topic: string,
   timeoutMs: number,

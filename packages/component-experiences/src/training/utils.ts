@@ -220,24 +220,6 @@ export function getTrainingEventDetail(event: TrainingJobEvent): string | undefi
   return undefined;
 }
 
-export function getStatusClassName(status: string): string {
-  const normalised = status.toLowerCase();
-
-  if (["completed", "inservice", "in service"].includes(normalised)) {
-    return "border-success/45 bg-success/12 text-success";
-  }
-
-  if (["failed", "error", "outofservice", "out of service"].includes(normalised)) {
-    return "border-failure/45 bg-failure/12 text-failure";
-  }
-
-  if (["starting", "creating", "inprogress", "in progress", "updating"].includes(normalised)) {
-    return "border-active-work/45 bg-active-work/12 text-active-work";
-  }
-
-  return "border-border bg-surface-elevated text-muted-foreground";
-}
-
 function isTrainingHyperparameterValue(value: unknown): value is TrainingHyperparameterValue {
   if (typeof value === "number") {
     return Number.isFinite(value);

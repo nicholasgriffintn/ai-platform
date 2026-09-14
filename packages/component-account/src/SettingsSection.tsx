@@ -59,32 +59,3 @@ export function SettingsSectionTitle({
 }) {
   return <h3 className={cn("text-lg font-bold text-foreground", className)}>{children}</h3>;
 }
-
-export function SettingsFieldLabel({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return <h3 className={cn("text-sm font-medium text-muted-foreground", className)}>{children}</h3>;
-}
-
-export function SettingsGroupLabel({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <h2
-      className={cn(
-        "text-xs font-semibold tracking-wide text-muted-foreground uppercase",
-        className,
-      )}
-    >
-      {children}
-    </h2>
-  );
-}

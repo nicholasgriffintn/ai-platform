@@ -1,3 +1,4 @@
+import type { DesktopBackend } from "@ngriffin_uk/polychat-library-chat";
 import type { PermissionMode } from "@ngriffin_uk/polychat-schemas";
 import { agentRuntimeVendorSchema } from "@ngriffin_uk/polychat-schemas";
 
@@ -6,11 +7,24 @@ import {
   AgentSessionUnavailableError,
   streamAgentSessionRun,
   type AgentSessionRunOptions,
+  type SessionBackend,
 } from "./agent-session-run.js";
 import { consumeDesktopRun } from "./desktop-run-stream.js";
-import type { DeviceModelRunOptions } from "./device-run.js";
+import type { DeviceModelRunBackend, DeviceModelRunOptions } from "./device-run.js";
 
-export async function streamAgentRun(options: AgentSessionRunOptions): Promise<string> {
+type AgentProcessRunBackend = DeviceModelRunBackend &
+  Pick<
+    DesktopBackend,
+    "probeAgentTool" | "pickAgentDirectory" | "saveAgentDirectory" | "startAgentProcessRun"
+  >;
+
+export type AgentRunBackend = SessionBackend & AgentProcessRunBackend;
+
+export type AgentRunOptions = Omit<AgentSessionRunOptions, "backend"> & {
+  backend: AgentRunBackend;
+};
+
+export async function streamAgentRun(options: AgentRunOptions): Promise<string> {
   try {
     return await streamAgentSessionRun(options);
   } catch (cause) {
@@ -30,7 +44,8 @@ export async function streamAgentProcessRun({
   signal,
   permissionMode,
   onStatus,
-}: DeviceModelRunOptions & {
+}: Omit<DeviceModelRunOptions, "backend"> & {
+  backend: AgentProcessRunBackend;
   permissionMode: PermissionMode;
   onStatus: (message: string) => void;
 }): Promise<string> {

@@ -1,10 +1,4 @@
-import {
-  Button,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  cn,
-} from "@ngriffin_uk/polychat-component-ui";
+import { cn } from "@ngriffin_uk/polychat-component-ui";
 import {
   creditsFromCreditMicros,
   type ChatContextOmission,
@@ -17,10 +11,6 @@ interface ContextDetailsPanelProps {
   context?: ChatContextSnapshot | null;
   usage?: ChatRunUsage;
   resolveReferenceHref?: (path: string) => string;
-}
-
-interface ContextDetailsButtonProps extends ContextDetailsPanelProps {
-  compactOnMobile?: boolean;
 }
 
 function omissionLabel(omission: ChatContextOmission): string {
@@ -58,44 +48,6 @@ function ReferenceLink({
     >
       <ExternalLink className="h-3 w-3" aria-hidden="true" />
     </a>
-  );
-}
-
-export function ContextDetailsButton({
-  context,
-  usage,
-  resolveReferenceHref,
-  compactOnMobile = false,
-}: ContextDetailsButtonProps) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          collapseLabel={compactOnMobile ? "container" : false}
-          className="flex-shrink-0 text-muted-foreground hover:text-foreground"
-          title="View run context"
-          aria-label="View run context"
-          icon={<BookOpenText className="h-3.5 w-3.5" />}
-        >
-          Context
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        side="bottom"
-        align="end"
-        sideOffset={8}
-        className="max-h-[min(38rem,76dvh)] w-[min(94vw,38rem)] overflow-y-auto rounded-xl p-0"
-        aria-label="Run context"
-      >
-        <ContextDetailsPanel
-          context={context}
-          usage={usage}
-          resolveReferenceHref={resolveReferenceHref}
-        />
-      </PopoverContent>
-    </Popover>
   );
 }
 

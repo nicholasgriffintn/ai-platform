@@ -12,6 +12,34 @@ export function clampPercentage(value: number): number {
   return clampNumber(value, 0, 100);
 }
 
+export interface FormatDurationOptions {
+  padMinutes?: boolean;
+}
+
+export function formatDuration(
+  seconds: number | undefined,
+  { padMinutes = false }: FormatDurationOptions = {},
+): string {
+  if (seconds === undefined || !Number.isFinite(seconds) || seconds <= 0) {
+    return "";
+  }
+
+  const totalSeconds = Math.floor(seconds);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
+  const secondsPart = secs.toString().padStart(2, "0");
+  const minutesPart = minutes.toString().padStart(2, "0");
+
+  if (hours > 0) {
+    const hoursPart = padMinutes ? hours.toString().padStart(2, "0") : String(hours);
+
+    return `${hoursPart}:${minutesPart}:${secondsPart}`;
+  }
+
+  return `${padMinutes ? minutesPart : String(minutes)}:${secondsPart}`;
+}
+
 export function formatCompactCount(value: number): string {
   if (!Number.isFinite(value) || value < 0) {
     return "0";

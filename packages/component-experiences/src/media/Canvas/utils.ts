@@ -76,7 +76,7 @@ interface CanvasModelOptionFieldOptions {
   includeReferenceFields?: boolean;
 }
 
-function getFieldTypes(field: CanvasInputField): string[] {
+export function getFieldTypes(field: CanvasInputField): string[] {
   return Array.isArray(field.type) ? field.type : [field.type];
 }
 

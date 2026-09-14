@@ -16,7 +16,3 @@ const ADAPTERS: Partial<Record<InboundChannelId, ChannelAdapter>> = {
 export function getChannelAdapter(channel: InboundChannelId): ChannelAdapter | null {
   return ADAPTERS[channel] ?? null;
 }
-
-export function listChannelAdapters(): ChannelAdapter[] {
-  return Object.values(ADAPTERS).filter((adapter): adapter is ChannelAdapter => Boolean(adapter));
-}

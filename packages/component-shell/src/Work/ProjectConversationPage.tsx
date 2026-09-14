@@ -11,14 +11,10 @@ import {
   getProjectSurface,
   getProjectCodingPresentation,
 } from "@ngriffin_uk/polychat-library-react";
-import {
-  getModelInteractionCapabilities,
-  type SandboxTaskType,
-  sandboxTaskTypeSchema,
-} from "@ngriffin_uk/polychat-schemas";
+import { getModelInteractionCapabilities } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 import { ConversationPage } from "../Conversations/ConversationPage.js";
@@ -27,6 +23,7 @@ import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl.js";
 import { ProjectFileAsTaskControl } from "./ProjectFileAsTaskControl.js";
 import { ProjectWorkbenchConversation } from "./ProjectWorkbenchConversation.js";
 import { useFileMessageAsTask } from "./useFileMessageAsTask.js";
+import { useProjectCodingTaskType } from "./useProjectCodingTaskType.js";
 import { useProjectTaskInteractions } from "./useProjectTaskInteractions.js";
 import { useWorkData } from "./WorkDataContext.js";
 
@@ -84,15 +81,11 @@ export function ProjectConversationPage({
     [projectCapabilities],
   );
   const codingEnvironment = project?.codingEnvironment;
-  const [draftTaskType, setDraftTaskType] = useState<SandboxTaskType>("feature-implementation");
-  const [taskTypesByConversation, setTaskTypesByConversation] = useState<
-    Record<string, SandboxTaskType>
-  >({});
-  const [prevProjectId, setPrevProjectId] = useState(projectId);
-  const previousConversationIdRef = useRef<string | null>(null);
-  const taskType = currentConversationId
-    ? (taskTypesByConversation[currentConversationId] ?? draftTaskType)
-    : draftTaskType;
+  const { taskType, handleTaskTypeChange } = useProjectCodingTaskType({
+    projectId,
+    currentConversationId,
+    currentConversation,
+  });
   const codingPresentation = useMemo(() => getProjectCodingPresentation(taskType), [taskType]);
   const recipeManagementPath = getCapabilityLibraryPath(getProjectSurface(workspaceId, projectId));
   const renderConversationHeader = useCallback(
@@ -106,65 +99,6 @@ export function ProjectConversationPage({
       />
     ),
     [conversationId, project?.colour, projectId],
-  );
-
-  if (prevProjectId !== projectId) {
-    setPrevProjectId(projectId);
-    setDraftTaskType("feature-implementation");
-    setTaskTypesByConversation({});
-  }
-
-  useEffect(() => {
-    if (!currentConversationId) {
-      previousConversationIdRef.current = null;
-
-      return;
-    }
-
-    if (previousConversationIdRef.current && !taskTypesByConversation[currentConversationId]) {
-      setDraftTaskType("feature-implementation");
-    }
-
-    previousConversationIdRef.current = currentConversationId;
-  }, [currentConversationId, taskTypesByConversation]);
-
-  const persistedTaskType = [...(currentConversation?.messages ?? [])]
-    .reverse()
-    .map((message) => sandboxTaskTypeSchema.safeParse(message.data?.codingTaskType))
-    .find((result) => result.success)?.data;
-  const [prevPersistedConversation, setPrevPersistedConversation] = useState(currentConversation);
-  const [prevPersistedConversationId, setPrevPersistedConversationId] =
-    useState(currentConversationId);
-
-  if (
-    prevPersistedConversation !== currentConversation ||
-    prevPersistedConversationId !== currentConversationId
-  ) {
-    setPrevPersistedConversation(currentConversation);
-    setPrevPersistedConversationId(currentConversationId);
-
-    if (currentConversationId && persistedTaskType) {
-      setTaskTypesByConversation((current) => ({
-        ...current,
-        [currentConversationId]: persistedTaskType,
-      }));
-    }
-  }
-
-  const handleTaskTypeChange = useCallback(
-    (nextTaskType: SandboxTaskType) => {
-      if (currentConversationId) {
-        setTaskTypesByConversation((current) => ({
-          ...current,
-          [currentConversationId]: nextTaskType,
-        }));
-
-        return;
-      }
-
-      setDraftTaskType(nextTaskType);
-    },
-    [currentConversationId],
   );
 
   useEffect(() => {

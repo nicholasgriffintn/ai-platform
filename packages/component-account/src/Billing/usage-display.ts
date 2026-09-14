@@ -1,5 +1,7 @@
 import type { CreditState, UsageSource } from "@ngriffin_uk/polychat-schemas";
-import { formatUsdFromMicros } from "@ngriffin_uk/polychat-utility-core";
+import { formatUsdFromMicros, humaniseIdentifier } from "@ngriffin_uk/polychat-utility-core";
+
+export { humaniseIdentifier };
 
 export const USAGE_SOURCE_LABELS: Record<UsageSource, string> = {
   model: "Models",
@@ -24,16 +26,6 @@ export const CREDIT_STATE_DESCRIPTIONS: Record<CreditState, string> = {
 
 export function humaniseUsageSource(source: string): string {
   return USAGE_SOURCE_LABELS[source as UsageSource] ?? humaniseIdentifier(source);
-}
-
-export function humaniseIdentifier(value: string): string {
-  if (!value || value === "*") {
-    return "General";
-  }
-
-  const spaced = value.replaceAll(/[_-]/g, " ").trim();
-
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
 export function humaniseUsageUnit(unit: string): string {

@@ -1,5 +1,6 @@
 import { apiService } from "@ngriffin_uk/polychat-library-client";
 import type { ResearchStatus } from "@ngriffin_uk/polychat-schemas";
+import { normalizeStatus } from "@ngriffin_uk/polychat-utility-core";
 import { useQuery } from "@tanstack/react-query";
 
 import { liveOrPoll } from "../sync/live-or-poll.js";
@@ -19,8 +20,6 @@ const researchStatusQueryKey = (runId?: string, provider?: string) => [
   runId ?? "",
   provider ?? "",
 ];
-
-const normalizeStatus = (status?: string) => status?.toLowerCase() ?? "";
 
 export function useResearchStatus({
   runId,

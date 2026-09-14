@@ -16,7 +16,8 @@ import { toRunMessages } from "../lib/run-messages.js";
 import { AgentSessionUnavailableError, agentSessions } from "./agent-session-host.js";
 import type { DeviceModelRunOptions } from "./device-run.js";
 
-export interface AgentSessionRunOptions extends DeviceModelRunOptions {
+export interface AgentSessionRunOptions extends Omit<DeviceModelRunOptions, "backend"> {
+  backend: SessionBackend;
   permissionMode: PermissionMode;
   reasoningEffort: ReasoningEffort | null;
   selectedModel: string | null;
@@ -40,7 +41,7 @@ export interface AgentSessionRunOptions extends DeviceModelRunOptions {
   onApprovalResolved?: (requestId: string) => void;
 }
 
-type SessionBackend = Pick<
+export type SessionBackend = Pick<
   DesktopBackend,
   | "agentSupportsSessions"
   | "startAgentSession"

@@ -13,6 +13,7 @@ import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
 import { bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { fetchFollowingSafeRedirects, UnsafeUrlError } from "~/utils/http";
 import { generateId } from "~/utils/id";
 import { getLogger } from "~/utils/logger";
 
@@ -306,7 +307,7 @@ export class StorageService {
     try {
       logger.debug("Downloading file from URL", { url });
 
-      const response = await fetch(url);
+      const response = await fetchFollowingSafeRedirects(url);
 
       if (!response.ok) {
         throw new AssistantError(
@@ -328,6 +329,10 @@ export class StorageService {
 
       return blob;
     } catch (error) {
+      if (error instanceof UnsafeUrlError) {
+        throw new AssistantError(`Invalid image URL: ${url}`, ErrorType.PARAMS_ERROR);
+      }
+
       throw new AssistantError(
         `Network error downloading image: ${error instanceof Error ? error.message : "Unknown error"}`,
         ErrorType.NETWORK_ERROR,

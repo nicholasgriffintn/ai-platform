@@ -4,8 +4,6 @@ export type AsyncMessageStatus = AsyncInvocationStatus;
 
 export type AsyncInvocationMetadata = AsyncInvocationData;
 
-export const DEFAULT_ASYNC_POLL_INTERVAL_MS = 4000;
-
 export function createAsyncInvocationMetadata(
   base: AsyncInvocationMetadata,
   overrides: Partial<AsyncInvocationMetadata> = {},
@@ -51,14 +49,4 @@ export function mergeAsyncInvocationMetadata(
 
 export function isAsyncInvocationPending(metadata?: AsyncInvocationMetadata): boolean {
   return metadata?.status === "in_progress";
-}
-
-export function getAsyncPollInterval(metadata?: AsyncInvocationMetadata): number {
-  const interval = metadata?.pollIntervalMs ?? metadata?.poll?.intervalMs ?? 0;
-
-  if (!interval || interval < 1000) {
-    return DEFAULT_ASYNC_POLL_INTERVAL_MS;
-  }
-
-  return interval;
 }

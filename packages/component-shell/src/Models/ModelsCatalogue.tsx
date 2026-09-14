@@ -3,7 +3,7 @@ import {
   useModelCatalogue,
   groupModelsByProvider,
   isCatalogueModel,
-  useUIStore,
+  useModelSourcesOnboarding,
 } from "@ngriffin_uk/polychat-library-react";
 import { CircleHelp } from "lucide-react";
 import { useMemo } from "react";
@@ -13,7 +13,7 @@ import { MODELS_SECTION_NAV } from "./models-sections.js";
 import { ProviderCatalogue } from "./ProviderCatalogue.js";
 
 export function ModelsCatalogue() {
-  const setShowModelSources = useUIStore((state) => state.setShowModelSources);
+  const { open: openModelSources } = useModelSourcesOnboarding();
   const { data, isLoading, error } = useModelCatalogue();
   const models = useMemo(() => Object.values(data ?? {}).filter(isCatalogueModel), [data]);
   const groups = useMemo(() => groupModelsByProvider(models), [models]);
@@ -36,7 +36,7 @@ export function ModelsCatalogue() {
             variant="outline"
             size="sm"
             icon={<CircleHelp className="h-4 w-4" aria-hidden="true" />}
-            onClick={() => setShowModelSources(true)}
+            onClick={() => openModelSources()}
           >
             How models work here
           </Button>

@@ -17,18 +17,3 @@ export function getSearchProvider(
 ): SearchProvider {
   return providerLibrary.search(providerName, context);
 }
-
-/**
- * List all registered search providers (including aliases).
- */
-export function listSearchProviders(): string[] {
-  const summaries = providerLibrary.list("search");
-  const names = new Set<string>();
-
-  for (const summary of summaries) {
-    names.add(summary.name);
-    summary.aliases?.forEach((alias) => names.add(alias));
-  }
-
-  return Array.from(names).sort();
-}

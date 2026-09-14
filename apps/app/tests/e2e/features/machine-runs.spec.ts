@@ -206,7 +206,16 @@ test.describe("Advertised machine discovery", () => {
       const advertised = machines.find((machine) => machine.machineId === machineId);
 
       expect(advertised?.label).toBe("Studio desktop");
-      expect(advertised?.runtimes[0]?.models[0]).toMatchObject({
+
+      const runtime = advertised?.runtimes[0];
+
+      expect(runtime?.kind).toBe("model");
+
+      if (runtime?.kind !== "model") {
+        throw new Error("Expected the advertised machine to expose a model runtime");
+      }
+
+      expect(runtime.models[0]).toMatchObject({
         nativeId: "studio-model",
         displayName: "Studio model",
         contextTokens: 8192,

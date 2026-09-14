@@ -29,15 +29,3 @@ export function getOcrProvider(
 ): OcrProvider {
   return providerLibrary.ocr(providerName, context);
 }
-
-export function listOcrProviders(): string[] {
-  const summaries = providerLibrary.list("ocr");
-  const names = new Set<string>();
-
-  for (const summary of summaries) {
-    names.add(summary.name);
-    summary.aliases?.forEach((alias) => names.add(alias));
-  }
-
-  return Array.from(names).sort();
-}

@@ -1,23 +1,10 @@
+import { timingSafeEqual } from "~/utils/crypto";
 import { safeParseJson } from "~/utils/json";
 
 import { requireSuccessfulChannelSend } from "./send-response";
 import type { ChannelAdapter, ChannelIncoming, ChannelReply, ChannelVerification } from "./types";
 
 const TELEGRAM_SECRET_HEADER = "x-telegram-bot-api-secret-token";
-
-function timingSafeEqual(left: string, right: string): boolean {
-  if (left.length !== right.length) {
-    return false;
-  }
-
-  let mismatch = 0;
-
-  for (let index = 0; index < left.length; index += 1) {
-    mismatch |= left.charCodeAt(index) ^ right.charCodeAt(index);
-  }
-
-  return mismatch === 0;
-}
 
 /**
  * Telegram does not sign requests. It echoes a secret token chosen when the webhook is

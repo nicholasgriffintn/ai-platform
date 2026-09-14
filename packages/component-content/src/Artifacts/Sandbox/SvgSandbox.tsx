@@ -1,37 +1,10 @@
-import { useEffect, useState } from "react";
-
 import type { ArtifactProps } from "../artifact";
-import { LoadingIndicator, SandboxIframe } from "./shared";
-
-const HTML_SANDBOX_TEMPLATE = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .error-container {
-      padding: 16px;
-      background-color: #fff0f0;
-      color: #e00;
-      border-left: 4px solid #e00;
-      margin: 16px;
-      border-radius: 4px;
-      font-family: monospace;
-      white-space: pre-wrap;
-    }
-  </style>
-</head>
-<body>
-  <CONTENT_PLACEHOLDER>
-</body>
-</html>
-`;
+import {
+  LoadingIndicator,
+  SandboxIframe,
+  SVG_SANDBOX_TEMPLATE,
+  useSandboxDocument,
+} from "./shared";
 
 export function SvgSandbox({
   code,
@@ -42,35 +15,10 @@ export function SvgSandbox({
   setPreviewError: (error: string | null) => void;
   iframeKey: number;
 }) {
-  const [documentContent, setDocumentContent] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [prevCode, setPrevCode] = useState(code);
-
-  if (prevCode !== code) {
-    setPrevCode(code);
-    setIsLoading(true);
-  }
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const prepareDocument = async () => {
-      let doc = HTML_SANDBOX_TEMPLATE;
-
-      doc = doc.replace("<CONTENT_PLACEHOLDER>", code.content);
-
-      if (isMounted) {
-        setDocumentContent(doc);
-        setIsLoading(false);
-      }
-    };
-
-    void prepareDocument();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [code]);
+  const { documentContent, isLoading } = useSandboxDocument({
+    code,
+    template: SVG_SANDBOX_TEMPLATE,
+  });
 
   if (isLoading) {
     return <LoadingIndicator />;

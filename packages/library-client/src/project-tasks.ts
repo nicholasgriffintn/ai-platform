@@ -3,7 +3,6 @@ import type {
   CreateProjectTaskInput,
   ProjectFlow,
   ProjectTask,
-  ProjectTaskAttentionResponse,
   ProjectTaskDetailResponse,
   ProjectTaskListResponse,
   ResolveProjectTaskToolApprovalInput,
@@ -133,15 +132,6 @@ export async function setProjectFlow(
     method: "PUT",
     headers: await authHeaders(),
     body: { flow },
-  });
-
-  return returnFetchedData(response);
-}
-
-export async function listTaskAttention(): Promise<ProjectTaskAttentionResponse> {
-  const response = await fetchApiOrThrow("/workspaces/attention/tasks", {
-    method: "GET",
-    headers: await authHeaders(),
   });
 
   return returnFetchedData(response);

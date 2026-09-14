@@ -6,7 +6,7 @@ import {
   type MarkdownEditAction,
 } from "@ngriffin_uk/polychat-library-chat/markdown-editor";
 import { measureTextareaSelectionActionPosition } from "@ngriffin_uk/polychat-library-chat/textarea-selection-position";
-import { getCharCount, getWordCount } from "@ngriffin_uk/polychat-utility-core";
+import { getCharCount, getErrorMessage, getWordCount } from "@ngriffin_uk/polychat-utility-core";
 import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
 import {
   Bold,
@@ -22,6 +22,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { type ReactNode, type SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { MemoizedMarkdown } from "../markdown";
 import type { ArtifactProps } from "./artifact";
@@ -187,8 +188,9 @@ export const ArtifactDocumentEditor = ({
 
       setContent(rewritten);
       setActiveView("edit");
-    } catch {
-      return;
+    } catch (error) {
+      console.error("Failed to rewrite artifact", error);
+      toast.error(getErrorMessage(error, "Failed to rewrite document"));
     }
   };
 

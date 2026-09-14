@@ -27,10 +27,6 @@ export function getFilesTabPath(basePath: string, tab: FilesTab, itemPath?: stri
   return itemPath ? `${tabPath}/${itemPath.replace(/^\/+/, "")}` : tabPath;
 }
 
-export function getPersonalFilesPath(tab: FilesTab = DEFAULT_FILES_TAB, itemPath?: string): string {
-  return getFilesTabPath(getPlacePaths("chat").files, tab, itemPath);
-}
-
 export function getProjectFilesPath(
   workspaceId: string,
   projectId: string,

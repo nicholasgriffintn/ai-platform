@@ -46,18 +46,3 @@ export function getImageProvider(
 ): ImageProvider {
   return providerLibrary.image(providerName, context);
 }
-
-/**
- * List all registered image providers (includes aliases)
- */
-export function listImageProviders(): string[] {
-  const summaries = providerLibrary.list("image");
-  const names = new Set<string>();
-
-  for (const summary of summaries) {
-    names.add(summary.name);
-    summary.aliases?.forEach((alias) => names.add(alias));
-  }
-
-  return Array.from(names).sort();
-}

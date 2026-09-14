@@ -56,6 +56,27 @@ export interface ModelProviderListEntry<T extends ModelGroupingItem = ModelGroup
   models: RegionalModelListEntry<T>[];
 }
 
+export function limitModelGroups<T extends ModelGroupingItem>(
+  groups: ModelProviderListEntry<T>[],
+  limit: number,
+): ModelProviderListEntry<T>[] {
+  let remaining = limit;
+  const visible: ModelProviderListEntry<T>[] = [];
+
+  for (const group of groups) {
+    if (remaining <= 0) {
+      break;
+    }
+
+    const models = group.models.slice(0, remaining);
+
+    visible.push({ ...group, models });
+    remaining -= models.length;
+  }
+
+  return visible;
+}
+
 interface BedrockRegionInfo {
   baseModelId: string;
   region: BedrockRegionCode;

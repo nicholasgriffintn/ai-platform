@@ -46,18 +46,3 @@ export function getAudioProvider(
 ): AudioProvider {
   return providerLibrary.audio(providerName, context);
 }
-
-/**
- * List all registered audio providers (includes aliases)
- */
-export function listAudioProviders(): string[] {
-  const summaries = providerLibrary.list("audio");
-  const names = new Set<string>();
-
-  for (const summary of summaries) {
-    names.add(summary.name);
-    summary.aliases?.forEach((alias) => names.add(alias));
-  }
-
-  return Array.from(names).sort();
-}

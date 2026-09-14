@@ -1,4 +1,5 @@
 import type { RecordingTranscriptData } from "@ngriffin_uk/polychat-schemas";
+import { formatDuration } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo } from "react";
 
 const EMPTY_SPEAKER_NAMES: Record<string, string> = {};
@@ -9,20 +10,7 @@ interface TranscriptViewerProps {
 }
 
 export function formatTime(seconds: number): string {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-
-  const parts: string[] = [];
-
-  if (hours > 0) {
-    parts.push(hours.toString().padStart(2, "0"));
-  }
-
-  parts.push(minutes.toString().padStart(2, "0"));
-  parts.push(secs.toString().padStart(2, "0"));
-
-  return parts.join(":");
+  return formatDuration(seconds, { padMinutes: true }) || "00:00";
 }
 
 export function TranscriptViewer({

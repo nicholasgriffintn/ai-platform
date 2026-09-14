@@ -13,6 +13,5 @@ export * from "./Sidebar/SidebarHeader";
 export * from "./Sidebar/SidebarNav";
 export * from "./Sidebar/SidebarSettingsPopover";
 export * from "./Sidebar/StandardSidebarContent";
-export * from "./Sidebar/UserMenuItem";
 export * from "./ConversationListSection";
 export * from "./ProductHeaderShell";

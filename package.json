@@ -40,7 +40,8 @@
     "test:e2e:visual": "PVC_ENVIRONMENT=release pnpm test:e2e",
     "test:mobile": "sh scripts/xcodebuild-mobile.sh test",
     "test:watch": "vitest",
-    "typecheck": "pnpm build:packages && vp run --cache --filter=\"./packages/**\" --filter=\"./apps/**\" typecheck"
+    "typecheck": "pnpm build:packages && vp run --cache --filter=\"./packages/**\" --filter=\"./apps/**\" typecheck",
+    "typecheck:e2e": "pnpm --filter @assistant/app exec tsc -p ../../tsconfig.playwright.json --noEmit"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",

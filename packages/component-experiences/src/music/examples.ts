@@ -283,11 +283,3 @@ s("bd sd [~ bd] sd,hh*8").bank("RolandTR808")
 // - Replace 'bd' or 'sd' with other drum names (hh, cp, lt, perc)
 // - Add '*2' or '/2' inside the quotes to change density
 // - Add '.room(0.4)' or '.lpf(2000)' for reverb / filtering`;
-
-export function getExamplesByCategory(category: PatternExample["category"]): PatternExample[] {
-  return examplePatterns.filter((pattern) => pattern.category === category);
-}
-
-export function getRandomExample(): PatternExample {
-  return examplePatterns[Math.floor(Math.random() * examplePatterns.length)];
-}

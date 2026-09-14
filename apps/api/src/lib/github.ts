@@ -42,20 +42,6 @@ export function validateSignature(
   });
 }
 
-export async function postCommentToPR(
-  repo: string,
-  pr: number,
-  body: string,
-  token: string,
-): Promise<void> {
-  await postCommentToIssueOrPullRequest({
-    repo,
-    issueOrPrNumber: pr,
-    body,
-    token,
-  });
-}
-
 export async function postCommentToIssue(
   repo: string,
   issue: number,

@@ -4,6 +4,7 @@ import type { Context } from "hono";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { base64ToBuffer, bufferToBase64 } from "~/utils/base64";
 import { AssistantError, ErrorType } from "~/utils/errors";
+import { safeParseJson } from "~/utils/json";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/realtime/transcription-proxy" });
@@ -165,18 +166,6 @@ function closeSocket(socket: WebSocket, code = 1000, reason = ""): void {
   }
 }
 
-function parseJson(data: unknown): unknown {
-  if (typeof data !== "string") {
-    return undefined;
-  }
-
-  try {
-    return JSON.parse(data);
-  } catch {
-    return undefined;
-  }
-}
-
 export function normalizeClientRealtimeMessage(
   data: unknown,
   limits = new RealtimeProxySessionLimits(),
@@ -192,7 +181,7 @@ export function normalizeClientRealtimeMessage(
     };
   }
 
-  const payload = parseJson(data);
+  const payload = typeof data === "string" ? safeParseJson<unknown>(data) : undefined;
 
   if (!payload || typeof payload !== "object") {
     throw new AssistantError("Invalid realtime message", ErrorType.PARAMS_ERROR);

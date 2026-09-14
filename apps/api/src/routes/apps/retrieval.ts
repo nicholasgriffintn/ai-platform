@@ -206,10 +206,17 @@ addRoute(app, "get", "/weather", {
         latitude: string;
       };
 
-      const longitude = query.longitude ? Number.parseFloat(query.longitude) : 0;
-      const latitude = query.latitude ? Number.parseFloat(query.latitude) : 0;
+      const longitude = query.longitude ? Number.parseFloat(query.longitude) : Number.NaN;
+      const latitude = query.latitude ? Number.parseFloat(query.latitude) : Number.NaN;
 
-      if (!longitude || !latitude) {
+      if (
+        !Number.isFinite(longitude) ||
+        !Number.isFinite(latitude) ||
+        longitude < -180 ||
+        longitude > 180 ||
+        latitude < -90 ||
+        latitude > 90
+      ) {
         throw new AssistantError("Invalid longitude or latitude", ErrorType.PARAMS_ERROR);
       }
 

@@ -1,5 +1,11 @@
 import { isAbortError } from "~/utils/abort";
-import { headersToRecord, readHttpResponseBody, setDefaultHeader } from "~/utils/http";
+import {
+  UnsafeUrlError,
+  fetchFollowingSafeRedirects,
+  headersToRecord,
+  readHttpResponseBody,
+  setDefaultHeader,
+} from "~/utils/http";
 import { getLogger } from "~/utils/logger";
 import { coerceStringRecord, isPlainObject } from "~/utils/objects";
 import { appendQueryParams, isPrivateHostname } from "~/utils/urls";
@@ -153,8 +159,20 @@ export const call_api: ApiToolDefinition = {
         fetchOptions.body = body;
       }
 
-      response = await fetch(url.toString(), fetchOptions);
+      response = await fetchFollowingSafeRedirects(url, fetchOptions);
     } catch (error) {
+      if (error instanceof UnsafeUrlError) {
+        return {
+          status: "error",
+          name: "call_api",
+          content: "Private or local network URLs are not allowed",
+          data: {
+            url: url.toString(),
+            method,
+          },
+        };
+      }
+
       logger.error("API request failed", {
         error_message: error instanceof Error ? error.message : "Unknown error",
         url: url.toString(),

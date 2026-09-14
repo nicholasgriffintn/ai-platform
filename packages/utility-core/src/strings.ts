@@ -61,6 +61,20 @@ export function titleCaseSlug(value: string): string {
     .join(" ");
 }
 
+export function normalizeStatus(status?: string): string {
+  return status?.toLowerCase() ?? "";
+}
+
+export function humaniseIdentifier(value: string): string {
+  if (!value || value === "*") {
+    return "General";
+  }
+
+  const spaced = value.replace(/[_-]/g, " ").trim();
+
+  return capitaliseFirst(spaced);
+}
+
 export function joinNonEmptyStrings(
   parts: Array<string | null | undefined>,
   separator = " ",
