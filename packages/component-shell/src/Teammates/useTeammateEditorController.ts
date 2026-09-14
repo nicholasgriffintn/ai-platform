@@ -4,7 +4,9 @@ import type {
 } from "@ngriffin_uk/polychat-component-account";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
+  useAddProjectCapability,
   useCapabilityCatalog,
+  capabilityCatalogQueryKey,
   useModels,
   useTeammate,
   useTeammates,
@@ -23,6 +25,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { EMPTY_MODEL_CONFIG } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -32,6 +35,7 @@ export interface TeammateEditorControllerOptions {
   teammatesPath: string;
   backPath: string;
   projectId?: string;
+  workspaceId?: string;
 }
 
 export interface TeammateEditorController {
@@ -62,9 +66,11 @@ export function useTeammateEditorController({
   teammatesPath,
   backPath,
   projectId,
+  workspaceId,
 }: TeammateEditorControllerOptions): TeammateEditorController {
   const isCreate = teammateId === NEW_TEAMMATE_ID;
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const currentUserId = useChatStore((state) => state.user?.id);
   const teammateQuery = useTeammate(isCreate ? undefined : teammateId);
   const modelsQuery = useModels();
@@ -72,6 +78,7 @@ export function useTeammateEditorController({
   const catalogQuery = useCapabilityCatalog(projectId);
   const workspacesQuery = useWorkspaces();
   const publishMutation = usePublishTeammateToWorkspace();
+  const addProjectCapability = useAddProjectCapability();
   const {
     createTeammate,
     isCreatingTeammate,
@@ -99,7 +106,23 @@ export function useTeammateEditorController({
         return;
       }
 
-      const created = await createTeammate(data);
+      const created = await createTeammate(
+        projectId && workspaceId ? { ...data, workspace_id: workspaceId } : data,
+      );
+
+      if (projectId) {
+        try {
+          await addProjectCapability.mutateAsync({
+            projectId,
+            input: { kind: "teammate", capabilityId: created.id, configuration: {} },
+          });
+          await queryClient.invalidateQueries({ queryKey: capabilityCatalogQueryKey(projectId) });
+        } catch (error) {
+          toast.error(
+            getErrorMessage(error, "Created the teammate but could not attach it to this project."),
+          );
+        }
+      }
 
       toast.success("Teammate created");
       await navigate(`${teammatesPath}/${created.id}`, { replace: true });
@@ -126,9 +149,9 @@ export function useTeammateEditorController({
     });
   };
 
-  const publishToWorkspace = async (targetTeammateId: string, workspaceId: string) => {
+  const publishToWorkspace = async (targetTeammateId: string, targetWorkspaceId: string) => {
     const published = await publishMutation
-      .mutateAsync({ teammateId: targetTeammateId, workspaceId })
+      .mutateAsync({ teammateId: targetTeammateId, workspaceId: targetWorkspaceId })
       .catch(() => null);
 
     if (published) {
@@ -144,8 +167,8 @@ export function useTeammateEditorController({
           error: publishMutation.error
             ? getErrorMessage(publishMutation.error, "Could not publish this teammate.")
             : null,
-          onPublish: (workspaceId: string) => {
-            void publishToWorkspace(teammate.id, workspaceId);
+          onPublish: (targetWorkspaceId: string) => {
+            void publishToWorkspace(teammate.id, targetWorkspaceId);
           },
         }
       : undefined;

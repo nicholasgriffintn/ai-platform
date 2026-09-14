@@ -13,6 +13,7 @@ export default function DesktopProjectTeammatePage() {
       backPath={teammatesPath}
       backLabel="Back to capabilities"
       projectId={projectId}
+      workspaceId={workspaceId}
     />
   );
 }

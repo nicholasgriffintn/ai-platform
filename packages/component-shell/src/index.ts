@@ -70,6 +70,7 @@ export * from "./Sidebar/SidebarFooter.js";
 export * from "./Sidebar/SidebarHeader.js";
 export * from "./Sidebar/SidebarSettingsPopover.js";
 export * from "./Sidebar/StandardSidebarContent.js";
+export * from "./Skills/SkillEditorPage.js";
 export * from "./Teammates/TeammateEditorPage.js";
 export * from "./Teammates/TeammateContextsPanel.js";
 export * from "./Teammates/TeammateComputerPanel.js";

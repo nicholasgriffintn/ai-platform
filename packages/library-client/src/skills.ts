@@ -1,5 +1,10 @@
 import type {
   AuthoredSkillDocument,
+  AuthoredSkillDraftInput,
+  AuthoredSkillHistoryResponse,
+  AuthoredSkillImportInput,
+  AuthoredSkillPromotionInput,
+  AuthoredSkillRollbackInput,
   AuthoredSkillVersionedDocument,
   SkillAvailability,
   SkillAvailabilityResponse,
@@ -12,6 +17,120 @@ import { createApiErrorFromResponse, returnFetchedData } from "./http.js";
 
 async function readHeaders(): Promise<Record<string, string>> {
   return await apiService.getHeaders();
+}
+
+function skillDocumentBasePath(skillId: string, projectId?: string): string {
+  const encodedSkillId = encodeURIComponent(skillId);
+
+  return projectId
+    ? `/projects/${encodeURIComponent(projectId)}/skills/${encodedSkillId}`
+    : `/skills/documents/${encodedSkillId}`;
+}
+
+export async function getSkill(
+  skillId: string,
+  projectId?: string,
+): Promise<AuthoredSkillDocument> {
+  const response = await fetchApi(skillDocumentBasePath(skillId, projectId), {
+    method: "GET",
+    headers: await readHeaders(),
+  });
+
+  if (!response.ok) {
+    throw await createApiErrorFromResponse(response, "Failed to load skill");
+  }
+
+  return returnFetchedData<AuthoredSkillDocument>(response);
+}
+
+export async function getSkillHistory(
+  skillId: string,
+  projectId?: string,
+): Promise<AuthoredSkillHistoryResponse> {
+  const response = await fetchApi(`${skillDocumentBasePath(skillId, projectId)}/history`, {
+    method: "GET",
+    headers: await readHeaders(),
+  });
+
+  if (!response.ok) {
+    throw await createApiErrorFromResponse(response, "Failed to load skill history");
+  }
+
+  return returnFetchedData<AuthoredSkillHistoryResponse>(response);
+}
+
+export async function saveSkillDraft(
+  skillId: string,
+  input: AuthoredSkillDraftInput,
+  projectId?: string,
+): Promise<AuthoredSkillVersionedDocument> {
+  const response = await fetchApi(`${skillDocumentBasePath(skillId, projectId)}/draft`, {
+    method: "PUT",
+    headers: await readHeaders(),
+    body: input,
+  });
+
+  if (!response.ok) {
+    throw await createApiErrorFromResponse(response, "Failed to save skill draft");
+  }
+
+  return returnFetchedData<AuthoredSkillVersionedDocument>(response);
+}
+
+export async function promoteSkillDraft(
+  skillId: string,
+  input: AuthoredSkillPromotionInput,
+  projectId?: string,
+): Promise<AuthoredSkillVersionedDocument> {
+  const response = await fetchApi(`${skillDocumentBasePath(skillId, projectId)}/promote`, {
+    method: "POST",
+    headers: await readHeaders(),
+    body: input,
+  });
+
+  if (!response.ok) {
+    throw await createApiErrorFromResponse(response, "Failed to publish skill revision");
+  }
+
+  return returnFetchedData<AuthoredSkillVersionedDocument>(response);
+}
+
+export async function rollbackSkill(
+  skillId: string,
+  input: AuthoredSkillRollbackInput,
+  projectId?: string,
+): Promise<AuthoredSkillVersionedDocument> {
+  const response = await fetchApi(`${skillDocumentBasePath(skillId, projectId)}/rollback`, {
+    method: "POST",
+    headers: await readHeaders(),
+    body: input,
+  });
+
+  if (!response.ok) {
+    throw await createApiErrorFromResponse(response, "Failed to roll the skill back");
+  }
+
+  return returnFetchedData<AuthoredSkillVersionedDocument>(response);
+}
+
+export async function importSkill(
+  input: AuthoredSkillImportInput,
+  projectId?: string,
+): Promise<AuthoredSkillVersionedDocument> {
+  const path = projectId
+    ? `/projects/${encodeURIComponent(projectId)}/skills/import`
+    : "/skills/documents/import";
+  const response = await fetchApi(path, {
+    method: "POST",
+    headers: await readHeaders(),
+    body: input,
+  });
+
+  if (!response.ok) {
+    throw await createApiErrorFromResponse(response, "Failed to import skill");
+  }
+
+  return returnFetchedData<AuthoredSkillVersionedDocument>(response);
 }
 
 export async function fetchPersonalSkills(): Promise<SkillAvailabilityResponse> {

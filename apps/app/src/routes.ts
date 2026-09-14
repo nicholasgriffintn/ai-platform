@@ -9,6 +9,7 @@ export default [
     route("teammates/:teammateId", "pages/chat/teammate.tsx"),
     route("apps/:appId/*", "pages/chat/app.tsx"),
     route("tools/:toolId", "pages/chat/tool.tsx"),
+    route("skills/:skillId", "pages/chat/skill.tsx"),
     route(":completionId?", "pages/chat/index.tsx"),
   ]),
   route("/work", "pages/work/layout.tsx", [
@@ -32,6 +33,7 @@ export default [
     route(":workspaceId/projects/:projectId/tasks/:taskId", "pages/work/project-task.tsx"),
     route(":workspaceId/projects/:projectId/activity", "pages/work/project-activity.tsx"),
     route(":workspaceId/projects/:projectId/tools/:toolId", "pages/work/project-tool.tsx"),
+    route(":workspaceId/projects/:projectId/skills/:skillId", "pages/work/project-skill.tsx"),
   ]),
   route("/pets", "pages/pets.tsx"),
   route("/discover", "pages/discover.tsx"),

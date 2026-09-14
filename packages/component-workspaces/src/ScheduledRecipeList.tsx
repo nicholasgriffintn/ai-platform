@@ -1,4 +1,11 @@
-import { Button, Card, DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
+import {
+  Button,
+  Card,
+  DropdownMenu,
+  DropdownMenuItem,
+  SkeletonList,
+} from "@ngriffin_uk/polychat-component-ui";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import {
   CalendarClock,
   CalendarX2,
@@ -24,6 +31,8 @@ export interface ScheduledRecipeEntry {
 export interface ScheduledRecipeListProps {
   entries: ScheduledRecipeEntry[];
   embedded?: boolean;
+  error?: Error | null;
+  isLoading?: boolean;
   canSchedule: boolean;
   onSchedule: () => void;
   onViewConfiguration: (entryId: string) => void;
@@ -35,6 +44,8 @@ export interface ScheduledRecipeListProps {
 export function ScheduledRecipeList({
   entries,
   embedded = false,
+  error = null,
+  isLoading = false,
   canSchedule,
   onSchedule,
   onViewConfiguration,
@@ -66,7 +77,13 @@ export function ScheduledRecipeList({
         />
       </div>
 
-      {entries.length ? (
+      {isLoading ? (
+        <SkeletonList count={2} />
+      ) : error ? (
+        <p role="alert" className="text-sm text-failure">
+          {getErrorMessage(error, "Could not load scheduled recipes.")}
+        </p>
+      ) : entries.length ? (
         <ul className="space-y-2">
           {entries.map((entry) => (
             <li

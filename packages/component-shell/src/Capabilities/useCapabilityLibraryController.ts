@@ -28,9 +28,9 @@ import {
   type ModelToolDefinition,
   type SkillAvailability,
 } from "@ngriffin_uk/polychat-schemas";
-import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo, useState } from "react";
 
+import { buildOwnInstallationByRecipeId } from "../Recipes/installations.js";
 import { useRecipeActionRequest } from "../Recipes/useRecipeActionRequest.js";
 import { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows.js";
 
@@ -117,12 +117,7 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
     [catalog.tools],
   );
   const installationByRecipeId = useMemo(
-    () =>
-      new Map(
-        (installationsData?.installations ?? [])
-          .filter((installation) => areUserIdsEqual(installation.userId, currentUserId))
-          .map((installation) => [installation.recipeId, installation]),
-      ),
+    () => buildOwnInstallationByRecipeId(installationsData?.installations ?? [], currentUserId),
     [currentUserId, installationsData?.installations],
   );
   const toolConfigurationById = useMemo(

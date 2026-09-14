@@ -207,8 +207,6 @@ export const teammateSummarySchema = z.object({
   scorecard: teammateScorecardSchema,
 });
 
-export const teammateSummaryListResponseSchema = z.array(teammateSummarySchema);
-
 export type TeammateMcpServer = z.infer<typeof teammateMcpServerInputSchema>;
 export type TeammateFewShotExample = z.input<typeof fewShotExampleSchema>;
 export type CreateTeammateInput = z.input<typeof createTeammateSchema>;

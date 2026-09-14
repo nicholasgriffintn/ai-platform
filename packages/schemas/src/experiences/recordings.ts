@@ -13,6 +13,39 @@ export interface RecordingFormData {
   speakers: Record<string, string>;
 }
 
+export const DEFAULT_RECORDING_NUMBER_OF_SPEAKERS = 2;
+
+export function createRecordingSpeakers(
+  count: number,
+  existing: Record<string, string> = {},
+): Record<string, string> {
+  return Object.fromEntries(
+    Array.from({ length: count }, (_, index) => {
+      const speakerId = String(index + 1);
+
+      return [speakerId, existing[speakerId] ?? `Speaker ${speakerId}`];
+    }),
+  );
+}
+
+export const DEFAULT_RECORDING_SPEAKERS = createRecordingSpeakers(
+  DEFAULT_RECORDING_NUMBER_OF_SPEAKERS,
+);
+
+export function getRecordingSpeakerCount(recording: { transcript?: unknown }): number {
+  const transcript = recording.transcript;
+
+  if (transcript && typeof transcript === "object" && "num_speakers" in transcript) {
+    const count = transcript.num_speakers;
+
+    if (typeof count === "number" && count > 0) {
+      return count;
+    }
+  }
+
+  return DEFAULT_RECORDING_NUMBER_OF_SPEAKERS;
+}
+
 export interface UploadRecordingParams {
   title: string;
   description?: string;

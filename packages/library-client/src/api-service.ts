@@ -27,6 +27,7 @@ import type {
   TeammateComputerAction,
   MemoryDocument,
   UpdateMemoryDocumentInput,
+  RecordTeammateFeedbackInput,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { useChatStore } from "./chatStore.js";
@@ -240,6 +241,11 @@ class ApiService {
   getTeammate = (teammateId: string): Promise<TeammateResponse> => {
     return this.teammateService.getTeammate(teammateId);
   };
+
+  recordTeammateFeedback = (
+    teammateId: string,
+    input: RecordTeammateFeedbackInput,
+  ): Promise<void> => this.teammateService.recordTeammateFeedback(teammateId, input);
 
   listTeammateContexts = (teammateId: string): Promise<TeammateContext[]> =>
     this.teammateService.listTeammateContexts(teammateId);

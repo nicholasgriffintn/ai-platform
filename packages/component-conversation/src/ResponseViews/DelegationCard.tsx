@@ -7,7 +7,9 @@ import type {
   DelegationTeammateReference,
 } from "@ngriffin_uk/polychat-schemas";
 import { isHttpUrl } from "@ngriffin_uk/polychat-utility-core";
-import { ArrowUpRight, FileOutput } from "lucide-react";
+import { ArrowUpRight, FileOutput, ThumbsDown, ThumbsUp } from "lucide-react";
+
+export type DelegationFeedbackVerdict = "good" | "bad";
 
 const stateLabels: Record<DelegationState, string> = {
   queued: "queued",
@@ -48,6 +50,8 @@ export interface DelegationCardProps {
   onResumeDelegation?: (delegation: Delegation) => void;
   onStartFreshDelegation?: (delegation: Delegation) => void;
   onOpenOutput?: (output: DelegationOutputReference) => void;
+  recordedFeedback?: Record<string, DelegationFeedbackVerdict>;
+  onRecordFeedback?: (delegation: Delegation, verdict: DelegationFeedbackVerdict) => void;
 }
 
 export function createDelegationFollowUpInteraction(
@@ -81,6 +85,8 @@ export function DelegationCard({
   onResumeDelegation,
   onStartFreshDelegation,
   onOpenOutput,
+  recordedFeedback,
+  onRecordFeedback,
 }: DelegationCardProps) {
   const first = delegations[0];
 
@@ -229,6 +235,35 @@ export function DelegationCard({
                       </Button>
                     )}
                   </div>
+                  {canFollowUp && onRecordFeedback && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">Did this go well?</span>
+                      <Button
+                        type="button"
+                        size="xs"
+                        variant={
+                          recordedFeedback?.[delegation.id] === "good" ? "primary" : "outline"
+                        }
+                        aria-pressed={recordedFeedback?.[delegation.id] === "good"}
+                        aria-label={`Mark ${teammate?.name ?? delegation.teammateId} as good`}
+                        onClick={() => onRecordFeedback(delegation, "good")}
+                      >
+                        <ThumbsUp size={13} />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="xs"
+                        variant={
+                          recordedFeedback?.[delegation.id] === "bad" ? "destructive" : "outline"
+                        }
+                        aria-pressed={recordedFeedback?.[delegation.id] === "bad"}
+                        aria-label={`Mark ${teammate?.name ?? delegation.teammateId} as bad`}
+                        onClick={() => onRecordFeedback(delegation, "bad")}
+                      >
+                        <ThumbsDown size={13} />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </li>

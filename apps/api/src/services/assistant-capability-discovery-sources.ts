@@ -10,6 +10,7 @@ import { listRecipeConnectors } from "~/services/apps/connectors";
 import { listAssistantRecipes, listRecipeInstallations } from "~/services/apps/recipes";
 import { resolveEnabledFunctionToolNames } from "~/services/functions/availability";
 import { listFunctionToolDefinitions } from "~/services/functions/definitions";
+import { INTERNAL_FUNCTION_TOOLS } from "~/services/functions/internal-tools";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import type { IRequest } from "~/types";
@@ -25,16 +26,6 @@ interface ProjectCapabilityReference {
   capability_id: string;
 }
 
-const INTERNAL_FUNCTION_TOOLS = new Set([
-  "ask_user",
-  "configure_recipe",
-  "get_recipe",
-  "load_skill",
-  "request_approval",
-  "search_pashi_tools",
-  "trigger_recipe",
-  "use_recipe_connector",
-]);
 const permissionChecker = new PermissionChecker();
 
 export function scopeCapabilityDiscoverySourcesToProject(params: {

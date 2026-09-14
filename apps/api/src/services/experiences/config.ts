@@ -7,8 +7,6 @@ import type {
   ModelToolDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 
-export type AppKind = "dynamic" | "frontend";
-
 /**
  * One entry per rich experience. Entries with a `capabilityId` are also published as apps a
  * project or person can enable; entries without one are always available alongside them.

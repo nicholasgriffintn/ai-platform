@@ -1,7 +1,3 @@
-export interface ToolParameterSchema extends Record<string, unknown> {
-  type: string;
-}
-
 export interface ToolDefinitionInput {
   name: string;
   description: string;

@@ -54,6 +54,10 @@ export function getTeammateEditorPath(surface: CapabilitySurface, teammateId: st
   return `${surface.basePath}/teammates/${teammateId}`;
 }
 
+export function getSkillEditorPath(surface: CapabilitySurface, skillId: string): string {
+  return `${surface.basePath}/skills/${encodeURIComponent(skillId)}`;
+}
+
 export function getConversationPath(surface: CapabilitySurface): string {
   return surface.projectId ? `${surface.basePath}/chat` : surface.basePath;
 }

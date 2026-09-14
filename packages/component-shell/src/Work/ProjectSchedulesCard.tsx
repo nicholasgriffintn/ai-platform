@@ -1,8 +1,4 @@
-import {
-  RecipeConfigurationDialog,
-  RecipeConfigurationSummaryDialog,
-  RecipeScheduleDialog,
-} from "@ngriffin_uk/polychat-component-capabilities";
+import { RecipeConfigurationSummaryDialog } from "@ngriffin_uk/polychat-component-capabilities";
 import { ConfirmationDialog, FormDialog, FormSelect } from "@ngriffin_uk/polychat-component-ui";
 import { ScheduledRecipeList } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
@@ -17,6 +13,9 @@ import type {
 import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo, useState } from "react";
 
+import { buildOwnInstallationByRecipeId } from "../Recipes/installations.js";
+import { RecipeWorkflowDialogs } from "../Recipes/RecipeWorkflowDialogs.js";
+import { useRecipeActionRequest } from "../Recipes/useRecipeActionRequest.js";
 import { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows.js";
 
 export function ProjectSchedulesCard({
@@ -58,13 +57,20 @@ export function ProjectSchedulesCard({
       ),
     [capabilities],
   );
-  const schedulableRecipes = (recipes.data?.recipes ?? []).filter(
+  const recipesList = useMemo(() => recipes.data?.recipes ?? [], [recipes.data?.recipes]);
+  const schedulableRecipes = recipesList.filter(
     (recipe) =>
       enabledRecipeIds.has(recipe.id) &&
       recipe.triggers.some((trigger) => trigger.type === "schedule"),
   );
-  const recipeById = new Map((recipes.data?.recipes ?? []).map((recipe) => [recipe.id, recipe]));
-  const projectInstallations = installations.data?.installations ?? [];
+  const recipeById = useMemo(
+    () => new Map(recipesList.map((recipe) => [recipe.id, recipe])),
+    [recipesList],
+  );
+  const projectInstallations = useMemo(
+    () => installations.data?.installations ?? [],
+    [installations.data?.installations],
+  );
   const scheduleEntries = projectInstallations.flatMap((installation) => {
     const trigger = getRecipeScheduleTrigger(installation);
 
@@ -72,14 +78,15 @@ export function ProjectSchedulesCard({
       ? [{ installation, trigger, recipe: recipeById.get(installation.recipeId) }]
       : [];
   });
-  const ownInstallationByRecipeId = new Map(
-    projectInstallations
-      .filter((installation) => areUserIdsEqual(installation.userId, currentUserId))
-      .map((installation) => [installation.recipeId, installation]),
+  const ownInstallationByRecipeId = useMemo(
+    () => buildOwnInstallationByRecipeId(projectInstallations, currentUserId),
+    [projectInstallations, currentUserId],
   );
   const memberNameById = new Map(
     members.map((member) => [String(member.userId), member.name || member.email]),
   );
+
+  useRecipeActionRequest(recipesList, ownInstallationByRecipeId, workflows.actions);
 
   const openRecipePicker = () => {
     setSelectedRecipeId(schedulableRecipes[0]?.id ?? "");
@@ -108,6 +115,8 @@ export function ProjectSchedulesCard({
       <ScheduledRecipeList
         entries={entries}
         embedded={embedded}
+        error={recipes.error ?? installations.error}
+        isLoading={recipes.isLoading || installations.isLoading}
         canSchedule={schedulableRecipes.length > 0}
         onSchedule={openRecipePicker}
         onViewConfiguration={(entryId) => {
@@ -169,32 +178,7 @@ export function ProjectSchedulesCard({
         />
       </FormDialog>
 
-      <RecipeConfigurationDialog
-        recipe={workflows.configurationDialog.recipe}
-        installation={workflows.configurationDialog.installation}
-        values={workflows.configurationDialog.values}
-        onValuesChange={workflows.configurationDialog.setValues}
-        onClose={workflows.configurationDialog.close}
-        onSubmit={workflows.configurationDialog.submit}
-        isLoading={workflows.configurationDialog.isLoading}
-      />
-      <RecipeScheduleDialog
-        recipe={workflows.scheduleDialog.recipe}
-        hasExistingSchedule={workflows.scheduleDialog.hasExistingSchedule}
-        cronExpression={workflows.scheduleDialog.cronExpression}
-        timezone={workflows.scheduleDialog.timezone}
-        prompt={workflows.scheduleDialog.prompt}
-        notifySms={workflows.scheduleDialog.notifySms}
-        smsTarget={workflows.scheduleDialog.smsTarget}
-        onCronExpressionChange={workflows.scheduleDialog.setCronExpression}
-        onTimezoneChange={workflows.scheduleDialog.setTimezone}
-        onPromptChange={workflows.scheduleDialog.setPrompt}
-        onNotifySmsChange={workflows.scheduleDialog.setNotifySms}
-        onSmsTargetChange={workflows.scheduleDialog.setSmsTarget}
-        onClose={workflows.scheduleDialog.close}
-        onSubmit={workflows.scheduleDialog.submit}
-        isLoading={workflows.scheduleDialog.isLoading}
-      />
+      <RecipeWorkflowDialogs workflows={workflows} />
       <RecipeConfigurationSummaryDialog
         recipe={configurationView?.recipe ?? null}
         installation={configurationView?.installation ?? null}

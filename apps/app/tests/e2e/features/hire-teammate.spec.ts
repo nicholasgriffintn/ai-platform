@@ -195,6 +195,67 @@ test.describe("Hiring a teammate", () => {
     );
   });
 
+  test("persists MCP servers configured while building a teammate", async ({
+    page,
+    capabilitiesPage,
+  }) => {
+    const name = "Release MCP teammate";
+
+    await capabilitiesPage.open();
+    await capabilitiesPage.startNewTeammate();
+    await capabilitiesPage.fillTeammateEditor({
+      name,
+      description: "Uses a release MCP server.",
+      systemPrompt: "Call the release MCP server when asked.",
+      temperature: "",
+      maxSteps: "4",
+    });
+    await capabilitiesPage.addMcpServer("Release server", "https://mcp.example.com/sse");
+    await capabilitiesPage.createTeammate();
+
+    const teammateId = new URL(page.url()).pathname.split("/").pop();
+    const response = await page.request.get(`${E2E_API_BASE_URL}/teammates/${teammateId}`);
+
+    await requireSuccessfulResponse(response, "Read teammate with MCP server");
+    const teammate = teammateResponseSchema.parse(await response.json());
+
+    expect(teammate.servers).toHaveLength(1);
+    expect(teammate.servers[0]).toMatchObject({
+      label: "Release server",
+      url: "https://mcp.example.com/sse",
+    });
+
+    await capabilitiesPage.open();
+    await capabilitiesPage.deleteTeammateFromLibrary(name);
+  });
+
+  test("attaches a teammate built from scratch inside a project", async ({
+    capabilitiesPage,
+    page,
+    workPage,
+    polychatApi,
+  }) => {
+    const name = "Release from-scratch teammate";
+
+    await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
+    const projectId = workPage.currentProjectId();
+
+    await workPage.openProjectSurface("Teammates & tools");
+    await capabilitiesPage.startNewTeammate();
+    await capabilitiesPage.fillTeammateEditor({
+      name,
+      description: "Built inside a project.",
+      systemPrompt: "Answer release questions.",
+      temperature: "",
+      maxSteps: "4",
+    });
+    await capabilitiesPage.createTeammate();
+
+    const teammateId = new URL(page.url()).pathname.split("/").pop();
+
+    expect(await polychatApi.getProjectCapabilityIds(projectId)).toContain(teammateId);
+  });
+
   test("serves teammates where agents used to be and answers an at-mention", async ({
     capabilitiesPage,
     homePage,

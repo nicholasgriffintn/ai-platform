@@ -149,6 +149,42 @@ export class CapabilitiesPage extends BasePage {
     await this.page.getByRole("button", { name: "Delete teammate", exact: true }).waitFor();
   }
 
+  async addMcpServer(label: string, url: string) {
+    await this.clickElement(this.page.getByRole("button", { name: "Add server", exact: true }));
+    await this.fillInput(this.page.getByLabel("Server URL", { exact: true }).last(), url);
+    await this.fillInput(this.page.getByLabel("Label", { exact: true }).last(), label);
+  }
+
+  async openSkillEditorFromLibrary(name: string) {
+    await this.openCapabilityActions(name);
+    await this.clickElement(this.page.getByRole("menuitem", { name: "Edit skill", exact: true }));
+    await this.page.getByRole("heading", { name: "Skill document" }).waitFor();
+  }
+
+  async saveSkillDraft() {
+    const saved = this.page.waitForResponse(
+      (response) =>
+        response.request().method() === "PUT" &&
+        /\/skills\/[^/]+\/draft$/.test(new URL(response.url()).pathname),
+    );
+
+    await this.clickElement(this.page.getByRole("button", { name: "Save draft", exact: true }));
+    await saved;
+  }
+
+  async publishSkillRevision() {
+    const published = this.page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        /\/skills\/[^/]+\/promote$/.test(new URL(response.url()).pathname),
+    );
+
+    await this.clickElement(
+      this.page.getByRole("button", { name: "Publish revision", exact: true }),
+    );
+    await published;
+  }
+
   async deleteTeammateFromLibrary(name: string) {
     await this.openCapabilityActions(name);
     await this.clickElement(

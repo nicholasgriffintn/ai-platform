@@ -94,7 +94,8 @@ export function TeammateTeachingDraft({
       ) : null}
       {saved ? (
         <p className="text-xs text-muted-foreground">
-          Saved as a disabled draft. Review and publish it from Skills when ready.
+          Saved as a disabled draft. Open the skill from Teammates and tools to review and publish
+          it.
         </p>
       ) : null}
       <Button

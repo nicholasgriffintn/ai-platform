@@ -349,8 +349,6 @@ export const appInfoSchema = z.object({
   capability: assistantCapabilityDescriptorSchema.optional(),
 });
 
-export const appInfoArraySchema = z.array(appInfoSchema);
-
 export const capabilityThemes = [
   "violet",
   "indigo",
@@ -556,7 +554,6 @@ export const capabilityCatalogResponseSchema = z.object({
 });
 
 export type AppTheme = z.infer<typeof capabilityThemeSchema>;
-export type AppKind = "dynamic" | "frontend";
 export type AssistantCapabilityKind = z.infer<typeof assistantCapabilityKindSchema>;
 export type AssistantCapabilityAvailability = z.infer<typeof assistantCapabilityAvailabilitySchema>;
 export type AssistantCapabilityLaunchMethod = z.infer<typeof assistantCapabilityLaunchMethodSchema>;

@@ -1,5 +1,4 @@
 import type {
-  AssistantRecipe,
   AssistantRecipeInstallResponse,
   AssistantRecipesResponse,
   RecipeConfiguration,
@@ -30,24 +29,6 @@ export async function listAssistantRecipes(): Promise<AssistantRecipesResponse> 
   }
 
   return returnFetchedData<AssistantRecipesResponse>(response);
-}
-
-export async function getAssistantRecipe(recipeId: string): Promise<AssistantRecipe> {
-  let headers = {};
-
-  try {
-    headers = await apiService.getHeaders();
-  } catch (error) {
-    console.error("Error preparing recipe headers:", error);
-  }
-
-  const response = await fetchApi(`/apps/recipes/${recipeId}`, { method: "GET", headers });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch assistant recipe");
-  }
-
-  return returnFetchedData<AssistantRecipe>(response);
 }
 
 export async function installAssistantRecipe(

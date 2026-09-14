@@ -3,6 +3,11 @@ import {
   RecordingWorkflowStep,
 } from "@ngriffin_uk/polychat-component-experiences/content";
 import { useProcessRecording, useUploadRecording } from "@ngriffin_uk/polychat-library-react";
+import {
+  createRecordingSpeakers,
+  DEFAULT_RECORDING_NUMBER_OF_SPEAKERS,
+  DEFAULT_RECORDING_SPEAKERS,
+} from "@ngriffin_uk/polychat-schemas/experiences";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router";
@@ -23,8 +28,8 @@ const INITIAL_FORM_DATA: RecordingFormData = {
   generateImage: true,
   imagePrompt: "",
   transcribePrompt: "Transcribe this recording",
-  numberOfSpeakers: 2,
-  speakers: { "1": "Speaker 1", "2": "Speaker 2" },
+  numberOfSpeakers: DEFAULT_RECORDING_NUMBER_OF_SPEAKERS,
+  speakers: DEFAULT_RECORDING_SPEAKERS,
 };
 
 const EMPTY_STATUS: ProcessingStatus = {
@@ -92,17 +97,11 @@ export function useRecordingWorkflow(basePath: string, projectId?: string) {
       if (name === "numberOfSpeakers") {
         const count = Number(value);
 
-        setFormData((current) => {
-          const speakers = Object.fromEntries(
-            Array.from({ length: count }, (_, index) => {
-              const speakerId = String(index + 1);
-
-              return [speakerId, current.speakers[speakerId] ?? `Speaker ${speakerId}`];
-            }),
-          );
-
-          return { ...current, numberOfSpeakers: count, speakers };
-        });
+        setFormData((current) => ({
+          ...current,
+          numberOfSpeakers: count,
+          speakers: createRecordingSpeakers(count, current.speakers),
+        }));
 
         return;
       }

@@ -1,4 +1,8 @@
-import type { CapabilitySurface, EnabledCapability } from "@ngriffin_uk/polychat-library-react";
+import {
+  getSkillEditorPath,
+  type CapabilitySurface,
+  type EnabledCapability,
+} from "@ngriffin_uk/polychat-library-react";
 import type {
   TeammateResponse,
   HireTeammateInput,
@@ -141,7 +145,7 @@ export function useCapabilityAuthoring({
           },
       {
         label: "Add a skill",
-        description: "Upload an Teammate Skills document",
+        description: "Upload a teammate skills document",
         icon: <Plus className="h-4 w-4" />,
         onSelect: () => setAddSkillOpen(true),
       },
@@ -187,6 +191,14 @@ export function useCapabilityAuthoring({
     return hired;
   };
 
+  const setHireTeammateOpenAndReset = (open: boolean) => {
+    if (!open) {
+      teammates.resetHireError();
+    }
+
+    setHireTeammateOpen(open);
+  };
+
   const requestDeletion = (deletion: PendingCapabilityDeletion) => {
     teammates.resetDeletion();
     skillDeletion.reset();
@@ -199,7 +211,7 @@ export function useCapabilityAuthoring({
     addSkill: { open: addSkillOpen, setOpen: setAddSkillOpen },
     hireTeammate: {
       open: hireTeammateOpen,
-      setOpen: setHireTeammateOpen,
+      setOpen: setHireTeammateOpenAndReset,
       hire: hireTeammate,
       isHiring: teammates.isHiring,
       error: teammates.hireError,
@@ -236,6 +248,9 @@ export function useCapabilityAuthoring({
     authoredSkillActions: {
       canDelete: canAuthor,
       onDelete: (id, label) => requestDeletion({ id, kind: "skill", label }),
+      onEdit: (id) => {
+        void navigate(getSkillEditorPath(surface, id));
+      },
       pendingSkillId: skillDeletion.pendingSkillId,
     },
     canAuthor,

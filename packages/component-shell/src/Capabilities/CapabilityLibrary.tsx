@@ -1,7 +1,5 @@
 import {
   CapabilityFilters,
-  RecipeConfigurationDialog,
-  RecipeScheduleDialog,
   ToolConfigurationDialog,
 } from "@ngriffin_uk/polychat-component-capabilities";
 import {
@@ -14,6 +12,7 @@ import { SearchX } from "lucide-react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { ConnectorSetupDialogs } from "../Connectors/ConnectorSetupDialogs.js";
+import { RecipeWorkflowDialogs } from "../Recipes/RecipeWorkflowDialogs.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { AddSkillDialog } from "./AddSkillDialog.js";
 import { AttachTeammateDialog } from "./AttachTeammateDialog.js";
@@ -90,7 +89,7 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
           <CardGridLoadingSkeleton count={6} label="Loading capabilities" />
         ) : controller.scopeError || controller.catalog.error ? (
           <EmptyState
-            title="Teammates unavailable"
+            title="Capabilities unavailable"
             message={(controller.scopeError ?? controller.catalog.error)?.message ?? "Try again."}
           />
         ) : controller.catalog.groups.length === 0 ? (
@@ -124,32 +123,7 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
         )}
       </PageShell.Content>
 
-      <RecipeConfigurationDialog
-        recipe={recipeWorkflows.configurationDialog.recipe}
-        installation={recipeWorkflows.configurationDialog.installation}
-        values={recipeWorkflows.configurationDialog.values}
-        onValuesChange={recipeWorkflows.configurationDialog.setValues}
-        onClose={recipeWorkflows.configurationDialog.close}
-        onSubmit={recipeWorkflows.configurationDialog.submit}
-        isLoading={recipeWorkflows.configurationDialog.isLoading}
-      />
-      <RecipeScheduleDialog
-        recipe={recipeWorkflows.scheduleDialog.recipe}
-        hasExistingSchedule={recipeWorkflows.scheduleDialog.hasExistingSchedule}
-        cronExpression={recipeWorkflows.scheduleDialog.cronExpression}
-        timezone={recipeWorkflows.scheduleDialog.timezone}
-        prompt={recipeWorkflows.scheduleDialog.prompt}
-        notifySms={recipeWorkflows.scheduleDialog.notifySms}
-        smsTarget={recipeWorkflows.scheduleDialog.smsTarget}
-        onCronExpressionChange={recipeWorkflows.scheduleDialog.setCronExpression}
-        onTimezoneChange={recipeWorkflows.scheduleDialog.setTimezone}
-        onPromptChange={recipeWorkflows.scheduleDialog.setPrompt}
-        onNotifySmsChange={recipeWorkflows.scheduleDialog.setNotifySms}
-        onSmsTargetChange={recipeWorkflows.scheduleDialog.setSmsTarget}
-        onClose={recipeWorkflows.scheduleDialog.close}
-        onSubmit={recipeWorkflows.scheduleDialog.submit}
-        isLoading={recipeWorkflows.scheduleDialog.isLoading}
-      />
+      <RecipeWorkflowDialogs workflows={recipeWorkflows} />
       <ConfirmationDialog
         open={recipeWorkflows.deleteDialog.installation !== null}
         onOpenChange={(open) => !open && recipeWorkflows.deleteDialog.setInstallation(null)}

@@ -29,6 +29,8 @@ export {
   SandboxView,
 };
 
+export type { DelegationFeedbackVerdict } from "./DelegationCard.js";
+
 export const sharedResponseViews: CustomResponseViewRegistry = {
   computer_observation: ({ data }) => <ComputerObservationView data={data} />,
   computer_takeover: ({ data, onToolInteraction }) => (

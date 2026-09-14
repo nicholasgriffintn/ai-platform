@@ -11,21 +11,18 @@ import { RerunReportButton } from "./RerunReportButton.js";
 export function ArticleView({
   report,
   sourceIds,
-  isShared,
   basePath,
   projectId,
 }: {
   report: ArticleReportItem;
   sourceIds: string[];
-  isShared?: boolean;
-  basePath?: string;
+  basePath: string;
   projectId?: string;
 }) {
   return (
     <div className="space-y-6">
       <ArticleReportHeader
         report={report}
-        isShared={isShared}
         rerunControl={
           <RerunReportButton
             basePath={basePath}

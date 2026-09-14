@@ -1,9 +1,11 @@
 import { Checkbox } from "@ngriffin_uk/polychat-component-ui";
 import {
+  useAssistantRecipes,
   useRecipeInstallations,
   useUpdateRecipeInstallation,
 } from "@ngriffin_uk/polychat-library-react";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
+import { useMemo } from "react";
 
 export function TeammateRoutinesPanel({
   contextId,
@@ -13,8 +15,13 @@ export function TeammateRoutinesPanel({
   projectId?: string;
 }) {
   const installations = useRecipeInstallations(projectId);
+  const recipes = useAssistantRecipes();
   const update = useUpdateRecipeInstallation();
   const items = installations.data?.installations ?? [];
+  const recipeTitleById = useMemo(
+    () => new Map((recipes.data?.recipes ?? []).map((recipe) => [recipe.id, recipe.title])),
+    [recipes.data?.recipes],
+  );
 
   return (
     <div className="space-y-3 border-t pt-4">
@@ -60,7 +67,7 @@ export function TeammateRoutinesPanel({
               />
               <span>
                 <span className="block text-sm font-medium text-foreground">
-                  {installation.recipeId}
+                  {recipeTitleById.get(installation.recipeId) ?? installation.recipeId}
                 </span>
                 <span className="block text-xs text-muted-foreground">
                   {assignedElsewhere

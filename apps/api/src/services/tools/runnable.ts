@@ -3,6 +3,7 @@ import { formatUnknownValue } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 import { listFunctionToolDefinitions } from "~/services/functions/definitions";
+import { NON_RUNNABLE_FUNCTION_TOOLS } from "~/services/functions/internal-tools";
 import { getToolCategory } from "~/services/tools/toolCategories";
 import { formatFunctionName, getFunctionIcon, getFunctionResponseType } from "~/utils/functions";
 
@@ -112,6 +113,10 @@ export const buildRunnableTool = (tool: FunctionTool): RunnableTool => ({
 });
 
 export const getRunnableTool = (id: string): RunnableTool | null => {
+  if (NON_RUNNABLE_FUNCTION_TOOLS.has(id)) {
+    return null;
+  }
+
   const tool = listFunctionToolDefinitions().find((candidate) => candidate.name === id);
 
   return tool ? buildRunnableTool(tool) : null;

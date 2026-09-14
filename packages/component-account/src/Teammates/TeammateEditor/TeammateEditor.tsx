@@ -89,6 +89,9 @@ export function TeammateEditor({
         ownerScopeType={teammate?.owner_scope_type ?? "user"}
         ownerLabel={ownerLabel}
         isSaved={teammate !== null}
+        disabled={disabled}
+        workspaceDefault={value.workspaceDefault}
+        onWorkspaceDefaultChange={(next) => change({ workspaceDefault: next })}
         publish={canManage ? publish : undefined}
       />
 

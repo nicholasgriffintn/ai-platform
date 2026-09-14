@@ -22,7 +22,7 @@ export function ProjectCapabilityLibrary({
   return (
     <CapabilityLibrary
       scope={scope}
-      title="Teammates &amp; tools"
+      title="Teammates & tools"
       subtitle={`Pick what ${
         projectQuery.data?.name ?? "this project"
       } can reach for. Anything you add here is available to every member.`}

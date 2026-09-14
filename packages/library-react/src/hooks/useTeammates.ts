@@ -2,6 +2,7 @@ import { apiService } from "@ngriffin_uk/polychat-library-client";
 import type {
   TeammateResponse,
   HireTeammateInput,
+  RecordTeammateFeedbackInput,
   UpdateTeammateInput,
 } from "@ngriffin_uk/polychat-schemas";
 import type { TeammateFormData } from "@ngriffin_uk/polychat-utility-react";
@@ -9,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { useCanAccessProFeatures } from "./useCanAccessProFeatures.js";
+import { CAPABILITY_CATALOG_QUERY_KEY } from "./useCapabilityCatalog.js";
 
 export const TEAMMATES_QUERY_KEYS = {
   all: ["teammates"],
@@ -23,6 +25,18 @@ export function useTeammate(teammateId?: string) {
     queryFn: () => apiService.getTeammate(teammateId ?? ""),
     enabled: canAccessProFeatures && Boolean(teammateId),
     staleTime: 1000 * 60,
+  });
+}
+
+export function useRecordTeammateFeedback() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, { teammateId: string; input: RecordTeammateFeedbackInput }>({
+    mutationFn: ({ teammateId, input }) => apiService.recordTeammateFeedback(teammateId, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: TEAMMATES_QUERY_KEYS.all });
+      void queryClient.invalidateQueries({ queryKey: CAPABILITY_CATALOG_QUERY_KEY });
+    },
   });
 }
 
@@ -88,7 +102,6 @@ export function useTeammates({ enabled = true }: { enabled?: boolean } = {}) {
   return {
     teammates,
     isLoadingTeammates: canAccessProFeatures && enabled ? teammatesQuery.isLoading : false,
-    errorTeammates: canAccessProFeatures && enabled ? teammatesQuery.error : null,
     createTeammate: createMutation.mutateAsync,
     isCreatingTeammate: createMutation.isPending,
     hireTeammate: hireMutation.mutateAsync,

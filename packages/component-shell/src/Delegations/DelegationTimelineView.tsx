@@ -2,9 +2,15 @@ import type { ToolInteractionHandler } from "@ngriffin_uk/polychat-component-con
 import {
   createDelegationFollowUpInteraction,
   DelegationCard,
+  type DelegationFeedbackVerdict,
 } from "@ngriffin_uk/polychat-component-conversation";
-import { useCancelDelegations, useDelegations } from "@ngriffin_uk/polychat-library-react";
+import {
+  useCancelDelegations,
+  useDelegations,
+  useRecordTeammateFeedback,
+} from "@ngriffin_uk/polychat-library-react";
 import { delegationListResponseSchema } from "@ngriffin_uk/polychat-schemas";
+import { useState } from "react";
 
 export function DelegationTimelineView({
   data,
@@ -20,6 +26,10 @@ export function DelegationTimelineView({
   const parentRunId = parsed.success ? parsed.data.delegations[0]?.parentRunId : undefined;
   const query = useDelegations(parentConversationId ?? "");
   const cancelDelegations = useCancelDelegations();
+  const recordFeedback = useRecordTeammateFeedback();
+  const [recordedFeedback, setRecordedFeedback] = useState<
+    Record<string, DelegationFeedbackVerdict>
+  >({});
   const delegations = (
     query.data?.delegations ?? (parsed.success ? parsed.data.delegations : [])
   ).filter((delegation) => delegation.parentRunId === parentRunId);
@@ -28,6 +38,21 @@ export function DelegationTimelineView({
   if (!first) {
     return null;
   }
+
+  const handleRecordFeedback = (
+    delegationId: string,
+    teammateId: string,
+    verdict: DelegationFeedbackVerdict,
+  ) => {
+    setRecordedFeedback((current) => ({ ...current, [delegationId]: verdict }));
+    recordFeedback.mutate({
+      teammateId,
+      input: {
+        verdict,
+        ...(parentConversationId ? { conversationId: parentConversationId } : {}),
+      },
+    });
+  };
 
   return (
     <DelegationCard
@@ -78,6 +103,10 @@ export function DelegationTimelineView({
                 outputId: output.id,
               })
           : undefined
+      }
+      recordedFeedback={recordedFeedback}
+      onRecordFeedback={(delegation, verdict) =>
+        handleRecordFeedback(delegation.id, delegation.teammateId, verdict)
       }
     />
   );

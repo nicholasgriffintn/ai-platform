@@ -14,16 +14,20 @@ import type {
   TeammateComputerAction,
   MemoryDocument,
   UpdateMemoryDocumentInput,
+  RecordTeammateFeedbackInput,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "../fetch-wrapper.js";
 import { createApiErrorFromResponse, returnFetchedData } from "../http.js";
 
 function toTeammatePayload(data: CreateTeammateInput | UpdateTeammateInput) {
+  const workspaceId = "workspace_id" in data ? data.workspace_id : undefined;
+
   return {
     name: data.name,
     description: data.description,
     avatar_url: data.avatar_url || undefined,
+    servers: data.servers,
     model: data.model,
     temperature: data.temperature,
     max_steps: data.max_steps,
@@ -33,6 +37,8 @@ function toTeammatePayload(data: CreateTeammateInput | UpdateTeammateInput) {
     skill_ids: data.skill_ids,
     mode: data.mode,
     kind: data.kind,
+    workspace_default: data.workspace_default,
+    ...(workspaceId ? { workspace_id: workspaceId } : {}),
   };
 }
 
@@ -289,6 +295,23 @@ export class TeammateService {
     }
 
     return returnFetchedData<TeammateResponse>(response);
+  }
+
+  async recordTeammateFeedback(
+    teammateId: string,
+    input: RecordTeammateFeedbackInput,
+  ): Promise<void> {
+    const response = await fetchApi(`/teammates/${teammateId}/feedback`, {
+      method: "POST",
+      headers: await this.authHeaders("recordTeammateFeedback"),
+      body: input,
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to record teammate feedback");
+    }
+
+    await returnFetchedData<unknown>(response);
   }
 
   async listTeammates(): Promise<TeammateResponse[]> {

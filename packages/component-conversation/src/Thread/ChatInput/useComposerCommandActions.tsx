@@ -10,7 +10,6 @@ import {
 } from "@ngriffin_uk/polychat-library-chat/composer-commands";
 import type { ChatSettings } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import type { GoalCommand } from "@ngriffin_uk/polychat-library-chat/goal-command";
-import type { ModelToolId } from "@ngriffin_uk/polychat-library-chat/model-tools";
 import {
   formatVerbosityLabel,
   getDefaultVerbosity,
@@ -48,25 +47,11 @@ import type {
   ComposerCommandAction,
   ComposerTeammateOption,
 } from "@ngriffin_uk/polychat-utility-react";
-import {
-  Archive,
-  BookOpen,
-  Brain,
-  Code,
-  Cpu,
-  Database,
-  Image,
-  Layers,
-  Link,
-  ListFilter,
-  Search,
-  Target,
-  Terminal,
-  type LucideIcon,
-} from "lucide-react";
+import { Archive, BookOpen, Brain, Cpu, Layers, ListFilter, Target } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
 import { getComposerCommandMenuState } from "../../Composer/composerCommandNavigation.js";
+import { MODEL_TOOL_ICONS } from "./modelToolIcons.js";
 
 const PROJECT_CAPABILITY_KIND_BY_ACTION_KIND: Partial<
   Record<AssistantActionItemKind, ProjectCapabilityKind>
@@ -76,17 +61,6 @@ const PROJECT_CAPABILITY_KIND_BY_ACTION_KIND: Partial<
   recipe: "recipe",
   skill: "skill",
   tool: "tool",
-};
-
-const MODEL_TOOL_ICONS: Record<ModelToolId, LucideIcon> = {
-  code_execution: Code,
-  file_search: Database,
-  hosted_shell: Terminal,
-  image_generation: Image,
-  mcp: ListFilter,
-  search_grounding: Search,
-  tool_search: ListFilter,
-  web_fetch: Link,
 };
 
 export function useComposerCommandActions({

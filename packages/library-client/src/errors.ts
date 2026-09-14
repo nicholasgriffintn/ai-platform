@@ -28,3 +28,19 @@ export function isAuthenticationError(error: unknown): boolean {
 
   return "statusCode" in error && typeof error.statusCode === "number" && error.statusCode === 401;
 }
+
+export function isNotFoundError(error: unknown): boolean {
+  if (error instanceof ApiError) {
+    return error.status === 404;
+  }
+
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  if ("status" in error && typeof error.status === "number") {
+    return error.status === 404;
+  }
+
+  return "statusCode" in error && typeof error.statusCode === "number" && error.statusCode === 404;
+}

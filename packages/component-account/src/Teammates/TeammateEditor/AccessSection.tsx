@@ -1,4 +1,4 @@
-import { Button, FormSelect } from "@ngriffin_uk/polychat-component-ui";
+import { Button, Checkbox, FormSelect } from "@ngriffin_uk/polychat-component-ui";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -9,6 +9,9 @@ export function AccessSection({
   ownerScopeType,
   ownerLabel,
   isSaved,
+  disabled,
+  workspaceDefault,
+  onWorkspaceDefaultChange,
   publish,
 }: TeammateAccessSectionProps) {
   const [workspaceId, setWorkspaceId] = useState("");
@@ -30,6 +33,28 @@ export function AccessSection({
           New teammates start in your personal scope. Publish a copy to a workspace once it is
           saved.
         </p>
+      )}
+
+      {ownerScopeType === "workspace" && (
+        <label
+          htmlFor="teammate-workspace-default"
+          className="flex items-start gap-3 rounded-lg border p-4"
+        >
+          <Checkbox
+            id="teammate-workspace-default"
+            checked={workspaceDefault}
+            disabled={disabled}
+            onCheckedChange={(next) => onWorkspaceDefaultChange(next === true)}
+          />
+          <span>
+            <span className="block text-sm font-medium text-foreground">
+              Default for every project
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              Every project in {ownerLabel} gets this teammate without being asked.
+            </span>
+          </span>
+        </label>
       )}
 
       {canPublish &&

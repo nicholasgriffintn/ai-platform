@@ -14,7 +14,7 @@ interface RerunReportButtonProps {
   sourceIds: string[];
   itemId: string;
   className?: string;
-  basePath?: string;
+  basePath: string;
   projectId?: string;
 }
 
@@ -143,7 +143,7 @@ export function RerunReportButton({
       }));
 
       if (reportResult.outputId) {
-        void navigate(`${basePath ?? "/work"}/${reportResult.outputId}`);
+        void navigate(`${basePath}/${reportResult.outputId}`);
       } else {
         throw new Error("Failed to generate report");
       }

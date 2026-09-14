@@ -32,6 +32,7 @@ export interface TeammateEditorValue {
   toolIds: string[];
   skillIds: string[];
   servers: McpServerFieldValue[];
+  workspaceDefault: boolean;
 }
 
 export type TeammateEditorChange = (patch: Partial<TeammateEditorValue>) => void;
@@ -69,5 +70,8 @@ export interface TeammateAccessSectionProps {
   ownerScopeType: TeammateOwnerScopeType;
   ownerLabel: string;
   isSaved: boolean;
+  disabled: boolean;
+  workspaceDefault: boolean;
+  onWorkspaceDefaultChange: (value: boolean) => void;
   publish?: TeammatePublishState;
 }

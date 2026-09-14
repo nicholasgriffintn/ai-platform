@@ -29,6 +29,7 @@ export interface TeammateCapabilityActions {
   pendingTeammateId?: string;
   refreshCatalogue: () => Promise<void>;
   resetDeletion: () => void;
+  resetHireError: () => void;
 }
 
 export function useTeammateCapabilityActions(
@@ -49,6 +50,7 @@ export function useTeammateCapabilityActions(
     hireTeammate: hireTeammateMutation,
     isHiringTeammate,
     hireTeammateError,
+    resetHireTeammate,
   } = useTeammates();
   const workspaces = useMemo(
     () => workspacesQuery.data?.workspaces ?? [],
@@ -126,5 +128,6 @@ export function useTeammateCapabilityActions(
     pendingTeammateId: deletingTeammateId,
     refreshCatalogue,
     resetDeletion: resetTeammateDeletion,
+    resetHireError: resetHireTeammate,
   };
 }

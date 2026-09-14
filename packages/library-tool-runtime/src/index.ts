@@ -4,7 +4,6 @@ export {
   isToolDefinition,
   type ToolDefinition,
   type ToolDefinitionInput,
-  type ToolParameterSchema,
 } from "./define-tool";
 
 export {
@@ -18,7 +17,6 @@ export {
 export { flattenObjectRootSchema } from "./json-schema";
 
 export {
-  toProviderToolDefinition,
   toProviderToolDefinitions,
   type AnthropicToolDefinition,
   type BedrockToolDefinition,

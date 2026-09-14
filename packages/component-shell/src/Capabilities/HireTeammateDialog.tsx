@@ -42,7 +42,7 @@ export function HireTeammateDialog({
   const [selectedRole, setSelectedRole] = useState<TeammateRole | null>(null);
   const [name, setName] = useState("");
   const [jobDescription, setJobDescription] = useState("");
-  const canHire = Boolean(selectedRole) || jobDescription.trim().length > 0;
+  const canHire = selectedRole ? true : jobDescription.trim().length > 0 && name.trim().length > 0;
 
   const reset = () => {
     setSelectedRole(null);
@@ -63,13 +63,17 @@ export function HireTeammateDialog({
       return;
     }
 
-    await onHire({
-      ...(selectedRole ? { role_slug: selectedRole.slug } : {}),
-      ...(jobDescription.trim() ? { job_description: jobDescription.trim() } : {}),
-      ...(name.trim() ? { name: name.trim() } : {}),
-      ...(workspaceId ? { workspace_id: workspaceId } : {}),
-    });
-    reset();
+    try {
+      await onHire({
+        ...(selectedRole ? { role_slug: selectedRole.slug } : {}),
+        ...(jobDescription.trim() ? { job_description: jobDescription.trim() } : {}),
+        ...(name.trim() ? { name: name.trim() } : {}),
+        ...(workspaceId ? { workspace_id: workspaceId } : {}),
+      });
+      reset();
+    } catch {
+      // Failures are surfaced through the `error` prop.
+    }
   };
 
   return (

@@ -3,10 +3,18 @@ import {
   createTeachingSkillDraft,
   deleteSkill,
   fetchPersonalSkills,
+  getSkill,
+  getSkillHistory,
+  promoteSkillDraft,
+  rollbackSkill,
+  saveSkillDraft,
   setPersonalSkillEnabled,
   useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
+  AuthoredSkillDraftInput,
+  AuthoredSkillPromotionInput,
+  AuthoredSkillRollbackInput,
   SkillAvailabilityResponse,
   TeachingSkillDraftInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -16,6 +24,12 @@ import { capabilityCatalogQueryKey } from "../hooks/useCapabilityCatalog.js";
 import { projectQueryKey } from "../hooks/useWorkspaces.js";
 
 export const PERSONAL_SKILLS_QUERY_KEY = ["personalSkills"];
+
+export const authoredSkillQueryKey = (skillId: string, projectId?: string) =>
+  ["authoredSkill", projectId ?? "personal", skillId] as const;
+
+export const authoredSkillHistoryQueryKey = (skillId: string, projectId?: string) =>
+  ["authoredSkillHistory", projectId ?? "personal", skillId] as const;
 
 function useInvalidateSkillScope(projectId?: string) {
   const queryClient = useQueryClient();
@@ -85,5 +99,70 @@ export function useDeleteSkill(projectId?: string) {
   return useMutation({
     mutationFn: (skillId: string) => deleteSkill(skillId, projectId),
     onSuccess: invalidateSkillScope,
+  });
+}
+
+export function useAuthoredSkill(skillId: string, projectId?: string) {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+
+  return useQuery({
+    queryKey: authoredSkillQueryKey(skillId, projectId),
+    queryFn: () => getSkill(skillId, projectId),
+    enabled: isAuthenticated && Boolean(skillId),
+    staleTime: 1000 * 30,
+  });
+}
+
+export function useAuthoredSkillHistory(skillId: string, projectId?: string) {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+
+  return useQuery({
+    queryKey: authoredSkillHistoryQueryKey(skillId, projectId),
+    queryFn: () => getSkillHistory(skillId, projectId),
+    enabled: isAuthenticated && Boolean(skillId),
+    staleTime: 1000 * 30,
+  });
+}
+
+function useInvalidateAuthoredSkill(skillId: string, projectId?: string) {
+  const queryClient = useQueryClient();
+  const invalidateSkillScope = useInvalidateSkillScope(projectId);
+
+  return async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: authoredSkillQueryKey(skillId, projectId) }),
+      queryClient.invalidateQueries({
+        queryKey: authoredSkillHistoryQueryKey(skillId, projectId),
+      }),
+      invalidateSkillScope(),
+    ]);
+  };
+}
+
+export function useSaveSkillDraft(skillId: string, projectId?: string) {
+  const invalidate = useInvalidateAuthoredSkill(skillId, projectId);
+
+  return useMutation({
+    mutationFn: (input: AuthoredSkillDraftInput) => saveSkillDraft(skillId, input, projectId),
+    onSuccess: invalidate,
+  });
+}
+
+export function usePromoteSkillDraft(skillId: string, projectId?: string) {
+  const invalidate = useInvalidateAuthoredSkill(skillId, projectId);
+
+  return useMutation({
+    mutationFn: (input: AuthoredSkillPromotionInput) =>
+      promoteSkillDraft(skillId, input, projectId),
+    onSuccess: invalidate,
+  });
+}
+
+export function useRollbackSkill(skillId: string, projectId?: string) {
+  const invalidate = useInvalidateAuthoredSkill(skillId, projectId);
+
+  return useMutation({
+    mutationFn: (input: AuthoredSkillRollbackInput) => rollbackSkill(skillId, input, projectId),
+    onSuccess: invalidate,
   });
 }

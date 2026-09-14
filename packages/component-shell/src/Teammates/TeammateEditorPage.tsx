@@ -13,6 +13,7 @@ export interface TeammateEditorPageProps {
   backPath: string;
   backLabel: string;
   projectId?: string;
+  workspaceId?: string;
 }
 
 export function TeammateEditorPage({
@@ -21,12 +22,14 @@ export function TeammateEditorPage({
   backPath,
   backLabel,
   projectId,
+  workspaceId,
 }: TeammateEditorPageProps) {
   const controller = useTeammateEditorController({
     teammateId,
     teammatesPath,
     backPath,
     projectId,
+    workspaceId,
   });
 
   if (controller.isLoading) {

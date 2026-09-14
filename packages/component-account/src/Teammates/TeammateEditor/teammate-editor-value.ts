@@ -38,6 +38,7 @@ export function createTeammateEditorValue(
       toolIds: [],
       skillIds: [],
       servers: [],
+      workspaceDefault: false,
     };
   }
 
@@ -66,6 +67,7 @@ export function createTeammateEditorValue(
       label: server.label ?? getMcpServerDefaultLabel(server.url),
       url: server.url,
     })),
+    workspaceDefault: teammate.workspace_default,
   };
 }
 
@@ -91,6 +93,7 @@ export function toTeammateFormData(value: TeammateEditorValue): TeammateFormData
       url: url.trim(),
       type: "sse",
     })),
+    workspace_default: value.workspaceDefault,
   };
 }
 

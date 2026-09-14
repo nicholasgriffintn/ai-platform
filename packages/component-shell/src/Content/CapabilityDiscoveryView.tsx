@@ -16,12 +16,12 @@ import {
   type AssistantRecipe,
   type CapabilityDiscoveryItem,
   type RecipeConnectorManifest,
-  type RecipeInstallation,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { Plug } from "lucide-react";
 
 import { ConnectorSetupDialogs } from "../Connectors/ConnectorSetupDialogs.js";
+import { findOwnInstallation } from "../Recipes/installations.js";
 import { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows.js";
 
 function getMissingConnectors(
@@ -39,18 +39,6 @@ function getMissingConnectors(
 
     return connector && connector.status !== "connected" ? [connector] : [];
   });
-}
-
-function findOwnInstallation(
-  installations: readonly RecipeInstallation[],
-  recipeId: string,
-  userId?: number,
-) {
-  return installations.find(
-    (installation) =>
-      installation.recipeId === recipeId &&
-      (userId === undefined || installation.userId === userId),
-  );
 }
 
 function stateLabel(item: CapabilityDiscoveryItem) {

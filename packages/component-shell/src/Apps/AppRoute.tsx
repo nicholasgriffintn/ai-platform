@@ -4,7 +4,7 @@ import {
   ContentLoadingSkeleton,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
-import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
+import { isAuthenticationError, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useCapabilityCatalog,
   type AppProjectScope,
@@ -33,16 +33,19 @@ export function AppRoute({
   subpath?: string;
   surface: CapabilitySurface;
 }) {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const {
     data: catalog,
     isLoading: isCatalogLoading,
     error: catalogError,
-  } = useCapabilityCatalog();
+  } = useCapabilityCatalog(surface.projectId);
   const definition = catalog?.experiences.find((item) => item.id === appId);
   const title = definition?.name;
   const backLink = getAppBackLink(surface, appId, subpath, title);
   const basePath = getAppPath(surface, appId);
-  const isLoading = isCatalogLoading || Boolean(project?.isLoading);
+  const needsSignIn = !isAuthenticationLoading && !isAuthenticated;
+  const isLoading = isCatalogLoading || isAuthenticationLoading || Boolean(project?.isLoading);
   const pageError = project?.error ?? catalogError;
   const isEnabled =
     !project || (definition ? isExperienceEnabled(definition, project.capabilities ?? []) : false);
@@ -76,7 +79,7 @@ export function AppRoute({
 
       {isLoading ? (
         <ContentLoadingSkeleton />
-      ) : isAuthenticationError(pageError) ? (
+      ) : needsSignIn || isAuthenticationError(pageError) ? (
         <SignInEmptyState
           title="Sign in to open this app"
           message="This app keeps your work, so it needs an account."

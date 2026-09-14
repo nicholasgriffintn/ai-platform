@@ -3,7 +3,7 @@ import { capabilityCatalogResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import { OutputApi } from "../fixtures/output-api";
 import { expect, test } from "../fixtures/polychat-test";
 import { requireSuccessfulResponse } from "../support/api-response";
-import { E2E_API_BASE_URL } from "../support/environment";
+import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "../support/environment";
 
 test.describe("Apps retain their runtime and scope", () => {
   test.use({ persona: "pro" });
@@ -72,6 +72,21 @@ test.describe("Apps retain their runtime and scope", () => {
 
     await capabilitiesPage.navigate("/chat/apps/does-not-exist");
     await expect(page.getByRole("heading", { name: "App not found", exact: true })).toBeVisible();
+  });
+
+  test("asks a signed-out visitor to sign in before opening an app", async ({ browser }) => {
+    const context = await browser.newContext();
+
+    try {
+      const page = await context.newPage();
+
+      await page.goto(`${E2E_APP_BASE_URL}/chat/apps/notes`);
+      await expect(
+        page.getByRole("heading", { name: "Sign in to open this app", exact: true }),
+      ).toBeVisible();
+    } finally {
+      await context.close();
+    }
   });
 
   test("automatically saves a note and preserves later edits across reopening", async ({

@@ -14,6 +14,10 @@ import {
   useProcessRecording,
 } from "@ngriffin_uk/polychat-library-react";
 import type { Recording } from "@ngriffin_uk/polychat-schemas";
+import {
+  DEFAULT_RECORDING_SPEAKERS,
+  getRecordingSpeakerCount,
+} from "@ngriffin_uk/polychat-schemas/experiences";
 import { Mic2, Plus } from "lucide-react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
@@ -133,8 +137,8 @@ function RecordingDetail({ recording, projectId }: { recording: Recording; proje
           process.mutate({
             recordingId: recording.id,
             action: action as NonNullable<typeof nextAction>,
-            numberOfSpeakers: 2,
-            speakers: {},
+            numberOfSpeakers: getRecordingSpeakerCount(recording),
+            speakers: DEFAULT_RECORDING_SPEAKERS,
           })
         }
       />

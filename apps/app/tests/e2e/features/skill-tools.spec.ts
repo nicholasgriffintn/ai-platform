@@ -1,11 +1,8 @@
-import {
-  authoredSkillHistoryResponseSchema,
-  authoredSkillVersionedDocumentSchema,
-} from "@ngriffin_uk/polychat-schemas";
+import { authoredSkillHistoryResponseSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { expect, test } from "../fixtures/polychat-test";
 import { requireSuccessfulResponse } from "../support/api-response";
-import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "../support/environment";
+import { E2E_API_BASE_URL } from "../support/environment";
 
 test.describe("Skill tools preserve reviewed instructions", () => {
   test.use({ persona: "pro" });
@@ -16,7 +13,6 @@ test.describe("Skill tools preserve reviewed instructions", () => {
     capabilitiesPage,
   }) => {
     const url = `${E2E_API_BASE_URL}/skills/documents/release-playbook`;
-    const headers = { origin: E2E_APP_BASE_URL };
 
     await homePage.navigate("/chat");
     await homePage.selectModel("GPT OSS 120B");
@@ -36,21 +32,26 @@ test.describe("Skill tools preserve reviewed instructions", () => {
 
     expect(draft.state.stableRevisionId).toBe(initial.state.stableRevisionId);
     expect(draft.state.draftRevisionId).not.toBe(initial.state.draftRevisionId);
-    const promotedResponse = await page.request.post(`${url}/promote`, {
-      headers,
-      data: {
-        revisionId: draft.state.draftRevisionId,
-        expectedStateVersion: draft.state.stateVersion,
-      },
-    });
 
-    await requireSuccessfulResponse(promotedResponse, "Accept corrected skill");
-    const promoted = authoredSkillVersionedDocumentSchema.parse(await promotedResponse.json());
-
-    expect(promoted.content).toContain("Return the corrected release procedure.");
-    expect(promoted.state.stableRevisionId).toBe(draft.state.draftRevisionId);
     await capabilitiesPage.open();
     await expect(capabilitiesPage.capabilityCard("release-playbook")).toBeVisible();
+    await capabilitiesPage.openSkillEditorFromLibrary("release-playbook");
+    await expect(page.getByLabel("Skill document")).toHaveValue(
+      /Return the corrected release procedure/,
+    );
+    await capabilitiesPage.publishSkillRevision();
+    const promotedResponse = await page.request.get(`${url}/history`);
+
+    await requireSuccessfulResponse(promotedResponse, "Read promoted skill");
+    const promoted = authoredSkillHistoryResponseSchema.parse(await promotedResponse.json());
+
+    expect(promoted.state.stableRevisionId).toBe(draft.state.draftRevisionId);
+    await expect(
+      page
+        .getByRole("heading", { name: "Revision history" })
+        .locator("..")
+        .getByText("Published", { exact: true }),
+    ).toBeVisible();
     await homePage.navigate("/chat");
     await homePage.sendMessageAndRequireCompletion("Load the accepted release skill");
     await expect(homePage.getLatestAssistantMessage()).toContainText(
