@@ -2,6 +2,9 @@
 ### Base App Configuration
 ###
 
+ENV="development"
+LOG_LEVEL="error"
+
 APP_BASE_URL="http://localhost:5173"
 API_BASE_URL="http://localhost:8787"
 SANDBOX_PREVIEW_HOST="localhost:8788"
@@ -75,7 +78,6 @@ BEDROCK_AWS_ACCESS_KEY=pass://VAULT_SHARE_ID/ITEM_ID/aws_access_key
 BEDROCK_AWS_SECRET_KEY=pass://VAULT_SHARE_ID/ITEM_ID/aws_secret_key
 DEEPGRAM_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
 ELEVENLABS_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
-GITHUB_MODELS_API_TOKEN=pass://VAULT_SHARE_ID/ITEM_ID/api_key
 GOOGLE_STUDIO_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
 GROK_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
 GROQ_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
