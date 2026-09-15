@@ -196,6 +196,7 @@ export const ModelOption = ({
                 aria-label={`Select region for ${getModelDisplayName(model)}`}
                 value={selectedRegionModelId || model.id}
                 disabled={disabled}
+                portal
                 menuClassName="w-40"
                 triggerClassName="h-6 min-h-6 rounded-full bg-surface py-0 pr-2 pl-5 text-[11px] font-medium"
                 options={regionOptions.map((option) => ({

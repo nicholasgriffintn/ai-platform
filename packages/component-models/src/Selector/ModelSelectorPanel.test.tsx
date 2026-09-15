@@ -112,4 +112,38 @@ describe("model picker navigation", () => {
     fireEvent.click(option);
     expect(props.onModelSelect).not.toHaveBeenCalled();
   });
+
+  it("keeps regional menus out of model row containment", () => {
+    const regionalDefault: ModelCatalogItem = {
+      ...cloud,
+      id: "nova-default",
+      matchingModel: "amazon.nova-2-lite-v1:0",
+      name: "Nova 2 Lite",
+      provider: "bedrock",
+      isFeatured: false,
+    };
+    const regionalGlobal: ModelCatalogItem = {
+      ...regionalDefault,
+      id: "nova-global",
+      matchingModel: "global.amazon.nova-2-lite-v1:0",
+      name: "Amazon Nova 2 Lite",
+    };
+
+    render(
+      <ModelSelectorPanel
+        {...props}
+        showTiers={false}
+        selectedModelId={regionalDefault.id}
+        models={[regionalDefault, regionalGlobal]}
+        featuredModelIds={{}}
+      />,
+    );
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Select region for Nova 2 Lite" }));
+
+    const menu = screen.getByRole("menu");
+
+    expect(menu.closest("[data-model-option]")).toBeNull();
+    expect(screen.getByRole("menuitem", { name: "Global" })).toBeTruthy();
+  });
 });

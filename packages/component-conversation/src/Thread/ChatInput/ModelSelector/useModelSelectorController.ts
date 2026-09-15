@@ -10,6 +10,18 @@ import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from "re
 
 import { useModelSelectorLayout } from "./useModelSelectorLayout.js";
 
+function isInsidePortalledSelectorMenu(dropdown: HTMLElement | null, target: EventTarget | null) {
+  if (!dropdown || !(target instanceof Element)) {
+    return false;
+  }
+
+  const menu = target.closest<HTMLElement>("[data-radix-menu-content]");
+  const triggerId = menu?.getAttribute("aria-labelledby");
+  const trigger = triggerId ? document.getElementById(triggerId) : null;
+
+  return Boolean(menu && trigger && dropdown.contains(trigger));
+}
+
 interface UseModelSelectorControllerOptions {
   isOpen: boolean;
   onOpen: () => void;
@@ -64,7 +76,8 @@ export function useModelSelectorController({
       const isInsideSelector =
         containsEventTarget(dropdownRef.current, event.target) ||
         containsEventTarget(triggerWrapperRef.current, event.target) ||
-        containsEventTarget(hoverPreviewRef.current, event.target);
+        containsEventTarget(hoverPreviewRef.current, event.target) ||
+        isInsidePortalledSelectorMenu(dropdownRef.current, event.target);
 
       if (!isInsideSelector) {
         dismissSelector();
