@@ -4,7 +4,7 @@ import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import { NEW_TEAMMATE_ID } from "@ngriffin_uk/polychat-library-react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
-import { TeammateContextsPanel } from "./TeammateContextsPanel.js";
+import { getTeammatePagePaths, TeammatePageHeader } from "./TeammatePageHeader.js";
 import { useTeammateEditorController } from "./useTeammateEditorController.js";
 
 export interface TeammateEditorPageProps {
@@ -60,14 +60,19 @@ export function TeammateEditorPage({
     );
   }
 
+  const pagePaths = getTeammatePagePaths(teammatesPath, teammateId);
+
   return (
     <div className="mx-auto max-w-4xl px-6 md:px-10">
-      <header className="mb-8 space-y-3">
-        <BackLink href={backPath} label={backLabel} />
-        <h1 className="text-2xl font-bold text-foreground">
-          {controller.teammate ? controller.teammate.name : "New teammate"}
-        </h1>
-      </header>
+      <TeammatePageHeader
+        backPath={backPath}
+        backLabel={backLabel}
+        teammateName={controller.teammate ? controller.teammate.name : "New teammate"}
+        teammatePath={pagePaths.editorPath}
+        contextPath={controller.teammate ? pagePaths.contextPath : undefined}
+        activeSection="configuration"
+        description="Define what this teammate is, how it behaves, and what it can use."
+      />
 
       <TeammateEditor
         teammate={controller.teammate}
@@ -85,18 +90,6 @@ export function TeammateEditorPage({
         onCancel={controller.cancel}
         onDelete={controller.requestDelete}
       />
-
-      {controller.teammate && (
-        <TeammateContextsPanel
-          teammateId={controller.teammate.id}
-          projectId={projectId}
-          conversationPath={(conversationId) =>
-            projectId
-              ? `${backPath.replace(/\/teammates\/?$/u, "")}/chat/${conversationId}`
-              : `/chat/${conversationId}`
-          }
-        />
-      )}
 
       {controller.teammate && (
         <ConfirmDeleteModal

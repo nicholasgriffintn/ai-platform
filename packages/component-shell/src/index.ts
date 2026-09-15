@@ -78,6 +78,7 @@ export * from "./Sidebar/StandardSidebarContent.js";
 export * from "./Skills/SkillEditorPage.js";
 export * from "./Teammates/TeammateEditorPage.js";
 export * from "./Teammates/TeammateContextsPanel.js";
+export * from "./Teammates/TeammateWorkingContextPage.js";
 export * from "./Teammates/TeammateComputerPanel.js";
 export * from "./Teammates/TeammateConnectionGrantsPanel.js";
 export * from "./Teammates/TeammateRoutinesPanel.js";

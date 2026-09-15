@@ -57,7 +57,7 @@ export function TeammateComputerPanel({ contextId }: { contextId: string }) {
   };
 
   return (
-    <div className="space-y-3 border-t pt-4">
+    <div className="space-y-3 rounded-lg border p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-foreground">Computer</p>

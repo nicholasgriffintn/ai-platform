@@ -24,7 +24,7 @@ export function TeammateRoutinesPanel({
   );
 
   return (
-    <div className="space-y-3 border-t pt-4">
+    <div className="space-y-3 rounded-lg border p-4">
       <div>
         <p className="text-sm font-medium text-foreground">Routines</p>
         <p className="text-xs text-muted-foreground">

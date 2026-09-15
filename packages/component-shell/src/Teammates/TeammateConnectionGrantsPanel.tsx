@@ -73,7 +73,7 @@ export function TeammateConnectionGrantsPanel({ contextId }: { contextId: string
   const { connections, grants, isLoading, error, update } = useTeammateConnectionGrants(contextId);
 
   return (
-    <div className="space-y-3 border-t pt-4">
+    <div className="space-y-3 rounded-lg border p-4">
       <div>
         <p className="text-sm font-medium text-foreground">Connections</p>
         <p className="text-xs text-muted-foreground">

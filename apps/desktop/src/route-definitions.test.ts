@@ -44,6 +44,7 @@ describe("desktop routes", () => {
   it("serves the Teammates place and the surfaces it links to", () => {
     expect(pageFor("/chat/teammates")).toBe("teammates");
     expect(pageFor("/chat/teammates/poly")).toBe("teammate");
+    expect(pageFor("/chat/teammates/poly/context")).toBe("teammate-context");
     expect(pageFor("/chat/tools/search")).toBe("tools");
   });
 
@@ -76,6 +77,7 @@ describe("desktop routes", () => {
     expect(pageFor(`${project}/chat/c1`)).toBe("project-chat");
     expect(pageFor(`${project}/teammates`)).toBe("project-teammates");
     expect(pageFor(`${project}/teammates/poly`)).toBe("project-teammate");
+    expect(pageFor(`${project}/teammates/poly/context`)).toBe("project-teammate-context");
     expect(pageFor(`${project}/plugins`)).toBe("project-plugins");
     expect(pageFor(`${project}/scheduled`)).toBe("project-scheduled");
     expect(pageFor(`${project}/apps/notes/entry`)).toBe("project-app");
@@ -180,6 +182,8 @@ describe("desktop routes", () => {
     expect(layoutFor("project-plugins")).toBe("work");
     expect(layoutFor("project-scheduled")).toBe("work");
     expect(layoutFor("project-tasks")).toBe("work");
+    expect(layoutFor("teammate-context")).toBe("chat");
+    expect(layoutFor("project-teammate-context")).toBe("work");
   });
 
   it("leaves the surfaces that bring their own frame outside a place layout", () => {
