@@ -14,7 +14,6 @@ import { ElevenLabsProvider } from "../../capabilities/chat/providers/elevenlabs
 import { ExaProvider } from "../../capabilities/chat/providers/exa";
 import { FalAIProvider } from "../../capabilities/chat/providers/fal";
 import { FireworksProvider } from "../../capabilities/chat/providers/fireworks";
-import { GithubModelsProvider } from "../../capabilities/chat/providers/github";
 import { GithubCopilotProvider } from "../../capabilities/chat/providers/githubcopilot";
 import { GoogleVertexProvider } from "../../capabilities/chat/providers/google-vertex";
 import { GoogleStudioProvider } from "../../capabilities/chat/providers/googlestudio";
@@ -110,12 +109,6 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
     name: "fireworks",
     create: () => new FireworksProvider(),
     metadata: { vendor: "Fireworks AI", categories: ["chat"] },
-  },
-  {
-    name: "github-models",
-    aliases: ["github"],
-    create: () => new GithubModelsProvider(),
-    metadata: { vendor: "GitHub", categories: ["chat"] },
   },
   {
     name: "github-copilot",
