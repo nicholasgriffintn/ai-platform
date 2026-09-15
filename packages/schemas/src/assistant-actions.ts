@@ -668,7 +668,7 @@ export function createConnectorAssistantActionItem(
         : connector.authType === "api_key"
           ? {
               kind: "navigation",
-              path: `/profile?tab=providers&type=connector&connector=${connector.id}`,
+              path: `/chat/plugins?connector=${connector.id}`,
             }
           : {
               kind: "external",

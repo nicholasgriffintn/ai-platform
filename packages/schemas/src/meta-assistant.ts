@@ -8,9 +8,12 @@ export const metaAssistantModeSchema = z.enum(["chat", "work"]);
 
 export const metaAssistantPlaceSchema = z.enum([
   "conversations",
+  "canvas",
   "attention",
   "files",
   "teammates",
+  "plugins",
+  "scheduled",
   "you",
 ]);
 

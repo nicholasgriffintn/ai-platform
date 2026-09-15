@@ -12,8 +12,8 @@ export default function DesktopProjectSkillPage() {
       skillId={skillId}
       projectId={projectId}
       canManage={canManage}
-      backPath={`${getProjectBasePath(workspaceId, projectId)}/teammates`}
-      backLabel="Back to capabilities"
+      backPath={`${getProjectBasePath(workspaceId, projectId)}/plugins`}
+      backLabel="Back to plugins"
     />
   );
 }

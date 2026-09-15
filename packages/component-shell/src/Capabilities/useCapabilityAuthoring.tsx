@@ -13,6 +13,7 @@ import { type ReactNode, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
 import type { TeammateCardActions, AuthoredSkillActions } from "./CapabilityGroups.js";
+import { DEFAULT_CAPABILITY_KINDS } from "./useCapabilityLibraryController.js";
 import { useTeammateCapabilityActions } from "./useTeammateCapabilityActions.js";
 
 interface PendingCapabilityDeletion {
@@ -24,6 +25,7 @@ interface PendingCapabilityDeletion {
 export interface CapabilityAuthoringInput {
   capabilities: EnabledCapability[];
   currentUserId?: string | number;
+  kinds?: readonly ProjectCapabilityKind[];
   projectActions?: {
     addCapability: (kind: ProjectCapabilityKind, capabilityId: string) => Promise<void>;
     canManage: boolean;
@@ -88,6 +90,7 @@ export interface CapabilityAuthoring {
 export function useCapabilityAuthoring({
   capabilities,
   currentUserId,
+  kinds = DEFAULT_CAPABILITY_KINDS,
   projectActions,
   projectAddError,
   skillDeletion,
@@ -115,42 +118,51 @@ export function useCapabilityAuthoring({
       return [];
     }
 
-    return [
-      {
-        label: "Hire a teammate",
-        description: "Start from a role, or describe the job in your own words",
-        icon: <UserRoundPlus className="h-4 w-4" />,
-        onSelect: () => setHireTeammateOpen(true),
-      },
-      {
-        label: "Build one from scratch",
-        description: "Configure a brief, its model, tools and skills yourself",
-        icon: <Bot className="h-4 w-4" />,
-        onSelect: () => {
-          void navigate(teammates.createPath);
+    const choices: CapabilityAddChoice[] = [];
+
+    if (kinds.includes("teammate")) {
+      choices.push(
+        {
+          label: "Hire a teammate",
+          description: "Start from a role, or describe the job in your own words",
+          icon: <UserRoundPlus className="h-4 w-4" />,
+          onSelect: () => setHireTeammateOpen(true),
         },
-      },
-      projectId
-        ? {
-            label: "Attach a teammate",
-            description: "Bring in a teammate this workspace already owns",
-            icon: <Link2 className="h-4 w-4" />,
-            onSelect: () => setAttachTeammateOpen(true),
-          }
-        : {
-            label: "Browse shared teammates",
-            description: "Install a teammate someone has published",
-            icon: <Store className="h-4 w-4" />,
-            onSelect: () => setBrowseSharedOpen(true),
+        {
+          label: "Build one from scratch",
+          description: "Configure a brief, its model, tools and skills yourself",
+          icon: <Bot className="h-4 w-4" />,
+          onSelect: () => {
+            void navigate(teammates.createPath);
           },
-      {
+        },
+        projectId
+          ? {
+              label: "Attach a teammate",
+              description: "Bring in a teammate this workspace already owns",
+              icon: <Link2 className="h-4 w-4" />,
+              onSelect: () => setAttachTeammateOpen(true),
+            }
+          : {
+              label: "Browse shared teammates",
+              description: "Install a teammate someone has published",
+              icon: <Store className="h-4 w-4" />,
+              onSelect: () => setBrowseSharedOpen(true),
+            },
+      );
+    }
+
+    if (kinds.includes("skill")) {
+      choices.push({
         label: "Add a skill",
-        description: "Upload a teammate skills document",
+        description: "Upload an Agent Skills-compatible SKILL.md document",
         icon: <Plus className="h-4 w-4" />,
         onSelect: () => setAddSkillOpen(true),
-      },
-    ];
-  }, [teammates.createPath, canAuthor, navigate, projectId]);
+      });
+    }
+
+    return choices;
+  }, [teammates.createPath, canAuthor, kinds, navigate, projectId]);
 
   const isDeletingTeammate = pendingDeletion?.kind === "teammate";
 

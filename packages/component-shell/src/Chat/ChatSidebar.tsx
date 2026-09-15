@@ -23,7 +23,7 @@ import {
   useConversationStorage,
 } from "@ngriffin_uk/polychat-library-react";
 import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
-import { Loader2, Search, SquarePen } from "lucide-react";
+import { Loader2, SquarePen } from "lucide-react";
 import { type ReactNode, lazy, Suspense, useCallback, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
@@ -63,7 +63,6 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
     currentConversationId,
     setCurrentConversationId,
     clearCurrentConversation,
-    setShowSearch,
     isAuthenticated,
     isAuthenticationLoading,
   } = useChatStore();
@@ -267,13 +266,6 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
                   onClick={handleNewChatClick}
                 >
                   New chat
-                </SidebarNavButton>
-                <SidebarNavButton
-                  icon={<Search size={17} />}
-                  onClick={() => setShowSearch(true)}
-                  shortcut="⌘K"
-                >
-                  Search
                 </SidebarNavButton>
                 <PlacesNavLinks onNavigate={closeOnMobile} />
               </SidebarNavSection>

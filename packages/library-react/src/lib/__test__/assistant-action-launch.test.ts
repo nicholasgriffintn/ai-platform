@@ -161,7 +161,7 @@ describe("assistant action launch URL contract", () => {
         authType: "api_key",
       }),
     ).toEqual({
-      navigationPath: "/profile?tab=providers&type=connector&connector=posthog",
+      navigationPath: "/chat/plugins?connector=posthog",
     });
 
     expect(

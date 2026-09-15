@@ -2,7 +2,6 @@ import type { CapabilityFilter } from "@ngriffin_uk/polychat-component-capabilit
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useProjectCapabilityCatalog,
-  useRecipeInstallations,
   useDeleteSkill,
   usePersonalSkills,
   useToolConfigurations,
@@ -19,7 +18,6 @@ import {
   groupProjectCapabilities,
 } from "@ngriffin_uk/polychat-library-react";
 import {
-  isRecipeConfigured,
   type ModelToolConfiguration,
   parseModelToolConfiguration,
   type AssistantActionItem,
@@ -30,16 +28,23 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo, useState } from "react";
 
-import { buildOwnInstallationByRecipeId } from "../Recipes/installations.js";
-import { useRecipeActionRequest } from "../Recipes/useRecipeActionRequest.js";
-import { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows.js";
-
 export interface PersonalSkillControls {
   byId: Map<string, SkillAvailability>;
   error: Error | null;
   pendingSkillId?: string;
   setEnabled: (skillId: string, enabled: boolean) => void;
 }
+
+export const TEAMMATE_LIBRARY_KINDS: readonly ProjectCapabilityKind[] = ["teammate"];
+
+export const PLUGIN_LIBRARY_KINDS: readonly ProjectCapabilityKind[] = ["app", "skill", "tool"];
+
+export const DEFAULT_CAPABILITY_KINDS: readonly ProjectCapabilityKind[] = [
+  "teammate",
+  "app",
+  "skill",
+  "tool",
+];
 
 interface CapabilityLibraryScopeBase {
   surface: CapabilitySurface;
@@ -88,15 +93,17 @@ export type CapabilityLibraryScope = CapabilityLibraryScopeBase &
       }
   );
 
-export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
+export function useCapabilityLibraryController(
+  scope: CapabilityLibraryScope,
+  {
+    kinds: allowedKinds = DEFAULT_CAPABILITY_KINDS,
+  }: {
+    kinds?: readonly ProjectCapabilityKind[];
+  } = {},
+) {
   const catalog = useProjectCapabilityCatalog(scope.surface.projectId);
   const deleteSkill = useDeleteSkill(scope.surface.projectId);
   const currentUserId = useChatStore((state) => state.user?.id);
-  const { data: installationsData } = useRecipeInstallations(scope.surface.projectId);
-  const recipeWorkflows = useRecipeWorkflows({
-    conversationPath: scope.conversationPath,
-    projectId: scope.surface.projectId,
-  });
   const [query, setQuery] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<CapabilityFilter[]>([]);
   const [category, setCategory] = useState("all");
@@ -104,21 +111,18 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
   const [configuration, setConfiguration] = useState<Record<string, unknown>>();
 
   const items = useMemo(
-    () => catalog.items.filter((item) => getProjectCapabilityKind(item) !== null),
-    [catalog.items],
+    () =>
+      catalog.items.filter((item) => {
+        const kind = getProjectCapabilityKind(item);
+
+        return kind !== null && allowedKinds.includes(kind);
+      }),
+    [catalog.items, allowedKinds],
   );
   const appById = useMemo(() => new Map(catalog.apps.map((app) => [app.id, app])), [catalog.apps]);
-  const recipeById = useMemo(
-    () => new Map(catalog.recipes.map((recipe) => [recipe.id, recipe])),
-    [catalog.recipes],
-  );
   const toolById = useMemo(
     () => new Map<string, ModelToolDefinition>(catalog.tools.map((tool) => [tool.id, tool])),
     [catalog.tools],
-  );
-  const installationByRecipeId = useMemo(
-    () => buildOwnInstallationByRecipeId(installationsData?.installations ?? [], currentUserId),
-    [currentUserId, installationsData?.installations],
   );
   const toolConfigurationById = useMemo(
     () =>
@@ -132,15 +136,6 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
 
     for (const item of items) {
       const kind = getProjectCapabilityKind(item);
-
-      if (kind === "recipe") {
-        const recipe = recipeById.get(item.capability.id);
-        const installation = installationByRecipeId.get(item.capability.id);
-
-        if (recipe && isRecipeConfigured(recipe, installation)) {
-          configured.add(item.id);
-        }
-      }
 
       if (kind === "tool") {
         const tool = toolById.get(item.capability.id);
@@ -162,14 +157,7 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
     }
 
     return configured;
-  }, [
-    installationByRecipeId,
-    items,
-    recipeById,
-    scope.capabilities,
-    toolById,
-    toolConfigurationById,
-  ]);
+  }, [items, scope.capabilities, toolById, toolConfigurationById]);
   const kinds = useMemo(
     () =>
       selectedFilters.filter((filter): filter is ProjectCapabilityKind => filter !== "configured"),
@@ -202,8 +190,6 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
     [category, configuredItemIds, items, kinds, query, selectedFilters],
   );
   const groups = useMemo(() => groupProjectCapabilities(visibleItems), [visibleItems]);
-
-  useRecipeActionRequest(catalog.recipes, installationByRecipeId, recipeWorkflows.actions);
 
   const addCapability = async (itemKind: ProjectCapabilityKind, capabilityId: string) => {
     if (!scope.requiresExplicitEnablement) {
@@ -242,7 +228,6 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
       experiences: catalog.experiences,
       groups,
       isLoading: catalog.isLoading,
-      recipeById,
       toolById,
     },
     toolConfigurationDialog: {
@@ -279,10 +264,6 @@ export function useCapabilityLibraryController(scope: CapabilityLibraryScope) {
     scopeError: scope.error,
     scopeName: scope.name,
     isLoadingScope: scope.isLoading,
-    recipes: {
-      installationByRecipeId,
-      workflows: recipeWorkflows,
-    },
     currentUserId,
     personalSkills: scope.personalSkills,
     skillDeletion: {

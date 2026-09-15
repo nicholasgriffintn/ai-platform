@@ -16,8 +16,8 @@ export default function ProjectSkillPage() {
       skillId={skillId}
       projectId={projectId}
       canManage={canManage}
-      backPath={`${projectPath}/teammates`}
-      backLabel="Back to capabilities"
+      backPath={`${projectPath}/plugins`}
+      backLabel="Back to plugins"
     />
   );
 }

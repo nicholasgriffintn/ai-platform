@@ -3,10 +3,13 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 export default [
   index("pages/home.tsx"),
   route("/chat", "pages/chat/layout.tsx", [
+    route("canvas", "pages/chat/canvas.tsx"),
     route("attention", "pages/chat/attention.tsx"),
     route("files/*", "pages/chat/files.tsx"),
     route("teammates", "pages/chat/teammates.tsx"),
     route("teammates/:teammateId", "pages/chat/teammate.tsx"),
+    route("plugins", "pages/chat/plugins.tsx"),
+    route("scheduled", "pages/chat/scheduled.tsx"),
     route("apps/:appId/*", "pages/chat/app.tsx"),
     route("tools/:toolId", "pages/chat/tool.tsx"),
     route("skills/:skillId", "pages/chat/skill.tsx"),
@@ -22,11 +25,14 @@ export default [
     route(":workspaceId/projects/:projectId", "pages/work/project.tsx"),
     route(":workspaceId/projects/:projectId/settings", "pages/work/project-settings.tsx"),
     route(":workspaceId/projects/:projectId/chat/:conversationId?", "pages/work/project-chat.tsx"),
+    route(":workspaceId/projects/:projectId/canvas", "pages/work/project-canvas.tsx"),
     route(":workspaceId/projects/:projectId/teammates", "pages/work/project-teammates.tsx"),
     route(
       ":workspaceId/projects/:projectId/teammates/:teammateId",
       "pages/work/project-teammate.tsx",
     ),
+    route(":workspaceId/projects/:projectId/scheduled", "pages/work/project-scheduled.tsx"),
+    route(":workspaceId/projects/:projectId/plugins", "pages/work/project-plugins.tsx"),
     route(":workspaceId/projects/:projectId/apps/:appId/*", "pages/work/project-app.tsx"),
     route(":workspaceId/projects/:projectId/files/*", "pages/work/project-files.tsx"),
     route(":workspaceId/projects/:projectId/tasks", "pages/work/project-tasks.tsx"),

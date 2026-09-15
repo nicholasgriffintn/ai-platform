@@ -1,6 +1,4 @@
 import {
-  ConnectorDetailsModal,
-  ConnectorLogo,
   ProviderCatalogue,
   type ProviderCatalogueItem,
   ProviderFilterBar,
@@ -15,25 +13,12 @@ import {
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { ProviderSetting } from "@ngriffin_uk/polychat-library-client";
-import {
-  useTrackEvent,
-  RECIPE_CONNECTORS_QUERY_KEY,
-  useDisconnectRecipeConnector,
-  useRecipeConnectors,
-  useConnectorSetup,
-  useUser,
-  completeConnectorAuthPopup,
-} from "@ngriffin_uk/polychat-library-react";
-import { formatProviderLabel, recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
-import type { RecipeConnectorManifest } from "@ngriffin_uk/polychat-schemas";
-import { useQueryClient } from "@tanstack/react-query";
+import { useTrackEvent, useUser } from "@ngriffin_uk/polychat-library-react";
+import { formatProviderLabel } from "@ngriffin_uk/polychat-schemas";
 import { RefreshCcw } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
-import { toast } from "sonner";
 
-import { ConnectorSetupDialogs } from "../../Connectors/ConnectorSetupDialogs.js";
-import { ConnectorAccountsPanel } from "../Connectors/ConnectorAccountsPanel.js";
 import { ProviderApiKeyModal } from "../Modals/ProviderApiKeyModal.js";
 import { ProfileTab } from "../ProfileTabLayout.js";
 
@@ -48,14 +33,13 @@ interface ProviderDeleteState {
   providerName: string;
 }
 
-type ProviderTypeFilter = "all" | "connected" | "chat" | "messaging" | "connector";
+type ProviderTypeFilter = "all" | "connected" | "chat" | "messaging";
 
 function readProviderTypeFilter(value: string | null): ProviderTypeFilter {
   switch (value) {
     case "connected":
     case "chat":
     case "messaging":
-    case "connector":
       return value;
     case null:
     default:
@@ -65,7 +49,6 @@ function readProviderTypeFilter(value: string | null): ProviderTypeFilter {
 
 export function ProfileProvidersTab() {
   const { trackEvent } = useTrackEvent();
-  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const {
@@ -84,58 +67,22 @@ export function ProfileProvidersTab() {
     providerName: "",
   });
   const [providerToDelete, setProviderToDelete] = useState<ProviderDeleteState | null>(null);
-  const [connectorToDelete, setConnectorToDelete] = useState<ProviderDeleteState | null>(null);
-  const [selectedConnector, setSelectedConnector] = useState<RecipeConnectorManifest | null>(null);
   const providerType = readProviderTypeFilter(searchParams.get("type"));
   const [providerSearch, setProviderSearch] = useState("");
-  const { data: connectorsData, isLoading: isLoadingConnectors } = useRecipeConnectors();
-  const connectorSetup = useConnectorSetup();
-  const disconnectConnector = useDisconnectRecipeConnector();
-  const connectors = useMemo(() => connectorsData?.connectors ?? [], [connectorsData?.connectors]);
-  const configuredProviderCount =
-    providerSettings.filter((provider) => provider.hasApiKey).length +
-    connectors.filter((connector) => connector.status === "connected").length;
-  const totalProviderCount = providerSettings.length + connectors.length;
+  const configuredProviderCount = providerSettings.filter((provider) => provider.hasApiKey).length;
   const providerCounts = useMemo(
     () => ({
-      all: providerSettings.length + connectors.length,
+      all: providerSettings.length,
       connected: configuredProviderCount,
       chat: providerSettings.filter((provider) => provider.type === "chat").length,
       messaging: providerSettings.filter((provider) => provider.type === "messaging").length,
-      connector: connectors.length,
     }),
-    [configuredProviderCount, connectors.length, providerSettings],
+    [configuredProviderCount, providerSettings],
   );
   const modalProvider = useMemo(
     () => providerSettings.find((provider) => provider.provider_id === modalState.providerId),
     [modalState.providerId, providerSettings],
   );
-
-  useEffect(() => {
-    completeConnectorAuthPopup(searchParams);
-  }, [searchParams]);
-
-  const requestedConnectorId = searchParams.get("connector");
-  const requestedConnector =
-    !requestedConnectorId || isLoadingConnectors
-      ? undefined
-      : connectors.find((item) => item.id === requestedConnectorId);
-
-  if (requestedConnector && selectedConnector?.id !== requestedConnector.id) {
-    setSelectedConnector(requestedConnector);
-  }
-
-  useEffect(() => {
-    if (!requestedConnector) {
-      return;
-    }
-
-    const nextSearchParams = new URLSearchParams(searchParams);
-
-    nextSearchParams.delete("connector");
-    nextSearchParams.set("type", "connector");
-    setSearchParams(nextSearchParams, { replace: true });
-  }, [requestedConnector, searchParams, setSearchParams]);
 
   const getProviderName = (provider: ProviderSetting) =>
     provider.name || formatProviderLabel(provider.provider_id);
@@ -182,25 +129,6 @@ export function ProfileProvidersTab() {
     setProviderToDelete(null);
   };
 
-  const handleDisconnectConnector = async () => {
-    if (!connectorToDelete) {
-      return;
-    }
-
-    const parsedProvider = recipeConnectorProviderSchema.safeParse(connectorToDelete.providerId);
-
-    if (!parsedProvider.success) {
-      toast.error("Unknown connector provider.");
-      setConnectorToDelete(null);
-
-      return;
-    }
-
-    await disconnectConnector.mutateAsync(parsedProvider.data);
-    await queryClient.invalidateQueries({ queryKey: RECIPE_CONNECTORS_QUERY_KEY });
-    setConnectorToDelete(null);
-  };
-
   const handleProviderTypeChange = (value: string) => {
     const nextType = value as ProviderTypeFilter;
     const nextSearchParams = new URLSearchParams(searchParams);
@@ -215,8 +143,8 @@ export function ProfileProvidersTab() {
   };
 
   const normalisedSearch = providerSearch.trim().toLowerCase();
-  const catalogueItems: ProviderCatalogueItem[] = [
-    ...providerSettings.map((provider): ProviderCatalogueItem & { type: ProviderTypeFilter } => {
+  const catalogueItems: ProviderCatalogueItem[] = providerSettings
+    .map((provider): ProviderCatalogueItem & { type: ProviderTypeFilter } => {
       const providerName = getProviderName(provider);
       const isConfigured = Boolean(provider.hasApiKey);
 
@@ -238,38 +166,24 @@ export function ProfileProvidersTab() {
         ),
         onSelect: () => handleEnableProvider(provider.provider_id, providerName),
       };
-    }),
-    ...connectors.map((connector): ProviderCatalogueItem & { type: ProviderTypeFilter } => ({
-      id: `connector:${connector.id}`,
-      name: connector.name,
-      description:
-        connectorSetup.connectingProviderId === connector.id
-          ? "Waiting for connection in the popup…"
-          : connector.description,
-      category: connector.categories?.[0]?.name ?? "Integrations",
-      connected: connector.status === "connected",
-      connecting: connectorSetup.connectingProviderId === connector.id,
-      type: "connector",
-      icon: <ConnectorLogo connector={connector} />,
-      onSelect: () => setSelectedConnector(connector),
-    })),
-  ].filter((item) => {
-    if (providerType === "connected" && !item.connected) {
-      return false;
-    }
+    })
+    .filter((item) => {
+      if (providerType === "connected" && !item.connected) {
+        return false;
+      }
 
-    if (!["all", "connected"].includes(providerType) && item.type !== providerType) {
-      return false;
-    }
+      if (!["all", "connected"].includes(providerType) && item.type !== providerType) {
+        return false;
+      }
 
-    if (!normalisedSearch) {
-      return true;
-    }
+      if (!normalisedSearch) {
+        return true;
+      }
 
-    return `${item.name} ${item.description ?? ""} ${item.category}`
-      .toLowerCase()
-      .includes(normalisedSearch);
-  });
+      return `${item.name} ${item.description ?? ""} ${item.category}`
+        .toLowerCase()
+        .includes(normalisedSearch);
+    });
 
   return (
     <ProfileTab
@@ -309,7 +223,7 @@ export function ProfileProvidersTab() {
             </AlertDescription>
           </Alert>
         )}
-        {!isLoadingProviderSettings && totalProviderCount > 0 && (
+        {!isLoadingProviderSettings && providerSettings.length > 0 && (
           <ProviderFilterBar
             counts={providerCounts}
             activeType={providerType}
@@ -319,11 +233,11 @@ export function ProfileProvidersTab() {
           />
         )}
 
-        {isLoadingProviderSettings || isLoadingConnectors ? (
+        {isLoadingProviderSettings ? (
           <div className="flex justify-center py-10">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent" />
           </div>
-        ) : totalProviderCount === 0 ? (
+        ) : providerSettings.length === 0 ? (
           <EmptyState
             message="No providers available"
             className="border-none bg-transparent px-0 py-10 dark:bg-transparent"
@@ -362,29 +276,6 @@ export function ProfileProvidersTab() {
         }
         isDeleting={isDeletingProviderApiKey}
       />
-      <ConnectorSetupDialogs controller={connectorSetup} />
-      <ConnectorDetailsModal
-        connector={selectedConnector}
-        onOpenChange={(open) => !open && setSelectedConnector(null)}
-        onConnect={(connector) => {
-          setSelectedConnector(null);
-          void connectorSetup.connect(connector);
-        }}
-        onDisconnect={(connector) => {
-          setSelectedConnector(null);
-          setConnectorToDelete({ providerId: connector.id, providerName: connector.name });
-        }}
-        isStarting={connectorSetup.isStarting}
-        isDisconnecting={disconnectConnector.isPending}
-        accountsSlot={
-          selectedConnector ? (
-            <ConnectorAccountsPanel
-              provider={selectedConnector.id}
-              providerName={selectedConnector.name}
-            />
-          ) : null
-        }
-      />
       <ConfirmationDialog
         open={providerToDelete !== null}
         onOpenChange={(open) => !open && setProviderToDelete(null)}
@@ -398,20 +289,6 @@ export function ProfileProvidersTab() {
         variant="destructive"
         onConfirm={handleDeleteProvider}
         isLoading={isDeletingProviderApiKey}
-      />
-      <ConfirmationDialog
-        open={connectorToDelete !== null}
-        onOpenChange={(open) => !open && setConnectorToDelete(null)}
-        title="Disconnect Connector"
-        description={
-          connectorToDelete
-            ? `Disconnect ${connectorToDelete.providerName}? Recipes using it will stop working until you reconnect.`
-            : ""
-        }
-        confirmText="Disconnect Connector"
-        variant="destructive"
-        onConfirm={handleDisconnectConnector}
-        isLoading={disconnectConnector.isPending}
       />
     </ProfileTab>
   );

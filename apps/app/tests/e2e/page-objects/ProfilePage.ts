@@ -16,10 +16,8 @@ export class ProfilePage extends BasePage {
     });
   }
 
-  async openProviders(type: "all" | "connector" = "all") {
-    const suffix = type === "connector" ? "&type=connector" : "";
-
-    await this.navigate(`/profile?tab=providers${suffix}`);
+  async openProviders() {
+    await this.navigate("/profile?tab=providers");
     await this.page.getByRole("heading", { name: "Available Providers" }).waitFor();
     await this.waitForElement(this.search);
   }
@@ -228,72 +226,6 @@ export class ProfilePage extends BasePage {
     await confirmation.getByRole("button", { name: "Delete Provider" }).click();
     await this.requireSuccessfulProviderMutation(response);
     await this.requireSuccessfulProviderMutation(refresh);
-    await confirmation.waitFor({ state: "hidden" });
-  }
-
-  async connectApiKeyConnector(connectorName: string, apiKey: string) {
-    await this.fillInput(this.search, connectorName);
-    await this.clickElement(
-      this.page.getByRole("button").filter({ hasText: connectorName }).first(),
-    );
-    const details = this.page.getByRole("dialog", { name: connectorName });
-
-    await details.getByRole("button", { name: "Connect" }).click();
-    const credentials = this.page.getByRole("dialog", { name: `Connect ${connectorName}` });
-
-    await credentials.locator('input[type="password"]').fill(apiKey);
-    const response = this.page.waitForResponse(
-      (candidate) =>
-        candidate.request().method() === "POST" &&
-        /\/apps\/connectors\/[^/]+\/api-key$/.test(new URL(candidate.url()).pathname),
-    );
-
-    await credentials.getByRole("button", { name: "Connect" }).click();
-    await this.requireSuccessfulProviderMutation(response);
-    await credentials.waitFor({ state: "hidden" });
-  }
-
-  async connectOAuthConnector(connectorName: string) {
-    await this.fillInput(this.search, connectorName);
-    await this.clickElement(
-      this.page.getByRole("button").filter({ hasText: connectorName }).first(),
-    );
-    const details = this.page.getByRole("dialog", { name: connectorName });
-    const popup = this.page.waitForEvent("popup");
-    const startResponse = this.page.waitForResponse(
-      (candidate) =>
-        candidate.request().method() === "POST" &&
-        /\/apps\/connectors\/[^/]+\/start$/.test(new URL(candidate.url()).pathname),
-    );
-
-    await details.getByRole("button", { name: "Connect" }).click();
-    await this.requireSuccessfulProviderMutation(startResponse);
-    const authorizationPopup = await popup;
-
-    if (!authorizationPopup.isClosed()) {
-      await authorizationPopup.waitForEvent("close");
-    }
-
-    await this.page.getByText(`${connectorName} connected`, { exact: true }).waitFor();
-  }
-
-  async disconnectConnector(connectorName: string) {
-    await this.fillInput(this.search, connectorName);
-    await this.clickElement(
-      this.page.getByRole("button").filter({ hasText: connectorName }).first(),
-    );
-    const details = this.page.getByRole("dialog", { name: connectorName });
-
-    await details.getByRole("button", { name: "Disconnect" }).click();
-    const confirmation = this.page.getByRole("dialog", { name: "Disconnect Connector" });
-    const response = this.page.waitForResponse(
-      (candidate) =>
-        candidate.request().method() === "DELETE" &&
-        /\/apps\/connectors\/[^/]+$/.test(new URL(candidate.url()).pathname),
-    );
-
-    await confirmation.getByRole("button", { name: "Disconnect Connector" }).click();
-    await this.requireSuccessfulProviderMutation(response);
     await confirmation.waitFor({ state: "hidden" });
   }
 

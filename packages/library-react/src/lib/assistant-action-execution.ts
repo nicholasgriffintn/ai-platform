@@ -242,7 +242,7 @@ export async function executeAssistantAction(
 
     const authorization = await dependencies.startConnector(
       parsedProvider.data,
-      action.connectorReturnTo ?? "/profile?tab=providers&type=connector",
+      action.connectorReturnTo ?? "/chat/plugins",
     );
     const connectorLaunch = createConnectorAssistantActionLaunch({
       authType: launch.authType,

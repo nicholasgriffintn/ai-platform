@@ -9,5 +9,5 @@ export function meta() {
 export default function PersonalToolPage() {
   const { toolId = "" } = useParams();
 
-  return <ToolRunner backPath={getPlacePaths("chat").teammates} toolId={toolId} />;
+  return <ToolRunner backPath={getPlacePaths("chat").plugins} toolId={toolId} />;
 }

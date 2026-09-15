@@ -67,7 +67,7 @@ export const create_automation: ApiToolDefinition = {
     return {
       status: "success",
       name: AUTOMATION_CREATE_TOOL_NAME,
-      content: `Set up ${installed.recipe.title} to run ${schedule}.${blocked} You can pause or change it in Teammates and tools.`,
+      content: `Set up ${installed.recipe.title} to run ${schedule}.${blocked} You can pause or change it in Scheduled.`,
       data: {
         recipeId: installed.recipe.id,
         installationId: installed.installation?.id,

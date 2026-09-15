@@ -48,7 +48,7 @@ export function TeammateEditorPage({
 
   if (controller.loadError || (teammateId !== NEW_TEAMMATE_ID && !controller.teammate)) {
     return (
-      <div className="mx-auto max-w-xl px-6 py-16">
+      <div className="mx-auto max-w-xl px-6">
         <Card className="p-8 text-center shadow-none">
           <h1 className="text-2xl font-bold text-foreground">Teammate unavailable</h1>
           <p className="text-sm leading-6 text-muted-foreground">
@@ -61,7 +61,7 @@ export function TeammateEditorPage({
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10 md:px-10 md:py-14">
+    <div className="mx-auto max-w-4xl px-6 md:px-10">
       <header className="mb-8 space-y-3">
         <BackLink href={backPath} label={backLabel} />
         <h1 className="text-2xl font-bold text-foreground">

@@ -12,8 +12,8 @@ export default function PersonalSkillPage() {
   return (
     <SkillEditorPage
       skillId={skillId}
-      backPath={getPlacePaths("chat").teammates}
-      backLabel="Back to capabilities"
+      backPath={getPlacePaths("chat").plugins}
+      backLabel="Back to plugins"
     />
   );
 }

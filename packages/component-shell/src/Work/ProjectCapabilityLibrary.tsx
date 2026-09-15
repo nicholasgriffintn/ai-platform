@@ -1,5 +1,8 @@
 import { CapabilityLibrary } from "../Capabilities/CapabilityLibrary.js";
-import { useProjectCapabilityScope } from "../Capabilities/useCapabilityLibraryController.js";
+import {
+  TEAMMATE_LIBRARY_KINDS,
+  useProjectCapabilityScope,
+} from "../Capabilities/useCapabilityLibraryController.js";
 import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectCapabilityLibrary({
@@ -22,10 +25,9 @@ export function ProjectCapabilityLibrary({
   return (
     <CapabilityLibrary
       scope={scope}
-      title="Teammates & tools"
-      subtitle={`Pick what ${
-        projectQuery.data?.name ?? "this project"
-      } can reach for. Anything you add here is available to every member.`}
+      kinds={TEAMMATE_LIBRARY_KINDS}
+      title="Teammates"
+      subtitle={`The teammates ${projectQuery.data?.name ?? "this project"} can work with. Anything you add here is available to every member.`}
     />
   );
 }

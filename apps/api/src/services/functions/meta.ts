@@ -198,12 +198,19 @@ async function resolveNavigationTarget(
     return { target: { kind: "workspace", workspaceId: workspace.id }, label: workspace.name };
   }
 
-  if (target.mode === "work" && (target.place === "files" || target.place === "teammates")) {
+  if (
+    target.mode === "work" &&
+    (target.place === "canvas" ||
+      target.place === "files" ||
+      target.place === "teammates" ||
+      target.place === "plugins" ||
+      target.place === "scheduled")
+  ) {
     const projectId = target.projectId ?? uiContext?.projectId;
 
     if (!projectId) {
       throw new AssistantError(
-        "Choose a project before opening its Files or Teammates.",
+        `Choose a project before opening its ${target.place}.`,
         ErrorType.PARAMS_ERROR,
         400,
       );

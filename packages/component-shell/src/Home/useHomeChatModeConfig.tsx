@@ -450,7 +450,7 @@ export function useHomeChatModeConfig(): {
       return {
         activeModeId: effectiveActiveModeId,
         modeConfig: {
-          assistantActionRoutes: { recipes: getPlacePaths("chat").teammates },
+          assistantActionRoutes: { recipes: getPlacePaths("chat").scheduled },
           analyticsSource: "live",
           welcomeTitle: "Start a live session",
           welcomeDescription:
@@ -478,7 +478,7 @@ export function useHomeChatModeConfig(): {
     return {
       activeModeId: effectiveActiveModeId,
       modeConfig: {
-        assistantActionRoutes: { recipes: getPlacePaths("chat").teammates },
+        assistantActionRoutes: { recipes: getPlacePaths("chat").scheduled },
         modeControls,
         onModelChange: handleModelChange,
       },

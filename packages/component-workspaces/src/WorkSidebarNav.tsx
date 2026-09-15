@@ -3,13 +3,15 @@ import { Badge, cn, Link, NavLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   Activity,
   BellRing,
+  CalendarClock,
   ChevronRight,
   ClipboardList,
   FolderKanban,
   FolderOpen,
   LayoutDashboard,
   ListChecks,
-  Search,
+  Palette,
+  Plug,
   SquarePen,
   Users,
   UsersRound,
@@ -37,10 +39,13 @@ export interface WorkSidebarWorkspace {
 
 export interface WorkSidebarProject {
   newConversationHref: string;
+  canvasHref: string;
   filesHref: string;
   tasksHref: string;
   activityHref: string;
   teammatesHref: string;
+  pluginsHref: string;
+  scheduledHref: string;
   conversationList?: ReactNode;
   attentionCount?: number;
   /** True while the project chat route is open, which decides conversation highlighting. */
@@ -56,10 +61,10 @@ export interface WorkSidebarNavProps {
   project?: WorkSidebarProject;
   /** Listed only when no workspace is open, as a way back into one. */
   workspaceShortcuts?: Array<{ id: string; name: string; href: string }>;
-  onSearch: () => void;
   onNavigate: () => void;
   onNewChat: () => void;
   onNewConversation: () => void;
+  onCanvas: () => void;
 }
 
 export function WorkSidebarNav({
@@ -69,10 +74,10 @@ export function WorkSidebarNav({
   activeProjectId,
   project,
   workspaceShortcuts,
-  onSearch,
   onNavigate,
   onNewChat,
   onNewConversation,
+  onCanvas,
 }: WorkSidebarNavProps) {
   const linkClass = sidebarNavLinkClass;
 
@@ -82,8 +87,8 @@ export function WorkSidebarNav({
         <SidebarNavButton icon={<SquarePen size={17} />} onClick={onNewChat}>
           New chat
         </SidebarNavButton>
-        <SidebarNavButton icon={<Search size={17} />} onClick={onSearch} shortcut="⌘K">
-          Search
+        <SidebarNavButton icon={<Palette size={17} />} onClick={onCanvas}>
+          Canvas
         </SidebarNavButton>
         <NavLink href={attentionHref} className={linkClass} onClick={onNavigate}>
           <BellRing size={17} /> Attention
@@ -174,6 +179,9 @@ export function WorkSidebarNav({
               </Badge>
             ) : null}
           </NavLink>
+          <NavLink href={project.canvasHref} className={linkClass} onClick={onNavigate}>
+            <Palette size={16} /> Canvas
+          </NavLink>
           <NavLink href={project.filesHref} className={linkClass} onClick={onNavigate}>
             <FolderOpen size={16} /> Files
           </NavLink>
@@ -182,6 +190,12 @@ export function WorkSidebarNav({
           </NavLink>
           <NavLink href={project.teammatesHref} className={linkClass} onClick={onNavigate}>
             <UsersRound size={16} /> Teammates
+          </NavLink>
+          <NavLink href={project.scheduledHref} className={linkClass} onClick={onNavigate}>
+            <CalendarClock size={16} /> Scheduled
+          </NavLink>
+          <NavLink href={project.pluginsHref} className={linkClass} onClick={onNavigate}>
+            <Plug size={16} /> Plugins
           </NavLink>
           {project.conversationList}
         </div>

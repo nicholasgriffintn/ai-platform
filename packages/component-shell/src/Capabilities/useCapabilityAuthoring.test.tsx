@@ -181,6 +181,12 @@ describe("capability library teammate authoring", () => {
     expect(result.current.addChoices).toEqual([]);
   });
 
+  it("offers only skill authoring when the library manages plugins", () => {
+    const { result } = renderAuthoring({ kinds: ["app", "skill", "tool"] });
+
+    expect(result.current.addChoices.map((choice) => choice.label)).toEqual(["Add a skill"]);
+  });
+
   it("only lets a viewer manage the teammates they own or administer", () => {
     teammateList.push(
       teammate({ id: "mine", owner_scope_type: "user", owner_scope_id: "7", user_id: 7 }),

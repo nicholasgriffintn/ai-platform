@@ -8,8 +8,8 @@ export default function DesktopSkillPage() {
   return (
     <SkillEditorPage
       skillId={skillId}
-      backPath={getPlacePaths("chat").teammates}
-      backLabel="Back to capabilities"
+      backPath={getPlacePaths("chat").plugins}
+      backLabel="Back to plugins"
     />
   );
 }

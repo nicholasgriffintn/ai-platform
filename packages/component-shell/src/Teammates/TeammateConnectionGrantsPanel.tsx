@@ -92,7 +92,7 @@ export function TeammateConnectionGrantsPanel({ contextId }: { contextId: string
           <p className="text-xs text-muted-foreground">
             Connect an account before granting access.
           </p>
-          <ButtonLink href="/profile?tab=providers&type=connector" size="sm" variant="outline">
+          <ButtonLink href="/chat/plugins" size="sm" variant="outline">
             Manage connections
           </ButtonLink>
         </div>

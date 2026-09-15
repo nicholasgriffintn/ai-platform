@@ -7,7 +7,7 @@ import {
   useModels,
   useProjectConversationSources,
   projectQueryKey,
-  getCapabilityLibraryPath,
+  getScheduledLibraryPath,
   getProjectSurface,
   getProjectCodingPresentation,
 } from "@ngriffin_uk/polychat-library-react";
@@ -87,7 +87,7 @@ export function ProjectConversationPage({
     currentConversation,
   });
   const codingPresentation = useMemo(() => getProjectCodingPresentation(taskType), [taskType]);
-  const recipeManagementPath = getCapabilityLibraryPath(getProjectSurface(workspaceId, projectId));
+  const recipeManagementPath = getScheduledLibraryPath(getProjectSurface(workspaceId, projectId));
   const renderConversationHeader = useCallback(
     ({ status, actions }: ProjectWorkbenchHeaderSlots) => (
       <ConversationProductHeader

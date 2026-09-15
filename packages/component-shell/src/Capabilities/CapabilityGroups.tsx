@@ -14,18 +14,14 @@ import {
 import { parseModelToolConfiguration } from "@ngriffin_uk/polychat-schemas";
 import type {
   AssistantActionItem,
-  AssistantRecipe,
   CapabilityCatalogItem,
   ProjectCapabilityKind,
   ProjectExperienceDefinition,
   ModelToolDefinition,
-  RecipeInstallation,
 } from "@ngriffin_uk/polychat-schemas";
-import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
 import { useNavigate } from "react-router";
 
-import type { useRecipeWorkflows } from "../Recipes/useRecipeWorkflows.js";
-import { RecipeCapabilityCard } from "./RecipeCapabilityCard.js";
+import { resolveCapabilityCardState } from "./capabilityCardState.js";
 import type { PersonalSkillControls } from "./useCapabilityLibraryController.js";
 
 interface CapabilityGroupsProps {
@@ -43,9 +39,6 @@ interface CapabilityGroupsProps {
     removeCapability: (capability: EnabledCapability & { id: string }) => void;
   };
   personalSkills?: PersonalSkillControls;
-  recipeById: Map<string, AssistantRecipe>;
-  recipeInstallationById: Map<string, RecipeInstallation>;
-  recipeWorkflows: ReturnType<typeof useRecipeWorkflows>;
   toolById: Map<string, ModelToolDefinition>;
   toolConfigurationById: Map<string, Record<string, unknown>>;
   surface: CapabilitySurface;
@@ -116,9 +109,6 @@ export function CapabilityGroups({
   onConfigureTool,
   personalSkills,
   projectActions,
-  recipeById,
-  recipeInstallationById,
-  recipeWorkflows,
   toolById,
   toolConfigurationById,
   surface,
@@ -146,50 +136,14 @@ export function CapabilityGroups({
                     return null;
                   }
 
-                  const existing = capabilities.find(
-                    (capability) =>
-                      capability.kind === itemKind &&
-                      capability.capabilityId === item.capability.id,
-                  );
-                  const isAdding = pendingAddCapabilityId === item.capability.id;
-                  const isRemoving = Boolean(existing) && pendingRemoveId === existing?.id;
-                  const recipe =
-                    itemKind === "recipe" ? recipeById.get(item.capability.id) : undefined;
-                  const canManageCapability = existing
-                    ? existing.createdBy === undefined ||
-                      areUserIdsEqual(existing.createdBy, currentUserId) ||
-                      (existing.kind === "tool" && Boolean(projectActions?.canManage))
-                    : projectActions
-                      ? itemKind !== "tool" || projectActions.canManage
-                      : true;
-
-                  if (recipe) {
-                    return (
-                      <RecipeCapabilityCard
-                        key={item.id}
-                        capability={existing}
-                        installation={recipeInstallationById.get(recipe.id)}
-                        projectActions={
-                          projectActions
-                            ? {
-                                canManage: canManageCapability,
-                                isAdding,
-                                isRemoving,
-                                onAdd: () => projectActions.addItem(item, itemKind),
-                                onRemove: () => {
-                                  if (existing) {
-                                    projectActions.removeCapability(existing);
-                                  }
-                                },
-                              }
-                            : undefined
-                        }
-                        recipe={recipe}
-                        workflows={recipeWorkflows}
-                      />
-                    );
-                  }
-
+                  const cardState = resolveCapabilityCardState(item, itemKind, {
+                    canManageProject: projectActions?.canManage,
+                    capabilities,
+                    currentUserId,
+                    pendingAddCapabilityId,
+                    pendingRemoveId,
+                  });
+                  const { existing } = cardState;
                   const tool = itemKind === "tool" ? toolById.get(item.capability.id) : undefined;
                   const skillState =
                     itemKind === "skill" && personalSkills
@@ -218,9 +172,9 @@ export function CapabilityGroups({
                       projectActions={
                         projectActions
                           ? {
-                              canManage: canManageCapability,
-                              isAdding,
-                              isRemoving,
+                              canManage: cardState.canManage,
+                              isAdding: cardState.isAdding,
+                              isRemoving: cardState.isRemoving,
                               onAdd: () => projectActions.addItem(item, itemKind),
                               onRemove: () => {
                                 if (existing) {

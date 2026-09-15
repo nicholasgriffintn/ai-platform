@@ -31,10 +31,25 @@ describe("desktop routes", () => {
     expect(pageFor("/chat/attention")).toBe("attention");
   });
 
+  it("serves the Canvas place in both product modes", () => {
+    expect(pageFor("/chat/canvas")).toBe("canvas");
+    expect(pageFor("/work/acme/projects/p1/canvas")).toBe("project-canvas");
+  });
+
+  it("serves the Scheduled place in both product modes", () => {
+    expect(pageFor("/chat/scheduled")).toBe("scheduled");
+    expect(pageFor("/work/acme/projects/p1/scheduled")).toBe("project-scheduled");
+  });
+
   it("serves the Teammates place and the surfaces it links to", () => {
     expect(pageFor("/chat/teammates")).toBe("teammates");
     expect(pageFor("/chat/teammates/poly")).toBe("teammate");
     expect(pageFor("/chat/tools/search")).toBe("tools");
+  });
+
+  it("serves the Plugins place in both product modes", () => {
+    expect(pageFor("/chat/plugins")).toBe("plugins");
+    expect(pageFor("/work/acme/projects/p1/plugins")).toBe("project-plugins");
   });
 
   it("serves the Apps place and the runtimes it routes into", () => {
@@ -61,6 +76,8 @@ describe("desktop routes", () => {
     expect(pageFor(`${project}/chat/c1`)).toBe("project-chat");
     expect(pageFor(`${project}/teammates`)).toBe("project-teammates");
     expect(pageFor(`${project}/teammates/poly`)).toBe("project-teammate");
+    expect(pageFor(`${project}/plugins`)).toBe("project-plugins");
+    expect(pageFor(`${project}/scheduled`)).toBe("project-scheduled");
     expect(pageFor(`${project}/apps/notes/entry`)).toBe("project-app");
     expect(pageFor(`${project}/files/made/nested`)).toBe("project-files");
     expect(pageFor(`${project}/tasks`)).toBe("project-tasks");
@@ -152,10 +169,16 @@ describe("desktop routes", () => {
       DESKTOP_ROUTE_DEFINITIONS.find((definition) => definition.page === page)?.layout;
 
     expect(layoutFor("attention")).toBe("chat");
+    expect(layoutFor("canvas")).toBe("chat");
     expect(layoutFor("files")).toBe("chat");
+    expect(layoutFor("scheduled")).toBe("chat");
     expect(layoutFor("teammates")).toBe("chat");
+    expect(layoutFor("plugins")).toBe("chat");
     expect(layoutFor("work")).toBe("work");
     expect(layoutFor("project")).toBe("work");
+    expect(layoutFor("project-canvas")).toBe("work");
+    expect(layoutFor("project-plugins")).toBe("work");
+    expect(layoutFor("project-scheduled")).toBe("work");
     expect(layoutFor("project-tasks")).toBe("work");
   });
 

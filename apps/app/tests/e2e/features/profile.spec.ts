@@ -204,12 +204,12 @@ test.describe("Provider configuration", () => {
 test.describe("Connector configuration", () => {
   test.use({ persona: "pro" });
 
-  test("stores and removes an API-key connector credential", async ({ profilePage, page }) => {
-    await profilePage.openProviders("connector");
-    await profilePage.connectApiKeyConnector("Netlify", "e2e-netlify-personal-access-token");
-    await profilePage.filterProviders("Netlify");
+  test("stores and removes an API-key connector credential", async ({ pluginsPage, page }) => {
+    await pluginsPage.open();
+    await pluginsPage.connectApiKeyConnector("Netlify", "e2e-netlify-personal-access-token");
+    await pluginsPage.filterPlugins("Netlify");
     await expect(page.getByLabel("Connected")).toBeVisible();
-    await profilePage.disconnectConnector("Netlify");
+    await pluginsPage.disconnectConnector("Netlify");
     await expect(page.getByLabel("Connected")).toHaveCount(0);
     await captureVisualSnapshots(page, "release-profile-connector-netlify", {
       ...DEFAULT_VISUAL_CHECKPOINTS,
@@ -219,15 +219,15 @@ test.describe("Connector configuration", () => {
 
   test("authorises and disconnects an OAuth connector", async ({
     externalServices,
-    profilePage,
+    pluginsPage,
     page,
   }) => {
     await externalServices.mockComposioAuthorization();
-    await profilePage.openProviders("connector");
-    await profilePage.connectOAuthConnector("Airtable");
-    await profilePage.filterProviders("Airtable");
+    await pluginsPage.open();
+    await pluginsPage.connectOAuthConnector("Airtable");
+    await pluginsPage.filterPlugins("Airtable");
     await expect(page.getByLabel("Connected")).toBeVisible();
-    await profilePage.disconnectConnector("Airtable");
+    await pluginsPage.disconnectConnector("Airtable");
     await expect(page.getByLabel("Connected")).toHaveCount(0);
     await captureVisualSnapshots(page, "release-profile-connector-airtable", {
       ...DEFAULT_VISUAL_CHECKPOINTS,

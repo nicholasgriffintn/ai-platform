@@ -7,8 +7,8 @@ import type {
 import type { SearchResult, SearchResultKind } from "@ngriffin_uk/polychat-utility-react";
 
 import {
-  getCapabilityLibraryPath,
   getCapabilityOpenPath,
+  getPluginsPath,
   PERSONAL_SURFACE,
 } from "../lib/capability-surfaces.js";
 import {
@@ -144,7 +144,7 @@ export function buildGlobalSearchResults({
     description: capabilityDescription(capability),
     href:
       getCapabilityOpenPath(capability, PERSONAL_SURFACE, experiences) ??
-      getCapabilityLibraryPath(PERSONAL_SURFACE),
+      getPluginsPath(PERSONAL_SURFACE),
     searchText: [
       capability.label,
       capability.description,

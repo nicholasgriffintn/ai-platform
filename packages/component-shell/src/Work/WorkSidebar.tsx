@@ -10,6 +10,7 @@ import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-libr
 import {
   useTaskAttention,
   useStartNewChat,
+  useOpenCanvas,
   getProjectBasePath,
   getProjectChatPath,
   getProjectConversationPath,
@@ -56,12 +57,9 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const { conversationId: pathConversationId } = useParams<"conversationId">();
   const navigate = useNavigate();
   const startNewChat = useStartNewChat();
-  const {
-    clearCurrentConversation,
-    currentConversationId,
-    setCurrentConversationId,
-    setShowSearch,
-  } = useChatStore();
+  const openCanvas = useOpenCanvas();
+  const { clearCurrentConversation, currentConversationId, setCurrentConversationId } =
+    useChatStore();
   const activeConversationId =
     pathConversationId ??
     project?.conversations.find((conversation) => conversation.id === currentConversationId)?.id;
@@ -168,11 +166,14 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
           projectId && workspaceId
             ? {
                 newConversationHref: projectChatPath,
+                canvasHref: `${projectBasePath}/canvas`,
                 filesHref: `${projectBasePath}/files`,
                 tasksHref: `${projectBasePath}/tasks`,
                 attentionCount: projectAttentionCount,
                 activityHref: `${projectBasePath}/activity`,
                 teammatesHref: `${projectBasePath}/teammates`,
+                pluginsHref: `${projectBasePath}/plugins`,
+                scheduledHref: `${projectBasePath}/scheduled`,
                 conversationList: (
                   <div className="-mx-2 pt-3">
                     <ConversationListSection
@@ -223,10 +224,13 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
               }))
             : undefined
         }
-        onSearch={() => setShowSearch(true)}
         onNavigate={closeOnMobile}
         onNewChat={() => {
           startNewChat();
+          closeOnMobile();
+        }}
+        onCanvas={() => {
+          openCanvas();
           closeOnMobile();
         }}
         onNewConversation={clearCurrentConversation}

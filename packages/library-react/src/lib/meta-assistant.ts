@@ -26,7 +26,16 @@ const PROJECT_TASK_PATTERN = "/work/:workspaceId/projects/:projectId/tasks/:task
 const WORKSPACE_PATTERN = "/work/:workspaceId/*";
 const PERSONAL_CONVERSATION_PATTERN = "/chat/:conversationId";
 
-const RESERVED_CHAT_SEGMENTS = new Set(["attention", "files", "teammates", "apps", "tools"]);
+const RESERVED_CHAT_SEGMENTS = new Set([
+  "attention",
+  "canvas",
+  "files",
+  "teammates",
+  "plugins",
+  "scheduled",
+  "apps",
+  "tools",
+]);
 
 export function buildMetaAssistantUiContext(
   pathname: string,
@@ -109,7 +118,14 @@ export function getMetaNavigationHref(target: MetaNavigationTarget): string {
     case "workspace":
       return `/work/${encodeURIComponent(target.workspaceId)}`;
     case "place":
-      if (target.mode === "work" && (target.place === "files" || target.place === "teammates")) {
+      if (
+        target.mode === "work" &&
+        (target.place === "canvas" ||
+          target.place === "files" ||
+          target.place === "teammates" ||
+          target.place === "plugins" ||
+          target.place === "scheduled")
+      ) {
         return target.workspaceId && target.projectId
           ? `${getProjectBasePath(target.workspaceId, target.projectId)}/${target.place}`
           : MODE_BASE_PATHS.work;

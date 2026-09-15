@@ -4,7 +4,7 @@ import { SandboxApi } from "../fixtures/sandbox-api";
 import { ProjectTasksPage } from "../page-objects/ProjectTasksPage";
 import { chooseDropdownOption } from "../support/dropdown";
 
-const REMOVED_PATHS = ["/attention", "/files", "/teammates"];
+const REMOVED_PATHS = ["/attention", "/files", "/teammates", "/scheduled"];
 
 test("removes the top-level places rather than redirecting them", async ({ page }) => {
   for (const path of REMOVED_PATHS) {
@@ -28,8 +28,11 @@ test.describe("Places belong to a mode", () => {
 
     for (const [place, path] of [
       ["Attention", "/chat/attention"],
+      ["Canvas", "/chat/canvas"],
       ["Files", "/chat/files"],
       ["Teammates", "/chat/teammates"],
+      ["Plugins", "/chat/plugins"],
+      ["Scheduled", "/chat/scheduled"],
     ] as const) {
       await appPage.followSidebarLink(place);
       await expect(page).toHaveURL(new RegExp(`${path}$`));
@@ -71,8 +74,11 @@ test.describe("Places belong to a mode", () => {
     const sidebar = page.getByRole("navigation", { name: "Workspace" });
 
     for (const [place, suffix] of [
+      ["Canvas", "/canvas"],
       ["Files", "/files"],
       ["Teammates", "/teammates"],
+      ["Plugins", "/plugins"],
+      ["Scheduled", "/scheduled"],
     ] as const) {
       await expect(sidebar.getByRole("link", { name: place, exact: true })).toHaveCount(1);
       await sidebar.getByRole("link", { name: place, exact: true }).click();

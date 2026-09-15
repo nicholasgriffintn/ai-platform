@@ -44,12 +44,14 @@ describe("buildMetaAssistantUiContext", () => {
     expect(buildMetaAssistantUiContext("/chat/c2")).toMatchObject({ conversationId: "c2" });
     expect(buildMetaAssistantUiContext("/chat/teammates").conversationId).toBeUndefined();
     expect(buildMetaAssistantUiContext("/chat/teammates").place).toBe("teammates");
+    expect(buildMetaAssistantUiContext("/chat/scheduled").conversationId).toBeUndefined();
+    expect(buildMetaAssistantUiContext("/chat/scheduled").place).toBe("scheduled");
   });
 });
 
 describe("meta navigation", () => {
-  it("opens Work Files and Teammates under their authorised project", () => {
-    for (const place of ["files", "teammates"] as const) {
+  it("opens Work Canvas, Files, Teammates, Plugins and Scheduled under their authorised project", () => {
+    for (const place of ["canvas", "files", "teammates", "plugins", "scheduled"] as const) {
       expect(
         getMetaNavigationHref({
           kind: "place",
@@ -99,12 +101,18 @@ describe("places and files routes", () => {
     expect(getActivePlace("/chat/abc")).toBe("conversations");
     expect(getActivePlace("/chat/teammates/a1")).toBe("teammates");
     expect(getActivePlace("/chat/apps/strudel")).toBe("teammates");
+    expect(getActivePlace("/chat/canvas")).toBe("canvas");
     expect(getActivePlace("/chat/files/given")).toBe("files");
+    expect(getActivePlace("/chat/plugins")).toBe("plugins");
+    expect(getActivePlace("/chat/scheduled")).toBe("scheduled");
     expect(getActivePlace("/chat/attention")).toBe("attention");
     expect(getActivePlace("/work")).toBe("conversations");
     expect(getActivePlace("/work/attention")).toBe("attention");
+    expect(getActivePlace("/work/w1/projects/p1/canvas")).toBe("canvas");
     expect(getActivePlace("/work/w1/projects/p1/files/made/o1")).toBe("files");
     expect(getActivePlace("/work/w1/projects/p1/teammates")).toBe("teammates");
+    expect(getActivePlace("/work/w1/projects/p1/scheduled")).toBe("scheduled");
+    expect(getActivePlace("/work/w1/projects/p1/plugins")).toBe("plugins");
     expect(getActivePlace("/profile")).toBe("you");
     expect(getActivePlace("/pricing")).toBeUndefined();
   });
@@ -112,7 +120,9 @@ describe("places and files routes", () => {
   it("reads the mode from the path so a place keeps its context", () => {
     expect(getProductMode("/chat/files/made")).toBe("chat");
     expect(getProductMode("/work/w1/projects/p1/files/made")).toBe("work");
+    expect(getPlacePaths("chat").canvas).toBe("/chat/canvas");
     expect(getPlacePaths("chat").files).toBe("/chat/files");
+    expect(getPlacePaths("chat").scheduled).toBe("/chat/scheduled");
     expect(getPlacePaths("work").attention).toBe("/work/attention");
   });
 

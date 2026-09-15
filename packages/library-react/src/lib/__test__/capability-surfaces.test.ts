@@ -78,14 +78,14 @@ describe("capability surfaces", () => {
     expect(getEnabledExperiences([], [savedOutputs])).toEqual([]);
   });
 
-  it("returns to the teammates library from the top of an app, not to a separate list", () => {
+  it("returns to the plugins library from the top of an app, not to a separate list", () => {
     expect(getAppBackLink(PERSONAL_SURFACE, "strudel", "", "Strudel")).toEqual({
-      to: "/chat/teammates",
-      label: "Back to teammates",
+      to: "/chat/plugins",
+      label: "Back to plugins",
     });
     expect(getAppBackLink(getProjectSurface("w1", "p1"), "strudel", "", "Strudel")).toEqual({
-      to: "/work/w1/projects/p1/teammates",
-      label: "Back to teammates",
+      to: "/work/w1/projects/p1/plugins",
+      label: "Back to plugins",
     });
   });
 

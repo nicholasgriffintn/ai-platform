@@ -240,7 +240,7 @@ test.describe("Hiring a teammate", () => {
     await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
     const projectId = workPage.currentProjectId();
 
-    await workPage.openProjectSurface("Teammates & tools");
+    await workPage.openProjectSurface("Teammates");
     await capabilitiesPage.startNewTeammate();
     await capabilitiesPage.fillTeammateEditor({
       name,

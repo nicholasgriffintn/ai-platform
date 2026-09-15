@@ -13,7 +13,7 @@ export function useStartNewChat() {
   const { workspaceId, projectId } = useParams<"workspaceId" | "projectId">();
   const { trackEvent } = useTrackEvent();
   const clearCurrentConversation = useChatStore((state) => state.clearCurrentConversation);
-  const setShowProjectPicker = useUIStore((state) => state.setShowProjectPicker);
+  const openProjectPicker = useUIStore((state) => state.openProjectPicker);
 
   return useCallback(() => {
     const mode = getProductMode(pathname);
@@ -33,7 +33,7 @@ export function useStartNewChat() {
     }
 
     if (mode === "work") {
-      setShowProjectPicker(true);
+      openProjectPicker("chat");
 
       return;
     }
@@ -43,9 +43,9 @@ export function useStartNewChat() {
   }, [
     clearCurrentConversation,
     navigate,
+    openProjectPicker,
     pathname,
     projectId,
-    setShowProjectPicker,
     trackEvent,
     workspaceId,
   ]);

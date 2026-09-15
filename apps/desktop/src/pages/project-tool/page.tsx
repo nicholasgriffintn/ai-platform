@@ -7,7 +7,7 @@ export default function DesktopProjectToolPage() {
 
   return (
     <ToolRunner
-      backPath={`${getProjectBasePath(workspaceId, projectId)}/teammates`}
+      backPath={`${getProjectBasePath(workspaceId, projectId)}/plugins`}
       projectId={projectId}
       toolId={toolId}
     />

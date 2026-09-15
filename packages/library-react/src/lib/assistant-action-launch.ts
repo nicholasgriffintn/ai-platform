@@ -266,13 +266,11 @@ export function createConnectorAssistantActionLaunch(
 
   if (source.authType === "api_key") {
     const params = new URLSearchParams({
-      tab: "providers",
-      type: "connector",
       connector: source.provider,
     });
 
     return {
-      navigationPath: `/profile?${params.toString()}`,
+      navigationPath: `/chat/plugins?${params.toString()}`,
     };
   }
 

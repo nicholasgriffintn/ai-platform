@@ -95,7 +95,7 @@ export function useComposerBanner({
           title: "Connect your tools",
           message:
             "Link Gmail, Notion, and friends so Polychat can do things for you, not just discuss them.",
-          action: { label: "Browse connectors", to: "/profile?tab=providers" },
+          action: { label: "Browse plugins", to: "/chat/plugins" },
           dismissal: { scope: "forever", suggestion: true },
         });
       }

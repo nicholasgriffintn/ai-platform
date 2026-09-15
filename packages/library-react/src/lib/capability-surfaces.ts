@@ -62,8 +62,12 @@ export function getConversationPath(surface: CapabilitySurface): string {
   return surface.projectId ? `${surface.basePath}/chat` : surface.basePath;
 }
 
-export function getCapabilityLibraryPath(surface: CapabilitySurface): string {
-  return surface.projectId ? `${surface.basePath}/teammates` : getPlacePaths("chat").teammates;
+export function getPluginsPath(surface: CapabilitySurface): string {
+  return surface.projectId ? `${surface.basePath}/plugins` : getPlacePaths("chat").plugins;
+}
+
+export function getScheduledLibraryPath(surface: CapabilitySurface): string {
+  return surface.projectId ? `${surface.basePath}/scheduled` : getPlacePaths("chat").scheduled;
 }
 
 export function getAppPath(surface: CapabilitySurface, appId: string, suffix?: string): string {
@@ -86,7 +90,7 @@ export function getAppBackLink(
   const segments = subpath.split("/").filter(Boolean);
 
   if (segments.length === 0) {
-    return { to: getCapabilityLibraryPath(surface), label: "Back to teammates" };
+    return { to: getPluginsPath(surface), label: "Back to plugins" };
   }
 
   const parent = segments.slice(0, -1).join("/");
@@ -113,7 +117,7 @@ export function getAppOpenPath(
       candidate.requirement.capabilityId === capabilityId,
   );
 
-  return app ? getAppPath(surface, app.id) : getCapabilityLibraryPath(surface);
+  return app ? getAppPath(surface, app.id) : getPluginsPath(surface);
 }
 
 function capabilityEnablesExperience(
@@ -150,7 +154,7 @@ export function getCapabilityOpenPath(
     const recipeId = item.metadata?.recipeId ?? item.capability.id;
 
     return createRecipeManagementActionPath(
-      getCapabilityLibraryPath(surface),
+      getScheduledLibraryPath(surface),
       "configure",
       recipeId,
     );

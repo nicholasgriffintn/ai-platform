@@ -33,7 +33,7 @@ test.describe("Skill tools preserve reviewed instructions", () => {
     expect(draft.state.stableRevisionId).toBe(initial.state.stableRevisionId);
     expect(draft.state.draftRevisionId).not.toBe(initial.state.draftRevisionId);
 
-    await capabilitiesPage.open();
+    await capabilitiesPage.openPlugins();
     await expect(capabilitiesPage.capabilityCard("release-playbook")).toBeVisible();
     await capabilitiesPage.openSkillEditorFromLibrary("release-playbook");
     await expect(page.getByLabel("Skill document")).toHaveValue(

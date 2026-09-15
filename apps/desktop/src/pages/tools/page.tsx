@@ -5,5 +5,5 @@ import { useParams } from "react-router";
 export default function DesktopToolPage() {
   const { toolId = "" } = useParams();
 
-  return <ToolRunner backPath={getPlacePaths("chat").teammates} toolId={toolId} />;
+  return <ToolRunner backPath={getPlacePaths("chat").plugins} toolId={toolId} />;
 }

@@ -11,7 +11,7 @@ import {
   type CapabilitySurface,
   getAppBackLink,
   getAppPath,
-  getCapabilityLibraryPath,
+  getPluginsPath,
   isExperienceEnabled,
 } from "@ngriffin_uk/polychat-library-react";
 import { Puzzle } from "lucide-react";
@@ -27,11 +27,13 @@ export function AppRoute({
   project,
   subpath = "",
   surface,
+  title: titleOverride,
 }: {
   appId: string;
   project?: AppProjectScope;
   subpath?: string;
   surface: CapabilitySurface;
+  title?: string;
 }) {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
@@ -41,7 +43,7 @@ export function AppRoute({
     error: catalogError,
   } = useCapabilityCatalog(surface.projectId);
   const definition = catalog?.experiences.find((item) => item.id === appId);
-  const title = definition?.name;
+  const title = titleOverride ?? definition?.name;
   const backLink = getAppBackLink(surface, appId, subpath, title);
   const basePath = getAppPath(surface, appId);
   const needsSignIn = !isAuthenticationLoading && !isAuthenticated;
@@ -95,8 +97,8 @@ export function AppRoute({
           title="App not enabled"
           message={`Add ${title} to the project before opening it.`}
           action={
-            <ButtonLink variant="primary" href={getCapabilityLibraryPath(surface)}>
-              Open teammates
+            <ButtonLink variant="primary" href={getPluginsPath(surface)}>
+              Open plugins
             </ButtonLink>
           }
         />

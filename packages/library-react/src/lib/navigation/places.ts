@@ -1,6 +1,14 @@
 export type ProductMode = "chat" | "work";
 
-export type ProductPlace = "conversations" | "attention" | "files" | "teammates" | "you";
+export type ProductPlace =
+  | "conversations"
+  | "canvas"
+  | "attention"
+  | "files"
+  | "teammates"
+  | "plugins"
+  | "scheduled"
+  | "you";
 
 export const MODE_BASE_PATHS: Record<ProductMode, string> = {
   chat: "/chat",
@@ -13,9 +21,12 @@ export const DISCOVER_PATH = "/discover";
 
 export interface PlacePaths {
   conversations: string;
+  canvas: string;
   attention: string;
   files: string;
   teammates: string;
+  plugins: string;
+  scheduled: string;
 }
 
 export function getPlacePaths(mode: ProductMode): PlacePaths {
@@ -23,9 +34,12 @@ export function getPlacePaths(mode: ProductMode): PlacePaths {
 
   return {
     conversations: base,
+    canvas: `${base}/canvas`,
     attention: `${base}/attention`,
     files: `${base}/files`,
     teammates: `${base}/teammates`,
+    plugins: `${base}/plugins`,
+    scheduled: `${base}/scheduled`,
   };
 }
 
@@ -36,9 +50,12 @@ export function getProductMode(pathname: string): ProductMode {
 }
 
 const PLACE_SEGMENTS: Array<[Exclude<ProductPlace, "conversations" | "you">, string[]]> = [
+  ["canvas", ["canvas"]],
   ["attention", ["attention"]],
   ["files", ["files"]],
   ["teammates", ["teammates", "apps", "tools"]],
+  ["plugins", ["plugins"]],
+  ["scheduled", ["scheduled"]],
 ];
 
 export function getActivePlace(pathname: string): ProductPlace | undefined {

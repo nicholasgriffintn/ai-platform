@@ -36,6 +36,7 @@ export * from "./hooks/useModelSourcesOnboarding.js";
 export * from "./hooks/useModelTools.js";
 export * from "./hooks/useNoteFormatter.js";
 export * from "./hooks/useNotes.js";
+export * from "./hooks/useOpenCanvas.js";
 export * from "./hooks/useOutputs.js";
 export * from "./hooks/usePasskeys.js";
 export * from "./hooks/usePetNudgeSources.js";

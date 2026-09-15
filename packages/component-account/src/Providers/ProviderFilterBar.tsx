@@ -1,13 +1,12 @@
 import { SearchInput, Tabs, TabsList, TabsTrigger } from "@ngriffin_uk/polychat-component-ui";
 
-export type ProviderTypeFilter = "all" | "connected" | "chat" | "messaging" | "connector";
+export type ProviderTypeFilter = "all" | "connected" | "chat" | "messaging";
 
 export interface ProviderCounts {
   all: number;
   connected: number;
   chat: number;
   messaging: number;
-  connector: number;
 }
 
 export interface ProviderFilterBarProps {
@@ -23,7 +22,6 @@ const FILTERS: Array<{ value: ProviderTypeFilter; label: string }> = [
   { value: "connected", label: "Connected" },
   { value: "chat", label: "Chat" },
   { value: "messaging", label: "Messaging" },
-  { value: "connector", label: "Integrations" },
 ];
 
 export function ProviderFilterBar({

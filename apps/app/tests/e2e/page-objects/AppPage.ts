@@ -37,9 +37,7 @@ export class AppPage extends BasePage {
     );
     const documentResponse = await this.navigate("/chat");
     const assetResponse = await assetResponsePromise;
-    const callbackResponse = await this.navigate(
-      "/profile?tab=providers&type=connector&connector=airtable&connected=1",
-    );
+    const callbackResponse = await this.navigate("/chat/plugins?connector=airtable&connected=1");
 
     if (!documentResponse || !callbackResponse) {
       throw new Error("Expected document responses while checking security headers");

@@ -14,7 +14,7 @@ export default function PersonalTeammatePage() {
       teammateId={teammateId}
       teammatesPath="/chat/teammates"
       backPath={getPlacePaths("chat").teammates}
-      backLabel="Back to capabilities"
+      backLabel="Back to teammates"
     />
   );
 }

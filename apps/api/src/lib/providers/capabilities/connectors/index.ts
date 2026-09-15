@@ -65,7 +65,7 @@ const localConnectorProviders: ConnectorProviderConfig[] = [
     name: "Devin",
     description: "Start Devin sessions, check progress, and send follow-up messages.",
     categories: [{ id: "developer-tools", name: "Developer tools" }],
-    setupUrl: "/profile?tab=providers&type=connector&connector=devin",
+    setupUrl: "/chat/plugins?connector=devin",
     operations: [
       {
         id: "list_sessions",
@@ -171,7 +171,7 @@ const localConnectorProviders: ConnectorProviderConfig[] = [
     name: "Hindsight",
     description: "Use Hindsight as an external long-term memory provider.",
     categories: [{ id: "ai", name: "AI" }],
-    setupUrl: "/profile?tab=providers&type=connector&connector=hindsight",
+    setupUrl: "/chat/plugins?connector=hindsight",
     operations: [],
     auth: {
       authType: "api_key",
@@ -184,7 +184,7 @@ const localConnectorProviders: ConnectorProviderConfig[] = [
     name: "Honcho",
     description: "Use Honcho as an external memory and peer reasoning provider.",
     categories: [{ id: "ai", name: "AI" }],
-    setupUrl: "/profile?tab=providers&type=connector&connector=honcho",
+    setupUrl: "/chat/plugins?connector=honcho",
     operations: [],
     auth: {
       authType: "api_key",
@@ -197,7 +197,7 @@ const localConnectorProviders: ConnectorProviderConfig[] = [
     name: "Netlify",
     description: "Inspect Netlify sites, deploys, and deployment status.",
     categories: [{ id: "developer-tools", name: "Developer tools" }],
-    setupUrl: "/profile?tab=providers&type=connector&connector=netlify",
+    setupUrl: "/chat/plugins?connector=netlify",
     operations: [
       {
         id: "list_sites",
@@ -250,7 +250,7 @@ const composioConnectorProviders: ConnectorProviderConfig[] = Object.values(
   logoUrl: toolkit.logoUrl,
   appUrl: toolkit.appUrl,
   categories: toolkit.categories,
-  setupUrl: `/profile?tab=providers&type=connector&connector=${encodeURIComponent(toolkit.providerId)}`,
+  setupUrl: `/chat/plugins?connector=${encodeURIComponent(toolkit.providerId)}`,
   operations: toolkit.operations,
   auth: {
     authType: "composio",

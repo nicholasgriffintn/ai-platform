@@ -1,6 +1,7 @@
 import {
   CapabilityFilters,
   ToolConfigurationDialog,
+  type CapabilityFilter,
 } from "@ngriffin_uk/polychat-component-capabilities";
 import {
   CardGridLoadingSkeleton,
@@ -8,11 +9,11 @@ import {
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
+import type { ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
 import { SearchX } from "lucide-react";
+import { type ReactNode, useMemo } from "react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
-import { ConnectorSetupDialogs } from "../Connectors/ConnectorSetupDialogs.js";
-import { RecipeWorkflowDialogs } from "../Recipes/RecipeWorkflowDialogs.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { AddSkillDialog } from "./AddSkillDialog.js";
 import { AttachTeammateDialog } from "./AttachTeammateDialog.js";
@@ -23,22 +24,34 @@ import { SharedTeammatesDialog } from "./SharedTeammatesDialog.js";
 import { ShareTeammateDialog } from "./ShareTeammateDialog.js";
 import { useCapabilityAuthoring } from "./useCapabilityAuthoring.js";
 import {
+  DEFAULT_CAPABILITY_KINDS,
   useCapabilityLibraryController,
   type CapabilityLibraryScope,
 } from "./useCapabilityLibraryController.js";
 
-export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryProps) {
-  const controller = useCapabilityLibraryController(scope);
+export function CapabilityLibrary({
+  scope,
+  title,
+  subtitle,
+  kinds = DEFAULT_CAPABILITY_KINDS,
+  children,
+}: CapabilityLibraryProps) {
+  const controller = useCapabilityLibraryController(scope, { kinds });
   const authoring = useCapabilityAuthoring({
     capabilities: controller.capabilities,
     currentUserId: controller.currentUserId,
+    kinds,
     projectActions: controller.projectActions,
     projectAddError: controller.projectMutations?.add.error,
     skillDeletion: controller.skillDeletion,
     surface: controller.surface,
   });
   const isLoading = controller.isLoadingScope || controller.catalog.isLoading;
-  const recipeWorkflows = controller.recipes.workflows;
+  const managesTeammates = kinds.includes("teammate");
+  const availableFilters = useMemo<CapabilityFilter[]>(
+    () => [...(kinds.includes("tool") ? ["configured" as const] : []), ...kinds],
+    [kinds],
+  );
   const mutationError =
     controller.configurationMutation.error ??
     controller.projectMutations?.add.error ??
@@ -65,9 +78,13 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
         />
         <p className="mb-6 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>
         <CapabilityFilters
+          availableFilters={availableFilters}
           categories={controller.filters.categories}
           category={controller.filters.category}
           filters={controller.filters.selected}
+          searchPlaceholder={
+            managesTeammates ? "Search teammates..." : "Search apps, skills, and tools..."
+          }
           onCategoryChange={controller.filters.setCategory}
           onFiltersChange={controller.filters.setSelected}
           onQueryChange={controller.filters.setQuery}
@@ -81,8 +98,16 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
 
         {hasAuthenticationError ? (
           <SignInEmptyState
-            title="Sign in to manage your teammates"
-            message="Sign in to choose the teammates, apps, automations, skills and tools you use."
+            title={
+              managesTeammates
+                ? "Sign in to manage your teammates"
+                : "Sign in to manage your plugins"
+            }
+            message={
+              managesTeammates
+                ? "Sign in to choose the teammates you use."
+                : "Sign in to choose the apps, skills and tools you use."
+            }
             className="min-h-[300px]"
           />
         ) : isLoading ? (
@@ -111,9 +136,6 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
             onConfigureTool={controller.toolConfigurationDialog.open}
             personalSkills={controller.personalSkills}
             projectActions={controller.projectActions}
-            recipeById={controller.catalog.recipeById}
-            recipeInstallationById={controller.recipes.installationByRecipeId}
-            recipeWorkflows={recipeWorkflows}
             toolById={controller.catalog.toolById}
             toolConfigurationById={controller.toolConfigurationById}
             surface={controller.surface}
@@ -121,19 +143,9 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
             authoredSkillActions={authoring.authoredSkillActions}
           />
         )}
+        {children}
       </PageShell.Content>
 
-      <RecipeWorkflowDialogs workflows={recipeWorkflows} />
-      <ConfirmationDialog
-        open={recipeWorkflows.deleteDialog.installation !== null}
-        onOpenChange={(open) => !open && recipeWorkflows.deleteDialog.setInstallation(null)}
-        title="Remove recipe"
-        description="This removes your installed recipe and stops its configured schedules. The recipe itself stays available."
-        confirmText="Remove"
-        variant="destructive"
-        isLoading={recipeWorkflows.deleteDialog.isLoading}
-        onConfirm={recipeWorkflows.deleteDialog.submit}
-      />
       <ToolConfigurationDialog
         configuration={controller.toolConfigurationDialog.configuration}
         isLoading={controller.toolConfigurationDialog.isLoading}
@@ -193,12 +205,13 @@ export function CapabilityLibrary({ scope, title, subtitle }: CapabilityLibraryP
           </p>
         )}
       </ConfirmationDialog>
-      <ConnectorSetupDialogs controller={recipeWorkflows.connectorSetup} />
     </>
   );
 }
 
 interface CapabilityLibraryProps {
+  children?: ReactNode;
+  kinds?: readonly ProjectCapabilityKind[];
   scope: CapabilityLibraryScope;
   title: string;
   subtitle: string;

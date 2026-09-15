@@ -6,6 +6,7 @@ import {
   BillingPage,
   CapabilitiesPage,
   HomePage,
+  PluginsPage,
   PricingPage,
   ProfilePage,
   WorkPage,
@@ -42,6 +43,7 @@ interface PolychatFixtures {
   capabilitiesPage: CapabilitiesPage;
   externalServices: ExternalServices;
   homePage: HomePage;
+  pluginsPage: PluginsPage;
   pricingPage: PricingPage;
   profilePage: ProfilePage;
   polychatApi: PolychatApi;
@@ -110,6 +112,7 @@ export const test = base.extend<PolychatFixtures>({
   capabilitiesPage: async ({ page }, use) => use(new CapabilitiesPage(page)),
   externalServices: async ({ page }, use) => use(new ExternalServices(page)),
   homePage: async ({ page }, use) => use(new HomePage(page)),
+  pluginsPage: async ({ page }, use) => use(new PluginsPage(page)),
   pricingPage: async ({ page }, use) => use(new PricingPage(page)),
   profilePage: async ({ page }, use) => use(new ProfilePage(page)),
   polychatApi: async ({ page }, use) => use(new PolychatApi(page.request)),

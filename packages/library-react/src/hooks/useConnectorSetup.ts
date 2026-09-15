@@ -48,7 +48,7 @@ const CLOSED_API_KEY_DIALOG: ApiKeyDialogState = {
 
 export function useConnectorSetup({
   onConnected,
-  returnTo = "/profile?tab=providers&type=connector",
+  returnTo = "/chat/plugins",
 }: {
   onConnected?: (provider: RecipeConnectorProvider) => Promise<void> | void;
   returnTo?: string;

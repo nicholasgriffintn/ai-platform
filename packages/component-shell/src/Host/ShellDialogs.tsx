@@ -22,9 +22,9 @@ const MetaAssistantOverlay = lazy(() =>
   })),
 );
 
-const NewProjectConversationDialog = lazy(() =>
-  import("../Work/NewProjectConversationDialog.js").then((module) => ({
-    default: module.NewProjectConversationDialog,
+const ProjectPickerDialog = lazy(() =>
+  import("../Work/ProjectPickerDialog.js").then((module) => ({
+    default: module.ProjectPickerDialog,
   })),
 );
 
@@ -42,7 +42,7 @@ const BrowserModelConsentDialog = lazy(() =>
 
 export function ShellDialogs() {
   const host = useShellHost();
-  const { showMetaAssistant, setShowMetaAssistant, showProjectPicker, setShowProjectPicker } =
+  const { showMetaAssistant, setShowMetaAssistant, projectPicker, closeProjectPicker } =
     useUIStore();
   const { isAuthenticated } = useAuthStatus();
   const { providerSettings, isLoadingProviderSettings } = useUser({ enabled: isAuthenticated });
@@ -109,9 +109,17 @@ export function ShellDialogs() {
           <MetaAssistantOverlay open onClose={() => setShowMetaAssistant(false)} />
         </Suspense>
       )}
-      {showProjectPicker && (
+      {projectPicker && (
         <Suspense fallback={null}>
-          <NewProjectConversationDialog open onOpenChange={setShowProjectPicker} />
+          <ProjectPickerDialog
+            open
+            destination={projectPicker}
+            onOpenChange={(open) => {
+              if (!open) {
+                closeProjectPicker();
+              }
+            }}
+          />
         </Suspense>
       )}
       {showModelSources && (

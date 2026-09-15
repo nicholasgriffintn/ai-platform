@@ -22,6 +22,11 @@ export class CapabilitiesPage extends BasePage {
     await this.page.getByRole("heading", { name: "Teammates", level: 1 }).waitFor();
   }
 
+  async openPlugins() {
+    await this.navigate("/chat/plugins");
+    await this.page.getByRole("heading", { name: "Plugins", level: 1 }).waitFor();
+  }
+
   capabilityCard(name: string) {
     return this.page
       .locator('[data-slot="card"]')
@@ -32,10 +37,10 @@ export class CapabilitiesPage extends BasePage {
     return this.page.getByRole("menuitem", { name: new RegExp(`^${label}`) });
   }
 
-  async openAddMenuWithKeyboard() {
+  async openAddMenuWithKeyboard(firstItem: string = "Hire a teammate") {
     await this.addMenu.focus();
     await this.addMenu.press("Enter");
-    await this.addMenuItem("Hire a teammate").waitFor();
+    await this.addMenuItem(firstItem).waitFor();
   }
 
   async moveAddMenuSelection() {

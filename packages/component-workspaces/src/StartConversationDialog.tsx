@@ -30,6 +30,8 @@ export interface StartConversationDialogProps {
   projects: StartConversationProjectOption[];
   isLoadingProjects?: boolean;
   errorMessage?: string;
+  description?: string;
+  projectDescription?: string;
   onOpenChange: (open: boolean) => void;
   onSelectWorkspace: (workspaceId: string | null) => void;
   onSelectProject: (projectId: string) => void;
@@ -46,6 +48,8 @@ export function StartConversationDialog({
   projects,
   isLoadingProjects = false,
   errorMessage,
+  description = "Pick a workspace, then a project. The conversation uses that project's brief and teammates.",
+  projectDescription = "Pick the project this conversation belongs to.",
   onOpenChange,
   onSelectWorkspace,
   onSelectProject,
@@ -60,9 +64,7 @@ export function StartConversationDialog({
             {choosingProject ? `Start in ${selectedWorkspace?.name}` : "Where should this go?"}
           </DialogTitle>
           <DialogDescription>
-            {choosingProject
-              ? "Pick the project this conversation belongs to."
-              : "Pick a workspace, then a project. The conversation uses that project's brief and teammates."}
+            {choosingProject ? projectDescription : description}
           </DialogDescription>
         </DialogHeader>
 

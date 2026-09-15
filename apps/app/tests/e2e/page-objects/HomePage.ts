@@ -347,20 +347,8 @@ export class HomePage extends BasePage {
   }
 
   async openCanvas() {
-    await this.chatInput.waitFor();
-    const heading = this.page.getByRole("heading", { name: "Generations", exact: true });
-
-    for (let attempt = 0; attempt < 3 && !(await heading.isVisible()); attempt += 1) {
-      const toggle = this.page.getByRole("button", { name: "Switch to image generation" });
-
-      if (await toggle.count()) {
-        await toggle.click();
-      }
-
-      await this.page.waitForTimeout(100);
-    }
-
-    await heading.waitFor();
+    await this.page.getByRole("link", { name: "Canvas", exact: true }).click();
+    await this.page.getByRole("heading", { name: "Generations", exact: true }).waitFor();
   }
 
   async selectCanvasSurface(surface: "Image generation" | "Video generation" | "Drawing") {
@@ -374,7 +362,7 @@ export class HomePage extends BasePage {
   }
 
   async closeCanvas() {
-    await this.page.getByRole("button", { name: "Switch to chat" }).click();
+    await this.newChatButton.click();
     await this.chatInput.waitFor();
   }
 

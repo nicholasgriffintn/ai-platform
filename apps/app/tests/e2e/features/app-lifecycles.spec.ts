@@ -19,7 +19,7 @@ test.describe("Apps retain their runtime and scope", () => {
     const catalog = capabilityCatalogResponseSchema.parse(await response.json());
 
     for (const app of catalog.experiences) {
-      await capabilitiesPage.open();
+      await capabilitiesPage.openPlugins();
       await capabilitiesPage
         .capabilityCard(app.name)
         .getByRole("button", { name: "Open", exact: true })
@@ -53,8 +53,8 @@ test.describe("Apps retain their runtime and scope", () => {
         await expect(page.getByRole("tab", { name: "Jobs", exact: true })).toBeVisible();
       }
 
-      await page.getByRole("link", { name: "Back to teammates", exact: true }).click();
-      await expect(page).toHaveURL(/\/chat\/teammates$/);
+      await page.getByRole("link", { name: "Back to plugins", exact: true }).click();
+      await expect(page).toHaveURL(/\/chat\/plugins$/);
     }
 
     await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
@@ -66,8 +66,8 @@ test.describe("Apps retain their runtime and scope", () => {
       await expect(
         page.getByRole("heading", { name: "App not enabled", exact: true }),
       ).toBeVisible();
-      await page.getByRole("link", { name: "Open teammates", exact: true }).click();
-      await expect(page).toHaveURL(new RegExp(`/projects/${projectId}/teammates$`));
+      await page.getByRole("link", { name: "Open plugins", exact: true }).click();
+      await expect(page).toHaveURL(new RegExp(`/projects/${projectId}/plugins$`));
     }
 
     await capabilitiesPage.navigate("/chat/apps/does-not-exist");
@@ -110,7 +110,7 @@ test.describe("Apps retain their runtime and scope", () => {
 
     await editor.fill("Release note\nRevised evidence also survives reopening.");
     expect((await updated).status()).toBe(200);
-    await capabilitiesPage.open();
+    await capabilitiesPage.openPlugins();
     await capabilitiesPage.navigate(notePath);
     await expect(editor).toHaveValue("Release note\nRevised evidence also survives reopening.");
   });

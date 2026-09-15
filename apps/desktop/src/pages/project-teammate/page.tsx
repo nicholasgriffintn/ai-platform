@@ -11,7 +11,7 @@ export default function DesktopProjectTeammatePage() {
       teammateId={teammateId}
       teammatesPath={teammatesPath}
       backPath={teammatesPath}
-      backLabel="Back to capabilities"
+      backLabel="Back to teammates"
       projectId={projectId}
       workspaceId={workspaceId}
     />

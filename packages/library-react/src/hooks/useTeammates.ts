@@ -6,7 +6,7 @@ import type {
   UpdateTeammateInput,
 } from "@ngriffin_uk/polychat-schemas";
 import type { TeammateFormData } from "@ngriffin_uk/polychat-utility-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { useCanAccessProFeatures } from "./useCanAccessProFeatures.js";
@@ -16,6 +16,11 @@ export const TEAMMATES_QUERY_KEYS = {
   all: ["teammates"],
   detail: (teammateId: string) => ["teammates", teammateId],
 } as const;
+
+function invalidateTeammates(queryClient: QueryClient) {
+  void queryClient.invalidateQueries({ queryKey: TEAMMATES_QUERY_KEYS.all });
+  void queryClient.invalidateQueries({ queryKey: CAPABILITY_CATALOG_QUERY_KEY });
+}
 
 export function useTeammate(teammateId?: string) {
   const canAccessProFeatures = useCanAccessProFeatures();
@@ -34,8 +39,7 @@ export function useRecordTeammateFeedback() {
   return useMutation<void, Error, { teammateId: string; input: RecordTeammateFeedbackInput }>({
     mutationFn: ({ teammateId, input }) => apiService.recordTeammateFeedback(teammateId, input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: TEAMMATES_QUERY_KEYS.all });
-      void queryClient.invalidateQueries({ queryKey: CAPABILITY_CATALOG_QUERY_KEY });
+      invalidateTeammates(queryClient);
     },
   });
 }
@@ -47,7 +51,7 @@ export function usePublishTeammateToWorkspace() {
     mutationFn: ({ teammateId, workspaceId }) =>
       apiService.publishTeammateToWorkspace(teammateId, workspaceId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: TEAMMATES_QUERY_KEYS.all });
+      invalidateTeammates(queryClient);
     },
   });
 }
@@ -70,14 +74,14 @@ export function useTeammates({ enabled = true }: { enabled?: boolean } = {}) {
   const createMutation = useMutation<TeammateResponse, Error, TeammateFormData>({
     mutationFn: (data) => apiService.createTeammate(data),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: TEAMMATES_QUERY_KEYS.all });
+      invalidateTeammates(queryClient);
     },
   });
 
   const hireMutation = useMutation<TeammateResponse, Error, HireTeammateInput>({
     mutationFn: (data) => apiService.hireTeammate(data),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: TEAMMATES_QUERY_KEYS.all });
+      invalidateTeammates(queryClient);
     },
   });
 
@@ -88,14 +92,14 @@ export function useTeammates({ enabled = true }: { enabled?: boolean } = {}) {
   >({
     mutationFn: ({ id, data }) => apiService.updateTeammate(id, data),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: TEAMMATES_QUERY_KEYS.all });
+      invalidateTeammates(queryClient);
     },
   });
 
   const deleteMutation = useMutation<void, Error, string>({
     mutationFn: (teammateId) => apiService.deleteTeammate(teammateId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: TEAMMATES_QUERY_KEYS.all });
+      invalidateTeammates(queryClient);
     },
   });
 

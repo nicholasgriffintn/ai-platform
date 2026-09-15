@@ -89,7 +89,7 @@ export function CapabilityFilters({
             </button>
           ))}
         </fieldset>
-        <div className="sm:hidden">
+        <div className="mt-4 sm:hidden">
           <FormSelect
             aria-label="Filter capabilities by category"
             onValueChange={onCategoryChange}
@@ -97,7 +97,7 @@ export function CapabilityFilters({
             value={category}
           />
         </div>
-        <fieldset className="m-0 hidden min-w-0 flex-wrap gap-1.5 border-0 p-0 sm:flex">
+        <fieldset className="m-0 mt-4 hidden min-w-0 flex-wrap gap-1.5 border-0 p-0 sm:flex">
           <legend className="sr-only">Filter capabilities by category</legend>
           {categoryFilters.map((filter) => (
             <button

@@ -88,7 +88,7 @@ test.describe("Work experience", () => {
       workPage,
     }) => {
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
-      await workPage.openProjectSurface("Teammates & tools");
+      await workPage.openProjectSurface("Teammates");
       await capabilitiesPage.openAddMenuWithKeyboard();
 
       await expect(capabilitiesPage.addMenuItem("Hire a teammate")).toContainText(
@@ -100,9 +100,7 @@ test.describe("Work experience", () => {
       await expect(capabilitiesPage.addMenuItem("Attach a teammate")).toContainText(
         "Bring in a teammate this workspace already owns",
       );
-      await expect(capabilitiesPage.addMenuItem("Add a skill")).toContainText(
-        "Upload an Teammate Skills document",
-      );
+      await expect(capabilitiesPage.addMenuItem("Add a skill")).toHaveCount(0);
       await expect(capabilitiesPage.addMenuItem("Browse shared teammates")).toHaveCount(0);
       await expect(capabilitiesPage.addMenuItem("Hire a teammate")).toBeFocused();
 
@@ -110,8 +108,15 @@ test.describe("Work experience", () => {
       await expect(capabilitiesPage.addMenuItem("Build one from scratch")).toBeFocused();
       await capabilitiesPage.moveAddMenuSelection();
       await expect(capabilitiesPage.addMenuItem("Attach a teammate")).toBeFocused();
-      await capabilitiesPage.moveAddMenuSelection();
-      await expect(capabilitiesPage.addMenuItem("Add a skill")).toBeFocused();
+      await capabilitiesPage.closeAddMenuWithKeyboard();
+      await expect(capabilitiesPage.addMenu).toBeFocused();
+
+      await workPage.openProjectSurface("Plugins");
+      await capabilitiesPage.openAddMenuWithKeyboard("Add a skill");
+      await expect(capabilitiesPage.addMenuItem("Add a skill")).toContainText(
+        "Upload an Agent Skills-compatible SKILL.md document",
+      );
+      await expect(capabilitiesPage.addMenuItem("Hire a teammate")).toHaveCount(0);
       await capabilitiesPage.selectAddMenuItemWithKeyboard();
       await expect(page.getByRole("dialog", { name: "Add skill" })).toBeVisible();
       await capabilitiesPage.dismissDialog();
@@ -197,7 +202,7 @@ test.describe("Work experience", () => {
         ],
       });
 
-      for (const surface of ["Files", "Activity", "Teammates & tools"] as const) {
+      for (const surface of ["Files", "Activity", "Teammates"] as const) {
         await test.step(surface, async () => {
           await workPage.openProjectSurface(surface);
           await captureVisualSnapshots(

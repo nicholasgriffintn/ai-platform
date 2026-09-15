@@ -9,7 +9,9 @@ const PROJECT_SURFACES = {
   Governance: { link: "Governance", heading: "Governance" },
   Files: { link: "Files", navigation: "Files sections" },
   Activity: { link: "Activity", heading: "Activity" },
-  "Teammates & tools": { link: "Teammates", heading: "Teammates & tools" },
+  Teammates: { link: "Teammates", heading: "Teammates" },
+  Plugins: { link: "Plugins", heading: "Plugins" },
+  Scheduled: { link: "Scheduled", heading: "Scheduled" },
 } as const;
 
 type ProjectSurface = keyof typeof PROJECT_SURFACES;
@@ -99,7 +101,7 @@ export class WorkPage extends BasePage {
   }
 
   async openProjectApp(name: string) {
-    await this.openProjectSurface("Teammates & tools");
+    await this.openProjectSurface("Plugins");
     await this.capabilitySearch().fill(name);
     await this.capabilityCard(name).getByRole("button", { name: "Open", exact: true }).click();
     await this.page.getByRole("heading", { name, exact: true }).first().waitFor();
@@ -387,15 +389,15 @@ export class WorkPage extends BasePage {
     return this.page.getByRole("searchbox", { name: "Search capabilities" });
   }
 
-  private async openCapability(name: string) {
-    await this.openProjectSurface("Teammates & tools");
+  private async openCapability(name: string, surface: ProjectSurface = "Plugins") {
+    await this.openProjectSurface(surface);
     await this.capabilitySearch().fill(name);
 
     return this.capabilityCard(name);
   }
 
-  private async addCapability(name: string, reload: boolean) {
-    let card = await this.openCapability(name);
+  private async addCapability(name: string, reload: boolean, surface: ProjectSurface = "Plugins") {
+    let card = await this.openCapability(name, surface);
     const addResponse = this.waitForCapabilityMutation("POST");
 
     await card.getByRole("button", { name: "Add to project" }).click();
@@ -422,8 +424,8 @@ export class WorkPage extends BasePage {
     await this.addCapability(name, false);
   }
 
-  async enableCapabilityAfterReload(name: string) {
-    await this.addCapability(name, true);
+  async enableCapabilityAfterReload(name: string, surface?: ProjectSurface) {
+    await this.addCapability(name, true, surface);
   }
 
   private async removeProjectCapability(name: string, reload: boolean) {
@@ -462,7 +464,7 @@ export class WorkPage extends BasePage {
   }
 
   async configureMcpTool(label: string, serverUrl: string) {
-    await this.openProjectSurface("Teammates & tools");
+    await this.openProjectSurface("Plugins");
     await this.capabilitySearch().fill("MCP");
     const card = this.page
       .getByRole("heading", { name: "MCP", exact: true })
@@ -493,7 +495,7 @@ export class WorkPage extends BasePage {
   }
 
   async configureFileSearchTool(vectorStoreIds: string[]) {
-    await this.openProjectSurface("Teammates & tools");
+    await this.openProjectSurface("Plugins");
     await this.capabilitySearch().fill("File search");
     const card = this.page
       .getByRole("heading", { name: "File search", exact: true })
@@ -547,7 +549,7 @@ export class WorkPage extends BasePage {
   async configureScheduleAndRemoveDailyWeatherRecipe() {
     const recipeName = "Daily Weather";
 
-    await this.enableCapabilityAfterReload(recipeName);
+    await this.enableCapabilityAfterReload(recipeName, "Scheduled");
     let card = this.capabilityCard(recipeName);
 
     await card.getByRole("button", { name: "Preferences", exact: true }).click();
@@ -640,7 +642,7 @@ export class WorkPage extends BasePage {
     await stopConfirmation.waitFor({ state: "hidden" });
     await scheduleEntry.waitFor({ state: "detached" });
 
-    card = await this.openCapability(recipeName);
+    card = await this.openCapability(recipeName, "Scheduled");
     await card.getByRole("button", { name: "Remove", exact: true }).click();
     const removeInstallationDialog = this.page.getByRole("dialog", { name: "Remove recipe" });
     const removeInstallationResponse = this.waitForRecipeInstallationMutation("DELETE");
@@ -856,12 +858,12 @@ export class WorkPage extends BasePage {
   }
 
   async searchProjectCapabilities(name: string) {
-    await this.openProjectSurface("Teammates & tools");
+    await this.openProjectSurface("Plugins");
     await this.capabilitySearch().fill(name);
   }
 
   async executeQrToolAndOpenSavedOutput(payload: string) {
-    await this.openProjectSurface("Teammates & tools");
+    await this.openProjectSurface("Plugins");
     await this.capabilitySearch().fill("Create Qr Code");
     const card = this.capabilityCard("Create Qr Code");
 

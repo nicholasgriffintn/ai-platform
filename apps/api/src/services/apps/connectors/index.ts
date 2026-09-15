@@ -67,19 +67,19 @@ function getConnectorKeyMaterial(params: {
 
 function normaliseReturnTo(returnTo?: string): string {
   if (!returnTo?.trim()) {
-    return "/profile?tab=providers&type=connector";
+    return "/chat/plugins";
   }
 
   try {
     const parsed = new URL(returnTo, "https://polychat.local");
 
     if (parsed.origin !== "https://polychat.local") {
-      return "/profile?tab=providers&type=connector";
+      return "/chat/plugins";
     }
 
     return `${parsed.pathname}${parsed.search}${parsed.hash}`;
   } catch {
-    return "/profile?tab=providers&type=connector";
+    return "/chat/plugins";
   }
 }
 
@@ -448,10 +448,7 @@ export async function verifyComposioConnectorAuthorization(params: {
     account: completedAccount,
   });
 
-  const redirectUrl = new URL(
-    "/profile?tab=providers&type=connector",
-    getAppBaseUrl(params.context),
-  );
+  const redirectUrl = new URL("/chat/plugins", getAppBaseUrl(params.context));
 
   redirectUrl.searchParams.set("connector", provider.id);
   redirectUrl.searchParams.set("connected", "1");

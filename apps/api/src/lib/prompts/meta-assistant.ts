@@ -8,9 +8,12 @@ import { buildSafetyStandardsSection } from "./sections/safety";
 
 const PLACE_LABELS: Record<NonNullable<MetaAssistantUiContext["place"]>, string> = {
   conversations: "Conversations",
+  canvas: "Canvas",
   attention: "Attention",
   files: "Files",
   teammates: "Teammates",
+  scheduled: "Scheduled",
+  plugins: "Plugins",
   you: "Account settings",
 };
 

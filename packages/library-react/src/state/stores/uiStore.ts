@@ -14,6 +14,8 @@ function initialIsMobile(): boolean {
   return window.matchMedia("(max-width: 768px)").matches;
 }
 
+export type ProjectPickerDestination = "chat" | "canvas";
+
 export interface UIStore {
   isMobile: boolean;
   setIsMobile: (isMobile: boolean) => void;
@@ -27,8 +29,9 @@ export interface UIStore {
   setShowKeyboardShortcuts: (showKeyboardShortcuts: boolean) => void;
   showMetaAssistant: boolean;
   setShowMetaAssistant: (showMetaAssistant: boolean) => void;
-  showProjectPicker: boolean;
-  setShowProjectPicker: (showProjectPicker: boolean) => void;
+  projectPicker: ProjectPickerDestination | null;
+  openProjectPicker: (destination: ProjectPickerDestination) => void;
+  closeProjectPicker: () => void;
   showModelSources: boolean;
   setShowModelSources: (showModelSources: boolean) => void;
   metaAssistantConversationId: string | undefined;
@@ -56,8 +59,9 @@ export const useUIStore = create<UIStore>()(
       setShowKeyboardShortcuts: (showKeyboardShortcuts) => set({ showKeyboardShortcuts }),
       showMetaAssistant: false,
       setShowMetaAssistant: (showMetaAssistant) => set({ showMetaAssistant }),
-      showProjectPicker: false,
-      setShowProjectPicker: (showProjectPicker) => set({ showProjectPicker }),
+      projectPicker: null,
+      openProjectPicker: (destination) => set({ projectPicker: destination }),
+      closeProjectPicker: () => set({ projectPicker: null }),
       showModelSources: false,
       setShowModelSources: (showModelSources) => set({ showModelSources }),
       metaAssistantConversationId: undefined,
@@ -86,7 +90,7 @@ export const useUIStore = create<UIStore>()(
           isMobileLoading: _l,
           sidebarVisible: _s,
           showMetaAssistant: _a,
-          showProjectPicker: _p,
+          projectPicker: _p,
           showModelSources: _ms,
           chatConversationListFilters,
           workConversationListFilters,

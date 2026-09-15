@@ -10,6 +10,7 @@ const CHAT_PLACE_PATHS = [
   "files/*",
   "teammates",
   "teammates/:teammateId",
+  "plugins",
   "apps/:appId/*",
   "tools/:toolId",
 ];

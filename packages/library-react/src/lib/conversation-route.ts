@@ -12,6 +12,10 @@ export function getProjectChatPath(workspaceId: string, projectId: string): stri
   return `${getProjectBasePath(workspaceId, projectId)}/chat`;
 }
 
+export function getProjectCanvasPath(workspaceId: string, projectId: string): string {
+  return `${getProjectBasePath(workspaceId, projectId)}/canvas`;
+}
+
 export function getProjectConversationPath(
   workspaceId: string,
   projectId: string,
