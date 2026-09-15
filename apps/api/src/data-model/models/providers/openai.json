@@ -45,16 +45,6 @@
       "model": "gpt/gpt-4o",
       "matchingModel": "gpt-4o",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "card": "https://www.prompthub.us/models/gpt-4o",
         "strengths": [
           "analysis",
@@ -99,16 +89,6 @@
       "matchingModel": "gpt-4o-mini",
       "overrides": {
         "name": "GPT-4o mini",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "card": "https://www.prompthub.us/models/gpt-4o-mini",
         "strengths": [
           "analysis",
@@ -216,16 +196,6 @@
       "matchingModel": "gpt-4.1-mini",
       "overrides": {
         "name": "GPT-4.1 mini",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "card": "https://www.prompthub.us/models/gpt-4-1-mini",
         "strengths": [
           "coding",
@@ -1288,9 +1258,9 @@
         "requiresResponsesApi": true
       },
       "unset": [
+        "supportsResponseFormat",
         "contextComplexity",
-        "reliability",
-        "supportsResponseFormat"
+        "reliability"
       ]
     },
     "text-embedding-3-large": {
@@ -1472,6 +1442,15 @@
       "matchingModel": "gpt-5.4-nano",
       "overrides": {
         "name": "GPT-5.4 nano",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "chat",
           "general_knowledge",

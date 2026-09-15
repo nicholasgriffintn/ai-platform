@@ -6,20 +6,6 @@
   },
   "description": "The qwen family includes models that produce audio, embedding, image, text.",
   "models": {
-    "cerebras-qwen-3-32b": {
-      "defaults": {
-        "name": "Cerebras Qwen 3 32B",
-        "description": "Cerebras Qwen 3 32B accepts text and produces text.",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        }
-      }
-    },
     "qwen-2-5-7b-instruct-turbo": {
       "defaults": {
         "name": "Qwen 2.5 7B Instruct Turbo",
@@ -67,24 +53,6 @@
         "knowledgeCutoffDate": "December 2024",
         "releaseDate": "January 1, 2025",
         "supportsAttachments": true
-      }
-    },
-    "qwen-3-235b-instruct": {
-      "defaults": {
-        "name": "Qwen 3 235B Instruct",
-        "description": "Qwen 3 235B Instruct accepts text and produces text.",
-        "contextWindow": 131000,
-        "maxTokens": 32000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "July 22, 2025"
       }
     },
     "qwen-3-32b": {

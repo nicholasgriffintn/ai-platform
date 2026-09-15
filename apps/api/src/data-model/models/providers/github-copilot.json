@@ -240,6 +240,15 @@
       "overrides": {
         "contextWindow": 128000,
         "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -780,6 +789,15 @@
       "matchingModel": "gpt-5.4-nano",
       "overrides": {
         "name": "GPT-5.4 nano",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 4,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.0002,

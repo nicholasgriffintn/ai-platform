@@ -127,16 +127,6 @@
       "matchingModel": "openai/gpt-4o-mini",
       "overrides": {
         "name": "GPT-4o-mini",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "chat",
           "analysis",
@@ -394,6 +384,13 @@
       "model": "grok/grok-3",
       "matchingModel": "x-ai/grok-3",
       "overrides": {
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "chat",
+          "general_knowledge",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.003,
@@ -409,6 +406,13 @@
       "matchingModel": "x-ai/grok-3-mini",
       "overrides": {
         "status": "deprecated",
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "chat"
+        ],
+        "contextComplexity": 3,
+        "reliability": 4,
         "speed": 4,
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -3096,7 +3100,10 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
         "supportsResponseFormat": false
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "aion-labs/aion-1.0": {
       "model": "openrouter/aion-labs/aion-1.0/aion-1-0",
@@ -4431,11 +4438,7 @@
       "model": "phi/phi-4-mini-instruct",
       "matchingModel": "microsoft/phi-4-mini-instruct",
       "overrides": {
-        "name": "Phi 4 Mini Instruct",
-        "maxTokens": 128000,
-        "contextComplexity": 4,
         "speed": 2,
-        "releaseDate": "October 17, 2025",
         "lastUpdated": "October 17, 2025",
         "costPer1kInputTokens": 0.00008,
         "costPer1kOutputTokens": 0.00035,
@@ -4590,7 +4593,6 @@
       "overrides": {
         "contextWindow": 131072,
         "maxTokens": 16384,
-        "knowledgeCutoffDate": "July 2024",
         "releaseDate": "July 1, 2024",
         "lastUpdated": "July 1, 2024",
         "costPer1kInputTokens": 0.000019,
@@ -4960,16 +4962,6 @@
       "model": "gpt/gpt-4o",
       "matchingModel": "openai/gpt-4o",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 4,
         "lastUpdated": "August 6, 2024",
         "costPer1kInputTokens": 0.0025,
@@ -5004,8 +4996,7 @@
       },
       "unset": [
         "contextComplexity",
-        "reliability",
-        "reasoningConfig"
+        "reliability"
       ]
     },
     "openai/gpt-4o-search-preview": {
@@ -5289,8 +5280,7 @@
       },
       "unset": [
         "contextComplexity",
-        "reliability",
-        "reasoningConfig"
+        "reliability"
       ]
     },
     "openai/gpt-chat-latest": {

@@ -569,6 +569,7 @@
       "model": "llama/llama-3-3-70b-instruct",
       "matchingModel": "meta-llama/Llama-3.3-70B-Instruct",
       "overrides": {
+        "name": "Llama-3.3-70B-Instruct",
         "contextWindow": 131072,
         "maxTokens": 4096,
         "lastUpdated": "December 6, 2024",

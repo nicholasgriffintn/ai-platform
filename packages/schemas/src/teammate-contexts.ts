@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
-import { recipeConnectorProviderSchema } from "./apps";
-import { delegationContinuationSchema, delegationMemoryBindingSchema } from "./delegations";
+import { recipeConnectorProviderSchema } from "./apps.js";
+import { delegationContinuationSchema, delegationMemoryBindingSchema } from "./delegations.js";
 
 export const teammateContextScopeSchema = z.object({
   type: z.enum(["personal", "project"]),

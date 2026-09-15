@@ -3,6 +3,7 @@ import { AnthropicProvider } from "../../capabilities/chat/providers/anthropic";
 import { AzureOpenAIProvider } from "../../capabilities/chat/providers/azure";
 import type { AIProvider } from "../../capabilities/chat/providers/base";
 import { BedrockProvider } from "../../capabilities/chat/providers/bedrock";
+import { BedrockMantleProvider } from "../../capabilities/chat/providers/bedrock-mantle";
 import { CerebrasProvider } from "../../capabilities/chat/providers/cerebras";
 import { CertesiaProvider } from "../../capabilities/chat/providers/certesia";
 import { ChutesProvider } from "../../capabilities/chat/providers/chutes";
@@ -78,6 +79,11 @@ const chatProviders: ProviderRegistration<AIProvider>[] = [
     name: "bedrock",
     aliases: ["aws-bedrock"],
     create: () => new BedrockProvider(),
+    metadata: { vendor: "AWS", categories: ["chat"], tags: ["multi-provider"] },
+  },
+  {
+    name: "bedrock-mantle",
+    create: () => new BedrockMantleProvider(),
     metadata: { vendor: "AWS", categories: ["chat"], tags: ["multi-provider"] },
   },
   {

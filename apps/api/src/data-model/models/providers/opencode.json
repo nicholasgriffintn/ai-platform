@@ -33,6 +33,7 @@
       "matchingModel": "claude-opus-4-5",
       "overrides": {
         "speed": 3,
+        "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -464,16 +465,6 @@
       "matchingModel": "gpt-5.4-mini",
       "overrides": {
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 4,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.00075,

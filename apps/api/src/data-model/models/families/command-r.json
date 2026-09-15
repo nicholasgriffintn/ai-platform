@@ -18,24 +18,6 @@
   },
   "description": "The command r family includes models that produce text.",
   "models": {
-    "cohere-command-r": {
-      "defaults": {
-        "openWeights": false,
-        "description": "Cohere's conversational model optimized for RAG and tool use.",
-        "maxTokens": 4096,
-        "reliability": 4,
-        "knowledgeCutoffDate": "March 2024"
-      }
-    },
-    "cohere-command-r-08-2024": {
-      "defaults": {
-        "openWeights": false,
-        "description": "Cohere Command R 08-2024 accepts text and produces text.",
-        "maxTokens": 4096,
-        "knowledgeCutoffDate": "March 2024",
-        "releaseDate": "August 1, 2024"
-      }
-    },
     "command-r": {
       "defaults": {
         "description": "Cohere retrieval model for long-context chat and enterprise RAG workflows",

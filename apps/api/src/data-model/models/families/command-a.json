@@ -16,24 +16,6 @@
   },
   "description": "The command a family includes models that produce text.",
   "models": {
-    "cohere-command-a": {
-      "defaults": {
-        "name": "Cohere Command A",
-        "openWeights": false,
-        "description": "Cohere Command A accepts text and produces text.",
-        "contextWindow": 128000,
-        "maxTokens": 4096,
-        "knowledgeCutoffDate": "March 2024",
-        "releaseDate": "November 1, 2024",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "command-a": {
       "defaults": {
         "name": "Command A",

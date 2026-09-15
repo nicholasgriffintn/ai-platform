@@ -36,8 +36,8 @@
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "supportsResponseFormat",
-        "knowledgeCutoffDate"
+        "knowledgeCutoffDate",
+        "supportsResponseFormat"
       ]
     },
     "apertus-70b": {
@@ -147,6 +147,7 @@
         "name": "Llama 3.3 70B Instruct",
         "openWeights": false,
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 128000,
         "maxTokens": 16384,
         "releaseDate": "April 28, 2025",
         "lastUpdated": "April 28, 2025",

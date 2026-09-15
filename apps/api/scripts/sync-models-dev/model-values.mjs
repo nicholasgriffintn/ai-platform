@@ -185,6 +185,22 @@ export function buildUpdateValues(
     values.provider = provider;
   }
 
+  const providerOverride = remoteModel.provider;
+
+  if (
+    providerOverride &&
+    typeof providerOverride === "object" &&
+    !Array.isArray(providerOverride)
+  ) {
+    if (typeof providerOverride.api === "string" && providerOverride.api.trim()) {
+      values.apiBaseUrl = providerOverride.api.trim();
+    }
+
+    if (typeof providerOverride.shape === "string" && providerOverride.shape.trim()) {
+      values.apiShape = providerOverride.shape.trim();
+    }
+  }
+
   if (typeof remoteModel.family === "string" && remoteModel.family.length > 0) {
     values.family = remoteModel.family;
   }

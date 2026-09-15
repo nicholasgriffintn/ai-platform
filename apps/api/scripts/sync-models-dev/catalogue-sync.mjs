@@ -8,6 +8,11 @@ import { modelIdentity } from "./catalogue-identity.mjs";
 import { PROVIDER_ALIASES } from "./constants.mjs";
 import { buildUpdateValues } from "./model-values.mjs";
 import {
+  remoteModelBelongsToProvider,
+  resolveRemoteModelProvider,
+  ROUTED_PROVIDER_IDS,
+} from "./provider-routing.mjs";
+import {
   buildProviderModelFamilies,
   buildProviderModelStatus,
   getCurrentAliasFamilies,
@@ -19,12 +24,87 @@ import {
   shouldProtectCurrentAlias,
 } from "./remote-model-status.mjs";
 
+function buildSelection(selectedProviders) {
+  return new Set([...selectedProviders].map((selected) => PROVIDER_ALIASES[selected] ?? selected));
+}
+
+function isProviderSelected(provider, selection) {
+  if (!selection.size) {
+    return true;
+  }
+
+  return selection.has(PROVIDER_ALIASES[provider] ?? provider);
+}
+
+function planProviders(catalogue, remoteProviders, selection) {
+  const order = [];
+  const planned = new Set();
+
+  for (const provider of Object.keys(catalogue.providers)) {
+    if (!planned.has(provider)) {
+      planned.add(provider);
+      order.push(provider);
+    }
+
+    const remoteProviderId = PROVIDER_ALIASES[provider] ?? provider;
+
+    for (const remoteModel of Object.values(remoteProviders[remoteProviderId]?.models ?? {})) {
+      const target = resolveRemoteModelProvider(remoteProviderId, remoteModel);
+
+      if (target && !planned.has(target) && isProviderSelected(target, selection)) {
+        planned.add(target);
+        order.push(target);
+      }
+    }
+  }
+
+  return order;
+}
+
+function collectProviderTransfers(catalogue, remoteProviders, providerOrder, selection) {
+  const transferredEntries = new Map();
+  const transferredKeys = new Map();
+
+  for (const provider of providerOrder) {
+    if (!catalogue.providers[provider] || !isProviderSelected(provider, selection)) {
+      continue;
+    }
+
+    const remoteProviderId = PROVIDER_ALIASES[provider] ?? provider;
+    const upstreamModels = remoteProviders[remoteProviderId]?.models ?? {};
+    const current = resolveCatalogueProvider(catalogue, provider);
+
+    for (const [modelKey, config] of Object.entries(current)) {
+      const upstreamModel = upstreamModels[modelKey] ?? upstreamModels[config.matchingModel];
+
+      if (!upstreamModel) {
+        continue;
+      }
+
+      const target = resolveRemoteModelProvider(remoteProviderId, upstreamModel);
+
+      if (!target || target === provider || !providerOrder.includes(target)) {
+        continue;
+      }
+
+      transferredKeys.set(provider, (transferredKeys.get(provider) ?? new Set()).add(modelKey));
+      transferredEntries.set(target, [
+        ...(transferredEntries.get(target) ?? []),
+        { modelKey, config },
+      ]);
+    }
+  }
+
+  return { transferredEntries, transferredKeys };
+}
+
 export function syncCatalogue(catalogue, remoteProviders, analysisLookup, selectedProviders) {
   for (const selected of selectedProviders) {
     if (
       !Object.keys(catalogue.providers).some(
         (provider) => provider === selected || PROVIDER_ALIASES[provider] === selected,
-      )
+      ) &&
+      !ROUTED_PROVIDER_IDS.has(selected)
     ) {
       throw new Error(`Unknown selected provider: ${selected}`);
     }
@@ -32,25 +112,42 @@ export function syncCatalogue(catalogue, remoteProviders, analysisLookup, select
 
   const providers = {};
   const stats = { updatedModels: 0, addedModels: 0, removedModels: 0 };
+  const selection = buildSelection(selectedProviders);
+  const providerOrder = planProviders(catalogue, remoteProviders, selection);
+  const { transferredEntries, transferredKeys } = collectProviderTransfers(
+    catalogue,
+    remoteProviders,
+    providerOrder,
+    selection,
+  );
 
-  for (const provider of Object.keys(catalogue.providers)) {
-    const current = resolveCatalogueProvider(catalogue, provider);
+  for (const provider of providerOrder) {
+    const current = catalogue.providers[provider]
+      ? resolveCatalogueProvider(catalogue, provider)
+      : {};
     const remoteProviderId = PROVIDER_ALIASES[provider] ?? provider;
 
-    if (
-      selectedProviders.size &&
-      !selectedProviders.has(provider) &&
-      !selectedProviders.has(remoteProviderId)
-    ) {
+    if (!isProviderSelected(provider, selection)) {
       providers[provider] = current;
       continue;
     }
 
     const remoteProvider = remoteProviders[remoteProviderId];
-    const remoteModels = remoteProvider?.models ?? {};
+    const upstreamModels = remoteProvider?.models ?? {};
+    const remoteModels = Object.fromEntries(
+      Object.entries(upstreamModels).filter(([, model]) =>
+        remoteModelBelongsToProvider(remoteProviderId, provider, model),
+      ),
+    );
     const status = buildProviderModelStatus(remoteModels, remoteProviderId);
     const families = buildProviderModelFamilies(remoteModels, remoteProviderId);
-    const entries = Object.entries(current).map(([modelKey, config]) => ({ modelKey, config }));
+    const transferredAway = transferredKeys.get(provider) ?? new Set();
+    const entries = [
+      ...Object.entries(current)
+        .filter(([modelKey]) => !transferredAway.has(modelKey))
+        .map(([modelKey, config]) => ({ modelKey, config })),
+      ...(transferredEntries.get(provider) ?? []),
+    ];
     const aliases = getCurrentAliasFamilies(entries, remoteProviderId);
     const represented = new Set(
       entries.flatMap(({ modelKey, config }) => [
@@ -136,7 +233,7 @@ export function syncCatalogue(catalogue, remoteProviders, analysisLookup, select
       const values = {
         ...catalogue.families[identity.family]?.defaults,
         ...shared?.defaults,
-        ...catalogue.providers[provider].defaults,
+        ...catalogue.providers[provider]?.defaults,
         ...buildUpdateValues(remote, {
           modelKey: id,
           allowMatchingModelUpdate: true,

@@ -33,6 +33,8 @@ The command defaults to a dry run. Use `--provider <id>` to restrict upstream up
 
 The sync imports [models.dev](https://models.dev/) descriptions and family metadata, resolves existing configuration, applies upstream updates and compacts the result back into shared defaults and explicit exceptions. Upstream fields remain sync-owned; preserve durable corrections in the sync rules. Keep Anthropic's sampling restrictions in `model-values.mjs` and direct OpenAI contract corrections in `model-contract-overrides.mjs`. Fields not supplied upstream, including custom API operations, hosted tools, pricing tiers and reasoning API settings, survive conversion.
 
+Upstream routing rules in `provider-routing.mjs` can split one remote provider across local providers. The sync creates the target provider, moves existing offerings without losing local overrides, and copies the models.dev `provider.api` and `provider.shape` values into `apiBaseUrl` and `apiShape` for the adapters. `amazon-bedrock` traffic splits into `bedrock` and `bedrock-mantle` this way.
+
 Infer a shared model from its family and normalised upstream display name. Retain distinct names and variants rather than fuzzy-matching model identifiers. Prefer upstream descriptions, retain existing descriptions when upstream has none, and generate a factual capability summary only when neither exists. Family descriptions use repeated model descriptions where possible, then a summary of recorded output modalities.
 
 To replay the full conversion, retain the original source tree's `data-model/models/` and `lib/providers/models/index.ts` together, then run:

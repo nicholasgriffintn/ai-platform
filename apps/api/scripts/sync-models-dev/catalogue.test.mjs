@@ -285,6 +285,81 @@ describe("models.dev catalogue sync", () => {
     expect(resolveCatalogueProvider(result.catalogue, "second").alpha).toBeDefined();
   });
 
+  it("routes mantle endpoint models into the split provider and is repeatable", () => {
+    const bedrockRemote = {
+      "amazon-bedrock": {
+        models: {
+          "openai.runtime-model": {
+            id: "openai.runtime-model",
+            name: "Runtime Model",
+            family: "gpt-oss",
+          },
+          "openai.mantle-model": {
+            id: "openai.mantle-model",
+            name: "Mantle Model",
+            family: "gpt-oss",
+            provider: {
+              npm: "@ai-sdk/amazon-bedrock/mantle",
+              api: "https://bedrock-mantle.${AWS_REGION}.api.aws/v1",
+              shape: "responses",
+            },
+          },
+        },
+      },
+    };
+    const bedrockProviders = {
+      bedrock: {
+        "openai.runtime-model": {
+          provider: "bedrock",
+          matchingModel: "openai.runtime-model",
+          name: "Runtime Model",
+          family: "gpt-oss",
+          supportsStreaming: true,
+        },
+        "openai.mantle-model": {
+          provider: "bedrock",
+          matchingModel: "openai.mantle-model",
+          name: "Mantle Model",
+          family: "gpt-oss",
+          speed: 4,
+          supportsStreaming: true,
+        },
+      },
+    };
+    const selected = new Set(["bedrock"]);
+    const catalogue = convertCatalogue(bedrockProviders, bedrockRemote);
+    const result = syncCatalogue(catalogue, bedrockRemote, new Map(), selected);
+
+    expect(Object.keys(result.catalogue.providers)).toEqual(["bedrock", "bedrock-mantle"]);
+    expect(Object.keys(resolveCatalogueProvider(result.catalogue, "bedrock"))).toEqual([
+      "openai.runtime-model",
+    ]);
+    expect(resolveCatalogueProvider(result.catalogue, "bedrock-mantle")).toMatchObject({
+      "openai.mantle-model": {
+        provider: "bedrock-mantle",
+        matchingModel: "openai.mantle-model",
+        name: "Mantle Model",
+        speed: 4,
+        apiBaseUrl: "https://bedrock-mantle.${AWS_REGION}.api.aws/v1",
+        apiShape: "responses",
+      },
+    });
+    expect(syncCatalogue(result.catalogue, bedrockRemote, new Map(), selected).catalogue).toEqual(
+      result.catalogue,
+    );
+
+    const runtimeOnly = structuredClone(bedrockRemote);
+
+    delete runtimeOnly["amazon-bedrock"].models["openai.mantle-model"].provider;
+    const movedBack = syncCatalogue(result.catalogue, runtimeOnly, new Map(), selected);
+
+    expect(Object.keys(resolveCatalogueProvider(movedBack.catalogue, "bedrock"))).toEqual([
+      "openai.runtime-model",
+      "openai.mantle-model",
+    ]);
+    expect(resolveCatalogueProvider(movedBack.catalogue, "bedrock-mantle")).toEqual({});
+  });
+
   it("converts original source spreads and replays saved input byte for byte without touching sources on a dry run", async () => {
     const directory = await fs.mkdtemp(path.join(os.tmpdir(), "polychat-catalogue-test-"));
 

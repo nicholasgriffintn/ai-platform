@@ -99,6 +99,7 @@ export class ResponseFormatter {
       "google-ai-studio": googleStudio,
       ollama: ollama,
       bedrock: bedrock,
+      "bedrock-mantle": openAI,
       workers: workers,
       "workers-ai": workers,
       openrouter: openRouter,

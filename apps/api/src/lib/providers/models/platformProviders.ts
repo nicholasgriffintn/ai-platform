@@ -25,6 +25,7 @@ const PROVIDER_PLATFORM_ENV_KEYS: Record<string, EnvKeyGroups> = {
   azure: single("AZURE_API_KEY"),
   bedrock: [["BEDROCK_AWS_ACCESS_KEY", "BEDROCK_AWS_SECRET_KEY"]],
   "aws-bedrock": [["BEDROCK_AWS_ACCESS_KEY", "BEDROCK_AWS_SECRET_KEY"]],
+  "bedrock-mantle": single("BEDROCK_MANTLE_API_KEY"),
   nova: single("AMAZON_NOVA_API_KEY"),
   cartesia: single("CARTESIA_API_KEY"),
   certesia: single("CARTESIA_API_KEY"),

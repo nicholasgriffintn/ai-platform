@@ -143,6 +143,8 @@ export function convertCatalogue(providers, remoteProviders, previous) {
             [
               "timeout",
               "apiOperation",
+              "apiBaseUrl",
+              "apiShape",
               "requiresResponsesApi",
               "bedrockApiOperation",
               "bedrockStreamingApiOperation",

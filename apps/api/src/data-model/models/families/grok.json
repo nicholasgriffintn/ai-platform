@@ -188,13 +188,6 @@
             "text"
           ]
         },
-        "strengths": [
-          "reasoning",
-          "analysis",
-          "chat",
-          "general_knowledge",
-          "tool_use"
-        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "November 2024",
@@ -309,13 +302,6 @@
             "text"
           ]
         },
-        "strengths": [
-          "reasoning",
-          "analysis",
-          "chat"
-        ],
-        "contextComplexity": 3,
-        "reliability": 4,
         "knowledgeCutoffDate": "November 2024",
         "releaseDate": "February 17, 2025"
       }

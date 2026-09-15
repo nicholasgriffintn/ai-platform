@@ -20,6 +20,7 @@
       "defaults": {
         "name": "Codestral 25.01",
         "description": "Mistral coding model for code completion, generation, and developer workflows",
+        "maxTokens": 256000,
         "knowledgeCutoffDate": "March 2024",
         "releaseDate": "January 1, 2025"
       }

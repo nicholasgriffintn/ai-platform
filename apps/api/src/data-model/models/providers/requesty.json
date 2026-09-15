@@ -115,6 +115,15 @@
       "matchingModel": "openai/gpt-4.1",
       "overrides": {
         "description": "OpenAI's advanced model optimized for coding and instruction-following with massive 1M+ token context window.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "coding",
           "academic",
@@ -304,6 +313,7 @@
       "matchingModel": "anthropic/claude-opus-4-5",
       "overrides": {
         "speed": 3,
+        "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -1067,7 +1077,6 @@
       "model": "claude-opus/claude-opus-4-7-eu",
       "matchingModel": "claude-opus-4-7@eu",
       "overrides": {
-        "description": "Stronger Opus tier for advanced software work and high-stakes reasoning",
         "speed": 2,
         "lastUpdated": "April 16, 2026",
         "costPer1kInputTokens": 0.0055,
@@ -1226,6 +1235,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-eu",
       "matchingModel": "claude-sonnet-4-6@eu",
       "overrides": {
+        "maxTokens": 64000,
         "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.0033,
@@ -2188,6 +2198,15 @@
       "matchingModel": "gpt-5.4-nano",
       "overrides": {
         "name": "GPT-5.4 nano",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 4,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.0002,

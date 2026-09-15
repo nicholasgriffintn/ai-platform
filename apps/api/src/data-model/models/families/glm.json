@@ -16,12 +16,6 @@
   },
   "description": "The glm family includes models that produce text.",
   "models": {
-    "cerebras-zai-glm-4-6": {
-      "defaults": {
-        "name": "Cerebras ZAI GLM 4.6",
-        "description": "This model delivers strong coding performance with advanced reasoning capabilities, superior tool use, and enhanced real-world performance in agentic coding applications."
-      }
-    },
     "glm-4-32b": {
       "defaults": {
         "name": "GLM 4 32B ",
@@ -950,22 +944,6 @@
         "maxTokens": 32768,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 17, 2025"
-      }
-    },
-    "z-ai-glm-4-7": {
-      "defaults": {
-        "name": "Z.AI GLM-4.7",
-        "description": "This model delivers strong coding performance with advanced reasoning capabilities, superior tool use, and enhanced real-world performance in agentic coding applications.",
-        "contextWindow": 131072,
-        "maxTokens": 40960,
-        "releaseDate": "January 7, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
       }
     }
   }

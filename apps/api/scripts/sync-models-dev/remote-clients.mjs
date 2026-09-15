@@ -29,6 +29,14 @@ const remoteModelSchema = z
       })
       .passthrough()
       .optional(),
+    provider: z
+      .object({
+        npm: z.string().optional(),
+        api: z.string().optional(),
+        shape: z.string().optional(),
+      })
+      .passthrough()
+      .optional(),
   })
   .passthrough();
 

@@ -1,15 +1,6 @@
 {
   "defaults": {
     "openWeights": false,
-    "modalities": {
-      "input": [
-        "text",
-        "image"
-      ],
-      "output": [
-        "text"
-      ]
-    },
     "strengths": [
       "vision",
       "document",
@@ -45,6 +36,15 @@
         "description": "Tiny GPT-4.1 option for classification, routing, and very high-volume tasks",
         "contextWindow": 1047576,
         "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
@@ -112,6 +112,15 @@
         "description": "Tiny GPT-5 lane for routing, extraction, classification, and bulk jobs",
         "contextWindow": 400000,
         "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "knowledgeCutoffDate": "May 30, 2024",
         "releaseDate": "August 7, 2025",
         "supportsTemperature": false,
@@ -138,6 +147,15 @@
         "description": "Tiny GPT-5 lane for routing, extraction, classification, and bulk jobs",
         "contextWindow": 200000,
         "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "knowledgeCutoffDate": "May 30, 2024",
         "releaseDate": "August 7, 2025",
         "supportsTemperature": false,

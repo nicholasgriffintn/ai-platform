@@ -43,34 +43,6 @@
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows"
       }
     },
-    "mistral-medium-3-25-05": {
-      "defaults": {
-        "name": "Mistral Medium 3 (25.05)",
-        "description": "Mistral Medium 3 (25.05) accepts text, image and produces text.",
-        "contextWindow": 128000,
-        "maxTokens": 32768,
-        "strengths": [
-          "vision",
-          "tool_use"
-        ],
-        "knowledgeCutoffDate": "September 2024",
-        "releaseDate": "May 1, 2025",
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 12.5,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
-        }
-      }
-    },
     "mistral-medium-3-5": {
       "defaults": {
         "name": "Mistral Medium 3.5",

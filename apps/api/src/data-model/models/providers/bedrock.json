@@ -206,33 +206,13 @@
         "speed": 4,
         "isFeatured": false,
         "lastUpdated": "September 29, 2025",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015,
+        "costPer1kInputTokens": 0.0033,
+        "costPer1kOutputTokens": 0.0165,
         "supportsDocuments": true,
         "supportsSearchGrounding": true,
         "supportsCodeExecution": true,
         "supportsPromptCaching": true
       }
-    },
-    "anthropic.claude-sonnet-4": {
-      "model": "claude-sonnet/claude-sonnet-4-us",
-      "matchingModel": "us.anthropic.claude-sonnet-4-20250514-v1:0",
-      "overrides": {
-        "speed": 4,
-        "isFeatured": false,
-        "deprecated": true,
-        "lastUpdated": "May 22, 2025",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015,
-        "supportsDocuments": true,
-        "supportsSearchGrounding": true,
-        "supportsCodeExecution": true,
-        "supportsPromptCaching": true
-      },
-      "unset": [
-        "openWeights",
-        "supportsResponseFormat"
-      ]
     },
     "anthropic.claude-3-5-haiku": {
       "model": "claude/claude-3-5-haiku-bedrock-us",
@@ -689,7 +669,9 @@
       "matchingModel": "anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
         "speed": 3,
-        "lastUpdated": "August 1, 2025",
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "November 1, 2025",
+        "lastUpdated": "November 1, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsResponseFormat": true,
@@ -713,8 +695,8 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "March 13, 2026",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025,
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -835,7 +817,7 @@
       "matchingModel": "eu.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
         "speed": 3,
-        "lastUpdated": "August 1, 2025",
+        "lastUpdated": "November 1, 2025",
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
       },
@@ -866,20 +848,6 @@
         "supportsTopP"
       ]
     },
-    "eu.anthropic.claude-sonnet-4-20250514-v1:0": {
-      "model": "claude-sonnet/claude-sonnet-4-eu",
-      "matchingModel": "eu.anthropic.claude-sonnet-4-20250514-v1:0",
-      "overrides": {
-        "deprecated": true,
-        "lastUpdated": "May 22, 2025",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015
-      },
-      "unset": [
-        "openWeights",
-        "supportsResponseFormat"
-      ]
-    },
     "eu.anthropic.claude-sonnet-4-5-20250929-v1:0": {
       "model": "claude-sonnet/claude-sonnet-4-5-eu",
       "matchingModel": "eu.anthropic.claude-sonnet-4-5-20250929-v1:0",
@@ -903,7 +871,7 @@
       "matchingModel": "global.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
         "speed": 3,
-        "lastUpdated": "August 1, 2025",
+        "lastUpdated": "November 1, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025
       },
@@ -922,20 +890,6 @@
       },
       "unset": [
         "supportsTopP"
-      ]
-    },
-    "global.anthropic.claude-sonnet-4-20250514-v1:0": {
-      "model": "claude-sonnet/claude-sonnet-4-global",
-      "matchingModel": "global.anthropic.claude-sonnet-4-20250514-v1:0",
-      "overrides": {
-        "deprecated": true,
-        "lastUpdated": "May 22, 2025",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015
-      },
-      "unset": [
-        "openWeights",
-        "supportsResponseFormat"
       ]
     },
     "global.anthropic.claude-sonnet-4-5-20250929-v1:0": {
@@ -1055,6 +1009,7 @@
       "matchingModel": "meta.llama3-3-70b-instruct-v1:0",
       "overrides": {
         "name": "Llama 3.3 70B Instruct",
+        "contextWindow": 128000,
         "maxTokens": 4096,
         "deprecated": true,
         "lastUpdated": "December 6, 2024",
@@ -1360,8 +1315,8 @@
       "matchingModel": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
       "overrides": {
         "lastUpdated": "October 15, 2025",
-        "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.005
+        "costPer1kInputTokens": 0.0011,
+        "costPer1kOutputTokens": 0.0055
       }
     },
     "us.anthropic.claude-opus-4-5-20251101-v1:0": {
@@ -1369,9 +1324,9 @@
       "matchingModel": "us.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
         "speed": 3,
-        "lastUpdated": "August 1, 2025",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025
+        "lastUpdated": "November 1, 2025",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275
       },
       "unset": [
         "supportsTopP"
@@ -1383,8 +1338,8 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "March 13, 2026",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275
       },
       "unset": [
         "supportsTopP"
@@ -1421,7 +1376,6 @@
       "model": "claude-opus/claude-opus-4-7",
       "matchingModel": "anthropic.claude-opus-4-7",
       "overrides": {
-        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
         "speed": 2,
         "lastUpdated": "April 16, 2026",
         "costPer1kInputTokens": 0.005,
@@ -1444,12 +1398,11 @@
       "model": "claude-sonnet/claude-sonnet-4-6",
       "matchingModel": "anthropic.claude-sonnet-4-6",
       "overrides": {
-        "maxTokens": 64000,
         "contextComplexity": 4,
         "speed": 2,
         "lastUpdated": "March 13, 2026",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015,
+        "costPer1kInputTokens": 0.0033,
+        "costPer1kOutputTokens": 0.0165,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1467,17 +1420,17 @@
       "matchingModel": "au.anthropic.claude-haiku-4-5-20251001-v1:0",
       "overrides": {
         "lastUpdated": "October 15, 2025",
-        "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.005
+        "costPer1kInputTokens": 0.0011,
+        "costPer1kOutputTokens": 0.0055
       }
     },
     "au.anthropic.claude-opus-4-6-v1": {
       "model": "claude-opus/au-anthropic-claude-opus-4-6",
       "matchingModel": "au.anthropic.claude-opus-4-6-v1",
       "overrides": {
-        "lastUpdated": "February 5, 2026",
-        "costPer1kInputTokens": 0.0165,
-        "costPer1kOutputTokens": 0.0825
+        "lastUpdated": "March 13, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275
       },
       "unset": [
         "contextComplexity",
@@ -1489,15 +1442,15 @@
       "matchingModel": "au.anthropic.claude-sonnet-4-5-20250929-v1:0",
       "overrides": {
         "lastUpdated": "September 29, 2025",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015
+        "costPer1kInputTokens": 0.0033,
+        "costPer1kOutputTokens": 0.0165
       }
     },
     "au.anthropic.claude-sonnet-4-6": {
       "model": "claude-sonnet/au-anthropic-claude-sonnet-4-6",
       "matchingModel": "au.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "lastUpdated": "February 17, 2026",
+        "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165
       }
@@ -1540,6 +1493,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-eu",
       "matchingModel": "eu.anthropic.claude-sonnet-4-6",
       "overrides": {
+        "maxTokens": 128000,
         "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.0033,
@@ -1583,8 +1537,8 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "April 16, 2026",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025,
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
       }
     },
@@ -1593,8 +1547,8 @@
       "matchingModel": "jp.anthropic.claude-sonnet-4-5-20250929-v1:0",
       "overrides": {
         "lastUpdated": "September 29, 2025",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015
+        "costPer1kInputTokens": 0.0033,
+        "costPer1kOutputTokens": 0.0165
       }
     },
     "jp.anthropic.claude-sonnet-4-6": {
@@ -1603,8 +1557,8 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "March 13, 2026",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015
+        "costPer1kInputTokens": 0.0033,
+        "costPer1kOutputTokens": 0.0165
       }
     },
     "minimax.minimax-m2.5": {
@@ -1729,8 +1683,8 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "April 16, 2026",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025,
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
       }
     },
@@ -1740,8 +1694,8 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "March 13, 2026",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015
+        "costPer1kInputTokens": 0.0033,
+        "costPer1kOutputTokens": 0.0165
       }
     },
     "us.deepseek.r1-v1:0": {
@@ -1840,8 +1794,8 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "May 28, 2026",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025,
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
       }
     },
@@ -1884,8 +1838,8 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "May 28, 2026",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025,
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
       }
     },
@@ -1895,75 +1849,9 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "May 28, 2026",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025,
-        "supportsTemperature": false
-      }
-    },
-    "openai.gpt-5.4": {
-      "model": "gpt/gpt-5-4",
-      "matchingModel": "openai.gpt-5.4",
-      "overrides": {
-        "contextWindow": 272000,
-        "contextComplexity": 4,
-        "speed": 4,
-        "lastUpdated": "June 1, 2026",
-        "costPer1kInputTokens": 0.00275,
-        "costPer1kOutputTokens": 0.0165
-      }
-    },
-    "openai.gpt-5.5": {
-      "model": "gpt/gpt-5-5",
-      "matchingModel": "openai.gpt-5.5",
-      "overrides": {
-        "contextWindow": 272000,
-        "contextComplexity": 4,
-        "speed": 3,
-        "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0055,
-        "costPer1kOutputTokens": 0.033,
+        "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
-      }
-    },
-    "openai.gpt-oss-120b": {
-      "model": "gpt-oss/gpt-oss-120b",
-      "matchingModel": "openai.gpt-oss-120b",
-      "overrides": {
-        "name": "gpt-oss-120b",
-        "contextWindow": 128000,
-        "maxTokens": 16384,
-        "strengths": [
-          "reasoning",
-          "analysis",
-          "coding",
-          "math",
-          "tool_use"
-        ],
-        "speed": 5,
-        "lastUpdated": "August 5, 2025",
-        "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.0006,
-        "supportsAttachments": false
-      }
-    },
-    "openai.gpt-oss-20b": {
-      "model": "gpt-oss/gpt-oss-20b",
-      "matchingModel": "openai.gpt-oss-20b",
-      "overrides": {
-        "name": "gpt-oss-20b",
-        "contextWindow": 128000,
-        "maxTokens": 16384,
-        "strengths": [
-          "reasoning",
-          "analysis",
-          "coding",
-          "tool_use"
-        ],
-        "speed": 5,
-        "lastUpdated": "August 5, 2025",
-        "costPer1kInputTokens": 0.00007,
-        "costPer1kOutputTokens": 0.0003,
-        "supportsAttachments": false
       }
     },
     "eu.anthropic.claude-fable-5": {
@@ -2011,38 +1899,9 @@
       "matchingModel": "us.anthropic.claude-fable-5",
       "overrides": {
         "lastUpdated": "June 9, 2026",
-        "costPer1kInputTokens": 0.01,
-        "costPer1kOutputTokens": 0.05,
+        "costPer1kInputTokens": 0.011,
+        "costPer1kOutputTokens": 0.055,
         "supportsTemperature": false
-      }
-    },
-    "xai.grok-4.3": {
-      "model": "grok/grok-4-3",
-      "matchingModel": "xai.grok-4.3",
-      "overrides": {
-        "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "speed": 4,
-        "lastUpdated": "June 28, 2026",
-        "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.0025,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
       }
     },
     "anthropic.claude-sonnet-5": {
@@ -2052,6 +1911,7 @@
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
+        "supportsResponseFormat": false,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2071,8 +1931,8 @@
       "matchingModel": "au.anthropic.claude-sonnet-5",
       "overrides": {
         "lastUpdated": "June 30, 2026",
-        "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01,
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false
       }
     },
@@ -2083,6 +1943,7 @@
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
+        "supportsResponseFormat": false,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2112,8 +1973,8 @@
       "matchingModel": "jp.anthropic.claude-sonnet-5",
       "overrides": {
         "lastUpdated": "June 30, 2026",
-        "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01,
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false
       }
     },
@@ -2122,8 +1983,8 @@
       "matchingModel": "us.anthropic.claude-sonnet-5",
       "overrides": {
         "lastUpdated": "June 30, 2026",
-        "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01,
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false
       }
     },
@@ -2153,38 +2014,8 @@
       "matchingModel": "jp.anthropic.claude-haiku-4-5-20251001-v1:0",
       "overrides": {
         "lastUpdated": "October 15, 2025",
-        "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.005
-      }
-    },
-    "openai.gpt-5.6-luna": {
-      "model": "gpt-luna/gpt-5-6-luna",
-      "matchingModel": "openai.gpt-5.6-luna",
-      "overrides": {
-        "lastUpdated": "July 9, 2026",
-        "costPer1kInputTokens": 0.00022,
-        "costPer1kOutputTokens": 0.00132,
-        "supportsTemperature": false
-      }
-    },
-    "openai.gpt-5.6-sol": {
-      "model": "gpt-sol/gpt-5-6-sol",
-      "matchingModel": "openai.gpt-5.6-sol",
-      "overrides": {
-        "lastUpdated": "July 9, 2026",
-        "costPer1kInputTokens": 0.0044,
-        "costPer1kOutputTokens": 0.022,
-        "supportsTemperature": false
-      }
-    },
-    "openai.gpt-5.6-terra": {
-      "model": "gpt-terra/gpt-5-6-terra",
-      "matchingModel": "openai.gpt-5.6-terra",
-      "overrides": {
-        "lastUpdated": "July 9, 2026",
-        "costPer1kInputTokens": 0.0022,
-        "costPer1kOutputTokens": 0.0132,
-        "supportsTemperature": false
+        "costPer1kInputTokens": 0.0011,
+        "costPer1kOutputTokens": 0.0055
       }
     },
     "anthropic.claude-opus-5": {
@@ -2217,8 +2048,8 @@
       "matchingModel": "au.anthropic.claude-opus-5",
       "overrides": {
         "lastUpdated": "July 24, 2026",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025,
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
       },
       "unset": [
@@ -2267,8 +2098,8 @@
       "matchingModel": "jp.anthropic.claude-opus-5",
       "overrides": {
         "lastUpdated": "July 24, 2026",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025,
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
       },
       "unset": [
@@ -2280,8 +2111,8 @@
       "matchingModel": "us.anthropic.claude-opus-5",
       "overrides": {
         "lastUpdated": "July 24, 2026",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025,
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
       },
       "unset": [
@@ -2316,15 +2147,6 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
         "supportsTemperature": false
-      }
-    },
-    "xai.grok-4.6": {
-      "model": "grok/grok-4-6",
-      "matchingModel": "xai.grok-4.6",
-      "overrides": {
-        "lastUpdated": "August 18, 2026",
-        "costPer1kInputTokens": 0.0022,
-        "costPer1kOutputTokens": 0.0066
       }
     },
     "anthropic.claude-fable-5-1": {
@@ -2494,16 +2316,6 @@
         "costPer1kOutputTokens": 0.003311
       }
     },
-    "openai.gpt-6-astra": {
-      "model": "gpt-astra/gpt-6-astra",
-      "matchingModel": "openai.gpt-6-astra",
-      "overrides": {
-        "lastUpdated": "September 4, 2026",
-        "costPer1kInputTokens": 0.011,
-        "costPer1kOutputTokens": 0.055,
-        "supportsTemperature": false
-      }
-    },
     "us.amazon.nova-2-lite-v1:0": {
       "model": "nova/nova-2-lite-us",
       "matchingModel": "us.amazon.nova-2-lite-v1:0",
@@ -2641,87 +2453,6 @@
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.006,
         "supportsAttachments": false
-      }
-    },
-    "google.gemma-4-26b-a4b": {
-      "model": "gemma/gemma-4-26b-a4b-it",
-      "matchingModel": "google.gemma-4-26b-a4b",
-      "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.00013,
-        "costPer1kOutputTokens": 0.0004,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "google.gemma-4-31b": {
-      "model": "gemma/gemma-4-31b-it",
-      "matchingModel": "google.gemma-4-31b",
-      "overrides": {
-        "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.00014,
-        "costPer1kOutputTokens": 0.0004,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "google.gemma-4-e2b": {
-      "model": "gemma/gemma-4-e2b-it",
-      "matchingModel": "google.gemma-4-e2b",
-      "overrides": {
-        "openWeights": true,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.00004,
-        "costPer1kOutputTokens": 0.00008,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
       }
     },
     "in.openai.gpt-5.6-luna": {

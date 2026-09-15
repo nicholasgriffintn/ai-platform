@@ -24,8 +24,8 @@
     "au-anthropic-claude-opus-4-6": {
       "defaults": {
         "name": "AU Anthropic Claude Opus 4.6",
-        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
-        "knowledgeCutoffDate": "May 2025",
+        "description": "High-end Claude for difficult coding, planning, and slower expert reasoning",
+        "knowledgeCutoffDate": "May 31, 2025",
         "releaseDate": "February 5, 2026",
         "supportsResponseFormat": true,
         "supportsTemperature": true,
@@ -99,7 +99,6 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "November 24, 2025",
         "supportsTemperature": true,
         "artificialAnalysis": {
@@ -123,8 +122,8 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "knowledgeCutoffDate": "March 31, 2025",
-        "releaseDate": "November 24, 2025",
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "November 1, 2025",
         "supportsResponseFormat": true,
         "supportsTemperature": true,
         "reasoningConfig": {
@@ -157,8 +156,8 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "knowledgeCutoffDate": "March 31, 2025",
-        "releaseDate": "November 24, 2025",
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "November 1, 2025",
         "supportsResponseFormat": true,
         "supportsTemperature": true,
         "reasoningConfig": {
@@ -251,8 +250,8 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "knowledgeCutoffDate": "March 31, 2025",
-        "releaseDate": "November 24, 2025",
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "November 1, 2025",
         "supportsResponseFormat": true,
         "supportsTemperature": true,
         "reasoningConfig": {
@@ -473,7 +472,7 @@
     "claude-opus-4-7-eu": {
       "defaults": {
         "name": "Claude Opus 4.7 (EU)",
-        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "description": "Stronger Opus tier for advanced software work and high-stakes reasoning",
         "strengths": [
           "coding",
           "vision",
@@ -515,7 +514,7 @@
     "claude-opus-4-7-global": {
       "defaults": {
         "name": "Claude Opus 4.7 (Global)",
-        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "description": "Stronger Opus tier for advanced software work and high-stakes reasoning",
         "strengths": [
           "coding",
           "vision",
@@ -579,7 +578,7 @@
     "claude-opus-4-7-us": {
       "defaults": {
         "name": "Claude Opus 4.7 (US)",
-        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "description": "Stronger Opus tier for advanced software work and high-stakes reasoning",
         "strengths": [
           "coding",
           "vision",

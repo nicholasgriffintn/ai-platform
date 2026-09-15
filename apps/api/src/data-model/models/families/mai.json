@@ -3,18 +3,8 @@
     "openWeights": false,
     "contextWindow": 256000,
     "maxTokens": 128000,
-    "modalities": {
-      "input": [
-        "text"
-      ],
-      "output": [
-        "text"
-      ]
-    },
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": false,
-    "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [
         "low",
@@ -48,25 +38,18 @@
       "defaults": {
         "name": "MAI-Code-1-Flash",
         "description": "Microsoft coding model built for fast, efficient assistance in everyday developer workflows",
-        "knowledgeCutoffDate": "December 2025",
-        "releaseDate": "June 2, 2026"
-      }
-    },
-    "mai-ds-r1": {
-      "defaults": {
-        "name": "MAI-DS-R1",
-        "description": "MAI-DS-R1 accepts text and produces text.",
-        "contextWindow": 65536,
-        "maxTokens": 8192,
-        "knowledgeCutoffDate": "June 2024",
-        "releaseDate": "January 20, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
+        "modalities": {
+          "input": [
+            "text"
           ],
-          "defaultEffort": "none"
-        }
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "December 2025",
+        "releaseDate": "June 2, 2026",
+        "supportsAttachments": false,
+        "supportsTemperature": true
       }
     }
   }

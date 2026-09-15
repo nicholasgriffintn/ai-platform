@@ -107,6 +107,7 @@ export const PROVIDER_ICONS: Record<string, string> = {
   "perplexity-ai": "perplexity",
   deepseek: "deepseek",
   bedrock: "bedrock",
+  "bedrock-mantle": "bedrock",
   "together-ai": "together-ai",
   grok: "grok",
   replicate: "replicate",

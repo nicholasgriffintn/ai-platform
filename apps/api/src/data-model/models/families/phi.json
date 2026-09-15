@@ -12,6 +12,7 @@
       ]
     },
     "knowledgeCutoffDate": "October 2023",
+    "supportsToolCalls": false,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
@@ -21,88 +22,26 @@
       "defaults": {
         "name": "Phi-3.5-mini-instruct",
         "description": "Phi-3.5-mini-instruct accepts text and produces text.",
-        "releaseDate": "August 20, 2024",
-        "supportsToolCalls": false
-      }
-    },
-    "phi-3-5-mini-instruct-128k": {
-      "defaults": {
-        "name": "Phi-3.5-mini instruct (128k)",
-        "description": "Phi-3.5-mini instruct (128k) accepts text and produces text.",
-        "releaseDate": "August 20, 2024",
-        "supportsToolCalls": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "releaseDate": "August 20, 2024"
       }
     },
     "phi-3-5-moe-instruct": {
       "defaults": {
         "name": "Phi-3.5-MoE-instruct",
         "description": "Phi-3.5-MoE-instruct accepts text and produces text.",
-        "releaseDate": "August 20, 2024",
-        "supportsToolCalls": false
-      }
-    },
-    "phi-3-5-moe-instruct-128k": {
-      "defaults": {
-        "name": "Phi-3.5-MoE instruct (128k)",
-        "description": "Phi-3.5-MoE instruct (128k) accepts text and produces text.",
-        "releaseDate": "August 20, 2024",
-        "supportsToolCalls": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "phi-3-5-vision-instruct-128k": {
-      "defaults": {
-        "name": "Phi-3.5-vision instruct (128k)",
-        "description": "Vision-enabled Phi model for image understanding and analysis.",
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "reasoning",
-          "analysis"
-        ],
-        "contextComplexity": 4,
-        "reliability": 4,
-        "multimodal": true,
-        "releaseDate": "August 20, 2024",
-        "supportsToolCalls": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "releaseDate": "August 20, 2024"
       }
     },
     "phi-3-medium-instruct-128k": {
       "defaults": {
+        "name": "Phi-3-medium-instruct (128k)",
         "description": "Phi-3-medium-instruct (128k) accepts text and produces text.",
         "releaseDate": "April 23, 2024"
       }
     },
     "phi-3-medium-instruct-4k": {
       "defaults": {
+        "name": "Phi-3-medium-instruct (4k)",
         "description": "Phi-3-medium-instruct (4k) accepts text and produces text.",
         "contextWindow": 4096,
         "maxTokens": 1024,
@@ -111,12 +50,14 @@
     },
     "phi-3-mini-instruct-128k": {
       "defaults": {
+        "name": "Phi-3-mini-instruct (128k)",
         "description": "Phi-3-mini-instruct (128k) accepts text and produces text.",
         "releaseDate": "April 23, 2024"
       }
     },
     "phi-3-mini-instruct-4k": {
       "defaults": {
+        "name": "Phi-3-mini-instruct (4k)",
         "description": "Phi-3-mini-instruct (4k) accepts text and produces text.",
         "contextWindow": 4096,
         "maxTokens": 1024,
@@ -125,12 +66,14 @@
     },
     "phi-3-small-instruct-128k": {
       "defaults": {
+        "name": "Phi-3-small-instruct (128k)",
         "description": "Phi-3-small-instruct (128k) accepts text and produces text.",
         "releaseDate": "April 23, 2024"
       }
     },
     "phi-3-small-instruct-8k": {
       "defaults": {
+        "name": "Phi-3-small-instruct (8k)",
         "description": "Phi-3-small-instruct (8k) accepts text and produces text.",
         "contextWindow": 8192,
         "maxTokens": 2048,
@@ -139,12 +82,9 @@
     },
     "phi-4": {
       "defaults": {
-        "name": "Phi-4",
         "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads",
         "contextComplexity": 2,
         "reliability": 1,
-        "releaseDate": "December 11, 2024",
-        "supportsToolCalls": false,
         "artificialAnalysis": {
           "intelligenceIndex": 4.9,
           "codingIndex": null,
@@ -174,8 +114,13 @@
     },
     "phi-4-mini-instruct": {
       "defaults": {
+        "name": "Phi 4 Mini Instruct",
         "description": "Phi-4-mini-instruct accepts text and produces text.",
+        "maxTokens": 128000,
+        "contextComplexity": 4,
         "reliability": 1,
+        "releaseDate": "October 17, 2025",
+        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 3,
           "codingIndex": null,
@@ -221,49 +166,7 @@
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "December 11, 2024",
-        "supportsToolCalls": false,
         "supportsAttachments": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 4.5,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
-        }
-      }
-    },
-    "phi-4-multimodal-instruct": {
-      "defaults": {
-        "name": "Phi-4-multimodal-instruct",
-        "description": "Multimodal version of Phi-4 with vision and audio capabilities.",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "reasoning",
-          "vision",
-          "audio",
-          "analysis",
-          "tool_use"
-        ],
-        "contextComplexity": 3,
-        "reliability": 1,
-        "multimodal": true,
-        "releaseDate": "December 11, 2024",
-        "supportsToolCalls": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 4.5,
           "codingIndex": null,
@@ -274,7 +177,9 @@
     },
     "phi-4-reasoning": {
       "defaults": {
+        "name": "Phi-4-reasoning",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 32000,
         "releaseDate": "December 11, 2024",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -291,7 +196,6 @@
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 32000,
         "releaseDate": "December 11, 2024",
-        "supportsToolCalls": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

@@ -10,58 +10,15 @@
         "text"
       ]
     },
+    "contextComplexity": 3,
+    "knowledgeCutoffDate": "August 2024",
+    "releaseDate": "August 15, 2024",
     "supportsToolCalls": true,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
   "description": "The jamba family includes models that produce text.",
   "models": {
-    "ai21-jamba-1-5-large": {
-      "defaults": {
-        "name": "AI21 Jamba 1.5 Large",
-        "openWeights": false,
-        "description": "Large-scale hybrid architecture model for complex reasoning and analysis tasks.",
-        "strengths": [
-          "analysis",
-          "reasoning",
-          "multilingual"
-        ],
-        "contextComplexity": 4,
-        "reliability": 4,
-        "knowledgeCutoffDate": "March 2024",
-        "releaseDate": "August 29, 2024",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "ai21-jamba-1-5-mini": {
-      "defaults": {
-        "name": "AI21 Jamba 1.5 Mini",
-        "openWeights": false,
-        "description": "Efficient hybrid architecture model combining Transformer and Mamba layers for speed and context handling.",
-        "strengths": [
-          "analysis",
-          "reasoning",
-          "multilingual"
-        ],
-        "contextComplexity": 4,
-        "reliability": 4,
-        "knowledgeCutoffDate": "March 2024",
-        "releaseDate": "August 29, 2024",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "ai21-jambda-instruct": {
       "defaults": {
         "name": "AI21 Jambda Instruct",
@@ -72,10 +29,7 @@
           "summarization",
           "analysis"
         ],
-        "contextComplexity": 3,
-        "reliability": 4,
-        "knowledgeCutoffDate": "August 2024",
-        "releaseDate": "August 15, 2024"
+        "reliability": 4
       }
     },
     "jamba-1-5-large": {
@@ -87,10 +41,7 @@
           "reasoning",
           "tool_use"
         ],
-        "contextComplexity": 3,
         "reliability": 1,
-        "knowledgeCutoffDate": "August 2024",
-        "releaseDate": "August 15, 2024",
         "artificialAnalysis": {
           "intelligenceIndex": 5.1,
           "codingIndex": null,
@@ -107,10 +58,7 @@
           "analysis",
           "tool_use"
         ],
-        "contextComplexity": 3,
         "reliability": 1,
-        "knowledgeCutoffDate": "August 2024",
-        "releaseDate": "August 15, 2024",
         "artificialAnalysis": {
           "intelligenceIndex": 2.7,
           "codingIndex": null,

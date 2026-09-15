@@ -32,16 +32,6 @@
       "model": "gpt/gpt-4o",
       "matchingModel": "openai/gpt-4o",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 4,
         "lastUpdated": "August 6, 2024",
         "costPer1kInputTokens": 0.0025,
@@ -113,16 +103,6 @@
       "matchingModel": "openai/gpt-4o-mini",
       "overrides": {
         "name": "GPT-4o mini",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 3,
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.00015,
@@ -147,16 +127,6 @@
       "matchingModel": "openai/gpt-4.1-mini",
       "overrides": {
         "name": "GPT-4.1 mini",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 3,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.0004,
@@ -1407,7 +1377,9 @@
       "model": "llama/llama-3-3-70b-instruct",
       "matchingModel": "meta/llama-3.3-70b",
       "overrides": {
+        "name": "Llama-3.3-70B-Instruct",
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 128000,
         "maxTokens": 4096,
         "lastUpdated": "December 6, 2024",
         "costPer1kInputTokens": 0,
@@ -1420,6 +1392,7 @@
       "matchingModel": "meta/llama-4-maverick",
       "overrides": {
         "name": "Llama-4-Maverick-17B-128E-Instruct-FP8",
+        "contextWindow": 128000,
         "maxTokens": 4096,
         "strengths": [
           "vision",
@@ -1607,7 +1580,6 @@
       "overrides": {
         "openWeights": false,
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
-        "maxTokens": 128000,
         "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "July 1, 2024",
         "costPer1kInputTokens": 0.00015,
@@ -2362,10 +2334,7 @@
         "costPer1kReasoningTokens": 0.0005
       },
       "unset": [
-        "openWeights",
-        "strengths",
-        "contextComplexity",
-        "reliability"
+        "openWeights"
       ]
     },
     "xai/grok-3-mini-fast": {
@@ -3200,16 +3169,6 @@
       "matchingModel": "openai/gpt-5.4-mini",
       "overrides": {
         "name": "GPT 5.4 Mini",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 4,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.00075,
@@ -4562,9 +4521,9 @@
         "supportsToolCalls": false
       },
       "unset": [
+        "supportsResponseFormat",
         "contextComplexity",
-        "reliability",
-        "reasoningConfig"
+        "reliability"
       ]
     },
     "openai/gpt-4o-transcribe": {

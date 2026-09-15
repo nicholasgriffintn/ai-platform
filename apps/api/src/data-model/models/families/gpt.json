@@ -101,15 +101,6 @@
         "description": "Long-lived GPT workhorse for coding, instruction following, and production apps",
         "contextWindow": 1047576,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2024",
@@ -294,6 +285,16 @@
         "description": "Omni-era GPT for multimodal chat, practical coding, and general assistants",
         "contextWindow": 128000,
         "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",

@@ -52,6 +52,13 @@
       "matchingModel": "grok-3-mini",
       "overrides": {
         "description": "A lightweight model that thinks before responding. Fast, smart, and great for logic-based tasks that do not require deep domain knowledge.",
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "chat"
+        ],
+        "contextComplexity": 3,
+        "reliability": 4,
         "speed": 4,
         "isFeatured": false,
         "lastUpdated": "February 17, 2025",
@@ -83,6 +90,13 @@
       "matchingModel": "grok-3",
       "overrides": {
         "description": "Excels at enterprise use cases like data extraction, coding, and text summarization. Possesses deep domain knowledge in finance, healthcare, law, and science.",
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "chat",
+          "general_knowledge",
+          "tool_use"
+        ],
         "speed": 3,
         "isFeatured": false,
         "lastUpdated": "February 17, 2025",

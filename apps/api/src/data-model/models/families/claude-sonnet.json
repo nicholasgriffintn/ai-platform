@@ -2,7 +2,6 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 1000000,
-    "maxTokens": 64000,
     "modalities": {
       "input": [
         "text",
@@ -44,9 +43,9 @@
     "au-anthropic-claude-sonnet-4-6": {
       "defaults": {
         "name": "AU Anthropic Claude Sonnet 4.6",
-        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
         "maxTokens": 128000,
-        "knowledgeCutoffDate": "August 2025",
+        "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -65,6 +64,7 @@
         "name": "Claude Sonnet 3.7",
         "description": "Enhanced version of Claude 3.5 Sonnet with improved reasoning and analysis capabilities.",
         "contextWindow": 200000,
+        "maxTokens": 64000,
         "strengths": [
           "reasoning",
           "analysis",
@@ -98,6 +98,7 @@
       "defaults": {
         "name": "Claude Sonnet 4",
         "description": "Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
+        "maxTokens": 64000,
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "May 22, 2025",
         "reasoningConfig": {
@@ -113,6 +114,7 @@
       "defaults": {
         "name": "Claude Sonnet 4.5",
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "maxTokens": 64000,
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
@@ -129,6 +131,7 @@
         "name": "Claude Sonnet 4.5 (AU)",
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "contextWindow": 200000,
+        "maxTokens": 64000,
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
@@ -146,6 +149,7 @@
         "name": "Claude Sonnet 4.5 (EU)",
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "contextWindow": 200000,
+        "maxTokens": 64000,
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
@@ -163,6 +167,7 @@
         "name": "Claude Sonnet 4.5 (Global)",
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "contextWindow": 200000,
+        "maxTokens": 64000,
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
@@ -180,6 +185,7 @@
         "name": "Claude Sonnet 4.5 (JP)",
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "contextWindow": 200000,
+        "maxTokens": 64000,
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
@@ -195,6 +201,7 @@
     "claude-sonnet-4-5-latest": {
       "defaults": {
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "maxTokens": 64000,
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025"
       }
@@ -203,6 +210,7 @@
       "defaults": {
         "name": "Claude Sonnet 4.5 (latest) (EU)",
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "maxTokens": 64000,
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
@@ -222,6 +230,7 @@
         "name": "Claude Sonnet 4.5 (US)",
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "contextWindow": 200000,
+        "maxTokens": 64000,
         "card": "https://www.prompthub.us/models/claude-sonnet-4-5",
         "strengths": [
           "chat",
@@ -295,6 +304,7 @@
       "defaults": {
         "name": "Claude Sonnet 4.6 (Global)",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
+        "maxTokens": 128000,
         "strengths": [
           "coding",
           "vision",
@@ -327,6 +337,7 @@
       "defaults": {
         "name": "Claude Sonnet 4.6 (JP)",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
+        "maxTokens": 128000,
         "strengths": [
           "coding",
           "vision",
@@ -359,6 +370,7 @@
       "defaults": {
         "name": "Claude Sonnet 4.6 (US)",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
+        "maxTokens": 128000,
         "strengths": [
           "coding",
           "vision",
@@ -387,24 +399,6 @@
         }
       }
     },
-    "claude-sonnet-4-eu": {
-      "defaults": {
-        "name": "Claude Sonnet 4 (EU)",
-        "description": "Claude Sonnet 4 (EU) accepts text, image, pdf and produces text.",
-        "contextWindow": 200000,
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "May 22, 2025"
-      }
-    },
-    "claude-sonnet-4-global": {
-      "defaults": {
-        "name": "Claude Sonnet 4 (Global)",
-        "description": "Claude Sonnet 4 (Global) accepts text, image, pdf and produces text.",
-        "contextWindow": 200000,
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "May 22, 2025"
-      }
-    },
     "claude-sonnet-4-latest": {
       "defaults": {
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
@@ -416,6 +410,7 @@
       "defaults": {
         "name": "Claude Sonnet 4 (latest) (EU)",
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "maxTokens": 64000,
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "May 22, 2025",
         "reasoningConfig": {
@@ -428,27 +423,6 @@
           ],
           "defaultEffort": "none"
         }
-      }
-    },
-    "claude-sonnet-4-us": {
-      "defaults": {
-        "name": "Claude Sonnet 4 (US)",
-        "description": "Combined with state-of-the-art coding, vision, and writing skills, you can use this model for a variety of use cases.",
-        "contextWindow": 200000,
-        "card": "https://www.prompthub.us/models/claude-4-sonnet",
-        "strengths": [
-          "chat",
-          "general_knowledge",
-          "analysis",
-          "coding",
-          "reasoning",
-          "creative"
-        ],
-        "contextComplexity": 5,
-        "reliability": 5,
-        "multimodal": true,
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "May 22, 2025"
       }
     },
     "claude-sonnet-5": {
@@ -479,6 +453,7 @@
         "maxTokens": 128000,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
+        "supportsResponseFormat": false,
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
@@ -512,6 +487,7 @@
         "maxTokens": 128000,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
+        "supportsResponseFormat": false,
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
@@ -534,6 +510,7 @@
         "maxTokens": 128000,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
+        "supportsResponseFormat": false,
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
@@ -556,6 +533,7 @@
         "maxTokens": 128000,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
+        "supportsResponseFormat": false,
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {

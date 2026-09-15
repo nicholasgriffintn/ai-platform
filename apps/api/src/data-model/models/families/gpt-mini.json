@@ -1,6 +1,16 @@
 {
   "defaults": {
     "openWeights": false,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
     "strengths": [
       "vision",
       "document",
@@ -37,16 +47,6 @@
         "description": "Affordable GPT-4.1 lane for fast coding help and structured extraction",
         "contextWindow": 1047576,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
@@ -63,16 +63,6 @@
         "description": "Affordable GPT-4.1 lane for fast coding help and structured extraction",
         "contextWindow": 1047576,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
@@ -105,16 +95,6 @@
         "description": "Small omni GPT for cheap multimodal assistance and production-scale traffic",
         "contextWindow": 128000,
         "maxTokens": 16000,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "contextComplexity": 3,
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "July 18, 2024",
@@ -132,16 +112,6 @@
         "description": "Small omni GPT for cheap multimodal assistance and production-scale traffic",
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "contextComplexity": 3,
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "July 18, 2024",
@@ -206,16 +176,6 @@
         "description": "Strong small GPT for coding subagents, quick tool use, and high-volume work",
         "contextWindow": 400000,
         "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 17, 2026",
         "reasoningConfig": {
@@ -304,16 +264,6 @@
         "description": "Small GPT-5 for responsive agents, coding help, and everyday automation",
         "contextWindow": 400000,
         "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "knowledgeCutoffDate": "May 30, 2024",
         "releaseDate": "August 7, 2025",
         "supportsTemperature": false,

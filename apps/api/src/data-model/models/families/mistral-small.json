@@ -80,6 +80,11 @@
         "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
         "contextWindow": 128000,
         "maxTokens": 32768,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "September 2024",

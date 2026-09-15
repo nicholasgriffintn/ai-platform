@@ -5,6 +5,7 @@ export const POLYCHAT_API_BASE_URL_DEFAULT = "https://api.polychat.app";
 export const PROVIDER_ALIASES = {
   "azure-openai": "azure",
   bedrock: "amazon-bedrock",
+  "bedrock-mantle": "amazon-bedrock",
   "workers-ai": "cloudflare-workers-ai",
   "together-ai": "togetherai",
   "google-ai-studio": "google",
