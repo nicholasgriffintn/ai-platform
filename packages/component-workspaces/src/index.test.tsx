@@ -517,7 +517,7 @@ describe("FlowEditorDialog", () => {
     );
   });
 
-  it("offers the suggested pipeline only until a flow exists and saves it as valid stages", async () => {
+  it("applies the suggested pipeline from the workflow selector and saves valid stages", async () => {
     const onSave = vi.fn<(nextFlow: ProjectFlow) => Promise<void>>(async () => undefined);
     const props = {
       open: true,
@@ -529,12 +529,14 @@ describe("FlowEditorDialog", () => {
       onSave,
     };
 
-    const { rerender } = render(<FlowEditorDialog {...props} flow={flow} />);
-
-    expect(screen.queryByRole("button", { name: "Use suggested pipeline" })).toBeNull();
-
-    rerender(<FlowEditorDialog {...props} flow={null} />);
-    fireEvent.click(screen.getByRole("button", { name: "Use suggested pipeline" }));
+    render(<FlowEditorDialog {...props} flow={null} />);
+    fireEvent.click(screen.getByRole("button", { name: "Start from a workflow" }));
+    fireEvent.click(
+      screen.getByRole("menuitem", { name: "Suggested: research → plan → build → review" }),
+    );
+    expect(screen.getByRole("button", { name: "Start from a workflow" }).textContent).toContain(
+      "Suggested: research → plan → build → review",
+    );
     fireEvent.click(screen.getByRole("button", { name: "Save pipeline" }));
 
     await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));

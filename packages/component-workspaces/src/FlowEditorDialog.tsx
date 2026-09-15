@@ -23,7 +23,7 @@ import {
   type ProjectFlowStage,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
-import { ArrowDown, ArrowUp, Plus, Settings2, Sparkles, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Settings2, Trash2 } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
 
 export interface FlowEditorDialogProps {
@@ -100,7 +100,6 @@ export function FlowEditorDialog({
   const [prevFlow, setPrevFlow] = useState<ProjectFlow | null>(null);
   const [prevOpen, setPrevOpen] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const isNewFlow = flow === null;
 
   if (prevOpen !== open || prevFlow !== flow) {
     setPrevOpen(open);
@@ -181,61 +180,61 @@ export function FlowEditorDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface-elevated p-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+          <div className="grid gap-5 rounded-xl border border-border bg-surface-elevated p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)] lg:items-start lg:gap-6">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-foreground">
                 {teammates.length} teammate{teammates.length === 1 ? "" : "s"} available ·{" "}
                 {skills.length} attached skill{skills.length === 1 ? "" : "s"}
               </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Platform teammates are included by default. Add more through project Capabilities,
-                where you can also build a new teammate for this project.
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Start from a workflow or set each phase up yourself. You can edit every stage after
-                applying a workflow.
-              </p>
+              <div className="mt-2 space-y-1">
+                <p className="text-xs text-muted-foreground">
+                  Platform teammates are included by default. Add more through project Capabilities,
+                  where you can also build a new teammate for this project.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Start from a workflow or set each phase up yourself. You can edit every stage
+                  after applying a workflow.
+                </p>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {isNewFlow ? (
-                <Button
-                  type="button"
-                  variant="primary"
-                  size="sm"
-                  icon={<Sparkles size={13} />}
-                  onClick={() => setStages(createSuggestedProjectFlow().stages)}
+            <div className="min-w-0 space-y-3 lg:border-l lg:border-border lg:pl-5">
+              <div className="space-y-2">
+                <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  Start with
+                </p>
+                <FormSelect
+                  label="Start from a workflow"
+                  description="Sequence platform teammates across phases, with approval gates for human review."
+                  value={workflowSlug}
+                  options={WORKFLOW_OPTIONS}
+                  onValueChange={applyWorkflow}
+                />
+              </div>
+
+              <div className="grid gap-2 border-t border-border pt-3 sm:grid-cols-2">
+                <ButtonLink
+                  href={createTeammateHref}
+                  variant="outline"
+                  size="md"
+                  fullWidth
+                  icon={<Plus size={14} />}
+                  className="no-underline hover:!no-underline"
                 >
-                  Use suggested pipeline
-                </Button>
-              ) : null}
-              <ButtonLink
-                href={createTeammateHref}
-                variant="ghost"
-                size="sm"
-                icon={<Plus size={13} />}
-                className="no-underline hover:!no-underline"
-              >
-                New teammate
-              </ButtonLink>
-              <ButtonLink
-                href={capabilitiesHref}
-                variant="outline"
-                size="sm"
-                icon={<Settings2 size={13} />}
-                className="no-underline hover:!no-underline"
-              >
-                Manage capabilities
-              </ButtonLink>
+                  New teammate
+                </ButtonLink>
+                <ButtonLink
+                  href={capabilitiesHref}
+                  variant="outline"
+                  size="md"
+                  fullWidth
+                  icon={<Settings2 size={14} />}
+                  className="no-underline hover:!no-underline"
+                >
+                  Manage capabilities
+                </ButtonLink>
+              </div>
             </div>
           </div>
-
-          <FormSelect
-            label="Start from a workflow"
-            description="Workflows sequence platform teammates across phases, with approval gates where a person should check the work."
-            value={workflowSlug}
-            options={WORKFLOW_OPTIONS}
-            onValueChange={applyWorkflow}
-          />
 
           <div className="space-y-3">
             {stages.map((stage, index) => (
