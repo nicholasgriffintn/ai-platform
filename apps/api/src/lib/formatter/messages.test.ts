@@ -204,3 +204,27 @@ describe("Anthropic history formatting", () => {
     ]);
   });
 });
+
+describe("Google Vertex history formatting", () => {
+  const formatForVertex = (messages: any[]) =>
+    MessageFormatter.formatMessages(messages, { provider: "google-vertex" });
+
+  it("builds Google parts so Vertex receives non-empty contents", () => {
+    expect(formatForVertex([{ role: "user", content: "Run my briefing." }])).toEqual([
+      {
+        role: "user",
+        parts: [{ text: "Run my briefing." }],
+        content: "",
+      },
+    ]);
+  });
+
+  it("keeps the system prompt out of contents", () => {
+    const formatted = MessageFormatter.formatMessages([{ role: "user", content: "Hello" }], {
+      provider: "google-vertex",
+      system_prompt: "Be terse.",
+    });
+
+    expect(formatted.some((message) => message.role === "system")).toBe(false);
+  });
+});

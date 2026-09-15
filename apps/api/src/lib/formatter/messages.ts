@@ -235,7 +235,8 @@ export class MessageFormatter {
       }
 
       switch (provider) {
-        case "google-ai-studio": {
+        case "google-ai-studio":
+        case "google-vertex": {
           const googleMessage = {
             role: message.role,
             parts: Array.isArray(content) ? content : [{ text: content }],
@@ -421,6 +422,7 @@ export class MessageFormatter {
 
     switch (provider) {
       case "google-ai-studio":
+      case "google-vertex":
         return content
           .map((item) => MessageFormatter.formatGoogleAIContent(item))
           .filter((item) => item !== null);
@@ -537,6 +539,7 @@ export class MessageFormatter {
       case "anthropic":
       case "bedrock":
       case "google-ai-studio":
+      case "google-vertex":
         return messages;
       case "openai":
       case "compat":
