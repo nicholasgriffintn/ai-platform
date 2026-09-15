@@ -337,8 +337,8 @@ importers:
         specifier: 8.0.4
         version: 8.0.4
       '@mlc-ai/web-llm':
-        specifier: 0.2.84
-        version: 0.2.84
+        specifier: 0.2.85
+        version: 0.2.85
       '@ngriffin_uk/auth-encoding':
         specifier: ^0.2.4
         version: 0.2.4
@@ -3674,6 +3674,9 @@ packages:
 
   '@mlc-ai/web-llm@0.2.84':
     resolution: {integrity: sha512-hrOWzK4/nGNmgoRKT8pgVmZZ2oEPpbblIWQOwpqNyvK2dysHw3KVB1gNJOuRcQfKOPhucEhX1NJzXzgMDnwSCQ==}
+
+  '@mlc-ai/web-llm@0.2.85':
+    resolution: {integrity: sha512-CwUiSAvDCYnmAZlpPMkurPHDfBLq6fvdRB3vRgoA894hRG/V/BSeY9bmMm6iIIU5VpjJxfb/dLPpJX2at0L9rw==}
 
   '@modelcontextprotocol/client@2.0.0':
     resolution: {integrity: sha512-8f1OghQ2rjzIOfqgUCP+8GiUWqRs89njoWLNqAe8kWmDePv3s1fZXseej+QXemssEuuOvLLmLO/kqM3IQHtISw==}
@@ -10907,6 +10910,10 @@ snapshots:
   '@marijn/find-cluster-break@1.0.4': {}
 
   '@mlc-ai/web-llm@0.2.84':
+    dependencies:
+      loglevel: 1.9.2
+
+  '@mlc-ai/web-llm@0.2.85':
     dependencies:
       loglevel: 1.9.2
 
