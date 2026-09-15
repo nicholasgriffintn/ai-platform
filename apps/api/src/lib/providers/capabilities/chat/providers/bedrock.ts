@@ -124,6 +124,14 @@ export class BedrockProvider extends BaseProvider {
     return operationPath === "async-invoke";
   }
 
+  private applyGatewayAuth(headers: Headers, params: ChatCompletionParameters): void {
+    const token = params.env.AI_GATEWAY_TOKEN;
+
+    if (token) {
+      headers.set("cf-aig-authorization", `Bearer ${token}`);
+    }
+  }
+
   private buildOperationPaths(
     params: ChatCompletionParameters,
     operationPath: string,
@@ -176,6 +184,8 @@ export class BedrockProvider extends BaseProvider {
         ErrorType.PROVIDER_ERROR,
       );
     }
+
+    this.applyGatewayAuth(pollRequest.headers, params);
 
     const signedUrl = new URL(pollRequest.url);
 
@@ -452,7 +462,9 @@ export class BedrockProvider extends BaseProvider {
       },
       ...toolConfig,
       ...(reasoning.additionalModelRequestFields
-        ? { additionalModelRequestFields: reasoning.additionalModelRequestFields }
+        ? {
+            additionalModelRequestFields: reasoning.additionalModelRequestFields,
+          }
         : {}),
     };
   }
@@ -572,6 +584,8 @@ export class BedrockProvider extends BaseProvider {
       throw new AssistantError("Failed to get presigned request from Bedrock");
     }
 
+    this.applyGatewayAuth(presignedRequest.headers, params);
+
     const signedUrl = new URL(presignedRequest.url);
 
     signedUrl.host = "gateway.ai.cloudflare.com";
@@ -686,6 +700,8 @@ export class BedrockProvider extends BaseProvider {
         if (!presignedRequest.url) {
           throw new AssistantError("Failed to get presigned request from Bedrock");
         }
+
+        this.applyGatewayAuth(presignedRequest.headers, params);
 
         const signedUrl = new URL(presignedRequest.url);
 
