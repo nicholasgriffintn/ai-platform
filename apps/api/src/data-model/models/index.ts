@@ -341,7 +341,6 @@ import provider4 from "./providers/bedrock.json";
 import provider5 from "./providers/deepinfra.json";
 import provider6 from "./providers/deepseek.json";
 import provider7 from "./providers/azure-openai.json";
-import provider8 from "./providers/github-models.json";
 import provider9 from "./providers/grok.json";
 import provider10 from "./providers/groq.json";
 import provider11 from "./providers/huggingface.json";
@@ -739,7 +738,6 @@ export default {
     "deepinfra": provider5,
     "deepseek": provider6,
     "azure-openai": provider7,
-    "github-models": provider8,
     "grok": provider9,
     "groq": provider10,
     "huggingface": provider11,
