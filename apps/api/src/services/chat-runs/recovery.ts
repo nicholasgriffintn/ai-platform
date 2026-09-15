@@ -2,9 +2,22 @@ import type { ChatRun } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getActiveThreadOperation } from "~/services/conversations/coordinator/client";
+import { publishConversationChanged, publishRunChanged } from "~/services/sync/conversation-events";
+import { withoutOrigin } from "~/services/sync/publish";
 import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/chat-runs/recovery" });
+
+async function announceRecoveredRun(context: ServiceContext, run: ChatRun): Promise<void> {
+  try {
+    const publisher = withoutOrigin(context);
+
+    await publishRunChanged(publisher, run);
+    await publishConversationChanged(publisher, run.conversationId, { runId: run.id });
+  } catch (error) {
+    logger.error("Could not publish recovered chat run state", { error, runId: run.id });
+  }
+}
 
 export async function reconcileInactiveChatRun(
   context: ServiceContext,
@@ -42,6 +55,8 @@ export async function reconcileInactiveChatRun(
   });
 
   if (transitioned) {
+    await announceRecoveredRun(context, transitioned);
+
     return transitioned;
   }
 

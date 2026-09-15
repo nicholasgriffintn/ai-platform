@@ -191,6 +191,8 @@ export function useChatRunReplay(
       }
     };
 
+    void synchronise();
+
     const watchedTopics = new Set([`conversation:${conversationId}`, `run:${runId}`]);
     const unsubscribe = useSyncStore.subscribe((state, previous) => {
       if (disposed) {
@@ -207,8 +209,6 @@ export function useChatRunReplay(
         void synchronise();
       }
     });
-
-    void synchronise();
 
     return () => {
       disposed = true;
