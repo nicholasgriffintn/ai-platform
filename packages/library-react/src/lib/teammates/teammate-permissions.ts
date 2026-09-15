@@ -30,6 +30,15 @@ export function resolveTeammateManagePermission(
     return { canManage: true, ownerLabel: "you" };
   }
 
+  if (teammate.owner_scope_type === "platform") {
+    return {
+      canManage: false,
+      ownerLabel: "Polychat",
+      reason:
+        "This is a platform teammate, available to everyone by default. Polychat maintains it, so it cannot be changed here.",
+    };
+  }
+
   if (teammate.owner_scope_type === "workspace") {
     const workspace = workspaces.find((entry) => entry.id === teammate.owner_scope_id);
     const ownerLabel = workspace?.name ?? "another workspace";

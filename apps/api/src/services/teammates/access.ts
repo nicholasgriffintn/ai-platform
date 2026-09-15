@@ -1,9 +1,12 @@
 import type { WorkspaceRole } from "@ngriffin_uk/polychat-schemas";
+import { isPlatformTeammateId, listPlatformTeammateIds } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Teammate } from "~/lib/database/schema";
 import { requireProjectAccess, requireWorkspaceAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
+
+import { ensurePlatformTeammates } from "./platform-teammates";
 
 export type TeammateAccessAction = "read" | "write";
 
@@ -12,7 +15,7 @@ export const TEAMMATE_CAPABILITY_KIND = "teammate";
 interface ProjectCapabilityGrant {
   kind: string;
   capability_id: string;
-  excluded?: boolean;
+  excluded?: boolean | number;
 }
 
 export function resolveProjectTeammateGrants(
@@ -33,17 +36,22 @@ export function resolveRemovedProjectTeammates(
   );
 }
 
-/**
- * A workspace default reaches every project in that workspace unless the project removed it,
- * so adding a teammate once does not mean adding it to each project by hand.
- */
+export async function listProjectDefaultTeammateIds(
+  context: ServiceContext,
+  workspaceId: string,
+): Promise<string[]> {
+  const workspaceDefaults = await context.repositories.teammates.listWorkspaceDefaults(workspaceId);
+
+  return [...workspaceDefaults.map((teammate) => teammate.id), ...listPlatformTeammateIds()];
+}
+
 export function resolveProjectTeammateIds(params: {
   capabilities: readonly ProjectCapabilityGrant[];
-  workspaceDefaultTeammateIds: readonly string[];
+  defaultTeammateIds: readonly string[];
 }): string[] {
   const removed = resolveRemovedProjectTeammates(params.capabilities);
   const granted = resolveProjectTeammateGrants(params.capabilities);
-  const inherited = params.workspaceDefaultTeammateIds.filter((id) => !removed.has(id));
+  const inherited = params.defaultTeammateIds.filter((id) => !removed.has(id));
 
   return [...new Set([...granted, ...inherited])];
 }
@@ -53,6 +61,10 @@ const TEAMMATE_WRITE_ROLES: readonly WorkspaceRole[] = ["owner", "admin"];
 
 export function isWorkspaceTeammate(teammate: Pick<Teammate, "owner_scope_type">): boolean {
   return teammate.owner_scope_type === "workspace";
+}
+
+export function isPlatformTeammate(teammate: Pick<Teammate, "owner_scope_type">): boolean {
+  return teammate.owner_scope_type === "platform";
 }
 
 export function teammateOwnerScopeForUser(userId: number): {
@@ -68,6 +80,18 @@ export async function assertTeammateAccess(
   action: TeammateAccessAction,
   userId: number,
 ): Promise<void> {
+  if (isPlatformTeammate(teammate)) {
+    if (action === "write") {
+      throw new AssistantError(
+        "Platform teammates are maintained by Polychat and cannot be changed here",
+        ErrorType.FORBIDDEN,
+        403,
+      );
+    }
+
+    return;
+  }
+
   if (isWorkspaceTeammate(teammate)) {
     await requireWorkspaceAccess(
       context,
@@ -84,7 +108,12 @@ export async function assertTeammateAccess(
 }
 
 async function loadTeammate(context: ServiceContext, teammateId: string): Promise<Teammate> {
-  const teammate = await context.repositories.teammates.getTeammateById(teammateId);
+  let teammate = await context.repositories.teammates.getTeammateById(teammateId);
+
+  if (!teammate && isPlatformTeammateId(teammateId)) {
+    await ensurePlatformTeammates(context);
+    teammate = await context.repositories.teammates.getTeammateById(teammateId);
+  }
 
   if (!teammate) {
     throw new AssistantError("Teammate not found", ErrorType.NOT_FOUND, 404);
@@ -113,15 +142,12 @@ export async function requireProjectTeammate(
   teammateId: string,
 ): Promise<Teammate> {
   const { project } = await requireProjectAccess(context, projectId);
-  const [capabilities, workspaceDefaults, teammate] = await Promise.all([
+  const [capabilities, defaultTeammateIds, teammate] = await Promise.all([
     context.repositories.workspaces.listProjectCapabilities(projectId),
-    context.repositories.teammates.listWorkspaceDefaults(project.workspace_id),
+    listProjectDefaultTeammateIds(context, project.workspace_id),
     loadTeammate(context, teammateId),
   ]);
-  const availableIds = resolveProjectTeammateIds({
-    capabilities,
-    workspaceDefaultTeammateIds: workspaceDefaults.map((candidate) => candidate.id),
-  });
+  const availableIds = resolveProjectTeammateIds({ capabilities, defaultTeammateIds });
 
   if (!availableIds.includes(teammateId)) {
     throw new AssistantError(
@@ -173,6 +199,10 @@ export async function assertTeammateAvailableToWorkspace(
   teammate: Pick<Teammate, "owner_scope_type" | "owner_scope_id" | "user_id">,
   workspaceId: string,
 ): Promise<void> {
+  if (isPlatformTeammate(teammate)) {
+    return;
+  }
+
   if (isWorkspaceTeammate(teammate)) {
     if (teammate.owner_scope_id !== workspaceId) {
       throw new AssistantError(

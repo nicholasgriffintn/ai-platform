@@ -51,3 +51,11 @@ export function createUserProviderSettings(
     listConfigurableUserProviderIds(),
   );
 }
+
+export async function ensureUserProvisioned(
+  repositories: RepositoryManager,
+  userId: number,
+): Promise<void> {
+  await createUserSettings(repositories, userId);
+  await createUserProviderSettings(repositories, userId);
+}

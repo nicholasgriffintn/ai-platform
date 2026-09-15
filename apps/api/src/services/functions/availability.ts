@@ -30,12 +30,14 @@ export function resolveEnabledFunctionToolNames(
 export function resolveRequestFunctionToolNames(params: {
   projectTools?: readonly string[];
   requestedToolNames: readonly string[] | undefined;
+  grantedToolNames?: readonly string[];
   toolSelectionMode: ToolSelectionMode | undefined;
   user: Pick<IUser, "id" | "plan_id"> | undefined;
 }): string[] | undefined {
-  const { projectTools, requestedToolNames, toolSelectionMode, user } = params;
-  const scopedRequestedTools = projectTools
-    ? intersectEnabledTools(projectTools, requestedToolNames)
+  const { projectTools, requestedToolNames, grantedToolNames, toolSelectionMode, user } = params;
+  const scopeTools = widenProjectTools(projectTools, grantedToolNames);
+  const scopedRequestedTools = scopeTools
+    ? intersectEnabledTools(scopeTools, requestedToolNames)
     : requestedToolNames;
 
   if (toolSelectionMode !== "managed") {
@@ -50,4 +52,15 @@ export function resolveRequestFunctionToolNames(params: {
   );
 
   return [...new Set([...(scopedRequestedTools ?? []), ...baselineTools, ...(projectTools ?? [])])];
+}
+
+function widenProjectTools(
+  projectTools: readonly string[] | undefined,
+  grantedToolNames: readonly string[] | undefined,
+): readonly string[] | undefined {
+  if (!projectTools || !grantedToolNames?.length) {
+    return projectTools;
+  }
+
+  return [...new Set([...projectTools, ...grantedToolNames])];
 }

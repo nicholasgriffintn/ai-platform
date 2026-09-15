@@ -3,6 +3,7 @@ export * from "./teammateCrud";
 export * from "./hire";
 export * from "./workspace-defaults";
 export * from "./listing";
+export * from "./platform-teammates";
 export * from "./run-admission";
 export * from "./contexts";
 export * from "./context-lifecycle";

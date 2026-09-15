@@ -1,4 +1,4 @@
-import { updateTeammateSchema } from "@ngriffin_uk/polychat-schemas";
+import { listPlatformTeammateIds, updateTeammateSchema } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -25,7 +25,7 @@ function buildStoredTeammate(
     id?: string;
     enabled_tools?: string[] | null;
     model?: string | null;
-    owner_scope_type?: "user" | "workspace";
+    owner_scope_type?: "user" | "workspace" | "platform";
     owner_scope_id?: string;
     skill_ids?: string[] | null;
     user_id?: number;
@@ -73,6 +73,7 @@ function createContext(
       kind: string;
       capability_id: string;
       configuration: null;
+      excluded?: number;
     }[];
   } = {},
 ) {
@@ -86,6 +87,8 @@ function createContext(
       getTeammateById: vi.fn(async () => teammate),
       getTeammatesByIds: vi.fn(async () => overrides.projectTeammates ?? []),
       getTeammatesForScopes: vi.fn(async () => overrides.scopedTeammates ?? []),
+      listPlatformTeammates: vi.fn(async () => []),
+      upsertPlatformTeammates: vi.fn(async () => undefined),
       listWorkspaceDefaults: vi.fn(async () => []),
       createTeammate: vi.fn(async (record: Record<string, unknown>) => ({
         ...buildStoredTeammate(),
@@ -292,7 +295,7 @@ describe("listScopedTeammateSummaries", () => {
     ]);
   });
 
-  it("returns only the teammates a project has attached", async () => {
+  it("returns attached teammates plus the platform teammates every project gets", async () => {
     const { context, repositories } = createContext({
       role: "member",
       projectCapabilities: [
@@ -310,8 +313,31 @@ describe("listScopedTeammateSummaries", () => {
 
     const summaries = await listScopedTeammateSummaries(context, OWNER_ID, PROJECT_ID);
 
-    expect(repositories.teammates.getTeammatesByIds).toHaveBeenCalledWith(["teammate-2"]);
+    expect(repositories.teammates.getTeammatesByIds).toHaveBeenCalledWith([
+      "teammate-2",
+      ...listPlatformTeammateIds(),
+    ]);
     expect(summaries.map((summary) => summary.id)).toEqual(["teammate-2"]);
+  });
+
+  it("keeps a platform teammate the project removed out of the project", async () => {
+    const { context, repositories } = createContext({
+      role: "member",
+      projectCapabilities: [
+        {
+          kind: "teammate",
+          capability_id: "platform-research",
+          configuration: null,
+          excluded: 1,
+        },
+      ],
+    });
+
+    await listScopedTeammateSummaries(context, OWNER_ID, PROJECT_ID);
+
+    expect(repositories.teammates.getTeammatesByIds).toHaveBeenCalledWith(
+      listPlatformTeammateIds().filter((id) => id !== "platform-research"),
+    );
   });
 
   it("drops a project teammate whose author has left the workspace", async () => {
@@ -343,6 +369,37 @@ describe("listScopedTeammateSummaries", () => {
       modelAvailable: false,
       unavailableSkillIds: ["not-a-real-skill"],
       unavailableToolIds: ["not_a_real_tool"],
+    });
+  });
+
+  it("does not mark platform grants or the core teammate tools as unavailable", async () => {
+    const { context } = createContext({
+      workspaces: [],
+      scopedTeammates: [
+        buildStoredTeammate({
+          id: "platform-support",
+          user_id: -1,
+          owner_scope_type: "platform",
+          owner_scope_id: "platform",
+          skill_ids: ["structured-reasoning"],
+          enabled_tools: ["search_documents", "request_approval"],
+        }),
+        buildStoredTeammate({
+          enabled_tools: ["request_approval"],
+        }),
+      ],
+    });
+
+    const [platformSummary, personalSummary] = await listScopedTeammateSummaries(context, OWNER_ID);
+
+    expect(platformSummary).toMatchObject({
+      id: "platform-support",
+      ownerScopeType: "platform",
+      unavailableSkillIds: [],
+      unavailableToolIds: [],
+    });
+    expect(personalSummary).toMatchObject({
+      unavailableToolIds: [],
     });
   });
 });

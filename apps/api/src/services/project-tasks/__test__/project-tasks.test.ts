@@ -825,6 +825,39 @@ describe("resolveTaskRuntime", () => {
     expect(runtime.teammate?.id).toBe("teammate-1");
   });
 
+  it("gives a platform teammate its own tools and skills inside a project", async () => {
+    const { context } = createContext({
+      teammate: {
+        id: "platform-research",
+        user_id: -1,
+        owner_scope_type: "platform",
+        owner_scope_id: "platform",
+        enabled_tools: ["search_documents", "create_note"],
+        skill_ids: ["document-research"],
+        model: null,
+      },
+    });
+
+    const runtime = await resolveTaskRuntime({
+      context,
+      task: {
+        ...baseTask,
+        runner: {
+          kind: "conversation",
+          teammateId: "platform-research",
+          model: null,
+          mode: null,
+        },
+      },
+      flow: null,
+    });
+
+    expect(runtime.enabledTools).toEqual(
+      expect.arrayContaining(["search_documents", "create_note"]),
+    );
+    expect(runtime.skillIds).toEqual(["document-research"]);
+  });
+
   it("refuses an attached teammate that now belongs to another workspace", async () => {
     const { context } = createContext({
       capabilities: [{ kind: "teammate", capability_id: "teammate-1" }],

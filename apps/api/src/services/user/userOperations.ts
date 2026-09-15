@@ -4,6 +4,7 @@ import {
   getUserConfigurableProviderMetadata,
   listConfigurableUserProviderIds,
 } from "~/lib/providers/userConfigurableProviders";
+import { ensureUserProvisioned } from "~/services/auth/user";
 import { validatePetSettingsUpdate } from "~/services/pets/settings";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { getLogger } from "~/utils/logger";
@@ -67,6 +68,9 @@ export async function updateUserSettings(
 ): Promise<{ success: boolean; message: string }> {
   const repo = ensureRepo(context);
   const id = userId ?? context.requireUser().id;
+
+  await ensureUserProvisioned(context.repositories, id);
+
   const validatedSettings = await validatePetSettingsUpdate(context, id, settings);
 
   await repo.updateUserSettings(id, validatedSettings);
@@ -104,6 +108,8 @@ export async function storeProviderApiKey(
 ): Promise<{ success: boolean; message: string }> {
   const repo = ensureRepo(context);
   const id = userId ?? context.requireUser().id;
+
+  await ensureUserProvisioned(context.repositories, id);
 
   await repo.storeProviderApiKey(id, providerId, apiKey, secretKey, configuration);
   await invalidateUserModelCache(context, id, "store-provider-api-key", providerId);

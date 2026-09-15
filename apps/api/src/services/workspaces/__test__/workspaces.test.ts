@@ -484,6 +484,7 @@ describe("project capability ownership", () => {
     kind: "recipe",
     capability_id: assistantRecipes[0].id,
     configuration: {},
+    excluded: 0,
     created_by: 2,
     created_at: "2026-08-10T12:00:00.000Z",
   };

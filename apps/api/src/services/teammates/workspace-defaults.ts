@@ -21,21 +21,20 @@ export async function removeInheritedTeammateFromProject(
 
   if (role === "member") {
     throw new AssistantError(
-      "Only project admins can remove a workspace teammate",
+      "Only project admins can remove a default teammate",
       ErrorType.FORBIDDEN,
       403,
     );
   }
 
   const teammate = await context.repositories.teammates.getTeammateById(teammateId);
+  const isPlatformDefault = teammate?.owner_scope_type === "platform";
+  const isWorkspaceDefault =
+    teammate?.owner_scope_type === "workspace" && teammate.owner_scope_id === project.workspace_id;
 
-  if (
-    !teammate ||
-    teammate.owner_scope_type !== "workspace" ||
-    teammate.owner_scope_id !== project.workspace_id
-  ) {
+  if (!teammate || (!isPlatformDefault && !isWorkspaceDefault)) {
     throw new AssistantError(
-      "That teammate does not belong to this workspace",
+      "That teammate is not a default for this project",
       ErrorType.NOT_FOUND,
       404,
     );
@@ -72,7 +71,7 @@ export async function restoreInheritedTeammateToProject(
 
   if (role === "member") {
     throw new AssistantError(
-      "Only project admins can restore a workspace teammate",
+      "Only project admins can restore a default teammate",
       ErrorType.FORBIDDEN,
       403,
     );

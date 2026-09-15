@@ -1,4 +1,5 @@
 import type { TeammateResponse, TeammateSummary } from "@ngriffin_uk/polychat-schemas";
+import { findPlatformTeammate } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Teammate } from "~/lib/database/schema";
@@ -11,13 +12,35 @@ import { getAvailableTools } from "~/services/tools/toolsOperations";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
 
-import { isTeammateAvailableToWorkspace, resolveProjectTeammateIds } from "./access";
+import {
+  isTeammateAvailableToWorkspace,
+  listProjectDefaultTeammateIds,
+  resolveProjectTeammateIds,
+} from "./access";
+import { buildTeammateCompletionTools } from "./completion-tools";
+import { ensurePlatformTeammates } from "./platform-teammates";
 import { getUserTeammates } from "./teammateCrud";
 import { normaliseTeammateResponse } from "./teammateResponse";
 
 interface TeammateScopeAvailability {
   skillIds: ReadonlySet<string>;
   toolIds: ReadonlySet<string>;
+}
+
+const CORE_TEAMMATE_TOOL_IDS = new Set(buildTeammateCompletionTools().map((tool) => tool.name));
+
+function resolveAvailableToolIds(
+  teammate: TeammateResponse,
+  availability: TeammateScopeAvailability,
+): ReadonlySet<string> {
+  const available = new Set([...availability.toolIds, ...CORE_TEAMMATE_TOOL_IDS]);
+  const platformTeammate = findPlatformTeammate(teammate.id);
+
+  for (const toolId of platformTeammate?.tools ?? []) {
+    available.add(toolId);
+  }
+
+  return available;
 }
 
 async function builtInSkillIds(): Promise<string[]> {
@@ -76,6 +99,7 @@ function toTeammateSummary(
   scorecards: ReadonlyMap<string, { good: number; bad: number }>,
 ): TeammateSummary {
   const toolIds = teammate.enabled_tools ?? [];
+  const availableToolIds = resolveAvailableToolIds(teammate, availability);
 
   return {
     id: teammate.id,
@@ -92,7 +116,7 @@ function toTeammateSummary(
     unavailableSkillIds: teammate.skill_ids.filter(
       (skillId) => !availability.skillIds.has(skillId),
     ),
-    unavailableToolIds: toolIds.filter((toolId) => !availability.toolIds.has(toolId)),
+    unavailableToolIds: toolIds.filter((toolId) => !availableToolIds.has(toolId)),
     scorecard: scorecards.get(teammate.id) ?? { good: 0, bad: 0 },
   };
 }
@@ -136,14 +160,12 @@ export async function listScopedTeammateSummaries(
 ): Promise<TeammateSummary[]> {
   if (projectId) {
     const { project } = await requireProjectAccess(context, projectId);
+
+    await ensurePlatformTeammates(context);
+
     const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
-    const workspaceDefaults = await context.repositories.teammates.listWorkspaceDefaults(
-      project.workspace_id,
-    );
-    const grantedTeammateIds = resolveProjectTeammateIds({
-      capabilities,
-      workspaceDefaultTeammateIds: workspaceDefaults.map((teammate) => teammate.id),
-    });
+    const defaultTeammateIds = await listProjectDefaultTeammateIds(context, project.workspace_id);
+    const grantedTeammateIds = resolveProjectTeammateIds({ capabilities, defaultTeammateIds });
 
     if (grantedTeammateIds.length === 0) {
       return [];

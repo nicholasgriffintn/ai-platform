@@ -175,6 +175,17 @@ export class UserSettingsRepository extends BaseRepository {
 
   public async createUserSettings(userId: number): Promise<void> {
     try {
+      const { query, values } = this.buildSelectQuery(
+        "user_settings",
+        { user_id: userId },
+        { columns: ["id"] },
+      );
+      const existing = await this.runQuery<{ id: string }>(query, values, true);
+
+      if (existing) {
+        return;
+      }
+
       const keyPair = await crypto.subtle.generateKey(
         {
           name: "RSA-OAEP",

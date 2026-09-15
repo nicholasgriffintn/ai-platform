@@ -22,15 +22,19 @@ export function createAssistantIdentityStore(
       return user ? toAssistantAuthUser(user) : null;
     },
     async resolve(identity) {
+      let user: AssistantAuthUser;
+
       if (identity.provider === "apple") {
-        return resolveAppleUser(context, identity);
+        user = await resolveAppleUser(context, identity);
+      } else if (identity.provider === "github") {
+        user = await resolveGitHubUser(context, identity);
+      } else {
+        throw new TypeError("Unsupported external identity provider.");
       }
 
-      if (identity.provider === "github") {
-        return resolveGitHubUser(context, identity);
-      }
+      await initialiseAssistantUser(context, user.record.id);
 
-      throw new TypeError("Unsupported external identity provider.");
+      return user;
     },
   };
 }

@@ -15,7 +15,10 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import {
   agentModeSchema,
+  createProjectFlowFromWorkflow,
   createSuggestedProjectFlow,
+  platformTeammateCategoryLabels,
+  PROJECT_WORKFLOWS,
   type ProjectFlow,
   type ProjectFlowStage,
   type ToolPermission,
@@ -56,6 +59,17 @@ const APPROVAL_OPTIONS: { permission: ToolPermission; label: string }[] = [
   { permission: "orchestration", label: "Orchestration" },
 ];
 
+const SUGGESTED_PIPELINE = "__suggested";
+
+const WORKFLOW_OPTIONS: FormSelectOption[] = [
+  { value: "", label: "From scratch" },
+  { value: SUGGESTED_PIPELINE, label: "Suggested: research → plan → build → review" },
+  ...PROJECT_WORKFLOWS.map((workflow) => ({
+    value: workflow.slug,
+    label: `${platformTeammateCategoryLabels[workflow.category]} · ${workflow.name}`,
+  })),
+];
+
 function newStage(): ProjectFlowStage {
   return {
     id: `stage-${crypto.randomUUID().slice(0, 8)}`,
@@ -82,6 +96,7 @@ export function FlowEditorDialog({
   onSave,
 }: FlowEditorDialogProps) {
   const [stages, setStages] = useState<ProjectFlowStage[]>([]);
+  const [workflowSlug, setWorkflowSlug] = useState("");
   const [prevFlow, setPrevFlow] = useState<ProjectFlow | null>(null);
   const [prevOpen, setPrevOpen] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -93,8 +108,25 @@ export function FlowEditorDialog({
 
     if (open) {
       setStages(flow?.stages.map((stage) => ({ ...stage })) ?? [newStage()]);
+      setWorkflowSlug("");
     }
   }
+
+  const applyWorkflow = (slug: string) => {
+    setWorkflowSlug(slug);
+
+    if (slug === SUGGESTED_PIPELINE) {
+      setStages(createSuggestedProjectFlow().stages);
+
+      return;
+    }
+
+    const template = slug ? createProjectFlowFromWorkflow(slug) : null;
+
+    if (template) {
+      setStages(template.stages);
+    }
+  };
 
   const updateStage = (index: number, update: Partial<ProjectFlowStage>) => {
     setStages((current) =>
@@ -152,19 +184,17 @@ export function FlowEditorDialog({
           <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface-elevated p-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-medium text-foreground">
-                {teammates.length} attached teammate{teammates.length === 1 ? "" : "s"} ·{" "}
+                {teammates.length} teammate{teammates.length === 1 ? "" : "s"} available ·{" "}
                 {skills.length} attached skill{skills.length === 1 ? "" : "s"}
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                Add teammates and skills through project Capabilities, where you can also build a
-                new teammate for this project.
+                Platform teammates are included by default. Add more through project Capabilities,
+                where you can also build a new teammate for this project.
               </p>
-              {isNewFlow ? (
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Not sure where to start? The suggested pipeline runs research, plan, build and
-                  review with the project default agent, pausing for you after plan and review.
-                </p>
-              ) : null}
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Start from a workflow or set each phase up yourself. You can edit every stage after
+                applying a workflow.
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
               {isNewFlow ? (
@@ -198,6 +228,14 @@ export function FlowEditorDialog({
               </ButtonLink>
             </div>
           </div>
+
+          <FormSelect
+            label="Start from a workflow"
+            description="Workflows sequence platform teammates across phases, with approval gates where a person should check the work."
+            value={workflowSlug}
+            options={WORKFLOW_OPTIONS}
+            onValueChange={applyWorkflow}
+          />
 
           <div className="space-y-3">
             {stages.map((stage, index) => (

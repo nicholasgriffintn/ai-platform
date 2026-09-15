@@ -23,9 +23,11 @@ export function AccessSection({
       description="Who owns this teammate, and therefore who can change it."
     >
       <p className="text-sm">
-        {ownerScopeType === "workspace"
-          ? `Owned by ${ownerLabel}. Workspace owners and admins can change it; everyone else can use it.`
-          : `Owned by ${ownerLabel}. Only you can change it.`}
+        {ownerScopeType === "platform"
+          ? "Available to everyone by default. Polychat maintains it, so it cannot be changed here."
+          : ownerScopeType === "workspace"
+            ? `Owned by ${ownerLabel}. Workspace owners and admins can change it; everyone else can use it.`
+            : `Owned by ${ownerLabel}. Only you can change it.`}
       </p>
 
       {!isSaved && (

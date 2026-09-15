@@ -1,5 +1,6 @@
 import {
   findFlowStage,
+  readToolIds,
   PROJECT_TASK_INTERACTION_TOOL_IDS,
   PROJECT_TASK_TOOL_IDS,
   type ProjectFlow,
@@ -11,7 +12,8 @@ import {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Teammate } from "~/lib/database/schema";
 import { resolveProjectSkillGrants } from "~/services/skills/scope";
-import { requireProjectTeammate } from "~/services/teammates/access";
+import { isPlatformTeammate, requireProjectTeammate } from "~/services/teammates/access";
+import { readTeammateSkillIds } from "~/services/teammates/teammateResponse";
 import {
   PROJECT_CODING_TOOL_IDS,
   resolveProjectCodingEnvironment,
@@ -53,6 +55,26 @@ function resolveRequestedSkillIds(
   return [...new Set([...(stage?.skillIds ?? []), ...toStringArray(teammate?.skill_ids)])];
 }
 
+function resolveTeammateTools(projectTools: string[], teammate: Teammate | null): string[] {
+  if (!teammate) {
+    return projectTools;
+  }
+
+  if (isPlatformTeammate(teammate)) {
+    return [...new Set([...projectTools, ...(readToolIds(teammate.enabled_tools) ?? [])])];
+  }
+
+  return intersectEnabledTools(projectTools, teammate.enabled_tools);
+}
+
+function resolveTeammateSkillIds(projectSkillIds: string[], teammate: Teammate | null): string[] {
+  if (!teammate || !isPlatformTeammate(teammate)) {
+    return projectSkillIds;
+  }
+
+  return [...projectSkillIds, ...readTeammateSkillIds(teammate.skill_ids)];
+}
+
 export async function resolveTaskRuntime(params: {
   context: ServiceContext;
   task: ProjectTask;
@@ -69,11 +91,10 @@ export async function resolveTaskRuntime(params: {
   const teammate = teammateId
     ? await requireProjectTeammate(context, task.projectId, teammateId)
     : null;
-  const configuredTools = teammate
-    ? intersectEnabledTools(projectTools, teammate.enabled_tools)
-    : projectTools;
+  const configuredTools = resolveTeammateTools(projectTools, teammate);
   const project = await context.repositories.workspaces.getProject(task.projectId);
   const codingTools = resolveProjectCodingEnvironment(project) ? PROJECT_CODING_TOOL_IDS : [];
+  const grantedSkillIds = resolveTeammateSkillIds(projectSkillIds, teammate);
 
   return {
     stage,
@@ -91,7 +112,7 @@ export async function resolveTaskRuntime(params: {
       ],
       task.constraints?.forbiddenTools,
     ),
-    skillIds: intersectGrantedIds(projectSkillIds, resolveRequestedSkillIds(stage, teammate)),
+    skillIds: intersectGrantedIds(grantedSkillIds, resolveRequestedSkillIds(stage, teammate)),
     requireApprovalFor: [
       ...new Set([...(stage?.requiresApprovalFor ?? []), ...task.requireApprovalFor]),
     ],

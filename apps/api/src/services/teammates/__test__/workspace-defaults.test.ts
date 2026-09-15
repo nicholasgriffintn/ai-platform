@@ -8,21 +8,21 @@ const grant = (capabilityId: string, excluded = false) => ({
   excluded,
 });
 
-describe("workspace teammate defaults", () => {
-  it("gives a project every workspace default without it asking", () => {
+describe("project teammate defaults", () => {
+  it("gives a project every default teammate without it asking", () => {
     expect(
       resolveProjectTeammateIds({
         capabilities: [],
-        workspaceDefaultTeammateIds: ["teammate-1", "teammate-2"],
+        defaultTeammateIds: ["teammate-1", "teammate-2", "platform-research"],
       }),
-    ).toEqual(["teammate-1", "teammate-2"]);
+    ).toEqual(["teammate-1", "teammate-2", "platform-research"]);
   });
 
   it("keeps a default out of a project that removed it", () => {
     expect(
       resolveProjectTeammateIds({
-        capabilities: [grant("teammate-1", true)],
-        workspaceDefaultTeammateIds: ["teammate-1", "teammate-2"],
+        capabilities: [grant("teammate-1", true), grant("platform-research", true)],
+        defaultTeammateIds: ["teammate-1", "teammate-2", "platform-research"],
       }),
     ).toEqual(["teammate-2"]);
   });
@@ -31,9 +31,27 @@ describe("workspace teammate defaults", () => {
     expect(
       resolveProjectTeammateIds({
         capabilities: [grant("teammate-1")],
-        workspaceDefaultTeammateIds: ["teammate-1"],
+        defaultTeammateIds: ["teammate-1"],
       }),
     ).toEqual(["teammate-1"]);
+  });
+
+  it("still honours a teammate attached to the project directly", () => {
+    expect(
+      resolveProjectTeammateIds({
+        capabilities: [grant("teammate-3")],
+        defaultTeammateIds: [],
+      }),
+    ).toEqual(["teammate-3"]);
+  });
+
+  it("treats an exclusion row from SQLite as a removal, not a grant", () => {
+    expect(
+      resolveProjectTeammateIds({
+        capabilities: [{ kind: "teammate", capability_id: "platform-research", excluded: 1 }],
+        defaultTeammateIds: ["platform-research"],
+      }),
+    ).toEqual([]);
   });
 
   it("ignores an exclusion for something that is not a teammate", () => {
@@ -42,14 +60,5 @@ describe("workspace teammate defaults", () => {
         { kind: "app", capability_id: "featured-notes", excluded: true },
       ]),
     ).toEqual(new Set());
-  });
-
-  it("still honours a teammate attached to the project directly", () => {
-    expect(
-      resolveProjectTeammateIds({
-        capabilities: [grant("teammate-3")],
-        workspaceDefaultTeammateIds: [],
-      }),
-    ).toEqual(["teammate-3"]);
   });
 });

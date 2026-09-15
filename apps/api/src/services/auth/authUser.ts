@@ -1,8 +1,9 @@
 import type { AuthUserWithEmail, UserStore } from "@ngriffin_uk/auth-core";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { listConfigurableUserProviderIds } from "~/lib/providers/userConfigurableProviders";
 import type { User } from "~/types";
+
+import { ensureUserProvisioned } from "./user";
 
 export interface AssistantAuthUser extends AuthUserWithEmail {
   readonly record: User;
@@ -36,6 +37,8 @@ export async function resolveAssistantEmailUser(
   const existing = await context.repositories.users.getUserByEmail(email);
 
   if (existing) {
+    await initialiseAssistantUser(context, existing.id);
+
     return toAssistantAuthUser(existing);
   }
 
@@ -54,13 +57,7 @@ export async function initialiseAssistantUser(
   context: ServiceContext,
   userId: number,
 ): Promise<void> {
-  await Promise.allSettled([
-    context.repositories.userSettings.createUserSettings(userId),
-    context.repositories.userSettings.createUserProviderSettings(
-      userId,
-      listConfigurableUserProviderIds(),
-    ),
-  ]);
+  await Promise.allSettled([ensureUserProvisioned(context.repositories, userId)]);
 }
 
 export function toAssistantAuthUser(record: User): AssistantAuthUser {

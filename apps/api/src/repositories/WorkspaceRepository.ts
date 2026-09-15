@@ -106,6 +106,7 @@ export interface ProjectCapabilityRow {
   kind: ProjectCapabilityKind;
   capability_id: string;
   configuration: string | Record<string, unknown> | null;
+  excluded: number;
   created_by: number;
   created_at: string;
 }
@@ -777,7 +778,7 @@ export class WorkspaceRepository extends BaseRepository {
     return this.runQuery<ProjectCapabilityRow>(
       `SELECT pc.id, pc.project_id, pc.kind, pc.capability_id,
 				COALESCE(cc.configuration, pc.configuration) AS configuration,
-				pc.created_by, pc.created_at
+				pc.excluded, pc.created_by, pc.created_at
 			 FROM project_capability pc
 			 LEFT JOIN capability_configuration cc
 				ON cc.scope_type = 'project'

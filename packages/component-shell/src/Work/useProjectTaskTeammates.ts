@@ -1,4 +1,5 @@
 import { useTeammates } from "@ngriffin_uk/polychat-library-react";
+import { isPlatformTeammateId, PLATFORM_TEAMMATES } from "@ngriffin_uk/polychat-schemas";
 import type { ProjectCapability, SkillSummary } from "@ngriffin_uk/polychat-schemas";
 
 export function useProjectTaskTeammates(capabilities: ProjectCapability[] | undefined) {
@@ -8,10 +9,17 @@ export function useProjectTaskTeammates(capabilities: ProjectCapability[] | unde
       .filter((capability) => capability.kind === "teammate")
       .map((capability) => capability.capabilityId),
   );
+  const entries = new Map(
+    PLATFORM_TEAMMATES.map((teammate) => [teammate.id, { id: teammate.id, name: teammate.name }]),
+  );
 
-  return (teammates ?? [])
-    .filter((teammate) => attached.has(teammate.id))
-    .map((teammate) => ({ id: teammate.id, name: teammate.name ?? teammate.id }));
+  for (const teammate of teammates ?? []) {
+    if (attached.has(teammate.id) || isPlatformTeammateId(teammate.id)) {
+      entries.set(teammate.id, { id: teammate.id, name: teammate.name ?? teammate.id });
+    }
+  }
+
+  return [...entries.values()];
 }
 
 export function projectTaskSkills(

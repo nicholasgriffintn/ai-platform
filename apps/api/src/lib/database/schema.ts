@@ -2169,7 +2169,7 @@ export const teammates = sqliteTable(
     user_id: integer()
       .notNull()
       .references(() => user.id),
-    owner_scope_type: text({ enum: ["user", "workspace"] })
+    owner_scope_type: text({ enum: ["user", "workspace", "platform"] })
       .default("user")
       .notNull(),
     owner_scope_id: text().default("").notNull(),

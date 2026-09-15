@@ -2,6 +2,7 @@ import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
 import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { CapabilityConfigurationRepository } from "~/repositories/CapabilityConfigurationRepository";
+import { resolvePlatformTeammateGrants } from "~/services/teammates/platform-teammates";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import type { IRequest } from "~/types";
 
@@ -88,8 +89,12 @@ export async function resolveSkillScope(request: IRequest): Promise<RequestSkill
   if (projectId && context) {
     await requireProjectAccess(context, projectId);
     const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
+    const platformGrants = resolvePlatformTeammateGrants(request.request?.resolved_configuration);
 
-    return createProjectSkillScope(resolveProjectSkillGrants(capabilities));
+    return createProjectSkillScope([
+      ...resolveProjectSkillGrants(capabilities),
+      ...(platformGrants?.skillIds ?? []),
+    ]);
   }
 
   if (context && request.user?.id) {

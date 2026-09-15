@@ -5,6 +5,10 @@ import type {
   TeammateOwnerScopeType,
   TeammateKind,
 } from "@ngriffin_uk/polychat-schemas";
+import {
+  PLATFORM_TEAMMATE_AUTHOR_USER_ID,
+  PLATFORM_TEAMMATE_SCOPE_ID,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { Teammate } from "~/lib/database/schema";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -31,6 +35,23 @@ export interface CreateTeammateRecord {
   enabledTools?: string[] | null;
   skillIds?: string[] | null;
   mode?: AgentMode | null;
+}
+
+export interface PlatformTeammateRecord {
+  id: string;
+  kind: TeammateKind;
+  name: string;
+  description: string;
+  avatarUrl: string | null;
+  servers: TeammateMcpServer[];
+  model: string | null;
+  temperature: number | null;
+  maxSteps: number | null;
+  systemPrompt: string;
+  fewShotExamples: TeammateFewShotExample[] | null;
+  enabledTools: string[] | null;
+  skillIds: string[] | null;
+  mode: AgentMode | null;
 }
 
 export class TeammateRepository extends BaseRepository {
@@ -92,9 +113,71 @@ export class TeammateRepository extends BaseRepository {
     return this.runQuery<Teammate>(
       `SELECT * FROM teammates
 			 WHERE (owner_scope_type = 'user' AND owner_scope_id = ?)${workspaceClause}
+				OR owner_scope_type = 'platform'
 			 ORDER BY created_at DESC`,
       [String(userId), ...uniqueWorkspaceIds],
     );
+  }
+
+  public async listPlatformTeammates(): Promise<Teammate[]> {
+    return this.runQuery<Teammate>(
+      `SELECT * FROM teammates
+       WHERE owner_scope_type = 'platform'
+       ORDER BY id ASC`,
+    );
+  }
+
+  public async upsertPlatformTeammates(records: PlatformTeammateRecord[]): Promise<void> {
+    if (records.length === 0) {
+      return;
+    }
+
+    const statements = records.map((record) =>
+      this.env.DB.prepare(
+        `INSERT INTO teammates (
+          id, user_id, owner_scope_type, owner_scope_id, derived_from_teammate_id, kind,
+          workspace_default, name, description, avatar_url, servers, model, temperature,
+          max_steps, system_prompt, few_shot_examples, enabled_tools, skill_ids, mode,
+          created_at, updated_at
+        ) VALUES (?, ?, 'platform', ?, NULL, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+          CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        ON CONFLICT(id) DO UPDATE SET
+          kind = excluded.kind,
+          name = excluded.name,
+          description = excluded.description,
+          avatar_url = excluded.avatar_url,
+          servers = excluded.servers,
+          model = excluded.model,
+          temperature = excluded.temperature,
+          max_steps = excluded.max_steps,
+          system_prompt = excluded.system_prompt,
+          few_shot_examples = excluded.few_shot_examples,
+          enabled_tools = excluded.enabled_tools,
+          skill_ids = excluded.skill_ids,
+          mode = excluded.mode,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE teammates.owner_scope_type = 'platform'`,
+      ).bind(
+        record.id,
+        PLATFORM_TEAMMATE_AUTHOR_USER_ID,
+        PLATFORM_TEAMMATE_SCOPE_ID,
+        record.kind,
+        record.name,
+        record.description,
+        record.avatarUrl,
+        JSON.stringify(record.servers),
+        record.model,
+        record.temperature !== null ? record.temperature.toString() : null,
+        record.maxSteps,
+        record.systemPrompt,
+        record.fewShotExamples ? JSON.stringify(record.fewShotExamples) : null,
+        record.enabledTools ? JSON.stringify(record.enabledTools) : null,
+        record.skillIds ? JSON.stringify(record.skillIds) : null,
+        record.mode,
+      ),
+    );
+
+    await this.executeBatch(statements);
   }
 
   public async listWorkspaceDefaults(workspaceId: string): Promise<Teammate[]> {

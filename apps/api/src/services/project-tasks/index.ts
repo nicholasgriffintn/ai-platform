@@ -18,6 +18,10 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ListProjectTaskFilters } from "~/repositories/ProjectTaskRepository";
 import { createGoalService } from "~/services/goals/createGoalService";
 import { TaskService } from "~/services/tasks/TaskService";
+import {
+  listProjectDefaultTeammateIds,
+  resolveProjectTeammateIds,
+} from "~/services/teammates/access";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { parseProjectFlow } from "~/services/workspaces/format";
 import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
@@ -664,22 +668,23 @@ export async function setProjectFlow(
   const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
 
   if (flow) {
-    const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
-    const attachedTeammates = new Set(
-      capabilities
-        .filter((capability) => capability.kind === "teammate")
-        .map((capability) => capability.capability_id),
+    const [capabilities, defaultTeammateIds] = await Promise.all([
+      context.repositories.workspaces.listProjectCapabilities(projectId),
+      listProjectDefaultTeammateIds(context, project.workspace_id),
+    ]);
+    const availableTeammates = new Set(
+      resolveProjectTeammateIds({ capabilities, defaultTeammateIds }),
     );
     const missing = flow.stages
       .map((stage) => stage.teammateId)
       .filter(
         (teammateId): teammateId is string =>
-          Boolean(teammateId) && !attachedTeammates.has(teammateId),
+          Boolean(teammateId) && !availableTeammates.has(teammateId),
       );
 
     if (missing.length > 0) {
       throw new AssistantError(
-        `Attach these teammates to the project before using them in a flow: ${missing.join(", ")}`,
+        `These teammates are not available in this project: ${missing.join(", ")}`,
         ErrorType.PARAMS_ERROR,
         400,
       );

@@ -30,6 +30,7 @@ describe("project tool configuration", () => {
           kind: "tool",
           capability_id: "get_weather",
           configuration: {},
+          excluded: 0,
           created_by: 1,
           created_at: "2026-08-11T00:00:00.000Z",
         },

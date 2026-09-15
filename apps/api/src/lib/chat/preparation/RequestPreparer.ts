@@ -40,6 +40,7 @@ import {
   mergeSkillLoadToolName,
   mergeSkillSuggestedToolNames,
 } from "~/services/skills";
+import { resolvePlatformTeammateGrants } from "~/services/teammates/platform-teammates";
 import {
   getModelToolDefinition,
   mergePersonalModelToolOptions,
@@ -222,6 +223,7 @@ export class RequestPreparer {
     return resolveRequestFunctionToolNames({
       projectTools: scope.projectContext?.enabledTools,
       requestedToolNames: scope.options.enabled_tools,
+      grantedToolNames: resolvePlatformTeammateGrants(scope.options.resolved_configuration)?.tools,
       toolSelectionMode: scope.options.tool_selection_mode,
       user: scope.user,
     });

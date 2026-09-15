@@ -4,7 +4,7 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { requireWorkspaceAccess } from "~/services/workspaces/access";
 import { AssistantError, ErrorType } from "~/utils/errors";
 
-import { isWorkspaceTeammate, requireTeammateAccess } from "./access";
+import { isPlatformTeammate, isWorkspaceTeammate, requireTeammateAccess } from "./access";
 import { resolveTeammateMcpServers } from "./mcp-servers";
 import { normaliseTeammateResponse } from "./teammateResponse";
 
@@ -25,6 +25,14 @@ export async function publishTeammateToWorkspace(
   if (isWorkspaceTeammate(source)) {
     throw new AssistantError(
       "That teammate is already owned by a workspace",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  if (isPlatformTeammate(source)) {
+    throw new AssistantError(
+      "Platform teammates are already available to every workspace",
       ErrorType.CONFLICT_ERROR,
       409,
     );

@@ -138,7 +138,7 @@ export const updateTeammateSchema = z
     error: "At least one field must be provided",
   });
 
-export const teammateOwnerScopeTypeSchema = z.enum(["user", "workspace"]);
+export const teammateOwnerScopeTypeSchema = z.enum(["user", "workspace", "platform"]);
 
 export const publishTeammateToWorkspaceSchema = z.object({
   workspace_id: z

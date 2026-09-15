@@ -7,11 +7,15 @@ import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { teammateOwnerScopeForUser, requireTeammateAccess } from "./access";
 import { mutateTeammateContextsWithCleanup } from "./context-lifecycle";
+import { ensurePlatformTeammates } from "./platform-teammates";
 import { normaliseTeammateResponse } from "./teammateResponse";
 
 export async function getUserTeammates(context: ServiceContext, userId?: number) {
   context.ensureDatabase();
   const id = userId ?? context.requireUser().id;
+
+  await ensurePlatformTeammates(context);
+
   const workspaces = await context.repositories.workspaces.listWorkspaces(id);
 
   return (

@@ -407,6 +407,10 @@ function isWorkspaceOwnedTeammate(teammate: AssistantActionTeammateSource): bool
   return teammate.ownerScopeType === "workspace";
 }
 
+function isPlatformOwnedTeammate(teammate: AssistantActionTeammateSource): boolean {
+  return teammate.ownerScopeType === "platform";
+}
+
 function getTeammateUnavailabilityReason(
   teammate: AssistantActionTeammateSource,
 ): string | undefined {
@@ -426,13 +430,21 @@ function getTeammateUnavailabilityReason(
 }
 
 function getTeammateCapabilityCategory(teammate: AssistantActionTeammateSource): string {
+  if (isPlatformOwnedTeammate(teammate)) {
+    return "Platform";
+  }
+
   return isWorkspaceOwnedTeammate(teammate) ? "Workspace" : "Personal";
 }
 
 function getTeammateTags(teammate: AssistantActionTeammateSource): string[] {
   return [
     "teammate",
-    isWorkspaceOwnedTeammate(teammate) ? "workspace" : "personal",
+    isPlatformOwnedTeammate(teammate)
+      ? "platform"
+      : isWorkspaceOwnedTeammate(teammate)
+        ? "workspace"
+        : "personal",
     ...(teammate.mode ? [teammate.mode] : []),
     ...(teammate.skillIds.length > 0 ? ["skills"] : []),
     ...(teammate.toolIds.length > 0 ? ["tools"] : []),

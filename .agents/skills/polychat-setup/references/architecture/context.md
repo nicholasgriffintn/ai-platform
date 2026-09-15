@@ -10,6 +10,8 @@ Use this as the ownership and responsibility map. Detailed rationale is in [deci
 - **Scope**: personal or project authority boundaries.
 - **Conversation**: durable user history; **Activity**: user-visible execution trace.
 - **Teammate context**: one teammate's durable home, grants, routines and computer within a personal or project scope.
+- **Platform teammate**: a read-only teammate defined in code and available to every project by default; its tools and skills are platform grants.
+- **Workflow**: a code-defined sequence of project flow stages that can be applied and then edited as task phases.
 - **Brief**: a revisioned memory document explicitly bound to a conversation and loaded into its runs.
 
 ## Deployables and owners

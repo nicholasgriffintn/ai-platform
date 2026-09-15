@@ -113,6 +113,29 @@ describe("functions tool registry", () => {
     expect(enabled).toEqual(["create_note", CAPABILITY_DISCOVERY_TOOL_NAME, "load_skill"]);
   });
 
+  it("lets a platform teammate bring its own tools into a project", () => {
+    const enabled = resolveRequestFunctionToolNames({
+      projectTools: ["create_note"],
+      requestedToolNames: ["search_documents", "create_note"],
+      grantedToolNames: ["search_documents"],
+      toolSelectionMode: "explicit",
+      user: { id: 1, plan_id: "pro" },
+    });
+
+    expect(enabled).toEqual(["search_documents", "create_note"]);
+  });
+
+  it("does not switch platform tools on for other project chats", () => {
+    const enabled = resolveRequestFunctionToolNames({
+      projectTools: ["create_note"],
+      requestedToolNames: ["search_documents", "create_note"],
+      toolSelectionMode: "explicit",
+      user: { id: 1, plan_id: "pro" },
+    });
+
+    expect(enabled).toEqual(["create_note"]);
+  });
+
   it("leaves an explicit request untouched", () => {
     expect(
       resolveRequestFunctionToolNames({

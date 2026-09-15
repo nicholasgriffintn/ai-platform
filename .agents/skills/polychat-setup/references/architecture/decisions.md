@@ -30,6 +30,7 @@ Read the relevant record before changing any durable boundary.
 - [0016: Keep meta tools in the meta scope](decisions/0016-meta-tools-belong-to-the-meta-scope.md)
 - [0017: Bind connector execution to exact local authority](decisions/0017-bind-connector-execution-to-local-authority.md)
 - [0039: Set permission mode on the conversation](decisions/0039-set-permission-mode-on-the-conversation.md)
+- [0043: Keep platform teammates in the teammate system and route task phases through them](decisions/0043-platform-teammates-and-task-workflows.md)
 
 ## Work orchestration
 
