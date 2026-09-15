@@ -32,6 +32,7 @@ import { DiscoverSidebarSection } from "../Sidebar/DiscoverSidebarSection.js";
 import { PlacesNavLinks } from "../Sidebar/PlacesNavLinks.js";
 import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
 import { SidebarHeader } from "../Sidebar/SidebarHeader.js";
+import { useSidebarPeekPanel } from "../Sidebar/SidebarPeekContext.js";
 
 const ConversationGroupsDialog = lazy(() =>
   import("../Conversations/ConversationGroupsDialog.js").then((module) => ({
@@ -59,6 +60,7 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
     setChatConversationListFilters: setConversationListFilters,
     resetChatConversationListFilters: resetConversationListFilters,
   } = useUIStore();
+  const { peeking, panelProps } = useSidebarPeekPanel();
   const {
     currentConversationId,
     setCurrentConversationId,
@@ -239,6 +241,8 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
       <SidebarShell
         visible={sidebarVisible}
         isMobile={isMobile}
+        peeking={peeking}
+        peekProps={panelProps}
         onClose={() => setSidebarVisible(false)}
         label="Conversations"
         header={<SidebarHeader actions={headerActions} />}

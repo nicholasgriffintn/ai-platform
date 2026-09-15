@@ -3,6 +3,7 @@ import { useAuthStatus, useUIStore } from "@ngriffin_uk/polychat-library-react";
 
 import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
 import { SidebarHeader } from "../Sidebar/SidebarHeader.js";
+import { useSidebarPeekPanel } from "../Sidebar/SidebarPeekContext.js";
 import { ProfileAccountTab } from "./Tabs/ProfileAccountTab.js";
 import { ProfileApiKeysTab } from "./Tabs/ProfileApiKeysTab.js";
 import { ProfileBillingTab } from "./Tabs/ProfileBillingTab.js";
@@ -89,6 +90,7 @@ export function ProfileSidebar({
   items = profileSidebarItems,
 }: ProfileSidebarProps) {
   const { sidebarVisible, isMobile, setSidebarVisible } = useUIStore();
+  const { peeking, panelProps } = useSidebarPeekPanel();
   const { isAuthenticated, logout, isLoggingOut } = useAuthStatus();
 
   return (
@@ -101,6 +103,8 @@ export function ProfileSidebar({
       footer={<SidebarFooter />}
       isMobile={isMobile}
       sidebarVisible={sidebarVisible}
+      peeking={peeking}
+      peekProps={panelProps}
       onClose={() => setSidebarVisible(false)}
       isAuthenticated={isAuthenticated}
       isLoggingOut={isLoggingOut}

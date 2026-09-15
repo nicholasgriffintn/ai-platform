@@ -6,7 +6,9 @@ import {
   useRecipeConnectors,
 } from "@ngriffin_uk/polychat-library-react";
 import {
+  createConnectorAssistantActionItem,
   recipeConnectorProviderSchema,
+  type AssistantActionItem,
   type RecipeConnectorManifest,
 } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,7 +19,6 @@ import { toast } from "sonner";
 export function usePluginsController() {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [search, setSearch] = useState("");
   const [selectedConnector, setSelectedConnector] = useState<RecipeConnectorManifest | null>(null);
   const [connectorToDisconnect, setConnectorToDisconnect] =
     useState<RecipeConnectorManifest | null>(null);
@@ -28,6 +29,14 @@ export function usePluginsController() {
   const connectors = useMemo(
     () => connectorsQuery.data?.connectors ?? [],
     [connectorsQuery.data?.connectors],
+  );
+  const manifestsById = useMemo(
+    () => new Map(connectors.map((connector) => [connector.id, connector])),
+    [connectors],
+  );
+  const items = useMemo<AssistantActionItem[]>(
+    () => connectors.map((connector) => createConnectorAssistantActionItem(connector)),
+    [connectors],
   );
 
   useEffect(() => {
@@ -56,22 +65,6 @@ export function usePluginsController() {
     setSearchParams(nextSearchParams, { replace: true });
   }, [requestedConnector, searchParams, setSearchParams]);
 
-  const normalisedSearch = search.trim().toLowerCase();
-  const filteredConnectors = connectors.filter((connector) => {
-    if (!normalisedSearch) {
-      return true;
-    }
-
-    return [
-      connector.name,
-      connector.description ?? "",
-      ...(connector.categories ?? []).map((category) => category.name),
-    ]
-      .join(" ")
-      .toLowerCase()
-      .includes(normalisedSearch);
-  });
-
   const disconnect = async () => {
     if (!connectorToDisconnect) {
       return;
@@ -92,17 +85,15 @@ export function usePluginsController() {
   };
 
   return {
-    connectors: filteredConnectors,
-    hasConnectors: connectors.length > 0,
-    isLoading: connectorsQuery.isLoading,
-    isDisconnecting: disconnectConnector.isPending,
-    search,
-    setSearch,
-    selectedConnector,
-    setSelectedConnector,
     connectorSetup,
     connectorToDisconnect,
-    setConnectorToDisconnect,
     disconnect,
+    isDisconnecting: disconnectConnector.isPending,
+    isLoading: connectorsQuery.isLoading,
+    items,
+    manifestsById,
+    selectedConnector,
+    setConnectorToDisconnect,
+    setSelectedConnector,
   };
 }

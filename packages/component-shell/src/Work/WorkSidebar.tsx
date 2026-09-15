@@ -27,6 +27,7 @@ import { ConversationGroupsDialog } from "../Conversations/ConversationGroupsDia
 import { ConversationItemActions } from "../Conversations/ConversationItemActions.js";
 import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
 import { SidebarHeader } from "../Sidebar/SidebarHeader.js";
+import { useSidebarPeekPanel } from "../Sidebar/SidebarPeekContext.js";
 import { useProjectConversationActions } from "./useProjectConversationActions.js";
 import { useWorkData } from "./WorkDataContext.js";
 
@@ -48,6 +49,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     setWorkConversationListFilters,
     resetWorkConversationListFilters,
   } = useUIStore();
+  const { peeking, panelProps } = useSidebarPeekPanel();
   const { workspacesQuery, workspaceQuery, projectQuery } = useWorkData();
   const { data } = workspacesQuery;
   const { data: workspace } = workspaceQuery;
@@ -133,6 +135,8 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     <SidebarShell
       visible={sidebarVisible}
       isMobile={isMobile}
+      peeking={peeking}
+      peekProps={panelProps}
       onClose={() => setSidebarVisible(false)}
       label="Workspace navigation"
       header={<SidebarHeader />}

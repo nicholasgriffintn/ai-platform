@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 
-import type { TeammateFormData } from "@ngriffin_uk/polychat-utility-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -43,7 +42,7 @@ describe("creating a teammate", () => {
     });
 
     await act(async () => {
-      await result.current.createTeammate({ name: "Researcher" } as TeammateFormData);
+      await result.current.createTeammate({ name: "Researcher" });
     });
 
     expect(mocks.createTeammate).toHaveBeenCalled();

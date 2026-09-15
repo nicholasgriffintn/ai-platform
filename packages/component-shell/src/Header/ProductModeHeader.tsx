@@ -11,6 +11,8 @@ import { Menu, PanelLeftOpen } from "lucide-react";
 import { type ReactNode, useRef } from "react";
 import { useLocation } from "react-router";
 
+import { useSidebarPeekTrigger } from "../Sidebar/SidebarPeekContext.js";
+
 export interface ProductModeHeaderProps {
   actions?: ReactNode;
   context?: ReactNode;
@@ -31,6 +33,7 @@ export function ProductModeHeader({
   const headerRef = useRef<HTMLElement>(null);
   const isScrolled = useHeaderScrollEdge(headerRef, pathname);
   const { isMobile, sidebarVisible, setSidebarVisible } = useUIStore();
+  const sidebarPeekTrigger = useSidebarPeekTrigger();
 
   return (
     <ProductHeaderShell
@@ -40,6 +43,7 @@ export function ProductModeHeader({
         <>
           {showSidebarToggle && !sidebarVisible && (
             <Button
+              {...sidebarPeekTrigger}
               type="button"
               variant="icon"
               title="Show sidebar"

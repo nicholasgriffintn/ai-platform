@@ -19,6 +19,8 @@ import type {
   ProjectExperienceDefinition,
   ModelToolDefinition,
 } from "@ngriffin_uk/polychat-schemas";
+import type { ReactNode } from "react";
+import { Fragment } from "react";
 import { useNavigate } from "react-router";
 
 import { resolveCapabilityCardState } from "./capabilityCardState.js";
@@ -44,6 +46,7 @@ interface CapabilityGroupsProps {
   surface: CapabilitySurface;
   authoredSkillActions: AuthoredSkillActions;
   teammateActions: TeammateCardActions;
+  renderGroup?: (group: ProjectCapabilityKindGroup) => ReactNode;
 }
 
 export interface AuthoredSkillActions {
@@ -114,99 +117,114 @@ export function CapabilityGroups({
   surface,
   authoredSkillActions,
   teammateActions,
+  renderGroup,
 }: CapabilityGroupsProps) {
   const navigate = useNavigate();
 
   return (
     <div className="space-y-10">
-      {groups.map((group) => (
-        <CapabilityGroupSection
-          key={group.kind}
-          id={group.kind}
-          label={group.label}
-          count={group.categories.reduce((total, item) => total + item.items.length, 0)}
-        >
-          {group.categories.map((categoryGroup) => (
-            <CapabilityCategoryGroup key={categoryGroup.category} category={categoryGroup.category}>
-              <>
-                {categoryGroup.items.map((item) => {
-                  const itemKind = getProjectCapabilityKind(item);
+      {groups.map((group) => {
+        const renderedGroup = renderGroup?.(group);
 
-                  if (!itemKind) {
-                    return null;
-                  }
+        if (renderedGroup) {
+          return <Fragment key={group.kind}>{renderedGroup}</Fragment>;
+        }
 
-                  const cardState = resolveCapabilityCardState(item, itemKind, {
-                    canManageProject: projectActions?.canManage,
-                    capabilities,
-                    currentUserId,
-                    pendingAddCapabilityId,
-                    pendingRemoveId,
-                  });
-                  const { existing } = cardState;
-                  const tool = itemKind === "tool" ? toolById.get(item.capability.id) : undefined;
-                  const skillState =
-                    itemKind === "skill" && personalSkills
-                      ? personalSkills.byId.get(item.capability.id)
-                      : undefined;
-                  const toolConfiguration =
-                    existing?.configuration ?? toolConfigurationById.get(item.capability.id) ?? {};
-                  const openPath = getCapabilityOpenPath(item, surface, experiences);
+        return (
+          <CapabilityGroupSection
+            key={group.kind}
+            id={group.kind}
+            label={group.label}
+            count={group.categories.reduce((total, item) => total + item.items.length, 0)}
+          >
+            {group.categories.map((categoryGroup) => (
+              <CapabilityCategoryGroup
+                key={categoryGroup.category}
+                category={categoryGroup.category}
+              >
+                <>
+                  {categoryGroup.items.map((item) => {
+                    const itemKind = getProjectCapabilityKind(item);
 
-                  return (
-                    <CapabilityCard
-                      key={item.id}
-                      isEnabled={Boolean(existing)}
-                      isConfigured={Boolean(
-                        tool && parseModelToolConfiguration(tool, toolConfiguration),
-                      )}
-                      item={item}
-                      kind={itemKind}
-                      app={appById.get(item.capability.id)}
-                      onOpen={openPath ? () => void navigate(openPath) : undefined}
-                      onConfigure={
-                        tool?.requiresConfiguration
-                          ? () => onConfigureTool(tool, toolConfiguration)
-                          : undefined
-                      }
-                      projectActions={
-                        projectActions
-                          ? {
-                              canManage: cardState.canManage,
-                              isAdding: cardState.isAdding,
-                              isRemoving: cardState.isRemoving,
-                              onAdd: () => projectActions.addItem(item, itemKind),
-                              onRemove: () => {
-                                if (existing) {
-                                  projectActions.removeCapability(existing);
-                                }
-                              },
-                            }
-                          : undefined
-                      }
-                      tool={tool}
-                      authoredCapability={resolveAuthoredCapability(
-                        item,
-                        itemKind,
-                        teammateActions,
-                        authoredSkillActions,
-                      )}
-                      skill={
-                        skillState && {
-                          alwaysOn: skillState.alwaysOn,
-                          enabled: skillState.state === "ready",
-                          isPending: personalSkills?.pendingSkillId === skillState.id,
-                          onToggle: (enabled) => personalSkills?.setEnabled(skillState.id, enabled),
+                    if (!itemKind) {
+                      return null;
+                    }
+
+                    const cardState = resolveCapabilityCardState(item, itemKind, {
+                      canManageProject: projectActions?.canManage,
+                      capabilities,
+                      currentUserId,
+                      pendingAddCapabilityId,
+                      pendingRemoveId,
+                    });
+                    const { existing } = cardState;
+                    const tool = itemKind === "tool" ? toolById.get(item.capability.id) : undefined;
+                    const skillState =
+                      itemKind === "skill" && personalSkills
+                        ? personalSkills.byId.get(item.capability.id)
+                        : undefined;
+                    const toolConfiguration =
+                      existing?.configuration ??
+                      toolConfigurationById.get(item.capability.id) ??
+                      {};
+                    const openPath = getCapabilityOpenPath(item, surface, experiences);
+
+                    return (
+                      <CapabilityCard
+                        key={item.id}
+                        isEnabled={Boolean(existing)}
+                        isConfigured={Boolean(
+                          tool && parseModelToolConfiguration(tool, toolConfiguration),
+                        )}
+                        item={item}
+                        kind={itemKind}
+                        app={appById.get(item.capability.id)}
+                        onOpen={openPath ? () => void navigate(openPath) : undefined}
+                        onConfigure={
+                          tool?.requiresConfiguration
+                            ? () => onConfigureTool(tool, toolConfiguration)
+                            : undefined
                         }
-                      }
-                    />
-                  );
-                })}
-              </>
-            </CapabilityCategoryGroup>
-          ))}
-        </CapabilityGroupSection>
-      ))}
+                        projectActions={
+                          projectActions
+                            ? {
+                                canManage: cardState.canManage,
+                                isAdding: cardState.isAdding,
+                                isRemoving: cardState.isRemoving,
+                                onAdd: () => projectActions.addItem(item, itemKind),
+                                onRemove: () => {
+                                  if (existing) {
+                                    projectActions.removeCapability(existing);
+                                  }
+                                },
+                              }
+                            : undefined
+                        }
+                        tool={tool}
+                        authoredCapability={resolveAuthoredCapability(
+                          item,
+                          itemKind,
+                          teammateActions,
+                          authoredSkillActions,
+                        )}
+                        skill={
+                          skillState && {
+                            alwaysOn: skillState.alwaysOn,
+                            enabled: skillState.state === "ready",
+                            isPending: personalSkills?.pendingSkillId === skillState.id,
+                            onToggle: (enabled) =>
+                              personalSkills?.setEnabled(skillState.id, enabled),
+                          }
+                        }
+                      />
+                    );
+                  })}
+                </>
+              </CapabilityCategoryGroup>
+            ))}
+          </CapabilityGroupSection>
+        );
+      })}
     </div>
   );
 }

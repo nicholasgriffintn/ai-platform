@@ -1,6 +1,6 @@
 import { FormSelect, SearchInput } from "@ngriffin_uk/polychat-component-ui";
 
-export type CapabilityKind = "app" | "recipe" | "skill" | "tool" | "teammate";
+export type CapabilityKind = "app" | "connector" | "recipe" | "skill" | "tool" | "teammate";
 export type CapabilityFilter = "configured" | CapabilityKind;
 
 export interface CapabilityFiltersProps {
@@ -9,6 +9,7 @@ export interface CapabilityFiltersProps {
   filters: CapabilityFilter[];
   query: string;
   availableFilters?: CapabilityFilter[];
+  searchLabel?: string;
   searchPlaceholder?: string;
   onCategoryChange: (category: string) => void;
   onFiltersChange: (filters: CapabilityFilter[]) => void;
@@ -17,6 +18,7 @@ export interface CapabilityFiltersProps {
 
 const capabilityFilters: Array<{ label: string; value: CapabilityFilter }> = [
   { label: "Configured", value: "configured" },
+  { label: "Integrations", value: "connector" },
   { label: "Teammates", value: "teammate" },
   { label: "Apps", value: "app" },
   { label: "Automations", value: "recipe" },
@@ -30,6 +32,7 @@ export function CapabilityFilters({
   filters,
   query,
   availableFilters,
+  searchLabel = "Search capabilities",
   searchPlaceholder = "Search apps, recipes, and tools...",
   onCategoryChange,
   onFiltersChange,
@@ -46,7 +49,7 @@ export function CapabilityFilters({
   return (
     <div className="mb-8 space-y-4">
       <SearchInput
-        aria-label="Search capabilities"
+        aria-label={searchLabel}
         className="max-w-xl"
         placeholder={searchPlaceholder}
         value={query}

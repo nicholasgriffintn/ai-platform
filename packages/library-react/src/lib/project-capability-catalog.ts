@@ -1,5 +1,7 @@
 import type { AssistantActionItem, ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
 
+export type CatalogueItemKind = ProjectCapabilityKind | "connector";
+
 export interface ProjectCapabilityCategoryGroup {
   category: string;
   items: AssistantActionItem[];
@@ -7,11 +9,12 @@ export interface ProjectCapabilityCategoryGroup {
 
 export interface ProjectCapabilityKindGroup {
   categories: ProjectCapabilityCategoryGroup[];
-  kind: ProjectCapabilityKind;
+  kind: CatalogueItemKind;
   label: string;
 }
 
-const KIND_LABELS: Record<ProjectCapabilityKind, string> = {
+const KIND_LABELS: Record<CatalogueItemKind, string> = {
+  connector: "Integrations",
   teammate: "Teammates",
   app: "Apps",
   recipe: "Automations",
@@ -19,7 +22,7 @@ const KIND_LABELS: Record<ProjectCapabilityKind, string> = {
   tool: "Tools",
 };
 
-const KIND_ORDER: ProjectCapabilityKind[] = ["teammate", "app", "recipe", "skill", "tool"];
+const KIND_ORDER: CatalogueItemKind[] = ["connector", "teammate", "app", "recipe", "skill", "tool"];
 
 export function getProjectCapabilityKind(item: AssistantActionItem): ProjectCapabilityKind | null {
   if (item.kind === "app") {
@@ -45,19 +48,27 @@ export function getProjectCapabilityKind(item: AssistantActionItem): ProjectCapa
   return null;
 }
 
+export function getCatalogueItemKind(item: AssistantActionItem): CatalogueItemKind | null {
+  if (item.kind === "connector") {
+    return "connector";
+  }
+
+  return getProjectCapabilityKind(item);
+}
+
 export function getProjectCapabilityCategory(item: AssistantActionItem): string {
   return item.metadata?.category?.trim() || "Other";
 }
 
 export function getProjectCapabilityCategories(
   items: AssistantActionItem[],
-  kinds: ProjectCapabilityKind[],
+  kinds: CatalogueItemKind[],
 ): string[] {
   return Array.from(
     new Set(
       items
         .filter((item) => {
-          const kind = getProjectCapabilityKind(item);
+          const kind = getCatalogueItemKind(item);
 
           return kind && (kinds.length === 0 || kinds.includes(kind));
         })
@@ -82,14 +93,14 @@ export function filterProjectCapabilities(
     category: string;
     configuredItemIds: ReadonlySet<string>;
     configuredOnly: boolean;
-    kinds: ProjectCapabilityKind[];
+    kinds: CatalogueItemKind[];
     query: string;
   },
 ): AssistantActionItem[] {
   const query = filters.query.trim().toLocaleLowerCase();
 
   return items.filter((item) => {
-    const kind = getProjectCapabilityKind(item);
+    const kind = getCatalogueItemKind(item);
 
     if (!kind || (filters.kinds.length > 0 && !filters.kinds.includes(kind))) {
       return false;
@@ -119,7 +130,7 @@ export function groupProjectCapabilities(
   items: AssistantActionItem[],
 ): ProjectCapabilityKindGroup[] {
   return KIND_ORDER.flatMap((kind) => {
-    const kindItems = items.filter((item) => getProjectCapabilityKind(item) === kind);
+    const kindItems = items.filter((item) => getCatalogueItemKind(item) === kind);
 
     if (kindItems.length === 0) {
       return [];

@@ -1,4 +1,10 @@
-import { cn, Link, SidebarBackdrop, useOverlayDismiss } from "@ngriffin_uk/polychat-component-ui";
+import {
+  cn,
+  Link,
+  SidebarBackdrop,
+  type SidebarPeekPointerHandlers,
+  useOverlayDismiss,
+} from "@ngriffin_uk/polychat-component-ui";
 import { Home, Loader2, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -16,6 +22,10 @@ export interface AccountSidebarShellProps {
   footer?: ReactNode;
   isMobile: boolean;
   sidebarVisible: boolean;
+  /** Whether to preview the hidden sidebar without pinning it open */
+  peeking?: boolean;
+  /** Pointer handlers that keep the preview open while the panel is hovered */
+  peekProps?: SidebarPeekPointerHandlers;
   onClose: () => void;
   isAuthenticated: boolean;
   isLoggingOut?: boolean;
@@ -31,6 +41,8 @@ export function AccountSidebarShell({
   footer,
   isMobile,
   sidebarVisible,
+  peeking = false,
+  peekProps,
   onClose,
   isAuthenticated,
   isLoggingOut = false,
@@ -38,6 +50,9 @@ export function AccountSidebarShell({
 }: AccountSidebarShellProps) {
   // Only the mobile drawer overlays the page, so only it takes focus and Escape.
   const isDrawer = sidebarVisible && isMobile;
+  // A peek overlays the page without taking layout space, so the header above
+  // it keeps its buttons and title in place and paints above it.
+  const isPeek = peeking && !sidebarVisible && !isMobile;
   const drawerRef = useOverlayDismiss<HTMLDivElement>({ open: isDrawer, onClose });
 
   return (
@@ -49,11 +64,16 @@ export function AccountSidebarShell({
         aria-modal={isDrawer ? true : undefined}
         aria-label={isDrawer ? "Account navigation" : undefined}
         tabIndex={isDrawer ? -1 : undefined}
+        {...(isPeek ? peekProps : undefined)}
         className={`fixed z-50 h-full w-64 border-r border-border bg-surface transition-transform duration-300 ease-in-out md:relative ${
-          sidebarVisible ? "translate-x-0" : "-translate-x-full md:w-0 md:translate-x-0 md:border-0"
+          sidebarVisible
+            ? "translate-x-0"
+            : isPeek
+              ? "md:absolute md:inset-y-0 md:left-0 md:z-10 md:w-64 md:translate-x-0"
+              : "-translate-x-full md:w-0 md:translate-x-0 md:border-0"
         }`}
       >
-        {sidebarVisible && (
+        {(sidebarVisible || isPeek) && (
           <div className="flex h-full w-64 flex-col">
             <div className="sticky top-0 z-10 w-full border-r border-b border-border bg-surface">
               {header}

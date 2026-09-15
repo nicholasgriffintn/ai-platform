@@ -13,9 +13,11 @@ import {
   getProjectSurface,
   PERSONAL_SURFACE,
   filterProjectCapabilities,
+  getCatalogueItemKind,
   getProjectCapabilityCategories,
   getProjectCapabilityKind,
   groupProjectCapabilities,
+  type CatalogueItemKind,
 } from "@ngriffin_uk/polychat-library-react";
 import {
   type ModelToolConfiguration,
@@ -35,11 +37,16 @@ export interface PersonalSkillControls {
   setEnabled: (skillId: string, enabled: boolean) => void;
 }
 
-export const TEAMMATE_LIBRARY_KINDS: readonly ProjectCapabilityKind[] = ["teammate"];
+export const TEAMMATE_LIBRARY_KINDS: readonly CatalogueItemKind[] = ["teammate"];
 
-export const PLUGIN_LIBRARY_KINDS: readonly ProjectCapabilityKind[] = ["app", "skill", "tool"];
+export const PLUGIN_LIBRARY_KINDS: readonly CatalogueItemKind[] = [
+  "connector",
+  "app",
+  "skill",
+  "tool",
+];
 
-export const DEFAULT_CAPABILITY_KINDS: readonly ProjectCapabilityKind[] = [
+export const DEFAULT_CAPABILITY_KINDS: readonly CatalogueItemKind[] = [
   "teammate",
   "app",
   "skill",
@@ -97,8 +104,10 @@ export function useCapabilityLibraryController(
   scope: CapabilityLibraryScope,
   {
     kinds: allowedKinds = DEFAULT_CAPABILITY_KINDS,
+    extraItems = [],
   }: {
-    kinds?: readonly ProjectCapabilityKind[];
+    kinds?: readonly CatalogueItemKind[];
+    extraItems?: readonly AssistantActionItem[];
   } = {},
 ) {
   const catalog = useProjectCapabilityCatalog(scope.surface.projectId);
@@ -110,15 +119,18 @@ export function useCapabilityLibraryController(
   const [configurationTool, setConfigurationTool] = useState<ModelToolDefinition | null>(null);
   const [configuration, setConfiguration] = useState<Record<string, unknown>>();
 
-  const items = useMemo(
-    () =>
-      catalog.items.filter((item) => {
-        const kind = getProjectCapabilityKind(item);
+  const items = useMemo(() => {
+    const matchesAllowedKinds = (item: AssistantActionItem) => {
+      const kind = getCatalogueItemKind(item);
 
-        return kind !== null && allowedKinds.includes(kind);
-      }),
-    [catalog.items, allowedKinds],
-  );
+      return kind !== null && allowedKinds.includes(kind);
+    };
+
+    return [
+      ...catalog.items.filter(matchesAllowedKinds),
+      ...extraItems.filter(matchesAllowedKinds),
+    ];
+  }, [allowedKinds, catalog.items, extraItems]);
   const appById = useMemo(() => new Map(catalog.apps.map((app) => [app.id, app])), [catalog.apps]);
   const toolById = useMemo(
     () => new Map<string, ModelToolDefinition>(catalog.tools.map((tool) => [tool.id, tool])),
@@ -159,8 +171,7 @@ export function useCapabilityLibraryController(
     return configured;
   }, [items, scope.capabilities, toolById, toolConfigurationById]);
   const kinds = useMemo(
-    () =>
-      selectedFilters.filter((filter): filter is ProjectCapabilityKind => filter !== "configured"),
+    () => selectedFilters.filter((filter): filter is CatalogueItemKind => filter !== "configured"),
     [selectedFilters],
   );
   const itemsForCategories = useMemo(

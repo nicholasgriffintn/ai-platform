@@ -1,6 +1,7 @@
 import {
   getSkillEditorPath,
   type CapabilitySurface,
+  type CatalogueItemKind,
   type EnabledCapability,
 } from "@ngriffin_uk/polychat-library-react";
 import type {
@@ -25,7 +26,7 @@ interface PendingCapabilityDeletion {
 export interface CapabilityAuthoringInput {
   capabilities: EnabledCapability[];
   currentUserId?: string | number;
-  kinds?: readonly ProjectCapabilityKind[];
+  kinds?: readonly CatalogueItemKind[];
   projectActions?: {
     addCapability: (kind: ProjectCapabilityKind, capabilityId: string) => Promise<void>;
     canManage: boolean;

@@ -10,9 +10,11 @@ import { DiscoverSidebarSection } from "./DiscoverSidebarSection.js";
 import { PlacesNavLinks } from "./PlacesNavLinks.js";
 import { SidebarFooter } from "./SidebarFooter.js";
 import { SidebarHeader } from "./SidebarHeader.js";
+import { useSidebarPeekPanel } from "./SidebarPeekContext.js";
 
 export function StandardSidebarContent() {
   const { sidebarVisible, isMobile, setSidebarVisible } = useUIStore();
+  const { peeking, panelProps } = useSidebarPeekPanel();
   const startNewChat = useStartNewChat();
   const closeOnMobile = () => {
     if (isMobile) {
@@ -27,6 +29,8 @@ export function StandardSidebarContent() {
       homeHref={MODE_BASE_PATHS.chat}
       isMobile={isMobile}
       sidebarVisible={sidebarVisible}
+      peeking={peeking}
+      peekProps={panelProps}
       onClose={() => setSidebarVisible(false)}
     >
       <SidebarNavSection>

@@ -678,6 +678,7 @@ export function createConnectorAssistantActionItem(
     capability: createConnectorCapabilityDescriptor(connector),
     metadata: {
       authType: connector.authType,
+      category: connector.categories?.[0]?.name ?? "Integrations",
       provider: connector.id,
     },
   };

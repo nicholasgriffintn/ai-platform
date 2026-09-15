@@ -1,14 +1,23 @@
-import type { ReactNode } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 
 import { SidebarBackdrop } from "./SidebarBackdrop";
 import { useOverlayDismiss } from "./useOverlayDismiss";
 import { cn } from "./utils";
+
+export type SidebarPeekPointerHandlers = Pick<
+  HTMLAttributes<HTMLDivElement>,
+  "onPointerEnter" | "onPointerLeave" | "onPointerCancel"
+>;
 
 interface SidebarShellProps {
   /** Whether the sidebar is visible */
   visible: boolean;
   /** Whether this is a mobile viewport */
   isMobile: boolean;
+  /** Whether to preview the hidden sidebar without pinning it open */
+  peeking?: boolean;
+  /** Pointer handlers that keep the preview open while the panel is hovered */
+  peekProps?: SidebarPeekPointerHandlers;
   /** Callback to close/hide the sidebar */
   onClose: () => void;
   /** Content to render in the sidebar header */
@@ -28,6 +37,8 @@ interface SidebarShellProps {
 export function SidebarShell({
   visible,
   isMobile,
+  peeking = false,
+  peekProps,
   onClose,
   header,
   footer,
@@ -38,6 +49,11 @@ export function SidebarShell({
 }: SidebarShellProps) {
   // Only the mobile drawer overlays the page, so only it takes focus and Escape.
   const isDrawer = visible && isMobile;
+  // A peek is a desktop-only preview: it overlays the page instead of taking
+  // layout space, so the header keeps its buttons and title in place and paints
+  // above it.
+  const isPeek = peeking && !visible && !isMobile;
+  const isShown = visible || isPeek;
   const drawerRef = useOverlayDismiss<HTMLDivElement>({ open: isDrawer, onClose });
 
   return (
@@ -50,16 +66,21 @@ export function SidebarShell({
         aria-modal={isDrawer ? true : undefined}
         aria-label={isDrawer ? label : undefined}
         tabIndex={isDrawer ? -1 : undefined}
+        {...(isPeek ? peekProps : undefined)}
         className={cn(
           "fixed z-50 h-full w-64 md:relative",
           "bg-sidebar text-sidebar-foreground",
           "polychat-motion-panel transition-transform",
           "border-r border-sidebar-border",
-          visible ? "translate-x-0" : "-translate-x-full md:w-0 md:translate-x-0 md:border-0",
+          visible
+            ? "translate-x-0"
+            : isPeek
+              ? "md:absolute md:inset-y-0 md:left-0 md:z-10 md:w-64 md:translate-x-0"
+              : "-translate-x-full md:w-0 md:translate-x-0 md:border-0",
           className,
         )}
       >
-        {visible && (
+        {isShown && (
           <div className={cn("flex h-full w-full flex-col", contentClassName)}>
             {header && <div className="sticky top-0 z-10 w-full bg-sidebar">{header}</div>}
 

@@ -1,4 +1,4 @@
-import { SidebarShell } from "@ngriffin_uk/polychat-component-ui";
+import { SidebarShell, type SidebarPeekPointerHandlers } from "@ngriffin_uk/polychat-component-ui";
 import { Home } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -11,6 +11,8 @@ export interface StandardSidebarContentProps {
   homeHref: string;
   isMobile: boolean;
   sidebarVisible: boolean;
+  peeking?: boolean;
+  peekProps?: SidebarPeekPointerHandlers;
   onClose: () => void;
 }
 
@@ -21,12 +23,16 @@ export function StandardSidebarContent({
   homeHref,
   isMobile,
   sidebarVisible,
+  peeking,
+  peekProps,
   onClose,
 }: StandardSidebarContentProps) {
   return (
     <SidebarShell
       visible={sidebarVisible}
       isMobile={isMobile}
+      peeking={peeking}
+      peekProps={peekProps}
       onClose={onClose}
       header={header}
       footer={footer}

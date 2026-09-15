@@ -7,7 +7,7 @@ export class PluginsPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.search = page.getByRole("searchbox", { name: "Search integrations" });
+    this.search = page.getByRole("searchbox", { name: "Search plugins" });
   }
 
   async open() {

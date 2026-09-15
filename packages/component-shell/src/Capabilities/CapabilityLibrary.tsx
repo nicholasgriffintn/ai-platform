@@ -9,7 +9,11 @@ import {
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
-import type { ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
+import type {
+  CatalogueItemKind,
+  ProjectCapabilityKindGroup,
+} from "@ngriffin_uk/polychat-library-react";
+import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
 import { SearchX } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
 
@@ -34,9 +38,11 @@ export function CapabilityLibrary({
   title,
   subtitle,
   kinds = DEFAULT_CAPABILITY_KINDS,
+  extraItems,
+  renderGroup,
   children,
 }: CapabilityLibraryProps) {
-  const controller = useCapabilityLibraryController(scope, { kinds });
+  const controller = useCapabilityLibraryController(scope, { kinds, extraItems });
   const authoring = useCapabilityAuthoring({
     capabilities: controller.capabilities,
     currentUserId: controller.currentUserId,
@@ -82,9 +88,8 @@ export function CapabilityLibrary({
           categories={controller.filters.categories}
           category={controller.filters.category}
           filters={controller.filters.selected}
-          searchPlaceholder={
-            managesTeammates ? "Search teammates..." : "Search apps, skills, and tools..."
-          }
+          searchLabel={managesTeammates ? "Search teammates" : "Search plugins"}
+          searchPlaceholder={managesTeammates ? "Search teammates..." : "Search plugins..."}
           onCategoryChange={controller.filters.setCategory}
           onFiltersChange={controller.filters.setSelected}
           onQueryChange={controller.filters.setQuery}
@@ -106,7 +111,7 @@ export function CapabilityLibrary({
             message={
               managesTeammates
                 ? "Sign in to choose the teammates you use."
-                : "Sign in to choose the apps, skills and tools you use."
+                : "Sign in to choose the apps, skills, tools and integrations you use."
             }
             className="min-h-[300px]"
           />
@@ -141,6 +146,7 @@ export function CapabilityLibrary({
             surface={controller.surface}
             teammateActions={authoring.teammateActions}
             authoredSkillActions={authoring.authoredSkillActions}
+            renderGroup={renderGroup}
           />
         )}
         {children}
@@ -211,7 +217,9 @@ export function CapabilityLibrary({
 
 interface CapabilityLibraryProps {
   children?: ReactNode;
-  kinds?: readonly ProjectCapabilityKind[];
+  extraItems?: readonly AssistantActionItem[];
+  kinds?: readonly CatalogueItemKind[];
+  renderGroup?: (group: ProjectCapabilityKindGroup) => ReactNode;
   scope: CapabilityLibraryScope;
   title: string;
   subtitle: string;

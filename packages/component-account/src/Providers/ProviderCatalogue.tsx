@@ -14,6 +14,39 @@ export interface ProviderCatalogueItem {
   onSelect: () => void;
 }
 
+export function ProviderCatalogueRow({ item }: { item: ProviderCatalogueItem }) {
+  return (
+    <div className="group flex min-w-0 items-center rounded-lg border border-transparent transition-colors hover:border-border hover:bg-surface-elevated">
+      <button
+        type="button"
+        className="flex min-w-0 flex-1 items-center gap-3 px-2.5 py-2.5 text-left focus-visible:ring-2 focus-visible:ring-active-work/40 focus-visible:outline-none focus-visible:ring-inset"
+        onClick={item.onSelect}
+      >
+        {item.icon}
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-2 font-medium text-foreground">
+            <span className="truncate">{item.name}</span>
+            {item.connecting ? (
+              <Loader2
+                className="size-3.5 shrink-0 animate-spin text-muted-foreground"
+                aria-label="Connection in progress"
+              />
+            ) : item.connected ? (
+              <span className="size-1.5 shrink-0 rounded-full bg-success" aria-label="Connected" />
+            ) : null}
+          </span>
+          {item.description && (
+            <span className="mt-0.5 block truncate text-sm text-muted-foreground">
+              {item.description}
+            </span>
+          )}
+        </span>
+      </button>
+      <ChevronRight className="mr-3 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+    </div>
+  );
+}
+
 export function ProviderCatalogue({ items }: { items: ProviderCatalogueItem[] }) {
   const groups = new Map<string, ProviderCatalogueItem[]>();
 
@@ -37,40 +70,7 @@ export function ProviderCatalogue({ items }: { items: ProviderCatalogueItem[] })
           </h2>
           <div className="grid gap-1 lg:grid-cols-2">
             {group.items.map((item) => (
-              <div
-                key={item.id}
-                className="group flex min-w-0 items-center rounded-lg border border-transparent transition-colors hover:border-border hover:bg-surface-elevated"
-              >
-                <button
-                  type="button"
-                  className="flex min-w-0 flex-1 items-center gap-3 px-2.5 py-2.5 text-left focus-visible:ring-2 focus-visible:ring-active-work/40 focus-visible:outline-none focus-visible:ring-inset"
-                  onClick={item.onSelect}
-                >
-                  {item.icon}
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-2 font-medium text-foreground">
-                      <span className="truncate">{item.name}</span>
-                      {item.connecting ? (
-                        <Loader2
-                          className="size-3.5 shrink-0 animate-spin text-muted-foreground"
-                          aria-label="Connection in progress"
-                        />
-                      ) : item.connected ? (
-                        <span
-                          className="size-1.5 shrink-0 rounded-full bg-success"
-                          aria-label="Connected"
-                        />
-                      ) : null}
-                    </span>
-                    {item.description && (
-                      <span className="mt-0.5 block truncate text-sm text-muted-foreground">
-                        {item.description}
-                      </span>
-                    )}
-                  </span>
-                </button>
-                <ChevronRight className="mr-3 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-              </div>
+              <ProviderCatalogueRow key={item.id} item={item} />
             ))}
           </div>
         </section>

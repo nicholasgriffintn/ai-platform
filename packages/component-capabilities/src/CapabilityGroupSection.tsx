@@ -29,13 +29,18 @@ export function CapabilityGroupSection({
 export interface CapabilityCategoryGroupProps {
   category: string;
   children: ReactNode;
+  gridClassName?: string;
 }
 
-export function CapabilityCategoryGroup({ category, children }: CapabilityCategoryGroupProps) {
+export function CapabilityCategoryGroup({
+  category,
+  children,
+  gridClassName = "grid gap-4 md:grid-cols-2 xl:grid-cols-3",
+}: CapabilityCategoryGroupProps) {
   return (
     <div>
       <h3 className="mb-3 text-sm font-medium text-muted-foreground">{category}</h3>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{children}</div>
+      <div className={gridClassName}>{children}</div>
     </div>
   );
 }

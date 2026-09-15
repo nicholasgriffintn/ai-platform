@@ -9,6 +9,7 @@ import { lazy, type ReactNode, Suspense } from "react";
 
 import { useShellHost } from "../Host/ShellHostContext.js";
 import { SearchDialog } from "../Search/SearchDialog.js";
+import { SidebarPeekProvider } from "../Sidebar/SidebarPeekContext.js";
 import { ChatNavbar } from "./Navbar.js";
 
 export const MAIN_CONTENT_ID = "main-content";
@@ -42,7 +43,7 @@ export function ProductShell({
   useKeyboardShortcuts();
 
   return (
-    <>
+    <SidebarPeekProvider>
       <div
         className={cn(
           "flex h-dvh w-full max-w-full overflow-hidden",
@@ -85,6 +86,6 @@ export function ProductShell({
       )}
       {showSearch && <SearchDialog isOpen onClose={() => setShowSearch(false)} />}
       {HostDialogs ? <HostDialogs /> : null}
-    </>
+    </SidebarPeekProvider>
   );
 }
