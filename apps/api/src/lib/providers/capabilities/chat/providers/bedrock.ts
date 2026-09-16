@@ -880,7 +880,7 @@ export class BedrockProvider extends BaseProvider {
       normalizedStatus === "SUCCESS" ||
       normalizedStatus === "COMPLETED"
     ) {
-      const formatted = await this.formatResponse(mergedData, params);
+      const formatted = await this.formatResponse(mergedData, params, userId);
       const enhanced = await this.enhanceAsyncResult(formatted, mergedData, params, userId);
 
       return {

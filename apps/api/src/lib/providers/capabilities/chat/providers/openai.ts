@@ -208,9 +208,13 @@ export class OpenAIProvider extends BaseProvider {
     );
   }
 
-  protected async formatResponse(data: any, params: ChatCompletionParameters): Promise<any> {
+  protected async formatResponse(
+    data: any,
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<any> {
     if (!this.isBackgroundResponsePending(data)) {
-      return await super.formatResponse(data, params);
+      return await super.formatResponse(data, params, userId);
     }
 
     const placeholderContent: MessageContent[] = [
@@ -305,7 +309,7 @@ export class OpenAIProvider extends BaseProvider {
     if (status === "completed") {
       return {
         status: "completed",
-        result: await super.formatResponse(raw, params),
+        result: await super.formatResponse(raw, params, userId),
         raw,
       };
     }

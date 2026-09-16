@@ -8,7 +8,7 @@ import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import { formatProviderError } from "~/lib/providers/utils/errors";
 import type { StorageService } from "~/lib/storage";
 import type { ChatCompletionParameters, IEnv } from "~/types";
-import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "~/utils/aiGateway";
+import { getAiGatewayMetadataHeaders } from "~/utils/aiGateway";
 import { AssistantError, ErrorType } from "~/utils/errors";
 import { buildInputSchemaInput } from "~/utils/inputSchema";
 import { appendUrlPath } from "~/utils/urls";
@@ -66,7 +66,7 @@ export class ReplicateProvider extends BaseProvider {
       "Content-Type": "application/json",
       Prefer: `wait=${waitSeconds}`,
       "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+      "cf-aig-cache-ttl": "0",
     };
   }
 
@@ -197,7 +197,7 @@ export class ReplicateProvider extends BaseProvider {
       "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
       Authorization: `Token ${apiKey}`,
       "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
-      "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+      "cf-aig-cache-ttl": "0",
     };
 
     const response = await fetch(await this.resolvePredictionUrl(metadata.id, params.env), {
@@ -216,7 +216,7 @@ export class ReplicateProvider extends BaseProvider {
     const status = String(data.status || "").toLowerCase();
 
     if (status === "succeeded") {
-      const formatted = await this.formatResponse(data, params);
+      const formatted = await this.formatResponse(data, params, userId);
 
       return {
         status: "completed",

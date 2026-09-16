@@ -214,7 +214,11 @@ export abstract class BaseProvider implements AIProvider {
    * @param params - The parameters of the request
    * @returns The formatted data
    */
-  protected async formatResponse(data: any, params: ChatCompletionParameters): Promise<any> {
+  protected async formatResponse(
+    data: any,
+    params: ChatCompletionParameters,
+    userId?: number,
+  ): Promise<any> {
     const modelConfig = await getModelConfigByMatchingModel(
       params.model || "",
       params.env,
@@ -228,7 +232,9 @@ export abstract class BaseProvider implements AIProvider {
       model: params.model,
       modalities: modelConfig?.modalities,
       env: params.env,
-      userId: typeof params.context?.user?.id === "number" ? params.context?.user.id : undefined,
+      userId:
+        userId ??
+        (typeof params.context?.user?.id === "number" ? params.context?.user.id : undefined),
     });
   }
 
@@ -307,7 +313,7 @@ export abstract class BaseProvider implements AIProvider {
           return data;
         }
 
-        return await this.formatResponse(data, params);
+        return await this.formatResponse(data, params, userId);
       },
       analyticsEngine: params.env?.ANALYTICS,
       settings: this.buildMetricsSettings(params),

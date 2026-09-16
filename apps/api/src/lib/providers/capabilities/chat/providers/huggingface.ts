@@ -257,7 +257,7 @@ export class HuggingFaceProvider extends BaseProvider {
 
       return {
         status: "completed",
-        result: await this.formatResponse(data, pollParams),
+        result: await this.formatResponse(data, pollParams, userId),
         raw: data,
       };
     } catch (error) {
