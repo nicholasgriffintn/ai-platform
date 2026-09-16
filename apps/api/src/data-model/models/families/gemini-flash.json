@@ -1,7 +1,6 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 1048576,
     "knowledgeCutoffDate": "January 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -14,6 +13,7 @@
       "defaults": {
         "name": "Gemini 2.5 Flash",
         "description": "Fast Gemini workhorse for multimodal apps where latency and price matter",
+        "contextWindow": 1048576,
         "maxTokens": 65536,
         "modalities": {
           "input": [
@@ -42,6 +42,7 @@
       "defaults": {
         "name": "Gemini 2.5 Flash (EU)",
         "description": "Fast Gemini workhorse for multimodal apps where latency and price matter",
+        "contextWindow": 1048576,
         "maxTokens": 65535,
         "modalities": {
           "input": [
@@ -250,6 +251,7 @@
       "defaults": {
         "name": "Gemini 3.5 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "contextWindow": 1048576,
         "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "May 19, 2026",
@@ -274,6 +276,7 @@
       "defaults": {
         "name": "Gemini 3.5 Flash (EU)",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "contextWindow": 1048576,
         "maxTokens": 65535,
         "modalities": {
           "input": [
@@ -320,6 +323,7 @@
       "defaults": {
         "name": "Gemini 3.6 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "contextWindow": 1048576,
         "modalities": {
           "input": [
             "text",
@@ -349,6 +353,7 @@
       "defaults": {
         "name": "Gemini 3.7 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "contextWindow": 1048576,
         "maxTokens": 65536,
         "modalities": {
           "input": [
@@ -378,6 +383,7 @@
       "defaults": {
         "name": "Gemini 3.7 Flash (EU)",
         "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
+        "contextWindow": 1048576,
         "maxTokens": 65535,
         "modalities": {
           "input": [
@@ -409,6 +415,7 @@
       "defaults": {
         "name": "Gemini 3.8 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "contextWindow": 1048576,
         "maxTokens": 65536,
         "modalities": {
           "input": [
@@ -437,6 +444,7 @@
       "defaults": {
         "name": "Gemini 3.8 Flash (EU)",
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
+        "contextWindow": 1048576,
         "maxTokens": 65535,
         "modalities": {
           "input": [
@@ -491,6 +499,7 @@
       "defaults": {
         "name": "Gemini 3 Flash Preview",
         "description": "New Gemini flash lane bringing frontier-style multimodal reasoning to cheaper runs",
+        "contextWindow": 1048576,
         "maxTokens": 65536,
         "modalities": {
           "input": [
@@ -534,39 +543,11 @@
     "gemini-flash-latest": {
       "defaults": {
         "name": "Gemini Flash Latest",
-        "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
+        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "contextWindow": 1048576,
         "maxTokens": 65536,
         "knowledgeCutoffDate": "March 2026",
         "releaseDate": "August 13, 2026"
-      }
-    },
-    "google-gemini-flash-latest": {
-      "defaults": {
-        "name": "Google Gemini Flash Latest",
-        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "January 1, 2025",
-        "releaseDate": "April 27, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
       }
     },
     "nano-banana": {

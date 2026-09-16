@@ -774,8 +774,6 @@
       "model": "deepseek-thinking/deepseek-v4-pro-0813",
       "matchingModel": "@cf/deepseek-ai/deepseek-v4-pro-0813",
       "overrides": {
-        "contextWindow": 1048576,
-        "maxTokens": 1048576,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00132,
         "costPer1kOutputTokens": 0.00396

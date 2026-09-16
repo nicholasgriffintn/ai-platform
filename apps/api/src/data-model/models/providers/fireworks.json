@@ -408,12 +408,18 @@
         "name": "MiniMax-M2.7",
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
         "contextWindow": 196608,
-        "maxTokens": 196608,
         "speed": 2,
-        "releaseDate": "April 12, 2026",
-        "lastUpdated": "April 12, 2026",
+        "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012
+        "costPer1kOutputTokens": 0.0012,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -534,7 +540,6 @@
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -652,15 +657,6 @@
       "model": "kimi-k3/kimi-k3-fast",
       "matchingModel": "accounts/fireworks/routers/kimi-k3-fast",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "July 27, 2026",
         "lastUpdated": "July 27, 2026",
         "costPer1kInputTokens": 0.0045,
@@ -747,6 +743,7 @@
         "lastUpdated": "August 3, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -775,21 +772,6 @@
           "defaultEffort": "low"
         }
       }
-    },
-    "accounts/fireworks/models/deepseek-v4-pro-0813": {
-      "model": "deepseek-thinking/deepseek-v4-pro-0813",
-      "matchingModel": "accounts/fireworks/models/deepseek-v4-pro-0813",
-      "overrides": {
-        "contextWindow": 1000000,
-        "maxTokens": 384000,
-        "lastUpdated": "August 22, 2026",
-        "costPer1kInputTokens": 0.00132,
-        "costPer1kOutputTokens": 0.00396
-      },
-      "unset": [
-        "strengths",
-        "reliability"
-      ]
     },
     "accounts/fireworks/models/glm-5p3": {
       "model": "glm/glm-5-3",
@@ -901,6 +883,110 @@
       "overrides": {
         "lastUpdated": "December 2, 2025",
         "supportsAttachments": true
+      }
+    },
+    "accounts/fireworks/models/deepseek-v4-pro": {
+      "model": "deepseek-thinking/deepseek-v4-pro",
+      "matchingModel": "accounts/fireworks/models/deepseek-v4-pro",
+      "overrides": {
+        "maxTokens": 384000,
+        "speed": 3,
+        "lastUpdated": "April 24, 2026",
+        "costPer1kInputTokens": 0.00043,
+        "costPer1kOutputTokens": 0.00087,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "accounts/fireworks/routers/deepseek-flash-latest": {
+      "model": "deepseek-flash/deepseek-flash-latest",
+      "matchingModel": "accounts/fireworks/routers/deepseek-flash-latest",
+      "overrides": {
+        "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "releaseDate": "September 10, 2026",
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.00066,
+        "supportsAttachments": true
+      }
+    },
+    "accounts/fireworks/routers/deepseek-pro-latest": {
+      "model": "deepseek-thinking/deepseek-pro-latest",
+      "matchingModel": "accounts/fireworks/routers/deepseek-pro-latest",
+      "overrides": {
+        "lastUpdated": "August 22, 2026",
+        "costPer1kInputTokens": 0.00132,
+        "costPer1kOutputTokens": 0.00396
+      }
+    },
+    "accounts/fireworks/routers/glm-fast-latest": {
+      "model": "glm/glm-5-3-fast-latest",
+      "matchingModel": "accounts/fireworks/routers/glm-fast-latest",
+      "overrides": {
+        "lastUpdated": "September 15, 2026",
+        "costPer1kInputTokens": 0.0021,
+        "costPer1kOutputTokens": 0.0066
+      }
+    },
+    "accounts/fireworks/routers/glm-flash-latest": {
+      "model": "glm/glm-flash-latest-glm-5-3-flash",
+      "matchingModel": "accounts/fireworks/routers/glm-flash-latest",
+      "overrides": {
+        "lastUpdated": "September 15, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsAttachments": true
+      }
+    },
+    "accounts/fireworks/routers/glm-latest": {
+      "model": "glm/glm-latest",
+      "matchingModel": "accounts/fireworks/routers/glm-latest",
+      "overrides": {
+        "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
+        "contextWindow": 1048573,
+        "maxTokens": 262144,
+        "releaseDate": "August 14, 2026",
+        "lastUpdated": "September 15, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044
+      }
+    },
+    "accounts/fireworks/routers/kimi-fast-latest": {
+      "model": "kimi-k3/kimi-fast-latest",
+      "matchingModel": "accounts/fireworks/routers/kimi-fast-latest",
+      "overrides": {
+        "lastUpdated": "September 15, 2026",
+        "costPer1kInputTokens": 0.0045,
+        "costPer1kOutputTokens": 0.0225,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "accounts/fireworks/routers/kimi-latest": {
+      "model": "kimi-k3/kimi-latest",
+      "matchingModel": "accounts/fireworks/routers/kimi-latest",
+      "overrides": {
+        "lastUpdated": "September 15, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "accounts/fireworks/routers/minimax-latest": {
+      "model": "minimax/minimax-latest",
+      "matchingModel": "accounts/fireworks/routers/minimax-latest",
+      "overrides": {
+        "lastUpdated": "September 15, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
       }
     }
   }

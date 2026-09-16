@@ -17,6 +17,46 @@
   },
   "description": "The kimi k2 family includes models that produce text.",
   "models": {
+    "kimi-for-coding": {
+      "defaults": {
+        "name": "Kimi For Coding",
+        "openWeights": false,
+        "description": "Kimi coding model with more efficient thinking and up to 1M context, available through Kimi Code",
+        "contextWindow": 1048576,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "releaseDate": "September 11, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 41.9,
+          "codingIndex": 60.8,
+          "agenticIndex": 29.6,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
     "kimi-for-coding-highspeed": {
       "defaults": {
         "name": "Kimi For Coding HighSpeed",

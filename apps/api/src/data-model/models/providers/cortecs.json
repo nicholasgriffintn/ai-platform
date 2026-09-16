@@ -164,8 +164,8 @@
       "matchingModel": "codestral-2508",
       "overrides": {
         "lastUpdated": "July 30, 2025",
-        "costPer1kInputTokens": 0.000334,
-        "costPer1kOutputTokens": 0.001003,
+        "costPer1kInputTokens": 0.000368,
+        "costPer1kOutputTokens": 0.001103,
         "supportsAttachments": false
       }
     },
@@ -650,8 +650,8 @@
         ],
         "speed": 3,
         "lastUpdated": "December 2, 2025",
-        "costPer1kInputTokens": 0.000557,
-        "costPer1kOutputTokens": 0.001671
+        "costPer1kInputTokens": 0.000613,
+        "costPer1kOutputTokens": 0.001838
       }
     },
     "mixtral-8x7B-instruct-v0.1": {
@@ -1120,8 +1120,8 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "April 30, 2026",
-        "costPer1kInputTokens": 0.001393,
-        "costPer1kOutputTokens": 0.00713,
+        "costPer1kInputTokens": 0.001532,
+        "costPer1kOutputTokens": 0.007843,
         "supportsTemperature": false
       }
     },
@@ -1225,8 +1225,8 @@
         "name": "Mistral Small 2603",
         "speed": 4,
         "lastUpdated": "March 16, 2026",
-        "costPer1kInputTokens": 0.000143,
-        "costPer1kOutputTokens": 0.000568,
+        "costPer1kInputTokens": 0.000156,
+        "costPer1kOutputTokens": 0.000625,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1293,8 +1293,8 @@
       "matchingModel": "voxtral-small-2507",
       "overrides": {
         "lastUpdated": "February 2, 2026",
-        "costPer1kInputTokens": 0.000111,
-        "costPer1kOutputTokens": 0.000334,
+        "costPer1kInputTokens": 0.000123,
+        "costPer1kOutputTokens": 0.000368,
         "supportsTemperature": false
       }
     },
@@ -1385,8 +1385,8 @@
       "matchingModel": "ministral-8b-2512",
       "overrides": {
         "lastUpdated": "December 3, 2025",
-        "costPer1kInputTokens": 0.000167,
-        "costPer1kOutputTokens": 0.000167,
+        "costPer1kInputTokens": 0.000179,
+        "costPer1kOutputTokens": 0.000179,
         "supportsTemperature": false
       }
     },
@@ -1395,8 +1395,8 @@
       "matchingModel": "ministral-3b-2512",
       "overrides": {
         "lastUpdated": "December 3, 2025",
-        "costPer1kInputTokens": 0.000111,
-        "costPer1kOutputTokens": 0.000111,
+        "costPer1kInputTokens": 0.000123,
+        "costPer1kOutputTokens": 0.000123,
         "supportsTemperature": false
       }
     },
@@ -1405,8 +1405,8 @@
       "matchingModel": "ministral-14b-2512",
       "overrides": {
         "lastUpdated": "December 3, 2025",
-        "costPer1kInputTokens": 0.000223,
-        "costPer1kOutputTokens": 0.000223,
+        "costPer1kInputTokens": 0.00024,
+        "costPer1kOutputTokens": 0.00024,
         "supportsTemperature": false
       }
     },
@@ -1691,7 +1691,6 @@
       "matchingModel": "llama-4-maverick",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 16384,
         "strengths": [
           "document",
           "tool_use"
@@ -2420,6 +2419,24 @@
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.000825,
         "costPer1kOutputTokens": 0.004125
+      }
+    },
+    "deepseek-v4.1-flash": {
+      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "matchingModel": "deepseek-v4.1-flash",
+      "overrides": {
+        "maxTokens": 64000,
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.001499,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

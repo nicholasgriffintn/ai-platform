@@ -34,8 +34,8 @@
         ],
         "speed": 5,
         "lastUpdated": "January 19, 2026",
-        "costPer1kInputTokens": 0.00005,
-        "costPer1kOutputTokens": 0.0002
+        "costPer1kInputTokens": 0.00007,
+        "costPer1kOutputTokens": 0.0003
       }
     },
     "deepseek-v4-flash": {
@@ -48,8 +48,8 @@
         "maxTokens": 1048576,
         "speed": 4,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.00014,
-        "costPer1kOutputTokens": 0.00028,
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.00066,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high",
@@ -74,8 +74,8 @@
         "maxTokens": 1048576,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.00043,
-        "costPer1kOutputTokens": 0.00087,
+        "costPer1kInputTokens": 0.00066,
+        "costPer1kOutputTokens": 0.00198,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high",
@@ -85,8 +85,8 @@
         }
       },
       "unset": [
-        "supportsTemperature",
         "supportsResponseFormat",
+        "supportsTemperature",
         "knowledgeCutoffDate"
       ]
     },
@@ -95,6 +95,8 @@
       "matchingModel": "gemma4:31b",
       "overrides": {
         "lastUpdated": "April 8, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.0004,
         "supportsAttachments": true
       },
       "unset": [
@@ -111,8 +113,8 @@
         "speed": 3,
         "releaseDate": "March 27, 2026",
         "lastUpdated": "April 7, 2026",
-        "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.0032
       },
       "unset": [
         "supportsResponseFormat",
@@ -148,6 +150,8 @@
           ]
         },
         "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": true
       }
     },
@@ -250,6 +254,8 @@
       "overrides": {
         "name": "kimi-k3",
         "lastUpdated": "July 27, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
         "supportsAttachments": true
       }
     },
@@ -259,6 +265,7 @@
       "overrides": {
         "name": "minimax-m2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "maxTokens": 131072,
         "speed": 4,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",
@@ -301,8 +308,8 @@
         "contextComplexity": 4,
         "speed": 3,
         "lastUpdated": "May 31, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0024,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -320,6 +327,8 @@
       "matchingModel": "mistral-large-3:675b",
       "overrides": {
         "lastUpdated": "January 19, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0015,
         "supportsAttachments": true
       },
       "unset": [
@@ -332,14 +341,18 @@
       "model": "nemotron/nemotron-3-nano-30b",
       "matchingModel": "nemotron-3-nano:30b",
       "overrides": {
-        "lastUpdated": "January 19, 2026"
+        "lastUpdated": "January 19, 2026",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00024
       }
     },
     "nemotron-3-super": {
       "model": "nemotron/nemotron-3-super",
       "matchingModel": "nemotron-3-super",
       "overrides": {
-        "lastUpdated": "March 12, 2026"
+        "lastUpdated": "March 12, 2026",
+        "costPer1kInputTokens": 0.000015,
+        "costPer1kOutputTokens": 0.0006
       }
     },
     "nemotron-3-ultra": {
@@ -349,7 +362,9 @@
         "name": "nemotron-3-ultra",
         "contextWindow": 262144,
         "maxTokens": 128000,
-        "lastUpdated": "June 4, 2026"
+        "lastUpdated": "June 4, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.003
       }
     },
     "qwen3.5:397b": {
@@ -357,6 +372,8 @@
       "matchingModel": "qwen3.5:397b",
       "overrides": {
         "lastUpdated": "February 17, 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0036,
         "supportsAttachments": true
       },
       "unset": [
@@ -369,7 +386,9 @@
       "overrides": {
         "contextWindow": 1048576,
         "maxTokens": 131072,
-        "lastUpdated": "August 14, 2026"
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044
       }
     },
     "deepseek-v4.1-flash": {
@@ -377,6 +396,8 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [

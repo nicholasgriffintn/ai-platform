@@ -541,6 +541,50 @@
         "supportsAttachments": false
       }
     },
+    "gemini-3-8-live": {
+      "defaults": {
+        "name": "Gemini 3.8 Live",
+        "openWeights": false,
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "releaseDate": "September 15, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "gemini-3-8-live-extended-thinking": {
+      "defaults": {
+        "name": "Gemini 3.8 Live Extended Thinking",
+        "openWeights": false,
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "releaseDate": "September 15, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
     "gemini-3-flash": {
       "defaults": {
         "name": "Gemini 3 Flash",

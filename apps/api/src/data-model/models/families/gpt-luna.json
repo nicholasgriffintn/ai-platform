@@ -85,7 +85,7 @@
         "description": "Cost-efficient GPT-5.6 model for fast, high-volume workloads"
       }
     },
-    "openai-gpt-luna-latest": {
+    "gpt-luna-latest": {
       "defaults": {
         "name": "OpenAI GPT Luna Latest",
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",

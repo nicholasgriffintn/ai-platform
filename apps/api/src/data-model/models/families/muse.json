@@ -17,7 +17,17 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh"
+      ],
+      "defaultEffort": "minimal"
+    }
   },
   "description": "Open Llama multimodal model for image understanding and text reasoning",
   "models": {
@@ -72,17 +82,7 @@
       "defaults": {
         "name": "Muse Spark 1.1",
         "description": "Open Llama multimodal model for image understanding and text reasoning",
-        "releaseDate": "April 8, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "releaseDate": "April 8, 2026"
       }
     },
     "muse-spark-1-2": {
@@ -90,34 +90,14 @@
         "name": "Muse Spark 1.2",
         "description": "Muse Spark 1.2 is a coding-focused update to Muse Spark 1.1 with improvements in code generation, complex debugging, codebase understanding, and end-to-end developer workflows.",
         "maxTokens": 131072,
-        "releaseDate": "August 5, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "releaseDate": "August 5, 2026"
       }
     },
     "muse-spark-1-2-contributor": {
       "defaults": {
         "name": "Muse Spark 1.2 Contributor",
         "description": "Open Llama multimodal model for image understanding and text reasoning",
-        "releaseDate": "August 5, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "releaseDate": "August 5, 2026"
       }
     },
     "muse-spark-1-3": {

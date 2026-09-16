@@ -67,7 +67,7 @@
         "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation."
       }
     },
-    "openai-gpt-astra-latest": {
+    "gpt-astra-latest": {
       "defaults": {
         "name": "OpenAI GPT Astra Latest",
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",

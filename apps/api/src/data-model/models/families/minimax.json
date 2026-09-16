@@ -121,6 +121,23 @@
         "supportsAttachments": true
       }
     },
+    "minimax-latest": {
+      "defaults": {
+        "name": "MiniMax Latest",
+        "description": "MiniMax multimodal model for long-context coding, perception, and agent planning",
+        "contextWindow": 512000,
+        "maxTokens": 512000,
+        "releaseDate": "June 12, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "minimax-m1": {
       "defaults": {
         "name": "MiniMax M1",
@@ -195,7 +212,6 @@
       "defaults": {
         "description": "Prior MiniMax coding model for agent workflows, office edits, and automation",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],
@@ -262,6 +278,7 @@
     "minimax-m2-7": {
       "defaults": {
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],

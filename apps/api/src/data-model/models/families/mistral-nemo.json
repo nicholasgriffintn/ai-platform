@@ -20,8 +20,6 @@
       "defaults": {
         "name": "Mistral Nemo",
         "description": "Efficient Mistral-NVIDIA open model for multilingual chat and local deployment",
-        "contextWindow": 128000,
-        "maxTokens": 128000,
         "releaseDate": "July 18, 2024"
       }
     },

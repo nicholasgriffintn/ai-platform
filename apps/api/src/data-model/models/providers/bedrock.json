@@ -1398,7 +1398,6 @@
       "model": "claude-sonnet/claude-sonnet-4-6",
       "matchingModel": "anthropic.claude-sonnet-4-6",
       "overrides": {
-        "contextComplexity": 4,
         "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.0033,
@@ -1494,6 +1493,7 @@
       "matchingModel": "eu.anthropic.claude-sonnet-4-6",
       "overrides": {
         "maxTokens": 128000,
+        "contextComplexity": 5,
         "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.0033,

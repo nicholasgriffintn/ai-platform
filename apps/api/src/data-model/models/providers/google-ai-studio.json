@@ -376,6 +376,7 @@
       "model": "gemini-flash/gemini-flash-latest",
       "matchingModel": "gemini-flash-latest",
       "overrides": {
+        "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
         "modalities": {
           "input": [
             "text",
@@ -640,6 +641,7 @@
       "matchingModel": "gemma-4-26b-a4b-it",
       "overrides": {
         "name": "Gemma 4 26B",
+        "maxTokens": 32768,
         "isFree": true,
         "lastUpdated": "April 2, 2026"
       }

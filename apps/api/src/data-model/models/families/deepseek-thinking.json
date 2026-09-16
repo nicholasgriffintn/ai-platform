@@ -16,17 +16,26 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "thinking"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "The deepseek thinking family includes models that produce text.",
   "models": {
+    "deepseek-pro-latest": {
+      "defaults": {
+        "name": "DeepSeek Pro Latest",
+        "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "releaseDate": "August 12, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
     "deepseek-r1": {
       "defaults": {
         "name": "DeepSeek-R1",
@@ -35,6 +44,13 @@
         "contextComplexity": 3,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "January 20, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 12.6,
           "codingIndex": null,
@@ -75,7 +91,14 @@
         "contextWindow": 163840,
         "maxTokens": 65536,
         "knowledgeCutoffDate": "July 2024",
-        "releaseDate": "January 20, 2025"
+        "releaseDate": "January 20, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "deepseek-r1-distill-llama-70b": {
@@ -87,6 +110,13 @@
         "contextComplexity": 4,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "December 29, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 9.9,
           "codingIndex": null,
@@ -106,6 +136,13 @@
         "releaseDate": "January 20, 2025",
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 11,
           "codingIndex": null,
@@ -124,6 +161,13 @@
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "January 20, 2025",
         "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 12.6,
           "codingIndex": null,
@@ -149,13 +193,21 @@
         "reliability": 5,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "December 1, 2025",
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "deepseek-v4-pro": {
       "defaults": {
         "name": "DeepSeek V4 Pro",
         "description": "Open MoE flagship with million-token context for coding and long agent runs",
+        "contextWindow": 1000000,
         "contextComplexity": 5,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "April 24, 2026",
@@ -171,6 +223,8 @@
       "defaults": {
         "name": "DeepSeek V4 Pro 0813",
         "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
         "releaseDate": "August 12, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -262,6 +316,13 @@
         "releaseDate": "January 23, 2025",
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 9.9,
           "codingIndex": null,

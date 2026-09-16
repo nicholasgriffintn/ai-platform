@@ -355,7 +355,7 @@
         }
       }
     },
-    "google-gemini-pro-latest": {
+    "gemini-pro-latest": {
       "defaults": {
         "name": "Google Gemini Pro Latest",
         "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",

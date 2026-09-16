@@ -386,6 +386,7 @@
       "overrides": {
         "name": "MiniMax-M2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -401,7 +402,6 @@
       "overrides": {
         "name": "MiniMax-M2.7",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -548,6 +548,7 @@
       "model": "gemma/gemma-4-26b-a4b-it",
       "matchingModel": "google/gemma-4-26B-A4B-it",
       "overrides": {
+        "maxTokens": 32768,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00013,
         "costPer1kOutputTokens": 0.0004,
@@ -734,7 +735,6 @@
       "model": "qwen/qwen3-5-35b-a3b",
       "matchingModel": "Qwen/Qwen3.5-35B-A3B",
       "overrides": {
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
