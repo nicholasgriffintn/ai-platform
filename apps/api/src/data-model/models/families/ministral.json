@@ -14,7 +14,7 @@
         "name": "Ministral 14B",
         "openWeights": false,
         "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
-        "contextWindow": 256000,
+        "contextWindow": 262144,
         "maxTokens": 256000,
         "modalities": {
           "input": [

@@ -30,7 +30,6 @@
         "name": "MiniMax M2.7",
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "strengths": [
           "coding",
           "agents",
@@ -59,6 +58,7 @@
       "matchingModel": "MiniMax-M2.5",
       "overrides": {
         "name": "MiniMax-M2.5",
+        "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,

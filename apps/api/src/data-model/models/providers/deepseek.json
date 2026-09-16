@@ -86,7 +86,6 @@
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
         "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
-        "contextWindow": 1000000,
         "maxTokens": 384000,
         "isFree": true,
         "strengths": [

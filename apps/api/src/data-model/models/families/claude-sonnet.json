@@ -19,27 +19,6 @@
   },
   "description": "The claude sonnet family includes models that produce text.",
   "models": {
-    "anthropic-claude-sonnet-latest": {
-      "defaults": {
-        "name": "Anthropic Claude Sonnet Latest",
-        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "maxTokens": 128000,
-        "knowledgeCutoffDate": "January 31, 2026",
-        "releaseDate": "April 27, 2026",
-        "supportsTemperature": false,
-        "supportsTopP": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
     "au-anthropic-claude-sonnet-4-6": {
       "defaults": {
         "name": "AU Anthropic Claude Sonnet 4.6",
@@ -288,7 +267,6 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 4,
         "reliability": 3,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
@@ -311,7 +289,7 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 4,
+        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
@@ -344,7 +322,7 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 4,
+        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
@@ -377,7 +355,7 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 4,
+        "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
@@ -546,6 +524,27 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "claude-sonnet-latest": {
+      "defaults": {
+        "name": "Anthropic Claude Sonnet Latest",
+        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "maxTokens": 128000,
+        "knowledgeCutoffDate": "January 31, 2026",
+        "releaseDate": "April 27, 2026",
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
         }
       }
     }

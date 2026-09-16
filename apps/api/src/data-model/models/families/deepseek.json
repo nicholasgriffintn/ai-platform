@@ -59,6 +59,25 @@
         "supportsAttachments": true
       }
     },
+    "deepseek-pro-latest": {
+      "defaults": {
+        "name": "DeepSeek Pro Latest",
+        "openWeights": false,
+        "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
+        "contextWindow": 1048576,
+        "maxTokens": 384000,
+        "releaseDate": "September 14, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "deepseek-r1-05-28": {
       "defaults": {
         "name": "Deepseek R1 05/28",

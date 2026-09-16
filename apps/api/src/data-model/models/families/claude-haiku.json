@@ -22,20 +22,6 @@
   },
   "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
   "models": {
-    "anthropic-claude-haiku-latest": {
-      "defaults": {
-        "name": "Anthropic Claude Haiku Latest",
-        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
-        "releaseDate": "April 27, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "claude-3-5-haiku": {
       "defaults": {
         "name": "Claude 3.5 Haiku",
@@ -227,6 +213,20 @@
           ],
           "defaultEffort": "none",
           "thinkingApi": "budget"
+        }
+      }
+    },
+    "claude-haiku-latest": {
+      "defaults": {
+        "name": "Anthropic Claude Haiku Latest",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "releaseDate": "April 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
         }
       }
     }

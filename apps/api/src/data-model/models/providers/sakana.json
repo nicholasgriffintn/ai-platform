@@ -3,7 +3,8 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": false
+    "supportsTemperature": false,
+    "apiShape": "responses"
   },
   "models": {
     "fugu": {
@@ -54,7 +55,10 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "apiShape"
+      ]
     }
   }
 }

@@ -154,28 +154,9 @@
         "name": "Seed 2.1 Turbo",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 262144,
-        "maxTokens": 235929,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "August 12, 2026",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": true
       }
     },
     "seedance-1-5-pro": {

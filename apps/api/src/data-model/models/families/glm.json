@@ -582,8 +582,8 @@
       "defaults": {
         "name": "GLM 5.2 (free)",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 256000,
-        "maxTokens": 230400,
+        "contextWindow": 32768,
+        "maxTokens": 29491,
         "strengths": [
           "coding",
           "tool_use"
@@ -591,6 +591,8 @@
         "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "June 13, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high",
@@ -803,6 +805,23 @@
         }
       }
     },
+    "glm-5-3-fast-latest": {
+      "defaults": {
+        "name": "GLM 5.3 Fast (Latest)",
+        "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
+        "contextWindow": 1048572,
+        "maxTokens": 262144,
+        "releaseDate": "August 28, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "glm-5-3-flash": {
       "defaults": {
         "name": "GLM-5.3-Flash",
@@ -918,14 +937,37 @@
         }
       }
     },
+    "glm-flash-latest-glm-5-3-flash": {
+      "defaults": {
+        "name": "GLM Flash Latest (GLM 5.3 Flash)",
+        "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+        "contextWindow": 1048573,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 26, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "glm-latest": {
       "defaults": {
         "name": "GLM Latest",
-        "openWeights": false,
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 1310720,
-        "maxTokens": 943718,
-        "releaseDate": "August 19, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",

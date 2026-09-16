@@ -4,7 +4,8 @@
     "contextWindow": 0,
     "maxTokens": 0,
     "supportsToolCalls": false,
-    "supportsAttachments": false
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "description": "The o family includes models that produce audio, image, text, video.",
   "models": {
@@ -22,8 +23,7 @@
             "image"
           ]
         },
-        "releaseDate": "April 16, 2026",
-        "supportsTemperature": true
+        "releaseDate": "April 16, 2026"
       }
     },
     "cohere-rerank-3-5": {
@@ -40,8 +40,7 @@
             "text"
           ]
         },
-        "releaseDate": "December 2, 2024",
-        "supportsTemperature": true
+        "releaseDate": "December 2, 2024"
       }
     },
     "cohere-rerank-4-fast": {
@@ -58,8 +57,7 @@
             "text"
           ]
         },
-        "releaseDate": "December 11, 2025",
-        "supportsTemperature": true
+        "releaseDate": "December 11, 2025"
       }
     },
     "cohere-rerank-4-pro": {
@@ -76,8 +74,7 @@
             "text"
           ]
         },
-        "releaseDate": "December 11, 2025",
-        "supportsTemperature": true
+        "releaseDate": "December 11, 2025"
       }
     },
     "o1": {
@@ -169,7 +166,6 @@
         "releaseDate": "June 26, 2024",
         "supportsToolCalls": true,
         "supportsAttachments": true,
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -405,6 +401,40 @@
         "releaseDate": "March 9, 2026"
       }
     },
+    "schematron-v2-small": {
+      "defaults": {
+        "name": "Schematron V2 Small",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 16, 2026"
+      }
+    },
+    "schematron-v2-turbo": {
+      "defaults": {
+        "name": "Schematron V2 Turbo",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 16, 2026"
+      }
+    },
     "transcribe-1": {
       "defaults": {
         "name": "Transcribe-1",
@@ -452,7 +482,6 @@
         ],
         "reliability": 3,
         "releaseDate": "November 6, 2023",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -488,7 +517,6 @@
         ],
         "reliability": 3,
         "releaseDate": "November 6, 2023",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -519,8 +547,7 @@
             "video"
           ]
         },
-        "releaseDate": "September 24, 2025",
-        "supportsTemperature": true
+        "releaseDate": "September 24, 2025"
       }
     },
     "wan-v2-6-image-to-video": {
@@ -535,8 +562,7 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025",
-        "supportsTemperature": true
+        "releaseDate": "December 16, 2025"
       }
     },
     "wan-v2-6-image-to-video-flash": {
@@ -551,8 +577,7 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025",
-        "supportsTemperature": true
+        "releaseDate": "December 16, 2025"
       }
     },
     "wan-v2-6-reference-to-video": {
@@ -567,8 +592,7 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025",
-        "supportsTemperature": true
+        "releaseDate": "December 16, 2025"
       }
     },
     "wan-v2-6-reference-to-video-flash": {
@@ -583,8 +607,7 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025",
-        "supportsTemperature": true
+        "releaseDate": "December 16, 2025"
       }
     },
     "wan-v2-6-text-to-video": {
@@ -599,8 +622,7 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025",
-        "supportsTemperature": true
+        "releaseDate": "December 16, 2025"
       }
     },
     "wan-v2-7-reference-to-video": {
@@ -615,8 +637,7 @@
             "video"
           ]
         },
-        "releaseDate": "April 7, 2026",
-        "supportsTemperature": true
+        "releaseDate": "April 7, 2026"
       }
     },
     "wan-v2-7-text-to-video": {
@@ -631,8 +652,7 @@
             "video"
           ]
         },
-        "releaseDate": "April 7, 2026",
-        "supportsTemperature": true
+        "releaseDate": "April 7, 2026"
       }
     },
     "wan-v3-0-video": {

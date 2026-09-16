@@ -305,6 +305,7 @@
       "matchingModel": "google/gemma-4-26B-A4B-it",
       "overrides": {
         "name": "Gemma 4 26B",
+        "maxTokens": 32768,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.00034
@@ -1136,8 +1137,8 @@
       "overrides": {
         "maxTokens": 32768,
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.0004,
-        "costPer1kOutputTokens": 0.003,
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0025,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1250,6 +1251,15 @@
         "lastUpdated": "March 12, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0001
+      }
+    },
+    "Qwen/Qwen3.8-Flash": {
+      "model": "qwen/qwen3-8-flash",
+      "matchingModel": "Qwen/Qwen3.8-Flash",
+      "overrides": {
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.000113,
+        "costPer1kOutputTokens": 0.000382
       }
     }
   }

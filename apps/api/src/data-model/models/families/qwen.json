@@ -1820,6 +1820,7 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
+        "maxTokens": 65536,
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 23, 2026",
@@ -3154,6 +3155,7 @@
         "name": "Qwen3 Next 80B A3B Thinking",
         "openWeights": true,
         "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
+        "maxTokens": 32768,
         "modalities": {
           "input": [
             "text"
@@ -3386,7 +3388,7 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
-        "maxTokens": 16384,
+        "maxTokens": 32768,
         "modalities": {
           "input": [
             "text",

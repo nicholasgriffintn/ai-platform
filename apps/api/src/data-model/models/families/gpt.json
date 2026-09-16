@@ -1347,6 +1347,27 @@
         "supportsTemperature": false
       }
     },
+    "gpt-live-1": {
+      "defaults": {
+        "name": "GPT-Live 1",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "releaseDate": "September 10, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
     "gpt-live-transcribe": {
       "defaults": {
         "name": "GPT Live Transcribe",

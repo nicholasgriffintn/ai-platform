@@ -322,6 +322,7 @@
       "model": "gemini-flash/gemini-flash-latest",
       "matchingModel": "gemini-flash-latest",
       "overrides": {
+        "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
         "modalities": {
           "input": [
             "text",

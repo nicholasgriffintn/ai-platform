@@ -126,7 +126,6 @@
       "matchingModel": "mistral-medium-latest",
       "overrides": {
         "name": "Mistral Medium 3.5",
-        "contextWindow": 262144,
         "maxTokens": 262144,
         "card": "https://www.prompthub.us/models/mistral-medium",
         "strengths": [

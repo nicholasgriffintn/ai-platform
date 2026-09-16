@@ -167,7 +167,6 @@
         "name": "Llama 3.1 70B Instruct",
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "contextWindow": 128000,
-        "maxTokens": 8192,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "July 23, 2024"
       }
@@ -521,6 +520,7 @@
       "defaults": {
         "name": "Llama 4 Maverick",
         "description": "Open multimodal Llama model for strong reasoning and fast responses",
+        "maxTokens": 16384,
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 5, 2025",

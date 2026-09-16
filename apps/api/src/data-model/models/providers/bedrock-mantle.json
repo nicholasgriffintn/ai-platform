@@ -158,6 +158,7 @@
       "model": "gemma/gemma-4-26b-a4b-it",
       "matchingModel": "google.gemma-4-26b-a4b",
       "overrides": {
+        "maxTokens": 32768,
         "modalities": {
           "input": [
             "text",

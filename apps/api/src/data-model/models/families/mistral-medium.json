@@ -88,6 +88,7 @@
       "defaults": {
         "openWeights": true,
         "description": "Balanced Mistral model for enterprise assistants, multilingual work, and tools",
+        "contextWindow": 262144,
         "releaseDate": "April 29, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [

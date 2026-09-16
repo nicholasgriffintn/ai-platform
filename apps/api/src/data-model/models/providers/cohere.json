@@ -146,7 +146,8 @@
         "speed": 4,
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "costPer1kOutputTokens": 0,
+        "apiBaseUrl": "https://api.cohere.ai/compatibility/v1"
       }
     }
   }

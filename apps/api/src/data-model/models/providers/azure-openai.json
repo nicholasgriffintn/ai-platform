@@ -88,7 +88,8 @@
         "lastUpdated": "November 18, 2025",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
     },
     "anthropic/claude-opus-4-1": {
@@ -100,7 +101,8 @@
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.075,
         "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       },
       "unset": [
         "contextComplexity",
@@ -117,6 +119,7 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsAttachments": true,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -140,6 +143,7 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsAttachments": true,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -164,7 +168,8 @@
         "lastUpdated": "November 18, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
     },
     "mistral/codestral-2501": {
@@ -734,7 +739,9 @@
         "releaseDate": "February 6, 2026",
         "lastUpdated": "February 6, 2026",
         "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.003
+        "costPer1kOutputTokens": 0.003,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
+        "apiShape": "completions"
       }
     },
     "meta/llama-3.2-11b-vision-instruct": {
@@ -901,6 +908,8 @@
       "model": "mistral-nemo/mistral-nemo",
       "matchingModel": "mistral-nemo",
       "overrides": {
+        "contextWindow": 128000,
+        "maxTokens": 128000,
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00015
@@ -1124,6 +1133,7 @@
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "supportsAttachments": true,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1409,7 +1419,9 @@
         "releaseDate": "April 22, 2026",
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00095,
-        "costPer1kOutputTokens": 0.004
+        "costPer1kOutputTokens": 0.004,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
+        "apiShape": "completions"
       }
     },
     "deepseek-v4-flash": {
@@ -1423,6 +1435,8 @@
         "costPer1kInputTokens": 0.00019,
         "costPer1kOutputTokens": 0.00051,
         "supportsToolCalls": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
+        "apiShape": "completions",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1440,13 +1454,21 @@
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
         "name": "DeepSeek-V4-Pro",
-        "contextWindow": 1000000,
         "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00174,
         "costPer1kOutputTokens": 0.00348,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
+        "apiShape": "completions",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "strengths"
@@ -1461,7 +1483,8 @@
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
     },
     "gpt-image-1": {
@@ -1546,7 +1569,8 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
     },
     "claude-sonnet-5": {
@@ -1558,7 +1582,8 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
     },
     "gpt-5.6-luna": {
@@ -1628,7 +1653,8 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       },
       "unset": [
         "contextComplexity"
@@ -1658,7 +1684,9 @@
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
+        "apiShape": "completions"
       }
     },
     "claude-mythos-5": {
@@ -1670,7 +1698,8 @@
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
     },
     "claude-opus-4-7": {
@@ -1682,7 +1711,8 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
     },
     "claude-fable-5-1": {
@@ -1694,7 +1724,8 @@
         "costPer1kOutputTokens": 0.05,
         "supportsResponseFormat": true,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
     },
     "grok-4.6": {

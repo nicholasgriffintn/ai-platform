@@ -279,7 +279,6 @@
       "overrides": {
         "name": "MiniMax-M2.7",
         "contextWindow": 202752,
-        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -630,6 +629,24 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": true
+      }
+    },
+    "deepseek-ai/DeepSeek-V4.1-Flash": {
+      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "overrides": {
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }
