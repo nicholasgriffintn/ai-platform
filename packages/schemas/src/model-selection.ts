@@ -85,11 +85,17 @@ export function createModelReferenceMap(models: ModelConfig) {
 
   for (const model of Object.values(models)) {
     for (const modelReference of [model.id, model.matchingModel, model.name]) {
-      if (!modelReference || modelReferences.has(modelReference)) {
+      if (!modelReference) {
         continue;
       }
 
-      modelReferences.set(modelReference, model);
+      if (model.provider && !modelReferences.has(`${model.provider}/${modelReference}`)) {
+        modelReferences.set(`${model.provider}/${modelReference}`, model);
+      }
+
+      if (!modelReferences.has(modelReference)) {
+        modelReferences.set(modelReference, model);
+      }
     }
   }
 
@@ -99,8 +105,15 @@ export function createModelReferenceMap(models: ModelConfig) {
 export function getModelByReference(
   modelReferences: ReadonlyMap<string, ModelConfigItem>,
   modelId?: string | null,
+  provider?: string | null,
 ) {
-  return modelId ? modelReferences.get(modelId) : undefined;
+  if (!modelId) {
+    return undefined;
+  }
+
+  const providerMatch = provider ? modelReferences.get(`${provider}/${modelId}`) : undefined;
+
+  return providerMatch ?? modelReferences.get(modelId);
 }
 
 export function sortModelsByDisplayName<T extends Pick<ModelConfigItem, "matchingModel" | "name">>(

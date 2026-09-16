@@ -314,7 +314,11 @@ export const MessageList = ({
                           message={message}
                           isTemporary={isTemporary}
                           isGenerating={index === generatingAssistantMessageIndex}
-                          modelConfig={getModelByReference(modelReferences, message.model)}
+                          modelConfig={getModelByReference(
+                            modelReferences,
+                            message.model,
+                            message.provider,
+                          )}
                           onToolInteraction={onToolInteraction}
                           onConnectorApproval={onConnectorApproval}
                           onArtifactOpen={onArtifactOpen}
