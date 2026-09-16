@@ -53,7 +53,7 @@ addRoute(app, "get", "/", {
     500: { description: "Server error", schema: errorResponseSchema },
   },
   handler: async ({ serviceContext, user }) => listModels(serviceContext.env, user),
-  cache: { maxAge: 60, staleWhileRevalidate: 300 },
+  cache: "no-store",
 });
 
 addRoute(app, "get", "/catalogue", {

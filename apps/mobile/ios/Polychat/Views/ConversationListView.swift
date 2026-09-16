@@ -283,7 +283,7 @@ struct ConversationRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            if !conversation.isLoadedFromAPI {
+            if conversation.isTemporary {
                 Image(systemName: "theatermasks")
                     .font(.caption)
                     .foregroundStyle(.secondary)

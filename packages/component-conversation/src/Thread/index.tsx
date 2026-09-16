@@ -472,7 +472,10 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
         if (currentModel?.readiness && !isReadinessFresh(currentModel.readiness)) {
           const refreshResult = await refetchModels();
-          const refreshedModels = refreshResult.data ?? EMPTY_MODEL_CONFIG;
+          const refreshedModels = {
+            ...apiModels,
+            ...(refreshResult.data ?? EMPTY_MODEL_CONFIG),
+          };
 
           currentModel = getModelByReference(createModelReferenceMap(refreshedModels), model);
 
@@ -599,6 +602,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       }
     },
     [
+      apiModels,
       canUseGoals,
       compactConversation,
       composerInput,

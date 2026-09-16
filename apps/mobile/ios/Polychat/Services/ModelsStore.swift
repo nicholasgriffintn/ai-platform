@@ -19,6 +19,7 @@ class ModelsStore: ObservableObject {
     private var accountDefaultModelId: String?
     private var accountDefaultModelTier: String?
     private var accountDefaultComputeSite: String?
+    private var fetchGeneration = 0
     
     init(apiClient: any ModelsAPIClient = APIClient.shared, userDefaults: UserDefaults = .standard) {
         self.apiClient = apiClient
@@ -27,12 +28,22 @@ class ModelsStore: ObservableObject {
     }
     
     func fetchModels() async {
+        fetchGeneration += 1
+        let generation = fetchGeneration
         isLoading = true
         error = nil
+
+        defer {
+            if generation == fetchGeneration {
+                isLoading = false
+            }
+        }
         
         do {
             let response = try await apiClient.fetchModels()
-            models = response.map { (key, model) in
+            guard generation == fetchGeneration, !Task.isCancelled else { return }
+
+            let fetchedModels = response.map { (key, model) in
                 ModelConfigItem(
                     id: key,
                     name: model.name ?? key,
@@ -66,9 +77,10 @@ class ModelsStore: ObservableObject {
                 )
             }
 
+            var fetchedTierModelIds: [String: String]?
             if let tierResponse = try? await apiClient.fetchModelTiers(),
                let hostedLineup = tierResponse.runtimes["hosted"] {
-                tierModelIds = [
+                fetchedTierModelIds = [
                     "low": hostedLineup.modelId(for: "low"),
                     "medium": hostedLineup.modelId(for: "medium"),
                     "high": hostedLineup.modelId(for: "high"),
@@ -76,8 +88,8 @@ class ModelsStore: ObservableObject {
                 ].compactMapValues { $0 }
             }
 
-            machines = (try? await apiClient.fetchMachines()) ?? []
-            let machineModels = machines.flatMap { machine in
+            let fetchedMachines = (try? await apiClient.fetchMachines()) ?? []
+            let machineModels = fetchedMachines.flatMap { machine in
                 machine.runtimes.filter { $0.kind == "model" && $0.readiness.status == "ready" }.flatMap { runtime in
                     runtime.models.map { model in
                         ModelConfigItem(
@@ -101,7 +113,14 @@ class ModelsStore: ObservableObject {
                     }
                 }
             }
-            models.append(contentsOf: machineModels)
+
+            guard generation == fetchGeneration, !Task.isCancelled else { return }
+
+            models = fetchedModels + machineModels
+            machines = fetchedMachines
+            if let fetchedTierModelIds {
+                tierModelIds = fetchedTierModelIds
+            }
 
             let hasAccountDefaults = accountDefaultModelId != nil ||
                 accountDefaultModelTier != nil ||
@@ -121,10 +140,10 @@ class ModelsStore: ObservableObject {
                 updateSelectionIssue()
             }
         } catch {
+            guard generation == fetchGeneration, !Task.isCancelled else { return }
+
             self.error = "Failed to fetch models: \(error.localizedDescription)"
         }
-        
-        isLoading = false
     }
     
     func selectModel(_ modelId: String?) {
@@ -165,6 +184,46 @@ class ModelsStore: ObservableObject {
     
     func refreshModels() async {
         await fetchModels()
+    }
+
+    func refreshModelsIfNeeded(for modelId: String?) async {
+        guard let modelId else { return }
+
+        guard let model = model(withId: modelId) else {
+            await fetchModels()
+            return
+        }
+
+        let needsRefresh: Bool
+        if let readiness = model.readiness {
+            needsRefresh = !readiness.isFresh() || !readiness.isReady
+        } else {
+            needsRefresh = !model.isAvailableForSelection
+        }
+
+        if needsRefresh {
+            await fetchModels()
+        }
+    }
+
+    func readinessMessage(for modelId: String?) -> String? {
+        guard let modelId else { return nil }
+
+        guard let model = model(withId: modelId) else {
+            return "Your selected model is no longer available to this account. Choose another model before sending."
+        }
+
+        if let readiness = model.readiness {
+            if !readiness.isFresh() {
+                return "Model readiness has expired. Refresh the model list before sending."
+            }
+
+            return readiness.isReady ? nil : readiness.reason
+        }
+
+        return model.isAvailableForSelection
+            ? nil
+            : "This model cannot run under the current account and provider policy."
     }
     
     private func loadSelectedModel() {
@@ -219,30 +278,7 @@ class ModelsStore: ObservableObject {
     }
 
     private func updateSelectionIssue() {
-        guard let selectedModelId else {
-            selectionIssue = nil
-            return
-        }
-
-        guard let selectedModel = model(withId: selectedModelId) else {
-            selectionIssue = "Your selected model is no longer available to this account. It was not replaced automatically."
-            return
-        }
-
-        if let readiness = selectedModel.readiness {
-            if !readiness.isFresh() {
-                selectionIssue = "Model readiness has expired. Refresh models before sending."
-            } else if !readiness.isReady {
-                selectionIssue = readiness.reason
-            } else {
-                selectionIssue = nil
-            }
-            return
-        }
-
-        selectionIssue = selectedModel.isAvailableForSelection
-            ? nil
-            : "This model cannot run under the current account and provider policy."
+        selectionIssue = readinessMessage(for: selectedModelId)
     }
     
     func getModelsByProvider() -> [String: [ModelConfigItem]] {

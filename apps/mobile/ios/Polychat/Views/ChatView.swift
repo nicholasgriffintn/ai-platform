@@ -23,7 +23,7 @@ struct ChatView: View {
     }
 
     private var isTemporaryConversation: Bool {
-        !(conversationManager.currentConversation?.isLoadedFromAPI ?? false)
+        conversationManager.currentConversation?.isTemporary ?? false
     }
 
     private var activeModelId: String? {
@@ -53,23 +53,7 @@ struct ChatView: View {
     }
 
     private var modelReadinessMessage: String? {
-        if let selectionIssue = modelsStore.selectionIssue {
-            return selectionIssue
-        }
-
-        guard activeModelId != nil else { return nil }
-        guard let activeModelConfig else {
-            return "Your selected model is no longer available to this account. Choose another model before sending."
-        }
-        if let readiness = activeModelConfig.readiness {
-            if !readiness.isFresh() {
-                return "Model readiness has expired. Refresh the model list before sending."
-            }
-            return readiness.isReady ? nil : readiness.reason
-        }
-        return activeModelConfig.isAvailableForSelection
-            ? nil
-            : "This model cannot run under the current account and provider policy."
+        modelsStore.readinessMessage(for: activeModelId)
     }
 
     private var currentRun: ChatRun? {
@@ -274,22 +258,29 @@ struct ChatView: View {
         .task(id: currentRun.map { "\($0.id):\($0.attempt)" }) {
             await conversationManager.observeCurrentRun()
         }
+        .task(id: activeModelId) {
+            await modelsStore.refreshModelsIfNeeded(for: activeModelId)
+        }
     }
     
     private func sendMessage() {
         let text = messageText
         let attachments = selectedAttachments
+        let requestedModelId = activeModelId
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachments.isEmpty else { return }
         guard !isUploadingAttachments else { return }
-        if let modelReadinessMessage {
-            uploadError = modelReadinessMessage
-            return
-        }
 
-        messageText = ""
-        selectedAttachments = []
+        Task { @MainActor in
+            await modelsStore.refreshModelsIfNeeded(for: requestedModelId)
+            if modelsStore.readinessMessage(for: requestedModelId) != nil {
+                uploadError = nil
+                return
+            }
 
-        Task {
+            uploadError = nil
+            messageText = ""
+            selectedAttachments = []
+
             do {
                 let userMessage: ChatMessage
 

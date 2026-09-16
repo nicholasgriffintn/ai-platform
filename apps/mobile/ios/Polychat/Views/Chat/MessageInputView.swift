@@ -22,7 +22,7 @@ struct MessageInputView: View {
     let sendMessage: () -> Void
 
     private var canSend: Bool {
-        (!messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !selectedAttachments.isEmpty) && !isUploadingAttachments && !isRunActive && modelReadinessMessage == nil
+        (!messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !selectedAttachments.isEmpty) && !isUploadingAttachments && !isRunActive
     }
 
     var body: some View {

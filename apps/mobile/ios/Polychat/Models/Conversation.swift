@@ -13,6 +13,7 @@ struct Conversation: Identifiable, Equatable {
     var latestRun: ChatRun? = nil
     var hasMoreMessages = false
     var oldestMessageId: String? = nil
+    var isTemporary: Bool = false
 
     static func == (lhs: Conversation, rhs: Conversation) -> Bool {
         lhs.id == rhs.id

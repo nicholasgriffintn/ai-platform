@@ -234,7 +234,11 @@ final class APIClient: ObservableObject {
     }
 
     func fetchModels() async throws -> ModelsResponse {
-        try await send(path: "/models", method: "GET")
+        try await send(
+            path: "/models",
+            method: "GET",
+            additionalHeaders: ["Cache-Control": "no-cache"]
+        )
     }
 
     func fetchModelTiers() async throws -> ModelTiersResponse {
@@ -610,14 +614,16 @@ final class APIClient: ObservableObject {
         path: String,
         method: String,
         queryItems: [URLQueryItem] = [],
-        emptyBody: Bool = false
+        emptyBody: Bool = false,
+        additionalHeaders: [String: String] = [:]
     ) async throws -> T {
         try await send(
             path: path,
             method: method,
             queryItems: queryItems,
             bodyData: emptyBody ? Data("{}".utf8) : nil,
-            contentType: emptyBody ? "application/json" : nil
+            contentType: emptyBody ? "application/json" : nil,
+            additionalHeaders: additionalHeaders
         )
     }
 
@@ -626,14 +632,16 @@ final class APIClient: ObservableObject {
         method: String,
         queryItems: [URLQueryItem] = [],
         bodyData: Data?,
-        contentType: String?
+        contentType: String?,
+        additionalHeaders: [String: String] = [:]
     ) async throws -> T {
         let request = makeRequest(
             path: path,
             method: method,
             queryItems: queryItems,
             bodyData: bodyData,
-            contentType: contentType
+            contentType: contentType,
+            additionalHeaders: additionalHeaders
         )
 
         let (data, response) = try await session.data(for: request)

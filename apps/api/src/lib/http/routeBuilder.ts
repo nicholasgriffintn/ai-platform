@@ -82,7 +82,7 @@ interface BaseRouteConfig<TBody, TParams, TQuery> {
   /**
    * Opt-in browser caching for GET JSON responses. Emits a weak ETag,
    */
-  cache?: RouteCacheConfig;
+  cache?: RouteCacheConfig | "no-store";
 }
 
 export interface RouteCacheConfig {
@@ -195,7 +195,9 @@ export function addRoute<TBody = unknown, TParams = unknown, TQuery = unknown>(
       }
 
       if (method === "get" && config.cache) {
-        return respondWithRouteCache(c, result, config.cache);
+        return config.cache === "no-store"
+          ? respondWithoutRouteCache(c, result)
+          : respondWithRouteCache(c, result, config.cache);
       }
 
       return ResponseFactory.success(c, result);
@@ -297,4 +299,13 @@ async function respondWithRouteCache(
   }
 
   return new Response(body, { status: response.status, headers });
+}
+
+function respondWithoutRouteCache(c: Context, data: unknown): Response {
+  const response = ResponseFactory.success(c, data);
+  const headers = new Headers(response.headers);
+
+  headers.set("Cache-Control", "private, no-store");
+
+  return new Response(response.body, { status: response.status, headers });
 }

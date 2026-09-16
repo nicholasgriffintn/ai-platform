@@ -76,6 +76,7 @@ export class UserService {
 
     const response = await fetchApi("/models", {
       method: "GET",
+      cache: "no-store",
       headers,
       timeoutMs: 10000,
     });

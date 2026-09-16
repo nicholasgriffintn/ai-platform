@@ -100,6 +100,113 @@ struct ServiceStoreTests {
     }
 
     @MainActor
+    @Test func modelsStoreUsesTheRequestedModelForReadinessMessages() async throws {
+        let defaults = try makeIsolatedUserDefaults()
+        let store = ModelsStore(
+            apiClient: ModelsAPIClientStub(result: .success([
+                "blocked-model": makeModel(
+                    id: "",
+                    readiness: ModelReadiness(
+                        protocolVersion: 1,
+                        state: "blocked",
+                        reasonCode: "provider_unavailable",
+                        reason: "Provider unavailable",
+                        checkedAt: "2026-09-16T10:00:00.000Z",
+                        expiresAt: "2099-09-16T10:01:00.000Z"
+                    )
+                ),
+                "ready-model": makeModel(
+                    id: "",
+                    readiness: ModelReadiness(
+                        protocolVersion: 1,
+                        state: "ready",
+                        reasonCode: "ready",
+                        reason: "Ready",
+                        checkedAt: "2026-09-16T10:00:00.000Z",
+                        expiresAt: "2099-09-16T10:01:00.000Z"
+                    )
+                )
+            ])),
+            userDefaults: defaults
+        )
+
+        await store.fetchModels()
+        store.selectModel("blocked-model")
+
+        #expect(store.readinessMessage(for: "ready-model") == nil)
+        #expect(store.readinessMessage(for: "blocked-model") == "Provider unavailable")
+    }
+
+    @MainActor
+    @Test func modelsStoreRefreshesExpiredReadinessBeforeSending() async throws {
+        let defaults = try makeIsolatedUserDefaults()
+        let expiredReadiness = ModelReadiness(
+            protocolVersion: 1,
+            state: "ready",
+            reasonCode: "ready",
+            reason: "Ready",
+            checkedAt: "2020-09-16T10:00:00.000Z",
+            expiresAt: "2020-09-16T10:01:00.000Z"
+        )
+        let freshReadiness = ModelReadiness(
+            protocolVersion: 1,
+            state: "ready",
+            reasonCode: "ready",
+            reason: "Ready",
+            checkedAt: "2099-09-16T10:00:00.000Z",
+            expiresAt: "2099-09-16T10:01:00.000Z"
+        )
+        let client = ModelsAPIClientStub(result: .success([
+            "model": makeModel(id: "", readiness: freshReadiness)
+        ]))
+        let store = ModelsStore(apiClient: client, userDefaults: defaults)
+        store.models = [makeModel(id: "model", readiness: expiredReadiness)]
+
+        await store.refreshModelsIfNeeded(for: "model")
+
+        #expect(store.model(withId: "model")?.readiness == freshReadiness)
+    }
+
+    @MainActor
+    @Test func modelsStoreIgnoresAnOlderCatalogueResponse() async throws {
+        let defaults = try makeIsolatedUserDefaults()
+        let client = ModelsAPIClientStub(result: .success([:]))
+        let oldModel = makeModel(id: "", name: "Old model")
+        let newModel = makeModel(id: "", name: "New model")
+        var fetchCount = 0
+        client.fetchModelsHandler = {
+            fetchCount += 1
+            if fetchCount == 1 {
+                try await Task.sleep(nanoseconds: 100_000_000)
+                return ["model": oldModel]
+            }
+
+            return ["model": newModel]
+        }
+        let store = ModelsStore(apiClient: client, userDefaults: defaults)
+
+        let firstFetch = Task { @MainActor in
+            await store.fetchModels()
+        }
+        try await Task.sleep(nanoseconds: 10_000_000)
+        let secondFetch = Task { @MainActor in
+            await store.fetchModels()
+        }
+
+        await secondFetch.value
+        await firstFetch.value
+
+        #expect(store.model(withId: "model")?.name == "New model")
+    }
+
+    @MainActor
+    @Test func aConversationPendingItsFirstSyncIsNotTemporary() {
+        let conversation = makeConversation(id: "pending")
+
+        #expect(conversation.isTemporary == false)
+    }
+
+    @MainActor
     @Test func conversationManagerStreamsAssistantMessageAndGeneratesTitle() async throws {
         let apiClient = ConversationAPIClientStub()
         apiClient.streamEvents = [
