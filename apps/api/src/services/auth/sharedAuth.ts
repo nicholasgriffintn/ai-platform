@@ -73,8 +73,11 @@ export function createAssistantMagicLinkAuth(
 }
 
 export function createAssistantWebAuthn(context: ServiceContext) {
+  const configuredAppOrigin = context.env.APP_BASE_URL?.replace(/\/$/, "");
   const origin =
-    context.env.ENV === "development" ? `http://${LOCAL_HOST}` : `https://${PROD_HOST}`;
+    context.env.ENV === "development"
+      ? (configuredAppOrigin ?? `http://${LOCAL_HOST}`)
+      : `https://${PROD_HOST}`;
 
   return createAssistantAuth(context).use(
     webAuthn({

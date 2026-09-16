@@ -166,4 +166,25 @@ describe("user settings provisioning", () => {
       sqlite.close();
     }
   });
+
+  it("leaves the provider catalogue untouched when saving settings", async () => {
+    const sqlite = new Database(":memory:");
+
+    try {
+      sqlite.exec(CREATE_USER_SETTINGS_TABLE);
+      sqlite.exec(CREATE_PROVIDER_SETTINGS_TABLE);
+
+      const context = createTestContext(sqlite);
+
+      await updateUserSettings(context, { last_model_selection: { modelId: "test-model" } }, 42);
+
+      const providers = sqlite.prepare("SELECT COUNT(*) AS count FROM provider_settings").get() as {
+        count: number;
+      };
+
+      expect(providers.count).toBe(0);
+    } finally {
+      sqlite.close();
+    }
+  });
 });
