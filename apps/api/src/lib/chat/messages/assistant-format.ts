@@ -13,6 +13,7 @@ export function formatAssistantMessage({
   tool_calls = [],
   data = null,
   usage = null,
+  impact = null,
   guardrails = { passed: true },
   log_id = null,
   model = "",
@@ -48,12 +49,16 @@ export function formatAssistantMessage({
 
   const determinedFinishReason = finish_reason || (tool_calls?.length ? "tool_calls" : "stop");
 
-  const finalUsage = normaliseTokenUsage(usage) || {
-    input_tokens: 0,
-    output_tokens: 0,
-    total_tokens: 0,
-    prompt_tokens: 0,
-    completion_tokens: 0,
+  const tokenUsage = normaliseTokenUsage(usage);
+  const finalUsage = {
+    ...(tokenUsage || {
+      input_tokens: 0,
+      output_tokens: 0,
+      total_tokens: 0,
+      prompt_tokens: 0,
+      completion_tokens: 0,
+    }),
+    ...(impact ? { impact } : {}),
   };
 
   let messageContent: string | Array<any> = content;

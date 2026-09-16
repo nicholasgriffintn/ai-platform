@@ -1,4 +1,4 @@
-import type { RunProvenance } from "@ngriffin_uk/polychat-schemas";
+import type { InferenceImpact, RunProvenance } from "@ngriffin_uk/polychat-schemas";
 
 import { formatAssistantMessage } from "~/lib/chat/messages/assistant-format";
 import { buildMessageParts } from "~/lib/chat/messages/parts";
@@ -33,6 +33,7 @@ export interface TurnOutput {
   citations?: unknown;
   usage?: NormalisedTokenUsage | null;
   rawUsage?: unknown;
+  impact?: InferenceImpact | null;
   serviceTier?: string;
   structuredData?: unknown;
   refusal?: string | null;
@@ -120,6 +121,7 @@ export async function finaliseAssistantTurn(
     citations: (visibleTurn.citations as string[]) ?? [],
     tool_calls: visibleTurn.toolCalls,
     usage: auditedUsage,
+    impact: turn.impact,
     data: buildAssistantMessageData({ responseData: visibleTurn.structuredData }),
     guardrails: {
       passed: guardrailResult.passed,

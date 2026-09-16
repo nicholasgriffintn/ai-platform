@@ -87,24 +87,26 @@ function observeProviderStream(
   let usage: Record<string, unknown> | undefined;
   let buffer = "";
 
+  const handleEvent = (event: Record<string, unknown>) => {
+    const content = StreamingFormatter.extractContentFromChunk(event);
+
+    if (content) {
+      contentChunks.push(content);
+    }
+
+    const extractedUsage = StreamingFormatter.extractUsageData(event);
+
+    if (isRecord(extractedUsage)) {
+      usage = mergeStreamedTokenUsage(usage, extractedUsage) ?? usage;
+    }
+  };
+
   return stream.pipeThrough(
     new TransformStream({
       transform(chunk, controller) {
         buffer += decoder.decode(chunk, { stream: true });
         buffer = parseSseBuffer(buffer, {
-          onEvent(event) {
-            const content = StreamingFormatter.extractContentFromChunk(event);
-
-            if (content) {
-              contentChunks.push(content);
-            }
-
-            const extractedUsage = StreamingFormatter.extractUsageData(event);
-
-            if (isRecord(extractedUsage)) {
-              usage = mergeStreamedTokenUsage(usage, extractedUsage) ?? usage;
-            }
-          },
+          onEvent: handleEvent,
           onError: onParseError,
         });
 
@@ -115,6 +117,13 @@ function observeProviderStream(
 
         if (remainder) {
           buffer += remainder;
+        }
+
+        if (buffer.trim()) {
+          parseSseBuffer(`${buffer}\n\n`, {
+            onEvent: handleEvent,
+            onError: onParseError,
+          });
         }
 
         captureProviderGeneration(

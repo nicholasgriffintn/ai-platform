@@ -99,6 +99,7 @@ export * from "./thread-operations.js";
 export * from "./edit.js";
 export * from "./embeddings.js";
 export * from "./fim.js";
+export * from "./impact.js";
 export * from "./magicLink.js";
 export * from "./message-parts.js";
 export * from "./message-selection.js";

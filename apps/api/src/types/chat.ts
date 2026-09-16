@@ -11,6 +11,7 @@ import type {
   MetaAssistantRequest,
   RecipeConnectorProvider,
   RunProvenance,
+  InferenceImpact,
   ChatMessageSelection,
   DelegationContext,
   ChatRunTrigger,
@@ -342,6 +343,7 @@ export interface AssistantMessageData {
   tool_calls?: any[];
   data?: any;
   usage?: any;
+  impact?: InferenceImpact | null;
   guardrails?: {
     passed: boolean;
     error?: string;

@@ -19,6 +19,7 @@ import type {
   ReasoningEffort,
   ThreadOperation,
   RunProvenance,
+  InferenceImpact,
   ChatMessageSelection,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -203,6 +204,7 @@ export interface MessageUsage extends Record<string, unknown> {
     modality: string;
     tokenCount: number;
   }[];
+  impact?: InferenceImpact;
 }
 
 export interface Message {

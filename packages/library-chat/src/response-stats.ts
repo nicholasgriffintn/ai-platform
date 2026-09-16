@@ -1,3 +1,8 @@
+import {
+  readInferenceImpact,
+  type InferenceImpact,
+  type InferenceImpactMeasurement,
+} from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "./conversation-types.js";
@@ -91,6 +96,47 @@ export function readTokenUsageCounts(value: unknown): TokenUsageCounts | undefin
   }
 
   return { inputTokens, outputTokens, totalTokens };
+}
+
+export function readMessageImpact(message: Message): InferenceImpact | undefined {
+  const usage = message.usage;
+
+  return readInferenceImpact(isRecord(usage) ? usage.impact : undefined);
+}
+
+const IMPACT_UNIT_CONVERSIONS: Record<string, { unit: string; factor: number }> = {
+  ms: { unit: "s", factor: 0.001 },
+  s: { unit: "s", factor: 1 },
+  wms: { unit: "Wh", factor: 1 / 3_600_000 },
+  ws: { unit: "Wh", factor: 1 / 3600 },
+  j: { unit: "Wh", factor: 1 / 3600 },
+  wh: { unit: "Wh", factor: 1 },
+  kwh: { unit: "Wh", factor: 1000 },
+  ugco2e: { unit: "g", factor: 1e-6 },
+  µgco2e: { unit: "g", factor: 1e-6 },
+  mgco2e: { unit: "g", factor: 1e-3 },
+  gco2e: { unit: "g", factor: 1 },
+  kgco2e: { unit: "g", factor: 1000 },
+};
+
+function formatImpactTotal(total: number): string {
+  if (total === 0) {
+    return "0";
+  }
+
+  return total < 0.01 ? total.toPrecision(2) : total.toFixed(2);
+}
+
+export function formatImpactMeasurement(measurement: InferenceImpactMeasurement): string {
+  const conversion = IMPACT_UNIT_CONVERSIONS[measurement.unit.toLowerCase()];
+
+  if (!conversion) {
+    return `${formatImpactTotal(measurement.total)} ${measurement.unit}`;
+  }
+
+  const value = formatImpactTotal(measurement.total * conversion.factor);
+
+  return conversion.unit === "s" ? `${value}s` : `${value} ${conversion.unit}`;
 }
 
 function completeRunningTools(activity: StreamActivity, completedAt: number): StreamActivity {

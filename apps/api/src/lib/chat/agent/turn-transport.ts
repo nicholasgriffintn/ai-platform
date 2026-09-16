@@ -13,6 +13,7 @@ import {
   extractUsagePayload,
   readServiceTier,
 } from "~/lib/usage/extractUsage";
+import { extractImpactPayload } from "~/lib/usage/impact";
 import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
 import type { ChatCompletionParameters, IEnv, ToolCall } from "~/types";
 import { AssistantError, ErrorType } from "~/utils/errors";
@@ -66,6 +67,7 @@ function formatBufferedTurn(providerResponse: unknown): TurnOutput {
       extractUsagePayload(providerResponse) ??
       extractPredictionMetricsPayload(providerResponse) ??
       undefined,
+    impact: extractImpactPayload(providerResponse),
     serviceTier: readServiceTier(providerResponse),
     structuredData: modelResponse.data,
     refusal: modelResponse.refusal ?? null,
@@ -140,6 +142,7 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
         citations: streamed.citations,
         usage: streamed.usage,
         rawUsage: streamed.rawUsage,
+        impact: streamed.impact,
         serviceTier: streamed.serviceTier,
         structuredData: streamed.structuredData,
         refusal: streamed.refusal,

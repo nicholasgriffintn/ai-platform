@@ -1,10 +1,12 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@ngriffin_uk/polychat-component-ui";
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import {
+  formatImpactMeasurement,
   formatStatsCost,
   formatStatsDuration,
   formatStatsTokens,
   getMessageStats,
+  readMessageImpact,
   readTokenUsageCounts,
 } from "@ngriffin_uk/polychat-library-chat/response-stats";
 import { getModelDisplayName } from "@ngriffin_uk/polychat-schemas";
@@ -39,6 +41,7 @@ export const MessageInfo = ({
     pricing: modelConfig,
   });
   const usage = readTokenUsageCounts(message.usage);
+  const impact = readMessageImpact(message);
   const modelName = modelConfig ? getModelDisplayName(modelConfig) : message.model;
   const provider = modelConfig?.provider ?? message.provider;
 
@@ -47,7 +50,7 @@ export const MessageInfo = ({
       <PopoverTrigger className={buttonClassName} aria-label="Message details">
         <Info size={14} />
       </PopoverTrigger>
-      <PopoverContent className="w-72">
+      <PopoverContent className="max-h-(--radix-popover-content-available-height) w-72 overflow-y-auto overscroll-contain">
         <div className="space-y-3 text-sm">
           <h4 className="font-medium text-foreground">Message details</h4>
           <dl className="space-y-1">
@@ -75,6 +78,25 @@ export const MessageInfo = ({
                 )}
                 {stats.estimatedCostUsd !== undefined && (
                   <Row label="Cost" value={`~${formatStatsCost(stats.estimatedCostUsd)}`} />
+                )}
+              </dl>
+            </div>
+          )}
+          {impact && (
+            <div className="space-y-1 border-t border-border pt-2">
+              <p className="font-medium text-foreground">Environmental impact</p>
+              <dl className="space-y-1">
+                {impact.inferenceTime && (
+                  <Row
+                    label="Inference time"
+                    value={formatImpactMeasurement(impact.inferenceTime)}
+                  />
+                )}
+                {impact.energy && (
+                  <Row label="Energy" value={formatImpactMeasurement(impact.energy)} />
+                )}
+                {impact.emissions && (
+                  <Row label="Emissions" value={formatImpactMeasurement(impact.emissions)} />
                 )}
               </dl>
             </div>

@@ -1,3 +1,4 @@
+import type { InferenceImpact } from "@ngriffin_uk/polychat-schemas";
 import { deepMergeRecords, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import {
@@ -58,6 +59,7 @@ export interface StreamedTurn {
   citations: unknown[];
   usage: NormalisedTokenUsage | null;
   rawUsage?: unknown;
+  impact?: InferenceImpact | null;
   serviceTier?: string;
   structuredData: unknown;
   refusal: string | null;
@@ -130,6 +132,7 @@ export async function consumeProviderStream(
     toolCalls: [],
     citations: [],
     usage: null,
+    impact: null,
     structuredData: null,
     refusal: null,
     annotations: null,
@@ -548,6 +551,12 @@ export async function consumeProviderStream(
           : extractedUsage;
     }
 
+    const extractedImpact = StreamingFormatter.extractImpactData(data);
+
+    if (extractedImpact) {
+      turn.impact = extractedImpact;
+    }
+
     const serviceTier = readServiceTier(data);
 
     if (serviceTier) {
@@ -572,13 +581,11 @@ export async function consumeProviderStream(
       turn.annotations = annotationsDelta;
     }
 
-    const completionIndicated = StreamingFormatter.isCompletionIndicated(data);
-
-    if (completionIndicated || hasOpenAIToolCallFinishReason(data)) {
+    if (StreamingFormatter.isCompletionIndicated(data) || hasOpenAIToolCallFinishReason(data)) {
       completeOpenAIToolCalls();
     }
 
-    return completionIndicated;
+    return false;
   };
 
   const reader = providerStream.getReader();

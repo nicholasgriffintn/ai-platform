@@ -7,11 +7,13 @@ import {
   completeStreamActivityTool,
   createStreamActivity,
   estimateStreamActivityTokens,
+  formatImpactMeasurement,
   formatStatsDuration,
   formatStatsTokens,
   getMessageStatsSegments,
   getRunningStreamActivityTools,
   getStreamActivityMetrics,
+  readMessageImpact,
 } from "./response-stats.js";
 
 function assistantMessage(overrides: Partial<Message> = {}): Message {
@@ -221,5 +223,31 @@ describe("message stats", () => {
 
   it("returns nothing when the message carries no usage or tools", () => {
     expect(getMessageStatsSegments(assistantMessage())).toEqual([]);
+  });
+
+  it("reads provider impact from message usage and formats its measurements", () => {
+    const impact = readMessageImpact(
+      assistantMessage({
+        usage: {
+          total_tokens: 14,
+          impact: {
+            inferenceTime: { total: 7550, unit: "ms" },
+            energy: { total: 23_544_000, unit: "Wms" },
+            emissions: { total: 160_000, unit: "ugCO2e" },
+          },
+        },
+      }),
+    );
+
+    expect(impact?.energy).toEqual({ total: 23_544_000, unit: "Wms" });
+    expect(formatImpactMeasurement(impact!.inferenceTime!)).toBe("7.55s");
+    expect(formatImpactMeasurement(impact!.energy!)).toBe("6.54 Wh");
+    expect(formatImpactMeasurement(impact!.emissions!)).toBe("0.16 g");
+  });
+
+  it("ignores malformed impact data on messages", () => {
+    expect(readMessageImpact(assistantMessage({ usage: { impact: {} } }))).toBeUndefined();
+    expect(readMessageImpact(assistantMessage({ usage: {} }))).toBeUndefined();
+    expect(readMessageImpact(assistantMessage())).toBeUndefined();
   });
 });

@@ -1,7 +1,9 @@
 import { HOSTED_MCP_APPROVAL_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
+import type { InferenceImpact } from "@ngriffin_uk/polychat-schemas";
 
 import { readGoogleThoughtSignature } from "~/lib/providers/utils/googleThoughtSignatures";
 import { extractUsagePayload } from "~/lib/usage/extractUsage";
+import { extractImpactPayload } from "~/lib/usage/impact";
 import { generateId } from "~/utils/id";
 
 import { extractReasoningContentBlocks } from "./content-blocks";
@@ -386,6 +388,15 @@ export class StreamingFormatter {
    */
   static extractUsageData(data: any): any {
     return extractUsagePayload(data);
+  }
+
+  /**
+   * Extract sustainability impact information from a response
+   * @param data - The data to extract impact from
+   * @returns The extracted impact
+   */
+  static extractImpactData(data: any): InferenceImpact | null {
+    return extractImpactPayload(data);
   }
 
   /**

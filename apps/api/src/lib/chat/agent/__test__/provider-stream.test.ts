@@ -250,6 +250,44 @@ describe("consumeProviderStream", () => {
     expect(events.some((event) => event.type === "usage")).toBe(true);
   });
 
+  it("captures usage and impact sent after the finish reason chunk", async () => {
+    const { sink, events } = createSink();
+
+    const turn = await consumeProviderStream(
+      providerStream([
+        textDelta("Hello"),
+        `data: ${JSON.stringify({ choices: [{ delta: {}, finish_reason: "stop" }] })}\n\n`,
+        `data: ${JSON.stringify({
+          choices: [],
+          usage: {
+            prompt_tokens: 10,
+            completion_tokens: 4,
+            total_tokens: 14,
+            prompt_tokens_details: { cached_tokens: 6 },
+          },
+          impact: {
+            inferenceTime: { total: 1380, unit: "ms" },
+            energy: { total: 526, unit: "Wms" },
+            emissions: { total: 47, unit: "ugCO2e" },
+            version: "20250922",
+          },
+        })}\n\n`,
+        "data: [DONE]\n\n",
+      ]),
+      sink,
+      context,
+    );
+
+    expect(turn.usage).toMatchObject({ total_tokens: 14, cached_input_tokens: 6 });
+    expect(turn.impact).toEqual({
+      inferenceTime: { total: 1380, unit: "ms" },
+      energy: { total: 526, unit: "Wms" },
+      emissions: { total: 47, unit: "ugCO2e" },
+      version: "20250922",
+    });
+    expect(events.some((event) => event.type === "usage")).toBe(true);
+  });
+
   it("reassembles a delta split across two network chunks", async () => {
     const { sink } = createSink();
     const event = textDelta("split");
