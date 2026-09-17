@@ -416,7 +416,14 @@
         "speed": 4,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044
+        "costPer1kOutputTokens": 0.0044,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     }
   }

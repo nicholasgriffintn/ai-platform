@@ -119,7 +119,14 @@
         "speed": 4,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.00231,
-        "costPer1kOutputTokens": 0.006
+        "costPer1kOutputTokens": 0.006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "gpt-oss-20b": {

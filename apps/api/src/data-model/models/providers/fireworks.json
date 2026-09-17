@@ -373,17 +373,6 @@
         "supportsResponseFormat"
       ]
     },
-    "accounts/fireworks/models/kimi-k2p6": {
-      "model": "kimi-thinking/kimi-k2-6",
-      "matchingModel": "accounts/fireworks/models/kimi-k2p6",
-      "overrides": {
-        "speed": 3,
-        "lastUpdated": "April 17, 2026",
-        "costPer1kInputTokens": 0.00095,
-        "costPer1kOutputTokens": 0.004,
-        "supportsAttachments": true
-      }
-    },
     "accounts/fireworks/models/minimax-m2p5": {
       "model": "minimax/minimax-m2-5",
       "matchingModel": "accounts/fireworks/models/minimax-m2p5",
@@ -399,30 +388,6 @@
       },
       "unset": [
         "openWeights"
-      ]
-    },
-    "accounts/fireworks/models/minimax-m2p7": {
-      "model": "minimax/minimax-m2-7",
-      "matchingModel": "accounts/fireworks/models/minimax-m2p7",
-      "overrides": {
-        "name": "MiniMax-M2.7",
-        "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
-        "contextWindow": 196608,
-        "speed": 2,
-        "lastUpdated": "March 18, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
-      },
-      "unset": [
-        "supportsResponseFormat"
       ]
     },
     "accounts/fireworks/models/qwen3p6-plus": {
@@ -488,40 +453,11 @@
         "supportsAttachments": true
       }
     },
-    "accounts/fireworks/models/kimi-k2p7-code": {
-      "model": "kimi-k2/kimi-k2-7-code",
-      "matchingModel": "accounts/fireworks/models/kimi-k2p7-code",
-      "overrides": {
-        "description": "Kimi coding model for software agents, refactors, and repository reasoning",
-        "contextWindow": 262000,
-        "maxTokens": 262000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "coding",
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "speed": 3,
-        "lastUpdated": "June 16, 2026",
-        "costPer1kInputTokens": 0.00095,
-        "costPer1kOutputTokens": 0.004,
-        "supportsAttachments": true
-      }
-    },
     "accounts/fireworks/models/minimax-m3": {
       "model": "minimax/minimax-m3",
       "matchingModel": "accounts/fireworks/models/minimax-m3",
       "overrides": {
-        "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
+        "description": "Fireworks text-only MiniMax coding model for long-context reasoning and agent tasks",
         "contextWindow": 512000,
         "modalities": {
           "input": [
@@ -592,23 +528,6 @@
         "costPer1kOutputTokens": 0.008,
         "supportsAttachments": true
       }
-    },
-    "accounts/fireworks/models/glm-5p2": {
-      "model": "glm/glm-5-2",
-      "matchingModel": "accounts/fireworks/models/glm-5p2",
-      "overrides": {
-        "name": "GLM 5.2",
-        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 1048575,
-        "speed": 4,
-        "releaseDate": "June 16, 2026",
-        "lastUpdated": "June 16, 2026",
-        "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
     },
     "accounts/fireworks/routers/glm-5p2-fast": {
       "model": "glm/glm-5-2-fast",
@@ -693,17 +612,6 @@
         }
       }
     },
-    "accounts/fireworks/models/muse-glimmer-30b": {
-      "model": "muse/muse-glimmer-30b",
-      "matchingModel": "accounts/fireworks/models/muse-glimmer-30b",
-      "overrides": {
-        "maxTokens": 131072,
-        "lastUpdated": "August 10, 2026",
-        "costPer1kInputTokens": 0.00035,
-        "costPer1kOutputTokens": 0.0015,
-        "supportsAttachments": true
-      }
-    },
     "accounts/fireworks/models/nemotron-3-ultra-nvfp4": {
       "model": "nemotron/nemotron-3-ultra-550b-a55b",
       "matchingModel": "accounts/fireworks/models/nemotron-3-ultra-nvfp4",
@@ -756,23 +664,6 @@
         "supportsResponseFormat"
       ]
     },
-    "accounts/fireworks/models/deepseek-v4-flash-0731": {
-      "model": "deepseek-flash/deepseek-v4-flash-0731",
-      "matchingModel": "accounts/fireworks/models/deepseek-v4-flash-0731",
-      "overrides": {
-        "lastUpdated": "July 31, 2026",
-        "costPer1kInputTokens": 0.00022,
-        "costPer1kOutputTokens": 0.00066,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
     "accounts/fireworks/models/glm-5p3": {
       "model": "glm/glm-5-3",
       "matchingModel": "accounts/fireworks/models/glm-5p3",
@@ -794,7 +685,7 @@
       }
     },
     "accounts/fireworks/models/glm-5p3-flash": {
-      "model": "glm/glm-5-3-flash",
+      "model": "glm-flash/glm-5-3-flash",
       "matchingModel": "accounts/fireworks/models/glm-5p3-flash",
       "overrides": {
         "name": "GLM 5.3 Flash",
@@ -823,20 +714,6 @@
           "defaultEffort": "high"
         }
       }
-    },
-    "accounts/fireworks/models/deepseek-v4-flash-vision-exp": {
-      "model": "deepseek-flash/deepseek-v4-flash-vision-exp",
-      "matchingModel": "accounts/fireworks/models/deepseek-v4-flash-vision-exp",
-      "overrides": {
-        "contextWindow": 1000000,
-        "lastUpdated": "August 21, 2026",
-        "costPer1kInputTokens": 0.00022,
-        "costPer1kOutputTokens": 0.00066,
-        "supportsAttachments": true
-      },
-      "unset": [
-        "knowledgeCutoffDate"
-      ]
     },
     "accounts/fireworks/models/qwen3p8-2p4t-a95b": {
       "model": "qwen/qwen3-8-2-4t-a95b",
@@ -885,24 +762,6 @@
         "supportsAttachments": true
       }
     },
-    "accounts/fireworks/models/deepseek-v4-pro": {
-      "model": "deepseek-thinking/deepseek-v4-pro",
-      "matchingModel": "accounts/fireworks/models/deepseek-v4-pro",
-      "overrides": {
-        "maxTokens": 384000,
-        "speed": 3,
-        "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.00043,
-        "costPer1kOutputTokens": 0.00087,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "max"
-          ],
-          "defaultEffort": "high"
-        }
-      }
-    },
     "accounts/fireworks/routers/deepseek-flash-latest": {
       "model": "deepseek-flash/deepseek-flash-latest",
       "matchingModel": "accounts/fireworks/routers/deepseek-flash-latest",
@@ -936,7 +795,7 @@
       }
     },
     "accounts/fireworks/routers/glm-flash-latest": {
-      "model": "glm/glm-flash-latest-glm-5-3-flash",
+      "model": "glm-flash/glm-flash-latest-glm-5-3-flash",
       "matchingModel": "accounts/fireworks/routers/glm-flash-latest",
       "overrides": {
         "lastUpdated": "September 15, 2026",
@@ -987,6 +846,16 @@
         "lastUpdated": "September 15, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
+      }
+    },
+    "accounts/fireworks/routers/qwen-max-latest": {
+      "model": "qwen/qwen-max-latest-qwen3-8-max",
+      "matchingModel": "accounts/fireworks/routers/qwen-max-latest",
+      "overrides": {
+        "lastUpdated": "September 16, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006,
+        "supportsAttachments": true
       }
     }
   }

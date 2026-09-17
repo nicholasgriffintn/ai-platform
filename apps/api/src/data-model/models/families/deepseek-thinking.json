@@ -207,7 +207,6 @@
       "defaults": {
         "name": "DeepSeek V4 Pro",
         "description": "Open MoE flagship with million-token context for coding and long agent runs",
-        "contextWindow": 1000000,
         "contextComplexity": 5,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "April 24, 2026",
@@ -240,7 +239,7 @@
         "name": "DeepSeek V4 Pro 0813 (EU)",
         "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
         "contextWindow": 1048576,
-        "maxTokens": 1048576,
+        "maxTokens": 65536,
         "releaseDate": "August 12, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [

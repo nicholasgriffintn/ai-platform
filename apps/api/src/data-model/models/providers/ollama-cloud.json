@@ -44,7 +44,6 @@
       "overrides": {
         "name": "deepseek-v4-flash",
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
-        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "speed": 4,
         "lastUpdated": "April 24, 2026",
@@ -130,11 +129,18 @@
         "speed": 4,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044
+        "costPer1kOutputTokens": 0.0044,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "glm-5.3-flash": {
-      "model": "glm/glm-5-3-flash",
+      "model": "glm-flash/glm-5-3-flash",
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,

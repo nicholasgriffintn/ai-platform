@@ -534,7 +534,14 @@
         "releaseDate": "June 16, 2026",
         "lastUpdated": "June 16, 2026",
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044
+        "costPer1kOutputTokens": 0.0044,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "thinkingmachines/Inkling": {
@@ -588,14 +595,7 @@
       "overrides": {
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.00014,
-        "costPer1kOutputTokens": 0.00028,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "max"
-          ],
-          "defaultEffort": "high"
-        }
+        "costPer1kOutputTokens": 0.00028
       }
     },
     "zai-org/GLM-5.3": {
@@ -610,7 +610,7 @@
       }
     },
     "zai-org/GLM-5.3-Flash": {
-      "model": "glm/glm-5-3-flash",
+      "model": "glm-flash/glm-5-3-flash",
       "matchingModel": "zai-org/GLM-5.3-Flash",
       "overrides": {
         "contextWindow": 1048575,

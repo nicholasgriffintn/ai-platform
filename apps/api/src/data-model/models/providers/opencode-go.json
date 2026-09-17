@@ -234,7 +234,14 @@
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "kimi-k3": {
@@ -369,7 +376,7 @@
       ]
     },
     "glm-5.3-flash": {
-      "model": "glm/glm-5-3-flash",
+      "model": "glm-flash/glm-5-3-flash",
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "name": "GLM-5.3-Flash (2x usage)",
@@ -465,6 +472,15 @@
           ],
           "defaultEffort": "low"
         }
+      }
+    },
+    "union-alpha": {
+      "model": "opencode-go/union-alpha/union-alpha-free",
+      "matchingModel": "union-alpha",
+      "overrides": {
+        "lastUpdated": "September 16, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
       }
     }
   }

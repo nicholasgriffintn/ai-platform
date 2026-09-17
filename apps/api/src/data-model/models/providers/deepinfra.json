@@ -258,7 +258,6 @@
       "model": "deepseek-flash/deepseek-v4-flash",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Flash",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 16384,
         "contextComplexity": 4,
         "speed": 4,
@@ -1162,7 +1161,7 @@
       }
     },
     "zai-org/GLM-5.3-Flash": {
-      "model": "glm/glm-5-3-flash",
+      "model": "glm-flash/glm-5-3-flash",
       "matchingModel": "zai-org/GLM-5.3-Flash",
       "overrides": {
         "contextWindow": 1048576,
@@ -1186,7 +1185,6 @@
       "model": "deepseek-flash/deepseek-v4-flash-vision-exp",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Flash-Vision-Exp",
       "overrides": {
-        "contextWindow": 1048576,
         "lastUpdated": "August 21, 2026",
         "costPer1kInputTokens": 0.00044,
         "costPer1kOutputTokens": 0.00132,

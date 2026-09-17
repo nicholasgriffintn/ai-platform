@@ -13,7 +13,7 @@
     },
     "knowledgeCutoffDate": "April 30, 2024",
     "releaseDate": "November 8, 2024",
-    "supportsToolCalls": true,
+    "supportsToolCalls": false,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
     "supportsTemperature": true

@@ -343,7 +343,6 @@
       "model": "glm-flash/glm-4-7-flash",
       "matchingModel": "glm-4.7-flash",
       "overrides": {
-        "name": "GLM-4.7-Flash",
         "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
         "contextWindow": 203000,
         "maxTokens": 203000,
@@ -544,8 +543,8 @@
         ],
         "speed": 3,
         "lastUpdated": "April 21, 2026",
-        "costPer1kInputTokens": 0.000773,
-        "costPer1kOutputTokens": 0.00338
+        "costPer1kInputTokens": 0.000516,
+        "costPer1kOutputTokens": 0.002869
       }
     },
     "llama-3.1-405b-instruct": {
@@ -566,8 +565,8 @@
         "contextWindow": 131000,
         "maxTokens": 131000,
         "lastUpdated": "December 6, 2024",
-        "costPer1kInputTokens": 0.000129,
-        "costPer1kOutputTokens": 0.000399,
+        "costPer1kInputTokens": 0.000724,
+        "costPer1kOutputTokens": 0.000724,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1990,9 +1989,16 @@
         "maxTokens": 1000000,
         "speed": 4,
         "lastUpdated": "June 13, 2026",
-        "costPer1kInputTokens": 0.0012,
-        "costPer1kOutputTokens": 0.0042,
-        "supportsAttachments": false
+        "costPer1kInputTokens": 0.0011,
+        "costPer1kOutputTokens": 0.00299,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "kimi-k2.7-code": {
@@ -2018,8 +2024,8 @@
         ],
         "speed": 3,
         "lastUpdated": "June 12, 2026",
-        "costPer1kInputTokens": 0.00075,
-        "costPer1kOutputTokens": 0.0035,
+        "costPer1kInputTokens": 0.000706,
+        "costPer1kOutputTokens": 0.003208,
         "supportsTemperature": false
       }
     },
@@ -2245,8 +2251,8 @@
         "contextWindow": 1048576,
         "maxTokens": 1048576,
         "lastUpdated": "July 31, 2026",
-        "costPer1kInputTokens": 0.00009,
-        "costPer1kOutputTokens": 0.00017,
+        "costPer1kInputTokens": 0.000055,
+        "costPer1kOutputTokens": 0.000174,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2353,7 +2359,7 @@
       }
     },
     "glm-5.3-flash": {
-      "model": "glm/glm-5-3-flash",
+      "model": "glm-flash/glm-5-3-flash",
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1048576,

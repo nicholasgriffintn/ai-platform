@@ -1,20 +1,7 @@
 {
   "defaults": {
     "openWeights": true,
-    "contextWindow": 262000,
-    "maxTokens": 262000,
-    "modalities": {
-      "input": [
-        "text",
-        "image"
-      ],
-      "output": [
-        "text"
-      ]
-    },
-    "releaseDate": "April 17, 2026",
     "supportsToolCalls": true,
-    "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [
@@ -26,35 +13,42 @@
   },
   "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
   "models": {
-    "kimi-k2-6": {
-      "defaults": {
-        "name": "Kimi K2.6",
-        "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 2,
-        "artificialAnalysis": {
-          "intelligenceIndex": 42.8,
-          "codingIndex": 56,
-          "agenticIndex": 30.3,
-          "intelligenceIndexVersion": 4.1
-        }
-      }
-    },
     "kimi-k2-6-fast": {
       "defaults": {
         "name": "Kimi K2.6 Fast",
-        "description": "Kimi K2.6 Fast accepts text, image and produces text."
+        "description": "Kimi K2.6 Fast accepts text, image and produces text.",
+        "contextWindow": 262000,
+        "maxTokens": 262000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 17, 2026",
+        "supportsAttachments": true
       }
     },
     "kimi-k2-6-turbo": {
       "defaults": {
         "name": "Kimi K2.6 Turbo",
-        "description": "Kimi K2.6 Turbo accepts text, image and produces text."
+        "description": "Kimi K2.6 Turbo accepts text, image and produces text.",
+        "contextWindow": 262000,
+        "maxTokens": 262000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 17, 2026",
+        "supportsAttachments": true
       }
     },
     "kimi-k2-thinking": {

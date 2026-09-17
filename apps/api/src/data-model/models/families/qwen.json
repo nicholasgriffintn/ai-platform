@@ -453,7 +453,7 @@
         "name": "Qwen 3.8 Max",
         "openWeights": false,
         "description": "Preview Qwen flagship for million-token multimodal reasoning and long-horizon agentic workflows",
-        "contextWindow": 1000000,
+        "contextWindow": 262144,
         "maxTokens": 128000,
         "modalities": {
           "input": [
@@ -675,6 +675,33 @@
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 3, 2024"
+      }
+    },
+    "qwen-max-latest-qwen3-8-max": {
+      "defaults": {
+        "name": "Qwen Max Latest (Qwen3.8 Max)",
+        "openWeights": false,
+        "description": "2.4-trillion-parameter MoE flagship for coding, professional work, multimodal understanding, and long-horizon agentic workflows",
+        "contextWindow": 262144,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 3, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "qwen-mt-plus": {
@@ -3155,7 +3182,7 @@
         "name": "Qwen3 Next 80B A3B Thinking",
         "openWeights": true,
         "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
-        "maxTokens": 32768,
+        "contextWindow": 262144,
         "modalities": {
           "input": [
             "text"
