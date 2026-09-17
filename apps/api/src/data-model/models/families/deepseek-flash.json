@@ -1,6 +1,7 @@
 {
   "defaults": {
     "openWeights": true,
+    "contextWindow": 1048576,
     "knowledgeCutoffDate": "May 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -36,7 +37,6 @@
       "defaults": {
         "name": "DeepSeek V4.1 Flash",
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
-        "contextWindow": 1048576,
         "maxTokens": 384000,
         "modalities": {
           "input": [
@@ -55,7 +55,6 @@
       "defaults": {
         "name": "DeepSeek V4.1 Flash (EU)",
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
-        "contextWindow": 1048576,
         "maxTokens": 393216,
         "modalities": {
           "input": [
@@ -123,14 +122,20 @@
           ]
         },
         "releaseDate": "July 31, 2026",
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "deepseek-v4-flash-0731-eu": {
       "defaults": {
         "name": "DeepSeek V4 Flash 0731 (EU)",
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
-        "contextWindow": 1048576,
         "maxTokens": 131072,
         "modalities": {
           "input": [
@@ -158,7 +163,6 @@
       "defaults": {
         "name": "DeepSeek V4 Flash 0731 TEE",
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
-        "contextWindow": 1048576,
         "maxTokens": 131072,
         "modalities": {
           "input": [

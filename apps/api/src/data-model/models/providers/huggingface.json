@@ -272,7 +272,6 @@
       "matchingModel": "Qwen/Qwen3-Next-80B-A3B-Thinking",
       "overrides": {
         "name": "Qwen3-Next-80B-A3B-Thinking",
-        "contextWindow": 262144,
         "maxTokens": 131072,
         "releaseDate": "September 11, 2025",
         "lastUpdated": "September 11, 2025",
@@ -321,25 +320,16 @@
       ]
     },
     "zai-org/GLM-4.7-Flash": {
-      "model": "glm/glm-4-7-flash",
+      "model": "glm-flash/glm-4-7-flash",
       "matchingModel": "zai-org/GLM-4.7-Flash",
       "overrides": {
-        "name": "GLM-4.7-Flash",
-        "contextWindow": 200000,
+        "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
         "maxTokens": 128000,
         "speed": 4,
-        "knowledgeCutoffDate": "April 2025",
         "releaseDate": "August 8, 2025",
         "lastUpdated": "August 8, 2025",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0
       },
       "unset": [
         "supportsResponseFormat"
@@ -401,7 +391,6 @@
       "matchingModel": "MiniMaxAI/MiniMax-M2.7",
       "overrides": {
         "name": "MiniMax-M2.7",
-        "contextWindow": 204800,
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -530,7 +519,6 @@
       "model": "deepseek-flash/deepseek-v4-flash",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Flash",
       "overrides": {
-        "contextWindow": 1048576,
         "speed": 4,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00014,
@@ -1167,21 +1155,9 @@
       }
     },
     "zai-org/GLM-4.6V-Flash": {
-      "model": "glm/glm-4-6v-flash",
+      "model": "glm-flash/glm-4-6v-flash",
       "matchingModel": "zai-org/GLM-4.6V-Flash",
       "overrides": {
-        "contextWindow": 131072,
-        "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "December 8, 2025",
         "lastUpdated": "December 8, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
@@ -1224,7 +1200,7 @@
       }
     },
     "zai-org/GLM-5.3-Flash": {
-      "model": "glm/glm-5-3-flash",
+      "model": "glm-flash/glm-5-3-flash",
       "matchingModel": "zai-org/GLM-5.3-Flash",
       "overrides": {
         "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
@@ -1250,7 +1226,6 @@
       "overrides": {
         "openWeights": true,
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
-        "contextWindow": 1048576,
         "lastUpdated": "August 21, 2026",
         "costPer1kInputTokens": 0.00044,
         "costPer1kOutputTokens": 0.00132,

@@ -640,7 +640,6 @@
       "matchingModel": "minimax-m2.7",
       "overrides": {
         "name": "MiniMax M2.7",
-        "contextWindow": 204800,
         "speed": 2,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "March 18, 2026",
@@ -717,6 +716,7 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
+        "contextWindow": 1000000,
         "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
@@ -745,7 +745,14 @@
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "claude-sonnet-5": {
@@ -1049,7 +1056,7 @@
       }
     },
     "glm-5.3-flash": {
-      "model": "glm/glm-5-3-flash",
+      "model": "glm-flash/glm-5-3-flash",
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
@@ -1088,6 +1095,15 @@
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425
+      }
+    },
+    "union-alpha": {
+      "model": "opencode/union-alpha/union-alpha-free",
+      "matchingModel": "union-alpha",
+      "overrides": {
+        "lastUpdated": "September 16, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
       }
     }
   }

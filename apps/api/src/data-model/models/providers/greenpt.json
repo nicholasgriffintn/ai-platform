@@ -613,10 +613,18 @@
       }
     },
     "glm-5.3-flash": {
-      "model": "glm/glm-5-3-flash",
+      "model": "glm-flash/glm-5-3-flash",
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.000127754,
         "costPer1kOutputTokens": 0.000511016,

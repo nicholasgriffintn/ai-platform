@@ -823,11 +823,7 @@
       "model": "glm/glm-4-7-flash",
       "matchingModel": "zai-org/GLM-4.7-Flash",
       "overrides": {
-        "name": "GLM 4.7 Flash",
-        "contextWindow": 202752,
-        "maxTokens": 65535,
         "speed": 4,
-        "releaseDate": "January 27, 2026",
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00035
@@ -878,8 +874,8 @@
       "matchingModel": "moonshotai/Kimi-K2.6-TEE",
       "overrides": {
         "lastUpdated": "April 21, 2026",
-        "costPer1kInputTokens": 0.00058,
-        "costPer1kOutputTokens": 0.0034,
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.00285,
         "supportsAttachments": true
       }
     },
@@ -1055,8 +1051,8 @@
       "matchingModel": "Qwen/Qwen3.8-27B-TEE",
       "overrides": {
         "lastUpdated": "August 16, 2026",
-        "costPer1kInputTokens": 0.00032,
-        "costPer1kOutputTokens": 0.0025,
+        "costPer1kInputTokens": 0.00024,
+        "costPer1kOutputTokens": 0.0022,
         "supportsAttachments": true
       }
     }

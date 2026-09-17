@@ -278,6 +278,7 @@
     "minimax-m2-7": {
       "defaults": {
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "contextWindow": 204800,
         "maxTokens": 131072,
         "strengths": [
           "tool_use"

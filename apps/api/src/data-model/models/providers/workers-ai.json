@@ -760,14 +760,7 @@
         "maxTokens": 1048576,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.00044,
-        "costPer1kOutputTokens": 0.00132,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "max"
-          ],
-          "defaultEffort": "high"
-        }
+        "costPer1kOutputTokens": 0.00132
       }
     },
     "@cf/deepseek-ai/deepseek-v4-pro-0813": {
@@ -825,7 +818,7 @@
       }
     },
     "@cf/zai-org/glm-5.3-flash": {
-      "model": "glm/glm-5-3-flash",
+      "model": "glm-flash/glm-5-3-flash",
       "matchingModel": "@cf/zai-org/glm-5.3-flash",
       "overrides": {
         "name": "Glm 5.3 Flash",

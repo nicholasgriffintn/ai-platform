@@ -42,7 +42,7 @@
       }
     },
     "mercury-edit-2": {
-      "model": "inception/mercury-edit-2/mercury-edit-2",
+      "model": "mercury/mercury-edit-2",
       "matchingModel": "mercury-edit-2",
       "overrides": {
         "lastUpdated": "March 30, 2026",

@@ -74,7 +74,10 @@
         "lastUpdated": "July 28, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "glm-4.5v": {
       "model": "glm/glm-4-5v",
@@ -161,7 +164,6 @@
       "model": "glm-flash/glm-4-7-flash",
       "matchingModel": "glm-4.7-flash",
       "overrides": {
-        "name": "GLM-4.7-Flash",
         "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "January 19, 2026",
@@ -182,7 +184,10 @@
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0004
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "glm-5-turbo": {
       "model": "glm/glm-5-turbo",
@@ -217,7 +222,14 @@
         "speed": 4,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044
+        "costPer1kOutputTokens": 0.0044,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "glm-5.3": {
@@ -232,7 +244,7 @@
       }
     },
     "glm-5.3-flash": {
-      "model": "glm/glm-5-3-flash",
+      "model": "glm-flash/glm-5-3-flash",
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,

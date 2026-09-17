@@ -1363,7 +1363,6 @@
       "model": "glm-flash/glm-4-7-flash",
       "matchingModel": "zai.glm-4.7-flash",
       "overrides": {
-        "name": "GLM-4.7-Flash",
         "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "January 19, 2026",

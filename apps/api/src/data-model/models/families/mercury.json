@@ -89,6 +89,24 @@
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "February 26, 2025"
       }
+    },
+    "mercury-edit-2": {
+      "defaults": {
+        "name": "Mercury Edit 2",
+        "description": "Code editing dLLM for autocomplete (FIM) and next-edit suggestions",
+        "contextWindow": 32000,
+        "maxTokens": 8192,
+        "releaseDate": "March 30, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
     }
   }
 }

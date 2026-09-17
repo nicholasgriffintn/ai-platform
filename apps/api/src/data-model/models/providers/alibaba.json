@@ -43,14 +43,7 @@
       "overrides": {
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0004,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "max"
-          ],
-          "defaultEffort": "high"
-        }
+        "costPer1kOutputTokens": 0.0004
       }
     },
     "glm-5.2": {
@@ -422,6 +415,7 @@
         "name": "Qwen3-Next 80B-A3B (Thinking)",
         "description": "Efficient Qwen thinking model for local reasoning, math, and coding agents",
         "contextWindow": 131072,
+        "maxTokens": 32768,
         "contextComplexity": 3,
         "speed": 4,
         "lastUpdated": "September 2025",
@@ -797,6 +791,18 @@
         "lastUpdated": "March 5, 2025",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0024
+      }
+    },
+    "kimi-k3": {
+      "model": "kimi-k3/kimi-k3",
+      "matchingModel": "kimi-k3",
+      "overrides": {
+        "maxTokens": 1048576,
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsAttachments": true,
+        "supportsTemperature": false
       }
     }
   }

@@ -1454,6 +1454,7 @@
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
         "name": "DeepSeek-V4-Pro",
+        "contextWindow": 1000000,
         "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",

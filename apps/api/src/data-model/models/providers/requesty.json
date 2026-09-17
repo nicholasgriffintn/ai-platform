@@ -1687,7 +1687,6 @@
       "model": "deepseek-flash/deepseek-v4-flash",
       "matchingModel": "deepseek-v4-flash",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "April 24, 2026",
@@ -1710,6 +1709,7 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
+        "contextWindow": 1000000,
         "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
@@ -3543,7 +3543,7 @@
       ]
     },
     "glm-5.3-flash": {
-      "model": "glm/glm-5-3-flash",
+      "model": "glm-flash/glm-5-3-flash",
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
@@ -3575,7 +3575,7 @@
       }
     },
     "glm-5.3-flash@eu": {
-      "model": "glm/glm-5-3-flash-eu",
+      "model": "glm-flash/glm-5-3-flash-eu",
       "matchingModel": "glm-5.3-flash@eu",
       "overrides": {
         "lastUpdated": "August 26, 2026",

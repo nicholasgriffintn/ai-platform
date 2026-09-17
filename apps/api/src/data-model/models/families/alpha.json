@@ -1,17 +1,8 @@
 {
   "defaults": {
     "openWeights": false,
-    "modalities": {
-      "input": [
-        "text"
-      ],
-      "output": [
-        "text"
-      ]
-    },
     "supportsToolCalls": true,
     "supportsResponseFormat": false,
-    "supportsAttachments": false,
     "supportsTemperature": true
   },
   "description": "The alpha family includes models that produce text.",
@@ -22,8 +13,17 @@
         "description": "Owl Alpha accepts text and produces text.",
         "contextWindow": 1048756,
         "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "releaseDate": "April 28, 2026",
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "supportsAttachments": false
       }
     },
     "ox-alpha": {
@@ -53,15 +53,43 @@
         }
       }
     },
+    "union-alpha": {
+      "defaults": {
+        "name": "Union Alpha",
+        "description": "Multimodal model for analyzing text, images, documents, and rich media",
+        "contextWindow": 262144,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 16, 2026",
+        "supportsAttachments": true
+      }
+    },
     "weaver-alpha": {
       "defaults": {
         "name": "Weaver (alpha)",
         "description": "General-purpose chat model for instruction following, writing, and analysis",
         "contextWindow": 8000,
         "maxTokens": 6000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "knowledgeCutoffDate": "June 30, 2023",
         "releaseDate": "August 2, 2023",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsAttachments": false
       }
     }
   }
