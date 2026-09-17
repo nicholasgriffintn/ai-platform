@@ -17,7 +17,7 @@ catalog:
   typescript: 6.0.3
   vitest: 4.1.11
   wrangler: 4.130.0
-  zod: 4.5.4
+  zod: 4.6.1
 
 catalogs:
   react-peer:
