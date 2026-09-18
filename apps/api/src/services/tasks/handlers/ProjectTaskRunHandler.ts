@@ -70,6 +70,7 @@ export class ProjectTaskRunHandler implements TaskHandler {
             signal: "ownership_loss",
             taskId: payload.data.taskId,
             outcome: "interrupted",
+            identity: { userId: payload.data.runnerIdentityUserId },
           });
         }
 

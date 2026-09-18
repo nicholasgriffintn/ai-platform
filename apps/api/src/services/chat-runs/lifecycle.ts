@@ -18,6 +18,7 @@ import {
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { resolveTelemetryIdentity } from "~/lib/telemetry";
 import type { ConversationRunRepository } from "~/repositories/ConversationRunRepository";
 import { reconcileRecipeExecutionTask } from "~/services/apps/recipes/task-reconciliation";
 import type { AgentLoopExecutionResult } from "~/services/chat/agent/agent-loop";
@@ -378,6 +379,7 @@ export class ChatRunLifecycle {
           0,
           Date.parse(transitioned.updatedAt) - Date.parse(transitioned.cancellationRequestedAt),
         ),
+        identity: { userId: this.receipt.run.initiatorUserId },
       });
     }
 
@@ -406,6 +408,7 @@ export class ChatRunLifecycle {
           runId: transitioned.id,
           attempt: transitioned.attempt,
           outcome: "interrupted",
+          identity: { userId: this.receipt.run.initiatorUserId },
         });
       }
     }
@@ -437,6 +440,7 @@ export async function findAcceptedChatRunCommand(
       attempt: receipt.run.attempt,
       commandKind: receipt.kind,
       outcome: "success",
+      identity: resolveTelemetryIdentity(scope.context),
     });
   }
 
@@ -469,6 +473,7 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
       attempt: receipt.run.attempt,
       commandKind: receipt.kind,
       outcome: "success",
+      identity: resolveTelemetryIdentity(scope.context),
     });
   }
 

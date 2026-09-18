@@ -1,5 +1,10 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
-import { getLogger, type MetricInput, type TelemetryEnv } from "@ngriffin_uk/polychat-ai-telemetry";
+import {
+  getLogger,
+  type MetricInput,
+  type TelemetryEnv,
+  type TelemetryIdentityInput,
+} from "@ngriffin_uk/polychat-ai-telemetry";
 
 import { createMetrics } from "~/lib/telemetry";
 import type { ChatStreamContinuitySnapshot } from "~/services/chat/streaming/emitter";
@@ -14,6 +19,7 @@ export interface RecordMetricContext {
   env: TelemetryEnv;
   executionCtx?: ExecutionContext;
   traceId: string;
+  identity?: TelemetryIdentityInput;
 }
 
 export function normaliseContinuityPlatform(platform?: string | null): ContinuityPlatform {
@@ -99,7 +105,10 @@ function clampDuration(value: number): number {
 
 function recordContinuityMetric(context: RecordMetricContext, metric: MetricInput): void {
   try {
-    createMetrics(context.env, context.executionCtx).recordMetric(metric);
+    createMetrics(context.env, context.executionCtx).recordMetric({
+      ...metric,
+      ...(context.identity ? { identity: context.identity } : {}),
+    });
   } catch {
     logger.debug("Failed to record turn continuity metric", { name: metric.name });
   }

@@ -28,6 +28,7 @@ import {
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
+import { resolveTelemetryIdentity } from "~/lib/telemetry";
 import { scheduleComposioConnectorRunCleanup } from "~/services/apps/connectors/composio-run";
 import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
 import { toProviderMessages } from "~/services/chat/messages/provider-mapping";
@@ -391,6 +392,7 @@ export async function recoverRedeliveredProjectTaskRun(params: {
       attempt: recovered.attempt,
       taskId: recovered.projectTaskId ?? undefined,
       outcome: recovered.status === "interrupted" ? "interrupted" : "success",
+      identity: resolveTelemetryIdentity(params.context),
     });
 
     return recovered;

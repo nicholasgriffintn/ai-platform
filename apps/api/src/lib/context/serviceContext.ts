@@ -16,11 +16,12 @@ import type { Context, MiddlewareHandler } from "hono";
 
 import { Database } from "~/lib/database";
 import { RepositoryManager } from "~/repositories";
-import type { IEnv, IUser, IUserSettings } from "~/types";
+import type { AnonymousUser, IEnv, IUser, IUserSettings } from "~/types";
 
 export interface ServiceContextOptions {
   env: IEnv;
   user?: IUser | null;
+  anonymousUser?: AnonymousUser | null;
   requestId?: string;
   connectorRunId?: string;
   originDeviceId?: string | null;
@@ -31,6 +32,7 @@ export interface ServiceContext {
   env: IEnv;
   waitUntil: (work: Promise<unknown>) => void;
   user?: IUser | null;
+  anonymousUser?: AnonymousUser | null;
   requestId?: string;
   connectorRunId: string;
   connectorApprovalExecutionToken?: string;
@@ -77,6 +79,7 @@ export function withExecutionRunContext(
 export const createServiceContext = ({
   env,
   user = null,
+  anonymousUser = null,
   requestId,
   connectorRunId = `connector_run_${generateId()}`,
   originDeviceId = null,
@@ -147,6 +150,7 @@ export const createServiceContext = ({
   return {
     env,
     user,
+    anonymousUser,
     requestId,
     connectorRunId,
     originDeviceId,
@@ -183,6 +187,7 @@ export interface ResolveServiceContextOptions {
   context?: ServiceContext;
   env?: IEnv;
   user?: IUser | null;
+  anonymousUser?: AnonymousUser | null;
   requestId?: string;
   waitUntil?: (work: Promise<unknown>) => void;
 }
@@ -191,6 +196,7 @@ export const resolveServiceContext = ({
   context,
   env,
   user = null,
+  anonymousUser = null,
   requestId,
   waitUntil,
 }: ResolveServiceContextOptions): ServiceContext => {
@@ -205,6 +211,7 @@ export const resolveServiceContext = ({
   return createServiceContext({
     env,
     user,
+    anonymousUser,
     requestId,
     waitUntil,
   });
@@ -221,10 +228,12 @@ export const serviceContextMiddleware: MiddlewareHandler = async (c, next) => {
 
   if (!existing) {
     const user = c.get("user") as IUser | null | undefined;
+    const anonymousUser = c.get("anonymousUser") as AnonymousUser | undefined;
     const requestId = c.get("requestId") as string | undefined;
     const context = createServiceContext({
       env: c.env as IEnv,
       user: user ?? null,
+      anonymousUser: anonymousUser ?? null,
       requestId,
       originDeviceId: readOriginDeviceId(c),
       waitUntil: (work) => c.executionCtx?.waitUntil(work),
@@ -244,10 +253,12 @@ export const getServiceContext = (c: Context): ServiceContext => {
   }
 
   const user = c.get("user") as IUser | null | undefined;
+  const anonymousUser = c.get("anonymousUser") as AnonymousUser | undefined;
   const requestId = c.get("requestId") as string | undefined;
   const context = createServiceContext({
     env: c.env as IEnv,
     user: user ?? null,
+    anonymousUser: anonymousUser ?? null,
     requestId,
     originDeviceId: readOriginDeviceId(c),
     waitUntil: (work) => c.executionCtx?.waitUntil(work),

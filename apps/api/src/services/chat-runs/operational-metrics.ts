@@ -1,3 +1,5 @@
+import type { TelemetryIdentityInput } from "@ngriffin_uk/polychat-ai-telemetry";
+
 import { createMetrics } from "~/lib/telemetry";
 import type { IEnv } from "~/types";
 
@@ -19,10 +21,11 @@ export interface ChatRunOperationalMetric {
   operation?: string;
   outcome: "success" | "interrupted" | "unknown";
   value?: number;
+  identity?: TelemetryIdentityInput;
 }
 
 export function recordChatRunOperationalMetric(env: IEnv, metric: ChatRunOperationalMetric): void {
-  const { signal, value = 1, outcome, ...metadata } = metric;
+  const { signal, value = 1, outcome, identity, ...metadata } = metric;
 
   try {
     createMetrics(env).recordMetric({
@@ -31,6 +34,7 @@ export function recordChatRunOperationalMetric(env: IEnv, metric: ChatRunOperati
       name: `chat_run_${signal}`,
       value,
       metadata: { ...metadata, outcome },
+      identity,
       status: outcome === "success" ? "success" : outcome === "unknown" ? "error" : "info",
     });
   } catch {

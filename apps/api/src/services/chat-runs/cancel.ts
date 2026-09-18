@@ -6,6 +6,7 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { resolveTelemetryIdentity } from "~/lib/telemetry";
 import { recordTurnCancellationRequested } from "~/services/chat/streaming/continuity-telemetry";
 import { canonicalJson } from "~/utils/canonical-json";
 
@@ -56,6 +57,7 @@ export async function handleCancelChatRun(
       attempt: receipt.run.attempt,
       commandKind: "cancel",
       outcome: "success",
+      identity: resolveTelemetryIdentity(context),
     });
   } else if (receipt.run.status === "cancelled" && receipt.run.cancellationRequestedAt) {
     recordChatRunOperationalMetric(context.env, {
@@ -67,13 +69,21 @@ export async function handleCancelChatRun(
         0,
         Date.parse(receipt.run.updatedAt) - Date.parse(receipt.run.cancellationRequestedAt),
       ),
+      identity: resolveTelemetryIdentity(context),
     });
   }
 
   await cleanupCancelledChatRun(context, run);
 
   if (!receipt.duplicate) {
-    recordTurnCancellationRequested({ env: context.env, traceId: run.conversationId }, platform);
+    recordTurnCancellationRequested(
+      {
+        env: context.env,
+        traceId: run.conversationId,
+        identity: resolveTelemetryIdentity(context),
+      },
+      platform,
+    );
   }
 
   await cancelDelegationTree(context, run.id);

@@ -8,6 +8,7 @@ import {
 import type { ModelConfigInfo } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { resolveTelemetryIdentity } from "~/lib/telemetry";
 import type { ChatRunLifecycle } from "~/services/chat-runs/lifecycle";
 import { createChatRetryStatePublisher } from "~/services/chat-runs/retry-state";
 import { runAgentLoop, type AgentLoopExecutionParams } from "~/services/chat/agent/agent-loop";
@@ -231,6 +232,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
           env: params.env,
           executionCtx: params.executionCtx,
           traceId: params.completionId,
+          identity: resolveTelemetryIdentity(params.context),
         },
         {
           platform: params.platform,

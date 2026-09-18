@@ -65,6 +65,7 @@ function captureProviderGeneration(
   capture({
     env: request.env,
     user: request.context?.user,
+    anonymousUser: request.context?.anonymousUser,
     executionCtx: request.executionCtx,
     userTrackingEnabled: request.analyticsTrackingEnabled,
     traceId: context.traceId,

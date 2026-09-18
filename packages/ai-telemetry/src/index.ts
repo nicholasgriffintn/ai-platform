@@ -21,10 +21,12 @@ export type {
   TelemetryEnv,
   TelemetryEvent,
   TelemetryIdentity,
+  TelemetryIdentityInput,
   TelemetryLogLevel,
   TelemetryLogRecord,
   TelemetryMessage,
   TelemetryMetric,
+  TelemetryPersonProperties,
   TelemetryProperties,
   TelemetrySink,
   TelemetrySpan,
@@ -39,7 +41,11 @@ export {
   type MetricsRecorder,
   type TrackTokenUsageParams,
 } from "./metrics.js";
-export { buildAnalyticsDistinctId } from "./identity.js";
+export {
+  buildAnalyticsDistinctId,
+  buildTelemetryPersonProperties,
+  resolveAnalyticsDistinctId,
+} from "./identity.js";
 export { buildAiGenerationEvent, type AiGenerationEventInput } from "./ai-generation.js";
 export { buildAiGenerationProperties } from "./ai-generation-properties.js";
 export {

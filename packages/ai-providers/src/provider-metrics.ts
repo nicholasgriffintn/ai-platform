@@ -6,6 +6,7 @@ import {
   type MetricsRecorder,
   type Telemetry,
   type TelemetryEnv,
+  type TelemetryIdentityInput,
 } from "@ngriffin_uk/polychat-ai-telemetry";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -51,6 +52,12 @@ export function createProviderMetrics(options: CreateProviderMetricsOptions): Pr
       });
       const startTime = performance.now();
       const traceId = metrics.completion_id || generateId();
+      const identity = {
+        userId: metrics.userId ?? request?.context?.user?.id,
+        anonymousUserId: request?.context?.anonymousUser?.id,
+        email: request?.context?.user?.email,
+        planId: request?.context?.user?.plan_id,
+      } satisfies TelemetryIdentityInput;
 
       return operation()
         .then((result) => {
@@ -72,6 +79,7 @@ export function createProviderMetrics(options: CreateProviderMetricsOptions): Pr
               log_id: record?.log_id,
               settings: metrics.settings,
             },
+            identity,
             status: "success",
           });
 
@@ -80,7 +88,8 @@ export function createProviderMetrics(options: CreateProviderMetricsOptions): Pr
               usage: extractUsagePayload(result),
               provider: metrics.provider,
               model: metrics.model,
-              userId: metrics.userId,
+              userId: identity.userId,
+              anonymousUserId: identity.anonymousUserId,
               completion_id: traceId,
               streamed: false,
             });
@@ -120,6 +129,7 @@ export function createProviderMetrics(options: CreateProviderMetricsOptions): Pr
               settings: metrics.settings,
               error: getErrorMessage(error),
             },
+            identity,
             status: "error",
             error: getErrorMessage(error),
           });
@@ -130,7 +140,7 @@ export function createProviderMetrics(options: CreateProviderMetricsOptions): Pr
       recorderFor(options, { env }).trackGuardrailViolation(
         violationName,
         details,
-        userId,
+        { userId },
         completionId,
       );
     },

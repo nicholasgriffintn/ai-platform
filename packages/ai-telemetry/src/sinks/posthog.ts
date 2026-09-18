@@ -23,12 +23,15 @@ export function createPostHogSink(
   return {
     name: "posthog",
     capture(event) {
+      const personProperties = omitNullishValues(event.personProperties ?? {});
+
       client.capture({
         distinctId: event.distinctId,
         event: event.name,
         properties: omitNullishValues({
           category: event.category,
           ...event.properties,
+          ...(Object.keys(personProperties).length > 0 ? { $set: personProperties } : {}),
           ...(event.label !== undefined ? { label: event.label } : {}),
           ...(event.value !== undefined ? { value: event.value } : {}),
           ...(event.nonInteraction !== undefined ? { non_interaction: event.nonInteraction } : {}),

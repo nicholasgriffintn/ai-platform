@@ -10,6 +10,7 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { resolveTelemetryIdentity } from "~/lib/telemetry";
 import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
 
 import {
@@ -133,6 +134,7 @@ export async function resolveProjectTaskToolApproval(params: {
       taskId: task.id,
       outcome: "success",
       value: Math.max(0, Date.now() - pending.timestamp),
+      identity: resolveTelemetryIdentity(context),
     });
   }
 

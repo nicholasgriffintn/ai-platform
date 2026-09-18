@@ -5,6 +5,7 @@ import type { ChatRunCommandReceipt } from "@ngriffin_uk/polychat-schemas";
 import { isAgentExecutionMode } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { resolveTelemetryIdentity } from "~/lib/telemetry";
 import { closeComposioConnectorRun } from "~/services/apps/connectors/composio-run";
 import type { ChatRunLifecycle } from "~/services/chat-runs/lifecycle";
 import { createChatRetryStatePublisher } from "~/services/chat-runs/retry-state";
@@ -194,6 +195,7 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
           env: params.env,
           executionCtx: params.executionCtx,
           traceId: params.completionId,
+          identity: resolveTelemetryIdentity(params.context),
         },
         {
           platform: params.platform,

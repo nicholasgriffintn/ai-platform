@@ -213,7 +213,10 @@ describe("Rate Limit Middleware", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(mockTrackUsageMetric).toHaveBeenCalledWith("user-123", "completions");
+      expect(mockTrackUsageMetric).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: "user-123" }),
+        "completions",
+      );
     });
 
     it("should track usage metrics for unauthenticated users", async () => {
@@ -228,7 +231,11 @@ describe("Rate Limit Middleware", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(mockTrackUsageMetric).toHaveBeenCalledWith(undefined, "completions");
+      const [identity, routeName] = mockTrackUsageMetric.mock.calls[0] ?? [];
+
+      expect(identity.userId).toBeUndefined();
+      expect(identity.anonymousUserId).toBeUndefined();
+      expect(routeName).toBe("completions");
     });
 
     it("uses one identity bucket across paths so dynamic IDs cannot evade limits", async () => {
@@ -253,7 +260,10 @@ describe("Rate Limit Middleware", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(mockTrackUsageMetric).toHaveBeenCalledWith(undefined, "speech");
+      const [identity, routeName] = mockTrackUsageMetric.mock.calls[0] ?? [];
+
+      expect(identity.userId).toBeUndefined();
+      expect(routeName).toBe("speech");
     });
 
     it("should handle usage metric tracking errors gracefully", async () => {

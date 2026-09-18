@@ -112,7 +112,11 @@ export class Guardrails {
           violations: result.violations,
           contentLength: typeof message === "string" ? message.length : message.text.length,
         },
-        userId,
+        {
+          userId: userId ?? this.user?.id,
+          email: this.user?.email,
+          planId: this.user?.plan_id,
+        },
         completionId,
       );
     }
@@ -139,7 +143,11 @@ export class Guardrails {
           violations: result.violations,
           contentLength: typeof response === "string" ? response.length : response.text.length,
         },
-        userId,
+        {
+          userId: userId ?? this.user?.id,
+          email: this.user?.email,
+          planId: this.user?.plan_id,
+        },
         completionId,
       );
     }

@@ -4,6 +4,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { listComposioConnectedAccounts } from "~/lib/providers/capabilities/connectors/composio/client";
+import { resolveTelemetryIdentity } from "~/lib/telemetry";
 import { requireActiveExecutionRun } from "~/services/chat-runs/execution-authority";
 import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
 
@@ -173,6 +174,7 @@ export async function executeRecipeConnectorOperation(params: {
           provider: adapter.provider.name,
           operation: operation.id,
           outcome: "unknown",
+          identity: { ...resolveTelemetryIdentity(params.context), userId: params.userId },
         });
       }
 
@@ -217,6 +219,7 @@ export async function executeRecipeConnectorOperation(params: {
         provider: adapter.provider.name,
         operation: operation.id,
         outcome: "unknown",
+        identity: { ...resolveTelemetryIdentity(params.context), userId: params.userId },
       });
     }
 

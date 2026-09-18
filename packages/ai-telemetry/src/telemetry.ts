@@ -2,7 +2,7 @@ import { isAnalyticsTrackingEnabled } from "@ngriffin_uk/polychat-schemas";
 
 import { buildAiGenerationEvent } from "./ai-generation.js";
 import { shouldCaptureAiContent, shouldCaptureAiObservability } from "./config.js";
-import { buildAnalyticsDistinctId } from "./identity.js";
+import { buildAnalyticsDistinctId, buildTelemetryPersonProperties } from "./identity.js";
 import { createSpanId, createTraceId } from "./ids.js";
 import { createAnalyticsEngineSink } from "./sinks/analytics-engine.js";
 import { createBeaconSink } from "./sinks/beacon.js";
@@ -84,7 +84,8 @@ export function createTelemetry(options: CreateTelemetryOptions): Telemetry {
       sink.capture?.({
         name: metric.name,
         category: metric.type,
-        distinctId: metric.traceId,
+        distinctId: metric.distinctId ?? metric.traceId,
+        personProperties: metric.personProperties,
         value: metric.value,
         properties: metric.metadata,
       });
@@ -108,6 +109,12 @@ export function createTelemetry(options: CreateTelemetryOptions): Telemetry {
       const event = buildAiGenerationEvent({
         ...signal,
         distinctId: buildAnalyticsDistinctId(signal),
+        personProperties: buildTelemetryPersonProperties({
+          userId: signal.user?.id,
+          anonymousUserId: signal.anonymousUser?.id,
+          email: signal.user?.email,
+          planId: signal.user?.plan_id,
+        }),
         captureContent: observability.captureContent && consented,
       });
 

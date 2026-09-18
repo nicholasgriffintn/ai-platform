@@ -46,4 +46,5 @@ export interface ProviderUser {
 export interface ProviderRequestContext {
   env?: ProviderEnv;
   user?: ProviderUser;
+  anonymousUser?: { id: string } | null;
 }

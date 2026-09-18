@@ -59,6 +59,13 @@ export function createAnalyticsEngineSink(
   };
 }
 
+function analyticsEngineMetadata(metric: TelemetryMetric): Record<string, unknown> {
+  return {
+    ...metric.metadata,
+    ...(metric.distinctId ? { distinctId: metric.distinctId } : {}),
+  };
+}
+
 function analyticsEngineBlobs(metric: TelemetryMetric): string[] {
   const metadata = metric.metadata;
   const values: Record<AnalyticsEngineBlobColumn, string> = {
@@ -67,7 +74,7 @@ function analyticsEngineBlobs(metric: TelemetryMetric): string[] {
     status: metric.status,
     error: metric.error || "None",
     traceId: metric.traceId,
-    metadata: JSON.stringify(metadata),
+    metadata: JSON.stringify(analyticsEngineMetadata(metric)),
     provider: readStringField(metadata, "provider") ?? "unknown",
     model: readStringField(metadata, "model") ?? "unknown",
   };

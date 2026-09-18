@@ -109,6 +109,7 @@ export async function finaliseAssistantTurn(
     provider: params.provider,
     model,
     userId: user?.id,
+    anonymousUserId: context?.anonymousUser?.id,
     completion_id: completionId,
     streamed: true,
     expectUsage: true,

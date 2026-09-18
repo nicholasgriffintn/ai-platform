@@ -47,7 +47,8 @@ export const handleCreateChatCompletions = async (req: {
   signal?: AbortSignal;
 }): Promise<CreateChatCompletionsResponse | Response> => {
   const { env, request, user, anonymousUser, app_url, context, executionCtx, signal } = req;
-  const serviceContext = context ?? createServiceContext({ env, user });
+  const serviceContext =
+    context ?? createServiceContext({ env, user, anonymousUser: anonymousUser ?? null });
   const chatRequest = normaliseChatCompletionRequest(request);
   const isStreaming = request.stream ?? false;
   let providerMessages = toProviderMessages(chatRequest.messages);

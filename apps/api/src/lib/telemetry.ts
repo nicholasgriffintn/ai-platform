@@ -6,7 +6,10 @@ import {
   type MetricsRecorder,
   type Telemetry,
   type TelemetryEnv,
+  type TelemetryIdentityInput,
 } from "@ngriffin_uk/polychat-ai-telemetry";
+
+import type { ServiceContext } from "~/lib/context/serviceContext";
 
 export function createTelemetry(env: TelemetryEnv, executionCtx?: ExecutionContext): Telemetry {
   return createWorkerTelemetry({ env, executionCtx });
@@ -14,6 +17,17 @@ export function createTelemetry(env: TelemetryEnv, executionCtx?: ExecutionConte
 
 export function createMetrics(env: TelemetryEnv, executionCtx?: ExecutionContext): MetricsRecorder {
   return createWorkerMetricsRecorder({ env, executionCtx });
+}
+
+export function resolveTelemetryIdentity(
+  context?: Pick<ServiceContext, "user" | "anonymousUser"> | null,
+): TelemetryIdentityInput {
+  return {
+    userId: context?.user?.id,
+    anonymousUserId: context?.anonymousUser?.id,
+    email: context?.user?.email,
+    planId: context?.user?.plan_id,
+  };
 }
 
 export const providerMetrics = createProviderMetrics({

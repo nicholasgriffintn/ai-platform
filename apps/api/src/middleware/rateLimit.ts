@@ -24,8 +24,8 @@ export async function rateLimit(context: Context, next: Next) {
 
   const user = context.get("user");
   const anonymousUser = context.get("anonymousUser");
-  const userId: string = user?.id;
-  const anonymousUserId: string = anonymousUser?.id;
+  const userId = user?.id;
+  const anonymousUserId = anonymousUser?.id;
   const clientAddress = context.req.header?.("CF-Connecting-IP") ?? "unknown";
   const isCredentialBroker = pathname.startsWith(`${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/`);
 
@@ -62,7 +62,15 @@ export async function rateLimit(context: Context, next: Next) {
 
   const routeName = pathname.split("/").pop() || "unknown";
 
-  createMetrics(context.env).trackUsageMetric(userId || anonymousUserId, routeName);
+  createMetrics(context.env).trackUsageMetric(
+    {
+      userId,
+      anonymousUserId,
+      email: user?.email,
+      planId: user?.plan_id,
+    },
+    routeName,
+  );
 
   return next();
 }

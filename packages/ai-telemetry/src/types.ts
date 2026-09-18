@@ -4,8 +4,14 @@ import type { PostHog, PostHogOptions } from "posthog-node";
 
 export type TelemetryProperties = Record<string, unknown>;
 
+export type TelemetryPersonProperties = Record<
+  string,
+  string | number | boolean | null | undefined
+>;
+
 export type TelemetryEvent = Omit<AnalyticsEvent, "properties"> & {
   distinctId: string;
+  personProperties?: TelemetryPersonProperties;
   properties?: TelemetryProperties;
 };
 
@@ -18,6 +24,8 @@ export type TelemetryMetric = {
   metadata: Record<string, unknown>;
   status: string;
   error?: string;
+  distinctId?: string;
+  personProperties?: TelemetryPersonProperties;
 };
 
 export type TelemetryLogLevel = "trace" | "debug" | "info" | "warn" | "error";
@@ -49,9 +57,16 @@ export type TelemetrySpan = {
 export type TelemetryMessage = { role: string; content: unknown };
 
 export type TelemetryIdentity = {
-  user?: { id: number; email?: string | null };
-  anonymousUser?: { id: string };
+  user?: { id: number; email?: string | null; plan_id?: string | null } | null;
+  anonymousUser?: { id: string } | null;
   userTrackingEnabled?: boolean | null;
+};
+
+export type TelemetryIdentityInput = {
+  userId?: number | string | null;
+  anonymousUserId?: string | null;
+  email?: string | null;
+  planId?: string | null;
 };
 
 export type AiGenerationSignal = TelemetryIdentity & {
