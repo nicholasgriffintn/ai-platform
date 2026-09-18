@@ -392,9 +392,6 @@ importers:
       isbot:
         specifier: 5.2.2
         version: 5.2.2
-      posthog-node:
-        specifier: ^5.48.1
-        version: 5.52.4
       stripe:
         specifier: 22.6.2
         version: 22.6.2(@types/node@26.5.1)
