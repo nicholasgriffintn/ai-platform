@@ -16,7 +16,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import type { APIRequestContext } from "@playwright/test";
 
-import { runMachineConsumer } from "../../../../desktop/src/lib/machine-runner";
+import { runMachineConsumer } from "../../../../desktop/src/infrastructure/machine-runner";
 import { E2E_API_BASE_URL, E2E_APP_BASE_URL } from "../support/environment";
 import { fetchOllamaFixture } from "./ollama-provider";
 

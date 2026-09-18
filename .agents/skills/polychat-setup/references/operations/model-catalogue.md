@@ -12,7 +12,7 @@ Use `packages/library-model-catalogue/src/data/`:
 - **Ordering:** `providers/index.json` preserves catalogue precedence when providers expose the same local ID. Keep this order stable to retain public IDs.
 - **Imports:** the root `index.ts` file contains generated imports only. Regenerate it with the sync command after adding or removing definitions.
 
-The API never reads this directory itself. `@ngriffin_uk/polychat-ai-models` resolves the catalogue into model configs and answers catalogue queries; `apps/api/src/services/models/resolve.ts` layers KV caching, machine models, training deployments and per-account access on top.
+The API never reads this directory itself. `@ngriffin_uk/polychat-ai-models` resolves the catalogue into model configs and answers catalogue queries; `apps/api/src/modules/models/application/resolve.ts` layers KV caching, machine models, training deployments and per-account access on top.
 
 Encode reserved filename characters with `~HH` escapes through the sync tooling, including `~7E` for a literal tilde. Keep percent escapes out of generated paths: names such as `%2F` break file URL resolution in coverage and module tooling. Retain the original family IDs inside catalogue references.
 
