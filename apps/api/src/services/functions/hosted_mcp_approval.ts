@@ -1,3 +1,4 @@
+import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
 import { HOSTED_MCP_APPROVAL_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import z from "zod/v4";
@@ -50,13 +51,10 @@ export const hostedMcpApproval: ApiToolDefinition = {
           toolName: input.toolName,
           arguments: input.arguments,
         },
-        humanInTheLoop: {
-          type: "approval",
-          status: "pending",
+        humanInTheLoop: pendingApproval({
           interactionId: input.approvalRequestId,
           toolName: HOSTED_MCP_APPROVAL_TOOL_NAME,
-          requires_user_action: true,
-        },
+        }),
       },
     };
   },

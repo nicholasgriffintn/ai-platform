@@ -1,3 +1,4 @@
+import { mergeHumanInTheLoop } from "@ngriffin_uk/polychat-library-interactions";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "./conversation-types.js";
@@ -47,11 +48,10 @@ function buildResolvedToolData(
     resolution: response,
     ...(Object.keys(currentHumanState).length > 0
       ? {
-          humanInTheLoop: {
-            ...currentHumanState,
+          humanInTheLoop: mergeHumanInTheLoop(currentHumanState, {
             status: "resolved",
             requires_user_action: false,
-          },
+          }),
         }
       : {}),
   };

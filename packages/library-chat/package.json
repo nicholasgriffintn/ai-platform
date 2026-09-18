@@ -177,6 +177,7 @@
   },
   "dependencies": {
     "@ngriffin_uk/polychat-library-goals": "workspace:^",
+    "@ngriffin_uk/polychat-library-interactions": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^"
   },

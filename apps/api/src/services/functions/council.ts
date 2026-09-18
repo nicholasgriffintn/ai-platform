@@ -1,3 +1,4 @@
+import { pendingSelection } from "@ngriffin_uk/polychat-library-interactions";
 import {
   councilMembers,
   type CouncilMemberDefinition,
@@ -115,11 +116,7 @@ export const select_council_members: ApiToolDefinition = {
         recommended,
         reason: args.reason,
         maxSelection: MAX_COUNCIL_MEMBERS,
-        humanInTheLoop: {
-          type: "selection",
-          status: "pending",
-          requires_user_action: true,
-        },
+        humanInTheLoop: pendingSelection(),
       },
     };
   },

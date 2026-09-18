@@ -1,4 +1,5 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { mergeHumanInTheLoop } from "@ngriffin_uk/polychat-library-interactions";
+import { isDeadlinePassed, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ConnectorOperationApprovalRecord } from "~/repositories/ConnectorOperationApprovalRepository";
 import type { Message } from "~/types";
@@ -31,7 +32,7 @@ function getDisplayState(
 ): ConnectorApprovalDisplayState {
   if (
     (approval.state === "pending" || approval.state === "approved") &&
-    approval.expiresAt <= now
+    isDeadlinePassed(approval.expiresAt, now)
   ) {
     return "expired";
   }
@@ -52,14 +53,13 @@ function projectApprovalState(
     ...message,
     data: {
       ...data,
-      humanInTheLoop: {
-        ...existingHumanState,
+      humanInTheLoop: mergeHumanInTheLoop(existingHumanState, {
         type: "approval",
         status,
         requires_user_action: status === "pending",
         ...(approval.resolvedAt ? { resolvedAt: approval.resolvedAt } : {}),
         ...(approval.consumedAt ? { consumedAt: approval.consumedAt } : {}),
-      },
+      }),
     },
   };
 }

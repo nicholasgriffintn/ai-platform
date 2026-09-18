@@ -8,7 +8,7 @@
  * defaults; this module only decides what is due.
  */
 
-import { readOptionalString } from "@ngriffin_uk/polychat-utility-core";
+import { isDeadlinePassed } from "@ngriffin_uk/polychat-utility-core";
 
 export const APPROVAL_TIMEOUT_REASON = "Approval request timed out";
 
@@ -26,20 +26,13 @@ export interface ApprovalSlaTransition {
   resolutionReason?: string;
 }
 
-function isPast(value: string | null | undefined, nowMs: number): boolean {
-  const timestamp = readOptionalString(value);
-
-  return timestamp !== undefined && timestamp !== "" && Date.parse(timestamp) <= nowMs;
-}
-
 export function evaluateApprovalSla(
   state: ApprovalSlaState,
   now: Date = new Date(),
 ): ApprovalSlaTransition | null {
-  const nowMs = now.getTime();
   const escalatedAt = now.toISOString();
-  const escalationDue = state.status === "pending" && isPast(state.escalationAt, nowMs);
-  const timeoutDue = isPast(state.expiresAt, nowMs);
+  const escalationDue = state.status === "pending" && isDeadlinePassed(state.escalationAt, now);
+  const timeoutDue = isDeadlinePassed(state.expiresAt, now);
 
   if (timeoutDue) {
     return {

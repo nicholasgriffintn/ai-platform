@@ -1,3 +1,4 @@
+import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
 import {
   recipeConnectorProviderSchema,
   teammateRunConfigurationSchema,
@@ -320,13 +321,10 @@ export const use_recipe_connector: ApiToolDefinition = {
             operation,
             argumentSummary: redactSensitiveTokens(params ?? {}),
             expiresAt: approval.approval?.expiresAt,
-            humanInTheLoop: {
-              type: "approval",
-              status: "pending",
+            humanInTheLoop: pendingApproval({
               interactionId: context.toolCallId,
               toolName: "use_recipe_connector",
-              requires_user_action: true,
-            },
+            }),
           },
         };
       }

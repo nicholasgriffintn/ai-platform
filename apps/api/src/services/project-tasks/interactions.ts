@@ -6,7 +6,7 @@ import {
   type ProjectTask,
   type ProjectTaskInteraction,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, readNonEmptyString } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -15,12 +15,8 @@ import { readInteractionMessageData } from "./interaction-messages";
 
 const answersSchema = z.array(userQuestionAnswerSchema);
 
-function readString(value: unknown): string | null {
-  return typeof value === "string" && value.length > 0 ? value : null;
-}
-
 function readMessageTime(message: Record<string, unknown>, data: Record<string, unknown>): string {
-  const explicit = readString(data.requestedAt) ?? readString(data.timestamp);
+  const explicit = readNonEmptyString(data.requestedAt) ?? readNonEmptyString(data.timestamp);
 
   if (explicit) {
     return explicit;
@@ -30,7 +26,7 @@ function readMessageTime(message: Record<string, unknown>, data: Record<string, 
     return new Date(message.timestamp).toISOString();
   }
 
-  return readString(message.created_at) ?? "";
+  return readNonEmptyString(message.created_at) ?? "";
 }
 
 function readStatus(params: {
@@ -38,16 +34,16 @@ function readStatus(params: {
   data: Record<string, unknown>;
   humanInTheLoop: Record<string, unknown>;
 }): ProjectTaskInteraction["status"] {
-  const humanStatus = readString(params.humanInTheLoop.status);
+  const humanStatus = readNonEmptyString(params.humanInTheLoop.status);
 
-  if (humanStatus === "expired" || readString(params.data.expiredAt)) {
+  if (humanStatus === "expired" || readNonEmptyString(params.data.expiredAt)) {
     return "expired";
   }
 
   const resolved =
     params.data.resolved === true ||
     humanStatus === "resolved" ||
-    readString(params.data.resolution) !== null;
+    readNonEmptyString(params.data.resolution) !== undefined;
 
   if (
     resolved &&
@@ -87,7 +83,7 @@ export async function getProjectTaskInteraction(
     return null;
   }
 
-  const messageRunId = readString(message.run_id);
+  const messageRunId = readNonEmptyString(message.run_id);
 
   if (task.runId && messageRunId && task.runId !== messageRunId) {
     return null;
@@ -95,9 +91,9 @@ export async function getProjectTaskInteraction(
 
   const type = humanInTheLoop.type;
   const interactionId =
-    readString(humanInTheLoop.interactionId) ??
-    readString(data.interactionId) ??
-    (isRecord(data.approval) ? readString(data.approval.interactionId) : null);
+    readNonEmptyString(humanInTheLoop.interactionId) ??
+    readNonEmptyString(data.interactionId) ??
+    (isRecord(data.approval) ? readNonEmptyString(data.approval.interactionId) : null);
 
   if ((type !== "question" && type !== "approval") || !interactionId) {
     return null;
@@ -112,7 +108,7 @@ export async function getProjectTaskInteraction(
     interactionId,
     status,
     requestedAt: readMessageTime(message, data),
-    resolvedAt: readString(data.resolvedAt) ?? readString(data.expiredAt),
+    resolvedAt: readNonEmptyString(data.resolvedAt) ?? readNonEmptyString(data.expiredAt),
     detail: status === "interrupted" ? task.blockedDetail : null,
   } as const;
 

@@ -1,3 +1,5 @@
+import { readOptionalString } from "./objects.js";
+
 export function formatDate(dateString: string): string {
   if (!dateString) {
     return "N/A";
@@ -8,6 +10,19 @@ export function formatDate(dateString: string): string {
     month: "long",
     day: "numeric",
   });
+}
+
+export function isDeadlinePassed(deadline: unknown, now: Date | string = new Date()): boolean {
+  const value = readOptionalString(deadline);
+
+  if (value === undefined || value === "") {
+    return false;
+  }
+
+  const deadlineMs = Date.parse(value);
+  const nowMs = typeof now === "string" ? Date.parse(now) : now.getTime();
+
+  return Number.isFinite(deadlineMs) && Number.isFinite(nowMs) && deadlineMs <= nowMs;
 }
 
 export function formatRelativeTime(dateString: string, now = new Date()): string {

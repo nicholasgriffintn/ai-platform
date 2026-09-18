@@ -1,3 +1,4 @@
+import { mergeHumanInTheLoop } from "@ngriffin_uk/polychat-library-interactions";
 import {
   projectTaskToolApprovalSchema,
   resolveProjectTaskToolApprovalSchema,
@@ -7,24 +8,31 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
-import { buildMessageParts } from "~/services/chat/messages/parts";
-import { withThreadLock } from "~/services/conversations/coordinator/client";
-import { ConversationManager } from "~/services/conversations/manager";
-import type { Message } from "~/types";
 
-import { readInteractionMessageData } from "./interaction-messages";
-import { isProjectTaskInteractionExpired } from "./interaction-recovery";
+import {
+  readPendingInteractionMessage,
+  resolvePendingInteraction,
+  type PendingInteractionMessage,
+} from "./interaction-resolution";
 
-interface PendingApprovalMessage {
-  messageId: string;
-  data: Record<string, unknown>;
-  approval: ProjectTaskToolApproval;
-  toolCallId?: string;
-  timestamp?: number;
+function getPendingApprovalMessage(
+  context: ServiceContext,
+  conversationId: string,
+): Promise<PendingInteractionMessage<ProjectTaskToolApproval> | null> {
+  return readPendingInteractionMessage({
+    context,
+    conversationId,
+    parse: (data) => {
+      const approval = projectTaskToolApprovalSchema.safeParse(
+        isRecord(data.approval) ? data.approval : undefined,
+      );
+
+      return approval.success ? approval.data : null;
+    },
+  });
 }
 
 export async function getPendingProjectTaskToolApproval(
@@ -37,36 +45,7 @@ export async function getPendingProjectTaskToolApproval(
 
   const pending = await getPendingApprovalMessage(context, task.conversationId);
 
-  return pending?.approval ?? null;
-}
-
-async function getPendingApprovalMessage(
-  context: ServiceContext,
-  conversationId: string,
-): Promise<PendingApprovalMessage | null> {
-  const message = await context.repositories.messages.getLatestPendingToolMessage(conversationId);
-  const data = readInteractionMessageData(message?.data);
-  const approval = projectTaskToolApprovalSchema.safeParse(
-    data && isRecord(data.approval) ? data.approval : undefined,
-  );
-
-  if (
-    !message ||
-    !data ||
-    !approval.success ||
-    typeof message.id !== "string" ||
-    isProjectTaskInteractionExpired(message)
-  ) {
-    return null;
-  }
-
-  return {
-    messageId: message.id,
-    data,
-    approval: approval.data,
-    ...(typeof message.tool_call_id === "string" ? { toolCallId: message.tool_call_id } : {}),
-    ...(typeof message.timestamp === "number" ? { timestamp: message.timestamp } : {}),
-  };
+  return pending?.interaction ?? null;
 }
 
 export async function resolveProjectTaskToolApproval(params: {
@@ -94,10 +73,9 @@ export async function resolveProjectTaskToolApproval(params: {
   }
 
   const conversationId = task.conversationId;
-
   const pending = await getPendingApprovalMessage(context, conversationId);
 
-  if (!pending || pending.approval.interactionId !== input.interactionId) {
+  if (!pending || pending.interaction.interactionId !== input.interactionId) {
     throw new AssistantError(
       "This approval is no longer pending. Refresh the conversation.",
       ErrorType.CONFLICT_ERROR,
@@ -105,87 +83,48 @@ export async function resolveProjectTaskToolApproval(params: {
     );
   }
 
-  const user = context.requireUser();
-
-  await withThreadLock(
-    { env: context.env, conversationId, kind: "human_response" },
-    async (lease) => {
-      const currentPending = await getPendingApprovalMessage(context, conversationId);
-
-      if (!currentPending || currentPending.approval.interactionId !== input.interactionId) {
-        throw new AssistantError(
-          "This approval is no longer pending. Refresh the conversation.",
-          ErrorType.CONFLICT_ERROR,
-          409,
-        );
-      }
-
-      const resolvedData = {
-        ...currentPending.data,
+  const resolved = await resolvePendingInteraction<ProjectTaskToolApproval>({
+    context,
+    task,
+    conversationId,
+    expectedInteractionId: input.interactionId,
+    interactionIdOf: (approval) => approval.interactionId,
+    conflictMessage: "This approval is no longer pending. Refresh the conversation.",
+    readPending: (id) => getPendingApprovalMessage(context, id),
+    buildResolution: (current) => ({
+      data: {
+        ...current.data,
         resolved: true,
         resolvedAt: new Date().toISOString(),
         resolution: input.resolution,
         approval: {
-          ...currentPending.approval,
+          ...current.interaction,
           status: input.resolution,
         },
-        humanInTheLoop: {
-          type: "approval",
+        humanInTheLoop: mergeHumanInTheLoop(current.data.humanInTheLoop, {
           status: "resolved",
           interactionId: input.interactionId,
-          toolName: currentPending.approval.toolName,
+          toolName: current.interaction.toolName,
           resolution: input.resolution,
           requires_user_action: false,
+        }),
+      },
+      toolName: current.interaction.toolName,
+      toolContent:
+        input.resolution === "approved" ? "Tool access approved." : "Tool access rejected.",
+      userContent:
+        input.resolution === "approved"
+          ? `Approved access to ${current.interaction.toolName}. Continue the task.`
+          : `Rejected access to ${current.interaction.toolName}. Continue without it.`,
+      userData: {
+        toolApprovalResponse: {
+          interactionId: input.interactionId,
+          resolution: input.resolution,
+          toolName: current.interaction.toolName,
         },
-      };
-      const resolvedMessage: Message = {
-        role: "tool",
-        name: currentPending.approval.toolName,
-        content:
-          input.resolution === "approved" ? "Tool access approved." : "Tool access rejected.",
-        status: "resolved",
-        data: resolvedData,
-        tool_call_id: currentPending.toolCallId,
-        timestamp: currentPending.timestamp,
-      };
-
-      await lease.assertOwned();
-      await context.repositories.messages.updateMessage(conversationId, currentPending.messageId, {
-        content: resolvedMessage.content,
-        status: resolvedMessage.status,
-        data: resolvedData,
-        parts: buildMessageParts(resolvedMessage),
-      });
-
-      const conversationManager = ConversationManager.getInstance({
-        database: context.database,
-        repositories: context.repositories,
-        user,
-        env: context.env,
-        store: true,
-        runId: task.runId ?? undefined,
-        writeFence: lease,
-      });
-
-      await conversationManager.add(conversationId, {
-        id: generateId(),
-        role: "user",
-        content:
-          input.resolution === "approved"
-            ? `Approved access to ${currentPending.approval.toolName}. Continue the task.`
-            : `Rejected access to ${currentPending.approval.toolName}. Continue without it.`,
-        data: {
-          toolApprovalResponse: {
-            interactionId: input.interactionId,
-            resolution: input.resolution,
-            toolName: pending.approval.toolName,
-          },
-        },
-        timestamp: Date.now(),
-        platform: "web",
-      });
-    },
-  );
+      },
+    }),
+  });
 
   if (pending.timestamp !== undefined) {
     recordChatRunOperationalMetric(context.env, {
@@ -197,5 +136,5 @@ export async function resolveProjectTaskToolApproval(params: {
     });
   }
 
-  return { toolName: pending.approval.toolName, resolution: input.resolution };
+  return { toolName: resolved.interaction.toolName, resolution: input.resolution };
 }

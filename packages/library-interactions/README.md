@@ -31,3 +31,7 @@ if (!result.rejected) {
 ## SLA
 
 `evaluateApprovalSla({ status, escalationAt, expiresAt }, now)` is pure. It returns `null` while the request is inside its SLA, an `escalated` transition once `escalationAt` passes, and a `timed_out` transition once `expiresAt` passes. Timeout wins when both are due in one pass, and an already-escalated request is never re-escalated. The caller persists the returned fields, keeping existing values where it already set them.
+
+## Envelope
+
+The `humanInTheLoop` wire envelope is described by `humanInTheLoopSchema` in `@ngriffin_uk/polychat-schemas`; this package owns its writers. `pendingApproval`, `pendingQuestion`, `pendingSelection` and `pendingTakeover` produce the pending forms, and `mergeHumanInTheLoop(previous, patch)` preserves unknown fields while applying a status or resolution change. `resolveHumanInTheLoop` and `expireHumanInTheLoop` are the two terminal presets used by project-task resolution and interaction recovery.

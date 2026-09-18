@@ -36,6 +36,12 @@ export function readOptionalString(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+export function readNonEmptyString(value: unknown): string | undefined {
+  const text = readOptionalString(value);
+
+  return text !== undefined && text !== "" ? text : undefined;
+}
+
 export function getStringProperty(value: unknown, key: string): string | undefined {
   if (!isRecord(value)) {
     return undefined;

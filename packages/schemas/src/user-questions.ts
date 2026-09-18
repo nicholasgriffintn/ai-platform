@@ -53,5 +53,6 @@ export const answerUserQuestionsSchema = z.object({
 
 export type UserQuestionOption = z.infer<typeof userQuestionOptionSchema>;
 export type UserQuestion = z.infer<typeof userQuestionSchema>;
+export type UserQuestionAnswer = z.infer<typeof userQuestionAnswerSchema>;
 export type UserQuestionSet = z.infer<typeof userQuestionSetSchema>;
 export type AnswerUserQuestionsInput = z.infer<typeof answerUserQuestionsSchema>;

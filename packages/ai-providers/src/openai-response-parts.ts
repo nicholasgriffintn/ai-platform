@@ -1,4 +1,4 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, readNonEmptyString } from "@ngriffin_uk/polychat-utility-core";
 
 import type { MessagePart } from "./types/index.js";
 
@@ -35,10 +35,6 @@ const HOSTED_TOOL_DEFINITIONS: Record<string, HostedToolDefinition> = {
   tool_search_output: { name: "tool_search", label: "Tool search", outputOnly: true },
   web_search_call: { name: "search_grounding", label: "Search grounding" },
 };
-
-function readString(value: unknown): string | undefined {
-  return typeof value === "string" && value.length > 0 ? value : undefined;
-}
 
 function readPayload(value: unknown): string | unknown[] | Record<string, unknown> | undefined {
   if (typeof value === "string" || Array.isArray(value) || isRecord(value)) {
@@ -77,8 +73,8 @@ function extractToolInput(item: Record<string, unknown>): unknown {
     return { queries: item.queries };
   }
 
-  const name = readString(item.name);
-  const serverLabel = readString(item.server_label);
+  const name = readNonEmptyString(item.name);
+  const serverLabel = readNonEmptyString(item.server_label);
 
   return name || serverLabel ? { name, serverLabel } : undefined;
 }
@@ -88,7 +84,9 @@ function normaliseCodeInterpreterOutputs(outputs: unknown): unknown {
     return outputs;
   }
 
-  const logs = outputs.map((output) => (isRecord(output) ? readString(output.logs) : undefined));
+  const logs = outputs.map((output) =>
+    isRecord(output) ? readNonEmptyString(output.logs) : undefined,
+  );
 
   if (logs.every((output): output is string => output !== undefined)) {
     return logs.join("\n");
@@ -107,8 +105,8 @@ function normaliseShellOutputs(outputs: unknown): unknown {
       return [];
     }
 
-    const stdout = readString(output.stdout);
-    const stderr = readString(output.stderr);
+    const stdout = readNonEmptyString(output.stdout);
+    const stderr = readNonEmptyString(output.stderr);
 
     if (stdout && stderr) {
       return [stdout, `[stderr]\n${stderr}`];
@@ -145,8 +143,8 @@ function normaliseToolSearchOutput(tools: unknown): unknown {
         return typeof tool === "string" ? tool : undefined;
       }
 
-      const name = readString(tool.name) ?? readString(tool.type) ?? "Unknown tool";
-      const description = readString(tool.description);
+      const name = readNonEmptyString(tool.name) ?? readNonEmptyString(tool.type) ?? "Unknown tool";
+      const description = readNonEmptyString(tool.description);
 
       return description ? `${name} — ${description}` : name;
     })
@@ -200,7 +198,7 @@ export function extractOpenAIReasoningSummary(item: unknown): string {
   }
 
   return item.summary
-    .map((entry) => (isRecord(entry) ? readString(entry.text) : undefined))
+    .map((entry) => (isRecord(entry) ? readNonEmptyString(entry.text) : undefined))
     .filter((text): text is string => !!text)
     .join("\n");
 }
@@ -220,8 +218,9 @@ export function buildOpenAIHostedToolParts(
     return [];
   }
 
-  const toolCallId = toolCallIdOverride ?? readString(item.call_id) ?? readString(item.id);
-  const status = readString(item.status) ?? "completed";
+  const toolCallId =
+    toolCallIdOverride ?? readNonEmptyString(item.call_id) ?? readNonEmptyString(item.id);
+  const status = readNonEmptyString(item.status) ?? "completed";
   const input = extractToolInput(item);
   const output = extractToolOutput(item);
   const responseType = output === undefined || typeof output === "string" ? "text" : "json";

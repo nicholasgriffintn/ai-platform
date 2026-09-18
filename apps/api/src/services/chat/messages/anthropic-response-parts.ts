@@ -1,4 +1,4 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, readNonEmptyString } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { MessagePart } from "~/types";
@@ -35,10 +35,6 @@ const RESULT_TYPE_TO_TOOL: Record<string, string> = {
   web_fetch_tool_result: "web_fetch",
 };
 
-function readString(value: unknown): string | undefined {
-  return typeof value === "string" && value.length > 0 ? value : undefined;
-}
-
 function readPayload(value: unknown): string | unknown[] | Record<string, unknown> | undefined {
   if (typeof value === "string" || Array.isArray(value) || isRecord(value)) {
     return value;
@@ -62,8 +58,8 @@ function formatCodeBlock(value: string): string {
 }
 
 function formatCodeExecutionResult(payload: Record<string, unknown>): string {
-  const stdout = readString(payload.stdout);
-  const stderr = readString(payload.stderr);
+  const stdout = readNonEmptyString(payload.stdout);
+  const stderr = readNonEmptyString(payload.stderr);
   const sections: string[] = [];
 
   if (stdout) {
@@ -94,10 +90,10 @@ function stripDocumentFrontMatter(value: string): string {
 function formatWebFetchResult(payload: Record<string, unknown>): string {
   const document = isRecord(payload.content) ? payload.content : undefined;
   const source = document && isRecord(document.source) ? document.source : undefined;
-  const body = source ? readString(source.data) : undefined;
+  const body = source ? readNonEmptyString(source.data) : undefined;
   const renderedBody = body ? stripDocumentFrontMatter(body) : undefined;
-  const title = document ? readString(document.title) : undefined;
-  const url = readString(payload.url);
+  const title = document ? readNonEmptyString(document.title) : undefined;
+  const url = readNonEmptyString(payload.url);
   const sourceLink = url ? `[Source](${url})` : undefined;
 
   if (renderedBody) {
@@ -108,7 +104,7 @@ function formatWebFetchResult(payload: Record<string, unknown>): string {
 }
 
 function formatErrorPayload(payload: Record<string, unknown>): string {
-  const errorCode = readString(payload.error_code);
+  const errorCode = readNonEmptyString(payload.error_code);
 
   return errorCode ? `Tool error: ${errorCode.replaceAll("_", " ")}.` : "The tool failed.";
 }
@@ -154,8 +150,8 @@ export function buildAnthropicSearchGrounding(
       return [];
     }
 
-    const uri = readString(result.url);
-    const title = readString(result.title) ?? uri;
+    const uri = readNonEmptyString(result.url);
+    const title = readNonEmptyString(result.title) ?? uri;
 
     return uri && title ? [{ web: { uri, title } }] : [];
   });
@@ -184,8 +180,8 @@ export function mergeAnthropicSearchGrounding(
 
   for (const chunk of [...existingChunks, ...incoming.groundingChunks]) {
     if (isRecord(chunk) && isRecord(chunk.web)) {
-      const uri = readString(chunk.web.uri);
-      const title = readString(chunk.web.title) ?? uri;
+      const uri = readNonEmptyString(chunk.web.uri);
+      const title = readNonEmptyString(chunk.web.title) ?? uri;
 
       if (uri && title) {
         chunksByUrl.set(uri, { web: { uri, title } });
@@ -217,8 +213,8 @@ export function readAnthropicHostedToolStart(block: unknown): AnthropicHostedToo
     return null;
   }
 
-  const id = readString(block.id);
-  const name = readString(block.name);
+  const id = readNonEmptyString(block.id);
+  const name = readNonEmptyString(block.name);
 
   if (!id || !name) {
     return null;
@@ -254,7 +250,7 @@ export function buildAnthropicHostedToolResultPart(
   }
 
   const fallbackName = RESULT_TYPE_TO_TOOL[block.type];
-  const toolCallId = readString(block.tool_use_id);
+  const toolCallId = readNonEmptyString(block.tool_use_id);
 
   if (!fallbackName || !toolCallId) {
     return null;

@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
 import { hasAnyEnabledTool } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
@@ -245,13 +246,10 @@ export const handleToolCalls = async (
               interactionId: toolCall.id,
               reason: approvalReason,
             },
-            humanInTheLoop: {
-              type: "approval",
-              status: "pending",
+            humanInTheLoop: pendingApproval({
               interactionId: toolCall.id,
               toolName: functionName,
-              requires_user_action: true,
-            },
+            }),
           },
           log_id: modelResponseLogId || "",
           id: generateId(),

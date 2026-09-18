@@ -1,4 +1,14 @@
 export { InteractionError, isInteractionError, type InteractionErrorCode } from "./errors.js";
+export {
+  expireHumanInTheLoop,
+  mergeHumanInTheLoop,
+  pendingApproval,
+  pendingQuestion,
+  pendingSelection,
+  pendingTakeover,
+  resolveHumanInTheLoop,
+  type HumanInTheLoopPatch,
+} from "./envelope.js";
 export type {
   ApprovalClient,
   ApprovalControlState,

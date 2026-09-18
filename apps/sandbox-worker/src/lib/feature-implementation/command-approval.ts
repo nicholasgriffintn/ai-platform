@@ -1,6 +1,6 @@
 import { resolveApproval, type ApprovalClient } from "@ngriffin_uk/polychat-library-interactions";
 import { sandboxRunEventSchema, type SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
-import { readOptionalString } from "@ngriffin_uk/polychat-utility-core";
+import { readNonEmptyString } from "@ngriffin_uk/polychat-utility-core";
 
 import type { TaskEvent } from "../../types";
 import type { CommandApproval, RunControlClient } from "../run-control-client";
@@ -78,7 +78,7 @@ function approvalEventMessage(event: Record<string, unknown>): string {
   }
 
   if (event.type === "command_approval_timed_out") {
-    return readOptionalString(event.approvalResolutionReason) || "Command approval timed out";
+    return readNonEmptyString(event.approvalResolutionReason) ?? "Command approval timed out";
   }
 
   if (event.type === "command_approval_resolved") {

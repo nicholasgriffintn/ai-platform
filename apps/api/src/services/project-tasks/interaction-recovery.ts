@@ -1,4 +1,4 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { expireHumanInTheLoop } from "@ngriffin_uk/polychat-library-interactions";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { buildMessageParts } from "~/services/chat/messages/parts";
@@ -60,16 +60,11 @@ export async function recoverPendingProjectTaskInteraction(params: {
 
   const data = readInteractionMessageData(message.data) ?? {};
   const expiredAt = new Date(params.now ?? Date.now()).toISOString();
-  const humanInTheLoop = isRecord(data.humanInTheLoop) ? data.humanInTheLoop : {};
   const expiredData = {
     ...data,
     resolved: true,
     expiredAt,
-    humanInTheLoop: {
-      ...humanInTheLoop,
-      status: "expired",
-      requires_user_action: false,
-    },
+    humanInTheLoop: expireHumanInTheLoop(data.humanInTheLoop),
   };
   const expiredMessage: Message = {
     role: "tool",

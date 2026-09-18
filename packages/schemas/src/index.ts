@@ -91,6 +91,7 @@ export * from "./desktop-runtimes.js";
 export * from "./machines.js";
 export * from "./mcp.js";
 export * from "./goals.js";
+export * from "./human-in-the-loop.js";
 export * from "./internal-service-auth.js";
 export * from "./memory-documents.js";
 export * from "./saved-messages.js";

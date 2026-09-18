@@ -1,4 +1,5 @@
 import { userCreditActor, readCreditPosition } from "@ngriffin_uk/polychat-ai-billing";
+import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
 import {
   DELEGATION_DEFAULT_MAX_CREDIT_MICROS,
   DELEGATION_RUN_TASK_TYPE,
@@ -154,13 +155,10 @@ export const delegate: ApiToolDefinition = {
             interactionId: toolContext.toolCallId,
             reason,
           },
-          humanInTheLoop: {
-            type: "approval",
-            status: "pending",
+          humanInTheLoop: pendingApproval({
             interactionId: toolContext.toolCallId,
             toolName: "delegate",
-            requires_user_action: true,
-          },
+          }),
         },
       };
     }

@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { pendingApproval, pendingQuestion } from "@ngriffin_uk/polychat-library-interactions";
 import { userQuestionsSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
@@ -82,13 +83,7 @@ export const request_approval: ApiToolDefinition = {
         options: approvalOptions,
         context: parsedContext,
         timestamp: new Date().toISOString(),
-        humanInTheLoop: {
-          type: "approval",
-          status: "pending",
-          message,
-          options: approvalOptions,
-          requires_user_action: true,
-        },
+        humanInTheLoop: pendingApproval({ message, options: approvalOptions }),
       },
     };
   },
@@ -146,13 +141,10 @@ export const ask_user: ApiToolDefinition = {
         interactionId,
         questions: parsed.data,
         requestedAt,
-        humanInTheLoop: {
-          type: "question",
-          status: "pending",
+        humanInTheLoop: pendingQuestion({
           interactionId,
           questions: parsed.data,
-          requires_user_action: true,
-        },
+        }),
       },
     };
   },

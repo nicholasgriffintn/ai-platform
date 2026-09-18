@@ -1,3 +1,4 @@
+import { mergeHumanInTheLoop } from "@ngriffin_uk/polychat-library-interactions";
 import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 import { abortableDelay, isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -422,14 +423,14 @@ export async function replayApprovedConnectorOperation(params: {
           approvalRequired: false,
           approvalId: approval.id,
           resolution: "rejected",
-          humanInTheLoop: {
+          humanInTheLoop: mergeHumanInTheLoop(undefined, {
             type: "approval",
             status: "resolved",
             interactionId: boundary.toolCallId,
             toolName: TOOL_NAME,
             resolution: "rejected",
             requires_user_action: false,
-          },
+          }),
         },
         tool_call_id: boundary.toolCallId,
       }));

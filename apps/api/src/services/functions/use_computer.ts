@@ -1,3 +1,5 @@
+import { pendingTakeover } from "@ngriffin_uk/polychat-library-interactions";
+
 import {
   computerInputRequiresTakeover,
   describeComputerTakeoverInput,
@@ -45,13 +47,10 @@ export const use_computer: ApiToolDefinition = {
           renderer: "computer_takeover",
           contextId,
           reason,
-          humanInTheLoop: {
-            type: "takeover",
-            status: "pending",
+          humanInTheLoop: pendingTakeover({
             interactionId: toolContext.toolCallId,
             toolName: descriptor.name,
-            requires_user_action: true,
-          },
+          }),
         },
       };
     }

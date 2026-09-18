@@ -1,4 +1,5 @@
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
+import { isDeadlinePassed } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -53,7 +54,8 @@ function toConnectorOperationApprovalStatusView(
     provider: approval.provider,
     operation: approval.operation,
     state:
-      (approval.state === "pending" || approval.state === "approved") && approval.expiresAt <= now
+      (approval.state === "pending" || approval.state === "approved") &&
+      isDeadlinePassed(approval.expiresAt, now)
         ? "expired"
         : approval.state,
     createdAt: approval.createdAt,

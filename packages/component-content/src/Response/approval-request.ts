@@ -1,4 +1,4 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isDeadlinePassed, isRecord, readNonEmptyString } from "@ngriffin_uk/polychat-utility-core";
 
 export type ApprovalResolution = "approved" | "rejected";
 export type ApprovalAuthoritativeState =
@@ -23,19 +23,15 @@ function readResolution(value: unknown): ApprovalResolution | undefined {
   return value === "approved" || value === "rejected" ? value : undefined;
 }
 
-function readString(value: unknown): string | undefined {
-  return typeof value === "string" && value.length > 0 ? value : undefined;
-}
-
 function readAuthoritativeState(
   data: Record<string, unknown>,
   approval: Record<string, unknown> | undefined,
   humanInTheLoop: Record<string, unknown> | undefined,
   expiresAt: string | undefined,
 ): ApprovalAuthoritativeState {
-  const status = readString(data.status);
-  const approvalStatus = readString(approval?.status);
-  const humanStatus = readString(humanInTheLoop?.status);
+  const status = readNonEmptyString(data.status);
+  const approvalStatus = readNonEmptyString(approval?.status);
+  const humanStatus = readNonEmptyString(humanInTheLoop?.status);
   const resolution =
     readResolution(data.resolution) ??
     readResolution(humanInTheLoop?.resolution) ??
@@ -46,12 +42,8 @@ function readAuthoritativeState(
     return { status: "expired" };
   }
 
-  if (expiresAt) {
-    const expiry = Date.parse(expiresAt);
-
-    if (Number.isFinite(expiry) && expiry <= Date.now()) {
-      return { status: "expired" };
-    }
+  if (isDeadlinePassed(expiresAt)) {
+    return { status: "expired" };
   }
 
   if (
@@ -74,12 +66,13 @@ export function readApprovalRequest(data: unknown): ApprovalRequestData {
 
   const approval = isRecord(data.approval) ? data.approval : undefined;
   const humanInTheLoop = isRecord(data.humanInTheLoop) ? data.humanInTheLoop : undefined;
-  const message = readString(data.message);
-  const timestamp = readString(data.timestamp);
-  const completionId = readString(data.completion_id);
-  const interactionId = readString(approval?.interactionId);
-  const toolName = readString(approval?.toolName);
-  const expiresAt = readString(data.expiresAt) ?? readString(humanInTheLoop?.expiresAt);
+  const message = readNonEmptyString(data.message);
+  const timestamp = readNonEmptyString(data.timestamp);
+  const completionId = readNonEmptyString(data.completion_id);
+  const interactionId = readNonEmptyString(approval?.interactionId);
+  const toolName = readNonEmptyString(approval?.toolName);
+  const expiresAt =
+    readNonEmptyString(data.expiresAt) ?? readNonEmptyString(humanInTheLoop?.expiresAt);
   const options = Array.isArray(data.options)
     ? data.options.filter((option): option is string => typeof option === "string")
     : undefined;
