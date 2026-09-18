@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { SlackChannelAdapter } from "../adapters/SlackChannelAdapter";
-import { TelegramChannelAdapter } from "../adapters/TelegramChannelAdapter";
+import { SlackChannelAdapter } from "../SlackChannelAdapter";
+import { TelegramChannelAdapter } from "../TelegramChannelAdapter";
 import { signSlackRequest } from "./slackSignature";
 
 function slackRequest(headers: Record<string, string>): Request {

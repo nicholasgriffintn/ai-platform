@@ -39,8 +39,8 @@ import {
   type TurnAdmissionRequest,
   type TurnAdmissionScope,
 } from "~/modules/conversations/application/turn-admission";
-import { loadVisibleConversationMessagePage } from "~/modules/conversations/application/visibleMessagePagination";
-import type { ConversationWriteFence } from "~/modules/conversations/application/write-fence";
+import { loadVisibleConversationMessagePage } from "~/modules/conversations/domain/visibleMessagePagination";
+import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
 import type {
   ConversationArchiveFilter,
   ConversationSortBy,

@@ -8,8 +8,8 @@ export {
   startRunCoordinatorDispatchFiber,
   submitRunCoordinatorInstruction,
   updateRunCoordinatorControl,
-} from "./run-coordinator/client";
+} from "~/modules/apps/infrastructure/sandbox/run-coordinator/client";
 export type {
   SandboxRunInstructionRecord,
   CoordinatorInstructionEnvelope,
-} from "./run-coordinator/types";
+} from "~/modules/apps/infrastructure/sandbox/run-coordinator/types";

@@ -1,9 +1,11 @@
 import { sleep } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import type {
+  ContentExtractParams,
+  ExtractedContentPayload,
+} from "~/modules/apps/application/ports/content-extract";
 import type { IRequest } from "~/types";
-
-import type { ContentExtractParams, ExtractedContentPayload } from "../../types/content-extract";
 
 const CLOUDFLARE_TERMINAL_CRAWL_STATUSES = new Set([
   "completed",

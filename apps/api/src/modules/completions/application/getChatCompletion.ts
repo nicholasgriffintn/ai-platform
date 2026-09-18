@@ -3,11 +3,11 @@ import { isAsyncInvocationPending } from "@ngriffin_uk/polychat-ai-providers";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { hydrateConnectorApprovalMessageState } from "~/modules/apps/application/connectors/approval-message-state";
 import { hydrateChatRunUsage } from "~/modules/chat-runs/application/usage";
+import { ConversationManager } from "~/modules/conversations/application/manager";
 import {
   getActiveThreadOperation,
   withThreadLockIfFree,
-} from "~/modules/conversations/application/coordinator/client";
-import { ConversationManager } from "~/modules/conversations/application/manager";
+} from "~/modules/conversations/infrastructure/coordinator/client";
 import type { Message } from "~/types";
 
 import { handleAsyncInvocation } from "./async/handler";

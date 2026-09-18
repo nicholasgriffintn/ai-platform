@@ -14,7 +14,7 @@ vi.mock("agents", () => ({
   },
 }));
 
-const { UserSyncCoordinator } = await import("../coordinator/object");
+const { UserSyncCoordinator } = await import("~/modules/sync/infrastructure/coordinator/object");
 
 interface FakeSocket {
   sent: unknown[];

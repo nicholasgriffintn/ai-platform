@@ -17,7 +17,7 @@ vi.mock("~/modules/tasks/application/TaskService", () => ({
 
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { signSlackRequest } from "~/modules/channels/application/__test__/slackSignature";
+import { signSlackRequest } from "~/modules/channels/infrastructure/adapters/__test__/slackSignature";
 
 import { handleChannelWebhook } from "../channels";
 

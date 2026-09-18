@@ -4,8 +4,8 @@ import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { buildMessageParts } from "~/modules/chat/application/messages/parts";
-import { withThreadLock } from "~/modules/conversations/application/coordinator/client";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { withThreadLock } from "~/modules/conversations/infrastructure/coordinator/client";
 import type { Message } from "~/types";
 
 import { readInteractionMessageData } from "./interaction-messages";

@@ -11,8 +11,8 @@ import {
   cloneMessagesForBranch,
   selectBranchSourceMessages,
 } from "~/modules/chat/application/messages/branch-cloning";
-import { withThreadLock } from "~/modules/conversations/application/coordinator/client";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { withThreadLock } from "~/modules/conversations/infrastructure/coordinator/client";
 import { publishConversationChanged } from "~/modules/sync/application/conversation-events";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import type { Message } from "~/types";

@@ -1,8 +1,14 @@
 import { timingSafeEqual, toHex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
+import type {
+  ChannelAdapter,
+  ChannelIncoming,
+  ChannelReply,
+  ChannelVerification,
+} from "~/modules/channels/application/ports/channel-adapter";
+
 import { requireSuccessfulChannelSend } from "./send-response";
-import type { ChannelAdapter, ChannelIncoming, ChannelReply, ChannelVerification } from "./types";
 
 const SLACK_SIGNATURE_VERSION = "v0";
 const SIGNATURE_TOLERANCE_SECONDS = 5 * 60;

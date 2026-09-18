@@ -1,6 +1,8 @@
+import type {
+  ContentExtractParams,
+  ExtractedContentPayload,
+} from "~/modules/apps/application/ports/content-extract";
 import type { IRequest } from "~/types";
-
-import type { ContentExtractParams, ExtractedContentPayload } from "../../types/content-extract";
 
 export async function extractWithTavily(
   params: ContentExtractParams,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getOutputRestoreCapability } from "./revision-policy";
+import { getOutputRestoreCapability } from "../revision-policy";
 
 describe("output restore policy", () => {
   it.each(["documents", "document-writer"])(

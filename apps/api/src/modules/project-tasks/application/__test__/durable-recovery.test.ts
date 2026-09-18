@@ -18,7 +18,7 @@ vi.mock("~/modules/apps/application/connectors/composio-run", () => ({
   scheduleComposioConnectorRunCleanup: mocks.scheduleComposioConnectorRunCleanup,
 }));
 
-vi.mock("~/modules/conversations/application/coordinator/client", () => ({
+vi.mock("~/modules/conversations/infrastructure/coordinator/client", () => ({
   acquireThread: mocks.acquireThread,
 }));
 

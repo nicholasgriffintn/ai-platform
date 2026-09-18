@@ -17,7 +17,7 @@ import {
   listComposioTriggerTypes,
   setComposioTriggerEnabled,
   upsertComposioTriggerInstance,
-} from "~/modules/apps/application/connectors/composio-trigger-client";
+} from "~/modules/apps/infrastructure/connectors/composio-trigger-client";
 import type { RecipeComposioTriggerRecord } from "~/modules/apps/infrastructure/RecipeComposioTriggerRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 

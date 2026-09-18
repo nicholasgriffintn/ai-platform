@@ -2,7 +2,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
   deleteComposioTriggerInstance,
   setComposioTriggerEnabled,
-} from "~/modules/apps/application/connectors/composio-trigger-client";
+} from "~/modules/apps/infrastructure/connectors/composio-trigger-client";
 
 export async function syncRecipeComposioTriggerStatus(params: {
   context: ServiceContext;

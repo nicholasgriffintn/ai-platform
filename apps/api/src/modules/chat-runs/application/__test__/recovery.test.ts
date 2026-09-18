@@ -10,7 +10,7 @@ const { mockGetActiveThreadOperation, mockPublishConversationChanged, mockPublis
     mockPublishRunChanged: vi.fn(),
   }));
 
-vi.mock("~/modules/conversations/application/coordinator/client", () => ({
+vi.mock("~/modules/conversations/infrastructure/coordinator/client", () => ({
   getActiveThreadOperation: mockGetActiveThreadOperation,
 }));
 

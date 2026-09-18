@@ -6,7 +6,7 @@ import { API_LOCAL_HOST, API_PROD_HOST, LOCAL_HOST, PROD_HOST } from "~/config/a
 import {
   reserveRealtimeProxySession,
   type RealtimeProxyReservation,
-} from "~/modules/realtime/application/proxy-coordinator/client";
+} from "~/modules/realtime/infrastructure/proxy-coordinator/client";
 import type { IEnv, IUser } from "~/types";
 
 export const REALTIME_PROXY_GRANT_TTL_SECONDS = 60;

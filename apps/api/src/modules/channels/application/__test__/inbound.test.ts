@@ -11,8 +11,9 @@ const mocks = vi.hoisted(() => ({
   getChannelAdapter: vi.fn(),
 }));
 
-vi.mock("../adapters", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../adapters")>();
+vi.mock("~/modules/channels/infrastructure/adapters", async (importOriginal) => {
+  const original =
+    await importOriginal<typeof import("~/modules/channels/infrastructure/adapters")>();
 
   return { ...original, getChannelAdapter: mocks.getChannelAdapter };
 });

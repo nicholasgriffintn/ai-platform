@@ -24,6 +24,7 @@ import {
   resolveStoredMessagingProvider,
   selectConfiguredMessagingDelivery,
 } from "~/infrastructure/providers/capabilities/messaging/delivery";
+import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import { recoverChatCompletionResponse } from "~/modules/chat-runs/application/completion-recovery";
 import { getInboundChannelProfile } from "~/modules/chat/application/policy/channels";
 import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
@@ -38,7 +39,7 @@ import { enqueueTeammateRun } from "~/modules/teammates/application/run-admissio
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv, IUser, Message } from "~/types";
 
-import { getChannelAdapter, type ChannelIncomingMessage } from "./adapters";
+import type { ChannelIncomingMessage } from "./ports/channel-adapter";
 import { getChannelSecrets } from "./secrets";
 
 export interface InboundChannelMessage {

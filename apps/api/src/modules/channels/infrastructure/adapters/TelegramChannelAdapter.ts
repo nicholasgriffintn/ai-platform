@@ -1,8 +1,14 @@
 import { timingSafeEqual } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
+import type {
+  ChannelAdapter,
+  ChannelIncoming,
+  ChannelReply,
+  ChannelVerification,
+} from "~/modules/channels/application/ports/channel-adapter";
+
 import { requireSuccessfulChannelSend } from "./send-response";
-import type { ChannelAdapter, ChannelIncoming, ChannelReply, ChannelVerification } from "./types";
 
 const TELEGRAM_SECRET_HEADER = "x-telegram-bot-api-secret-token";
 

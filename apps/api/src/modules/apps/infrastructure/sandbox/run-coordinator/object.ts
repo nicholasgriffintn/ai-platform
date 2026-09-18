@@ -362,7 +362,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
 
     stash("running");
     try {
-      const { processSandboxRunDispatch } = await import("../dispatch");
+      const { processSandboxRunDispatch } = await import("../../../application/sandbox/dispatch");
 
       await processSandboxRunDispatch({
         env: this.env,

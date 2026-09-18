@@ -1,13 +1,13 @@
 import { pendingTakeover } from "@ngriffin_uk/polychat-library-interactions";
 
 import {
-  computerInputRequiresTakeover,
-  describeComputerTakeoverInput,
-} from "~/modules/teammates/application/computer-policy";
-import {
   operateTeammateComputerAsAgent,
   releaseTeammateComputerAgentLease,
 } from "~/modules/teammates/application/computers";
+import {
+  computerInputRequiresTakeover,
+  describeComputerTakeoverInput,
+} from "~/modules/teammates/domain/computer-policy";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { use_computer as descriptor } from "./definitions/use_computer";

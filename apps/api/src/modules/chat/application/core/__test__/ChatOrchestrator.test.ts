@@ -81,7 +81,7 @@ vi.mock("~/modules/chat/application/preparation/RequestPreparer", () => ({
   },
 }));
 
-vi.mock("~/modules/conversations/application/coordinator/client", () => ({
+vi.mock("~/modules/conversations/infrastructure/coordinator/client", () => ({
   acquireThread: mockAcquireThread,
   threadLockError: () => new AssistantError("Conversation busy", ErrorType.CONFLICT_ERROR, 409),
 }));

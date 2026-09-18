@@ -15,7 +15,7 @@ import {
   getDurableObjectStub,
   postDurableObjectJson,
 } from "~/infrastructure/durable-objects/client";
-import type { ConversationWriteFence } from "~/modules/conversations/application/write-fence";
+import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
 import type { IEnv } from "~/types";
 
 const logger = getLogger({ prefix: "services/conversations/coordinator/client" });

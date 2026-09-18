@@ -2,7 +2,7 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { ChatRun } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getActiveThreadOperation } from "~/modules/conversations/application/coordinator/client";
+import { getActiveThreadOperation } from "~/modules/conversations/infrastructure/coordinator/client";
 import {
   publishConversationChanged,
   publishRunChanged,

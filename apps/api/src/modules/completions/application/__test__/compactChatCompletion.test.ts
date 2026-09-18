@@ -22,7 +22,7 @@ const { mockAcquireThread, mockThreadLease, mockWithThreadLockIfFree } = vi.hois
   mockWithThreadLockIfFree: vi.fn(),
 }));
 
-vi.mock("~/modules/conversations/application/coordinator/client", async (importOriginal) => ({
+vi.mock("~/modules/conversations/infrastructure/coordinator/client", async (importOriginal) => ({
   ...(await importOriginal()),
   acquireThread: mockAcquireThread,
   withThreadLockIfFree: mockWithThreadLockIfFree,

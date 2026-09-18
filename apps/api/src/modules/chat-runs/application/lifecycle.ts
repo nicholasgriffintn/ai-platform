@@ -22,8 +22,8 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { reconcileRecipeExecutionTask } from "~/modules/apps/application/recipes/task-reconciliation";
 import type { AgentLoopExecutionResult } from "~/modules/chat/application/agent/agent-loop";
-import { isThreadLeaseOwnershipLostError } from "~/modules/conversations/application/coordinator/client";
 import type { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { isThreadLeaseOwnershipLostError } from "~/modules/conversations/infrastructure/coordinator/client";
 import {
   publishConversationChanged,
   publishRunChanged,

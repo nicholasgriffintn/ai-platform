@@ -3,13 +3,12 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ChannelBindingRow } from "~/infrastructure/database/schema";
+import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import {
   requireProjectTeammate,
   requireTeammateAccess,
 } from "~/modules/teammates/application/access";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
-
-import { getChannelAdapter } from "./adapters";
 
 function toBinding(row: ChannelBindingRow): ChannelBinding {
   return {

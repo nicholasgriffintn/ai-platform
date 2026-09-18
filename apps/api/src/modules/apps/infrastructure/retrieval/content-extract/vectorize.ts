@@ -5,15 +5,14 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { deleteEmbedding } from "~/modules/apps/application/embeddings/delete";
 import { insertEmbedding } from "~/modules/apps/application/embeddings/insert";
 import { parseInsertEmbeddingRequest } from "~/modules/apps/application/embeddings/requests";
-import { resolveRequestProjectId } from "~/modules/functions/application/request-context";
-import type { IRequest } from "~/types";
-
 import type {
   ContentExtractParams,
   ContentExtractProvider,
   ContentExtractResult,
   ExtractedContentPayload,
-} from "../../types/content-extract";
+} from "~/modules/apps/application/ports/content-extract";
+import { resolveRequestProjectId } from "~/modules/functions/application/request-context";
+import type { IRequest } from "~/types";
 
 async function generateShortId(text: string): Promise<string> {
   return `tx_${(await sha256Hex(text)).slice(0, 24)}`;

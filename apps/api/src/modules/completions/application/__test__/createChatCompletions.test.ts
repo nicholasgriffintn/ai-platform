@@ -24,7 +24,7 @@ vi.mock("~/modules/conversations/application/manager", () => ({
   ConversationManager: { getInstance: mockConversationManagerGetInstance },
 }));
 
-vi.mock("~/modules/conversations/application/coordinator/client", () => ({
+vi.mock("~/modules/conversations/infrastructure/coordinator/client", () => ({
   withThreadLock: vi.fn(async (_params, run) => run(mockThreadLease)),
 }));
 

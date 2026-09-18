@@ -3,7 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import {
   getOpenWeatherForecast,
   getOpenWeatherUrl,
-} from "~/modules/apps/application/retrieval/weather-forecast";
+} from "~/modules/apps/infrastructure/retrieval/weather-forecast";
 import type { IFunctionResponse, IWeather } from "~/types";
 
 export const getWeatherForLocation = async (

@@ -37,13 +37,13 @@ import {
 } from "~/modules/chat/application/preparation/RequestPreparer";
 import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn-cancellation";
 import { ValidationPipeline } from "~/modules/chat/application/validation/ValidationPipeline";
+import type { ConversationManager } from "~/modules/conversations/application/manager";
+import { SessionManager } from "~/modules/conversations/application/SessionManager";
 import {
   acquireThread,
   threadLockError,
   type ThreadLease,
-} from "~/modules/conversations/application/coordinator/client";
-import type { ConversationManager } from "~/modules/conversations/application/manager";
-import { SessionManager } from "~/modules/conversations/application/SessionManager";
+} from "~/modules/conversations/infrastructure/coordinator/client";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import {
   GOAL_STATUS_MARKER_EVENTS,

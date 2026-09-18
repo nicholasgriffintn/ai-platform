@@ -1,12 +1,12 @@
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { extractWithCloudflare } from "~/modules/apps/infrastructure/retrieval/content-extract/cloudflare";
+import { resolveContentExtractProvider } from "~/modules/apps/infrastructure/retrieval/content-extract/provider";
+import { extractWithTavily } from "~/modules/apps/infrastructure/retrieval/content-extract/tavily";
+import { maybeVectorizeExtractedContent } from "~/modules/apps/infrastructure/retrieval/content-extract/vectorize";
 import type { IRequest } from "~/types";
 
-import { extractWithCloudflare } from "./lib/content-extract/cloudflare";
-import { resolveContentExtractProvider } from "./lib/content-extract/provider";
-import { extractWithTavily } from "./lib/content-extract/tavily";
-import { maybeVectorizeExtractedContent } from "./lib/content-extract/vectorize";
-import type { ContentExtractParams, ContentExtractResult } from "./types/content-extract";
+import type { ContentExtractParams, ContentExtractResult } from "../ports/content-extract";
 
 export type { ContentExtractParams, ContentExtractResult };
 

@@ -18,8 +18,8 @@ import {
   toProviderResponseMessages,
 } from "~/modules/chat/application/messages/provider-mapping";
 import { buildChatPostProcessing } from "~/modules/chat/application/streaming/post-processing";
-import { withThreadLock } from "~/modules/conversations/application/coordinator/client";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { withThreadLock } from "~/modules/conversations/infrastructure/coordinator/client";
 import { prepareTeammateRunResume } from "~/modules/teammates/application/run-resume";
 import type {
   AnonymousUser,

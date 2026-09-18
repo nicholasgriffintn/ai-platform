@@ -33,9 +33,9 @@ import type {
 import { requireSourceAccess } from "~/modules/sources/application/sources";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
+import { getOutputRestoreCapability } from "../domain/revision-policy";
 import { requireConversationScope, requireOutputAccess, requireOutputRecordAccess } from "./access";
 import { deleteOutputResources } from "./delete-resources";
-import { getOutputRestoreCapability } from "./revision-policy";
 
 function formatFile(record: OutputRecord): Output["file"] {
   if (!record.storage_key || !record.mime_type) {

@@ -4,7 +4,7 @@ import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { hasSnapshotPart } from "~/modules/chat/application/messages/parts";
 import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
-import { loadVisibleConversationMessagePage } from "~/modules/conversations/application/visibleMessagePagination";
+import { loadVisibleConversationMessagePage } from "~/modules/conversations/domain/visibleMessagePagination";
 import type { Message, User } from "~/types";
 
 export interface ConversationSharingScope {

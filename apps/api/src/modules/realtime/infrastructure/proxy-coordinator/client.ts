@@ -7,7 +7,7 @@ import {
 } from "~/infrastructure/durable-objects/client";
 import type { IEnv } from "~/types";
 
-import { REALTIME_PROXY_LIMITS } from "../transcriptionProxy";
+import { REALTIME_PROXY_LIMITS } from "../../application/transcriptionProxy";
 
 const logger = getLogger({ prefix: "services/realtime/proxy-coordinator/client" });
 const COORDINATOR_ORIGIN = "https://realtime-proxy-coordinator";

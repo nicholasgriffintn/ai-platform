@@ -4,7 +4,7 @@ import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { conversationHandleIdForDelegation } from "~/modules/conversations/application/conversation-handles";
-import { withThreadLockIfFree } from "~/modules/conversations/application/coordinator/client";
+import { withThreadLockIfFree } from "~/modules/conversations/infrastructure/coordinator/client";
 import { filterAccessibleOutputs } from "~/modules/outputs/application/access";
 import type { IUser } from "~/types";
 

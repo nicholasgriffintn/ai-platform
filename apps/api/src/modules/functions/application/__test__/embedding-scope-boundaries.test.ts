@@ -8,8 +8,8 @@ vi.mock("~/modules/apps/application/embeddings/delete", () => ({ deleteEmbedding
 vi.mock("~/modules/apps/application/embeddings/insert", () => ({ insertEmbedding }));
 vi.mock("~/modules/apps/application/embeddings/query", () => ({ queryEmbeddings }));
 
-import { maybeVectorizeExtractedContent } from "~/modules/apps/application/retrieval/lib/content-extract/vectorize";
-import type { ContentExtractResult } from "~/modules/apps/application/retrieval/types/content-extract";
+import type { ContentExtractResult } from "~/modules/apps/application/ports/content-extract";
+import { maybeVectorizeExtractedContent } from "~/modules/apps/infrastructure/retrieval/content-extract/vectorize";
 import { generateDocumentFromMedia } from "~/modules/documents/application";
 
 import { create_note } from "../create_note";

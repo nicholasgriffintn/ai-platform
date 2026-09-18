@@ -1,6 +1,8 @@
+import type {
+  ContentExtractParams,
+  ContentExtractProvider,
+} from "~/modules/apps/application/ports/content-extract";
 import type { IRequest } from "~/types";
-
-import type { ContentExtractParams, ContentExtractProvider } from "../../types/content-extract";
 
 export function resolveContentExtractProvider(
   params: ContentExtractParams,

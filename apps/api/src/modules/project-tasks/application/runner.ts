@@ -33,8 +33,8 @@ import { scheduleComposioConnectorRunCleanup } from "~/modules/apps/application/
 import { recordChatRunOperationalMetric } from "~/modules/chat-runs/application/operational-metrics";
 import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
 import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
-import { acquireThread } from "~/modules/conversations/application/coordinator/client";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { acquireThread } from "~/modules/conversations/infrastructure/coordinator/client";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import { notifyMobileProjectTask } from "~/modules/mobile-push/application";
 import { TaskService } from "~/modules/tasks/application/TaskService";

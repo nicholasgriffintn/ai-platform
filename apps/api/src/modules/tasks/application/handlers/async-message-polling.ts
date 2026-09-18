@@ -7,8 +7,8 @@ import { z } from "zod/v4";
 
 import { Database } from "~/infrastructure/database";
 import { handleAsyncInvocation } from "~/modules/completions/application/async/handler";
-import { withThreadLockIfFree } from "~/modules/conversations/application/coordinator/client";
 import { ConversationManager } from "~/modules/conversations/application/manager";
+import { withThreadLockIfFree } from "~/modules/conversations/infrastructure/coordinator/client";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 import { definePoll } from "../workflows";

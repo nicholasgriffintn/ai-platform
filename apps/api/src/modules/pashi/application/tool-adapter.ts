@@ -1,7 +1,7 @@
 import { searchPashiTools } from "~/modules/pashi/application/catalog";
-import type { PashiClient } from "~/modules/pashi/application/client";
-import { PashiClientError } from "~/modules/pashi/application/client";
 import type { PashiOperation, PashiToolType } from "~/modules/pashi/application/contracts";
+import type { PashiClient } from "~/modules/pashi/infrastructure/client";
+import { PashiClientError } from "~/modules/pashi/infrastructure/client";
 import type { IFunctionResponse } from "~/types";
 
 export async function searchPashiCatalog(

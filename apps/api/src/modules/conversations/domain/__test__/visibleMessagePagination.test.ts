@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { loadVisibleConversationMessagePage } from "~/modules/conversations/application/visibleMessagePagination";
+import { loadVisibleConversationMessagePage } from "~/modules/conversations/domain/visibleMessagePagination";
 
 interface RawMessage {
   id: string;

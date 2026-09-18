@@ -5,9 +5,9 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { Context } from "hono";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import { getChannelAdapter } from "~/modules/channels/application/adapters";
 import { toChannelBindingMessage } from "~/modules/channels/application/inbound";
 import { getChannelSecrets } from "~/modules/channels/application/secrets";
+import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 
 const logger = getLogger({ prefix: "services/webhooks/channels" });

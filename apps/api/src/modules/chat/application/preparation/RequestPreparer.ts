@@ -57,7 +57,7 @@ import {
 } from "~/modules/chat/application/preparation/system-prompt";
 import type { ValidationContext } from "~/modules/chat/application/validation/ValidationPipeline";
 import { ConversationManager } from "~/modules/conversations/application/manager";
-import type { ConversationWriteFence } from "~/modules/conversations/application/write-fence";
+import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
 import {
   resolveEnabledFunctionToolNames,
   resolveRequestFunctionToolNames,
