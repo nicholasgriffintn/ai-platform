@@ -35,6 +35,10 @@ async function createToken(payload: Record<string, unknown>, secret: string) {
   return `${signingInput}.${toBase64Url(signature)}`;
 }
 
+const SECRET = "sandbox-test-secret-with-at-least-32-bytes";
+const SECRET_A = "sandbox-test-secret-a-with-at-least-32-bytes";
+const SECRET_B = "sandbox-test-secret-b-with-at-least-32-bytes";
+
 describe("verifySandboxJwt", () => {
   it("verifies a valid token and extracts user id", async () => {
     const now = Math.floor(Date.now() / 1000);
@@ -46,10 +50,10 @@ describe("verifySandboxJwt", () => {
         iat: now - 10,
         exp: now + 120,
       },
-      "secret",
+      SECRET,
     );
 
-    const decoded = await verifySandboxJwt(token, "secret");
+    const decoded = await verifySandboxJwt(token, SECRET);
 
     expect(decoded.userId).toBe(42);
     expect(decoded.payload.sub).toBe("42");
@@ -65,10 +69,10 @@ describe("verifySandboxJwt", () => {
         iat: now - 300,
         exp: now - 60,
       },
-      "secret",
+      SECRET,
     );
 
-    await expect(verifySandboxJwt(token, "secret")).rejects.toThrow("JWT is expired");
+    await expect(verifySandboxJwt(token, SECRET)).rejects.toThrow("JWT has expired");
   });
 
   it("rejects tokens signed with a different secret", async () => {
@@ -81,12 +85,10 @@ describe("verifySandboxJwt", () => {
         iat: now - 10,
         exp: now + 120,
       },
-      "secret-a",
+      SECRET_A,
     );
 
-    await expect(verifySandboxJwt(token, "secret-b")).rejects.toThrow(
-      "JWT signature verification failed",
-    );
+    await expect(verifySandboxJwt(token, SECRET_B)).rejects.toThrow("JWT signature is invalid");
   });
 
   it("rejects correctly signed tokens that omit the issuer", async () => {
@@ -98,10 +100,10 @@ describe("verifySandboxJwt", () => {
         iat: now - 10,
         exp: now + 120,
       },
-      "secret",
+      SECRET,
     );
 
-    await expect(verifySandboxJwt(token, "secret")).rejects.toThrow("JWT issuer is invalid");
+    await expect(verifySandboxJwt(token, SECRET)).rejects.toThrow("JWT issuer is invalid");
   });
 
   it("rejects correctly signed tokens that omit the audience", async () => {
@@ -113,9 +115,9 @@ describe("verifySandboxJwt", () => {
         iat: now - 10,
         exp: now + 120,
       },
-      "secret",
+      SECRET,
     );
 
-    await expect(verifySandboxJwt(token, "secret")).rejects.toThrow("JWT audience is invalid");
+    await expect(verifySandboxJwt(token, SECRET)).rejects.toThrow("JWT audience is invalid");
   });
 });

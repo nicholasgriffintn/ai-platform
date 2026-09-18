@@ -1,3 +1,4 @@
+import { OutboundGateway } from "@ngriffin_uk/polychat-ai-sandbox/worker";
 import { LogLevel, getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   DEVICE_SYNC_DEVICE_ID_HEADER,
@@ -324,6 +325,7 @@ export default withSentry<IEnv>(getSentryOptions, handler);
 export {
   MachineRunCoordinator,
   ConversationCoordinator,
+  OutboundGateway,
   RealtimeProxyCoordinator,
   SandboxRunCoordinator,
   UserSyncCoordinator,

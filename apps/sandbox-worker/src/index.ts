@@ -1,3 +1,4 @@
+import { SandboxCancellationError } from "@ngriffin_uk/polychat-library-sandbox";
 import {
   NO_STORE,
   SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX,
@@ -9,7 +10,6 @@ import {
 } from "@ngriffin_uk/polychat-utility-core";
 
 import { verifySandboxJwt } from "./lib/auth";
-import { SandboxCancellationError } from "./lib/cancellation";
 import { handleSandboxPreviewRequest } from "./lib/preview-gateway";
 import { buildSandboxRunUsageReport, reportSandboxRunUsage } from "./lib/usage-report";
 import { executeSandboxTask } from "./tasks";

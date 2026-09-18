@@ -45,6 +45,7 @@ export type IEnv = {
   AI_GATEWAY_TOKEN?: string;
   SANDBOX_WORKER?: Fetcher;
   COMPUTER_WORKER?: Fetcher;
+  LOADER?: WorkerLoader;
   TRAINING_WORKER?: WorkerCacheFetcher<{ userId: string }>;
   TRAINING_WORKER_TOKEN?: string;
   SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;

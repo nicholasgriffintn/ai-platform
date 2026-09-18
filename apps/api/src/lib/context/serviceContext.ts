@@ -1,4 +1,5 @@
 import type { D1Database } from "@cloudflare/workers-types";
+import type { OutboundGatewayFactory } from "@ngriffin_uk/polychat-ai-sandbox";
 import type { LoggerOptions } from "@ngriffin_uk/polychat-ai-telemetry";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
@@ -14,6 +15,7 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/request-cache";
 import type { Context, MiddlewareHandler } from "hono";
 
+import { loopbackOutboundGateway } from "~/lib/cloudflare/outbound-gateway";
 import { Database } from "~/lib/database";
 import { RepositoryManager } from "~/repositories";
 import type { AnonymousUser, IEnv, IUser, IUserSettings } from "~/types";
@@ -26,11 +28,13 @@ export interface ServiceContextOptions {
   connectorRunId?: string;
   originDeviceId?: string | null;
   waitUntil?: (work: Promise<unknown>) => void;
+  outboundGateway?: OutboundGatewayFactory;
 }
 
 export interface ServiceContext {
   env: IEnv;
   waitUntil: (work: Promise<unknown>) => void;
+  outboundGateway?: OutboundGatewayFactory;
   user?: IUser | null;
   anonymousUser?: AnonymousUser | null;
   requestId?: string;
@@ -84,6 +88,7 @@ export const createServiceContext = ({
   connectorRunId = `connector_run_${generateId()}`,
   originDeviceId = null,
   waitUntil,
+  outboundGateway,
 }: ServiceContextOptions): ServiceContext => {
   let databaseInstance: Database | null = null;
   let repositoriesInstance: RepositoryManager | null = null;
@@ -175,6 +180,7 @@ export const createServiceContext = ({
     requireUser,
     ensureDatabase,
     waitUntil: waitUntil ?? ((work) => void work.catch(() => undefined)),
+    outboundGateway,
     getUserSettings: loadUserSettings,
     setUserSettings,
     getLogger: getContextLogger,
@@ -217,6 +223,14 @@ export const resolveServiceContext = ({
   });
 };
 
+function hostExecutionContext(c: Context): unknown {
+  try {
+    return c.executionCtx;
+  } catch {
+    return undefined;
+  }
+}
+
 function readOriginDeviceId(c: Context): string | null {
   const parsed = deviceSyncDeviceIdSchema.safeParse(c.req.header(DEVICE_SYNC_DEVICE_ID_HEADER));
 
@@ -237,6 +251,7 @@ export const serviceContextMiddleware: MiddlewareHandler = async (c, next) => {
       requestId,
       originDeviceId: readOriginDeviceId(c),
       waitUntil: (work) => c.executionCtx?.waitUntil(work),
+      outboundGateway: loopbackOutboundGateway(() => hostExecutionContext(c)),
     });
 
     c.set(SERVICE_CONTEXT_KEY, context);
@@ -262,6 +277,7 @@ export const getServiceContext = (c: Context): ServiceContext => {
     requestId,
     originDeviceId: readOriginDeviceId(c),
     waitUntil: (work) => c.executionCtx?.waitUntil(work),
+    outboundGateway: loopbackOutboundGateway(() => hostExecutionContext(c)),
   });
 
   c.set(SERVICE_CONTEXT_KEY, context);

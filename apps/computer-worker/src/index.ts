@@ -1,5 +1,6 @@
+import { errorResponse } from "@ngriffin_uk/polychat-library-sandbox";
+
 import { INTERNAL_COMPUTER_ORIGIN } from "./constants";
-import { errorResponse } from "./http";
 import { handleComputerRequest } from "./lifecycle";
 import { handleScreenRequest } from "./screen";
 import type { Env } from "./types";

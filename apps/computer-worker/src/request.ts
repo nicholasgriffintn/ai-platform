@@ -1,16 +1,16 @@
+import { readJsonRecord } from "@ngriffin_uk/polychat-library-sandbox";
 import {
   teammateComputerInputSchema,
   teachingRecordingIdSchema,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { RESOURCE_ID_PATTERN } from "./constants";
 import type { ComputerRequest } from "./types";
 
 export async function parseComputerRequest(request: Request): Promise<ComputerRequest | null> {
-  const value = await request.json().catch(() => null);
+  const value = await readJsonRecord(request);
 
-  if (!isRecord(value) || typeof value.resourceId !== "string") {
+  if (!value || typeof value.resourceId !== "string") {
     return null;
   }
 

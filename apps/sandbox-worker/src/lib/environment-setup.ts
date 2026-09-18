@@ -1,3 +1,4 @@
+import { redactSandboxOutput } from "@ngriffin_uk/polychat-library-sandbox";
 import {
   SANDBOX_ENVIRONMENT_CACHE_PLATFORM_VERSION,
   SANDBOX_REPOSITORY_ENVIRONMENT_PATH,
@@ -23,7 +24,6 @@ import {
   type SandboxExecInstance,
 } from "./commands";
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
-import { redactSandboxOutput } from "./output-redaction";
 import type { RunControlClient } from "./run-control-client";
 import { withSandboxEnvironment } from "./sandbox-environment-runtime";
 

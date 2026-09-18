@@ -1,12 +1,14 @@
 import { type getSandbox, parseSSEStream, type ExecEvent } from "@cloudflare/sandbox";
 import {
+  createSandboxOutputRedactor,
+  redactSandboxResult,
+} from "@ngriffin_uk/polychat-library-sandbox";
+import {
   hasBlockedShellChainingOperators,
   hasBlockedShellEvaluationOperators,
   type SandboxTaskType,
   type SandboxTrustLevel,
 } from "@ngriffin_uk/polychat-schemas";
-
-import { createSandboxOutputRedactor, redactSandboxResult } from "./output-redaction";
 
 export const MAX_LOG_CHARS = 80000;
 

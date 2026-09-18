@@ -15,6 +15,7 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "apply_edit_completion",
     "fill_in_middle_completion",
     "next_edit_completion",
+    "run_code",
     "run_sandbox_task",
     "v0_code_generation",
   ],

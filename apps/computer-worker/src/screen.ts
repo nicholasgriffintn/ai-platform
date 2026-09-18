@@ -1,11 +1,11 @@
 import { getSandbox } from "@cloudflare/sandbox";
+import { errorResponse } from "@ngriffin_uk/polychat-library-sandbox";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 
 import { startComputer } from "./browser";
 import { RESOURCE_ID_PATTERN, SCREEN_PORT, SCREEN_TTL_MS } from "./constants";
-import { signScreenAccess, verifyScreenAccess } from "./crypto";
-import { ensureInitialisedFence, readFence } from "./fencing";
-import { errorResponse } from "./http";
+import { computerLeaseFence } from "./fencing";
+import { signScreenAccess, verifyScreenAccess } from "./screen-access";
 import { startTeachingRecording } from "./teaching-recording";
 import type { ComputerRequest, ComputerSandbox, Env } from "./types";
 
@@ -138,7 +138,7 @@ export async function createViewScreenConnection(
 
   return exposeScreen(sandbox, {
     resourceId,
-    fence: await ensureInitialisedFence(sandbox),
+    fence: await computerLeaseFence(sandbox).ensureInitialised(),
     viewOnly: true,
     host: env.COMPUTER_SCREEN_HOST,
     secret: env.COMPUTER_SCREEN_SECRET,
@@ -209,7 +209,10 @@ export async function handleScreenRequest(request: Request, env: Env): Promise<R
 
   const sandbox = getSandbox(env.Computer, screenAccess.resourceId, { normalizeId: true });
 
-  if (!screenAccess.viewOnly && (await readFence(sandbox)) !== screenAccess.fence) {
+  if (
+    !screenAccess.viewOnly &&
+    (await computerLeaseFence(sandbox).current()) !== screenAccess.fence
+  ) {
     return errorResponse(401, "Screen session has been revoked");
   }
 

@@ -2,6 +2,7 @@ import { AuthError, type AuthErrorCode } from "@ngriffin_uk/auth-core";
 import { isProviderError, type ProviderError } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { isGoalError, type GoalError } from "@ngriffin_uk/polychat-library-goals";
+import { isSandboxError, type SandboxError } from "@ngriffin_uk/polychat-library-sandbox";
 import { isTaskError, type TaskError } from "@ngriffin_uk/polychat-library-tasks";
 import { isToolError, type ToolError } from "@ngriffin_uk/polychat-library-tools";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -29,6 +30,10 @@ export function normaliseApiError(error: Error): AssistantError {
     return fromGoalError(error);
   }
 
+  if (isSandboxError(error)) {
+    return fromSandboxError(error);
+  }
+
   if (!(error instanceof AuthError)) {
     return AssistantError.fromError(error);
   }
@@ -36,6 +41,26 @@ export function normaliseApiError(error: Error): AssistantError {
   const [type, statusCode] = authErrorResponse(error.code);
 
   return new AssistantError(error.message, type, statusCode);
+}
+
+export function fromSandboxError(error: SandboxError): AssistantError {
+  switch (error.code) {
+    case "invalid_options":
+    case "invalid_lease":
+      return new AssistantError(error.message, ErrorType.PARAMS_ERROR, 400, error.details);
+    case "stale_lease":
+      return new AssistantError(error.message, ErrorType.CONFLICT_ERROR, 409, error.details);
+    case "network_blocked":
+    case "tool_unavailable":
+      return new AssistantError(error.message, ErrorType.FORBIDDEN, 403, error.details);
+    case "cancelled":
+    case "timeout":
+      return new AssistantError(error.message, ErrorType.TOOL_CALL_ERROR, 408, error.details);
+    case "gateway_unavailable":
+      return new AssistantError(error.message, ErrorType.CONFIGURATION_ERROR, 503, error.details);
+    default:
+      return new AssistantError(error.message, ErrorType.TOOL_CALL_ERROR, 500, error.details);
+  }
 }
 
 export function fromGoalError(error: GoalError): AssistantError {

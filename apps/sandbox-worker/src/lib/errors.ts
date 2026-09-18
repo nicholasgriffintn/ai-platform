@@ -1,7 +1,9 @@
 import { RPCTransportError, SessionTerminatedError } from "@cloudflare/sandbox";
+import {
+  SandboxCancellationError,
+  SandboxTimeoutError,
+} from "@ngriffin_uk/polychat-library-sandbox";
 
-import { SandboxCancellationError } from "./cancellation";
-import { SandboxTimeoutError } from "./execution-control";
 import { PolychatApiError } from "./polychat-client";
 
 export type SandboxErrorType =

@@ -1,5 +1,6 @@
 import type { AgentMessage } from "@ngriffin_uk/polychat-ai-agents";
 import { getPromptText, renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
+import { redactSandboxOutput } from "@ngriffin_uk/polychat-library-sandbox";
 import type { SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
 import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 
@@ -10,7 +11,6 @@ import {
   quoteForShell,
   runSandboxCommand,
 } from "../commands";
-import { redactSandboxOutput } from "../output-redaction";
 import { withSandboxEnvironment } from "../sandbox-environment-runtime";
 import { runSandboxScript } from "../script-execution";
 import { resolveCommandApproval } from "./command-approval";

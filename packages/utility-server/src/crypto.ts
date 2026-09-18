@@ -129,3 +129,40 @@ export async function decryptJsonPayload(params: {
     throw error;
   }
 }
+
+async function importHmacKey(secret: string): Promise<CryptoKey> {
+  return crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign", "verify"],
+  );
+}
+
+export async function hmacSha256(secret: string, message: string): Promise<Uint8Array> {
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    await importHmacKey(secret),
+    new TextEncoder().encode(message),
+  );
+
+  return new Uint8Array(signature);
+}
+
+export async function verifyHmacSha256(
+  secret: string,
+  message: string,
+  signature: Uint8Array,
+): Promise<boolean> {
+  const bytes = new Uint8Array(signature.byteLength);
+
+  bytes.set(signature);
+
+  return crypto.subtle.verify(
+    "HMAC",
+    await importHmacKey(secret),
+    bytes,
+    new TextEncoder().encode(message),
+  );
+}

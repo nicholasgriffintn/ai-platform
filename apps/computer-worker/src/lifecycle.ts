@@ -1,9 +1,9 @@
 import { getSandbox } from "@cloudflare/sandbox";
+import { errorResponse, isSandboxError } from "@ngriffin_uk/polychat-library-sandbox";
 
 import { inputComputer, observeComputer, startComputer, stopComputer } from "./browser";
 import { createComputerCheckpoint, restoreComputerCheckpoint } from "./checkpoints";
-import { assertFence, revokeComputerControl } from "./fencing";
-import { errorResponse } from "./http";
+import { computerLeaseFence } from "./fencing";
 import { parseComputerRequest } from "./request";
 import { createScreenConnection, createViewScreenConnection } from "./screen";
 import { readTeachingRecording } from "./teaching-recording";
@@ -17,6 +17,7 @@ export async function handleComputerRequest(request: Request, env: Env): Promise
   }
 
   const sandbox = getSandbox(env.Computer, input.resourceId, { normalizeId: true });
+  const lease = computerLeaseFence(sandbox);
   const path = new URL(request.url).pathname;
 
   try {
@@ -36,7 +37,7 @@ export async function handleComputerRequest(request: Request, env: Env): Promise
     if (
       !["/computer/provision", "/computer/revoke-control", "/computer/view-screen"].includes(path)
     ) {
-      await assertFence(sandbox, input.fence);
+      await lease.assert(input.fence);
     }
 
     switch (path) {
@@ -49,7 +50,7 @@ export async function handleComputerRequest(request: Request, env: Env): Promise
 
         return Response.json({ success: true });
       case "/computer/revoke-control":
-        await revokeComputerControl(sandbox, input.fence);
+        await lease.revoke(input.fence);
 
         return Response.json({ success: true });
       case "/computer/checkpoint":
@@ -92,6 +93,13 @@ export async function handleComputerRequest(request: Request, env: Env): Promise
         return errorResponse(404, "Not found");
     }
   } catch (error) {
+    if (isSandboxError(error)) {
+      return Response.json(
+        { error: error.message, code: error.code },
+        { status: error.code === "stale_lease" ? 409 : 400 },
+      );
+    }
+
     return errorResponse(400, error instanceof Error ? error.message : "Computer request failed");
   }
 }

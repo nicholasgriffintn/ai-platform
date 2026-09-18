@@ -6,6 +6,7 @@ Use the tracked example files as the only source of truth.
 
 - API: `apps/api/.dev.vars.example` and `apps/api/wrangler.jsonc.example`
 - Web: `apps/app/src/constants.ts` and `apps/app/wrangler.jsonc`
+- API `worker_loaders` binding `LOADER` backs the `run_code` tool; without it the tool reports that code execution is unavailable and everything else keeps working.
 - Optional worker components: follow each component’s `.dev.vars.example` and `wrangler.json`
 
 ## Core requirements

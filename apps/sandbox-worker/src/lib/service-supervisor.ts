@@ -1,5 +1,10 @@
 import { ProcessReadyTimeoutError, type Process } from "@cloudflare/sandbox";
 import {
+  createSandboxOutputRedactor,
+  redactSandboxError,
+  SandboxCancellationError,
+} from "@ngriffin_uk/polychat-library-sandbox";
+import {
   sandboxServiceManifestSchema,
   type SandboxRunServiceEvidence,
   type SandboxServiceAction,
@@ -10,7 +15,6 @@ import {
 import { delay } from "@ngriffin_uk/polychat-utility-core";
 
 import type { TaskEvent } from "../types";
-import { SandboxCancellationError } from "./cancellation";
 import {
   assertSafeCommand,
   getCommandRiskLevel,
@@ -20,7 +24,6 @@ import {
 import { hasSandboxErrorCode } from "./errors";
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
 import { listeningPortsFromProcNet, READ_LISTENING_SOCKETS_COMMAND } from "./network-ports";
-import { createSandboxOutputRedactor, redactSandboxError } from "./output-redaction";
 import type { RunControlClient } from "./run-control-client";
 import { withSandboxEnvironment } from "./sandbox-environment-runtime";
 

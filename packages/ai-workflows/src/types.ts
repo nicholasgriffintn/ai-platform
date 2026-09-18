@@ -68,25 +68,25 @@ export type PayloadSchema<TPayload> = z.ZodType<TPayload>;
 
 export interface TaskDefinition<TEnv, TPayload, TType extends string = string> {
   payload: PayloadSchema<TPayload>;
-  handle(payload: TPayload, context: TaskContext<TEnv, TType>): Promise<TaskResult | void>;
-  onFinalFailure?(
+  handle: (payload: TPayload, context: TaskContext<TEnv, TType>) => Promise<TaskResult | void>;
+  onFinalFailure?: (
     payload: TPayload,
     error: Error,
     context: TaskContext<TEnv, TType>,
-  ): Promise<void>;
+  ) => Promise<void>;
 }
 
 export interface RawTaskDefinition<TEnv, TType extends string = string> {
   payload?: undefined;
-  handle(
+  handle: (
     payload: Record<string, unknown>,
     context: TaskContext<TEnv, TType>,
-  ): Promise<TaskResult | void>;
-  onFinalFailure?(
+  ) => Promise<TaskResult | void>;
+  onFinalFailure?: (
     payload: Record<string, unknown>,
     error: Error,
     context: TaskContext<TEnv, TType>,
-  ): Promise<void>;
+  ) => Promise<void>;
 }
 
 export type PollOutcome = TaskResult | typeof PENDING;

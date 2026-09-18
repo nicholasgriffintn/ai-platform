@@ -50,6 +50,7 @@ import { trigger_recipe } from "./recipes/trigger_recipe";
 import { use_recipe_connector } from "./recipes/use_recipe_connector";
 import { applyFunctionRequestContext } from "./request-context";
 import { research } from "./research";
+import { run_code } from "./run_code";
 import { run_prediction } from "./run_prediction";
 import { run_sandbox_task } from "./sandbox";
 import { save_skill } from "./save_skill";
@@ -122,6 +123,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   messageParent,
   run_sandbox_task,
   run_prediction,
+  run_code,
   use_computer,
   hostedMcpApproval,
   ...metaTools,

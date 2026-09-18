@@ -1,7 +1,10 @@
+import {
+  SandboxCancellationError,
+  SandboxTimeoutError,
+} from "@ngriffin_uk/polychat-library-sandbox";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { SandboxCancellationError } from "../cancellation";
-import { createExecutionControl, SandboxTimeoutError } from "../execution-control";
+import { createExecutionControl } from "../execution-control";
 
 function toJsonResponse(payload: unknown, status = 200): Response {
   return new Response(JSON.stringify(payload), {

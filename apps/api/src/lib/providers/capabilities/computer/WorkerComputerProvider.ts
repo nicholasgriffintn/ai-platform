@@ -31,7 +31,7 @@ export class WorkerComputerProvider implements ComputerProvider {
         isRecord(payload) && typeof payload.error === "string"
           ? payload.error
           : `Computer provider failed (${response.status})`;
-      const staleLease = message.toLowerCase().includes("stale");
+      const staleLease = isRecord(payload) && payload.code === "stale_lease";
 
       throw new AssistantError(
         message,

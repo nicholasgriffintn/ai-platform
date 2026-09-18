@@ -76,6 +76,11 @@
       "name": "SEND_EMAIL"
     }
   ],
+  "worker_loaders": [
+    {
+      "binding": "LOADER"
+    }
+  ],
   "services": [
     {
       "binding": "SANDBOX_WORKER",

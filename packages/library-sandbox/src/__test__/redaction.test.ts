@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 
-import { createSandboxOutputRedactor } from "./output-redaction";
+import { createSandboxOutputRedactor } from "../redaction.js";
 
 it("redacts credentials split across arbitrary chunks and line boundaries", () => {
   const secret = "private\ncredential-private";

@@ -1,4 +1,5 @@
 import { getSandbox } from "@cloudflare/sandbox";
+import { redactSandboxOutput } from "@ngriffin_uk/polychat-library-sandbox";
 import {
   DEFAULT_SANDBOX_MODEL as DEFAULT_MODEL,
   SANDBOX_RUN_PROOF_MAX_CHANGED_FILES,
@@ -39,7 +40,6 @@ import {
 import { runStoryTracker } from "../../lib/feature-implementation/story-tracker";
 import { deliverCommitToGitHub, prepareGitHubDelivery } from "../../lib/github-delivery";
 import { waitForInspectionWindow } from "../../lib/inspection-window";
-import { redactSandboxOutput } from "../../lib/output-redaction";
 import { PolychatClient } from "../../lib/polychat-client";
 import { RunControlClient } from "../../lib/run-control-client";
 import { ProjectServiceSupervisor } from "../../lib/service-supervisor";

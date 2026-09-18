@@ -39,6 +39,7 @@ Use this as the ownership and responsibility map. Detailed rationale is in [deci
 
 - `project-tasks`, `attention`, `task-notifications`, and `conversation-organisation` own project execution and delivery signals.
 - Sandbox/Workbench uses versioned contracts from `schemas/sandbox*`, environment snapshots, and authenticated previews.
+- Model-written code runs through `run_code` in a dynamic Worker isolate (`ai-sandbox` over the `LOADER` binding); tools reach it through the loopback `OutboundGateway`, never through the container sandbox.
 - Avoid adding extra workbench tables or duplicate contracts outside existing channels.
 
 ## Data, authority, and spend

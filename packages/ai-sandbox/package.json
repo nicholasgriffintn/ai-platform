@@ -1,0 +1,45 @@
+{
+  "name": "@ngriffin_uk/polychat-ai-sandbox",
+  "version": "0.1.0",
+  "description": "Sandboxed execution primitives for Polychat: evaluate untrusted code in a dynamic Worker isolate, expose host tools to it as code mode, and enforce network policy through an outbound gateway",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "polychat-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./worker": {
+      "polychat-source": "./src/worker.ts",
+      "types": "./dist/worker.d.ts",
+      "import": "./dist/worker.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.typecheck.json"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-library-sandbox": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

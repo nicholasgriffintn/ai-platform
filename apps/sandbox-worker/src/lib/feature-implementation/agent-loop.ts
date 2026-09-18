@@ -7,8 +7,8 @@ import {
   type AgentToolCall,
 } from "@ngriffin_uk/polychat-ai-agents";
 import { getPromptText, renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
+import { throwIfAborted } from "@ngriffin_uk/polychat-library-sandbox";
 
-import { throwIfAborted } from "../cancellation";
 import { buildSummary } from "../commands";
 import { PolychatApiError } from "../polychat-client";
 import {

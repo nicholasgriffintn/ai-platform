@@ -1,3 +1,4 @@
+import { redactSandboxOutput, throwIfAborted } from "@ngriffin_uk/polychat-library-sandbox";
 import {
   sandboxCommandSchema,
   type SandboxRunControl,
@@ -6,14 +7,12 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { delay } from "@ngriffin_uk/polychat-utility-core";
 
-import { throwIfAborted } from "./cancellation";
 import {
   assertSafeCommand,
   quoteForShell,
   runSandboxCommand,
   type SandboxExecInstance,
 } from "./commands";
-import { redactSandboxOutput } from "./output-redaction";
 import type { RunControlClient } from "./run-control-client";
 import { withSandboxEnvironment } from "./sandbox-environment-runtime";
 
