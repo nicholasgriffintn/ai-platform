@@ -46,4 +46,5 @@ export interface ProviderRequestContext {
   env?: ProviderEnv;
   user?: ProviderUser;
   anonymousUser?: { id: string } | null;
+  experimentAssignments?: Readonly<Record<string, string>>;
 }

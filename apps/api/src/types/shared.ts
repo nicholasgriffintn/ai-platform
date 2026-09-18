@@ -7,6 +7,7 @@ import type {
   Vectorize,
   SendEmail,
 } from "@cloudflare/workers-types";
+import type { FlagshipBinding } from "@ngriffin_uk/polychat-library-flags";
 
 export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclude<keyof T, Keys>> &
   {
@@ -46,6 +47,7 @@ export type IEnv = {
   SANDBOX_WORKER?: Fetcher;
   COMPUTER_WORKER?: Fetcher;
   LOADER?: WorkerLoader;
+  FLAGS?: FlagshipBinding;
   TRAINING_WORKER?: WorkerCacheFetcher<{ userId: string }>;
   TRAINING_WORKER_TOKEN?: string;
   SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;

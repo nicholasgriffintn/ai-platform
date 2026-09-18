@@ -76,6 +76,12 @@
       "name": "SEND_EMAIL"
     }
   ],
+  "flagship": [
+    {
+      "binding": "FLAGS",
+      "app_id": "<FLAGSHIP_APP_ID>"
+    }
+  ],
   "worker_loaders": [
     {
       "binding": "LOADER"

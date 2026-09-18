@@ -191,7 +191,7 @@ export function createWorkflows<TEnv, TType extends string = string>(
     context: CronContext<TEnv, TType>,
     report: CronRunReport,
   ): Promise<void> => {
-    if (definition.enabledWhen && !definition.enabledWhen(context.env)) {
+    if (definition.enabledWhen && !(await definition.enabledWhen(context.env))) {
       report.skipped.push(definition.name);
 
       return;

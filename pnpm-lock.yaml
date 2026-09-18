@@ -317,6 +317,9 @@ importers:
       '@ngriffin_uk/polychat-ai-billing':
         specifier: workspace:^
         version: link:../../packages/ai-billing
+      '@ngriffin_uk/polychat-ai-experiments':
+        specifier: workspace:^
+        version: link:../../packages/ai-experiments
       '@ngriffin_uk/polychat-ai-functions':
         specifier: workspace:^
         version: link:../../packages/ai-functions
@@ -341,6 +344,9 @@ importers:
       '@ngriffin_uk/polychat-ai-workflows':
         specifier: workspace:^
         version: link:../../packages/ai-workflows
+      '@ngriffin_uk/polychat-library-flags':
+        specifier: workspace:^
+        version: link:../../packages/library-flags
       '@ngriffin_uk/polychat-library-goals':
         specifier: workspace:^
         version: link:../../packages/library-goals
@@ -993,6 +999,34 @@ importers:
         specifier: workspace:^
         version: link:../utility-server
     devDependencies:
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.5.1
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@4.1.11)(@vitest/browser-preview@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
+
+  packages/ai-experiments:
+    dependencies:
+      '@ngriffin_uk/polychat-ai-telemetry':
+        specifier: workspace:^
+        version: link:../ai-telemetry
+      '@ngriffin_uk/polychat-library-flags':
+        specifier: workspace:^
+        version: link:../library-flags
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: 'catalog:'
+        version: 5.20260911.1
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
         version: link:../config
@@ -2115,6 +2149,25 @@ importers:
       vite:
         specifier: 8.3.0
         version: 8.3.0(@types/node@26.5.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@4.1.11)(@vitest/browser-preview@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
+
+  packages/library-flags:
+    dependencies:
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
+    devDependencies:
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.5.1
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@4.1.11)(@vitest/browser-preview@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))

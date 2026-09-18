@@ -169,5 +169,22 @@ describe("captureProviderGenerationResult", () => {
       sessionId: "conversation-1",
       error: { message: "rate limited" },
     });
+    expect(captured[0]?.properties).toBeUndefined();
+  });
+
+  it("tags generations with the experiment assignments on the request context", () => {
+    const captured: AiGenerationSignal[] = [];
+    const tagged = context();
+
+    tagged.request = {
+      ...tagged.request,
+      context: { experimentAssignments: { "chat-tone": "playful" } },
+    } as never;
+
+    captureProviderGenerationFailure(new Error("rate limited"), tagged, (input) =>
+      captured.push(input),
+    );
+
+    expect(captured[0]?.properties).toEqual({ "experiment.chat-tone": "playful" });
   });
 });

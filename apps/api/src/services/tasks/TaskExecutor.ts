@@ -10,21 +10,16 @@ import {
   DEFAULT_TASK_MAX_ATTEMPTS,
   type TaskHandlerRegistry,
 } from "@ngriffin_uk/polychat-library-tasks";
-import type { TaskType } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import { ENABLED_SCHEDULES_FLAGS } from "~/constants/schedules";
 import { TaskRepository } from "~/repositories/TaskRepository";
+import { evaluateServerFlag, isTaskFlagType, taskFlags } from "~/services/experiments";
 import type { IEnv } from "~/types";
 
 import { taskLeaseStore } from "./lease-store";
 import type { TaskExecutionContext, TaskHandler, TaskMessage, TaskResult } from "./types";
 
 const logger = getLogger({ prefix: "services/tasks/executor" });
-
-function hasFeatureFlag(taskType: TaskType): taskType is keyof typeof ENABLED_SCHEDULES_FLAGS {
-  return taskType in ENABLED_SCHEDULES_FLAGS;
-}
 
 export class TaskExecutor {
   private env: IEnv;
@@ -42,21 +37,18 @@ export class TaskExecutor {
     const isRedelivery = deliveryAttempt > 1;
 
     try {
-      if (hasFeatureFlag(message.task_type)) {
-        const isEnabledEnvVar = ENABLED_SCHEDULES_FLAGS[message.task_type];
+      if (
+        isTaskFlagType(message.task_type) &&
+        !(await evaluateServerFlag(this.env, taskFlags(this.env)[message.task_type]))
+      ) {
+        await this.taskRepository.updateTask(message.taskId, {
+          status: "cancelled",
+          completed_at: new Date().toISOString(),
+          error_message: `Task type ${message.task_type} is disabled by its feature flag`,
+        });
+        logger.info(`Task type ${message.task_type} is disabled by its feature flag`);
 
-        if (this.env[isEnabledEnvVar] !== "true") {
-          const completedAt = new Date().toISOString();
-
-          await this.taskRepository.updateTask(message.taskId, {
-            status: "cancelled",
-            completed_at: completedAt,
-            error_message: `Task type ${message.task_type} is disabled via environment variable ${isEnabledEnvVar}`,
-          });
-          logger.info(`Task type ${message.task_type} is disabled via environment variable`);
-
-          return;
-        }
+        return;
       }
 
       if (!this.handlers.has(message.task_type)) {

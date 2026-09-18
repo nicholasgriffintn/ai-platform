@@ -84,9 +84,7 @@ describe("TaskExecutor", () => {
       "task-1",
       expect.objectContaining({
         status: "cancelled",
-        error_message: expect.stringContaining(
-          "memory_synthesis is disabled via environment variable",
-        ),
+        error_message: expect.stringContaining("memory_synthesis is disabled by its feature flag"),
       }),
     );
   });

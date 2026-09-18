@@ -1,0 +1,40 @@
+{
+  "name": "@ngriffin_uk/polychat-ai-experiments",
+  "version": "0.1.0",
+  "description": "Experimentation primitives for Polychat: define flags and experiments in code, assign users to variants with exposure telemetry, run generations under an assignment, track outcomes, and run offline variant evaluations with metrics",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "polychat-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.typecheck.json"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-ai-telemetry": "workspace:^",
+    "@ngriffin_uk/polychat-library-flags": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -13,6 +13,7 @@ import capabilities from "./capabilities";
 import channels from "./channels";
 import chat from "./chat";
 import desktop from "./desktop";
+import flags from "./flags";
 import machines from "./machines";
 import memoryDocuments from "./memory-documents";
 import models from "./models";
@@ -60,6 +61,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/uploads", uploads);
   app.route("/user", user);
   app.route("/plans", plans);
+  app.route("/flags", flags);
   app.route("/stripe", stripe);
   app.route("/skills", skills);
   app.route("/sources", sources);

@@ -2,6 +2,7 @@ import { SCHEDULES } from "~/constants/schedules";
 import { reapComposioConnectorSessions } from "~/services/apps/connectors/composio-cleanup";
 import { deleteExpiredConnectorOperationApprovals } from "~/services/apps/connectors/connector-approval-cleanup";
 import { releaseExpiredChatRunReservations } from "~/services/chat-runs/reservation-maintenance";
+import { evaluateServerFlag, taskFlags } from "~/services/experiments";
 import { schedulePendingTaskNotificationDeliveries } from "~/services/task-notifications/delivery";
 
 import {
@@ -56,7 +57,7 @@ workflows.every(
   SCHEDULES.MEMORIES_SYNTHESIS,
   defineSchedule({
     name: "memory-synthesis",
-    enabledWhen: (env) => env.MEMORY_SYNTHESIS_ENABLED === "true",
+    enabledWhen: (env) => evaluateServerFlag(env, taskFlags(env).memory_synthesis),
     run: ({ env }) => scheduleDailySynthesis(env),
   }),
 );
@@ -65,7 +66,7 @@ workflows.every(
   SCHEDULES.TRAINING_QUALITY_SCORING,
   defineSchedule({
     name: "training-quality-scoring",
-    enabledWhen: (env) => env.TRAINING_QUALITY_SCORING_ENABLED === "true",
+    enabledWhen: (env) => evaluateServerFlag(env, taskFlags(env).training_quality_scoring),
     run: ({ env }) => scheduleTrainingQualityScoring(env),
   }),
 );

@@ -6,6 +6,7 @@ Use the tracked example files as the only source of truth.
 
 - API: `apps/api/.dev.vars.example` and `apps/api/wrangler.jsonc.example`
 - Web: `apps/app/src/constants.ts` and `apps/app/wrangler.jsonc`
+- API `flagship` binding `FLAGS` (set `app_id` to the Flagship app in the Cloudflare dashboard) lets the dashboard override code-defined flags and experiments; without the binding the rules provider alone decides. `MEMORY_SYNTHESIS_ENABLED` and `TRAINING_QUALITY_SCORING_ENABLED` are now the defaults of the `memory_synthesis` and `training_quality_scoring` flags.
 - API `worker_loaders` binding `LOADER` backs the `run_code` tool; without it the tool reports that code execution is unavailable and everything else keeps working.
 - Optional worker components: follow each component’s `.dev.vars.example` and `wrangler.json`
 

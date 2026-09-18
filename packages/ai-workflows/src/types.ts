@@ -116,7 +116,7 @@ export interface CronContext<TEnv, TType extends string = string> {
 
 export interface ScheduleDefinition<TEnv, TType extends string = string> {
   name: string;
-  enabledWhen?(env: TEnv): boolean;
+  enabledWhen?(env: TEnv): boolean | Promise<boolean>;
   run(context: CronContext<TEnv, TType>): Promise<void>;
 }
 

@@ -5,6 +5,7 @@ import {
   type AiErrorInfo,
   type AiGenerationSignal,
   type TelemetryEnv,
+  type TelemetryProperties,
 } from "@ngriffin_uk/polychat-ai-telemetry";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -69,7 +70,18 @@ function baseSignal(
     tools: collectAvailableToolNames(request),
     temperature: readNumberField(request, "temperature"),
     maxTokens: readNumberField(request, "max_tokens"),
+    properties: experimentProperties(request?.context?.experimentAssignments),
   };
+}
+
+function experimentProperties(
+  assignments: Readonly<Record<string, string>> | undefined,
+): TelemetryProperties | undefined {
+  const entries = Object.entries(assignments ?? {});
+
+  return entries.length > 0
+    ? Object.fromEntries(entries.map(([key, variant]) => [`experiment.${key}`, variant]))
+    : undefined;
 }
 
 function captureProviderGeneration(

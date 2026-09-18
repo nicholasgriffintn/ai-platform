@@ -1,4 +1,4 @@
-import type { D1Database } from "@cloudflare/workers-types";
+import type { D1Database, ExecutionContext } from "@cloudflare/workers-types";
 import type { OutboundGatewayFactory } from "@ngriffin_uk/polychat-ai-sandbox";
 import type { LoggerOptions } from "@ngriffin_uk/polychat-ai-telemetry";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
@@ -15,6 +15,7 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/request-cache";
 import type { Context, MiddlewareHandler } from "hono";
 
+import { requireCloudflareExecutionContext } from "~/lib/cloudflare/execution-context";
 import { loopbackOutboundGateway } from "~/lib/cloudflare/outbound-gateway";
 import { Database } from "~/lib/database";
 import { RepositoryManager } from "~/repositories";
@@ -29,12 +30,15 @@ export interface ServiceContextOptions {
   originDeviceId?: string | null;
   waitUntil?: (work: Promise<unknown>) => void;
   outboundGateway?: OutboundGatewayFactory;
+  executionCtx?: ExecutionContext;
 }
 
 export interface ServiceContext {
   env: IEnv;
   waitUntil: (work: Promise<unknown>) => void;
   outboundGateway?: OutboundGatewayFactory;
+  executionCtx?: ExecutionContext;
+  experimentAssignments: Record<string, string>;
   user?: IUser | null;
   anonymousUser?: AnonymousUser | null;
   requestId?: string;
@@ -89,6 +93,7 @@ export const createServiceContext = ({
   originDeviceId = null,
   waitUntil,
   outboundGateway,
+  executionCtx,
 }: ServiceContextOptions): ServiceContext => {
   let databaseInstance: Database | null = null;
   let repositoriesInstance: RepositoryManager | null = null;
@@ -181,6 +186,8 @@ export const createServiceContext = ({
     ensureDatabase,
     waitUntil: waitUntil ?? ((work) => void work.catch(() => undefined)),
     outboundGateway,
+    executionCtx,
+    experimentAssignments: {},
     getUserSettings: loadUserSettings,
     setUserSettings,
     getLogger: getContextLogger,
@@ -231,6 +238,14 @@ function hostExecutionContext(c: Context): unknown {
   }
 }
 
+function cloudflareExecutionContext(c: Context): ExecutionContext | undefined {
+  try {
+    return requireCloudflareExecutionContext(hostExecutionContext(c));
+  } catch {
+    return undefined;
+  }
+}
+
 function readOriginDeviceId(c: Context): string | null {
   const parsed = deviceSyncDeviceIdSchema.safeParse(c.req.header(DEVICE_SYNC_DEVICE_ID_HEADER));
 
@@ -252,6 +267,7 @@ export const serviceContextMiddleware: MiddlewareHandler = async (c, next) => {
       originDeviceId: readOriginDeviceId(c),
       waitUntil: (work) => c.executionCtx?.waitUntil(work),
       outboundGateway: loopbackOutboundGateway(() => hostExecutionContext(c)),
+      executionCtx: cloudflareExecutionContext(c),
     });
 
     c.set(SERVICE_CONTEXT_KEY, context);
@@ -278,6 +294,7 @@ export const getServiceContext = (c: Context): ServiceContext => {
     originDeviceId: readOriginDeviceId(c),
     waitUntil: (work) => c.executionCtx?.waitUntil(work),
     outboundGateway: loopbackOutboundGateway(() => hostExecutionContext(c)),
+    executionCtx: cloudflareExecutionContext(c),
   });
 
   c.set(SERVICE_CONTEXT_KEY, context);

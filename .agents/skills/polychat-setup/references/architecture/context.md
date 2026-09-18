@@ -50,6 +50,7 @@ Use this as the ownership and responsibility map. Detailed rationale is in [deci
 - Hosted computer control uses expiring leases and monotonically increasing fences.
 - Vector retrieval uses scoped authority and immutable provenance.
 - Credits are reserved, used, and settled as separate accounting states.
+- Feature flags and experiments are defined in code (`services/experiments`), bucketed on the analytics distinct id, optionally overridden by the Flagship `FLAGS` binding, and exposed to telemetry as `feature_flag.evaluation` events plus `experiment.<key>` properties on outcomes and generations.
 
 ## Web and desktop
 
