@@ -1,0 +1,81 @@
+{
+	"providerId": "dynamics365",
+	"name": "Dynamics 365",
+	"description": "Dynamics 365 from Microsoft combines CRM, ERP, and productivity apps to streamline sales, marketing, customer service, and operations in one integrated platform",
+	"logoUrl": "https://logos.composio.dev/api/dynamics365",
+	"appUrl": "https://www.microsoft.com/en-in/",
+	"categories": [
+		{
+			"id": "crm",
+			"name": "CRM"
+		},
+		{
+			"id": "project-management",
+			"name": "Project Management"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_gjQJqufHmYbh",
+			"name": "dynamics365-6m6nfs",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "dynamics365",
+	"toolkitVersion": "20260724_00",
+	"toolCount": 16,
+	"readToolCount": 4,
+	"writeToolCount": 12,
+	"scopes": [
+		"https://{{subdomain}}.api.crm.dynamics.com/.default",
+		"https://{{subdomain}}.api.crm.dynamics.com/user_impersonation",
+		"https://{{subdomain}}.crm.dynamics.com/.default",
+		"user_impersonation"
+	],
+	"operations": {
+		"read": [
+			"DYNAMICS365_DYNAMICSCRM_GET_A_INVOICE",
+			"DYNAMICS365_DYNAMICSCRM_GET_A_LEAD",
+			"DYNAMICS365_DYNAMICSCRM_GET_ALL_LEADS",
+			"DYNAMICS365_GET_ALL_INVOICES_ACTION"
+		],
+		"write": [
+			"DYNAMICS365_DYNAMICSCRM_CREATE_ACCOUNT",
+			"DYNAMICS365_DYNAMICSCRM_CREATE_CASE",
+			"DYNAMICS365_DYNAMICSCRM_CREATE_CONTACT",
+			"DYNAMICS365_DYNAMICSCRM_CREATE_INVOICE",
+			"DYNAMICS365_DYNAMICSCRM_CREATE_LEAD",
+			"DYNAMICS365_DYNAMICSCRM_CREATE_OPPORTUNITY",
+			"DYNAMICS365_DYNAMICSCRM_CREATE_SALES_ORDER",
+			"DYNAMICS365_DYNAMICSCRM_UPDATE_CASE",
+			"DYNAMICS365_DYNAMICSCRM_UPDATE_INVOICE",
+			"DYNAMICS365_DYNAMICSCRM_UPDATE_LEAD",
+			"DYNAMICS365_DYNAMICSCRM_UPDATE_OPPORTUNITY",
+			"DYNAMICS365_DYNAMICSCRM_UPDATE_SALES_ORDER"
+		],
+		"important": [
+			"DYNAMICS365_DYNAMICSCRM_CREATE_ACCOUNT"
+		],
+		"destructive": [],
+		"idempotent": [],
+		"openWorld": [
+			"DYNAMICS365_DYNAMICSCRM_CREATE_ACCOUNT",
+			"DYNAMICS365_DYNAMICSCRM_CREATE_CASE",
+			"DYNAMICS365_DYNAMICSCRM_CREATE_CONTACT",
+			"DYNAMICS365_DYNAMICSCRM_CREATE_INVOICE",
+			"DYNAMICS365_DYNAMICSCRM_CREATE_LEAD",
+			"DYNAMICS365_DYNAMICSCRM_CREATE_OPPORTUNITY",
+			"DYNAMICS365_DYNAMICSCRM_CREATE_SALES_ORDER",
+			"DYNAMICS365_DYNAMICSCRM_GET_A_INVOICE",
+			"DYNAMICS365_DYNAMICSCRM_GET_A_LEAD",
+			"DYNAMICS365_DYNAMICSCRM_GET_ALL_LEADS",
+			"DYNAMICS365_DYNAMICSCRM_UPDATE_CASE",
+			"DYNAMICS365_DYNAMICSCRM_UPDATE_INVOICE",
+			"DYNAMICS365_DYNAMICSCRM_UPDATE_LEAD",
+			"DYNAMICS365_DYNAMICSCRM_UPDATE_OPPORTUNITY",
+			"DYNAMICS365_DYNAMICSCRM_UPDATE_SALES_ORDER",
+			"DYNAMICS365_GET_ALL_INVOICES_ACTION"
+		]
+	}
+}

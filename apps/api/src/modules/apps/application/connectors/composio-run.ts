@@ -1,3 +1,12 @@
+import {
+  createComposioToolSession,
+  deleteComposioToolSession,
+  executeComposioSessionTool,
+  listComposioConnectedAccounts,
+  searchComposioSessionTools,
+  type ComposioConnectedAccount,
+  type ConnectorProviderConfig,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
@@ -8,15 +17,6 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { ConnectorProviderConfig } from "~/infrastructure/providers/capabilities/connectors";
-import {
-  createComposioToolSession,
-  deleteComposioToolSession,
-  executeComposioSessionTool,
-  listComposioConnectedAccounts,
-  searchComposioSessionTools,
-  type ComposioConnectedAccount,
-} from "~/infrastructure/providers/capabilities/connectors/composio/client";
 import type { ComposioConnectorSessionRecord } from "~/modules/apps/infrastructure/ComposioConnectorSessionRepository";
 
 import {

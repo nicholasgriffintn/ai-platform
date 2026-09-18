@@ -1,0 +1,70 @@
+{
+	"providerId": "googleslides",
+	"name": "Google Slides",
+	"description": "Google Slides is a cloud-based presentation editor with real-time collaboration, template gallery, and integration with other Google Workspace apps",
+	"logoUrl": "https://logos.composio.dev/api/googleslides",
+	"appUrl": "https://docs.google.com/presentation",
+	"categories": [
+		{
+			"id": "documents",
+			"name": "Documents"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_RZ3rHy5OOvCA",
+			"name": "googleslides-vingi5",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "googleslides",
+	"toolkitVersion": "20260811_00",
+	"toolCount": 7,
+	"readToolCount": 3,
+	"writeToolCount": 4,
+	"scopes": [
+		"https://www.googleapis.com/auth/drive",
+		"https://www.googleapis.com/auth/drive.appdata",
+		"https://www.googleapis.com/auth/drive.file",
+		"https://www.googleapis.com/auth/drive.meet.readonly",
+		"https://www.googleapis.com/auth/drive.photos.readonly",
+		"https://www.googleapis.com/auth/drive.readonly",
+		"https://www.googleapis.com/auth/presentations",
+		"https://www.googleapis.com/auth/presentations.readonly",
+		"https://www.googleapis.com/auth/spreadsheets",
+		"https://www.googleapis.com/auth/spreadsheets.readonly"
+	],
+	"operations": {
+		"read": [
+			"GOOGLESLIDES_GET_PAGE_THUMBNAIL2",
+			"GOOGLESLIDES_PRESENTATIONS_GET",
+			"GOOGLESLIDES_PRESENTATIONS_PAGES_GET"
+		],
+		"write": [
+			"GOOGLESLIDES_CREATE_PRESENTATION",
+			"GOOGLESLIDES_CREATE_SLIDES_MARKDOWN",
+			"GOOGLESLIDES_PRESENTATIONS_BATCH_UPDATE",
+			"GOOGLESLIDES_PRESENTATIONS_COPY_FROM_TEMPLATE"
+		],
+		"important": [
+			"GOOGLESLIDES_CREATE_PRESENTATION",
+			"GOOGLESLIDES_CREATE_SLIDES_MARKDOWN",
+			"GOOGLESLIDES_PRESENTATIONS_BATCH_UPDATE",
+			"GOOGLESLIDES_PRESENTATIONS_COPY_FROM_TEMPLATE",
+			"GOOGLESLIDES_PRESENTATIONS_GET",
+			"GOOGLESLIDES_PRESENTATIONS_PAGES_GET"
+		],
+		"destructive": [],
+		"idempotent": [],
+		"openWorld": [
+			"GOOGLESLIDES_CREATE_PRESENTATION",
+			"GOOGLESLIDES_CREATE_SLIDES_MARKDOWN",
+			"GOOGLESLIDES_GET_PAGE_THUMBNAIL2",
+			"GOOGLESLIDES_PRESENTATIONS_BATCH_UPDATE",
+			"GOOGLESLIDES_PRESENTATIONS_COPY_FROM_TEMPLATE",
+			"GOOGLESLIDES_PRESENTATIONS_GET",
+			"GOOGLESLIDES_PRESENTATIONS_PAGES_GET"
+		]
+	}
+}

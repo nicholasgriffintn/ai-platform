@@ -1,0 +1,59 @@
+{
+	"providerId": "foursquare",
+	"name": "Foursquare",
+	"description": "Foursquare provides location-based search and discovery, offering detailed venue information, place recommendations, and geospatial data for businesses and points of interest worldwide",
+	"logoUrl": "https://logos.composio.dev/api/foursquare",
+	"appUrl": "https://www.foursquare.com",
+	"categories": [
+		{
+			"id": "analytics",
+			"name": "Analytics"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_IdYYTyr30J25",
+			"name": "foursquare-8sv4mq",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "foursquare",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 8,
+	"readToolCount": 8,
+	"writeToolCount": 0,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"FOURSQUARE_AUTOCOMPLETE_PLACES",
+			"FOURSQUARE_GET_TRENDING_VENUES",
+			"FOURSQUARE_RETRIEVE_NEARBY_PLACES_V3",
+			"FOURSQUARE_RETRIEVE_PLACE_PHOTOS_BY_ID",
+			"FOURSQUARE_RETRIEVE_PLACE_TIPS_USING_FSQ_ID",
+			"FOURSQUARE_RETRIEVE_PLACES_BY_ID",
+			"FOURSQUARE_SEARCH_PLACES_API_REQUEST",
+			"FOURSQUARE_VALIDATE_CREDENTIAL"
+		],
+		"write": [],
+		"important": [
+			"FOURSQUARE_AUTOCOMPLETE_PLACES",
+			"FOURSQUARE_GET_TRENDING_VENUES",
+			"FOURSQUARE_VALIDATE_CREDENTIAL"
+		],
+		"destructive": [],
+		"idempotent": [
+			"FOURSQUARE_VALIDATE_CREDENTIAL"
+		],
+		"openWorld": [
+			"FOURSQUARE_AUTOCOMPLETE_PLACES",
+			"FOURSQUARE_GET_TRENDING_VENUES",
+			"FOURSQUARE_RETRIEVE_NEARBY_PLACES_V3",
+			"FOURSQUARE_RETRIEVE_PLACE_PHOTOS_BY_ID",
+			"FOURSQUARE_RETRIEVE_PLACE_TIPS_USING_FSQ_ID",
+			"FOURSQUARE_RETRIEVE_PLACES_BY_ID",
+			"FOURSQUARE_SEARCH_PLACES_API_REQUEST",
+			"FOURSQUARE_VALIDATE_CREDENTIAL"
+		]
+	}
+}

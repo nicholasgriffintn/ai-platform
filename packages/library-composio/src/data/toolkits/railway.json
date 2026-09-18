@@ -1,0 +1,76 @@
+{
+	"providerId": "railway",
+	"name": "Railway",
+	"description": "Railway is a deployment platform for building and shipping applications with instant deployments, automatic scaling, and managed infrastructure.",
+	"logoUrl": "https://logos.composio.dev/api/railway",
+	"appUrl": "https://railway.com",
+	"categories": [
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_2BkdQ83bYdUL",
+			"name": "railway-ctqqsk",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "railway",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 18,
+	"readToolCount": 11,
+	"writeToolCount": 7,
+	"scopes": [
+		"email",
+		"offline_access",
+		"openid",
+		"profile",
+		"project:member",
+		"project:viewer",
+		"workspace:admin",
+		"workspace:member",
+		"workspace:viewer"
+	],
+	"operations": {
+		"read": [
+			"RAILWAY_GET_DEPLOYMENT_LOGS",
+			"RAILWAY_GET_ENVIRONMENT",
+			"RAILWAY_GET_GIT_HUB_PR_INFO",
+			"RAILWAY_GET_USER_KICKBACK_EARNINGS",
+			"RAILWAY_LIST_API_TOKENS",
+			"RAILWAY_LIST_ENVIRONMENT_PATCHES",
+			"RAILWAY_LIST_GIT_HUB_REPOS",
+			"RAILWAY_LIST_GIT_HUB_WRITABLE_SCOPES",
+			"RAILWAY_LIST_INTEGRATION_AUTHS",
+			"RAILWAY_LIST_NOTIFICATION_DELIVERIES",
+			"RAILWAY_LIST_TRUSTED_DOMAINS"
+		],
+		"write": [
+			"RAILWAY_CREATE_PLUGIN",
+			"RAILWAY_DELETE_VARIABLE",
+			"RAILWAY_DELETE_VOLUME",
+			"RAILWAY_DELETE_WORKSPACE",
+			"RAILWAY_DISCONNECT_USER_DISCORD",
+			"RAILWAY_UPDATE_PROJECT",
+			"RAILWAY_UPDATE_SERVICE_INSTANCE"
+		],
+		"important": [],
+		"destructive": [
+			"RAILWAY_DELETE_VARIABLE",
+			"RAILWAY_DELETE_VOLUME",
+			"RAILWAY_DELETE_WORKSPACE",
+			"RAILWAY_DISCONNECT_USER_DISCORD"
+		],
+		"idempotent": [
+			"RAILWAY_DELETE_VARIABLE",
+			"RAILWAY_DELETE_VOLUME",
+			"RAILWAY_DELETE_WORKSPACE",
+			"RAILWAY_UPDATE_PROJECT",
+			"RAILWAY_UPDATE_SERVICE_INSTANCE"
+		],
+		"openWorld": []
+	}
+}

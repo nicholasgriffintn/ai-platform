@@ -1,0 +1,52 @@
+{
+	"providerId": "agent_mail",
+	"name": "Agent Mail",
+	"description": "AgentMail provides AI agents with their own email inboxes, enabling them to send, receive, and act upon emails for communication with services, people, and other agents.",
+	"logoUrl": "https://logos.composio.dev/api/agent_mail",
+	"appUrl": "https://agentmail.to",
+	"categories": [
+		{
+			"id": "ai-agents",
+			"name": "AI Agents"
+		},
+		{
+			"id": "email",
+			"name": "Email"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_3BucipqSgcwi",
+			"name": "agent_mail-asard3",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "agent_mail",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 5,
+	"readToolCount": 3,
+	"writeToolCount": 2,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"AGENT_MAIL_GET_MESSAGE",
+			"AGENT_MAIL_LIST_INBOXES",
+			"AGENT_MAIL_LIST_MESSAGES"
+		],
+		"write": [
+			"AGENT_MAIL_CREATE_INBOX",
+			"AGENT_MAIL_SEND_EMAIL"
+		],
+		"important": [
+			"AGENT_MAIL_CREATE_INBOX",
+			"AGENT_MAIL_LIST_INBOXES"
+		],
+		"destructive": [],
+		"idempotent": [],
+		"openWorld": [
+			"AGENT_MAIL_CREATE_INBOX",
+			"AGENT_MAIL_LIST_INBOXES"
+		]
+	}
+}

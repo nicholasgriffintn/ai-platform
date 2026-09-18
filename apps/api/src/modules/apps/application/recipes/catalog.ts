@@ -1,8 +1,9 @@
+import {
+  configuredComposioToolkits,
+  isConnectorOperationSupported,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import type { AssistantRecipe, RecipeCategory, RecipeKind } from "@ngriffin_uk/polychat-schemas";
 import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
-
-import { isConnectorOperationSupported } from "~/infrastructure/providers/capabilities/connectors";
-import { configuredComposioToolkits } from "~/infrastructure/providers/capabilities/connectors/composio/configured-toolkit-manifest";
 
 import { composioWorkflowRecipes } from "./catalog/composio-workflows";
 import { configuredComposioRecipes } from "./catalog/configured-composio";

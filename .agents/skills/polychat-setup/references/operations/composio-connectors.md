@@ -11,7 +11,16 @@ Composio owns credentials and execution schemas for its configured connectors. P
 - Subscribe to `composio.trigger.message` and `composio.connected_account.expired`.
 - Apply the current migration set for the authorised target; do not use historical migration numbers from older guides.
 
-After enabled auth configs or tool restrictions change, run the authorised `pnpm --filter @assistant/api connectors:sync`, review the generated catalogue and risk hints, validate connectors and deploy. Exact toolkit/auth-config/tool IDs are authoritative; catalogue counts and schemas are not copied here.
+After enabled auth configs or tool restrictions change, synchronise the catalogue from the owning package:
+
+```sh
+pnpm --filter @ngriffin_uk/polychat-library-composio composio:sync
+pnpm --filter @ngriffin_uk/polychat-library-composio composio:sync --write
+```
+
+The command defaults to a dry run, reads `COMPOSIO_API_KEY` from the environment or `apps/api/.dev.vars`, and regenerates `packages/library-composio/src/data/toolkits/`, its data index and the provider id list in `packages/schemas/src/generated/`. Pass `--snapshot <path>` to replay a saved manifest without network access. Review the generated catalogue and risk hints, validate connectors and deploy. Exact toolkit/auth-config/tool IDs are authoritative; catalogue counts and schemas are not copied here.
+
+`@ngriffin_uk/polychat-library-composio` owns the toolkit data, schema and session handle contract; `@ngriffin_uk/polychat-ai-integrations` owns the provider registry, operation policy and Composio clients the API calls. Keep new catalogue behaviour in the library and new provider policy in the primitives package rather than in the API.
 
 ## Connections and sessions
 

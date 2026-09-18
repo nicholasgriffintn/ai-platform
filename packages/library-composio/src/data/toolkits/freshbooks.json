@@ -1,0 +1,79 @@
+{
+	"providerId": "freshbooks",
+	"name": "FreshBooks",
+	"description": "FreshBooks is a cloud-based accounting software service designed for small and medium-sized businesses, offering features like invoicing, expense tracking, and time management.",
+	"logoUrl": "https://logos.composio.dev/api/freshbooks",
+	"appUrl": "https://www.freshbooks.com/signup",
+	"categories": [
+		{
+			"id": "accounting",
+			"name": "Accounting"
+		},
+		{
+			"id": "proposal-&-invoice-management",
+			"name": "Proposal & Invoice Management"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_f6XnGWhU-7rE",
+			"name": "freshbooks-j4d9xt",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "freshbooks",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 10,
+	"readToolCount": 6,
+	"writeToolCount": 4,
+	"scopes": [
+		"user:businesses:read",
+		"user:clients:read",
+		"user:journal_entries:read",
+		"user:notifications:read",
+		"user:notifications:write",
+		"user:profile:read",
+		"user:projects:read"
+	],
+	"operations": {
+		"read": [
+			"FRESHBOOKS_GET_BUSINESS_USERS",
+			"FRESHBOOKS_LIST_BUSINESSES",
+			"FRESHBOOKS_LIST_CLIENTS",
+			"FRESHBOOKS_LIST_JOURNAL_ENTRIES2",
+			"FRESHBOOKS_LIST_PROJECTS",
+			"FRESHBOOKS_LIST_WEBHOOKS"
+		],
+		"write": [
+			"FRESHBOOKS_CREATE_WEBHOOK",
+			"FRESHBOOKS_DELETE_WEBHOOK",
+			"FRESHBOOKS_REGISTER_AS_A_NEW_USER",
+			"FRESHBOOKS_UPDATE_WEBHOOK"
+		],
+		"important": [
+			"FRESHBOOKS_CREATE_WEBHOOK",
+			"FRESHBOOKS_GET_BUSINESS_USERS",
+			"FRESHBOOKS_LIST_BUSINESSES",
+			"FRESHBOOKS_LIST_CLIENTS",
+			"FRESHBOOKS_LIST_JOURNAL_ENTRIES2",
+			"FRESHBOOKS_LIST_PROJECTS"
+		],
+		"destructive": [
+			"FRESHBOOKS_DELETE_WEBHOOK"
+		],
+		"idempotent": [
+			"FRESHBOOKS_DELETE_WEBHOOK"
+		],
+		"openWorld": [
+			"FRESHBOOKS_CREATE_WEBHOOK",
+			"FRESHBOOKS_DELETE_WEBHOOK",
+			"FRESHBOOKS_GET_BUSINESS_USERS",
+			"FRESHBOOKS_LIST_CLIENTS",
+			"FRESHBOOKS_LIST_JOURNAL_ENTRIES2",
+			"FRESHBOOKS_LIST_WEBHOOKS",
+			"FRESHBOOKS_REGISTER_AS_A_NEW_USER",
+			"FRESHBOOKS_UPDATE_WEBHOOK"
+		]
+	}
+}

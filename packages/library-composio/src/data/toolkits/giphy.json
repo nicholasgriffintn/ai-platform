@@ -1,0 +1,132 @@
+{
+	"providerId": "giphy",
+	"name": "Giphy",
+	"description": "GIPHY is the first and largest GIF search engine, offering an extensive library of GIFs and Stickers for integration into applications.",
+	"logoUrl": "https://giphy.com/static/img/giphy_logo_square_social.png",
+	"appUrl": "https://developers.giphy.com/",
+	"categories": [
+		{
+			"id": "images-&-design",
+			"name": "Images & Design"
+		},
+		{
+			"id": "lifestyle-&-entertainment",
+			"name": "Lifestyle & Entertainment"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_LGE8G244kKNY",
+			"name": "giphy-vtulmo",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "giphy",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 23,
+	"readToolCount": 21,
+	"writeToolCount": 2,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"GIPHY_CATEGORIES",
+			"GIPHY_CATEGORY_BY_ID",
+			"GIPHY_CATEGORY_GIFS",
+			"GIPHY_EMOJI",
+			"GIPHY_EMOJI_VARIATIONS",
+			"GIPHY_GET_CONTENT_BY_ID",
+			"GIPHY_GET_CONTENT_BY_IDS",
+			"GIPHY_GET_RANDOM_ID",
+			"GIPHY_RANDOM_GIF",
+			"GIPHY_RANDOM_STICKER",
+			"GIPHY_SEARCH_CHANNELS",
+			"GIPHY_SEARCH_GIFS",
+			"GIPHY_SEARCH_STICKERS",
+			"GIPHY_TAG_RANDOM",
+			"GIPHY_TAG_RELATED",
+			"GIPHY_TAG_SEARCH",
+			"GIPHY_TAG_TRENDING",
+			"GIPHY_TRANSLATE_GIF",
+			"GIPHY_TRANSLATE_STICKER",
+			"GIPHY_TRENDING_GIFS",
+			"GIPHY_TRENDING_STICKERS"
+		],
+		"write": [
+			"GIPHY_ACTION_REGISTER",
+			"GIPHY_UPLOAD_GIF"
+		],
+		"important": [
+			"GIPHY_CATEGORIES",
+			"GIPHY_CATEGORY_BY_ID",
+			"GIPHY_CATEGORY_GIFS",
+			"GIPHY_EMOJI",
+			"GIPHY_EMOJI_VARIATIONS",
+			"GIPHY_GET_CONTENT_BY_ID",
+			"GIPHY_GET_CONTENT_BY_IDS",
+			"GIPHY_RANDOM_GIF",
+			"GIPHY_RANDOM_STICKER",
+			"GIPHY_SEARCH_CHANNELS",
+			"GIPHY_SEARCH_GIFS",
+			"GIPHY_SEARCH_STICKERS",
+			"GIPHY_TAG_RANDOM",
+			"GIPHY_TAG_RELATED",
+			"GIPHY_TAG_SEARCH",
+			"GIPHY_TAG_TRENDING",
+			"GIPHY_TRANSLATE_GIF",
+			"GIPHY_TRANSLATE_STICKER",
+			"GIPHY_TRENDING_GIFS",
+			"GIPHY_TRENDING_STICKERS",
+			"GIPHY_UPLOAD_GIF"
+		],
+		"destructive": [],
+		"idempotent": [
+			"GIPHY_CATEGORIES",
+			"GIPHY_CATEGORY_BY_ID",
+			"GIPHY_CATEGORY_GIFS",
+			"GIPHY_EMOJI",
+			"GIPHY_EMOJI_VARIATIONS",
+			"GIPHY_GET_CONTENT_BY_ID",
+			"GIPHY_GET_CONTENT_BY_IDS",
+			"GIPHY_GET_RANDOM_ID",
+			"GIPHY_RANDOM_GIF",
+			"GIPHY_RANDOM_STICKER",
+			"GIPHY_SEARCH_CHANNELS",
+			"GIPHY_SEARCH_GIFS",
+			"GIPHY_SEARCH_STICKERS",
+			"GIPHY_TAG_RANDOM",
+			"GIPHY_TAG_RELATED",
+			"GIPHY_TAG_SEARCH",
+			"GIPHY_TAG_TRENDING",
+			"GIPHY_TRANSLATE_GIF",
+			"GIPHY_TRANSLATE_STICKER",
+			"GIPHY_TRENDING_GIFS",
+			"GIPHY_TRENDING_STICKERS"
+		],
+		"openWorld": [
+			"GIPHY_ACTION_REGISTER",
+			"GIPHY_CATEGORIES",
+			"GIPHY_CATEGORY_BY_ID",
+			"GIPHY_CATEGORY_GIFS",
+			"GIPHY_EMOJI",
+			"GIPHY_EMOJI_VARIATIONS",
+			"GIPHY_GET_CONTENT_BY_ID",
+			"GIPHY_GET_CONTENT_BY_IDS",
+			"GIPHY_GET_RANDOM_ID",
+			"GIPHY_RANDOM_GIF",
+			"GIPHY_RANDOM_STICKER",
+			"GIPHY_SEARCH_CHANNELS",
+			"GIPHY_SEARCH_GIFS",
+			"GIPHY_SEARCH_STICKERS",
+			"GIPHY_TAG_RANDOM",
+			"GIPHY_TAG_RELATED",
+			"GIPHY_TAG_SEARCH",
+			"GIPHY_TAG_TRENDING",
+			"GIPHY_TRANSLATE_GIF",
+			"GIPHY_TRANSLATE_STICKER",
+			"GIPHY_TRENDING_GIFS",
+			"GIPHY_TRENDING_STICKERS",
+			"GIPHY_UPLOAD_GIF"
+		]
+	}
+}

@@ -1,11 +1,10 @@
-import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
-
 import {
   connectorProviders,
+  executeDevinOperation,
+  executeNetlifyOperation,
   type ConnectorProviderConfig,
-} from "~/infrastructure/providers/capabilities/connectors";
-import { executeDevinOperation } from "~/modules/apps/infrastructure/connectors/executors/devin";
-import { executeNetlifyOperation } from "~/modules/apps/infrastructure/connectors/executors/netlify";
+} from "@ngriffin_uk/polychat-ai-integrations";
+import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveComposioApprovalAuthority } from "./composio-approval-authority";
 import type { ResolveConnectorApprovalAuthority } from "./connector-approval-authority";

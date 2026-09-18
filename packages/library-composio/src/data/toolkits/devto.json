@@ -1,0 +1,83 @@
+{
+	"providerId": "devto",
+	"name": "DEV Community",
+	"description": "DEV Community (dev.to) is a community of software developers where you can publish articles, engage with others, and build your online presence.",
+	"logoUrl": "https://logos.composio.dev/api/devto",
+	"appUrl": "https://dev.to",
+	"categories": [
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_WkaxytKu1HqU",
+			"name": "devto-vp3d3o",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "devto",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 28,
+	"readToolCount": 25,
+	"writeToolCount": 3,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"DEVTO_GET_ARTICLE",
+			"DEVTO_GET_ARTICLE_BY_PATH",
+			"DEVTO_GET_COMMENT",
+			"DEVTO_GET_CURRENT_USER",
+			"DEVTO_GET_LISTING",
+			"DEVTO_GET_ORGANIZATION",
+			"DEVTO_GET_PROFILE_IMAGE",
+			"DEVTO_GET_USER",
+			"DEVTO_LIST_ARTICLES",
+			"DEVTO_LIST_COMMENTS",
+			"DEVTO_LIST_FOLLOWED_TAGS",
+			"DEVTO_LIST_FOLLOWERS",
+			"DEVTO_LIST_LATEST_ARTICLES",
+			"DEVTO_LIST_LISTINGS",
+			"DEVTO_LIST_LISTINGS_BY_CATEGORY",
+			"DEVTO_LIST_ORGANIZATION_ARTICLES",
+			"DEVTO_LIST_ORGANIZATION_USERS",
+			"DEVTO_LIST_PODCAST_EPISODES",
+			"DEVTO_LIST_READING_LIST",
+			"DEVTO_LIST_TAGS",
+			"DEVTO_LIST_USER_ALL_ARTICLES",
+			"DEVTO_LIST_USER_ARTICLES",
+			"DEVTO_LIST_USER_PUBLISHED_ARTICLES",
+			"DEVTO_LIST_USER_UNPUBLISHED_ARTICLES",
+			"DEVTO_LIST_VIDEOS"
+		],
+		"write": [
+			"DEVTO_CREATE_ARTICLE",
+			"DEVTO_UPDATE_ARTICLE",
+			"DEVTO_UPDATE_LISTING"
+		],
+		"important": [
+			"DEVTO_GET_CURRENT_USER",
+			"DEVTO_GET_ORGANIZATION",
+			"DEVTO_GET_USER"
+		],
+		"destructive": [],
+		"idempotent": [
+			"DEVTO_GET_LISTING",
+			"DEVTO_UPDATE_ARTICLE",
+			"DEVTO_UPDATE_LISTING"
+		],
+		"openWorld": [
+			"DEVTO_GET_COMMENT",
+			"DEVTO_GET_LISTING",
+			"DEVTO_LIST_FOLLOWED_TAGS",
+			"DEVTO_LIST_LISTINGS",
+			"DEVTO_LIST_LISTINGS_BY_CATEGORY",
+			"DEVTO_LIST_ORGANIZATION_USERS",
+			"DEVTO_LIST_PODCAST_EPISODES",
+			"DEVTO_LIST_USER_PUBLISHED_ARTICLES",
+			"DEVTO_LIST_USER_UNPUBLISHED_ARTICLES"
+		]
+	}
+}

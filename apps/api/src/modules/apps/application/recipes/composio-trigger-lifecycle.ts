@@ -1,8 +1,9 @@
-import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
   deleteComposioTriggerInstance,
   setComposioTriggerEnabled,
-} from "~/modules/apps/infrastructure/connectors/composio-trigger-client";
+} from "@ngriffin_uk/polychat-ai-integrations";
+
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
 export async function syncRecipeComposioTriggerStatus(params: {
   context: ServiceContext;

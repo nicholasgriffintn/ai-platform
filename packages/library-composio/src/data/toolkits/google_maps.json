@@ -1,0 +1,98 @@
+{
+	"providerId": "google_maps",
+	"name": "Google Maps",
+	"description": "Integrate Google Maps to access location data, geocoding, directions, and mapping services in your application.",
+	"logoUrl": "https://logos.composio.dev/api/google_maps",
+	"appUrl": "https://www.google.com/maps",
+	"categories": [
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_qQGYN5APPi1O",
+			"name": "google_maps-tdsw06",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "google_maps",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 20,
+	"readToolCount": 18,
+	"writeToolCount": 2,
+	"scopes": [
+		"https://www.googleapis.com/auth/cloud-platform",
+		"https://www.googleapis.com/auth/maps-platform.geocode",
+		"https://www.googleapis.com/auth/maps-platform.geocode.address",
+		"https://www.googleapis.com/auth/maps-platform.geocode.location",
+		"https://www.googleapis.com/auth/maps-platform.geocode.place"
+	],
+	"operations": {
+		"read": [
+			"GOOGLE_MAPS_AUTOCOMPLETE",
+			"GOOGLE_MAPS_COMPUTE_ROUTE_MATRIX",
+			"GOOGLE_MAPS_GEOCODE_ADDRESS_WITH_QUERY",
+			"GOOGLE_MAPS_GEOCODE_DESTINATIONS",
+			"GOOGLE_MAPS_GEOCODE_LOCATION",
+			"GOOGLE_MAPS_GEOCODE_PLACE",
+			"GOOGLE_MAPS_GEOCODING_API",
+			"GOOGLE_MAPS_GEOLOCATE",
+			"GOOGLE_MAPS_GET_PLACE_DETAILS",
+			"GOOGLE_MAPS_GET_ROUTE",
+			"GOOGLE_MAPS_GET_TIME_ZONE",
+			"GOOGLE_MAPS_GET2D_TILE",
+			"GOOGLE_MAPS_GET3D_TILES_ROOT",
+			"GOOGLE_MAPS_LOOKUP_AERIAL_VIDEO",
+			"GOOGLE_MAPS_MAPS_EMBED_API",
+			"GOOGLE_MAPS_NEARBY_SEARCH",
+			"GOOGLE_MAPS_PLACE_PHOTO",
+			"GOOGLE_MAPS_TEXT_SEARCH"
+		],
+		"write": [
+			"GOOGLE_MAPS_RENDER_AERIAL_VIDEO",
+			"GOOGLE_MAPS_TILES_CREATE_SESSION"
+		],
+		"important": [
+			"GOOGLE_MAPS_AUTOCOMPLETE",
+			"GOOGLE_MAPS_COMPUTE_ROUTE_MATRIX",
+			"GOOGLE_MAPS_GEOCODE_ADDRESS_WITH_QUERY",
+			"GOOGLE_MAPS_GEOCODE_LOCATION",
+			"GOOGLE_MAPS_GEOCODE_PLACE",
+			"GOOGLE_MAPS_GEOCODING_API",
+			"GOOGLE_MAPS_GET_PLACE_DETAILS",
+			"GOOGLE_MAPS_GET_TIME_ZONE",
+			"GOOGLE_MAPS_MAPS_EMBED_API",
+			"GOOGLE_MAPS_PLACE_PHOTO",
+			"GOOGLE_MAPS_RENDER_AERIAL_VIDEO",
+			"GOOGLE_MAPS_TEXT_SEARCH"
+		],
+		"destructive": [],
+		"idempotent": [
+			"GOOGLE_MAPS_GET_TIME_ZONE",
+			"GOOGLE_MAPS_TILES_CREATE_SESSION"
+		],
+		"openWorld": [
+			"GOOGLE_MAPS_AUTOCOMPLETE",
+			"GOOGLE_MAPS_COMPUTE_ROUTE_MATRIX",
+			"GOOGLE_MAPS_GEOCODE_ADDRESS_WITH_QUERY",
+			"GOOGLE_MAPS_GEOCODE_DESTINATIONS",
+			"GOOGLE_MAPS_GEOCODE_LOCATION",
+			"GOOGLE_MAPS_GEOCODE_PLACE",
+			"GOOGLE_MAPS_GEOLOCATE",
+			"GOOGLE_MAPS_GET_PLACE_DETAILS",
+			"GOOGLE_MAPS_GET_ROUTE",
+			"GOOGLE_MAPS_GET_TIME_ZONE",
+			"GOOGLE_MAPS_GET2D_TILE",
+			"GOOGLE_MAPS_GET3D_TILES_ROOT",
+			"GOOGLE_MAPS_LOOKUP_AERIAL_VIDEO",
+			"GOOGLE_MAPS_NEARBY_SEARCH",
+			"GOOGLE_MAPS_PLACE_PHOTO",
+			"GOOGLE_MAPS_RENDER_AERIAL_VIDEO",
+			"GOOGLE_MAPS_TEXT_SEARCH",
+			"GOOGLE_MAPS_TILES_CREATE_SESSION"
+		]
+	}
+}

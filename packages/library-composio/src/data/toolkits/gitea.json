@@ -1,0 +1,94 @@
+{
+	"providerId": "gitea",
+	"name": "Gitea",
+	"description": "Community managed lightweight code hosting solution written in Go",
+	"logoUrl": "https://logos.composio.dev/api/gitea",
+	"appUrl": "https://gitea.io",
+	"categories": [
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_-_YEi-Y6gJIy",
+			"name": "gitea-dzmkjt",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "gitea",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 19,
+	"readToolCount": 19,
+	"writeToolCount": 0,
+	"scopes": [
+		"read:organization"
+	],
+	"operations": {
+		"read": [
+			"GITEA_ACTIVITYPUB_PERSON",
+			"GITEA_GET_GENERAL_API_SETTINGS",
+			"GITEA_GET_GENERAL_ATTACHMENT_SETTINGS",
+			"GITEA_GET_GENERAL_REPOSITORY_SETTINGS",
+			"GITEA_GET_GENERAL_UI_SETTINGS",
+			"GITEA_GET_GITIGNORE_TEMPLATE_INFO",
+			"GITEA_GET_LABEL_TEMPLATE_INFO",
+			"GITEA_GET_LICENSE_TEMPLATE_INFO",
+			"GITEA_GET_NODE_INFO",
+			"GITEA_GET_SIGNING_KEY",
+			"GITEA_GET_VERSION",
+			"GITEA_LIST_GITIGNORE_TEMPLATES",
+			"GITEA_LIST_LABEL_TEMPLATES",
+			"GITEA_LIST_LICENSE_TEMPLATES",
+			"GITEA_ORG_GET_ALL",
+			"GITEA_ORG_LIST_ACTIONS_SECRETS",
+			"GITEA_RENDER_MARKDOWN",
+			"GITEA_RENDER_MARKDOWN_RAW",
+			"GITEA_RENDER_MARKUP"
+		],
+		"write": [],
+		"important": [],
+		"destructive": [],
+		"idempotent": [
+			"GITEA_ACTIVITYPUB_PERSON",
+			"GITEA_GET_GENERAL_API_SETTINGS",
+			"GITEA_GET_GENERAL_ATTACHMENT_SETTINGS",
+			"GITEA_GET_GENERAL_REPOSITORY_SETTINGS",
+			"GITEA_GET_GENERAL_UI_SETTINGS",
+			"GITEA_GET_GITIGNORE_TEMPLATE_INFO",
+			"GITEA_GET_LABEL_TEMPLATE_INFO",
+			"GITEA_GET_LICENSE_TEMPLATE_INFO",
+			"GITEA_GET_NODE_INFO",
+			"GITEA_GET_SIGNING_KEY",
+			"GITEA_GET_VERSION",
+			"GITEA_LIST_GITIGNORE_TEMPLATES",
+			"GITEA_LIST_LABEL_TEMPLATES",
+			"GITEA_LIST_LICENSE_TEMPLATES",
+			"GITEA_ORG_GET_ALL",
+			"GITEA_ORG_LIST_ACTIONS_SECRETS",
+			"GITEA_RENDER_MARKDOWN",
+			"GITEA_RENDER_MARKDOWN_RAW",
+			"GITEA_RENDER_MARKUP"
+		],
+		"openWorld": [
+			"GITEA_ACTIVITYPUB_PERSON",
+			"GITEA_GET_GENERAL_API_SETTINGS",
+			"GITEA_GET_GENERAL_ATTACHMENT_SETTINGS",
+			"GITEA_GET_GENERAL_REPOSITORY_SETTINGS",
+			"GITEA_GET_GENERAL_UI_SETTINGS",
+			"GITEA_GET_GITIGNORE_TEMPLATE_INFO",
+			"GITEA_GET_LABEL_TEMPLATE_INFO",
+			"GITEA_GET_LICENSE_TEMPLATE_INFO",
+			"GITEA_GET_NODE_INFO",
+			"GITEA_GET_SIGNING_KEY",
+			"GITEA_GET_VERSION",
+			"GITEA_LIST_GITIGNORE_TEMPLATES",
+			"GITEA_LIST_LABEL_TEMPLATES",
+			"GITEA_LIST_LICENSE_TEMPLATES",
+			"GITEA_ORG_GET_ALL",
+			"GITEA_ORG_LIST_ACTIONS_SECRETS"
+		]
+	}
+}

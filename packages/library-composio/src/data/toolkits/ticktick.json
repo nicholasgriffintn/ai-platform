@@ -1,0 +1,66 @@
+{
+	"providerId": "ticktick",
+	"name": "Ticktick",
+	"description": "TickTick is a cross-platform task management and to-do list application designed to help users organize their tasks and schedules efficiently.",
+	"logoUrl": "https://ticktick.com/favicon.ico",
+	"appUrl": "https://ticktick.com",
+	"categories": [
+		{
+			"id": "productivity",
+			"name": "Productivity"
+		},
+		{
+			"id": "task-management",
+			"name": "Task Management"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_TR-R4gIPNj9r",
+			"name": "ticktick-gbsuhg",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "ticktick",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 13,
+	"readToolCount": 6,
+	"writeToolCount": 7,
+	"scopes": [
+		"tasks:read"
+	],
+	"operations": {
+		"read": [
+			"TICKTICK_GET_PROJECT_BY_ID",
+			"TICKTICK_GET_PROJECT_WITH_DATA",
+			"TICKTICK_GET_TASK_BY_PROJECT_AND_ID",
+			"TICKTICK_GET_USER_PROJECT",
+			"TICKTICK_LIST_ALL_TASKS",
+			"TICKTICK_OAUTH2_AUTHORIZATION_STEP1"
+		],
+		"write": [
+			"TICKTICK_COMPLETE_TASK",
+			"TICKTICK_CREATE_PROJECT",
+			"TICKTICK_CREATE_TASK",
+			"TICKTICK_DELETE_PROJECT",
+			"TICKTICK_DELETE_TASK",
+			"TICKTICK_UPDATE_PROJECT",
+			"TICKTICK_UPDATE_TASK"
+		],
+		"important": [
+			"TICKTICK_GET_PROJECT_BY_ID",
+			"TICKTICK_GET_TASK_BY_PROJECT_AND_ID",
+			"TICKTICK_LIST_ALL_TASKS"
+		],
+		"destructive": [
+			"TICKTICK_DELETE_PROJECT",
+			"TICKTICK_DELETE_TASK"
+		],
+		"idempotent": [],
+		"openWorld": [
+			"TICKTICK_GET_PROJECT_BY_ID",
+			"TICKTICK_GET_TASK_BY_PROJECT_AND_ID"
+		]
+	}
+}

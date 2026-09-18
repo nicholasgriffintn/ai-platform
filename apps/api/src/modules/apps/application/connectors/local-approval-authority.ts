@@ -1,9 +1,12 @@
+import {
+  getConnectorProviderConfig,
+  RECIPE_CONNECTOR_CONNECTION_KIND,
+} from "@ngriffin_uk/polychat-ai-integrations";
+
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getConnectorProviderConfig } from "~/infrastructure/providers/capabilities/connectors";
 import { resolveTeammateConnectorAuthority } from "~/modules/teammates/application/connection-authority";
 
 import { buildConnectorApprovalRecipeContext } from "./approval-recipe-context";
-import { RECIPE_CONNECTOR_CONNECTION_KIND } from "./connection-references";
 import {
   rejectConnectorApprovalAuthority,
   type ResolveConnectorApprovalAuthority,

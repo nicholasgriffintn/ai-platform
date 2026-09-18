@@ -1,0 +1,92 @@
+{
+	"providerId": "toneden",
+	"name": "Toneden",
+	"description": "ToneDen automates social media campaigns, advertising, and landing pages, particularly for music promoters and event organizers looking to boost audience reach",
+	"logoUrl": "https://logos.composio.dev/api/toneden",
+	"appUrl": "https://www.toneden.io/",
+	"categories": [
+		{
+			"id": "social-media-marketing",
+			"name": "Social Media Marketing"
+		},
+		{
+			"id": "marketing-automation",
+			"name": "Marketing Automation"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_8TFDy7uUUlPa",
+			"name": "toneden-psxyxw",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "toneden",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 26,
+	"readToolCount": 17,
+	"writeToolCount": 9,
+	"scopes": [
+		"posts",
+		"profiles",
+		"user"
+	],
+	"operations": {
+		"read": [
+			"TONEDEN_EXPAND_LINK_TEMPLATE",
+			"TONEDEN_GET_ADVERTISING_CAMPAIGN",
+			"TONEDEN_GET_ADVERTISING_CAMPAIGN_CREATIVE_INSIGHTS",
+			"TONEDEN_GET_ADVERTISING_CAMPAIGN_INSIGHTS",
+			"TONEDEN_GET_ATTACHMENT",
+			"TONEDEN_GET_ATTACHMENT_ENTRIES_TIME_SERIES",
+			"TONEDEN_GET_ATTACHMENT_ENTRIES_TOTALS",
+			"TONEDEN_GET_ATTACHMENT_UNLOCKS_BY_PLATFORM",
+			"TONEDEN_GET_ATTACHMENT_UNLOCKS_TIME_SERIES",
+			"TONEDEN_GET_LINK",
+			"TONEDEN_GET_LINK_INSIGHTS",
+			"TONEDEN_GET_LINK_INSIGHTS_OVERVIEW",
+			"TONEDEN_GET_USER",
+			"TONEDEN_LIST_PLAYBOOK_CAMPAIGNS",
+			"TONEDEN_LIST_USER_ATTACHMENTS",
+			"TONEDEN_LIST_USER_LISTS",
+			"TONEDEN_VALIDATE_LINK_PATH"
+		],
+		"write": [
+			"TONEDEN_CREATE_ADVERTISING_CAMPAIGN",
+			"TONEDEN_CREATE_ATTACHMENT",
+			"TONEDEN_CREATE_LINK",
+			"TONEDEN_DELETE_ADVERTISING_CAMPAIGN",
+			"TONEDEN_DELETE_LINK",
+			"TONEDEN_DELETE_PLAYBOOK_CAMPAIGN",
+			"TONEDEN_UPDATE_ATTACHMENT",
+			"TONEDEN_UPDATE_PLAYBOOK_CAMPAIGN",
+			"TONEDEN_UPDATE_USER"
+		],
+		"important": [
+			"TONEDEN_CREATE_ADVERTISING_CAMPAIGN",
+			"TONEDEN_CREATE_ATTACHMENT",
+			"TONEDEN_CREATE_LINK",
+			"TONEDEN_DELETE_LINK",
+			"TONEDEN_DELETE_PLAYBOOK_CAMPAIGN",
+			"TONEDEN_GET_LINK",
+			"TONEDEN_GET_USER",
+			"TONEDEN_UPDATE_PLAYBOOK_CAMPAIGN"
+		],
+		"destructive": [
+			"TONEDEN_DELETE_ADVERTISING_CAMPAIGN",
+			"TONEDEN_DELETE_LINK",
+			"TONEDEN_DELETE_PLAYBOOK_CAMPAIGN"
+		],
+		"idempotent": [],
+		"openWorld": [
+			"TONEDEN_CREATE_ADVERTISING_CAMPAIGN",
+			"TONEDEN_CREATE_ATTACHMENT",
+			"TONEDEN_CREATE_LINK",
+			"TONEDEN_GET_LINK",
+			"TONEDEN_GET_USER",
+			"TONEDEN_LIST_USER_LISTS",
+			"TONEDEN_VALIDATE_LINK_PATH"
+		]
+	}
+}

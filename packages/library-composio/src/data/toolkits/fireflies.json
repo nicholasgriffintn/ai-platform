@@ -1,0 +1,96 @@
+{
+	"providerId": "fireflies",
+	"name": "Fireflies",
+	"description": "Fireflies.ai helps your team transcribe, summarize, search, and analyze voice conversations.",
+	"logoUrl": "https://logos.composio.dev/api/fireflies",
+	"appUrl": "https://www.fireflies.ai",
+	"categories": [
+		{
+			"id": "ai-meeting-assistants",
+			"name": "AI Meeting Assistants"
+		},
+		{
+			"id": "transcription",
+			"name": "Transcription"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_I5sDwF1pBczT",
+			"name": "fireflies-eqe9ib",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "fireflies",
+	"toolkitVersion": "20260625_00",
+	"toolCount": 26,
+	"readToolCount": 16,
+	"writeToolCount": 10,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"FIREFLIES_FETCH_AI_APP_OUTPUTS2",
+			"FIREFLIES_GET_ASK_FRED_THREAD",
+			"FIREFLIES_GET_ASK_FRED_THREADS",
+			"FIREFLIES_GET_BITE_BY_ID",
+			"FIREFLIES_GET_BITES",
+			"FIREFLIES_GET_MEETING_ANALYTICS",
+			"FIREFLIES_GET_MEETING_PARTICIPANTS",
+			"FIREFLIES_GET_MEETING_TOPICS",
+			"FIREFLIES_GET_TRANSCRIPT_BY_ID",
+			"FIREFLIES_GET_TRANSCRIPTS",
+			"FIREFLIES_GET_USER_BY_ID",
+			"FIREFLIES_GET_USER_GROUPS",
+			"FIREFLIES_GET_USERS",
+			"FIREFLIES_GRAPHQL_QUERY",
+			"FIREFLIES_LIST_CHANNELS",
+			"FIREFLIES_SEARCH_TRANSCRIPTS"
+		],
+		"write": [
+			"FIREFLIES_ADD_TO_LIVE",
+			"FIREFLIES_CONTINUE_ASK_FRED_THREAD",
+			"FIREFLIES_CREATE_ASK_FRED_THREAD",
+			"FIREFLIES_CREATE_BITE",
+			"FIREFLIES_DELETE_TRANSCRIPT_BY_ID",
+			"FIREFLIES_SET_USER_ROLE",
+			"FIREFLIES_UPDATE_MEETING_CHANNEL",
+			"FIREFLIES_UPDATE_MEETING_PRIVACY",
+			"FIREFLIES_UPDATE_MEETING_TITLE",
+			"FIREFLIES_UPLOAD_AUDIO"
+		],
+		"important": [
+			"FIREFLIES_GET_ASK_FRED_THREAD",
+			"FIREFLIES_GET_ASK_FRED_THREADS",
+			"FIREFLIES_GET_MEETING_ANALYTICS",
+			"FIREFLIES_GET_MEETING_PARTICIPANTS",
+			"FIREFLIES_GET_MEETING_TOPICS",
+			"FIREFLIES_GET_USER_GROUPS",
+			"FIREFLIES_LIST_CHANNELS",
+			"FIREFLIES_SEARCH_TRANSCRIPTS",
+			"FIREFLIES_SET_USER_ROLE"
+		],
+		"destructive": [
+			"FIREFLIES_DELETE_TRANSCRIPT_BY_ID"
+		],
+		"idempotent": [],
+		"openWorld": [
+			"FIREFLIES_ADD_TO_LIVE",
+			"FIREFLIES_DELETE_TRANSCRIPT_BY_ID",
+			"FIREFLIES_FETCH_AI_APP_OUTPUTS2",
+			"FIREFLIES_GET_BITE_BY_ID",
+			"FIREFLIES_GET_BITES",
+			"FIREFLIES_GET_MEETING_ANALYTICS",
+			"FIREFLIES_GET_MEETING_PARTICIPANTS",
+			"FIREFLIES_GET_MEETING_TOPICS",
+			"FIREFLIES_GET_TRANSCRIPT_BY_ID",
+			"FIREFLIES_GET_TRANSCRIPTS",
+			"FIREFLIES_GET_USER_BY_ID",
+			"FIREFLIES_GET_USERS",
+			"FIREFLIES_GRAPHQL_QUERY",
+			"FIREFLIES_LIST_CHANNELS",
+			"FIREFLIES_SEARCH_TRANSCRIPTS",
+			"FIREFLIES_UPLOAD_AUDIO"
+		]
+	}
+}

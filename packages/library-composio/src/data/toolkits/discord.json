@@ -1,0 +1,104 @@
+{
+	"providerId": "discord",
+	"name": "Discord",
+	"description": "An instant messaging and VoIP social platform.",
+	"logoUrl": "https://logos.composio.dev/api/discord",
+	"appUrl": "https://composio.dev",
+	"categories": [
+		{
+			"id": "team-chat",
+			"name": "Team Chat"
+		},
+		{
+			"id": "team-collaboration",
+			"name": "Team Collaboration"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_X3XkwAoZpNgJ",
+			"name": "discord-9qry7e",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "discord",
+	"toolkitVersion": "20260724_00",
+	"toolCount": 23,
+	"readToolCount": 20,
+	"writeToolCount": 3,
+	"scopes": [
+		"applications.commands.permissions.update",
+		"applications.entitlements",
+		"connections",
+		"email",
+		"guilds",
+		"guilds.members.read",
+		"identify",
+		"openid",
+		"role_connections.write"
+	],
+	"operations": {
+		"read": [
+			"DISCORD_GET_APPLICATION_COMMAND_PERMISSIONS",
+			"DISCORD_GET_BATCH_APPLICATION_COMMAND_PERMISSIONS",
+			"DISCORD_GET_CURRENT_USER_APPLICATION_ENTITLEMENTS",
+			"DISCORD_GET_GATEWAY",
+			"DISCORD_GET_GUILD_TEMPLATE",
+			"DISCORD_GET_GUILD_WIDGET",
+			"DISCORD_GET_GUILD_WIDGET_PNG",
+			"DISCORD_GET_MY_GUILD_MEMBER",
+			"DISCORD_GET_MY_OAUTH2_AUTHORIZATION",
+			"DISCORD_GET_MY_USER",
+			"DISCORD_GET_OPENID_CONNECT_USERINFO",
+			"DISCORD_GET_PUBLIC_KEYS",
+			"DISCORD_GET_SKU_SUBSCRIPTION",
+			"DISCORD_GET_USER",
+			"DISCORD_GET_USER_APPLICATION_ROLE_CONNECTION",
+			"DISCORD_INVITE_RESOLVE",
+			"DISCORD_LIST_MY_CONNECTIONS",
+			"DISCORD_LIST_MY_GUILDS",
+			"DISCORD_LIST_SKU_SUBSCRIPTIONS",
+			"DISCORD_LIST_STICKER_PACKS"
+		],
+		"write": [
+			"DISCORD_DELETE_USER_APPLICATION_ROLE_CONNECTION",
+			"DISCORD_EDIT_APPLICATION_COMMAND_PERMISSIONS",
+			"DISCORD_UPDATE_USER_APPLICATION_ROLE_CONNECTION"
+		],
+		"important": [
+			"DISCORD_GET_GATEWAY",
+			"DISCORD_GET_USER",
+			"DISCORD_INVITE_RESOLVE"
+		],
+		"destructive": [
+			"DISCORD_DELETE_USER_APPLICATION_ROLE_CONNECTION"
+		],
+		"idempotent": [],
+		"openWorld": [
+			"DISCORD_DELETE_USER_APPLICATION_ROLE_CONNECTION",
+			"DISCORD_EDIT_APPLICATION_COMMAND_PERMISSIONS",
+			"DISCORD_GET_APPLICATION_COMMAND_PERMISSIONS",
+			"DISCORD_GET_BATCH_APPLICATION_COMMAND_PERMISSIONS",
+			"DISCORD_GET_CURRENT_USER_APPLICATION_ENTITLEMENTS",
+			"DISCORD_GET_GATEWAY",
+			"DISCORD_GET_GUILD_TEMPLATE",
+			"DISCORD_GET_GUILD_WIDGET",
+			"DISCORD_GET_GUILD_WIDGET_PNG",
+			"DISCORD_GET_MY_GUILD_MEMBER",
+			"DISCORD_GET_MY_OAUTH2_AUTHORIZATION",
+			"DISCORD_GET_MY_USER",
+			"DISCORD_GET_OPENID_CONNECT_USERINFO",
+			"DISCORD_GET_PUBLIC_KEYS",
+			"DISCORD_GET_SKU_SUBSCRIPTION",
+			"DISCORD_GET_USER",
+			"DISCORD_GET_USER_APPLICATION_ROLE_CONNECTION",
+			"DISCORD_INVITE_RESOLVE",
+			"DISCORD_LIST_MY_CONNECTIONS",
+			"DISCORD_LIST_MY_GUILDS",
+			"DISCORD_LIST_SKU_SUBSCRIPTIONS",
+			"DISCORD_LIST_STICKER_PACKS",
+			"DISCORD_UPDATE_USER_APPLICATION_ROLE_CONNECTION"
+		]
+	}
+}

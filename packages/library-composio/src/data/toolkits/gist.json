@@ -1,0 +1,103 @@
+{
+	"providerId": "gist",
+	"name": "Gist",
+	"description": "GitHub Gist is a service provided by GitHub that allows users to share code snippets, notes, and other text-based content. It supports both public and private gists, enabling easy sharing and collaboration.",
+	"logoUrl": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+	"appUrl": "https://gist.github.com/",
+	"categories": [
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_XwsbVVbaPuUb",
+			"name": "gist-1xnqo1",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "gist",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 20,
+	"readToolCount": 11,
+	"writeToolCount": 9,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"GIST_CHECK_GIST_STAR",
+			"GIST_GET_GIST",
+			"GIST_GET_GIST_COMMENT",
+			"GIST_GET_GIST_REVISION",
+			"GIST_LIST_GIST_COMMENTS",
+			"GIST_LIST_GIST_COMMITS",
+			"GIST_LIST_GIST_FORKS",
+			"GIST_LIST_GISTS",
+			"GIST_LIST_PUBLIC_GISTS",
+			"GIST_LIST_STARRED_GISTS",
+			"GIST_LIST_USER_GISTS"
+		],
+		"write": [
+			"GIST_CREATE_GIST",
+			"GIST_CREATE_GIST_COMMENT",
+			"GIST_DELETE_GIST",
+			"GIST_DELETE_GIST_COMMENT",
+			"GIST_FORK_GIST",
+			"GIST_STAR_GIST",
+			"GIST_UNSTAR_GIST",
+			"GIST_UPDATE_GIST",
+			"GIST_UPDATE_GIST_COMMENT"
+		],
+		"important": [
+			"GIST_CREATE_GIST",
+			"GIST_GET_GIST",
+			"GIST_LIST_GISTS"
+		],
+		"destructive": [
+			"GIST_DELETE_GIST",
+			"GIST_DELETE_GIST_COMMENT",
+			"GIST_UNSTAR_GIST"
+		],
+		"idempotent": [
+			"GIST_CHECK_GIST_STAR",
+			"GIST_DELETE_GIST",
+			"GIST_DELETE_GIST_COMMENT",
+			"GIST_GET_GIST",
+			"GIST_GET_GIST_COMMENT",
+			"GIST_GET_GIST_REVISION",
+			"GIST_LIST_GIST_COMMENTS",
+			"GIST_LIST_GIST_COMMITS",
+			"GIST_LIST_GIST_FORKS",
+			"GIST_LIST_GISTS",
+			"GIST_LIST_PUBLIC_GISTS",
+			"GIST_LIST_STARRED_GISTS",
+			"GIST_LIST_USER_GISTS",
+			"GIST_STAR_GIST",
+			"GIST_UNSTAR_GIST",
+			"GIST_UPDATE_GIST_COMMENT"
+		],
+		"openWorld": [
+			"GIST_CHECK_GIST_STAR",
+			"GIST_CREATE_GIST",
+			"GIST_CREATE_GIST_COMMENT",
+			"GIST_DELETE_GIST",
+			"GIST_DELETE_GIST_COMMENT",
+			"GIST_FORK_GIST",
+			"GIST_GET_GIST",
+			"GIST_GET_GIST_COMMENT",
+			"GIST_GET_GIST_REVISION",
+			"GIST_LIST_GIST_COMMENTS",
+			"GIST_LIST_GIST_COMMITS",
+			"GIST_LIST_GIST_FORKS",
+			"GIST_LIST_GISTS",
+			"GIST_LIST_PUBLIC_GISTS",
+			"GIST_LIST_STARRED_GISTS",
+			"GIST_LIST_USER_GISTS",
+			"GIST_STAR_GIST",
+			"GIST_UNSTAR_GIST",
+			"GIST_UPDATE_GIST",
+			"GIST_UPDATE_GIST_COMMENT"
+		]
+	}
+}

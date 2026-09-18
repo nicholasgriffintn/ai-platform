@@ -1,0 +1,60 @@
+{
+	"providerId": "gumroad",
+	"name": "Gumroad",
+	"description": "Gumroad simplifies selling digital goods, physical products, and memberships by offering a streamlined checkout, marketing tools, and direct payout options",
+	"logoUrl": "https://logos.composio.dev/api/gumroad",
+	"appUrl": "https://gumroad.com",
+	"categories": [
+		{
+			"id": "ecommerce",
+			"name": "eCommerce"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_6cP03aEVS2v4",
+			"name": "gumroad-vyxcbs",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "gumroad",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 7,
+	"readToolCount": 4,
+	"writeToolCount": 3,
+	"scopes": [
+		"view_profile",
+		"view_sales"
+	],
+	"operations": {
+		"read": [
+			"GUMROAD_GET_RESOURCE_SUBSCRIPTIONS",
+			"GUMROAD_GET_SALES",
+			"GUMROAD_GET_USER",
+			"GUMROAD_LIST_PRODUCTS"
+		],
+		"write": [
+			"GUMROAD_SUBSCRIBE_TO_RESOURCE",
+			"GUMROAD_UNSUBSCRIBE_FROM_RESOURCE",
+			"GUMROAD_VERIFY_LICENSE"
+		],
+		"important": [
+			"GUMROAD_GET_RESOURCE_SUBSCRIPTIONS",
+			"GUMROAD_GET_SALES",
+			"GUMROAD_GET_USER",
+			"GUMROAD_LIST_PRODUCTS",
+			"GUMROAD_SUBSCRIBE_TO_RESOURCE",
+			"GUMROAD_UNSUBSCRIBE_FROM_RESOURCE",
+			"GUMROAD_VERIFY_LICENSE"
+		],
+		"destructive": [
+			"GUMROAD_UNSUBSCRIBE_FROM_RESOURCE"
+		],
+		"idempotent": [],
+		"openWorld": [
+			"GUMROAD_LIST_PRODUCTS",
+			"GUMROAD_VERIFY_LICENSE"
+		]
+	}
+}

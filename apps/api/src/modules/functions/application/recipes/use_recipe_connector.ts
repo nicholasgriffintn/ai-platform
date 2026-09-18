@@ -1,3 +1,7 @@
+import {
+  getConnectorProviderConfig,
+  RECIPE_CONNECTOR_CONNECTION_KIND,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
 import {
   recipeConnectorProviderSchema,
@@ -7,12 +11,10 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
-import { getConnectorProviderConfig } from "~/infrastructure/providers/capabilities/connectors";
 import {
   retainComposioConnectorSession,
   resolveComposioRunAccount,
 } from "~/modules/apps/application/connectors/composio-run";
-import { RECIPE_CONNECTOR_CONNECTION_KIND } from "~/modules/apps/application/connectors/connection-references";
 import { authoriseConnectorOperation } from "~/modules/apps/application/connectors/operation-approvals";
 import {
   discoverRecipeConnectorTools,

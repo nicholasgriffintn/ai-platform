@@ -1,0 +1,124 @@
+{
+	"providerId": "wakatime",
+	"name": "WakaTime",
+	"description": "WakaTime offers automatic time tracking for developers, integrating with code editors and delivering dashboards on coding activity, project progress, and productivity",
+	"logoUrl": "https://logos.composio.dev/api/wakatime",
+	"appUrl": "https://wakatime.com/",
+	"categories": [
+		{
+			"id": "time-tracking-software",
+			"name": "Time Tracking Software"
+		},
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_6rqsGaWBFqRM",
+			"name": "wakatime-7sgre9",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "wakatime",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 17,
+	"readToolCount": 17,
+	"writeToolCount": 0,
+	"scopes": [
+		"email",
+		"read_goals",
+		"read_heartbeats",
+		"read_orgs",
+		"read_private_leaderboards",
+		"read_stats",
+		"read_stats.best_day",
+		"read_stats.categories",
+		"read_stats.dependencies",
+		"read_stats.editors",
+		"read_stats.languages",
+		"read_stats.machines",
+		"read_stats.operating_systems",
+		"read_stats.projects",
+		"read_summaries",
+		"read_summaries.categories",
+		"read_summaries.dependencies",
+		"read_summaries.editors",
+		"read_summaries.languages",
+		"read_summaries.machines",
+		"read_summaries.operating_systems",
+		"read_summaries.projects",
+		"write_heartbeats",
+		"write_orgs",
+		"write_private_leaderboards"
+	],
+	"operations": {
+		"read": [
+			"WAKATIME_GET_AGGREGATE_STATS",
+			"WAKATIME_GET_CURRENT_USER_STATUS_BAR_TODAY",
+			"WAKATIME_GET_EDITORS",
+			"WAKATIME_GET_GOALS",
+			"WAKATIME_GET_INSIGHTS",
+			"WAKATIME_GET_LEADERS",
+			"WAKATIME_GET_MACHINE_NAMES",
+			"WAKATIME_GET_META",
+			"WAKATIME_GET_OAUTH_AUTHORIZE",
+			"WAKATIME_GET_USER",
+			"WAKATIME_GET_USER_STATS",
+			"WAKATIME_GET_USER_STATS_BY_RANGE",
+			"WAKATIME_GET_USER_SUMMARIES",
+			"WAKATIME_GET_USERS_ALL_TIME_SINCE_TODAY",
+			"WAKATIME_LIST_PROGRAM_LANGUAGES",
+			"WAKATIME_LIST_USER_PROJECTS",
+			"WAKATIME_LIST_USER_USER_AGENTS"
+		],
+		"write": [],
+		"important": [
+			"WAKATIME_GET_INSIGHTS",
+			"WAKATIME_GET_OAUTH_AUTHORIZE",
+			"WAKATIME_GET_USER_STATS",
+			"WAKATIME_GET_USER_STATS_BY_RANGE",
+			"WAKATIME_GET_USER_SUMMARIES"
+		],
+		"destructive": [],
+		"idempotent": [
+			"WAKATIME_GET_AGGREGATE_STATS",
+			"WAKATIME_GET_CURRENT_USER_STATUS_BAR_TODAY",
+			"WAKATIME_GET_EDITORS",
+			"WAKATIME_GET_GOALS",
+			"WAKATIME_GET_INSIGHTS",
+			"WAKATIME_GET_LEADERS",
+			"WAKATIME_GET_MACHINE_NAMES",
+			"WAKATIME_GET_META",
+			"WAKATIME_GET_USER",
+			"WAKATIME_GET_USER_STATS",
+			"WAKATIME_GET_USER_STATS_BY_RANGE",
+			"WAKATIME_GET_USER_SUMMARIES",
+			"WAKATIME_GET_USERS_ALL_TIME_SINCE_TODAY",
+			"WAKATIME_LIST_PROGRAM_LANGUAGES",
+			"WAKATIME_LIST_USER_PROJECTS",
+			"WAKATIME_LIST_USER_USER_AGENTS"
+		],
+		"openWorld": [
+			"WAKATIME_GET_AGGREGATE_STATS",
+			"WAKATIME_GET_CURRENT_USER_STATUS_BAR_TODAY",
+			"WAKATIME_GET_EDITORS",
+			"WAKATIME_GET_GOALS",
+			"WAKATIME_GET_INSIGHTS",
+			"WAKATIME_GET_LEADERS",
+			"WAKATIME_GET_MACHINE_NAMES",
+			"WAKATIME_GET_META",
+			"WAKATIME_GET_OAUTH_AUTHORIZE",
+			"WAKATIME_GET_USER",
+			"WAKATIME_GET_USER_STATS",
+			"WAKATIME_GET_USER_STATS_BY_RANGE",
+			"WAKATIME_GET_USER_SUMMARIES",
+			"WAKATIME_GET_USERS_ALL_TIME_SINCE_TODAY",
+			"WAKATIME_LIST_PROGRAM_LANGUAGES",
+			"WAKATIME_LIST_USER_PROJECTS",
+			"WAKATIME_LIST_USER_USER_AGENTS"
+		]
+	}
+}

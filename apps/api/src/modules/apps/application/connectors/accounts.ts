@@ -1,3 +1,8 @@
+import {
+  CONNECTOR_ACCOUNT_REFERENCE_KIND,
+  listComposioConnectedAccounts,
+  type ComposioConnectedAccount,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import type {
   RecipeConnectorAccount,
   RecipeConnectorAccountUpdateRequest,
@@ -7,13 +12,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import {
-  type ComposioConnectedAccount,
-  listComposioConnectedAccounts,
-} from "~/infrastructure/providers/capabilities/connectors/composio/client";
 import type { ProviderConnectionRecord } from "~/modules/apps/infrastructure/ProviderConnectionRepository";
 
-import { CONNECTOR_ACCOUNT_REFERENCE_KIND } from "./connection-references";
 import { getRecipeConnectorProviderConfig } from "./connector-adapters";
 
 const ACCOUNT_ALIAS_KIND = "recipe_connector_account_alias";

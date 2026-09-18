@@ -1,0 +1,101 @@
+{
+	"providerId": "reddit",
+	"name": "Reddit",
+	"description": "Reddit is a social news platform with user-driven communities (subreddits), offering content sharing, discussions, and viral marketing opportunities for brands",
+	"logoUrl": "https://logos.composio.dev/api/reddit",
+	"appUrl": "https://www.reddit.com",
+	"categories": [
+		{
+			"id": "social-media-accounts",
+			"name": "Social Media Accounts"
+		},
+		{
+			"id": "social-media-marketing",
+			"name": "Social Media Marketing"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_RM6g8gRvPpHl",
+			"name": "reddit-osfvgi",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "reddit",
+	"toolkitVersion": "20260724_00",
+	"toolCount": 21,
+	"readToolCount": 15,
+	"writeToolCount": 6,
+	"scopes": [
+		"edit",
+		"flair",
+		"identity",
+		"modflair",
+		"privatemessages",
+		"read",
+		"submit"
+	],
+	"operations": {
+		"read": [
+			"REDDIT_GET",
+			"REDDIT_GET_CONTROVERSIAL_POSTS",
+			"REDDIT_GET_ME_PREFS",
+			"REDDIT_GET_RANDOM",
+			"REDDIT_GET_REDDIT_USER_ABOUT",
+			"REDDIT_GET_SCOPES",
+			"REDDIT_GET_SUBREDDIT_RULES",
+			"REDDIT_GET_SUBREDDITS_SEARCH",
+			"REDDIT_GET_USER_FLAIR",
+			"REDDIT_GET_USERNAME_AVAILABLE",
+			"REDDIT_LIST_SUBREDDIT_POST_FLAIRS",
+			"REDDIT_RETRIEVE_POST_COMMENTS",
+			"REDDIT_RETRIEVE_REDDIT_POST",
+			"REDDIT_RETRIEVE_SPECIFIC_COMMENT",
+			"REDDIT_SEARCH_ACROSS_SUBREDDITS"
+		],
+		"write": [
+			"REDDIT_CREATE_REDDIT_POST",
+			"REDDIT_DELETE_REDDIT_COMMENT",
+			"REDDIT_DELETE_REDDIT_POST",
+			"REDDIT_EDIT_REDDIT_COMMENT_OR_POST",
+			"REDDIT_POST_REDDIT_COMMENT",
+			"REDDIT_TOGGLE_INBOX_REPLIES"
+		],
+		"important": [
+			"REDDIT_EDIT_REDDIT_COMMENT_OR_POST",
+			"REDDIT_GET",
+			"REDDIT_GET_CONTROVERSIAL_POSTS",
+			"REDDIT_GET_REDDIT_USER_ABOUT",
+			"REDDIT_GET_SUBREDDITS_SEARCH"
+		],
+		"destructive": [
+			"REDDIT_DELETE_REDDIT_COMMENT",
+			"REDDIT_DELETE_REDDIT_POST"
+		],
+		"idempotent": [],
+		"openWorld": [
+			"REDDIT_CREATE_REDDIT_POST",
+			"REDDIT_DELETE_REDDIT_COMMENT",
+			"REDDIT_DELETE_REDDIT_POST",
+			"REDDIT_EDIT_REDDIT_COMMENT_OR_POST",
+			"REDDIT_GET",
+			"REDDIT_GET_CONTROVERSIAL_POSTS",
+			"REDDIT_GET_ME_PREFS",
+			"REDDIT_GET_RANDOM",
+			"REDDIT_GET_REDDIT_USER_ABOUT",
+			"REDDIT_GET_SCOPES",
+			"REDDIT_GET_SUBREDDIT_RULES",
+			"REDDIT_GET_SUBREDDITS_SEARCH",
+			"REDDIT_GET_USER_FLAIR",
+			"REDDIT_GET_USERNAME_AVAILABLE",
+			"REDDIT_LIST_SUBREDDIT_POST_FLAIRS",
+			"REDDIT_POST_REDDIT_COMMENT",
+			"REDDIT_RETRIEVE_POST_COMMENTS",
+			"REDDIT_RETRIEVE_REDDIT_POST",
+			"REDDIT_RETRIEVE_SPECIFIC_COMMENT",
+			"REDDIT_SEARCH_ACROSS_SUBREDDITS",
+			"REDDIT_TOGGLE_INBOX_REPLIES"
+		]
+	}
+}

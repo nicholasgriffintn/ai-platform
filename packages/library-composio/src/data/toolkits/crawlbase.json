@@ -1,0 +1,53 @@
+{
+	"providerId": "crawlbase",
+	"name": "Crawlbase",
+	"description": "Crawlbase provides APIs for crawling web pages, managing crawler queues, storing crawl results, and monitoring account usage.",
+	"logoUrl": "https://logos.composio.dev/api/crawlbase",
+	"appUrl": "https://crawlbase.com",
+	"categories": [
+		{
+			"id": "ai-web-scraping",
+			"name": "AI Web Scraping"
+		},
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_eDh99AAk2GKI",
+			"name": "crawlbase-m40bgf",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "crawlbase",
+	"toolkitVersion": "00000000_00",
+	"toolCount": 8,
+	"readToolCount": 6,
+	"writeToolCount": 2,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"CRAWLBASE_GENERATE_USER_AGENTS",
+			"CRAWLBASE_GET_CRAWLING_USAGE",
+			"CRAWLBASE_GET_STORAGE_COUNT",
+			"CRAWLBASE_GET_STORED_PAGE",
+			"CRAWLBASE_GET_STORED_PAGES",
+			"CRAWLBASE_LIST_STORED_PAGE_IDS"
+		],
+		"write": [
+			"CRAWLBASE_CRAWL_URL",
+			"CRAWLBASE_DELETE_STORED_PAGES"
+		],
+		"important": [],
+		"destructive": [
+			"CRAWLBASE_DELETE_STORED_PAGES"
+		],
+		"idempotent": [
+			"CRAWLBASE_GET_STORED_PAGES"
+		],
+		"openWorld": []
+	}
+}

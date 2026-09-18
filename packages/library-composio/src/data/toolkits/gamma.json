@@ -1,0 +1,58 @@
+{
+	"providerId": "gamma",
+	"name": "Gamma",
+	"description": "Gamma helps create beautiful, interactive content and presentations using AI. This integration enables programmatic generation via Gamma’s API.",
+	"logoUrl": "https://logos.composio.dev/api/gamma",
+	"appUrl": "https://gamma.app",
+	"categories": [
+		{
+			"id": "ai-content-generation",
+			"name": "AI Content Generation"
+		},
+		{
+			"id": "documents",
+			"name": "Documents"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_ffj1GnU3OSVC",
+			"name": "gamma-nb99vo",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "gamma",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 5,
+	"readToolCount": 3,
+	"writeToolCount": 2,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"GAMMA_GET_GAMMA_FILE_URLS",
+			"GAMMA_LIST_FOLDERS",
+			"GAMMA_LIST_THEMES"
+		],
+		"write": [
+			"GAMMA_CREATE_FROM_TEMPLATE",
+			"GAMMA_GENERATE_GAMMA"
+		],
+		"important": [
+			"GAMMA_CREATE_FROM_TEMPLATE",
+			"GAMMA_GENERATE_GAMMA",
+			"GAMMA_LIST_FOLDERS",
+			"GAMMA_LIST_THEMES"
+		],
+		"destructive": [],
+		"idempotent": [
+			"GAMMA_CREATE_FROM_TEMPLATE",
+			"GAMMA_GENERATE_GAMMA"
+		],
+		"openWorld": [
+			"GAMMA_CREATE_FROM_TEMPLATE",
+			"GAMMA_LIST_FOLDERS",
+			"GAMMA_LIST_THEMES"
+		]
+	}
+}

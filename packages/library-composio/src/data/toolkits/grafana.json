@@ -1,0 +1,84 @@
+{
+	"providerId": "grafana",
+	"name": "Grafana",
+	"description": "Open and composable observability platform for metrics, logs, and traces",
+	"logoUrl": "https://logos.composio.dev/api/grafana",
+	"appUrl": "https://grafana.com/",
+	"categories": [
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		},
+		{
+			"id": "server-monitoring",
+			"name": "Server Monitoring"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_XT-CVTfU0O1-",
+			"name": "grafana-w5okqo",
+			"authScheme": "BEARER_TOKEN",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "grafana",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 11,
+	"readToolCount": 9,
+	"writeToolCount": 2,
+	"scopes": [
+		"licensing:read"
+	],
+	"operations": {
+		"read": [
+			"GRAFANA_GET_DISTRIBUTOR_HA_TRACKER",
+			"GRAFANA_GET_HEALTH",
+			"GRAFANA_GET_INDEX_GATEWAY_RING",
+			"GRAFANA_GET_OVERRIDES_EXPORTER_RING",
+			"GRAFANA_GET_RULER_RING",
+			"GRAFANA_GET_STATUS",
+			"GRAFANA_GET_STORE_GATEWAY_TENANTS",
+			"GRAFANA_QUERY_PUBLIC_DASHBOARD",
+			"GRAFANA_RETRIEVE_JWKS"
+		],
+		"write": [
+			"GRAFANA_CREATE_OTLP_V1_LOGS",
+			"GRAFANA_POST_ACS"
+		],
+		"important": [
+			"GRAFANA_GET_HEALTH",
+			"GRAFANA_GET_INDEX_GATEWAY_RING",
+			"GRAFANA_GET_RULER_RING",
+			"GRAFANA_GET_STATUS",
+			"GRAFANA_POST_ACS",
+			"GRAFANA_QUERY_PUBLIC_DASHBOARD",
+			"GRAFANA_RETRIEVE_JWKS"
+		],
+		"destructive": [],
+		"idempotent": [
+			"GRAFANA_GET_DISTRIBUTOR_HA_TRACKER",
+			"GRAFANA_GET_HEALTH",
+			"GRAFANA_GET_INDEX_GATEWAY_RING",
+			"GRAFANA_GET_OVERRIDES_EXPORTER_RING",
+			"GRAFANA_GET_RULER_RING",
+			"GRAFANA_GET_STATUS",
+			"GRAFANA_GET_STORE_GATEWAY_TENANTS",
+			"GRAFANA_QUERY_PUBLIC_DASHBOARD",
+			"GRAFANA_RETRIEVE_JWKS"
+		],
+		"openWorld": [
+			"GRAFANA_CREATE_OTLP_V1_LOGS",
+			"GRAFANA_GET_DISTRIBUTOR_HA_TRACKER",
+			"GRAFANA_GET_HEALTH",
+			"GRAFANA_GET_INDEX_GATEWAY_RING",
+			"GRAFANA_GET_OVERRIDES_EXPORTER_RING",
+			"GRAFANA_GET_RULER_RING",
+			"GRAFANA_GET_STATUS",
+			"GRAFANA_GET_STORE_GATEWAY_TENANTS",
+			"GRAFANA_POST_ACS",
+			"GRAFANA_QUERY_PUBLIC_DASHBOARD",
+			"GRAFANA_RETRIEVE_JWKS"
+		]
+	}
+}

@@ -1,0 +1,98 @@
+{
+	"providerId": "yandex",
+	"name": "Yandex",
+	"description": "Yandex is a Russian internet services provider offering search, email, navigation, and other web-based solutions, often referred to as “Russia’s Google”",
+	"logoUrl": "https://logos.composio.dev/api/yandex",
+	"appUrl": "https://yandex.com/",
+	"categories": [
+		{
+			"id": "email",
+			"name": "Email"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_7F9GELfK7B7-",
+			"name": "yandex-otiyk3",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "yandex",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 21,
+	"readToolCount": 21,
+	"writeToolCount": 0,
+	"scopes": [
+		"metrika:read"
+	],
+	"operations": {
+		"read": [
+			"YANDEX_GEOCODER_REVERSE",
+			"YANDEX_GET_ACCOUNT_EXPERIMENTS",
+			"YANDEX_GET_ACCOUNT_STATUS",
+			"YANDEX_GET_GENRES",
+			"YANDEX_GET_PERMISSION_ALERTS",
+			"YANDEX_GET_PLAYLISTS_IDS_BY_TAG",
+			"YANDEX_GET_PUBLIC_RESOURCE",
+			"YANDEX_GET_PUBLIC_RESOURCE_DOWNLOAD_LINK",
+			"YANDEX_GET_ROTOR_ACCOUNT_STATUS",
+			"YANDEX_GET_ROTOR_STATIONS_DASHBOARD",
+			"YANDEX_GET_SETTINGS",
+			"YANDEX_GET_STATIONS_LIST",
+			"YANDEX_GET_TRACK_DOWNLOAD_INFO",
+			"YANDEX_LIST_FILTERS",
+			"YANDEX_LIST_GOALS",
+			"YANDEX_LIST_GRANTS",
+			"YANDEX_LIST_LOG_REQUESTS",
+			"YANDEX_LIST_STORAGE_BUCKETS",
+			"YANDEX_ORGANIZATION_SEARCH",
+			"YANDEX_ROUTE",
+			"YANDEX_TILES"
+		],
+		"write": [],
+		"important": [
+			"YANDEX_GEOCODER_REVERSE",
+			"YANDEX_GET_ACCOUNT_EXPERIMENTS",
+			"YANDEX_GET_ACCOUNT_STATUS",
+			"YANDEX_GET_GENRES",
+			"YANDEX_GET_PUBLIC_RESOURCE",
+			"YANDEX_GET_PUBLIC_RESOURCE_DOWNLOAD_LINK",
+			"YANDEX_GET_ROTOR_STATIONS_DASHBOARD",
+			"YANDEX_GET_SETTINGS",
+			"YANDEX_GET_STATIONS_LIST",
+			"YANDEX_GET_TRACK_DOWNLOAD_INFO",
+			"YANDEX_LIST_GOALS",
+			"YANDEX_LIST_GRANTS",
+			"YANDEX_LIST_LOG_REQUESTS",
+			"YANDEX_ORGANIZATION_SEARCH",
+			"YANDEX_ROUTE",
+			"YANDEX_TILES"
+		],
+		"destructive": [],
+		"idempotent": [],
+		"openWorld": [
+			"YANDEX_GEOCODER_REVERSE",
+			"YANDEX_GET_ACCOUNT_EXPERIMENTS",
+			"YANDEX_GET_ACCOUNT_STATUS",
+			"YANDEX_GET_GENRES",
+			"YANDEX_GET_PERMISSION_ALERTS",
+			"YANDEX_GET_PLAYLISTS_IDS_BY_TAG",
+			"YANDEX_GET_PUBLIC_RESOURCE",
+			"YANDEX_GET_PUBLIC_RESOURCE_DOWNLOAD_LINK",
+			"YANDEX_GET_ROTOR_ACCOUNT_STATUS",
+			"YANDEX_GET_ROTOR_STATIONS_DASHBOARD",
+			"YANDEX_GET_SETTINGS",
+			"YANDEX_GET_STATIONS_LIST",
+			"YANDEX_GET_TRACK_DOWNLOAD_INFO",
+			"YANDEX_LIST_FILTERS",
+			"YANDEX_LIST_GOALS",
+			"YANDEX_LIST_GRANTS",
+			"YANDEX_LIST_LOG_REQUESTS",
+			"YANDEX_LIST_STORAGE_BUCKETS",
+			"YANDEX_ORGANIZATION_SEARCH",
+			"YANDEX_ROUTE",
+			"YANDEX_TILES"
+		]
+	}
+}

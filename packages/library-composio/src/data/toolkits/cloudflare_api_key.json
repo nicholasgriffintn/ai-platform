@@ -1,0 +1,83 @@
+{
+	"providerId": "cloudflare_api_key",
+	"name": "Cloudflare Api Key",
+	"description": "Cloudflare provides a suite of services to enhance the security, performance, and reliability of websites and applications.",
+	"logoUrl": "https://www.cloudflare.com/img/logo-cloudflare.svg",
+	"appUrl": "https://www.cloudflare.com/",
+	"categories": [
+		{
+			"id": "security-&-identity-tools",
+			"name": "Security & Identity Tools"
+		},
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_v6pyGB3bOaY7",
+			"name": "cloudflare_api_key-3vuyxg",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "cloudflare_api_key",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 25,
+	"readToolCount": 8,
+	"writeToolCount": 17,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"CLOUDFLARE_API_KEY_GET_CLOUDFLARE_IP_ADDRESSES",
+			"CLOUDFLARE_API_KEY_GET_ENTRYPOINT_RULESET_VERSION",
+			"CLOUDFLARE_API_KEY_GET_LOCKDOWN_RULE",
+			"CLOUDFLARE_API_KEY_GET_REGIONAL_TIERED_CACHE",
+			"CLOUDFLARE_API_KEY_GET_RULESET",
+			"CLOUDFLARE_API_KEY_GET_ZONE_DETAILS",
+			"CLOUDFLARE_API_KEY_LIST_DNS_RECORDS",
+			"CLOUDFLARE_API_KEY_LIST_ZONES"
+		],
+		"write": [
+			"CLOUDFLARE_API_KEY_CREATE_DNS_RECORD",
+			"CLOUDFLARE_API_KEY_CREATE_LOCKDOWN_RULE",
+			"CLOUDFLARE_API_KEY_CREATE_RULE_IN_RULESET",
+			"CLOUDFLARE_API_KEY_CREATE_RULESET",
+			"CLOUDFLARE_API_KEY_DELETE_DNS_RECORD",
+			"CLOUDFLARE_API_KEY_DELETE_DNSSEC",
+			"CLOUDFLARE_API_KEY_DELETE_RULE_FROM_RULESET",
+			"CLOUDFLARE_API_KEY_DELETE_RULESET",
+			"CLOUDFLARE_API_KEY_DELETE_ZONE",
+			"CLOUDFLARE_API_KEY_OVERWRITE_DNS_RECORD",
+			"CLOUDFLARE_API_KEY_RERUN_ZONE_ACTIVATION_CHECK",
+			"CLOUDFLARE_API_KEY_UPDATE_DNSSEC_STATUS",
+			"CLOUDFLARE_API_KEY_UPDATE_LOCKDOWN_RULE",
+			"CLOUDFLARE_API_KEY_UPDATE_RULE_IN_RULESET",
+			"CLOUDFLARE_API_KEY_UPDATE_RULESET",
+			"CLOUDFLARE_API_KEY_UPDATE_ZONE",
+			"CLOUDFLARE_API_KEY_UPLOAD_FILE_TO_S3"
+		],
+		"important": [
+			"CLOUDFLARE_API_KEY_CREATE_DNS_RECORD",
+			"CLOUDFLARE_API_KEY_CREATE_LOCKDOWN_RULE",
+			"CLOUDFLARE_API_KEY_CREATE_RULE_IN_RULESET",
+			"CLOUDFLARE_API_KEY_CREATE_RULESET"
+		],
+		"destructive": [
+			"CLOUDFLARE_API_KEY_DELETE_DNS_RECORD",
+			"CLOUDFLARE_API_KEY_DELETE_DNSSEC",
+			"CLOUDFLARE_API_KEY_DELETE_RULE_FROM_RULESET",
+			"CLOUDFLARE_API_KEY_DELETE_RULESET",
+			"CLOUDFLARE_API_KEY_DELETE_ZONE"
+		],
+		"idempotent": [],
+		"openWorld": [
+			"CLOUDFLARE_API_KEY_CREATE_DNS_RECORD",
+			"CLOUDFLARE_API_KEY_CREATE_LOCKDOWN_RULE",
+			"CLOUDFLARE_API_KEY_CREATE_RULE_IN_RULESET",
+			"CLOUDFLARE_API_KEY_CREATE_RULESET",
+			"CLOUDFLARE_API_KEY_GET_CLOUDFLARE_IP_ADDRESSES"
+		]
+	}
+}

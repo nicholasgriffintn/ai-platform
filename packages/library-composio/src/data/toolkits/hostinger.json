@@ -1,0 +1,76 @@
+{
+	"providerId": "hostinger",
+	"name": "Hostinger",
+	"description": "Web hosting and domain management platform with APIs for billing, domains, DNS, and VPS management",
+	"logoUrl": "https://logos.composio.dev/api/hostinger",
+	"appUrl": "https://www.hostinger.com",
+	"categories": [
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_hn2NPJKitTGC",
+			"name": "hostinger-ky1tkl",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "hostinger",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 24,
+	"readToolCount": 20,
+	"writeToolCount": 4,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"HOSTINGER_CHECK_DOMAIN_AVAILABILITY",
+			"HOSTINGER_GET_DNS_RECORDS",
+			"HOSTINGER_GET_DOMAIN_FORWARDING",
+			"HOSTINGER_GET_TEMPLATE_DETAILS",
+			"HOSTINGER_GET_WHOIS_PROFILE",
+			"HOSTINGER_GET_WHOIS_PROFILE_USAGE",
+			"HOSTINGER_LIST_CATALOG_ITEMS",
+			"HOSTINGER_LIST_DATA_CENTERS",
+			"HOSTINGER_LIST_DNS_SNAPSHOTS",
+			"HOSTINGER_LIST_DOMAINS",
+			"HOSTINGER_LIST_ORDERS",
+			"HOSTINGER_LIST_PAYMENT_METHODS",
+			"HOSTINGER_LIST_PUBLIC_KEYS",
+			"HOSTINGER_LIST_SUBSCRIPTIONS",
+			"HOSTINGER_LIST_TEMPLATES",
+			"HOSTINGER_LIST_VIRTUAL_MACHINES",
+			"HOSTINGER_LIST_WEBSITES",
+			"HOSTINGER_LIST_WHOIS_PROFILES",
+			"HOSTINGER_VALIDATE_DNS_RECORDS",
+			"HOSTINGER_VERIFY_DOMAIN_OWNERSHIP"
+		],
+		"write": [
+			"HOSTINGER_CREATE_PUBLIC_KEY",
+			"HOSTINGER_CREATE_WHOIS_PROFILE",
+			"HOSTINGER_DELETE_PUBLIC_KEY",
+			"HOSTINGER_GENERATE_FREE_SUBDOMAIN"
+		],
+		"important": [
+			"HOSTINGER_CHECK_DOMAIN_AVAILABILITY",
+			"HOSTINGER_GET_DNS_RECORDS",
+			"HOSTINGER_LIST_CATALOG_ITEMS",
+			"HOSTINGER_LIST_DOMAINS",
+			"HOSTINGER_LIST_ORDERS",
+			"HOSTINGER_LIST_PAYMENT_METHODS",
+			"HOSTINGER_LIST_PUBLIC_KEYS",
+			"HOSTINGER_LIST_SUBSCRIPTIONS",
+			"HOSTINGER_LIST_VIRTUAL_MACHINES",
+			"HOSTINGER_LIST_WEBSITES"
+		],
+		"destructive": [
+			"HOSTINGER_DELETE_PUBLIC_KEY"
+		],
+		"idempotent": [
+			"HOSTINGER_DELETE_PUBLIC_KEY"
+		],
+		"openWorld": []
+	}
+}

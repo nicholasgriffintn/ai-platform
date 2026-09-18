@@ -1,0 +1,82 @@
+{
+	"providerId": "googletasks",
+	"name": "Google Tasks",
+	"description": "Google Tasks provides a simple to-do list and task management system integrated into Gmail and Google Calendar for quick and easy tracking",
+	"logoUrl": "https://logos.composio.dev/api/googletasks",
+	"appUrl": "https://tasks.google.com/tasks/",
+	"categories": [
+		{
+			"id": "task-management",
+			"name": "Task Management"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_y2jBRqADSTv_",
+			"name": "googletasks-wy1ufr",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "googletasks",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 16,
+	"readToolCount": 5,
+	"writeToolCount": 11,
+	"scopes": [
+		"https://www.googleapis.com/auth/tasks",
+		"https://www.googleapis.com/auth/tasks.readonly"
+	],
+	"operations": {
+		"read": [
+			"GOOGLETASKS_GET_TASK",
+			"GOOGLETASKS_GET_TASK_LIST",
+			"GOOGLETASKS_LIST_ALL_TASKS",
+			"GOOGLETASKS_LIST_TASK_LISTS",
+			"GOOGLETASKS_LIST_TASKS"
+		],
+		"write": [
+			"GOOGLETASKS_BATCH_EXECUTE",
+			"GOOGLETASKS_CLEAR_TASKS",
+			"GOOGLETASKS_CREATE_TASK_LIST",
+			"GOOGLETASKS_DELETE_TASK",
+			"GOOGLETASKS_DELETE_TASK_LIST",
+			"GOOGLETASKS_INSERT_TASK",
+			"GOOGLETASKS_MOVE_TASK",
+			"GOOGLETASKS_PATCH_TASK",
+			"GOOGLETASKS_PATCH_TASK_LIST",
+			"GOOGLETASKS_UPDATE_TASK_FULL",
+			"GOOGLETASKS_UPDATE_TASK_LIST"
+		],
+		"important": [
+			"GOOGLETASKS_UPDATE_TASK_FULL"
+		],
+		"destructive": [
+			"GOOGLETASKS_BATCH_EXECUTE",
+			"GOOGLETASKS_CLEAR_TASKS",
+			"GOOGLETASKS_DELETE_TASK",
+			"GOOGLETASKS_DELETE_TASK_LIST"
+		],
+		"idempotent": [
+			"GOOGLETASKS_CLEAR_TASKS",
+			"GOOGLETASKS_DELETE_TASK_LIST",
+			"GOOGLETASKS_UPDATE_TASK_FULL"
+		],
+		"openWorld": [
+			"GOOGLETASKS_BATCH_EXECUTE",
+			"GOOGLETASKS_CLEAR_TASKS",
+			"GOOGLETASKS_CREATE_TASK_LIST",
+			"GOOGLETASKS_DELETE_TASK",
+			"GOOGLETASKS_DELETE_TASK_LIST",
+			"GOOGLETASKS_GET_TASK",
+			"GOOGLETASKS_GET_TASK_LIST",
+			"GOOGLETASKS_INSERT_TASK",
+			"GOOGLETASKS_LIST_ALL_TASKS",
+			"GOOGLETASKS_LIST_TASK_LISTS",
+			"GOOGLETASKS_LIST_TASKS",
+			"GOOGLETASKS_PATCH_TASK",
+			"GOOGLETASKS_PATCH_TASK_LIST",
+			"GOOGLETASKS_UPDATE_TASK_FULL"
+		]
+	}
+}

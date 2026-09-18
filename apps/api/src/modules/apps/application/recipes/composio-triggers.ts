@@ -1,3 +1,13 @@
+import {
+  deleteComposioTriggerInstance,
+  getComposioTriggerType,
+  getComposioUserId,
+  getConnectorProviderConfig,
+  listComposioConnectedAccounts,
+  listComposioTriggerTypes,
+  setComposioTriggerEnabled,
+  upsertComposioTriggerInstance,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import type {
   RecipeComposioTrigger,
   RecipeComposioTriggerCreateRequest,
@@ -6,18 +16,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getConnectorProviderConfig } from "~/infrastructure/providers/capabilities/connectors";
-import {
-  getComposioUserId,
-  listComposioConnectedAccounts,
-} from "~/infrastructure/providers/capabilities/connectors/composio/client";
-import {
-  deleteComposioTriggerInstance,
-  getComposioTriggerType,
-  listComposioTriggerTypes,
-  setComposioTriggerEnabled,
-  upsertComposioTriggerInstance,
-} from "~/modules/apps/infrastructure/connectors/composio-trigger-client";
 import type { RecipeComposioTriggerRecord } from "~/modules/apps/infrastructure/RecipeComposioTriggerRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 

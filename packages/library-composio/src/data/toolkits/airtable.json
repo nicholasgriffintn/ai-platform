@@ -1,0 +1,118 @@
+{
+	"providerId": "airtable",
+	"name": "Airtable",
+	"description": "Airtable merges spreadsheet functionality with database power, enabling teams to organize projects, track tasks, and collaborate through customizable views, automation, and integrations for data management",
+	"logoUrl": "https://logos.composio.dev/api/airtable",
+	"appUrl": "https://www.airtable.com/",
+	"categories": [
+		{
+			"id": "productivity",
+			"name": "Productivity"
+		},
+		{
+			"id": "spreadsheets",
+			"name": "Spreadsheets"
+		},
+		{
+			"id": "databases",
+			"name": "Databases"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_XI46beTJeNlJ",
+			"name": "airtable",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "airtable",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 24,
+	"readToolCount": 7,
+	"writeToolCount": 17,
+	"scopes": [
+		"data.recordComments:read",
+		"data.recordComments:write",
+		"data.records:read",
+		"data.records:write",
+		"schema.bases:read",
+		"schema.bases:write"
+	],
+	"operations": {
+		"read": [
+			"AIRTABLE_GET_ATTACHMENT_INFO",
+			"AIRTABLE_GET_BASE_SCHEMA",
+			"AIRTABLE_GET_RECORD",
+			"AIRTABLE_GET_USER_INFO",
+			"AIRTABLE_LIST_BASES",
+			"AIRTABLE_LIST_COMMENTS",
+			"AIRTABLE_LIST_RECORDS"
+		],
+		"write": [
+			"AIRTABLE_CREATE_BASE",
+			"AIRTABLE_CREATE_COMMENT",
+			"AIRTABLE_CREATE_FIELD",
+			"AIRTABLE_CREATE_RECORD_FROM_NATURAL_LANGUAGE",
+			"AIRTABLE_CREATE_RECORDS",
+			"AIRTABLE_CREATE_TABLE",
+			"AIRTABLE_DELETE_COMMENT",
+			"AIRTABLE_DELETE_MULTIPLE_RECORDS",
+			"AIRTABLE_DELETE_RECORD",
+			"AIRTABLE_UPDATE_COMMENT",
+			"AIRTABLE_UPDATE_FIELD",
+			"AIRTABLE_UPDATE_MULTIPLE_RECORDS",
+			"AIRTABLE_UPDATE_MULTIPLE_RECORDS_PUT",
+			"AIRTABLE_UPDATE_RECORD",
+			"AIRTABLE_UPDATE_RECORD_PUT",
+			"AIRTABLE_UPDATE_TABLE",
+			"AIRTABLE_UPLOAD_ATTACHMENT"
+		],
+		"important": [
+			"AIRTABLE_CREATE_RECORD_FROM_NATURAL_LANGUAGE",
+			"AIRTABLE_CREATE_RECORDS",
+			"AIRTABLE_GET_BASE_SCHEMA",
+			"AIRTABLE_GET_RECORD",
+			"AIRTABLE_LIST_BASES",
+			"AIRTABLE_UPDATE_MULTIPLE_RECORDS",
+			"AIRTABLE_UPDATE_MULTIPLE_RECORDS_PUT",
+			"AIRTABLE_UPDATE_RECORD",
+			"AIRTABLE_UPDATE_RECORD_PUT"
+		],
+		"destructive": [
+			"AIRTABLE_DELETE_COMMENT",
+			"AIRTABLE_DELETE_MULTIPLE_RECORDS",
+			"AIRTABLE_DELETE_RECORD"
+		],
+		"idempotent": [
+			"AIRTABLE_DELETE_COMMENT",
+			"AIRTABLE_DELETE_MULTIPLE_RECORDS"
+		],
+		"openWorld": [
+			"AIRTABLE_CREATE_BASE",
+			"AIRTABLE_CREATE_COMMENT",
+			"AIRTABLE_CREATE_FIELD",
+			"AIRTABLE_CREATE_RECORD_FROM_NATURAL_LANGUAGE",
+			"AIRTABLE_CREATE_RECORDS",
+			"AIRTABLE_CREATE_TABLE",
+			"AIRTABLE_DELETE_COMMENT",
+			"AIRTABLE_DELETE_MULTIPLE_RECORDS",
+			"AIRTABLE_DELETE_RECORD",
+			"AIRTABLE_GET_ATTACHMENT_INFO",
+			"AIRTABLE_GET_BASE_SCHEMA",
+			"AIRTABLE_GET_RECORD",
+			"AIRTABLE_GET_USER_INFO",
+			"AIRTABLE_LIST_BASES",
+			"AIRTABLE_LIST_COMMENTS",
+			"AIRTABLE_LIST_RECORDS",
+			"AIRTABLE_UPDATE_COMMENT",
+			"AIRTABLE_UPDATE_FIELD",
+			"AIRTABLE_UPDATE_MULTIPLE_RECORDS",
+			"AIRTABLE_UPDATE_MULTIPLE_RECORDS_PUT",
+			"AIRTABLE_UPDATE_RECORD",
+			"AIRTABLE_UPDATE_RECORD_PUT",
+			"AIRTABLE_UPDATE_TABLE",
+			"AIRTABLE_UPLOAD_ATTACHMENT"
+		]
+	}
+}

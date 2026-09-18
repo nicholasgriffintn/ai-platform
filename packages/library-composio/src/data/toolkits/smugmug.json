@@ -1,0 +1,110 @@
+{
+	"providerId": "smugmug",
+	"name": "SmugMug",
+	"description": "SmugMug is a platform for photographers to showcase, share, and sell their photos and videos.",
+	"logoUrl": "https://logos.composio.dev/api/smugmug",
+	"appUrl": "https://www.smugmug.com/",
+	"categories": [
+		{
+			"id": "images-&-design",
+			"name": "Images & Design"
+		},
+		{
+			"id": "file-management-&-storage",
+			"name": "File Management & Storage"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_Azj1NgEvtVeE",
+			"name": "smugmug-q4itqg",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "smugmug",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 25,
+	"readToolCount": 23,
+	"writeToolCount": 2,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"SMUGMUG_GET_ALBUM",
+			"SMUGMUG_GET_ALBUM_HIGHLIGHT_IMAGE",
+			"SMUGMUG_GET_ALBUM_IMAGE",
+			"SMUGMUG_GET_ALBUM_IMAGES",
+			"SMUGMUG_GET_FOLDER_ALBUMS",
+			"SMUGMUG_GET_FOLDER_BY_USER_PATH",
+			"SMUGMUG_GET_FOLDER_DETAILS",
+			"SMUGMUG_GET_FOLDER_SUBFOLDERS",
+			"SMUGMUG_GET_IMAGE",
+			"SMUGMUG_GET_IMAGE_METADATA",
+			"SMUGMUG_GET_IMAGE_SIZE_DETAILS",
+			"SMUGMUG_GET_IMAGE_SIZES",
+			"SMUGMUG_GET_NODE_HIGHLIGHT_IMAGE",
+			"SMUGMUG_GET_NODE_PARENT",
+			"SMUGMUG_GET_NODE_PARENTS",
+			"SMUGMUG_GET_USER",
+			"SMUGMUG_GET_USER_BIO_IMAGE",
+			"SMUGMUG_GET_USER_FEATURED_ALBUMS",
+			"SMUGMUG_GET_USER_FEATURES",
+			"SMUGMUG_GET_USER_PROFILE",
+			"SMUGMUG_GET_USER_ROOT_NODE",
+			"SMUGMUG_LIST_CHILD_NODES",
+			"SMUGMUG_SEARCH_USER_CONTENT"
+		],
+		"write": [
+			"SMUGMUG_UNLOCK_ALBUM",
+			"SMUGMUG_UNLOCK_USER"
+		],
+		"important": [
+			"SMUGMUG_GET_ALBUM",
+			"SMUGMUG_GET_ALBUM_HIGHLIGHT_IMAGE",
+			"SMUGMUG_GET_ALBUM_IMAGE",
+			"SMUGMUG_GET_ALBUM_IMAGES",
+			"SMUGMUG_GET_FOLDER_ALBUMS",
+			"SMUGMUG_GET_FOLDER_BY_USER_PATH",
+			"SMUGMUG_GET_FOLDER_DETAILS",
+			"SMUGMUG_GET_FOLDER_SUBFOLDERS",
+			"SMUGMUG_GET_IMAGE",
+			"SMUGMUG_GET_IMAGE_METADATA",
+			"SMUGMUG_GET_IMAGE_SIZE_DETAILS",
+			"SMUGMUG_GET_IMAGE_SIZES",
+			"SMUGMUG_GET_NODE_HIGHLIGHT_IMAGE",
+			"SMUGMUG_GET_NODE_PARENT",
+			"SMUGMUG_GET_NODE_PARENTS",
+			"SMUGMUG_GET_USER",
+			"SMUGMUG_GET_USER_BIO_IMAGE",
+			"SMUGMUG_GET_USER_FEATURED_ALBUMS",
+			"SMUGMUG_GET_USER_FEATURES",
+			"SMUGMUG_GET_USER_PROFILE",
+			"SMUGMUG_GET_USER_ROOT_NODE",
+			"SMUGMUG_LIST_CHILD_NODES",
+			"SMUGMUG_SEARCH_USER_CONTENT"
+		],
+		"destructive": [],
+		"idempotent": [],
+		"openWorld": [
+			"SMUGMUG_GET_ALBUM",
+			"SMUGMUG_GET_FOLDER_ALBUMS",
+			"SMUGMUG_GET_FOLDER_BY_USER_PATH",
+			"SMUGMUG_GET_FOLDER_DETAILS",
+			"SMUGMUG_GET_FOLDER_SUBFOLDERS",
+			"SMUGMUG_GET_IMAGE",
+			"SMUGMUG_GET_IMAGE_SIZES",
+			"SMUGMUG_GET_NODE_HIGHLIGHT_IMAGE",
+			"SMUGMUG_GET_NODE_PARENT",
+			"SMUGMUG_GET_NODE_PARENTS",
+			"SMUGMUG_GET_USER",
+			"SMUGMUG_GET_USER_BIO_IMAGE",
+			"SMUGMUG_GET_USER_FEATURED_ALBUMS",
+			"SMUGMUG_GET_USER_PROFILE",
+			"SMUGMUG_GET_USER_ROOT_NODE",
+			"SMUGMUG_LIST_CHILD_NODES",
+			"SMUGMUG_SEARCH_USER_CONTENT",
+			"SMUGMUG_UNLOCK_ALBUM",
+			"SMUGMUG_UNLOCK_USER"
+		]
+	}
+}

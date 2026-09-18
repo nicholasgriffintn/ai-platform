@@ -1,0 +1,67 @@
+{
+	"providerId": "wolfram_alpha_api",
+	"name": "Wolfram Alpha Api",
+	"description": "Integrate computational knowledge into applications via Wolfram|Alpha's APIs.",
+	"logoUrl": "https://logos.composio.dev/api/wolfram_alpha_api",
+	"appUrl": "https://developer.wolframalpha.com/portal/myapps/",
+	"categories": [
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		},
+		{
+			"id": "analytics",
+			"name": "Analytics"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_qC5SGKbv18C0",
+			"name": "wolfram_alpha_api-ajt3g8",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "wolfram_alpha_api",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 11,
+	"readToolCount": 10,
+	"writeToolCount": 1,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"WOLFRAM_ALPHA_API_ASYNC_POD_FETCH",
+			"WOLFRAM_ALPHA_API_EXTRACT_RECALC_URL_TOKENS",
+			"WOLFRAM_ALPHA_API_FULL_RESULTS_RECALCULATE",
+			"WOLFRAM_ALPHA_API_FULL_RESULTS_RELATED_QUERIES",
+			"WOLFRAM_ALPHA_API_GET_APP_ID",
+			"WOLFRAM_ALPHA_API_QUERY_LLM_API",
+			"WOLFRAM_ALPHA_API_QUERY_SUMMARY_BOX",
+			"WOLFRAM_ALPHA_API_SHORT_ANSWERS_RESULT",
+			"WOLFRAM_ALPHA_API_SPOKEN_RESULTS_RESULT",
+			"WOLFRAM_ALPHA_API_VALIDATE_QUERY"
+		],
+		"write": [
+			"WOLFRAM_ALPHA_API_ESTABLISH_CONNECTION"
+		],
+		"important": [
+			"WOLFRAM_ALPHA_API_QUERY_LLM_API",
+			"WOLFRAM_ALPHA_API_SHORT_ANSWERS_RESULT",
+			"WOLFRAM_ALPHA_API_SPOKEN_RESULTS_RESULT",
+			"WOLFRAM_ALPHA_API_VALIDATE_QUERY"
+		],
+		"destructive": [],
+		"idempotent": [],
+		"openWorld": [
+			"WOLFRAM_ALPHA_API_ASYNC_POD_FETCH",
+			"WOLFRAM_ALPHA_API_FULL_RESULTS_RECALCULATE",
+			"WOLFRAM_ALPHA_API_FULL_RESULTS_RELATED_QUERIES",
+			"WOLFRAM_ALPHA_API_GET_APP_ID",
+			"WOLFRAM_ALPHA_API_QUERY_LLM_API",
+			"WOLFRAM_ALPHA_API_QUERY_SUMMARY_BOX",
+			"WOLFRAM_ALPHA_API_SHORT_ANSWERS_RESULT",
+			"WOLFRAM_ALPHA_API_SPOKEN_RESULTS_RESULT",
+			"WOLFRAM_ALPHA_API_VALIDATE_QUERY"
+		]
+	}
+}

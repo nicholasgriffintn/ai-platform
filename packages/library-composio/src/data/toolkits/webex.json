@@ -1,0 +1,123 @@
+{
+	"providerId": "webex",
+	"name": "Webex",
+	"description": "Webex is a Cisco-powered video conferencing and collaboration platform offering online meetings, webinars, screen sharing, and team messaging",
+	"logoUrl": "https://logos.composio.dev/api/webex",
+	"appUrl": "https://www.webex.com/",
+	"categories": [
+		{
+			"id": "video-conferencing",
+			"name": "Video Conferencing"
+		},
+		{
+			"id": "team-collaboration",
+			"name": "Team Collaboration"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_cvNipyRXrgV3",
+			"name": "webex-70udwk",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "webex",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 26,
+	"readToolCount": 14,
+	"writeToolCount": 12,
+	"scopes": [
+		"spark-admin:messages_read",
+		"spark-admin:messages_write",
+		"spark-admin:people_read",
+		"spark-admin:rooms_read",
+		"spark-compliance:memberships_read",
+		"spark-compliance:memberships_write",
+		"spark-compliance:messages_read",
+		"spark-compliance:messages_write",
+		"spark-compliance:rooms_read",
+		"spark-compliance:team_memberships_read",
+		"spark-compliance:webhooks_read",
+		"spark-compliance:webhooks_write",
+		"spark:kms",
+		"spark:memberships_read",
+		"spark:memberships_write",
+		"spark:messages_read",
+		"spark:messages_write",
+		"spark:people_read",
+		"spark:rooms_read",
+		"spark:rooms_write",
+		"spark:team_memberships_read",
+		"spark:webhooks_read",
+		"spark:webhooks_write"
+	],
+	"operations": {
+		"read": [
+			"WEBEX_GET_TEAM_DETAILS",
+			"WEBEX_LIST_TEAMS",
+			"WEBEX_LIST_WEBHOOKS",
+			"WEBEX_MESSAGING_GET_MEMBERSHIP_DETAILS",
+			"WEBEX_MESSAGING_GET_MESSAGE_DETAILS",
+			"WEBEX_MESSAGING_GET_TEAM_MEMBERSHIP_DETAILS",
+			"WEBEX_MESSAGING_LIST_MEMBERSHIPS",
+			"WEBEX_MESSAGING_LIST_MESSAGES",
+			"WEBEX_MESSAGING_LIST_ROOMS",
+			"WEBEX_MESSAGING_LIST_TEAM_MEMBERSHIPS",
+			"WEBEX_PEOPLE_GET_PERSON",
+			"WEBEX_PEOPLE_LIST_PEOPLE",
+			"WEBEX_ROOMS_GET_ROOM_DETAILS",
+			"WEBEX_WEBHOOKS_GET_WEBHOOK"
+		],
+		"write": [
+			"WEBEX_CREATE_TEAM",
+			"WEBEX_MESSAGING_CREATE_MESSAGE",
+			"WEBEX_MESSAGING_CREATE_ROOM",
+			"WEBEX_MESSAGING_CREATE_TEAM_MEMBERSHIP",
+			"WEBEX_MESSAGING_DELETE_MEMBERSHIP",
+			"WEBEX_MESSAGING_DELETE_MESSAGE",
+			"WEBEX_MESSAGING_DELETE_ROOM",
+			"WEBEX_UPDATE_MEMBERSHIP",
+			"WEBEX_UPDATE_ROOM",
+			"WEBEX_UPDATE_TEAM",
+			"WEBEX_WEBHOOKS_CREATE_WEBHOOK",
+			"WEBEX_WEBHOOKS_DELETE_WEBHOOK"
+		],
+		"important": [
+			"WEBEX_CREATE_TEAM",
+			"WEBEX_GET_TEAM_DETAILS",
+			"WEBEX_LIST_TEAMS",
+			"WEBEX_LIST_WEBHOOKS",
+			"WEBEX_MESSAGING_CREATE_MESSAGE",
+			"WEBEX_MESSAGING_CREATE_ROOM",
+			"WEBEX_MESSAGING_CREATE_TEAM_MEMBERSHIP",
+			"WEBEX_MESSAGING_DELETE_MEMBERSHIP",
+			"WEBEX_MESSAGING_DELETE_MESSAGE",
+			"WEBEX_MESSAGING_DELETE_ROOM",
+			"WEBEX_MESSAGING_GET_MEMBERSHIP_DETAILS",
+			"WEBEX_MESSAGING_GET_MESSAGE_DETAILS",
+			"WEBEX_MESSAGING_GET_TEAM_MEMBERSHIP_DETAILS",
+			"WEBEX_MESSAGING_LIST_MEMBERSHIPS",
+			"WEBEX_MESSAGING_LIST_MESSAGES",
+			"WEBEX_MESSAGING_LIST_ROOMS",
+			"WEBEX_MESSAGING_LIST_TEAM_MEMBERSHIPS",
+			"WEBEX_PEOPLE_GET_PERSON",
+			"WEBEX_PEOPLE_LIST_PEOPLE",
+			"WEBEX_ROOMS_GET_ROOM_DETAILS",
+			"WEBEX_UPDATE_MEMBERSHIP",
+			"WEBEX_UPDATE_ROOM",
+			"WEBEX_UPDATE_TEAM",
+			"WEBEX_WEBHOOKS_CREATE_WEBHOOK",
+			"WEBEX_WEBHOOKS_DELETE_WEBHOOK",
+			"WEBEX_WEBHOOKS_GET_WEBHOOK"
+		],
+		"destructive": [
+			"WEBEX_MESSAGING_DELETE_MEMBERSHIP",
+			"WEBEX_MESSAGING_DELETE_MESSAGE",
+			"WEBEX_MESSAGING_DELETE_ROOM",
+			"WEBEX_WEBHOOKS_DELETE_WEBHOOK"
+		],
+		"idempotent": [],
+		"openWorld": []
+	}
+}

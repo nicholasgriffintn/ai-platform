@@ -1,9 +1,12 @@
+import {
+  listComposioConnectedAccounts,
+  normaliseConnectorOperationFailure,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { listComposioConnectedAccounts } from "~/infrastructure/providers/capabilities/connectors/composio/client";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { requireActiveExecutionRun } from "~/modules/chat-runs/application/execution-authority";
 import { recordChatRunOperationalMetric } from "~/modules/chat-runs/application/operational-metrics";
@@ -16,7 +19,6 @@ import { discoverComposioRunTools, executeComposioRunTool } from "./composio-run
 import { getRecipeConnectorAdapter } from "./connector-adapters";
 import type { ConnectorRunScope } from "./connector-run-scope";
 import { getRecipeConnectorAccessToken } from "./index";
-import { normaliseConnectorOperationFailure } from "./operation-outcome";
 
 export interface RecipeConnectorOperationRequest {
   provider: RecipeConnectorProvider;

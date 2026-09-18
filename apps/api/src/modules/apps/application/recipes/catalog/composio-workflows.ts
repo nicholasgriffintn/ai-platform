@@ -1,4 +1,4 @@
-import { configuredComposioToolkits } from "~/infrastructure/providers/capabilities/connectors/composio/configured-toolkit-manifest";
+import { configuredComposioToolkits } from "@ngriffin_uk/polychat-ai-integrations";
 
 import type { CatalogRecipe } from "./shared";
 import { RECIPE_CONNECTOR_TOOL, preferredConnectorsField, reviewInstructionsField } from "./shared";

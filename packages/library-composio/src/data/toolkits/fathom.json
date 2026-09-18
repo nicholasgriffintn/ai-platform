@@ -1,0 +1,65 @@
+{
+	"providerId": "fathom",
+	"name": "Fathom",
+	"description": "AI meeting assistant that records, transcribes, and summarizes meetings",
+	"logoUrl": "https://logos.composio.dev/api/fathom",
+	"appUrl": "https://fathom.video",
+	"categories": [
+		{
+			"id": "ai-meeting-assistants",
+			"name": "AI Meeting Assistants"
+		},
+		{
+			"id": "transcription",
+			"name": "Transcription"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_LNTk-6QQIZaI",
+			"name": "fathom-wsxz29",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "fathom",
+	"toolkitVersion": "20260724_00",
+	"toolCount": 7,
+	"readToolCount": 5,
+	"writeToolCount": 2,
+	"scopes": [
+		"public_api"
+	],
+	"operations": {
+		"read": [
+			"FATHOM_GET_RECORDING_SUMMARY",
+			"FATHOM_GET_RECORDING_TRANSCRIPT",
+			"FATHOM_LIST_MEETINGS",
+			"FATHOM_LIST_TEAM_MEMBERS",
+			"FATHOM_LIST_TEAMS"
+		],
+		"write": [
+			"FATHOM_CREATE_WEBHOOK",
+			"FATHOM_DELETE_WEBHOOK"
+		],
+		"important": [
+			"FATHOM_GET_RECORDING_SUMMARY",
+			"FATHOM_GET_RECORDING_TRANSCRIPT",
+			"FATHOM_LIST_MEETINGS",
+			"FATHOM_LIST_TEAM_MEMBERS"
+		],
+		"destructive": [
+			"FATHOM_DELETE_WEBHOOK"
+		],
+		"idempotent": [
+			"FATHOM_CREATE_WEBHOOK",
+			"FATHOM_DELETE_WEBHOOK",
+			"FATHOM_GET_RECORDING_SUMMARY",
+			"FATHOM_GET_RECORDING_TRANSCRIPT",
+			"FATHOM_LIST_MEETINGS",
+			"FATHOM_LIST_TEAM_MEMBERS",
+			"FATHOM_LIST_TEAMS"
+		],
+		"openWorld": []
+	}
+}

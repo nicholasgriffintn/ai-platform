@@ -1,4 +1,9 @@
 import {
+  canAutoConnectGitHubApp,
+  getGitHubAppCallbackUrl,
+  getGitHubAppInstallUrl,
+} from "@ngriffin_uk/polychat-ai-integrations";
+import {
   autoConnectSchema,
   errorResponseSchema,
   githubConnectionSchema,
@@ -9,11 +14,6 @@ import type { Hono } from "hono";
 import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
-import {
-  canAutoConnectGitHubApp,
-  getGitHubAppCallbackUrl,
-  getGitHubAppInstallUrl,
-} from "~/infrastructure/providers/capabilities/connectors";
 import {
   getGitHubAppConnectionForUserInstallation,
   listGitHubAppConnectionsForUser,

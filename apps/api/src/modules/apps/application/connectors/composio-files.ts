@@ -1,12 +1,12 @@
+import {
+  createComposioSessionMountDownloadUrl,
+  createComposioSessionMountUploadUrl,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import {
-  createComposioSessionMountDownloadUrl,
-  createComposioSessionMountUploadUrl,
-} from "~/infrastructure/providers/capabilities/connectors/composio/client";
 import { StorageService } from "~/infrastructure/storage";
 import { getPrivateFileResourceFromUrl } from "~/infrastructure/storage/resource-urls";
 import {

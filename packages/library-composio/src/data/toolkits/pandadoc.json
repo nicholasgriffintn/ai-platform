@@ -1,0 +1,89 @@
+{
+	"providerId": "pandadoc",
+	"name": "PandaDoc",
+	"description": "PandaDoc offers document creation, e-signatures, and workflow automation, helping sales teams and businesses streamline proposals, contracts, and agreement processes",
+	"logoUrl": "https://logos.composio.dev/api/pandadoc",
+	"appUrl": "https://www.pandadoc.com/",
+	"categories": [
+		{
+			"id": "documents",
+			"name": "Documents"
+		},
+		{
+			"id": "signatures",
+			"name": "Signatures"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_9vIuAF7Ucc6u",
+			"name": "pandadoc-pzslw1",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "pandadoc",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 14,
+	"readToolCount": 5,
+	"writeToolCount": 9,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"PANDADOC_GET_DOCUMENT_DETAILS",
+			"PANDADOC_GET_TEMPLATE_DETAILS",
+			"PANDADOC_LIST_CONTACTS",
+			"PANDADOC_LIST_DOCUMENT_FOLDERS",
+			"PANDADOC_LIST_TEMPLATES"
+		],
+		"write": [
+			"PANDADOC_CREATE_DOCUMENT_ATTACHMENT",
+			"PANDADOC_CREATE_DOCUMENT_FROM_FILE",
+			"PANDADOC_CREATE_FOLDER",
+			"PANDADOC_CREATE_OR_UPDATE_CONTACT",
+			"PANDADOC_CREATE_TEMPLATE",
+			"PANDADOC_CREATE_WEBHOOK",
+			"PANDADOC_DELETE_CONTACT",
+			"PANDADOC_DELETE_TEMPLATE",
+			"PANDADOC_MOVE_DOCUMENT_TO_FOLDER"
+		],
+		"important": [
+			"PANDADOC_CREATE_DOCUMENT_ATTACHMENT",
+			"PANDADOC_CREATE_DOCUMENT_FROM_FILE",
+			"PANDADOC_CREATE_FOLDER",
+			"PANDADOC_CREATE_TEMPLATE",
+			"PANDADOC_CREATE_WEBHOOK",
+			"PANDADOC_DELETE_CONTACT",
+			"PANDADOC_DELETE_TEMPLATE",
+			"PANDADOC_GET_DOCUMENT_DETAILS",
+			"PANDADOC_LIST_CONTACTS",
+			"PANDADOC_LIST_DOCUMENT_FOLDERS",
+			"PANDADOC_LIST_TEMPLATES",
+			"PANDADOC_MOVE_DOCUMENT_TO_FOLDER"
+		],
+		"destructive": [
+			"PANDADOC_DELETE_CONTACT",
+			"PANDADOC_DELETE_TEMPLATE"
+		],
+		"idempotent": [
+			"PANDADOC_DELETE_CONTACT",
+			"PANDADOC_DELETE_TEMPLATE"
+		],
+		"openWorld": [
+			"PANDADOC_CREATE_DOCUMENT_ATTACHMENT",
+			"PANDADOC_CREATE_DOCUMENT_FROM_FILE",
+			"PANDADOC_CREATE_FOLDER",
+			"PANDADOC_CREATE_OR_UPDATE_CONTACT",
+			"PANDADOC_CREATE_TEMPLATE",
+			"PANDADOC_CREATE_WEBHOOK",
+			"PANDADOC_DELETE_CONTACT",
+			"PANDADOC_DELETE_TEMPLATE",
+			"PANDADOC_GET_DOCUMENT_DETAILS",
+			"PANDADOC_GET_TEMPLATE_DETAILS",
+			"PANDADOC_LIST_CONTACTS",
+			"PANDADOC_LIST_DOCUMENT_FOLDERS",
+			"PANDADOC_LIST_TEMPLATES",
+			"PANDADOC_MOVE_DOCUMENT_TO_FOLDER"
+		]
+	}
+}

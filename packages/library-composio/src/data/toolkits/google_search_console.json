@@ -1,0 +1,67 @@
+{
+	"providerId": "google_search_console",
+	"name": "Google Search Console",
+	"description": "Google Search Console provides tools to monitor, maintain, and troubleshoot your site's presence in Google Search results.",
+	"logoUrl": "https://logos.composio.dev/api/google_search_console",
+	"appUrl": "https://search.google.com/search-console",
+	"categories": [
+		{
+			"id": "analytics",
+			"name": "Analytics"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_thrv5KJFTJR5",
+			"name": "google_search_console-z25gdb",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "google_search_console",
+	"toolkitVersion": "20260806_00",
+	"toolCount": 9,
+	"readToolCount": 6,
+	"writeToolCount": 3,
+	"scopes": [
+		"https://www.googleapis.com/auth/webmasters",
+		"https://www.googleapis.com/auth/webmasters.readonly"
+	],
+	"operations": {
+		"read": [
+			"GOOGLE_SEARCH_CONSOLE_GET_SITE",
+			"GOOGLE_SEARCH_CONSOLE_GET_SITEMAP",
+			"GOOGLE_SEARCH_CONSOLE_INSPECT_URL",
+			"GOOGLE_SEARCH_CONSOLE_LIST_SITEMAPS",
+			"GOOGLE_SEARCH_CONSOLE_LIST_SITES",
+			"GOOGLE_SEARCH_CONSOLE_SEARCH_ANALYTICS_QUERY"
+		],
+		"write": [
+			"GOOGLE_SEARCH_CONSOLE_ADD_SITE",
+			"GOOGLE_SEARCH_CONSOLE_DELETE_SITE",
+			"GOOGLE_SEARCH_CONSOLE_SUBMIT_SITEMAP"
+		],
+		"important": [
+			"GOOGLE_SEARCH_CONSOLE_ADD_SITE",
+			"GOOGLE_SEARCH_CONSOLE_GET_SITE"
+		],
+		"destructive": [
+			"GOOGLE_SEARCH_CONSOLE_DELETE_SITE"
+		],
+		"idempotent": [
+			"GOOGLE_SEARCH_CONSOLE_ADD_SITE",
+			"GOOGLE_SEARCH_CONSOLE_DELETE_SITE"
+		],
+		"openWorld": [
+			"GOOGLE_SEARCH_CONSOLE_ADD_SITE",
+			"GOOGLE_SEARCH_CONSOLE_DELETE_SITE",
+			"GOOGLE_SEARCH_CONSOLE_GET_SITE",
+			"GOOGLE_SEARCH_CONSOLE_GET_SITEMAP",
+			"GOOGLE_SEARCH_CONSOLE_INSPECT_URL",
+			"GOOGLE_SEARCH_CONSOLE_LIST_SITEMAPS",
+			"GOOGLE_SEARCH_CONSOLE_LIST_SITES",
+			"GOOGLE_SEARCH_CONSOLE_SEARCH_ANALYTICS_QUERY",
+			"GOOGLE_SEARCH_CONSOLE_SUBMIT_SITEMAP"
+		]
+	}
+}

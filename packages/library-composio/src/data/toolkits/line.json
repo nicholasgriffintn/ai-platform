@@ -1,0 +1,61 @@
+{
+	"providerId": "line",
+	"name": "LINE",
+	"description": "Use a LINE Official Account's Messaging API channel to manage messages, audiences, and rich menus.",
+	"logoUrl": "https://logos.composio.dev/api/line",
+	"appUrl": "https://developers.line.biz/",
+	"categories": [
+		{
+			"id": "communication",
+			"name": "Communication"
+		},
+		{
+			"id": "team-chat",
+			"name": "Team Chat"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_LiJ2lP1u8x5e",
+			"name": "line-3g4957",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "line",
+	"toolkitVersion": "00000000_00",
+	"toolCount": 13,
+	"readToolCount": 6,
+	"writeToolCount": 7,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"LINE_DOWNLOAD_MESSAGE_CONTENT_PREVIEW",
+			"LINE_GET_MESSAGE_DELIVERY_COUNT",
+			"LINE_GET_RICH_MENU",
+			"LINE_LIST_CHAT_MEMBER_IDS",
+			"LINE_LIST_FOLLOWER_IDS",
+			"LINE_LIST_RICH_MENUS"
+		],
+		"write": [
+			"LINE_CREATE_RICH_MENU",
+			"LINE_CREATE_RICH_MENU_WITH_IMAGE",
+			"LINE_DELETE_RICH_MENU",
+			"LINE_LINK_OR_UNLINK_USER_RICH_MENU",
+			"LINE_MARK_MESSAGES_AS_READ",
+			"LINE_SET_OR_CLEAR_DEFAULT_RICH_MENU",
+			"LINE_UPLOAD_RICH_MENU_IMAGE"
+		],
+		"important": [],
+		"destructive": [
+			"LINE_CREATE_RICH_MENU_WITH_IMAGE",
+			"LINE_DELETE_RICH_MENU",
+			"LINE_MARK_MESSAGES_AS_READ",
+			"LINE_UPLOAD_RICH_MENU_IMAGE"
+		],
+		"idempotent": [
+			"LINE_GET_RICH_MENU"
+		],
+		"openWorld": []
+	}
+}

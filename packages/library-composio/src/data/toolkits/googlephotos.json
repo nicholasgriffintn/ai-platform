@@ -1,0 +1,74 @@
+{
+	"providerId": "googlephotos",
+	"name": "Google Photos",
+	"description": "Google Photos is a cloud-based photo storage and organization service offering automatic backups, AI-assisted search, and shared albums for personal and collaborative media management",
+	"logoUrl": "https://logos.composio.dev/api/googlephotos",
+	"appUrl": "https://photos.google.com",
+	"categories": [
+		{
+			"id": "images-&-design",
+			"name": "Images & Design"
+		},
+		{
+			"id": "file-management-&-storage",
+			"name": "File Management & Storage"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_TV2b2uHNaNP6",
+			"name": "googlephotos-8eglqn",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "googlephotos",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 13,
+	"readToolCount": 6,
+	"writeToolCount": 7,
+	"scopes": [
+		"https://www.googleapis.com/auth/photoslibrary",
+		"https://www.googleapis.com/auth/photoslibrary.appendonly",
+		"https://www.googleapis.com/auth/photoslibrary.edit.appcreateddata",
+		"https://www.googleapis.com/auth/photoslibrary.readonly",
+		"https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata"
+	],
+	"operations": {
+		"read": [
+			"GOOGLEPHOTOS_BATCH_GET_MEDIA_ITEMS",
+			"GOOGLEPHOTOS_GET_ALBUM",
+			"GOOGLEPHOTOS_GET_MEDIA_ITEM_DOWNLOAD",
+			"GOOGLEPHOTOS_LIST_ALBUMS",
+			"GOOGLEPHOTOS_LIST_MEDIA_ITEMS",
+			"GOOGLEPHOTOS_SEARCH_MEDIA_ITEMS"
+		],
+		"write": [
+			"GOOGLEPHOTOS_ADD_ENRICHMENT",
+			"GOOGLEPHOTOS_BATCH_ADD_MEDIA_ITEMS",
+			"GOOGLEPHOTOS_BATCH_CREATE_MEDIA_ITEMS",
+			"GOOGLEPHOTOS_CREATE_ALBUM",
+			"GOOGLEPHOTOS_UPDATE_ALBUM",
+			"GOOGLEPHOTOS_UPDATE_MEDIA_ITEM",
+			"GOOGLEPHOTOS_UPLOAD_MEDIA"
+		],
+		"important": [],
+		"destructive": [],
+		"idempotent": [],
+		"openWorld": [
+			"GOOGLEPHOTOS_ADD_ENRICHMENT",
+			"GOOGLEPHOTOS_BATCH_ADD_MEDIA_ITEMS",
+			"GOOGLEPHOTOS_BATCH_CREATE_MEDIA_ITEMS",
+			"GOOGLEPHOTOS_BATCH_GET_MEDIA_ITEMS",
+			"GOOGLEPHOTOS_CREATE_ALBUM",
+			"GOOGLEPHOTOS_GET_ALBUM",
+			"GOOGLEPHOTOS_GET_MEDIA_ITEM_DOWNLOAD",
+			"GOOGLEPHOTOS_LIST_ALBUMS",
+			"GOOGLEPHOTOS_LIST_MEDIA_ITEMS",
+			"GOOGLEPHOTOS_SEARCH_MEDIA_ITEMS",
+			"GOOGLEPHOTOS_UPDATE_ALBUM",
+			"GOOGLEPHOTOS_UPDATE_MEDIA_ITEM",
+			"GOOGLEPHOTOS_UPLOAD_MEDIA"
+		]
+	}
+}

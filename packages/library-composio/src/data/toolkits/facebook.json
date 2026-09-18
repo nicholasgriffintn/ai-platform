@@ -1,0 +1,127 @@
+{
+	"providerId": "facebook",
+	"name": "Facebook",
+	"description": "Facebook is a social media and advertising platform used by individuals and businesses to connect, share content, and promote products or services. Only supports Facebook Pages, not Facebook Personal accounts.",
+	"logoUrl": "https://logos.composio.dev/api/facebook",
+	"appUrl": "https://www.facebook.com/",
+	"categories": [
+		{
+			"id": "social-media-accounts",
+			"name": "Social Media Accounts"
+		},
+		{
+			"id": "social-media-marketing",
+			"name": "Social Media Marketing"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_zYfvQ3tJmcr6",
+			"name": "facebook-oxmicj",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "facebook",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 39,
+	"readToolCount": 18,
+	"writeToolCount": 21,
+	"scopes": [
+		"pages_manage_engagement",
+		"pages_manage_metadata",
+		"pages_manage_posts",
+		"pages_messaging",
+		"pages_read_engagement",
+		"pages_read_user_content",
+		"pages_show_list",
+		"public_profile",
+		"read_insights"
+	],
+	"operations": {
+		"read": [
+			"FACEBOOK_GET_COMMENT",
+			"FACEBOOK_GET_COMMENTS",
+			"FACEBOOK_GET_CONVERSATION_MESSAGES",
+			"FACEBOOK_GET_CURRENT_USER",
+			"FACEBOOK_GET_MESSAGE_DETAILS",
+			"FACEBOOK_GET_PAGE_CONVERSATIONS",
+			"FACEBOOK_GET_PAGE_DETAILS",
+			"FACEBOOK_GET_PAGE_INSIGHTS",
+			"FACEBOOK_GET_PAGE_PHOTOS",
+			"FACEBOOK_GET_PAGE_POSTS",
+			"FACEBOOK_GET_PAGE_ROLES",
+			"FACEBOOK_GET_PAGE_TAGGED_POSTS",
+			"FACEBOOK_GET_PAGE_VIDEOS",
+			"FACEBOOK_GET_POST",
+			"FACEBOOK_GET_POST_INSIGHTS",
+			"FACEBOOK_GET_POST_REACTIONS",
+			"FACEBOOK_GET_SCHEDULED_POSTS",
+			"FACEBOOK_LIST_MANAGED_PAGES"
+		],
+		"write": [
+			"FACEBOOK_ASSIGN_PAGE_TASK",
+			"FACEBOOK_CREATE_COMMENT",
+			"FACEBOOK_CREATE_PHOTO_ALBUM",
+			"FACEBOOK_CREATE_PHOTO_POST",
+			"FACEBOOK_CREATE_POST",
+			"FACEBOOK_CREATE_VIDEO_POST",
+			"FACEBOOK_DELETE_COMMENT",
+			"FACEBOOK_DELETE_POST",
+			"FACEBOOK_LIKE_POST_OR_COMMENT",
+			"FACEBOOK_MARK_MESSAGE_SEEN",
+			"FACEBOOK_PUBLISH_SCHEDULED_POST",
+			"FACEBOOK_REMOVE_PAGE_TASK",
+			"FACEBOOK_RESCHEDULE_POST",
+			"FACEBOOK_SEND_MEDIA_MESSAGE",
+			"FACEBOOK_SEND_MESSAGE",
+			"FACEBOOK_TOGGLE_TYPING_INDICATOR",
+			"FACEBOOK_UNLIKE_POST_OR_COMMENT",
+			"FACEBOOK_UPDATE_COMMENT",
+			"FACEBOOK_UPDATE_PAGE_SETTINGS",
+			"FACEBOOK_UPDATE_POST",
+			"FACEBOOK_UPLOAD_PHOTOS_BATCH"
+		],
+		"important": [
+			"FACEBOOK_CREATE_COMMENT",
+			"FACEBOOK_CREATE_PHOTO_ALBUM",
+			"FACEBOOK_CREATE_PHOTO_POST",
+			"FACEBOOK_CREATE_POST",
+			"FACEBOOK_CREATE_VIDEO_POST",
+			"FACEBOOK_GET_COMMENTS",
+			"FACEBOOK_GET_CONVERSATION_MESSAGES",
+			"FACEBOOK_GET_PAGE_CONVERSATIONS",
+			"FACEBOOK_GET_PAGE_POSTS",
+			"FACEBOOK_GET_PAGE_TAGGED_POSTS",
+			"FACEBOOK_GET_POST",
+			"FACEBOOK_SEND_MEDIA_MESSAGE",
+			"FACEBOOK_SEND_MESSAGE",
+			"FACEBOOK_UNLIKE_POST_OR_COMMENT",
+			"FACEBOOK_UPLOAD_PHOTOS_BATCH"
+		],
+		"destructive": [
+			"FACEBOOK_DELETE_COMMENT",
+			"FACEBOOK_DELETE_POST",
+			"FACEBOOK_REMOVE_PAGE_TASK",
+			"FACEBOOK_UNLIKE_POST_OR_COMMENT"
+		],
+		"idempotent": [],
+		"openWorld": [
+			"FACEBOOK_CREATE_COMMENT",
+			"FACEBOOK_CREATE_PHOTO_ALBUM",
+			"FACEBOOK_CREATE_PHOTO_POST",
+			"FACEBOOK_CREATE_POST",
+			"FACEBOOK_CREATE_VIDEO_POST",
+			"FACEBOOK_GET_COMMENTS",
+			"FACEBOOK_GET_CONVERSATION_MESSAGES",
+			"FACEBOOK_GET_PAGE_CONVERSATIONS",
+			"FACEBOOK_GET_PAGE_POSTS",
+			"FACEBOOK_GET_PAGE_TAGGED_POSTS",
+			"FACEBOOK_GET_POST",
+			"FACEBOOK_SEND_MEDIA_MESSAGE",
+			"FACEBOOK_SEND_MESSAGE",
+			"FACEBOOK_UNLIKE_POST_OR_COMMENT",
+			"FACEBOOK_UPLOAD_PHOTOS_BATCH"
+		]
+	}
+}

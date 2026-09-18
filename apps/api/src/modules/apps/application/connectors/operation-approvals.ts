@@ -1,3 +1,4 @@
+import { connectorOperationRequiresApproval } from "@ngriffin_uk/polychat-ai-integrations";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { isDeadlinePassed } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
@@ -5,7 +6,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { canonicalJson } from "~/infrastructure/canonical-json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { connectorOperationRequiresApproval } from "~/infrastructure/providers/capabilities/connectors";
 import type { ConnectorOperationApprovalRecord } from "~/modules/apps/infrastructure/ConnectorOperationApprovalRepository";
 import { publishConnectorApprovalChanged } from "~/modules/sync/application/conversation-events";
 

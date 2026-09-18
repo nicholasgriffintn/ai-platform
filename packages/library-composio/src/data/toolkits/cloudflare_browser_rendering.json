@@ -1,0 +1,59 @@
+{
+	"providerId": "cloudflare_browser_rendering",
+	"name": "Cloudflare Browser Rendering",
+	"description": "Cloudflare Browser Rendering enables developers to programmatically control and interact with headless browser instances running on Cloudflare’s global network, facilitating tasks such as automating browser interactions, capturing screenshots, generating PDFs, and extracting data from web pages.",
+	"logoUrl": "https://logos.composio.dev/api/cloudflare_browser_rendering",
+	"appUrl": "https://developers.cloudflare.com/browser-rendering/",
+	"categories": [
+		{
+			"id": "ai-web-scraping",
+			"name": "AI Web Scraping"
+		},
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_Q1vHD60-fE2P",
+			"name": "cloudflare_browser_rendering-bqspg2",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "cloudflare_browser_rendering",
+	"toolkitVersion": "20260707_00",
+	"toolCount": 4,
+	"readToolCount": 4,
+	"writeToolCount": 0,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"CLOUDFLARE_BROWSER_RENDERING_CAPTURE_SCREENSHOT",
+			"CLOUDFLARE_BROWSER_RENDERING_LIST_ACCOUNTS",
+			"CLOUDFLARE_BROWSER_RENDERING_SCRAPE_HTML_ELEMENTS",
+			"CLOUDFLARE_BROWSER_RENDERING_TAKE_WEBPAGE_SNAPSHOT"
+		],
+		"write": [],
+		"important": [
+			"CLOUDFLARE_BROWSER_RENDERING_CAPTURE_SCREENSHOT",
+			"CLOUDFLARE_BROWSER_RENDERING_LIST_ACCOUNTS",
+			"CLOUDFLARE_BROWSER_RENDERING_SCRAPE_HTML_ELEMENTS",
+			"CLOUDFLARE_BROWSER_RENDERING_TAKE_WEBPAGE_SNAPSHOT"
+		],
+		"destructive": [],
+		"idempotent": [
+			"CLOUDFLARE_BROWSER_RENDERING_CAPTURE_SCREENSHOT",
+			"CLOUDFLARE_BROWSER_RENDERING_LIST_ACCOUNTS",
+			"CLOUDFLARE_BROWSER_RENDERING_SCRAPE_HTML_ELEMENTS",
+			"CLOUDFLARE_BROWSER_RENDERING_TAKE_WEBPAGE_SNAPSHOT"
+		],
+		"openWorld": [
+			"CLOUDFLARE_BROWSER_RENDERING_CAPTURE_SCREENSHOT",
+			"CLOUDFLARE_BROWSER_RENDERING_LIST_ACCOUNTS",
+			"CLOUDFLARE_BROWSER_RENDERING_SCRAPE_HTML_ELEMENTS",
+			"CLOUDFLARE_BROWSER_RENDERING_TAKE_WEBPAGE_SNAPSHOT"
+		]
+	}
+}

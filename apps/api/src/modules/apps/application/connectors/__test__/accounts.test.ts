@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const listAccountsMock = vi.hoisted(() => vi.fn());
 
-vi.mock("~/infrastructure/providers/capabilities/connectors/composio/client", () => ({
+vi.mock("@ngriffin_uk/polychat-ai-integrations", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-integrations")>()),
   listComposioConnectedAccounts: listAccountsMock,
 }));
 

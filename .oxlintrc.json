@@ -38,6 +38,7 @@
     "**/.wrangler/**",
     "**/generated/**",
     "**/worker-configuration.d.ts",
+    "packages/library-composio/src/data/**",
     "packages/library-model-catalogue/src/data/**"
   ],
   "rules": {

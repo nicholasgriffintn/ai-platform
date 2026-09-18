@@ -1,0 +1,115 @@
+{
+	"providerId": "linkedin",
+	"name": "LinkedIn",
+	"description": "LinkedIn is a professional networking platform enabling job seekers, companies, and thought leaders to connect, share content, and discover business opportunities",
+	"logoUrl": "https://logos.composio.dev/api/linkedin",
+	"appUrl": "https://linkedin.com/",
+	"categories": [
+		{
+			"id": "social-media-accounts",
+			"name": "Social Media Accounts"
+		},
+		{
+			"id": "marketing-automation",
+			"name": "Marketing Automation"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_zD5Uf247rhlF",
+			"name": "linkedin-yanjb5",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "linkedin",
+	"toolkitVersion": "20260724_00",
+	"toolCount": 22,
+	"readToolCount": 14,
+	"writeToolCount": 8,
+	"scopes": [
+		"profile",
+		"r_ads",
+		"r_basicprofile",
+		"r_liteprofile",
+		"r_member_social",
+		"r_member_social_feed",
+		"r_organization_admin",
+		"r_organization_social",
+		"r_organization_social_feed",
+		"rw_ads",
+		"rw_organization_admin",
+		"w_compliance",
+		"w_member_social",
+		"w_organization_social",
+		"w_power_creators"
+	],
+	"operations": {
+		"read": [
+			"LINKEDIN_GET_AD_TARGETING_FACETS",
+			"LINKEDIN_GET_AUDIENCE_COUNTS",
+			"LINKEDIN_GET_COMPANY_INFO",
+			"LINKEDIN_GET_IMAGE",
+			"LINKEDIN_GET_IMAGES",
+			"LINKEDIN_GET_MY_INFO",
+			"LINKEDIN_GET_NETWORK_SIZE",
+			"LINKEDIN_GET_ORG_PAGE_STATS",
+			"LINKEDIN_GET_PERSON",
+			"LINKEDIN_GET_POST_CONTENT",
+			"LINKEDIN_GET_SHARE_STATS",
+			"LINKEDIN_GET_VIDEOS",
+			"LINKEDIN_LIST_REACTIONS",
+			"LINKEDIN_SEARCH_AD_TARGETING_ENTITIES"
+		],
+		"write": [
+			"LINKEDIN_CREATE_ARTICLE_OR_URL_SHARE",
+			"LINKEDIN_CREATE_COMMENT_ON_POST",
+			"LINKEDIN_CREATE_LINKED_IN_POST",
+			"LINKEDIN_DELETE_LINKED_IN_POST",
+			"LINKEDIN_DELETE_POST",
+			"LINKEDIN_DELETE_UGC_POST",
+			"LINKEDIN_INITIALIZE_IMAGE_UPLOAD",
+			"LINKEDIN_REGISTER_IMAGE_UPLOAD"
+		],
+		"important": [
+			"LINKEDIN_CREATE_ARTICLE_OR_URL_SHARE",
+			"LINKEDIN_GET_PERSON",
+			"LINKEDIN_GET_POST_CONTENT",
+			"LINKEDIN_INITIALIZE_IMAGE_UPLOAD",
+			"LINKEDIN_REGISTER_IMAGE_UPLOAD"
+		],
+		"destructive": [
+			"LINKEDIN_DELETE_LINKED_IN_POST",
+			"LINKEDIN_DELETE_POST",
+			"LINKEDIN_DELETE_UGC_POST"
+		],
+		"idempotent": [
+			"LINKEDIN_DELETE_POST",
+			"LINKEDIN_DELETE_UGC_POST"
+		],
+		"openWorld": [
+			"LINKEDIN_CREATE_ARTICLE_OR_URL_SHARE",
+			"LINKEDIN_CREATE_COMMENT_ON_POST",
+			"LINKEDIN_CREATE_LINKED_IN_POST",
+			"LINKEDIN_DELETE_LINKED_IN_POST",
+			"LINKEDIN_DELETE_POST",
+			"LINKEDIN_DELETE_UGC_POST",
+			"LINKEDIN_GET_AD_TARGETING_FACETS",
+			"LINKEDIN_GET_AUDIENCE_COUNTS",
+			"LINKEDIN_GET_COMPANY_INFO",
+			"LINKEDIN_GET_IMAGE",
+			"LINKEDIN_GET_IMAGES",
+			"LINKEDIN_GET_MY_INFO",
+			"LINKEDIN_GET_NETWORK_SIZE",
+			"LINKEDIN_GET_ORG_PAGE_STATS",
+			"LINKEDIN_GET_PERSON",
+			"LINKEDIN_GET_POST_CONTENT",
+			"LINKEDIN_GET_SHARE_STATS",
+			"LINKEDIN_GET_VIDEOS",
+			"LINKEDIN_INITIALIZE_IMAGE_UPLOAD",
+			"LINKEDIN_LIST_REACTIONS",
+			"LINKEDIN_REGISTER_IMAGE_UPLOAD",
+			"LINKEDIN_SEARCH_AD_TARGETING_ENTITIES"
+		]
+	}
+}

@@ -1,10 +1,9 @@
+import { COMPOSIO_CONNECTOR_SESSION_HANDLE_PATTERN } from "@ngriffin_uk/polychat-ai-integrations";
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 import {
   recipeConnectorProviderSchema,
   type RecipeConnectorProvider,
 } from "@ngriffin_uk/polychat-schemas";
-
-import { COMPOSIO_CONNECTOR_SESSION_HANDLE_PATTERN } from "~/infrastructure/providers/capabilities/connectors/composio/session-handle";
 
 import type { FunctionToolDescriptor } from "../types";
 

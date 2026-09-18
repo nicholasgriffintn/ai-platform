@@ -23,7 +23,8 @@ vi.mock("../accounts", async (importOriginal) => ({
   getSelectedRecipeConnectorAccountId: mocks.getSelectedRecipeConnectorAccountId,
 }));
 
-vi.mock("~/infrastructure/providers/capabilities/connectors/composio/client", () => ({
+vi.mock("@ngriffin_uk/polychat-ai-integrations", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-integrations")>()),
   createComposioToolSession: mocks.createComposioToolSession,
   searchComposioSessionTools: mocks.searchComposioSessionTools,
   deleteComposioToolSession: mocks.deleteComposioToolSession,
@@ -38,7 +39,7 @@ vi.mock("../composio-files", () => ({
   importComposioOperationFileResults: mocks.importComposioOperationFileResults,
 }));
 
-import { getConnectorProviderConfig } from "~/infrastructure/providers/capabilities/connectors";
+import { getConnectorProviderConfig } from "@ngriffin_uk/polychat-ai-integrations";
 
 import {
   closeComposioConnectorRun,

@@ -1,0 +1,148 @@
+{
+	"providerId": "typeform",
+	"name": "Typeform",
+	"description": "Build beautiful, interactive forms that people love to fill out. Collect data, accept payments, and integrate with your favorite tools.",
+	"logoUrl": "https://logos.composio.dev/api/typeform",
+	"appUrl": "https://www.typeform.com",
+	"categories": [
+		{
+			"id": "forms-&-surveys",
+			"name": "Forms & Surveys"
+		},
+		{
+			"id": "productivity",
+			"name": "Productivity"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_z2V2ZHaepj_G",
+			"name": "typeform-f4i3hi",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "typeform",
+	"toolkitVersion": "20260721_00",
+	"toolCount": 35,
+	"readToolCount": 16,
+	"writeToolCount": 19,
+	"scopes": [
+		"accounts:read",
+		"forms:read",
+		"forms:write",
+		"images:read",
+		"images:write",
+		"responses:read",
+		"responses:write",
+		"themes:read",
+		"themes:write",
+		"webhooks:read",
+		"webhooks:write",
+		"workspaces:read",
+		"workspaces:write"
+	],
+	"operations": {
+		"read": [
+			"TYPEFORM_GET_ABOUT_ME",
+			"TYPEFORM_GET_ALL_RESPONSE_FILES",
+			"TYPEFORM_GET_BACKGROUND_BY_SIZE",
+			"TYPEFORM_GET_CHOICE_IMAGE_BY_SIZE",
+			"TYPEFORM_GET_FORM",
+			"TYPEFORM_GET_FORM_MESSAGES",
+			"TYPEFORM_GET_FORM_RESPONSES",
+			"TYPEFORM_GET_IMAGE_BY_SIZE",
+			"TYPEFORM_GET_THEME",
+			"TYPEFORM_GET_WEBHOOK",
+			"TYPEFORM_GET_WORKSPACE",
+			"TYPEFORM_LIST_FORMS",
+			"TYPEFORM_LIST_IMAGES",
+			"TYPEFORM_LIST_THEMES",
+			"TYPEFORM_LIST_WEBHOOKS",
+			"TYPEFORM_LIST_WORKSPACES"
+		],
+		"write": [
+			"TYPEFORM_CREATE_ACCOUNT_WORKSPACE",
+			"TYPEFORM_CREATE_FORM",
+			"TYPEFORM_CREATE_IMAGE",
+			"TYPEFORM_CREATE_OR_UPDATE_WEBHOOK",
+			"TYPEFORM_CREATE_THEME",
+			"TYPEFORM_CREATE_WORKSPACE",
+			"TYPEFORM_DELETE_FORM",
+			"TYPEFORM_DELETE_IMAGE",
+			"TYPEFORM_DELETE_RESPONSES",
+			"TYPEFORM_DELETE_THEME",
+			"TYPEFORM_DELETE_WEBHOOK",
+			"TYPEFORM_DELETE_WORKSPACE",
+			"TYPEFORM_PATCH_FORM",
+			"TYPEFORM_PATCH_THEME",
+			"TYPEFORM_UPDATE_FORM",
+			"TYPEFORM_UPDATE_FORM_MESSAGES",
+			"TYPEFORM_UPDATE_THEME",
+			"TYPEFORM_UPDATE_WORKSPACE",
+			"TYPEFORM_UPLOAD_VIDEO"
+		],
+		"important": [
+			"TYPEFORM_CREATE_FORM",
+			"TYPEFORM_GET_ABOUT_ME",
+			"TYPEFORM_GET_FORM",
+			"TYPEFORM_GET_FORM_RESPONSES",
+			"TYPEFORM_GET_WORKSPACE",
+			"TYPEFORM_LIST_FORMS",
+			"TYPEFORM_LIST_THEMES",
+			"TYPEFORM_LIST_WORKSPACES"
+		],
+		"destructive": [
+			"TYPEFORM_DELETE_FORM",
+			"TYPEFORM_DELETE_IMAGE",
+			"TYPEFORM_DELETE_RESPONSES",
+			"TYPEFORM_DELETE_THEME",
+			"TYPEFORM_DELETE_WEBHOOK",
+			"TYPEFORM_DELETE_WORKSPACE",
+			"TYPEFORM_UPDATE_FORM"
+		],
+		"idempotent": [
+			"TYPEFORM_DELETE_FORM",
+			"TYPEFORM_DELETE_IMAGE",
+			"TYPEFORM_DELETE_THEME",
+			"TYPEFORM_DELETE_WEBHOOK"
+		],
+		"openWorld": [
+			"TYPEFORM_CREATE_ACCOUNT_WORKSPACE",
+			"TYPEFORM_CREATE_FORM",
+			"TYPEFORM_CREATE_IMAGE",
+			"TYPEFORM_CREATE_OR_UPDATE_WEBHOOK",
+			"TYPEFORM_CREATE_THEME",
+			"TYPEFORM_CREATE_WORKSPACE",
+			"TYPEFORM_DELETE_FORM",
+			"TYPEFORM_DELETE_IMAGE",
+			"TYPEFORM_DELETE_RESPONSES",
+			"TYPEFORM_DELETE_THEME",
+			"TYPEFORM_DELETE_WEBHOOK",
+			"TYPEFORM_DELETE_WORKSPACE",
+			"TYPEFORM_GET_ABOUT_ME",
+			"TYPEFORM_GET_ALL_RESPONSE_FILES",
+			"TYPEFORM_GET_BACKGROUND_BY_SIZE",
+			"TYPEFORM_GET_CHOICE_IMAGE_BY_SIZE",
+			"TYPEFORM_GET_FORM",
+			"TYPEFORM_GET_FORM_MESSAGES",
+			"TYPEFORM_GET_FORM_RESPONSES",
+			"TYPEFORM_GET_IMAGE_BY_SIZE",
+			"TYPEFORM_GET_THEME",
+			"TYPEFORM_GET_WEBHOOK",
+			"TYPEFORM_GET_WORKSPACE",
+			"TYPEFORM_LIST_FORMS",
+			"TYPEFORM_LIST_IMAGES",
+			"TYPEFORM_LIST_THEMES",
+			"TYPEFORM_LIST_WEBHOOKS",
+			"TYPEFORM_LIST_WORKSPACES",
+			"TYPEFORM_PATCH_FORM",
+			"TYPEFORM_PATCH_THEME",
+			"TYPEFORM_UPDATE_FORM",
+			"TYPEFORM_UPDATE_FORM_MESSAGES",
+			"TYPEFORM_UPDATE_THEME",
+			"TYPEFORM_UPDATE_WORKSPACE",
+			"TYPEFORM_UPLOAD_VIDEO"
+		]
+	}
+}

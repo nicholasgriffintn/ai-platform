@@ -1,0 +1,110 @@
+{
+	"providerId": "cloudflare",
+	"name": "Cloudflare",
+	"description": "Cloudflare is a global network designed to make everything you connect to the Internet secure, private, fast, and reliable.",
+	"logoUrl": "https://logos.composio.dev/api/cloudflare",
+	"appUrl": "https://dash.cloudflare.com/sign-up",
+	"categories": [
+		{
+			"id": "security-&-identity-tools",
+			"name": "Security & Identity Tools"
+		},
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_orQIuXdMbmz5",
+			"name": "cloudflare-65xsfq",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "cloudflare",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 20,
+	"readToolCount": 10,
+	"writeToolCount": 10,
+	"scopes": [
+		"#dns_records:edit",
+		"Account Filter Lists Edit",
+		"Account Rule Lists Read",
+		"Account Rule Lists Write",
+		"Account Settings Read",
+		"Account Settings Write",
+		"Bot Management:Read",
+		"Cloudflare Tunnel:Edit",
+		"Cloudflare Tunnel:Write",
+		"Load Balancing: Monitors and Pools Read",
+		"Load Balancing: Monitors and Pools Write",
+		"Zone Edit",
+		"Zone Read",
+		"Zone:DNS:Edit",
+		"Zone:DNS:Read",
+		"Zone:Edit"
+	],
+	"operations": {
+		"read": [
+			"CLOUDFLARE_GET_BOT_MANAGEMENT_SETTINGS",
+			"CLOUDFLARE_GET_LISTS",
+			"CLOUDFLARE_LIST_ACCOUNT_MEMBERS",
+			"CLOUDFLARE_LIST_ACCOUNTS",
+			"CLOUDFLARE_LIST_DNS_RECORDS",
+			"CLOUDFLARE_LIST_FIREWALL_RULES",
+			"CLOUDFLARE_LIST_MONITORS",
+			"CLOUDFLARE_LIST_POOLS",
+			"CLOUDFLARE_LIST_TUNNELS",
+			"CLOUDFLARE_LIST_ZONES"
+		],
+		"write": [
+			"CLOUDFLARE_CREATE_DNS_RECORD",
+			"CLOUDFLARE_CREATE_LIST",
+			"CLOUDFLARE_CREATE_ZONE",
+			"CLOUDFLARE_DELETE_DNS_RECORD",
+			"CLOUDFLARE_DELETE_LIST",
+			"CLOUDFLARE_DELETE_ZONE",
+			"CLOUDFLARE_UPDATE_DNS_RECORD",
+			"CLOUDFLARE_UPDATE_LIST",
+			"CLOUDFLARE_UPDATE_TUNNEL_CONFIGURATION",
+			"CLOUDFLARE_UPDATE_ZONE"
+		],
+		"important": [
+			"CLOUDFLARE_CREATE_DNS_RECORD",
+			"CLOUDFLARE_CREATE_LIST",
+			"CLOUDFLARE_CREATE_ZONE",
+			"CLOUDFLARE_DELETE_DNS_RECORD",
+			"CLOUDFLARE_DELETE_LIST",
+			"CLOUDFLARE_DELETE_ZONE",
+			"CLOUDFLARE_GET_BOT_MANAGEMENT_SETTINGS",
+			"CLOUDFLARE_GET_LISTS",
+			"CLOUDFLARE_LIST_ACCOUNT_MEMBERS",
+			"CLOUDFLARE_LIST_ACCOUNTS",
+			"CLOUDFLARE_LIST_DNS_RECORDS",
+			"CLOUDFLARE_LIST_FIREWALL_RULES",
+			"CLOUDFLARE_LIST_MONITORS",
+			"CLOUDFLARE_LIST_POOLS",
+			"CLOUDFLARE_LIST_TUNNELS",
+			"CLOUDFLARE_LIST_ZONES",
+			"CLOUDFLARE_UPDATE_DNS_RECORD",
+			"CLOUDFLARE_UPDATE_LIST",
+			"CLOUDFLARE_UPDATE_TUNNEL_CONFIGURATION",
+			"CLOUDFLARE_UPDATE_ZONE"
+		],
+		"destructive": [
+			"CLOUDFLARE_DELETE_DNS_RECORD",
+			"CLOUDFLARE_DELETE_LIST",
+			"CLOUDFLARE_DELETE_ZONE"
+		],
+		"idempotent": [
+			"CLOUDFLARE_UPDATE_TUNNEL_CONFIGURATION"
+		],
+		"openWorld": [
+			"CLOUDFLARE_GET_BOT_MANAGEMENT_SETTINGS",
+			"CLOUDFLARE_LIST_TUNNELS",
+			"CLOUDFLARE_LIST_ZONES",
+			"CLOUDFLARE_UPDATE_TUNNEL_CONFIGURATION"
+		]
+	}
+}

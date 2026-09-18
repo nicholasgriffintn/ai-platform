@@ -1,0 +1,39 @@
+{
+	"providerId": "microsoft_clarity",
+	"name": "Microsoft Clarity",
+	"description": "Microsoft Clarity is a free user behavior analytics tool that captures heatmaps, session recordings, and engagement metrics to help improve website experiences",
+	"logoUrl": "https://logos.composio.dev/api/microsoft_clarity",
+	"appUrl": "https://clarity.microsoft.com",
+	"categories": [
+		{
+			"id": "analytics",
+			"name": "Analytics"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_MmdIp5z8eIMt",
+			"name": "microsoft_clarity-tk21mm",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "microsoft_clarity",
+	"toolkitVersion": "20260724_00",
+	"toolCount": 1,
+	"readToolCount": 1,
+	"writeToolCount": 0,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"MICROSOFT_CLARITY_DATA_EXPORT"
+		],
+		"write": [],
+		"important": [],
+		"destructive": [],
+		"idempotent": [],
+		"openWorld": [
+			"MICROSOFT_CLARITY_DATA_EXPORT"
+		]
+	}
+}

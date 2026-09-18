@@ -23,7 +23,8 @@ vi.mock("~/infrastructure/database/repositoryManager", () => ({
   },
 }));
 
-vi.mock("~/infrastructure/providers/capabilities/connectors/composio/client", () => ({
+vi.mock("@ngriffin_uk/polychat-ai-integrations", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-integrations")>()),
   deleteComposioToolSession: mocks.deleteComposioToolSession,
 }));
 

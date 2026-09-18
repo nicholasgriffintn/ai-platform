@@ -1,0 +1,54 @@
+{
+	"providerId": "cursor",
+	"name": "Cursor",
+	"description": "Cursor is an AI-powered code editor built on VSCode. The API provides access to Cloud Agents, Admin, Analytics, and AI Code Tracking features.",
+	"logoUrl": "https://logos.composio.dev/api/cursor",
+	"appUrl": "https://cursor.com",
+	"categories": [
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		},
+		{
+			"id": "artificial-intelligence",
+			"name": "Artificial Intelligence"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_Yr2gxhHO5iU9",
+			"name": "cursor-j7syst",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "cursor",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 5,
+	"readToolCount": 5,
+	"writeToolCount": 0,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"CURSOR_GET_AGENT_CONVERSATION",
+			"CURSOR_GET_ME",
+			"CURSOR_LIST_AGENTS",
+			"CURSOR_LIST_MODELS",
+			"CURSOR_LIST_REPOSITORIES"
+		],
+		"write": [],
+		"important": [
+			"CURSOR_LIST_AGENTS",
+			"CURSOR_LIST_REPOSITORIES"
+		],
+		"destructive": [],
+		"idempotent": [],
+		"openWorld": [
+			"CURSOR_GET_AGENT_CONVERSATION",
+			"CURSOR_GET_ME",
+			"CURSOR_LIST_AGENTS",
+			"CURSOR_LIST_MODELS",
+			"CURSOR_LIST_REPOSITORIES"
+		]
+	}
+}

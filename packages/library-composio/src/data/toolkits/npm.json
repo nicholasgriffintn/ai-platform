@@ -1,0 +1,84 @@
+{
+	"providerId": "npm",
+	"name": "Npm",
+	"description": "npm is the default package manager for JavaScript and Node.js, facilitating the sharing and reuse of code, managing dependencies, and streamlining project workflows.",
+	"logoUrl": "https://logos.composio.dev/api/npm",
+	"appUrl": "https://www.npmjs.com/",
+	"categories": [
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_nXmBVUvIoQyI",
+			"name": "npm-ff028a",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "npm",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 12,
+	"readToolCount": 11,
+	"writeToolCount": 1,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"NPM_GET_ALL_PACKAGES_DOWNLOAD_POINT",
+			"NPM_GET_DOWNLOAD_COUNTS_POINT",
+			"NPM_GET_DOWNLOAD_COUNTS_RANGE_PACKAGE",
+			"NPM_GET_DOWNLOAD_RANGE_ALL",
+			"NPM_GET_REGISTRY_CHANGES",
+			"NPM_GET_REGISTRY_META",
+			"NPM_GET_VERSION_DOWNLOADS",
+			"NPM_QUERY_BULK_SECURITY_ADVISORIES",
+			"NPM_REGISTRY_GET_PACKAGE",
+			"NPM_REGISTRY_GET_ROOT",
+			"NPM_REGISTRY_SEARCH_PACKAGES"
+		],
+		"write": [
+			"NPM_DELETE_USER_TOKEN_LEGACY"
+		],
+		"important": [
+			"NPM_GET_REGISTRY_CHANGES",
+			"NPM_GET_REGISTRY_META",
+			"NPM_QUERY_BULK_SECURITY_ADVISORIES",
+			"NPM_REGISTRY_GET_PACKAGE",
+			"NPM_REGISTRY_GET_ROOT",
+			"NPM_REGISTRY_SEARCH_PACKAGES"
+		],
+		"destructive": [
+			"NPM_DELETE_USER_TOKEN_LEGACY"
+		],
+		"idempotent": [
+			"NPM_DELETE_USER_TOKEN_LEGACY",
+			"NPM_GET_ALL_PACKAGES_DOWNLOAD_POINT",
+			"NPM_GET_DOWNLOAD_COUNTS_POINT",
+			"NPM_GET_DOWNLOAD_COUNTS_RANGE_PACKAGE",
+			"NPM_GET_DOWNLOAD_RANGE_ALL",
+			"NPM_GET_REGISTRY_CHANGES",
+			"NPM_GET_REGISTRY_META",
+			"NPM_GET_VERSION_DOWNLOADS",
+			"NPM_QUERY_BULK_SECURITY_ADVISORIES",
+			"NPM_REGISTRY_GET_PACKAGE",
+			"NPM_REGISTRY_GET_ROOT",
+			"NPM_REGISTRY_SEARCH_PACKAGES"
+		],
+		"openWorld": [
+			"NPM_DELETE_USER_TOKEN_LEGACY",
+			"NPM_GET_ALL_PACKAGES_DOWNLOAD_POINT",
+			"NPM_GET_DOWNLOAD_COUNTS_POINT",
+			"NPM_GET_DOWNLOAD_COUNTS_RANGE_PACKAGE",
+			"NPM_GET_DOWNLOAD_RANGE_ALL",
+			"NPM_GET_REGISTRY_CHANGES",
+			"NPM_GET_REGISTRY_META",
+			"NPM_GET_VERSION_DOWNLOADS",
+			"NPM_QUERY_BULK_SECURITY_ADVISORIES",
+			"NPM_REGISTRY_GET_PACKAGE",
+			"NPM_REGISTRY_GET_ROOT",
+			"NPM_REGISTRY_SEARCH_PACKAGES"
+		]
+	}
+}

@@ -1,4 +1,5 @@
-import { getConnectorProviderConfig } from "~/infrastructure/providers/capabilities/connectors";
+import { getConnectorProviderConfig } from "@ngriffin_uk/polychat-ai-integrations";
+
 import type { ComposioConnectorSessionRecord } from "~/modules/apps/infrastructure/ComposioConnectorSessionRepository";
 import type { ConnectorOperationApprovalRecord } from "~/modules/apps/infrastructure/ConnectorOperationApprovalRepository";
 import { resolveTeammateConnectorAuthority } from "~/modules/teammates/application/connection-authority";

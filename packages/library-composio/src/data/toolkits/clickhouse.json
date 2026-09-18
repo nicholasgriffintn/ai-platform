@@ -1,0 +1,56 @@
+{
+	"providerId": "clickhouse",
+	"name": "ClickHouse",
+	"description": "ClickHouse is a fast open-source column-oriented database management system for real-time analytics and big data processing with SQL support",
+	"logoUrl": "https://logos.composio.dev/api/clickhouse",
+	"appUrl": "https://clickhouse.com",
+	"categories": [
+		{
+			"id": "databases",
+			"name": "Databases"
+		},
+		{
+			"id": "analytics",
+			"name": "Analytics"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_7fIBEtuLsYjt",
+			"name": "clickhouse-p88up0",
+			"authScheme": "BASIC",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "clickhouse",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 6,
+	"readToolCount": 6,
+	"writeToolCount": 0,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"CLICKHOUSE_EXECUTE_QUERY",
+			"CLICKHOUSE_GET_DATABASE_SCHEMA",
+			"CLICKHOUSE_GET_PLAY_INTERFACE",
+			"CLICKHOUSE_GET_TABLE_SCHEMA",
+			"CLICKHOUSE_LIST_DATABASES",
+			"CLICKHOUSE_LIST_TABLES"
+		],
+		"write": [],
+		"important": [
+			"CLICKHOUSE_EXECUTE_QUERY",
+			"CLICKHOUSE_GET_DATABASE_SCHEMA",
+			"CLICKHOUSE_GET_TABLE_SCHEMA",
+			"CLICKHOUSE_LIST_DATABASES",
+			"CLICKHOUSE_LIST_TABLES"
+		],
+		"destructive": [],
+		"idempotent": [],
+		"openWorld": [
+			"CLICKHOUSE_GET_DATABASE_SCHEMA",
+			"CLICKHOUSE_GET_PLAY_INTERFACE",
+			"CLICKHOUSE_GET_TABLE_SCHEMA"
+		]
+	}
+}

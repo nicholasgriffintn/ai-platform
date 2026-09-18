@@ -28,6 +28,7 @@
     "**/.wrangler/**",
     "**/generated/**",
     "**/target/**",
+    "packages/library-composio/src/data/**",
     "packages/library-model-catalogue/src/data/**",
     "apps/api/src/openapi/content/**"
   ]

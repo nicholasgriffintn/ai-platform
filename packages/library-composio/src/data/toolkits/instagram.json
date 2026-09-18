@@ -1,0 +1,118 @@
+{
+	"providerId": "instagram",
+	"name": "Instagram",
+	"description": "Instagram is a social media platform for sharing photos, videos, and stories. Only supports Instagram Business and Creator accounts, not Instagram Personal accounts.",
+	"logoUrl": "https://logos.composio.dev/api/instagram",
+	"appUrl": "https://www.instagram.com",
+	"categories": [
+		{
+			"id": "social-media-accounts",
+			"name": "Social Media Accounts"
+		},
+		{
+			"id": "social-media-marketing",
+			"name": "Social Media Marketing"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_Im4uFAcbolbK",
+			"name": "instagram-rb6uz6",
+			"authScheme": "OAUTH2",
+			"isManaged": true
+		}
+	],
+	"toolkitSlug": "instagram",
+	"toolkitVersion": "20260813_00",
+	"toolCount": 28,
+	"readToolCount": 16,
+	"writeToolCount": 12,
+	"scopes": [
+		"instagram_business_basic",
+		"instagram_business_content_publish",
+		"instagram_business_manage_comments",
+		"instagram_business_manage_insights",
+		"instagram_business_manage_messages"
+	],
+	"operations": {
+		"read": [
+			"INSTAGRAM_GET_CONVERSATION",
+			"INSTAGRAM_GET_IG_COMMENT_REPLIES",
+			"INSTAGRAM_GET_IG_MEDIA",
+			"INSTAGRAM_GET_IG_MEDIA_CHILDREN",
+			"INSTAGRAM_GET_IG_MEDIA_COMMENTS",
+			"INSTAGRAM_GET_IG_MEDIA_INSIGHTS",
+			"INSTAGRAM_GET_IG_USER_CONTENT_PUBLISHING_LIMIT",
+			"INSTAGRAM_GET_IG_USER_LIVE_MEDIA",
+			"INSTAGRAM_GET_IG_USER_MEDIA",
+			"INSTAGRAM_GET_IG_USER_STORIES",
+			"INSTAGRAM_GET_MESSENGER_PROFILE",
+			"INSTAGRAM_GET_PAGE_CONVERSATIONS",
+			"INSTAGRAM_GET_USER_INFO",
+			"INSTAGRAM_GET_USER_INSIGHTS",
+			"INSTAGRAM_LIST_ALL_CONVERSATIONS",
+			"INSTAGRAM_LIST_ALL_MESSAGES"
+		],
+		"write": [
+			"INSTAGRAM_CREATE_CAROUSEL_CONTAINER",
+			"INSTAGRAM_DELETE_COMMENT",
+			"INSTAGRAM_DELETE_MESSENGER_PROFILE",
+			"INSTAGRAM_MARK_SEEN",
+			"INSTAGRAM_POST_IG_COMMENT_REPLIES",
+			"INSTAGRAM_POST_IG_MEDIA_COMMENTS",
+			"INSTAGRAM_POST_IG_USER_MEDIA",
+			"INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH",
+			"INSTAGRAM_POST_IG_USER_MENTIONS",
+			"INSTAGRAM_SEND_IMAGE",
+			"INSTAGRAM_SEND_TEXT_MESSAGE",
+			"INSTAGRAM_UPDATE_MESSENGER_PROFILE"
+		],
+		"important": [
+			"INSTAGRAM_CREATE_CAROUSEL_CONTAINER",
+			"INSTAGRAM_GET_IG_MEDIA",
+			"INSTAGRAM_GET_IG_MEDIA_COMMENTS",
+			"INSTAGRAM_GET_IG_MEDIA_INSIGHTS",
+			"INSTAGRAM_GET_IG_USER_MEDIA",
+			"INSTAGRAM_GET_PAGE_CONVERSATIONS",
+			"INSTAGRAM_POST_IG_COMMENT_REPLIES",
+			"INSTAGRAM_POST_IG_MEDIA_COMMENTS",
+			"INSTAGRAM_POST_IG_USER_MEDIA",
+			"INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH",
+			"INSTAGRAM_SEND_TEXT_MESSAGE",
+			"INSTAGRAM_UPDATE_MESSENGER_PROFILE"
+		],
+		"destructive": [
+			"INSTAGRAM_DELETE_COMMENT",
+			"INSTAGRAM_DELETE_MESSENGER_PROFILE"
+		],
+		"idempotent": [
+			"INSTAGRAM_DELETE_COMMENT",
+			"INSTAGRAM_DELETE_MESSENGER_PROFILE",
+			"INSTAGRAM_MARK_SEEN"
+		],
+		"openWorld": [
+			"INSTAGRAM_CREATE_CAROUSEL_CONTAINER",
+			"INSTAGRAM_DELETE_COMMENT",
+			"INSTAGRAM_DELETE_MESSENGER_PROFILE",
+			"INSTAGRAM_GET_IG_COMMENT_REPLIES",
+			"INSTAGRAM_GET_IG_MEDIA",
+			"INSTAGRAM_GET_IG_MEDIA_CHILDREN",
+			"INSTAGRAM_GET_IG_MEDIA_COMMENTS",
+			"INSTAGRAM_GET_IG_MEDIA_INSIGHTS",
+			"INSTAGRAM_GET_IG_USER_CONTENT_PUBLISHING_LIMIT",
+			"INSTAGRAM_GET_IG_USER_LIVE_MEDIA",
+			"INSTAGRAM_GET_IG_USER_MEDIA",
+			"INSTAGRAM_GET_IG_USER_STORIES",
+			"INSTAGRAM_GET_MESSENGER_PROFILE",
+			"INSTAGRAM_GET_PAGE_CONVERSATIONS",
+			"INSTAGRAM_GET_USER_INFO",
+			"INSTAGRAM_GET_USER_INSIGHTS",
+			"INSTAGRAM_POST_IG_COMMENT_REPLIES",
+			"INSTAGRAM_POST_IG_MEDIA_COMMENTS",
+			"INSTAGRAM_POST_IG_USER_MEDIA",
+			"INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH",
+			"INSTAGRAM_POST_IG_USER_MENTIONS",
+			"INSTAGRAM_UPDATE_MESSENGER_PROFILE"
+		]
+	}
+}

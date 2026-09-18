@@ -1,3 +1,7 @@
+import {
+  getConnectorProviderConfig,
+  isConnectorConnectionKindForAuth,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import type {
   MemoryDocument,
   UpdateMemoryDocumentInput,
@@ -10,8 +14,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getConnectorProviderConfig } from "~/infrastructure/providers/capabilities/connectors";
-import { isConnectorConnectionKindForAuth } from "~/modules/apps/application/connectors/connection-references";
 import { formatMemoryDocument } from "~/modules/memory-documents/application/memory-documents";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 

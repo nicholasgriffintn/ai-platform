@@ -1,3 +1,4 @@
+import { isConnectorOperationSupported } from "@ngriffin_uk/polychat-ai-integrations";
 import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import type {
   AssistantRecipe,
@@ -8,8 +9,6 @@ import type {
   RecipeInstallation,
 } from "@ngriffin_uk/polychat-schemas";
 import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
-
-import { isConnectorOperationSupported } from "~/infrastructure/providers/capabilities/connectors";
 
 import { RECIPE_LOOKUP_TOOL, RECIPE_SETUP_TOOL } from "./catalog/shared";
 

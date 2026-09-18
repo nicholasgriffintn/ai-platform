@@ -1,3 +1,17 @@
+import {
+  completeComposioAuthorization,
+  createComposioConnectLink,
+  deleteComposioToolSession,
+  disconnectComposioAccount,
+  getConnectorProviderOperationAccess,
+  isComposioConfigured,
+  isComposioOAuthAuthConfig,
+  isComposioProviderConfigured,
+  listComposioConnectedAccounts,
+  RECIPE_CONNECTOR_CONNECTION_KIND,
+  type ComposioConnectedAccount,
+  type ConnectorProviderConfig,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import type {
   RecipeConnectorManifest,
   RecipeConnectorProvider,
@@ -12,25 +26,9 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import {
-  getConnectorProviderOperationAccess,
-  isComposioOAuthAuthConfig,
-  type ConnectorProviderConfig,
-} from "~/infrastructure/providers/capabilities/connectors";
-import {
-  completeComposioAuthorization,
-  createComposioConnectLink,
-  deleteComposioToolSession,
-  disconnectComposioAccount,
-  type ComposioConnectedAccount,
-  isComposioConfigured,
-  isComposioProviderConfigured,
-  listComposioConnectedAccounts,
-} from "~/infrastructure/providers/capabilities/connectors/composio/client";
 import type { ProviderConnectionRecord } from "~/modules/apps/infrastructure/ProviderConnectionRepository";
 
 import { ensureRecipeConnectorAccountReference } from "./accounts";
-import { RECIPE_CONNECTOR_CONNECTION_KIND } from "./connection-references";
 import {
   getRecipeConnectorProviderConfig,
   getRecipeConnectorProviderConfigs,

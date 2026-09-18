@@ -1,0 +1,58 @@
+{
+	"providerId": "nasdaq",
+	"name": "Nasdaq",
+	"description": "Nasdaq Data Link is a cloud-based financial data platform providing access to curated premium and free datasets including equity prices, company fundamentals, earnings estimates, options data, forex rates, and economic indicators through REST and Streaming APIs, with integrations for Python, R, Excel, and SQL.",
+	"logoUrl": "https://logos.composio.dev/api/nasdaq",
+	"appUrl": "https://data.nasdaq.com/",
+	"categories": [
+		{
+			"id": "analytics",
+			"name": "Analytics"
+		},
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_ck7ZZ86UjtT5",
+			"name": "nasdaq-fqbgjp",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "nasdaq",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 7,
+	"readToolCount": 7,
+	"writeToolCount": 0,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"NASDAQ_GET_ANALYST_RATINGS",
+			"NASDAQ_GET_DATATABLE",
+			"NASDAQ_GET_DATATABLE_METADATA",
+			"NASDAQ_GET_DIVIDEND_HISTORY",
+			"NASDAQ_GET_REAL_TIME_QUOTE",
+			"NASDAQ_GET_TABLE_ROW",
+			"NASDAQ_GET_TABLES_BY_DATE"
+		],
+		"write": [],
+		"important": [
+			"NASDAQ_GET_ANALYST_RATINGS",
+			"NASDAQ_GET_DATATABLE",
+			"NASDAQ_GET_DATATABLE_METADATA",
+			"NASDAQ_GET_DIVIDEND_HISTORY",
+			"NASDAQ_GET_REAL_TIME_QUOTE",
+			"NASDAQ_GET_TABLE_ROW",
+			"NASDAQ_GET_TABLES_BY_DATE"
+		],
+		"destructive": [],
+		"idempotent": [],
+		"openWorld": [
+			"NASDAQ_GET_DATATABLE",
+			"NASDAQ_GET_DATATABLE_METADATA"
+		]
+	}
+}

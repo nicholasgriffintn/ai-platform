@@ -1,0 +1,67 @@
+{
+	"providerId": "tripadvisor",
+	"name": "Tripadvisor",
+	"description": "TripAdvisor Content API provides access to location data, reviews, photos, and search functionality for travel-related content.",
+	"logoUrl": "https://logos.composio.dev/api/tripadvisor",
+	"appUrl": "https://www.tripadvisor.com",
+	"categories": [
+		{
+			"id": "reviews",
+			"name": "Reviews"
+		},
+		{
+			"id": "news-&-lifestyle",
+			"name": "News & Lifestyle"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_Ms3k4KC9UKNd",
+			"name": "tripadvisor-rj7ycx",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "tripadvisor",
+	"toolkitVersion": "20260615_00",
+	"toolCount": 7,
+	"readToolCount": 7,
+	"writeToolCount": 0,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"TRIPADVISOR_GET_LOCATION_ACTIVITIES",
+			"TRIPADVISOR_GET_LOCATION_AWARDS",
+			"TRIPADVISOR_GET_LOCATION_DETAILS_V2",
+			"TRIPADVISOR_GET_LOCATION_GEOS",
+			"TRIPADVISOR_GET_LOCATION_HOTELS",
+			"TRIPADVISOR_GET_LOCATION_PHOTOS_V2",
+			"TRIPADVISOR_GET_LOCATION_REVIEWS_V2"
+		],
+		"write": [],
+		"important": [
+			"TRIPADVISOR_GET_LOCATION_DETAILS_V2",
+			"TRIPADVISOR_GET_LOCATION_HOTELS",
+			"TRIPADVISOR_GET_LOCATION_REVIEWS_V2"
+		],
+		"destructive": [],
+		"idempotent": [
+			"TRIPADVISOR_GET_LOCATION_ACTIVITIES",
+			"TRIPADVISOR_GET_LOCATION_AWARDS",
+			"TRIPADVISOR_GET_LOCATION_DETAILS_V2",
+			"TRIPADVISOR_GET_LOCATION_GEOS",
+			"TRIPADVISOR_GET_LOCATION_HOTELS",
+			"TRIPADVISOR_GET_LOCATION_PHOTOS_V2",
+			"TRIPADVISOR_GET_LOCATION_REVIEWS_V2"
+		],
+		"openWorld": [
+			"TRIPADVISOR_GET_LOCATION_ACTIVITIES",
+			"TRIPADVISOR_GET_LOCATION_AWARDS",
+			"TRIPADVISOR_GET_LOCATION_DETAILS_V2",
+			"TRIPADVISOR_GET_LOCATION_GEOS",
+			"TRIPADVISOR_GET_LOCATION_HOTELS",
+			"TRIPADVISOR_GET_LOCATION_PHOTOS_V2",
+			"TRIPADVISOR_GET_LOCATION_REVIEWS_V2"
+		]
+	}
+}

@@ -1,8 +1,8 @@
+import { deleteComposioToolSession } from "@ngriffin_uk/polychat-ai-integrations";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import { deleteComposioToolSession } from "~/infrastructure/providers/capabilities/connectors/composio/client";
 import type { IEnv } from "~/types";
 
 const CLEANUP_BATCH_SIZE = 50;

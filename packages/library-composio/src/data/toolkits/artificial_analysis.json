@@ -1,0 +1,65 @@
+{
+	"providerId": "artificial_analysis",
+	"name": "Artificial Analysis",
+	"description": "Artificial Analysis provides independent benchmarks and analysis of AI models and API providers — intelligence, coding and math indices, pricing, latency and throughput performance, plus arena rankings for image, video, speech and music models.",
+	"logoUrl": "https://logos.composio.dev/api/artificial_analysis",
+	"appUrl": "https://artificialanalysis.ai/",
+	"categories": [
+		{
+			"id": "developer-tools",
+			"name": "Developer Tools"
+		},
+		{
+			"id": "artificial-intelligence",
+			"name": "Artificial Intelligence"
+		}
+	],
+	"authConfigs": [
+		{
+			"id": "ac_FvSS181vDk-D",
+			"name": "artificial_analysis-9ytt4c",
+			"authScheme": "API_KEY",
+			"isManaged": false
+		}
+	],
+	"toolkitSlug": "artificial_analysis",
+	"toolkitVersion": "00000000_00",
+	"toolCount": 12,
+	"readToolCount": 12,
+	"writeToolCount": 0,
+	"scopes": [],
+	"operations": {
+		"read": [
+			"ARTIFICIAL_ANALYSIS_LIST_IMAGE_EDITING_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_IMAGE_TO_VIDEO_AUDIO_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_IMAGE_TO_VIDEO_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_LANGUAGE_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_MUSIC_INSTRUMENTAL_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_MUSIC_WITH_VOCALS_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_SPEECH_TO_SPEECH_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_SPEECH_TO_TEXT_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_TEXT_TO_IMAGE_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_TEXT_TO_SPEECH_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_TEXT_TO_VIDEO_AUDIO_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_TEXT_TO_VIDEO_MODELS"
+		],
+		"write": [],
+		"important": [],
+		"destructive": [],
+		"idempotent": [
+			"ARTIFICIAL_ANALYSIS_LIST_IMAGE_EDITING_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_IMAGE_TO_VIDEO_AUDIO_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_IMAGE_TO_VIDEO_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_LANGUAGE_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_MUSIC_INSTRUMENTAL_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_MUSIC_WITH_VOCALS_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_SPEECH_TO_SPEECH_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_SPEECH_TO_TEXT_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_TEXT_TO_IMAGE_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_TEXT_TO_SPEECH_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_TEXT_TO_VIDEO_AUDIO_MODELS",
+			"ARTIFICIAL_ANALYSIS_LIST_TEXT_TO_VIDEO_MODELS"
+		],
+		"openWorld": []
+	}
+}
