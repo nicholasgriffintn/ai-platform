@@ -10,15 +10,26 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 16, 2026",
         "supportsToolCalls": true,
         "supportsResponseFormat": false,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -28,10 +39,18 @@
         "name": "Kling Video 3.0",
         "description": "Generate cinematic videos up to 15 seconds with multi-shot control, native audio, and improved consistency",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["video"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
         },
-        "strengths": ["creative", "video"],
+        "strengths": [
+          "creative",
+          "video"
+        ],
         "supportsAttachments": false
       }
     }

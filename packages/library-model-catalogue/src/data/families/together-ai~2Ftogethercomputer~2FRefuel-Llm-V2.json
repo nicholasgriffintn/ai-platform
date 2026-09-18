@@ -2,8 +2,12 @@
   "defaults": {
     "contextWindow": 16000,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "contextComplexity": 4,
     "reliability": 4

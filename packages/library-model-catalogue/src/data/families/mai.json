@@ -6,7 +6,11 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["low", "medium", "high"],
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
       "defaultEffort": "low"
     }
   },
@@ -17,8 +21,14 @@
         "name": "MAI-Code-1.1-Flash",
         "description": "Microsoft coding model with native vision support, optimized for fast and efficient software development",
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 11, 2026",
         "supportsAttachments": true
@@ -29,8 +39,12 @@
         "name": "MAI-Code-1-Flash",
         "description": "Microsoft coding model built for fast, efficient assistance in everyday developer workflows",
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "December 2025",
         "releaseDate": "June 2, 2026",

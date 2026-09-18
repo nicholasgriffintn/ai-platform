@@ -4,10 +4,19 @@
     "contextWindow": 32768,
     "maxTokens": 4096,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["chat", "general_knowledge", "analysis", "tool_use"],
+    "strengths": [
+      "chat",
+      "general_knowledge",
+      "analysis",
+      "tool_use"
+    ],
     "contextComplexity": 2,
     "reliability": 1,
     "knowledgeCutoffDate": "September 2024",

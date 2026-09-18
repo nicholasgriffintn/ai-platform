@@ -3,8 +3,12 @@
     "contextWindow": 123000,
     "maxTokens": 12000,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "contextComplexity": 2,
     "reliability": 1,

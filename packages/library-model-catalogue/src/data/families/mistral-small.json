@@ -2,8 +2,13 @@
   "defaults": {
     "openWeights": true,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsAttachments": true,
@@ -28,8 +33,12 @@
         "contextWindow": 128000,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 2025",
         "releaseDate": "June 20, 2025"
@@ -42,8 +51,12 @@
         "contextWindow": 32768,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 2,
         "reliability": 1,
@@ -67,7 +80,11 @@
         "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
         "contextWindow": 128000,
         "maxTokens": 32768,
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "September 2024",
@@ -99,8 +116,12 @@
         "contextWindow": 128000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "March 18, 2025",
         "supportsResponseFormat": false,
@@ -113,7 +134,11 @@
         "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
         "contextWindow": 128000,
         "maxTokens": 32768,
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "March 2025",
@@ -133,8 +158,13 @@
         "contextWindow": 256000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["image", "text"],
-          "output": ["text"]
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 31, 2023",
         "releaseDate": "June 20, 2025",
@@ -147,7 +177,11 @@
         "description": "Fast Mistral production model for chat, extraction, and cost-sensitive agents",
         "contextWindow": 262144,
         "maxTokens": 256000,
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "June 2025",
@@ -170,7 +204,10 @@
         "maxTokens": 16384,
         "releaseDate": "March 15, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -181,14 +218,24 @@
         "description": "Fast Mistral production model for chat, extraction, and cost-sensitive agents",
         "contextWindow": 256000,
         "maxTokens": 256000,
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "March 16, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {

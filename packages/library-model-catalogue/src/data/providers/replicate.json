@@ -20,7 +20,10 @@
             },
             {
               "name": "input_audio",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Optional audio file URL or handle to condition the generation."
             },
             {
@@ -34,7 +37,12 @@
               "type": "string",
               "description": "MusicGen checkpoint to use (melody, medium, large).",
               "default": "stereo-melody-large",
-              "enum": ["melody-large", "stereo-large", "stereo-melody-large", "large"]
+              "enum": [
+                "melody-large",
+                "stereo-large",
+                "stereo-melody-large",
+                "large"
+              ]
             },
             {
               "name": "top_k",
@@ -82,7 +90,12 @@
               "type": "string",
               "description": "Strategy for normalizing audio.",
               "default": "loudness",
-              "enum": ["loudness", "clip", "peak", "rms"]
+              "enum": [
+                "loudness",
+                "clip",
+                "peak",
+                "rms"
+              ]
             },
             {
               "name": "classifier_free_guidance",
@@ -110,19 +123,26 @@
           "fields": [
             {
               "name": "file_string",
-              "type": ["string"],
+              "type": [
+                "string"
+              ],
               "description": "Either provide: Base64 encoded audio file",
               "required": false
             },
             {
               "name": "file_string",
-              "type": ["string"],
+              "type": [
+                "string"
+              ],
               "description": "Or provide: A direct audio file URL",
               "required": false
             },
             {
               "name": "file",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Or an audio file",
               "required": false
             },
@@ -171,7 +191,10 @@
           "fields": [
             {
               "name": "audio_file",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Audio file to transcribe.",
               "required": true
             },
@@ -318,7 +341,10 @@
           "reference": "https://replicate.com/elevenlabs/music"
         }
       },
-      "unset": ["supportsAttachments", "supportsStreaming"]
+      "unset": [
+        "supportsAttachments",
+        "supportsStreaming"
+      ]
     },
     "replicate-minimax-music-1.5": {
       "model": "minimax/music-1-5",
@@ -344,7 +370,11 @@
               "type": "string",
               "description": "Audio format for the generated music",
               "default": "mp3",
-              "enum": ["mp3", "wav", "flac"]
+              "enum": [
+                "mp3",
+                "wav",
+                "flac"
+              ]
             },
             {
               "name": "lyrics",
@@ -362,7 +392,12 @@
           "reference": "https://replicate.com/minimax/music-1.5"
         }
       },
-      "unset": ["openWeights", "supportsToolCalls", "supportsTemperature", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "supportsToolCalls",
+        "supportsTemperature",
+        "reasoningConfig"
+      ]
     },
     "replicate-chatterbox-turbo": {
       "model": "replicate/resemble-ai/chatterbox-turbo/chatterbox-turbo",
@@ -407,7 +442,10 @@
             },
             {
               "name": "reference_audio",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Reference audio file for voice cloning (optional). Must be longer than 5 seconds. If provided, overrides the voice selection."
             },
             {
@@ -499,10 +537,19 @@
         "name": "FLUX 2 Max",
         "description": "The highest fidelity image model from Black Forest Labs",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
         },
-        "strengths": ["creative", "vision", "image"],
+        "strengths": [
+          "creative",
+          "vision",
+          "image"
+        ],
         "contextComplexity": 4,
         "costPerRun": 0.04,
         "inputSchema": {
@@ -543,7 +590,13 @@
               "type": "string",
               "description": "Resolution in megapixels. Up to 4 MP is possible, but 2 MP or below is recommended. The maximum image size is 2048x2048, which means that high-resolution images may not respect the resolution if aspect ratio is not 1:1. Resolution is not used when aspect_ratio is 'custom'. When aspect_ratio is 'match_input_image', use 'match_input_image' to match the input image's resolution (clamped to 0.5-4 MP).",
               "default": "1 MP",
-              "enum": ["match_input_image", "0.5 MP", "1 MP", "2 MP", "4 MP"]
+              "enum": [
+                "match_input_image",
+                "0.5 MP",
+                "1 MP",
+                "2 MP",
+                "4 MP"
+              ]
             },
             {
               "name": "width",
@@ -571,7 +624,11 @@
               "type": "string",
               "description": "Format of the output images.",
               "default": "webp",
-              "enum": ["webp", "jpg", "png"]
+              "enum": [
+                "webp",
+                "jpg",
+                "png"
+              ]
             },
             {
               "name": "output_quality",
@@ -583,7 +640,11 @@
           "reference": "https://replicate.com/black-forest-labs/flux-2-max"
         }
       },
-      "unset": ["supportsToolCalls", "supportsTemperature", "releaseDate"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsTemperature",
+        "releaseDate"
+      ]
     },
     "replicate-flux-2-pro": {
       "model": "flux/flux-2-pro",
@@ -591,7 +652,10 @@
       "overrides": {
         "name": "FLUX 2 Pro",
         "description": "Flux 2 Pro is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
-        "strengths": ["creative", "image"],
+        "strengths": [
+          "creative",
+          "image"
+        ],
         "costPerRun": 0.015,
         "inputSchema": {
           "fields": [
@@ -603,7 +667,10 @@
             },
             {
               "name": "input_images",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "A list of input images for image-to-image generation. Maximum 8 images. Must be jpeg, png, gif, or webp.",
               "required": false
             },
@@ -631,7 +698,13 @@
               "type": "string",
               "description": "Resolution in megapixels. Up to 4 MP is possible, but 2 MP or below is recommended. The maximum image size is 2048x2048, which means that high-resolution images may not respect the resolution if aspect ratio is not 1:1. Resolution is not used when aspect_ratio is 'custom'. When aspect_ratio is 'match_input_image', use 'match_input_image' to match the input image's resolution (clamped to 0.5-4 MP).",
               "default": "1 MP",
-              "enum": ["1 MP", "2 MP", "4 MP", "0.5MP", "match_input_image"]
+              "enum": [
+                "1 MP",
+                "2 MP",
+                "4 MP",
+                "0.5MP",
+                "match_input_image"
+              ]
             },
             {
               "name": "width",
@@ -656,7 +729,11 @@
               "type": "string",
               "description": "Output format.",
               "default": "webp",
-              "enum": ["webp", "jpg", "png"]
+              "enum": [
+                "webp",
+                "jpg",
+                "png"
+              ]
             },
             {
               "name": "seed",
@@ -667,7 +744,12 @@
           "reference": "https://replicate.com/black-forest-labs/flux-2-pro"
         }
       },
-      "unset": ["supportsToolCalls", "supportsTemperature", "contextComplexity", "releaseDate"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsTemperature",
+        "contextComplexity",
+        "releaseDate"
+      ]
     },
     "replicate-flux-2-flex": {
       "model": "flux/flux-2-flex",
@@ -675,7 +757,10 @@
       "overrides": {
         "name": "FLUX 2 Flex",
         "description": "Flux 2 Flex is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
-        "strengths": ["creative", "image"],
+        "strengths": [
+          "creative",
+          "image"
+        ],
         "costPerRun": 0.06,
         "inputSchema": {
           "fields": [
@@ -687,7 +772,10 @@
             },
             {
               "name": "input_images",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "A list of input images for image-to-image generation. Maximum 8 images. Must be jpeg, png, gif, or webp.",
               "required": false
             },
@@ -715,7 +803,13 @@
               "type": "string",
               "description": "Resolution in megapixels. Up to 4 MP is possible, but 2 MP or below is recommended. The maximum image size is 2048x2048, which means that high-resolution images may not respect the resolution if aspect ratio is not 1:1. Resolution is not used when aspect_ratio is 'custom'. When aspect_ratio is 'match_input_image', use 'match_input_image' to match the input image's resolution (clamped to 0.5-4 MP).",
               "default": "1 MP",
-              "enum": ["1 MP", "2 MP", "4 MP", "0.5MP", "match_input_image"]
+              "enum": [
+                "1 MP",
+                "2 MP",
+                "4 MP",
+                "0.5MP",
+                "match_input_image"
+              ]
             },
             {
               "name": "width",
@@ -740,7 +834,11 @@
               "type": "string",
               "description": "Output format.",
               "default": "webp",
-              "enum": ["webp", "jpg", "png"]
+              "enum": [
+                "webp",
+                "jpg",
+                "png"
+              ]
             },
             {
               "name": "seed",
@@ -769,7 +867,11 @@
           "reference": "https://replicate.com/black-forest-labs/flux-2-flex"
         }
       },
-      "unset": ["supportsToolCalls", "supportsTemperature", "releaseDate"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsTemperature",
+        "releaseDate"
+      ]
     },
     "replicate-flux-2-dev": {
       "model": "flux/flux-2-dev",
@@ -786,7 +888,10 @@
             },
             {
               "name": "input_images",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "List of input images for image-to-image generation. Maximum 4 images. Must be jpeg, png, gif, or webp.",
               "required": false
             },
@@ -826,7 +931,11 @@
               "type": "string",
               "description": "Output format.",
               "default": "webp",
-              "enum": ["webp", "jpg", "png"]
+              "enum": [
+                "webp",
+                "jpg",
+                "png"
+              ]
             },
             {
               "name": "output_quality",
@@ -849,7 +958,10 @@
           "reference": "https://replicate.com/black-forest-labs/flux-2-dev"
         }
       },
-      "unset": ["supportsToolCalls", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
     },
     "replicate-flux-1.1-pro": {
       "model": "flux/flux-1-1-pro",
@@ -866,7 +978,10 @@
             },
             {
               "name": "image_prompt",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Image to use with Flux Redux. This is used together with the text prompt to guide the generation towards the composition of the image_prompt. Must be jpeg, png, gif, or webp.",
               "required": false
             },
@@ -905,7 +1020,11 @@
               "type": "string",
               "description": "Output format.",
               "default": "webp",
-              "enum": ["webp", "jpg", "png"]
+              "enum": [
+                "webp",
+                "jpg",
+                "png"
+              ]
             },
             {
               "name": "seed",
@@ -916,7 +1035,10 @@
           "reference": "https://replicate.com/black-forest-labs/flux-1.1-pro"
         }
       },
-      "unset": ["supportsToolCalls", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
     },
     "replicate-sd3.5large": {
       "model": "stable-diffusion/stable-diffusion-3-5-large",
@@ -952,7 +1074,10 @@
             },
             {
               "name": "image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input image for image to image mode. The aspect ratio of your output will match this image."
             },
             {
@@ -981,7 +1106,10 @@
           "fields": [
             {
               "name": "image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input image to upscale.",
               "required": true
             },
@@ -990,7 +1118,10 @@
               "type": "number",
               "description": "Upscaling factor.",
               "default": 4,
-              "enum": [2, 4]
+              "enum": [
+                2,
+                4
+              ]
             },
             {
               "name": "face_enhance",
@@ -1013,13 +1144,19 @@
           "fields": [
             {
               "name": "image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input image for background removal.",
               "required": false
             },
             {
               "name": "image_url",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input image for background removal.",
               "required": false
             },
@@ -1083,27 +1220,41 @@
               "type": "string",
               "description": "Output resolution.",
               "default": "2K",
-              "enum": ["1K", "2K", "4K"]
+              "enum": [
+                "1K",
+                "2K",
+                "4K"
+              ]
             },
             {
               "name": "output_format",
               "type": "string",
               "description": "Output format.",
               "default": "jpg",
-              "enum": ["png", "jpg"]
+              "enum": [
+                "png",
+                "jpg"
+              ]
             },
             {
               "name": "safety_filter_level",
               "type": "string",
               "description": "Output format.",
               "default": "block_only_high",
-              "enum": ["block_only_high", "block_only_medium_and_above", "block_only_low_and_above"]
+              "enum": [
+                "block_only_high",
+                "block_only_medium_and_above",
+                "block_only_low_and_above"
+              ]
             }
           ],
           "reference": "https://replicate.com/google/nano-banana-pro"
         }
       },
-      "unset": ["supportsAttachments", "supportsStreaming"]
+      "unset": [
+        "supportsAttachments",
+        "supportsStreaming"
+      ]
     },
     "replicate-google-nano-banana-2": {
       "model": "replicate/google/nano-banana-2/google-nano-banana-2",
@@ -1152,7 +1303,11 @@
               "type": "string",
               "description": "Resolution of the generated image. Higher resolutions take longer to generate.",
               "default": "1K",
-              "enum": ["1K", "2K", "4K"]
+              "enum": [
+                "1K",
+                "2K",
+                "4K"
+              ]
             },
             {
               "name": "google_search",
@@ -1171,7 +1326,10 @@
               "type": "string",
               "description": "Format of the output image",
               "default": "jpg",
-              "enum": ["jpg", "png"]
+              "enum": [
+                "jpg",
+                "png"
+              ]
             }
           ],
           "reference": "https://replicate.com/google/nano-banana-2"
@@ -1221,13 +1379,19 @@
               "type": "string",
               "description": "Output format.",
               "default": "jpg",
-              "enum": ["png", "jpg"]
+              "enum": [
+                "png",
+                "jpg"
+              ]
             }
           ],
           "reference": "https://replicate.com/google/nano-banana"
         }
       },
-      "unset": ["supportsAttachments", "supportsStreaming"]
+      "unset": [
+        "supportsAttachments",
+        "supportsStreaming"
+      ]
     },
     "replicate-xai-grok-imagine-image": {
       "model": "grok/grok-imagine-image",
@@ -1235,10 +1399,19 @@
       "overrides": {
         "description": "Generate and edit images using xAI's Grok Imagine Image model.",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
         },
-        "strengths": ["creative", "vision", "image"],
+        "strengths": [
+          "creative",
+          "vision",
+          "image"
+        ],
         "contextComplexity": 4,
         "inputSchema": {
           "fields": [
@@ -1250,7 +1423,10 @@
             },
             {
               "name": "image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input image for editing. When provided, the model edits this image based on the prompt. Supports jpg, jpeg, png, webp."
             },
             {
@@ -1312,7 +1488,14 @@
               "type": "string",
               "description": "Aspect ratio for the generated image.",
               "default": "1:1",
-              "enum": ["1:1", "16:9", "9:16", "4:3", "3:4", "match_input_image"]
+              "enum": [
+                "1:1",
+                "16:9",
+                "9:16",
+                "4:3",
+                "3:4",
+                "match_input_image"
+              ]
             },
             {
               "name": "go_fast",
@@ -1330,7 +1513,11 @@
               "type": "string",
               "description": "Format of the output images.",
               "default": "webp",
-              "enum": ["webp", "jpg", "png"]
+              "enum": [
+                "webp",
+                "jpg",
+                "png"
+              ]
             },
             {
               "name": "output_quality",
@@ -1348,7 +1535,10 @@
           "reference": "https://replicate.com/qwen/qwen-image-edit-2511"
         }
       },
-      "unset": ["supportsToolCalls", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
     },
     "replicate-insanely-fast-whisper-with-video": {
       "model": "whisper/insanely-fast-whisper-with-video-transcription",
@@ -1359,7 +1549,10 @@
           "fields": [
             {
               "name": "audio",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Audio file. Either this or url must be provided."
             },
             {
@@ -1372,7 +1565,10 @@
               "type": "string",
               "description": "Task to perform: transcribe or translate to another language. (default: transcribe).",
               "default": "transcribe",
-              "enum": ["transcribe", "translate"]
+              "enum": [
+                "transcribe",
+                "translate"
+              ]
             },
             {
               "name": "language",
@@ -1390,7 +1586,10 @@
               "type": "string",
               "description": "Whisper supports both chunked as well as word level timestamps.",
               "default": "chunk",
-              "enum": ["chunk", "word"]
+              "enum": [
+                "chunk",
+                "word"
+              ]
             }
           ],
           "reference": "https://replicate.com/turian/insanely-fast-whisper-with-video"
@@ -1468,7 +1667,10 @@
               "type": "string",
               "description": "Aspect ratio of the generated video.",
               "default": "portrait",
-              "enum": ["portrait", "landscape"]
+              "enum": [
+                "portrait",
+                "landscape"
+              ]
             },
             {
               "name": "prompt",
@@ -1478,7 +1680,10 @@
             },
             {
               "name": "input_reference",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "An optional image to use as the first frame of the video. The image must be the same aspect ratio as the video."
             }
           ],
@@ -1501,7 +1706,10 @@
             },
             {
               "name": "first_frame_image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "First frame image for video generation. The output video will have the same aspect ratio as this image."
             },
             {
@@ -1515,7 +1723,10 @@
               "type": "string",
               "description": "Resolution of the generated video.",
               "default": "768p",
-              "enum": ["768p", "1080p"]
+              "enum": [
+                "768p",
+                "1080p"
+              ]
             },
             {
               "name": "prompt_optimizer",
@@ -1527,14 +1738,22 @@
           "reference": "https://replicate.com/minimax/hailuo-2-3"
         }
       },
-      "unset": ["openWeights", "supportsToolCalls", "supportsTemperature", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "supportsToolCalls",
+        "supportsTemperature",
+        "reasoningConfig"
+      ]
     },
     "replicate-veo-3-1": {
       "model": "veo/veo-3-1",
       "matchingModel": "google/veo-3.1",
       "overrides": {
         "description": "New and improved version of Veo 3, with higher-fidelity video, context-aware audio, reference image and last frame support",
-        "strengths": ["creative", "video"],
+        "strengths": [
+          "creative",
+          "video"
+        ],
         "costPerRun": 1,
         "inputSchema": {
           "fields": [
@@ -1549,7 +1768,10 @@
               "type": "string",
               "description": "Aspect ratio of the generated video.",
               "default": "16:9",
-              "enum": ["16:9", "9:16"]
+              "enum": [
+                "16:9",
+                "9:16"
+              ]
             },
             {
               "name": "duration",
@@ -1559,12 +1781,18 @@
             },
             {
               "name": "image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input image to start generating from. Ideal images are 16:9 or 9:16 and 1280x720 or 720x1280, depending on the aspect ratio you choose."
             },
             {
               "name": "last_frame",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Binding image for interpolation. When provided with an input image, creates a transition between the two images."
             },
             {
@@ -1572,11 +1800,16 @@
               "type": "string",
               "description": "Resolution of the generated video.",
               "default": "720p",
-              "enum": ["720p", "1080p"]
+              "enum": [
+                "720p",
+                "1080p"
+              ]
             },
             {
               "name": "reference_images",
-              "type": ["array"],
+              "type": [
+                "array"
+              ],
               "description": "1 to 3 reference images for subject-consistent generation (reference-to-video, or R2V). Reference images only work with 16:9 aspect ratio and 8-second duration. Last frame is ignored if reference images are provided.",
               "default": []
             },
@@ -1595,14 +1828,22 @@
           "reference": "https://replicate.com/google/veo-3-1"
         }
       },
-      "unset": ["openWeights", "supportsToolCalls", "releaseDate"]
+      "unset": [
+        "openWeights",
+        "supportsToolCalls",
+        "releaseDate"
+      ]
     },
     "replicate-google-veo-3-1-fast": {
       "model": "veo/google-veo-3-1-fast",
       "matchingModel": "google/veo-3.1-fast",
       "overrides": {
         "description": "New and improved version of Veo 3 Fast, with higher-fidelity video, context-aware audio and last frame support",
-        "strengths": ["vision", "video", "creative"],
+        "strengths": [
+          "vision",
+          "video",
+          "creative"
+        ],
         "costPerRun": 5,
         "inputSchema": {
           "fields": [
@@ -1617,7 +1858,10 @@
               "type": "string",
               "description": "Aspect ratio of the generated video.",
               "default": "16:9",
-              "enum": ["16:9", "9:16"]
+              "enum": [
+                "16:9",
+                "9:16"
+              ]
             },
             {
               "name": "duration",
@@ -1627,12 +1871,18 @@
             },
             {
               "name": "image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input image to start generating from. Ideal images are 16:9 or 9:16 and 1280x720 or 720x1280, depending on the aspect ratio you choose."
             },
             {
               "name": "last_frame",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Binding image for interpolation. When provided with an input image, creates a transition between the two images."
             },
             {
@@ -1646,7 +1896,10 @@
               "type": "string",
               "description": "Resolution of the generated video.",
               "default": "1080p",
-              "enum": ["720p", "1080p"]
+              "enum": [
+                "720p",
+                "1080p"
+              ]
             },
             {
               "name": "generate_audio",
@@ -1663,7 +1916,12 @@
           "reference": "https://replicate.com/google/veo-3-1-fast"
         }
       },
-      "unset": ["openWeights", "supportsToolCalls", "supportsAttachments", "supportsStreaming"]
+      "unset": [
+        "openWeights",
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsStreaming"
+      ]
     },
     "replicate-bytedance-seedance-1-5-pro": {
       "model": "seed/seedance-1-5-pro",
@@ -1680,12 +1938,18 @@
             },
             {
               "name": "image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input image for image-to-video generation"
             },
             {
               "name": "last_frame_image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input image for last frame generation. This only works if an image start frame is given too."
             },
             {
@@ -1699,14 +1963,24 @@
               "type": "string",
               "description": "Video aspect ratio. Ignored if an image is used.",
               "default": "16:9",
-              "enum": ["16:9", "4:3", "1:1", "3:4", "9:16", "21:9", "9:21"]
+              "enum": [
+                "16:9",
+                "4:3",
+                "1:1",
+                "3:4",
+                "9:16",
+                "21:9",
+                "9:21"
+              ]
             },
             {
               "name": "fps",
               "type": "integer",
               "description": "Frame rate (frames per second)",
               "default": 24,
-              "enum": [24]
+              "enum": [
+                24
+              ]
             },
             {
               "name": "camera_fixed",
@@ -1729,7 +2003,11 @@
           "reference": "https://replicate.com/bytedance/seedance-1.5-pro"
         }
       },
-      "unset": ["openWeights", "supportsToolCalls", "supportsTemperature"]
+      "unset": [
+        "openWeights",
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
     },
     "replicate-bytedance-seedance-2-0": {
       "model": "seed/seedance-2-0",
@@ -1737,10 +2015,22 @@
       "overrides": {
         "description": "ByteDance video generation model with first-frame, last-frame, reference image, reference video, and reference audio support.",
         "modalities": {
-          "input": ["text", "image", "video", "audio"],
-          "output": ["video"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "video"
+          ]
         },
-        "strengths": ["creative", "video", "vision", "audio"],
+        "strengths": [
+          "creative",
+          "video",
+          "vision",
+          "audio"
+        ],
         "isFeatured": true,
         "inputSchema": {
           "fields": [
@@ -1752,12 +2042,18 @@
             },
             {
               "name": "image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input image for image-to-video generation (first frame). Cannot be combined with reference images."
             },
             {
               "name": "last_frame_image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input image for last frame generation. Only works if a first frame image is also provided. Cannot be combined with reference images."
             },
             {
@@ -1789,14 +2085,27 @@
               "type": "string",
               "description": "Video resolution.",
               "default": "720p",
-              "enum": ["480p", "720p", "1080p"]
+              "enum": [
+                "480p",
+                "720p",
+                "1080p"
+              ]
             },
             {
               "name": "aspect_ratio",
               "type": "string",
               "description": "Video aspect ratio. Set to 'adaptive' to let the model choose the best ratio based on inputs.",
               "default": "16:9",
-              "enum": ["16:9", "4:3", "1:1", "3:4", "9:16", "21:9", "9:21", "adaptive"]
+              "enum": [
+                "16:9",
+                "4:3",
+                "1:1",
+                "3:4",
+                "9:16",
+                "21:9",
+                "9:21",
+                "adaptive"
+              ]
             },
             {
               "name": "generate_audio",
@@ -1813,7 +2122,11 @@
           "reference": "https://replicate.com/bytedance/seedance-2.0"
         }
       },
-      "unset": ["openWeights", "supportsToolCalls", "supportsTemperature"]
+      "unset": [
+        "openWeights",
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
     },
     "replicate-alibaba-happyhorse-1-0": {
       "model": "replicate/alibaba/happyhorse-1.0/happyhorse-1-0",
@@ -1829,7 +2142,10 @@
             },
             {
               "name": "image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "First-frame image to animate. When provided, the model runs in image-to-video mode. Accepts jpg/png/bmp/webp, <=10MB, aspect ratio between 1:2.5 and 2.5:1, each side >=300px."
             },
             {
@@ -1837,21 +2153,44 @@
               "type": "string",
               "description": "Output video resolution",
               "default": "1080p",
-              "enum": ["720p", "1080p"]
+              "enum": [
+                "720p",
+                "1080p"
+              ]
             },
             {
               "name": "aspect_ratio",
               "type": "string",
               "description": "Aspect ratio of the generated video. Only applies to text-to-video - when an image is provided, the image's aspect ratio is used.",
               "default": "16:9",
-              "enum": ["16:9", "9:16", "1:1", "4:3", "3:4"]
+              "enum": [
+                "16:9",
+                "9:16",
+                "1:1",
+                "4:3",
+                "3:4"
+              ]
             },
             {
               "name": "duration",
               "type": "integer",
               "description": "Duration of the generated video in seconds",
               "default": 5,
-              "enum": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+              "enum": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ]
             },
             {
               "name": "seed",
@@ -1868,7 +2207,11 @@
       "matchingModel": "xai/grok-imagine-video",
       "overrides": {
         "description": "Generate videos using xAI's Grok Imagine Video model",
-        "strengths": ["creative", "video", "vision"],
+        "strengths": [
+          "creative",
+          "video",
+          "vision"
+        ],
         "contextComplexity": 4,
         "inputSchema": {
           "fields": [
@@ -1880,7 +2223,10 @@
             },
             {
               "name": "image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input image to generate video from (image-to-video). Supports jpg, jpeg, png, webp."
             },
             {
@@ -1899,20 +2245,36 @@
               "type": "string",
               "description": "Aspect ratio of the video. For text-to-video, defaults to 16:9. For image-to-video, defaults to the input image's native aspect ratio. Ignored when editing a video.",
               "default": "auto",
-              "enum": ["auto", "16:9", "4:3", "1:1", "9:16", "3:4", "3:2", "2:3"]
+              "enum": [
+                "auto",
+                "16:9",
+                "4:3",
+                "1:1",
+                "9:16",
+                "3:4",
+                "3:2",
+                "2:3"
+              ]
             },
             {
               "name": "resolution",
               "type": "string",
               "description": "Resolution of the video. Ignored when editing a video.",
               "default": "720p",
-              "enum": ["720p", "480p"]
+              "enum": [
+                "720p",
+                "480p"
+              ]
             }
           ],
           "reference": "https://replicate.com/xai/grok-imagine-video"
         }
       },
-      "unset": ["supportsToolCalls", "supportsTemperature", "openWeights"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsTemperature",
+        "openWeights"
+      ]
     },
     "replicate-prunaai-p-video": {
       "model": "replicate/prunaai/p-video/p-video",
@@ -1928,17 +2290,26 @@
             },
             {
               "name": "image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input image to generate video from (image-to-video). Supports jpg, jpeg, png, webp."
             },
             {
               "name": "last_frame_image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Reference image for the last frame of the video. Supports jpg, jpeg, png, webp."
             },
             {
               "name": "audio",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Input audio to condition video generation. Supports flac, mp3, wav."
             },
             {
@@ -1952,21 +2323,35 @@
               "type": "string",
               "description": "Aspect ratio of the video. Ignored when an input image is provided.",
               "default": "16:9",
-              "enum": ["16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "1:1"]
+              "enum": [
+                "16:9",
+                "9:16",
+                "4:3",
+                "3:4",
+                "3:2",
+                "2:3",
+                "1:1"
+              ]
             },
             {
               "name": "resolution",
               "type": "string",
               "description": "Resolution of the video.",
               "default": "720p",
-              "enum": ["720p", "1080p"]
+              "enum": [
+                "720p",
+                "1080p"
+              ]
             },
             {
               "name": "fps",
               "type": "integer",
               "description": "Frames per second of the video.",
               "default": 24,
-              "enum": [24, 48]
+              "enum": [
+                24,
+                48
+              ]
             },
             {
               "name": "draft",
@@ -2022,7 +2407,10 @@
             },
             {
               "name": "image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Optional initial image for video generation (first frame). If not provided, video will be generated from text only."
             },
             {
@@ -2064,12 +2452,18 @@
             },
             {
               "name": "start_image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "First frame image. Supports .jpg/.jpeg/.png, max 10MB, min 300px, aspect ratio 1:2.5 to 2.5:1."
             },
             {
               "name": "end_image",
-              "type": ["file", "string"],
+              "type": [
+                "file",
+                "string"
+              ],
               "description": "Last frame image. Requires start_image. Supports .jpg/.jpeg/.png, max 10MB, min 300px."
             },
             {
@@ -2077,13 +2471,20 @@
               "type": "string",
               "description": "'standard' generates 720p, 'pro' generates 1080p.",
               "default": "standard",
-              "enum": ["standard", "pro"]
+              "enum": [
+                "standard",
+                "pro"
+              ]
             },
             {
               "name": "aspect_ratio",
               "type": "string",
               "description": "Aspect ratio. Ignored when start_image is provided.",
-              "enum": ["16:9", "9:16", "1:1"]
+              "enum": [
+                "16:9",
+                "9:16",
+                "1:1"
+              ]
             },
             {
               "name": "duration",

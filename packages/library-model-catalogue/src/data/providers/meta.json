@@ -11,10 +11,19 @@
       "matchingModel": "muse-spark-1.2",
       "overrides": {
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["reasoning", "coding", "analysis", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "coding",
+          "analysis",
+          "tool_use"
+        ],
         "lastUpdated": "August 5, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425
@@ -27,10 +36,19 @@
         "description": "Muse Spark is a natively multimodal reasoning model with support for tool-use, visual chain of thought, and multi-agent orchestration.",
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["reasoning", "coding", "analysis", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "coding",
+          "analysis",
+          "tool_use"
+        ],
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425

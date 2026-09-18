@@ -3,8 +3,12 @@
     "openWeights": false,
     "contextWindow": 256000,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsAttachments": false,
@@ -17,7 +21,9 @@
         "name": "Devstral 2",
         "openWeights": true,
         "description": "Mistral coding agent model for repository tasks and software engineering workflows",
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "December 2025",
@@ -65,7 +71,9 @@
         "description": "Devstral Small 1.1 accepts text and produces text.",
         "contextWindow": 128000,
         "maxTokens": 64000,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
@@ -83,7 +91,9 @@
         "name": "Devstral Small 2",
         "description": "Mistral coding agent model for repository tasks and software engineering workflows",
         "maxTokens": 256000,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "October 2024",

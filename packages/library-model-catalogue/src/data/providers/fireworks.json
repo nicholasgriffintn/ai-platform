@@ -10,7 +10,13 @@
       "matchingModel": "accounts/fireworks/gpt-oss-120b",
       "overrides": {
         "maxTokens": 32768,
-        "strengths": ["reasoning", "analysis", "coding", "multilingual", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "multilingual",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "speed": 5,
         "releaseDate": "August 5, 2025",
@@ -18,7 +24,10 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
       },
-      "unset": ["openWeights", "supportsResponseFormat"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-oss-20b": {
       "model": "gpt/gpt-oss-20b",
@@ -26,7 +35,12 @@
       "overrides": {
         "name": "GPT OSS 20B",
         "maxTokens": 32768,
-        "strengths": ["reasoning", "analysis", "coding", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "speed": 5,
         "releaseDate": "August 5, 2025",
@@ -34,7 +48,10 @@
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0002
       },
-      "unset": ["openWeights", "supportsResponseFormat"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "deepseek/deepseek-r1": {
       "model": "deepseek/deepseek-r1-05-28",
@@ -52,14 +69,23 @@
       "overrides": {
         "description": "Large-scale Qwen3 model with 235B parameters, offering strong reasoning and language understanding.",
         "contextWindow": 128000,
-        "strengths": ["reasoning", "analysis", "multilingual", "coding", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "coding",
+          "tool_use"
+        ],
         "speed": 3,
         "releaseDate": "April 29, 2025",
         "lastUpdated": "April 29, 2025",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00088
       },
-      "unset": ["openWeights", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "reasoningConfig"
+      ]
     },
     "deepseek/deepseek-v3-0324": {
       "model": "deepseek/deepseek-v3-03-24",
@@ -77,7 +103,11 @@
       "overrides": {
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "strengths": ["chat", "analysis", "multilingual"],
+        "strengths": [
+          "chat",
+          "analysis",
+          "multilingual"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "speed": 3,
@@ -99,7 +129,11 @@
         "costPer1kInputTokens": 0.00056,
         "costPer1kOutputTokens": 0.00168
       },
-      "unset": ["openWeights", "supportsResponseFormat", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat",
+        "reasoningConfig"
+      ]
     },
     "accounts/fireworks/models/deepseek-v3p2": {
       "model": "deepseek/deepseek-v3-2",
@@ -114,7 +148,11 @@
         "costPer1kInputTokens": 0.00056,
         "costPer1kOutputTokens": 0.00168
       },
-      "unset": ["openWeights", "supportsResponseFormat", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat",
+        "reasoningConfig"
+      ]
     },
     "accounts/fireworks/models/glm-4p5": {
       "model": "glm/glm-4-5",
@@ -127,7 +165,11 @@
         "costPer1kInputTokens": 0.00055,
         "costPer1kOutputTokens": 0.00219
       },
-      "unset": ["supportsResponseFormat", "openWeights", "reasoningConfig"]
+      "unset": [
+        "supportsResponseFormat",
+        "openWeights",
+        "reasoningConfig"
+      ]
     },
     "accounts/fireworks/models/glm-4p5-air": {
       "model": "glm/glm-4-5-air",
@@ -139,7 +181,10 @@
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00088
       },
-      "unset": ["supportsResponseFormat", "openWeights"]
+      "unset": [
+        "supportsResponseFormat",
+        "openWeights"
+      ]
     },
     "accounts/fireworks/models/glm-4p6": {
       "model": "glm/glm-4-6",
@@ -153,7 +198,11 @@
         "costPer1kInputTokens": 0.00055,
         "costPer1kOutputTokens": 0.00219
       },
-      "unset": ["supportsResponseFormat", "openWeights", "reasoningConfig"]
+      "unset": [
+        "supportsResponseFormat",
+        "openWeights",
+        "reasoningConfig"
+      ]
     },
     "accounts/fireworks/models/glm-4p7": {
       "model": "glm/glm-4-7",
@@ -167,7 +216,11 @@
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0022
       },
-      "unset": ["supportsResponseFormat", "openWeights", "reasoningConfig"]
+      "unset": [
+        "supportsResponseFormat",
+        "openWeights",
+        "reasoningConfig"
+      ]
     },
     "accounts/fireworks/models/gpt-oss-120b": {
       "model": "gpt-oss/gpt-oss-120b",
@@ -180,7 +233,9 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "accounts/fireworks/models/gpt-oss-20b": {
       "model": "gpt-oss/gpt-oss-20b",
@@ -193,11 +248,16 @@
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0003,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "accounts/fireworks/models/kimi-k2-thinking": {
       "model": "kimi/kimi-k2-thinking",
@@ -236,7 +296,10 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
       },
-      "unset": ["openWeights", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "reasoningConfig"
+      ]
     },
     "accounts/fireworks/models/minimax-m2p1": {
       "model": "minimax/minimax-m2-1",
@@ -251,7 +314,10 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
       },
-      "unset": ["openWeights", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "reasoningConfig"
+      ]
     },
     "accounts/fireworks/models/qwen3-coder-480b-a35b-instruct": {
       "model": "qwen/qwen3-coder-480b-a35b-instruct",
@@ -266,7 +332,10 @@
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0018
       },
-      "unset": ["openWeights", "knowledgeCutoffDate"]
+      "unset": [
+        "openWeights",
+        "knowledgeCutoffDate"
+      ]
     },
     "accounts/fireworks/models/glm-5": {
       "model": "glm/glm-5",
@@ -281,7 +350,11 @@
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.0032
       },
-      "unset": ["supportsResponseFormat", "openWeights", "reasoningConfig"]
+      "unset": [
+        "supportsResponseFormat",
+        "openWeights",
+        "reasoningConfig"
+      ]
     },
     "accounts/fireworks/models/glm-5p1": {
       "model": "glm/glm-5-1",
@@ -296,7 +369,9 @@
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "accounts/fireworks/models/minimax-m2p5": {
       "model": "minimax/minimax-m2-5",
@@ -311,7 +386,9 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "accounts/fireworks/models/qwen3p6-plus": {
       "model": "qwen/qwen-3-6-plus",
@@ -320,8 +397,13 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 4, 2026",
         "lastUpdated": "April 4, 2026",
@@ -347,7 +429,9 @@
         "costPer1kInputTokens": 0.0028,
         "costPer1kOutputTokens": 0.0088
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "accounts/fireworks/routers/kimi-k2p6-turbo": {
       "model": "kimi-thinking/kimi-k2-6-turbo",
@@ -376,21 +460,34 @@
         "description": "Fireworks text-only MiniMax coding model for long-context reasoning and agent tasks",
         "contextWindow": 512000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["document", "tool_use"],
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "releaseDate": "June 12, 2026",
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "accounts/fireworks/models/qwen3p7-plus": {
       "model": "qwen/qwen-3-7-plus",
@@ -399,8 +496,13 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "June 12, 2026",
         "lastUpdated": "June 12, 2026",
@@ -408,7 +510,11 @@
         "costPer1kOutputTokens": 0.0016,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -434,11 +540,16 @@
         "costPer1kInputTokens": 0.0021,
         "costPer1kOutputTokens": 0.0066,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "max"],
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
           "defaultEffort": "high"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "accounts/fireworks/models/kimi-k3": {
       "model": "kimi-k3/kimi-k3",
@@ -451,7 +562,12 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -467,7 +583,12 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -483,7 +604,10 @@
         "costPer1kOutputTokens": 0.00405,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -517,19 +641,28 @@
       "overrides": {
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "August 3, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "accounts/fireworks/models/glm-5p3": {
       "model": "glm/glm-5-3",
@@ -542,7 +675,11 @@
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -554,15 +691,26 @@
         "name": "GLM 5.3 Flash",
         "contextWindow": 1048573,
         "modalities": {
-          "input": ["text", "image", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "September 7, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -597,7 +745,11 @@
         "costPer1kOutputTokens": 0.00066,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }

@@ -4,8 +4,12 @@
     "contextWindow": 32768,
     "maxTokens": 32768,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "contextComplexity": 3,
     "reliability": 1,
@@ -48,12 +52,17 @@
       "defaults": {
         "name": "LFM2.5-1.2B-Thinking (free)",
         "description": "LFM2.5-1.2B-Thinking (free) accepts text and produces text.",
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "January 20, 2026",
         "supportsToolCalls": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -73,7 +82,10 @@
         "releaseDate": "August 11, 2026",
         "supportsToolCalls": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }

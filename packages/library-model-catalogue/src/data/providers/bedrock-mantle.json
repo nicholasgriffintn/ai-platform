@@ -40,7 +40,13 @@
         "name": "gpt-oss-120b",
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "strengths": ["reasoning", "analysis", "coding", "math", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "math",
+          "tool_use"
+        ],
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00015,
@@ -56,7 +62,12 @@
         "name": "gpt-oss-20b",
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "strengths": ["reasoning", "analysis", "coding", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "tool_use"
+        ],
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00007,
@@ -71,15 +82,25 @@
       "overrides": {
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 4,
         "lastUpdated": "June 28, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -139,14 +160,23 @@
       "overrides": {
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00013,
         "costPer1kOutputTokens": 0.0004,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -157,14 +187,23 @@
       "overrides": {
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.0004,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -175,14 +214,24 @@
       "overrides": {
         "openWeights": true,
         "modalities": {
-          "input": ["text", "image", "audio", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00008,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }

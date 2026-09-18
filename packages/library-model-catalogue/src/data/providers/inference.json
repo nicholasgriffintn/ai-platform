@@ -43,7 +43,10 @@
       "overrides": {
         "contextWindow": 16000,
         "maxTokens": 4096,
-        "strengths": ["chat", "instruction"],
+        "strengths": [
+          "chat",
+          "instruction"
+        ],
         "contextComplexity": 2,
         "reliability": 3,
         "speed": 5,
@@ -60,7 +63,12 @@
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "contextWindow": 16000,
         "maxTokens": 4096,
-        "strengths": ["chat", "general_knowledge", "coding", "analysis"],
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "coding",
+          "analysis"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "speed": 4,
@@ -76,7 +84,11 @@
       "overrides": {
         "contextWindow": 16000,
         "maxTokens": 4096,
-        "strengths": ["chat", "general_knowledge", "instruction"],
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "instruction"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "speed": 4,
@@ -92,7 +104,12 @@
       "overrides": {
         "contextWindow": 16000,
         "maxTokens": 4096,
-        "strengths": ["vision", "analysis", "chat", "instruction"],
+        "strengths": [
+          "vision",
+          "analysis",
+          "chat",
+          "instruction"
+        ],
         "contextComplexity": 3,
         "reliability": 4,
         "speed": 4,
@@ -109,7 +126,9 @@
       "model": "qwen/qwen-3-embedding-4b",
       "matchingModel": "qwen/qwen3-embedding-4b",
       "overrides": {
-        "strengths": ["general_knowledge"],
+        "strengths": [
+          "general_knowledge"
+        ],
         "contextComplexity": 2,
         "reliability": 4,
         "speed": 5,

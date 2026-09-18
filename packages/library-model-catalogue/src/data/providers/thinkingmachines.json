@@ -12,14 +12,24 @@
         "contextWindow": 65536,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.00187,
         "costPer1kOutputTokens": 0.00468,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }

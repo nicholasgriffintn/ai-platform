@@ -39,7 +39,12 @@
         "supportsWebFetch": true,
         "supportsTokenCounting": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -75,7 +80,10 @@
         "supportsTokenCounting": true,
         "restrictsCombinedTopPAndTemperature": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -120,7 +128,10 @@
           "intelligenceIndexVersion": 4.1
         }
       },
-      "unset": ["supportsResponseFormat", "supportsCodeExecution"]
+      "unset": [
+        "supportsResponseFormat",
+        "supportsCodeExecution"
+      ]
     },
     "claude-3.5-haiku": {
       "model": "claude-haiku/claude-haiku-3-5",
@@ -134,13 +145,23 @@
         "costPer1kOutputTokens": 0.004,
         "supportsTokenCounting": true
       },
-      "unset": ["supportsResponseFormat", "supportsCodeExecution"]
+      "unset": [
+        "supportsResponseFormat",
+        "supportsCodeExecution"
+      ]
     },
     "claude-haiku-4-5": {
       "model": "claude-haiku/claude-haiku-4-5-latest",
       "matchingModel": "claude-haiku-4-5",
       "overrides": {
-        "strengths": ["chat", "general_knowledge", "analysis", "coding", "reasoning", "creative"],
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "coding",
+          "reasoning",
+          "creative"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "speed": 5,
@@ -153,7 +174,9 @@
         "supportsTokenCounting": true,
         "restrictsCombinedTopPAndTemperature": true
       },
-      "unset": ["supportsCodeExecution"]
+      "unset": [
+        "supportsCodeExecution"
+      ]
     },
     "claude-opus-4-0": {
       "model": "claude-opus/claude-opus-4",
@@ -176,7 +199,12 @@
       "model": "claude-opus/claude-opus-4-5-latest",
       "matchingModel": "claude-opus-4-5",
       "overrides": {
-        "strengths": ["vision", "document", "tool_use", "coding"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "speed": 3,
         "deprecated": true,
         "lastUpdated": "November 24, 2025",
@@ -184,17 +212,30 @@
         "costPer1kOutputTokens": 0.025,
         "costPerCodeExecutionHour": 0.05,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       },
-      "unset": ["supportsTopP"]
+      "unset": [
+        "supportsTopP"
+      ]
     },
     "claude-opus-4-7": {
       "model": "claude-opus/claude-opus-4-7",
       "matchingModel": "claude-opus-4-7",
       "overrides": {
-        "strengths": ["coding", "vision", "document", "tool_use", "search", "research"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "research"
+        ],
         "speed": 2,
         "isFeatured": false,
         "releaseDate": "April 14, 2026",
@@ -209,7 +250,13 @@
         "supportsWebFetch": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -219,7 +266,14 @@
       "model": "claude-sonnet/claude-sonnet-4-6",
       "matchingModel": "claude-sonnet-4-6",
       "overrides": {
-        "strengths": ["coding", "vision", "document", "tool_use", "search", "research"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "research"
+        ],
         "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
@@ -232,7 +286,12 @@
         "supportsWebFetch": true,
         "restrictsCombinedTopPAndTemperature": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -271,7 +330,13 @@
         "supportsTemperature": false,
         "supportsTokenCounting": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -303,12 +368,21 @@
         "supportsTemperature": false,
         "supportsTokenCounting": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
       },
-      "unset": ["knowledgeCutoffDate", "supportsCodeExecution"]
+      "unset": [
+        "knowledgeCutoffDate",
+        "supportsCodeExecution"
+      ]
     },
     "claude-sonnet-5": {
       "model": "claude-sonnet/claude-sonnet-5",
@@ -327,7 +401,13 @@
         "supportsWebFetch": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -349,12 +429,20 @@
         "supportsWebFetch": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "claude-fable-5-1": {
       "model": "claude-fable/claude-fable-5-1",
@@ -365,7 +453,9 @@
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false
       },
-      "unset": ["supportsCodeExecution"]
+      "unset": [
+        "supportsCodeExecution"
+      ]
     }
   }
 }

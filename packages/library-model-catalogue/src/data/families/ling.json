@@ -13,8 +13,14 @@
         "openWeights": true,
         "description": "Multimodal MoE reasoning model (975B total, 41B active) for text, image, and audio",
         "modalities": {
-          "input": ["text", "image", "audio"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 15, 2026",
         "supportsAttachments": true
@@ -28,13 +34,24 @@
         "contextWindow": 262144,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 15, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -47,14 +64,27 @@
         "contextWindow": 1048576,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image", "audio"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 15, 2026",
         "supportsResponseFormat": false,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -76,14 +106,27 @@
         "contextWindow": 1048576,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image", "audio"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 30, 2026",
         "supportsResponseFormat": false,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -95,8 +138,12 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "September 23, 2025",
         "supportsToolCalls": false
@@ -109,8 +156,12 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "September 23, 2025",
         "supportsToolCalls": false
@@ -123,8 +174,12 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "December 3, 2025",
         "supportsToolCalls": false
@@ -137,8 +192,12 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "December 18, 2025",
         "supportsToolCalls": false
@@ -151,8 +210,12 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "December 3, 2025",
         "supportsToolCalls": false
@@ -165,8 +228,12 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "February 5, 2026",
         "supportsToolCalls": false
@@ -179,8 +246,12 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "March 4, 2026",
         "supportsToolCalls": false
@@ -193,8 +264,12 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "February 5, 2026",
         "supportsToolCalls": false
@@ -205,10 +280,16 @@
         "description": "Inclusion AI ling-2.6-1t",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 23, 2026",
@@ -225,10 +306,16 @@
         "description": "Inclusion AI ling-2.6-flash",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 21, 2026",
@@ -246,12 +333,19 @@
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
         "contextWindow": 256000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 23, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -261,12 +355,19 @@
         "name": "Ling 3.0 Flash Fin",
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 27, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -277,13 +378,20 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 27, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -296,13 +404,20 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 23, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -314,12 +429,19 @@
         "contextWindow": 256000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 4, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -328,12 +450,19 @@
       "defaults": {
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 4, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -345,7 +474,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -356,7 +488,10 @@
         "supportsResponseFormat": false,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -368,13 +503,23 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 5, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -383,12 +528,19 @@
       "defaults": {
         "description": "Ling 3.0 Tiny (free) accepts text and produces text.",
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 6, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }

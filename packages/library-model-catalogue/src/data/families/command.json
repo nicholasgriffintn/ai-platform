@@ -2,8 +2,12 @@
   "defaults": {
     "maxTokens": 4096,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsAttachments": false,
     "supportsTemperature": true
@@ -27,7 +31,9 @@
         "description": "Cohere command model for multilingual enterprise agents, tools, and chat",
         "contextWindow": 256000,
         "maxTokens": 8000,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "October 2024",

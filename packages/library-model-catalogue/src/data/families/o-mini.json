@@ -19,8 +19,12 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 31, 2023",
         "releaseDate": "March 12, 2025",
@@ -36,8 +40,12 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["audio"],
-          "output": ["text"]
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "March 13, 2024",
         "supportsToolCalls": false,
@@ -52,8 +60,14 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "audio"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "releaseDate": "January 19, 2026",
         "supportsTemperature": true
@@ -66,15 +80,24 @@
         "contextWindow": 128000,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "September 12, 2024",
         "supportsAttachments": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -90,14 +113,25 @@
         "name": "o3 Mini",
         "description": "Smaller o-series reasoner for economical coding, math, and planning tasks",
         "modalities": {
-          "input": ["text", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["document", "tool_use"],
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "May 2024",
         "releaseDate": "December 20, 2024",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -115,7 +149,10 @@
         "multimodal": true,
         "releaseDate": "April 16, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -132,7 +169,10 @@
         "knowledgeCutoffDate": "May 2024",
         "releaseDate": "June 26, 2024",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -142,14 +182,29 @@
         "name": "o4-mini (EU)",
         "description": "Fast o-series model for compact reasoning, coding, and tool use",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "May 2024",
         "releaseDate": "April 16, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -165,14 +220,28 @@
         "name": "o4-mini (Fast)",
         "description": "Fast o-series model for compact reasoning, coding, and tool use",
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "May 2024",
         "releaseDate": "April 16, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         },
         "artificialAnalysis": {

@@ -1,10 +1,16 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["audio"],
-      "output": ["text"]
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["transcription"]
+    "strengths": [
+      "transcription"
+    ]
   },
   "description": "The elevenlabs/scribe_v2_realtime family includes models that produce text.",
   "models": {

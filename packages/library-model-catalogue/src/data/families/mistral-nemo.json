@@ -2,8 +2,12 @@
   "defaults": {
     "openWeights": true,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "knowledgeCutoffDate": "July 2024",
     "supportsToolCalls": true,
@@ -25,7 +29,12 @@
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "contextWindow": 16000,
         "maxTokens": 4096,
-        "strengths": ["chat", "general_knowledge", "analysis", "multilingual"],
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "multilingual"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "knowledgeCutoffDate": "December 2024",

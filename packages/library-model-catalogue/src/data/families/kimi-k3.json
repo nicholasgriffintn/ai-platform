@@ -4,8 +4,13 @@
     "contextWindow": 1048576,
     "maxTokens": 131072,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -20,7 +25,12 @@
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
         "releaseDate": "July 27, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -31,7 +41,11 @@
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
         "releaseDate": "July 16, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -43,7 +57,11 @@
         "contextWindow": 262144,
         "releaseDate": "July 16, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -54,12 +72,24 @@
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 16, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -76,13 +106,22 @@
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 65535,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 29, 2026",
         "supportsTemperature": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -93,7 +132,12 @@
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
         "releaseDate": "July 27, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }

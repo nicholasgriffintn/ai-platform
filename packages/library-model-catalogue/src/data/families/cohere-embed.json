@@ -2,8 +2,12 @@
   "defaults": {
     "openWeights": true,
     "modalities": {
-      "input": ["text"],
-      "output": ["embedding"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
     },
     "supportsToolCalls": false,
     "supportsAttachments": false,
@@ -36,8 +40,13 @@
         "contextWindow": 128000,
         "maxTokens": 1536,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["embedding"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "embedding"
+          ]
         },
         "releaseDate": "April 15, 2025",
         "supportsAttachments": true

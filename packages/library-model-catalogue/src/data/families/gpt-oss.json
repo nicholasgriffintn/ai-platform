@@ -3,8 +3,12 @@
     "openWeights": true,
     "contextWindow": 131072,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "releaseDate": "August 5, 2025",
     "supportsToolCalls": true,
@@ -12,7 +16,11 @@
     "supportsAttachments": false,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["low", "medium", "high"],
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
       "defaultEffort": "low"
     }
   },
@@ -22,7 +30,9 @@
       "defaults": {
         "name": "GPT OSS 120B",
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "artificialAnalysis": {
@@ -38,13 +48,18 @@
         "name": "gpt-oss-120b (free)",
         "description": "gpt-oss-120b (free) accepts text and produces text.",
         "maxTokens": 131072,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "June 30, 2024",
         "supportsResponseFormat": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -61,7 +76,9 @@
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "artificialAnalysis": {
@@ -79,7 +96,10 @@
         "maxTokens": 65536,
         "releaseDate": "December 29, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -88,7 +108,9 @@
       "defaults": {
         "name": "GPT OSS 20B",
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "artificialAnalysis": {
@@ -104,12 +126,17 @@
         "name": "gpt-oss-20b (free)",
         "description": "gpt-oss-20b (free) accepts text and produces text.",
         "maxTokens": 32768,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "June 30, 2024",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -126,7 +153,9 @@
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "artificialAnalysis": {
@@ -143,8 +172,12 @@
         "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
         "contextWindow": 128000,
         "modalities": {
-          "input": ["text"],
-          "output": ["guardrails"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
         },
         "releaseDate": "October 29, 2025"
       }
@@ -155,8 +188,12 @@
         "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
         "contextWindow": 128000,
         "modalities": {
-          "input": ["text"],
-          "output": ["guardrails"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
         },
         "releaseDate": "October 29, 2025"
       }
@@ -167,8 +204,13 @@
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsAttachments": true
       }
@@ -179,8 +221,13 @@
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsAttachments": true
       }
@@ -191,8 +238,12 @@
         "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text"],
-          "output": ["guardrails"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
         },
         "releaseDate": "October 29, 2025"
       }

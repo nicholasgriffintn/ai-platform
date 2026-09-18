@@ -2,15 +2,22 @@
   "defaults": {
     "openWeights": false,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     }
   },
@@ -22,7 +29,9 @@
         "description": "Automatic model router for matching prompts to suitable backends and budgets",
         "contextWindow": 32000,
         "maxTokens": 32000,
-        "strengths": ["coding"],
+        "strengths": [
+          "coding"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "knowledgeCutoffDate": "June 2024",
@@ -39,10 +48,23 @@
         "contextWindow": 2000000,
         "maxTokens": 2000000,
         "modalities": {
-          "input": ["text", "image", "audio", "pdf", "video"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "pdf",
+            "video"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
-        "strengths": ["general_knowledge", "analysis", "reasoning"],
+        "strengths": [
+          "general_knowledge",
+          "analysis",
+          "reasoning"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "releaseDate": "November 8, 2023"

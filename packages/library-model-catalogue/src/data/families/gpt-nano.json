@@ -1,7 +1,11 @@
 {
   "defaults": {
     "openWeights": false,
-    "strengths": ["vision", "document", "tool_use"],
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
     "contextComplexity": 4,
     "reliability": 1,
     "supportsToolCalls": true,
@@ -33,8 +37,13 @@
         "contextWindow": 1047576,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
@@ -53,8 +62,14 @@
         "contextWindow": 1047576,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
@@ -74,7 +89,13 @@
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 17, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -92,14 +113,24 @@
         "contextWindow": 400000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "May 30, 2024",
         "releaseDate": "August 7, 2025",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
@@ -117,14 +148,25 @@
         "contextWindow": 200000,
         "maxTokens": 100000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "May 30, 2024",
         "releaseDate": "August 7, 2025",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {

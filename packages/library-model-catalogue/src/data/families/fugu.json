@@ -14,13 +14,20 @@
         "description": "Multi-agent model for routing expert agents across complex analytical tasks",
         "maxTokens": 1000000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "June 15, 2026",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "xhigh"],
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -30,7 +37,11 @@
         "name": "Fugu Max",
         "description": "Multi-agent model for routing expert agents across complex analytical tasks",
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -40,8 +51,13 @@
         "name": "Fugu Ultra",
         "description": "Quality-first multi-agent model for hard research, analysis, and competitions",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "June 15, 2026",
         "supportsTemperature": false
@@ -53,7 +69,11 @@
         "description": "Quality-first multi-agent model for hard research, analysis, and competitions",
         "knowledgeCutoffDate": "August 28, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "high"
         }
       }

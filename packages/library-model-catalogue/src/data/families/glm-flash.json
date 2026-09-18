@@ -15,14 +15,21 @@
         "contextWindow": 131072,
         "maxTokens": 98304,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "July 28, 2025",
         "supportsAttachments": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -34,12 +41,20 @@
         "contextWindow": 131072,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "December 8, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -50,17 +65,26 @@
         "description": "Budget GLM lane for fast coding help, routing, and everyday automation",
         "contextWindow": 200000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "January 19, 2026",
         "supportsAttachments": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -76,13 +100,20 @@
         "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
         "contextWindow": 200000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "January 19, 2026",
         "supportsAttachments": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -94,7 +125,11 @@
         "maxTokens": 131072,
         "releaseDate": "August 26, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -106,13 +141,52 @@
         "contextWindow": 1000000,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 26, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-3-flashx": {
+      "defaults": {
+        "name": "GLM 5.3 FlashX",
+        "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 26, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
         }
       }
     },
@@ -124,12 +198,22 @@
         "contextWindow": 1310720,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 27, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -141,12 +225,21 @@
         "contextWindow": 1048573,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 26, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }

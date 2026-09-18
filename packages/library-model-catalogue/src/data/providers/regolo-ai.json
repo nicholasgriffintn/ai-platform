@@ -18,7 +18,9 @@
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.0042
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3-coder-next": {
       "model": "qwen/qwen3-coder-next",
@@ -33,7 +35,10 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
       },
-      "unset": ["knowledgeCutoffDate", "supportsResponseFormat"]
+      "unset": [
+        "knowledgeCutoffDate",
+        "supportsResponseFormat"
+      ]
     },
     "apertus-70b": {
       "model": "regolo-ai/apertus-70b/apertus-70b",
@@ -75,7 +80,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "faster-whisper-large-v3": {
       "model": "whisper/faster-whisper-large-v3",
@@ -86,7 +93,9 @@
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "gemma4-31b": {
       "model": "gemma/gemma-4-31b-it",
@@ -112,7 +121,10 @@
         "costPer1kInputTokens": 0.00231,
         "costPer1kOutputTokens": 0.006,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "max"],
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -131,7 +143,9 @@
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0018
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "llama-3.3-70b-instruct": {
       "model": "llama/llama-3-3-70b-instruct",
@@ -147,7 +161,9 @@
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0027
       },
-      "unset": ["knowledgeCutoffDate"]
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "mistral-small-4-119b": {
       "model": "mistral-small/mistral-small-4-119b",
@@ -168,7 +184,9 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 8192,
         "maxTokens": 4096,
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "contextComplexity": 1,
         "releaseDate": "March 1, 2026",
         "lastUpdated": "March 1, 2026",
@@ -185,8 +203,12 @@
         "openWeights": true,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "February 1, 2026",
         "lastUpdated": "February 1, 2026",
@@ -230,7 +252,9 @@
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3.8-27b": {
       "model": "qwen/qwen3-8-27b",
@@ -239,15 +263,24 @@
         "contextWindow": 120000,
         "maxTokens": 120000,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00242,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }

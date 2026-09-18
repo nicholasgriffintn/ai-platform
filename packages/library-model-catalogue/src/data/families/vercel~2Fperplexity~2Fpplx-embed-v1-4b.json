@@ -4,8 +4,12 @@
     "contextWindow": 32000,
     "maxTokens": 0,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "releaseDate": "February 26, 2026",
     "supportsToolCalls": false,

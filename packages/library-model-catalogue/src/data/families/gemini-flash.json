@@ -16,13 +16,24 @@
         "contextWindow": 1048576,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "audio", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 4,
         "releaseDate": "June 17, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -34,15 +45,35 @@
         "contextWindow": 1048576,
         "maxTokens": 65535,
         "modalities": {
-          "input": ["text", "image", "audio", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "audio", "video", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "June 17, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -60,8 +91,12 @@
         "contextWindow": 8192,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
         "releaseDate": "May 1, 2025",
         "supportsToolCalls": false,
@@ -75,10 +110,16 @@
         "contextWindow": 32768,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
-        "strengths": ["audio"],
+        "strengths": [
+          "audio"
+        ],
         "contextComplexity": 2,
         "reliability": 2,
         "releaseDate": "September 30, 2025",
@@ -110,8 +151,12 @@
         "contextWindow": 8192,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
         "releaseDate": "May 1, 2025",
         "supportsToolCalls": false,
@@ -125,13 +170,22 @@
         "contextWindow": 131072,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
         "releaseDate": "February 26, 2026",
         "supportsToolCalls": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
           "defaultEffort": "minimal"
         }
       }
@@ -143,13 +197,26 @@
         "contextWindow": 131072,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "audio", "video"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "releaseDate": "March 26, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -161,14 +228,21 @@
         "contextWindow": 8192,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
         "releaseDate": "April 15, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -182,7 +256,12 @@
         "reliability": 3,
         "releaseDate": "May 19, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
@@ -200,15 +279,36 @@
         "contextWindow": 1048576,
         "maxTokens": 65535,
         "modalities": {
-          "input": ["text", "image", "video", "audio", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["coding", "vision", "document", "audio", "video", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "May 19, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -225,13 +325,26 @@
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "contextWindow": 1048576,
         "modalities": {
-          "input": ["text", "image", "video", "audio", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 2026",
         "releaseDate": "July 21, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "minimal"
         }
       }
@@ -243,13 +356,25 @@
         "contextWindow": 1048576,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video", "audio", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 2026",
         "releaseDate": "August 13, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -261,13 +386,27 @@
         "contextWindow": 1048576,
         "maxTokens": 65535,
         "modalities": {
-          "input": ["text", "image", "video", "audio", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 2026",
         "releaseDate": "August 13, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -279,12 +418,24 @@
         "contextWindow": 1048576,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video", "audio", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 2, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -296,12 +447,26 @@
         "contextWindow": 1048576,
         "maxTokens": 65535,
         "modalities": {
-          "input": ["text", "image", "video", "audio", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 2, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -314,7 +479,12 @@
         "reliability": 1,
         "releaseDate": "December 17, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
@@ -332,15 +502,34 @@
         "contextWindow": 1048576,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video", "audio", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "audio", "video", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "December 17, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
@@ -367,10 +556,21 @@
         "contextWindow": 32768,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
-        "strengths": ["vision", "document", "image", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
         "contextComplexity": 3,
         "reliability": 4,
         "knowledgeCutoffDate": "June 2024",
@@ -404,7 +604,10 @@
         "releaseDate": "May 28, 2026",
         "supportsToolCalls": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
@@ -432,16 +635,30 @@
         "contextWindow": 65536,
         "maxTokens": 58982,
         "modalities": {
-          "input": ["image", "text"],
-          "output": ["image", "text"]
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "image", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
         "contextComplexity": 3,
         "reliability": 5,
         "releaseDate": "February 26, 2026",
         "supportsToolCalls": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
@@ -469,10 +686,18 @@
         "contextWindow": 32768,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text"],
-          "output": ["text", "image"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "contextComplexity": 3,
         "reliability": 4,
         "releaseDate": "August 26, 2025",

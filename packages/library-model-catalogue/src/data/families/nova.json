@@ -13,8 +13,13 @@
         "contextWindow": 1000000,
         "maxTokens": 1000000,
         "modalities": {
-          "input": ["speech"],
-          "output": ["speech", "text"]
+          "input": [
+            "speech"
+          ],
+          "output": [
+            "speech",
+            "text"
+          ]
         }
       }
     },
@@ -25,8 +30,13 @@
         "contextWindow": 1024,
         "maxTokens": 1024,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
         },
         "multimodal": true
       }
@@ -38,8 +48,13 @@
         "contextWindow": 512,
         "maxTokens": 512,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["video"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "multimodal": true
       }
@@ -51,10 +66,16 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["audio"],
+        "strengths": [
+          "audio"
+        ],
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "November 14, 2025",
@@ -70,14 +91,21 @@
         "contextWindow": 120000,
         "maxTokens": 8000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "September 16, 2025",
         "releaseDate": "December 28, 2024",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -100,13 +128,24 @@
         "contextWindow": 1000000,
         "maxTokens": 65535,
         "modalities": {
-          "input": ["text", "image", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 2025",
         "releaseDate": "December 2, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -119,17 +158,31 @@
         "contextWindow": 1000000,
         "maxTokens": 65535,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["analysis", "multilingual", "vision"],
+        "strengths": [
+          "analysis",
+          "multilingual",
+          "vision"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "multimodal": true,
         "knowledgeCutoffDate": "October 2025",
         "releaseDate": "December 2, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -142,13 +195,24 @@
         "contextWindow": 1000000,
         "maxTokens": 65535,
         "modalities": {
-          "input": ["text", "image", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 2025",
         "releaseDate": "December 2, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -161,13 +225,24 @@
         "contextWindow": 1000000,
         "maxTokens": 65535,
         "modalities": {
-          "input": ["text", "image", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 2025",
         "releaseDate": "December 2, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -179,8 +254,13 @@
         "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["speech"],
-          "output": ["speech", "text"]
+          "input": [
+            "speech"
+          ],
+          "output": [
+            "speech",
+            "text"
+          ]
         }
       }
     },
@@ -191,8 +271,14 @@
         "contextWindow": 300000,
         "maxTokens": 10000,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "strengths": [
           "chat",
@@ -222,14 +308,22 @@
         "contextWindow": 300000,
         "maxTokens": 10000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 14, 2025",
         "supportsResponseFormat": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -241,10 +335,19 @@
         "contextWindow": 128000,
         "maxTokens": 10000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["chat", "summarization", "general_knowledge", "tool_use"],
+        "strengths": [
+          "chat",
+          "summarization",
+          "general_knowledge",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "December 3, 2024",
@@ -265,14 +368,22 @@
         "contextWindow": 128000,
         "maxTokens": 10000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 14, 2025",
         "supportsResponseFormat": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -283,8 +394,14 @@
         "description": "Amazon Nova Premier is the most capable multimodal model in the Nova family with advanced reasoning capabilities.",
         "contextWindow": 1000000,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 4,
         "reliability": 1,
@@ -305,8 +422,13 @@
         "contextWindow": 1000000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "October 31, 2025",
         "supportsResponseFormat": false
@@ -319,10 +441,24 @@
         "contextWindow": 300000,
         "maxTokens": 10000,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["analysis", "reasoning", "coding", "vision", "video", "document", "tool_use"],
+        "strengths": [
+          "analysis",
+          "reasoning",
+          "coding",
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "December 3, 2024",
@@ -339,8 +475,13 @@
         "name": "Nova Sonic",
         "description": "Nova Sonic accepts speech and produces speech, text.",
         "modalities": {
-          "input": ["speech"],
-          "output": ["speech", "text"]
+          "input": [
+            "speech"
+          ],
+          "output": [
+            "speech",
+            "text"
+          ]
         }
       }
     }

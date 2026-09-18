@@ -2,8 +2,13 @@
   "defaults": {
     "openWeights": true,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "contextComplexity": 4,
     "reliability": 1,
@@ -21,10 +26,18 @@
         "contextWindow": 128000,
         "maxTokens": 102400,
         "modalities": {
-          "input": ["text", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["document", "tool_use"],
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "November 30, 2024",
         "releaseDate": "February 26, 2024",
         "supportsResponseFormat": true,
@@ -44,8 +57,12 @@
         "contextWindow": 128000,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "September 2024",
         "releaseDate": "November 1, 2024",

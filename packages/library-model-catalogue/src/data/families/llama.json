@@ -2,8 +2,12 @@
   "defaults": {
     "openWeights": true,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsAttachments": false,
@@ -52,7 +56,12 @@
         "description": "Groq Llama 3 70B accepts text and produces text.",
         "contextWindow": 8192,
         "maxTokens": 8192,
-        "strengths": ["chat", "analysis", "creative", "general_knowledge"],
+        "strengths": [
+          "chat",
+          "analysis",
+          "creative",
+          "general_knowledge"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "knowledgeCutoffDate": "December 2023",
@@ -65,7 +74,10 @@
         "description": "Groq Llama 3 8B accepts text and produces text.",
         "contextWindow": 8192,
         "maxTokens": 8192,
-        "strengths": ["chat", "general_knowledge"],
+        "strengths": [
+          "chat",
+          "general_knowledge"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "knowledgeCutoffDate": "December 2023",
@@ -90,7 +102,12 @@
         "description": "Hermes 3 is a generalist language model with many improvements over Hermes 2, including advanced agentic capabilities, much better roleplaying, reasoning, multi-turn conversation, long context coherence, and improvements across the board.",
         "contextWindow": 24000,
         "maxTokens": 1024,
-        "strengths": ["instruction", "coding", "reasoning", "chat"],
+        "strengths": [
+          "instruction",
+          "coding",
+          "reasoning",
+          "chat"
+        ],
         "supportsResponseFormat": true
       }
     },
@@ -104,7 +121,10 @@
         "releaseDate": "July 23, 2024",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -234,14 +254,19 @@
         "description": "A reasoning-optimized LLM based on Llama 3.1, Nemotron Ultra 253B delivers strong performance in tasks like RAG and tool use, with high efficiency and reduced latency.",
         "contextWindow": 128000,
         "maxTokens": 128000,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 7, 2025",
         "supportsResponseFormat": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -259,8 +284,13 @@
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "September 25, 2024",
@@ -273,8 +303,13 @@
         "description": "Open Llama multimodal model for image understanding and text reasoning",
         "contextWindow": 128000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "September 25, 2024",
@@ -318,10 +353,19 @@
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["analysis", "reasoning", "vision"],
+        "strengths": [
+          "analysis",
+          "reasoning",
+          "vision"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "multimodal": true,
@@ -336,8 +380,13 @@
         "contextWindow": 128000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "September 25, 2024",
@@ -348,7 +397,13 @@
       "defaults": {
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "contextWindow": 131072,
-        "strengths": ["chat", "general_knowledge", "analysis", "creative", "multilingual"],
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "multilingual"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "knowledgeCutoffDate": "December 2023",
@@ -368,7 +423,13 @@
         "description": "Popular open Llama workhorse for multilingual chat, coding, and self-hosting",
         "contextWindow": 24000,
         "maxTokens": 24000,
-        "strengths": ["instruction", "general_knowledge", "coding", "reasoning", "multilingual"],
+        "strengths": [
+          "instruction",
+          "general_knowledge",
+          "coding",
+          "reasoning",
+          "multilingual"
+        ],
         "contextComplexity": 5,
         "reliability": 5,
         "knowledgeCutoffDate": "December 2023",
@@ -382,7 +443,12 @@
         "description": "Llama 3.3 70B Instruct (free) accepts text and produces text.",
         "contextWindow": 131072,
         "maxTokens": 131072,
-        "strengths": ["chat", "general_knowledge", "analysis", "multilingual"],
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "multilingual"
+        ],
         "contextComplexity": 3,
         "reliability": 4,
         "knowledgeCutoffDate": "December 2023",
@@ -471,8 +537,13 @@
       "defaults": {
         "description": "Open multimodal Llama model for strong reasoning and fast responses",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
@@ -486,8 +557,13 @@
         "contextWindow": 1048576,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 5, 2025",
         "supportsToolCalls": false,
@@ -502,8 +578,13 @@
         "contextWindow": 1000000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
@@ -517,8 +598,13 @@
         "contextWindow": 1000000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
@@ -551,10 +637,19 @@
         "contextWindow": 1310720,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2024",
@@ -574,8 +669,13 @@
         "name": "Llama 4 Scout 17B",
         "description": "Open multimodal Llama model for long-context analysis and efficient agents",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 5, 2025",
         "supportsResponseFormat": true,
@@ -587,8 +687,13 @@
         "name": "Llama 4 Scout 17B 16E Instruct",
         "description": "Open multimodal Llama model for long-context analysis and efficient agents",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
@@ -602,10 +707,19 @@
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
@@ -626,8 +740,13 @@
         "contextWindow": 10000000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
@@ -641,8 +760,13 @@
         "contextWindow": 10000000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
@@ -656,10 +780,19 @@
         "contextWindow": 64000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
@@ -680,8 +813,12 @@
         "contextWindow": 131072,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text"],
-          "output": ["guardrails"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
         },
         "supportsToolCalls": false,
         "supportsResponseFormat": false
@@ -694,8 +831,13 @@
         "contextWindow": 163840,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["image", "text"],
-          "output": ["guardrails"]
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
         },
         "knowledgeCutoffDate": "August 31, 2024",
         "releaseDate": "April 30, 2025",
@@ -711,8 +853,12 @@
         "contextWindow": 512,
         "maxTokens": 512,
         "modalities": {
-          "input": ["text"],
-          "output": ["guardrails"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "May 29, 2025",
@@ -737,10 +883,21 @@
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["chat", "general_knowledge", "analysis", "creative", "multilingual"],
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "multilingual"
+        ],
         "contextComplexity": 5,
         "reliability": 5
       }
@@ -772,10 +929,19 @@
         "contextWindow": 32768,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "chat", "general_knowledge"],
+        "strengths": [
+          "vision",
+          "chat",
+          "general_knowledge"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "multimodal": true
@@ -788,10 +954,20 @@
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "analysis", "chat", "general_knowledge"],
+        "strengths": [
+          "vision",
+          "analysis",
+          "chat",
+          "general_knowledge"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "multimodal": true
@@ -813,7 +989,12 @@
         "description": "The Meta Llama 3.3 multilingual large language model (LLM) is a pretrained and instruction tuned generative model in 70B (text in/text out). The Llama 3.3 instruction tuned text only model is optimized for multilingual dialogue use cases and outperform many of the available open source and closed chat models on common industry benchmarks.",
         "contextWindow": 8192,
         "maxTokens": 4096,
-        "strengths": ["chat", "general_knowledge", "analysis", "multilingual"],
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "multilingual"
+        ],
         "contextComplexity": 4,
         "reliability": 3
       }
@@ -857,10 +1038,18 @@
         "contextWindow": 32768,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "chat"],
+        "strengths": [
+          "vision",
+          "chat"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "multimodal": true
@@ -873,8 +1062,12 @@
         "contextWindow": 512,
         "maxTokens": 512,
         "modalities": {
-          "input": ["text"],
-          "output": ["guardrails"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "May 29, 2025",

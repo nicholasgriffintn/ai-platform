@@ -12,7 +12,10 @@
         "reliability": 2,
         "speed": 3
       },
-      "unset": ["supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "whisper": {
       "model": "whisper/openai-whisper",
@@ -22,7 +25,10 @@
         "reliability": 4,
         "speed": 3
       },
-      "unset": ["supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "whisper-large-v3-turbo": {
       "model": "whisper/openai-whisper-large-v3-turbo",
@@ -30,7 +36,10 @@
       "overrides": {
         "speed": 4
       },
-      "unset": ["supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "melotts": {
       "model": "workers-ai/@cf/myshell-ai/melotts/myshell-melotts",
@@ -50,17 +59,30 @@
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
         "maxTokens": 256000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -81,7 +103,11 @@
       "overrides": {
         "contextWindow": 60000,
         "maxTokens": 60000,
-        "strengths": ["instruction", "summarization", "multilingual"],
+        "strengths": [
+          "instruction",
+          "summarization",
+          "multilingual"
+        ],
         "contextComplexity": 2,
         "reliability": 3,
         "speed": 5,
@@ -97,7 +123,11 @@
       "overrides": {
         "contextWindow": 80000,
         "maxTokens": 80000,
-        "strengths": ["instruction", "summarization", "multilingual"],
+        "strengths": [
+          "instruction",
+          "summarization",
+          "multilingual"
+        ],
         "contextComplexity": 3,
         "reliability": 4,
         "speed": 4,
@@ -114,7 +144,13 @@
         "description": "Open Llama with long-context vision for efficient multimodal agents",
         "contextWindow": 131000,
         "maxTokens": 16384,
-        "strengths": ["vision", "reasoning", "instruction", "general_knowledge", "chat"],
+        "strengths": [
+          "vision",
+          "reasoning",
+          "instruction",
+          "general_knowledge",
+          "chat"
+        ],
         "contextComplexity": 5,
         "reliability": 5,
         "speed": 4,
@@ -132,7 +168,10 @@
       "overrides": {
         "speed": 3
       },
-      "unset": ["supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "flux": {
       "model": "flux/black-forest-labs-flux-1-schnell",
@@ -140,7 +179,11 @@
       "overrides": {
         "speed": 4
       },
-      "unset": ["supportsAttachments", "supportsToolCalls", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
     },
     "flux-2-dev": {
       "model": "flux/black-forest-labs-flux-2-dev",
@@ -150,7 +193,11 @@
         "isFeatured": true,
         "inputFormat": "multipart"
       },
-      "unset": ["supportsAttachments", "supportsToolCalls", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
     },
     "@cf/black-forest-labs/flux-2-klein-4b": {
       "model": "flux/black-forest-labs-flux-2-klein-4b",
@@ -159,7 +206,11 @@
         "speed": 4,
         "inputFormat": "multipart"
       },
-      "unset": ["supportsAttachments", "supportsToolCalls", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
     },
     "@cf/black-forest-labs/flux-2-klein-9b": {
       "model": "flux/black-forest-labs-flux-2-klein-9b",
@@ -168,7 +219,11 @@
         "speed": 4,
         "inputFormat": "multipart"
       },
-      "unset": ["supportsAttachments", "supportsToolCalls", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
     },
     "stable-diffusion-1.5-img2img": {
       "model": "stable-diffusion/stable-diffusion-1-5-img2img",
@@ -176,7 +231,10 @@
       "overrides": {
         "speed": 3
       },
-      "unset": ["supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "stable-diffusion-1.5-inpainting": {
       "model": "stable-diffusion/stable-diffusion-1-5-inpainting",
@@ -184,7 +242,10 @@
       "overrides": {
         "speed": 3
       },
-      "unset": ["supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "stable-diffusion-xl-base-1.0": {
       "model": "stable-diffusion/stable-diffusion-xl-base-1-0",
@@ -192,7 +253,10 @@
       "overrides": {
         "speed": 3
       },
-      "unset": ["supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "dreamshaper-8-lcm": {
       "model": "workers-ai/@cf/lykon/dreamshaper-8-lcm/dreamshaper-8-lcm",
@@ -200,7 +264,10 @@
       "overrides": {
         "speed": 5
       },
-      "unset": ["supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "stable-diffusion-xl-lightning": {
       "model": "stable-diffusion/stable-diffusion-xl-lightning",
@@ -208,7 +275,10 @@
       "overrides": {
         "speed": 5
       },
-      "unset": ["supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "bge-base-en-v1.5": {
       "model": "workers-ai/@cf/baai/bge-base-en-v1.5/bge-base-en-v1-5",
@@ -256,7 +326,13 @@
       "overrides": {
         "contextWindow": 256000,
         "maxTokens": 16384,
-        "strengths": ["instruction", "reasoning", "multilingual", "summarization", "vision"],
+        "strengths": [
+          "instruction",
+          "reasoning",
+          "multilingual",
+          "summarization",
+          "vision"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "speed": 4,
@@ -266,7 +342,11 @@
         "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -288,7 +368,9 @@
       "overrides": {
         "name": "Qwen 2.5 Coder 32B Instruct",
         "maxTokens": 32768,
-        "strengths": ["coding"],
+        "strengths": [
+          "coding"
+        ],
         "speed": 3,
         "releaseDate": "November 12, 2024",
         "lastUpdated": "November 12, 2024",
@@ -315,7 +397,10 @@
       "overrides": {
         "speed": 4
       },
-      "unset": ["supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "phoenix-1.0": {
       "model": "workers-ai/@cf/leonardo/phoenix-1.0/leonardo-phoenix-1-0",
@@ -323,7 +408,10 @@
       "overrides": {
         "speed": 4
       },
-      "unset": ["supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "aura-1": {
       "model": "workers-ai/@cf/deepgram/aura-1/deepgram-aura-1",
@@ -331,7 +419,10 @@
       "overrides": {
         "speed": 4
       },
-      "unset": ["supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "nova-3": {
       "model": "nova/deepgram-nova-3",
@@ -359,7 +450,11 @@
       "overrides": {
         "speed": 4
       },
-      "unset": ["supportsToolCalls", "supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "@cf/ai4bharat/indictrans2-en-indic-1B": {
       "model": "workers-ai/@cf/ai4bharat/indictrans2-en-indic-1B/indictrans2-en-indic-1b",
@@ -414,7 +509,9 @@
         "costPer1kInputTokens": 0.000497,
         "costPer1kOutputTokens": 0.004881
       },
-      "unset": ["strengths"]
+      "unset": [
+        "strengths"
+      ]
     },
     "@cf/huggingface/distilbert-sst-2-int8": {
       "model": "workers-ai/@cf/huggingface/distilbert-sst-2-int8/distilbert-sst-2-int8",
@@ -449,8 +546,12 @@
       "overrides": {
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "September 25, 2024",
         "costPer1kInputTokens": 0.0000485,
@@ -495,13 +596,24 @@
         "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
         "contextWindow": 131072,
         "maxTokens": 131072,
-        "strengths": ["chat", "instruction", "analysis", "multilingual", "coding", "tool_use"],
+        "strengths": [
+          "chat",
+          "instruction",
+          "analysis",
+          "multilingual",
+          "coding",
+          "tool_use"
+        ],
         "speed": 4,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.0000605,
         "costPer1kOutputTokens": 0.0004,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -512,7 +624,13 @@
       "overrides": {
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "strengths": ["reasoning", "analysis", "coding", "math", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "math",
+          "tool_use"
+        ],
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00035,
@@ -526,13 +644,21 @@
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "strengths": ["reasoning", "analysis", "coding", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "tool_use"
+        ],
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0003,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -571,8 +697,13 @@
       "matchingModel": "@cf/moonshotai/kimi-k2.7-code",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "strengths": [
           "coding",
@@ -590,7 +721,11 @@
         "costPer1kOutputTokens": 0.004,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -608,7 +743,11 @@
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -632,7 +771,10 @@
         "costPer1kInputTokens": 0.00132,
         "costPer1kOutputTokens": 0.00396
       },
-      "unset": ["strengths", "reliability"]
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "@cf/qwen/qwen3.8-27b": {
       "model": "qwen/qwen3-8-27b",
@@ -645,7 +787,11 @@
         "costPer1kOutputTokens": 0.0032,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "xhigh"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "xhigh"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -662,7 +808,11 @@
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -676,8 +826,13 @@
         "contextWindow": 1310720,
         "maxTokens": 1048576,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "isFeatured": true,
         "lastUpdated": "August 26, 2026",
@@ -685,7 +840,10 @@
         "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -694,11 +852,18 @@
       "model": "veo/google-veo-3-1-fast",
       "matchingModel": "google/veo-3.1-fast",
       "overrides": {
-        "strengths": ["vision", "document", "video", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "creative"
+        ],
         "supportsAttachments": true,
         "supportsTemperature": false
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "workers-ai-minimax-music-2-6": {
       "model": "minimax-music/minimax-music-2-6",

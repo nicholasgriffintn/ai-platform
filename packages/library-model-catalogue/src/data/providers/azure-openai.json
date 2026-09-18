@@ -16,7 +16,9 @@
         "costPer1kInputTokens": 0.06,
         "costPer1kOutputTokens": 0.12
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/o1-mini": {
       "model": "o-mini/o1-mini",
@@ -27,7 +29,9 @@
         "costPer1kOutputTokens": 0.0044,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/o1-preview": {
       "model": "azure-openai/o1-preview/o1-preview",
@@ -47,15 +51,22 @@
         "costPer1kInputTokens": 0.06,
         "costPer1kOutputTokens": 0.12
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/o3": {
       "model": "o/o3",
       "matchingModel": "o3",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 3,
         "lastUpdated": "April 16, 2025",
@@ -65,7 +76,9 @@
         "supportsParallelToolCalls": false,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "anthropic/claude-haiku-4-5": {
       "model": "claude-haiku/claude-haiku-4-5",
@@ -91,7 +104,10 @@
         "supportsAttachments": true,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       },
-      "unset": ["contextComplexity", "supportsTopP"]
+      "unset": [
+        "contextComplexity",
+        "supportsTopP"
+      ]
     },
     "anthropic/claude-opus-4-5": {
       "model": "claude-opus/claude-opus-4-5",
@@ -105,11 +121,17 @@
         "supportsAttachments": true,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       },
-      "unset": ["supportsTopP"]
+      "unset": [
+        "supportsTopP"
+      ]
     },
     "anthropic/claude-opus-4-6": {
       "model": "claude-opus/claude-opus-4-6",
@@ -123,11 +145,19 @@
         "supportsAttachments": true,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       },
-      "unset": ["supportsTopP", "supportsResponseFormat"]
+      "unset": [
+        "supportsTopP",
+        "supportsResponseFormat"
+      ]
     },
     "anthropic/claude-sonnet-4-5": {
       "model": "claude-sonnet/claude-sonnet-4-5",
@@ -161,7 +191,10 @@
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -245,7 +278,9 @@
         "costPer1kInputTokens": 0.00056,
         "costPer1kOutputTokens": 0.00168
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "deepseek/v3.2": {
       "model": "deepseek/deepseek-v3-2",
@@ -259,7 +294,9 @@
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00168
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "deepseek/v3.2-speciale": {
       "model": "deepseek/deepseek-v3-2-speciale",
@@ -287,7 +324,9 @@
         "supportsAttachments": true,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-5-chat": {
       "model": "gpt-codex/gpt-5-chat",
@@ -303,29 +342,44 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["supportsResponseFormat", "contextComplexity"]
+      "unset": [
+        "supportsResponseFormat",
+        "contextComplexity"
+      ]
     },
     "openai/gpt-5-codex": {
       "model": "gpt-codex/gpt-5-codex",
       "matchingModel": "gpt-5-codex",
       "overrides": {
         "name": "GPT-5-Codex",
-        "strengths": ["vision", "tool_use"],
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "September 15, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-5-mini": {
       "model": "gpt-mini/gpt-5-mini",
@@ -339,11 +393,18 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "minimal"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-5-nano": {
       "model": "gpt-nano/gpt-5-nano",
@@ -357,7 +418,9 @@
         "supportsAttachments": true,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-5-pro": {
       "model": "gpt-pro/gpt-5-pro",
@@ -369,7 +432,9 @@
         "supportsAttachments": true,
         "supportsTemperature": false
       },
-      "unset": ["strengths"]
+      "unset": [
+        "strengths"
+      ]
     },
     "openai/gpt-5.1": {
       "model": "gpt/gpt-5-1",
@@ -377,10 +442,23 @@
       "overrides": {
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "modalities": {
-          "input": ["text", "image", "audio"],
-          "output": ["text", "image", "audio"]
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "image",
+            "audio"
+          ]
         },
-        "strengths": ["vision", "audio", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "audio",
+          "document",
+          "tool_use"
+        ],
         "speed": 4,
         "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
@@ -395,8 +473,16 @@
       "matchingModel": "gpt-5.1-chat",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "audio"],
-          "output": ["text", "image", "audio"]
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "image",
+            "audio"
+          ]
         },
         "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
@@ -405,11 +491,16 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "openai/gpt-5.1-codex": {
       "model": "gpt-codex/gpt-5-1-codex",
@@ -418,10 +509,22 @@
         "name": "GPT-5.1 Codex",
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "modalities": {
-          "input": ["text", "image", "audio"],
-          "output": ["text", "image", "audio"]
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "image",
+            "audio"
+          ]
         },
-        "strengths": ["vision", "audio", "tool_use"],
+        "strengths": [
+          "vision",
+          "audio",
+          "tool_use"
+        ],
         "speed": 4,
         "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
@@ -441,7 +544,9 @@
         "supportsAttachments": true,
         "supportsTemperature": false
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "openai/gpt-5.1-codex-mini": {
       "model": "gpt-codex/gpt-5-1-codex-mini",
@@ -449,7 +554,10 @@
       "overrides": {
         "name": "GPT-5.1 Codex Mini",
         "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
-        "strengths": ["vision", "tool_use"],
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
         "speed": 4,
         "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
@@ -481,14 +589,19 @@
         "supportsAttachments": true,
         "supportsTemperature": false
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "openai/gpt-5.2-codex": {
       "model": "gpt-codex/gpt-5-2-codex",
       "matchingModel": "gpt-5.2-codex",
       "overrides": {
         "name": "GPT-5.2 Codex",
-        "strengths": ["vision", "tool_use"],
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
         "speed": 3,
         "releaseDate": "January 14, 2026",
         "lastUpdated": "January 14, 2026",
@@ -501,12 +614,16 @@
       "model": "grok/grok-3",
       "matchingModel": "grok-3",
       "overrides": {
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-3-mini": {
       "model": "grok/grok-3-mini",
@@ -517,7 +634,9 @@
         "costPer1kOutputTokens": 0.0005,
         "costPer1kReasoningTokens": 0.0005
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-4": {
       "model": "grok/grok-4",
@@ -528,7 +647,9 @@
         "costPer1kOutputTokens": 0.015,
         "costPer1kReasoningTokens": 0.015
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-4-fast-non-reasoning": {
       "model": "grok/grok-4-fast-non-reasoning",
@@ -539,7 +660,9 @@
         "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": true
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-4-fast-reasoning": {
       "model": "grok/grok-4-fast-reasoning",
@@ -548,10 +671,19 @@
         "name": "Grok 4 Fast (Reasoning)",
         "maxTokens": 30000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "September 19, 2025",
@@ -569,7 +701,9 @@
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0015
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "monshot/kimi-k2-thinking": {
       "model": "kimi-thinking/kimi-k2-thinking",
@@ -589,10 +723,18 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "tool_use"],
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
         "speed": 3,
         "releaseDate": "February 6, 2026",
         "lastUpdated": "February 6, 2026",
@@ -728,7 +870,9 @@
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00004
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "mistral/mistral-large-2411": {
       "model": "mistral-large/mistral-large-24-11",
@@ -738,7 +882,10 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
       },
-      "unset": ["contextComplexity", "reliability"]
+      "unset": [
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "mistral/medium-2505": {
       "model": "mistral-medium/mistral-medium-3",
@@ -753,7 +900,9 @@
         "costPer1kOutputTokens": 0.002,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "mistral/mistral-nemo": {
       "model": "mistral-nemo/mistral-nemo",
@@ -786,7 +935,9 @@
         "costPer1kOutputTokens": 0,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "microsoft/phi-3-medium-128k-instruct": {
       "model": "phi/phi-3-medium-instruct-128k",
@@ -941,7 +1092,9 @@
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "microsoft/text-embedding-3-small": {
       "model": "text-embedding/text-embedding-3-small",
@@ -952,7 +1105,9 @@
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "microsoft/text-embedding-ada-002": {
       "model": "text-embedding/text-embedding-ada-002",
@@ -963,7 +1118,9 @@
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "claude-sonnet-4-6": {
       "model": "claude-sonnet/claude-sonnet-4-6",
@@ -978,7 +1135,12 @@
         "supportsAttachments": true,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -993,7 +1155,9 @@
         "supportsAttachments": true,
         "supportsTemperature": false
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "gpt-5.3-codex": {
       "model": "gpt-codex/gpt-5-3-codex",
@@ -1001,10 +1165,18 @@
       "overrides": {
         "name": "GPT-5.3 Codex",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "tool_use"],
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
         "speed": 2,
         "releaseDate": "February 24, 2026",
         "lastUpdated": "February 24, 2026",
@@ -1012,7 +1184,13 @@
         "costPer1kOutputTokens": 0.014,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1045,8 +1223,14 @@
       "overrides": {
         "name": "GPT-5.4 Nano",
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 4,
         "lastUpdated": "March 17, 2026",
@@ -1060,8 +1244,13 @@
       "matchingModel": "gpt-5.4-pro",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.03,
@@ -1092,10 +1281,19 @@
         "contextWindow": 128000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "June 27, 2025",
@@ -1120,8 +1318,13 @@
         "contextWindow": 128000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 3,
         "releaseDate": "June 27, 2025",
@@ -1140,10 +1343,16 @@
         "contextWindow": 262000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "speed": 5,
         "knowledgeCutoffDate": "September 2025",
@@ -1162,10 +1371,16 @@
         "contextWindow": 262000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 2,
         "speed": 4,
@@ -1188,10 +1403,18 @@
       "overrides": {
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "tool_use"],
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
         "speed": 3,
         "releaseDate": "April 22, 2026",
         "lastUpdated": "April 22, 2026",
@@ -1215,11 +1438,16 @@
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
         "apiShape": "completions",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["strengths"]
+      "unset": [
+        "strengths"
+      ]
     },
     "deepseek-v4-pro": {
       "model": "deepseek-thinking/deepseek-v4-pro",
@@ -1236,11 +1464,16 @@
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
         "apiShape": "completions",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["strengths"]
+      "unset": [
+        "strengths"
+      ]
     },
     "claude-fable-5": {
       "model": "claude-fable/claude-fable-5",
@@ -1261,10 +1494,19 @@
       "overrides": {
         "name": "GPT-Image-1",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
         },
-        "strengths": ["vision", "document", "image"],
+        "strengths": [
+          "vision",
+          "document",
+          "image"
+        ],
         "contextComplexity": 4,
         "lastUpdated": "April 24, 2025",
         "costPer1kInputTokens": 0.005,
@@ -1279,7 +1521,12 @@
       "matchingModel": "gpt-image-1.5",
       "overrides": {
         "name": "GPT-Image-1.5",
-        "strengths": ["vision", "document", "image", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
         "lastUpdated": "November 25, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.032,
@@ -1293,7 +1540,12 @@
       "matchingModel": "gpt-image-2",
       "overrides": {
         "name": "GPT-Image-2",
-        "strengths": ["vision", "document", "image", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
@@ -1306,7 +1558,12 @@
       "model": "claude-opus/claude-opus-4-8",
       "matchingModel": "claude-opus-4-8",
       "overrides": {
-        "strengths": ["vision", "document", "tool_use", "coding"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "speed": 2,
         "knowledgeCutoffDate": "December 31, 2025",
         "lastUpdated": "May 28, 2026",
@@ -1380,7 +1637,11 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -1396,17 +1657,29 @@
         "supportsTemperature": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "kimi-k2.7-code": {
       "model": "kimi-k2/kimi-k2-7-code",
       "matchingModel": "kimi-k2.7-code",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use", "coding"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
@@ -1477,9 +1750,58 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "none"
         }
+      }
+    },
+    "gpt-image-2.5-flare": {
+      "model": "gpt-image/gpt-image-2-5-flare",
+      "matchingModel": "gpt-image-2.5-flare",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "lastUpdated": "September 8, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsToolCalls": false,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-image-2.5-sunburst": {
+      "model": "gpt-image/gpt-image-2-5-sunburst",
+      "matchingModel": "gpt-image-2.5-sunburst",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "lastUpdated": "September 8, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsToolCalls": false,
+        "supportsAttachments": true,
+        "supportsTemperature": false
       }
     }
   }

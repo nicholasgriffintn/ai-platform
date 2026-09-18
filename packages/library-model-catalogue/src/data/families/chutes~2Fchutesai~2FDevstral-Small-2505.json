@@ -3,10 +3,16 @@
     "contextWindow": 32768,
     "maxTokens": 32768,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["tool_use"],
+    "strengths": [
+      "tool_use"
+    ],
     "contextComplexity": 3,
     "reliability": 1,
     "releaseDate": "May 21, 2025",

@@ -4,8 +4,14 @@
     "contextWindow": 1050000,
     "maxTokens": 128000,
     "modalities": {
-      "input": ["text", "image", "pdf"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "knowledgeCutoffDate": "April 30, 2026",
     "releaseDate": "September 4, 2026",
@@ -14,7 +20,13 @@
     "supportsAttachments": true,
     "supportsTemperature": false,
     "reasoningConfig": {
-      "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
       "defaultEffort": "low"
     }
   },
@@ -31,7 +43,14 @@
         "name": "GPT-6 Astra (Fast)",
         "description": "Fast variant of GPT-6 Astra for low-latency assistance and high-volume workloads.",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -53,8 +72,14 @@
         "name": "OpenAI GPT Astra Latest",
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
         "modalities": {
-          "input": ["pdf", "image", "text"],
-          "output": ["text"]
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 11, 2026"
       }

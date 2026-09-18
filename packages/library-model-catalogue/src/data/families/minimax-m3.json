@@ -3,8 +3,14 @@
     "openWeights": true,
     "maxTokens": 131072,
     "modalities": {
-      "input": ["text", "image", "video"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "reliability": 2,
     "knowledgeCutoffDate": "January 2025",

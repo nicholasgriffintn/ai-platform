@@ -14,8 +14,12 @@
         "contextWindow": 100000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 2,
         "reliability": 1,
@@ -37,8 +41,12 @@
         "description": "Claude 2.1 accepts text and produces text.",
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 3,
         "reliability": 1,
@@ -60,10 +68,21 @@
         "description": "Claude 3.5 Haiku accepts text, image and produces text.",
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["chat", "analysis", "vision", "document", "tool_use"],
+        "strengths": [
+          "chat",
+          "analysis",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "multimodal": true,
@@ -85,8 +104,13 @@
         "contextWindow": 80000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "card": "https://www.prompthub.us/models/claude-3-5-haiku",
         "strengths": [
@@ -120,8 +144,13 @@
         "description": "Advanced reasoning model with enhanced capabilities for complex analytical tasks.",
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "card": "https://www.prompthub.us/models/claude-3-7-sonnet",
         "strengths": [
@@ -155,10 +184,19 @@
         "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2023",
@@ -178,8 +216,14 @@
         "description": "Claude Haiku 3 accepts text, image, pdf and produces text.",
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "February 2024",
         "releaseDate": "March 13, 2024"
@@ -201,8 +245,12 @@
         "contextWindow": 100000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 2,
         "reliability": 1,
@@ -224,8 +272,14 @@
         "description": "Claude Opus 3 accepts text, image, pdf and produces text.",
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "August 2023",
         "releaseDate": "February 29, 2024"
@@ -237,10 +291,19 @@
         "description": "Claude Opus 4 accepts text, image and produces text.",
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "March 2025",
@@ -259,8 +322,14 @@
         "description": "Claude Sonnet 3 accepts text, image, pdf and produces text.",
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "August 2023",
         "releaseDate": "March 4, 2024"
@@ -280,8 +349,14 @@
         "description": "Claude Sonnet 3.5 v2 accepts text, image, pdf and produces text.",
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "October 22, 2024"
@@ -300,8 +375,13 @@
         "description": "Claude Sonnet 3.7 Thinking accepts text, image and produces text.",
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "February 19, 2025"
@@ -313,8 +393,13 @@
         "description": "Claude's most advanced Sonnet model with enhanced reasoning capabilities and multimodal understanding.",
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 2025",
         "releaseDate": "May 22, 2025"

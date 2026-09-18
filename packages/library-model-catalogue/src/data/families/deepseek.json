@@ -1,8 +1,12 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsAttachments": false,
@@ -26,7 +30,10 @@
         "maxTokens": 164000,
         "releaseDate": "26 March 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -39,8 +46,13 @@
         "contextWindow": 4000,
         "maxTokens": 4000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "January 27, 2026",
         "supportsToolCalls": false,
@@ -53,11 +65,15 @@
         "openWeights": false,
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
         "contextWindow": 1048576,
-        "maxTokens": 384000,
+        "maxTokens": 393216,
         "releaseDate": "September 14, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -68,7 +84,13 @@
         "description": "Advanced DeepSeek R1 reasoning model hosted on Fireworks with enhanced mathematical and logical capabilities.",
         "contextWindow": 160000,
         "maxTokens": 16384,
-        "strengths": ["reasoning", "math", "analysis", "coding", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "math",
+          "analysis",
+          "coding",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "May 2025",
@@ -84,7 +106,9 @@
     "deepseek-r1-0528": {
       "defaults": {
         "description": "DeepSeek reasoning model for multi-step analysis, math, coding, and tools",
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "artificialAnalysis": {
@@ -101,7 +125,9 @@
         "description": "Qwen3 8B distilled reasoning model hosted on Chutes.",
         "contextWindow": 131072,
         "maxTokens": 131072,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "May 2025",
@@ -120,7 +146,9 @@
         "description": "Deepseek R1 0528 Qwen3 8B (free) accepts text and produces text.",
         "contextWindow": 131072,
         "maxTokens": 131072,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "May 2025",
@@ -139,7 +167,9 @@
         "description": "DeepSeek R1 Distill Llama 70B accepts text and produces text.",
         "contextWindow": 131072,
         "maxTokens": 8192,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "July 2024",
@@ -158,7 +188,11 @@
         "description": "DeepSeek-R1-Distill-Qwen-32B outperforms OpenAI-o1-mini across various benchmarks, achieving new state-of-the-art results for dense models.",
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "strengths": ["reasoning", "analysis", "creative"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "creative"
+        ],
         "contextComplexity": 4,
         "reliability": 3
       }
@@ -237,7 +271,10 @@
         "releaseDate": "April 25, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -249,7 +286,9 @@
         "description": "Open DeepSeek MoE chat model for coding, math, and general reasoning",
         "contextWindow": 163840,
         "maxTokens": 8192,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "December 26, 2024",
@@ -268,7 +307,12 @@
         "description": "DeepSeek V3 model hosted on Fireworks, optimized for coding and analytical tasks.",
         "contextWindow": 160000,
         "maxTokens": 16384,
-        "strengths": ["coding", "analysis", "multilingual", "tool_use"],
+        "strengths": [
+          "coding",
+          "analysis",
+          "multilingual",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
@@ -285,7 +329,9 @@
       "defaults": {
         "openWeights": true,
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "March 24, 2025",
@@ -314,13 +360,18 @@
         "openWeights": true,
         "description": "Hybrid-reasoning DeepSeek model with thinking and non-thinking modes",
         "contextWindow": 163840,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "August 21, 2025",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -351,7 +402,10 @@
         "releaseDate": "December 29, 2025",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -361,11 +415,16 @@
         "name": "DeepSeek V3.1 Terminus",
         "openWeights": true,
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "reliability": 1,
         "releaseDate": "September 22, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -382,7 +441,9 @@
         "description": "DeepSeek V3.1 Terminus (exacto) accepts text and produces text.",
         "contextWindow": 131072,
         "maxTokens": 65536,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "July 2025",
@@ -410,14 +471,19 @@
         "openWeights": true,
         "description": "Hybrid-reasoning DeepSeek model with thinking and non-thinking modes, sparse attention, and tool-use",
         "contextWindow": 163840,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "December 1, 2025",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -433,12 +499,17 @@
         "name": "DeepSeek V3.2 Exp",
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 163840,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -458,7 +529,10 @@
         "releaseDate": "December 1, 2025",
         "supportsToolCalls": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -491,7 +565,10 @@
         "releaseDate": "December 2025",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -515,13 +592,21 @@
         "contextWindow": 1000000,
         "maxTokens": 384000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 8, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "xhigh"],
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -532,7 +617,9 @@
         "description": "DeepSeek V4 Flash (free) accepts text and produces text.",
         "contextWindow": 1048576,
         "maxTokens": 384000,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 1,
         "knowledgeCutoffDate": "May 2025",
@@ -540,7 +627,10 @@
         "supportsResponseFormat": false,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -557,11 +647,15 @@
         "openWeights": false,
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "contextWindow": 1310720,
-        "maxTokens": 393216,
+        "maxTokens": 384000,
         "releaseDate": "August 1, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -573,13 +667,18 @@
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
         "contextWindow": 512000,
         "maxTokens": 384000,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 24, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "max"],
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
           "defaultEffort": "high"
         },
         "artificialAnalysis": {
@@ -597,7 +696,10 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "card": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
-        "strengths": ["reasoning", "analysis"],
+        "strengths": [
+          "reasoning",
+          "analysis"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "knowledgeCutoffDate": "July 2024",
@@ -611,7 +713,11 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "card": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
-        "strengths": ["reasoning", "analysis", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "July 2024",
@@ -630,7 +736,12 @@
         "description": "R1 0528 (free) accepts text and produces text.",
         "contextWindow": 163840,
         "maxTokens": 163840,
-        "strengths": ["reasoning", "math", "analysis", "coding"],
+        "strengths": [
+          "reasoning",
+          "math",
+          "analysis",
+          "coding"
+        ],
         "contextComplexity": 5,
         "reliability": 4,
         "knowledgeCutoffDate": "May 2025",
@@ -651,7 +762,10 @@
         "supportsToolCalls": false,
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -668,7 +782,12 @@
         "description": "R1 (free) accepts text and produces text.",
         "contextWindow": 163840,
         "maxTokens": 163840,
-        "strengths": ["reasoning", "math", "analysis", "coding"],
+        "strengths": [
+          "reasoning",
+          "math",
+          "analysis",
+          "coding"
+        ],
         "contextComplexity": 5,
         "reliability": 4,
         "knowledgeCutoffDate": "January 2025",

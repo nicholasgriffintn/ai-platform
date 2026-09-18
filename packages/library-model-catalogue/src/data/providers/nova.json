@@ -16,7 +16,10 @@
         "costPer1kReasoningTokens": 0,
         "supportsDocuments": true
       },
-      "unset": ["knowledgeCutoffDate", "artificialAnalysis"]
+      "unset": [
+        "knowledgeCutoffDate",
+        "artificialAnalysis"
+      ]
     },
     "nova-2-pro-v1": {
       "model": "nova-pro/nova-2-pro",
@@ -29,7 +32,10 @@
         "costPer1kReasoningTokens": 0,
         "supportsDocuments": true
       },
-      "unset": ["knowledgeCutoffDate", "artificialAnalysis"]
+      "unset": [
+        "knowledgeCutoffDate",
+        "artificialAnalysis"
+      ]
     },
     "nova-2-sonic-v1": {
       "model": "nova/nova-2-sonic",
@@ -39,7 +45,11 @@
         "costPer1kOutputTokens": 0,
         "supportsAudio": true
       },
-      "unset": ["supportsToolCalls", "supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "nova-micro-v1": {
       "model": "nova/nova-micro",
@@ -80,7 +90,11 @@
         "costPer1kOutputTokens": 0.00024,
         "supportsAudio": true
       },
-      "unset": ["supportsToolCalls", "supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "nova-premier-v1": {
       "model": "nova/nova-premier",

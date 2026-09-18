@@ -3,10 +3,19 @@
     "contextWindow": 128000,
     "maxTokens": 128000,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["vision", "document", "tool_use"],
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
     "contextComplexity": 4,
     "reliability": 1,
     "releaseDate": "18 September 2025",
@@ -14,7 +23,10 @@
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     },
     "artificialAnalysis": {

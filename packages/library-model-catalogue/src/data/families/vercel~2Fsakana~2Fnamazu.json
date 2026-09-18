@@ -4,14 +4,23 @@
     "contextWindow": 256000,
     "maxTokens": 256000,
     "modalities": {
-      "input": ["text", "image", "pdf"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "releaseDate": "August 3, 2026",
     "supportsToolCalls": true,
     "supportsAttachments": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     }
   },

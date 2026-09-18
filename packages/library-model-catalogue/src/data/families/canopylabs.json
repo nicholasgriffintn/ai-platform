@@ -4,8 +4,12 @@
     "contextWindow": 4000,
     "maxTokens": 50000,
     "modalities": {
-      "input": ["text"],
-      "output": ["audio"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
     },
     "supportsToolCalls": false,
     "supportsAttachments": false,

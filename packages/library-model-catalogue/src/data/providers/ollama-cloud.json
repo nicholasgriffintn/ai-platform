@@ -10,7 +10,11 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 32768,
-        "strengths": ["reasoning", "coding", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "coding",
+          "tool_use"
+        ],
         "speed": 5,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -23,7 +27,11 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 32768,
-        "strengths": ["reasoning", "coding", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "coding",
+          "tool_use"
+        ],
         "speed": 5,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.00007,
@@ -42,11 +50,18 @@
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00066,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "max"],
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
           "defaultEffort": "high"
         }
       },
-      "unset": ["knowledgeCutoffDate", "supportsResponseFormat", "supportsTemperature"]
+      "unset": [
+        "knowledgeCutoffDate",
+        "supportsResponseFormat",
+        "supportsTemperature"
+      ]
     },
     "deepseek-v4-pro": {
       "model": "deepseek-thinking/deepseek-v4-pro",
@@ -61,11 +76,18 @@
         "costPer1kInputTokens": 0.00066,
         "costPer1kOutputTokens": 0.00198,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "max"],
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
           "defaultEffort": "high"
         }
       },
-      "unset": ["supportsResponseFormat", "supportsTemperature", "knowledgeCutoffDate"]
+      "unset": [
+        "supportsResponseFormat",
+        "supportsTemperature",
+        "knowledgeCutoffDate"
+      ]
     },
     "gemma4:31b": {
       "model": "gemma/gemma4-31b",
@@ -76,7 +98,9 @@
         "costPer1kOutputTokens": 0.0004,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "glm-5.1": {
       "model": "glm/glm-5-1",
@@ -91,7 +115,10 @@
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.0032
       },
-      "unset": ["supportsResponseFormat", "supportsTemperature"]
+      "unset": [
+        "supportsResponseFormat",
+        "supportsTemperature"
+      ]
     },
     "glm-5.2": {
       "model": "glm/glm-5-2",
@@ -104,7 +131,10 @@
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "max"],
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -115,8 +145,15 @@
       "overrides": {
         "contextWindow": 1000000,
         "modalities": {
-          "input": ["text", "image", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -131,10 +168,19 @@
         "name": "kimi-k2.5",
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "releaseDate": "January 27, 2026",
         "lastUpdated": "January 27, 2026",
@@ -142,7 +188,11 @@
         "costPer1kOutputTokens": 0.003,
         "supportsAttachments": true
       },
-      "unset": ["knowledgeCutoffDate", "supportsResponseFormat", "supportsTemperature"]
+      "unset": [
+        "knowledgeCutoffDate",
+        "supportsResponseFormat",
+        "supportsTemperature"
+      ]
     },
     "kimi-k2.6": {
       "model": "kimi-k2/kimi-k2-6",
@@ -151,10 +201,19 @@
         "name": "kimi-k2.6",
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "releaseDate": "April 20, 2026",
         "lastUpdated": "April 20, 2026",
@@ -162,7 +221,11 @@
         "costPer1kOutputTokens": 0.004,
         "supportsAttachments": true
       },
-      "unset": ["knowledgeCutoffDate", "supportsResponseFormat", "supportsTemperature"]
+      "unset": [
+        "knowledgeCutoffDate",
+        "supportsResponseFormat",
+        "supportsTemperature"
+      ]
     },
     "kimi-k2.7-code": {
       "model": "kimi-k2/kimi-k2-7-code",
@@ -170,10 +233,20 @@
       "overrides": {
         "name": "kimi-k2.7-code",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use", "coding"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
@@ -205,7 +278,9 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "minimax-m2.7": {
       "model": "minimax/minimax-m2-7",
@@ -219,7 +294,10 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
       },
-      "unset": ["supportsTemperature", "supportsResponseFormat"]
+      "unset": [
+        "supportsTemperature",
+        "supportsResponseFormat"
+      ]
     },
     "minimax-m3": {
       "model": "minimax-m3/minimax-m3",
@@ -227,7 +305,12 @@
       "overrides": {
         "name": "minimax-m3",
         "contextWindow": 512000,
-        "strengths": ["vision", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "speed": 3,
         "lastUpdated": "May 31, 2026",
@@ -235,7 +318,12 @@
         "costPer1kOutputTokens": 0.0024,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -249,7 +337,11 @@
         "costPer1kOutputTokens": 0.0015,
         "supportsAttachments": true
       },
-      "unset": ["contextComplexity", "reliability", "supportsTemperature"]
+      "unset": [
+        "contextComplexity",
+        "reliability",
+        "supportsTemperature"
+      ]
     },
     "nemotron-3-nano:30b": {
       "model": "nemotron/nemotron-3-nano-30b",
@@ -290,14 +382,15 @@
         "costPer1kOutputTokens": 0.0036,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "glm-5.3": {
       "model": "glm/glm-5-3",
       "matchingModel": "glm-5.3",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 131072,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044
@@ -312,7 +405,11 @@
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }

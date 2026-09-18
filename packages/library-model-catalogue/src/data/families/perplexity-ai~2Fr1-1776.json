@@ -1,10 +1,20 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["reasoning", "multilingual", "coding", "analysis", "general_knowledge"],
+    "strengths": [
+      "reasoning",
+      "multilingual",
+      "coding",
+      "analysis",
+      "general_knowledge"
+    ],
     "contextComplexity": 1,
     "reliability": 1,
     "artificialAnalysis": {

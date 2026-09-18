@@ -15,7 +15,11 @@
         "maxTokens": 384000,
         "isFree": true,
         "card": "https://www.prompthub.us/models/deepseek-v3",
-        "strengths": ["multilingual", "coding", "analysis"],
+        "strengths": [
+          "multilingual",
+          "coding",
+          "analysis"
+        ],
         "contextComplexity": 4,
         "reliability": 5,
         "speed": 3,
@@ -24,7 +28,9 @@
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "deepseek-reasoner": {
       "model": "deepseek-thinking/deepseek-reasoner",
@@ -38,7 +44,9 @@
         "costPer1kOutputTokens": 0.00028,
         "costPer1kReasoningTokens": 0.00028
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "deepseek-v4-flash": {
       "model": "deepseek-flash/deepseek-v4-flash",
@@ -47,7 +55,14 @@
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
         "contextWindow": 1000000,
         "isFree": true,
-        "strengths": ["reasoning", "coding", "analysis", "multilingual", "tool_use", "document"],
+        "strengths": [
+          "reasoning",
+          "coding",
+          "analysis",
+          "multilingual",
+          "tool_use",
+          "document"
+        ],
         "speed": 4,
         "isFeatured": true,
         "releaseDate": "September 10, 2026",
@@ -57,7 +72,11 @@
         "costPer1kReasoningTokens": 0.0006,
         "supportsToolChoice": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -70,7 +89,14 @@
         "contextWindow": 1000000,
         "maxTokens": 384000,
         "isFree": true,
-        "strengths": ["reasoning", "coding", "analysis", "math", "multilingual", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "coding",
+          "analysis",
+          "math",
+          "multilingual",
+          "tool_use"
+        ],
         "speed": 3,
         "isFeatured": true,
         "releaseDate": "August 12, 2026",
@@ -81,7 +107,10 @@
         "supportsToolChoice": false,
         "supportsAttachments": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "max"],
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -91,7 +120,6 @@
       "matchingModel": "deepseek-v4-flash-vision-exp",
       "overrides": {
         "status": "beta",
-        "openWeights": true,
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
         "contextWindow": 1000000,
         "releaseDate": "September 10, 2026",
@@ -111,7 +139,11 @@
         "costPer1kOutputTokens": 0.0006,
         "costPer1kReasoningTokens": 0.0006,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }

@@ -2,8 +2,12 @@
   "defaults": {
     "openWeights": false,
     "modalities": {
-      "input": ["text"],
-      "output": ["embedding"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
     },
     "releaseDate": "December 11, 2023",
     "supportsToolCalls": false,

@@ -3,10 +3,19 @@
     "contextWindow": 16384,
     "maxTokens": 4096,
     "modalities": {
-      "input": ["text", "video"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["vision", "analysis", "summarization"],
+    "strengths": [
+      "vision",
+      "analysis",
+      "summarization"
+    ],
     "contextComplexity": 4,
     "reliability": 4,
     "multimodal": true,

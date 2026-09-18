@@ -1,10 +1,16 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text"],
-      "output": ["image"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
     },
-    "strengths": ["creative"],
+    "strengths": [
+      "creative"
+    ],
     "supportsAttachments": false
   },
   "description": "The ideogram/V_3 family includes models that produce image.",

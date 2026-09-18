@@ -4,15 +4,29 @@
     "contextWindow": 1048576,
     "maxTokens": 131072,
     "modalities": {
-      "input": ["text", "image", "video", "pdf", "audio"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image",
+        "video",
+        "pdf",
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["minimal", "low", "medium", "high", "xhigh"],
+      "supportedEffortLevels": [
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh"
+      ],
       "defaultEffort": "minimal"
     }
   },

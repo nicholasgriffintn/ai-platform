@@ -4,8 +4,12 @@
     "contextWindow": 8192,
     "maxTokens": 1536,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": false,
     "supportsAttachments": false,

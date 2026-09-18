@@ -3,15 +3,25 @@
     "openWeights": false,
     "contextWindow": 128000,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "reliability": 1,
     "supportsToolCalls": false,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+      "supportedEffortLevels": [
+        "minimal",
+        "low",
+        "medium",
+        "high"
+      ],
       "defaultEffort": "minimal"
     },
     "artificialAnalysis": {

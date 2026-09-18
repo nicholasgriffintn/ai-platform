@@ -1,8 +1,12 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsAttachments": false,
@@ -49,10 +53,18 @@
         "contextWindow": 131072,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["document", "tool_use"],
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "June 30, 2025",
@@ -74,10 +86,21 @@
         "contextWindow": 131072,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["coding", "analysis", "agents", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "analysis",
+          "agents",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "March 31, 2025",
@@ -98,7 +121,9 @@
         "description": "Devstral Small 2505 (free) accepts text and produces text.",
         "contextWindow": 32768,
         "maxTokens": 32768,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "May 2025",
@@ -138,7 +163,11 @@
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "contextWindow": 8000,
         "maxTokens": 8000,
-        "strengths": ["chat", "general_knowledge", "multilingual"],
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "multilingual"
+        ],
         "contextComplexity": 2,
         "reliability": 3,
         "knowledgeCutoffDate": "December 2023",
@@ -151,7 +180,9 @@
         "description": "Mistral 7B Instruct (free) accepts text and produces text.",
         "contextWindow": 32768,
         "maxTokens": 32768,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "May 2024",
@@ -206,7 +237,9 @@
         "description": "Mistral Large accepts text and produces text.",
         "contextWindow": 131072,
         "maxTokens": 16384,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "November 2024",
@@ -225,7 +258,9 @@
         "description": "Mistral Large (24.02) accepts text and produces text.",
         "contextWindow": 128000,
         "maxTokens": 4096,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "December 1, 2024",
@@ -245,15 +280,23 @@
         "contextWindow": 128000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 7, 2024",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -266,10 +309,19 @@
         "contextWindow": 256000,
         "maxTokens": 256000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "April 30, 2026",
@@ -277,7 +329,10 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -293,8 +348,12 @@
         "name": "Mistral Moderation",
         "description": "A moderation model for content filtering",
         "modalities": {
-          "input": ["moderation"],
-          "output": ["moderation"]
+          "input": [
+            "moderation"
+          ],
+          "output": [
+            "moderation"
+          ]
         }
       }
     },
@@ -319,10 +378,18 @@
         "name": "Mistral OCR 4.1",
         "description": "The pinned Mistral OCR 4.1 model for reproducible structured extraction from PDFs and images.",
         "modalities": {
-          "input": ["document", "image"],
-          "output": ["text"]
+          "input": [
+            "document",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["ocr", "vision"]
+        "strengths": [
+          "ocr",
+          "vision"
+        ]
       }
     },
     "mistral-ocr-4-1-latest": {
@@ -330,10 +397,18 @@
         "name": "Mistral OCR 4.1 (Latest)",
         "description": "Mistral's current OCR 4.1 document processor for structured extraction from PDFs and images.",
         "modalities": {
-          "input": ["document", "image"],
-          "output": ["text"]
+          "input": [
+            "document",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["ocr", "vision"]
+        "strengths": [
+          "ocr",
+          "vision"
+        ]
       }
     },
     "mistral-small-24b-instruct-2501": {
@@ -343,8 +418,13 @@
         "contextWindow": 32768,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "December 29, 2025",
         "supportsResponseFormat": true
@@ -357,8 +437,13 @@
         "contextWindow": 131072,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "December 29, 2025",
         "supportsResponseFormat": true
@@ -371,8 +456,13 @@
         "contextWindow": 96000,
         "maxTokens": 96000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "June 20, 2025",
@@ -386,8 +476,13 @@
         "contextWindow": 131072,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsResponseFormat": true,
         "supportsAttachments": true
@@ -407,7 +502,13 @@
         "contextWindow": 128000,
         "maxTokens": 128000,
         "card": "https://www.prompthub.us/models/mistral-nemo",
-        "strengths": ["chat", "general_knowledge", "analysis", "creative", "multilingual"],
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "multilingual"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "knowledgeCutoffDate": "July 2024",
@@ -420,7 +521,9 @@
         "description": "Mixtral 8x22B accepts text and produces text.",
         "contextWindow": 64000,
         "maxTokens": 64000,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2024",
@@ -441,10 +544,18 @@
         "contextWindow": 65536,
         "maxTokens": 52428,
         "modalities": {
-          "input": ["text", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["document", "tool_use"],
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "January 31, 2024",
@@ -477,10 +588,20 @@
         "contextWindow": 131072,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "July 31, 2024",
@@ -503,10 +624,18 @@
         "contextWindow": 32768,
         "maxTokens": 26214,
         "modalities": {
-          "input": ["text", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["document", "tool_use"],
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "September 30, 2024",
@@ -555,8 +684,13 @@
         "contextWindow": 32768,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "audio"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "July 15, 2025",

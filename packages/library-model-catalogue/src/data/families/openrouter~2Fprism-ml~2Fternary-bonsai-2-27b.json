@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262144,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 18, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "medium",
+        "xhigh"
+      ],
+      "defaultEffort": "medium"
+    }
+  },
+  "description": "The openrouter/prism ml/ternary bonsai 2 27b family includes models that produce text.",
+  "models": {
+    "ternary-bonsai-2-27b": {
+      "defaults": {
+        "name": "Ternary Bonsai 2 27B",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
+      }
+    }
+  }
+}

@@ -1,8 +1,12 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text"],
-      "output": ["image"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
     },
     "supportsToolCalls": false,
     "supportsAttachments": false,
@@ -14,7 +18,10 @@
       "defaults": {
         "name": "Black Forest Labs Flux 1 Schnell",
         "description": "FLUX.1 [schnell] is a 12 billion parameter rectified flow transformer capable of generating images from text descriptions.",
-        "strengths": ["creative", "image"],
+        "strengths": [
+          "creative",
+          "image"
+        ],
         "contextComplexity": 3,
         "reliability": 2,
         "artificialAnalysis": {
@@ -39,7 +46,10 @@
       "defaults": {
         "name": "Black Forest Labs Flux 2 Dev",
         "description": "Flux 2 is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
-        "strengths": ["creative", "image"],
+        "strengths": [
+          "creative",
+          "image"
+        ],
         "contextComplexity": 3,
         "reliability": 4,
         "artificialAnalysis": {
@@ -64,7 +74,10 @@
       "defaults": {
         "name": "Black Forest Labs Flux 2 Klein 4B",
         "description": "Black Forest Labs Flux 2 Klein 4B accepts text and produces image.",
-        "strengths": ["creative", "image"],
+        "strengths": [
+          "creative",
+          "image"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "artificialAnalysis": {
@@ -89,7 +102,10 @@
       "defaults": {
         "name": "Black Forest Labs Flux 2 Klein 9B",
         "description": "Black Forest Labs Flux 2 Klein 9B accepts text and produces image.",
-        "strengths": ["creative", "image"],
+        "strengths": [
+          "creative",
+          "image"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "artificialAnalysis": {
@@ -114,7 +130,9 @@
       "defaults": {
         "name": "FLUX 1.1 Pro",
         "description": "Black Forest Labs' flagship text-to-image model with excellent quality, prompt adherence, and 6x faster generation.",
-        "strengths": ["creative"]
+        "strengths": [
+          "creative"
+        ]
       }
     },
     "flux-1-fill-pro": {
@@ -134,7 +152,9 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
         "maxTokens": 0,
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "contextComplexity": 1,
         "reliability": 3,
         "releaseDate": "May 29, 2025",
@@ -163,7 +183,9 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
         "maxTokens": 0,
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "contextComplexity": 1,
         "reliability": 3,
         "releaseDate": "May 29, 2025",
@@ -189,7 +211,10 @@
       "defaults": {
         "name": "FLUX 2 Dev",
         "description": "Flux 2 Dev is an image generation and editing model by Black Forest Labs. It creates high-quality images from text prompts and can edit existing images using natural language instructions.",
-        "strengths": ["creative", "image"],
+        "strengths": [
+          "creative",
+          "image"
+        ],
         "reliability": 4,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -261,7 +286,9 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 0,
         "maxTokens": 0,
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "reliability": 3,
         "releaseDate": "January 15, 2026",
         "artificialAnalysis": {
@@ -338,8 +365,12 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "August 4, 2026"
       }
@@ -361,7 +392,9 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
         "maxTokens": 0,
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "contextComplexity": 1,
         "reliability": 3,
         "releaseDate": "October 2, 2024",
@@ -390,7 +423,9 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
         "maxTokens": 0,
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "contextComplexity": 1,
         "reliability": 3,
         "releaseDate": "November 1, 2024",

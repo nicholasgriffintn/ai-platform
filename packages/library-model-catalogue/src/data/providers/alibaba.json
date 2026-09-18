@@ -9,7 +9,12 @@
       "model": "qwen/qwen3-max",
       "matchingModel": "qwen3-max",
       "overrides": {
-        "strengths": ["reasoning", "coding", "multilingual", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "coding",
+          "multilingual",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0012,
@@ -22,7 +27,11 @@
       "overrides": {
         "openWeights": true,
         "contextWindow": 1048576,
-        "strengths": ["coding", "agents", "tool_use"],
+        "strengths": [
+          "coding",
+          "agents",
+          "tool_use"
+        ],
         "lastUpdated": "July 23, 2025",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005
@@ -47,7 +56,15 @@
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -127,7 +144,10 @@
         "costPer1kOutputTokens": 0.0012,
         "costPer1kReasoningTokens": 0.004,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -246,7 +266,9 @@
         "costPer1kInputTokens": 0.0028,
         "costPer1kOutputTokens": 0.0084
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen2-5-vl-7b-instruct": {
       "model": "qwen/qwen2-5-vl-7b-instruct",
@@ -296,7 +318,9 @@
         "costPer1kOutputTokens": 0.0028,
         "costPer1kReasoningTokens": 0.0084
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3-8b": {
       "model": "qwen/qwen3-8b",
@@ -333,7 +357,9 @@
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.00225
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3-coder-480b-a35b-instruct": {
       "model": "qwen/qwen3-coder-480b-a35b-instruct",
@@ -424,7 +450,10 @@
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
         "maxTokens": 32768,
-        "strengths": ["vision", "tool_use"],
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
         "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 2025",
@@ -460,10 +489,23 @@
       "matchingModel": "qwen3.5-122b-a10b",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "video", "audio"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "audio", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "speed": 4,
         "lastUpdated": "February 23, 2026",
         "costPer1kInputTokens": 0.0004,
@@ -487,10 +529,23 @@
       "matchingModel": "qwen3.5-35b-a3b",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "video", "audio"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "audio", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "speed": 4,
         "lastUpdated": "February 23, 2026",
         "costPer1kInputTokens": 0.00025,
@@ -506,17 +561,33 @@
         "description": "Large open Qwen multimodal MoE for visual agents and long technical tasks",
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video", "audio"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "audio", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "speed": 2,
         "lastUpdated": "February 15, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0036,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -536,10 +607,23 @@
       "matchingModel": "qwen3.6-27b",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "video", "audio"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "audio", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.0006,
@@ -555,10 +639,23 @@
         "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video", "audio"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "audio", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "speed": 4,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.000248,
@@ -590,7 +687,11 @@
       "model": "qwen/qwen3-6-plus",
       "matchingModel": "qwen3.6-plus",
       "overrides": {
-        "strengths": ["vision", "video", "tool_use"],
+        "strengths": [
+          "vision",
+          "video",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.0005,
@@ -608,21 +709,29 @@
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.0075
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3.7-plus": {
       "model": "qwen/qwen3-7-plus",
       "matchingModel": "qwen3.7-plus",
       "overrides": {
         "maxTokens": 65536,
-        "strengths": ["vision", "video", "tool_use"],
+        "strengths": [
+          "vision",
+          "video",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "speed": 2,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3.8-flash": {
       "model": "qwen/qwen3-8-flash",
@@ -633,11 +742,17 @@
         "costPer1kOutputTokens": 0.00047,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "xhigh"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "xhigh"
+          ],
           "defaultEffort": "low"
         }
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "qwen3.8-max": {
       "model": "qwen/qwen3-8-max",
@@ -645,15 +760,26 @@
       "overrides": {
         "contextWindow": 1000000,
         "modalities": {
-          "input": ["text", "image", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "August 3, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "xhigh"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "xhigh"
+          ],
           "defaultEffort": "low"
         }
       }

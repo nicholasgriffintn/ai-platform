@@ -21,7 +21,14 @@
       "model": "nova-lite/nova-lite",
       "matchingModel": "amazon.nova-lite-v1:0",
       "overrides": {
-        "strengths": ["analysis", "multilingual", "vision", "video", "document", "tool_use"],
+        "strengths": [
+          "analysis",
+          "multilingual",
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "speed": 4,
         "multimodal": true,
         "lastUpdated": "December 3, 2024",
@@ -35,7 +42,12 @@
       "model": "nova-micro/nova-micro",
       "matchingModel": "amazon.nova-micro-v1:0",
       "overrides": {
-        "strengths": ["coding", "analysis", "multilingual", "tool_use"],
+        "strengths": [
+          "coding",
+          "analysis",
+          "multilingual",
+          "tool_use"
+        ],
         "speed": 4,
         "multimodal": false,
         "lastUpdated": "December 3, 2024",
@@ -76,7 +88,11 @@
         "costPer1kInputTokens": 0.002,
         "bedrockApiOperation": "invoke"
       },
-      "unset": ["supportsToolCalls", "supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "nova-reel": {
       "model": "nova/amazon-nova-reel",
@@ -85,13 +101,21 @@
         "deprecated": true,
         "bedrockApiOperation": "async-invoke"
       },
-      "unset": ["supportsToolCalls", "supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "nova-2-sonic": {
       "model": "nova/amazon-nova-2-sonic",
       "matchingModel": "amazon.nova-2-sonic-v1:0",
       "overrides": {},
-      "unset": ["supportsToolCalls", "supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "openai.gpt-oss-safeguard-120b": {
       "model": "gpt-oss/gpt-oss-safeguard-120b",
@@ -153,7 +177,9 @@
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0006
       },
-      "unset": ["reasoningConfig"]
+      "unset": [
+        "reasoningConfig"
+      ]
     },
     "nvidia.nemotron-nano-9b-v2": {
       "model": "nemotron/nvidia-nemotron-nano-9b-v2",
@@ -169,7 +195,9 @@
         "supportsResponseFormat": true,
         "supportsAttachments": false
       },
-      "unset": ["reasoningConfig"]
+      "unset": [
+        "reasoningConfig"
+      ]
     },
     "anthropic.claude-sonnet-4.5": {
       "model": "claude-sonnet/claude-sonnet-4-5-us",
@@ -217,7 +245,10 @@
         "supportsTokenCounting": true,
         "supportsPromptCaching": true
       },
-      "unset": ["openWeights", "supportsTopP"]
+      "unset": [
+        "openWeights",
+        "supportsTopP"
+      ]
     },
     "anthropic.claude-3-7-sonnet": {
       "model": "claude/claude-3-7-sonnet-bedrock-us",
@@ -238,7 +269,11 @@
       "overrides": {
         "costPer1kInputTokens": 0.0001
       },
-      "unset": ["supportsToolCalls", "supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "cohere.embed-multilingual": {
       "model": "bedrock/cohere.embed-multilingual-v3/cohere-embed-multilingual",
@@ -246,14 +281,22 @@
       "overrides": {
         "costPer1kInputTokens": 0.0001
       },
-      "unset": ["supportsToolCalls", "supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "cohere.command-r": {
       "model": "command/command-r",
       "matchingModel": "cohere.command-r-v1:0",
       "overrides": {
         "name": "Command R",
-        "strengths": ["summarization", "analysis", "tool_use"],
+        "strengths": [
+          "summarization",
+          "analysis",
+          "tool_use"
+        ],
         "speed": 3,
         "releaseDate": "March 11, 2024",
         "lastUpdated": "March 11, 2024",
@@ -268,7 +311,12 @@
       "overrides": {
         "name": "Command R+",
         "description": "Command R+ is an instruction-following conversational model that performs language tasks at a higher quality, more reliably, and with a longer context than previous models. It is best suited for complex RAG workflows and multi-step tool use.",
-        "strengths": ["summarization", "analysis", "reasoning", "tool_use"],
+        "strengths": [
+          "summarization",
+          "analysis",
+          "reasoning",
+          "tool_use"
+        ],
         "speed": 2,
         "releaseDate": "April 4, 2024",
         "lastUpdated": "April 4, 2024",
@@ -309,7 +357,9 @@
         "costPer1kOutputTokens": 0.0007,
         "supportsAttachments": false
       },
-      "unset": ["supportsToolCalls"]
+      "unset": [
+        "supportsToolCalls"
+      ]
     },
     "nova-premier": {
       "model": "nova/nova-premier",
@@ -346,14 +396,20 @@
         "costPer1kInputTokens": 0.00072,
         "costPer1kOutputTokens": 0.00072
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "meta/llama-3-1-70b-bedrock": {
       "model": "llama/llama-3-1-70b-instruct",
       "matchingModel": "meta.llama3-1-70b-instruct-v1:0",
       "overrides": {
         "maxTokens": 4096,
-        "strengths": ["analysis", "reasoning", "coding"],
+        "strengths": [
+          "analysis",
+          "reasoning",
+          "coding"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "speed": 3,
@@ -369,7 +425,12 @@
       "matchingModel": "deepseek.r1-v1:0",
       "overrides": {
         "contextWindow": 128000,
-        "strengths": ["math", "reasoning", "analysis", "tool_use"],
+        "strengths": [
+          "math",
+          "reasoning",
+          "analysis",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "May 29, 2025",
         "costPer1kInputTokens": 0.00135,
@@ -377,7 +438,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "twelvelabs.marengo-embed-2-7-v1": {
       "model": "bedrock/twelvelabs.marengo-embed-2-7-v1:0/twelve-labs-marengo-embed",
@@ -390,7 +453,9 @@
         "supportsTemperature": false,
         "bedrockApiOperation": "start-async-invoke"
       },
-      "unset": ["supportsToolCalls"]
+      "unset": [
+        "supportsToolCalls"
+      ]
     },
     "twelvelabs.pegasus-1-2-v1": {
       "model": "bedrock/us.twelvelabs.pegasus-1-2-v1:0/twelve-labs-pegasus-bedrock-us",
@@ -405,22 +470,34 @@
         "bedrockApiOperation": "invoke",
         "bedrockStreamingApiOperation": "invoke-with-response-stream"
       },
-      "unset": ["supportsToolCalls"]
+      "unset": [
+        "supportsToolCalls"
+      ]
     },
     "amazon.nova-2-lite-v1:0": {
       "model": "nova/nova-2-lite",
       "matchingModel": "amazon.nova-2-lite-v1:0",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 2025",
         "lastUpdated": "December 1, 2025",
         "costPer1kInputTokens": 0.00033,
         "costPer1kOutputTokens": 0.00275,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -450,8 +527,14 @@
       "matchingModel": "anthropic.claude-3-5-haiku-20241022-v1:0",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "October 22, 2024",
         "costPer1kInputTokens": 0.0008,
@@ -463,8 +546,14 @@
       "matchingModel": "anthropic.claude-3-5-sonnet-20240620-v1:0",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "June 20, 2024",
         "lastUpdated": "June 20, 2024",
@@ -487,8 +576,14 @@
       "overrides": {
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "February 19, 2025",
@@ -533,7 +628,10 @@
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none",
           "thinkingApi": "budget"
         }
@@ -559,7 +657,12 @@
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.075
       },
-      "unset": ["openWeights", "contextComplexity", "supportsTopP", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "contextComplexity",
+        "supportsTopP",
+        "reasoningConfig"
+      ]
     },
     "anthropic.claude-opus-4-5-20251101-v1:0": {
       "model": "claude-opus/claude-opus-4-5",
@@ -573,12 +676,18 @@
         "costPer1kOutputTokens": 0.025,
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "budget"
         }
       },
-      "unset": ["supportsTopP"]
+      "unset": [
+        "supportsTopP"
+      ]
     },
     "anthropic.claude-opus-4-6-v1": {
       "model": "claude-opus/claude-opus-4-6",
@@ -589,12 +698,19 @@
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
       },
-      "unset": ["supportsTopP"]
+      "unset": [
+        "supportsTopP"
+      ]
     },
     "anthropic.claude-sonnet-4-20250514-v1:0": {
       "model": "claude-sonnet/claude-sonnet-4",
@@ -607,7 +723,11 @@
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
       },
-      "unset": ["openWeights", "supportsResponseFormat", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat",
+        "reasoningConfig"
+      ]
     },
     "anthropic.claude-sonnet-4-5-20250929-v1:0": {
       "model": "claude-sonnet/claude-sonnet-4-5",
@@ -618,7 +738,10 @@
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none",
           "thinkingApi": "budget"
         }
@@ -698,7 +821,9 @@
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
       },
-      "unset": ["supportsTopP"]
+      "unset": [
+        "supportsTopP"
+      ]
     },
     "eu.anthropic.claude-opus-4-6-v1": {
       "model": "claude-opus/claude-opus-4-6-eu",
@@ -709,12 +834,19 @@
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
       },
-      "unset": ["supportsTopP"]
+      "unset": [
+        "supportsTopP"
+      ]
     },
     "eu.anthropic.claude-sonnet-4-5-20250929-v1:0": {
       "model": "claude-sonnet/claude-sonnet-4-5-eu",
@@ -743,7 +875,9 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025
       },
-      "unset": ["supportsTopP"]
+      "unset": [
+        "supportsTopP"
+      ]
     },
     "global.anthropic.claude-opus-4-6-v1": {
       "model": "claude-opus/claude-opus-4-6-global",
@@ -754,7 +888,9 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025
       },
-      "unset": ["supportsTopP"]
+      "unset": [
+        "supportsTopP"
+      ]
     },
     "global.anthropic.claude-sonnet-4-5-20250929-v1:0": {
       "model": "claude-sonnet/claude-sonnet-4-5-global",
@@ -776,7 +912,9 @@
         "costPer1kOutputTokens": 0.00029,
         "supportsToolCalls": false
       },
-      "unset": ["reasoningConfig"]
+      "unset": [
+        "reasoningConfig"
+      ]
     },
     "google.gemma-3-27b-it": {
       "model": "gemma/gemma-3-27b-it",
@@ -790,7 +928,9 @@
         "costPer1kOutputTokens": 0.00038,
         "supportsToolCalls": false
       },
-      "unset": ["reasoningConfig"]
+      "unset": [
+        "reasoningConfig"
+      ]
     },
     "google.gemma-3-4b-it": {
       "model": "gemma/gemma-3-4b-it",
@@ -802,7 +942,9 @@
         "costPer1kOutputTokens": 0.00008,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "meta.llama3-1-8b-instruct-v1:0": {
       "model": "llama/llama-3-1-8b-instruct",
@@ -826,7 +968,9 @@
         "costPer1kInputTokens": 0.00016,
         "costPer1kOutputTokens": 0.00016
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "meta.llama3-2-1b-instruct-v1:0": {
       "model": "llama/llama-3-2-1b-instruct",
@@ -840,7 +984,9 @@
         "costPer1kOutputTokens": 0.0001,
         "supportsAttachments": false
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "meta.llama3-2-3b-instruct-v1:0": {
       "model": "llama/llama-3-2-3b-instruct",
@@ -854,7 +1000,9 @@
         "costPer1kOutputTokens": 0.00015,
         "supportsAttachments": false
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "meta.llama3-3-70b-instruct-v1:0": {
       "model": "llama/llama-3-3-70b-instruct",
@@ -884,7 +1032,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "meta.llama3-8b-instruct-v1:0": {
       "model": "llama/llama-3-8b-instruct",
@@ -900,7 +1050,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "meta.llama4-maverick-17b-instruct-v1:0": {
       "model": "llama/llama-4-maverick-17b-instruct",
@@ -1000,8 +1152,13 @@
       "overrides": {
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "audio"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "July 15, 2025",
         "costPer1kInputTokens": 0.0001,
@@ -1015,10 +1172,19 @@
         "contextWindow": 262143,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "tool_use", "document"],
+        "strengths": [
+          "vision",
+          "tool_use",
+          "document"
+        ],
         "speed": 3,
         "releaseDate": "January 27, 2026",
         "lastUpdated": "February 6, 2026",
@@ -1162,7 +1328,9 @@
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
       },
-      "unset": ["supportsTopP"]
+      "unset": [
+        "supportsTopP"
+      ]
     },
     "us.anthropic.claude-opus-4-6-v1": {
       "model": "claude-opus/claude-opus-4-6-us",
@@ -1173,7 +1341,9 @@
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
       },
-      "unset": ["supportsTopP"]
+      "unset": [
+        "supportsTopP"
+      ]
     },
     "zai.glm-4.7": {
       "model": "glm/glm-4-7",
@@ -1211,7 +1381,13 @@
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -1226,7 +1402,12 @@
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -1249,7 +1430,10 @@
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
       },
-      "unset": ["contextComplexity", "supportsTopP"]
+      "unset": [
+        "contextComplexity",
+        "supportsTopP"
+      ]
     },
     "au.anthropic.claude-sonnet-4-5-20250929-v1:0": {
       "model": "claude-sonnet/claude-sonnet-4-5-au",
@@ -1291,7 +1475,13 @@
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -1308,7 +1498,12 @@
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -1415,7 +1610,11 @@
       "matchingModel": "mistral.mistral-large-3-675b-instruct",
       "overrides": {
         "maxTokens": 8192,
-        "strengths": ["vision", "tool_use", "document"],
+        "strengths": [
+          "vision",
+          "tool_use",
+          "document"
+        ],
         "speed": 3,
         "lastUpdated": "December 2, 2025",
         "costPer1kInputTokens": 0.0005,
@@ -1428,14 +1627,20 @@
       "overrides": {
         "name": "Pixtral Large (25.02)",
         "maxTokens": 8192,
-        "strengths": ["vision", "tool_use", "document"],
+        "strengths": [
+          "vision",
+          "tool_use",
+          "document"
+        ],
         "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "April 8, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
       },
-      "unset": ["knowledgeCutoffDate"]
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "nvidia.nemotron-nano-3-30b": {
       "model": "nemotron/nvidia-nemotron-nano-3-30b",
@@ -1502,7 +1707,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "us.meta.llama4-maverick-17b-instruct-v1:0": {
       "model": "llama/llama-4-maverick-17b-instruct-us",
@@ -1568,7 +1775,13 @@
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -1595,7 +1808,13 @@
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -1639,15 +1858,26 @@
       "matchingModel": "eu.anthropic.claude-fable-5",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0.011,
         "costPer1kOutputTokens": 0.055,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -1683,7 +1913,13 @@
         "supportsResponseFormat": false,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -1709,7 +1945,13 @@
         "supportsResponseFormat": false,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -1754,7 +1996,13 @@
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -1778,12 +2026,21 @@
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
       },
-      "unset": ["contextComplexity", "supportsResponseFormat"]
+      "unset": [
+        "contextComplexity",
+        "supportsResponseFormat"
+      ]
     },
     "au.anthropic.claude-opus-5": {
       "model": "claude-opus/claude-opus-5-au",
@@ -1794,7 +2051,9 @@
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "eu.anthropic.claude-opus-5": {
       "model": "claude-opus/claude-opus-5-eu",
@@ -1805,12 +2064,20 @@
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "global.anthropic.claude-opus-5": {
       "model": "claude-opus/claude-opus-5-global",
@@ -1821,7 +2088,9 @@
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "jp.anthropic.claude-opus-5": {
       "model": "claude-opus/claude-opus-5-jp",
@@ -1832,7 +2101,9 @@
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "us.anthropic.claude-opus-5": {
       "model": "claude-opus/claude-opus-5-us",
@@ -1843,7 +2114,9 @@
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "global.openai.gpt-5.6-luna": {
       "model": "gpt-luna/gpt-5-6-luna-global",

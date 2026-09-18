@@ -3,10 +3,23 @@
     "contextWindow": 262144,
     "maxTokens": 16384,
     "modalities": {
-      "input": ["text", "image", "audio", "video"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image",
+        "audio",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["vision", "audio", "video", "document", "tool_use"],
+    "strengths": [
+      "vision",
+      "audio",
+      "video",
+      "document",
+      "tool_use"
+    ],
     "contextComplexity": 4,
     "reliability": 2,
     "knowledgeCutoffDate": "December 2024",
@@ -15,7 +28,10 @@
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     },
     "artificialAnalysis": {

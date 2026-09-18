@@ -2,10 +2,19 @@
   "defaults": {
     "openWeights": false,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["vision", "document", "tool_use"],
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
     "contextComplexity": 4,
     "reliability": 1,
     "supportsToolCalls": true,
@@ -42,7 +51,10 @@
         "reliability": 2,
         "releaseDate": "April 30, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -61,7 +73,13 @@
         "maxTokens": 262144,
         "releaseDate": "April 30, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -73,7 +91,10 @@
         "contextWindow": 262144,
         "releaseDate": "April 29, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {

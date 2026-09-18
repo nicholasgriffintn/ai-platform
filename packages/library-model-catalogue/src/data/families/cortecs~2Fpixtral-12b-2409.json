@@ -4,8 +4,13 @@
     "contextWindow": 128000,
     "maxTokens": 4096,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "releaseDate": "November 9, 2024",
     "supportsToolCalls": true,
@@ -13,7 +18,10 @@
     "supportsAttachments": true,
     "supportsTemperature": false,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     }
   },

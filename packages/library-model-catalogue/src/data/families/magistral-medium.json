@@ -4,8 +4,12 @@
     "contextWindow": 128000,
     "maxTokens": 16384,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "contextComplexity": 3,
     "reliability": 1,
@@ -15,7 +19,10 @@
     "supportsAttachments": false,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
@@ -31,7 +38,9 @@
       "defaults": {
         "name": "Magistral Medium",
         "description": "Magistral Medium accepts text and produces text.",
-        "strengths": ["tool_use"]
+        "strengths": [
+          "tool_use"
+        ]
       }
     },
     "magistral-medium-latest": {

@@ -16,15 +16,27 @@
         "name": "o1-pro",
         "description": "O-series reasoning model for hard analysis, math, coding, and planning",
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document"],
+        "strengths": [
+          "vision",
+          "document"
+        ],
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "March 19, 2025",
         "supportsToolCalls": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -39,12 +51,20 @@
       "defaults": {
         "name": "o3 Pro",
         "description": "High-effort o3 tier for difficult technical reasoning and careful answers",
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "May 2024",
         "releaseDate": "June 10, 2025",
         "supportsToolCalls": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         },
         "artificialAnalysis": {

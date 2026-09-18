@@ -64,19 +64,29 @@
         "costPer1kOutputTokens": 0.03,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-2.5-flash-lite": {
       "model": "gemini-flash-lite/gemini-2-5-flash-lite",
       "matchingModel": "gemini-2.5-flash-lite",
       "overrides": {
         "name": "Gemini 2.5 Flash-Lite",
-        "strengths": ["audio", "vision", "document", "video", "tool_use"],
+        "strengths": [
+          "audio",
+          "vision",
+          "document",
+          "video",
+          "tool_use"
+        ],
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-2.5-flash-tts": {
       "model": "gemini-flash/gemini-2-5-flash-tts",
@@ -89,7 +99,9 @@
         "supportsAttachments": false,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-2.5-pro-tts": {
       "model": "gemini-pro/gemini-2-5-pro-tts",
@@ -102,7 +114,10 @@
         "supportsAttachments": false,
         "supportsTemperature": false
       },
-      "unset": ["reasoningConfig", "supportsResponseFormat"]
+      "unset": [
+        "reasoningConfig",
+        "supportsResponseFormat"
+      ]
     },
     "gemini-3-flash-preview": {
       "model": "gemini-flash/gemini-3-flash-preview",
@@ -119,13 +134,20 @@
       "matchingModel": "gemini-3-pro-image",
       "overrides": {
         "contextWindow": 65536,
-        "strengths": ["vision", "document", "image", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.12,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-3.1-flash-image": {
       "model": "gemini-flash/nano-banana-2",
@@ -133,16 +155,32 @@
       "overrides": {
         "name": "Nano Banana 2",
         "modalities": {
-          "input": ["text", "image", "video", "pdf"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
-        "strengths": ["vision", "document", "video", "image", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "image",
+          "creative"
+        ],
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.06,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-3.1-flash-lite": {
       "model": "gemini-flash-lite/gemini-3-1-flash-lite",
@@ -150,10 +188,24 @@
       "overrides": {
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video", "audio", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "audio", "video", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "speed": 4,
         "lastUpdated": "May 7, 2026",
         "costPer1kInputTokens": 0.00025,
@@ -185,10 +237,25 @@
       "overrides": {
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video", "audio", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["coding", "vision", "document", "audio", "video", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,
@@ -204,7 +271,9 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "gemini-3.6-flash": {
       "model": "gemini-flash/gemini-3-6-flash",
@@ -231,8 +300,12 @@
       "matchingModel": "gemini-embedding-001",
       "overrides": {
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "May 20, 2025",
         "costPer1kInputTokens": 0.00015,
@@ -241,7 +314,9 @@
         "supportsAttachments": false,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-flash-latest": {
       "model": "gemini-flash/gemini-flash-latest",
@@ -249,14 +324,27 @@
       "overrides": {
         "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
         "modalities": {
-          "input": ["text", "image", "video", "audio", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.009,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "minimal"
         }
       }
@@ -266,14 +354,25 @@
       "matchingModel": "gemini-flash-lite-latest",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "video", "audio", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0015
       },
-      "unset": ["contextComplexity", "supportsResponseFormat"]
+      "unset": [
+        "contextComplexity",
+        "supportsResponseFormat"
+      ]
     },
     "gemini-3.8-flash": {
       "model": "gemini-flash/gemini-3-8-flash",
@@ -284,7 +383,9 @@
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
       },
-      "unset": ["knowledgeCutoffDate"]
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     }
   }
 }

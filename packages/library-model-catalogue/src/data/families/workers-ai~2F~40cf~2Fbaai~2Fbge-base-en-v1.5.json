@@ -3,10 +3,16 @@
     "contextWindow": 128000,
     "maxTokens": 16384,
     "modalities": {
-      "input": ["embedding"],
-      "output": ["embedding"]
+      "input": [
+        "embedding"
+      ],
+      "output": [
+        "embedding"
+      ]
     },
-    "strengths": ["search"],
+    "strengths": [
+      "search"
+    ],
     "contextComplexity": 3,
     "reliability": 5,
     "releaseDate": "April 3, 2025",

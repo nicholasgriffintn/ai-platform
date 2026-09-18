@@ -3,7 +3,8 @@
     "openWeights": false,
     "contextWindow": 0,
     "maxTokens": 0,
-    "supportsToolCalls": false
+    "supportsToolCalls": false,
+    "supportsTemperature": false
   },
   "description": "Image model for prompt-driven generation, editing, and visual design workflows",
   "models": {
@@ -12,12 +13,17 @@
         "name": "chatgpt-image-latest",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
         "releaseDate": "December 16, 2025",
-        "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsAttachments": true
       }
     },
     "gpt-image-1": {
@@ -47,14 +53,19 @@
       "defaults": {
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "November 25, 2025",
         "supportsAttachments": true,
-        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -99,14 +110,18 @@
       "defaults": {
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
         },
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "April 21, 2026",
         "supportsAttachments": true,
-        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -129,26 +144,14 @@
       "defaults": {
         "name": "GPT Image 2.5 Flare",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "modalities": {
-          "input": ["text"],
-          "output": ["image"]
-        },
-        "releaseDate": "September 8, 2026",
-        "supportsAttachments": false,
-        "supportsTemperature": true
+        "releaseDate": "September 8, 2026"
       }
     },
     "gpt-image-2-5-sunburst": {
       "defaults": {
         "name": "GPT Image 2.5 Sunburst",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "modalities": {
-          "input": ["text"],
-          "output": ["image"]
-        },
-        "releaseDate": "September 8, 2026",
-        "supportsAttachments": false,
-        "supportsTemperature": true
+        "releaseDate": "September 8, 2026"
       }
     }
   }

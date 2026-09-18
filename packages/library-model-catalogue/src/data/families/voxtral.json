@@ -15,8 +15,13 @@
         "contextWindow": 32768,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["audio", "text"],
-          "output": ["text"]
+          "input": [
+            "audio",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsResponseFormat": true
       }
@@ -29,8 +34,12 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["speech"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "speech"
+          ]
         },
         "releaseDate": "February 1, 2026",
         "supportsToolCalls": false,
@@ -46,8 +55,12 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
         "releaseDate": "March 1, 2026",
         "supportsToolCalls": false,
@@ -70,8 +83,12 @@
         "contextWindow": 32000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text"],
-          "output": ["speech"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "speech"
+          ]
         }
       }
     }

@@ -21,8 +21,12 @@
       "matchingModel": "k3",
       "overrides": {
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0,

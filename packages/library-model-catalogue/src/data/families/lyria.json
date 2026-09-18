@@ -4,8 +4,14 @@
     "contextWindow": 1048576,
     "maxTokens": 65536,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text", "audio"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text",
+        "audio"
+      ]
     },
     "releaseDate": "March 25, 2026",
     "supportsToolCalls": false,

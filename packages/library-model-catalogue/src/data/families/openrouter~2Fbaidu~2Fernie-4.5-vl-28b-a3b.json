@@ -3,8 +3,13 @@
     "contextWindow": 30000,
     "maxTokens": 8000,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "knowledgeCutoffDate": "March 31, 2025",
     "releaseDate": "August 12, 2025",
@@ -13,7 +18,10 @@
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     }
   },

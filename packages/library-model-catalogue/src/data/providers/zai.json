@@ -11,7 +11,12 @@
       "overrides": {
         "contextWindow": 204800,
         "maxTokens": 131072,
-        "strengths": ["coding", "reasoning", "agents", "tool_use"],
+        "strengths": [
+          "coding",
+          "reasoning",
+          "agents",
+          "tool_use"
+        ],
         "speed": 4,
         "lastUpdated": "December 22, 2025",
         "costPer1kInputTokens": 0.0006,
@@ -24,7 +29,12 @@
       "overrides": {
         "name": "GLM 5",
         "contextWindow": 204800,
-        "strengths": ["coding", "reasoning", "agents", "tool_use"],
+        "strengths": [
+          "coding",
+          "reasoning",
+          "agents",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.001,
@@ -42,7 +52,9 @@
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0022
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "glm-4.5-air": {
       "model": "glm-air/glm-4-5-air",
@@ -63,7 +75,9 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "glm-4.5v": {
       "model": "glm/glm-4-5v",
@@ -72,17 +86,30 @@
         "name": "GLM-4.5V",
         "contextWindow": 64000,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "speed": 2,
         "lastUpdated": "August 11, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0018,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "glm-4.6": {
       "model": "glm/glm-4-6",
@@ -97,7 +124,9 @@
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0022
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "glm-4.6v": {
       "model": "glm/glm-4-6v",
@@ -106,17 +135,30 @@
         "contextWindow": 128000,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "December 8, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "glm-4.7-flash": {
       "model": "glm-flash/glm-4-7-flash",
@@ -128,7 +170,9 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "glm-4.7-flashx": {
       "model": "glm-flash/glm-4-7-flashx",
@@ -141,7 +185,9 @@
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0004
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "glm-5-turbo": {
       "model": "glm/glm-5-turbo",
@@ -178,7 +224,10 @@
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "max"],
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -188,7 +237,6 @@
       "matchingModel": "glm-5.3",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044
@@ -200,8 +248,15 @@
       "overrides": {
         "contextWindow": 1000000,
         "modalities": {
-          "input": ["text", "image", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.000075,
@@ -217,16 +272,30 @@
         "contextWindow": 200000,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "video", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "tool_use"
+        ],
         "lastUpdated": "April 1, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.004,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     }
   }
 }

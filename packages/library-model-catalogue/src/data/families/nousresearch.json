@@ -2,8 +2,12 @@
   "defaults": {
     "openWeights": true,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsResponseFormat": true,
     "supportsAttachments": false,
@@ -52,7 +56,10 @@
         "releaseDate": "December 29, 2025",
         "supportsToolCalls": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }

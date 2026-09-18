@@ -15,7 +15,9 @@
         "costPer1kOutputTokens": 0.000912,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "green-s": {
       "model": "greenpt/green-s/green-s",
@@ -27,7 +29,9 @@
         "supportsToolCalls": false,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "deepseek-v4-flash-0731": {
       "model": "deepseek-flash/deepseek-v4-flash-0731",
@@ -37,7 +41,13 @@
         "costPer1kInputTokens": 0.0001596,
         "costPer1kOutputTokens": 0.000399,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -55,7 +65,9 @@
         "costPer1kInputTokens": 0.00057,
         "costPer1kOutputTokens": 0.002736
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemma-3-27b-it": {
       "model": "gemma/gemma-3-27b",
@@ -91,7 +103,13 @@
         "costPer1kInputTokens": 0.001254,
         "costPer1kOutputTokens": 0.005016,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -183,10 +201,19 @@
       "overrides": {
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
@@ -204,7 +231,9 @@
         "costPer1kOutputTokens": 0.000912,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "green-r": {
       "model": "gpt-oss/green-r",
@@ -236,7 +265,9 @@
         "supportsToolCalls": false,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "holo2-30b-a3b": {
       "model": "greenpt/holo2-30b-a3b/holo2-30b-a3b",
@@ -256,17 +287,32 @@
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.0007524,
         "costPer1kOutputTokens": 0.004275,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -276,17 +322,30 @@
       "matchingModel": "kimi-k2.7-code",
       "overrides": {
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use", "coding"],
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
         "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.0009006,
         "costPer1kOutputTokens": 0.004389,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -301,7 +360,13 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -317,7 +382,9 @@
         "costPer1kInputTokens": 0.001254,
         "costPer1kOutputTokens": 0.001254
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "minimax-m2.5": {
       "model": "minimax/minimax-m2-5",
@@ -330,11 +397,19 @@
         "costPer1kInputTokens": 0.0001938,
         "costPer1kOutputTokens": 0.001129,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "mistral-medium-3.5-128b": {
       "model": "mistral-medium/mistral-medium-3-5",
@@ -361,7 +436,9 @@
         "costPer1kOutputTokens": 0.000456,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "pixtral-12b-2409": {
       "model": "pixtral/pixtral-12b",
@@ -373,7 +450,11 @@
         "costPer1kOutputTokens": 0.000285,
         "supportsAttachments": true
       },
-      "unset": ["reliability", "artificialAnalysis", "supportsResponseFormat"]
+      "unset": [
+        "reliability",
+        "artificialAnalysis",
+        "supportsResponseFormat"
+      ]
     },
     "qwen3-235b-a22b-instruct-2507": {
       "model": "qwen/qwen3-235b-a22b-instruct-2507",
@@ -401,7 +482,9 @@
         "costPer1kInputTokens": 0.000285,
         "costPer1kOutputTokens": 0.001083
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3.5-397b-a17b": {
       "model": "qwen/qwen3-5-397b-a17b",
@@ -411,17 +494,29 @@
         "description": "Large open Qwen multimodal MoE for visual agents and long technical tasks",
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "speed": 2,
         "lastUpdated": "February 15, 2026",
         "costPer1kInputTokens": 0.000798,
         "costPer1kOutputTokens": 0.004959,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -434,17 +529,32 @@
         "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 4,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.000342,
         "costPer1kOutputTokens": 0.002052,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -470,7 +580,13 @@
         "costPer1kOutputTokens": 0.00127776,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -480,12 +596,17 @@
       "matchingModel": "glm-5.3",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00127754,
         "costPer1kOutputTokens": 0.00511016,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -496,14 +617,24 @@
       "overrides": {
         "contextWindow": 1000000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.000127754,
         "costPer1kOutputTokens": 0.000511016,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }

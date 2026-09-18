@@ -3,8 +3,12 @@
     "contextWindow": 256000,
     "maxTokens": 4096,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "contextComplexity": 3,
     "knowledgeCutoffDate": "August 2024",
@@ -21,7 +25,10 @@
         "description": "Jambda Instruct is an aligned version of Jamba with additional training, chat capabilities, and safety guardrails to make it suitable for immediate and secure enterprise use.",
         "contextWindow": 128000,
         "maxTokens": 8000,
-        "strengths": ["summarization", "analysis"],
+        "strengths": [
+          "summarization",
+          "analysis"
+        ],
         "reliability": 4
       }
     },
@@ -29,7 +36,11 @@
       "defaults": {
         "name": "Jamba 1.5 Large",
         "description": "Jamba 1.5 Large (94B active/398B total) is built for superior long context handling, speed, and quality. They mark the first time a non-Transformer model has been successfully scaled to the quality and strength of the market's leading models.",
-        "strengths": ["analysis", "reasoning", "tool_use"],
+        "strengths": [
+          "analysis",
+          "reasoning",
+          "tool_use"
+        ],
         "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": 5.1,
@@ -43,7 +54,10 @@
       "defaults": {
         "name": "Jamba 1.5 Mini",
         "description": "Jamba 1.5 Mini (12B active/52B total) is built for superior long context handling, speed, and quality. They mark the first time a non-Transformer model has been successfully scaled to the quality and strength of the market's leading models.",
-        "strengths": ["analysis", "tool_use"],
+        "strengths": [
+          "analysis",
+          "tool_use"
+        ],
         "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": 2.7,

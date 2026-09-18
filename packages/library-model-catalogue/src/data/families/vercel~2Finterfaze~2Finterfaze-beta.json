@@ -4,15 +4,23 @@
     "contextWindow": 1000000,
     "maxTokens": 32000,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "releaseDate": "October 7, 2025",
     "supportsToolCalls": false,
     "supportsAttachments": false,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["low", "medium", "high"],
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
       "defaultEffort": "low"
     }
   },

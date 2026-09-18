@@ -18,17 +18,28 @@
         "supportsAttachments": false,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "ghcopilot/anthropic/claude-3.5-sonnet": {
       "model": "claude/claude-sonnet-3-5",
       "matchingModel": "claude-3.5-sonnet",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "October 22, 2024",
@@ -42,7 +53,9 @@
           "intelligenceIndexVersion": 4.1
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "ghcopilot/google/gemini-2.0-flash-001": {
       "model": "gemini/gemini-2-0-flash",
@@ -50,25 +63,45 @@
       "overrides": {
         "contextWindow": 1000000,
         "modalities": {
-          "input": ["text", "image", "audio", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "audio", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "June 2024",
         "releaseDate": "December 11, 2024",
         "lastUpdated": "December 11, 2024",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "ghcopilot/anthropic/claude-opus-4.1": {
       "model": "claude-opus/claude-opus-4-1",
       "matchingModel": "claude-opus-4.1",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 2025",
         "lastUpdated": "August 5, 2025"
@@ -87,7 +120,9 @@
       "overrides": {
         "lastUpdated": "February 19, 2025"
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "ghcopilot/anthropic/claude-3.7-sonnet": {
       "model": "claude/claude-sonnet-3-7",
@@ -95,10 +130,19 @@
       "overrides": {
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2024",
@@ -112,7 +156,9 @@
           "intelligenceIndexVersion": 4.1
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "ghcopilot/google/gemini-2.5-pro": {
       "model": "gemini-pro/gemini-2-5-pro",
@@ -121,10 +167,23 @@
         "contextWindow": 128000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "audio", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "audio", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.00125,
@@ -138,8 +197,13 @@
         "contextWindow": 80000,
         "maxTokens": 16000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 2025",
         "lastUpdated": "May 22, 2025",
@@ -166,7 +230,9 @@
         "supportsAttachments": false,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "ghcopilot/openai/gpt-4.1": {
       "model": "gpt/gpt-4-1",
@@ -175,10 +241,19 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "speed": 4,
         "lastUpdated": "April 14, 2025",
@@ -192,15 +267,23 @@
       "overrides": {
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 4,
         "lastUpdated": "May 13, 2024",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       },
-      "unset": ["openWeights", "supportsResponseFormat"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "ghcopilot/openai/o3": {
       "model": "github-copilot/o3/o3-preview",
@@ -213,21 +296,30 @@
         "supportsParallelToolCalls": false,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "ghcopilot/anthropic/claude-haiku-4.5": {
       "model": "claude-haiku/claude-haiku-4-5-latest",
       "matchingModel": "claude-haiku-4.5",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "October 15, 2025",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "ghcopilot/anthropic/claude-opus-4.5": {
       "model": "claude-opus/claude-opus-4-5",
@@ -235,8 +327,13 @@
       "overrides": {
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 3,
         "knowledgeCutoffDate": "May 2025",
@@ -244,11 +341,17 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["supportsTopP", "supportsResponseFormat"]
+      "unset": [
+        "supportsTopP",
+        "supportsResponseFormat"
+      ]
     },
     "ghcopilot/anthropic/claude-opus-4.6": {
       "model": "claude-opus/claude-opus-4-6",
@@ -257,8 +360,13 @@
         "contextWindow": 200000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 4,
         "speed": 2,
@@ -266,11 +374,19 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       },
-      "unset": ["supportsTopP", "supportsResponseFormat"]
+      "unset": [
+        "supportsTopP",
+        "supportsResponseFormat"
+      ]
     },
     "ghcopilot/anthropic/claude-sonnet-4.5": {
       "model": "claude-sonnet/claude-sonnet-4-5",
@@ -279,14 +395,21 @@
         "contextWindow": 200000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "September 29, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "ghcopilot/google/gemini-3-flash-preview": {
       "model": "gemini-flash/gemini-3-flash",
@@ -295,16 +418,32 @@
         "contextWindow": 128000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "audio", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "audio", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "speed": 5,
         "lastUpdated": "December 17, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -322,7 +461,11 @@
         "costPer1kOutputTokens": 0.002,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -336,7 +479,10 @@
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -351,7 +497,10 @@
         "costPer1kOutputTokens": 0.014,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -370,11 +519,17 @@
         "costPer1kOutputTokens": 0,
         "supportsAttachments": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["openWeights", "supportsResponseFormat"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "claude-opus-4.7": {
       "model": "claude-opus/claude-opus-4-7",
@@ -383,8 +538,13 @@
         "contextWindow": 200000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 4,
         "speed": 2,
@@ -393,7 +553,9 @@
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "claude-sonnet-4.6": {
       "model": "claude-sonnet/claude-sonnet-4-6",
@@ -402,8 +564,13 @@
         "contextWindow": 200000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 4,
         "speed": 2,
@@ -411,11 +578,18 @@
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-3.1-pro-preview": {
       "model": "gemini-pro/gemini-3-1-pro-preview",
@@ -424,10 +598,20 @@
         "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "February 19, 2026",
         "costPer1kInputTokens": 0.002,
@@ -440,15 +624,25 @@
       "overrides": {
         "name": "GPT-5.3-Codex",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 2,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -458,8 +652,13 @@
       "matchingModel": "gpt-5.4",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 4,
         "lastUpdated": "March 5, 2026",
@@ -472,8 +671,13 @@
       "matchingModel": "gpt-5.4-mini",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 4,
         "lastUpdated": "March 17, 2026",
@@ -486,8 +690,13 @@
       "matchingModel": "gpt-5.5",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 3,
         "lastUpdated": "April 23, 2026",
@@ -503,10 +712,24 @@
         "contextWindow": 200000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "audio", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["coding", "vision", "audio", "video", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,
@@ -520,8 +743,13 @@
         "contextWindow": 200000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 4,
         "speed": 2,
@@ -530,7 +758,9 @@
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "claude-sonnet-4": {
       "model": "claude-sonnet/claude-sonnet-4-latest",
@@ -543,11 +773,16 @@
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gpt-5.4-nano": {
       "model": "gpt-nano/gpt-5-4-nano",
@@ -555,15 +790,23 @@
       "overrides": {
         "name": "GPT-5.4 nano",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 4,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00125,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -587,7 +830,9 @@
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "claude-sonnet-5": {
       "model": "claude-sonnet/claude-sonnet-5",
@@ -598,7 +843,9 @@
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "kimi-k2.7-code": {
       "model": "kimi-k2/kimi-k2-7-code",
@@ -607,10 +854,20 @@
         "contextWindow": 256000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use", "coding"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
@@ -668,7 +925,9 @@
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "gemini-3.6-flash": {
       "model": "gemini-flash/gemini-3-6-flash",
@@ -677,8 +936,14 @@
         "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.00075,
@@ -691,8 +956,13 @@
       "overrides": {
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "July 8, 2026",
         "costPer1kInputTokens": 0.002,
@@ -717,7 +987,9 @@
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0012
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "gemini-3.7-flash": {
       "model": "gemini-flash/gemini-3-7-flash",
@@ -727,8 +999,13 @@
         "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.00075,
@@ -754,7 +1031,9 @@
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-3.8-flash": {
       "model": "gemini-flash/gemini-3-8-flash",
@@ -764,14 +1043,21 @@
         "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
       },
-      "unset": ["knowledgeCutoffDate"]
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "gpt-6-astra": {
       "model": "gpt-astra/gpt-6-astra",

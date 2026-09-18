@@ -1,10 +1,18 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text", "audio"],
-      "output": ["audio"]
+      "input": [
+        "text",
+        "audio"
+      ],
+      "output": [
+        "audio"
+      ]
     },
-    "strengths": ["audio", "document"],
+    "strengths": [
+      "audio",
+      "document"
+    ],
     "contextComplexity": 4,
     "reliability": 3,
     "supportsToolCalls": false,

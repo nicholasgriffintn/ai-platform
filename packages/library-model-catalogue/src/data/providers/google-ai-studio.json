@@ -34,7 +34,12 @@
         "supportsCodeExecution": true,
         "supportsWebFetch": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -44,11 +49,24 @@
       "matchingModel": "gemini-flash-lite-latest",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "audio", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "isFree": true,
-        "strengths": ["coding", "analysis", "math", "multilingual"],
+        "strengths": [
+          "coding",
+          "analysis",
+          "math",
+          "multilingual"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "speed": 2,
@@ -138,11 +156,16 @@
         "costPer1kOutputTokens": 0.03,
         "supportsToolCalls": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-2.5-flash-image-preview": {
       "model": "gemini/gemini-2-5-flash-image-preview",
@@ -246,7 +269,9 @@
         "supportsAttachments": false,
         "supportsAudio": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-3.1-flash-tts-preview": {
       "model": "gemini-flash/gemini-3-1-flash-tts-preview",
@@ -260,7 +285,9 @@
         "supportsAttachments": false,
         "supportsAudio": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-2.5-pro": {
       "model": "gemini-pro/gemini-2-5-pro",
@@ -289,7 +316,9 @@
         "supportsCodeExecution": true,
         "supportsWebFetch": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["thinking"],
+          "supportedEffortLevels": [
+            "thinking"
+          ],
           "defaultEffort": "thinking"
         }
       }
@@ -326,7 +355,9 @@
         "supportsAttachments": false,
         "supportsAudio": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-embedding-001": {
       "model": "gemini/gemini-embedding-001",
@@ -347,8 +378,16 @@
       "overrides": {
         "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
         "modalities": {
-          "input": ["text", "image", "audio", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "isFree": true,
         "lastUpdated": "August 13, 2026",
@@ -359,7 +398,11 @@
         "supportsCodeExecution": true,
         "supportsWebFetch": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -411,11 +454,24 @@
         "contextWindow": 65536,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
         "isFree": true,
-        "strengths": ["vision", "document", "search", "image", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "search",
+          "image",
+          "creative"
+        ],
         "contextComplexity": 4,
         "releaseDate": "February 26, 2026",
         "lastUpdated": "February 26, 2026",
@@ -431,8 +487,16 @@
       "overrides": {
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video", "audio", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "isFree": true,
         "strengths": [
@@ -484,7 +548,11 @@
         "supportsUrlContext": true,
         "supportsWebFetch": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -500,7 +568,11 @@
         "supportsUrlContext": true,
         "supportsWebFetch": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -581,7 +653,11 @@
         "name": "Gemma 4 31B",
         "maxTokens": 32768,
         "isFree": true,
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "speed": 2,
@@ -602,8 +678,16 @@
       "overrides": {
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video", "audio", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "isFree": true,
         "strengths": [
@@ -632,7 +716,12 @@
         "supportsCodeExecution": true,
         "supportsWebFetch": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "medium"
         }
       }
@@ -643,14 +732,21 @@
       "overrides": {
         "contextWindow": 131072,
         "isFree": true,
-        "strengths": ["vision", "document", "image", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
         "releaseDate": "November 20, 2025",
         "lastUpdated": "November 20, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.12,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemma-4-E2B-it": {
       "model": "gemma/gemma-4-e2b-it",
@@ -658,13 +754,22 @@
       "overrides": {
         "description": "Gemma 4 E2B IT accepts text, image, audio and produces text.",
         "modalities": {
-          "input": ["text", "image", "audio"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "isFree": true,
         "lastUpdated": "April 2, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -684,8 +789,14 @@
         "contextWindow": 131072,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["video"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.0015,
@@ -707,7 +818,9 @@
         "supportsCodeExecution": true,
         "supportsWebFetch": true
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "gemini-3.6-flash": {
       "model": "gemini-flash/gemini-3-6-flash",
@@ -731,7 +844,9 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "deep-research-preview-04-2026": {
       "model": "gemini-pro/deep-research-preview-apr-21-2026",
@@ -741,7 +856,9 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-2.5-computer-use-preview-10-2025": {
       "model": "gemini-pro/gemini-2-5-computer-use-preview-10-2025",
@@ -751,24 +868,36 @@
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-3-pro-image": {
       "model": "gemini-pro/nano-banana-pro",
       "matchingModel": "gemini-3-pro-image",
       "overrides": {
         "contextWindow": 131072,
-        "strengths": ["vision", "document", "image", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.12,
         "supportsToolCalls": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-3.1-flash-image": {
       "model": "gemini-flash/nano-banana-2",
@@ -778,17 +907,33 @@
         "contextWindow": 65536,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video", "pdf"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
-        "strengths": ["vision", "document", "video", "image", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "image",
+          "creative"
+        ],
         "isFeatured": true,
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.06,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemini-3.1-flash-lite-image": {
       "model": "gemini-flash-lite/nano-banana-2-lite",
@@ -798,14 +943,22 @@
         "description": "Fastest, most cost-efficient Gemini image model for high-volume 1K generation and editing",
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.03
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "gemini-3.5-live-translate-preview": {
       "model": "gemini-pro/gemini-3-5-live-translate-preview",
@@ -817,7 +970,10 @@
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
-      "unset": ["reasoningConfig", "supportsResponseFormat"]
+      "unset": [
+        "reasoningConfig",
+        "supportsResponseFormat"
+      ]
     },
     "gemini-embedding-2": {
       "model": "gemini/gemini-embedding-2",
@@ -826,8 +982,16 @@
         "contextWindow": 8192,
         "maxTokens": 1,
         "modalities": {
-          "input": ["text", "image", "audio", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.0002,
@@ -885,10 +1049,20 @@
         "contextWindow": 480,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["video"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
         },
-        "strengths": ["vision", "document", "video", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "creative"
+        ],
         "contextComplexity": 2,
         "lastUpdated": "January 2026",
         "supportsToolCalls": false,
@@ -944,7 +1118,9 @@
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
       },
-      "unset": ["knowledgeCutoffDate"]
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     }
   }
 }

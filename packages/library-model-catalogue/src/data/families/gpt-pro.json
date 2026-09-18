@@ -4,17 +4,31 @@
     "contextWindow": 400000,
     "maxTokens": 128000,
     "modalities": {
-      "input": ["text", "image", "pdf"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["vision", "document", "tool_use"],
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
     "knowledgeCutoffDate": "August 31, 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": false,
     "reasoningConfig": {
-      "supportedEffortLevels": ["medium", "high", "xhigh"],
+      "supportedEffortLevels": [
+        "medium",
+        "high",
+        "xhigh"
+      ],
       "defaultEffort": "medium"
     }
   },
@@ -42,8 +56,13 @@
         "name": "GPT-5.2 Pro",
         "description": "Higher-accuracy GPT-5.2 variant for tougher reasoning and review workflows",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "December 11, 2025"
       }
@@ -86,13 +105,20 @@
         "description": "Higher-accuracy GPT-5 tier for tough analysis, coding reviews, and planning",
         "maxTokens": 272000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "October 6, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["high"],
+          "supportedEffortLevels": [
+            "high"
+          ],
           "defaultEffort": "high"
         }
       }

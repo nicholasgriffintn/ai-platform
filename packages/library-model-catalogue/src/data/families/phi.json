@@ -4,8 +4,12 @@
     "contextWindow": 128000,
     "maxTokens": 4096,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "knowledgeCutoffDate": "October 2023",
     "supportsToolCalls": false,
@@ -93,7 +97,9 @@
       "defaults": {
         "name": "Phi-4-mini",
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "December 11, 2024",
@@ -130,7 +136,10 @@
         "releaseDate": "December 11, 2024",
         "supportsToolCalls": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -140,10 +149,20 @@
         "name": "Phi-4-multimodal",
         "description": "Multimodal model for analyzing text, images, documents, and rich media",
         "modalities": {
-          "input": ["text", "image", "audio"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "audio", "document"],
+        "strengths": [
+          "vision",
+          "audio",
+          "document"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "December 11, 2024",
@@ -163,7 +182,10 @@
         "contextWindow": 32000,
         "releaseDate": "December 11, 2024",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -175,7 +197,10 @@
         "contextWindow": 32000,
         "releaseDate": "December 11, 2024",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }

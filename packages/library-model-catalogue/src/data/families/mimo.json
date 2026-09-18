@@ -2,8 +2,12 @@
   "defaults": {
     "openWeights": true,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "reliability": 2,
     "knowledgeCutoffDate": "December 2024",
@@ -11,7 +15,10 @@
     "supportsAttachments": false,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     }
   },
@@ -24,10 +31,23 @@
         "contextWindow": 1050000,
         "maxTokens": 131100,
         "modalities": {
-          "input": ["text", "image", "audio", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "audio", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "releaseDate": "April 22, 2026",
         "supportsAttachments": true,
@@ -44,7 +64,13 @@
         "name": "MiMo-V2.5",
         "description": "Open MiMo model for multimodal coding agents and long-context automation",
         "maxTokens": 131072,
-        "strengths": ["vision", "audio", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "releaseDate": "April 22, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
@@ -86,7 +112,9 @@
       "defaults": {
         "description": "MiMo flash model for fast multimodal assistance and agent workflows",
         "contextWindow": 262144,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "reliability": 1,
         "releaseDate": "December 16, 2025",
         "artificialAnalysis": {
@@ -115,7 +143,9 @@
         "description": "MiMo V2 Pro accepts text and produces text.",
         "contextWindow": 1000000,
         "maxTokens": 128000,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "releaseDate": "March 18, 2026",
         "artificialAnalysis": {

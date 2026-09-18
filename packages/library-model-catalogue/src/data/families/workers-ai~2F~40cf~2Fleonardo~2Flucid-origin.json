@@ -1,10 +1,16 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["creative"],
+    "strengths": [
+      "creative"
+    ],
     "contextComplexity": 4,
     "reliability": 4
   },

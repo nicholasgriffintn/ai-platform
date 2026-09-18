@@ -1,10 +1,16 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["audio"],
-      "output": ["text"]
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["transcription"],
+    "strengths": [
+      "transcription"
+    ],
     "releaseDate": "May 22, 2026"
   },
   "description": "The cartesia/ink 2 family includes models that produce text.",

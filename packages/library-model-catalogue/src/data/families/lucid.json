@@ -4,8 +4,12 @@
     "contextWindow": 250000,
     "maxTokens": 60000,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "knowledgeCutoffDate": "August 1, 2025",
     "releaseDate": "September 1, 2025",
@@ -13,7 +17,10 @@
     "supportsAttachments": true,
     "supportsTemperature": false,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     }
   },

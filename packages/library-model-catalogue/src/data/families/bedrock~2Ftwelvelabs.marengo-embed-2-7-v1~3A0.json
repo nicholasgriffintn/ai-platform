@@ -3,10 +3,21 @@
     "contextWindow": 8192,
     "maxTokens": 512,
     "modalities": {
-      "input": ["text", "image", "audio", "video"],
-      "output": ["embedding"]
+      "input": [
+        "text",
+        "image",
+        "audio",
+        "video"
+      ],
+      "output": [
+        "embedding"
+      ]
     },
-    "strengths": ["vision", "search", "analysis"],
+    "strengths": [
+      "vision",
+      "search",
+      "analysis"
+    ],
     "contextComplexity": 3,
     "reliability": 4,
     "multimodal": true,

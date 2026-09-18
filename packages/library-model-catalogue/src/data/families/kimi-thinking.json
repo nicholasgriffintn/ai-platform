@@ -4,7 +4,10 @@
     "supportsToolCalls": true,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     }
   },
@@ -17,8 +20,13 @@
         "contextWindow": 262000,
         "maxTokens": 262000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 17, 2026",
         "supportsAttachments": true
@@ -31,8 +39,13 @@
         "contextWindow": 262000,
         "maxTokens": 262000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 17, 2026",
         "supportsAttachments": true
@@ -44,10 +57,16 @@
         "description": "Thinking Kimi model for slower research passes, planning, and hard technical questions",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
@@ -68,8 +87,12 @@
         "contextWindow": 262144,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "November 6, 2025",

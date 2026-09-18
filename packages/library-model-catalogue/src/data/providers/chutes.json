@@ -14,7 +14,9 @@
         "costPer1kInputTokens": 0.00002,
         "costPer1kOutputTokens": 0.00008
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "chutesai/Mistral-Small-3.2-24B-Instruct-2506": {
       "model": "mistral/mistral-small-3-2-24b-instruct-2506",
@@ -39,7 +41,10 @@
         "costPer1kInputTokens": 0.00018,
         "costPer1kOutputTokens": 0.00072
       },
-      "unset": ["openWeights", "supportsResponseFormat"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "deepseek-ai/DeepSeek-R1-0528": {
       "model": "deepseek/deepseek-r1-0528",
@@ -54,7 +59,9 @@
         "costPer1kInputTokens": 0.00018,
         "costPer1kOutputTokens": 0.00072
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "deepseek-ai/DeepSeek-R1-Distill-Llama-70B": {
       "model": "deepseek-thinking/deepseek-r1-distill-llama-70b",
@@ -74,7 +81,9 @@
         "costPer1kInputTokens": 0.00002,
         "costPer1kOutputTokens": 0.00007
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "moonshotai/Kimi-K2-Instruct-75k": {
       "model": "kimi/kimi-k2-instruct",
@@ -88,7 +97,10 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00059
       },
-      "unset": ["knowledgeCutoffDate", "supportsResponseFormat"]
+      "unset": [
+        "knowledgeCutoffDate",
+        "supportsResponseFormat"
+      ]
     },
     "Qwen/Qwen3-30B-A3B": {
       "model": "qwen/qwen3-30b-a3b",
@@ -117,7 +129,10 @@
         "costPer1kInputTokens": 0.000078,
         "costPer1kOutputTokens": 0.000312
       },
-      "unset": ["openWeights", "supportsResponseFormat"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8": {
       "model": "qwen/qwen3-coder-480b-a35b-instruct-fp8",
@@ -128,7 +143,9 @@
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0008
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "Qwen/Qwen3-235B-A22B-Thinking-2507": {
       "model": "qwen/qwen3-235b-a22b-thinking-2507",
@@ -171,7 +188,9 @@
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.00022
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "zai-org/GLM-4.5-FP8": {
       "model": "glm/glm-4-5-fp8",
@@ -181,7 +200,9 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "chutesai/Mistral-Small-3.1-24B-Instruct-2503": {
       "model": "mistral/mistral-small-3-1-24b-instruct-2503",
@@ -200,7 +221,10 @@
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.00215
       },
-      "unset": ["strengths", "reliability"]
+      "unset": [
+        "strengths",
+        "reliability"
+      ]
     },
     "deepseek-ai/DeepSeek-R1-TEE": {
       "model": "deepseek/deepseek-r1-tee",
@@ -225,7 +249,10 @@
         "costPer1kOutputTokens": 0.0012,
         "supportsToolCalls": false
       },
-      "unset": ["openWeights", "strengths"]
+      "unset": [
+        "openWeights",
+        "strengths"
+      ]
     },
     "deepseek-ai/DeepSeek-V3-0324-TEE": {
       "model": "deepseek/deepseek-v3-0324-tee",
@@ -281,7 +308,10 @@
         "costPer1kInputTokens": 0.00027,
         "costPer1kOutputTokens": 0.00112
       },
-      "unset": ["openWeights", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "reasoningConfig"
+      ]
     },
     "miromind-ai/MiroThinker-v1.5-235B": {
       "model": "chutes/miromind-ai/MiroThinker-v1.5-235B/mirothinker-v1-5-235b",
@@ -388,7 +418,10 @@
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00024
       },
-      "unset": ["openWeights", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "reasoningConfig"
+      ]
     },
     "openai/gpt-oss-120b-TEE": {
       "model": "gpt-oss/gpt-oss-120b-tee",
@@ -410,7 +443,9 @@
         "costPer1kInputTokens": 0.00002,
         "costPer1kOutputTokens": 0.0001
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "OpenGVLab/InternVL3-78B-TEE": {
       "model": "chutes/OpenGVLab/InternVL3-78B-TEE/internvl3-78b-tee",
@@ -480,7 +515,9 @@
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.00022
       },
-      "unset": ["reasoningConfig"]
+      "unset": [
+        "reasoningConfig"
+      ]
     },
     "Qwen/Qwen3-235B-A22B": {
       "model": "qwen/qwen3-235b-a22b",
@@ -495,7 +532,11 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
       },
-      "unset": ["openWeights", "knowledgeCutoffDate", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "knowledgeCutoffDate",
+        "reasoningConfig"
+      ]
     },
     "Qwen/Qwen3-235B-A22B-Instruct-2507-TEE": {
       "model": "qwen/qwen3-235b-a22b-instruct-2507-tee",
@@ -529,7 +570,11 @@
         "costPer1kInputTokens": 0.00008,
         "costPer1kOutputTokens": 0.00024
       },
-      "unset": ["openWeights", "knowledgeCutoffDate", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "knowledgeCutoffDate",
+        "reasoningConfig"
+      ]
     },
     "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8-TEE": {
       "model": "qwen/qwen3-coder-480b-a35b-instruct-fp8-tee",
@@ -552,7 +597,11 @@
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0003
       },
-      "unset": ["openWeights", "knowledgeCutoffDate", "reasoningConfig"]
+      "unset": [
+        "openWeights",
+        "knowledgeCutoffDate",
+        "reasoningConfig"
+      ]
     },
     "Qwen/Qwen3-Next-80B-A3B-Instruct": {
       "model": "qwen/qwen3-next-80b-a3b-instruct",
@@ -566,21 +615,29 @@
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0008
       },
-      "unset": ["knowledgeCutoffDate"]
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "Qwen/Qwen3-VL-235B-A22B-Instruct": {
       "model": "qwen/qwen3-vl-235b-a22b-instruct",
       "matchingModel": "Qwen/Qwen3-VL-235B-A22B-Instruct",
       "overrides": {
         "maxTokens": 262144,
-        "strengths": ["vision", "tool_use"],
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
         "speed": 3,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
       },
-      "unset": ["openWeights", "knowledgeCutoffDate"]
+      "unset": [
+        "openWeights",
+        "knowledgeCutoffDate"
+      ]
     },
     "Qwen/Qwen3Guard-Gen-0.6B": {
       "model": "qwen/qwen3guard-gen-0-6b",
@@ -707,7 +764,9 @@
         "costPer1kInputTokens": 0.00035,
         "costPer1kOutputTokens": 0.00155
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "zai-org/GLM-4.6-FP8": {
       "model": "glm/glm-4-6-fp8",
@@ -717,7 +776,9 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "zai-org/GLM-4.6-TEE": {
       "model": "glm/glm-4-6-tee",
@@ -727,7 +788,9 @@
         "costPer1kInputTokens": 0.00035,
         "costPer1kOutputTokens": 0.0015
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "zai-org/GLM-4.6V": {
       "model": "glm/glm-4-6v",
@@ -737,8 +800,13 @@
         "contextWindow": 131072,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 3,
         "releaseDate": "December 29, 2025",
@@ -747,7 +815,9 @@
         "costPer1kOutputTokens": 0.0009,
         "supportsAttachments": true
       },
-      "unset": ["knowledgeCutoffDate"]
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "zai-org/GLM-4.7-Flash": {
       "model": "glm/glm-4-7-flash",
@@ -758,7 +828,9 @@
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00035
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "zai-org/GLM-4.7-FP8": {
       "model": "glm/glm-4-7-fp8",
@@ -863,7 +935,9 @@
         "costPer1kOutputTokens": 0.0000136,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "XiaomiMiMo/MiMo-V2-Flash-TEE": {
       "model": "mimo/mimo-v2-flash-tee",
@@ -873,7 +947,10 @@
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00029
       },
-      "unset": ["reliability", "reasoningConfig"]
+      "unset": [
+        "reliability",
+        "reasoningConfig"
+      ]
     },
     "zai-org/GLM-5-TEE": {
       "model": "glm/glm-5-tee",
@@ -923,7 +1000,9 @@
         "costPer1kOutputTokens": 0.0000978,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "zai-org/GLM-5.2-TEE": {
       "model": "glm/glm-5-2-tee",
@@ -943,7 +1022,10 @@
         "costPer1kOutputTokens": 0.0000978,
         "supportsToolCalls": false
       },
-      "unset": ["reasoningConfig", "supportsResponseFormat"]
+      "unset": [
+        "reasoningConfig",
+        "supportsResponseFormat"
+      ]
     },
     "moonshotai/Kimi-K3-TEE": {
       "model": "kimi-k3/kimi-k3-tee",

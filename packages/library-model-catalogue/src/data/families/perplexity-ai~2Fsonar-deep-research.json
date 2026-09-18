@@ -4,8 +4,12 @@
     "contextWindow": 128000,
     "maxTokens": 32768,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "strengths": [
       "search",
@@ -23,7 +27,12 @@
     "supportsAttachments": false,
     "supportsTemperature": false,
     "reasoningConfig": {
-      "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+      "supportedEffortLevels": [
+        "minimal",
+        "low",
+        "medium",
+        "high"
+      ],
       "defaultEffort": "minimal"
     }
   },

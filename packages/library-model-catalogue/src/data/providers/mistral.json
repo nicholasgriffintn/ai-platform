@@ -11,7 +11,11 @@
       "overrides": {
         "deprecated": true
       },
-      "unset": ["supportsToolCalls", "supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "mistral-ocr-latest": {
       "model": "mistral/mistral-ocr-4-1-latest",
@@ -20,7 +24,11 @@
         "hiddenFromDefaultList": true,
         "supportsDocuments": true
       },
-      "unset": ["supportsToolCalls", "supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "mistral-ocr-4-1": {
       "model": "mistral/mistral-ocr-4-1",
@@ -29,7 +37,11 @@
         "hiddenFromDefaultList": true,
         "supportsDocuments": true
       },
-      "unset": ["supportsToolCalls", "supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "leanstral": {
       "model": "leanstral/leanstral-1-5",
@@ -140,7 +152,11 @@
       "matchingModel": "codestral-latest",
       "overrides": {
         "card": "https://www.prompthub.us/models/codestral",
-        "strengths": ["coding", "analysis", "multilingual"],
+        "strengths": [
+          "coding",
+          "analysis",
+          "multilingual"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "speed": 3,
@@ -164,7 +180,11 @@
       "model": "pixtral/pixtral-12b",
       "matchingModel": "pixtral-12b",
       "overrides": {
-        "strengths": ["vision", "analysis", "multilingual"],
+        "strengths": [
+          "vision",
+          "analysis",
+          "multilingual"
+        ],
         "contextComplexity": 3,
         "reliability": 4,
         "speed": 4,
@@ -175,7 +195,9 @@
         "costPer1kOutputTokens": 0.00015,
         "supportsAttachments": true
       },
-      "unset": ["artificialAnalysis"]
+      "unset": [
+        "artificialAnalysis"
+      ]
     },
     "mistral-small": {
       "model": "mistral-small/mistral-small-latest",
@@ -205,7 +227,10 @@
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -240,7 +265,9 @@
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0001
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "ministral-3-3b": {
       "model": "ministral/ministral-3b-latest",
@@ -271,7 +298,9 @@
           "intelligenceIndexVersion": 4.1
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "magistral-medium": {
       "model": "magistral-medium/magistral-medium-latest",
@@ -327,7 +356,9 @@
         "supportsRealtimeSession": true,
         "supportsTemperature": false
       },
-      "unset": ["supportsAttachments"]
+      "unset": [
+        "supportsAttachments"
+      ]
     },
     "mistral-embed": {
       "model": "mistral-embed/mistral-embed",
@@ -349,7 +380,11 @@
       "overrides": {
         "apiOperation": "codestralEmbeddings"
       },
-      "unset": ["supportsToolCalls", "supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "mistral-moderation-latest": {
       "model": "mistral/mistral-moderation",
@@ -357,7 +392,11 @@
       "overrides": {
         "apiOperation": "moderations"
       },
-      "unset": ["supportsToolCalls", "supportsAttachments", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsAttachments",
+        "supportsTemperature"
+      ]
     },
     "voxtral-mini-tts-latest": {
       "model": "voxtral/voxtral-mini-tts-latest",
@@ -379,9 +418,23 @@
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "high",
+            "max"
+          ],
           "defaultEffort": "high"
         }
+      }
+    },
+    "zai-glm-5-3": {
+      "model": "glm/glm-5-3",
+      "matchingModel": "zai-glm-5-3",
+      "overrides": {
+        "contextWindow": 1000000,
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044
       }
     }
   }

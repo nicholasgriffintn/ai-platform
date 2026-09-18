@@ -13,7 +13,9 @@
         "openWeights": true,
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 131072,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "speed": 5,
         "releaseDate": "August 28, 2025",
@@ -21,7 +23,11 @@
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00047,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -39,7 +45,9 @@
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00025
       },
-      "unset": ["knowledgeCutoffDate"]
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "gpt-oss-20b": {
       "model": "gpt/gpt-oss-20b",
@@ -54,11 +62,17 @@
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.00018,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "meta-llama-3_3-70b-instruct": {
       "model": "llama/meta-llama-3-3-70b-instruct",
@@ -140,7 +154,9 @@
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.00026
       },
-      "unset": ["knowledgeCutoffDate"]
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "qwen3.5-397b-a17b": {
       "model": "qwen/qwen3-5-397b-a17b",
@@ -150,10 +166,19 @@
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 2,
         "releaseDate": "May 18, 2026",
         "lastUpdated": "May 18, 2026",
@@ -161,7 +186,12 @@
         "costPer1kOutputTokens": 0.00425,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -179,7 +209,12 @@
         "costPer1kOutputTokens": 0.00018,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -198,7 +233,13 @@
         "costPer1kOutputTokens": 0.00319,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -216,7 +257,9 @@
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3guard-gen-8b": {
       "model": "qwen/qwen3guard-gen-8b",
@@ -228,8 +271,12 @@
         "contextWindow": 32768,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "January 22, 2026",
         "lastUpdated": "January 22, 2026",
@@ -237,7 +284,9 @@
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3.8-27b": {
       "model": "qwen/qwen3-8-27b",
@@ -248,11 +297,17 @@
         "maxTokens": 262144,
         "releaseDate": "September 2, 2026",
         "lastUpdated": "September 2, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
+        "costPer1kInputTokens": 0.00047,
+        "costPer1kOutputTokens": 0.00319,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }

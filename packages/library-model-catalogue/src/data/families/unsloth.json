@@ -15,8 +15,13 @@
         "contextWindow": 131072,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsAttachments": true
       }
@@ -28,8 +33,13 @@
         "contextWindow": 128000,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsToolCalls": true,
         "supportsAttachments": true
@@ -42,8 +52,13 @@
         "contextWindow": 96000,
         "maxTokens": 96000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsAttachments": true
       }
@@ -55,8 +70,12 @@
         "contextWindow": 16384,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "January 27, 2026",
         "supportsResponseFormat": false,
@@ -70,8 +89,12 @@
         "contextWindow": 16384,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "February 12, 2025",
         "supportsAttachments": false
@@ -84,8 +107,12 @@
         "contextWindow": 131072,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsAttachments": false
       }

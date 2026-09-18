@@ -1,10 +1,20 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["audio"],
-      "output": ["text"]
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["ocr", "audio", "analysis", "document", "transcription"],
+    "strengths": [
+      "ocr",
+      "audio",
+      "analysis",
+      "document",
+      "transcription"
+    ],
     "contextComplexity": 4,
     "supportsAttachments": true,
     "artificialAnalysis": {

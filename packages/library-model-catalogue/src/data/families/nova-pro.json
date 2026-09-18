@@ -4,8 +4,14 @@
     "contextWindow": 300000,
     "maxTokens": 10000,
     "modalities": {
-      "input": ["text", "image", "video"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "contextComplexity": 4,
     "reliability": 1,
@@ -30,15 +36,33 @@
         "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "video", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["analysis", "reasoning", "coding", "vision", "math"],
+        "strengths": [
+          "analysis",
+          "reasoning",
+          "coding",
+          "vision",
+          "math"
+        ],
         "contextComplexity": 5,
         "reliability": 4,
         "releaseDate": "December 3, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -54,8 +78,13 @@
         "name": "Nova Pro 1.0",
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         }
       }
     },
@@ -63,21 +92,36 @@
       "defaults": {
         "name": "Nova Pro (APAC)",
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
-        "strengths": ["vision", "video", "document", "tool_use"]
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ]
       }
     },
     "nova-pro-eu": {
       "defaults": {
         "name": "Nova Pro (EU)",
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
-        "strengths": ["vision", "video", "document", "tool_use"]
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ]
       }
     },
     "nova-pro-us": {
       "defaults": {
         "name": "Nova Pro (US)",
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
-        "strengths": ["vision", "video", "document", "tool_use"]
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ]
       }
     }
   }

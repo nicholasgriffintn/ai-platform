@@ -2,14 +2,21 @@
   "defaults": {
     "openWeights": true,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsAttachments": false,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     }
   },
@@ -20,10 +27,17 @@
         "name": "Hailuo 2.3",
         "description": "A high-fidelity video generation model optimized for realistic human motion, cinematic VFX, expressive characters, and strong prompt and style adherence across both text-to-video and image-to-video workflows",
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
-        "strengths": ["creative", "video"],
+        "strengths": [
+          "creative",
+          "video"
+        ],
         "reliability": 4,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -50,8 +64,13 @@
         "contextWindow": 1000192,
         "maxTokens": 900172,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 31, 2024",
         "releaseDate": "January 15, 2025",
@@ -68,8 +87,13 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["video"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "July 30, 2026",
         "supportsToolCalls": false,
@@ -84,8 +108,13 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["video"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "August 27, 2026",
         "supportsToolCalls": false,
@@ -100,7 +129,11 @@
         "maxTokens": 512000,
         "releaseDate": "June 12, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -121,7 +154,9 @@
       "defaults": {
         "name": "MiniMax M2",
         "description": "Efficient open MiniMax model built for coding agents and tool-heavy workflows",
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "October 27, 2025",
@@ -138,7 +173,9 @@
         "description": "Earlier MiniMax agent model for practical coding and productivity tasks",
         "contextWindow": 204800,
         "maxTokens": 131072,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "December 23, 2025",
@@ -175,7 +212,9 @@
       "defaults": {
         "description": "Prior MiniMax coding model for agent workflows, office edits, and automation",
         "contextWindow": 204800,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 12, 2026",
@@ -193,7 +232,9 @@
         "description": "MiniMax M2.5 (free) accepts text and produces text.",
         "contextWindow": 196608,
         "maxTokens": 8192,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "February 12, 2026",
@@ -239,7 +280,9 @@
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 204800,
         "maxTokens": 131072,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "March 18, 2026",
@@ -256,7 +299,9 @@
       "defaults": {
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196608,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "March 18, 2026",
@@ -275,8 +320,13 @@
         "contextWindow": 204800,
         "maxTokens": 131100,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "March 18, 2026",
         "supportsAttachments": true
@@ -307,10 +357,21 @@
         "description": "MiniMax multimodal model for long-context coding, perception, and agent planning",
         "maxTokens": 512000,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "June 1, 2026",
@@ -331,17 +392,34 @@
         "contextWindow": 1048576,
         "maxTokens": 1048576,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 2,
         "releaseDate": "June 1, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -373,10 +451,17 @@
         "name": "Music-1.5",
         "description": "Full-length songs (up to 4 mins) with natural vocals & rich instrumentation",
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
-        "strengths": ["creative", "audio"]
+        "strengths": [
+          "creative",
+          "audio"
+        ]
       }
     }
   }

@@ -4,8 +4,12 @@
     "contextWindow": 128000,
     "maxTokens": 4000,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "knowledgeCutoffDate": "June 1, 2024",
     "supportsToolCalls": true,
@@ -17,7 +21,9 @@
     "command-r": {
       "defaults": {
         "description": "Cohere retrieval model for long-context chat and enterprise RAG workflows",
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "August 30, 2024",

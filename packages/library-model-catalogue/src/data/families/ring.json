@@ -3,10 +3,16 @@
     "openWeights": false,
     "contextWindow": 262144,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["tool_use"],
+    "strengths": [
+      "tool_use"
+    ],
     "contextComplexity": 4,
     "reliability": 1,
     "releaseDate": "May 8, 2026",

@@ -4,10 +4,19 @@
     "contextWindow": 256000,
     "maxTokens": 128000,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["coding", "reasoning", "academic", "agents"],
+    "strengths": [
+      "coding",
+      "reasoning",
+      "academic",
+      "agents"
+    ],
     "contextComplexity": 4,
     "reliability": 3,
     "releaseDate": "June 30, 2026",

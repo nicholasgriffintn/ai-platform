@@ -1,8 +1,12 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text"],
-      "output": ["embedding"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
     }
   },
   "description": "The mistral/codestral embed family includes models that produce embedding.",

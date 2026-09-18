@@ -2,8 +2,12 @@
   "defaults": {
     "openWeights": true,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsAttachments": false,
@@ -46,7 +50,9 @@
         "description": "Granite 4.1 8B accepts text and produces text.",
         "contextWindow": 131072,
         "maxTokens": 117964,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 30, 2026",
@@ -68,7 +74,11 @@
         "releaseDate": "August 31, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }

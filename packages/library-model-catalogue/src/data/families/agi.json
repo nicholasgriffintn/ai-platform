@@ -4,14 +4,22 @@
     "contextWindow": 262144,
     "maxTokens": 235929,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     }
   },
@@ -25,8 +33,12 @@
         "contextWindow": 300000,
         "maxTokens": 120000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "June 5, 2026",
         "releaseDate": "June 16, 2026"
@@ -48,13 +60,21 @@
         "name": "Nex-N2.5-Mini (free)",
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 8, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -66,7 +86,11 @@
         "releaseDate": "September 8, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }

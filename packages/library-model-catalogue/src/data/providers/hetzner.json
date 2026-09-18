@@ -29,7 +29,10 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }

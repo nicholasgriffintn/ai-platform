@@ -3,8 +3,12 @@
     "contextWindow": 256000,
     "maxTokens": 65536,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "knowledgeCutoffDate": "November 2025",
     "releaseDate": "November 10, 2025",

@@ -1,10 +1,19 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["image"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "image"
+      ]
     },
-    "strengths": ["creative", "vision", "image"],
+    "strengths": [
+      "creative",
+      "vision",
+      "image"
+    ],
     "contextComplexity": 4,
     "reliability": 5,
     "supportsAttachments": false,

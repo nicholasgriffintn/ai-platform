@@ -3,8 +3,12 @@
     "openWeights": false,
     "contextWindow": 256000,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsAttachments": false,
@@ -27,8 +31,13 @@
         "description": "Mistral coding model for code completion, generation, and developer workflows",
         "maxTokens": 204800,
         "modalities": {
-          "input": ["text", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "August 1, 2025",

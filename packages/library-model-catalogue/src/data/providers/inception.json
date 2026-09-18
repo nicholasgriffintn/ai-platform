@@ -61,7 +61,11 @@
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00015,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }

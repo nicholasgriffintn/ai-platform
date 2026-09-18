@@ -3,10 +3,19 @@
     "contextWindow": 128000,
     "maxTokens": 16384,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["vision", "document", "tool_use"],
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
     "contextComplexity": 3,
     "reliability": 1,
     "knowledgeCutoffDate": "May 2024",

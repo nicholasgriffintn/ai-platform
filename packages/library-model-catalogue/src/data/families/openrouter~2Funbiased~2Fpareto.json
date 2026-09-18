@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 17, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/unbiased/pareto family includes models that produce text.",
+  "models": {
+    "pareto": {
+      "defaults": {
+        "name": "Pareto",
+        "description": "Blended multimodal model that runs multiple language models in parallel and returns a synthesized answer"
+      }
+    }
+  }
+}

@@ -3,8 +3,14 @@
     "openWeights": false,
     "contextWindow": 1000000,
     "modalities": {
-      "input": ["text", "image", "pdf"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -21,7 +27,12 @@
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -48,7 +59,10 @@
         "knowledgeCutoffDate": "January 2024",
         "releaseDate": "February 19, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -67,7 +81,10 @@
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "May 22, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -80,7 +97,10 @@
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -94,7 +114,10 @@
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none",
           "thinkingApi": "budget"
         }
@@ -109,7 +132,10 @@
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none",
           "thinkingApi": "budget"
         }
@@ -124,7 +150,10 @@
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none",
           "thinkingApi": "budget"
         }
@@ -139,7 +168,10 @@
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none",
           "thinkingApi": "budget"
         }
@@ -161,7 +193,13 @@
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -173,14 +211,24 @@
         "contextWindow": 200000,
         "maxTokens": 64000,
         "card": "https://www.prompthub.us/models/claude-sonnet-4-5",
-        "strengths": ["chat", "general_knowledge", "analysis", "coding", "reasoning", "creative"],
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "coding",
+          "reasoning",
+          "creative"
+        ],
         "contextComplexity": 5,
         "reliability": 5,
         "multimodal": true,
         "knowledgeCutoffDate": "July 31, 2025",
         "releaseDate": "September 29, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none",
           "thinkingApi": "budget"
         }
@@ -191,7 +239,12 @@
         "name": "Claude Sonnet 4.6",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
         "maxTokens": 128000,
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "August 31, 2025",
@@ -208,7 +261,12 @@
       "defaults": {
         "name": "Claude Sonnet 4.6 (EU)",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 3,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
@@ -225,13 +283,23 @@
         "name": "Claude Sonnet 4.6 (Global)",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
         "maxTokens": 128000,
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         },
@@ -248,13 +316,23 @@
         "name": "Claude Sonnet 4.6 (JP)",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
         "maxTokens": 128000,
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         },
@@ -271,13 +349,23 @@
         "name": "Claude Sonnet 4.6 (US)",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
         "maxTokens": 128000,
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         },
@@ -304,7 +392,13 @@
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "May 22, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -319,7 +413,13 @@
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -335,7 +435,13 @@
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -363,7 +469,13 @@
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -380,7 +492,13 @@
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -397,7 +515,13 @@
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
@@ -413,7 +537,13 @@
         "supportsTemperature": false,
         "supportsTopP": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }

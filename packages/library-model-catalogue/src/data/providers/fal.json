@@ -9,7 +9,10 @@
       "matchingModel": "fal-ai/qwen-image",
       "overrides": {
         "name": "Qwen Image",
-        "strengths": ["creative", "image"],
+        "strengths": [
+          "creative",
+          "image"
+        ],
         "inputSchema": {
           "fields": [
             {
@@ -22,7 +25,10 @@
           "reference": "https://fal.ai/models/fal-ai/qwen-image"
         }
       },
-      "unset": ["supportsToolCalls", "supportsTemperature"]
+      "unset": [
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
     }
   }
 }

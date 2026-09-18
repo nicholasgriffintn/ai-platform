@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 64000,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 15, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The opencode/jev latest family includes models that produce text.",
+  "models": {
+    "jev": {
+      "defaults": {
+        "name": "Jev",
+        "description": "System One model for fast, typed probabilistic decisions over text or structured state"
+      }
+    }
+  }
+}

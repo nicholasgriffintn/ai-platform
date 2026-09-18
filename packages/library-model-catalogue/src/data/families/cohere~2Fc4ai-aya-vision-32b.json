@@ -4,8 +4,13 @@
     "contextWindow": 16000,
     "maxTokens": 4000,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "releaseDate": "March 4, 2025",
     "supportsToolCalls": false,

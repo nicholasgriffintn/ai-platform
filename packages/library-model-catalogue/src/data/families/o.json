@@ -16,8 +16,12 @@
         "contextWindow": 131072,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text"],
-          "output": ["image"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
         },
         "releaseDate": "April 16, 2026"
       }
@@ -29,8 +33,12 @@
         "contextWindow": 4096,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "December 2, 2024"
       }
@@ -42,8 +50,12 @@
         "contextWindow": 32000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "December 11, 2025"
       }
@@ -55,8 +67,12 @@
         "contextWindow": 32000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "December 11, 2025"
       }
@@ -68,10 +84,20 @@
         "contextWindow": 200000,
         "maxTokens": 100000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "knowledgeCutoffDate": "September 2023",
@@ -81,7 +107,10 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -98,7 +127,11 @@
         "description": "Deliberate o-series reasoner for hard math, coding, and multi-step analysis",
         "contextWindow": 200000,
         "maxTokens": 100000,
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "May 2024",
@@ -108,7 +141,11 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
@@ -130,7 +167,10 @@
         "supportsToolCalls": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -142,10 +182,20 @@
         "contextWindow": 200000,
         "maxTokens": 100000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "May 2024",
@@ -155,7 +205,11 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
@@ -173,10 +227,18 @@
         "contextWindow": 200000,
         "maxTokens": 100000,
         "modalities": {
-          "input": ["text", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["document", "tool_use"],
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "knowledgeCutoffDate": "October 31, 2023",
@@ -186,7 +248,9 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high"],
+          "supportedEffortLevels": [
+            "high"
+          ],
           "defaultEffort": "high"
         },
         "artificialAnalysis": {
@@ -204,8 +268,14 @@
         "contextWindow": 200000,
         "maxTokens": 100000,
         "modalities": {
-          "input": ["image", "text", "pdf"],
-          "output": ["text"]
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "June 30, 2024",
         "releaseDate": "April 16, 2025",
@@ -214,7 +284,9 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high"],
+          "supportedEffortLevels": [
+            "high"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -224,8 +296,12 @@
         "name": "S1",
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
         "releaseDate": "October 20, 2025"
       }
@@ -235,8 +311,12 @@
         "name": "S1 (Free)",
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
         "releaseDate": "October 20, 2025"
       }
@@ -246,8 +326,12 @@
         "name": "S2.1 Pro",
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
         "releaseDate": "July 28, 2026"
       }
@@ -257,8 +341,12 @@
         "name": "S2.1 Pro (Free)",
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
         "releaseDate": "July 28, 2026"
       }
@@ -268,10 +356,16 @@
         "name": "S2 Pro",
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
-        "strengths": ["audio"],
+        "strengths": [
+          "audio"
+        ],
         "reliability": 3,
         "releaseDate": "March 9, 2026",
         "artificialAnalysis": {
@@ -297,8 +391,12 @@
         "name": "S2 Pro (Free)",
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
         "releaseDate": "March 9, 2026"
       }
@@ -310,8 +408,12 @@
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 16, 2026"
       }
@@ -323,8 +425,12 @@
         "contextWindow": 128000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 16, 2026"
       }
@@ -334,8 +440,12 @@
         "name": "Transcribe-1",
         "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
         "modalities": {
-          "input": ["audio"],
-          "output": ["text"]
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "March 1, 2026"
       }
@@ -345,8 +455,12 @@
         "name": "Transcribe-1 (Free)",
         "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
         "modalities": {
-          "input": ["audio"],
-          "output": ["text"]
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "March 1, 2026"
       }
@@ -356,10 +470,16 @@
         "name": "TTS-1",
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
-        "strengths": ["audio"],
+        "strengths": [
+          "audio"
+        ],
         "reliability": 3,
         "releaseDate": "November 6, 2023",
         "artificialAnalysis": {
@@ -385,10 +505,16 @@
         "name": "TTS-1 HD",
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "modalities": {
-          "input": ["text"],
-          "output": ["audio"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
         },
-        "strengths": ["audio"],
+        "strengths": [
+          "audio"
+        ],
         "reliability": 3,
         "releaseDate": "November 6, 2023",
         "artificialAnalysis": {
@@ -414,8 +540,12 @@
         "name": "Wan v2.5 Text-to-Video Preview",
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "September 24, 2025"
       }
@@ -425,8 +555,12 @@
         "name": "Wan v2.6 Image-to-Video",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "December 16, 2025"
       }
@@ -436,8 +570,12 @@
         "name": "Wan v2.6 Image-to-Video Flash",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "December 16, 2025"
       }
@@ -447,8 +585,12 @@
         "name": "Wan v2.6 Reference-to-Video",
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "December 16, 2025"
       }
@@ -458,8 +600,12 @@
         "name": "Wan v2.6 Reference-to-Video Flash",
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "December 16, 2025"
       }
@@ -469,8 +615,12 @@
         "name": "Wan v2.6 Text-to-Video",
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "December 16, 2025"
       }
@@ -480,8 +630,12 @@
         "name": "Wan v2.7 Reference-to-Video",
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "April 7, 2026"
       }
@@ -491,8 +645,12 @@
         "name": "Wan v2.7 Text-to-Video",
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "modalities": {
-          "input": ["text"],
-          "output": ["video"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "April 7, 2026"
       }
@@ -502,8 +660,13 @@
         "name": "Wan v3.0 Video",
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["video"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "August 23, 2026",
         "supportsAttachments": true
@@ -514,8 +677,13 @@
         "name": "Wan v3.0 Video Prime",
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["video"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
         },
         "releaseDate": "August 28, 2026",
         "supportsAttachments": true

@@ -1,10 +1,18 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["research", "search", "analysis"]
+    "strengths": [
+      "research",
+      "search",
+      "analysis"
+    ]
   },
   "description": "The parallel/speed family includes models that produce text.",
   "models": {

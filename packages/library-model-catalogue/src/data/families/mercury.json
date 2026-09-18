@@ -2,8 +2,12 @@
   "defaults": {
     "openWeights": false,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -18,12 +22,18 @@
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 128000,
         "maxTokens": 50000,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "February 24, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
@@ -42,7 +52,12 @@
         "maxTokens": 65536,
         "releaseDate": "September 8, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -55,7 +70,12 @@
         "maxTokens": 65536,
         "releaseDate": "August 31, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -80,7 +100,10 @@
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }

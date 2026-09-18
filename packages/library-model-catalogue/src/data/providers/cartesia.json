@@ -18,7 +18,9 @@
         "deprecated": true,
         "supportsRealtimeSession": false
       },
-      "unset": ["supportsAttachments"]
+      "unset": [
+        "supportsAttachments"
+      ]
     }
   }
 }

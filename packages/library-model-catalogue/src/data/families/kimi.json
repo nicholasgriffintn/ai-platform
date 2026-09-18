@@ -1,8 +1,12 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsAttachments": false,
@@ -26,7 +30,12 @@
         "description": "Kimi K2 is a powerful open-weights model with advanced text capabilities and tool calling support.",
         "contextWindow": 131072,
         "maxTokens": 32768,
-        "strengths": ["chat", "general_knowledge", "analysis", "tool_use"],
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
@@ -46,17 +55,31 @@
         "contextWindow": 256000,
         "maxTokens": 256000,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "January 27, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -74,8 +97,13 @@
         "contextWindow": 256000,
         "maxTokens": 256000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "January 27, 2026"
@@ -88,10 +116,19 @@
         "contextWindow": 262144,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "knowledgeCutoffDate": "January 2025",
@@ -100,7 +137,10 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -117,7 +157,9 @@
         "description": "Kimi K2 (free) accepts text and produces text.",
         "contextWindow": 32800,
         "maxTokens": 32800,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -158,7 +200,9 @@
       "defaults": {
         "name": "Kimi K2 Thinking",
         "description": "Kimi K2 Thinking accepts text and produces text.",
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "November 6, 2025",
@@ -189,7 +233,10 @@
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "September 5, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none",
           "modelOverrides": {
             "thinking": "moonshotai/kimi-k2-thinking-turbo"
@@ -205,14 +252,23 @@
         "contextWindow": 1048576,
         "maxTokens": 943718,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 27, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }

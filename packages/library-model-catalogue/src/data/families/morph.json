@@ -2,8 +2,12 @@
   "defaults": {
     "openWeights": false,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "releaseDate": "August 15, 2024",
     "supportsToolCalls": false,

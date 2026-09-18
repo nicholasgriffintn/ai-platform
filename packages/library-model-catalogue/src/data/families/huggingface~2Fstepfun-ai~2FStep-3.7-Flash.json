@@ -4,10 +4,19 @@
     "contextWindow": 262144,
     "maxTokens": 256000,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["vision", "document", "tool_use"],
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
     "contextComplexity": 4,
     "reliability": 1,
     "knowledgeCutoffDate": "March 1, 2026",
@@ -16,7 +25,11 @@
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["low", "medium", "high"],
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
       "defaultEffort": "low"
     },
     "artificialAnalysis": {

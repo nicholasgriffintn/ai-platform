@@ -3,10 +3,16 @@
     "contextWindow": 128000,
     "maxTokens": 16384,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["audio"],
+    "strengths": [
+      "audio"
+    ],
     "contextComplexity": 3,
     "reliability": 4,
     "releaseDate": "November 14, 2025",

@@ -1,8 +1,12 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["audio"],
-      "output": ["text"]
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsAttachments": false
   },
@@ -35,7 +39,9 @@
       "defaults": {
         "name": "Ink Whisper",
         "description": "Cartesia streaming speech-to-text model for realtime voice transcription.",
-        "strengths": ["transcription"]
+        "strengths": [
+          "transcription"
+        ]
       }
     },
     "insanely-fast-whisper-with-video-transcription": {
@@ -43,10 +49,18 @@
         "name": "Insanely Fast Whisper, with video transcription",
         "description": "TL;DR - Transcribe 150 minutes (2.5 hours) of audio in less than 98 seconds - with OpenAI’s Whisper Large v3. Blazingly fast transcription is now a reality! ⚡️",
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["creative", "audio", "transcription"]
+        "strengths": [
+          "creative",
+          "audio",
+          "transcription"
+        ]
       }
     },
     "openai-whisper": {
@@ -54,10 +68,16 @@
         "name": "OpenAI Whisper",
         "description": "OpenAI Whisper accepts text and produces speech.",
         "modalities": {
-          "input": ["text"],
-          "output": ["speech"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "speech"
+          ]
         },
-        "strengths": ["audio"]
+        "strengths": [
+          "audio"
+        ]
       }
     },
     "openai-whisper-large-v3-turbo": {
@@ -65,10 +85,16 @@
         "name": "OpenAI Whisper Large v3 Turbo",
         "description": "A faster, more accurate speech-to-text model when compared to the base Whisper model.",
         "modalities": {
-          "input": ["text"],
-          "output": ["speech"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "speech"
+          ]
         },
-        "strengths": ["audio"],
+        "strengths": [
+          "audio"
+        ],
         "contextComplexity": 4,
         "reliability": 5
       }

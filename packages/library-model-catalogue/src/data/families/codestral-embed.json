@@ -4,8 +4,12 @@
     "contextWindow": 8192,
     "maxTokens": 1536,
     "modalities": {
-      "input": ["text"],
-      "output": ["embedding"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
     },
     "releaseDate": "May 28, 2025",
     "supportsToolCalls": false,

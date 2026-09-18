@@ -4,8 +4,12 @@
     "contextWindow": 480,
     "maxTokens": 0,
     "modalities": {
-      "input": ["text"],
-      "output": ["image"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
     },
     "contextComplexity": 1,
     "supportsToolCalls": false,
@@ -25,7 +29,9 @@
       "defaults": {
         "name": "Imagen 4 Fast",
         "description": "Imagen 4 Fast accepts text and produces image.",
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "reliability": 3,
         "releaseDate": "June 1, 2025",
         "artificialAnalysis": {
@@ -50,7 +56,10 @@
       "defaults": {
         "name": "Imagen 4 Ultra",
         "description": "Imagen 4 Ultra accepts text and produces image.",
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "reliability": 4,
         "releaseDate": "May 24, 2025",
         "supportsTemperature": false,

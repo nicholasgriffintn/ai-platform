@@ -4,8 +4,12 @@
     "contextWindow": 1024000,
     "maxTokens": 819200,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "knowledgeCutoffDate": "April 30, 2024",
     "releaseDate": "November 8, 2024",

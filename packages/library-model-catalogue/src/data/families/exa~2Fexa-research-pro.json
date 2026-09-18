@@ -1,10 +1,19 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["chat", "search", "general_knowledge", "research"],
+    "strengths": [
+      "chat",
+      "search",
+      "general_knowledge",
+      "research"
+    ],
     "contextComplexity": 5,
     "reliability": 4,
     "supportsToolCalls": false,

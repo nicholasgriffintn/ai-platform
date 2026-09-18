@@ -11,8 +11,14 @@
       "matchingModel": "o3",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "strengths": [
           "coding",
@@ -74,7 +80,9 @@
         "supportsFrequencyPenalty": false,
         "supportsPresencePenalty": false
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "gpt-4o-mini": {
       "model": "gpt-mini/gpt-4o-mini",
@@ -115,7 +123,9 @@
         "supportsFrequencyPenalty": false,
         "supportsPresencePenalty": false
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "gpt-4.5": {
       "model": "gpt/openai-gpt-4-5",
@@ -130,15 +140,23 @@
         "supportsTemperature": true,
         "timeout": 1000000
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "gpt-4.1": {
       "model": "gpt/gpt-4-1",
       "matchingModel": "gpt-4.1",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "card": "https://www.prompthub.us/models/gpt-4-1",
         "strengths": [
@@ -243,11 +261,20 @@
         "supportsImageGenerationTool": true,
         "supportsTopP": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -286,11 +313,20 @@
         "supportsImageGenerationTool": true,
         "supportsTopP": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -328,11 +364,20 @@
         "supportsImageGenerationTool": true,
         "supportsTopP": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -360,9 +405,15 @@
         "costPer1kOutputTokens": 0.014,
         "costPer1kCachedInputTokens": 0.000175,
         "supportsTemperature": true,
-        "samplingSupportedReasoningEfforts": ["none"],
+        "samplingSupportedReasoningEfforts": [
+          "none"
+        ],
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -373,7 +424,14 @@
       "overrides": {
         "name": "GPT-5.1 Codex",
         "card": "https://www.prompthub.us/models/gpt-5.1",
-        "strengths": ["coding", "reasoning", "analysis", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "reasoning",
+          "analysis",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 4,
         "multimodal": true,
         "isFeatured": false,
@@ -384,11 +442,20 @@
         "supportsTopP": false,
         "requiresResponsesApi": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -399,7 +466,14 @@
       "overrides": {
         "name": "GPT-5.1 Codex mini",
         "card": "https://www.prompthub.us/models/gpt-5.1",
-        "strengths": ["coding", "reasoning", "analysis", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "reasoning",
+          "analysis",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 4,
         "multimodal": true,
         "isFeatured": false,
@@ -410,11 +484,20 @@
         "supportsTopP": false,
         "requiresResponsesApi": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -424,7 +507,12 @@
       "matchingModel": "gpt-image-2",
       "overrides": {
         "name": "gpt-image-2",
-        "strengths": ["creative", "vision", "document", "image"],
+        "strengths": [
+          "creative",
+          "vision",
+          "document",
+          "image"
+        ],
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "April 21, 2026",
@@ -450,13 +538,22 @@
               "name": "quality",
               "type": "string",
               "description": "Rendering quality.",
-              "enum": ["low", "medium", "high", "auto"]
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "auto"
+              ]
             },
             {
               "name": "output_format",
               "type": "string",
               "description": "Output image format.",
-              "enum": ["png", "jpeg", "webp"]
+              "enum": [
+                "png",
+                "jpeg",
+                "webp"
+              ]
             },
             {
               "name": "output_compression",
@@ -467,13 +564,19 @@
               "name": "background",
               "type": "string",
               "description": "Background handling. Transparent backgrounds are not supported.",
-              "enum": ["auto", "opaque"]
+              "enum": [
+                "auto",
+                "opaque"
+              ]
             },
             {
               "name": "moderation",
               "type": "string",
               "description": "Image moderation strictness.",
-              "enum": ["auto", "low"]
+              "enum": [
+                "auto",
+                "low"
+              ]
             },
             {
               "name": "n",
@@ -484,7 +587,9 @@
           "reference": "https://developers.openai.com/api/docs/guides/image-generation"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gpt-image-1-mini": {
       "model": "gpt-image/gpt-image-1-mini",
@@ -492,10 +597,21 @@
       "overrides": {
         "name": "gpt-image-1-mini",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
-        "strengths": ["creative", "vision", "document", "image"],
+        "strengths": [
+          "creative",
+          "vision",
+          "document",
+          "image"
+        ],
         "contextComplexity": 4,
         "speed": 4,
         "isFeatured": false,
@@ -523,13 +639,22 @@
               "name": "quality",
               "type": "string",
               "description": "Rendering quality.",
-              "enum": ["low", "medium", "high", "auto"]
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "auto"
+              ]
             },
             {
               "name": "output_format",
               "type": "string",
               "description": "Output image format.",
-              "enum": ["png", "jpeg", "webp"]
+              "enum": [
+                "png",
+                "jpeg",
+                "webp"
+              ]
             },
             {
               "name": "output_compression",
@@ -540,13 +665,20 @@
               "name": "background",
               "type": "string",
               "description": "Background handling. Transparent backgrounds are not supported.",
-              "enum": ["auto", "opaque", "transparent"]
+              "enum": [
+                "auto",
+                "opaque",
+                "transparent"
+              ]
             },
             {
               "name": "moderation",
               "type": "string",
               "description": "Image moderation strictness.",
-              "enum": ["auto", "low"]
+              "enum": [
+                "auto",
+                "low"
+              ]
             },
             {
               "name": "n",
@@ -557,14 +689,21 @@
           "reference": "https://developers.openai.com/api/docs/guides/image-generation"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gpt-image-1.5": {
       "model": "gpt-image/gpt-image-1-5",
       "matchingModel": "gpt-image-1.5",
       "overrides": {
         "name": "gpt-image-1.5",
-        "strengths": ["creative", "vision", "document", "image"],
+        "strengths": [
+          "creative",
+          "vision",
+          "document",
+          "image"
+        ],
         "speed": 3,
         "isFeatured": false,
         "lastUpdated": "November 25, 2025",
@@ -590,13 +729,22 @@
               "name": "quality",
               "type": "string",
               "description": "Rendering quality.",
-              "enum": ["low", "medium", "high", "auto"]
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "auto"
+              ]
             },
             {
               "name": "output_format",
               "type": "string",
               "description": "Output image format.",
-              "enum": ["png", "jpeg", "webp"]
+              "enum": [
+                "png",
+                "jpeg",
+                "webp"
+              ]
             },
             {
               "name": "output_compression",
@@ -607,13 +755,20 @@
               "name": "background",
               "type": "string",
               "description": "Background handling. Transparent backgrounds are not supported.",
-              "enum": ["auto", "opaque", "transparent"]
+              "enum": [
+                "auto",
+                "opaque",
+                "transparent"
+              ]
             },
             {
               "name": "moderation",
               "type": "string",
               "description": "Image moderation strictness.",
-              "enum": ["auto", "low"]
+              "enum": [
+                "auto",
+                "low"
+              ]
             },
             {
               "name": "n",
@@ -624,7 +779,9 @@
           "reference": "https://developers.openai.com/api/docs/guides/image-generation"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "codex-mini-latest": {
       "model": "openai/codex-mini-latest/codex-mini",
@@ -636,7 +793,9 @@
         "costPer1kOutputTokens": 0.006,
         "requiresResponsesApi": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gpt-5-chat-latest": {
       "model": "gpt-codex/gpt-5-chat",
@@ -649,22 +808,36 @@
         "supportsToolCalls": false,
         "supportsTemperature": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "gpt-5-codex": {
       "model": "gpt-codex/gpt-5-codex",
       "matchingModel": "gpt-5-codex",
       "overrides": {
         "name": "GPT-5-Codex",
-        "strengths": ["vision", "tool_use"],
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
         "speed": 3,
         "deprecated": true,
         "lastUpdated": "September 15, 2025",
@@ -673,11 +846,20 @@
         "supportsAttachments": false,
         "requiresResponsesApi": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -704,17 +886,29 @@
         "supportsHostedShell": true,
         "requiresResponsesApi": true,
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       },
-      "unset": ["strengths"]
+      "unset": [
+        "strengths"
+      ]
     },
     "gpt-5.1": {
       "model": "gpt/gpt-5-1",
       "matchingModel": "gpt-5.1",
       "overrides": {
-        "strengths": ["vision", "document", "tool_use", "search", "coding"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "coding"
+        ],
         "speed": 4,
         "deprecated": true,
         "lastUpdated": "November 13, 2025",
@@ -734,9 +928,15 @@
         "supportsToolSearch": true,
         "supportsHostedShell": true,
         "supportsTemperature": true,
-        "samplingSupportedReasoningEfforts": ["none"],
+        "samplingSupportedReasoningEfforts": [
+          "none"
+        ],
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -761,15 +961,26 @@
         "supportsImageGenerationTool": true,
         "supportsHostedShell": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "gpt-5.1-codex-max": {
       "model": "gpt-codex/gpt-5-1-codex-max",
@@ -782,15 +993,26 @@
         "costPer1kOutputTokens": 0.01,
         "requiresResponsesApi": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "gpt-5.2-codex": {
       "model": "gpt-codex/gpt-5-2-codex",
@@ -798,8 +1020,14 @@
       "overrides": {
         "name": "GPT-5.2 Codex",
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 3,
         "deprecated": true,
@@ -808,11 +1036,20 @@
         "costPer1kOutputTokens": 0.014,
         "requiresResponsesApi": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -839,18 +1076,30 @@
         "supportsHostedShell": true,
         "requiresResponsesApi": true,
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       },
-      "unset": ["strengths"]
+      "unset": [
+        "strengths"
+      ]
     },
     "gpt-5.3-codex": {
       "model": "gpt-codex/gpt-5-3-codex",
       "matchingModel": "gpt-5.3-codex",
       "overrides": {
         "name": "GPT-5.3 Codex",
-        "strengths": ["vision", "document", "tool_use", "search", "coding"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "search",
+          "coding"
+        ],
         "speed": 2,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
@@ -871,11 +1120,20 @@
         "supportsTopP": false,
         "requiresResponsesApi": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -886,8 +1144,14 @@
       "overrides": {
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "deprecated": true,
         "releaseDate": "February 5, 2026",
@@ -909,11 +1173,21 @@
         "supportsTopP": false,
         "requiresResponsesApi": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -923,8 +1197,13 @@
       "matchingModel": "o3-deep-research",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "deprecated": true,
         "lastUpdated": "June 26, 2024",
@@ -932,7 +1211,9 @@
         "costPer1kOutputTokens": 0.04,
         "requiresResponsesApi": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "o3-pro": {
       "model": "o-pro/o3-pro",
@@ -940,8 +1221,13 @@
       "overrides": {
         "name": "o3-pro",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 2,
         "deprecated": true,
@@ -957,8 +1243,13 @@
       "overrides": {
         "name": "o4-mini-deep-research",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "deprecated": true,
         "lastUpdated": "June 26, 2024",
@@ -966,7 +1257,11 @@
         "costPer1kOutputTokens": 0.008,
         "requiresResponsesApi": true
       },
-      "unset": ["supportsResponseFormat", "contextComplexity", "reliability"]
+      "unset": [
+        "supportsResponseFormat",
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "text-embedding-3-large": {
       "model": "text-embedding/text-embedding-3-large",
@@ -979,7 +1274,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "text-embedding-3-small": {
       "model": "text-embedding/text-embedding-3-small",
@@ -992,7 +1289,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "text-embedding-ada-002": {
       "model": "text-embedding/text-embedding-ada-002",
@@ -1006,7 +1305,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "chatgpt-image-latest": {
       "model": "gpt-image/chatgpt-image-latest",
@@ -1015,7 +1316,9 @@
         "lastUpdated": "December 16, 2025",
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gpt-5.4": {
       "model": "gpt/gpt-5-4",
@@ -1060,10 +1363,16 @@
         "supportsToolSearch": true,
         "supportsHostedShell": true,
         "supportsTemperature": true,
-        "samplingSupportedReasoningEfforts": ["none"],
+        "samplingSupportedReasoningEfforts": [
+          "none"
+        ],
         "supportsPromptCaching": true,
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -1074,8 +1383,13 @@
       "overrides": {
         "name": "GPT-5.4 mini",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "strengths": [
           "coding",
@@ -1109,10 +1423,16 @@
         "supportsToolSearch": true,
         "supportsHostedShell": true,
         "supportsTemperature": true,
-        "samplingSupportedReasoningEfforts": ["none"],
+        "samplingSupportedReasoningEfforts": [
+          "none"
+        ],
         "supportsPromptCaching": true,
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -1123,8 +1443,13 @@
       "overrides": {
         "name": "GPT-5.4 nano",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "strengths": [
           "chat",
@@ -1155,10 +1480,16 @@
         "supportsImageGenerationTool": true,
         "supportsHostedShell": true,
         "supportsTemperature": true,
-        "samplingSupportedReasoningEfforts": ["none"],
+        "samplingSupportedReasoningEfforts": [
+          "none"
+        ],
         "supportsPromptCaching": true,
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -1168,8 +1499,13 @@
       "matchingModel": "gpt-5.4-pro",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "strengths": [
           "reasoning",
@@ -1212,7 +1548,11 @@
         "requiresResponsesApi": true,
         "supportsPromptCaching": true,
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -1265,11 +1605,21 @@
         "prefersResponsesApiForReasoning": true,
         "supportsPromptCaching": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -1320,11 +1670,19 @@
         "prefersResponsesApiForReasoning": true,
         "supportsPromptCaching": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "high"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -1337,10 +1695,22 @@
         "contextWindow": 128000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text", "audio", "image"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "audio",
+            "image"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
-        "strengths": ["audio", "chat", "reasoning", "vision"],
+        "strengths": [
+          "audio",
+          "chat",
+          "reasoning",
+          "vision"
+        ],
         "contextComplexity": 5,
         "reliability": 5,
         "speed": 4,
@@ -1353,11 +1723,18 @@
         "supportsRealtimeSession": true,
         "supportsTopP": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "gpt-realtime-translate": {
       "model": "gpt/gpt-realtime-translate",
@@ -1372,7 +1749,9 @@
         "supportsAudio": true,
         "supportsRealtimeTranslationSession": true
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "gpt-realtime-mini": {
       "model": "gpt/gpt-realtime-mini",
@@ -1382,10 +1761,23 @@
         "contextWindow": 32000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image", "audio"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
-        "strengths": ["audio", "chat", "vision", "document", "tool_use"],
+        "strengths": [
+          "audio",
+          "chat",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "speed": 5,
         "multimodal": true,
@@ -1400,7 +1792,9 @@
         "supportsRealtimeSession": true,
         "supportsTemperature": true
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "gpt-audio-1.5": {
       "model": "gpt/gpt-audio-1-5",
@@ -1413,7 +1807,9 @@
         "supportsAudio": true,
         "supportsTemperature": true
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "gpt-audio-mini": {
       "model": "gpt/gpt-audio-mini",
@@ -1426,7 +1822,9 @@
         "supportsAudio": true,
         "supportsTemperature": true
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "gpt-realtime-whisper": {
       "model": "gpt/gpt-realtime-whisper",
@@ -1437,7 +1835,10 @@
         "supportsStreaming": true,
         "supportsAttachments": false
       },
-      "unset": ["openWeights", "supportsResponseFormat"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "gpt-live-transcribe": {
       "model": "gpt/gpt-live-transcribe",
@@ -1448,7 +1849,10 @@
         "supportsStreaming": true,
         "supportsAttachments": false
       },
-      "unset": ["openWeights", "supportsResponseFormat"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "gpt-transcribe": {
       "model": "gpt/gpt-transcribe",
@@ -1459,7 +1863,10 @@
         "supportsStreaming": true,
         "supportsAttachments": false
       },
-      "unset": ["openWeights", "supportsResponseFormat"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "gpt-4o-mini-transcribe": {
       "model": "gpt/gpt-4o-mini-transcribe",
@@ -1469,19 +1876,27 @@
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
-      "unset": ["openWeights", "supportsResponseFormat"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "gpt-4o-transcribe": {
       "model": "gpt/gpt-4o-transcribe",
       "matchingModel": "gpt-4o-transcribe",
       "overrides": {
         "contextWindow": 16000,
-        "strengths": ["transcription"],
+        "strengths": [
+          "transcription"
+        ],
         "hiddenFromDefaultList": true,
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
-      "unset": ["openWeights", "supportsResponseFormat"]
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "openai-whisper": {
       "model": "whisper/whisper",
@@ -1489,12 +1904,16 @@
       "overrides": {
         "contextWindow": 448,
         "maxTokens": 448,
-        "strengths": ["transcription"],
+        "strengths": [
+          "transcription"
+        ],
         "hiddenFromDefaultList": true,
         "supportsToolCalls": false,
         "supportsAttachments": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gpt-5.6": {
       "model": "gpt-sol/gpt-5-6",
@@ -1515,7 +1934,10 @@
           "fast": 2,
           "priority": 2
         },
-        "supportedServiceTiers": ["default", "fast"],
+        "supportedServiceTiers": [
+          "default",
+          "fast"
+        ],
         "longContextPricing": {
           "inputTokenThreshold": 272000,
           "inputMultiplier": 2,
@@ -1556,7 +1978,10 @@
           "fast": 2,
           "priority": 2
         },
-        "supportedServiceTiers": ["default", "fast"],
+        "supportedServiceTiers": [
+          "default",
+          "fast"
+        ],
         "longContextPricing": {
           "inputTokenThreshold": 272000,
           "inputMultiplier": 2,
@@ -1576,7 +2001,14 @@
         "supportsPromptCaching": true,
         "supportsPromptCacheOptions": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "medium"
         }
       }
@@ -1601,7 +2033,10 @@
           "fast": 2,
           "priority": 2
         },
-        "supportedServiceTiers": ["default", "fast"],
+        "supportedServiceTiers": [
+          "default",
+          "fast"
+        ],
         "longContextPricing": {
           "inputTokenThreshold": 272000,
           "inputMultiplier": 2,
@@ -1621,7 +2056,14 @@
         "supportsPromptCaching": true,
         "supportsPromptCacheOptions": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "medium"
         }
       }
@@ -1646,7 +2088,10 @@
           "fast": 2,
           "priority": 2
         },
-        "supportedServiceTiers": ["default", "fast"],
+        "supportedServiceTiers": [
+          "default",
+          "fast"
+        ],
         "longContextPricing": {
           "inputTokenThreshold": 272000,
           "inputMultiplier": 2,
@@ -1666,7 +2111,14 @@
         "supportsPromptCaching": true,
         "supportsPromptCacheOptions": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "medium"
         }
       }
@@ -1707,7 +2159,10 @@
           "fast": 2,
           "priority": 2
         },
-        "supportedServiceTiers": ["default", "fast"],
+        "supportedServiceTiers": [
+          "default",
+          "fast"
+        ],
         "longContextPricing": {
           "inputTokenThreshold": 272000,
           "inputMultiplier": 2,
@@ -1732,11 +2187,21 @@
         "supportsAsyncToolCalls": true,
         "supportsReasoningConfigurationUpdates": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "medium"
         },
         "verbosityConfig": {
-          "supportedVerbosityLevels": ["low", "medium", "high"],
+          "supportedVerbosityLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultVerbosity": "medium"
         }
       }
@@ -1747,8 +2212,15 @@
       "overrides": {
         "name": "GPT-Realtime-2.1",
         "modalities": {
-          "input": ["text", "audio", "image"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "audio",
+            "image"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "lastUpdated": "July 6, 2026",
         "costPer1kInputTokens": 0.004,

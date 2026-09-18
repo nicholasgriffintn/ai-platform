@@ -3,8 +3,12 @@
     "contextWindow": 131000,
     "maxTokens": 131000,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "releaseDate": "January 27, 2026",
     "supportsToolCalls": true,

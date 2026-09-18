@@ -8,7 +8,10 @@
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     }
   },
@@ -22,16 +25,28 @@
         "contextWindow": 1048576,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["document", "tool_use", "coding"],
+        "strengths": [
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "September 11, 2026",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
@@ -48,8 +63,14 @@
         "description": "Lower-latency Kimi Code variant for interactive edits and coding-agent loops",
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "June 12, 2026",
         "supportsTemperature": false
@@ -61,8 +82,12 @@
         "description": "Kimi model for long-context chat, coding, and agentic reasoning",
         "contextWindow": 131072,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsAttachments": false
       }
@@ -73,10 +98,16 @@
         "description": "Kimi model for long-context chat, coding, and agentic reasoning",
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
@@ -111,8 +142,14 @@
         "description": "Kimi K2.5 TEE accepts text, image, video and produces text.",
         "maxTokens": 65535,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "January 2026"
@@ -140,15 +177,32 @@
         "contextWindow": 256000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "April 21, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -165,8 +219,14 @@
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
         "maxTokens": 65535,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "December 2025",
         "releaseDate": "April 21, 2026"
@@ -195,16 +255,34 @@
         "description": "Coding-focused Kimi model, stronger on long-horizon repo work with less overthinking",
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "video", "document", "tool_use", "coding"],
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "June 12, 2026",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -222,8 +300,13 @@
         "contextWindow": 262000,
         "maxTokens": 262000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "June 12, 2026"
       }
@@ -234,8 +317,14 @@
         "description": "Lower-latency Kimi Code variant for interactive edits and coding-agent loops",
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "June 12, 2026"
       }
@@ -246,8 +335,14 @@
         "description": "Coding-focused Kimi model, stronger on long-horizon repo work with less overthinking",
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "June 12, 2026",
         "supportsTemperature": false
@@ -259,8 +354,12 @@
         "description": "Kimi model for long-context chat, coding, and agentic reasoning",
         "contextWindow": 131072,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 11, 2025",
         "supportsAttachments": false
@@ -272,8 +371,12 @@
         "description": "Fast Kimi model for responsive chat, coding help, and agent loops",
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "September 5, 2025",

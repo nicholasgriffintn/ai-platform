@@ -14,8 +14,12 @@
         "contextWindow": 1048756,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 28, 2026",
         "supportsResponseFormat": true,
@@ -29,13 +33,22 @@
         "contextWindow": 1048576,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 20, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -47,8 +60,13 @@
         "contextWindow": 262144,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 16, 2026",
         "supportsAttachments": true
@@ -61,8 +79,12 @@
         "contextWindow": 8000,
         "maxTokens": 6000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "June 30, 2023",
         "releaseDate": "August 2, 2023",

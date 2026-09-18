@@ -2,8 +2,12 @@
   "defaults": {
     "openWeights": false,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsAttachments": false,
@@ -17,13 +21,21 @@
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
         "contextWindow": 131072,
         "maxTokens": 117964,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "January 27, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -44,7 +56,15 @@
         "releaseDate": "August 6, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -55,13 +75,21 @@
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
         "contextWindow": 65536,
         "maxTokens": 8192,
-        "strengths": ["reasoning", "analysis", "coding", "general_knowledge"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "general_knowledge"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "knowledgeCutoffDate": "March 2025",
         "releaseDate": "May 20, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
           "defaultEffort": "minimal"
         }
       }
@@ -75,7 +103,11 @@
         "knowledgeCutoffDate": "March 2025",
         "releaseDate": "January 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }

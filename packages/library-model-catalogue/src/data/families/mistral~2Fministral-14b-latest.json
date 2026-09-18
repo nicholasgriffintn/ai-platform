@@ -3,10 +3,22 @@
     "contextWindow": 256000,
     "maxTokens": 256000,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["chat", "general_knowledge", "analysis", "creative", "multilingual", "vision"],
+    "strengths": [
+      "chat",
+      "general_knowledge",
+      "analysis",
+      "creative",
+      "multilingual",
+      "vision"
+    ],
     "contextComplexity": 2,
     "reliability": 3,
     "multimodal": true,

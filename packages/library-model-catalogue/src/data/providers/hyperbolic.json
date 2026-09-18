@@ -12,7 +12,10 @@
         "isFree": false,
         "isFeatured": false
       },
-      "unset": ["openWeights", "supportsAttachments"]
+      "unset": [
+        "openWeights",
+        "supportsAttachments"
+      ]
     }
   }
 }

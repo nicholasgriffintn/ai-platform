@@ -3,15 +3,29 @@
     "openWeights": false,
     "contextWindow": 1048576,
     "modalities": {
-      "input": ["text", "image", "video", "pdf", "audio"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image",
+        "video",
+        "pdf",
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["minimal", "low", "medium", "high", "xhigh"],
+      "supportedEffortLevels": [
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh"
+      ],
       "defaultEffort": "minimal"
     }
   },
@@ -24,13 +38,23 @@
         "description": "Muse Glimmer is a 30-billion-parameter open-weight multimodal model from Meta Superintelligence Labs, distilled from Muse Spark for always-on local agents, tool use, coding, and image understanding.",
         "contextWindow": 131072,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "January 4, 2026",
         "releaseDate": "August 10, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -42,8 +66,13 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
         },
         "releaseDate": "August 26, 2026",
         "supportsToolCalls": false
@@ -77,7 +106,14 @@
         "description": "Open Llama multimodal model for image understanding and text reasoning",
         "releaseDate": "September 2, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "minimal"
         }
       }

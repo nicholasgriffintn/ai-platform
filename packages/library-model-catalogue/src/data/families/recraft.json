@@ -4,8 +4,12 @@
     "contextWindow": 0,
     "maxTokens": 0,
     "modalities": {
-      "input": ["text"],
-      "output": ["image"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
     },
     "supportsToolCalls": false,
     "supportsAttachments": false,
@@ -26,7 +30,9 @@
         "name": "Recraft V3",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "contextComplexity": 1,
         "reliability": 3,
         "releaseDate": "October 30, 2024",
@@ -52,7 +58,9 @@
       "defaults": {
         "name": "Recraft V4",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "reliability": 3,
         "releaseDate": "February 17, 2026",
         "artificialAnalysis": {
@@ -77,7 +85,9 @@
       "defaults": {
         "name": "Recraft V4.1",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "reliability": 3,
         "releaseDate": "May 14, 2026",
         "artificialAnalysis": {
@@ -102,7 +112,10 @@
       "defaults": {
         "name": "Recraft V4.1 Pro",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "reliability": 4,
         "releaseDate": "May 14, 2026",
         "artificialAnalysis": {
@@ -127,7 +140,10 @@
       "defaults": {
         "name": "Recraft V4.1 Utility",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "reliability": 4,
         "releaseDate": "May 14, 2026",
         "artificialAnalysis": {
@@ -152,7 +168,10 @@
       "defaults": {
         "name": "Recraft V4.1 Utility Pro",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "reliability": 4,
         "releaseDate": "May 14, 2026",
         "artificialAnalysis": {
@@ -177,7 +196,9 @@
       "defaults": {
         "name": "Recraft V4 Pro",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "reliability": 3,
         "releaseDate": "February 17, 2026",
         "artificialAnalysis": {

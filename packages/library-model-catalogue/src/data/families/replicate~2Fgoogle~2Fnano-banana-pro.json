@@ -1,10 +1,19 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["image"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "image"
+      ]
     },
-    "strengths": ["vision", "image", "creative"],
+    "strengths": [
+      "vision",
+      "image",
+      "creative"
+    ],
     "contextComplexity": 4,
     "reliability": 4,
     "artificialAnalysis": {

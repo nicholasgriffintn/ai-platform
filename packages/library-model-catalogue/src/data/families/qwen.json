@@ -14,8 +14,12 @@
         "contextWindow": 32768,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 19, 2024",
         "supportsResponseFormat": true
@@ -29,10 +33,20 @@
         "contextWindow": 125000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "analysis", "multilingual", "general_knowledge"],
+        "strengths": [
+          "vision",
+          "analysis",
+          "multilingual",
+          "general_knowledge"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "multimodal": true,
@@ -49,13 +63,20 @@
         "contextWindow": 128000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -68,10 +89,21 @@
         "contextWindow": 262144,
         "maxTokens": 81920,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "January 2025",
@@ -79,7 +111,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -98,10 +133,21 @@
         "contextWindow": 262144,
         "maxTokens": 81920,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "January 2025",
@@ -109,7 +155,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -128,14 +177,23 @@
         "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "February 23, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -148,14 +206,23 @@
         "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "February 16, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -168,17 +235,30 @@
         "contextWindow": 256000,
         "maxTokens": 256000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 22, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -197,13 +277,22 @@
         "contextWindow": 240000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 20, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -214,7 +303,10 @@
         "description": "Earlier Qwen multimodal workhorse for million-token agent and document tasks",
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -227,14 +319,23 @@
         "contextWindow": 991000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 15, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -247,16 +348,30 @@
         "contextWindow": 991000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "May 21, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -283,14 +398,23 @@
         "contextWindow": 991000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 26, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -303,14 +427,23 @@
         "contextWindow": 1048576,
         "maxTokens": 1048576,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 27, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "xhigh"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "xhigh"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -323,14 +456,55 @@
         "contextWindow": 262144,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 19, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "xhigh"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "xhigh"
+          ],
           "defaultEffort": "low"
+        }
+      }
+    },
+    "qwen-3-8-omni-flash": {
+      "defaults": {
+        "name": "Qwen 3.8 Omni Flash",
+        "openWeights": false,
+        "description": "Qwen omni model for text, vision, audio, and multimodal agent tasks",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 17, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
         }
       }
     },
@@ -342,13 +516,20 @@
         "contextWindow": 262144,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "July 31, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -360,8 +541,12 @@
         "contextWindow": 131000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "July 23, 2025"
@@ -375,8 +560,12 @@
         "contextWindow": 32000,
         "maxTokens": 2048,
         "modalities": {
-          "input": ["text"],
-          "output": ["embedding"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "embedding"
+          ]
         },
         "knowledgeCutoffDate": "December 2024",
         "releaseDate": "January 1, 2025",
@@ -392,8 +581,12 @@
         "contextWindow": 32000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text"],
-          "output": ["embedding"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "embedding"
+          ]
         },
         "knowledgeCutoffDate": "December 2024",
         "releaseDate": "January 1, 2025",
@@ -409,13 +602,20 @@
         "contextWindow": 1000000,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "July 28, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -424,8 +624,12 @@
       "defaults": {
         "description": "Qwen Image is a large-scale image generation model capable of generating high-quality images from text descriptions.",
         "modalities": {
-          "input": ["text"],
-          "output": ["image"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
         },
         "reliability": 3,
         "artificialAnalysis": {
@@ -451,10 +655,20 @@
         "name": "Qwen Image Edit 2511",
         "description": "An enhanced version over Qwen-Image-Edit-2509, featuring multiple improvements including notably better consistency",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
         },
-        "strengths": ["creative", "vision", "document", "image"],
+        "strengths": [
+          "creative",
+          "vision",
+          "document",
+          "image"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "supportsAttachments": true,
@@ -484,8 +698,12 @@
         "contextWindow": 32768,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 3, 2024"
@@ -499,13 +717,21 @@
         "contextWindow": 262144,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 3, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -518,8 +744,12 @@
         "contextWindow": 16384,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "January 2025",
@@ -534,8 +764,12 @@
         "contextWindow": 16384,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "January 2025",
@@ -550,8 +784,16 @@
         "contextWindow": 32768,
         "maxTokens": 2048,
         "modalities": {
-          "input": ["text", "image", "audio", "video"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "January 19, 2025"
@@ -565,8 +807,15 @@
         "contextWindow": 32768,
         "maxTokens": 2048,
         "modalities": {
-          "input": ["text", "image", "audio"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "May 8, 2025"
@@ -579,8 +828,12 @@
         "contextWindow": 1000000,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "January 25, 2024"
@@ -594,14 +847,21 @@
         "contextWindow": 1000000,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "September 8, 2025",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -614,8 +874,12 @@
         "contextWindow": 8192,
         "maxTokens": 512,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "January 2024"
@@ -629,16 +893,25 @@
         "contextWindow": 1000000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "November 1, 2024",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -657,8 +930,13 @@
         "contextWindow": 131072,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 8, 2024"
@@ -672,8 +950,13 @@
         "contextWindow": 34096,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "October 28, 2024",
@@ -688,8 +971,13 @@
         "contextWindow": 131072,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "January 25, 2024"
@@ -703,8 +991,12 @@
         "contextWindow": 131072,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "September 2024"
@@ -718,10 +1010,16 @@
         "contextWindow": 131072,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2024",
@@ -740,10 +1038,16 @@
         "openWeights": true,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "artificialAnalysis": {
@@ -760,8 +1064,12 @@
         "openWeights": true,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         }
       }
     },
@@ -771,8 +1079,12 @@
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "contextWindow": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 3,
         "reliability": 1,
@@ -793,8 +1105,16 @@
         "contextWindow": 32768,
         "maxTokens": 2048,
         "modalities": {
-          "input": ["text", "image", "audio", "video"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "December 2024"
@@ -808,8 +1128,13 @@
         "contextWindow": 16384,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "December 29, 2025",
         "supportsToolCalls": false,
@@ -824,8 +1149,14 @@
         "contextWindow": 8192,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 2025",
         "releaseDate": "March 24, 2025",
@@ -837,8 +1168,13 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsToolCalls": false,
         "supportsResponseFormat": true,
@@ -852,8 +1188,13 @@
         "contextWindow": 32768,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "February 2025",
         "releaseDate": "February 1, 2025",
@@ -867,8 +1208,13 @@
         "contextWindow": 32768,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "December 29, 2025",
         "supportsToolCalls": false,
@@ -883,8 +1229,13 @@
         "contextWindow": 131072,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "September 2024"
@@ -897,8 +1248,13 @@
         "contextWindow": 32768,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "February 2025",
         "releaseDate": "August 28, 2024",
@@ -910,14 +1266,23 @@
         "name": "Qwen3 14B",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -935,10 +1300,16 @@
         "contextWindow": 40960,
         "maxTokens": 40960,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -958,16 +1329,25 @@
         "description": "Large open Qwen MoE for multilingual reasoning, coding, and tool use",
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -985,10 +1365,16 @@
         "contextWindow": 131072,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -1008,10 +1394,16 @@
         "description": "Updated large open Qwen3 MoE instruct model for multilingual chat, coding, and tool use",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "July 21, 2025",
@@ -1031,10 +1423,16 @@
         "contextWindow": 262144,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -1055,8 +1453,12 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 2025",
@@ -1070,13 +1472,20 @@
         "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "July 25, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1089,14 +1498,21 @@
         "contextWindow": 262144,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "July 2025",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1109,16 +1525,25 @@
         "contextWindow": 40960,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "April 28, 2025",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -1137,13 +1562,20 @@
         "contextWindow": 32768,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 28, 2025",
         "supportsResponseFormat": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1155,10 +1587,16 @@
         "contextWindow": 40960,
         "maxTokens": 40960,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -1177,8 +1615,12 @@
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsResponseFormat": true
       }
@@ -1191,14 +1633,21 @@
         "contextWindow": 81920,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "June 30, 2025",
         "releaseDate": "August 28, 2025",
         "supportsResponseFormat": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1210,17 +1659,26 @@
         "description": "Dense open Qwen model for self-hosted chat, reasoning, and coding",
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 2025",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -1238,10 +1696,16 @@
         "contextWindow": 40960,
         "maxTokens": 40960,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -1262,14 +1726,21 @@
         "contextWindow": 40960,
         "maxTokens": 40960,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 2025",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1281,10 +1752,16 @@
         "contextWindow": 40960,
         "maxTokens": 40960,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -1305,13 +1782,21 @@
         "contextWindow": 262144,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "February 1, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1329,7 +1814,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -1348,17 +1836,33 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video", "audio"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "audio", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "audio",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 23, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -1382,7 +1886,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -1401,13 +1908,21 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "February 15, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1438,14 +1953,22 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "February 15, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1457,17 +1980,29 @@
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 23, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -1486,14 +2021,23 @@
         "contextWindow": 1000000,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "February 25, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1506,13 +2050,22 @@
         "contextWindow": 1000000,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "February 16, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1525,15 +2078,24 @@
         "contextWindow": 1000000,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "February 16, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1546,17 +2108,29 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 22, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -1575,14 +2149,22 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 22, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1598,7 +2180,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -1617,14 +2202,22 @@
         "contextWindow": 262144,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 17, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1637,16 +2230,25 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 20, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -1665,15 +2267,24 @@
         "contextWindow": 1000000,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 4,
         "reliability": 2,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 2, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -1692,14 +2303,23 @@
         "contextWindow": 1000000,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 15, 2026",
         "supportsResponseFormat": false,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1711,16 +2331,26 @@
         "description": "Qwen frontier model tuned for agent frameworks, coding assistants, and long tasks",
         "contextWindow": 1000000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use", "coding"],
+        "strengths": [
+          "tool_use",
+          "coding"
+        ],
         "contextComplexity": 5,
         "reliability": 2,
         "releaseDate": "May 21, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -1739,8 +2369,14 @@
         "contextWindow": 1000000,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 5,
         "reliability": 2,
@@ -1749,7 +2385,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -1768,13 +2407,21 @@
         "contextWindow": 262144,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 12, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "xhigh"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "xhigh"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -1787,13 +2434,23 @@
         "contextWindow": 1000000,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 12, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1805,12 +2462,47 @@
         "description": "Dense 27B vision-language model for coding, agent tasks, and image and video understanding",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 14, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true
+      }
+    },
+    "qwen3-8-27b-free": {
+      "defaults": {
+        "name": "Qwen3.8 27B (free)",
+        "openWeights": true,
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
+        "maxTokens": 235929,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 14, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "qwen3-8-27b-tee": {
@@ -1821,14 +2513,22 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 16, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1841,8 +2541,14 @@
         "contextWindow": 1000000,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 26, 2026",
         "supportsResponseFormat": true,
@@ -1868,14 +2574,26 @@
         "contextWindow": 262144,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "August 27, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -1899,14 +2617,26 @@
         "contextWindow": 1000000,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 2, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "minimal"
         }
       }
@@ -1919,14 +2649,23 @@
         "contextWindow": 131072,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -1944,10 +2683,16 @@
         "contextWindow": 40960,
         "maxTokens": 40960,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -1968,8 +2713,12 @@
         "contextWindow": 53248,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["audio"],
-          "output": ["text"]
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "September 8, 2025",
@@ -1983,10 +2732,16 @@
         "description": "Smaller Qwen coder for efficient local agents and repo-level fixes",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -2008,8 +2763,12 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "June 30, 2025",
         "releaseDate": "July 23, 2025",
@@ -2024,10 +2783,18 @@
         "contextWindow": 1048576,
         "maxTokens": 262000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["coding", "analysis", "reasoning"],
+        "strengths": [
+          "coding",
+          "analysis",
+          "reasoning"
+        ],
         "contextComplexity": 5,
         "reliability": 4,
         "knowledgeCutoffDate": "June 30, 2025",
@@ -2042,10 +2809,16 @@
         "description": "Open Qwen coding heavyweight for repository reasoning and agentic engineering",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -2064,10 +2837,16 @@
         "contextWindow": 262144,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "August 1, 2025",
@@ -2086,8 +2865,12 @@
         "contextWindow": 262144,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "December 29, 2025",
         "supportsResponseFormat": true
@@ -2101,10 +2884,19 @@
         "contextWindow": 262144,
         "maxTokens": 66536,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["coding", "analysis", "instruction", "tool_use"],
+        "strengths": [
+          "coding",
+          "analysis",
+          "instruction",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 4,
         "knowledgeCutoffDate": "April 2025",
@@ -2119,8 +2911,12 @@
         "contextWindow": 131072,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "July 23, 2025"
@@ -2134,8 +2930,12 @@
         "contextWindow": 1000000,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "July 28, 2025"
@@ -2148,17 +2948,26 @@
         "description": "Open-weight Qwen coding model for agents, repository edits, and multi-turn tool use",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "February 3, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -2177,8 +2986,12 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "April 25, 2026",
         "supportsResponseFormat": true
@@ -2192,8 +3005,12 @@
         "contextWindow": 1000000,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "July 23, 2025",
@@ -2205,8 +3022,12 @@
         "name": "Qwen3 Embedding 0.6B",
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
         "modalities": {
-          "input": ["text"],
-          "output": ["embedding"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "embedding"
+          ]
         },
         "releaseDate": "November 14, 2025",
         "supportsToolCalls": false
@@ -2220,8 +3041,12 @@
         "contextWindow": 32768,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["embedding"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "embedding"
+          ]
         },
         "releaseDate": "June 5, 2025",
         "supportsToolCalls": false
@@ -2242,8 +3067,16 @@
         "contextWindow": 53248,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image", "audio", "video"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "September 22, 2025",
@@ -2258,10 +3091,16 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -2283,10 +3122,16 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -2307,16 +3152,25 @@
         "contextWindow": 262144,
         "maxTokens": 65536,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 9, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -2333,10 +3187,16 @@
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -2356,10 +3216,16 @@
         "contextWindow": 262144,
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -2380,15 +3246,24 @@
         "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "September 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -2407,13 +3282,24 @@
         "contextWindow": 65536,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image", "audio", "video"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "September 15, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -2426,8 +3312,16 @@
         "contextWindow": 65536,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image", "audio", "video"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "September 15, 2025"
@@ -2441,8 +3335,12 @@
         "contextWindow": 32768,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "February 1, 2026",
         "supportsToolCalls": false,
@@ -2453,13 +3351,21 @@
       "defaults": {
         "description": "Qwen3 VL 235B A22B is a 235B-parameter MoE vision-language flagship model (≈22B active) designed for frontier-level multimodal understanding across text, images, documents, and long videos.",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 4,
         "reliability": 1,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -2477,10 +3383,19 @@
         "description": "Qwen vision-language instruct model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "March 31, 2025",
@@ -2503,8 +3418,13 @@
         "contextWindow": 131072,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "September 23, 2025",
@@ -2520,16 +3440,27 @@
         "contextWindow": 131072,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "tool_use"],
+        "strengths": [
+          "vision",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -2548,10 +3479,19 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "March 31, 2025",
@@ -2574,15 +3514,23 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "October 6, 2025",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -2595,10 +3543,19 @@
         "contextWindow": 131072,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "October 23, 2025",
@@ -2620,10 +3577,19 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["image", "text"],
-          "output": ["text"]
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "October 14, 2025",
@@ -2645,14 +3611,22 @@
         "contextWindow": 131072,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["image", "text"],
-          "output": ["text"]
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "October 14, 2025",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -2665,8 +3639,13 @@
         "contextWindow": 131072,
         "maxTokens": 129024,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "September 23, 2025",
@@ -2681,13 +3660,21 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "September 23, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -2700,14 +3687,22 @@
         "contextWindow": 131072,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "September 23, 2025",
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -2718,8 +3713,12 @@
         "description": "Qwen3Guard-Gen-0.6B is a lightweight multilingual safety moderation model that classifies prompts and responses into safe, controversial, or unsafe categories.",
         "contextWindow": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsToolCalls": false,
         "supportsResponseFormat": false
@@ -2739,10 +3738,18 @@
         "contextWindow": 24000,
         "maxTokens": 24000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["reasoning", "math", "analysis"],
+        "strengths": [
+          "reasoning",
+          "math",
+          "analysis"
+        ],
         "contextComplexity": 2,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2024",
@@ -2750,7 +3757,10 @@
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -2768,10 +3778,16 @@
         "contextWindow": 32768,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "March 2025",
@@ -2792,13 +3808,20 @@
         "contextWindow": 131072,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "March 5, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }

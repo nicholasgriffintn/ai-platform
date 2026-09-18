@@ -14,13 +14,18 @@
         "costPer1kInputTokens": 0.00085,
         "costPer1kOutputTokens": 0.00155
       },
-      "unset": ["supportsResponseFormat", "reasoningConfig"]
+      "unset": [
+        "supportsResponseFormat",
+        "reasoningConfig"
+      ]
     },
     "morph-v3-large": {
       "model": "morph/morph-v3-large",
       "matchingModel": "morph-v3-large",
       "overrides": {
-        "strengths": ["coding"],
+        "strengths": [
+          "coding"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "speed": 3,
@@ -34,7 +39,9 @@
       "model": "morph/morph-v3-fast",
       "matchingModel": "morph-v3-fast",
       "overrides": {
-        "strengths": ["coding"],
+        "strengths": [
+          "coding"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "speed": 5,

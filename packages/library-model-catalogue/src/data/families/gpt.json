@@ -15,8 +15,12 @@
         "contextWindow": 16385,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "reliability": 1,
         "releaseDate": "March 1, 2023",
@@ -36,8 +40,12 @@
         "contextWindow": 16385,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "September 30, 2021",
         "releaseDate": "August 28, 2023",
@@ -49,8 +57,12 @@
         "name": "GPT-3.5 Turbo Instruct",
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -61,10 +73,16 @@
         "name": "GPT-4",
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 2,
         "reliability": 1,
         "knowledgeCutoffDate": "November 2023",
@@ -102,10 +120,20 @@
         "contextWindow": 1047576,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2024",
@@ -125,10 +153,20 @@
         "contextWindow": 1047576,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2024",
@@ -148,8 +186,12 @@
         "contextWindow": 32768,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "November 2023",
         "releaseDate": "March 14, 2023",
@@ -163,10 +205,19 @@
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "December 2023",
@@ -186,10 +237,16 @@
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "April 30, 2023",
@@ -210,8 +267,12 @@
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "December 31, 2023",
         "releaseDate": "January 25, 2024",
@@ -225,10 +286,20 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "September 2023",
@@ -248,8 +319,14 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["audio", "text"],
-          "output": ["text", "audio"]
+          "input": [
+            "audio",
+            "text"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "knowledgeCutoffDate": "October 31, 2023",
         "releaseDate": "August 15, 2025"
@@ -262,10 +339,20 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "September 2023",
@@ -284,10 +371,16 @@
         "description": "Lower-cost speech-to-text model for transcription workflows.",
         "contextWindow": 16000,
         "modalities": {
-          "input": ["audio"],
-          "output": ["text"]
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["transcription"],
+        "strengths": [
+          "transcription"
+        ],
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false
@@ -300,8 +393,12 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 31, 2023",
         "releaseDate": "March 12, 2025",
@@ -316,8 +413,12 @@
         "name": "GPT-4o Transcribe",
         "description": "Higher-accuracy speech-to-text model for transcription workflows.",
         "modalities": {
-          "input": ["audio"],
-          "output": ["text"]
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -330,17 +431,31 @@
         "contextWindow": 400000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "August 7, 2025",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
@@ -358,16 +473,30 @@
         "contextWindow": 400000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "November 13, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -385,16 +514,31 @@
         "contextWindow": 400000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "November 13, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -412,13 +556,23 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "November 12, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -430,13 +584,25 @@
         "contextWindow": 400000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "November 12, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -448,12 +614,21 @@
         "contextWindow": 400000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "November 12, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -465,17 +640,32 @@
         "contextWindow": 400000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "December 11, 2025",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -493,13 +683,22 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "December 11, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -511,16 +710,32 @@
         "contextWindow": 400000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "December 11, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -538,12 +753,21 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "March 3, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -555,16 +779,32 @@
         "contextWindow": 1050000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 5, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -582,16 +822,32 @@
         "contextWindow": 1050000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 5, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -609,16 +865,32 @@
         "contextWindow": 1050000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 5, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -636,14 +908,27 @@
         "contextWindow": 272000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["image", "text", "pdf"],
-          "output": ["image", "text"]
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
         },
         "releaseDate": "April 21, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -655,17 +940,33 @@
         "contextWindow": 1050000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 2,
         "knowledgeCutoffDate": "December 1, 2025",
         "releaseDate": "April 23, 2026",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -683,17 +984,33 @@
         "contextWindow": 1050000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 2,
         "knowledgeCutoffDate": "December 1, 2025",
         "releaseDate": "April 23, 2026",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -711,17 +1028,33 @@
         "contextWindow": 1000000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 2,
         "knowledgeCutoffDate": "December 1, 2025",
         "releaseDate": "April 23, 2026",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -739,13 +1072,23 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "August 7, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -757,17 +1100,32 @@
         "contextWindow": 400000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "August 7, 2025",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -785,17 +1143,32 @@
         "contextWindow": 400000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "August 7, 2025",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
@@ -815,7 +1188,10 @@
         "knowledgeCutoffDate": "October 1, 2024",
         "releaseDate": "October 14, 2025",
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -827,13 +1203,23 @@
         "contextWindow": 400000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["pdf", "image", "text"],
-          "output": ["image", "text"]
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
         },
         "releaseDate": "October 16, 2025",
         "supportsToolCalls": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -845,13 +1231,25 @@
         "contextWindow": 1050000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["pdf", "image", "text"],
-          "output": ["text"]
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 4, 2026",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -863,8 +1261,14 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "audio"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "releaseDate": "January 19, 2026"
       }
@@ -876,10 +1280,20 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "audio"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
-        "strengths": ["audio", "chat", "general_knowledge"],
+        "strengths": [
+          "audio",
+          "chat",
+          "general_knowledge"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "multimodal": true,
@@ -894,10 +1308,20 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
-          "input": ["text", "audio"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
-        "strengths": ["audio", "chat", "general_knowledge"],
+        "strengths": [
+          "audio",
+          "chat",
+          "general_knowledge"
+        ],
         "contextComplexity": 3,
         "reliability": 4,
         "multimodal": true,
@@ -910,8 +1334,14 @@
         "name": "GPT Chat Latest",
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "May 5, 2026",
         "supportsTemperature": false
@@ -924,8 +1354,14 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text", "audio"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "releaseDate": "September 10, 2026",
         "supportsToolCalls": false,
@@ -939,10 +1375,17 @@
         "contextWindow": 16000,
         "maxTokens": 2000,
         "modalities": {
-          "input": ["audio", "text"],
-          "output": ["text"]
+          "input": [
+            "audio",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["transcription"],
+        "strengths": [
+          "transcription"
+        ],
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false
@@ -954,8 +1397,12 @@
         "description": "Large 120B parameter open-source GPT model optimized for reasoning and complex tasks.",
         "contextWindow": 131072,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "reliability": 1,
         "supportsAttachments": false,
@@ -974,10 +1421,16 @@
         "contextWindow": 131072,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "August 5, 2025",
@@ -996,10 +1449,16 @@
         "contextWindow": 131072,
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "supportsAttachments": false,
@@ -1018,10 +1477,18 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text", "audio"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
-        "strengths": ["audio"],
+        "strengths": [
+          "audio"
+        ],
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "February 23, 2026",
@@ -1072,7 +1539,13 @@
         "releaseDate": "July 6, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "minimal"
         }
       }
@@ -1084,10 +1557,22 @@
         "contextWindow": 128000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text", "audio", "image"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "audio",
+            "image"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
-        "strengths": ["audio", "chat", "reasoning", "vision"],
+        "strengths": [
+          "audio",
+          "chat",
+          "reasoning",
+          "vision"
+        ],
         "contextComplexity": 4,
         "reliability": 5,
         "multimodal": true,
@@ -1095,7 +1580,13 @@
         "supportsResponseFormat": false,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "minimal"
         }
       }
@@ -1142,10 +1633,18 @@
         "contextWindow": 16000,
         "maxTokens": 2000,
         "modalities": {
-          "input": ["audio"],
-          "output": ["audio", "text"]
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "audio",
+            "text"
+          ]
         },
-        "strengths": ["multilingual", "audio"],
+        "strengths": [
+          "multilingual",
+          "audio"
+        ],
         "contextComplexity": 3,
         "reliability": 4,
         "knowledgeCutoffDate": "September 30, 2024",
@@ -1162,10 +1661,17 @@
         "contextWindow": 16000,
         "maxTokens": 2000,
         "modalities": {
-          "input": ["audio", "text"],
-          "output": ["text"]
+          "input": [
+            "audio",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["transcription"],
+        "strengths": [
+          "transcription"
+        ],
         "knowledgeCutoffDate": "September 2024",
         "supportsToolCalls": false,
         "supportsAttachments": false,
@@ -1179,10 +1685,17 @@
         "contextWindow": 16000,
         "maxTokens": 2000,
         "modalities": {
-          "input": ["audio", "text"],
-          "output": ["text"]
+          "input": [
+            "audio",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["transcription"],
+        "strengths": [
+          "transcription"
+        ],
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false
@@ -1195,8 +1708,13 @@
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "card": "https://platform.openai.com/docs/models/gpt-4.5-preview",
         "strengths": [
@@ -1228,11 +1746,22 @@
         "contextWindow": 128000,
         "maxTokens": 16484,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "card": "https://www.prompthub.us/models/gpt-4o-mini",
-        "strengths": ["analysis", "chat", "coding", "multilingual", "general_knowledge"],
+        "strengths": [
+          "analysis",
+          "chat",
+          "coding",
+          "multilingual",
+          "general_knowledge"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "knowledgeCutoffDate": "October 2023",
@@ -1249,11 +1778,22 @@
         "contextWindow": 128000,
         "maxTokens": 16484,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "card": "https://www.prompthub.us/models/gpt-4o",
-        "strengths": ["analysis", "chat", "coding", "multilingual", "general_knowledge"],
+        "strengths": [
+          "analysis",
+          "chat",
+          "coding",
+          "multilingual",
+          "general_knowledge"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "multimodal": true,
@@ -1271,14 +1811,27 @@
         "contextWindow": 1050000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["pdf", "image", "text"],
-          "output": ["text"]
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "February 16, 2026",
         "releaseDate": "April 27, 2026",
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }

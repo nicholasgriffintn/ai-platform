@@ -11,7 +11,11 @@
       "overrides": {
         "contextWindow": 204800,
         "maxTokens": 131072,
-        "strengths": ["coding", "agents", "tool_use"],
+        "strengths": [
+          "coding",
+          "agents",
+          "tool_use"
+        ],
         "speed": 4,
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -25,7 +29,12 @@
       "overrides": {
         "name": "MiniMax M2.7",
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
-        "strengths": ["coding", "agents", "reasoning", "tool_use"],
+        "strengths": [
+          "coding",
+          "agents",
+          "reasoning",
+          "tool_use"
+        ],
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -87,7 +96,9 @@
         "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     }
   }
 }

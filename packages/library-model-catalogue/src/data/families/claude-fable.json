@@ -4,8 +4,14 @@
     "contextWindow": 1000000,
     "maxTokens": 128000,
     "modalities": {
-      "input": ["text", "image", "pdf"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "releaseDate": "June 9, 2026",
     "supportsToolCalls": true,
@@ -13,7 +19,13 @@
     "supportsTemperature": false,
     "supportsTopP": false,
     "reasoningConfig": {
-      "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
       "defaultEffort": "low"
     }
   },
@@ -23,7 +35,12 @@
       "defaults": {
         "name": "Claude Fable 5",
         "description": "Claude model for creative writing, analysis, and controlled agent workflows",
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
@@ -51,7 +68,13 @@
         "releaseDate": "September 1, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -76,7 +99,12 @@
       "defaults": {
         "name": "Claude Fable 5 (EU)",
         "description": "Claude model for creative writing, analysis, and controlled agent workflows",
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
@@ -93,15 +121,31 @@
         "name": "Claude Fable 5 (Global)",
         "description": "Claude model for creative writing, analysis, and controlled agent workflows",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         },
@@ -118,15 +162,31 @@
         "name": "Claude Fable 5 (US)",
         "description": "Claude model for creative writing, analysis, and controlled agent workflows",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         },

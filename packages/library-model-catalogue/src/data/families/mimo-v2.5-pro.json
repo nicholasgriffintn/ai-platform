@@ -4,10 +4,18 @@
     "contextWindow": 1048576,
     "maxTokens": 128000,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
-    "strengths": ["coding", "document", "tool_use"],
+    "strengths": [
+      "coding",
+      "document",
+      "tool_use"
+    ],
     "contextComplexity": 5,
     "reliability": 2,
     "knowledgeCutoffDate": "December 2024",
@@ -16,7 +24,10 @@
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
-      "supportedEffortLevels": ["none", "thinking"],
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
       "defaultEffort": "none"
     },
     "artificialAnalysis": {

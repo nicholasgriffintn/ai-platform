@@ -13,8 +13,14 @@
         "contextWindow": 16384,
         "maxTokens": 14745,
         "modalities": {
-          "input": ["image", "text", "video"],
-          "output": ["text"]
+          "input": [
+            "image",
+            "text",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "March 20, 2026",
         "supportsToolCalls": true,
@@ -28,8 +34,12 @@
         "contextWindow": 65536,
         "maxTokens": 58982,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 3,
         "reliability": 1,
@@ -38,7 +48,10 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {

@@ -17,8 +17,14 @@
         "contextWindow": 262144,
         "maxTokens": 256000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "supportsToolCalls": false
@@ -31,8 +37,12 @@
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         }
       }
     },
@@ -43,8 +53,13 @@
         "contextWindow": 262144,
         "maxTokens": 209715,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         }
       }
     },
@@ -55,10 +70,19 @@
         "contextWindow": 256000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "tool_use", "document"],
+        "strengths": [
+          "vision",
+          "tool_use",
+          "document"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "artificialAnalysis": {
@@ -76,8 +100,13 @@
         "contextWindow": 131072,
         "maxTokens": 104857,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         }
       }
     },
@@ -88,10 +117,17 @@
         "contextWindow": 128000,
         "maxTokens": 4096,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use", "document"],
+        "strengths": [
+          "tool_use",
+          "document"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "artificialAnalysis": {
@@ -109,8 +145,13 @@
         "contextWindow": 262144,
         "maxTokens": 209715,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         }
       }
     },
@@ -121,8 +162,12 @@
         "contextWindow": 128000,
         "maxTokens": 8192,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "March 2024",
         "releaseDate": "October 22, 2024",
@@ -136,8 +181,12 @@
         "contextWindow": 128000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "October 1, 2024",
@@ -151,8 +200,12 @@
         "contextWindow": 128000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "October 1, 2024",

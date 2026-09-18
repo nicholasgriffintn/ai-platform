@@ -2,8 +2,13 @@
   "defaults": {
     "openWeights": false,
     "modalities": {
-      "input": ["text", "image"],
-      "output": ["text"]
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "contextComplexity": 3,
     "reliability": 1,

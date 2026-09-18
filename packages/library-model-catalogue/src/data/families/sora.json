@@ -1,10 +1,17 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["text"],
-      "output": ["video"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "video"
+      ]
     },
-    "strengths": ["creative", "video"],
+    "strengths": [
+      "creative",
+      "video"
+    ],
     "reliability": 4,
     "supportsAttachments": false,
     "artificialAnalysis": {

@@ -1,10 +1,17 @@
 {
   "defaults": {
     "modalities": {
-      "input": ["image"],
-      "output": ["image"]
+      "input": [
+        "image"
+      ],
+      "output": [
+        "image"
+      ]
     },
-    "strengths": ["creative", "analysis"],
+    "strengths": [
+      "creative",
+      "analysis"
+    ],
     "supportsAttachments": true
   },
   "description": "The replicate/bria/remove background family includes models that produce image.",

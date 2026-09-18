@@ -2,8 +2,12 @@
   "defaults": {
     "openWeights": true,
     "modalities": {
-      "input": ["text"],
-      "output": ["text"]
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
     },
     "releaseDate": "December 11, 2023",
     "supportsToolCalls": true,
@@ -18,7 +22,12 @@
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "contextWindow": 64000,
         "maxTokens": 64000,
-        "strengths": ["reasoning", "analysis", "multilingual", "coding"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "coding"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "knowledgeCutoffDate": "April 2024",
@@ -31,7 +40,12 @@
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "contextWindow": 32000,
         "maxTokens": 32000,
-        "strengths": ["reasoning", "analysis", "multilingual", "coding"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "coding"
+        ],
         "contextComplexity": 4,
         "reliability": 4,
         "knowledgeCutoffDate": "January 2024"
@@ -43,7 +57,13 @@
         "description": "Mixtral 8x7B Instruct accepts text and produces text.",
         "contextWindow": 32768,
         "maxTokens": 32768,
-        "strengths": ["reasoning", "analysis", "multilingual", "coding", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "coding",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "knowledgeCutoffDate": "September 2023",
@@ -66,7 +86,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }

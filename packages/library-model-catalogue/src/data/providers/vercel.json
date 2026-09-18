@@ -10,8 +10,14 @@
       "matchingModel": "openai/o3",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 3,
         "lastUpdated": "April 16, 2025",
@@ -44,7 +50,12 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "minimal"
         }
       }
@@ -54,10 +65,20 @@
       "matchingModel": "openai/gpt-4.1",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 4,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.002,
@@ -112,7 +133,9 @@
         "costPer1kOutputTokens": 0.0016,
         "supportsAttachments": true
       },
-      "unset": ["multimodal"]
+      "unset": [
+        "multimodal"
+      ]
     },
     "deepseek/deepseek-r1-distill-llama-70b": {
       "model": "deepseek/deepseek-r1-distill-llama-70b",
@@ -134,7 +157,9 @@
         "costPer1kOutputTokens": 0.0054,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "anthropic/claude-4-1-opus": {
       "model": "claude/claude-opus-4",
@@ -158,10 +183,19 @@
       "matchingModel": "anthropic/claude-3-5-haiku",
       "overrides": {
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "lastUpdated": "October 22, 2024",
@@ -180,7 +214,11 @@
       "model": "claude/claude-sonnet-4",
       "matchingModel": "anthropic/claude-4-sonnet",
       "overrides": {
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "lastUpdated": "May 22, 2025",
@@ -219,7 +257,12 @@
       "model": "nova-pro/nova-pro",
       "matchingModel": "amazon/nova-pro",
       "overrides": {
-        "strengths": ["vision", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "lastUpdated": "December 3, 2024",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0032,
@@ -245,7 +288,9 @@
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0001
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "mistral/magistral-medium": {
       "model": "magistral-medium/magistral-medium",
@@ -285,7 +330,10 @@
         "costPer1kOutputTokens": 0.00015,
         "supportsAttachments": true
       },
-      "unset": ["reliability", "artificialAnalysis"]
+      "unset": [
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "mistral/ministral-3b": {
       "model": "ministral/ministral-3b-latest",
@@ -295,7 +343,9 @@
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00004
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "mistral/mistral-small": {
       "model": "mistral-small/mistral-small-latest",
@@ -304,7 +354,11 @@
         "name": "Mistral Small",
         "contextWindow": 262144,
         "maxTokens": 4000,
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "speed": 4,
         "releaseDate": "September 17, 2024",
@@ -313,7 +367,10 @@
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -331,7 +388,9 @@
       "model": "magistral-small/magistral-small",
       "matchingModel": "mistral/magistral-small",
       "overrides": {
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "lastUpdated": "March 17, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015
@@ -385,14 +444,19 @@
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00088,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none",
           "modelOverrides": {
             "thinking": "alibaba/qwen3-235b-a22b-thinking"
           }
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "alibaba/qwen-3-30b": {
       "model": "qwen/qwen3-30b-a3b",
@@ -407,7 +471,9 @@
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0005
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "alibaba/qwen-3-32b": {
       "model": "qwen/qwen-3-32b",
@@ -431,7 +497,10 @@
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.0075,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -453,7 +522,9 @@
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "alibaba/qwen3-embedding-0.6b": {
       "model": "qwen/qwen3-embedding-0-6b",
@@ -486,8 +557,12 @@
         "openWeights": false,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text"],
-          "output": ["embedding"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "embedding"
+          ]
         },
         "releaseDate": "June 5, 2025",
         "lastUpdated": "June 5, 2025",
@@ -506,14 +581,19 @@
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.006,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none",
           "modelOverrides": {
             "thinking": "alibaba/qwen3-max-thinking"
           }
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "alibaba/qwen3-max-preview": {
       "model": "qwen/qwen3-max-preview",
@@ -549,7 +629,11 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0012
       },
-      "unset": ["strengths", "reliability", "artificialAnalysis"]
+      "unset": [
+        "strengths",
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "alibaba/qwen3-vl-instruct": {
       "model": "qwen/qwen3-vl-instruct",
@@ -577,8 +661,13 @@
       "overrides": {
         "maxTokens": 1000000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "December 1, 2024",
@@ -587,7 +676,11 @@
         "supportsToolCalls": false,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -612,7 +705,9 @@
         "costPer1kOutputTokens": 0.005,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "anthropic/claude-opus-4": {
       "model": "claude-opus/claude-opus-4",
@@ -625,7 +720,10 @@
         "costPer1kOutputTokens": 0.075,
         "supportsAttachments": true
       },
-      "unset": ["contextComplexity", "supportsTopP"]
+      "unset": [
+        "contextComplexity",
+        "supportsTopP"
+      ]
     },
     "anthropic/claude-opus-4.5": {
       "model": "claude-opus/claude-opus-4-5",
@@ -638,11 +736,16 @@
         "costPer1kOutputTokens": 0.025,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["supportsTopP"]
+      "unset": [
+        "supportsTopP"
+      ]
     },
     "anthropic/claude-opus-4.6": {
       "model": "claude-opus/claude-opus-4-6",
@@ -654,11 +757,18 @@
         "costPer1kOutputTokens": 0.025,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       },
-      "unset": ["supportsTopP", "supportsResponseFormat"]
+      "unset": [
+        "supportsTopP",
+        "supportsResponseFormat"
+      ]
     },
     "anthropic/claude-sonnet-4": {
       "model": "claude-sonnet/claude-sonnet-4",
@@ -671,7 +781,9 @@
         "costPer1kOutputTokens": 0.015,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "anthropic/claude-sonnet-4.5": {
       "model": "claude-sonnet/claude-sonnet-4-5",
@@ -751,8 +863,12 @@
         "contextWindow": 256000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "September 1, 2025",
@@ -774,7 +890,12 @@
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
         "reasoningConfig": {
-          "supportedEffortLevels": ["minimal", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "minimal"
         }
       }
@@ -830,7 +951,9 @@
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00095
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "deepseek/deepseek-v3.1-terminus": {
       "model": "deepseek/deepseek-v3-1-terminus",
@@ -859,14 +982,19 @@
         "costPer1kOutputTokens": 0.00185,
         "supportsToolCalls": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none",
           "modelOverrides": {
             "thinking": "deepseek/deepseek-v3.2-thinking"
           }
         }
       },
-      "unset": ["strengths"]
+      "unset": [
+        "strengths"
+      ]
     },
     "deepseek/deepseek-v3.2-exp": {
       "model": "deepseek/deepseek-v3-2-exp",
@@ -883,7 +1011,15 @@
       "model": "gemini-flash/gemini-2-5-flash",
       "matchingModel": "google/gemini-2.5-flash",
       "overrides": {
-        "strengths": ["vision", "document", "audio", "video", "tool_use", "image", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "image",
+          "creative"
+        ],
         "reliability": 4,
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -916,7 +1052,9 @@
         "costPer1kOutputTokens": 0.0025,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "google/gemini-2.5-flash-image-preview": {
       "model": "gemini/nano-banana-preview-gemini-2-5-flash-image-preview",
@@ -932,7 +1070,13 @@
       "model": "gemini-flash-lite/gemini-2-5-flash-lite",
       "matchingModel": "google/gemini-2.5-flash-lite",
       "overrides": {
-        "strengths": ["vision", "document", "audio", "video", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004,
@@ -948,7 +1092,10 @@
         "costPer1kOutputTokens": 0.0004,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -962,7 +1109,10 @@
         "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -971,7 +1121,13 @@
       "model": "gemini-pro/gemini-2-5-pro",
       "matchingModel": "google/gemini-2.5-pro",
       "overrides": {
-        "strengths": ["vision", "document", "audio", "video", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.00125,
@@ -986,10 +1142,20 @@
         "contextWindow": 1000000,
         "maxTokens": 65000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 5,
         "knowledgeCutoffDate": "March 2025",
         "lastUpdated": "December 17, 2025",
@@ -997,7 +1163,9 @@
         "costPer1kOutputTokens": 0.003,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "google/gemini-3-pro-image": {
       "model": "gemini-pro/nano-banana-pro",
@@ -1006,16 +1174,27 @@
         "name": "Nano Banana Pro (Gemini 3 Pro Image)",
         "contextWindow": 65536,
         "modalities": {
-          "input": ["text"],
-          "output": ["text", "image"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
         "supportsToolCalls": false
       },
-      "unset": ["reasoningConfig", "supportsResponseFormat"]
+      "unset": [
+        "reasoningConfig",
+        "supportsResponseFormat"
+      ]
     },
     "google/gemini-3-pro-preview": {
       "model": "gemini-pro/gemini-3-pro-preview",
@@ -1054,7 +1233,9 @@
         "lastUpdated": "May 22, 2025",
         "supportsToolCalls": false
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "google/imagen-4.0-ultra-generate-001": {
       "model": "imagen/imagen-4-ultra",
@@ -1093,7 +1274,9 @@
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.001
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "kwaipilot/kat-coder-pro-v1": {
       "model": "kat-coder/kat-coder-pro-v1",
@@ -1111,7 +1294,9 @@
       "overrides": {
         "lastUpdated": "August 30, 2025"
       },
-      "unset": ["reasoningConfig"]
+      "unset": [
+        "reasoningConfig"
+      ]
     },
     "meta/llama-3.1-70b": {
       "model": "llama/llama-3-1-70b-instruct",
@@ -1208,7 +1393,11 @@
         "name": "Llama-4-Maverick-17B-128E-Instruct-FP8",
         "contextWindow": 128000,
         "maxTokens": 4096,
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "speed": 4,
@@ -1322,7 +1511,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "mistral/mistral-embed": {
       "model": "mistral-embed/mistral-embed",
@@ -1343,7 +1534,10 @@
         "openWeights": false,
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
         "contextWindow": 262144,
-        "strengths": ["vision", "document"],
+        "strengths": [
+          "vision",
+          "document"
+        ],
         "speed": 3,
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "December 2, 2025",
@@ -1352,7 +1546,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "mistral/mistral-medium": {
       "model": "mistral-medium/mistral-medium-3-1",
@@ -1374,7 +1570,9 @@
           "intelligenceIndexVersion": 4.1
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "mistral/mistral-nemo": {
       "model": "mistral-nemo/mistral-nemo",
@@ -1418,10 +1616,21 @@
         "contextWindow": 256000,
         "maxTokens": 256000,
         "modalities": {
-          "input": ["text", "image", "video"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "video", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "releaseDate": "January 2026",
         "lastUpdated": "January 2026",
@@ -1464,7 +1673,9 @@
         "costPer1kOutputTokens": 0.0002,
         "supportsToolCalls": false
       },
-      "unset": ["strengths"]
+      "unset": [
+        "strengths"
+      ]
     },
     "nvidia/nemotron-nano-12b-v2-vl": {
       "model": "nemotron/nvidia-nemotron-nano-12b-v2-vl",
@@ -1527,7 +1738,9 @@
         "costPer1kOutputTokens": 0.002,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-4o-mini-search-preview": {
       "model": "gpt-mini/gpt-4o-mini-search-preview",
@@ -1538,7 +1751,11 @@
         "costPer1kOutputTokens": 0.0006,
         "supportsToolCalls": false
       },
-      "unset": ["contextComplexity", "reliability", "strengths"]
+      "unset": [
+        "contextComplexity",
+        "reliability",
+        "strengths"
+      ]
     },
     "openai/gpt-5-chat": {
       "model": "gpt/gpt-5-chat",
@@ -1549,14 +1766,20 @@
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-5-codex": {
       "model": "gpt-codex/gpt-5-codex",
       "matchingModel": "openai/gpt-5-codex",
       "overrides": {
         "name": "GPT-5-Codex",
-        "strengths": ["vision", "tool_use", "document"],
+        "strengths": [
+          "vision",
+          "tool_use",
+          "document"
+        ],
         "speed": 3,
         "lastUpdated": "September 15, 2025",
         "costPer1kInputTokens": 0.00125,
@@ -1564,7 +1787,11 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -1575,15 +1802,24 @@
       "overrides": {
         "name": "GPT-5 pro",
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
         "lastUpdated": "October 6, 2025",
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.12,
         "supportsAttachments": true
       },
-      "unset": ["strengths"]
+      "unset": [
+        "strengths"
+      ]
     },
     "openai/gpt-5.1-codex": {
       "model": "gpt-codex/gpt-5-1-codex",
@@ -1592,8 +1828,14 @@
         "name": "GPT-5.1-Codex",
         "description": "Codex GPT for repository edits, code review, and practical software agents",
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 4,
         "lastUpdated": "November 13, 2025",
@@ -1608,15 +1850,23 @@
       "overrides": {
         "name": "GPT 5.1 Codex Max",
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": true
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "openai/gpt-5.1-codex-mini": {
       "model": "gpt-codex/gpt-5-1-codex-mini",
@@ -1625,8 +1875,14 @@
         "name": "GPT-5.1 Codex mini",
         "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 4,
         "lastUpdated": "November 13, 2025",
@@ -1644,7 +1900,9 @@
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-5.1-thinking": {
       "model": "gpt/gpt-5-1-thinking",
@@ -1655,15 +1913,23 @@
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-5.2": {
       "model": "gpt/gpt-5-2",
       "matchingModel": "openai/gpt-5.2",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 3,
         "knowledgeCutoffDate": "October 2024",
@@ -1682,7 +1948,9 @@
         "costPer1kOutputTokens": 0.014,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-5.2-codex": {
       "model": "gpt-codex/gpt-5-2-codex",
@@ -1690,8 +1958,14 @@
       "overrides": {
         "description": "Code-specialist GPT for repository edits, reviews, and long-running software agents",
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 3,
         "lastUpdated": "December 11, 2025",
@@ -1753,8 +2027,14 @@
       "matchingModel": "openai/o3-deep-research",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "June 26, 2024",
         "costPer1kInputTokens": 0.01,
@@ -1767,8 +2047,14 @@
       "matchingModel": "openai/o3-pro",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 2,
         "knowledgeCutoffDate": "October 2024",
@@ -1817,7 +2103,11 @@
       "overrides": {
         "contextWindow": 127000,
         "maxTokens": 8000,
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "February 2025",
         "releaseDate": "February 19, 2025",
         "lastUpdated": "February 19, 2025",
@@ -1830,7 +2120,11 @@
       "model": "sonar-pro/sonar-pro",
       "matchingModel": "perplexity/sonar-pro",
       "overrides": {
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "February 19, 2025",
@@ -1857,8 +2151,12 @@
         "contextWindow": 127000,
         "maxTokens": 8000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 2,
         "knowledgeCutoffDate": "September 2025",
@@ -1993,18 +2291,24 @@
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": true
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-3": {
       "model": "grok/grok-3",
       "matchingModel": "xai/grok-3",
       "overrides": {
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-3-fast": {
       "model": "grok/grok-3-fast",
@@ -2014,7 +2318,9 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-3-mini": {
       "model": "grok/grok-3-mini",
@@ -2025,7 +2331,9 @@
         "costPer1kOutputTokens": 0.0005,
         "costPer1kReasoningTokens": 0.0005
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-3-mini-fast": {
       "model": "grok/grok-3-mini-fast",
@@ -2036,7 +2344,9 @@
         "costPer1kOutputTokens": 0.004,
         "costPer1kReasoningTokens": 0.004
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-4": {
       "model": "grok/grok-4",
@@ -2047,7 +2357,9 @@
         "costPer1kOutputTokens": 0.015,
         "costPer1kReasoningTokens": 0.015
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-4-fast-non-reasoning": {
       "model": "grok/grok-4-fast-non-reasoning",
@@ -2058,7 +2370,9 @@
         "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": true
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-4-fast-reasoning": {
       "model": "grok/grok-4-fast-reasoning",
@@ -2067,10 +2381,16 @@
         "name": "Grok 4 Fast Reasoning",
         "maxTokens": 256000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "July 9, 2025",
@@ -2078,7 +2398,9 @@
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xai/grok-4.1-fast-non-reasoning": {
       "model": "grok/grok-4-1-fast-non-reasoning",
@@ -2088,8 +2410,12 @@
         "contextWindow": 1000000,
         "maxTokens": 1000000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "July 9, 2025",
@@ -2102,10 +2428,16 @@
       "matchingModel": "xai/grok-4.1-fast-reasoning",
       "overrides": {
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "July 9, 2025",
         "costPer1kInputTokens": 0.0002,
@@ -2120,7 +2452,9 @@
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0015
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xiaomi/mimo-v2-flash": {
       "model": "mimo/mimo-v2-flash",
@@ -2149,7 +2483,9 @@
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0022
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "zai/glm-4.5-air": {
       "model": "glm-air/glm-4-5-air",
@@ -2177,7 +2513,9 @@
         "costPer1kOutputTokens": 0.0018,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "zai/glm-4.6": {
       "model": "glm/glm-4-6",
@@ -2191,7 +2529,9 @@
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0022
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "zai/glm-4.6v": {
       "model": "glm/glm-4-6v",
@@ -2200,8 +2540,14 @@
         "contextWindow": 128000,
         "maxTokens": 24000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 3,
         "speed": 3,
@@ -2210,7 +2556,9 @@
         "costPer1kOutputTokens": 0.0009,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "zai/glm-4.6v-flash": {
       "model": "glm/glm-4-6v-flash",
@@ -2219,7 +2567,9 @@
         "lastUpdated": "September 30, 2025",
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "zai/glm-4.7": {
       "model": "glm/glm-4-7",
@@ -2232,7 +2582,9 @@
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0022
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "zai/glm-4.7-flashx": {
       "model": "glm-flash/glm-4-7-flashx",
@@ -2245,7 +2597,9 @@
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.0004
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "alibaba/qwen-3.6-max-preview": {
       "model": "qwen/qwen-3-6-max-preview",
@@ -2277,7 +2631,10 @@
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
         "maxTokens": 129024,
-        "strengths": ["vision", "document"],
+        "strengths": [
+          "vision",
+          "document"
+        ],
         "speed": 3,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0004,
@@ -2325,10 +2682,20 @@
         "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "speed": 3,
@@ -2368,11 +2735,17 @@
         "costPer1kOutputTokens": 0.015,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "arcee-ai/trinity-large-thinking": {
       "model": "trinity/trinity-large-thinking",
@@ -2384,7 +2757,9 @@
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0009
       },
-      "unset": ["knowledgeCutoffDate"]
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "deepseek/deepseek-v4-flash": {
       "model": "deepseek-flash/deepseek-v4-flash",
@@ -2396,7 +2771,10 @@
         "costPer1kInputTokens": 0.00013,
         "costPer1kOutputTokens": 0.00026,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "xhigh"],
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -2412,7 +2790,10 @@
         "costPer1kInputTokens": 0.00066,
         "costPer1kOutputTokens": 0.00198,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "xhigh"],
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -2427,7 +2808,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "google/gemini-3.1-flash-lite": {
       "model": "gemini-flash-lite/gemini-3-1-flash-lite",
@@ -2436,10 +2819,20 @@
         "contextWindow": 1000000,
         "maxTokens": 65000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 4,
         "lastUpdated": "May 7, 2026",
         "costPer1kInputTokens": 0.00025,
@@ -2465,10 +2858,21 @@
         "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "February 19, 2026",
         "costPer1kInputTokens": 0.002,
@@ -2484,8 +2888,12 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["embedding"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "embedding"
+          ]
         },
         "lastUpdated": "April 22, 2026",
         "supportsToolCalls": false
@@ -2497,8 +2905,14 @@
       "overrides": {
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -2512,8 +2926,14 @@
       "overrides": {
         "maxTokens": 131072,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00014,
@@ -2532,7 +2952,9 @@
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00075
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "inception/mercury-edit-2": {
       "model": "vercel/inception/mercury-edit-2/mercury-edit-2",
@@ -2564,7 +2986,10 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -2598,17 +3023,29 @@
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
         "maxTokens": 131000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "minimax/minimax-m2.7-highspeed": {
       "model": "minimax/minimax-m2-7-high-speed",
@@ -2628,10 +3065,20 @@
         "contextWindow": 262000,
         "maxTokens": 262000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.00095,
@@ -2651,7 +3098,10 @@
         "costPer1kOutputTokens": 0.00065,
         "supportsToolCalls": false
       },
-      "unset": ["strengths", "supportsResponseFormat"]
+      "unset": [
+        "strengths",
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-5.3-chat": {
       "model": "gpt/gpt-5-3-chat",
@@ -2662,7 +3112,9 @@
         "costPer1kOutputTokens": 0.014,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-5.3-codex": {
       "model": "gpt-codex/gpt-5-3-codex",
@@ -2675,7 +3127,12 @@
         "costPer1kOutputTokens": 0.014,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high", "xhigh"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -2710,8 +3167,14 @@
       "overrides": {
         "name": "GPT 5.4 Nano",
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 4,
         "lastUpdated": "March 17, 2026",
@@ -2786,15 +3249,22 @@
       "overrides": {
         "maxTokens": 2000000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "March 10, 2026",
         "lastUpdated": "March 23, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -2804,8 +3274,12 @@
       "matchingModel": "xai/grok-4.20-multi-agent-beta",
       "overrides": {
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.00125,
@@ -2820,8 +3294,14 @@
         "contextWindow": 2000000,
         "maxTokens": 2000000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 5,
         "speed": 5,
@@ -2850,8 +3330,14 @@
         "contextWindow": 2000000,
         "maxTokens": 2000000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "March 10, 2026",
         "lastUpdated": "March 23, 2026",
@@ -2876,8 +3362,14 @@
       "overrides": {
         "maxTokens": 1000000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 4,
         "lastUpdated": "April 17, 2026",
@@ -2885,7 +3377,10 @@
         "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -2896,10 +3391,18 @@
       "overrides": {
         "contextWindow": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["text", "image"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "lastUpdated": "February 19, 2026",
         "supportsToolCalls": false
       }
@@ -2911,7 +3414,9 @@
         "lastUpdated": "February 19, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "xiaomi/mimo-v2-pro": {
       "model": "mimo/mimo-v2-pro",
@@ -2941,14 +3446,20 @@
         "name": "MiMo V2.5 Pro",
         "contextWindow": 1050000,
         "maxTokens": 131000,
-        "strengths": ["coding", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "document",
+          "tool_use"
+        ],
         "speed": 2,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.000435,
         "costPer1kOutputTokens": 0.00087,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "zai/glm-4.7-flash": {
       "model": "glm-flash/glm-4-7-flash",
@@ -2961,7 +3472,9 @@
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0004
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "zai/glm-5": {
       "model": "glm/glm-5",
@@ -2975,7 +3488,9 @@
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.0032
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "zai/glm-5-turbo": {
       "model": "glm/glm-5-turbo",
@@ -2997,10 +3512,20 @@
         "contextWindow": 202800,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.0014,
@@ -3015,16 +3540,28 @@
         "contextWindow": 200000,
         "maxTokens": 128000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "lastUpdated": "April 1, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.004,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "alibaba/qwen3.7-max": {
       "model": "qwen/qwen-3-7-max",
@@ -3044,10 +3581,21 @@
         "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,
@@ -3064,10 +3612,16 @@
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "maxTokens": 256000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "reliability": 2,
         "speed": 4,
         "lastUpdated": "May 21, 2026",
@@ -3080,7 +3634,9 @@
           "intelligenceIndexVersion": 4.1
         }
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "xai/grok-build-0.1": {
       "model": "grok-build/grok-build-0-1",
@@ -3112,10 +3668,20 @@
         "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "speed": 2,
@@ -3126,7 +3692,10 @@
         "costPer1kOutputTokens": 0.0016,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
@@ -3143,17 +3712,30 @@
       "overrides": {
         "name": "Gemini 3.1 Flash Image (Nano Banana 2)",
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text", "image"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
         },
-        "strengths": ["vision", "document", "image", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
         "supportsToolCalls": false,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "minimax/minimax-m3": {
       "model": "minimax/minimax-m3",
@@ -3162,17 +3744,29 @@
         "name": "MiniMax M3",
         "contextWindow": 512000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "nvidia/nemotron-3-ultra-550b-a55b": {
       "model": "nemotron/nemotron-3-ultra",
@@ -3181,7 +3775,9 @@
         "name": "Nemotron 3 Ultra",
         "contextWindow": 1000000,
         "maxTokens": 65000,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 2,
         "speed": 4,
@@ -3273,7 +3869,10 @@
         "openWeights": false,
         "contextWindow": 0,
         "maxTokens": 0,
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "lastUpdated": "June 8, 2026",
         "supportsToolCalls": false
       }
@@ -3286,7 +3885,9 @@
         "openWeights": false,
         "contextWindow": 0,
         "maxTokens": 0,
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "releaseDate": "January 15, 2026",
         "lastUpdated": "June 8, 2026",
         "supportsToolCalls": false
@@ -3308,7 +3909,10 @@
         "openWeights": false,
         "contextWindow": 67300,
         "maxTokens": 67300,
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "lastUpdated": "June 8, 2026",
         "supportsToolCalls": false
       }
@@ -3321,7 +3925,10 @@
         "openWeights": false,
         "contextWindow": 67300,
         "maxTokens": 67300,
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "lastUpdated": "June 8, 2026",
         "supportsToolCalls": false
       }
@@ -3333,10 +3940,20 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["video"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
         },
-        "strengths": ["vision", "document", "video", "creative"],
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "creative"
+        ],
         "releaseDate": "April 14, 2026",
         "lastUpdated": "April 14, 2026",
         "supportsToolCalls": false,
@@ -3359,7 +3976,9 @@
         "lastUpdated": "June 1, 2025",
         "supportsToolCalls": false
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "bytedance/seedance-v1.0-lite-t2v": {
       "model": "seed/seedance-v1-0-lite-text-to-video",
@@ -3368,7 +3987,9 @@
         "lastUpdated": "June 1, 2025",
         "supportsToolCalls": false
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "bytedance/seedance-v1.0-pro": {
       "model": "seed/seedance-v1-0-pro",
@@ -3409,10 +4030,17 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["image"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
         },
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "releaseDate": "December 3, 2025",
         "lastUpdated": "November 28, 2025",
         "supportsToolCalls": false
@@ -3480,7 +4108,10 @@
       "overrides": {
         "contextWindow": 0,
         "maxTokens": 0,
-        "strengths": ["video", "creative"],
+        "strengths": [
+          "video",
+          "creative"
+        ],
         "lastUpdated": "June 8, 2026",
         "supportsToolCalls": false
       }
@@ -3563,10 +4194,16 @@
       "overrides": {
         "name": "GPT Image 1",
         "modalities": {
-          "input": ["text"],
-          "output": ["image"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
         },
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "lastUpdated": "April 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.04,
@@ -3579,10 +4216,16 @@
       "overrides": {
         "name": "GPT Image 1 Mini",
         "modalities": {
-          "input": ["text"],
-          "output": ["image"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
         },
-        "strengths": ["image"],
+        "strengths": [
+          "image"
+        ],
         "releaseDate": "October 6, 2025",
         "lastUpdated": "October 6, 2025",
         "costPer1kInputTokens": 0.002,
@@ -3596,16 +4239,25 @@
       "overrides": {
         "name": "GPT Image 1.5",
         "modalities": {
-          "input": ["text"],
-          "output": ["image"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
         },
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "lastUpdated": "November 25, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.032,
         "supportsToolCalls": false
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "openai/gpt-image-2": {
       "model": "gpt-image/gpt-image-2",
@@ -3613,16 +4265,25 @@
       "overrides": {
         "name": "GPT Image 2",
         "modalities": {
-          "input": ["text"],
-          "output": ["image"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
         },
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
         "supportsToolCalls": false
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "prodia/flux-fast-schnell": {
       "model": "flux/flux-schnell",
@@ -3716,7 +4377,12 @@
       "model": "claude-fable/claude-fable-5",
       "matchingModel": "anthropic/claude-fable-5",
       "overrides": {
-        "strengths": ["vision", "document", "tool_use", "coding"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
@@ -3730,7 +4396,9 @@
       "overrides": {
         "openWeights": false,
         "maxTokens": 131072,
-        "strengths": ["tool_use"],
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "speed": 2,
@@ -3744,7 +4412,11 @@
           "intelligenceIndexVersion": 4.1
         }
       },
-      "unset": ["knowledgeCutoffDate", "supportsResponseFormat", "reasoningConfig"]
+      "unset": [
+        "knowledgeCutoffDate",
+        "supportsResponseFormat",
+        "reasoningConfig"
+      ]
     },
     "moonshotai/kimi-k2.7-code": {
       "model": "kimi-k2/kimi-k2-7-code",
@@ -3753,10 +4425,21 @@
         "contextWindow": 256000,
         "maxTokens": 32768,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
@@ -3786,7 +4469,10 @@
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.00255,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "xhigh"],
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -3801,7 +4487,10 @@
         "costPer1kOutputTokens": 0.03,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -3815,7 +4504,11 @@
         "costPer1kOutputTokens": 0.005,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat", "contextComplexity", "reliability"]
+      "unset": [
+        "supportsResponseFormat",
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "openai/gpt-4o-transcribe": {
       "model": "gpt/gpt-4o-transcribe",
@@ -3830,7 +4523,9 @@
         "costPer1kOutputTokens": 0.01,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-realtime-1.5": {
       "model": "gpt/gpt-realtime-1-5",
@@ -3841,7 +4536,9 @@
         "costPer1kOutputTokens": 0.016,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-realtime-2": {
       "model": "gpt/gpt-realtime-2",
@@ -3852,8 +4549,14 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text", "audio"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "releaseDate": "May 7, 2026",
         "lastUpdated": "May 7, 2026",
@@ -3861,7 +4564,9 @@
         "costPer1kOutputTokens": 0.024,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-realtime-mini": {
       "model": "gpt/gpt-realtime-mini",
@@ -3872,10 +4577,18 @@
         "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
-          "input": ["text", "audio"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
-        "strengths": ["audio"],
+        "strengths": [
+          "audio"
+        ],
         "contextComplexity": 4,
         "releaseDate": "October 10, 2025",
         "lastUpdated": "October 10, 2025",
@@ -3883,7 +4596,9 @@
         "costPer1kOutputTokens": 0.0024,
         "supportsToolCalls": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "openai/tts-1": {
       "model": "o/tts-1",
@@ -3955,7 +4670,10 @@
         "costPer1kInputTokens": 0.0021,
         "costPer1kOutputTokens": 0.0066,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "xhigh"],
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -3969,7 +4687,9 @@
         "costPer1kOutputTokens": 0.004,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "quiverai/arrow-1.1": {
       "model": "o/arrow-1-1",
@@ -3989,7 +4709,9 @@
         "supportsAttachments": true,
         "supportsTemperature": false
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "google/gemini-3.1-flash-lite-image": {
       "model": "gemini-flash-lite/gemini-3-1-flash-lite-image-nano-banana-2-lite",
@@ -4001,7 +4723,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": true
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "anthropic/claude-3-haiku": {
       "model": "claude-haiku/claude-haiku-3",
@@ -4012,7 +4736,9 @@
         "costPer1kOutputTokens": 0.00125,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "alibaba/wan-v2.7-r2v": {
       "model": "o/wan-v2-7-reference-to-video",
@@ -4038,8 +4764,14 @@
         "contextWindow": 1000000,
         "maxTokens": 57920,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.0015,
@@ -4057,7 +4789,10 @@
         "costPer1kOutputTokens": 0.006,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -4069,8 +4804,14 @@
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "maxTokens": 1048576,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.00125,
@@ -4122,7 +4863,10 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -4137,7 +4881,10 @@
         "costPer1kInputTokens": 0.00074,
         "costPer1kOutputTokens": 0.00296,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -4149,8 +4896,14 @@
         "name": "gpt-realtime-2.1",
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "modalities": {
-          "input": ["text", "audio"],
-          "output": ["text", "audio"]
+          "input": [
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
         },
         "lastUpdated": "July 6, 2026",
         "costPer1kInputTokens": 0.004,
@@ -4177,7 +4930,10 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -4186,7 +4942,12 @@
       "model": "claude-opus/claude-opus-4-8-fast",
       "matchingModel": "anthropic/claude-opus-4.8-fast",
       "overrides": {
-        "strengths": ["coding", "vision", "document", "tool_use"],
+        "strengths": [
+          "coding",
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 2,
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.01,
@@ -4202,8 +4963,14 @@
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "contextWindow": 1000000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
@@ -4211,7 +4978,10 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -4231,15 +5001,29 @@
         "contextWindow": 256000,
         "maxTokens": 256000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.00405,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -4251,15 +5035,23 @@
         "contextWindow": 1000000,
         "maxTokens": 65000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": true
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "google/gemini-3.6-flash": {
       "model": "gemini-flash/gemini-3-6-flash",
@@ -4268,8 +5060,14 @@
         "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.00075,
@@ -4307,7 +5105,9 @@
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00058
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "inclusionai/ling-3.0-flash-free": {
       "model": "ling/ling-3-0-flash",
@@ -4318,7 +5118,9 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "anthropic/claude-opus-5": {
       "model": "claude-opus/claude-opus-5",
@@ -4331,7 +5133,10 @@
         "supportsAttachments": true,
         "supportsTemperature": false
       },
-      "unset": ["contextComplexity", "supportsResponseFormat"]
+      "unset": [
+        "contextComplexity",
+        "supportsResponseFormat"
+      ]
     },
     "anthropic/claude-opus-5-fast": {
       "model": "claude-opus/claude-opus-5-fast",
@@ -4343,7 +5148,9 @@
         "supportsAttachments": true,
         "supportsTemperature": false
       },
-      "unset": ["contextComplexity"]
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "moonshotai/kimi-k3-fast": {
       "model": "kimi-k3/kimi-k3-fast",
@@ -4352,8 +5159,14 @@
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "contextWindow": 1000000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "July 16, 2026",
         "lastUpdated": "July 16, 2026",
@@ -4362,7 +5175,11 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "high", "max"],
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -4384,7 +5201,9 @@
         "lastUpdated": "July 29, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "minimax/minimax-h3": {
       "model": "minimax/minimax-h3",
@@ -4394,7 +5213,10 @@
         "supportsToolCalls": false,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature", "reasoningConfig"]
+      "unset": [
+        "supportsTemperature",
+        "reasoningConfig"
+      ]
     },
     "thinkingmachines/inkling-small": {
       "model": "ling/inkling-small",
@@ -4404,15 +5226,29 @@
         "contextWindow": 1000000,
         "maxTokens": 1000000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -4424,7 +5260,9 @@
         "lastUpdated": "April 2, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "alibaba/qwen3.8-max": {
       "model": "qwen/qwen-3-8-max",
@@ -4443,7 +5281,11 @@
         "lastUpdated": "February 26, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["multimodal", "supportsTemperature", "reasoningConfig"]
+      "unset": [
+        "multimodal",
+        "supportsTemperature",
+        "reasoningConfig"
+      ]
     },
     "perplexity/pplx-embed-v1-4b": {
       "model": "vercel/perplexity/pplx-embed-v1-4b/embed-v1-4b",
@@ -4452,7 +5294,9 @@
         "lastUpdated": "February 26, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "bfl/flux-3-video": {
       "model": "flux/flux-3",
@@ -4461,7 +5305,9 @@
         "lastUpdated": "August 4, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "meta/muse-spark-1.2": {
       "model": "muse/muse-spark-1-2",
@@ -4470,15 +5316,24 @@
         "description": "Open Llama multimodal model for image understanding and text reasoning",
         "maxTokens": 1048576,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "August 5, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -4489,15 +5344,24 @@
       "overrides": {
         "maxTokens": 1048576,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "August 5, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0002,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat", "supportsTemperature"]
+      "unset": [
+        "supportsResponseFormat",
+        "supportsTemperature"
+      ]
     },
     "fish-audio/s1": {
       "model": "o/s1",
@@ -4506,7 +5370,9 @@
         "lastUpdated": "October 20, 2025",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "fish-audio/s2-pro": {
       "model": "o/s2-pro",
@@ -4515,7 +5381,9 @@
         "lastUpdated": "March 9, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "fish-audio/s2.1-pro": {
       "model": "o/s2-1-pro",
@@ -4524,7 +5392,9 @@
         "lastUpdated": "July 28, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "fish-audio/transcribe-1": {
       "model": "o/transcribe-1",
@@ -4533,7 +5403,9 @@
         "lastUpdated": "March 1, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "inclusionai/ling-3.0-flash": {
       "model": "ling/ling-3-0-flash",
@@ -4545,7 +5417,9 @@
         "costPer1kInputTokens": 0.000021,
         "costPer1kOutputTokens": 0.000063
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "inclusionai/ling-3.0-tiny-free": {
       "model": "ling/ling-3-0-tiny-free",
@@ -4556,7 +5430,9 @@
         "maxTokens": 32000,
         "lastUpdated": "August 6, 2026"
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "bytedance/seedance-2.5": {
       "model": "seed/seedance-2-5",
@@ -4565,7 +5441,9 @@
         "lastUpdated": "August 7, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "xai/grok-imagine-image-2.0-preview": {
       "model": "grok/grok-imagine-image-2-0-preview",
@@ -4574,7 +5452,9 @@
         "lastUpdated": "August 8, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "meta/muse-glimmer-30b": {
       "model": "muse/muse-glimmer-30b",
@@ -4596,7 +5476,9 @@
         "costPer1kOutputTokens": 0.004,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "xai/grok-imagine-image-2.0": {
       "model": "grok/grok-imagine-image-2-0",
@@ -4612,14 +5494,21 @@
       "matchingModel": "xai/grok-4.6",
       "overrides": {
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -4640,8 +5529,14 @@
       "overrides": {
         "contextWindow": 1000000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.00075,
@@ -4661,7 +5556,12 @@
         "costPer1kOutputTokens": 0.003,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "xhigh"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "xhigh"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -4763,7 +5663,10 @@
         "costPer1kOutputTokens": 0.02,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature", "supportsResponseFormat"]
+      "unset": [
+        "supportsTemperature",
+        "supportsResponseFormat"
+      ]
     },
     "openai/gpt-5.2-fast": {
       "model": "gpt/gpt-5-2-fast",
@@ -4897,7 +5800,9 @@
         "lastUpdated": "October 20, 2025",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "fish-audio/s2-pro-free": {
       "model": "o/s2-pro-free",
@@ -4906,7 +5811,9 @@
         "lastUpdated": "March 9, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "fish-audio/s2.1-pro-free": {
       "model": "o/s2-1-pro-free",
@@ -4915,7 +5822,9 @@
         "lastUpdated": "July 28, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "fish-audio/transcribe-1-free": {
       "model": "o/transcribe-1-free",
@@ -4924,7 +5833,9 @@
         "lastUpdated": "March 1, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-4.1-fast-non-reasoning": {
       "model": "grok/grok-4-1-fast-non-reasoning",
@@ -4934,23 +5845,37 @@
         "contextWindow": 1000000,
         "maxTokens": 1000000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "November 19, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-4.1-fast-reasoning": {
       "model": "grok/grok-4-1-fast-reasoning",
       "matchingModel": "spacexai/grok-4.1-fast-reasoning",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "November 19, 2025",
         "costPer1kInputTokens": 0.0002,
@@ -4965,8 +5890,14 @@
       "overrides": {
         "maxTokens": 2000000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "March 10, 2026",
         "lastUpdated": "March 10, 2026",
@@ -4974,26 +5905,39 @@
         "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-4.20-multi-agent-beta": {
       "model": "grok/grok-4-20-multi-agent-beta",
       "matchingModel": "spacexai/grok-4.20-multi-agent-beta",
       "overrides": {
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-4.20-non-reasoning": {
       "model": "grok/grok-4-20-non-reasoning",
@@ -5003,8 +5947,14 @@
         "contextWindow": 2000000,
         "maxTokens": 2000000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "contextComplexity": 5,
         "speed": 5,
@@ -5014,7 +5964,9 @@
         "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-4.20-non-reasoning-beta": {
       "model": "grok/grok-4-20-beta-non-reasoning",
@@ -5025,7 +5977,9 @@
         "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-4.20-reasoning": {
       "model": "grok/grok-4-20-reasoning",
@@ -5035,8 +5989,14 @@
         "contextWindow": 2000000,
         "maxTokens": 2000000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "March 10, 2026",
         "lastUpdated": "March 10, 2026",
@@ -5044,7 +6004,9 @@
         "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-4.20-reasoning-beta": {
       "model": "grok/grok-4-20-beta-reasoning",
@@ -5055,7 +6017,9 @@
         "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-4.3": {
       "model": "grok/grok-4-3",
@@ -5064,8 +6028,14 @@
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "maxTokens": 1000000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "speed": 4,
         "lastUpdated": "April 17, 2026",
@@ -5073,7 +6043,11 @@
         "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -5099,7 +6073,11 @@
         "costPer1kOutputTokens": 0.006,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["low", "medium", "high"],
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "low"
         }
       }
@@ -5121,14 +6099,23 @@
       "overrides": {
         "contextWindow": 0,
         "modalities": {
-          "input": ["text"],
-          "output": ["image"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
         },
-        "strengths": ["image", "creative"],
+        "strengths": [
+          "image",
+          "creative"
+        ],
         "lastUpdated": "January 28, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-imagine-image-2.0": {
       "model": "grok/grok-imagine-image-2-0",
@@ -5146,7 +6133,9 @@
         "lastUpdated": "January 28, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-imagine-video-1.5": {
       "model": "grok/grok-imagine-video-1-5",
@@ -5165,7 +6154,9 @@
         "lastUpdated": "May 30, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-stt": {
       "model": "grok/grok-stt",
@@ -5174,7 +6165,9 @@
         "lastUpdated": "March 16, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-tts": {
       "model": "grok/grok-tts",
@@ -5183,7 +6176,9 @@
         "lastUpdated": "March 16, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-voice-think-fast-1.0": {
       "model": "grok/grok-voice-think-fast-1-0",
@@ -5192,7 +6187,9 @@
         "lastUpdated": "April 23, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "spacexai/grok-voice-think-fast-2.0": {
       "model": "grok/grok-voice-think-fast-2-0",
@@ -5201,7 +6198,9 @@
         "lastUpdated": "July 29, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "tencent/hy-mt2-lite": {
       "model": "Hy/tencent-hy-mt2-lite",
@@ -5212,7 +6211,9 @@
         "costPer1kOutputTokens": 0.000177,
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "tencent/hy-mt2-plus": {
       "model": "Hy/tencent-hy-mt2-plus",
@@ -5223,7 +6224,9 @@
         "costPer1kOutputTokens": 0.000295,
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "tencent/hy-mt2-pro": {
       "model": "Hy/tencent-hy-mt2-pro",
@@ -5234,23 +6237,30 @@
         "costPer1kOutputTokens": 0.000295,
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "deepseek/deepseek-v4-flash-vision-exp": {
       "model": "deepseek-flash/deepseek-v4-flash-vision-exp",
       "matchingModel": "deepseek/deepseek-v4-flash-vision-exp",
       "overrides": {
         "maxTokens": 1048576,
-        "lastUpdated": "August 21, 2026",
+        "lastUpdated": "September 1, 2026",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00066,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "xhigh"],
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "high"
         }
       },
-      "unset": ["knowledgeCutoffDate"]
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "nvidia/nemotron-3.5-lightning-free": {
       "model": "nemotron/nemotron-3-5-lightning-30b-free",
@@ -5269,7 +6279,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "minimax/minimax-m2.7-free": {
       "model": "minimax/minimax-m2-7-free",
@@ -5292,10 +6304,19 @@
         "description": "MiniMax multimodal model for long-context coding, perception, and agent planning",
         "maxTokens": 1048576,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "strengths": ["vision", "document", "tool_use"],
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0,
@@ -5309,8 +6330,12 @@
       "overrides": {
         "maxTokens": 16000,
         "modalities": {
-          "input": ["text"],
-          "output": ["text"]
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "October 29, 2025",
         "costPer1kInputTokens": 0.00015,
@@ -5326,7 +6351,9 @@
         "costPer1kOutputTokens": 0.00047,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "alibaba/wan-v3.0-video": {
       "model": "o/wan-v3-0-video",
@@ -5336,7 +6363,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "alibaba/wan-v3.0-video-prime": {
       "model": "o/wan-v3-0-video-prime",
@@ -5346,7 +6375,9 @@
         "supportsToolCalls": false,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "google/gemini-3.5-transcribe": {
       "model": "gemini/gemini-3-5-transcribe",
@@ -5357,7 +6388,9 @@
         "costPer1kOutputTokens": 0.012,
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "google/gemini-3.5-transcribe-live": {
       "model": "gemini/gemini-3-5-transcribe-live",
@@ -5366,7 +6399,9 @@
         "lastUpdated": "August 26, 2026",
         "supportsToolCalls": false
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "inclusionai/ling-3.0-flash-fin": {
       "model": "ling/ling-3-0-flash-fin",
@@ -5379,7 +6414,9 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "inclusionai/ling-3.0-flash-fin-free": {
       "model": "ling/ling-3-0-flash-fin-free",
@@ -5393,7 +6430,10 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       },
-      "unset": ["supportsTemperature", "supportsResponseFormat"]
+      "unset": [
+        "supportsTemperature",
+        "supportsResponseFormat"
+      ]
     },
     "meta/muse-image-1.0": {
       "model": "muse/muse-image-1-0",
@@ -5403,7 +6443,11 @@
         "supportsToolCalls": false,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat", "supportsTemperature", "reasoningConfig"]
+      "unset": [
+        "supportsResponseFormat",
+        "supportsTemperature",
+        "reasoningConfig"
+      ]
     },
     "tencent/hy4-preview": {
       "model": "Hy/tencent-hy4-preview",
@@ -5422,8 +6466,13 @@
         "contextWindow": 1000000,
         "maxTokens": 131000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -5439,7 +6488,10 @@
         "supportsToolCalls": false,
         "supportsAttachments": true
       },
-      "unset": ["supportsTemperature", "reasoningConfig"]
+      "unset": [
+        "supportsTemperature",
+        "reasoningConfig"
+      ]
     },
     "alibaba/qwen3.8-flash-next": {
       "model": "qwen/qwen-3-8-flash-next",
@@ -5459,7 +6511,9 @@
         "costPer1kInputTokens": 0.001305,
         "costPer1kOutputTokens": 0.00261
       },
-      "unset": ["reliability"]
+      "unset": [
+        "reliability"
+      ]
     },
     "anthropic/claude-fable-5.1": {
       "model": "claude-fable/claude-fable-5-1",
@@ -5480,19 +6534,30 @@
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
         "contextWindow": 1000000,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "thinking"],
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
           "defaultEffort": "none"
         }
       },
-      "unset": ["knowledgeCutoffDate"]
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "meta/muse-spark-1.3": {
       "model": "muse/muse-spark-1-3",
@@ -5500,8 +6565,14 @@
       "overrides": {
         "maxTokens": 1048576,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00125,
@@ -5515,15 +6586,24 @@
       "overrides": {
         "maxTokens": 1048576,
         "modalities": {
-          "input": ["text", "image", "pdf"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0002,
         "supportsAttachments": true
       },
-      "unset": ["supportsResponseFormat", "supportsTemperature"]
+      "unset": [
+        "supportsResponseFormat",
+        "supportsTemperature"
+      ]
     },
     "zai/glm-5.3-fast": {
       "model": "glm/glm-5-3-fast",
@@ -5544,7 +6624,10 @@
         "costPer1kInputTokens": 0.0007,
         "costPer1kOutputTokens": 0.0022
       },
-      "unset": ["supportsResponseFormat", "supportsTemperature"]
+      "unset": [
+        "supportsResponseFormat",
+        "supportsTemperature"
+      ]
     },
     "inclusionai/ling-3.0-flash-sante": {
       "model": "ling/ling-3-0-flash-sante",
@@ -5554,7 +6637,9 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "inclusionai/ling-3.0-flash-sante-free": {
       "model": "ling/ling-3-0-flash-sante-free",
@@ -5567,7 +6652,9 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       },
-      "unset": ["supportsTemperature"]
+      "unset": [
+        "supportsTemperature"
+      ]
     },
     "openai/gpt-6-astra": {
       "model": "gpt-astra/gpt-6-astra",
@@ -5579,7 +6666,14 @@
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -5594,7 +6688,9 @@
         "supportsAttachments": true,
         "supportsTemperature": false
       },
-      "unset": ["knowledgeCutoffDate"]
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "deepseek/deepseek-v4.1-flash-beta": {
       "model": "deepseek/deepseek-v4-1-flash-beta",
@@ -5619,20 +6715,38 @@
       "model": "gpt-image/gpt-image-2-5-flare",
       "matchingModel": "openai/gpt-image-2.5-flare",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        },
         "lastUpdated": "September 8, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       }
     },
     "openai/gpt-image-2.5-sunburst": {
       "model": "gpt-image/gpt-image-2-5-sunburst",
       "matchingModel": "openai/gpt-image-2.5-sunburst",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        },
         "lastUpdated": "September 8, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       }
     },
     "deepseek/deepseek-v4.1-flash": {
@@ -5645,7 +6759,10 @@
         "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["high", "xhigh"],
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
           "defaultEffort": "high"
         }
       }
@@ -5656,8 +6773,13 @@
       "overrides": {
         "maxTokens": 262144,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "June 23, 2026",
         "lastUpdated": "June 23, 2026",
@@ -5665,7 +6787,15 @@
         "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -5697,8 +6827,13 @@
         "contextWindow": 256000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 8, 2026",
         "lastUpdated": "September 8, 2026",
@@ -5715,8 +6850,13 @@
         "contextWindow": 256000,
         "maxTokens": 32000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 8, 2026",
         "lastUpdated": "September 8, 2026",
@@ -5759,8 +6899,13 @@
       "overrides": {
         "maxTokens": 1000000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 10, 2026",
         "lastUpdated": "September 10, 2026",
@@ -5775,13 +6920,49 @@
       "overrides": {
         "maxTokens": 1000000,
         "modalities": {
-          "input": ["text", "image"],
-          "output": ["text"]
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
         },
         "releaseDate": "September 10, 2026",
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
+        "supportsAttachments": true
+      }
+    },
+    "alibaba/qwen3.8-omni-flash": {
+      "model": "qwen/qwen-3-8-omni-flash",
+      "matchingModel": "alibaba/qwen3.8-omni-flash",
+      "overrides": {
+        "lastUpdated": "September 17, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00047,
+        "supportsAttachments": true
+      }
+    },
+    "typesafe-ai/jev": {
+      "model": "vercel/typesafe-ai/jev/jev",
+      "matchingModel": "typesafe-ai/jev",
+      "overrides": {
+        "lastUpdated": "September 15, 2026",
+        "costPer1kInputTokens": 0.000042,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "zai/glm-5.3-flashx": {
+      "model": "glm-flash/glm-5-3-flashx",
+      "matchingModel": "zai/glm-5.3-flashx",
+      "overrides": {
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.00037,
+        "costPer1kOutputTokens": 0.00125,
         "supportsAttachments": true
       }
     }

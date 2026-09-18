@@ -37,7 +37,9 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0006
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "llama3-8b": {
       "model": "llama/groq-llama-3-8b",
@@ -49,7 +51,9 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0003
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "llama-3.3-70b-versatile": {
       "model": "llama/llama-3-3-70b",
@@ -100,7 +104,11 @@
         "name": "Llama 3.1 8B Instant",
         "status": "deprecated",
         "maxTokens": 131072,
-        "strengths": ["chat", "general_knowledge", "multilingual"],
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "multilingual"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
         "speed": 5,
@@ -120,7 +128,9 @@
         "costPer1kInputTokens": 0.00024,
         "costPer1kOutputTokens": 0.00024
       },
-      "unset": ["openWeights"]
+      "unset": [
+        "openWeights"
+      ]
     },
     "gemma-2-2b-it": {
       "model": "gemma/gemma-2-2b-it",
@@ -151,7 +161,12 @@
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 65536,
         "isFree": true,
-        "strengths": ["reasoning", "analysis", "coding", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "speed": 5,
         "lastUpdated": "September 25, 2025",
@@ -165,7 +180,13 @@
       "overrides": {
         "maxTokens": 65536,
         "isFree": true,
-        "strengths": ["reasoning", "analysis", "coding", "multilingual", "tool_use"],
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "coding",
+          "multilingual",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "speed": 5,
         "isFeatured": true,
@@ -188,7 +209,9 @@
         "costPer1kInputTokens": 0.00029,
         "costPer1kOutputTokens": 0.00059
       },
-      "unset": ["supportsResponseFormat"]
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "allam-2-7b": {
       "model": "groq/allam-2-7b/allam-2-7b",
@@ -326,7 +349,10 @@
         "costPer1kOutputTokens": 0.003,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "default"],
+          "supportedEffortLevels": [
+            "none",
+            "default"
+          ],
           "defaultEffort": "none"
         }
       }
@@ -342,7 +368,13 @@
         "costPer1kOutputTokens": 0.004,
         "supportsAttachments": true,
         "reasoningConfig": {
-          "supportedEffortLevels": ["none", "default", "low", "medium", "high"],
+          "supportedEffortLevels": [
+            "none",
+            "default",
+            "low",
+            "medium",
+            "high"
+          ],
           "defaultEffort": "none"
         }
       }
