@@ -1153,7 +1153,6 @@
       "matchingModel": "zai-org/GLM-5.3",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 131072,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.004,

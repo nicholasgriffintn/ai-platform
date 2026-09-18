@@ -6715,20 +6715,38 @@
       "model": "gpt-image/gpt-image-2-5-flare",
       "matchingModel": "openai/gpt-image-2.5-flare",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        },
         "lastUpdated": "September 8, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       }
     },
     "openai/gpt-image-2.5-sunburst": {
       "model": "gpt-image/gpt-image-2-5-sunburst",
       "matchingModel": "openai/gpt-image-2.5-sunburst",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        },
         "lastUpdated": "September 8, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       }
     },
     "deepseek/deepseek-v4.1-flash": {
@@ -6915,6 +6933,27 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
         "supportsAttachments": true
+      }
+    },
+    "alibaba/qwen3.8-omni-flash": {
+      "model": "qwen/qwen-3-8-omni-flash",
+      "matchingModel": "alibaba/qwen3.8-omni-flash",
+      "overrides": {
+        "lastUpdated": "September 17, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00047,
+        "supportsAttachments": true
+      }
+    },
+    "typesafe-ai/jev": {
+      "model": "vercel/typesafe-ai/jev/jev",
+      "matchingModel": "typesafe-ai/jev",
+      "overrides": {
+        "lastUpdated": "September 15, 2026",
+        "costPer1kInputTokens": 0.000042,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       }
     }
   }

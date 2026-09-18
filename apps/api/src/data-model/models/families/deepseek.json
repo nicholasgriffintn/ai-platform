@@ -647,7 +647,7 @@
         "openWeights": false,
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "contextWindow": 1310720,
-        "maxTokens": 393216,
+        "maxTokens": 943718,
         "releaseDate": "August 1, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {

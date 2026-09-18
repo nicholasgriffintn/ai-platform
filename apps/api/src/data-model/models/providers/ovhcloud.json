@@ -297,8 +297,8 @@
         "maxTokens": 262144,
         "releaseDate": "September 2, 2026",
         "lastUpdated": "September 2, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
+        "costPer1kInputTokens": 0.00047,
+        "costPer1kOutputTokens": 0.00319,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [

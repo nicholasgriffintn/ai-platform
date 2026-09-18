@@ -1048,7 +1048,6 @@
       "matchingModel": "glm-5.3",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
@@ -1104,6 +1103,18 @@
         "lastUpdated": "September 16, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
+      }
+    },
+    "jev-latest": {
+      "model": "opencode/jev-latest/jev",
+      "matchingModel": "jev-latest",
+      "overrides": {
+        "lastUpdated": "September 15, 2026",
+        "costPer1kInputTokens": 0.000042,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsAttachments": false,
+        "supportsTemperature": false
       }
     }
   }

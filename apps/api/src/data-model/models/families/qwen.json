@@ -476,6 +476,38 @@
         }
       }
     },
+    "qwen-3-8-omni-flash": {
+      "defaults": {
+        "name": "Qwen 3.8 Omni Flash",
+        "openWeights": false,
+        "description": "Qwen omni model for text, vision, audio, and multimodal agent tasks",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 17, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "qwen-3-coder-30b-a3b-instruct": {
       "defaults": {
         "name": "Qwen 3 Coder 30B A3B Instruct",
@@ -2441,6 +2473,36 @@
         "releaseDate": "August 14, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true
+      }
+    },
+    "qwen3-8-27b-free": {
+      "defaults": {
+        "name": "Qwen3.8 27B (free)",
+        "openWeights": true,
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
+        "maxTokens": 235929,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 14, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "qwen3-8-27b-tee": {

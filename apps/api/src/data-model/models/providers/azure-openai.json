@@ -1761,6 +1761,48 @@
           "defaultEffort": "none"
         }
       }
+    },
+    "gpt-image-2.5-flare": {
+      "model": "gpt-image/gpt-image-2-5-flare",
+      "matchingModel": "gpt-image-2.5-flare",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "lastUpdated": "September 8, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsToolCalls": false,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-image-2.5-sunburst": {
+      "model": "gpt-image/gpt-image-2-5-sunburst",
+      "matchingModel": "gpt-image-2.5-sunburst",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "lastUpdated": "September 8, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsToolCalls": false,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
     }
   }
 }

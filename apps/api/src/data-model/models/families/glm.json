@@ -754,6 +754,7 @@
       "defaults": {
         "name": "GLM-5.3",
         "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
+        "maxTokens": 131072,
         "releaseDate": "August 14, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [

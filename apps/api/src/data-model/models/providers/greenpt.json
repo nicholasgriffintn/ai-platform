@@ -596,7 +596,6 @@
       "matchingModel": "glm-5.3",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00127754,
         "costPer1kOutputTokens": 0.00511016,

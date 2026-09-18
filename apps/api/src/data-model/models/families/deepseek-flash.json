@@ -2,9 +2,18 @@
   "defaults": {
     "openWeights": true,
     "contextWindow": 1048576,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
     "knowledgeCutoffDate": "May 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
+    "supportsAttachments": false,
     "supportsTemperature": true
   },
   "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
@@ -84,21 +93,12 @@
         "name": "DeepSeek V4 Flash",
         "description": "Fast DeepSeek V4 lane for economical reasoning, coding, and long-context work",
         "maxTokens": 384000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 5,
         "reliability": 1,
         "releaseDate": "April 24, 2026",
-        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 28.7,
           "codingIndex": null,
@@ -113,16 +113,7 @@
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "July 31, 2026",
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high",
@@ -137,16 +128,7 @@
         "name": "DeepSeek V4 Flash 0731 (EU)",
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "July 31, 2026",
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -159,21 +141,28 @@
         }
       }
     },
+    "deepseek-v4-flash-0731-free": {
+      "defaults": {
+        "name": "DeepSeek V4 Flash 0731 (free)",
+        "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
+        "maxTokens": 393216,
+        "releaseDate": "July 31, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "deepseek-v4-flash-0731-tee": {
       "defaults": {
         "name": "DeepSeek V4 Flash 0731 TEE",
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "July 31, 2026",
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

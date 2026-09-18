@@ -419,11 +419,22 @@
         "costPer1kOutputTokens": 0.0044,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "none",
             "high",
             "max"
           ],
           "defaultEffort": "high"
         }
+      }
+    },
+    "zai-glm-5-3": {
+      "model": "glm/glm-5-3",
+      "matchingModel": "zai-glm-5-3",
+      "overrides": {
+        "contextWindow": 1000000,
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044
       }
     }
   }
