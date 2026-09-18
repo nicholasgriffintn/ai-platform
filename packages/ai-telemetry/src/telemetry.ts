@@ -1,5 +1,6 @@
 import { isAnalyticsTrackingEnabled } from "@ngriffin_uk/polychat-schemas";
 
+import { buildAiEmbeddingEvent } from "./ai-embedding.js";
 import { buildAiGenerationEvent } from "./ai-generation.js";
 import { shouldCaptureAiContent, shouldCaptureAiObservability } from "./config.js";
 import { buildAnalyticsDistinctId, buildTelemetryPersonProperties } from "./identity.js";
@@ -8,10 +9,12 @@ import { createAnalyticsEngineSink } from "./sinks/analytics-engine.js";
 import { createBeaconSink } from "./sinks/beacon.js";
 import { createPostHogSink } from "./sinks/posthog.js";
 import type {
+  AiEmbeddingSignal,
   AiGenerationSignal,
   CreateWorkerTelemetryOptions,
   TelemetryEnv,
   TelemetryEvent,
+  TelemetryIdentity,
   TelemetryLogRecord,
   TelemetryMetric,
   TelemetrySink,
@@ -37,6 +40,7 @@ export interface Telemetry {
   capture(event: TelemetryEvent): void;
   recordMetric(metric: TelemetryMetric): void;
   captureAiGeneration(signal: AiGenerationSignal): void;
+  captureAiEmbedding(signal: AiEmbeddingSignal): void;
   captureTrainingExample(signal: TrainingExampleSignal): Promise<void>;
   log(record: TelemetryLogRecord): void;
   startSpan(name: string, options?: StartSpanOptions): ActiveSpan;
@@ -91,42 +95,43 @@ export function createTelemetry(options: CreateTelemetryOptions): Telemetry {
       });
     });
 
+  const observability = options.aiObservability ?? { enabled: true, captureContent: false };
+
+  const resolveAiEventIdentity = (signal: TelemetryIdentity) => {
+    const consented = isAnalyticsTrackingEnabled({
+      isAuthenticated: Boolean(signal.user?.id),
+      userTrackingEnabled: signal.userTrackingEnabled,
+    });
+
+    return {
+      distinctId: buildAnalyticsDistinctId(signal),
+      personProperties: buildTelemetryPersonProperties({
+        userId: signal.user?.id,
+        anonymousUserId: signal.anonymousUser?.id,
+        email: signal.user?.email,
+        planId: signal.user?.plan_id,
+      }),
+      captureContent: observability.captureContent && consented,
+    };
+  };
+
   return {
     sinks: sinks.map((sink) => sink.name),
     capture,
     recordMetric,
     captureAiGeneration: (signal) => {
-      const observability = options.aiObservability ?? { enabled: true, captureContent: false };
-
       if (!observability.enabled) {
         return;
       }
 
-      const consented = isAnalyticsTrackingEnabled({
-        isAuthenticated: Boolean(signal.user?.id),
-        userTrackingEnabled: signal.userTrackingEnabled,
-      });
-      const event = buildAiGenerationEvent({
-        ...signal,
-        distinctId: buildAnalyticsDistinctId(signal),
-        personProperties: buildTelemetryPersonProperties({
-          userId: signal.user?.id,
-          anonymousUserId: signal.anonymousUser?.id,
-          email: signal.user?.email,
-          planId: signal.user?.plan_id,
-        }),
-        captureContent: observability.captureContent && consented,
-      });
+      capture(buildAiGenerationEvent({ ...signal, ...resolveAiEventIdentity(signal) }));
+    },
+    captureAiEmbedding: (signal) => {
+      if (!observability.enabled) {
+        return;
+      }
 
-      eachSink(sinks, onSinkError, (sink) => {
-        if (sink.captureAiGeneration) {
-          sink.captureAiGeneration(signal);
-
-          return;
-        }
-
-        sink.capture?.(event);
-      });
+      capture(buildAiEmbeddingEvent({ ...signal, ...resolveAiEventIdentity(signal) }));
     },
     captureTrainingExample: async (signal) => {
       for (const sink of sinks) {

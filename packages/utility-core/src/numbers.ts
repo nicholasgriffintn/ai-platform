@@ -8,6 +8,14 @@ export function clampNumber(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+export function millisecondsToSeconds(value: number | undefined): number | undefined {
+  return typeof value === "number" ? value / 1000 : undefined;
+}
+
+export function secondsToMilliseconds(value: number | undefined): number | undefined {
+  return typeof value === "number" ? value * 1000 : undefined;
+}
+
 export function clampPercentage(value: number): number {
   return clampNumber(value, 0, 100);
 }

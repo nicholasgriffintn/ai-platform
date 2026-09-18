@@ -7,7 +7,6 @@ import { nonEmptyToolCallsOrNull } from "@ngriffin_uk/polychat-utility-server/to
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
-import { createMetrics } from "~/lib/telemetry";
 import { formatAssistantMessage } from "~/services/chat/messages/assistant-format";
 import { buildMessageParts } from "~/services/chat/messages/parts";
 import { buildAssistantMessageData } from "~/services/chat/policy/mode-metadata";
@@ -80,7 +79,6 @@ export async function finaliseAssistantTurn(
   params: FinaliseAssistantTurnParams,
 ): Promise<FinalisedAssistantTurn> {
   const { turn, sink, env, model, completionId, context } = params;
-  const user = context?.user;
 
   const guardrailResult = await validateOutput(params);
   const visibleTurn = guardrailResult.passed
@@ -104,16 +102,7 @@ export async function finaliseAssistantTurn(
 
   await sink.writeEvent("content_block_stop", {});
 
-  const auditedUsage = createMetrics(env).trackTokenUsage({
-    usage: turn.usage,
-    provider: params.provider,
-    model,
-    userId: user?.id,
-    anonymousUserId: context?.anonymousUser?.id,
-    completion_id: completionId,
-    streamed: true,
-    expectUsage: true,
-  });
+  const auditedUsage = turn.usage;
 
   const assistantMessage = formatAssistantMessage({
     content: visibleTurn.content,

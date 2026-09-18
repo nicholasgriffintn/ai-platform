@@ -1,23 +1,27 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import {
   createMetricsRecorder,
-  extractUsagePayload,
   getLogger,
   type MetricsRecorder,
   type Telemetry,
   type TelemetryEnv,
-  type TelemetryIdentityInput,
 } from "@ngriffin_uk/polychat-ai-telemetry";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { readStringField } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 import type { ProviderEnv } from "./env.js";
-import { captureProviderGenerationResult } from "./generation-analytics.js";
+import {
+  captureProviderGenerationFailure,
+  captureProviderGenerationResult,
+  type CaptureAiGeneration,
+  type ProviderGenerationContext,
+} from "./generation-analytics.js";
 import type { ProviderMetrics, ProviderOperationMetrics } from "./host.js";
 import type { ChatCompletionParameters } from "./types/index.js";
 
 const logger = getLogger({ prefix: "ai-providers/metrics" });
+const CHAT_COMPLETION_SPAN_NAME = "chat_completion";
 
 export interface TelemetryScope {
   env?: ProviderEnv | TelemetryEnv;
@@ -46,93 +50,41 @@ export function createProviderMetrics(options: CreateProviderMetricsOptions): Pr
       operation: () => Promise<T>,
     ): Promise<T> {
       const request = isChatRequest(metrics.request) ? metrics.request : undefined;
-      const recorder = recorderFor(options, {
-        env: request?.env ?? metrics.env,
-        executionCtx: request?.executionCtx,
-      });
-      const startTime = performance.now();
-      const traceId = metrics.completion_id || generateId();
-      const identity = {
-        userId: metrics.userId ?? request?.context?.user?.id,
-        anonymousUserId: request?.context?.anonymousUser?.id,
-        email: request?.context?.user?.email,
-        planId: request?.context?.user?.plan_id,
-      } satisfies TelemetryIdentityInput;
-
-      return operation()
-        .then((result) => {
-          const latency = performance.now() - startTime;
-          const record = isRecord(result) ? result : undefined;
-
-          recorder.recordMetric({
-            traceId,
-            type: "performance",
-            name: "ai_provider_response",
-            value: latency,
-            metadata: {
-              userId: metrics.userId?.toString(),
-              provider: metrics.provider,
-              model: metrics.model,
-              latency,
-              tokenUsage: record?.usage,
-              systemFingerprint: record?.system_fingerprint,
-              log_id: record?.log_id,
-              settings: metrics.settings,
-            },
-            identity,
-            status: "success",
+      const context: ProviderGenerationContext = {
+        provider: metrics.provider,
+        model: metrics.model,
+        traceId: generateId(),
+        spanId: generateId(),
+        sessionId: readStringField(request, "completion_id") ?? metrics.completion_id,
+        spanName: CHAT_COMPLETION_SPAN_NAME,
+        request,
+        startTime: performance.now(),
+      };
+      const captureGeneration: CaptureAiGeneration = (signal) => {
+        try {
+          const telemetry = options.telemetryFor({
+            env: signal.env,
+            executionCtx: signal.executionCtx,
           });
 
-          if (!(result instanceof ReadableStream)) {
-            recorder.trackTokenUsage({
-              usage: extractUsagePayload(result),
-              provider: metrics.provider,
-              model: metrics.model,
-              userId: identity.userId,
-              anonymousUserId: identity.anonymousUserId,
-              completion_id: traceId,
-              streamed: false,
-            });
+          if (telemetry.sinks.length > 0) {
+            telemetry.captureAiGeneration(signal);
           }
-
-          return captureProviderGenerationResult(
-            result,
-            { provider: metrics.provider, model: metrics.model, traceId, request, startTime },
-            (signal) => {
-              try {
-                const telemetry = options.telemetryFor({
-                  env: signal.env,
-                  executionCtx: signal.executionCtx,
-                });
-
-                if (telemetry.sinks.length > 0) {
-                  telemetry.captureAiGeneration(signal);
-                }
-              } catch (error) {
-                logger.warn("Failed to capture AI generation analytics", {
-                  error: getErrorMessage(error),
-                });
-              }
-            },
-            (error) => logger.debug("Failed to parse provider stream analytics event", { error }),
-          );
-        })
-        .catch((error: unknown) => {
-          recorder.recordMetric({
-            traceId,
-            type: "error",
-            name: "ai_provider_response",
-            value: performance.now() - startTime,
-            metadata: {
-              provider: metrics.provider,
-              model: metrics.model,
-              settings: metrics.settings,
-              error: getErrorMessage(error),
-            },
-            identity,
-            status: "error",
+        } catch (error) {
+          logger.warn("Failed to capture AI generation analytics", {
             error: getErrorMessage(error),
           });
+        }
+      };
+
+      return operation()
+        .then((result) =>
+          captureProviderGenerationResult(result, context, captureGeneration, (error) =>
+            logger.debug("Failed to parse provider stream analytics event", { error }),
+          ),
+        )
+        .catch((error: unknown) => {
+          captureProviderGenerationFailure(error, context, captureGeneration);
           throw error;
         });
     },

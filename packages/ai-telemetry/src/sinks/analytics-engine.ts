@@ -1,11 +1,12 @@
 import type { AnalyticsEngineDataset } from "@cloudflare/workers-types";
+import { secondsToMilliseconds } from "@ngriffin_uk/polychat-utility-core";
 import {
   readNumberField,
   readNumberFieldAlias,
   readStringField,
 } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
-import type { TelemetryEnv, TelemetryMetric, TelemetrySink } from "../types.js";
+import type { TelemetryEnv, TelemetryEvent, TelemetryMetric, TelemetrySink } from "../types.js";
 import {
   ANALYTICS_ENGINE_BLOB_COLUMNS,
   ANALYTICS_ENGINE_DOUBLE_COLUMNS,
@@ -13,6 +14,57 @@ import {
   type AnalyticsEngineDoubleColumn,
   ANALYTICS_ENGINE_INDEX_COLUMN,
 } from "./dataset-layout.js";
+
+const AI_EVENT_PREFIX = "$ai_";
+
+function aiMetadata(properties: Record<string, unknown>): Record<string, unknown> {
+  const inputTokens = readNumberField(properties, "$ai_input_tokens") ?? 0;
+  const outputTokens = readNumberField(properties, "$ai_output_tokens") ?? 0;
+
+  return {
+    provider: readStringField(properties, "$ai_provider"),
+    model: readStringField(properties, "$ai_model"),
+    latencyMs: secondsToMilliseconds(readNumberField(properties, "$ai_latency")),
+    input_tokens: inputTokens,
+    output_tokens: outputTokens,
+    total_tokens: inputTokens + outputTokens,
+    cached_input_tokens: readNumberField(properties, "$ai_cache_read_input_tokens"),
+    cache_creation_tokens: readNumberField(properties, "$ai_cache_creation_input_tokens"),
+    reasoning_tokens: readNumberField(properties, "$ai_reasoning_tokens"),
+  };
+}
+
+function metricFromEvent(event: TelemetryEvent, timestamp: number): TelemetryMetric {
+  const properties = event.properties ?? {};
+  const isAiEvent = event.name.startsWith(AI_EVENT_PREFIX);
+  const failed = isAiEvent && properties.$ai_is_error === true;
+
+  return {
+    traceId:
+      readStringField(properties, "$ai_trace_id") ??
+      readStringField(properties, "traceId") ??
+      event.distinctId,
+    timestamp,
+    type: event.category,
+    name: event.name,
+    value: typeof event.value === "number" ? event.value : 1,
+    metadata: {
+      distinctId: event.distinctId,
+      ...(event.label !== undefined ? { label: event.label } : {}),
+      ...(event.nonInteraction !== undefined ? { nonInteraction: event.nonInteraction } : {}),
+      ...properties,
+      ...(isAiEvent ? aiMetadata(properties) : {}),
+    },
+    status: isAiEvent
+      ? failed
+        ? "error"
+        : "success"
+      : (readStringField(properties, "status") ?? "success"),
+    error: isAiEvent
+      ? readStringField(properties, "$ai_error")
+      : readStringField(properties, "error"),
+  };
+}
 
 export function createAnalyticsEngineSink(
   env: TelemetryEnv,
@@ -27,31 +79,7 @@ export function createAnalyticsEngineSink(
   return {
     name: "analytics_engine",
     capture(event) {
-      const properties = event.properties || {};
-      const metric = {
-        traceId:
-          typeof properties.traceId === "string" && properties.traceId
-            ? properties.traceId
-            : event.distinctId,
-        timestamp: now(),
-        type: event.category,
-        name: event.name,
-        value: typeof event.value === "number" ? event.value : 1,
-        metadata: {
-          distinctId: event.distinctId,
-          ...(event.label !== undefined ? { label: event.label } : {}),
-          ...(event.nonInteraction !== undefined ? { nonInteraction: event.nonInteraction } : {}),
-          ...properties,
-        },
-        status:
-          typeof properties.status === "string" && properties.status
-            ? properties.status
-            : "success",
-        error:
-          typeof properties.error === "string" && properties.error ? properties.error : undefined,
-      };
-
-      writeAnalyticsEngineMetric(dataset, metric);
+      writeAnalyticsEngineMetric(dataset, metricFromEvent(event, now()));
     },
     recordMetric(metric) {
       writeAnalyticsEngineMetric(dataset, metric);

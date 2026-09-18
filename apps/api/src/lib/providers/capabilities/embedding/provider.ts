@@ -1,4 +1,5 @@
-import { parseAwsCredentials } from "@ngriffin_uk/polychat-ai-providers";
+import { estimateTextTokens, parseAwsCredentials } from "@ngriffin_uk/polychat-ai-providers";
+import { withEmbeddingTelemetry } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   awsRegionSchema,
   s3VectorsBucketNameSchema,
@@ -18,7 +19,11 @@ import type {
 } from "~/types";
 
 import { providerLibrary } from "../../library";
-import { EMBEDDING_VECTOR_SPACE_VERSION, WORKERS_EMBEDDING_MODEL } from "./constants";
+import {
+  EMBEDDING_VECTOR_SPACE_VERSION,
+  WORKERS_EMBEDDING_MODEL,
+  WORKERS_EMBEDDING_PROVIDER,
+} from "./constants";
 import { adaptVectorEmbeddingProvider } from "./runtime";
 import {
   type EmbeddingProviderTarget,
@@ -194,19 +199,28 @@ export function getEmbeddingProviderForTarget(
       );
     }
 
-    return providerLibrary.resolve("embedding", "s3vectors", {
-      env,
-      user,
-      config: {
-        bucketName: storedTarget.bucketName,
-        indexName: storedTarget.indexName,
-        region: storedTarget.region,
-        accessKeyId: env.S3VECTORS_AWS_ACCESS_KEY || "",
-        secretAccessKey: env.S3VECTORS_AWS_SECRET_KEY || "",
-        expectedCredentialFingerprint: storedTarget.credentialFingerprint,
-        ai: env.AI,
+    return withEmbeddingTelemetry(
+      providerLibrary.resolve("embedding", "s3vectors", {
+        env,
+        user,
+        config: {
+          bucketName: storedTarget.bucketName,
+          indexName: storedTarget.indexName,
+          region: storedTarget.region,
+          accessKeyId: env.S3VECTORS_AWS_ACCESS_KEY || "",
+          secretAccessKey: env.S3VECTORS_AWS_SECRET_KEY || "",
+          expectedCredentialFingerprint: storedTarget.credentialFingerprint,
+          ai: env.AI,
+        },
+      }),
+      {
+        env,
+        identity: { user, userTrackingEnabled: userSettings.tracking_enabled },
+        provider: WORKERS_EMBEDDING_PROVIDER,
+        model: target.model,
+        estimateInputTokens: estimateTextTokens,
       },
-    });
+    );
   }
 
   if (
@@ -308,7 +322,16 @@ export function getEmbeddingProvider(
         ai: env.AI,
       };
 
-      return providerLibrary.resolve("embedding", "s3vectors", { env, user, config });
+      return withEmbeddingTelemetry(
+        providerLibrary.resolve("embedding", "s3vectors", { env, user, config }),
+        {
+          env,
+          identity: { user, userTrackingEnabled: userSettings?.tracking_enabled },
+          provider: WORKERS_EMBEDDING_PROVIDER,
+          model: WORKERS_EMBEDDING_MODEL,
+          estimateInputTokens: estimateTextTokens,
+        },
+      );
     }
 
     case "vectorize": {
@@ -323,7 +346,16 @@ export function getEmbeddingProvider(
         repositories,
       };
 
-      return providerLibrary.resolve("embedding", "vectorize", { env, user, config });
+      return withEmbeddingTelemetry(
+        providerLibrary.resolve("embedding", "vectorize", { env, user, config }),
+        {
+          env,
+          identity: { user, userTrackingEnabled: userSettings?.tracking_enabled },
+          provider: WORKERS_EMBEDDING_PROVIDER,
+          model: WORKERS_EMBEDDING_MODEL,
+          estimateInputTokens: estimateTextTokens,
+        },
+      );
     }
 
     default:

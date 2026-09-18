@@ -80,6 +80,7 @@ export {
   type TelemetryScope,
 } from "./provider-metrics.js";
 export {
+  captureProviderGenerationFailure,
   captureProviderGenerationResult,
   type CaptureAiGeneration,
   type ProviderGenerationContext,

@@ -1,6 +1,7 @@
 import { buildAiGenerationProperties } from "./ai-generation-properties.js";
 import { AI_GENERATION_EVENT_NAME, AI_OBSERVABILITY_EVENT_CATEGORY } from "./constants.js";
 import type {
+  AiErrorInfo,
   TelemetryEvent,
   TelemetryMessage,
   TelemetryPersonProperties,
@@ -14,13 +15,22 @@ export type AiGenerationEventInput = {
   sessionId?: string;
   spanId?: string;
   spanName?: string;
+  parentSpanId?: string;
   model?: string;
   provider?: string;
   input?: TelemetryMessage[];
   output?: TelemetryMessage;
   usage?: Record<string, unknown>;
   latencyMs?: number;
+  timeToFirstTokenMs?: number;
   stream?: boolean;
+  stopReason?: string;
+  httpStatus?: number;
+  tools?: string[];
+  toolsCalled?: string[];
+  temperature?: number;
+  maxTokens?: number;
+  error?: AiErrorInfo;
   captureContent: boolean;
   properties?: TelemetryProperties;
 };

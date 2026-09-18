@@ -69,18 +69,48 @@ export type TelemetryIdentityInput = {
   planId?: string | null;
 };
 
+export type AiErrorInfo = {
+  message: string;
+  httpStatus?: number;
+};
+
 export type AiGenerationSignal = TelemetryIdentity & {
   traceId: string;
   sessionId?: string;
   spanId?: string;
   spanName?: string;
+  parentSpanId?: string;
   model?: string;
   provider?: string;
   input?: TelemetryMessage[];
   output?: TelemetryMessage;
   usage?: Record<string, unknown>;
   latencyMs?: number;
+  timeToFirstTokenMs?: number;
   stream?: boolean;
+  stopReason?: string;
+  httpStatus?: number;
+  tools?: string[];
+  toolsCalled?: string[];
+  temperature?: number;
+  maxTokens?: number;
+  error?: AiErrorInfo;
+  properties?: TelemetryProperties;
+};
+
+export type AiEmbeddingSignal = TelemetryIdentity & {
+  traceId: string;
+  sessionId?: string;
+  spanId?: string;
+  spanName?: string;
+  parentSpanId?: string;
+  model?: string;
+  provider?: string;
+  input?: string | string[];
+  inputTokens?: number;
+  latencyMs?: number;
+  httpStatus?: number;
+  error?: AiErrorInfo;
   properties?: TelemetryProperties;
 };
 
@@ -118,7 +148,6 @@ export interface TelemetrySink {
   name: string;
   capture?: (event: TelemetryEvent) => void;
   recordMetric?: (metric: TelemetryMetric) => void;
-  captureAiGeneration?: (signal: AiGenerationSignal) => void;
   captureTrainingExample?: (signal: TrainingExampleSignal) => void | Promise<void>;
   log?: (record: TelemetryLogRecord) => void;
   exportSpan?: (span: TelemetrySpan) => void;

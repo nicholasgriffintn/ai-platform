@@ -15,6 +15,8 @@ export {
   type Telemetry,
 } from "./telemetry.js";
 export type {
+  AiEmbeddingSignal,
+  AiErrorInfo,
   AiGenerationSignal,
   BeaconFetcher,
   CreateWorkerTelemetryOptions,
@@ -39,15 +41,21 @@ export {
   createWorkerMetricsRecorder,
   type MetricInput,
   type MetricsRecorder,
-  type TrackTokenUsageParams,
 } from "./metrics.js";
 export {
   buildAnalyticsDistinctId,
   buildTelemetryPersonProperties,
   resolveAnalyticsDistinctId,
 } from "./identity.js";
+export { buildAiEmbeddingEvent, type AiEmbeddingEventInput } from "./ai-embedding.js";
+export { buildAiEmbeddingProperties } from "./ai-embedding-properties.js";
 export { buildAiGenerationEvent, type AiGenerationEventInput } from "./ai-generation.js";
 export { buildAiGenerationProperties } from "./ai-generation-properties.js";
+export {
+  withEmbeddingTelemetry,
+  type EmbeddingProviderLike,
+  type EmbeddingTelemetryOptions,
+} from "./embedding.js";
 export {
   getBeaconAnalyticsConfig,
   getPostHogAnalyticsConfig,

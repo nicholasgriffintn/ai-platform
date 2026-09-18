@@ -8,7 +8,6 @@ import type {
   TelemetryIdentityInput,
   TelemetryMetric,
 } from "./types.js";
-import { normaliseTokenUsage, type NormalisedTokenUsage } from "./usage/token-usage.js";
 
 const logger = getLogger({ prefix: "ai-telemetry/metrics" });
 
@@ -20,22 +19,10 @@ export type MetricInput = Omit<TelemetryMetric, "traceId" | "timestamp"> & {
   identity?: TelemetryIdentityInput;
 };
 
-export interface TrackTokenUsageParams {
-  usage: unknown;
-  provider?: string;
-  model?: string;
-  userId?: number;
-  anonymousUserId?: string;
-  completion_id?: string;
-  streamed: boolean;
-  expectUsage?: boolean;
-}
-
 export interface MetricsRecorder {
   readonly telemetry: Telemetry;
   recordMetric(metric: MetricInput): void;
   trackUsageMetric(identity: TelemetryIdentityInput, name?: string): void;
-  trackTokenUsage(params: TrackTokenUsageParams): NormalisedTokenUsage | null;
   trackGuardrailViolation(
     violationName: string,
     details: Record<string, unknown>,
@@ -107,56 +94,6 @@ export function createMetricsRecorder(
       } catch (error) {
         logger.error("Failed to track usage metric", { error, identity, name });
       }
-    },
-    trackTokenUsage: ({
-      usage,
-      provider,
-      model,
-      userId,
-      anonymousUserId,
-      completion_id,
-      streamed,
-      expectUsage,
-    }) => {
-      const normalised = normaliseTokenUsage(usage);
-      const metadata = {
-        provider: provider || "unknown",
-        model: model || "unknown",
-        userId: userId?.toString(),
-        streamed,
-        reported: normalised !== null,
-        input_tokens: normalised?.input_tokens ?? 0,
-        output_tokens: normalised?.output_tokens ?? 0,
-        total_tokens: normalised?.total_tokens ?? 0,
-        cached_input_tokens: normalised?.cached_input_tokens ?? 0,
-        cache_creation_tokens: normalised?.cache_creation_tokens ?? 0,
-        reasoning_tokens: normalised?.reasoning_tokens ?? 0,
-      };
-
-      if (!normalised && expectUsage) {
-        logger.warn("Provider returned no token usage", {
-          provider: metadata.provider,
-          model: metadata.model,
-          streamed,
-          completion_id,
-        });
-      }
-
-      try {
-        recordMetric({
-          traceId: completion_id,
-          type: "usage",
-          name: "ai_token_usage",
-          value: normalised?.total_tokens ?? 0,
-          metadata,
-          identity: { userId, anonymousUserId },
-          status: normalised ? "success" : "info",
-        });
-      } catch (error) {
-        logger.debug("Failed to record token usage metric", { error });
-      }
-
-      return normalised;
     },
     trackGuardrailViolation: (violationName, details, identity, completionId) => {
       recordMetric({

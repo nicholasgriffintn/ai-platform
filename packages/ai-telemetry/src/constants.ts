@@ -5,4 +5,5 @@ export const BACKEND_ANALYTICS_APP_NAME = "polychat-api";
 export const BACKEND_ANALYTICS_APP_TYPE = "worker";
 
 export const AI_GENERATION_EVENT_NAME = "$ai_generation";
+export const AI_EMBEDDING_EVENT_NAME = "$ai_embedding";
 export const AI_OBSERVABILITY_EVENT_CATEGORY = "ai_observability";
