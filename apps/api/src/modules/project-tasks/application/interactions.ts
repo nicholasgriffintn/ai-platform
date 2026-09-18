@@ -108,7 +108,7 @@ export async function getProjectTaskInteraction(
     interactionId,
     status,
     requestedAt: readMessageTime(message, data),
-    resolvedAt: readNonEmptyString(data.resolvedAt) ?? readNonEmptyString(data.expiredAt),
+    resolvedAt: readNonEmptyString(data.resolvedAt) ?? readNonEmptyString(data.expiredAt) ?? null,
     detail: status === "interrupted" ? task.blockedDetail : null,
   } as const;
 
