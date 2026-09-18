@@ -3,8 +3,7 @@ import { delegationRunTaskDataSchema } from "@ngriffin_uk/polychat-schemas";
 import type { IEnv } from "~/types";
 
 import { runDelegationTask } from "../../delegations/run";
-import type { TaskHandler, TaskResult } from "../TaskHandler";
-import type { TaskMessage } from "../TaskService";
+import type { TaskHandler, TaskMessage, TaskResult } from "../types";
 
 export class DelegationRunHandler implements TaskHandler {
   public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {

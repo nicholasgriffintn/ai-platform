@@ -146,7 +146,7 @@ export interface UsageEventPublisher {
   usageChanged(userId: number, period: string): void;
 }
 
-export interface UsageRollupPayload {
+export interface UsageRollupPayload extends Record<string, unknown> {
   events: UsageEventRecord[];
 }
 

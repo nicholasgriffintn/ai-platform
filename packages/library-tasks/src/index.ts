@@ -28,3 +28,11 @@ export {
   type StatusMachine,
   type StatusMachineDefinition,
 } from "./status-machine.js";
+export {
+  DEFAULT_POLLING_DELAYS_SECONDS,
+  DEFAULT_POLLING_MAX_ATTEMPTS,
+  pollingSchedule,
+  type PollingSchedule,
+  type PollingScheduleOptions,
+} from "./polling.js";
+export { nextRunAt, parseInterval, type ScheduleDefinition } from "./schedule.js";

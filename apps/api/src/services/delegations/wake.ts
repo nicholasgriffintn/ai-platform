@@ -10,7 +10,7 @@ import { enqueueTeammateRun } from "~/services/teammates/run-admission";
 import { prepareTeammateRunResume } from "~/services/teammates/run-resume";
 import type { IEnv } from "~/types";
 
-import type { TaskMessage } from "../tasks/TaskService";
+import type { TaskMessage } from "../tasks/types";
 import { deliverDelegationResult } from "./message";
 import { isDelegationGroupReady } from "./wait-policy";
 

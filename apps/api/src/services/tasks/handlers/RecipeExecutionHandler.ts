@@ -22,8 +22,7 @@ import { prepareTeammateRun } from "~/services/teammates/execution";
 import { reconcileTeammateRun } from "~/services/teammates/run-reconciliation";
 import type { IEnv } from "~/types";
 
-import type { TaskHandler, TaskResult } from "../TaskHandler";
-import type { TaskMessage } from "../TaskService";
+import type { TaskHandler, TaskMessage, TaskResult } from "../types";
 
 const logger = getLogger({ prefix: "services/tasks/handlers/RecipeExecutionHandler" });
 

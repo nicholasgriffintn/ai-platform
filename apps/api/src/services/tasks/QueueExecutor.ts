@@ -1,92 +1,15 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import {
-  createTaskHandlerRegistry,
-  isTaskError,
-  leaseRetryDelaySeconds,
-  type TaskHandlerRegistry,
-} from "@ngriffin_uk/polychat-library-tasks";
-import {
-  INFRA_RECONCILIATION_TASK_TYPE,
-  PROJECT_TASK_RUN_TASK_TYPE,
-  DELEGATION_RUN_TASK_TYPE,
-  DELEGATION_MESSAGE_TASK_TYPE,
-  DELEGATION_EXPIRY_TASK_TYPE,
-  DELEGATION_WAKE_TASK_TYPE,
-  OCR_BATCH_POLLING_TASK_TYPE,
-  REALTIME_RECONCILIATION_TASK_TYPE,
-  SANDBOX_RUN_DISPATCH_TASK_TYPE,
-  STRIPE_USAGE_SYNC_TASK_TYPE,
-  TASK_NOTIFICATION_DELIVERY_TASK_TYPE,
-  TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
-  TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
-  USAGE_ROLLUP_TASK_TYPE,
-  CONVERSATION_TITLE_TASK_TYPE,
-} from "@ngriffin_uk/polychat-schemas";
+import { isTaskError, leaseRetryDelaySeconds } from "@ngriffin_uk/polychat-library-tasks";
 
 import { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv } from "~/types";
 
-import { TaskNotificationDeliveryHandler } from "../task-notifications/delivery";
-import { ArtificialAnalysisIngestHandler } from "./handlers/ArtificialAnalysisIngestHandler";
-import { ArtificialAnalysisScoringHandler } from "./handlers/ArtificialAnalysisScoringHandler";
-import { AsyncMessagePollingHandler } from "./handlers/AsyncMessagePollingHandler";
-import { ConversationTitleHandler } from "./handlers/ConversationTitleHandler";
-import { DelegationExpiryHandler } from "./handlers/DelegationExpiryHandler";
-import { DelegationMessageHandler } from "./handlers/DelegationMessageHandler";
-import { DelegationRunHandler } from "./handlers/DelegationRunHandler";
-import { DelegationWakeHandler } from "./handlers/DelegationWakeHandler";
-import { InboundMessageHandler } from "./handlers/InboundMessageHandler";
-import { InfraReconciliationHandler } from "./handlers/InfraReconciliationHandler";
-import { MemorySynthesisHandler } from "./handlers/MemorySynthesisHandler";
-import { OcrBatchPollingHandler } from "./handlers/OcrBatchPollingHandler";
-import { ProjectTaskRunHandler } from "./handlers/ProjectTaskRunHandler";
-import { RealtimeReconciliationHandler } from "./handlers/RealtimeReconciliationHandler";
-import { RecipeExecutionHandler } from "./handlers/RecipeExecutionHandler";
-import { RecordingTranscriptionPollingHandler } from "./handlers/RecordingTranscriptionPollingHandler";
-import { ReplicatePollingHandler } from "./handlers/ReplicatePollingHandler";
-import { ResearchPollingHandler } from "./handlers/ResearchPollingHandler";
-import { SandboxRunDispatchHandler } from "./handlers/SandboxRunDispatchHandler";
-import { StripeUsageSyncHandler } from "./handlers/StripeUsageSyncHandler";
-import { TeammateContextCleanupHandler } from "./handlers/TeammateContextCleanupHandler";
-import { TeammateRunReconciliationHandler } from "./handlers/TeammateRunReconciliationHandler";
-import { TrainingQualityHandler } from "./handlers/TrainingQualityHandler";
-import { UsageRollupHandler } from "./handlers/UsageRollupHandler";
+import { workflows } from "./registry";
 import { TaskExecutor } from "./TaskExecutor";
-import type { TaskHandler } from "./TaskHandler";
-import type { TaskMessage } from "./TaskService";
 import { MAX_QUEUE_DELAY_SECONDS } from "./TaskService";
+import type { TaskMessage } from "./types";
 
 const logger = getLogger({ prefix: "services/tasks/queue-executor" });
-
-export function createTaskHandlers(): TaskHandlerRegistry<TaskHandler> {
-  return createTaskHandlerRegistry<TaskHandler>({
-    memory_synthesis: new MemorySynthesisHandler(),
-    research_polling: new ResearchPollingHandler(),
-    replicate_polling: new ReplicatePollingHandler(),
-    async_message_polling: new AsyncMessagePollingHandler(),
-    recording_transcription_polling: new RecordingTranscriptionPollingHandler(),
-    training_quality_scoring: new TrainingQualityHandler(),
-    recipe_execution: new RecipeExecutionHandler(),
-    inbound_message: new InboundMessageHandler(),
-    artificial_analysis_ingest: new ArtificialAnalysisIngestHandler(),
-    artificial_analysis_scoring: new ArtificialAnalysisScoringHandler(),
-    [SANDBOX_RUN_DISPATCH_TASK_TYPE]: new SandboxRunDispatchHandler(),
-    [PROJECT_TASK_RUN_TASK_TYPE]: new ProjectTaskRunHandler(),
-    [DELEGATION_RUN_TASK_TYPE]: new DelegationRunHandler(),
-    [DELEGATION_MESSAGE_TASK_TYPE]: new DelegationMessageHandler(),
-    [DELEGATION_EXPIRY_TASK_TYPE]: new DelegationExpiryHandler(),
-    [DELEGATION_WAKE_TASK_TYPE]: new DelegationWakeHandler(),
-    [OCR_BATCH_POLLING_TASK_TYPE]: new OcrBatchPollingHandler(),
-    [USAGE_ROLLUP_TASK_TYPE]: new UsageRollupHandler(),
-    [REALTIME_RECONCILIATION_TASK_TYPE]: new RealtimeReconciliationHandler(),
-    [INFRA_RECONCILIATION_TASK_TYPE]: new InfraReconciliationHandler(),
-    [STRIPE_USAGE_SYNC_TASK_TYPE]: new StripeUsageSyncHandler(),
-    [TASK_NOTIFICATION_DELIVERY_TASK_TYPE]: new TaskNotificationDeliveryHandler(),
-    [TEAMMATE_RUN_RECONCILIATION_TASK_TYPE]: new TeammateRunReconciliationHandler(),
-    [TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE]: new TeammateContextCleanupHandler(),
-    [CONVERSATION_TITLE_TASK_TYPE]: new ConversationTitleHandler(),
-  });
-}
 
 export class QueueExecutor {
   public static async respondToCronQueue(
@@ -95,8 +18,7 @@ export class QueueExecutor {
   ): Promise<void> {
     logger.info(`Processing batch of ${batch.messages.length} tasks`);
 
-    const handlers = createTaskHandlers();
-    const taskExecutor = new TaskExecutor(env, handlers);
+    const taskExecutor = new TaskExecutor(env, workflows.handlers());
     const taskRepository = new TaskRepository(env);
 
     for (const message of batch.messages) {

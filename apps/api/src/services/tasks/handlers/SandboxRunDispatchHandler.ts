@@ -4,8 +4,7 @@ import { isSandboxRunDispatchMessage } from "~/services/apps/sandbox/dispatch";
 import { startRunCoordinatorDispatchFiber } from "~/services/apps/sandbox/run-coordinator";
 import type { IEnv } from "~/types";
 
-import type { TaskHandler, TaskResult } from "../TaskHandler";
-import type { TaskMessage } from "../TaskService";
+import type { TaskHandler, TaskMessage, TaskResult } from "../types";
 
 const logger = getLogger({
   prefix: "services/tasks/handlers/sandbox-run-dispatch",

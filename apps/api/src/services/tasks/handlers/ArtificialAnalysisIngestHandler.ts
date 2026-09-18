@@ -3,8 +3,7 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { ingestArtificialAnalysisModels } from "~/services/model-analysis/workflow";
 import type { IEnv } from "~/types";
 
-import type { TaskHandler, TaskResult } from "../TaskHandler";
-import type { TaskMessage } from "../TaskService";
+import type { TaskHandler, TaskMessage, TaskResult } from "../types";
 
 const logger = getLogger({ prefix: "services/tasks/artificial-analysis-ingest" });
 

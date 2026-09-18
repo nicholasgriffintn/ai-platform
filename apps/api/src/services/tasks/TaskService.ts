@@ -1,6 +1,5 @@
 import { addInfraUsage } from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Task } from "~/lib/database/schema";
@@ -8,32 +7,9 @@ import type { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv } from "~/types";
 import { normaliseIsoDateTime } from "~/utils/date";
 
+import type { TaskDefinition, TaskMessage } from "./types";
+
 const logger = getLogger({ prefix: "services/tasks" });
-
-export interface TaskDefinition {
-  id?: string;
-  task_type: TaskType;
-  user_id?: number;
-  project_id?: string;
-  task_data: Record<string, any>;
-  schedule_type?: ScheduleType;
-  scheduled_at?: string;
-  cron_expression?: string;
-  priority?: number;
-  metadata?: Record<string, any>;
-}
-
-export interface TaskMessage {
-  taskId: string;
-  task_type: TaskType;
-  user_id?: number;
-  project_id?: string;
-  task_data: Record<string, any>;
-  priority: number;
-  schedule_type?: ScheduleType;
-  scheduled_at?: string;
-  max_attempts?: number;
-}
 
 export const MAX_QUEUE_DELAY_SECONDS = 60 * 60 * 12;
 

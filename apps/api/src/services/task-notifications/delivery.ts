@@ -12,9 +12,8 @@ import { isTaskNotificationPreferenceEnabled } from "~/services/notifications/pr
 import { attentionState, isTaskInboxEligible } from "~/services/project-tasks/attention";
 import type { IEnv } from "~/types";
 
-import type { TaskExecutionContext, TaskHandler, TaskResult } from "../tasks/TaskHandler";
-import type { TaskMessage } from "../tasks/TaskService";
 import { TaskService } from "../tasks/TaskService";
+import type { TaskExecutionContext, TaskHandler, TaskMessage, TaskResult } from "../tasks/types";
 
 const NOTIFICATION_COPY: Record<TaskNotificationCategory, string> = {
   decisions: "A task needs your decision.",

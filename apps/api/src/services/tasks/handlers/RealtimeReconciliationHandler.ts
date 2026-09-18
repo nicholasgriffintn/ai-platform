@@ -13,8 +13,7 @@ import type { RealtimeReconciliationPayload } from "~/services/realtime/sessionU
 import { createUsageRuntime } from "~/services/usage/runtime";
 import type { IEnv } from "~/types";
 
-import type { TaskHandler, TaskResult } from "../TaskHandler";
-import type { TaskMessage } from "../TaskService";
+import type { TaskHandler, TaskMessage, TaskResult } from "../types";
 
 const logger = getLogger({ prefix: "services/tasks/realtime-reconciliation" });
 

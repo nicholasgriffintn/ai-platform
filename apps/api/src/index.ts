@@ -37,7 +37,7 @@ import { RealtimeProxyCoordinator } from "./services/realtime/proxy-coordinator/
 import { UserSyncCoordinator } from "./services/sync/coordinator/object";
 import { QueueExecutor } from "./services/tasks/QueueExecutor";
 import { ScheduleExecutor } from "./services/tasks/ScheduleExecutor";
-import type { TaskMessage } from "./services/tasks/TaskService";
+import type { TaskMessage } from "./services/tasks/types";
 import type { IEnv } from "./types";
 import { captureApiError, getSentryOptions } from "./utils/sentry";
 

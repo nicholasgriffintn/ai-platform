@@ -5,8 +5,7 @@ import { TrainingExampleRepository } from "~/repositories/TrainingExampleReposit
 import { getAuxiliaryModel } from "~/services/models/resolve";
 import type { IEnv } from "~/types";
 
-import type { TaskHandler, TaskResult } from "../TaskHandler";
-import type { TaskMessage } from "../TaskService";
+import type { TaskHandler, TaskMessage, TaskResult } from "../types";
 
 const logger = getLogger({ prefix: "services/tasks/training-quality" });
 

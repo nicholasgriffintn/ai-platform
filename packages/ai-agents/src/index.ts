@@ -1,21 +1,5 @@
 export * from "@ngriffin_uk/polychat-library-agent-loop";
 export {
-  createWorker,
-  createEventBus,
-  defineWorkflow,
-  runWorkflow,
-  scoreKpis,
-} from "@ngriffin_uk/polychat-library-workflows";
-export type {
-  KpiDefinition,
-  Worker,
-  WorkerDefinition,
-  WorkerEvaluation,
-  WorkflowDefinition,
-  WorkflowState,
-  WorkflowStep,
-} from "@ngriffin_uk/polychat-library-workflows";
-export {
   Agent,
   buildAgentSystemPrompt,
   parseAgentToolCalls,

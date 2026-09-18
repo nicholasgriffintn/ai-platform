@@ -6,8 +6,7 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { TaskExecutor } from "../TaskExecutor";
-import type { TaskHandler } from "../TaskHandler";
-import type { TaskMessage } from "../TaskService";
+import type { TaskHandler, TaskMessage } from "../types";
 
 const mockTaskRepository = {
   updateTask: vi.fn(),

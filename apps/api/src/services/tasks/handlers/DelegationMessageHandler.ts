@@ -4,8 +4,7 @@ import { createServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
 
 import { deliverDelegationMessage } from "../../delegations/message";
-import type { TaskHandler, TaskResult } from "../TaskHandler";
-import type { TaskMessage } from "../TaskService";
+import type { TaskHandler, TaskMessage, TaskResult } from "../types";
 
 export class DelegationMessageHandler implements TaskHandler {
   public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {

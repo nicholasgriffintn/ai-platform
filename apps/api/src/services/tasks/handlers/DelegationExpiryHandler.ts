@@ -7,8 +7,7 @@ import { transitionDelegation } from "~/services/delegations/settle";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
 
-import type { TaskHandler, TaskResult } from "../TaskHandler";
-import type { TaskMessage } from "../TaskService";
+import type { TaskHandler, TaskMessage, TaskResult } from "../types";
 
 export class DelegationExpiryHandler implements TaskHandler {
   public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {

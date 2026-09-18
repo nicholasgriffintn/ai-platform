@@ -34,8 +34,7 @@ vi.mock("~/repositories/UserRepository", () => ({
   },
 }));
 
-import type { TaskMessage } from "../TaskService";
-import { ReplicatePollingHandler } from "./ReplicatePollingHandler";
+import { replicatePolling } from "../replicate-polling";
 
 const env: IEnv = Object.create(null);
 const user = {
@@ -110,21 +109,27 @@ describe("ReplicatePollingHandler", () => {
   });
 
   it("re-resolves and preserves BYOK authority for queued polling", async () => {
-    const message = {
-      taskId: "task-1",
-      task_type: "replicate_polling",
-      task_data: {
+    const result = await replicatePolling.check(
+      {
         predictionId: "prediction-1",
         userId: user.id,
         modelId: "flux-dev",
         startedAt: "2026-01-01T00:00:00.000Z",
       },
-      priority: 5,
-    } satisfies TaskMessage;
+      {
+        env,
+        message: { taskId: "task-1", task_type: "replicate_polling", task_data: {}, priority: 5 },
+        execution: {
+          deliveryAttempt: 1,
+          isRedelivery: false,
+          lease: { ownerToken: "o", expiresAt: "", assertOwned: async () => {} },
+        },
+        queue: { enqueue: async () => "task-2" },
+        enqueue: async () => "task-2",
+      },
+    );
 
-    const result = await new ReplicatePollingHandler().handle(message, env);
-
-    expect(result.status).toBe("success");
+    expect(result).toMatchObject({ status: "success" });
     expect(mocks.resolveExecutableModelForRequest).toHaveBeenCalledWith({
       env,
       user,

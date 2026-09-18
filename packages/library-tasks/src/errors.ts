@@ -3,7 +3,8 @@ export type TaskErrorCode =
   | "ownership_lost"
   | "forbidden_transition"
   | "unknown_handler"
-  | "duplicate_handler";
+  | "duplicate_handler"
+  | "invalid_payload";
 
 export class TaskError extends Error {
   readonly code: TaskErrorCode;

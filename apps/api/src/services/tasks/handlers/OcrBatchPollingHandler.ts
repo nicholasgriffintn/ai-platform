@@ -8,6 +8,7 @@ import {
   withOcrBatchProviderCleanup as withProviderCleanup,
   withoutOcrBatchProviderCleanup as withoutProviderCleanup,
 } from "@ngriffin_uk/polychat-ai-providers";
+import { pollingSchedule } from "@ngriffin_uk/polychat-library-tasks";
 import { OCR_BATCH_POLLING_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { ResponseBodyTooLargeError } from "@ngriffin_uk/polychat-utility-server/http";
@@ -23,10 +24,8 @@ import { isOutputDeletionPending } from "~/services/outputs/deletion";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import type { IEnv } from "~/types";
 
-import type { TaskHandler, TaskResult } from "../TaskHandler";
-import type { TaskMessage } from "../TaskService";
 import { TaskService } from "../TaskService";
-import { getNextPollingSchedule } from "./polling";
+import type { TaskHandler, TaskMessage, TaskResult } from "../types";
 
 const OCR_BATCH_TIMEOUT_MS = 25 * 60 * 60 * 1000;
 
@@ -113,14 +112,14 @@ async function enqueueOcrBatchReconciliation(
   data: OcrBatchPollingData,
   priority = 5,
 ): Promise<void> {
-  const polling = getNextPollingSchedule(data.pollAttempt);
+  const polling = pollingSchedule({ attempt: data.pollAttempt });
 
   await taskService.enqueueTask({
     id: `ocr-batch:${data.outputId}:reconcile:${generateId()}`,
     task_type: OCR_BATCH_POLLING_TASK_TYPE,
     user_id: data.userId,
     project_id: data.projectId,
-    task_data: { ...data, pollAttempt: polling.pollAttempt },
+    task_data: { ...data, pollAttempt: polling.attempt },
     schedule_type: "scheduled",
     scheduled_at: polling.scheduledAt,
     priority,
@@ -211,7 +210,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
             error: "OCR batch exceeded its 25-hour polling window",
           },
         });
-        const polling = getNextPollingSchedule(data.pollAttempt);
+        const polling = pollingSchedule({ attempt: data.pollAttempt });
         const taskService = new TaskService(env, context.repositories.tasks);
 
         await taskService.enqueueTask({
@@ -219,7 +218,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
           task_type: OCR_BATCH_POLLING_TASK_TYPE,
           user_id: data.userId,
           project_id: data.projectId,
-          task_data: { ...data, pollAttempt: polling.pollAttempt },
+          task_data: { ...data, pollAttempt: polling.attempt },
           schedule_type: "scheduled",
           scheduled_at: polling.scheduledAt,
           priority: message.priority || 5,
@@ -332,15 +331,15 @@ export class OcrBatchPollingHandler implements TaskHandler {
           },
         },
       });
-      const polling = getNextPollingSchedule(data.pollAttempt);
+      const polling = pollingSchedule({ attempt: data.pollAttempt });
       const taskService = new TaskService(env, context.repositories.tasks);
 
       await taskService.enqueueTask({
-        id: `ocr-batch:${data.outputId}:${polling.pollAttempt}`,
+        id: `ocr-batch:${data.outputId}:${polling.attempt}`,
         task_type: OCR_BATCH_POLLING_TASK_TYPE,
         user_id: data.userId,
         project_id: data.projectId,
-        task_data: { ...data, pollAttempt: polling.pollAttempt },
+        task_data: { ...data, pollAttempt: polling.attempt },
         schedule_type: "scheduled",
         scheduled_at: polling.scheduledAt,
         priority: message.priority || 5,

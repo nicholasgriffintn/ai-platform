@@ -21,8 +21,7 @@ import { requireProjectAccess } from "~/services/workspaces/access";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import type { IEnv } from "~/types";
 
-import type { TaskResult } from "../tasks/TaskHandler";
-import type { TaskMessage } from "../tasks/TaskService";
+import type { TaskMessage, TaskResult } from "../tasks/types";
 import { canRunDelegationOnMachine, resolveDelegationExecutionRoute } from "./routing";
 import { scheduleDelegationWake } from "./schedule-wake";
 

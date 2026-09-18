@@ -18,8 +18,7 @@ import { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv } from "~/types";
 
 import { taskLeaseStore } from "./lease-store";
-import type { TaskExecutionContext, TaskHandler, TaskResult } from "./TaskHandler";
-import type { TaskMessage } from "./TaskService";
+import type { TaskExecutionContext, TaskHandler, TaskMessage, TaskResult } from "./types";
 
 const logger = getLogger({ prefix: "services/tasks/executor" });
 

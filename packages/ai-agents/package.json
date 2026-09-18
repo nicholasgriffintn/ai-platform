@@ -30,7 +30,6 @@
     "@ngriffin_uk/polychat-ai-providers": "workspace:^",
     "@ngriffin_uk/polychat-library-agent-loop": "workspace:^",
     "@ngriffin_uk/polychat-library-tools": "workspace:^",
-    "@ngriffin_uk/polychat-library-workflows": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@ngriffin_uk/polychat-utility-server": "workspace:^"
