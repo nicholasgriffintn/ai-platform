@@ -1,4 +1,4 @@
-import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import { projectTaskInteractionSchema, type ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -30,33 +30,35 @@ function context(message: Record<string, unknown>): ServiceContext {
 
 describe("project task interaction projection", () => {
   it("returns structured pending questions for the exact task run", async () => {
-    await expect(
-      getProjectTaskInteraction(
-        context({
-          run_id: "run-1",
-          timestamp: 1_788_609_600_000,
-          data: JSON.stringify({
-            interactionId: "question-1",
-            requestedAt: "2026-09-05T12:00:00.000Z",
-            questions: [
-              {
-                id: "format",
-                prompt: "Which format?",
-                options: [{ label: "Brief", description: "A short answer." }],
-                allowOther: true,
-              },
-            ],
-            humanInTheLoop: {
-              type: "question",
-              status: "pending",
-              interactionId: "question-1",
-              requires_user_action: true,
+    const interaction = await getProjectTaskInteraction(
+      context({
+        run_id: "run-1",
+        timestamp: 1_788_609_600_000,
+        data: JSON.stringify({
+          interactionId: "question-1",
+          requestedAt: "2026-09-05T12:00:00.000Z",
+          questions: [
+            {
+              id: "format",
+              prompt: "Which format?",
+              options: [{ label: "Brief", description: "A short answer." }],
+              allowOther: true,
             },
-          }),
+          ],
+          humanInTheLoop: {
+            type: "question",
+            status: "pending",
+            interactionId: "question-1",
+            requires_user_action: true,
+          },
         }),
-        task(),
-      ),
-    ).resolves.toMatchObject({
+      }),
+      task(),
+    );
+
+    expect(interaction?.resolvedAt).toBeNull();
+    expect(projectTaskInteractionSchema.safeParse(interaction).success).toBe(true);
+    expect(interaction).toMatchObject({
       type: "question",
       interactionId: "question-1",
       status: "pending",
