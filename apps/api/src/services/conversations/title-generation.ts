@@ -1,3 +1,4 @@
+import { buildConversationTitlePrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { DEFAULT_CONVERSATION_TITLE } from "@ngriffin_uk/polychat-schemas";
 import { stripSurroundingQuotes } from "@ngriffin_uk/polychat-utility-server/strings";
@@ -15,21 +16,6 @@ const logger = getLogger({ prefix: "services/conversations/title-generation" });
 const TITLE_MAX_MESSAGES = 3;
 const TITLE_MAX_LENGTH = 50;
 const TITLE_MAX_OUTPUT_TOKENS = 64;
-
-function buildTitlePrompt(messages: { role: string; content: unknown }[]): string {
-  return `You are a title generator. Your only job is to create a short, concise title (maximum 5 words) for a conversation.
-    Do not include any explanations, prefixes, or quotes in your response.
-    Output only the title itself.
-
-    Conversation:
-    ${messages
-      .map(
-        (msg) =>
-          `${msg.role.toUpperCase()}: ${typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)}`,
-      )
-      .join("\n")}
-  `;
-}
 
 export async function generateConversationTitle(
   context: ServiceContext,
@@ -54,7 +40,7 @@ export async function generateConversationTitle(
         user,
         model: modelToUse,
         provider: providerToUse,
-        prompt: buildTitlePrompt(messagesToUse),
+        prompt: buildConversationTitlePrompt({ messages: messagesToUse }),
         max_tokens: TITLE_MAX_OUTPUT_TOKENS,
       }),
     );

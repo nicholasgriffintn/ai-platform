@@ -1,3 +1,5 @@
+import { buildMemorySummaryContext } from "@ngriffin_uk/polychat-ai-prompts";
+
 import type { IUser, IUserSettings } from "~/types";
 
 export const MEMORY_SEARCH_TOOL_NAME = "search_memories";
@@ -80,5 +82,8 @@ export function buildMemoryPromptContext({ synthesisText }: MemoryPromptContextI
     return "";
   }
 
-  return `\n\n# Memory Summary\nThe following is a consolidated summary of your long-term memories about this user. Call ${MEMORY_SEARCH_TOOL_NAME} when the turn needs a specific memory this summary does not carry.\n<memory_synthesis>\n${synthesisText}\n</memory_synthesis>`;
+  return buildMemorySummaryContext({
+    synthesisText,
+    memorySearchTool: MEMORY_SEARCH_TOOL_NAME,
+  });
 }

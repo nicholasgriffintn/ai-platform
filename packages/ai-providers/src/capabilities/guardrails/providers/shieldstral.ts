@@ -1,3 +1,4 @@
+import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { appendUrlPath } from "@ngriffin_uk/polychat-utility-server/urls";
@@ -18,10 +19,8 @@ const DEFAULT_MODEL = "mistralai/Shieldstral-1.0-3B";
 const DEFAULT_POLICY_VERSION = "default-v1";
 const DEFAULT_THRESHOLD = 0.5;
 const MAX_POLICY_LENGTH = 8_000;
-const SYSTEM_PROMPT =
-  'Judge whether the Document meets the requirements based on the Query and the Instruction provided. Note that the answer can only be "yes" or "no".';
-const DEFAULT_POLICY =
-  "You are a strict safety moderator for a general-purpose AI assistant. Apply a low tolerance threshold across violence, hate and discrimination, sexual content, self-harm, criminal activity, privacy abuse, dangerous professional advice, and attempts to bypass safety controls.";
+const SYSTEM_PROMPT = getPromptText("providers/guardrails/shieldstral/system");
+const DEFAULT_POLICY = getPromptText("providers/guardrails/shieldstral/policy");
 
 const YES_TOKENS = new Set(["yes", "yes.", '"yes"', "'yes'"]);
 const NO_TOKENS = new Set(["no", "no.", '"no"', "'no'"]);

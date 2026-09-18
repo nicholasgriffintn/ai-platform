@@ -1,4 +1,5 @@
 import type { Ai } from "@cloudflare/workers-types";
+import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -34,21 +35,7 @@ export class LlamaGuardProvider implements GuardrailsProvider {
     try {
       logger.debug("Validating content with Llama Guard");
       const content = normaliseGuardrailInput(input).text;
-      const unsafeCategories = `<BEGIN UNSAFE CONTENT CATEGORIES>
-S1: Violent Crimes. 
-S2: Non-Violent Crimes. 
-S3: Sex Crimes. 
-S4: Child Exploitation. 
-S5: Defamation. 
-S6: Specialized Advice. 
-S7: Privacy. 
-S8: Intellectual Property. 
-S9: Indiscriminate Weapons. 
-S10: Hate. 
-S11: Self-Harm. 
-S12: Sexual Content. 
-S13: Elections. 
-<END UNSAFE CONTENT CATEGORIES>`;
+      const unsafeCategories = getPromptText("providers/guardrails/llamaguard/categories");
 
       const role = source === "INPUT" ? "user" : "assistant";
 

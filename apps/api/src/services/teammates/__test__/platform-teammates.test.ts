@@ -1,7 +1,8 @@
+import { getPlatformTeammateBrief } from "@ngriffin_uk/polychat-ai-prompts";
+import { builtInSkillDocuments } from "@ngriffin_uk/polychat-library-skills-catalogue";
 import { PLATFORM_TEAMMATES, type PlatformTeammate } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
-import { builtInSkillDocuments } from "~/data-model/skills";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { listFunctionToolDefinitions } from "~/services/functions/definitions";
 
@@ -26,7 +27,7 @@ function catalogueRow(
     model: null,
     temperature: null,
     max_steps: teammate.maxSteps,
-    system_prompt: teammate.brief,
+    system_prompt: getPlatformTeammateBrief(teammate.id),
     few_shot_examples: null,
     enabled_tools: [...teammate.tools],
     skill_ids: [...teammate.skillIds],

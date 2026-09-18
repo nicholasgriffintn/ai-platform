@@ -1,4 +1,5 @@
 import { createAi, type Ai } from "@ngriffin_uk/polychat-ai-functions";
+import { buildAgentSystemPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import type {
   Message,
   ProviderEnv,
@@ -102,16 +103,7 @@ export function parseAgentToolCalls(raw: unknown): AgentToolCall[] {
   });
 }
 
-export function buildAgentSystemPrompt(definition: AgentDefinition<any>): string {
-  return [
-    `You are ${definition.name}${definition.role ? `, ${definition.role}` : ""}.`,
-    definition.objective ? `Objective: ${definition.objective}` : undefined,
-    definition.instructions,
-    "Work step by step with the tools available. Call update_plan when the strategy changes and finish with a summary when the objective is met.",
-  ]
-    .filter(Boolean)
-    .join("\n\n");
-}
+export { buildAgentSystemPrompt };
 
 function stringifyToolResult(result: unknown): string {
   if (typeof result === "string") {

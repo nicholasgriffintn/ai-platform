@@ -1,4 +1,5 @@
 import { validateReplicatePayload } from "@ngriffin_uk/polychat-ai-models";
+import { getTextToImageSystemPrompt, isImagePromptStyle } from "@ngriffin_uk/polychat-ai-prompts";
 import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { omitNullishValues } from "@ngriffin_uk/polychat-utility-server/objects";
@@ -6,15 +7,11 @@ import { omitNullishValues } from "@ngriffin_uk/polychat-utility-server/objects"
 import type { ProviderRuntime } from "../../../runtime.js";
 import { extractGeneratedAsset } from "../../../utils/helpers.js";
 import type { ImageGenerationRequest, ImageGenerationResult, ImageProvider } from "../index.js";
-import { getTextToImageSystemPrompt, imagePrompts } from "../prompts.js";
 
 const DEFAULT_MODEL = MODEL_DEFAULTS.image.replicate.model;
 
 function resolveStylePrompt(style?: string): string {
-  const styleKey =
-    style && Object.prototype.hasOwnProperty.call(imagePrompts, style)
-      ? (style as keyof typeof imagePrompts)
-      : "default";
+  const styleKey = style && isImagePromptStyle(style) ? style : "default";
 
   return getTextToImageSystemPrompt(styleKey);
 }

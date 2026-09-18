@@ -1,3 +1,4 @@
+import { getPlatformTeammateBrief } from "@ngriffin_uk/polychat-ai-prompts";
 import {
   findPlatformTeammate,
   isPlatformTeammateId,
@@ -61,7 +62,7 @@ function toPlatformTeammateRecord(teammate: PlatformTeammate): PlatformTeammateR
     model: null,
     temperature: null,
     maxSteps: teammate.maxSteps,
-    systemPrompt: teammate.brief,
+    systemPrompt: getPlatformTeammateBrief(teammate.id),
     fewShotExamples: null,
     enabledTools: [...teammate.tools],
     skillIds: [...teammate.skillIds],

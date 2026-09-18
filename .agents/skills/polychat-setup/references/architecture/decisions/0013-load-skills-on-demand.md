@@ -8,7 +8,7 @@ Specialised instructions should not inflate every prompt, and editing them must 
 
 ## Decision
 
-Use Agent Skills documents: disclose a ready skill's name and triggering description, then load its body or exact resource through `load_skill`. Keep built-ins under `apps/api/src/data-model/skills`, explicitly registered in its index. Skills teach methods; tools provide capabilities. General safety and instruction precedence stay in the main prompt.
+Use Agent Skills documents: disclose a ready skill's name and triggering description, then load its body or exact resource through `load_skill`. Keep built-ins in `packages/library-skills-catalogue` under `src/documents`, embedded through its generated index. Skills teach methods; tools provide capabilities. General safety and instruction precedence stay in the main prompt.
 
 Treat portable `allowed-tools` as metadata, not authority. Built-in requirements and suggested tools remain subject to scope, permission and approval checks. Personal opt-outs are curation; project skill attachment is authority; always-on skills follow their explicit product contract. Treat authored documents as untrusted and reserve `polychat-*` metadata for built-ins.
 

@@ -1,3 +1,4 @@
+import { buildSkillDocument } from "@ngriffin_uk/polychat-library-skills-catalogue";
 import type {
   AuthoredSkillVersionedDocument,
   TeachingSkillDraftInput,
@@ -9,7 +10,6 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getTeammateComputerTeachingRecording } from "~/services/teammates/computers";
 
 import { getSkillDefinition } from "./catalog";
-import { buildSkillDocument } from "./document";
 import { personalSkillScope } from "./management-policy";
 import { createStoredSkill, getStoredSkillVersion } from "./persistence";
 

@@ -45,12 +45,15 @@
     "@ngriffin_uk/polychat-ai-billing": "workspace:^",
     "@ngriffin_uk/polychat-ai-functions": "workspace:^",
     "@ngriffin_uk/polychat-ai-models": "workspace:^",
+    "@ngriffin_uk/polychat-ai-prompts": "workspace:^",
     "@ngriffin_uk/polychat-ai-providers": "workspace:^",
+    "@ngriffin_uk/polychat-ai-skills": "workspace:^",
     "@ngriffin_uk/polychat-ai-telemetry": "workspace:^",
     "@ngriffin_uk/polychat-ai-workflows": "workspace:^",
     "@ngriffin_uk/polychat-library-goals": "workspace:^",
     "@ngriffin_uk/polychat-library-interactions": "workspace:^",
     "@ngriffin_uk/polychat-library-registry": "workspace:^",
+    "@ngriffin_uk/polychat-library-skills-catalogue": "workspace:^",
     "@ngriffin_uk/polychat-library-tasks": "workspace:^",
     "@ngriffin_uk/polychat-library-tools": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
@@ -67,7 +70,6 @@
     "isbot": "5.2.2",
     "posthog-node": "^5.48.1",
     "stripe": "22.6.2",
-    "yaml": "2.9.0",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -1,3 +1,4 @@
+import { getPromptText, renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import z from "zod/v4";
 
 import type { Ai } from "./ai.js";
@@ -72,8 +73,10 @@ export function defineFunctions<TSpecs extends FunctionSpecs>(
         name,
         schema,
         system: [
-          spec.description ? `Task: ${spec.description}` : undefined,
-          "Respond with the structure requested.",
+          spec.description
+            ? renderPrompt("functions/structured/task", { taskDescription: spec.description })
+            : undefined,
+          getPromptText("functions/structured/response"),
         ]
           .filter(Boolean)
           .join(" "),

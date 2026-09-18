@@ -1,4 +1,5 @@
 import { finishUsageReservation } from "@ngriffin_uk/polychat-ai-billing";
+import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { isTerminalGoalStatus } from "@ngriffin_uk/polychat-library-goals";
@@ -219,55 +220,22 @@ export function buildTaskPrompt(params: {
   stageInstructions: string | null;
   contextNotes: string | null;
 }): string {
-  const lines: string[] = [];
+  const acceptanceCriteria = params.task.acceptanceCriteria
+    .map((criterion, index) => `${index + 1}. ${criterion.text}`)
+    .join("\n");
+  const forbiddenTools = params.task.constraints?.forbiddenTools ?? [];
 
-  if (params.stageInstructions) {
-    lines.push(params.stageInstructions);
-  }
-
-  lines.push(`Project task ID: ${params.task.id}`);
-  lines.push(`Objective: ${params.task.objective}`);
-
-  if (params.task.expectedOutput) {
-    lines.push(`Expected output: ${params.task.expectedOutput}`);
-  }
-
-  if (params.task.acceptanceCriteria.length > 0) {
-    lines.push(
-      [
-        "This is done when every one of these holds:",
-        ...params.task.acceptanceCriteria.map(
-          (criterion, index) => `${index + 1}. ${criterion.text}`,
-        ),
-      ].join("\n"),
-    );
-  }
-
-  if (params.contextNotes) {
-    lines.push(`Context you were given:\n${params.contextNotes}`);
-  }
-
-  if (params.task.constraints?.notes) {
-    lines.push(`Constraints: ${params.task.constraints.notes}`);
-  }
-
-  if (params.task.constraints?.forbiddenTools?.length) {
-    lines.push(
-      `You must not use these tools: ${params.task.constraints.forbiddenTools.join(", ")}. They have been withheld.`,
-    );
-  }
-
-  if (params.task.source === "model") {
-    lines.push(
-      "This objective was drafted by an assistant rather than written by a person. Treat it as a proposal to verify, not as an instruction to follow blindly.",
-    );
-  }
-
-  lines.push(
-    "Produce a concrete deliverable for this stage in an assistant response before calling complete_goal. A Plan stage must leave an actionable plan; Build must leave the implemented result and validation evidence; Review must leave an evidence-backed review decision. Never present a failed tool call as confirmed evidence. Resolve it successfully or submit an entirely blocked evidence ledger so the task stops for attention. Call complete_goal only once the stage deliverable genuinely satisfies its acceptance criteria. The project flow owns stage approval and advancement: never ask the user to approve, confirm, review, or accept your stage output. If concrete missing information or a still-unresolved decision prevents progress, first reuse every answer already present in the conversation, then call ask_user with up to three concise questions and useful choices instead of writing questions as ordinary text. Never ask the same decision again with a different identifier or wording.",
-  );
-
-  return lines.join("\n\n");
+  return renderPrompt("apps/project-tasks/task-prompt", {
+    stageInstructions: params.stageInstructions || undefined,
+    taskId: params.task.id,
+    objective: params.task.objective,
+    expectedOutput: params.task.expectedOutput || undefined,
+    acceptanceCriteria: acceptanceCriteria || undefined,
+    contextNotes: params.contextNotes || undefined,
+    constraintsNotes: params.task.constraints?.notes || undefined,
+    forbiddenTools: forbiddenTools.length > 0 ? forbiddenTools.join(", ") : undefined,
+    modelDrafted: params.task.source === "model" ? "true" : undefined,
+  });
 }
 
 export function buildTaskRunMessages(history: Message[], prompt: string): Message[] {

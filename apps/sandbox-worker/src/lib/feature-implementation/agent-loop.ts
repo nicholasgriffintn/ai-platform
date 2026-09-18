@@ -6,6 +6,7 @@ import {
   type AgentMessage,
   type AgentToolCall,
 } from "@ngriffin_uk/polychat-ai-agents";
+import { getPromptText, renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 
 import { throwIfAborted } from "../cancellation";
 import { buildSummary } from "../commands";
@@ -215,14 +216,13 @@ export async function executeAgentLoop(
           role: "user",
           content:
             instruction.kind === "continue"
-              ? `Operator requested continuation with guidance: ${content}`
-              : `Operator message: ${content}`,
+              ? renderPrompt("sandbox/notice/operator-guidance", { content })
+              : renderPrompt("sandbox/notice/operator-message", { content }),
         });
       } else if (instruction.kind === "continue") {
         currentMessages.push({
           role: "user",
-          content:
-            "Operator requested continuation. Keep moving and prioritise finishing with clear validation.",
+          content: getPromptText("sandbox/notice/operator-continuation"),
         });
       }
 
@@ -412,11 +412,7 @@ export async function executeAgentLoop(
       );
     },
     formatRecoveryRequiredMessage: (recoveryReason) =>
-      [
-        "Execution has entered recovery mode.",
-        "First action must be update_plan with a corrected, safer command strategy.",
-        `Recovery reason: ${recoveryReason}`,
-      ].join("\n"),
+      renderPrompt("sandbox/notice/recovery-mode", { recoveryReason }),
   });
 
   return {

@@ -19,6 +19,7 @@
   "dependencies": {
     "@cloudflare/sandbox": "0.12.9",
     "@ngriffin_uk/polychat-ai-agents": "workspace:^",
+    "@ngriffin_uk/polychat-ai-prompts": "workspace:^",
     "@ngriffin_uk/polychat-library-client": "workspace:^",
     "@ngriffin_uk/polychat-library-interactions": "workspace:^",
     "@ngriffin_uk/polychat-library-tools": "workspace:^",

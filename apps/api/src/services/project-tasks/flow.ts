@@ -1,3 +1,4 @@
+import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import {
   findFlowStage,
   readToolIds,
@@ -127,25 +128,17 @@ export function buildStageInstructions(
   runtime: Pick<ResolvedTaskRuntime, "stage" | "skillIds">,
 ): string | null {
   const { stage, skillIds } = runtime;
-  const lines: string[] = [];
 
-  if (stage) {
-    lines.push(`You are working the "${stage.name}" stage of this project's flow.`);
-
-    if (stage.instructions) {
-      lines.push(stage.instructions);
-    }
+  if (!stage && skillIds.length === 0) {
+    return null;
   }
 
-  if (skillIds.length > 0) {
-    lines.push(`Load these skills before you start and follow them: ${skillIds.join(", ")}.`);
-  }
+  const instructions = renderPrompt("apps/project-tasks/stage-instructions", {
+    stageName: stage?.name,
+    stageInstructions: stage?.instructions || undefined,
+    skillIds: skillIds.length > 0 ? skillIds.join(", ") : undefined,
+    humanReview: stage?.advance === "on_human_accept" ? "true" : undefined,
+  }).trim();
 
-  if (stage?.advance === "on_human_accept") {
-    lines.push(
-      "This stage ends with a person reviewing your work. Finish by stating what you did and what remains unproven.",
-    );
-  }
-
-  return lines.length > 0 ? lines.join(" ") : null;
+  return instructions || null;
 }

@@ -1,3 +1,4 @@
+import { getPromptText, renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import z from "zod/v4";
 
 import type { Ai } from "./ai.js";
@@ -36,15 +37,14 @@ export interface IsRequest extends TextTaskRequest {
 export function createTextFunctions(ai: Ai) {
   return {
     list: async ({ prompt, count, ...scope }: ListRequest): Promise<string[]> => {
+      const countInstruction = count
+        ? renderPrompt("functions/text/list-count", { count })
+        : getPromptText("functions/text/list-all");
       const { object } = await ai.generateObject({
         ...scope,
         name: "list",
         schema: z.object({ items: z.array(z.string()) }),
-        system: [
-          "You produce lists.",
-          count ? `Return exactly ${count} items.` : "Return every relevant item.",
-          "Each item is a short string with no numbering.",
-        ].join(" "),
+        system: renderPrompt("functions/text/list", { countInstruction }),
         prompt,
       });
 
@@ -60,13 +60,7 @@ export function createTextFunctions(ai: Ai) {
         ...scope,
         name: "extraction",
         schema,
-        system: [
-          "Extract the requested structure from the text.",
-          "Only use information present in the text; leave unknown fields empty.",
-          instructions,
-        ]
-          .filter(Boolean)
-          .join(" "),
+        system: [getPromptText("functions/text/extract"), instructions].filter(Boolean).join(" "),
         prompt: input,
       });
 
@@ -82,7 +76,10 @@ export function createTextFunctions(ai: Ai) {
         ...scope,
         name: "classification",
         schema: z.object({ label: z.enum(labels as [TLabel, ...TLabel[]]) }),
-        system: [`Classify the text as exactly one of: ${labels.join(", ")}.`, instructions]
+        system: [
+          renderPrompt("functions/text/classify", { labels: labels.join(", ") }),
+          instructions,
+        ]
           .filter(Boolean)
           .join(" "),
         prompt: input,
@@ -94,10 +91,10 @@ export function createTextFunctions(ai: Ai) {
       ai.generateText({
         ...scope,
         system: [
-          "Summarise the text.",
-          style ? `Style: ${style}.` : undefined,
-          maxWords ? `Use at most ${maxWords} words.` : undefined,
-          "Reply with the summary only.",
+          getPromptText("functions/text/summarise"),
+          style ? renderPrompt("functions/text/summarise-style", { style }) : undefined,
+          maxWords ? renderPrompt("functions/text/summarise-max-words", { maxWords }) : undefined,
+          getPromptText("functions/text/summarise-reply-only"),
         ]
           .filter(Boolean)
           .join(" "),
@@ -108,7 +105,7 @@ export function createTextFunctions(ai: Ai) {
         ...scope,
         name: "verdict",
         schema: z.object({ verdict: z.boolean() }),
-        system: "Decide whether the statement is true. Answer with a boolean verdict only.",
+        system: getPromptText("functions/text/verdict"),
         prompt: context ? `Context:\n${context}\n\nStatement: ${statement}` : statement,
       });
 

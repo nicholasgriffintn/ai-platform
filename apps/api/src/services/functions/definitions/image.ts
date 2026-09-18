@@ -1,5 +1,5 @@
 import { getModelIdsByOutput, getProviderModels } from "@ngriffin_uk/polychat-ai-models";
-import { imagePrompts } from "@ngriffin_uk/polychat-ai-providers";
+import { imagePromptStyles } from "@ngriffin_uk/polychat-ai-prompts";
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 
 import type { FunctionToolDescriptor } from "./types";
@@ -24,7 +24,7 @@ export const create_image: FunctionToolDescriptor = {
       image_style: {
         type: "string",
         description: "The style of the image to generate",
-        enum: Object.keys(imagePrompts),
+        enum: [...imagePromptStyles],
       },
       steps: {
         type: "integer",

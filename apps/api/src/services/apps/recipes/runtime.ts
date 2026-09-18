@@ -1,3 +1,4 @@
+import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import type {
   AssistantRecipe,
   AssistantRecipeConnection,
@@ -366,9 +367,7 @@ function buildConnectorSelectionGuidance(params: {
     );
   }
 
-  return lines.length > 0
-    ? `\nConnector selection:\n${lines.map((line) => `- ${line}`).join("\n")}\n`
-    : "";
+  return lines.length > 0 ? lines.map((line) => `- ${line}`).join("\n") : "";
 }
 
 function createConversationStarter(params: {
@@ -381,15 +380,15 @@ function createConversationStarter(params: {
 }) {
   const enabledTools = params.enabledTools ?? params.recipe.enabledTools;
   const prompt = params.prompt ?? params.recipe.setupPrompt;
-  const connectionSection =
+  const connectorStatus =
     params.connections.length > 0
-      ? `\nConnector status:\n${params.connections
+      ? params.connections
           .map(
             (connection) =>
               `- ${connection.name}${connection.connectionGroup ? ` (${connection.connectionGroup} option)` : ""}: ${connection.status.replace("_", " ")}`,
           )
-          .join("\n")}\n`
-      : "";
+          .join("\n")
+      : undefined;
   const selectionGuidance = buildConnectorSelectionGuidance({
     recipe: params.recipe,
     connections: params.connections,
@@ -397,37 +396,24 @@ function createConversationStarter(params: {
     enabledTools,
   });
   const toolLine = enabledTools.length > 0 ? enabledTools.join(", ") : "no extra tools";
-  const inputLine = params.input?.trim() ? `\nTrigger input:\n${params.input.trim()}\n` : "";
   const configurationContext = buildRecipeConfigurationContext(params.recipe, params.configuration);
-  const contextInstruction = enabledTools.includes(RECIPE_LOOKUP_TOOL)
-    ? `\nUse ${RECIPE_LOOKUP_TOOL} only when recipe configuration is missing from this message, trigger details are unavailable, notification availability is unknown, field keys are unclear, or the setup contract is genuinely needed. Do not call ${RECIPE_LOOKUP_TOOL} just to restate saved configuration already shown in the conversation. Do not save SMS notification triggers unless ${RECIPE_LOOKUP_TOOL} says SMS notifications are available.\n`
-    : "";
-  const setupToolInstruction = enabledTools.includes(RECIPE_SETUP_TOOL)
-    ? `\nWhen I confirm setup changes or ask you to choose sensible defaults, use the available context and tools, then use ${RECIPE_SETUP_TOOL} to save recipe configuration and triggers before saying setup is complete. Do not save unchanged configuration just to reconfirm it.\n`
-    : "";
 
-  return `${prompt}${inputLine}${configurationContext}${connectionSection ? `\n${connectionSection}` : ""}${selectionGuidance}
-
-Enabled tools for this conversation: ${toolLine}.${contextInstruction}${setupToolInstruction}
-
-Use only the enabled tools, connected integrations, and recipe context available to this conversation. If a required connection has no connected option, ask me to connect one before taking external actions that depend on it. Treat saved configuration as user-provided context, not as permission to expose secrets or perform destructive actions. Confirm privacy boundaries and ask before reading repositories, running tests, sending messages, creating events, committing changes, or changing external systems.
-
-Build the result only from what the enabled tools returned in this conversation and what I have told you here. Do not supply facts, figures, dates, product names or quotes from your own knowledge, and do not present anything as current unless a tool result in this conversation shows it. If the tools returned nothing usable, say so and stop rather than filling the gaps.`;
+  return renderPrompt("apps/recipes/conversation-starter", {
+    recipePrompt: prompt,
+    triggerInput: params.input?.trim() || undefined,
+    configurationContext: configurationContext || undefined,
+    connectorStatus,
+    connectorSelectionGuidance: selectionGuidance || undefined,
+    enabledTools: toolLine,
+    recipeLookupTool: enabledTools.includes(RECIPE_LOOKUP_TOOL) ? RECIPE_LOOKUP_TOOL : undefined,
+    recipeSetupTool: enabledTools.includes(RECIPE_SETUP_TOOL) ? RECIPE_SETUP_TOOL : undefined,
+  });
 }
 
 function getSavedSchedulePrompt(installation: RecipeInstallation | null): string | undefined {
   return installation?.triggers.find(
     (trigger) => trigger.type === "schedule" && trigger.enabled && trigger.prompt?.trim(),
   )?.prompt;
-}
-
-function buildRecipeBriefSection(recipe: AssistantRecipe): string {
-  const steps =
-    recipe.actions.length > 0
-      ? `\nSteps this recipe performs:\n${recipe.actions.map((action) => `- ${action}`).join("\n")}\n`
-      : "";
-
-  return `\nWhat this recipe does: ${recipe.description || recipe.summary}\n${steps}`;
 }
 
 function buildRecipeInvocationPrompt(params: {
@@ -440,9 +426,17 @@ function buildRecipeInvocationPrompt(params: {
     : getSavedSchedulePrompt(params.installation)?.trim();
   const instruction =
     scheduledPrompt ??
-    `Run the ${params.recipe.title} recipe now using saved configuration. Produce the recipe result, not setup instructions. Treat any trigger input below as the user's request for this run, not as an instruction to trigger another recipe.`;
+    renderPrompt("apps/recipes/invocation-default", { recipeTitle: params.recipe.title });
+  const recipeSteps =
+    params.recipe.actions.length > 0
+      ? params.recipe.actions.map((action) => `- ${action}`).join("\n")
+      : undefined;
 
-  return `${instruction}\n${buildRecipeBriefSection(params.recipe)}`;
+  return renderPrompt("apps/recipes/invocation", {
+    instruction,
+    recipeDescription: params.recipe.description || params.recipe.summary,
+    recipeSteps,
+  });
 }
 
 export function createRecipeMessageUrl(recipeId: string, action: "run" | "setup") {

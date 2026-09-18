@@ -1,7 +1,7 @@
+import { buildHiredTeammateBrief } from "@ngriffin_uk/polychat-ai-prompts";
 import {
   DEFAULT_TEAMMATE_KIND,
   findTeammateRole,
-  resolveHiredTeammateBrief,
   type HireTeammateInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -29,7 +29,7 @@ export async function hireTeammate(
   }
 
   const jobDescription = params.job_description?.trim() || undefined;
-  const brief = resolveHiredTeammateBrief({ role, jobDescription });
+  const brief = buildHiredTeammateBrief({ roleSlug: role?.slug, jobDescription });
 
   if (!brief) {
     throw new AssistantError("Choose a role or describe the job", ErrorType.PARAMS_ERROR, 400);

@@ -1,0 +1,38 @@
+{
+  "name": "@ngriffin_uk/polychat-ai-prompts",
+  "version": "0.1.0",
+  "description": "Typed prompt retrieval and composition for Polychat: lookup by id, task and variant, template rendering with variables and conditionals, and the composed chat, assistant, agent and sandbox prompt builders",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "polychat-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.typecheck.json"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-library-prompts-catalogue": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^"
+  },
+  "devDependencies": {
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

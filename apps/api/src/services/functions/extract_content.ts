@@ -1,3 +1,5 @@
+import { buildContentExtractionPrompt } from "@ngriffin_uk/polychat-ai-prompts";
+
 import { ai } from "~/lib/ai";
 import { extractContent } from "~/services/apps/retrieval/content-extract";
 import { getAuxiliaryModelForRetrieval } from "~/services/models/resolve";
@@ -63,8 +65,7 @@ export const extract_content: ApiToolDefinition = {
       provider: providerToUse,
       completion_id,
       app_url,
-      system:
-        "You are a helpful assistant that summarizes web content. Focus on providing accurate, relevant information while maintaining proper citation of sources.",
+      system: buildContentExtractionPrompt(),
       prompt: `Please summarize the content from the following URLs:\n\nExtracted Content:\n${result.data?.extracted.results
         .map((r, i) => `[${i + 1}] URL: ${r.url}\n${r.raw_content}\n`)
         .join("\n\n")}`,

@@ -1,3 +1,4 @@
+import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   DEFAULT_PET_PRESET_SLUG,
@@ -24,10 +25,6 @@ import type { UserPetRecord } from "~/repositories/UserPetRepository";
 import { generateImage } from "~/services/generate/image";
 import type { IUser } from "~/types";
 
-const PET_STYLE_PROMPT =
-  "A single small chibi mascot character, front facing, standing, full body, centred, " +
-  "simple flat colours, bold dark outline, large expressive eyes, friendly, " +
-  "plain solid white background, no text, no shadow, sticker style, square composition.";
 const logger = getLogger({ prefix: "services/pets" });
 
 function assertPetAuthoring(user: IUser): void {
@@ -294,7 +291,7 @@ export async function generatePetImage(
     app_url: context.env.APP_BASE_URL,
     context,
     args: {
-      prompt: `${PET_STYLE_PROMPT} The character is: ${prompt}`,
+      prompt: `${getPromptText("apps/pets/style")} The character is: ${prompt}`,
     },
     user,
   });

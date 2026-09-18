@@ -1,3 +1,8 @@
+import {
+  buildDocumentNotesPrompt,
+  getPromptText,
+  tryGetPrompt,
+} from "@ngriffin_uk/polychat-ai-prompts";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { ai } from "~/lib/ai";
@@ -55,55 +60,21 @@ export async function generateDocumentFromMedia({
   }
 
   try {
-    const outputLabels: Record<string, string> = {
-      concise_summary: "Concise Summary",
-      detailed_outline: "Detailed Outline",
-      key_takeaways: "Key Takeaways",
-      action_items: "Action Items",
-      meeting_minutes: "Meeting Minutes",
-      qa_extraction: "Q&A Extraction",
-      scene_analysis: "Scene Analysis",
-      visual_insights: "Visual Insights",
-      smart_timestamps: "Smart Timestamps",
-    };
+    const toPromptSegment = (value: string) => value.replace(/_/g, "-");
+    const selectedSections = outputs.map(
+      (output) => tryGetPrompt(`document/section/${toPromptSegment(output)}`)?.text ?? output,
+    );
+    const documentTypeDescriptor =
+      tryGetPrompt(`document/type/${toPromptSegment(documentType)}`)?.text ??
+      getPromptText("document/type/other");
 
-    const typeDescriptorMap: Record<string, string> = {
-      general: "general content",
-      meeting: "a meeting with multiple speakers",
-      training: "a training session",
-      lecture: "an academic lecture",
-      interview: "an interview",
-      recording: "a recording episode",
-      webinar: "a webinar",
-      tutorial: "an instructional tutorial",
-      video_content: "video content",
-      educational_video: "an educational video",
-      documentary: "a documentary",
-      other: "content",
-    };
-
-    const selectedSections = outputs
-      .map((o) => outputLabels[o] || o)
-      .map((label) => `- ${label}`)
-      .join("\n");
-
-    const baseGuidelines = `- Be accurate to the ${useVideoAnalysis ? "audio and visual content" : "transcript"} while improving clarity
-- Keep factual details, names, dates
-- Merge duplicates and remove filler
-- Prefer concise language
-- For Action Items, include owner (if identifiable) and due dates if present
-- For Meeting Minutes, include attendees (if identifiable), agenda, decisions, and next steps
-- For Q&A Extraction, list Q paired with A succinctly${useVideoAnalysis ? "\n- For Scene Analysis, break down the content by visual scenes and topics\n- For Visual Insights, highlight important visual elements, diagrams, or on-screen content\n- For Smart Timestamps, provide key moment timestamps with visual and audio descriptions\n- Integrate visual insights with audio content for comprehensive notes" : "\n- For Smart Timestamps, provide key moment timestamps with descriptions"}${timestamps ? "\n- Include relevant timestamps where helpful" : ""}`;
-
-    const notePrompt = `You are an expert note taker. ${useVideoAnalysis ? "Analyze this video content" : "Given a transcript"} from ${typeDescriptorMap[documentType] || "content"} and produce the following sections in Markdown. Use clear headings and bullet points where appropriate.
-
-Sections to include:
-${selectedSections}
-
-Guidelines:
-${baseGuidelines}
-
-${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
+    const notePrompt = buildDocumentNotesPrompt({
+      documentTypeDescriptor,
+      sections: selectedSections,
+      useVideoAnalysis,
+      timestamps,
+      extraPrompt,
+    });
 
     if (useVideoAnalysis) {
       throw new AssistantError(

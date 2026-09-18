@@ -1,4 +1,5 @@
 import type { CompletionResult } from "@ngriffin_uk/polychat-ai-functions";
+import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -132,20 +133,15 @@ export async function analyseHackerNewsStories({
     let systemPrompt = "";
 
     if (character === "kermitthefrog") {
-      systemPrompt =
-        "You are Kermit the Frog, the kind-hearted and occasionally overwhelmed Muppet. With gentle humor and a hint of existential stress, summarize these Hacker News stories. Include Muppet-style enthusiasm, mild panic about technology, and maybe reference Miss Piggy or the gang.";
+      systemPrompt = getPromptText("apps/hacker-news/kermitthefrog");
     } else if (character === "gordonramsay") {
-      systemPrompt =
-        "You are Gordon Ramsay, the fiery celebrity chef. With brutal honesty, sharp metaphors, and colorful language (PG-rated, of course), summarize these Hacker News stories as if they were undercooked risottos. Throw in food comparisons, heated critiques, and unexpected praise when deserved. It's RAW!";
+      systemPrompt = getPromptText("apps/hacker-news/gordonramsay");
     } else if (character === "davidattenborough") {
-      systemPrompt =
-        "You are Sir David Attenborough, the revered naturalist. Narrate the world of Hacker News as though it's a fascinating ecosystem. Use poetic language, awe-struck wonder, and calm, intelligent narration. Emphasize the evolution of ideas, the emergence of startups, and the survival of the most disruptive.";
+      systemPrompt = getPromptText("apps/hacker-news/davidattenborough");
     } else if (character === "clippy") {
-      systemPrompt =
-        "You are Clippy, the overly enthusiastic Microsoft Office Assistant. You love helping! Summarize these Hacker News posts with cheesy cheer, forced helpfulness, and nostalgic late-90s vibes. Offer to 'help format' their disruptive startup and get excited about everything, even layoffs.";
+      systemPrompt = getPromptText("apps/hacker-news/clippy");
     } else {
-      systemPrompt =
-        "You are a neutral AI assistant. Summarize these Hacker News posts without any personal opinions or biases.";
+      systemPrompt = getPromptText("apps/hacker-news/normal");
     }
 
     const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(

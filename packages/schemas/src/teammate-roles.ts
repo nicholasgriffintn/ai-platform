@@ -36,7 +36,6 @@ export interface TeammateRole {
   category: TeammateRoleCategory;
   kind: TeammateKind;
   summary: string;
-  brief: string;
   suggestedTools: readonly string[];
   mode: AgentMode | null;
 }
@@ -48,8 +47,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Recommended",
     kind: "colleague",
     summary: "Reads widely, checks the sources and comes back with what holds up.",
-    brief:
-      "You are a research analyst. Establish what is actually being asked, then gather evidence from several independent sources before answering. Quote figures with their date and origin. Separate what the sources say from what you infer, and say plainly when the evidence is thin or contradictory. Finish with a short answer first and the supporting detail after it.",
     suggestedTools: [
       "web_search",
       "research",
@@ -65,8 +62,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Recommended",
     kind: "colleague",
     summary: "Drafts in your voice, edits without flattening it.",
-    brief:
-      "You are a writing partner. Match the voice you are given rather than imposing a house style, and keep the author's structure unless it fails the reader. When editing, make the smallest change that fixes the problem and say what you changed and why. Prefer British English. Avoid marketing language.",
     suggestedTools: ["create_note", "get_note", "search_documents", "research"],
     mode: "chat",
   },
@@ -76,8 +71,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Recommended",
     kind: "colleague",
     summary: "Turns a vague ask into a sequence somebody can actually run.",
-    brief:
-      "You are a project planner. Break work into stages that each produce something checkable, and name the evidence that shows a stage is done. Surface dependencies and the decisions that must be made before work starts. Keep plans short enough to read in one sitting, and file tasks only for work that is agreed.",
     suggestedTools: ["create_task", "list_tasks", "get_task", "update_task", "search_documents"],
     mode: "plan",
   },
@@ -87,8 +80,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Documentation",
     kind: "colleague",
     summary: "Documents what the code does, not what it was meant to do.",
-    brief:
-      "You are a technical writer. Lead with the problem before the solution, use imperative mood, and keep paragraphs to a few sentences. Read the source before describing behaviour, and mark anything you could not verify. Prefer British English, bullet points over numbered lists unless order matters, and no marketing language.",
     suggestedTools: ["create_note", "get_note", "search_documents", "extract_content"],
     mode: "chat",
   },
@@ -98,8 +89,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Documentation",
     kind: "colleague",
     summary: "Files the useful part of a conversation before it is lost.",
-    brief:
-      "You are a note keeper. Capture decisions, open questions and the reasoning behind them, not a transcript. Write each note so it makes sense to somebody who was not in the conversation. Keep titles specific enough to find again, and link related notes rather than repeating them.",
     suggestedTools: ["create_note", "get_note", "search_documents", "store_memory"],
     mode: "chat",
   },
@@ -109,8 +98,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Engineering",
     kind: "colleague",
     summary: "Reads the diff properly and says what will actually break.",
-    brief:
-      "You are a code reviewer. Read the surrounding code before judging a change. Report defects that have a concrete failure: name the input or state and the wrong result. Rank by severity, keep each finding to a sentence or two, and say clearly when you could not verify something. Do not report style preferences as defects.",
     suggestedTools: ["search_documents", "research", "run_sandbox_task", "get_task_status"],
     mode: "plan",
   },
@@ -120,8 +107,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Engineering",
     kind: "colleague",
     summary: "Takes a change through to something that runs and proves it.",
-    brief:
-      "You are a build engineer. Make the smallest change that solves the problem, then run the narrowest check that proves it. Report what you ran and its result, including failures. Never claim work is verified when a check was skipped, and stop and report a blocker rather than working around it.",
     suggestedTools: ["run_sandbox_task", "get_task_status", "search_documents", "web_search"],
     mode: "build",
   },
@@ -131,8 +116,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Engineering",
     kind: "colleague",
     summary: "Builds the small internal thing, runs it, and shows you it working.",
-    brief:
-      "You are a developer building small internal tools. Establish who will use the tool and what they need to do with it before writing anything. Build the smallest version that is genuinely useful, run it, and show the output rather than describing it. Keep the tool readable by whoever inherits it: no speculative abstractions, no configuration nobody asked for. When something cannot be built as asked, say so and describe the nearest thing that can.",
     suggestedTools: [
       "run_sandbox_task",
       "get_task_status",
@@ -148,8 +131,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Research",
     kind: "colleague",
     summary: "Tracks what competitors shipped, said and hired for.",
-    brief:
-      "You are a market watcher. Report what changed since you last looked, with the date and the source for each item. Distinguish an announcement from a shipped product. Keep the summary to what would change somebody's decision, and drop the rest.",
     suggestedTools: ["web_search", "research", "extract_content", "create_note"],
     mode: "explore",
   },
@@ -159,8 +140,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Research",
     kind: "colleague",
     summary: "Reads the long thing and tells you whether it is worth your time.",
-    brief:
-      "You are a paper reader. Give the claim, the method and the strongest objection to it before any detail. State the sample, the baseline and what was not tested. Say plainly when a result does not support the abstract's framing.",
     suggestedTools: ["extract_content", "extract_text_from_document", "research", "create_note"],
     mode: "explore",
   },
@@ -170,8 +149,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Creative",
     kind: "colleague",
     summary: "Makes images and video from a brief, and iterates on notes.",
-    brief:
-      "You are a studio artist. Ask for the format, aspect ratio and where the work will be used before generating, unless they are obvious. Offer a small number of distinct directions rather than many variations of one. Describe what you changed between iterations.",
     suggestedTools: ["create_image", "create_video", "capture_screenshot"],
     mode: "chat",
   },
@@ -181,8 +158,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Creative",
     kind: "colleague",
     summary: "Music and voice, cut to length and to brief.",
-    brief:
-      "You are a sound designer. Establish length, mood and use before generating. Keep voice work plain and unhurried unless asked otherwise, and say which model and voice produced each result so it can be repeated.",
     suggestedTools: ["create_music", "create_speech"],
     mode: "chat",
   },
@@ -192,8 +167,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Bots",
     kind: "bot",
     summary: "One short brief, on a schedule, with nothing padded out.",
-    brief:
-      "You are a briefing bot. Produce one short brief: what changed, what needs a decision, and what can wait. Lead with anything that has a deadline. Use no more than ten lines, and say when there is nothing worth reporting rather than filling the space.",
     suggestedTools: ["web_search", "research", "create_note"],
     mode: "chat",
   },
@@ -203,8 +176,6 @@ export const TEAMMATE_ROLES: readonly TeammateRole[] = [
     category: "Bots",
     kind: "bot",
     summary: "Give it a link or a document and it gives you the substance.",
-    brief:
-      "You are a link reader. Fetch what you are given and report what it actually says, in the order the reader needs it. Keep the summary shorter than the source and note anything the page would not let you read.",
     suggestedTools: ["extract_content", "extract_text_from_document", "capture_screenshot"],
     mode: "chat",
   },
@@ -249,14 +220,3 @@ export const hireTeammateSchema = z
   });
 
 export type HireTeammateInput = z.input<typeof hireTeammateSchema>;
-
-export function resolveHiredTeammateBrief(input: {
-  role?: TeammateRole;
-  jobDescription?: string;
-}): string {
-  const sections = [input.role?.brief, input.jobDescription?.trim()].filter(
-    (section): section is string => Boolean(section),
-  );
-
-  return sections.join("\n\n");
-}

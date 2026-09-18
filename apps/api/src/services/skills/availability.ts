@@ -1,7 +1,10 @@
+import {
+  toSkillSummary,
+  type SkillDefinition,
+} from "@ngriffin_uk/polychat-library-skills-catalogue";
 import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
 import { listSkillDefinitions } from "./catalog";
-import { toSkillSummary, type SkillDefinition } from "./types";
 
 export type SkillScopeKind = "personal" | "project";
 

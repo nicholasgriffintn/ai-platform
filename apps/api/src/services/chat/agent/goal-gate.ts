@@ -1,4 +1,5 @@
 import type { AgentFinishAssessment } from "@ngriffin_uk/polychat-ai-agents";
+import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { isTerminalGoalStatus } from "@ngriffin_uk/polychat-library-goals";
 import { goalSchema, type Goal, type GoalSurface } from "@ngriffin_uk/polychat-schemas";
 
@@ -33,14 +34,7 @@ export interface GoalFinishGate {
   hasActiveGoal(): boolean;
 }
 
-export const GOAL_UNSATISFIED_INSTRUCTION = [
-  "The active goal is not satisfied yet. Nobody is speaking to you; this is the goal tracker.",
-  "Audit the objective against the evidence in this thread: files changed, commands run, tool results, artifacts produced.",
-  "Do not apologise or address the user about this check. Just carry on with the work.",
-  "Only call complete_goal once every part of the objective is done; a ledger covering part of it is not a completion.",
-  "If no defensible path remains, say what was tried, what blocked it, and what would unblock it.",
-  "Otherwise take the single next best action.",
-].join(" ");
+export const GOAL_UNSATISFIED_INSTRUCTION = getPromptText("apps/goal/incomplete-instruction");
 
 export function createGoalFinishGate(params: GoalGateParams): GoalFinishGate {
   let currentGoal = params.goal ?? null;

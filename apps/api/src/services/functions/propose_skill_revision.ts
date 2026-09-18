@@ -1,3 +1,4 @@
+import { buildSkillDocument } from "@ngriffin_uk/polychat-library-skills-catalogue";
 import {
   SKILL_REVISE_TOOL_NAME,
   type ProposeSkillRevisionInput,
@@ -5,7 +6,6 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { getPersonalSkill, getPersonalSkillState, savePersonalSkillDraft } from "~/services/skills";
-import { buildSkillDocument } from "~/services/skills/document";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 

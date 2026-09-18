@@ -65,4 +65,4 @@ export {
   type SkillDefinition,
   type SkillResource,
   type SkillResourceDescriptor,
-} from "./types";
+} from "@ngriffin_uk/polychat-library-skills-catalogue";

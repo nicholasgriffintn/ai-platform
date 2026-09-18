@@ -10,6 +10,7 @@ import {
   type AgentMessage,
   type AgentToolCall,
 } from "@ngriffin_uk/polychat-ai-agents";
+import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 import {
   sumTokenUsage,
@@ -73,14 +74,10 @@ const AGENT_MAX_RECOVERY_REPLANS = 2;
 const AGENT_MAX_TURN_FAILURES = 2;
 const MAX_PROVIDER_RETRIES_PER_RUN = 2;
 const DEFAULT_INITIAL_PLAN = "Use available tools as needed, then return a final answer.";
-const FINAL_ANSWER_NOTICE =
-  "You have used every tool step available for this response. No further tool calls are possible. Answer the user now with what you already have, and say plainly what you could not finish.";
-const GOAL_FINALISATION_NOTICE =
-  "Resolve the active goal now. Call complete_goal with evidence if it is satisfied, or use ask_user or request_approval if progress is genuinely blocked.";
-const REPEATED_TOOL_CALL_NOTICE =
-  "The same tool call has already failed with identical arguments. Do not call another tool. Answer the user now with what you have, and say plainly what you could not finish.";
-const UNKNOWN_TOOL_FINAL_ANSWER_NOTICE =
-  "Another unavailable tool was called after a correction. Do not call another tool. Answer the user now using only the information already available.";
+const FINAL_ANSWER_NOTICE = getPromptText("apps/agent-loop/final-answer");
+const GOAL_FINALISATION_NOTICE = getPromptText("apps/agent-loop/goal-finalisation");
+const REPEATED_TOOL_CALL_NOTICE = getPromptText("apps/agent-loop/repeated-tool-call");
+const UNKNOWN_TOOL_FINAL_ANSWER_NOTICE = getPromptText("apps/agent-loop/unknown-tool-final-answer");
 
 function waitingForUserReason(result: Message): "approval" | "question" | "selection" | "takeover" {
   const humanInTheLoop = readRecordObjectField(result.data, "humanInTheLoop");

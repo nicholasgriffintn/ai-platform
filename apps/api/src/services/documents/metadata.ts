@@ -1,3 +1,4 @@
+import { buildDocumentMetadataPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   deriveDocumentStatistics,
@@ -11,15 +12,6 @@ import { getAuxiliaryModel } from "~/services/models/resolve";
 import type { IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/documents/metadata" });
-
-const METADATA_PROMPT = `Read the document and describe it as JSON. Include:
-- tags: up to eight short labels somebody would search for
-- summary: one or two sentences, no preamble
-- keyTopics: up to five subjects the document actually covers
-- contentType: one of "text", "list", "outline" or "mixed"
-- sentiment: one of "positive", "neutral" or "negative", describing its tone
-
-Return only the JSON object, with no markdown fence around it.`;
 
 export async function describeDocument({
   context,
@@ -43,7 +35,7 @@ export async function describeDocument({
       user,
       model,
       provider,
-      system: METADATA_PROMPT,
+      system: buildDocumentMetadataPrompt(),
       prompt: `Title: ${title}\n\n${body}`,
       reasoning: { effort: "none" },
       schema: documentMetadataSchema,

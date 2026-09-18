@@ -1,3 +1,4 @@
+import { getCouncilMemberPrompt, getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { pendingSelection } from "@ngriffin_uk/polychat-library-interactions";
 import {
   councilMembers,
@@ -26,21 +27,8 @@ const councilMemberById = new Map<CouncilMemberId, CouncilMemberDefinition>(
   (councilMembers as readonly CouncilMemberDefinition[]).map((member) => [member.id, member]),
 );
 
-const TURN_BRIEF = `You are one member of a council convened to pressure-test a question. Speak only as yourself.
-
-- Make one sharp contribution. Rebut, sharpen, or build on a specific point another member made.
-- Do not summarise the debate or restate agreement. If you agree, add the consequence nobody has named.
-- Stay under 150 words.
-- Do not fabricate facts. Mark anything you cannot verify as unverified and say what would settle it.
-- If you have nothing useful to add, say so in one line and route to a member who does, or end the debate.`;
-
-const CONCLUSION_BRIEF = `You are closing a council debate. Read the whole transcript and write the chamber's result.
-
-- State the decision or answer the debate reached.
-- Give the reasoning that survived challenge, not a summary of who said what.
-- Record any dissent that a reasonable person would still hold, and why.
-- Name the concrete next action, or the exact unknown that blocks one.
-- Do not invent agreement that the transcript does not support.`;
+const TURN_BRIEF = getPromptText("apps/functions/council-turn");
+const CONCLUSION_BRIEF = getPromptText("apps/functions/council-conclusion");
 
 function resolveMembers(requested: unknown): PanelMember[] {
   const ids =
@@ -60,7 +48,7 @@ function resolveMembers(requested: unknown): PanelMember[] {
       id: member.id,
       name: member.name,
       role: member.role,
-      instruction: member.systemPrompt,
+      instruction: getCouncilMemberPrompt(member.id),
     });
   }
 

@@ -4,6 +4,7 @@ import {
   selectMessagesForSummary,
   type CompactionMode,
 } from "@ngriffin_uk/polychat-ai-agents";
+import { buildConversationSummarisePrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   compactionStatusLabels,
@@ -13,7 +14,6 @@ import {
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { ai } from "~/lib/ai";
-import { getSummarisePrompt } from "~/services/conversations/summarise-prompt";
 import { getCompactionModel } from "~/services/models/resolve";
 import type { ChatMode, IEnv, Message, IUser } from "~/types";
 
@@ -149,7 +149,7 @@ export class SessionManager {
         user: this.user,
         model,
         provider,
-        system: getSummarisePrompt({ modeHint }),
+        system: buildConversationSummarisePrompt({ modeHint }),
         prompt: summaryInput,
       });
 

@@ -112,7 +112,6 @@ export * from "./capabilities/audio/formats.js";
 export * from "./capabilities/chat/index.js";
 export * from "./capabilities/guardrails/index.js";
 export * from "./capabilities/image/index.js";
-export * from "./capabilities/image/prompts.js";
 export * from "./capabilities/music/index.js";
 export * from "./capabilities/ocr/index.js";
 export * from "./capabilities/ocr/access.js";

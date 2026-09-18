@@ -1,3 +1,4 @@
+import { getTeammateRoleBrief } from "@ngriffin_uk/polychat-ai-prompts";
 import { findTeammateRole, hireTeammateSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -67,7 +68,7 @@ describe("hireTeammate", () => {
       expect.objectContaining({
         name: role?.title,
         kind: "colleague",
-        systemPrompt: role?.brief,
+        systemPrompt: getTeammateRoleBrief("research-analyst"),
         enabledTools: [...(role?.suggestedTools ?? [])],
         mode: role?.mode,
       }),
@@ -91,7 +92,6 @@ describe("hireTeammate", () => {
 
   it("appends a job description to the role brief", async () => {
     const { context, repositories } = createContext();
-    const role = findTeammateRole("writing-partner");
 
     await hireTeammate(
       context,
@@ -108,7 +108,9 @@ describe("hireTeammate", () => {
     };
 
     expect(record.name).toBe("Editor");
-    expect(record.systemPrompt).toBe(`${role?.brief}\n\nAlways cite the style guide.`);
+    expect(record.systemPrompt).toBe(
+      `${getTeammateRoleBrief("writing-partner")}\n\nAlways cite the style guide.`,
+    );
   });
 
   it("hires from a job description alone when it is given a name", async () => {

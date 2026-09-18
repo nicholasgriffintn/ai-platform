@@ -1,3 +1,4 @@
+import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 
 import { ai } from "~/lib/ai";
@@ -86,31 +87,11 @@ export class TrainingQualityHandler implements TaskHandler {
   }
 
   private async scoreExample(example: any, env: IEnv): Promise<number> {
-    const prompt = `You are evaluating the quality of a training example for an AI assistant.
-
-Rate this conversation on a scale of 1-10 where:
-- 1-2: Poor quality (incorrect, harmful, or nonsensical responses)
-- 3-4: Below average (partially correct but lacking clarity or completeness)
-- 5-6: Average (correct but could be more helpful or detailed)
-- 7-8: Good quality (accurate, helpful, and well-structured)
-- 9-10: Excellent (exceptional clarity, accuracy, and helpfulness)
-
-Consider these factors:
-- Accuracy and correctness of the assistant's response
-- Helpfulness and relevance to the user's prompt
-- Clarity and coherence of the response
-- Appropriate tone and professionalism
-- Completeness of the answer
-
-USER PROMPT:
-${example.user_prompt}
-
-ASSISTANT RESPONSE:
-${example.assistant_response}
-
-${example.system_prompt ? `SYSTEM PROMPT:\n${example.system_prompt}` : ""}
-
-Respond with only a single number from 1-10 representing the quality score.`;
+    const prompt = renderPrompt("apps/quality/scoring", {
+      userPrompt: example.user_prompt,
+      assistantResponse: example.assistant_response,
+      systemPrompt: example.system_prompt,
+    });
 
     try {
       const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env);

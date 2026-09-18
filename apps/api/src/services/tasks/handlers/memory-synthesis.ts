@@ -1,3 +1,4 @@
+import { buildMemorySynthesisPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
@@ -136,24 +137,11 @@ ${mems.map((m) => `- ${m.text}`).join("\n")}
     )
     .join("\n");
 
-  const prompt = `You are creating a memory synthesis for an AI assistant.
-
-Consolidate the following memories into a coherent, well-organized summary:
-
-${memoriesText}
-
-${existing ? `\nPrevious synthesis:\n${existing.synthesis_text}\n` : ""}
-
-Today's date is ${new Date().toISOString().split("T")[0]}.
-
-Create a clear, factual synthesis that:
-1. Groups related information
-2. Resolves any conflicts (prefer recent information)
-3. Removes redundancies
-4. Maintains specific dates and facts
-5. Is easy to scan and reference
-
-Format as a structured document with clear sections.`;
+  const prompt = buildMemorySynthesisPrompt({
+    memories: memoriesText,
+    existingSynthesis: existing?.synthesis_text,
+    date: new Date(),
+  });
 
   try {
     const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env);

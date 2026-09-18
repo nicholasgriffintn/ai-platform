@@ -1,3 +1,4 @@
+import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { stringifyMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 
 import { runPanel, type PanelMember, type PanelTurn } from "~/services/chat/panel";
@@ -10,21 +11,9 @@ import {
   MAX_SOURCE_LENGTH,
 } from "./definitions/second_opinion";
 
-const REVIEW_BRIEF = `You are reviewing another assistant's answer. You are not rewriting it and you are not being polite about it.
+const REVIEW_BRIEF = getPromptText("apps/functions/second-opinion-brief");
 
-- Say what the answer gets right, briefly, then spend your turn on what it gets wrong or leaves out.
-- Quote the specific claim you are challenging. A general worry is worth nothing here.
-- Mark anything you cannot verify as unverified and say what would settle it.
-- Correct the answer only where the correction changes what the reader should do.
-- If a previous reviewer already made your point, do not repeat it. Add the consequence they missed, or route onward.
-- Stay under 200 words.`;
-
-const CONCLUSION_BRIEF = `You are closing a review of another assistant's answer.
-
-- Lead with the answer the reader should trust, stated in full.
-- Name what the reviewers agreed was wrong or missing in the original.
-- Record any disagreement between reviewers that a reasonable reader would still hold, and why.
-- Do not invent agreement the transcript does not support, and do not summarise who said what.`;
+const CONCLUSION_BRIEF = getPromptText("apps/functions/second-opinion-conclusion");
 
 async function resolveReviewers(
   modelIds: readonly string[],
@@ -47,8 +36,7 @@ async function resolveReviewers(
         id: `reviewer_${index + 1}`,
         name: config.name || config.matchingModel,
         role: "Reviewer",
-        instruction:
-          "Review the answer on its merits. Your standing is your own judgement, not agreement with the other reviewers.",
+        instruction: getPromptText("apps/functions/second-opinion-reviewer"),
         model: config.matchingModel,
         provider: config.provider,
       },

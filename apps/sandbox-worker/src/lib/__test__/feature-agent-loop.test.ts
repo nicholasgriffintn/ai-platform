@@ -43,9 +43,6 @@ describe("executeAgentLoop", () => {
           definition: {
             strategy: "feature-delivery",
             label: "Feature delivery",
-            planningFocus: ["focus"],
-            executionFocus: ["focus"],
-            examples: [],
           },
           reason: "test",
           source: "explicit",
@@ -108,9 +105,6 @@ describe("executeAgentLoop", () => {
         definition: {
           strategy: "feature-delivery",
           label: "Feature delivery",
-          planningFocus: ["focus"],
-          executionFocus: ["focus"],
-          examples: [],
         },
         reason: "test",
         source: "explicit",
@@ -150,9 +144,6 @@ describe("executeAgentLoop", () => {
         definition: {
           strategy: "feature-delivery",
           label: "Feature delivery",
-          planningFocus: ["focus"],
-          executionFocus: ["focus"],
-          examples: [],
         },
         reason: "test",
         source: "explicit",
@@ -199,9 +190,6 @@ describe("executeAgentLoop", () => {
         definition: {
           strategy: "feature-delivery",
           label: "Feature delivery",
-          planningFocus: ["focus"],
-          executionFocus: ["focus"],
-          examples: [],
         },
         reason: "test",
         source: "explicit",
@@ -257,9 +245,6 @@ describe("executeAgentLoop", () => {
         definition: {
           strategy: "feature-delivery",
           label: "Feature delivery",
-          planningFocus: ["focus"],
-          executionFocus: ["focus"],
-          examples: [],
         },
         reason: "test",
         source: "explicit",
@@ -320,9 +305,6 @@ describe("executeAgentLoop", () => {
         definition: {
           strategy: "feature-delivery",
           label: "Feature delivery",
-          planningFocus: ["focus"],
-          executionFocus: ["focus"],
-          examples: [],
         },
         reason: "test",
         source: "explicit",
@@ -387,9 +369,6 @@ describe("executeAgentLoop", () => {
         definition: {
           strategy: "feature-delivery",
           label: "Feature delivery",
-          planningFocus: ["focus"],
-          executionFocus: ["focus"],
-          examples: [],
         },
         reason: "test",
         source: "explicit",
@@ -459,9 +438,6 @@ describe("executeAgentLoop", () => {
         definition: {
           strategy: "feature-delivery",
           label: "Feature delivery",
-          planningFocus: ["focus"],
-          executionFocus: ["focus"],
-          examples: [],
         },
         reason: "test",
         source: "explicit",
@@ -540,9 +516,6 @@ describe("executeAgentLoop", () => {
         definition: {
           strategy: "feature-delivery",
           label: "Feature delivery",
-          planningFocus: ["focus"],
-          executionFocus: ["focus"],
-          examples: [],
         },
         reason: "test",
         source: "explicit",
@@ -604,9 +577,6 @@ describe("executeAgentLoop", () => {
         definition: {
           strategy: "feature-delivery",
           label: "Feature delivery",
-          planningFocus: ["focus"],
-          executionFocus: ["focus"],
-          examples: [],
         },
         reason: "test",
         source: "explicit",
@@ -669,9 +639,6 @@ describe("executeAgentLoop", () => {
         definition: {
           strategy: "feature-delivery",
           label: "Feature delivery",
-          planningFocus: ["focus"],
-          executionFocus: ["focus"],
-          examples: [],
         },
         reason: "test",
         source: "explicit",

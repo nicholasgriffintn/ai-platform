@@ -1,40 +1,27 @@
-import { readdir, readFile } from "node:fs/promises";
-
-import { describe, expect, it } from "vitest";
-
-import { builtInSkillDocuments } from "~/data-model/skills";
-import { buildSkillsSection } from "~/services/chat/prompts/sections/skills";
-import { functionToolCatalogue } from "~/services/functions";
-
-import { listSkillAvailability } from "../availability";
+import { buildSkillsSection } from "@ngriffin_uk/polychat-ai-prompts";
 import {
-  SkillCatalog,
-  getSkillResource,
-  listSkillDefinitions,
-  loadSkill,
-  type SkillCatalogDocument,
-} from "../catalog";
-import {
-  MAX_USER_SKILL_DOCUMENT_BYTES,
-  parseSkillDocument,
-  parseUserSkillDocument,
-  SkillDocumentError,
-  validateSkillResourcePath,
-} from "../document";
-import {
-  createSkillInstructionsResponse,
-  createSkillResourceResponse,
   formatSkillContent,
   isSkillResourceWithinLoadLimit,
   MAX_SKILL_RESOURCE_CONTENT_BYTES,
-} from "../response";
+} from "@ngriffin_uk/polychat-ai-skills";
+import {
+  builtInSkillDocuments,
+  MAX_USER_SKILL_DOCUMENT_BYTES,
+  parseSkillDocument,
+  parseUserSkillDocument,
+  SkillCatalog,
+  SkillDocumentError,
+  validateSkillResourcePath,
+  type SkillCatalogDocument,
+} from "@ngriffin_uk/polychat-library-skills-catalogue";
+import { describe, expect, it } from "vitest";
+
+import { functionToolCatalogue } from "~/services/functions";
+
+import { listSkillAvailability } from "../availability";
+import { getSkillResource, listSkillDefinitions, loadSkill } from "../catalog";
+import { createSkillInstructionsResponse, createSkillResourceResponse } from "../response";
 import { getSkillSuggestedToolNames, mergeSkillSuggestedToolNames } from "../suggested-tools";
-
-const skillsRoot = new URL("../../../data-model/skills/", import.meta.url);
-
-async function readBuiltInSkill(name: string) {
-  return readFile(new URL(`${name}/SKILL.md`, skillsRoot), "utf8");
-}
 
 function skillDocument(
   directory: string,
@@ -63,8 +50,8 @@ const BUILT_IN_SKILL_IDS = [
 ];
 
 describe("built-in skill catalogue", () => {
-  it.each(BUILT_IN_SKILL_IDS)("stores %s as an Agent Skills document", async (name) => {
-    const raw = await readBuiltInSkill(name);
+  it.each(BUILT_IN_SKILL_IDS)("stores %s as an Agent Skills document", (name) => {
+    const raw = builtInSkillDocuments.find((document) => document.directory === name)?.rawContent;
 
     expect(raw).toMatch(/^---\n/);
     expect(raw).toContain(`\nname: ${name}\n`);
@@ -73,13 +60,15 @@ describe("built-in skill catalogue", () => {
     expect(raw).toMatch(/\n---\n\n# /);
   });
 
-  it("stores artifact guidance as relative skill resources", async () => {
-    await expect(
-      readFile(new URL("artifacts/references/types.md", skillsRoot), "utf8"),
-    ).resolves.toContain("# Artifact types");
-    await expect(
-      readFile(new URL("artifacts/references/design.md", skillsRoot), "utf8"),
-    ).resolves.toContain("# Designing visual artifacts");
+  it("stores artifact guidance as relative skill resources", () => {
+    const artifacts = builtInSkillDocuments.find((document) => document.directory === "artifacts");
+    const types = artifacts?.resources?.find((resource) => resource.path === "references/types.md");
+    const design = artifacts?.resources?.find(
+      (resource) => resource.path === "references/design.md",
+    );
+
+    expect(types?.content).toContain("# Artifact types");
+    expect(design?.content).toContain("# Designing visual artifacts");
   });
 
   it("loads imported Markdown and resources through the catalogue", async () => {
@@ -251,41 +240,12 @@ describe("built-in skill catalogue", () => {
     expect(project.find((skill) => skill.id === "council")?.state).toBe("disabled");
     expect(project.find((skill) => skill.id === "recipes")?.state).toBe("ready");
 
-    const prompt = buildSkillsSection(project);
+    const prompt = buildSkillsSection(project.filter((skill) => skill.state === "ready"));
 
     expect(prompt).toContain("<name>artifacts</name>");
     expect(prompt).toContain("<name>recipes</name>");
     expect(prompt).not.toContain("<name>council</name>");
     expect(prompt).not.toContain("# Artifacts");
-  });
-
-  it("registers every skill and resource that exists on disk", async () => {
-    const entries = await readdir(new URL(skillsRoot), { withFileTypes: true });
-    const directories = entries
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name)
-      .sort((left, right) => left.localeCompare(right));
-    const registered = builtInSkillDocuments
-      .map((document) => document.directory)
-      .sort((left, right) => left.localeCompare(right));
-
-    expect(registered).toEqual(directories);
-
-    for (const document of builtInSkillDocuments) {
-      const files = await readdir(new URL(`${document.directory}/references/`, skillsRoot), {
-        withFileTypes: true,
-      }).catch(() => []);
-      const onDisk = files
-        .filter((file) => file.isFile())
-        .map((file) => `references/${file.name}`)
-        .sort((left, right) => left.localeCompare(right));
-
-      expect(
-        document.resources
-          .map((resource) => resource.path)
-          .sort((left, right) => left.localeCompare(right)),
-      ).toEqual(onDisk);
-    }
   });
 
   it("only requires and suggests tools the registry actually publishes", async () => {

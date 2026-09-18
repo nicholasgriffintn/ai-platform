@@ -1,4 +1,3 @@
-import type { imagePrompts } from "@ngriffin_uk/polychat-ai-providers";
 import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
@@ -10,7 +9,7 @@ import type { IEnv, IUser } from "~/types";
 
 export interface ImageGenerationParams {
   prompt: string;
-  image_style?: keyof typeof imagePrompts;
+  image_style?: string;
   steps?: number;
   provider?: string;
   model?: string;

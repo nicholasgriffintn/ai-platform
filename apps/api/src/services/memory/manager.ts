@@ -1,3 +1,8 @@
+import {
+  buildMemoryClassifierPrompt,
+  buildMemoryNormaliserPrompt,
+  buildMemorySummariserPrompt,
+} from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { z } from "zod/v4";
@@ -9,9 +14,6 @@ import type { MemoryProviderId } from "~/lib/providers/capabilities/memory/types
 import { recordProjectAudit } from "~/services/audit";
 import { toProviderMessages } from "~/services/chat/messages/provider-mapping";
 import type { ConversationManager } from "~/services/conversations/manager";
-import { getMemoryClassifierPrompt } from "~/services/memory/prompts/classifier";
-import { getMemoryNormaliserPrompt } from "~/services/memory/prompts/normaliser";
-import { getMemorySummariserPrompt } from "~/services/memory/prompts/summariser";
 import { getAuxiliaryModel } from "~/services/models/resolve";
 import type { IEnv, IUser, IUserSettings, MemoryScope, Message } from "~/types";
 
@@ -209,7 +211,7 @@ export class MemoryManager {
           };
           const { object: classification } = await ai.generateObject({
             ...scope,
-            system: getMemoryClassifierPrompt(),
+            system: buildMemoryClassifierPrompt(),
             prompt: lastUser,
             schema: memoryClassificationSchema,
             name: "memory_classification",
@@ -236,7 +238,7 @@ export class MemoryManager {
               try {
                 const { object: normalised } = await ai.generateObject({
                   ...scope,
-                  system: getMemoryNormaliserPrompt(),
+                  system: buildMemoryNormaliserPrompt(),
                   prompt: summaryText,
                   schema: memoryAlternativesSchema,
                   name: "memory_alternatives",
@@ -295,7 +297,7 @@ export class MemoryManager {
               user: this.user,
               model: modelToUse,
               provider: providerToUse,
-              system: getMemorySummariserPrompt(),
+              system: buildMemorySummariserPrompt(),
               prompt: snippet,
             })
           ).trim();

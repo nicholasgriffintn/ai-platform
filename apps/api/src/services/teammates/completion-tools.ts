@@ -1,3 +1,4 @@
+import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
@@ -41,17 +42,13 @@ function buildPersonaInstructions(
   behaviour: "colleague" | "bot",
 ): string | undefined {
   const skillIds = readTeammateSkillIds(teammate.skill_ids);
-  const sections = [
-    teammate.system_prompt?.trim() || undefined,
-    skillIds.length > 0
-      ? `Load these skills before you start and follow them: ${skillIds.join(", ")}.`
-      : undefined,
-    behaviour === "colleague"
-      ? "Work directly alongside the user in this persistent context. Preserve continuity and make decisions collaboratively."
-      : "Complete this automated assignment independently within the exact granted scope. Pause for questions, approvals or supervised computer control when authority is missing.",
-  ].filter((section): section is string => Boolean(section));
+  const instructions = renderPrompt("apps/teammates/persona-instructions", {
+    systemPrompt: teammate.system_prompt?.trim() || undefined,
+    skillIds: skillIds.length > 0 ? skillIds.join(", ") : undefined,
+    isBot: behaviour === "bot" ? "true" : undefined,
+  }).trim();
 
-  return sections.length > 0 ? sections.join("\n\n") : undefined;
+  return instructions || undefined;
 }
 
 function parseFewShotExamples(rawExamples: unknown): AssistantPersonaExample[] {

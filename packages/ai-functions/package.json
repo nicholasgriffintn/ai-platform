@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@ngriffin_uk/polychat-ai-models": "workspace:^",
+    "@ngriffin_uk/polychat-ai-prompts": "workspace:^",
     "@ngriffin_uk/polychat-ai-providers": "workspace:^",
     "@ngriffin_uk/polychat-library-tools": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",

@@ -11,9 +11,11 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("~/services/chat/prompts", () => ({ getSystemPrompt: mocks.getSystemPrompt }));
-vi.mock("~/services/chat/prompts/sections/goal", () => ({
-  buildGoalContractSection: mocks.buildGoalContractSection,
-}));
+vi.mock("@ngriffin_uk/polychat-ai-prompts", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@ngriffin_uk/polychat-ai-prompts")>();
+
+  return { ...actual, buildGoalContractSection: mocks.buildGoalContractSection };
+});
 
 function createRepositories(synthesisText?: string) {
   return {

@@ -1,4 +1,5 @@
 import { userCreditActor, recordModelTurnUsage } from "@ngriffin_uk/polychat-ai-billing";
+import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import {
   extractUsagePayload,
   normaliseTokenUsage,
@@ -71,13 +72,11 @@ export interface RunPanelParams {
 const ROUTING_TAG = "panel_next";
 
 function buildRoutingContract(members: readonly PanelMember[], speaker: PanelMember): string {
-  return `End your turn with exactly one routing tag on its own line:
-<${ROUTING_TAG}>{"shouldContinue":true,"nextMemberIds":["member_id"],"reason":"short reason"}</${ROUTING_TAG}>
-Valid member ids: ${members.map((member) => member.id).join(", ")}.
-Choose the member with a concrete reason to speak next; you may choose yourself again if your role genuinely needs another turn.
-When no member has new input, use {"shouldContinue":false,"nextMemberIds":[],"reason":"consensus reached"} so the panel can conclude.
-The tag is machine-read and is stripped before the user sees your turn, so do not refer to it in your prose.
-You are ${speaker.name}.`;
+  return renderPrompt("apps/panel/routing-contract", {
+    routingTag: ROUTING_TAG,
+    memberIds: members.map((member) => member.id).join(", "),
+    speakerName: speaker.name,
+  });
 }
 
 function buildMemberSystemPrompt(params: {
@@ -87,21 +86,14 @@ function buildMemberSystemPrompt(params: {
 }): string {
   const roster = params.members.map(buildRosterEntry).join("\n");
 
-  return `${params.brief}
-
-<you>
-Name: ${params.member.name}
-Role: ${params.member.role}
-Instruction: ${params.member.instruction}
-</you>
-
-<panel>
-${roster}
-</panel>
-
-<routing>
-${buildRoutingContract(params.members, params.member)}
-</routing>`;
+  return renderPrompt("apps/panel/member-system", {
+    brief: params.brief,
+    memberName: params.member.name,
+    memberRole: params.member.role,
+    memberInstruction: params.member.instruction,
+    roster,
+    routingContract: buildRoutingContract(params.members, params.member),
+  });
 }
 
 function buildTranscript(turns: readonly PanelTurn[]): string {
@@ -240,8 +232,11 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
 
     const transcript = buildTranscript(turns);
     const userContent = transcript
-      ? `Question:\n${params.question}\n\nWhat the panel has said so far:\n${transcript}\n\nGive your turn.`
-      : `Question:\n${params.question}\n\nGive your turn. You are speaking first.`;
+      ? renderPrompt("apps/panel/member-turn", {
+          question: params.question,
+          transcript,
+        })
+      : renderPrompt("apps/panel/opening-turn", { question: params.question });
 
     let raw: string;
 
@@ -297,9 +292,16 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
     : undefined;
   const conclusion = await complete(
     concluding
-      ? `${params.conclusionBrief}\n\nYou are ${concluding.name} (${concluding.role}), concluding on behalf of the panel.`
+      ? renderPrompt("apps/panel/conclusion-brief", {
+          brief: params.conclusionBrief,
+          memberName: concluding.name,
+          memberRole: concluding.role,
+        })
       : params.conclusionBrief,
-    `Question:\n${params.question}\n\nPanel transcript:\n${buildTranscript(turns)}\n\nWrite the conclusion.`,
+    renderPrompt("apps/panel/conclusion-turn", {
+      question: params.question,
+      transcript: buildTranscript(turns),
+    }),
   );
 
   return { turns, conclusion, model, provider, stoppedReason };
