@@ -4,7 +4,6 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { SANDBOX_RUN_ITEM_TYPE } from "~/config/app";
 import { resolveSandboxModel } from "~/modules/sandbox/application/worker";
 
 import { executeSandboxRunStream } from "../execute-stream";
@@ -14,6 +13,7 @@ import {
   listRunCoordinatorEvents,
   updateRunCoordinatorControl,
 } from "../run-coordinator";
+import { SANDBOX_RUN_ITEM_TYPE } from "../run-data";
 
 const mockEnqueueTask = vi.fn();
 

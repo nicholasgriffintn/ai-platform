@@ -1,9 +1,10 @@
 import { isSageMakerGpuImage, type TrainingDeploymentTarget } from "@ngriffin_uk/polychat-schemas";
 
+import {
+  DEFAULT_SAGEMAKER_SERVERLESS_MAX_CONCURRENCY,
+  DEFAULT_SAGEMAKER_SERVERLESS_MEMORY_SIZE_MB,
+} from "../../../../config/sagemaker.js";
 import type { DeployModelOptions } from "../types/providers.js";
-
-export const DEFAULT_SAGEMAKER_SERVERLESS_MEMORY_SIZE_MB = 6144;
-export const DEFAULT_SAGEMAKER_SERVERLESS_MAX_CONCURRENCY = 5;
 
 export function isSageMakerServerlessDeploymentTarget(target?: TrainingDeploymentTarget): boolean {
   return target === "sagemaker-serverless-endpoint";

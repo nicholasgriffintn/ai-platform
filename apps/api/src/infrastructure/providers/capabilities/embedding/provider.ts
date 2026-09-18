@@ -7,6 +7,11 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import {
+  EMBEDDING_VECTOR_SPACE_VERSION,
+  WORKERS_EMBEDDING_MODEL,
+  WORKERS_EMBEDDING_PROVIDER,
+} from "~/config/storage";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type {
@@ -19,11 +24,6 @@ import type {
 } from "~/types";
 
 import { providerLibrary } from "../../library";
-import {
-  EMBEDDING_VECTOR_SPACE_VERSION,
-  WORKERS_EMBEDDING_MODEL,
-  WORKERS_EMBEDDING_PROVIDER,
-} from "./constants";
 import { adaptVectorEmbeddingProvider } from "./runtime";
 import {
   type EmbeddingProviderTarget,

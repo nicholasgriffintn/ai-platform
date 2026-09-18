@@ -20,7 +20,7 @@ import {
   MAX_CONTENT_LENGTH,
   MAX_PROVIDER_STREAM_EVENT_LENGTH,
   MAX_THINKING_LENGTH,
-} from "~/config/app";
+} from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { providerHost } from "~/infrastructure/providers/host";
 import {

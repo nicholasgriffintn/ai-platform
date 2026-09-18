@@ -1,13 +1,12 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { EMBEDDING_VECTOR_SPACE_VERSION, WORKERS_EMBEDDING_MODEL } from "~/config/storage";
 import type {
   EmbeddingDistanceMetric,
   EmbeddingProviderTarget,
   EmbeddingRuntimeTarget,
   EmbeddingTaskMode,
 } from "~/types";
-
-import { EMBEDDING_VECTOR_SPACE_VERSION, WORKERS_EMBEDDING_MODEL } from "./constants";
 
 export const WORKERS_EMBEDDING_DIMENSIONS = 1024;
 export const CURRENT_EMBEDDING_DISTANCE_METRIC = "provider-configured" as const;

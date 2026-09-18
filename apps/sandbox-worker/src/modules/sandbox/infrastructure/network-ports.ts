@@ -1,6 +1,3 @@
-export const READ_LISTENING_SOCKETS_COMMAND =
-  "cat /proc/net/tcp && if [ -r /proc/net/tcp6 ]; then cat /proc/net/tcp6; fi";
-
 export function listeningPortsFromProcNet(output: string): Set<number> {
   const ports = new Set<number>();
 

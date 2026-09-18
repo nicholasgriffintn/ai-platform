@@ -9,6 +9,14 @@ import {
 import { getPromptText, renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { throwIfAborted } from "@ngriffin_uk/polychat-library-sandbox";
 
+import {
+  MAX_CONSECUTIVE_DECISION_FAILURES,
+  MAX_AGENT_STEPS,
+  MAX_COMMANDS,
+  MAX_OBSERVATION_CHARS,
+  MAX_RECOVERY_REPLANS,
+  MODEL_RETRY_OPTIONS,
+} from "../../../../config/agent";
 import { buildSummary } from "../commands";
 import { PolychatApiError } from "../polychat-client";
 import {
@@ -18,14 +26,6 @@ import {
   handleRunParallelAction,
   handleRunScriptAction,
 } from "./agent-loop-actions";
-import {
-  MAX_CONSECUTIVE_DECISION_FAILURES,
-  MAX_AGENT_STEPS,
-  MAX_COMMANDS,
-  MAX_OBSERVATION_CHARS,
-  MAX_RECOVERY_REPLANS,
-  MODEL_RETRY_OPTIONS,
-} from "./constants";
 import { buildAgentKickoffPrompt, buildAgentSystemPrompt } from "./prompts";
 import {
   getSandboxAgentTools,

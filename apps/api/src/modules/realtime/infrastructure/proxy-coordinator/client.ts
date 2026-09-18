@@ -1,13 +1,12 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { REALTIME_PROXY_LIMITS } from "~/config/realtime";
 import {
   getDurableObjectStub,
   postDurableObjectJson,
 } from "~/infrastructure/durable-objects/client";
 import type { IEnv } from "~/types";
-
-import { REALTIME_PROXY_LIMITS } from "../../application/transcriptionProxy";
 
 const logger = getLogger({ prefix: "services/realtime/proxy-coordinator/client" });
 const COORDINATOR_ORIGIN = "https://realtime-proxy-coordinator";

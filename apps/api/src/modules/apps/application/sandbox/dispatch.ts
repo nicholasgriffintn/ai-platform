@@ -17,7 +17,7 @@ import {
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { parseSseBuffer } from "@ngriffin_uk/polychat-utility-server/streaming";
 
-import { MAX_STORED_STREAM_EVENTS } from "~/config/app";
+import { MAX_STORED_STREAM_EVENTS } from "~/config/chat";
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { executeSandboxProvider } from "~/infrastructure/providers/capabilities/sandbox";
 import { providerLibrary } from "~/infrastructure/providers/library";

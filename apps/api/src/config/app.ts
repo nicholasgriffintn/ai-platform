@@ -13,14 +13,5 @@ export const METRICS_PROD_HOST = "metrics.polychat.app";
 export const API_LOCAL_HOST = "localhost:8787";
 export const API_PROD_HOST = "api.polychat.app";
 
-export const FREE_TRIAL_DAYS = 90;
-
 export const AUTH_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1_000;
 export const MAGIC_LINK_EXPIRATION_MINUTES = 15;
-
-export const MAX_CONTENT_LENGTH = 1000000; // 1MB
-export const MAX_THINKING_LENGTH = 500000; // 500KB
-export const MAX_PROVIDER_STREAM_EVENT_LENGTH = 20 * 1024 * 1024; // 20MB
-
-export const SANDBOX_RUN_ITEM_TYPE = "sandbox_run";
-export const MAX_STORED_STREAM_EVENTS = 500;

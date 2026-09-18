@@ -8,7 +8,7 @@ import {
   OBSERVE_TIMEOUT_MS,
   PAINT_BRIGHTNESS_THRESHOLD,
   SCREEN_PORT,
-} from "./constants";
+} from "./config/app";
 import type { ComputerSandbox } from "./types";
 
 const DEBUGGER_BASE_URL = `http://127.0.0.1:${DEBUGGER_PORT}`;

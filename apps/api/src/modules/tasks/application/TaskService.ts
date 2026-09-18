@@ -2,6 +2,7 @@ import { addInfraUsage } from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
+import { MAX_QUEUE_DELAY_SECONDS } from "~/config/limits";
 import type { Task } from "~/infrastructure/database/schema";
 import { normaliseIsoDateTime } from "~/infrastructure/date";
 import type { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
@@ -10,8 +11,6 @@ import type { IEnv } from "~/types";
 import type { TaskDefinition, TaskMessage } from "./types";
 
 const logger = getLogger({ prefix: "services/tasks" });
-
-export const MAX_QUEUE_DELAY_SECONDS = 60 * 60 * 12;
 
 export class TaskService {
   private env: Pick<IEnv, "TASK_QUEUE">;

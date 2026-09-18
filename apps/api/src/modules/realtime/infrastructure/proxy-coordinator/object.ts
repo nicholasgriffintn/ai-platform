@@ -1,8 +1,7 @@
 import { Agent } from "agents";
 
+import { MAX_REALTIME_PROXY_SESSIONS_PER_USER } from "~/config/realtime";
 import type { IEnv } from "~/types";
-
-export const MAX_REALTIME_PROXY_SESSIONS_PER_USER = 3;
 
 interface StoredProxySession {
   expiresAt: number;

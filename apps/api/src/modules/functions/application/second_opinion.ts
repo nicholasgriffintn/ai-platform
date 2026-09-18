@@ -1,15 +1,12 @@
 import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { stringifyMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 
+import { MAX_REVIEWERS, MAX_SOURCE_LENGTH } from "~/config/limits";
 import { runPanel, type PanelMember, type PanelTurn } from "~/modules/chat/application/panel";
 import { findModelConfig } from "~/modules/models/application/resolve";
 import type { ApiToolDefinition } from "~/types/functions";
 
-import {
-  second_opinion as second_opinionDescriptor,
-  MAX_REVIEWERS,
-  MAX_SOURCE_LENGTH,
-} from "./definitions/second_opinion";
+import { second_opinion as second_opinionDescriptor } from "./definitions/second_opinion";
 
 const REVIEW_BRIEF = getPromptText("apps/functions/second-opinion-brief");
 

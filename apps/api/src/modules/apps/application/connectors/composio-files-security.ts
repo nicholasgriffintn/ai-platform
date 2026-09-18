@@ -1,8 +1,7 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-export const COMPOSIO_FILE_MAX_BYTES = 25 * 1024 * 1024;
-export const COMPOSIO_FILE_TRANSFER_TIMEOUT_MS = 15_000;
+import { COMPOSIO_FILE_MAX_BYTES } from "~/config/limits";
 
 const FILE_SCHEMA_FORMATS = new Set(["binary", "byte", "file"]);
 const FILE_FIELD_NAME = /(^|_)(attachment|audio|document|file|image|media|upload|video)(_|$)/i;

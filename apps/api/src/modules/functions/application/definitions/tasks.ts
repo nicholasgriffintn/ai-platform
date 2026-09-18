@@ -1,8 +1,8 @@
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 
-import type { FunctionToolDescriptor } from "./types";
+import { MAX_TASK_LIMIT } from "~/config/limits";
 
-export const MAX_TASK_LIMIT = 10;
+import type { FunctionToolDescriptor } from "./types";
 
 export const get_task_status: FunctionToolDescriptor = {
   name: "get_task_status",

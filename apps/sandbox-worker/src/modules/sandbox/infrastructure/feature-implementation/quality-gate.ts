@@ -1,6 +1,7 @@
 import { redactSandboxOutput, throwIfAborted } from "@ngriffin_uk/polychat-library-sandbox";
 import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 
+import { MAX_OBSERVATION_CHARS } from "../../../../config/agent";
 import {
   assertSafeCommand,
   extractCommands,
@@ -9,7 +10,6 @@ import {
   runSandboxCommand,
 } from "../commands";
 import { withSandboxEnvironment } from "../sandbox-environment-runtime";
-import { MAX_OBSERVATION_CHARS } from "./constants";
 import type { QualityGateCheckResult, QualityGateResult, SandboxExecInstance } from "./types";
 
 const VALIDATION_COMMAND_PATTERN =

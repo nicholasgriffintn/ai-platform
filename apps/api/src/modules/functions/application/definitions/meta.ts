@@ -1,11 +1,13 @@
 import { metaNavigationTargetSchema } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
-import type { FunctionToolDescriptor } from "./types";
+import {
+  MAX_META_ATTENTION_LIMIT,
+  MAX_META_FIND_LIMIT,
+  MAX_META_READ_MESSAGES,
+} from "~/config/limits";
 
-export const MAX_META_FIND_LIMIT = 20;
-export const MAX_META_READ_MESSAGES = 60;
-export const MAX_META_ATTENTION_LIMIT = 25;
+import type { FunctionToolDescriptor } from "./types";
 
 export const findPlacesInputSchema = z.object({
   query: z

@@ -40,3 +40,5 @@ export function appendSandboxRunEvent(
 
   return next.slice(next.length - maxEvents);
 }
+
+export const SANDBOX_RUN_ITEM_TYPE = "sandbox_run";

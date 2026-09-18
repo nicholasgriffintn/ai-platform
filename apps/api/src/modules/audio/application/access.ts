@@ -1,11 +1,10 @@
 import { anonymousCreditActor, readCreditPosition } from "@ngriffin_uk/polychat-ai-billing";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { PLATFORM_HOSTED_SPEECH_PROVIDERS } from "~/config/providers";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { createUsageStore } from "~/modules/usage/application/runtime";
 import type { AnonymousUser, IUser } from "~/types";
-
-export const PLATFORM_HOSTED_SPEECH_PROVIDERS: readonly string[] = ["melotts"];
 
 export interface SpeechAccessOptions {
   repositories: RepositoryManager;

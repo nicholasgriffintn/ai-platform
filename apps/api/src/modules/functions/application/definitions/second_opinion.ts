@@ -1,9 +1,8 @@
 import z from "zod/v4";
 
-import type { FunctionToolDescriptor } from "./types";
+import { MAX_REVIEWERS, MAX_SOURCE_LENGTH } from "~/config/limits";
 
-export const MAX_REVIEWERS = 4;
-export const MAX_SOURCE_LENGTH = 12000;
+import type { FunctionToolDescriptor } from "./types";
 
 export const second_opinion: FunctionToolDescriptor = {
   name: "second_opinion",

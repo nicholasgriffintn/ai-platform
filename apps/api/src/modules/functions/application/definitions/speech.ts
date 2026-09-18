@@ -1,9 +1,10 @@
 import { getModelIdsByOutput, getProviderModels } from "@ngriffin_uk/polychat-ai-models";
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 
+import { SPEECH_PROVIDERS } from "~/config/providers";
+
 import type { FunctionToolDescriptor } from "./types";
 
-export const SPEECH_PROVIDERS = ["workers-ai", "replicate"] as const;
 export const SPEECH_MODELS = [
   ...getModelIdsByOutput(getProviderModels("workers-ai"), "workers-ai", "speech"),
   ...getModelIdsByOutput(getProviderModels("replicate"), "replicate", "audio"),

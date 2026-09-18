@@ -1,11 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { PROJECT_TASK_INTERACTION_TTL_MS } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
-import {
-  PROJECT_TASK_INTERACTION_TTL_MS,
-  recoverPendingProjectTaskInteraction,
-} from "../interaction-recovery";
+import { recoverPendingProjectTaskInteraction } from "../interaction-recovery";
 
 function createContext(message: Record<string, unknown> | null) {
   const updateMessage = vi.fn().mockResolvedValue(undefined);

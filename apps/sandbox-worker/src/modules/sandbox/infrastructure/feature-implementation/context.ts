@@ -1,14 +1,14 @@
 import { isRecord, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 
-import { quoteForShell } from "../commands";
-import { safeParseJson } from "../json";
 import {
   MAX_CONTEXT_FILES,
   MAX_CONTEXT_SNIPPET_LINES,
   MAX_INSTRUCTION_FILES,
   MAX_READ_FILE_LINES,
   MAX_SNIPPET_CHARS,
-} from "./constants";
+} from "../../../../config/agent";
+import { quoteForShell } from "../commands";
+import { safeParseJson } from "../json";
 import type {
   FileContextSnippet,
   ReadFileResult,

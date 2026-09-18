@@ -10,8 +10,6 @@ import {
   type SandboxTrustLevel,
 } from "@ngriffin_uk/polychat-schemas";
 
-export const MAX_LOG_CHARS = 80000;
-
 const GITHUB_HTTPS_REPO_REGEX =
   /^https:\/\/github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?\/?$/i;
 const GITHUB_SLUG_REPO_REGEX = /^([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?$/;

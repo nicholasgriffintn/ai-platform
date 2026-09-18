@@ -1,6 +1,7 @@
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
+import { COMPOSIO_FILE_MAX_BYTES } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
 import {
@@ -12,7 +13,6 @@ import {
   type ComposioMountFileClient,
 } from "../composio-files";
 import {
-  COMPOSIO_FILE_MAX_BYTES,
   readBoundedResponseBody,
   requireComposioMountPath,
   requireComposioPresignedUrl,

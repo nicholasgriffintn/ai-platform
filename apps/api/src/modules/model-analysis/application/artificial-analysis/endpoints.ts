@@ -1,7 +1,7 @@
 import {
   ARTIFICIAL_ANALYSIS_API_BASE_URL,
   ARTIFICIAL_ANALYSIS_LLM_MODEL_TYPE,
-} from "~/modules/model-analysis/application/artificial-analysis/constants";
+} from "~/config/integrations";
 
 export type ArtificialAnalysisEndpoint = {
   path: string;

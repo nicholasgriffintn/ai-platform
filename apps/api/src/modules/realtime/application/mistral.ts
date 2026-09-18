@@ -6,6 +6,7 @@ import {
 import { NO_STORE } from "@ngriffin_uk/polychat-schemas";
 import type { Context } from "hono";
 
+import { REALTIME_PROXY_LIMITS } from "~/config/realtime";
 import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 import { getRealtimeProvider } from "~/infrastructure/providers/capabilities/realtime";
 import { resolveRealtimeMaxSessionSeconds } from "~/modules/realtime/application/sessionLimits";
@@ -16,7 +17,6 @@ import {
   createRealtimeProxyHandshakeFailure,
   createRealtimeProxySessionEnd,
   normalizeClientRealtimeMessage,
-  REALTIME_PROXY_LIMITS,
   RealtimeProxyLimitError,
   RealtimeProxySessionLimits,
   serializeNormalizedClientRealtimeMessage,

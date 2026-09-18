@@ -2,10 +2,10 @@ import type { MobileWorkNotification } from "@ngriffin_uk/polychat-schemas";
 import { base64ToBuffer, stringToBase64Url } from "@ngriffin_uk/polychat-utility-server/base64";
 import { encodeBase64Url } from "@ngriffin_uk/polychat-utility-server/base64url";
 
+import { APNS_TOKEN_LIFETIME_MS } from "~/config/notifications";
 import type { MobilePushDeviceRecord } from "~/modules/mobile-push/infrastructure/MobilePushRepository";
 import type { IEnv } from "~/types";
 
-const TOKEN_LIFETIME_MS = 45 * 60 * 1000;
 let cachedProviderToken: { value: string; createdAt: number; keyId: string } | undefined;
 
 type ConfiguredApnsEnv = IEnv &
@@ -26,7 +26,7 @@ export async function getApnsProviderToken(env: IEnv): Promise<string | null> {
 
   if (
     cachedProviderToken?.keyId === env.APNS_KEY_ID &&
-    Date.now() - cachedProviderToken.createdAt < TOKEN_LIFETIME_MS
+    Date.now() - cachedProviderToken.createdAt < APNS_TOKEN_LIFETIME_MS
   ) {
     return cachedProviderToken.value;
   }

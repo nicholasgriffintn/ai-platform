@@ -3,13 +3,12 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { API_LOCAL_HOST, API_PROD_HOST, LOCAL_HOST, PROD_HOST } from "~/config/app";
+import { REALTIME_PROXY_GRANT_TTL_SECONDS } from "~/config/realtime";
 import {
   reserveRealtimeProxySession,
   type RealtimeProxyReservation,
 } from "~/modules/realtime/infrastructure/proxy-coordinator/client";
 import type { IEnv, IUser } from "~/types";
-
-export const REALTIME_PROXY_GRANT_TTL_SECONDS = 60;
 
 const REALTIME_PROXY_GRANT_AUDIENCE = "assistant-realtime-proxy";
 const REALTIME_PROXY_GRANT_PURPOSE = "realtime-proxy";

@@ -3,7 +3,7 @@ import { errorResponse } from "@ngriffin_uk/polychat-library-sandbox";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 
 import { startComputer } from "./browser";
-import { RESOURCE_ID_PATTERN, SCREEN_PORT, SCREEN_TTL_MS } from "./constants";
+import { RESOURCE_ID_PATTERN, SCREEN_PORT, SCREEN_TTL_MS } from "./config/app";
 import { computerLeaseFence } from "./fencing";
 import { signScreenAccess, verifyScreenAccess } from "./screen-access";
 import { startTeachingRecording } from "./teaching-recording";

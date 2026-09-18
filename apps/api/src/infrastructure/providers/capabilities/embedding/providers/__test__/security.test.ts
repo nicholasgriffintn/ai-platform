@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { WORKERS_EMBEDDING_MODEL } from "../../constants";
+import { WORKERS_EMBEDDING_MODEL } from "~/config/storage";
 
 const logger = vi.hoisted(() => ({
   debug: vi.fn(),

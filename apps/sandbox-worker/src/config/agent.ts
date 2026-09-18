@@ -1,4 +1,4 @@
-import type { PolychatRetryOptions } from "../polychat-client";
+import type { PolychatRetryOptions } from "~/modules/sandbox/infrastructure/polychat-client";
 
 export const MAX_COMMANDS = 30;
 export const MAX_AGENT_STEPS = 48;
@@ -19,3 +19,8 @@ export const MODEL_RETRY_OPTIONS: PolychatRetryOptions = {
   baseDelayMs: 500,
   maxDelayMs: 2500,
 };
+
+export const NETWORK_APPROVAL_TIMEOUT_SECONDS = 120;
+export const NETWORK_APPROVAL_ESCALATE_AFTER_SECONDS = 30;
+export const RISKY_APPROVAL_TIMEOUT_SECONDS = 180;
+export const RISKY_APPROVAL_ESCALATE_AFTER_SECONDS = 45;

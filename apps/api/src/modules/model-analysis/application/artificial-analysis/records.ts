@@ -10,7 +10,7 @@ import {
   ARTIFICIAL_ANALYSIS_ATTRIBUTION_URL,
   ARTIFICIAL_ANALYSIS_LLM_MODEL_TYPE,
   ARTIFICIAL_ANALYSIS_SOURCE,
-} from "~/modules/model-analysis/application/artificial-analysis/constants";
+} from "~/config/integrations";
 import { ARTIFICIAL_ANALYSIS_FREE_MODEL_ENDPOINTS } from "~/modules/model-analysis/application/artificial-analysis/endpoints";
 import type { ArtificialAnalysisEndpoint } from "~/modules/model-analysis/application/artificial-analysis/endpoints";
 import { deriveBlendedPrice } from "~/modules/model-analysis/application/artificial-analysis/pricing";

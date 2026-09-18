@@ -8,7 +8,6 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import { SANDBOX_RUN_ITEM_TYPE } from "~/config/app";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { SSE_HEADERS } from "~/infrastructure/http/streaming";
 import { resolveSandboxModel } from "~/modules/sandbox/application/worker";
@@ -24,7 +23,7 @@ import {
   openRunCoordinatorEventsSocket,
   updateRunCoordinatorControl,
 } from "./run-coordinator";
-import { getSandboxActivityStatus, type SandboxRunData } from "./run-data";
+import { getSandboxActivityStatus, SANDBOX_RUN_ITEM_TYPE, type SandboxRunData } from "./run-data";
 import { assertSandboxRunCanStart } from "./run-limits";
 import { createCoordinatorEventSseStream } from "./streaming";
 

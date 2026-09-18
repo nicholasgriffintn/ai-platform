@@ -1,5 +1,15 @@
 export type ParsedNumberInput = number | "";
 
+export function parsePositiveInteger(input: string | undefined | null): number | null {
+  if (!input) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(input, 10);
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
 export function clampNumber(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) {
     return min;

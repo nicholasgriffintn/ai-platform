@@ -15,7 +15,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { isUrlWithinOrigin } from "@ngriffin_uk/polychat-utility-server/urls";
 import { Stripe } from "stripe";
 
-import { FREE_TRIAL_DAYS } from "~/config/app";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import {
   sendPaymentFailedEmail,
@@ -129,7 +128,6 @@ export async function createCheckoutSession(
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: successUrl,
     cancel_url: cancelUrl,
-    subscription_data: { trial_period_days: FREE_TRIAL_DAYS },
     metadata: { user_id: user.id.toString() },
   });
 

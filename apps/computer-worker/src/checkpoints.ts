@@ -2,7 +2,7 @@ import type { DirectoryBackup } from "@cloudflare/sandbox";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { startComputer, stopComputer } from "./browser";
-import { PROFILE_DIRECTORY } from "./constants";
+import { PROFILE_DIRECTORY } from "./config/app";
 import type { ComputerSandbox } from "./types";
 
 function parseCheckpointReference(value: string): DirectoryBackup {

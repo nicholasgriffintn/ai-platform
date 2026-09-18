@@ -3,26 +3,14 @@ import {
   SANDBOX_TIMEOUT_MAX_SECONDS,
   SANDBOX_TIMEOUT_MIN_SECONDS,
 } from "@ngriffin_uk/polychat-schemas";
+import { parsePositiveInteger } from "@ngriffin_uk/polychat-utility-core";
 
+import {
+  SANDBOX_DEFAULT_MAX_CONCURRENT_RUNS,
+  SANDBOX_DEFAULT_MAX_RUNS_PER_DAY,
+  SANDBOX_DEFAULT_MAX_RUN_STARTS_PER_MINUTE,
+} from "~/config/sandbox";
 import type { IEnv } from "~/types";
-
-const DEFAULT_MAX_CONCURRENT_RUNS = 2;
-const DEFAULT_MAX_RUNS_PER_DAY = 25;
-const DEFAULT_MAX_RUN_STARTS_PER_MINUTE = 4;
-
-function parsePositiveInteger(input: string | undefined): number | null {
-  if (!input) {
-    return null;
-  }
-
-  const parsed = Number.parseInt(input, 10);
-
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return null;
-  }
-
-  return parsed;
-}
 
 export interface SandboxTimeoutConfig {
   timeoutSeconds: number;
@@ -73,12 +61,12 @@ export function resolveSandboxExecutionQuotaConfig(
   env: IEnv | undefined,
 ): SandboxExecutionQuotaConfig {
   const maxConcurrentRuns =
-    parsePositiveInteger(env?.SANDBOX_MAX_CONCURRENT_RUNS) ?? DEFAULT_MAX_CONCURRENT_RUNS;
+    parsePositiveInteger(env?.SANDBOX_MAX_CONCURRENT_RUNS) ?? SANDBOX_DEFAULT_MAX_CONCURRENT_RUNS;
   const maxRunsPerDay =
-    parsePositiveInteger(env?.SANDBOX_MAX_RUNS_PER_DAY) ?? DEFAULT_MAX_RUNS_PER_DAY;
+    parsePositiveInteger(env?.SANDBOX_MAX_RUNS_PER_DAY) ?? SANDBOX_DEFAULT_MAX_RUNS_PER_DAY;
   const maxRunStartsPerMinute =
     parsePositiveInteger(env?.SANDBOX_MAX_RUN_STARTS_PER_MINUTE) ??
-    DEFAULT_MAX_RUN_STARTS_PER_MINUTE;
+    SANDBOX_DEFAULT_MAX_RUN_STARTS_PER_MINUTE;
 
   return {
     maxConcurrentRuns: Math.max(1, maxConcurrentRuns),

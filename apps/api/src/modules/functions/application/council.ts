@@ -6,14 +6,13 @@ import {
   type CouncilMemberId,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { MAX_COUNCIL_MEMBERS, MAX_COUNCIL_TURNS } from "~/config/limits";
 import { runPanel, type PanelMember, type PanelTurn } from "~/modules/chat/application/panel";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import {
   select_council_members as select_council_membersDescriptor,
   run_council as run_councilDescriptor,
-  MAX_COUNCIL_MEMBERS,
-  MAX_COUNCIL_TURNS,
 } from "./definitions/council";
 
 const DEFAULT_COUNCIL_MEMBER_IDS: CouncilMemberId[] = [

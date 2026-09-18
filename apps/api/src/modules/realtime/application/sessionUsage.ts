@@ -11,11 +11,11 @@ import {
   type UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
 
-import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import {
   REALTIME_RECONCILIATION_BUFFER_SECONDS,
   REALTIME_RESERVATION_SECONDS,
-} from "~/modules/realtime/application/sessionLimits";
+} from "~/config/realtime";
+import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import type { IEnv } from "~/types";

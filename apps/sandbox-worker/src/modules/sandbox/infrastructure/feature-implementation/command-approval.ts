@@ -2,13 +2,14 @@ import { resolveApproval, type ApprovalClient } from "@ngriffin_uk/polychat-libr
 import { sandboxRunEventSchema, type SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
 import { readNonEmptyString } from "@ngriffin_uk/polychat-utility-core";
 
+import {
+  NETWORK_APPROVAL_ESCALATE_AFTER_SECONDS,
+  NETWORK_APPROVAL_TIMEOUT_SECONDS,
+  RISKY_APPROVAL_ESCALATE_AFTER_SECONDS,
+  RISKY_APPROVAL_TIMEOUT_SECONDS,
+} from "../../../../config/agent";
 import type { TaskEvent } from "../../../../types";
 import type { CommandApproval, RunControlClient } from "../run-control-client";
-
-const NETWORK_APPROVAL_TIMEOUT_SECONDS = 120;
-const NETWORK_APPROVAL_ESCALATE_AFTER_SECONDS = 30;
-const RISKY_APPROVAL_TIMEOUT_SECONDS = 180;
-const RISKY_APPROVAL_ESCALATE_AFTER_SECONDS = 45;
 
 type CommandRiskLevel = "low" | "network" | "risky";
 

@@ -1,11 +1,12 @@
 import { Hono } from "hono";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { REALTIME_PROXY_LIMITS } from "~/config/realtime";
+
 import {
   bridgeRealtimeTranscriptionSockets,
   createRealtimeTranscriptionProxyResponse,
   normalizeClientRealtimeMessage,
-  REALTIME_PROXY_LIMITS,
   RealtimeProxyLimitError,
   RealtimeProxySessionLimits,
 } from "../transcriptionProxy";

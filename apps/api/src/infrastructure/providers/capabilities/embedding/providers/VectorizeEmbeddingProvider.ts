@@ -6,8 +6,8 @@ import { paginate } from "@ngriffin_uk/polychat-utility-server/arrays";
 import { parseEmbeddingVectors } from "@ngriffin_uk/polychat-utility-server/embeddings";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { WORKERS_EMBEDDING_MODEL } from "~/config/storage";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import { WORKERS_EMBEDDING_MODEL } from "~/infrastructure/providers/capabilities/embedding/constants";
 import {
   buildVectorizeMetadataFilter,
   requireEmbeddingScopeTag,

@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { WORKERS_EMBEDDING_MODEL } from "~/config/storage";
 import type { EmbeddingProvider, IEnv, IUser, IUserSettings } from "~/types";
 
-import { WORKERS_EMBEDDING_MODEL } from "../../constants";
 import { getEmbeddingRuntimeForTarget } from "../../provider";
 import { adaptVectorEmbeddingProvider } from "../../runtime";
 import {

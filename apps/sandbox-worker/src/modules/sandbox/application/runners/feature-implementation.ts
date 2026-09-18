@@ -13,6 +13,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 
+import { MAX_COMMANDS, MODEL_RETRY_OPTIONS } from "../../../../config/agent";
+import { MAX_LOG_CHARS } from "../../../../config/app";
 import type {
   TaskEvent,
   TaskEventEmitter,
@@ -26,7 +28,6 @@ import {
   execOrThrowRedacted,
   resolveGitHubRepo,
   buildSummary,
-  MAX_LOG_CHARS,
   quoteForShell,
   buildCommitMessage,
   uniqueOutputLines,
@@ -36,10 +37,6 @@ import { prepareSandboxEnvironment } from "../../infrastructure/environment-setu
 import { classifySandboxError } from "../../infrastructure/errors";
 import { createExecutionControl } from "../../infrastructure/execution-control";
 import { executeAgentLoop } from "../../infrastructure/feature-implementation/agent-loop";
-import {
-  MAX_COMMANDS,
-  MODEL_RETRY_OPTIONS,
-} from "../../infrastructure/feature-implementation/constants";
 import { collectRepositoryContext } from "../../infrastructure/feature-implementation/context";
 import {
   startFileWatcher,

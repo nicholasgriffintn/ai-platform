@@ -6,20 +6,16 @@ import {
   requiresPaidPlan,
 } from "@ngriffin_uk/polychat-schemas";
 
+import {
+  MODEL_READINESS_TTL_MS,
+  MODEL_RUNTIME_READINESS_STATUSES,
+  type ModelRuntimeReadinessStatus,
+} from "~/config/models";
 import type { IUser } from "~/types";
 
-const MODEL_READINESS_TTL_MS = 60_000;
+export type { ModelRuntimeReadinessStatus } from "~/config/models";
 
-export const MODEL_RUNTIME_READINESS_STATUSES = [
-  "not_configured",
-  "unreachable",
-  "model_missing",
-  "model_loading",
-  "machine_offline",
-  "desktop_required",
-] as const;
-
-export type ModelRuntimeReadinessStatus = (typeof MODEL_RUNTIME_READINESS_STATUSES)[number];
+export { MODEL_RUNTIME_READINESS_STATUSES };
 
 export interface ModelReadinessOptions {
   runtimeStatus?: ModelRuntimeReadinessStatus;

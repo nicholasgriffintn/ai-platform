@@ -14,6 +14,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { delay } from "@ngriffin_uk/polychat-utility-core";
 
+import { READ_LISTENING_SOCKETS_COMMAND } from "../../../config/app";
 import type { TaskEvent } from "../../../types";
 import {
   assertSafeCommand,
@@ -23,7 +24,7 @@ import {
 } from "./commands";
 import { hasSandboxErrorCode } from "./errors";
 import { resolveCommandApproval } from "./feature-implementation/command-approval";
-import { listeningPortsFromProcNet, READ_LISTENING_SOCKETS_COMMAND } from "./network-ports";
+import { listeningPortsFromProcNet } from "./network-ports";
 import type { RunControlClient } from "./run-control-client";
 import { withSandboxEnvironment } from "./sandbox-environment-runtime";
 

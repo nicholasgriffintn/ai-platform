@@ -1,18 +1,21 @@
 import { getModelIdsByOutput, getProviderModels } from "@ngriffin_uk/polychat-ai-models";
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 
+import {
+  VIDEO_DEFAULT_FLOW_SHIFT,
+  VIDEO_DEFAULT_FRAMES,
+  VIDEO_DEFAULT_GUIDANCE_SCALE,
+  VIDEO_DEFAULT_HEIGHT,
+  VIDEO_DEFAULT_INFER_STEPS,
+  VIDEO_DEFAULT_WIDTH,
+  VIDEO_MAX_DIMENSION,
+  VIDEO_MIN_GUIDANCE_SCALE,
+  VIDEO_MIN_INFER_STEPS,
+} from "~/config/limits";
+import { VIDEO_PROVIDERS } from "~/config/providers";
+
 import type { FunctionToolDescriptor } from "./types";
 
-export const DEFAULT_HEIGHT = 320;
-export const DEFAULT_WIDTH = 576;
-export const MAX_DIMENSION = 1280;
-export const DEFAULT_FRAMES = 24;
-export const DEFAULT_GUIDANCE_SCALE = 6;
-export const MIN_GUIDANCE_SCALE = 1;
-export const DEFAULT_INFER_STEPS = 50;
-export const MIN_INFER_STEPS = 1;
-export const DEFAULT_FLOW_SHIFT = 7;
-export const VIDEO_PROVIDERS = ["workers-ai", "replicate"] as const;
 export const VIDEO_MODELS = [
   ...getModelIdsByOutput(getProviderModels("workers-ai"), "workers-ai", "video"),
   ...getModelIdsByOutput(getProviderModels("replicate"), "replicate", "video"),
@@ -36,19 +39,19 @@ export const create_video: FunctionToolDescriptor = {
       },
       embedded_guidance_scale: {
         type: "integer",
-        description: `Scale for classifier-free guidance. Must be greater than or equal to ${MIN_GUIDANCE_SCALE} and no greater than ${DEFAULT_GUIDANCE_SCALE} Defaults to ${DEFAULT_GUIDANCE_SCALE}.`,
-        default: DEFAULT_GUIDANCE_SCALE,
-        minimum: MIN_GUIDANCE_SCALE,
+        description: `Scale for classifier-free guidance. Must be greater than or equal to ${VIDEO_MIN_GUIDANCE_SCALE} and no greater than ${VIDEO_DEFAULT_GUIDANCE_SCALE} Defaults to ${VIDEO_DEFAULT_GUIDANCE_SCALE}.`,
+        default: VIDEO_DEFAULT_GUIDANCE_SCALE,
+        minimum: VIDEO_MIN_GUIDANCE_SCALE,
       },
       video_length: {
         type: "integer",
-        description: `The length of the video in frames. Defaults to ${DEFAULT_FRAMES}.`,
-        default: DEFAULT_FRAMES,
+        description: `The length of the video in frames. Defaults to ${VIDEO_DEFAULT_FRAMES}.`,
+        default: VIDEO_DEFAULT_FRAMES,
       },
       infer_steps: {
         type: "integer",
-        description: `The number of inference steps to take. Must be greater than or equal to ${MIN_INFER_STEPS}. Defaults to ${DEFAULT_INFER_STEPS}.`,
-        default: DEFAULT_INFER_STEPS,
+        description: `The number of inference steps to take. Must be greater than or equal to ${VIDEO_MIN_INFER_STEPS}. Defaults to ${VIDEO_DEFAULT_INFER_STEPS}.`,
+        default: VIDEO_DEFAULT_INFER_STEPS,
       },
       seed: {
         type: "integer",
@@ -56,20 +59,20 @@ export const create_video: FunctionToolDescriptor = {
       },
       flow_shift: {
         type: "integer",
-        description: `The amount of flow shift to apply. Defaults to ${DEFAULT_FLOW_SHIFT}.`,
-        default: DEFAULT_FLOW_SHIFT,
+        description: `The amount of flow shift to apply. Defaults to ${VIDEO_DEFAULT_FLOW_SHIFT}.`,
+        default: VIDEO_DEFAULT_FLOW_SHIFT,
       },
       height: {
         type: "integer",
-        description: `The height of the video. Defaults to ${DEFAULT_HEIGHT}, must be less than or equal to ${MAX_DIMENSION}.`,
-        default: DEFAULT_HEIGHT,
-        maximum: MAX_DIMENSION,
+        description: `The height of the video. Defaults to ${VIDEO_DEFAULT_HEIGHT}, must be less than or equal to ${VIDEO_MAX_DIMENSION}.`,
+        default: VIDEO_DEFAULT_HEIGHT,
+        maximum: VIDEO_MAX_DIMENSION,
       },
       width: {
         type: "integer",
-        description: `The width of the video. Defaults to ${DEFAULT_WIDTH}, must be less than or equal to ${MAX_DIMENSION}.`,
-        default: DEFAULT_WIDTH,
-        maximum: MAX_DIMENSION,
+        description: `The width of the video. Defaults to ${VIDEO_DEFAULT_WIDTH}, must be less than or equal to ${VIDEO_MAX_DIMENSION}.`,
+        default: VIDEO_DEFAULT_WIDTH,
+        maximum: VIDEO_MAX_DIMENSION,
       },
       provider: {
         type: "string",

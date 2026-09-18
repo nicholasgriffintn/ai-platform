@@ -1,6 +1,7 @@
 import { createDefinitionRegistry, defineFlag } from "@ngriffin_uk/polychat-ai-experiments";
 import type { TaskType } from "@ngriffin_uk/polychat-schemas";
 
+import { TASK_FLAGS } from "~/config/experiments";
 import type { IEnv } from "~/types";
 
 function envToggle(env: IEnv, key: keyof IEnv): boolean {
@@ -11,15 +12,15 @@ export function taskFlags(env: IEnv) {
   return {
     memory_synthesis: defineFlag({
       key: "memory_synthesis",
-      description: "Run the nightly memory synthesis task",
-      defaultValue: envToggle(env, "MEMORY_SYNTHESIS_ENABLED"),
-      variants: { on: true, off: false },
+      description: TASK_FLAGS.memory_synthesis.description,
+      defaultValue: envToggle(env, TASK_FLAGS.memory_synthesis.envKey),
+      variants: { ...TASK_FLAGS.memory_synthesis.variants },
     }),
     training_quality_scoring: defineFlag({
       key: "training_quality_scoring",
-      description: "Run the nightly training quality scoring task",
-      defaultValue: envToggle(env, "TRAINING_QUALITY_SCORING_ENABLED"),
-      variants: { on: true, off: false },
+      description: TASK_FLAGS.training_quality_scoring.description,
+      defaultValue: envToggle(env, TASK_FLAGS.training_quality_scoring.envKey),
+      variants: { ...TASK_FLAGS.training_quality_scoring.variants },
     }),
   } satisfies Partial<Record<TaskType, unknown>>;
 }

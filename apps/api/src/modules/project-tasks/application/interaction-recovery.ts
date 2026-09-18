@@ -1,13 +1,12 @@
 import { expireHumanInTheLoop } from "@ngriffin_uk/polychat-library-interactions";
 
+import { PROJECT_TASK_INTERACTION_TTL_MS } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { buildMessageParts } from "~/modules/chat/application/messages/parts";
 import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
 import type { Message } from "~/types";
 
 import { readInteractionMessageData } from "./interaction-messages";
-
-export const PROJECT_TASK_INTERACTION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 function messageTimeMs(message: Record<string, unknown>): number | null {
   const data = readInteractionMessageData(message.data);

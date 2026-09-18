@@ -1,12 +1,12 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { isTaskError, leaseRetryDelaySeconds } from "@ngriffin_uk/polychat-library-tasks";
 
+import { MAX_QUEUE_DELAY_SECONDS } from "~/config/limits";
 import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
 import { workflows } from "./registry";
 import { TaskExecutor } from "./TaskExecutor";
-import { MAX_QUEUE_DELAY_SECONDS } from "./TaskService";
 import type { TaskMessage } from "./types";
 
 const logger = getLogger({ prefix: "services/tasks/queue-executor" });

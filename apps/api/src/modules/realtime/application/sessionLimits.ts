@@ -1,10 +1,9 @@
+import {
+  REALTIME_MAX_SESSION_SECONDS_DEFAULT,
+  REALTIME_MAX_SESSION_SECONDS_MAX,
+  REALTIME_MAX_SESSION_SECONDS_MIN,
+} from "~/config/realtime";
 import type { IEnv } from "~/types";
-
-export const REALTIME_MAX_SESSION_SECONDS_DEFAULT = 1800;
-export const REALTIME_MAX_SESSION_SECONDS_MIN = 60;
-export const REALTIME_MAX_SESSION_SECONDS_MAX = 3600;
-export const REALTIME_RESERVATION_SECONDS = 300;
-export const REALTIME_RECONCILIATION_BUFFER_SECONDS = 120;
 
 export function resolveRealtimeMaxSessionSeconds(
   env: Pick<IEnv, "REALTIME_MAX_SESSION_SECONDS">,

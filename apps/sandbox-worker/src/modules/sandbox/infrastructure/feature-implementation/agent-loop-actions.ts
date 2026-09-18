@@ -5,6 +5,13 @@ import type { SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
 import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 
 import {
+  MAX_COMMANDS,
+  MAX_CONSECUTIVE_COMMAND_FAILURES,
+  MAX_OBSERVATION_CHARS,
+  MAX_PARALLEL_COMMANDS,
+  MAX_READ_FILES_BATCH,
+} from "../../../../config/agent";
+import {
   assertSafeCommand,
   formatCommandResult,
   getCommandRiskLevel,
@@ -14,13 +21,6 @@ import {
 import { withSandboxEnvironment } from "../sandbox-environment-runtime";
 import { runSandboxScript } from "../script-execution";
 import { resolveCommandApproval } from "./command-approval";
-import {
-  MAX_COMMANDS,
-  MAX_CONSECUTIVE_COMMAND_FAILURES,
-  MAX_OBSERVATION_CHARS,
-  MAX_PARALLEL_COMMANDS,
-  MAX_READ_FILES_BATCH,
-} from "./constants";
 import { readRepositoryFileSnippet } from "./context";
 import { formatCommandObservation, formatReadObservation } from "./prompts";
 import type {

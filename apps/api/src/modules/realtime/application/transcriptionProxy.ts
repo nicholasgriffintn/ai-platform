@@ -5,6 +5,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import type { Context } from "hono";
 
+import { REALTIME_PROXY_LIMITS } from "~/config/realtime";
 import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 
 const logger = getLogger({ prefix: "services/realtime/transcription-proxy" });
@@ -14,18 +15,6 @@ const CLIENT_MESSAGE_TYPES = new Set([
   "input_audio.end",
 ]);
 const BASE64_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
-
-export const REALTIME_PROXY_LIMITS = {
-  clientFrameBytes: 384 * 1024,
-  audioFrameBytes: 256 * 1024,
-  pendingFrames: 32,
-  pendingBytes: 2 * 1024 * 1024,
-  sessionAudioBytes: 25 * 1024 * 1024,
-  sessionDurationMs: 15 * 60 * 1000,
-  upstreamFrameBytes: 2 * 1024 * 1024,
-  mappedFramesPerEvent: 32,
-  controlMessages: 128,
-} as const;
 
 export class RealtimeProxyLimitError extends Error {
   constructor(

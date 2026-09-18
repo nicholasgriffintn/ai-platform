@@ -19,6 +19,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { getUtf8ByteLength } from "@ngriffin_uk/polychat-utility-server/strings";
 
+import { MAX_OCR_DOCUMENT_BYTES, MAX_OCR_IMAGE_BYTES } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { providerHost } from "~/infrastructure/providers/host";
 import { providerRuntime } from "~/infrastructure/providers/runtime";
@@ -29,7 +30,7 @@ import { TaskService } from "~/modules/tasks/application/TaskService";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IUser } from "~/types";
 
-import { getOcrInputKind, MAX_OCR_DOCUMENT_BYTES, MAX_OCR_IMAGE_BYTES } from "./input";
+import { getOcrInputKind } from "./input";
 
 interface OcrBatchDependencies {
   batchClient?: OcrBatchClient;

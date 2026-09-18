@@ -1,6 +1,6 @@
 import { createLeaseFence, type LeaseFence } from "@ngriffin_uk/polychat-library-sandbox";
 
-import { FENCE_FILE } from "./constants";
+import { FENCE_FILE } from "./config/app";
 import type { ComputerSandbox } from "./types";
 
 async function readStoredFence(sandbox: ComputerSandbox): Promise<number | null> {

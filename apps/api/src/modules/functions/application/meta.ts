@@ -12,6 +12,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { toStringValue } from "@ngriffin_uk/polychat-utility-server/strings";
 import type z from "zod/v4";
 
+import { MAX_META_ATTENTION_LIMIT, MAX_META_READ_MESSAGES } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { listWorkAttention } from "~/modules/attention/application";
 import { isMetaConversationType } from "~/modules/chat/application/policy/meta-assistant";
@@ -42,8 +43,6 @@ import {
   type hireTeammateInputSchema,
   list_attention as listAttentionDescriptor,
   type listAttentionInputSchema,
-  MAX_META_ATTENTION_LIMIT,
-  MAX_META_READ_MESSAGES,
   open_place as openPlaceDescriptor,
   type openPlaceInputSchema,
   organise_conversation as organiseConversationDescriptor,

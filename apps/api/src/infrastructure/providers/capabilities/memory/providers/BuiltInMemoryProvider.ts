@@ -4,11 +4,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
+import { EMBEDDING_VECTOR_SPACE_VERSION, WORKERS_EMBEDDING_MODEL } from "~/config/storage";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import {
-  EMBEDDING_VECTOR_SPACE_VERSION,
-  WORKERS_EMBEDDING_MODEL,
-} from "~/infrastructure/providers/capabilities/embedding/constants";
 import {
   getEmbeddingProvider,
   getEmbeddingProviderForTarget,

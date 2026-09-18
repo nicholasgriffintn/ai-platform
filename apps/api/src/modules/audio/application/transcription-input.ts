@@ -1,10 +1,9 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { MAX_TRANSCRIPTION_BYTES } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { getPrivateFileResourceFromUrl } from "~/infrastructure/storage/resource-urls";
-
-export const MAX_TRANSCRIPTION_BYTES = 25 * 1024 * 1024;
 
 export type TranscriptionAudioSource = { kind: "file"; file: Blob };
 

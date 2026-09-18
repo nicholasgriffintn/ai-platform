@@ -16,7 +16,7 @@ import {
   MAX_OBSERVATION_CHARS,
   MAX_READ_FILES_BATCH,
   MAX_SNIPPET_CHARS,
-} from "./constants";
+} from "../../../../config/agent";
 import type { PromptStrategySelection } from "./prompt-strategy";
 import type { ReadFileResult, RepositoryContext } from "./types";
 

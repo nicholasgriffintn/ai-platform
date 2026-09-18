@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { MAX_REALTIME_PROXY_SESSIONS_PER_USER } from "~/config/realtime";
+
 vi.mock("agents", () => ({
   Agent: class {
     constructor(
@@ -9,8 +11,7 @@ vi.mock("agents", () => ({
   },
 }));
 
-const { MAX_REALTIME_PROXY_SESSIONS_PER_USER, RealtimeProxyCoordinator } =
-  await import("../object");
+const { RealtimeProxyCoordinator } = await import("../object");
 
 function createCoordinator() {
   const data = new Map<string, unknown>();

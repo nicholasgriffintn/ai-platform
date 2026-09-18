@@ -8,6 +8,7 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseAIResponseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
+import { MAX_PANEL_TURNS } from "~/config/chat";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { getAIResponse } from "~/modules/chat/application/streaming/responses";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
@@ -15,8 +16,6 @@ import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/panel" });
-
-export const MAX_PANEL_TURNS = 10;
 
 export interface PanelMember {
   id: string;

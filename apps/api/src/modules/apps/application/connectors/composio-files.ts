@@ -6,6 +6,7 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
+import { COMPOSIO_FILE_MAX_BYTES, COMPOSIO_FILE_TRANSFER_TIMEOUT_MS } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { getPrivateFileResourceFromUrl } from "~/infrastructure/storage/resource-urls";
@@ -18,8 +19,6 @@ import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv } from "~/types";
 
 import {
-  COMPOSIO_FILE_MAX_BYTES,
-  COMPOSIO_FILE_TRANSFER_TIMEOUT_MS,
   composioSchemaAcceptsFiles,
   readBoundedResponseBody,
   requireComposioFilename,

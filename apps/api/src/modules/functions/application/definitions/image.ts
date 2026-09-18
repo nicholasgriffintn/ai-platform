@@ -2,9 +2,10 @@ import { getModelIdsByOutput, getProviderModels } from "@ngriffin_uk/polychat-ai
 import { imagePromptStyles } from "@ngriffin_uk/polychat-ai-prompts";
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 
+import { IMAGE_PROVIDERS } from "~/config/providers";
+
 import type { FunctionToolDescriptor } from "./types";
 
-export const IMAGE_PROVIDERS = ["workers-ai", "replicate"] as const;
 export const IMAGE_MODELS = [
   ...getModelIdsByOutput(getProviderModels("replicate"), "replicate", "image"),
   ...getModelIdsByOutput(getProviderModels("workers-ai"), "workers-ai", "image"),

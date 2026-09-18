@@ -1,10 +1,9 @@
 import { councilMemberIds } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
-import type { FunctionToolDescriptor } from "./types";
+import { MAX_COUNCIL_MEMBERS, MAX_COUNCIL_TURNS } from "~/config/limits";
 
-export const MAX_COUNCIL_MEMBERS = 6;
-export const MAX_COUNCIL_TURNS = 8;
+import type { FunctionToolDescriptor } from "./types";
 
 export const select_council_members: FunctionToolDescriptor = {
   name: "select_council_members",

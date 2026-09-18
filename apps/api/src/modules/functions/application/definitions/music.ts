@@ -1,10 +1,11 @@
 import { getModelIdsByOutput, getProviderModels } from "@ngriffin_uk/polychat-ai-models";
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 
+import { MUSIC_DEFAULT_DURATION } from "~/config/limits";
+import { MUSIC_PROVIDERS } from "~/config/providers";
+
 import type { FunctionToolDescriptor } from "./types";
 
-export const DEFAULT_DURATION = 8;
-export const MUSIC_PROVIDERS = ["workers-ai", "replicate", "elevenlabs"] as const;
 export const MUSIC_MODELS = [
   ...getModelIdsByOutput(getProviderModels("workers-ai"), "workers-ai", "audio"),
   ...getModelIdsByOutput(getProviderModels("replicate"), "replicate", "audio"),
@@ -28,8 +29,8 @@ export const create_music: FunctionToolDescriptor = {
       },
       duration: {
         type: "number",
-        description: `The duration of the generated music in seconds. Defaults to ${DEFAULT_DURATION} seconds.`,
-        default: DEFAULT_DURATION,
+        description: `The duration of the generated music in seconds. Defaults to ${MUSIC_DEFAULT_DURATION} seconds.`,
+        default: MUSIC_DEFAULT_DURATION,
       },
       provider: {
         type: "string",

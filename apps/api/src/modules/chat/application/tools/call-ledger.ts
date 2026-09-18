@@ -1,8 +1,7 @@
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
+import { DEFAULT_MAX_IDENTICAL_TOOL_CALLS } from "~/config/chat";
 import { canonicalJson } from "~/infrastructure/canonical-json";
-
-export const DEFAULT_MAX_IDENTICAL_TOOL_CALLS = 3;
 
 export type ToolCallLedger = Map<string, number>;
 

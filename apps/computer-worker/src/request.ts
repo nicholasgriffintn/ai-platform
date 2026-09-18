@@ -4,7 +4,7 @@ import {
   teachingRecordingIdSchema,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { RESOURCE_ID_PATTERN } from "./constants";
+import { RESOURCE_ID_PATTERN } from "./config/app";
 import type { ComputerRequest } from "./types";
 
 export async function parseComputerRequest(request: Request): Promise<ComputerRequest | null> {

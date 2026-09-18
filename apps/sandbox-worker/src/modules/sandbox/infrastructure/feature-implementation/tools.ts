@@ -5,7 +5,7 @@ import {
   type ToolDeclaration,
 } from "@ngriffin_uk/polychat-library-tools";
 
-import { MAX_PARALLEL_COMMANDS, MAX_READ_FILES_BATCH } from "./constants";
+import { MAX_PARALLEL_COMMANDS, MAX_READ_FILES_BATCH } from "../../../../config/agent";
 
 export const RUN_COMMAND_TOOL_NAME = "run_command";
 export const READ_FILES_TOOL_NAME = "read_files";

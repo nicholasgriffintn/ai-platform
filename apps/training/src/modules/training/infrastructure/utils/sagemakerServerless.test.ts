@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_SAGEMAKER_SERVERLESS_MAX_CONCURRENCY,
   DEFAULT_SAGEMAKER_SERVERLESS_MEMORY_SIZE_MB,
+} from "../../../../config/sagemaker.js";
+import {
   getSageMakerServerlessCompatibilityError,
   getSageMakerServerlessConfig,
   isSageMakerServerlessDeploymentTarget,

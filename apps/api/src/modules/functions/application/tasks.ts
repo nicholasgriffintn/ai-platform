@@ -1,7 +1,8 @@
+import { MAX_TASK_LIMIT } from "~/config/limits";
 import { presentPublicTask } from "~/modules/tasks/application/task-presentation";
 import type { ApiToolDefinition } from "~/types/functions";
 
-import { get_task_status as get_task_statusDescriptor, MAX_TASK_LIMIT } from "./definitions/tasks";
+import { get_task_status as get_task_statusDescriptor } from "./definitions/tasks";
 
 const DEFAULT_TASK_LIMIT = 3;
 

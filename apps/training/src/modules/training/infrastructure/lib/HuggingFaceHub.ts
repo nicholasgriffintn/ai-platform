@@ -1,5 +1,7 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
+import { HUGGINGFACE_API_BASE_URL, HUGGINGFACE_BASE_URL } from "../../../../config/integrations.js";
+
 export interface HuggingFaceHubModelFile {
   path: string;
   size?: number;
@@ -10,9 +12,6 @@ interface HuggingFaceHubOptions {
   token?: string;
   fetcher?: typeof fetch;
 }
-
-const HUGGINGFACE_BASE_URL = "https://huggingface.co";
-const HUGGINGFACE_API_BASE_URL = `${HUGGINGFACE_BASE_URL}/api/models`;
 
 export class HuggingFaceHub {
   private readonly fetcher: typeof fetch;

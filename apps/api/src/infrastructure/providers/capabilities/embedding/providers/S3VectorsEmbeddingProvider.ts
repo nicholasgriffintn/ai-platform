@@ -10,7 +10,7 @@ import { parseEmbeddingVectors } from "@ngriffin_uk/polychat-utility-server/embe
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { AwsClient } from "aws4fetch";
 
-import { WORKERS_EMBEDDING_MODEL } from "~/infrastructure/providers/capabilities/embedding/constants";
+import { WORKERS_EMBEDDING_MODEL } from "~/config/storage";
 import {
   buildS3VectorsMetadataFilter,
   getEmbeddingCredentialFingerprint,

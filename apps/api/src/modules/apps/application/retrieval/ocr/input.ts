@@ -3,11 +3,10 @@ import type { OcrInput } from "@ngriffin_uk/polychat-schemas";
 import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { MAX_OCR_DOCUMENT_BYTES, MAX_OCR_IMAGE_BYTES } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { readPrivateFile } from "~/infrastructure/storage/read-resource";
 
-export const MAX_OCR_IMAGE_BYTES = 10 * 1024 * 1024;
-export const MAX_OCR_DOCUMENT_BYTES = 25 * 1024 * 1024;
 const SUPPORTED_OCR_IMAGE_MIME_TYPES = new Set([
   "image/avif",
   "image/jpeg",

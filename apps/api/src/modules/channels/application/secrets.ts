@@ -1,5 +1,6 @@
 import type { InboundChannelId } from "@ngriffin_uk/polychat-schemas";
 
+import { CHANNEL_SECRET_ENV_KEYS } from "~/config/channels";
 import type { IEnv } from "~/types";
 
 export interface ChannelSecrets {
@@ -8,13 +9,10 @@ export interface ChannelSecrets {
 }
 
 export function getChannelSecrets(channel: InboundChannelId, env: IEnv): ChannelSecrets {
-  switch (channel) {
-    case "slack":
-      return { verification: env.SLACK_SIGNING_SECRET, reply: env.SLACK_BOT_TOKEN };
-    case "telegram":
-      return { verification: env.TELEGRAM_WEBHOOK_SECRET, reply: env.TELEGRAM_BOT_TOKEN };
-    case "sms":
-    default:
-      return {};
-  }
+  const keys = CHANNEL_SECRET_ENV_KEYS[channel] ?? {};
+
+  return {
+    verification: keys.verification ? (env[keys.verification] as string | undefined) : undefined,
+    reply: keys.reply ? (env[keys.reply] as string | undefined) : undefined,
+  };
 }

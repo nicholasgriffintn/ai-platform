@@ -4,6 +4,7 @@ import {
   trainingWorkerStartJobSchema,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { PUBLIC_STATUS_CACHE, USER_READ_CACHE } from "./config/app.js";
 import { TrainingWorkerService } from "./modules/training/application/TrainingWorkerService.js";
 import type { Env } from "./modules/training/infrastructure/types/env.js";
 import {
@@ -20,9 +21,6 @@ import {
   decodeRouteSegment,
   decodeTrainingProvider,
 } from "./modules/training/infrastructure/utils/trainingRoutes.js";
-
-const PUBLIC_STATUS_CACHE = "public, max-age=30, stale-while-revalidate=300";
-const USER_READ_CACHE = "public, max-age=300, stale-while-revalidate=3600";
 
 type TrainingWorkerProps = {
   userId?: number | string;
