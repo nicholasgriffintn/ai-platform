@@ -1,0 +1,257 @@
+import {
+  createToolCatalogue,
+  isToolError,
+  validateToolInput,
+  type ToolCatalogue,
+} from "@ngriffin_uk/polychat-library-tools";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
+import { fromToolError } from "~/infrastructure/errors";
+import { filterToolsForConversationType } from "~/modules/chat/application/policy/meta-assistant";
+import type { ConversationManager } from "~/modules/conversations/application/manager";
+import { PermissionChecker } from "~/modules/functions/application/permissions";
+import type { IFunctionResponse, IRequest } from "~/types";
+import type { ApiToolDefinition } from "~/types/functions";
+
+import { analyse_article } from "./analyse_article";
+import { call_api } from "./api_call";
+import { apply_edit_completion } from "./apply_edit";
+import { run_council, select_council_members } from "./council";
+import { create_automation } from "./create_automation";
+import { create_note } from "./create_note";
+import { applyConnectorScope, type FunctionToolCatalogueOptions } from "./definitions";
+import { delegate } from "./delegate";
+import { discover_capabilities } from "./discover_capabilities";
+import { extract_content } from "./extract_content";
+import { fill_in_middle_completion } from "./fill_in_middle";
+import { generate_pattern } from "./generate_pattern";
+import { get_note } from "./get_note";
+import { complete_goal, set_goal } from "./goal";
+import { get_hacker_news_stories } from "./hacker_news";
+import { hostedMcpApproval } from "./hosted_mcp_approval";
+import { request_approval, ask_user } from "./human_in_the_loop";
+import { create_image } from "./image";
+import { list_saved_messages } from "./list_saved_messages";
+import { load_skill } from "./load_skill";
+import { search_memories, store_memory } from "./memory";
+import { messageParent } from "./message-parent";
+import { metaTools } from "./meta";
+import { create_music } from "./music";
+import { next_edit_completion } from "./next_edit";
+import { extract_text_from_document } from "./ocr";
+import { run_pashi_tools, search_pashi_tools } from "./pashi";
+import { process_recording } from "./process_recording";
+import { create_task, get_task, list_tasks, update_task } from "./projectTasks";
+import { propose_skill_revision } from "./propose_skill_revision";
+import { create_qr_code } from "./qr";
+import { configure_recipe } from "./recipes/configure_recipe";
+import { get_recipe } from "./recipes/get_recipe";
+import { trigger_recipe } from "./recipes/trigger_recipe";
+import { use_recipe_connector } from "./recipes/use_recipe_connector";
+import { applyFunctionRequestContext } from "./request-context";
+import { research } from "./research";
+import { run_code } from "./run_code";
+import { run_prediction } from "./run_prediction";
+import { run_sandbox_task } from "./sandbox";
+import { save_skill } from "./save_skill";
+import { capture_screenshot } from "./screenshot";
+import { search_documents } from "./search_documents";
+import { second_opinion } from "./second_opinion";
+import { create_speech } from "./speech";
+import { get_task_status } from "./tasks";
+import { use_computer } from "./use_computer";
+import { v0_code_generation } from "./v0_code_generation";
+import { create_video } from "./video";
+import { get_weather } from "./weather";
+import { web_search } from "./web_search";
+import { write_document } from "./write_document";
+
+const permissionChecker = new PermissionChecker();
+
+const functionDefinitions: ApiToolDefinition[] = [
+  get_weather,
+  create_video,
+  create_music,
+  create_image,
+  fill_in_middle_completion,
+  next_edit_completion,
+  apply_edit_completion,
+  web_search,
+  write_document,
+  create_qr_code,
+  search_pashi_tools,
+  run_pashi_tools,
+  call_api,
+  research,
+  search_documents,
+  extract_content,
+  search_memories,
+  store_memory,
+  analyse_article,
+  create_automation,
+  delegate,
+  create_note,
+  generate_pattern,
+  get_note,
+  extract_text_from_document,
+  use_recipe_connector,
+  get_recipe,
+  configure_recipe,
+  trigger_recipe,
+  get_task_status,
+  create_task,
+  get_task,
+  list_tasks,
+  update_task,
+  capture_screenshot,
+  create_speech,
+  v0_code_generation,
+  discover_capabilities,
+  set_goal,
+  complete_goal,
+  list_saved_messages,
+  load_skill,
+  process_recording,
+  propose_skill_revision,
+  save_skill,
+  run_council,
+  select_council_members,
+  second_opinion,
+  get_hacker_news_stories,
+  request_approval,
+  ask_user,
+  messageParent,
+  run_sandbox_task,
+  run_prediction,
+  run_code,
+  use_computer,
+  hostedMcpApproval,
+  ...metaTools,
+];
+
+export type RegisteredFunctionTool = ApiToolDefinition;
+
+export const functionToolCatalogue: ToolCatalogue<RegisteredFunctionTool> = createToolCatalogue(
+  functionDefinitions.filter((fn): fn is RegisteredFunctionTool => Boolean(fn)),
+);
+
+export const listFunctionTools = (
+  options?: FunctionToolCatalogueOptions,
+): RegisteredFunctionTool[] => applyConnectorScope(functionToolCatalogue.list(), options);
+
+export const resolveToolRepeatLimit = (functionName: string): number | undefined =>
+  functionToolCatalogue.repeatLimit(functionName);
+
+export const expandFunctionToolNames = (toolNames: readonly string[]): string[] =>
+  functionToolCatalogue.expandCompanions(toolNames);
+
+export const resolveFunctionTool = (functionName: string): RegisteredFunctionTool => {
+  try {
+    return functionToolCatalogue.resolve(functionName);
+  } catch (error) {
+    throw isToolError(error) ? fromToolError(error) : error;
+  }
+};
+
+export const validateFunctionArgs = (toolDefinition: RegisteredFunctionTool, args: unknown) => {
+  try {
+    return validateToolInput(toolDefinition, args);
+  } catch (error) {
+    throw isToolError(error) ? fromToolError(error) : error;
+  }
+};
+
+export const handleFunctions = async ({
+  completion_id,
+  app_url,
+  functionName,
+  tool_call_id,
+  args,
+  request,
+  conversationManager,
+  emitToolResult,
+}: {
+  completion_id: string;
+  app_url: string | undefined;
+  functionName: string;
+  tool_call_id?: string;
+  args: unknown;
+  request: IRequest;
+  conversationManager?: ConversationManager;
+  emitToolResult?: (response: IFunctionResponse) => Promise<void> | void;
+}): Promise<IFunctionResponse> => {
+  if (
+    filterToolsForConversationType([{ name: functionName }], request.request?.conversation_type)
+      .length === 0
+  ) {
+    throw new AssistantError(
+      `Tool "${functionName}" is not allowed in this conversation`,
+      ErrorType.AUTHORISATION_ERROR,
+      403,
+    );
+  }
+
+  const requestMode = request.request?.tool_policy_mode || request.request?.mode || request.mode;
+
+  const foundFunction = resolveFunctionTool(functionName);
+  const permissionResult = permissionChecker.checkRequestToolAccess({
+    toolName: functionName,
+    mode: requestMode,
+    user: request.user,
+    toolType: foundFunction.type,
+    toolPermissions: foundFunction.permissions,
+    approvedTools: request.request?.approved_tools,
+    requireApprovalFor: request.request?.require_approval_for,
+    deniedTools: request.request?.denied_tools,
+    enforceModePolicy: request.request?.enforce_mode_tool_policy,
+  });
+
+  if (!permissionResult.allowed) {
+    const isAuthenticationError =
+      (foundFunction.type === "premium" &&
+        permissionResult.reason === "This tool requires a premium subscription") ||
+      permissionResult.reason === "This tool requires a signed-in user";
+
+    throw new AssistantError(
+      permissionResult.reason || `Tool "${functionName}" is not allowed in this mode`,
+      isAuthenticationError ? ErrorType.AUTHENTICATION_ERROR : ErrorType.AUTHORISATION_ERROR,
+      isAuthenticationError ? 401 : 403,
+      {
+        toolName: functionName,
+        mode: permissionResult.mode,
+      },
+    );
+  }
+
+  if (permissionResult.requiresApproval && !permissionResult.approved) {
+    throw new AssistantError(
+      permissionResult.reason || `Tool "${functionName}" requires approval before execution`,
+      ErrorType.AUTHORISATION_ERROR,
+      403,
+      {
+        toolName: functionName,
+        mode: permissionResult.mode,
+        requiresApproval: true,
+      },
+    );
+  }
+
+  const contextualArgs = applyFunctionRequestContext({
+    args,
+    functionName,
+    requestOptions: request.request?.options,
+  });
+  const validatedArgs = validateFunctionArgs(foundFunction, contextualArgs);
+  const response = await foundFunction.execute(validatedArgs, {
+    completionId: completion_id,
+    toolCallId: tool_call_id,
+    env: request.env,
+    user: request.user,
+    request,
+    appUrl: app_url,
+    conversationManager,
+    emitToolResult,
+  });
+
+  return response;
+};

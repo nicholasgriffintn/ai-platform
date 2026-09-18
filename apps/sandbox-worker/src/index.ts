@@ -9,10 +9,13 @@ import {
   encodeServerSentEventDone,
 } from "@ngriffin_uk/polychat-utility-core";
 
-import { verifySandboxJwt } from "./lib/auth";
-import { handleSandboxPreviewRequest } from "./lib/preview-gateway";
-import { buildSandboxRunUsageReport, reportSandboxRunUsage } from "./lib/usage-report";
-import { executeSandboxTask } from "./tasks";
+import { executeSandboxTask } from "./modules/sandbox/application";
+import { verifySandboxJwt } from "./modules/sandbox/infrastructure/auth";
+import { handleSandboxPreviewRequest } from "./modules/sandbox/infrastructure/preview-gateway";
+import {
+  buildSandboxRunUsageReport,
+  reportSandboxRunUsage,
+} from "./modules/sandbox/infrastructure/usage-report";
 import type { TaskEvent, TaskParams, TaskResult, TaskSecrets, Env } from "./types";
 
 const SSE_HEADERS = {

@@ -3,12 +3,12 @@ import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useTaskAttention, useTaskNotificationSettings } from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useRef } from "react";
 
-import { tauriDesktopBackend } from "../lib/desktop-backend";
+import { tauriDesktopBackend } from "../infrastructure/desktop-backend";
 import {
   readAnnouncementSignature,
   readAnnouncements,
   readAttentionBadgeCount,
-} from "../lib/inbox-announcements";
+} from "../infrastructure/inbox-announcements";
 
 export function useInboxNotifier() {
   const userId = useChatStore((state) => state.user?.id);

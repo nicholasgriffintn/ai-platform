@@ -4,11 +4,22 @@ import {
   trainingWorkerStartJobSchema,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { TrainingWorkerService } from "./services/TrainingWorkerService.js";
-import type { Env } from "./types/env.js";
-import { errorResponse, HttpError, jsonResponse, parseJsonBody } from "./utils/http.js";
-import { assertInternalRequest, getInternalUserId } from "./utils/internalAuth.js";
-import { decodeRouteSegment, decodeTrainingProvider } from "./utils/trainingRoutes.js";
+import { TrainingWorkerService } from "./modules/training/application/TrainingWorkerService.js";
+import type { Env } from "./modules/training/infrastructure/types/env.js";
+import {
+  errorResponse,
+  HttpError,
+  jsonResponse,
+  parseJsonBody,
+} from "./modules/training/infrastructure/utils/http.js";
+import {
+  assertInternalRequest,
+  getInternalUserId,
+} from "./modules/training/infrastructure/utils/internalAuth.js";
+import {
+  decodeRouteSegment,
+  decodeTrainingProvider,
+} from "./modules/training/infrastructure/utils/trainingRoutes.js";
 
 const PUBLIC_STATUS_CACHE = "public, max-age=30, stale-while-revalidate=300";
 const USER_READ_CACHE = "public, max-age=300, stale-while-revalidate=3600";

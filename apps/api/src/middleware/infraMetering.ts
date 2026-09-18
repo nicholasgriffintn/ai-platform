@@ -7,7 +7,7 @@ import {
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { Context, Next } from "hono";
 
-import { createUsageRuntime } from "~/services/usage/runtime";
+import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import type { IEnv, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "middleware/infraMetering" });

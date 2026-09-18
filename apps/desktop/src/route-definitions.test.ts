@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { describeWindowTitle, readTitledPages } from "./lib/window-title";
+import { describeWindowTitle, readTitledPages } from "./infrastructure/window-title";
 import { readPageNames } from "./pages/registry";
 import {
   buildRouteDefinitions,

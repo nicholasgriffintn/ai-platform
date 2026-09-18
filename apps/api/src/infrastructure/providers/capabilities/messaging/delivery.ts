@@ -1,0 +1,163 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import {
+  getBooleanRecordValue,
+  getStringRecordValue,
+} from "@ngriffin_uk/polychat-utility-server/objects";
+import { isPashiQrPngUrl } from "@ngriffin_uk/polychat-utility-server/qr";
+
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { getPrivateFileResourceFromUrl } from "~/infrastructure/storage/resource-urls";
+import type { IEnv, IUser } from "~/types";
+
+import { providerLibrary } from "../../library";
+import { parseMessagingCredentialEnvelope } from "./credentials";
+import { isMessagingProviderId } from "./metadata";
+import { readAllowedSenders } from "./senders";
+import type { MessagingProvider, MessagingProviderId } from "./types";
+
+export interface ConfiguredMessagingProviderSettings {
+  id: string;
+  providerId: MessagingProviderId;
+}
+
+export interface ConfiguredMessagingDelivery extends ConfiguredMessagingProviderSettings {
+  mediaUrls?: string[];
+}
+
+function isConfiguredMessagingProviderSetting(setting: Record<string, unknown>) {
+  const id = getStringRecordValue(setting, "id");
+  const providerId = getStringRecordValue(setting, "provider_id");
+
+  if (
+    id &&
+    providerId &&
+    isMessagingProviderId(providerId) &&
+    getStringRecordValue(setting, "type") === "messaging" &&
+    getBooleanRecordValue(setting, "enabled") &&
+    getBooleanRecordValue(setting, "hasApiKey")
+  ) {
+    return { id, providerId };
+  }
+
+  return null;
+}
+
+function getProviderConfigurationValues(setting: Record<string, unknown>): Record<string, unknown> {
+  const configurationValues = setting.configurationValues;
+
+  return isRecord(configurationValues) ? configurationValues : {};
+}
+
+function normaliseMessagingMediaUrlsForProvider(
+  setting: Record<string, unknown>,
+  providerId: MessagingProviderId,
+  options: {
+    mediaUrls?: string[];
+    apiBaseUrl?: string;
+  },
+): string[] | null {
+  const urls = (options.mediaUrls ?? []).map((url) => url.trim()).filter(Boolean);
+
+  if (urls.length === 0) {
+    return [];
+  }
+
+  if (providerId === "twilio-sms") {
+    return urls.every((url) => url.startsWith("https://") || isPashiQrPngUrl(url)) ? urls : null;
+  }
+
+  if (providerId !== "aws-sms") {
+    return null;
+  }
+
+  const s3MediaUrl = urls.find((url) => url.startsWith("s3://"));
+
+  if (s3MediaUrl) {
+    return [s3MediaUrl];
+  }
+
+  const configurationValues = getProviderConfigurationValues(setting);
+
+  if (!getStringRecordValue(configurationValues, "mediaBucket")) {
+    return null;
+  }
+
+  const firstPartyMediaUrl = urls.find(
+    (url) =>
+      url.startsWith("https://") && Boolean(getPrivateFileResourceFromUrl(url, options.apiBaseUrl)),
+  );
+
+  if (firstPartyMediaUrl) {
+    return [firstPartyMediaUrl];
+  }
+
+  const pashiQrMediaUrl = urls.find((url) => isPashiQrPngUrl(url));
+
+  return pashiQrMediaUrl ? [pashiQrMediaUrl] : null;
+}
+
+export function selectConfiguredMessagingDelivery(
+  settings: Record<string, unknown>[],
+  options: { mediaUrls?: string[]; apiBaseUrl?: string } = {},
+): ConfiguredMessagingDelivery | null {
+  for (const setting of settings) {
+    const provider = isConfiguredMessagingProviderSetting(setting);
+
+    if (!provider) {
+      continue;
+    }
+
+    const mediaUrls = normaliseMessagingMediaUrlsForProvider(setting, provider.providerId, options);
+
+    if (mediaUrls) {
+      return {
+        ...provider,
+        ...(mediaUrls.length ? { mediaUrls } : {}),
+      };
+    }
+  }
+
+  return null;
+}
+
+export function selectConfiguredMessagingProviderSettings(
+  settings: Record<string, unknown>[],
+  options: { mediaUrls?: string[]; apiBaseUrl?: string } = {},
+): ConfiguredMessagingProviderSettings | null {
+  const delivery = selectConfiguredMessagingDelivery(settings, options);
+
+  return delivery ? { id: delivery.id, providerId: delivery.providerId } : null;
+}
+
+export function resolveStoredMessagingProvider(params: {
+  providerId: MessagingProviderId;
+  value: string;
+  env: IEnv;
+  user: IUser;
+  context?: ServiceContext;
+}): { provider: MessagingProvider; allowedSenders: string[] } {
+  const envelope = parseMessagingCredentialEnvelope({
+    providerId: params.providerId,
+    value: params.value,
+  });
+
+  return {
+    provider: providerLibrary.resolve("messaging", params.providerId, {
+      env: params.env,
+      user: params.user,
+      serviceContext: params.context,
+      config: envelope.credentials,
+    }),
+    allowedSenders: readAllowedSenders(envelope.credentials),
+  };
+}
+
+export function getMessagingProviderFromStoredCredential(params: {
+  providerId: MessagingProviderId;
+  value: string;
+  env: IEnv;
+  user: IUser;
+  context?: ServiceContext;
+}): MessagingProvider {
+  return resolveStoredMessagingProvider(params).provider;
+}

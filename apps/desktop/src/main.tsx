@@ -5,9 +5,9 @@ import { BrowserRouter } from "react-router";
 
 import "./styles/styles.css";
 import { App } from "./App";
-import "./lib/desktop-backend";
-import "./lib/device-models";
-import "./lib/sqlite-conversation-store";
+import "./infrastructure/desktop-backend";
+import "./infrastructure/device-models";
+import "./infrastructure/sqlite-conversation-store";
 
 const container = document.getElementById("root");
 

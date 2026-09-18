@@ -1,0 +1,173 @@
+import type {
+  RealtimePipelineSessionCreate,
+  RealtimePipelineSessionResponse,
+} from "@ngriffin_uk/polychat-schemas";
+import { realtimeSessionResponseSchema } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+
+import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { getRealtimeProvider } from "~/infrastructure/providers/capabilities/realtime";
+import { resolveRealtimeMaxSessionSeconds } from "~/modules/realtime/application/sessionLimits";
+import type { IEnv, IUser } from "~/types";
+
+import {
+  getAccessibleRealtimeModel,
+  lacksRealtimeEntitlement,
+  REALTIME_ENTITLEMENT_MESSAGE,
+} from "./access";
+import {
+  admitRealtimeSession,
+  priceRealtimeReservation,
+  registerRealtimeSessionUsage,
+} from "./sessionUsage";
+
+type PipelineStageName = "Input" | "Reasoning" | "Output";
+
+async function validatePipelineStage({
+  env,
+  model,
+  name,
+  provider,
+  user,
+}: {
+  env: IEnv;
+  model: string;
+  name: PipelineStageName;
+  provider: string;
+  user: IUser;
+}): Promise<{ message: string; status: 400 | 403 } | undefined> {
+  if (lacksRealtimeEntitlement(user)) {
+    return { message: REALTIME_ENTITLEMENT_MESSAGE, status: 403 };
+  }
+
+  const accessibleModel = await getAccessibleRealtimeModel({
+    env,
+    model,
+    provider,
+    user,
+  });
+
+  if (!accessibleModel) {
+    return {
+      message: `${name} model not found or user does not have access`,
+      status: 403,
+    };
+  }
+
+  return undefined;
+}
+
+export async function createRealtimePipelineSession({
+  env,
+  request,
+  user,
+}: {
+  env: IEnv;
+  request: RealtimePipelineSessionCreate;
+  user: IUser;
+}): Promise<
+  | { ok: true; session: RealtimePipelineSessionResponse }
+  | { ok: false; message: string; status: 400 | 403 }
+> {
+  const stageError =
+    (await validatePipelineStage({
+      env,
+      model: request.input.model,
+      name: "Input",
+      provider: request.input.provider,
+      user,
+    })) ??
+    (await validatePipelineStage({
+      env,
+      model: request.reasoning.model,
+      name: "Reasoning",
+      provider: request.reasoning.provider,
+      user,
+    })) ??
+    (await validatePipelineStage({
+      env,
+      model: request.output.model,
+      name: "Output",
+      provider: request.output.provider,
+      user,
+    }));
+
+  if (stageError) {
+    return { ok: false, message: stageError.message, status: stageError.status };
+  }
+
+  const accessibleInputModel = await getAccessibleRealtimeModel({
+    env,
+    model: request.input.model,
+    provider: request.input.provider,
+    user,
+  });
+
+  if (!accessibleInputModel) {
+    return { ok: false, message: "Input model access changed", status: 403 };
+  }
+
+  const repositories = env?.DB ? new RepositoryManager(env) : null;
+  const pricing = priceRealtimeReservation(
+    accessibleInputModel.config,
+    request.input.provider,
+    accessibleInputModel.id,
+  );
+  const admitted = await admitRealtimeSession({
+    repositories,
+    userId: user.id,
+    creditMicros: pricing.creditMicros,
+  });
+
+  if (!admitted) {
+    return {
+      ok: false,
+      message: "Realtime session refused: usage allowance is exhausted",
+      status: 403,
+    };
+  }
+
+  const realtimeProvider = getRealtimeProvider(request.input.provider, { env, user });
+  const rawInputSession = await realtimeProvider.createSession({
+    delay: request.delay,
+    env,
+    credentialAuthority: accessibleInputModel.credentialAuthority,
+    language: request.language,
+    model: request.input.model,
+    outputModalities: ["text"],
+    inputModalities: ["audio"],
+    transport: "websocket",
+    type: "transcription",
+    user,
+  });
+  const inputSession = realtimeSessionResponseSchema.parse(rawInputSession);
+
+  await registerRealtimeSessionUsage({
+    env,
+    repositories,
+    userId: user.id,
+    sessionId: inputSession.id,
+    model: accessibleInputModel.id,
+    provider: request.input.provider,
+    byok: accessibleInputModel.credentialAuthority === "byok",
+    pricing,
+    maxSessionSeconds: resolveRealtimeMaxSessionSeconds(env),
+  });
+
+  return {
+    ok: true,
+    session: {
+      id: generateId(),
+      object: "realtime.pipeline.session",
+      type: "pipeline",
+      live_mode: "composed",
+      input: {
+        ...request.input,
+        session: inputSession,
+      },
+      reasoning: request.reasoning,
+      output: request.output,
+      latency_profile: request.latency_profile ?? "balanced",
+    },
+  };
+}

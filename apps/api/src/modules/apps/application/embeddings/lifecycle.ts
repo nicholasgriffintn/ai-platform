@@ -1,0 +1,86 @@
+import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import type { Embedder, EmbeddingVector, VectorStore } from "~/types";
+
+import type { PendingEmbeddingChunk } from "./document";
+
+const EMBEDDING_GENERATION_CONCURRENCY = 8;
+
+export const generateEmbeddingVectors = async (
+  embedder: Embedder,
+  documentId: string,
+  type: string,
+  chunks: PendingEmbeddingChunk[],
+): Promise<EmbeddingVector[]> =>
+  mapWithConcurrency(chunks, EMBEDDING_GENERATION_CONCURRENCY, async (chunk) => {
+    const trustedMetadata = {
+      documentId,
+      chunkId: chunk.id,
+      chunkIndex: chunk.index,
+      type,
+    };
+    const vectors = await embedder.generate(type, chunk.content, chunk.vectorId, trustedMetadata);
+
+    if (vectors.length !== 1 || !vectors[0]?.values) {
+      throw new AssistantError(
+        "Embedding provider returned an invalid vector",
+        ErrorType.PROVIDER_ERROR,
+        502,
+      );
+    }
+
+    return {
+      id: chunk.vectorId,
+      values: vectors[0].values,
+      metadata: trustedMetadata,
+      content: chunk.content,
+    };
+  });
+
+const removeInsertedVectors = async (
+  vectorStore: VectorStore,
+  vectorIds: string[],
+): Promise<boolean> => {
+  if (vectorIds.length === 0) {
+    return true;
+  }
+
+  try {
+    const result = await vectorStore.delete(vectorIds);
+
+    return result.status === "success";
+  } catch {
+    // The inactive D1 document prevents an orphaned provider vector from becoming queryable.
+    return false;
+  }
+};
+
+export const cleanupPendingEmbeddingDocument = async ({
+  context,
+  vectorStore,
+  providerWriteAttempted,
+  userId,
+  documentId,
+  vectorIds,
+}: {
+  context: ServiceContext;
+  vectorStore: VectorStore;
+  providerWriteAttempted: boolean;
+  userId: number;
+  documentId: string;
+  vectorIds: string[];
+}): Promise<void> => {
+  if (providerWriteAttempted && !(await removeInsertedVectors(vectorStore, vectorIds))) {
+    return;
+  }
+
+  try {
+    await context.repositories.embeddings.removePendingDocument(userId, documentId);
+  } catch {
+    context
+      .getLogger({ prefix: "services/apps/embeddings/insert" })
+      .warn("Failed to remove an inactive embedding document", { documentId });
+  }
+};

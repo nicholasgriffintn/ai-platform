@@ -9,12 +9,12 @@ import type { Context, Next } from "hono";
 import { parse as parseCookieHeader } from "hono/utils/cookie";
 import { isbot } from "isbot";
 
-import { KVCache } from "~/lib/cache";
-import { createServiceContext } from "~/lib/context/serviceContext";
-import { RepositoryManager } from "~/repositories";
-import { verifyInternalServiceToken } from "~/services/auth/internal-service";
-import { getUserByJwtToken } from "~/services/auth/jwt";
-import { createAssistantAuth } from "~/services/auth/sharedAuth";
+import { KVCache } from "~/infrastructure/cache";
+import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { verifyInternalServiceToken } from "~/modules/auth/application/internal-service";
+import { getUserByJwtToken } from "~/modules/auth/application/jwt";
+import { createAssistantAuth } from "~/modules/auth/application/sharedAuth";
 import type { AnonymousUser, User } from "~/types";
 
 const logger = getLogger({ prefix: "middleware/auth" });

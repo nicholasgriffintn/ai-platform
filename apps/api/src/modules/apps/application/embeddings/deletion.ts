@@ -1,0 +1,98 @@
+import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import {
+  getEmbeddingRuntimeForTarget,
+  getEmbeddingRuntimeTargetKey,
+  isQuarantinedEmbeddingProviderTarget,
+  toEmbeddingProviderTarget,
+  type EmbeddingRuntimeTarget,
+} from "~/infrastructure/providers/capabilities/embedding/helpers";
+import type { EmbeddingDocumentDeletionTarget } from "~/modules/memory/infrastructure/EmbeddingRepository";
+import type { IUser, IUserSettings } from "~/types";
+
+type DocumentsByProviderTarget = {
+  documents: EmbeddingDocumentDeletionTarget[];
+  target: EmbeddingRuntimeTarget;
+};
+const PROVIDER_DELETE_CONCURRENCY = 4;
+
+const groupDocumentsByProviderTarget = (
+  documents: EmbeddingDocumentDeletionTarget[],
+): DocumentsByProviderTarget[] => {
+  const groups = new Map<string, DocumentsByProviderTarget>();
+
+  for (const document of documents) {
+    const target = {
+      embeddingProvider: document.provider,
+      providerTarget: document.providerTarget,
+      model: document.embeddingModel,
+      dimensions: document.embeddingDimensions,
+      distanceMetric: document.distanceMetric,
+      taskMode: document.taskMode,
+      vectorSpace: document.vectorSpace,
+      vectorSpaceVersion: document.vectorSpaceVersion,
+    };
+    const targetKey = getEmbeddingRuntimeTargetKey(target);
+    const group = groups.get(targetKey) ?? { documents: [], target };
+
+    group.documents.push(document);
+    groups.set(targetKey, group);
+  }
+
+  return [...groups.values()];
+};
+
+export const deleteProviderDocuments = async ({
+  context,
+  user,
+  userSettings,
+  documents,
+}: {
+  context: ServiceContext;
+  user: IUser;
+  userSettings: IUserSettings;
+  documents: EmbeddingDocumentDeletionTarget[];
+}): Promise<void> => {
+  await mapWithConcurrency(
+    groupDocumentsByProviderTarget(documents),
+    PROVIDER_DELETE_CONCURRENCY,
+    async ({ documents: group, target }) => {
+      if (isQuarantinedEmbeddingProviderTarget(toEmbeddingProviderTarget(target))) {
+        return;
+      }
+
+      const runtime = getEmbeddingRuntimeForTarget(context.env, user, userSettings, target);
+      const vectorIds = group.flatMap((document) => document.vectorIds);
+
+      if (vectorIds.length === 0) {
+        return;
+      }
+
+      let result;
+
+      try {
+        result = await runtime.vectorStore.delete(vectorIds);
+      } catch (error) {
+        if (error instanceof AssistantError) {
+          throw error;
+        }
+
+        throw new AssistantError(
+          "Embedding provider could not delete the document",
+          ErrorType.PROVIDER_ERROR,
+          502,
+        );
+      }
+
+      if (result.status !== "success") {
+        throw new AssistantError(
+          "Embedding provider could not delete the document",
+          ErrorType.PROVIDER_ERROR,
+          502,
+        );
+      }
+    },
+  );
+};

@@ -3,4 +3,4 @@ export type {
   TeammateInstall,
   TeammateRating,
   SharedTeammate,
-} from "~/lib/database/schema";
+} from "~/infrastructure/database/schema";

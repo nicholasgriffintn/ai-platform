@@ -17,7 +17,7 @@ import type {
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
-import type { ServiceContext } from "../lib/context/serviceContext";
+import type { ServiceContext } from "../infrastructure/context/serviceContext";
 import type { AnonymousUser } from "./anonymous-user";
 import type { MemoryScope } from "./memory";
 import type { IEnv } from "./shared";

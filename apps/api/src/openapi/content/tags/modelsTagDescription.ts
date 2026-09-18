@@ -105,7 +105,7 @@ Models are categorized by cost multiplier:
 - **Ollama** - Local models
 - **And 30+ more**
 
-Full provider list available in the [source code](https://github.com/nicholasgriffintn/assistant/blob/main/apps/api/src/lib/providers/index.ts).
+Full provider list available in the [source code](https://github.com/nicholasgriffintn/assistant/blob/main/apps/api/src/infrastructure/providers/index.ts).
 
 ## Model Routing
 

@@ -1,0 +1,303 @@
+import type { D1Database, ExecutionContext } from "@cloudflare/workers-types";
+import type { OutboundGatewayFactory } from "@ngriffin_uk/polychat-ai-sandbox";
+import type { LoggerOptions } from "@ngriffin_uk/polychat-ai-telemetry";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import {
+  DEVICE_SYNC_DEVICE_ID_HEADER,
+  deviceSyncDeviceIdSchema,
+} from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import {
+  createRequestCache,
+  memoizeRequest,
+  type RequestCache,
+} from "@ngriffin_uk/polychat-utility-server/request-cache";
+import type { Context, MiddlewareHandler } from "hono";
+
+import { requireCloudflareExecutionContext } from "~/infrastructure/cloudflare/execution-context";
+import { loopbackOutboundGateway } from "~/infrastructure/cloudflare/outbound-gateway";
+import { Database } from "~/infrastructure/database";
+import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import type { AnonymousUser, IEnv, IUser, IUserSettings } from "~/types";
+
+export interface ServiceContextOptions {
+  env: IEnv;
+  user?: IUser | null;
+  anonymousUser?: AnonymousUser | null;
+  requestId?: string;
+  connectorRunId?: string;
+  originDeviceId?: string | null;
+  waitUntil?: (work: Promise<unknown>) => void;
+  outboundGateway?: OutboundGatewayFactory;
+  executionCtx?: ExecutionContext;
+}
+
+export interface ServiceContext {
+  env: IEnv;
+  waitUntil: (work: Promise<unknown>) => void;
+  outboundGateway?: OutboundGatewayFactory;
+  executionCtx?: ExecutionContext;
+  experimentAssignments: Record<string, string>;
+  user?: IUser | null;
+  anonymousUser?: AnonymousUser | null;
+  requestId?: string;
+  connectorRunId: string;
+  connectorApprovalExecutionToken?: string;
+  originDeviceId?: string | null;
+  executionRunId?: string;
+  executionRunAttempt?: number;
+  database: Database;
+  repositories: RepositoryManager;
+  requestCache: RequestCache;
+  userSettings: IUserSettings | null;
+  requireUser(): IUser;
+  ensureDatabase(): D1Database;
+  getUserSettings(): Promise<IUserSettings | null>;
+  setUserSettings(settings: IUserSettings | null): void;
+  getLogger(options?: LoggerOptions): ReturnType<typeof getLogger>;
+}
+
+export function optionalRepositories(
+  context: Pick<ServiceContext, "env" | "repositories">,
+): RepositoryManager | null {
+  return context.env?.DB ? context.repositories : null;
+}
+
+export function withExecutionRunContext(
+  context: ServiceContext,
+  runId: string,
+  runAttempt?: number,
+): ServiceContext {
+  return new Proxy(context, {
+    get(target, property, receiver) {
+      if (property === "executionRunId") {
+        return runId;
+      }
+
+      if (property === "executionRunAttempt") {
+        return runAttempt;
+      }
+
+      return Reflect.get(target, property, receiver);
+    },
+  });
+}
+
+export const createServiceContext = ({
+  env,
+  user = null,
+  anonymousUser = null,
+  requestId,
+  connectorRunId = `connector_run_${generateId()}`,
+  originDeviceId = null,
+  waitUntil,
+  outboundGateway,
+  executionCtx,
+}: ServiceContextOptions): ServiceContext => {
+  let databaseInstance: Database | null = null;
+  let repositoriesInstance: RepositoryManager | null = null;
+  const requestCache = createRequestCache();
+  let cachedUserSettings: IUserSettings | null | undefined = undefined;
+  let userSettingsPromise: Promise<IUserSettings | null> | null = null;
+
+  const ensureDatabase = (): D1Database => {
+    if (!env.DB) {
+      throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+    }
+
+    return env.DB;
+  };
+
+  const requireUser = (): IUser => {
+    if (!user?.id) {
+      throw new AssistantError("User is not authenticated", ErrorType.AUTHENTICATION_ERROR);
+    }
+
+    return user;
+  };
+
+  const loadUserSettings = async (): Promise<IUserSettings | null> => {
+    if (!user?.id) {
+      cachedUserSettings = null;
+
+      return null;
+    }
+
+    if (cachedUserSettings !== undefined) {
+      return cachedUserSettings;
+    }
+
+    if (userSettingsPromise === null) {
+      userSettingsPromise = memoizeRequest(requestCache, `user-settings:${user.id}`, async () => {
+        if (!repositoriesInstance) {
+          repositoriesInstance = new RepositoryManager(env);
+        }
+
+        const settings = await repositoriesInstance.userSettings.getUserSettings(user.id);
+
+        return settings;
+      });
+    }
+
+    cachedUserSettings = await userSettingsPromise;
+
+    return cachedUserSettings;
+  };
+
+  const setUserSettings = (settings: IUserSettings | null) => {
+    cachedUserSettings = settings;
+    userSettingsPromise = Promise.resolve(settings);
+  };
+
+  const getContextLogger = (options?: LoggerOptions) => {
+    return getLogger({
+      ...options,
+      requestId,
+    });
+  };
+
+  return {
+    env,
+    user,
+    anonymousUser,
+    requestId,
+    connectorRunId,
+    originDeviceId,
+    requestCache,
+    get userSettings() {
+      return cachedUserSettings ?? null;
+    },
+    get database() {
+      if (!databaseInstance) {
+        databaseInstance = new Database(env);
+      }
+
+      return databaseInstance;
+    },
+    get repositories() {
+      if (!repositoriesInstance) {
+        repositoriesInstance = new RepositoryManager(env);
+      }
+
+      return repositoriesInstance;
+    },
+    requireUser,
+    ensureDatabase,
+    waitUntil: waitUntil ?? ((work) => void work.catch(() => undefined)),
+    outboundGateway,
+    executionCtx,
+    experimentAssignments: {},
+    getUserSettings: loadUserSettings,
+    setUserSettings,
+    getLogger: getContextLogger,
+  };
+};
+
+const SERVICE_CONTEXT_KEY = "serviceContext";
+
+export interface ResolveServiceContextOptions {
+  context?: ServiceContext;
+  env?: IEnv;
+  user?: IUser | null;
+  anonymousUser?: AnonymousUser | null;
+  requestId?: string;
+  waitUntil?: (work: Promise<unknown>) => void;
+}
+
+export const resolveServiceContext = ({
+  context,
+  env,
+  user = null,
+  anonymousUser = null,
+  requestId,
+  waitUntil,
+}: ResolveServiceContextOptions): ServiceContext => {
+  if (context) {
+    return context;
+  }
+
+  if (!env) {
+    throw new AssistantError("Service context requires environment", ErrorType.CONFIGURATION_ERROR);
+  }
+
+  return createServiceContext({
+    env,
+    user,
+    anonymousUser,
+    requestId,
+    waitUntil,
+  });
+};
+
+function hostExecutionContext(c: Context): unknown {
+  try {
+    return c.executionCtx;
+  } catch {
+    return undefined;
+  }
+}
+
+function cloudflareExecutionContext(c: Context): ExecutionContext | undefined {
+  try {
+    return requireCloudflareExecutionContext(hostExecutionContext(c));
+  } catch {
+    return undefined;
+  }
+}
+
+function readOriginDeviceId(c: Context): string | null {
+  const parsed = deviceSyncDeviceIdSchema.safeParse(c.req.header(DEVICE_SYNC_DEVICE_ID_HEADER));
+
+  return parsed.success ? parsed.data : null;
+}
+
+export const serviceContextMiddleware: MiddlewareHandler = async (c, next) => {
+  const existing = c.get(SERVICE_CONTEXT_KEY);
+
+  if (!existing) {
+    const user = c.get("user") as IUser | null | undefined;
+    const anonymousUser = c.get("anonymousUser") as AnonymousUser | undefined;
+    const requestId = c.get("requestId") as string | undefined;
+    const context = createServiceContext({
+      env: c.env as IEnv,
+      user: user ?? null,
+      anonymousUser: anonymousUser ?? null,
+      requestId,
+      originDeviceId: readOriginDeviceId(c),
+      waitUntil: (work) => c.executionCtx?.waitUntil(work),
+      outboundGateway: loopbackOutboundGateway(() => hostExecutionContext(c)),
+      executionCtx: cloudflareExecutionContext(c),
+    });
+
+    c.set(SERVICE_CONTEXT_KEY, context);
+  }
+
+  await next();
+};
+
+export const getServiceContext = (c: Context): ServiceContext => {
+  const existing = c.get(SERVICE_CONTEXT_KEY) as ServiceContext | undefined;
+
+  if (existing) {
+    return existing;
+  }
+
+  const user = c.get("user") as IUser | null | undefined;
+  const anonymousUser = c.get("anonymousUser") as AnonymousUser | undefined;
+  const requestId = c.get("requestId") as string | undefined;
+  const context = createServiceContext({
+    env: c.env as IEnv,
+    user: user ?? null,
+    anonymousUser: anonymousUser ?? null,
+    requestId,
+    originDeviceId: readOriginDeviceId(c),
+    waitUntil: (work) => c.executionCtx?.waitUntil(work),
+    outboundGateway: loopbackOutboundGateway(() => hostExecutionContext(c)),
+    executionCtx: cloudflareExecutionContext(c),
+  });
+
+  c.set(SERVICE_CONTEXT_KEY, context);
+
+  return context;
+};

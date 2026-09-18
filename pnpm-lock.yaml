@@ -918,6 +918,9 @@ importers:
       '@ngriffin_uk/polychat-utility-core':
         specifier: workspace:^
         version: link:../../packages/utility-core
+      aws4fetch:
+        specifier: 1.0.20
+        version: 1.0.20
       zod:
         specifier: 'catalog:'
         version: 4.6.2

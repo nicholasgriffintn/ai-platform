@@ -1,0 +1,157 @@
+import {
+  recipeConfigurationSchema,
+  recipeInstallationTriggerSchema,
+} from "@ngriffin_uk/polychat-schemas";
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
+
+import { updateRecipeInstallation } from "~/modules/apps/application/recipes";
+import {
+  getRecipeNotificationCapabilities,
+  hasSmsNotificationTrigger,
+} from "~/modules/apps/application/recipes/notificationCapabilities";
+import { getActiveRecipeSetup } from "~/modules/apps/application/recipes/toolContext";
+import type { ApiToolDefinition } from "~/types/functions";
+
+import { configure_recipe as configure_recipeDescriptor } from "../definitions/recipes/configure_recipe";
+
+export const configure_recipe: ApiToolDefinition = {
+  ...configure_recipeDescriptor,
+  execute: async (args, context) => {
+    const request = context.request;
+
+    if (!request.context || !request.user?.id) {
+      throw new Error("Signed-in user context is required for recipe setup tools");
+    }
+
+    const activeRecipe = getActiveRecipeSetup(request.request?.options);
+
+    if (!activeRecipe?.installationId) {
+      return {
+        status: "error",
+        name: "configure_recipe",
+        content: "No active installed recipe is available to configure in this chat.",
+        data: { recipeId: activeRecipe?.id },
+      };
+    }
+
+    if (typeof args.recipeId === "string" && args.recipeId !== activeRecipe.id) {
+      return {
+        status: "error",
+        name: "configure_recipe",
+        content: "The requested recipe does not match the active recipe setup chat.",
+        data: {
+          recipeId: args.recipeId,
+          activeRecipeId: activeRecipe.id,
+        },
+      };
+    }
+
+    const configuration =
+      args.configuration === undefined
+        ? undefined
+        : recipeConfigurationSchema.safeParse(args.configuration);
+
+    if (configuration && !configuration.success) {
+      return {
+        status: "error",
+        name: "configure_recipe",
+        content: "Recipe configuration is not valid.",
+        data: { issues: configuration.error.issues },
+      };
+    }
+
+    const triggers =
+      args.triggers === undefined
+        ? undefined
+        : recipeInstallationTriggerSchema.array().safeParse(args.triggers);
+
+    if (triggers && !triggers.success) {
+      return {
+        status: "error",
+        name: "configure_recipe",
+        content: "Recipe triggers are not valid.",
+        data: { issues: triggers.error.issues },
+      };
+    }
+
+    if (triggers && hasSmsNotificationTrigger(triggers.data)) {
+      const notificationCapabilities = await getRecipeNotificationCapabilities({
+        context: request.context,
+        userId: request.user.id,
+        apiBaseUrl: request.env.API_BASE_URL,
+      });
+
+      if (!notificationCapabilities.sms.available) {
+        return {
+          status: "needs_correction",
+          name: "configure_recipe",
+          content:
+            "SMS notifications are not configured for this user. Save the recipe without SMS notificationChannel/notificationTarget, or ask the user to connect SMS first.",
+          data: {
+            recipeId: activeRecipe.id,
+            installationId: activeRecipe.installationId,
+            notificationCapabilities,
+            recoverable: true,
+          },
+        };
+      }
+    }
+
+    if (!configuration && !triggers) {
+      return {
+        status: "error",
+        name: "configure_recipe",
+        content: "Provide recipe configuration, triggers, or both to save.",
+        data: { recipeId: activeRecipe.id },
+      };
+    }
+
+    let installation;
+
+    try {
+      installation = await updateRecipeInstallation({
+        context: request.context,
+        userId: request.user.id,
+        installationId: activeRecipe.installationId,
+        update: {
+          ...(configuration ? { configuration: configuration.data } : {}),
+          ...(triggers ? { triggers: triggers.data } : {}),
+        },
+      });
+    } catch (error) {
+      if (error instanceof AssistantError) {
+        return {
+          status: "needs_correction",
+          name: "configure_recipe",
+          content: `${error.message}. Call get_recipe for the exact configuration field keys, then retry configure_recipe.`,
+          data: {
+            recipeId: activeRecipe.id,
+            installationId: activeRecipe.installationId,
+            recoverable: true,
+          },
+        };
+      }
+
+      throw error;
+    }
+
+    if (!installation) {
+      return {
+        status: "error",
+        name: "configure_recipe",
+        content: "Recipe installation not found.",
+        data: {
+          recipeId: activeRecipe.id,
+          installationId: activeRecipe.installationId,
+        },
+      };
+    }
+
+    return {
+      status: "success",
+      name: "configure_recipe",
+      content: "Recipe setup saved.",
+      data: { installation },
+    };
+  },
+};

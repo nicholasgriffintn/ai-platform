@@ -1,14 +1,14 @@
 import { machineRunClient, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useEffect } from "react";
 
-import { tauriDesktopBackend } from "../lib/desktop-backend";
+import { tauriDesktopBackend } from "../infrastructure/desktop-backend";
 import {
   advertiseCurrentMachine,
   createMachineHeartbeatScheduler,
   removeMachineAdvertisement,
-} from "../lib/machine-heartbeat";
-import { MACHINE_ENDPOINTS_CHANGED_EVENT } from "../lib/machine-heartbeat-events";
-import { runMachineConsumer } from "../lib/machine-runner";
+} from "../infrastructure/machine-heartbeat";
+import { MACHINE_ENDPOINTS_CHANGED_EVENT } from "../infrastructure/machine-heartbeat-events";
+import { runMachineConsumer } from "../infrastructure/machine-runner";
 
 export function useMachineHeartbeat(): void {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);

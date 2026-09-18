@@ -3,8 +3,8 @@ import { readBooleanEnv } from "@ngriffin_uk/polychat-utility-server/env";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { Context, Next } from "hono";
 
-import { verifyCaptchaToken } from "~/lib/captcha";
-import { RepositoryManager } from "~/repositories";
+import { verifyCaptchaToken } from "~/infrastructure/captcha";
+import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 
 const logger = getLogger({ prefix: "middleware/captchaMiddleware" });
 

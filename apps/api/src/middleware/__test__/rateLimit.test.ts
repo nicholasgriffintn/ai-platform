@@ -6,7 +6,7 @@ import { rateLimit } from "../rateLimit";
 
 const mockTrackUsageMetric = vi.fn();
 
-vi.mock("~/lib/telemetry", () => ({
+vi.mock("~/infrastructure/telemetry", () => ({
   createMetrics: () => ({ trackUsageMetric: mockTrackUsageMetric }),
 }));
 

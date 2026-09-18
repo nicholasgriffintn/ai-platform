@@ -2,7 +2,10 @@ import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { Context, Next } from "hono";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getServiceContext, serviceContextMiddleware } from "~/lib/context/serviceContext";
+import {
+  getServiceContext,
+  serviceContextMiddleware,
+} from "~/infrastructure/context/serviceContext";
 
 import { allowRestrictedPaths, authMiddleware, requireAuth } from "../auth";
 
@@ -25,7 +28,7 @@ const mockIsbot = vi.fn();
 const repositoryCtor = vi.fn();
 let repositoryFactory = () => mockRepositories;
 
-vi.mock("~/repositories", () => ({
+vi.mock("~/infrastructure/database/repositoryManager", () => ({
   RepositoryManager: class {
     constructor() {
       repositoryCtor();
@@ -35,7 +38,7 @@ vi.mock("~/repositories", () => ({
   },
 }));
 
-vi.mock("~/lib/cache", () => ({
+vi.mock("~/infrastructure/cache", () => ({
   KVCache: class MockKVCache {
     static createKey = vi.fn();
     get = vi.fn();
@@ -43,11 +46,11 @@ vi.mock("~/lib/cache", () => ({
   },
 }));
 
-vi.mock("~/services/auth/jwt", () => ({
+vi.mock("~/modules/auth/application/jwt", () => ({
   getUserByJwtToken: vi.fn(),
 }));
 
-vi.mock("~/services/auth/sharedAuth", () => ({
+vi.mock("~/modules/auth/application/sharedAuth", () => ({
   createAssistantAuth: vi.fn(() => ({
     authenticate: mockAuthenticateSession,
   })),
@@ -104,8 +107,8 @@ describe("Auth Middleware", () => {
     vi.clearAllMocks();
     repositoryCtor.mockClear();
 
-    const { KVCache } = await import("~/lib/cache");
-    const { getUserByJwtToken } = await import("~/services/auth/jwt");
+    const { KVCache } = await import("~/infrastructure/cache");
+    const { getUserByJwtToken } = await import("~/modules/auth/application/jwt");
     const { isbot } = await import("isbot");
 
     repositoryFactory = () => mockRepositories;

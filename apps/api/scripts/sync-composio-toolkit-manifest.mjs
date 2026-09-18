@@ -8,7 +8,7 @@ const API_DIRECTORY = resolve(SCRIPT_DIRECTORY, "..");
 const REPOSITORY_DIRECTORY = resolve(API_DIRECTORY, "../..");
 const OUTPUT_PATH = resolve(
   API_DIRECTORY,
-  "src/lib/providers/capabilities/connectors/composio/configured-toolkit-manifest.generated.json",
+  "src/infrastructure/providers/capabilities/connectors/composio/configured-toolkit-manifest.generated.json",
 );
 const PROVIDER_IDS_OUTPUT_PATH = resolve(
   REPOSITORY_DIRECTORY,

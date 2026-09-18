@@ -1,0 +1,223 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+
+import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+
+const logger = getLogger({ prefix: "repositories/ApiKeyRepository" });
+
+export interface ApiKeyMetadata {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export class ApiKeyRepository extends BaseRepository {
+  private async getUserPublicKey(userId: number): Promise<CryptoKey> {
+    const { query, values } = this.buildSelectQuery(
+      "user_settings",
+      { user_id: userId },
+      { columns: ["public_key"] },
+    );
+    const result = await this.runQuery<{ public_key: string }>(query, values, true);
+
+    if (!result?.public_key) {
+      throw new AssistantError("User settings not found", ErrorType.NOT_FOUND);
+    }
+
+    const publicKeyJwk = safeParseJson(result.public_key);
+
+    if (!publicKeyJwk) {
+      logger.error("Failed to parse public key", { error: "" });
+      throw new AssistantError("Failed to parse public key", ErrorType.INTERNAL_ERROR);
+    }
+
+    try {
+      return await crypto.subtle.importKey(
+        "jwk",
+        publicKeyJwk,
+        {
+          name: "RSA-OAEP",
+          hash: "SHA-256",
+        },
+        false,
+        ["encrypt"],
+      );
+    } catch (error) {
+      logger.error("Error importing public key:", { error });
+      throw new AssistantError("Failed to import user public key", ErrorType.INTERNAL_ERROR);
+    }
+  }
+
+  private async encryptApiKey(apiKey: string, publicKey: CryptoKey): Promise<string> {
+    try {
+      const encryptedData = await crypto.subtle.encrypt(
+        {
+          name: "RSA-OAEP",
+        },
+        publicKey,
+        new TextEncoder().encode(apiKey),
+      );
+
+      return bufferToBase64(new Uint8Array(encryptedData));
+    } catch (error) {
+      logger.error("Error encrypting API key:", { error });
+      throw new AssistantError("Failed to encrypt API key", ErrorType.INTERNAL_ERROR);
+    }
+  }
+
+  private async hashApiKey(apiKey: string): Promise<string> {
+    try {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(apiKey);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+
+      return hashHex;
+    } catch (error) {
+      logger.error("Error hashing API key:", { error });
+      throw new AssistantError("Failed to hash API key", ErrorType.INTERNAL_ERROR);
+    }
+  }
+
+  private generateNewApiKey(): string {
+    const randomBytes = crypto.getRandomValues(new Uint8Array(32));
+    const key = bufferToBase64(randomBytes);
+
+    return `ak_${key}`;
+  }
+
+  public async createApiKey(
+    userId: number,
+    name: string,
+  ): Promise<{ plaintextKey: string; metadata: ApiKeyMetadata }> {
+    if (!userId) {
+      throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
+    }
+
+    const plaintextKey = this.generateNewApiKey();
+    const hashedKey = await this.hashApiKey(plaintextKey);
+    const publicKey = await this.getUserPublicKey(userId);
+    const encryptedKey = await this.encryptApiKey(plaintextKey, publicKey);
+
+    const apiKeyId = generateId();
+    const keyName = name || `API Key ${new Date().toISOString()}`;
+
+    try {
+      const insert = this.buildInsertQuery(
+        "user_api_keys",
+        {
+          id: apiKeyId,
+          user_id: userId,
+          name: keyName,
+          api_key: encryptedKey,
+          hashed_key: hashedKey,
+        },
+        { returning: "id, name, created_at" },
+      );
+
+      if (!insert) {
+        throw new AssistantError("Failed to build API key insert query", ErrorType.INTERNAL_ERROR);
+      }
+
+      const metadataRow = await this.runQuery<ApiKeyMetadata>(insert.query, insert.values, true);
+
+      if (!metadataRow) {
+        throw new AssistantError("Failed to create API key in database", ErrorType.INTERNAL_ERROR);
+      }
+
+      const metadata: ApiKeyMetadata = {
+        id: metadataRow.id,
+        name: metadataRow.name,
+        created_at: metadataRow.created_at,
+      };
+
+      return { plaintextKey, metadata };
+    } catch (error: any) {
+      if (error.message?.includes("UNIQUE constraint failed: user_api_keys.hashed_key")) {
+        logger.error("API Key hash collision (rare):", { error });
+        throw new AssistantError(
+          "Failed to create API key due to a hash collision. Please try again.",
+          ErrorType.INTERNAL_ERROR,
+        );
+      }
+
+      logger.error("Error inserting API key:", { error });
+      throw new AssistantError("Failed to create API key in database", ErrorType.INTERNAL_ERROR);
+    }
+  }
+
+  public async getUserApiKeys(userId: number): Promise<ApiKeyMetadata[]> {
+    if (!userId) {
+      throw new AssistantError("User ID is required", ErrorType.PARAMS_ERROR);
+    }
+
+    try {
+      const { query, values } = this.buildSelectQuery(
+        "user_api_keys",
+        { user_id: userId },
+        {
+          columns: ["id", "name", "created_at"],
+          orderBy: "created_at DESC",
+        },
+      );
+
+      const results = await this.runQuery<{
+        id: string;
+        name: string;
+        created_at: string;
+      }>(query, values);
+
+      return results;
+    } catch (error) {
+      logger.error("Error retrieving API keys:", { error });
+      throw new AssistantError("Failed to retrieve API keys", ErrorType.INTERNAL_ERROR);
+    }
+  }
+
+  public async deleteApiKey(userId: number, apiKeyId: string): Promise<void> {
+    if (!userId || !apiKeyId) {
+      throw new AssistantError("User ID and API Key ID are required", ErrorType.PARAMS_ERROR);
+    }
+
+    try {
+      const { query, values } = this.buildDeleteQuery("user_api_keys", {
+        id: apiKeyId,
+        user_id: userId,
+      });
+
+      const result = await this.executeRun(query, values);
+
+      if (!result) {
+        throw new AssistantError("API key not found", ErrorType.NOT_FOUND);
+      }
+    } catch (error) {
+      logger.error("Error deleting API key:", { error });
+      throw new AssistantError("Failed to delete API key", ErrorType.INTERNAL_ERROR);
+    }
+  }
+
+  public async findUserIdByApiKey(apiKey: string): Promise<number | null> {
+    if (!apiKey) {
+      return null;
+    }
+
+    try {
+      const hashedKey = await this.hashApiKey(apiKey);
+      const result = await this.runQuery<{ user_id: number }>(
+        "SELECT user_id FROM user_api_keys WHERE hashed_key = ?",
+        [hashedKey],
+        true,
+      );
+
+      return result?.user_id ?? null;
+    } catch (error) {
+      logger.error("Error finding user by API key hash:", { error });
+
+      return null;
+    }
+  }
+}

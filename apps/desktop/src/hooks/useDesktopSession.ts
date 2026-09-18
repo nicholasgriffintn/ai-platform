@@ -1,11 +1,11 @@
 import { apiKeyService, authService, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { getApiOriginMismatch } from "../lib/api-origin";
-import { tauriDesktopBackend } from "../lib/desktop-backend";
-import { removeMachineAdvertisement } from "../lib/machine-heartbeat";
-import { expiresAtMs, isTokenStale, refreshDelayMs } from "../lib/session-refresh";
-import { getDesktopSignInMessage } from "../lib/sign-in-message";
+import { getApiOriginMismatch } from "../infrastructure/api-origin";
+import { tauriDesktopBackend } from "../infrastructure/desktop-backend";
+import { removeMachineAdvertisement } from "../infrastructure/machine-heartbeat";
+import { expiresAtMs, isTokenStale, refreshDelayMs } from "../infrastructure/session-refresh";
+import { getDesktopSignInMessage } from "../infrastructure/sign-in-message";
 
 const RENEWAL_EVENTS = ["focus", "online"] as const;
 const RETRY_AFTER_FAILURE_SECONDS = 0;

@@ -14,11 +14,11 @@ const mockRepositoryManager = {
   },
 };
 
-vi.mock("~/lib/captcha", () => ({
+vi.mock("~/infrastructure/captcha", () => ({
   verifyCaptchaToken: vi.fn(),
 }));
 
-vi.mock("~/repositories", () => ({
+vi.mock("~/infrastructure/database/repositoryManager", () => ({
   RepositoryManager: {
     getInstance: vi.fn(),
   },
@@ -58,8 +58,8 @@ describe("Captcha Middleware", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    const { verifyCaptchaToken } = await import("~/lib/captcha");
-    const { RepositoryManager } = await import("~/repositories");
+    const { verifyCaptchaToken } = await import("~/infrastructure/captcha");
+    const { RepositoryManager } = await import("~/infrastructure/database/repositoryManager");
 
     vi.mocked(verifyCaptchaToken).mockImplementation(mockVerifyCaptchaToken);
     vi.mocked(RepositoryManager.getInstance).mockReturnValue(mockRepositoryManager as any);

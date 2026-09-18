@@ -1,0 +1,366 @@
+import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
+import {
+  recipeConnectorProviderSchema,
+  teammateRunConfigurationSchema,
+} from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
+
+import { getConnectorProviderConfig } from "~/infrastructure/providers/capabilities/connectors";
+import {
+  retainComposioConnectorSession,
+  resolveComposioRunAccount,
+} from "~/modules/apps/application/connectors/composio-run";
+import { RECIPE_CONNECTOR_CONNECTION_KIND } from "~/modules/apps/application/connectors/connection-references";
+import { authoriseConnectorOperation } from "~/modules/apps/application/connectors/operation-approvals";
+import {
+  discoverRecipeConnectorTools,
+  executeRecipeConnectorOperation,
+} from "~/modules/apps/application/connectors/operations";
+import {
+  getRecipeConfiguration,
+  getActiveRecipeSetup,
+  getRecipeAllowedConnectorOperations,
+  getRecipeAllowedConnectorProviders,
+  getRecipeExecutionChannel,
+} from "~/modules/apps/application/recipes/toolContext";
+import { resolveTeammateConnectorAuthority } from "~/modules/teammates/application/connection-authority";
+import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import {
+  resolveAllowedProjectConnectorOperations,
+  resolveProjectRecipeConnectorScope,
+  type ProjectRecipeConnectorScope,
+} from "~/modules/workspaces/application/projectRecipeConnectorScope";
+import type { ApiToolDefinition } from "~/types/functions";
+
+import { use_recipe_connector as use_recipe_connectorDescriptor } from "../definitions/recipes/use_recipe_connector";
+import { resolveRequestProjectId } from "../request-context";
+
+function buildConnectorToolError(params: {
+  provider: string;
+  operation: unknown;
+  error: AssistantError;
+  savedConfiguration?: Record<string, unknown>;
+}) {
+  const outcome = params.error.context?.outcome;
+  const retryable = params.error.context?.retryable === true;
+  const recoverable = params.error.type === ErrorType.PARAMS_ERROR || retryable;
+  const requiresUserAction = outcome === "unknown" && !retryable;
+
+  return {
+    status: "error",
+    name: "use_recipe_connector",
+    content:
+      params.error.type === ErrorType.PARAMS_ERROR
+        ? `${params.error.message}. Retry use_recipe_connector with corrected params. If this is a recipe chat, use the savedConfiguration values from this tool result as defaults.`
+        : params.error.message,
+    data: {
+      provider: params.provider,
+      operation: params.operation,
+      errorType: params.error.type,
+      statusCode: params.error.statusCode,
+      ...(outcome === "unknown" || outcome === "not_applied"
+        ? { outcome, retryable, requiresUserAction }
+        : {}),
+      ...(recoverable
+        ? {
+            recoverable: true,
+            ...(params.savedConfiguration ? { savedConfiguration: params.savedConfiguration } : {}),
+          }
+        : {}),
+    },
+  };
+}
+
+const PROMPT_ONLY_CONFIGURATION_KEYS = new Set(["preferredConnectors"]);
+
+function mergeRecipeConfigurationIntoParams(
+  params: unknown,
+  configuration: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  const parameterConfiguration = configuration
+    ? Object.fromEntries(
+        Object.entries(configuration).filter(([key]) => !PROMPT_ONLY_CONFIGURATION_KEYS.has(key)),
+      )
+    : undefined;
+
+  if (!parameterConfiguration) {
+    return isRecord(params) ? params : undefined;
+  }
+
+  if (!isRecord(params)) {
+    return { ...parameterConfiguration };
+  }
+
+  return {
+    ...parameterConfiguration,
+    ...params,
+  };
+}
+
+export const use_recipe_connector: ApiToolDefinition = {
+  ...use_recipe_connectorDescriptor,
+  execute: async (args, context) => {
+    const request = context.request;
+
+    if (!request.context || !request.user?.id) {
+      throw new Error("Signed-in user context is required for recipe connector tools");
+    }
+
+    const parsedProvider = recipeConnectorProviderSchema.safeParse(args.provider);
+
+    if (!parsedProvider.success) {
+      return {
+        status: "error",
+        name: "use_recipe_connector",
+        content: "Choose a supported recipe connector provider.",
+        data: { provider: args.provider },
+      };
+    }
+
+    const provider = parsedProvider.data;
+    const savedConfiguration = getRecipeConfiguration(request.request?.options);
+    const activeRecipe = getActiveRecipeSetup(request.request?.options);
+    const projectId =
+      request.memoryScope?.type === "project"
+        ? request.memoryScope.projectId
+        : (resolveRequestProjectId(request) ?? undefined);
+    const recipeAllowedConnectorProviders = getRecipeAllowedConnectorProviders(
+      request.request?.options,
+    );
+    let projectConnectorScope: ProjectRecipeConnectorScope | undefined;
+
+    if (projectId) {
+      await requireProjectAccess(request.context, projectId);
+      const capabilities =
+        await request.context.repositories.workspaces.listProjectCapabilities(projectId);
+
+      projectConnectorScope = resolveProjectRecipeConnectorScope(capabilities);
+    }
+
+    const allowedConnectorProviders = projectConnectorScope
+      ? projectConnectorScope.providers.filter(
+          (candidate) =>
+            !recipeAllowedConnectorProviders || recipeAllowedConnectorProviders.includes(candidate),
+        )
+      : recipeAllowedConnectorProviders;
+    const runConfiguration = teammateRunConfigurationSchema.safeParse(
+      request.request?.resolved_configuration,
+    );
+    const teammateAuthority = request.request?.teammate_context_id
+      ? await resolveTeammateConnectorAuthority({
+          context: request.context,
+          contextId: request.request.teammate_context_id,
+          userId: request.user.id,
+          provider,
+          ...(runConfiguration.success
+            ? { admittedGrants: runConfiguration.data.connectionGrants }
+            : {}),
+        })
+      : undefined;
+
+    if (allowedConnectorProviders && !allowedConnectorProviders.includes(provider)) {
+      return {
+        status: "error",
+        name: "use_recipe_connector",
+        content: `The ${provider || "requested"} connector is not enabled for this recipe.`,
+        data: {
+          provider,
+          allowedConnectorProviders,
+        },
+      };
+    }
+
+    const recipeAllowedConnectorOperations = getRecipeAllowedConnectorOperations(
+      request.request?.options,
+      provider,
+    );
+    const allowedConnectorOperations = resolveAllowedProjectConnectorOperations({
+      projectScope: projectConnectorScope,
+      provider,
+      recipeOperations: recipeAllowedConnectorOperations,
+    });
+    const providerConfig = getConnectorProviderConfig(provider);
+    const configuredAllowedOperations =
+      allowedConnectorOperations ??
+      providerConfig?.operations.map((operation) => operation.id) ??
+      [];
+    const effectiveAllowedOperations = teammateAuthority
+      ? configuredAllowedOperations.filter((candidate) =>
+          teammateAuthority.allowedOperations.includes(candidate),
+        )
+      : configuredAllowedOperations;
+    const operation = typeof args.operation === "string" ? args.operation.trim() : "";
+    const useCase = typeof args.useCase === "string" ? args.useCase.trim() : "";
+    const channel = getRecipeExecutionChannel(request.request?.options) ?? "web";
+
+    if (!operation && !useCase) {
+      return {
+        status: "error",
+        name: "use_recipe_connector",
+        content: "Provide useCase to discover tools, or operation to execute a discovered tool.",
+        data: { provider },
+      };
+    }
+
+    if (operation && !effectiveAllowedOperations.includes(operation)) {
+      return {
+        status: "error",
+        name: "use_recipe_connector",
+        content: `The ${provider || "requested"} connector operation is not enabled for this recipe.`,
+        data: {
+          provider,
+          operation,
+          allowedConnectorOperations: effectiveAllowedOperations,
+        },
+      };
+    }
+
+    if (!operation) {
+      try {
+        const discovery = await discoverRecipeConnectorTools({
+          context: request.context,
+          userId: request.user.id,
+          provider,
+          useCase,
+          allowedOperations: effectiveAllowedOperations,
+          completionId: request.request?.completion_id ?? context.completionId,
+          recipeId: activeRecipe?.id,
+          installationId: activeRecipe?.installationId,
+          projectId,
+          teammateContextId: request.request?.teammate_context_id,
+          connectedAccountId: teammateAuthority?.connectedAccountId,
+          requireSelectedAccount: channel === "scheduled" || channel === "event",
+        });
+
+        return {
+          status: "success",
+          name: "use_recipe_connector",
+          content:
+            "Connector tools discovered. Choose the exact operation and pass its schema-valid params with this sessionId. Identifiers are operation-specific unless the schemas explicitly describe the same identifier.",
+          data: discovery,
+        };
+      } catch (error) {
+        if (error instanceof AssistantError) {
+          return buildConnectorToolError({
+            provider,
+            operation: "discover",
+            error,
+          });
+        }
+
+        throw error;
+      }
+    }
+
+    let data: unknown;
+
+    try {
+      const params = mergeRecipeConfigurationIntoParams(args.params, savedConfiguration);
+      const scope = {
+        completionId: request.request?.completion_id ?? context.completionId,
+        recipeId: activeRecipe?.id,
+        installationId: activeRecipe?.installationId,
+        projectId,
+        teammateContextId: request.request?.teammate_context_id,
+      };
+      const resolvedRunAccount =
+        providerConfig?.auth.authType === "composio"
+          ? await resolveComposioRunAccount({
+              context: request.context,
+              userId: request.user.id,
+              provider: providerConfig,
+              operationId: operation,
+              connectedAccountId: teammateAuthority?.connectedAccountId,
+              sessionId: args.sessionId,
+              requireSelectedAccount: channel === "scheduled" || channel === "event",
+              scope,
+            })
+          : undefined;
+      const localConnection =
+        providerConfig?.auth.authType === "api_key"
+          ? (teammateAuthority?.connection ??
+            (await request.context.repositories.providerConnections.getConnection(
+              request.user.id,
+              provider,
+              RECIPE_CONNECTOR_CONNECTION_KIND,
+            )))
+          : undefined;
+
+      if (localConnection && localConnection.status !== "connected") {
+        throw new AssistantError("Connector is not connected", ErrorType.AUTHORISATION_ERROR, 403);
+      }
+
+      const approval = await authoriseConnectorOperation({
+        context: request.context,
+        userId: request.user.id,
+        provider,
+        operation,
+        arguments: params ?? {},
+        connectedAccountId: resolvedRunAccount?.connectedAccount.id ?? localConnection?.id,
+        authorityRevision: teammateAuthority?.grantRevision,
+        channel,
+        scope,
+        approvalId: request.request?.connector_approval_id,
+      });
+
+      if (approval.required && !approval.approved) {
+        if (typeof args.sessionId === "string") {
+          retainComposioConnectorSession(request.context, args.sessionId);
+        }
+
+        return {
+          status: "pending",
+          name: "use_recipe_connector",
+          content: `Approval is required before ${provider} can run ${operation}.`,
+          data: {
+            approvalRequired: true,
+            approvalId: approval.approval?.id,
+            provider,
+            operation,
+            argumentSummary: redactSensitiveTokens(params ?? {}),
+            expiresAt: approval.approval?.expiresAt,
+            humanInTheLoop: pendingApproval({
+              interactionId: context.toolCallId,
+              toolName: "use_recipe_connector",
+            }),
+          },
+        };
+      }
+
+      const executionParams = approval.arguments ?? params;
+
+      data = await executeRecipeConnectorOperation({
+        context: request.context,
+        userId: request.user.id,
+        request: {
+          provider,
+          operation,
+          params: executionParams,
+          sessionId: typeof args.sessionId === "string" ? args.sessionId : undefined,
+          connectedAccountId: teammateAuthority?.connectedAccountId,
+        },
+        scope,
+      });
+    } catch (error) {
+      if (error instanceof AssistantError) {
+        return buildConnectorToolError({
+          provider,
+          operation,
+          error,
+          savedConfiguration,
+        });
+      }
+
+      throw error;
+    }
+
+    return {
+      status: "success",
+      name: "use_recipe_connector",
+      content: "Connector operation completed",
+      data: isRecord(data) && "data" in data ? data.data : data,
+    };
+  },
+};

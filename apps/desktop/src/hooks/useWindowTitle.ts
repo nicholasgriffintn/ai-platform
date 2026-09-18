@@ -2,8 +2,8 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect } from "react";
 import { useLocation } from "react-router";
 
-import { isDesktopRuntime } from "../lib/desktop-runtime";
-import { describeWindowTitle } from "../lib/window-title";
+import { isDesktopRuntime } from "../infrastructure/desktop-runtime";
+import { describeWindowTitle } from "../infrastructure/window-title";
 import { readPageForPath } from "../route-definitions";
 
 function setNativeWindowTitle(title: string) {

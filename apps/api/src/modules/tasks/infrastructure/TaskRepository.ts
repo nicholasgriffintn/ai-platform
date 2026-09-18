@@ -1,0 +1,488 @@
+import { recordD1ResultMeta } from "@ngriffin_uk/polychat-ai-billing";
+import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+
+import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import type { Task, TaskExecution } from "~/infrastructure/database/schema";
+import { publishUserEvent } from "~/modules/sync/application/conversation-events";
+import type { IEnv } from "~/types";
+
+export interface CreateTaskParams {
+  id?: string;
+  task_type: TaskType;
+  user_id?: number;
+  project_id?: string;
+  task_data?: Record<string, any>;
+  schedule_type?: ScheduleType;
+  scheduled_at?: string;
+  cron_expression?: string;
+  priority?: number;
+  metadata?: Record<string, any>;
+  created_by: "system" | "user";
+}
+
+export interface UpdateTaskParams {
+  status?: "pending" | "queued" | "running" | "suspended" | "completed" | "failed" | "cancelled";
+  attempts?: number;
+  last_attempted_at?: string;
+  completed_at?: string;
+  error_message?: string;
+}
+
+export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
+  private announce(task: Task | null | undefined): void {
+    if (task?.user_id) {
+      publishUserEvent({ env: this.env }, task.user_id, "task.changed", {
+        taskId: task.id,
+        status: task.status,
+      });
+    }
+  }
+
+  private parseTask(task: Task): Task {
+    return {
+      ...task,
+      task_data: task.task_data ? safeParseJson(task.task_data) : null,
+      metadata: task.metadata ? safeParseJson(task.metadata) : null,
+    };
+  }
+
+  public async createTask(params: CreateTaskParams): Promise<Task | null> {
+    const id = params.id ?? generateId();
+    const insert = this.buildInsertQuery(
+      "tasks",
+      {
+        id,
+        task_type: params.task_type,
+        user_id: params.user_id ?? null,
+        project_id: params.project_id ?? null,
+        task_data: params.task_data ? JSON.stringify(params.task_data) : null,
+        schedule_type: params.schedule_type ?? "immediate",
+        scheduled_at: params.scheduled_at ?? null,
+        cron_expression: params.cron_expression ?? null,
+        priority: params.priority ?? 5,
+        metadata: params.metadata ? JSON.stringify(params.metadata) : null,
+        created_by: params.created_by,
+        status: "pending",
+        attempts: 0,
+        max_attempts: 3,
+      },
+      { jsonFields: ["task_data", "metadata"], returning: "*" },
+    );
+
+    if (!insert) {
+      return null;
+    }
+
+    const task = await this.runQuery<Task>(insert.query, insert.values, true);
+
+    this.announce(task);
+
+    return task;
+  }
+
+  public async createTaskIfAbsent(
+    params: CreateTaskParams & { id: string },
+  ): Promise<{ task: Task | null; created: boolean }> {
+    const result = await this.executeRun(
+      `INSERT OR IGNORE INTO tasks (
+				id, task_type, user_id, project_id, task_data, schedule_type, scheduled_at,
+				cron_expression, priority, metadata, created_by, status, attempts, max_attempts
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, 3)`,
+      [
+        params.id,
+        params.task_type,
+        params.user_id ?? null,
+        params.project_id ?? null,
+        params.task_data ? JSON.stringify(params.task_data) : null,
+        params.schedule_type ?? "immediate",
+        params.scheduled_at ?? null,
+        params.cron_expression ?? null,
+        params.priority ?? 5,
+        params.metadata ? JSON.stringify(params.metadata) : null,
+        params.created_by,
+      ],
+    );
+    const task = await this.getTaskById(params.id);
+
+    const created = Boolean(result.meta?.changes);
+
+    if (created) {
+      this.announce(task);
+    }
+
+    return { task, created };
+  }
+
+  public async getTaskById(taskId: string): Promise<Task | null> {
+    const { query, values } = this.buildSelectQuery("tasks", { id: taskId });
+    const result = await this.runQuery<Task>(query, values, true);
+
+    if (!result) {
+      return null;
+    }
+
+    return this.parseTask(result);
+  }
+
+  public async getTasksByUserId(userId: number, limit = 50): Promise<Task[]> {
+    const { query, values } = this.buildSelectQuery(
+      "tasks",
+      { user_id: userId },
+      { orderBy: "created_at DESC", limit },
+    );
+    const result = await this.runQuery<Task>(query, values);
+
+    if (!result) {
+      return [];
+    }
+
+    return Array.isArray(result) ? result.map((task) => this.parseTask(task)) : [];
+  }
+
+  public async getPendingTasks(limit = 10, now = new Date()): Promise<Task[]> {
+    const result = await this.runQuery<Task>(
+      `SELECT * FROM tasks
+       WHERE status IN ('pending', 'queued')
+         AND (scheduled_at IS NULL OR datetime(scheduled_at) <= datetime(?))
+       ORDER BY priority DESC, created_at ASC
+       LIMIT ?`,
+      [now.toISOString(), limit],
+    );
+
+    return result ? result.map((task) => this.parseTask(task)) : [];
+  }
+
+  public async requeueFailedTasksByType(
+    taskType: TaskType,
+    cutoff: Date,
+    limit = 100,
+  ): Promise<Task[]> {
+    const tasks = await this.runQuery<Task>(
+      `UPDATE tasks
+       SET status = 'queued',
+           attempts = 0,
+           completed_at = NULL,
+           error_message = NULL,
+           execution_owner_token = NULL,
+           execution_lease_expires_at = NULL,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id IN (
+         SELECT id FROM tasks
+         WHERE task_type = ?
+           AND status = 'failed'
+           AND datetime(updated_at) <= datetime(?)
+         ORDER BY updated_at ASC
+         LIMIT ?
+       )
+       RETURNING *`,
+      [taskType, cutoff.toISOString(), limit],
+    );
+    const recovered = tasks?.map((task) => this.parseTask(task)) ?? [];
+
+    for (const task of recovered) {
+      this.announce(task);
+    }
+
+    return recovered;
+  }
+
+  public async updateTask(taskId: string, params: UpdateTaskParams): Promise<Task | null> {
+    const fieldsToUpdate = Object.keys(params);
+
+    const update = this.buildUpdateQuery(
+      "tasks",
+      params as Record<string, unknown>,
+      fieldsToUpdate,
+      "id = ?",
+      [taskId],
+      { returning: "*" },
+    );
+
+    if (!update) {
+      return null;
+    }
+
+    const task = await this.runQuery<Task>(update.query, update.values, true);
+
+    this.announce(task);
+
+    return task;
+  }
+
+  public async settleSuspendedRecipeTask(params: {
+    taskId: string;
+    userId: number;
+    status: "completed" | "failed" | "cancelled";
+    completedAt: string;
+    errorMessage?: string;
+  }): Promise<Task | null> {
+    const task = await this.runQuery<Task>(
+      `UPDATE tasks
+       SET status = ?, completed_at = ?, error_message = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND user_id = ? AND task_type = 'recipe_execution' AND status = 'suspended'
+       RETURNING *`,
+      [
+        params.status,
+        params.completedAt,
+        params.errorMessage ?? null,
+        params.taskId,
+        params.userId,
+      ],
+      true,
+    );
+
+    this.announce(task);
+
+    return task ? this.parseTask(task) : null;
+  }
+
+  public async claimTaskForExecution(
+    taskId: string,
+    options: {
+      ownerToken: string;
+      leaseExpiresAt: string;
+      resumeInterrupted?: boolean;
+      now?: string;
+    },
+  ): Promise<Task | null> {
+    const now = options.now ?? new Date().toISOString();
+    const task = await this.runQuery<Task>(
+      `UPDATE tasks
+			 SET status = 'running',
+           last_attempted_at = ?,
+           execution_owner_token = ?,
+           execution_lease_expires_at = ?,
+           attempts = attempts + CASE WHEN status = 'running' THEN 1 ELSE 0 END
+			 WHERE id = ?
+         AND (
+           status IN ('pending', 'queued')
+           OR (
+             ? = 1
+             AND status = 'running'
+             AND (
+               execution_owner_token IS NULL
+               OR execution_lease_expires_at IS NULL
+               OR datetime(execution_lease_expires_at) <= datetime(?)
+             )
+           )
+         )
+			 RETURNING *`,
+      [
+        now,
+        options.ownerToken,
+        options.leaseExpiresAt,
+        taskId,
+        options.resumeInterrupted ? 1 : 0,
+        now,
+      ],
+      true,
+    );
+
+    return task ? this.parseTask(task) : null;
+  }
+
+  public async renewTaskExecutionLease(params: {
+    taskId: string;
+    ownerToken: string;
+    leaseExpiresAt: string;
+    now?: string;
+  }): Promise<string | null> {
+    const row = await this.runQuery<{ execution_lease_expires_at: string }>(
+      `UPDATE tasks
+       SET execution_lease_expires_at = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+         AND status = 'running'
+         AND execution_owner_token = ?
+         AND datetime(execution_lease_expires_at) > datetime(?)
+       RETURNING execution_lease_expires_at`,
+      [
+        params.leaseExpiresAt,
+        params.taskId,
+        params.ownerToken,
+        params.now ?? new Date().toISOString(),
+      ],
+      true,
+    );
+
+    return row?.execution_lease_expires_at ?? null;
+  }
+
+  public async isTaskExecutionOwner(params: {
+    taskId: string;
+    ownerToken: string;
+    now?: string;
+  }): Promise<boolean> {
+    const row = await this.runQuery<{ owned: number }>(
+      `SELECT 1 AS owned FROM tasks
+       WHERE id = ?
+         AND status = 'running'
+         AND execution_owner_token = ?
+         AND datetime(execution_lease_expires_at) > datetime(?)`,
+      [params.taskId, params.ownerToken, params.now ?? new Date().toISOString()],
+      true,
+    );
+
+    return row?.owned === 1;
+  }
+
+  public async updateOwnedTask(
+    taskId: string,
+    ownerToken: string,
+    params: UpdateTaskParams,
+  ): Promise<Task | null> {
+    const updates = {
+      ...params,
+      execution_owner_token: null,
+      execution_lease_expires_at: null,
+    };
+    const update = this.buildUpdateQuery(
+      "tasks",
+      updates,
+      Object.keys(updates),
+      `id = ?
+       AND status = 'running'
+       AND execution_owner_token = ?
+       AND datetime(execution_lease_expires_at) > datetime(?)`,
+      [taskId, ownerToken, new Date().toISOString()],
+      { returning: "*" },
+    );
+
+    if (!update) {
+      return null;
+    }
+
+    const task = await this.runQuery<Task>(update.query, update.values, true);
+
+    this.announce(task);
+
+    return task ? this.parseTask(task) : null;
+  }
+
+  public async failRunningTaskExecutions(taskId: string, reason: string): Promise<void> {
+    await this.executeRun(
+      `UPDATE task_executions
+       SET status = 'failed',
+           completed_at = ?,
+           error_message = ?
+       WHERE task_id = ? AND status = 'running'`,
+      [new Date().toISOString(), reason, taskId],
+    );
+  }
+
+  public async deleteTask(taskId: string): Promise<boolean> {
+    const task = await this.getTaskById(taskId);
+    const { query, values } = this.buildDeleteQuery("tasks", { id: taskId });
+
+    await this.executeRun(query, values);
+    this.announce(task);
+
+    return true;
+  }
+
+  public async deleteSettledTasksBefore(cutoff: Date, limit: number): Promise<number> {
+    const selection = `SELECT id FROM tasks
+       WHERE status IN ('completed', 'cancelled')
+         AND schedule_type = 'immediate'
+         AND datetime(COALESCE(completed_at, updated_at, created_at)) < datetime(?)
+       LIMIT ?`;
+    const bindings = [cutoff.toISOString(), limit];
+    const [executions, tasksDeleted] = await this.env.DB.batch([
+      this.env.DB.prepare(`DELETE FROM task_executions WHERE task_id IN (${selection})`).bind(
+        ...bindings,
+      ),
+      this.env.DB.prepare(`DELETE FROM tasks WHERE id IN (${selection})`).bind(...bindings),
+    ]);
+
+    recordD1ResultMeta(executions?.meta);
+    recordD1ResultMeta(tasksDeleted?.meta);
+
+    return tasksDeleted?.meta?.changes ?? 0;
+  }
+
+  public async createTaskExecution(
+    taskId: string,
+    status: "running" | "completed" | "failed",
+    errorMessage?: string,
+    resultData?: Record<string, any>,
+  ): Promise<TaskExecution | null> {
+    const id = generateId();
+    const now = new Date().toISOString();
+
+    const insert = this.buildInsertQuery(
+      "task_executions",
+      {
+        id,
+        task_id: taskId,
+        status,
+        started_at: now,
+        completed_at: status !== "running" ? now : null,
+        execution_time_ms: null,
+        error_message: errorMessage ?? null,
+        result_data: resultData ? JSON.stringify(resultData) : null,
+      },
+      { jsonFields: ["result_data"], returning: "*" },
+    );
+
+    if (!insert) {
+      return null;
+    }
+
+    return this.runQuery<TaskExecution>(insert.query, insert.values, true);
+  }
+
+  public async updateTaskExecution(
+    executionId: string,
+    status: "running" | "completed" | "failed",
+    executionTimeMs?: number,
+    errorMessage?: string,
+    resultData?: Record<string, any>,
+  ): Promise<TaskExecution | null> {
+    const now = new Date().toISOString();
+
+    const updates = {
+      status,
+      completed_at: now,
+      execution_time_ms: executionTimeMs ?? null,
+      error_message: errorMessage ?? null,
+      result_data: resultData ? JSON.stringify(resultData) : null,
+    };
+
+    const fieldsToUpdate = Object.keys(updates);
+
+    const update = this.buildUpdateQuery(
+      "task_executions",
+      updates,
+      fieldsToUpdate,
+      "id = ?",
+      [executionId],
+      { jsonFields: ["result_data"], returning: "*" },
+    );
+
+    if (!update) {
+      return null;
+    }
+
+    return this.runQuery<TaskExecution>(update.query, update.values, true);
+  }
+
+  public async getTaskExecutions(taskId: string): Promise<TaskExecution[]> {
+    const { query, values } = this.buildSelectQuery(
+      "task_executions",
+      { task_id: taskId },
+      { orderBy: "created_at DESC" },
+    );
+    const result = await this.runQuery<TaskExecution>(query, values);
+
+    return result || [];
+  }
+
+  public async getTaskExecutionById(executionId: string): Promise<TaskExecution | null> {
+    const { query, values } = this.buildSelectQuery("task_executions", {
+      id: executionId,
+    });
+
+    return this.runQuery<TaskExecution>(query, values, true);
+  }
+}
