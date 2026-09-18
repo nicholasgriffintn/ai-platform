@@ -1,5 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { goalStatusLabels, type Goal, type GoalMarkerEvent } from "@ngriffin_uk/polychat-schemas";
+import { goalStatusLabels } from "@ngriffin_uk/polychat-library-goals";
+import type { Goal, GoalMarkerEvent } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ConversationManager } from "~/services/conversations/manager";

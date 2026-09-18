@@ -22,7 +22,7 @@ export interface RequestCommandApprovalOptions {
   escalateAfterSeconds?: number;
 }
 
-interface CommandApproval {
+export interface CommandApproval {
   id: string;
   runId: string;
   command: string;

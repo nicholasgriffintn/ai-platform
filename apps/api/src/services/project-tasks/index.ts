@@ -1,6 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { isTerminalGoalStatus } from "@ngriffin_uk/polychat-library-goals";
 import {
-  isTerminalGoalStatus,
   isTerminalProjectTaskStatus,
   nextFlowStageId,
   PROJECT_TASK_DEFAULT_CONCURRENCY,

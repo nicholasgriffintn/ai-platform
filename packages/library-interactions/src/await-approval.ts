@@ -1,34 +1,14 @@
+import { sleep } from "@ngriffin_uk/polychat-utility-core";
+
+import type {
+  ApprovalClient,
+  ApprovalControlState,
+  ApprovalRecord,
+  ApprovalWindow,
+} from "./approval-types.js";
+import { InteractionError } from "./errors.js";
+
 const DEFAULT_POLL_INTERVAL_MS = 2000;
-
-export interface ApprovalWindow {
-  timeoutSeconds: number;
-  escalateAfterSeconds: number;
-}
-
-export interface ApprovalRecord {
-  id: string;
-  status: string;
-  expiresAt?: string;
-  escalatedAt?: string;
-  timedOutAt?: string;
-  resolutionReason?: string;
-}
-
-export interface ApprovalControlState {
-  state?: string;
-  cancellationReason?: string;
-}
-
-export interface ApprovalClient<TApproval extends ApprovalRecord = ApprovalRecord> {
-  requestApproval(
-    subject: string,
-    reason: string,
-    window: ApprovalWindow,
-    abortSignal?: AbortSignal,
-  ): Promise<TApproval | null>;
-  fetchApproval(approvalId: string, abortSignal?: AbortSignal): Promise<TApproval | null>;
-  fetchControlState?(abortSignal?: AbortSignal): Promise<ApprovalControlState | null>;
-}
 
 export interface ResolveApprovalParams<
   TRisk extends string,
@@ -55,10 +35,6 @@ export interface ResolveApprovalResult<TApproval extends ApprovalRecord = Approv
   rejected: boolean;
   approval?: TApproval;
   rejectedMessage?: string;
-}
-
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export async function resolveApproval<
@@ -92,7 +68,11 @@ export async function resolveApproval<
   }
 
   if (!approvalClient) {
-    throw new Error(`Approval required but no approval client is configured for: ${subject}`);
+    throw new InteractionError(
+      "approval_unavailable",
+      `Approval required but no approval client is configured for: ${subject}`,
+      { subject },
+    );
   }
 
   const approval = await approvalClient.requestApproval(
@@ -103,7 +83,11 @@ export async function resolveApproval<
   );
 
   if (!approval) {
-    throw new Error(`Failed to create approval request for: ${subject}`);
+    throw new InteractionError(
+      "approval_request_failed",
+      `Failed to create approval request for: ${subject}`,
+      { subject },
+    );
   }
 
   await emit({
@@ -123,18 +107,22 @@ export async function resolveApproval<
   while (true) {
     await guardExecution("Execution cancelled while waiting for approval");
 
-    const control = approvalClient.fetchControlState
+    const control: ApprovalControlState | null = approvalClient.fetchControlState
       ? await approvalClient.fetchControlState(abortSignal)
       : null;
 
     if (control?.state === "cancelled") {
-      throw new Error(control.cancellationReason || "Execution cancelled during approval wait");
+      throw new InteractionError(
+        "approval_cancelled",
+        control.cancellationReason || "Execution cancelled during approval wait",
+        { subject, approvalId: approval.id },
+      );
     }
 
     const latestApproval = await approvalClient.fetchApproval(approval.id, abortSignal);
 
     if (!latestApproval) {
-      await wait(pollIntervalMs);
+      await sleep(pollIntervalMs);
       continue;
     }
 
@@ -163,6 +151,7 @@ export async function resolveApproval<
         approvalStatus: latestApproval.status,
         approvalEscalatedAt: latestApproval.escalatedAt,
         approvalExpiresAt: latestApproval.expiresAt,
+        approvalResolutionReason: latestApproval.resolutionReason,
       });
 
       return {
@@ -183,6 +172,7 @@ export async function resolveApproval<
         approvalStatus: latestApproval.status,
         approvalEscalatedAt: latestApproval.escalatedAt,
         approvalExpiresAt: latestApproval.expiresAt,
+        approvalResolutionReason: latestApproval.resolutionReason,
       });
 
       return {
@@ -205,6 +195,7 @@ export async function resolveApproval<
         approvalEscalatedAt: latestApproval.escalatedAt,
         approvalExpiresAt: latestApproval.expiresAt,
         approvalTimedOutAt: latestApproval.timedOutAt,
+        approvalResolutionReason: latestApproval.resolutionReason,
       });
 
       return {
@@ -217,6 +208,6 @@ export async function resolveApproval<
     }
 
     previousStatus = latestApproval.status;
-    await wait(pollIntervalMs);
+    await sleep(pollIntervalMs);
   }
 }

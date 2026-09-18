@@ -1,28 +1,22 @@
 import {
-  evaluateGoalContinuation,
+  appendGoalProgressEntry,
+  assertGoalTransition,
   isTerminalGoalStatus,
-  type Goal,
-  type GoalEvidenceEntry,
-  type GoalOwner,
-  type GoalProgressEntry,
-  type GoalSource,
-  type GoalStatus,
-  type GoalSurface,
+  planGoalIteration,
+  type GoalActor,
+} from "@ngriffin_uk/polychat-library-goals";
+import type {
+  Goal,
+  GoalEvidenceEntry,
+  GoalOwner,
+  GoalSource,
+  GoalStatus,
+  GoalSurface,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { GoalRepository } from "~/repositories/GoalRepository";
 import type { IUser } from "~/types";
-
-const PROGRESS_JOURNAL_LIMIT = 40;
-
-export type GoalActor = "user" | "model" | "system";
-
-const ALLOWED_TRANSITIONS: Record<GoalActor, GoalStatus[]> = {
-  user: ["active", "paused", "cleared"],
-  model: ["completed"],
-  system: ["blocked", "stalled", "limit_reached"],
-};
 
 export interface RecordIterationParams {
   surface: GoalSurface;
@@ -155,16 +149,7 @@ export class GoalService {
       throw new AssistantError("Goal not found", ErrorType.NOT_FOUND);
     }
 
-    if (!ALLOWED_TRANSITIONS[params.actor].includes(params.status)) {
-      throw new AssistantError(
-        `A ${params.actor} may not move a goal to ${params.status}`,
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
-    if (isTerminalGoalStatus(goal.status)) {
-      throw new AssistantError(`This goal already ended as ${goal.status}`, ErrorType.PARAMS_ERROR);
-    }
+    assertGoalTransition({ actor: params.actor, from: goal.status, to: params.status });
 
     const updated = await this.updateGoal(
       goal.id,
@@ -214,7 +199,7 @@ export class GoalService {
       current.id,
       {
         iterationCount: current.iteration_count + 1,
-        progress: appendProgress(current.progress, {
+        progress: appendGoalProgressEntry(current.progress, {
           iteration: current.iteration_count + 1,
           surface: current.conversation_id ? "agent" : "sandbox",
           summary: params.summary,
@@ -260,7 +245,7 @@ export class GoalService {
       throw new AssistantError("No active goal to steer", ErrorType.PARAMS_ERROR);
     }
 
-    const progress = appendProgress(goal.progress, {
+    const progress = appendGoalProgressEntry(goal.progress, {
       iteration: goal.iteration_count,
       surface: params.surface,
       summary: "Steered by the user",
@@ -283,8 +268,8 @@ export class GoalService {
 
   /**
    * Records one unit of work against the goal and decides what happens next.
-   * The continuation rule itself lives in the schemas package so the client
-   * dispatcher and the sandbox coordinator apply exactly the same policy.
+   * The continuation policy lives in library-goals so the client dispatcher and
+   * the sandbox coordinator apply exactly the same rule.
    */
   async recordIteration(params: {
     goalId: string;
@@ -301,20 +286,17 @@ export class GoalService {
       return { goal, shouldContinue: false, transitioned: false };
     }
 
-    const decision = evaluateGoalContinuation({
+    const plan = planGoalIteration({
       goal,
-      lastTurn: {
+      iteration: {
         producedEvidence: iteration.producedEvidence,
         calledTool: iteration.calledTool,
-        aborted: false,
-        awaitingApproval: iteration.awaitingUserAction !== undefined,
+        awaitingUserAction: iteration.awaitingUserAction,
+        usageLimitsExhausted: iteration.usageLimitsExhausted,
       },
-      usageLimitsExhausted: iteration.usageLimitsExhausted === true,
-      queuedInstructionCount: 0,
-      otherWorkInFlight: false,
     });
 
-    const progress = appendProgress(goal.progress, {
+    const progress = appendGoalProgressEntry(goal.progress, {
       iteration: goal.iteration_count + 1,
       surface: iteration.surface,
       summary: iteration.summary,
@@ -323,27 +305,18 @@ export class GoalService {
       at: new Date().toISOString(),
     });
 
-    const nextStatus: GoalStatus | undefined =
-      decision.reason === "stalled"
-        ? "stalled"
-        : decision.reason === "usage-limits"
-          ? "limit_reached"
-          : decision.reason === "awaiting-approval"
-            ? "blocked"
-            : undefined;
-
     const updated = await this.updateGoal(
       goal.id,
       {
         iterationCount: goal.iteration_count + 1,
-        stallStreak: decision.nextStallStreak,
+        stallStreak: plan.stallStreak,
         tokensSpent: goal.tokens_spent + (iteration.tokens ?? 0),
         progress,
         lastContinuedAt: new Date().toISOString(),
-        ...(nextStatus
+        ...(plan.status
           ? {
-              status: nextStatus,
-              stoppedReason: stoppedReasonFor(nextStatus, iteration.awaitingUserAction),
+              status: plan.status,
+              stoppedReason: plan.stoppedReason ?? null,
             }
           : {}),
       },
@@ -362,32 +335,8 @@ export class GoalService {
 
     return {
       goal: updated,
-      shouldContinue: decision.shouldContinue,
-      transitioned: nextStatus !== undefined,
+      shouldContinue: plan.shouldContinue,
+      transitioned: plan.status !== undefined,
     };
   }
-}
-
-function stoppedReasonFor(
-  status: GoalStatus,
-  awaitingUserAction?: "approval" | "question",
-): string {
-  if (status === "stalled") {
-    return "Consecutive continuations produced no new evidence.";
-  }
-
-  if (status === "limit_reached") {
-    return "The account's usage limits were reached.";
-  }
-
-  return awaitingUserAction === "question"
-    ? "The work is waiting for your answers."
-    : "The work is waiting for your approval.";
-}
-
-function appendProgress(
-  progress: GoalProgressEntry[],
-  entry: GoalProgressEntry,
-): GoalProgressEntry[] {
-  return [...progress, entry].slice(-PROGRESS_JOURNAL_LIMIT);
 }

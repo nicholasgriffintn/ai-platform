@@ -15,7 +15,7 @@ export {
   type ApprovalWindow,
   type ResolveApprovalParams,
   type ResolveApprovalResult,
-} from "./approval.js";
+} from "@ngriffin_uk/polychat-library-interactions";
 
 export type {
   AgentActionContext,

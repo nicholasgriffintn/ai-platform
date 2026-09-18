@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  assertGoalTransition,
   evaluateGoalContinuation,
   GOAL_STALL_THRESHOLD,
+  GoalError,
   isTerminalGoalStatus,
+  planGoalIteration,
   type GoalContinuationInput,
-} from "./goals.js";
+} from "../index.js";
 
 function input(overrides: Partial<GoalContinuationInput> = {}): GoalContinuationInput {
   return {
@@ -143,6 +146,76 @@ describe("evaluateGoalContinuation", () => {
       shouldContinue: false,
       reason: "no-goal",
     });
+  });
+});
+
+describe("planGoalIteration", () => {
+  it("maps a stall to the stalled status and reason", () => {
+    const plan = planGoalIteration({
+      goal: { status: "active", stall_streak: 1 },
+      iteration: { producedEvidence: false, calledTool: false },
+    });
+
+    expect(plan).toMatchObject({
+      shouldContinue: false,
+      reason: "stalled",
+      status: "stalled",
+      stoppedReason: "Consecutive continuations produced no new evidence.",
+    });
+    expect(plan.stallStreak).toBe(GOAL_STALL_THRESHOLD);
+  });
+
+  it("blocks a goal that is waiting on a human", () => {
+    expect(
+      planGoalIteration({
+        goal: { status: "active", stall_streak: 0 },
+        iteration: { producedEvidence: true, calledTool: true, awaitingUserAction: "question" },
+      }),
+    ).toMatchObject({
+      shouldContinue: false,
+      reason: "awaiting-approval",
+      status: "blocked",
+      stoppedReason: "The work is waiting for your answers.",
+    });
+  });
+
+  it("maps exhausted usage limits to the limit_reached status", () => {
+    expect(
+      planGoalIteration({
+        goal: { status: "active", stall_streak: 0 },
+        iteration: { producedEvidence: true, calledTool: true, usageLimitsExhausted: true },
+      }),
+    ).toMatchObject({
+      shouldContinue: false,
+      reason: "usage-limits",
+      status: "limit_reached",
+    });
+  });
+});
+
+describe("assertGoalTransition", () => {
+  it("only lets each actor make its own transitions", () => {
+    expect(() => assertGoalTransition({ actor: "model", from: "active", to: "paused" })).toThrow(
+      /may not move a goal to paused/,
+    );
+    expect(() => assertGoalTransition({ actor: "user", from: "active", to: "completed" })).toThrow(
+      /may not move a goal to completed/,
+    );
+    expect(() =>
+      assertGoalTransition({ actor: "user", from: "active", to: "paused" }),
+    ).not.toThrow();
+  });
+
+  it("refuses to reopen a goal that already ended", () => {
+    expect(() => assertGoalTransition({ actor: "user", from: "completed", to: "paused" })).toThrow(
+      /already ended as completed/,
+    );
+  });
+
+  it("throws a coded GoalError", () => {
+    expect(() => assertGoalTransition({ actor: "model", from: "active", to: "paused" })).toThrow(
+      GoalError,
+    );
   });
 });
 

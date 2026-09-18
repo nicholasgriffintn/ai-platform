@@ -1,3 +1,4 @@
+import { evaluateApprovalSla } from "@ngriffin_uk/polychat-library-interactions";
 import {
   sandboxRunDispatchMessageSchema,
   sandboxRunControlSchema,
@@ -45,7 +46,6 @@ const MIN_APPROVAL_TIMEOUT_SECONDS = 5;
 const MAX_APPROVAL_TIMEOUT_SECONDS = 1800;
 const MIN_APPROVAL_ESCALATE_SECONDS = 1;
 const MAX_APPROVAL_ESCALATE_SECONDS = 900;
-const APPROVAL_TIMEOUT_REASON = "Approval request timed out";
 
 function parsePositiveInt(value: unknown, min: number, max: number): number | undefined {
   if (typeof value !== "number" || !Number.isInteger(value)) {
@@ -279,8 +279,6 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
     changed: boolean;
   } {
     let changed = false;
-    const nowMs = now.getTime();
-    const nowIso = now.toISOString();
     const nextInstructions = instructions.map((entry) => {
       const instruction = entry.instruction;
 
@@ -296,40 +294,39 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
         return entry;
       }
 
-      let nextInstruction = instruction;
+      const transition = evaluateApprovalSla(
+        {
+          status: instruction.approvalStatus ?? "pending",
+          escalationAt: instruction.escalationAt,
+          expiresAt: instruction.expiresAt,
+        },
+        now,
+      );
 
-      if (
-        instruction.approvalStatus === "pending" &&
-        instruction.escalationAt &&
-        Date.parse(instruction.escalationAt) <= nowMs
-      ) {
-        nextInstruction = {
-          ...nextInstruction,
-          approvalStatus: "escalated",
-          escalatedAt: nextInstruction.escalatedAt ?? nowIso,
-        };
-        changed = true;
+      if (!transition) {
+        return entry;
       }
 
-      if (
-        (nextInstruction.approvalStatus === "pending" ||
-          nextInstruction.approvalStatus === "escalated") &&
-        nextInstruction.expiresAt &&
-        Date.parse(nextInstruction.expiresAt) <= nowMs
-      ) {
-        nextInstruction = {
-          ...nextInstruction,
-          approvalStatus: "timed_out",
-          timedOutAt: nextInstruction.timedOutAt ?? nowIso,
-          resolvedAt: nextInstruction.resolvedAt ?? nowIso,
-          resolutionReason: nextInstruction.resolutionReason ?? APPROVAL_TIMEOUT_REASON,
-        };
-        changed = true;
-      }
+      changed = true;
 
       return {
         ...entry,
-        instruction: nextInstruction,
+        instruction: {
+          ...instruction,
+          approvalStatus: transition.status,
+          ...(transition.escalatedAt && !instruction.escalatedAt
+            ? { escalatedAt: transition.escalatedAt }
+            : {}),
+          ...(transition.timedOutAt && !instruction.timedOutAt
+            ? { timedOutAt: transition.timedOutAt }
+            : {}),
+          ...(transition.resolvedAt && !instruction.resolvedAt
+            ? { resolvedAt: transition.resolvedAt }
+            : {}),
+          ...(transition.resolutionReason && !instruction.resolutionReason
+            ? { resolutionReason: transition.resolutionReason }
+            : {}),
+        },
       };
     });
 

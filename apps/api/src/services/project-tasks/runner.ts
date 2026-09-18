@@ -1,6 +1,7 @@
 import { finishUsageReservation } from "@ngriffin_uk/polychat-ai-billing";
 import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { isTerminalGoalStatus } from "@ngriffin_uk/polychat-library-goals";
 import {
   isTaskError,
   leaseBusyError,
@@ -13,7 +14,6 @@ import {
   chatRunCommandReceiptResponseSchema,
   PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
   PROJECT_TASK_RUN_TASK_TYPE,
-  isTerminalGoalStatus,
   teammateRunConfigurationSchema,
   type ChatRun,
   type ProjectTask,

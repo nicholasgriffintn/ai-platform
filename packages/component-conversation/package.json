@@ -46,6 +46,7 @@
     "@ngriffin_uk/polychat-component-ui": "workspace:^",
     "@ngriffin_uk/polychat-library-chat": "workspace:^",
     "@ngriffin_uk/polychat-library-client": "workspace:^",
+    "@ngriffin_uk/polychat-library-goals": "workspace:^",
     "@ngriffin_uk/polychat-library-react": "workspace:^",
     "@ngriffin_uk/polychat-library-realtime": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",

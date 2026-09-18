@@ -1,10 +1,6 @@
 import type { AgentFinishAssessment } from "@ngriffin_uk/polychat-ai-agents";
-import {
-  goalSchema,
-  isTerminalGoalStatus,
-  type Goal,
-  type GoalSurface,
-} from "@ngriffin_uk/polychat-schemas";
+import { isTerminalGoalStatus } from "@ngriffin_uk/polychat-library-goals";
+import { goalSchema, type Goal, type GoalSurface } from "@ngriffin_uk/polychat-schemas";
 
 import type { ConversationManager } from "~/services/conversations/manager";
 import type { GoalService } from "~/services/goals/GoalService";
