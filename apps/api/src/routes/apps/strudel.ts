@@ -8,6 +8,11 @@ import {
   errorResponseSchema,
   successResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 import { z } from "zod/v4";
 
@@ -24,7 +29,6 @@ import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,
 } from "~/services/workspaces/access";
-import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 
 const app = new Hono();
 

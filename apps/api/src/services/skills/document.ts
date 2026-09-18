@@ -1,7 +1,6 @@
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parse as parseYaml } from "yaml";
 import z from "zod/v4";
-
-import { getErrorMessage } from "~/utils/errors";
 
 export const MAX_USER_SKILL_DOCUMENT_BYTES = 128 * 1024;
 const RESERVED_METADATA_PREFIX = "polychat-";

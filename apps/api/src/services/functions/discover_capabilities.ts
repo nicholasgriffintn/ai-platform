@@ -1,11 +1,12 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import {
   createUnknownCapabilityDiscoveryResult,
   discoverAssistantCapabilities,
-} from "~/services/assistant-capability-discovery";
-import { createCapabilityDiscoveryResponse } from "~/services/assistant-capability-discovery-response";
-import { loadCapabilityDiscoverySources } from "~/services/assistant-capability-discovery-sources";
+} from "~/services/assistant-capabilities/discovery";
+import { createCapabilityDiscoveryResponse } from "~/services/assistant-capabilities/discovery-response";
+import { loadCapabilityDiscoverySources } from "~/services/assistant-capabilities/discovery-sources";
 import type { ApiToolDefinition } from "~/types/functions";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { discover_capabilities as discover_capabilitiesDescriptor } from "./definitions/discover_capabilities";
 

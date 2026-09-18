@@ -1,5 +1,6 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { IFunctionResponse, IWeather } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import { getOpenWeatherForecast, getOpenWeatherUrl } from "~/utils/weather-forecast";
 
 export const getWeatherForLocation = async (

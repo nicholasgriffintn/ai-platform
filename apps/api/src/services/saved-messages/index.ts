@@ -3,12 +3,12 @@ import {
   type SaveMessageInput,
   type SavedMessage,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { SavedMessageRow } from "~/repositories/SavedMessageRepository";
 import { requireConversationAccess } from "~/services/conversations/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { safeParseJson } from "~/utils/json";
 
 const DEFAULT_LIMIT = 25;
 

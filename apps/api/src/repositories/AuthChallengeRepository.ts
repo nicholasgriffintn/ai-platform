@@ -1,4 +1,5 @@
 import type { AuthChallengeRecord, ChallengeStore } from "@ngriffin_uk/auth-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { and, eq, sql } from "drizzle-orm";
 
 import { authChallenge } from "~/lib/database/schema";
@@ -6,7 +7,6 @@ import {
   decryptAuthChallengePayload,
   encryptAuthChallengePayload,
 } from "~/services/auth/challengeEncryption";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { BaseRepository } from "./BaseRepository";
 

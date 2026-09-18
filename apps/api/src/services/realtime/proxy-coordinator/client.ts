@@ -1,7 +1,8 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import { getDurableObjectStub, postDurableObjectJson } from "~/lib/durable-objects/client";
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 import { REALTIME_PROXY_LIMITS } from "../transcriptionProxy";
 

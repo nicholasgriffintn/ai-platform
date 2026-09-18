@@ -1,9 +1,8 @@
+import { hasPlanEntitlement, resolvePlanId, type PlanId } from "@ngriffin_uk/polychat-ai-billing";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { Context, Next } from "hono";
 
-import type { PlanId } from "~/constants/plans";
-import { hasPlanEntitlement, resolvePlanId } from "~/lib/plans";
 import type { IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export type PlanType = PlanId;
 

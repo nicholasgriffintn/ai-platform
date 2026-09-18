@@ -1,8 +1,9 @@
-import type { ActorCreditDeltas } from "~/lib/usage/creditActor";
+import type { CreditDeltas } from "@ngriffin_uk/polychat-ai-billing";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+
 import type { AnonymousUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
 
 import { BaseRepository } from "./BaseRepository";
 
@@ -169,11 +170,7 @@ export class AnonymousUserRepository extends BaseRepository {
     };
   }
 
-  public async applyCreditDeltas(
-    id: string,
-    period: string,
-    deltas: ActorCreditDeltas,
-  ): Promise<void> {
+  public async applyCreditDeltas(id: string, period: string, deltas: CreditDeltas): Promise<void> {
     const spent = Math.round(deltas.spent_credit_micros ?? 0);
     const reserved = Math.round(deltas.reserved_credit_micros ?? 0);
 

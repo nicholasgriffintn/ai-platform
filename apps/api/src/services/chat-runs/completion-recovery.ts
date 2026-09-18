@@ -1,8 +1,8 @@
+import { normaliseTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { ChatRunCommandReceipt } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { formatStoredMessage } from "~/lib/conversation/stored-message";
-import { normaliseTokenUsage } from "~/lib/usage/tokenUsage";
+import { formatStoredMessage } from "~/services/conversations/stored-message";
 import type { CreateChatCompletionsResponse } from "~/types";
 
 import { reconcileInactiveChatRun } from "./recovery";

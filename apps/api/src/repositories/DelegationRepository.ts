@@ -7,11 +7,11 @@ import {
   type DelegationMemoryBinding,
   type DelegationState,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { DelegationRow } from "~/lib/database/schema";
 import type { IEnv } from "~/types";
 import { formatDelegation } from "~/utils/delegations";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { BaseRepository } from "./BaseRepository";
 

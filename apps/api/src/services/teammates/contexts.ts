@@ -6,14 +6,14 @@ import type {
   TeammateContext,
   TeammateContextScope,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getConnectorProviderConfig } from "~/lib/providers/capabilities/connectors";
 import { isConnectorConnectionKindForAuth } from "~/services/apps/connectors/connection-references";
 import { formatMemoryDocument } from "~/services/memory-documents";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 import { requireScopedTeammateAccess, requireTeammateAccess } from "./access";
 

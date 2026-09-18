@@ -1,16 +1,21 @@
+import {
+  ENTITLED_SUBSCRIPTION_STATUSES,
+  hasPlanEntitlement,
+  isExistingSubscriptionItemError,
+  requireCheckoutReturnUrls,
+  requireStripePriceId,
+  resolvePlanEntitlementMicros,
+  resolvePlanForSubscriptionStatus,
+  resolvePlanId,
+  type PlanId,
+} from "@ngriffin_uk/polychat-ai-billing";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { usagePeriodFromDate } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { isUrlWithinOrigin } from "@ngriffin_uk/polychat-utility-server/urls";
 import { Stripe } from "stripe";
 
 import { FREE_TRIAL_DAYS } from "~/constants/app";
-import type { PlanId } from "~/constants/plans";
-import { requireCheckoutReturnUrls, requireStripePriceId } from "~/lib/billing/checkout";
-import { resolvePlanEntitlementMicros } from "~/lib/billing/planCredits";
-import { isExistingSubscriptionItemError } from "~/lib/billing/stripeErrors";
-import {
-  ENTITLED_SUBSCRIPTION_STATUSES,
-  resolvePlanForSubscriptionStatus,
-} from "~/lib/billing/subscriptionStatus";
-import { hasPlanEntitlement, resolvePlanId } from "~/lib/plans";
 import { RepositoryManager } from "~/repositories";
 import {
   sendPaymentFailedEmail,
@@ -20,9 +25,6 @@ import {
   sendUnsubscriptionEmail,
 } from "~/services/notifications";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
-import { isUrlWithinOrigin } from "~/utils/urls";
 
 const logger = getLogger({ prefix: "services/subscription" });
 

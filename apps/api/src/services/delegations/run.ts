@@ -7,19 +7,19 @@ import {
   SANDBOX_TIMEOUT_MIN_SECONDS,
   type SandboxRequestOptions,
 } from "@ngriffin_uk/polychat-schemas";
+import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
-import { findModelConfig } from "~/lib/providers/models";
 import { recoverAcceptedChatCompletionResponse } from "~/services/chat-runs/completion-recovery";
 import { revalidateDelegationMemoryBindings } from "~/services/delegations/memory-bindings";
 import { transitionDelegation } from "~/services/delegations/settle";
+import { findModelConfig } from "~/services/models/resolve";
 import { TaskService } from "~/services/tasks/TaskService";
 import { enqueueTeammateRun } from "~/services/teammates/run-admission";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
 import type { IEnv } from "~/types";
-import { intersectEnabledTools } from "~/utils/enabledTools";
-import { safeParseJson } from "~/utils/json";
 
 import type { TaskResult } from "../tasks/TaskHandler";
 import type { TaskMessage } from "../tasks/TaskService";

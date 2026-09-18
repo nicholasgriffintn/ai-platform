@@ -3,10 +3,10 @@ import {
   type ChatRun,
   type TeammateRunConfiguration,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { CoreChatOptions } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { hydrateChatRunUsage } from "../chat-runs/usage";
 

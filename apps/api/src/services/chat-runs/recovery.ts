@@ -1,10 +1,10 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { ChatRun } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getActiveThreadOperation } from "~/services/conversations/coordinator/client";
 import { publishConversationChanged, publishRunChanged } from "~/services/sync/conversation-events";
 import { withoutOrigin } from "~/services/sync/publish";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/chat-runs/recovery" });
 

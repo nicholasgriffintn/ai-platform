@@ -1,8 +1,9 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { resolveEmbeddingRuntime } from "~/lib/providers/capabilities/embedding/helpers";
 import { getPersonalEmbeddingScopeTag } from "~/lib/providers/capabilities/embedding/utils/scope";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { deleteProviderDocuments } from "./deletion";
 import { prepareEmbeddingDocument } from "./document";

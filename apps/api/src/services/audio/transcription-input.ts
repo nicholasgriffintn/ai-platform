@@ -1,7 +1,8 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { StorageService } from "~/lib/storage";
 import { getPrivateFileResourceFromUrl } from "~/lib/storage/resource-urls";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export const MAX_TRANSCRIPTION_BYTES = 25 * 1024 * 1024;
 

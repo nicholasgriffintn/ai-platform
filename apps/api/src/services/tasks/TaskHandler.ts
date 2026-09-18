@@ -1,23 +1,17 @@
+import type { ExecutionLease, TaskResult } from "@ngriffin_uk/polychat-library-tasks";
+
 import type { IEnv } from "~/types";
 
 import type { TaskMessage } from "./TaskService";
 
-export interface TaskResult {
-  status: "success" | "error" | "skipped" | "suspended";
-  message?: string;
-  data?: Record<string, any>;
-}
+export type { TaskResult } from "@ngriffin_uk/polychat-library-tasks";
+
+export type TaskExecutionLease = Pick<ExecutionLease, "ownerToken" | "expiresAt" | "assertOwned">;
 
 export interface TaskExecutionContext {
   deliveryAttempt: number;
   isRedelivery: boolean;
   lease: TaskExecutionLease;
-}
-
-export interface TaskExecutionLease {
-  readonly ownerToken: string;
-  readonly expiresAt: string;
-  assertOwned(): Promise<void>;
 }
 
 export interface TaskHandler {

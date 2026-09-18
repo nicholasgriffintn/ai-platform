@@ -1,3 +1,10 @@
-import type { ApiToolDefinition } from "~/types/functions";
+import type { ToolDescriptor } from "@ngriffin_uk/polychat-library-tools";
 
-export type FunctionToolDescriptor = Omit<ApiToolDefinition, "execute" | "normaliseInput">;
+import type { IFunctionResponse } from "~/types";
+import type { ApiToolExecutionContext } from "~/types/functions";
+
+export type FunctionToolDescriptor = ToolDescriptor<
+  any,
+  IFunctionResponse,
+  ApiToolExecutionContext
+>;

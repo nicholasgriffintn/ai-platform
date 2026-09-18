@@ -1,12 +1,11 @@
 import type { AuthChallengeRecord } from "@ngriffin_uk/auth-core";
-
 import {
   decryptJsonPayload,
   encryptJsonPayload,
   isEncryptedJsonPayload,
   type EncryptedJsonPayload,
-} from "~/utils/crypto";
-import { AssistantError, ErrorType } from "~/utils/errors";
+} from "@ngriffin_uk/polychat-utility-server/crypto";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 type ChallengeMetadata = Pick<
   AuthChallengeRecord,

@@ -9,9 +9,9 @@ import {
   teammateKindSchema,
   type TeammateResponse,
 } from "@ngriffin_uk/polychat-schemas";
+import { parseJsonArrayColumn } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { Teammate } from "~/lib/database/schema";
-import { parseJsonArrayColumn } from "~/utils/json";
 
 export type StoredTeammateRow = Omit<Teammate, "mode" | "workspace_default"> & {
   mode: unknown;

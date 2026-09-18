@@ -1,7 +1,6 @@
-import { getProviderModels } from "~/lib/providers/models/catalogue";
-import { getModelIdsByOutput } from "~/utils/models";
+import { getModelIdsByOutput, getProviderModels } from "@ngriffin_uk/polychat-ai-models";
+import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 
-import { jsonSchemaToZod } from "../../../utils/jsonSchema";
 import type { FunctionToolDescriptor } from "./types";
 
 export const DEFAULT_HEIGHT = 320;

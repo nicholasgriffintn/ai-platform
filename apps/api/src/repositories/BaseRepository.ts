@@ -1,9 +1,10 @@
+import { recordD1ResultMeta } from "@ngriffin_uk/polychat-ai-billing";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import { createDatabaseClient, type DatabaseClient } from "~/lib/database/client";
 import { QueryBuilder } from "~/lib/database/QueryBuilder";
-import { recordD1ResultMeta } from "~/lib/usage/requestMeter";
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const IDENTIFIER_PATTERN = /^[A-Za-z_][A-Za-z0-9_$]*$/;
 

@@ -1,3 +1,6 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+
 import { getResearchProvider } from "~/lib/providers/capabilities/research";
 import { RepositoryManager } from "~/repositories";
 import { OutputRepository } from "~/repositories/OutputRepository";
@@ -13,8 +16,6 @@ import type {
   ParallelTaskRun,
   ExaTaskRun,
 } from "~/types";
-import { safeParseJson } from "~/utils/json";
-import { getLogger } from "~/utils/logger";
 
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";

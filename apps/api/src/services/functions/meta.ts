@@ -6,29 +6,28 @@ import {
   type MetaAssistantUiContext,
 } from "@ngriffin_uk/polychat-schemas";
 import { truncateText as truncate } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { toStringValue } from "@ngriffin_uk/polychat-utility-server/strings";
 import type z from "zod/v4";
 
-import { isMetaConversationType } from "~/lib/chat/policy/meta-assistant";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { ToolExecutionContext } from "~/lib/tools/ToolExecutionContext";
 import { listWorkAttention } from "~/services/attention";
+import { isMetaConversationType } from "~/services/chat/policy/meta-assistant";
 import { handleUpdateChatCompletion } from "~/services/completions/updateChatCompletion";
 import {
   getConversationOrganisation,
   updateConversationOrganisation,
 } from "~/services/conversation-organisation";
 import { requireConversationAccess } from "~/services/conversations/access";
-import { searchPolychat } from "~/services/global-search";
+import { searchPolychat } from "~/services/search/global";
 import { hireTeammate as hireTeammateService } from "~/services/teammates";
 import { requireProjectTeammate, requireTeammateAccess } from "~/services/teammates/access";
 import { requireProjectAccess, requireWorkspaceAccess } from "~/services/workspaces/access";
 import type { IFunctionResponse, IUser } from "~/types";
-import type { ApiToolDefinition } from "~/types/functions";
+import type { ApiToolDefinition, ApiToolExecutionContext } from "~/types/functions";
 import { isConversationUnread } from "~/utils/conversation-organisation";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { safeParseJson } from "~/utils/json";
-import { toStringValue } from "~/utils/strings";
 
 import {
   find_places as findPlacesDescriptor,
@@ -60,7 +59,7 @@ interface MetaToolScope {
   user: IUser;
 }
 
-function requireMetaScope(toolContext: ToolExecutionContext, toolName: string): MetaToolScope {
+function requireMetaScope(toolContext: ApiToolExecutionContext, toolName: string): MetaToolScope {
   const request = toolContext.request;
 
   if (!isMetaConversationType(request.request?.conversation_type)) {

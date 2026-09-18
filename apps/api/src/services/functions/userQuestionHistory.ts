@@ -1,7 +1,7 @@
 import { userQuestionSetSchema, type UserQuestion } from "@ngriffin_uk/polychat-schemas";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { Message } from "~/types";
-import { safeParseJson } from "~/utils/json";
 
 function readMessageData(message: Message): Record<string, unknown> | null {
   if (typeof message.data === "string") {

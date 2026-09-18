@@ -1,3 +1,4 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
   resolveSandboxExecutionProvider,
@@ -13,6 +14,8 @@ import {
   type SandboxRunStatus,
   SANDBOX_RUNS_CAPABILITY_ID,
 } from "@ngriffin_uk/polychat-schemas";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { parseSseBuffer } from "@ngriffin_uk/polychat-utility-server/streaming";
 
 import { MAX_STORED_STREAM_EVENTS } from "~/constants/app";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
@@ -23,9 +26,6 @@ import { notifyMobileProjectRun } from "~/services/mobile-push";
 import { TaskService } from "~/services/tasks/TaskService";
 import { persistProjectEnvironmentCacheCandidate } from "~/services/workspaces/environment-cache";
 import type { IEnv, IUser } from "~/types";
-import { safeParseJson } from "~/utils/json";
-import { getLogger } from "~/utils/logger";
-import { parseSseBuffer } from "~/utils/streaming";
 
 import { createSandboxCredentialBrokerAccess } from "./credential-broker-grants";
 import { persistSandboxRunArtifact } from "./run-artifacts";
@@ -281,7 +281,7 @@ export async function processSandboxRunDispatch(params: {
       timeoutSeconds: message.payload.timeoutSeconds ?? runData.timeoutSeconds,
       userId: user.id,
     });
-    const sandboxProvider = providerLibrary.sandbox(executionProvider, {
+    const sandboxProvider = providerLibrary.resolve("sandbox", executionProvider, {
       env,
       serviceContext: context,
       user,

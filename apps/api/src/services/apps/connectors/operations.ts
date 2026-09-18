@@ -1,11 +1,11 @@
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { listComposioConnectedAccounts } from "~/lib/providers/capabilities/connectors/composio/client";
 import { requireActiveExecutionRun } from "~/services/chat-runs/execution-authority";
 import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import {
   getSelectedRecipeConnectorAccountId,

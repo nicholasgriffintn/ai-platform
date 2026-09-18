@@ -1,13 +1,11 @@
 import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
+import { ai } from "~/lib/ai";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { getMusicProvider } from "~/lib/providers/capabilities/music";
-import { generateWithProviderFallback } from "~/lib/providers/capabilities/utils";
-import { resolveModelProvider } from "~/lib/providers/models";
-import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
+import { hasUserProviderApiKey } from "~/lib/providers/credentials";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { sanitiseInput } from "~/utils/sanitise";
 
 export interface MusicGenerationParams {
   prompt: string;
@@ -66,12 +64,11 @@ export async function generateMusic({
       };
     }
 
-    const providerName = await resolveModelProvider({
-      provider: args.provider,
-      model: args.model,
-      defaultProvider: DEFAULT_PROVIDER,
-      env: runtimeEnv,
-    });
+    const { providerName } = await ai.resolveMediaProvider(
+      "music",
+      { env: runtimeEnv, model: args.model },
+      { provider: args.provider, defaultProvider: DEFAULT_PROVIDER },
+    );
 
     if (
       runtimeUser.plan_id !== "pro" &&
@@ -99,15 +96,9 @@ export async function generateMusic({
       model: args.model,
     };
 
-    const musicData = await generateWithProviderFallback({
-      providerName,
+    const musicData = await ai.music(request, {
+      provider: providerName,
       defaultProvider: DEFAULT_PROVIDER,
-      request,
-      getProvider: (name) =>
-        getMusicProvider(name, {
-          env: runtimeEnv,
-          user: runtimeUser,
-        }),
       allowFallback: runtimeUser.plan_id === "pro",
     });
 

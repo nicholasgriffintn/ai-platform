@@ -4,10 +4,10 @@ import {
   type ChatHostedToolSettings,
   type ModelToolDefinition,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { MODEL_TOOL_DEFINITIONS } from "~/services/experiences/config";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { parseJsonRecord } from "~/utils/json";
 
 export interface StoredModelToolConfiguration {
   toolId: string;

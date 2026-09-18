@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleUnshareConversation } from "../unshareConversation";
 
-vi.mock("~/lib/conversationManager", () => ({
+vi.mock("~/services/conversations/manager", () => ({
   ConversationManager: {
     getInstance: vi.fn(),
   },
@@ -25,7 +25,7 @@ describe("handleUnshareConversation", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    const { ConversationManager } = await import("~/lib/conversationManager");
+    const { ConversationManager } = await import("~/services/conversations/manager");
 
     mockConversationManager = {
       unshareConversation: vi.fn(),

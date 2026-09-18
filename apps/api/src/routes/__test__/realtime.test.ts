@@ -1,9 +1,9 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv, IUser } from "~/types";
-import { AssistantError } from "~/utils/errors";
 
 import realtimeRoutes from "../realtime";
 
@@ -29,8 +29,12 @@ vi.mock("~/lib/providers/capabilities/realtime", () => ({
   parseRealtimeTransport: vi.fn(() => undefined),
 }));
 
-vi.mock("~/lib/providers/models", () => ({
+vi.mock("~/services/models/resolve", () => ({
   filterModelsForUserAccess: filterModelsForUserAccessMock,
+}));
+
+vi.mock("@ngriffin_uk/polychat-ai-models", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-models")>()),
   getModels: getModelsMock,
 }));
 
@@ -38,7 +42,7 @@ vi.mock("~/services/realtime/catalogue", () => ({
   listRealtimeLiveProviders: listRealtimeLiveProvidersMock,
 }));
 
-vi.mock("~/lib/realtime/proxy-grant", () => ({
+vi.mock("~/services/realtime/proxy-grant", () => ({
   assertRealtimeProxyGrant: assertRealtimeProxyGrantMock,
   connectReservedRealtimeProxy: (
     reservation: { release: () => Promise<void> },

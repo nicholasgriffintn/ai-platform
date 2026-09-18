@@ -1,9 +1,10 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+
 import { handleResearchTask, startResearchTask } from "~/services/research/task";
 import type { ResearchOptions, ParallelTaskSpec, ResearchProviderName } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import type { ApiToolDefinition } from "../../types/functions";
-import { safeParseJson } from "../../utils/json";
 import { research as researchDescriptor } from "./definitions/research";
 
 function coercePollingOptions(args: any): ResearchOptions["polling"] | undefined {

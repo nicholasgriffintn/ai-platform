@@ -1,10 +1,10 @@
 import { SKILL_SAVE_TOOL_NAME, type SaveSkillInput } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createPersonalSkill, publishProjectSkill } from "~/services/skills";
 import { buildSkillDocument } from "~/services/skills/document";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { save_skill as saveSkillDescriptor } from "./definitions/save_skill";
 import { resolveRequestProjectId } from "./request-context";

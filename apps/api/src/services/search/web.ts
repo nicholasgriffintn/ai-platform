@@ -1,8 +1,9 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
+
 import { getSearchProvider } from "~/lib/providers/capabilities/search";
-import { getAuxiliarySearchProvider } from "~/lib/providers/models";
+import { getAuxiliarySearchProvider } from "~/services/models/resolve";
 import type { IEnv, IFunctionResponse, IUser, SearchOptions, SearchProviderName } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { sanitiseInput } from "~/utils/sanitise";
 
 type WebSearchRequest = {
   env: IEnv;

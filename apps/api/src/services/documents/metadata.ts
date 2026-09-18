@@ -1,15 +1,14 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   deriveDocumentStatistics,
   documentMetadataSchema,
   type DocumentMetadata,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { ai } from "~/lib/ai";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getAuxiliaryModel } from "~/lib/providers/models";
+import { getAuxiliaryModel } from "~/services/models/resolve";
 import type { IUser } from "~/types";
-import { safeParseJson } from "~/utils/json";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/documents/metadata" });
 
@@ -21,32 +20,6 @@ const METADATA_PROMPT = `Read the document and describe it as JSON. Include:
 - sentiment: one of "positive", "neutral" or "negative", describing its tone
 
 Return only the JSON object, with no markdown fence around it.`;
-
-function readProviderText(result: unknown): string {
-  if (typeof result === "string") {
-    return result;
-  }
-
-  if (!result || typeof result !== "object") {
-    return "{}";
-  }
-
-  const record = result as { response?: unknown; choices?: unknown };
-
-  if (typeof record.response === "string") {
-    return record.response;
-  }
-
-  if (Array.isArray(record.choices)) {
-    const message = (record.choices[0] as { message?: { content?: unknown } } | undefined)?.message;
-
-    if (typeof message?.content === "string") {
-      return message.content;
-    }
-  }
-
-  return "{}";
-}
 
 export async function describeDocument({
   context,
@@ -65,25 +38,19 @@ export async function describeDocument({
 
   try {
     const { model, provider } = await getAuxiliaryModel(context.env, user);
-    const chat = getChatProvider(provider, { env: context.env, user });
-    const result = await chat.getResponse(
-      {
-        model,
-        env: context.env,
-        context,
-        messages: [
-          { role: "system", content: METADATA_PROMPT },
-          { role: "user", content: `Title: ${title}\n\n${body}` },
-        ],
-        reasoning: { effort: "none" },
-      },
-      user.id,
-    );
-    const parsed = documentMetadataSchema.safeParse(
-      safeParseJson<Record<string, unknown>>(readProviderText(result)) ?? {},
-    );
+    const { object } = await ai.generateObject({
+      env: context.env,
+      user,
+      model,
+      provider,
+      system: METADATA_PROMPT,
+      prompt: `Title: ${title}\n\n${body}`,
+      reasoning: { effort: "none" },
+      schema: documentMetadataSchema,
+      name: "document_metadata",
+    });
 
-    return { ...existing, ...(parsed.success ? parsed.data : {}), ...statistics };
+    return { ...existing, ...object, ...statistics };
   } catch (error) {
     logger.error("Could not describe a document", { error });
 

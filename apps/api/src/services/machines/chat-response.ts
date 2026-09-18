@@ -1,3 +1,4 @@
+import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 import {
   agentRuntimeVendorSchema,
   machineRunSnapshotSchema,
@@ -8,10 +9,9 @@ import {
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
 import { abortableDelay } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ChatCompletionParameters } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { extractTextFromMessageContent } from "~/utils/messages";
 
 import { callMachineRun } from "./runs";
 

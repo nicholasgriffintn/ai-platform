@@ -1,4 +1,4 @@
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 const E164_PATTERN = /^\+[1-9]\d{6,14}$/;
 const SENDER_SEPARATOR_PATTERN = /[,;\n]+/;

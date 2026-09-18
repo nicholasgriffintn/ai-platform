@@ -49,12 +49,16 @@ import {
   type ChatCompletionRequestBody,
   type SubmitChatCompletionFeedbackInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import {
+  readNumericField,
+  readRecordObjectField,
+} from "@ngriffin_uk/polychat-utility-server/record-fields";
 import { type Context, Hono, type Next } from "hono";
 import z from "zod/v4";
 
 import { requireCloudflareExecutionContext } from "~/lib/cloudflare/execution-context";
 import { getServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { addRoute } from "~/lib/http/routeBuilder";
 import { sseResponse } from "~/lib/http/streaming";
@@ -98,12 +102,11 @@ import { handleShareConversation } from "~/services/completions/shareConversatio
 import { handleUnshareConversation } from "~/services/completions/unshareConversation";
 import { handleUpdateChatCompletion } from "~/services/completions/updateChatCompletion";
 import { requireConversationAccess } from "~/services/conversations/access";
+import { ConversationManager } from "~/services/conversations/manager";
 import { cancelDelegationsForConversation } from "~/services/delegations/cancel-tree";
 import { listDelegationsWithReferences } from "~/services/delegations/list";
 import { resumeStoredTeammateInteraction } from "~/services/teammates/interaction-resume";
 import type { ChatRole, IEnv, IUser, Message } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { readNumericField, readRecordObjectField } from "~/utils/recordFields";
 
 import { registerConversationOrganisationRoutes } from "./chat-organisation";
 

@@ -2,9 +2,9 @@ import type {
   CreatePublicTaskRequest,
   TriggerMemorySynthesisRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { presentPublicTask } from "./task-presentation";
 import { TaskService } from "./TaskService";

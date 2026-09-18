@@ -2,6 +2,8 @@ import type {
   RecipeComposioTrigger,
   RecipeComposioTriggerCreateRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getConnectorProviderConfig } from "~/lib/providers/capabilities/connectors";
@@ -18,8 +20,6 @@ import {
   upsertComposioTriggerInstance,
 } from "~/services/apps/connectors/composio-trigger-client";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { parseJsonRecord } from "~/utils/json";
 
 import { getRecipeById } from ".";
 

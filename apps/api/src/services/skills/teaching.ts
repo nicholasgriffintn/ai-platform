@@ -2,11 +2,11 @@ import type {
   AuthoredSkillVersionedDocument,
   TeachingSkillDraftInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getTeammateComputerTeachingRecording } from "~/services/teammates/computers";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { redactSensitiveTokens } from "~/utils/redaction";
 
 import { getSkillDefinition } from "./catalog";
 import { buildSkillDocument } from "./document";

@@ -1,6 +1,7 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { TrainingExampleFilters } from "~/repositories/TrainingExampleRepository";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { putSageMakerS3Object, resolveSageMakerTrainingBucket } from "./trainingS3";
 

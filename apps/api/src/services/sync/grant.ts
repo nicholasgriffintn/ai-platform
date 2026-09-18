@@ -1,9 +1,9 @@
 import { importHmacSecret, signJwt, verifyJwt } from "@ngriffin_uk/auth-jwt";
 import { DEVICE_SYNC_GRANT_TTL_SECONDS } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 const DEVICE_SYNC_GRANT_AUDIENCE = "assistant-device-sync";
 const DEVICE_SYNC_GRANT_PURPOSE = "device-sync";

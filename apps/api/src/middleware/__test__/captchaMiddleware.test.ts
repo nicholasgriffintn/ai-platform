@@ -24,7 +24,8 @@ vi.mock("~/repositories", () => ({
   },
 }));
 
-vi.mock("~/utils/logger", () => ({
+vi.mock("@ngriffin_uk/polychat-ai-telemetry", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-telemetry")>()),
   getLogger: vi.fn(() => ({
     debug: vi.fn(),
     error: mocks.loggerError,

@@ -1,5 +1,5 @@
-import { bufferToBase64 } from "~/utils/base64";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 const MISTRAL_CLIENT_MESSAGE_TYPES = new Set([
   "input_audio.append",

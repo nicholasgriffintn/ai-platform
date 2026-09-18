@@ -1,3 +1,4 @@
+import { getExecutableModelsForAccount } from "@ngriffin_uk/polychat-ai-models";
 import {
   DEFAULT_MODEL_TIER,
   getLineupModelsByRuntime,
@@ -16,7 +17,6 @@ import {
   type ResolvedModelTier,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { getExecutableModelsForAccount } from "~/lib/providers/models/policy";
 import type { IUser } from "~/types";
 
 function isTierEligibleModel(model: ModelConfigItem): boolean {

@@ -11,6 +11,11 @@ import {
   type TaskNotificationCategory,
   type UpdateTaskNotificationPreferences,
 } from "@ngriffin_uk/polychat-schemas";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { TaskInboxRow } from "~/repositories/TaskNotificationRepository";
@@ -18,7 +23,6 @@ import { notifyMobileProjectTask } from "~/services/mobile-push";
 import { publishUserEvent } from "~/services/sync/conversation-events";
 import { TaskService } from "~/services/tasks/TaskService";
 import { requireProjectAccess, requireWorkAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
 
 const DEFAULT_ATTENTION_LIMIT = 50;
 

@@ -1,6 +1,6 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
 import type { SetConversationsArchivedOptions } from "~/repositories/ConversationRepository";
+import { ConversationManager } from "~/services/conversations/manager";
 
 export interface ArchiveAllChatCompletionsResult {
   success: boolean;

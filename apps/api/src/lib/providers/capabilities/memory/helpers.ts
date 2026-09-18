@@ -27,7 +27,7 @@ export function getMemoryProvider({
   memoryScope = { type: "personal" },
 }: GetMemoryProviderContext): MemoryProvider {
   if (memoryScope.type === "bound") {
-    const documents = providerLibrary.memory("documents", {
+    const documents = providerLibrary.resolve("memory", "documents", {
       env,
       user,
       userSettings,
@@ -42,7 +42,7 @@ export function getMemoryProvider({
           : "built-in"
       : undefined;
     const baseline = baselineName
-      ? providerLibrary.memory(baselineName, {
+      ? providerLibrary.resolve("memory", baselineName, {
           env,
           user,
           userSettings,
@@ -65,7 +65,7 @@ export function getMemoryProvider({
         ? userSettings.memory_provider
         : "built-in";
 
-  return providerLibrary.memory(providerName, {
+  return providerLibrary.resolve("memory", providerName, {
     env,
     user,
     userSettings,

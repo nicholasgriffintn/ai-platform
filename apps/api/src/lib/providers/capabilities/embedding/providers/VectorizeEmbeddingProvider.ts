@@ -1,4 +1,9 @@
 import type { Ai, Vectorize } from "@cloudflare/workers-types";
+import { addInfraUsage } from "@ngriffin_uk/polychat-ai-billing";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { paginate } from "@ngriffin_uk/polychat-utility-server/arrays";
+import { parseEmbeddingVectors } from "@ngriffin_uk/polychat-utility-server/embeddings";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { gatewayId } from "~/constants/app";
 import { WORKERS_EMBEDDING_MODEL } from "~/lib/providers/capabilities/embedding/constants";
@@ -7,7 +12,6 @@ import {
   requireEmbeddingScopeTag,
   withEmbeddingScopeMetadata,
 } from "~/lib/providers/capabilities/embedding/utils/scope";
-import { addInfraUsage } from "~/lib/usage/requestMeter";
 import type { RepositoryManager } from "~/repositories";
 import type {
   EmbeddingMutationResult,
@@ -18,10 +22,6 @@ import type {
   EmbeddingWriteOptions,
   NumericEmbeddingQuery,
 } from "~/types";
-import { paginate } from "~/utils/arrays";
-import { parseEmbeddingVectors } from "~/utils/embeddings";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/embedding/vectorize" });
 const MAX_VECTORIZE_DELETE_IDS = 500;

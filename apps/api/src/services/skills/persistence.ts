@@ -7,6 +7,8 @@ import type {
   AuthoredSkillState,
   AuthoredSkillVersionedDocument,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { CreateWorkspaceAuditRecordInput } from "~/repositories/AuditRepository";
@@ -16,8 +18,6 @@ import type {
   AuthoredSkillScope,
   CreateAuthoredSkillInput,
 } from "~/repositories/AuthoredSkillRepository";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 import { createSkillBundle, type SkillRevisionBundle } from "./bundle";
 import { SkillRevisionStorage } from "./storage";

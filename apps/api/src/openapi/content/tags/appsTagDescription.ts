@@ -1,4 +1,4 @@
-import { md } from "~/utils/markdown.js";
+import { md } from "@ngriffin_uk/polychat-utility-server/markdown";
 
 export const appsTagDescription = md`
 # Apps

@@ -1,8 +1,9 @@
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getAuxiliaryModel } from "~/lib/providers/models";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+
+import { ai } from "~/lib/ai";
 import { TrainingExampleRepository } from "~/repositories/TrainingExampleRepository";
+import { getAuxiliaryModel } from "~/services/models/resolve";
 import type { IEnv } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";
@@ -114,16 +115,15 @@ Respond with only a single number from 1-10 representing the quality score.`;
 
     try {
       const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env);
-      const provider = getChatProvider(providerToUse, { env, user: undefined });
-
-      const response = await provider.getResponse({
+      const response = await ai.generateText({
         env,
         model: modelToUse,
-        messages: [{ role: "user", content: prompt }],
+        provider: providerToUse,
+        prompt,
         reasoning: { effort: "none" },
       });
 
-      const scoreMatch = response.response.match(/(\d+)/);
+      const scoreMatch = response.match(/(\d+)/);
 
       if (scoreMatch) {
         const score = parseInt(scoreMatch[1], 10);
@@ -131,7 +131,7 @@ Respond with only a single number from 1-10 representing the quality score.`;
         return Math.max(1, Math.min(10, score));
       }
 
-      logger.warn(`Could not parse quality score from response: ${response.response}`);
+      logger.warn(`Could not parse quality score from response: ${response}`);
 
       return 5;
     } catch (error) {

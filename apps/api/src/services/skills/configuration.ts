@@ -1,7 +1,7 @@
 import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { listSkillAvailability, resolveSkillAvailability } from "./availability";
 import { resolveSkillCatalog } from "./catalog";

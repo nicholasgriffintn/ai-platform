@@ -1,6 +1,7 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { getErrorMessage } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/training/metadata-enhancer" });
 

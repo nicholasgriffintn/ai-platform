@@ -1,5 +1,6 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export async function requireActiveExecutionRun(context: ServiceContext): Promise<void> {
   if (!context.executionRunId || context.executionRunAttempt === undefined) {

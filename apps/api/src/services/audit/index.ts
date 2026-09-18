@@ -1,9 +1,9 @@
 import type { WorkspaceAuditRecord } from "@ngriffin_uk/polychat-schemas";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { WorkspaceAuditRecordRow } from "~/repositories/AuditRepository";
 import { requireWorkspaceAccess } from "~/services/workspaces/access";
-import { safeParseJson } from "~/utils/json";
 
 function formatAuditRecord(record: WorkspaceAuditRecordRow): WorkspaceAuditRecord {
   return {

@@ -1,188 +1,76 @@
-import { withCapabilityMetering } from "~/lib/usage/capabilityMetering";
+import { createProviderLibrary, type AIProvider } from "@ngriffin_uk/polychat-ai-providers";
 
-import { ProviderRegistry } from "./registry/ProviderRegistry";
-import { registerAudioProviders } from "./registry/registrations/audio";
-import { registerChatProviders } from "./registry/registrations/chat";
+import { withAvailableFunctions } from "~/services/chat/tools/available-functions";
+import { withCapabilityMetering } from "~/services/usage/capabilityMetering";
+import type { ChatCompletionParameters } from "~/types";
+import { fromProviderError } from "~/utils/errors";
+
+import { PolychatSandboxChatProvider } from "./capabilities/sandbox/providers/PolychatSandboxChatProvider";
+import { SageMakerProvider } from "./capabilities/training/SageMakerChatProvider";
+import { providerHost } from "./host";
 import { registerEmbeddingProviders } from "./registry/registrations/embedding";
-import { registerGuardrailProviders } from "./registry/registrations/guardrails";
-import { registerImageProviders } from "./registry/registrations/image";
 import { registerMemoryProviders } from "./registry/registrations/memory";
 import { registerMessagingProviders } from "./registry/registrations/messaging";
-import { registerMusicProviders } from "./registry/registrations/music";
-import { registerOcrProviders } from "./registry/registrations/ocr";
-import { registerRealtimeProviders } from "./registry/registrations/realtime";
-import { registerResearchProviders } from "./registry/registrations/research";
 import { registerSandboxProviders } from "./registry/registrations/sandbox";
-import { registerSearchProviders } from "./registry/registrations/search";
-import { registerSpeechProviders } from "./registry/registrations/speech";
-import { registerTranscriptionProviders } from "./registry/registrations/transcription";
-import { registerVideoProviders } from "./registry/registrations/video";
 import type {
-  ProviderCategory,
   CategoryProviderMap,
   ProviderFactoryContext,
-  ProviderRegistration,
-  ProviderSummary,
+  ProviderRegistry,
 } from "./registry/types";
 
-type CategoryBootstrapper = (registry: ProviderRegistry) => void;
-
-const DEFAULT_BOOTSTRAPPERS: Partial<Record<ProviderCategory, CategoryBootstrapper[]>> = {
-  audio: [registerAudioProviders],
-  chat: [registerChatProviders],
-  embedding: [registerEmbeddingProviders],
-  guardrails: [registerGuardrailProviders],
-  image: [registerImageProviders],
-  memory: [registerMemoryProviders],
-  messaging: [registerMessagingProviders],
-  music: [registerMusicProviders],
-  ocr: [registerOcrProviders],
-  realtime: [registerRealtimeProviders],
-  research: [registerResearchProviders],
-  sandbox: [registerSandboxProviders],
-  search: [registerSearchProviders],
-  speech: [registerSpeechProviders],
-  transcription: [registerTranscriptionProviders],
-  video: [registerVideoProviders],
-};
-
-export class ProviderLibrary {
-  private static instance: ProviderLibrary;
-  private readonly registry: ProviderRegistry;
-  private readonly bootstrappers = new Map<ProviderCategory, CategoryBootstrapper[]>();
-  private readonly bootstrappedCategories = new Set<ProviderCategory>();
-
-  private constructor(registry?: ProviderRegistry, bootstrappers = DEFAULT_BOOTSTRAPPERS) {
-    this.registry = registry ?? new ProviderRegistry();
-
-    for (const [category, categoryBootstrappers] of Object.entries(bootstrappers)) {
-      this.bootstrappers.set(category as ProviderCategory, [...(categoryBootstrappers ?? [])]);
-    }
-  }
-
-  static getInstance(): ProviderLibrary {
-    if (!ProviderLibrary.instance) {
-      ProviderLibrary.instance = new ProviderLibrary();
-    }
-
-    return ProviderLibrary.instance;
-  }
-
-  registerBootstrapper(category: ProviderCategory, bootstrapper: CategoryBootstrapper): void {
-    const existing = this.bootstrappers.get(category) ?? [];
-
-    existing.push(bootstrapper);
-    this.bootstrappers.set(category, existing);
-    this.bootstrappedCategories.delete(category);
-  }
-
-  register<TCategory extends ProviderCategory>(
-    category: TCategory,
-    registration: ProviderRegistration<CategoryProviderMap[TCategory]>,
-  ): void {
-    this.registry.register(category, registration);
-  }
-
-  resolve<TCategory extends ProviderCategory>(
-    category: TCategory,
-    providerName: string,
-    context?: ProviderFactoryContext,
-  ): CategoryProviderMap[TCategory] {
-    this.ensureBootstrapped(category);
-
-    return withCapabilityMetering(
-      category,
-      providerName,
-      this.registry.resolve(category, providerName, context),
-      context,
-    );
-  }
-
-  chat(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("chat", providerName, context);
-  }
-
-  audio(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("audio", providerName, context);
-  }
-
-  image(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("image", providerName, context);
-  }
-
-  messaging(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("messaging", providerName, context);
-  }
-
-  memory(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("memory", providerName, context);
-  }
-
-  music(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("music", providerName, context);
-  }
-
-  ocr(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("ocr", providerName, context);
-  }
-
-  realtime(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("realtime", providerName, context);
-  }
-
-  search(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("search", providerName, context);
-  }
-
-  research(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("research", providerName, context);
-  }
-
-  sandbox(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("sandbox", providerName, context);
-  }
-
-  embedding(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("embedding", providerName, context);
-  }
-
-  guardrails(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("guardrails", providerName, context);
-  }
-
-  speech(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("speech", providerName, context);
-  }
-
-  transcription(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("transcription", providerName, context);
-  }
-
-  video(providerName: string, context?: ProviderFactoryContext) {
-    return this.resolve("video", providerName, context);
-  }
-
-  list(category?: ProviderCategory): ProviderSummary[] {
-    if (category) {
-      this.ensureBootstrapped(category);
-    }
-
-    return this.registry.list(category);
-  }
-
-  private ensureBootstrapped(category: ProviderCategory): void {
-    if (this.bootstrappedCategories.has(category)) {
-      return;
-    }
-
-    const bootstrappers = this.bootstrappers.get(category) ?? [];
-
-    for (const bootstrapper of bootstrappers) {
-      bootstrapper(this.registry);
-    }
-
-    this.bootstrappedCategories.add(category);
-  }
+function registerHostChatProviders(registry: ProviderRegistry): void {
+  registry.register("chat", {
+    name: "polychat-sandbox",
+    create: () => new PolychatSandboxChatProvider(),
+    metadata: { vendor: "Polychat", categories: ["chat"], tags: ["coding"] },
+  });
+  registry.register("chat", {
+    name: "sagemaker",
+    aliases: ["aws-sagemaker-runtime"],
+    create: () => new SageMakerProvider(),
+    metadata: { vendor: "AWS", categories: ["chat"], tags: ["training"] },
+  });
 }
 
-export const providerLibrary = ProviderLibrary.getInstance();
+function prepareChatRequest(params: ChatCompletionParameters): ChatCompletionParameters {
+  return params.available_functions ? params : withAvailableFunctions(params);
+}
+
+const PREPARED_CHAT_METHODS = new Set(["getResponse", "countTokens", "getAsyncInvocationStatus"]);
+
+function withPreparedChatRequests(provider: AIProvider): AIProvider {
+  return new Proxy(provider, {
+    get(target, property, receiver) {
+      const value = Reflect.get(target, property, receiver);
+
+      if (typeof value !== "function" || !PREPARED_CHAT_METHODS.has(String(property))) {
+        return value;
+      }
+
+      return (...args: unknown[]) => {
+        const paramsIndex = property === "getAsyncInvocationStatus" ? 1 : 0;
+        const prepared = [...args];
+
+        prepared[paramsIndex] = prepareChatRequest(args[paramsIndex] as ChatCompletionParameters);
+
+        return Reflect.apply(value, target, prepared);
+      };
+    },
+  });
+}
+
+export const providerLibrary = createProviderLibrary<CategoryProviderMap, ProviderFactoryContext>({
+  host: providerHost,
+  bootstrappers: {
+    chat: [registerHostChatProviders],
+    embedding: [registerEmbeddingProviders],
+    memory: [registerMemoryProviders],
+    messaging: [registerMessagingProviders],
+    sandbox: [registerSandboxProviders],
+  },
+  decorators: {
+    chat: (_providerName, instance) => withPreparedChatRequests(instance),
+  },
+  decorate: withCapabilityMetering,
+  mapError: fromProviderError,
+});

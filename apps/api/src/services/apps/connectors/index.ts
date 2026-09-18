@@ -3,6 +3,13 @@ import type {
   RecipeConnectorProvider,
   RecipeConnectorStatus,
 } from "@ngriffin_uk/polychat-schemas";
+import {
+  decryptJsonPayload,
+  encryptJsonPayload,
+  type EncryptedJsonPayload,
+} from "@ngriffin_uk/polychat-utility-server/crypto";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
@@ -21,9 +28,6 @@ import {
   listComposioConnectedAccounts,
 } from "~/lib/providers/capabilities/connectors/composio/client";
 import type { ProviderConnectionRecord } from "~/repositories/ProviderConnectionRepository";
-import { decryptJsonPayload, encryptJsonPayload, type EncryptedJsonPayload } from "~/utils/crypto";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { safeParseJson } from "~/utils/json";
 
 import { ensureRecipeConnectorAccountReference } from "./accounts";
 import { RECIPE_CONNECTOR_CONNECTION_KIND } from "./connection-references";

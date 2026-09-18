@@ -1,8 +1,8 @@
 import { listPlatformTeammateIds, updateTeammateSchema } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { AssistantError } from "~/utils/errors";
 
 import { listScopedTeammateSummaries } from "../listing";
 import { publishTeammateToWorkspace } from "../publishTeammate";

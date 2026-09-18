@@ -1,17 +1,17 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   resolveSandboxDeliveryPolicy,
   SANDBOX_EXECUTION_PROVIDER_DEFINITIONS,
 } from "@ngriffin_uk/polychat-schemas";
 import { encodeServerSentEvent } from "@ngriffin_uk/polychat-utility-core";
+import { readResponseTextWithinLimit } from "@ngriffin_uk/polychat-utility-server/http";
+import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
+import { parseSseBuffer } from "@ngriffin_uk/polychat-utility-server/streaming";
 
 import { SSE_HEADERS } from "~/lib/http/streaming";
-import { getModelConfig } from "~/lib/providers/models";
-import { resolveProviderApiKey } from "~/lib/providers/utils/apiKeys";
+import { resolveProviderApiKey } from "~/lib/providers/credentials";
+import { getModelConfig } from "~/services/models/resolve";
 import type { IEnv, IUser } from "~/types";
-import { readResponseTextWithinLimit } from "~/utils/http";
-import { getLogger } from "~/utils/logger";
-import { redactSensitiveTokens } from "~/utils/redaction";
-import { parseSseBuffer } from "~/utils/streaming";
 
 import {
   buildHostedSandboxRunResult,

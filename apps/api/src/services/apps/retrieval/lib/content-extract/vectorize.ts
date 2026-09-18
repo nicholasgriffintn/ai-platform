@@ -1,12 +1,12 @@
 import type { InsertEmbeddingInput } from "@ngriffin_uk/polychat-schemas";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { deleteEmbedding } from "~/services/apps/embeddings/delete";
 import { insertEmbedding } from "~/services/apps/embeddings/insert";
 import { parseInsertEmbeddingRequest } from "~/services/apps/embeddings/requests";
 import { resolveRequestProjectId } from "~/services/functions/request-context";
 import type { IRequest } from "~/types";
-import { sha256Hex } from "~/utils/crypto";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import type {
   ContentExtractParams,

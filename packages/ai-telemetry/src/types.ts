@@ -1,0 +1,120 @@
+import type { AnalyticsEngineDataset, ExecutionContext } from "@cloudflare/workers-types";
+import type { AnalyticsEvent } from "@ngriffin_uk/polychat-schemas";
+import type { PostHog, PostHogOptions } from "posthog-node";
+
+export type TelemetryProperties = Record<string, unknown>;
+
+export type TelemetryEvent = Omit<AnalyticsEvent, "properties"> & {
+  distinctId: string;
+  properties?: TelemetryProperties;
+};
+
+export type TelemetryMetric = {
+  traceId: string;
+  timestamp: number;
+  type: string;
+  name: string;
+  value: number;
+  metadata: Record<string, unknown>;
+  status: string;
+  error?: string;
+};
+
+export type TelemetryLogLevel = "trace" | "debug" | "info" | "warn" | "error";
+
+export type TelemetryLogRecord = {
+  timestamp: number;
+  level: TelemetryLogLevel;
+  message: string;
+  prefix?: string;
+  attributes?: Record<string, unknown>;
+  traceId?: string;
+  spanId?: string;
+};
+
+export type TelemetrySpanStatus = "unset" | "ok" | "error";
+
+export type TelemetrySpan = {
+  traceId: string;
+  spanId: string;
+  parentSpanId?: string;
+  name: string;
+  startTime: number;
+  endTime: number;
+  status: TelemetrySpanStatus;
+  statusMessage?: string;
+  attributes: Record<string, unknown>;
+};
+
+export type TelemetryMessage = { role: string; content: unknown };
+
+export type TelemetryIdentity = {
+  user?: { id: number; email?: string | null };
+  anonymousUser?: { id: string };
+  userTrackingEnabled?: boolean | null;
+};
+
+export type AiGenerationSignal = TelemetryIdentity & {
+  traceId: string;
+  sessionId?: string;
+  spanId?: string;
+  spanName?: string;
+  model?: string;
+  provider?: string;
+  input?: TelemetryMessage[];
+  output?: TelemetryMessage;
+  usage?: Record<string, unknown>;
+  latencyMs?: number;
+  stream?: boolean;
+  properties?: TelemetryProperties;
+};
+
+export type TrainingExampleSignal = TelemetryIdentity & {
+  source: string;
+  appName: string;
+  userPrompt: string;
+  assistantResponse: string;
+  systemPrompt?: string;
+  model?: string;
+  conversationId?: string;
+  startedAt?: number;
+  previousMessages?: TelemetryMessage[];
+  metadata?: Record<string, unknown>;
+  userBehaviour?: Record<string, unknown>;
+};
+
+export type BeaconFetcher = (input: string, init: RequestInit) => Promise<Response>;
+
+export type TelemetryEnv = {
+  ANALYTICS?: AnalyticsEngineDataset;
+  POSTHOG_PROJECT_API_KEY?: string;
+  POSTHOG_HOST?: string;
+  POSTHOG_BACKEND_ENABLED?: string;
+  POSTHOG_AI_OBSERVABILITY_ENABLED?: string;
+  POSTHOG_CAPTURE_AI_CONTENT?: string;
+  AI_OBSERVABILITY_ENABLED?: string;
+  BEACON_BACKEND_ENABLED?: string;
+  BEACON_ENDPOINT?: string;
+  BEACON_SITE_ID?: string;
+  ENV?: string;
+};
+
+export interface TelemetrySink {
+  name: string;
+  capture?: (event: TelemetryEvent) => void;
+  recordMetric?: (metric: TelemetryMetric) => void;
+  captureAiGeneration?: (signal: AiGenerationSignal) => void;
+  captureTrainingExample?: (signal: TrainingExampleSignal) => void | Promise<void>;
+  log?: (record: TelemetryLogRecord) => void;
+  exportSpan?: (span: TelemetrySpan) => void;
+  flush?: () => Promise<void>;
+}
+
+export type CreateWorkerTelemetryOptions = {
+  env: TelemetryEnv;
+  executionCtx?: ExecutionContext;
+  createPostHogClient?: (apiKey: string, options: PostHogOptions) => PostHog;
+  fetcher?: BeaconFetcher;
+  now?: () => number;
+  sinks?: TelemetrySink[];
+};

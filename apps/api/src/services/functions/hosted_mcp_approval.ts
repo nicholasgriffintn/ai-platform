@@ -1,8 +1,8 @@
 import { HOSTED_MCP_APPROVAL_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import z from "zod/v4";
 
 import type { ApiToolDefinition } from "~/types/functions";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const hostedMcpApprovalInputSchema = z
   .object({

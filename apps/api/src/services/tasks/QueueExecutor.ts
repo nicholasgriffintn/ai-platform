@@ -1,3 +1,10 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import {
+  createTaskHandlerRegistry,
+  isTaskError,
+  leaseRetryDelaySeconds,
+  type TaskHandlerRegistry,
+} from "@ngriffin_uk/polychat-library-tasks";
 import {
   INFRA_RECONCILIATION_TASK_TYPE,
   PROJECT_TASK_RUN_TASK_TYPE,
@@ -13,17 +20,17 @@ import {
   TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
   TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
   USAGE_ROLLUP_TASK_TYPE,
-  type TaskType,
+  CONVERSATION_TITLE_TASK_TYPE,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 import { TaskNotificationDeliveryHandler } from "../task-notifications/delivery";
 import { ArtificialAnalysisIngestHandler } from "./handlers/ArtificialAnalysisIngestHandler";
 import { ArtificialAnalysisScoringHandler } from "./handlers/ArtificialAnalysisScoringHandler";
 import { AsyncMessagePollingHandler } from "./handlers/AsyncMessagePollingHandler";
+import { ConversationTitleHandler } from "./handlers/ConversationTitleHandler";
 import { DelegationExpiryHandler } from "./handlers/DelegationExpiryHandler";
 import { DelegationMessageHandler } from "./handlers/DelegationMessageHandler";
 import { DelegationRunHandler } from "./handlers/DelegationRunHandler";
@@ -44,7 +51,6 @@ import { TeammateContextCleanupHandler } from "./handlers/TeammateContextCleanup
 import { TeammateRunReconciliationHandler } from "./handlers/TeammateRunReconciliationHandler";
 import { TrainingQualityHandler } from "./handlers/TrainingQualityHandler";
 import { UsageRollupHandler } from "./handlers/UsageRollupHandler";
-import { TaskExecutionLeaseBusyError } from "./task-execution-lease";
 import { TaskExecutor } from "./TaskExecutor";
 import type { TaskHandler } from "./TaskHandler";
 import type { TaskMessage } from "./TaskService";
@@ -52,33 +58,34 @@ import { MAX_QUEUE_DELAY_SECONDS } from "./TaskService";
 
 const logger = getLogger({ prefix: "services/tasks/queue-executor" });
 
-export function createTaskHandlers(): Map<TaskType, TaskHandler> {
-  return new Map<TaskType, TaskHandler>([
-    ["memory_synthesis", new MemorySynthesisHandler()],
-    ["research_polling", new ResearchPollingHandler()],
-    ["replicate_polling", new ReplicatePollingHandler()],
-    ["async_message_polling", new AsyncMessagePollingHandler()],
-    ["recording_transcription_polling", new RecordingTranscriptionPollingHandler()],
-    ["training_quality_scoring", new TrainingQualityHandler()],
-    ["recipe_execution", new RecipeExecutionHandler()],
-    ["inbound_message", new InboundMessageHandler()],
-    ["artificial_analysis_ingest", new ArtificialAnalysisIngestHandler()],
-    ["artificial_analysis_scoring", new ArtificialAnalysisScoringHandler()],
-    [SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler()],
-    [PROJECT_TASK_RUN_TASK_TYPE, new ProjectTaskRunHandler()],
-    [DELEGATION_RUN_TASK_TYPE, new DelegationRunHandler()],
-    [DELEGATION_MESSAGE_TASK_TYPE, new DelegationMessageHandler()],
-    [DELEGATION_EXPIRY_TASK_TYPE, new DelegationExpiryHandler()],
-    [DELEGATION_WAKE_TASK_TYPE, new DelegationWakeHandler()],
-    [OCR_BATCH_POLLING_TASK_TYPE, new OcrBatchPollingHandler()],
-    [USAGE_ROLLUP_TASK_TYPE, new UsageRollupHandler()],
-    [REALTIME_RECONCILIATION_TASK_TYPE, new RealtimeReconciliationHandler()],
-    [INFRA_RECONCILIATION_TASK_TYPE, new InfraReconciliationHandler()],
-    [STRIPE_USAGE_SYNC_TASK_TYPE, new StripeUsageSyncHandler()],
-    [TASK_NOTIFICATION_DELIVERY_TASK_TYPE, new TaskNotificationDeliveryHandler()],
-    [TEAMMATE_RUN_RECONCILIATION_TASK_TYPE, new TeammateRunReconciliationHandler()],
-    [TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE, new TeammateContextCleanupHandler()],
-  ]);
+export function createTaskHandlers(): TaskHandlerRegistry<TaskHandler> {
+  return createTaskHandlerRegistry<TaskHandler>({
+    memory_synthesis: new MemorySynthesisHandler(),
+    research_polling: new ResearchPollingHandler(),
+    replicate_polling: new ReplicatePollingHandler(),
+    async_message_polling: new AsyncMessagePollingHandler(),
+    recording_transcription_polling: new RecordingTranscriptionPollingHandler(),
+    training_quality_scoring: new TrainingQualityHandler(),
+    recipe_execution: new RecipeExecutionHandler(),
+    inbound_message: new InboundMessageHandler(),
+    artificial_analysis_ingest: new ArtificialAnalysisIngestHandler(),
+    artificial_analysis_scoring: new ArtificialAnalysisScoringHandler(),
+    [SANDBOX_RUN_DISPATCH_TASK_TYPE]: new SandboxRunDispatchHandler(),
+    [PROJECT_TASK_RUN_TASK_TYPE]: new ProjectTaskRunHandler(),
+    [DELEGATION_RUN_TASK_TYPE]: new DelegationRunHandler(),
+    [DELEGATION_MESSAGE_TASK_TYPE]: new DelegationMessageHandler(),
+    [DELEGATION_EXPIRY_TASK_TYPE]: new DelegationExpiryHandler(),
+    [DELEGATION_WAKE_TASK_TYPE]: new DelegationWakeHandler(),
+    [OCR_BATCH_POLLING_TASK_TYPE]: new OcrBatchPollingHandler(),
+    [USAGE_ROLLUP_TASK_TYPE]: new UsageRollupHandler(),
+    [REALTIME_RECONCILIATION_TASK_TYPE]: new RealtimeReconciliationHandler(),
+    [INFRA_RECONCILIATION_TASK_TYPE]: new InfraReconciliationHandler(),
+    [STRIPE_USAGE_SYNC_TASK_TYPE]: new StripeUsageSyncHandler(),
+    [TASK_NOTIFICATION_DELIVERY_TASK_TYPE]: new TaskNotificationDeliveryHandler(),
+    [TEAMMATE_RUN_RECONCILIATION_TASK_TYPE]: new TeammateRunReconciliationHandler(),
+    [TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE]: new TeammateContextCleanupHandler(),
+    [CONVERSATION_TITLE_TASK_TYPE]: new ConversationTitleHandler(),
+  });
 }
 
 export class QueueExecutor {
@@ -116,9 +123,14 @@ export class QueueExecutor {
       } catch (error) {
         logger.error(`Error processing task ${message.body.taskId}:`, error);
 
-        if (error instanceof TaskExecutionLeaseBusyError) {
+        if (isTaskError(error, "lease_busy")) {
           message.retry({
-            delaySeconds: Math.min(error.delaySeconds, MAX_QUEUE_DELAY_SECONDS),
+            delaySeconds: Math.min(
+              leaseRetryDelaySeconds(
+                typeof error.details?.expiresAt === "string" ? error.details.expiresAt : "",
+              ),
+              MAX_QUEUE_DELAY_SECONDS,
+            ),
           });
           continue;
         }

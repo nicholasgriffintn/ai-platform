@@ -1,6 +1,6 @@
+import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 import type { ProjectTaskStatus } from "@ngriffin_uk/polychat-schemas";
 
-import { jsonSchemaToZod } from "../../../utils/jsonSchema";
 import type { FunctionToolDescriptor } from "./types";
 
 export const MODEL_SETTABLE_STATUSES: ProjectTaskStatus[] = ["backlog", "review", "cancelled"];

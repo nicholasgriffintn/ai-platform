@@ -1,4 +1,4 @@
-import { PermissionChecker } from "@ngriffin_uk/polychat-library-tool-runtime";
+import { PermissionChecker } from "@ngriffin_uk/polychat-library-tools";
 import { createChatCompletionsJsonSchema } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 

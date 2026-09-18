@@ -4,9 +4,8 @@ import {
   normaliseMcpServerLabel,
   type McpToolConfiguration,
 } from "@ngriffin_uk/polychat-schemas";
-
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { safeParseJson } from "~/utils/json";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 function uniqueServerLabel(base: string, index: number, used: Set<string>): string {
   let label = base || `server_${index + 1}`;

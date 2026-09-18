@@ -2,6 +2,7 @@ import {
   recipeConfigurationSchema,
   recipeInstallationTriggerSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { updateRecipeInstallation } from "~/services/apps/recipes";
 import {
@@ -9,7 +10,6 @@ import {
   hasSmsNotificationTrigger,
 } from "~/services/apps/recipes/notificationCapabilities";
 import { getActiveRecipeSetup } from "~/services/apps/recipes/toolContext";
-import { AssistantError } from "~/utils/errors";
 
 import type { ApiToolDefinition } from "../../../types/functions";
 import { configure_recipe as configure_recipeDescriptor } from "../definitions/recipes/configure_recipe";

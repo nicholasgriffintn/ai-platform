@@ -9,10 +9,10 @@ import {
   type GoalStatus,
   type GoalSurface,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { GoalRepository } from "~/repositories/GoalRepository";
 import type { IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const PROGRESS_JOURNAL_LIMIT = 40;
 

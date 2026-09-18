@@ -18,6 +18,7 @@ export const STRIPE_USAGE_SYNC_TASK_TYPE = "stripe_usage_sync";
 export const TASK_NOTIFICATION_DELIVERY_TASK_TYPE = "task_notification_delivery";
 export const TEAMMATE_RUN_RECONCILIATION_TASK_TYPE = "teammate_run_reconciliation";
 export const TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE = "teammate_context_cleanup";
+export const CONVERSATION_TITLE_TASK_TYPE = "conversation_title";
 
 export const TASK_TYPES = [
   "memory_synthesis",
@@ -44,6 +45,7 @@ export const TASK_TYPES = [
   TASK_NOTIFICATION_DELIVERY_TASK_TYPE,
   TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
   TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
+  CONVERSATION_TITLE_TASK_TYPE,
 ] as const;
 
 export const teammateRunReconciliationTaskDataSchema = z.object({
@@ -53,6 +55,10 @@ export const teammateRunReconciliationTaskDataSchema = z.object({
 
 export const teammateContextCleanupTaskDataSchema = z.object({
   contextIds: z.array(z.string().min(1)).min(1),
+});
+
+export const conversationTitleTaskDataSchema = z.object({
+  conversationId: z.string().min(1),
 });
 
 export const recipeExecutionTaskDataSchema = z.object({

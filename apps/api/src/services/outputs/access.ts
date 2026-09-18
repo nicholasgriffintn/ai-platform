@@ -1,8 +1,9 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { isOutputDeletionPending } from "~/lib/outputs/deletion";
 import type { OutputRecord } from "~/repositories/OutputRepository";
+import { isOutputDeletionPending } from "~/services/outputs/deletion";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const HIDDEN_OUTPUT_ERRORS = new Set([
   ErrorType.NOT_FOUND,

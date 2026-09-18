@@ -1,3 +1,5 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+
 import { createServiceContext } from "~/lib/context/serviceContext";
 import {
   handleInboundChannelMessage,
@@ -5,7 +7,6 @@ import {
   parseInboundChannelTaskData,
 } from "~/services/channels/inbound";
 import type { IEnv } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";

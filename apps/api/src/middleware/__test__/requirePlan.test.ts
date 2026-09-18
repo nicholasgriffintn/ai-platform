@@ -1,8 +1,9 @@
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 import { describe, expect, it } from "vitest";
 
 import type { IUser } from "~/types";
-import { AssistantError, handleAIServiceError } from "~/utils/errors";
+import { handleAIServiceError } from "~/utils/errors";
 
 import { requirePlan, requireUser } from "../requirePlan";
 

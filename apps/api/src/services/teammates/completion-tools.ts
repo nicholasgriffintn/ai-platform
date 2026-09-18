@@ -1,11 +1,12 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+
 import type { Teammate } from "~/lib/database/schema";
 import { request_approval, ask_user } from "~/services/functions/human_in_the_loop";
 import { messageParent } from "~/services/functions/message-parent";
 import { readTeammateSkillIds } from "~/services/teammates/teammateResponse";
 import type { AssistantPersona, AssistantPersonaExample } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
-import { safeParseJson } from "~/utils/json";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/teammates/completion-tools" });
 

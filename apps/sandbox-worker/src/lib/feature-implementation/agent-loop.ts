@@ -5,7 +5,7 @@ import {
   type AgentLoopState,
   type AgentMessage,
   type AgentToolCall,
-} from "@ngriffin_uk/polychat-library-agent-core";
+} from "@ngriffin_uk/polychat-ai-agents";
 
 import { throwIfAborted } from "../cancellation";
 import { buildSummary } from "../commands";

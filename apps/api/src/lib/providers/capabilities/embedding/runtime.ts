@@ -1,3 +1,5 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type {
   Embedder,
   EmbeddingProvider,
@@ -10,7 +12,6 @@ import type {
   VectorEmbeddingRuntime,
   VectorStore,
 } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const isNumericEmbeddingVector = (value: unknown): value is NumericEmbeddingVector => {
   const values =

@@ -5,6 +5,8 @@ vi.mock("~/services/email", () => ({
 }));
 
 import { deriveProjectColour } from "@ngriffin_uk/polychat-schemas";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
+import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
@@ -17,8 +19,6 @@ import type {
 import { WorkspaceRepository } from "~/repositories/WorkspaceRepository";
 import { assistantRecipes } from "~/services/apps/recipes/catalog";
 import { sendEmail } from "~/services/email";
-import { sha256Hex } from "~/utils/crypto";
-import { ErrorType } from "~/utils/errors";
 
 import {
   acceptWorkspaceInvitation,

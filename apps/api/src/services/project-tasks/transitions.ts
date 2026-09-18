@@ -1,6 +1,7 @@
+import { defineStatusMachine, isTaskError } from "@ngriffin_uk/polychat-library-tasks";
 import {
-  canActorSetProjectTaskStatus,
-  isTerminalProjectTaskStatus,
+  PROJECT_TASK_ACTOR_TRANSITIONS,
+  TERMINAL_PROJECT_TASK_STATUSES,
   type Goal,
   type GoalStatus,
   type ProjectTaskActor,
@@ -8,7 +9,7 @@ import {
   type ProjectTaskStatus,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { fromTaskError } from "~/utils/errors";
 
 export interface ProjectTaskStatusProjection {
   status: ProjectTaskStatus;
@@ -29,31 +30,32 @@ export function projectTaskStatusForGoal(goal: Pick<Goal, "status">): ProjectTas
   return GOAL_STATUS_PROJECTION[goal.status];
 }
 
+export const projectTaskStatusMachine = defineStatusMachine<ProjectTaskStatus, ProjectTaskActor>({
+  terminal: TERMINAL_PROJECT_TASK_STATUSES,
+  allowed: PROJECT_TASK_ACTOR_TRANSITIONS,
+  reopenBy: ["user"],
+  describeRefusal: ({ actor, from, to }) => {
+    if (actor === "model" && to === "done") {
+      return "A task is accepted by a person, not by the assistant. Move it to review instead.";
+    }
+
+    if (TERMINAL_PROJECT_TASK_STATUSES.includes(from) && actor !== "user") {
+      return "This task is already finished and only a person can reopen it";
+    }
+
+    return undefined;
+  },
+});
+
 export function assertProjectTaskTransition(params: {
   actor: ProjectTaskActor;
   from: ProjectTaskStatus;
   to: ProjectTaskStatus;
 }): void {
-  if (params.from === params.to) {
-    return;
-  }
-
-  if (!canActorSetProjectTaskStatus(params.actor, params.to)) {
-    throw new AssistantError(
-      params.actor === "model" && params.to === "done"
-        ? "A task is accepted by a person, not by the assistant. Move it to review instead."
-        : `A ${params.actor} cannot move a task to ${params.to}`,
-      ErrorType.FORBIDDEN,
-      403,
-    );
-  }
-
-  if (isTerminalProjectTaskStatus(params.from) && params.actor !== "user") {
-    throw new AssistantError(
-      "This task is already finished and only a person can reopen it",
-      ErrorType.FORBIDDEN,
-      403,
-    );
+  try {
+    projectTaskStatusMachine.assertTransition(params);
+  } catch (error) {
+    throw isTaskError(error) ? fromTaskError(error) : error;
   }
 }
 

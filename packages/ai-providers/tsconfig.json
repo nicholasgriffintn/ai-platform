@@ -1,0 +1,12 @@
+{
+  "extends": "@ngriffin_uk/polychat-config/tsconfig/library",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node", "@cloudflare/workers-types/experimental"],
+    "noUncheckedIndexedAccess": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "dist"]
+}

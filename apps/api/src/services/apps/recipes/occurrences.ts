@@ -1,12 +1,12 @@
+import { extractChatCompletionText } from "@ngriffin_uk/polychat-ai-providers";
 import type { ChatRun, TeammateContext } from "@ngriffin_uk/polychat-schemas";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { ensureConversationBrief } from "~/services/memory-documents";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import type { CreateChatCompletionsResponse, IUser } from "~/types";
-import { sha256Hex } from "~/utils/crypto";
-import { AssistantError } from "~/utils/errors";
-import { extractChatCompletionText } from "~/utils/messages";
 
 import { parseRecipeInstallationRecord } from "./index";
 

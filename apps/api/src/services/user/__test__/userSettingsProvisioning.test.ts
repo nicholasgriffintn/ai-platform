@@ -1,9 +1,9 @@
+import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import Database from "better-sqlite3";
 import { describe, expect, it } from "vitest";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
-import { bufferToBase64 } from "~/utils/base64";
 
 import { updateUserSettings } from "../userOperations";
 

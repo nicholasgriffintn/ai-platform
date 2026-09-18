@@ -1,5 +1,5 @@
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { IEnv } from "../../types";
 

@@ -38,7 +38,12 @@ vi.mock("~/services/tasks/TaskService", () => ({
 }));
 
 vi.mock("~/lib/storage/read-resource", () => ({ readPrivateFile }));
-vi.mock("~/lib/providers/capabilities/ocr/access", () => ({ requireOcrAccess }));
+vi.mock("@ngriffin_uk/polychat-ai-providers", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-providers")>()),
+  requireOcrAccess,
+}));
+vi.mock("~/lib/providers/host", () => ({ providerHost: {} }));
+vi.mock("~/lib/providers/runtime", () => ({ providerRuntime: {} }));
 vi.mock("~/services/outputs/access", () => ({ requireOutputAccess }));
 vi.mock("~/services/workspaces/access", () => ({ requireProjectAccess }));
 
@@ -106,7 +111,7 @@ describe("startOcrBatch", () => {
     );
 
     expect(result).toEqual({ outputId: "batch-output-1", status: "pending" });
-    expect(requireOcrAccess).toHaveBeenCalledWith({
+    expect(requireOcrAccess).toHaveBeenCalledWith(expect.anything(), {
       env: context.env,
       user,
       providerName: "mistral",

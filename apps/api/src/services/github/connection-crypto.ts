@@ -1,4 +1,8 @@
-import { decryptJsonPayload, encryptJsonPayload, type EncryptedJsonPayload } from "~/utils/crypto";
+import {
+  decryptJsonPayload,
+  encryptJsonPayload,
+  type EncryptedJsonPayload,
+} from "@ngriffin_uk/polychat-utility-server/crypto";
 
 export type EncryptedGitHubConnectionPayload = EncryptedJsonPayload;
 

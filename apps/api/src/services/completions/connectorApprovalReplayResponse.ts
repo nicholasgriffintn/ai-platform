@@ -1,5 +1,5 @@
-import { createEventData, encodeEventData } from "~/lib/chat/streaming/emitter";
 import type { ApprovedConnectorReplay } from "~/services/apps/connectors/approved-operation-replay";
+import { createEventData, encodeEventData } from "~/services/chat/streaming/emitter";
 import type { Message } from "~/types";
 
 export function prependConnectorReplayToStream(params: {

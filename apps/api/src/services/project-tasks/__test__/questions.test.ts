@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("~/lib/conversationManager", () => ({
+vi.mock("~/services/conversations/manager", () => ({
   ConversationManager: {
     getInstance: mocks.getInstance,
   },

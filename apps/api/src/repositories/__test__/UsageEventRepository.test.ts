@@ -1,8 +1,9 @@
+import type { UsageEventRecord } from "@ngriffin_uk/polychat-ai-billing";
 import { describe, expect, it, vi } from "vitest";
 
-import { UsageEventRepository, type UsageEventInsert } from "../UsageEventRepository";
+import { UsageEventRepository } from "../UsageEventRepository";
 
-function event(overrides: Partial<UsageEventInsert> = {}): UsageEventInsert {
+function event(overrides: Partial<UsageEventRecord> = {}): UsageEventRecord {
   return {
     id: "event-1",
     idempotency_key: "model:message-1:input_tokens",

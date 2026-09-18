@@ -1,8 +1,8 @@
 import { SANDBOX_RUNS_CAPABILITY_ID } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { publishProjectEvent } from "~/services/sync/conversation-events";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 import { BaseRepository } from "./BaseRepository";
 

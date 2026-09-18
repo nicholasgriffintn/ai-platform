@@ -1,0 +1,41 @@
+import type { ProviderStorage } from "../../../host.js";
+import type { ChatCompletionParameters } from "../../../types/index.js";
+import { BaseProvider } from "./base.js";
+
+export class OpenRouterProvider extends BaseProvider {
+  name = "openrouter";
+  supportsStreaming = true;
+  isOpenAiCompatible = false;
+
+  protected getProviderKeyName(): string {
+    return "OPENROUTER_API_KEY";
+  }
+
+  async mapParameters(
+    params: ChatCompletionParameters,
+    storageService?: ProviderStorage | null,
+    assetsUrl?: string,
+  ): Promise<Record<string, any>> {
+    const body = await this.defaultMapParameters(params, storageService, assetsUrl);
+
+    return {
+      ...body,
+      usage: { include: true },
+    };
+  }
+
+  protected validateParams(params: ChatCompletionParameters): void {
+    super.validateParams(params);
+    this.validateAiGatewayToken(params);
+  }
+
+  protected async getEndpoint(): Promise<string> {
+    return "v1/chat/completions";
+  }
+
+  protected async getHeaders(params: ChatCompletionParameters): Promise<Record<string, string>> {
+    const apiKey = await this.getApiKey(params, params.context?.user?.id);
+
+    return this.buildAiGatewayHeaders(params, apiKey);
+  }
+}

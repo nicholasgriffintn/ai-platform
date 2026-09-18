@@ -1,22 +1,19 @@
-import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
-
 import {
   availableModalities,
-  filterModelsForUserAccess,
   getAvailableStrengths,
-  getModelConfig,
   getModels,
   getModelsByCapability,
   getModelsByModality,
   getModelsByOutputModality,
-} from "~/lib/providers/models";
-import {
   getExecutableModelsForAccount,
   tryResolveDefaultChatModel,
-} from "~/lib/providers/models/policy";
+} from "@ngriffin_uk/polychat-ai-models";
+import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import { RepositoryManager } from "~/repositories";
+import { filterModelsForUserAccess, getModelConfig } from "~/services/models/resolve";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { resolveModelReadiness } from "./readiness";
 
@@ -44,19 +41,14 @@ const CATALOGUE_EXCLUDED_MODALITIES = [
 export function listModelCatalogue() {
   return includeModelIds(
     getModels({
-      shouldUseCache: false,
       excludeModalities: [...CATALOGUE_EXCLUDED_MODALITIES],
       chatSurfaceOnly: true,
     }),
   );
 }
 
-/**
- * List all models available to the user.
- */
 export async function listModels(env: IEnv, user?: IUser): Promise<ModelConfig> {
   const allModels = getModels({
-    shouldUseCache: false,
     excludeModalities: [...CATALOGUE_EXCLUDED_MODALITIES],
     chatSurfaceOnly: true,
   });
@@ -87,16 +79,10 @@ export async function listModels(env: IEnv, user?: IUser): Promise<ModelConfig> 
   );
 }
 
-/**
- * Get all capabilities.
- */
 export function listStrengths() {
   return getAvailableStrengths();
 }
 
-/**
- * Filter models by capability and user access.
- */
 export async function listModelsByStrength(env: IEnv, capability: string, userId?: number) {
   const models = getModelsByCapability(capability);
   const filteredModels = await filterModelsForUserAccess(models, env, userId, {
@@ -107,16 +93,10 @@ export async function listModelsByStrength(env: IEnv, capability: string, userId
   return includeModelIds(filteredModels);
 }
 
-/**
- * Get all model modalities.
- */
 export function listModalities() {
   return availableModalities;
 }
 
-/**
- * Filter models by modality and user access.
- */
 export async function listModelsByModality(env: IEnv, modality: string, userId?: number) {
   const models = getModelsByModality(modality as (typeof availableModalities)[number]);
   const filteredModels = await filterModelsForUserAccess(models, env, userId, {
@@ -127,9 +107,6 @@ export async function listModelsByModality(env: IEnv, modality: string, userId?:
   return includeModelIds(filteredModels);
 }
 
-/**
- * Filter models by output modality and user access.
- */
 export async function listModelsByOutputModality(env: IEnv, modality: string, userId?: number) {
   const models = getModelsByOutputModality(modality as (typeof availableModalities)[number]);
   const filteredModels = await filterModelsForUserAccess(models, env, userId, {
@@ -142,9 +119,6 @@ export async function listModelsByOutputModality(env: IEnv, modality: string, us
 
 export { resolveTierLineup } from "./tiers";
 
-/**
- * Get model details by ID if user has access.
- */
 export async function getModelDetails(env: IEnv, id: string, userId?: number) {
   const model = await getModelConfig(id, env, undefined, userId);
 

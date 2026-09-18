@@ -34,14 +34,14 @@ jobs:
         env:
           POLYCHAT_API_KEY: ${{ secrets.POLYCHAT_MODEL_ANALYSIS_TASK_API_KEY }}
           POLYCHAT_API_BASE_URL: https://api.polychat.app
-        run: pnpm --filter @assistant/api models:sync --write --verbose
+        run: pnpm --filter @ngriffin_uk/polychat-library-model-catalogue models:sync --write --verbose
       - name: Commit model updates
         id: sync-commit
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: chore/sync-models-dev
         run: |
-          if git diff --quiet -- apps/api/src/data-model/models; then
+          if git diff --quiet -- packages/library-model-catalogue/src/data; then
             echo "No model updates to commit."
             echo "committed=false" >> "${GITHUB_OUTPUT}"
             exit 0
@@ -50,7 +50,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "${BRANCH}"
-          git add apps/api/src/data-model/models
+          git add packages/library-model-catalogue/src/data
           git commit -m "chore(models): sync models.dev"
           commit_sha="$(git rev-parse HEAD)"
           git push --force origin "${BRANCH}"

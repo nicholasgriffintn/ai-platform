@@ -11,24 +11,24 @@ import type {
   SharedOutput,
   UpdateOutputInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId, randomHex } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import {
-  isOutputDeletionPending,
-  parseOutputContent as parseContent,
-} from "~/lib/outputs/deletion";
-import { createOutputProvenance, parseOutputProvenance } from "~/lib/provenance/output";
 import type {
   OutputRecord,
   OutputRevisionRecord,
   OutputShareRecord,
 } from "~/repositories/OutputRepository";
 import { recordProjectAudit } from "~/services/audit";
+import {
+  isOutputDeletionPending,
+  parseOutputContent as parseContent,
+} from "~/services/outputs/deletion";
+import { createOutputProvenance, parseOutputProvenance } from "~/services/outputs/provenance";
 import { requireSourceAccess } from "~/services/sources";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { sha256Hex } from "~/utils/crypto";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId, randomHex } from "~/utils/id";
 
 import { requireConversationScope, requireOutputAccess, requireOutputRecordAccess } from "./access";
 import { deleteOutputResources } from "./delete-resources";

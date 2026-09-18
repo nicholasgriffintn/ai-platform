@@ -2,7 +2,7 @@ import { globalSearchQuerySchema, globalSearchResponseSchema } from "@ngriffin_u
 import { Hono } from "hono";
 
 import { addRoute } from "~/lib/http/routeBuilder";
-import { searchPolychat } from "~/services/global-search";
+import { searchPolychat } from "~/services/search/global";
 
 const app = new Hono();
 

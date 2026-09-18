@@ -1,12 +1,13 @@
-import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
+import { isAsyncInvocationPending } from "@ngriffin_uk/polychat-ai-providers";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
 import { hydrateConnectorApprovalMessageState } from "~/services/apps/connectors/approval-message-state";
 import { hydrateChatRunUsage } from "~/services/chat-runs/usage";
 import {
   getActiveThreadOperation,
   withThreadLockIfFree,
 } from "~/services/conversations/coordinator/client";
+import { ConversationManager } from "~/services/conversations/manager";
 import type { Message } from "~/types";
 
 import { handleAsyncInvocation } from "./async/handler";

@@ -5,8 +5,7 @@ import {
   HindsightMemoryProvider,
   HonchoMemoryProvider,
 } from "../../capabilities/memory/providers";
-import type { ProviderRegistry } from "../ProviderRegistry";
-import type { ProviderRegistration } from "../types";
+import type { ProviderRegistration, ProviderRegistry } from "../types";
 import { ensureEnv, ensureUser } from "./utils";
 
 const HINDSIGHT_API_BASE_URL = "https://api.hindsight.vectorize.io";

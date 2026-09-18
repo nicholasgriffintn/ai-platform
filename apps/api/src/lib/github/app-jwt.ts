@@ -1,8 +1,12 @@
 import { createPrivateKey, createSign } from "node:crypto";
 
-import { encodeBase64Url } from "~/utils/base64url";
-import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
-import { stripSurroundingQuotes } from "~/utils/strings";
+import { encodeBase64Url } from "@ngriffin_uk/polychat-utility-server/base64url";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
+import { stripSurroundingQuotes } from "@ngriffin_uk/polychat-utility-server/strings";
 
 const APP_JWT_EXP_SECONDS = 9 * 60;
 

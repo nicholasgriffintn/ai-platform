@@ -1,7 +1,8 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { AuthoredSkillScope } from "~/repositories/AuthoredSkillRepository";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { parseUserSkillDocument, SkillDocumentError } from "./document";
 import { SKILL_CAPABILITY_KIND } from "./scope";

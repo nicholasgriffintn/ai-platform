@@ -1,11 +1,11 @@
 import type { SandboxConnection } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getGitHubAppInstallationToken } from "~/lib/github";
 import { githubApiRequest } from "~/lib/github/api-client";
 import type { ProviderConnectionRecord } from "~/repositories/ProviderConnectionRepository";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { safeParseJson } from "~/utils/json";
 
 import {
   decryptGitHubConnectionPayload,

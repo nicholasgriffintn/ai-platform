@@ -1,0 +1,62 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "maxTokens": 10000,
+    "modalities": {
+      "input": ["text"],
+      "output": ["text"]
+    },
+    "strengths": ["tool_use"],
+    "contextComplexity": 3,
+    "reliability": 1,
+    "knowledgeCutoffDate": "October 2024",
+    "releaseDate": "December 3, 2024",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 4.7,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 4.1
+    }
+  },
+  "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+  "models": {
+    "nova-micro": {
+      "defaults": {
+        "name": "Nova Micro",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation"
+      }
+    },
+    "nova-micro-1-0": {
+      "defaults": {
+        "name": "Nova Micro 1.0",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "maxTokens": 5120,
+        "knowledgeCutoffDate": "October 31, 2024",
+        "releaseDate": "December 5, 2024",
+        "supportsResponseFormat": false
+      }
+    },
+    "nova-micro-apac": {
+      "defaults": {
+        "name": "Nova Micro (APAC)",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation"
+      }
+    },
+    "nova-micro-eu": {
+      "defaults": {
+        "name": "Nova Micro (EU)",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation"
+      }
+    },
+    "nova-micro-us": {
+      "defaults": {
+        "name": "Nova Micro (US)",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation"
+      }
+    }
+  }
+}

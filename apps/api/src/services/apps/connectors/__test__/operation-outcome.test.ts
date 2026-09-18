@@ -1,7 +1,7 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it } from "vitest";
 
 import type { ConnectorOperationConfig } from "~/lib/providers/capabilities/connectors";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { normaliseConnectorOperationFailure } from "../operation-outcome";
 

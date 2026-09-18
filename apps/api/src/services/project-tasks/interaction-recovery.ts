@@ -1,8 +1,8 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import { buildMessageParts } from "~/lib/chat/messages/parts";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { ConversationWriteFence } from "~/lib/conversation/write-fence";
+import { buildMessageParts } from "~/services/chat/messages/parts";
+import type { ConversationWriteFence } from "~/services/conversations/write-fence";
 import type { Message } from "~/types";
 
 import { readInteractionMessageData } from "./interaction-messages";

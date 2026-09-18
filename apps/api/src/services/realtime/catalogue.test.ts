@@ -2,8 +2,8 @@ import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schem
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import * as apiKeyUtils from "~/lib/providers/credentials";
 import { providerLibrary } from "~/lib/providers/library";
-import * as apiKeyUtils from "~/lib/providers/utils/apiKeys";
 import * as modelsService from "~/services/models";
 
 import { listRealtimeLiveProviders, resolveRealtimeProviderReadiness } from "./catalogue";
@@ -30,7 +30,9 @@ describe("realtime provider catalogue", () => {
 
     expect(registrations).toHaveLength(5);
     for (const registration of registrations) {
-      expect(providerLibrary.realtime(registration.name).descriptor.id).toBe(registration.name);
+      expect(providerLibrary.resolve("realtime", registration.name, {}).descriptor.id).toBe(
+        registration.name,
+      );
     }
   });
 
@@ -69,7 +71,7 @@ describe("realtime provider catalogue", () => {
     const registrations = providerLibrary.list("realtime");
     const models: Awaited<ReturnType<typeof modelsService.listModels>> = Object.fromEntries(
       registrations.map(({ name }) => {
-        const providerDescriptor = providerLibrary.realtime(name).descriptor;
+        const providerDescriptor = providerLibrary.resolve("realtime", name, {}).descriptor;
 
         return [
           providerDescriptor.defaultModelId,
@@ -105,7 +107,7 @@ describe("realtime provider catalogue", () => {
     const registrations = providerLibrary.list("realtime");
     const models: Awaited<ReturnType<typeof modelsService.listModels>> = Object.fromEntries(
       registrations.map(({ name }) => {
-        const providerDescriptor = providerLibrary.realtime(name).descriptor;
+        const providerDescriptor = providerLibrary.resolve("realtime", name, {}).descriptor;
 
         return [
           providerDescriptor.defaultModelId,

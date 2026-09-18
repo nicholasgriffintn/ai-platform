@@ -1,5 +1,6 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { EmbeddingScopeOptions } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const hasKeys = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object" && Object.keys(value).length > 0;

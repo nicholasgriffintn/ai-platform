@@ -1,3 +1,4 @@
+import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 import {
   recipeConnectorProviderSchema,
   type RecipeConnectorProvider,
@@ -5,7 +6,6 @@ import {
 
 import { COMPOSIO_CONNECTOR_SESSION_HANDLE_PATTERN } from "~/lib/providers/capabilities/connectors/composio/session-handle";
 
-import { jsonSchemaToZod } from "../../../../utils/jsonSchema";
 import type { FunctionToolDescriptor } from "../types";
 
 export function createUseRecipeConnectorInputSchema(

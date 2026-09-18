@@ -1,11 +1,12 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
+import { ai } from "~/lib/ai";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getAuxiliaryModel } from "~/lib/providers/models";
 import type { TranscriptionProvider } from "~/services/audio/transcribe";
 import { handleTranscribe } from "~/services/audio/transcribe";
 import { resolveAuthorisedTranscriptionSource } from "~/services/audio/transcription-input";
+import { getAuxiliaryModel } from "~/services/models/resolve";
 import type { IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export async function generateDocumentFromMedia({
   context,
@@ -151,27 +152,20 @@ ${extraPrompt ? `Additional context: ${extraPrompt}` : ""}`;
 
     const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
 
-    const provider = getChatProvider(providerToUse, { env, user });
     const userPrompt = `${extraPrompt ? `${extraPrompt}\n\n` : ""}Transcript:\n\n${transcriptText}`;
+    const content = await ai.generateText({
+      env,
+      user,
+      model: modelToUse,
+      provider: providerToUse,
+      system: notePrompt,
+      prompt: userPrompt,
+      reasoning: { effort: "none" },
+    });
 
-    const aiResult = await provider.getResponse(
-      {
-        model: modelToUse,
-        env,
-        context,
-        messages: [
-          { role: "system", content: notePrompt },
-          { role: "user", content: userPrompt },
-        ],
-        reasoning: { effort: "none" },
-      },
-      user.id,
-    );
-
-    const content =
-      aiResult?.response ||
-      (Array.isArray(aiResult.choices) && aiResult.choices[0]?.message?.content) ||
-      (typeof aiResult === "string" ? aiResult : JSON.stringify(aiResult));
+    if (!content) {
+      throw new AssistantError("Empty notes returned", ErrorType.EXTERNAL_API_ERROR);
+    }
 
     return { content };
   } catch (error) {

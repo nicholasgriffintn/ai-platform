@@ -1,7 +1,6 @@
 import type { Goal } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import { AssistantError } from "~/utils/errors";
 
 import { GoalService } from "../GoalService";
 

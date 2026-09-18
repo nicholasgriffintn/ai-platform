@@ -1,9 +1,9 @@
+import { ANONYMOUS_PLAN_ID, resolvePlanAllowanceCredits } from "@ngriffin_uk/polychat-ai-billing";
 import type { PlanCreditsUpdate } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { ANONYMOUS_PLAN_ID, resolvePlanAllowanceCredits } from "~/lib/usage/planSeed";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 function toPublicPlan(plan: Record<string, unknown>) {
   const allowance =

@@ -1,4 +1,5 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
+import { formatToolCalls } from "@ngriffin_uk/polychat-ai-providers";
 import {
   PROJECT_TASK_INTERACTION_TOOL_IDS,
   teammateRunConfigurationSchema,
@@ -10,17 +11,16 @@ import {
   type TeammateInvocation,
   type TeammateRunConfiguration,
 } from "@ngriffin_uk/polychat-schemas";
+import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { formatToolCalls } from "~/lib/chat/tools/provider-tool-definitions";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { findModelConfig, getDefaultChatModel } from "~/lib/providers/models";
 import { readToolInteractionId } from "~/services/chat-runs/interactions";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { resolveDelegationContinuation } from "~/services/delegations/continuation";
+import { findModelConfig, getDefaultChatModel } from "~/services/models/resolve";
 import { resolveChatProjectAccess } from "~/services/workspaces/chatProjectAccess";
 import type { CoreChatOptions, IEnv, IUser } from "~/types";
-import { intersectEnabledTools } from "~/utils/enabledTools";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { requireTeammateAccess } from "./access";
 import { prepareTeammateCompletionRequest } from "./completion-request";

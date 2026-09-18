@@ -1,45 +1,16 @@
-import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
-  EmbeddingProvider,
-  GuardrailsProvider,
-  IEnv,
-  MemoryScope,
-  IUser,
-  IUserSettings,
-  ResearchProvider,
-  SearchProvider,
-} from "~/types";
+  AiProviderMap,
+  ProviderCategoryOf,
+  ProviderRegistration as GenericProviderRegistration,
+  ProviderRegistry as GenericProviderRegistry,
+} from "@ngriffin_uk/polychat-ai-providers";
 
-import type { AudioProvider } from "../capabilities/audio";
-import type { AIProvider } from "../capabilities/chat/providers/base";
-import type { ImageProvider } from "../capabilities/image";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { EmbeddingProvider, IEnv, MemoryScope, IUser, IUserSettings } from "~/types";
+
 import type { MemoryProvider } from "../capabilities/memory";
 import type { MessagingProvider } from "../capabilities/messaging";
-import type { MusicProvider } from "../capabilities/music";
-import type { OcrProvider } from "../capabilities/ocr/types";
-import type { RealtimeProvider } from "../capabilities/realtime";
 import type { SandboxProvider } from "../capabilities/sandbox";
-import type { SpeechProvider } from "../capabilities/speech";
-import type { TranscriptionProvider } from "../capabilities/transcription";
-import type { VideoProvider } from "../capabilities/video";
-
-export type ProviderCategory =
-  | "audio"
-  | "chat"
-  | "embedding"
-  | "guardrails"
-  | "image"
-  | "memory"
-  | "messaging"
-  | "music"
-  | "ocr"
-  | "realtime"
-  | "research"
-  | "sandbox"
-  | "search"
-  | "speech"
-  | "transcription"
-  | "video";
 
 export interface ProviderFactoryContext {
   env?: IEnv;
@@ -51,48 +22,18 @@ export interface ProviderFactoryContext {
   memoryScope?: MemoryScope;
 }
 
-export interface ProviderMetadata {
-  vendor?: string;
-  description?: string;
-  website?: string;
-  models?: string[];
-  defaultModel?: string;
-  categories?: ProviderCategory[];
-  tags?: string[];
-}
-
-export type ProviderLifecycle = "singleton" | "transient";
-
-export interface ProviderRegistration<TInstance> {
-  name: string;
-  aliases?: string[];
-  lifecycle?: ProviderLifecycle;
-  metadata?: ProviderMetadata;
-  create: (context: ProviderFactoryContext) => TInstance;
-}
-
-export type CategoryProviderMap = {
-  audio: AudioProvider;
-  chat: AIProvider;
+export type CategoryProviderMap = AiProviderMap & {
   embedding: EmbeddingProvider;
-  guardrails: GuardrailsProvider;
-  image: ImageProvider;
   memory: MemoryProvider;
   messaging: MessagingProvider;
-  music: MusicProvider;
-  ocr: OcrProvider;
-  realtime: RealtimeProvider;
-  research: ResearchProvider;
   sandbox: SandboxProvider;
-  search: SearchProvider;
-  speech: SpeechProvider;
-  transcription: TranscriptionProvider;
-  video: VideoProvider;
 };
 
-export interface ProviderSummary {
-  name: string;
-  category: ProviderCategory;
-  aliases?: string[];
-  metadata?: ProviderMetadata;
-}
+export type ProviderCategory = ProviderCategoryOf<CategoryProviderMap>;
+
+export type ProviderRegistration<TInstance> = GenericProviderRegistration<
+  TInstance,
+  ProviderFactoryContext
+>;
+
+export type ProviderRegistry = GenericProviderRegistry<CategoryProviderMap, ProviderFactoryContext>;

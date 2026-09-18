@@ -1,14 +1,14 @@
-import { createServiceContext } from "~/lib/context/serviceContext";
-import type { ConversationManager } from "~/lib/conversationManager";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getAuxiliaryModel } from "~/lib/providers/models";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
+import z from "zod/v4";
+
+import { ai } from "~/lib/ai";
+import type { ConversationManager } from "~/services/conversations/manager";
+import { getAuxiliaryModel } from "~/services/models/resolve";
 import { handleWebSearch } from "~/services/search/web";
 import type { IEnv, IUser, SearchOptions, SearchProviderName } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { sanitiseInput } from "~/utils/sanitise";
 
-import { safeParseJson } from "../../../utils/json";
 import {
   webSearchAnswerSystemPrompt,
   webSearchSimilarQuestionsSystemPrompt,
@@ -36,10 +36,8 @@ export async function performDeepWebSearch(
   }
 
   const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
-  const provider = getChatProvider(providerToUse, { env, user });
-  const context = createServiceContext({ env, user });
 
-  const [webSearchResults, similarQuestionsResponse] = await Promise.all([
+  const [webSearchResults, similarQuestions] = await Promise.all([
     handleWebSearch({
       provider: searchProvider,
       query: query,
@@ -53,46 +51,22 @@ export async function performDeepWebSearch(
       user: user,
     }),
 
-    (async () => {
-      return provider.getResponse({
-        env: env,
-        context,
+    ai
+      .generateObject({
+        env,
+        user,
         completion_id,
         model: modelToUse,
+        provider: providerToUse,
+        name: "similar_questions",
+        schema: z.object({ questions: z.array(z.string()) }),
+        system: webSearchSimilarQuestionsSystemPrompt(),
+        prompt: query,
         max_tokens: 1024,
-        messages: [
-          {
-            role: "system",
-            content: webSearchSimilarQuestionsSystemPrompt(),
-          },
-          {
-            role: "user",
-            content: query,
-          },
-        ],
         store: false,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "similar_questions",
-            strict: true,
-            schema: {
-              type: "object",
-              properties: {
-                questions: {
-                  type: "array",
-                  items: {
-                    type: "string",
-                  },
-                },
-              },
-              required: ["questions"],
-              additionalProperties: false,
-            },
-          },
-        },
-      });
-    })(),
+      })
+      .then((result) => result.object.questions)
+      .catch(() => []),
   ]);
 
   const searchData = webSearchResults.data || {};
@@ -125,25 +99,6 @@ export async function performDeepWebSearch(
     };
   });
 
-  const hasSimarQuestions =
-    similarQuestionsResponse?.response &&
-    Array.isArray(similarQuestionsResponse.response.questions);
-  const isContentAnStringifiedArray =
-    typeof similarQuestionsResponse?.response === "string" &&
-    similarQuestionsResponse.response.trim().startsWith("[") &&
-    similarQuestionsResponse.response.trim().endsWith("]");
-  let similarQuestions: string[] = [];
-
-  if (hasSimarQuestions) {
-    similarQuestions = similarQuestionsResponse.response.questions;
-  } else if (isContentAnStringifiedArray) {
-    const parsed = safeParseJson(similarQuestionsResponse.response) as string[];
-
-    if (Array.isArray(parsed)) {
-      similarQuestions = parsed;
-    }
-  }
-
   const completion_id_with_fallback = completion_id || generateId();
   const new_completion_id = `${completion_id_with_fallback}-answer`;
 
@@ -172,22 +127,15 @@ export async function performDeepWebSearch(
     });
   }
 
-  const answerResponse = await provider.getResponse({
-    env: env,
-    context,
+  const answer = await ai.generateText({
+    env,
+    user,
     completion_id,
     model: modelToUse,
+    provider: providerToUse,
+    system: systemPrompt,
+    prompt: query,
     max_tokens: 2048,
-    messages: [
-      {
-        role: "system",
-        content: systemPrompt,
-      },
-      {
-        role: "user",
-        content: query,
-      },
-    ],
     store: false,
   });
 
@@ -196,7 +144,7 @@ export async function performDeepWebSearch(
       role: "tool",
       content: "Web search completed",
       data: {
-        answer: answerResponse.response,
+        answer,
         sources,
         provider: providerUsed,
         providerWarning,
@@ -216,7 +164,7 @@ export async function performDeepWebSearch(
   }
 
   return {
-    answer: answerResponse.response,
+    answer,
     similarQuestions,
     sources,
     provider: providerUsed,

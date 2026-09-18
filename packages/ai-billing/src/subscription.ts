@@ -1,0 +1,23 @@
+export type SubscriptionPlanId = "free" | "pro";
+
+export const ENTITLED_SUBSCRIPTION_STATUSES: readonly string[] = ["active", "trialing"];
+
+const REVOKED_SUBSCRIPTION_STATUSES: ReadonlySet<string> = new Set([
+  "past_due",
+  "unpaid",
+  "incomplete_expired",
+  "paused",
+  "canceled",
+]);
+
+export function resolvePlanForSubscriptionStatus(status: string): SubscriptionPlanId | null {
+  if (ENTITLED_SUBSCRIPTION_STATUSES.includes(status)) {
+    return "pro";
+  }
+
+  if (REVOKED_SUBSCRIPTION_STATUSES.has(status)) {
+    return "free";
+  }
+
+  return null;
+}

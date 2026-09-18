@@ -1,4 +1,13 @@
 import {
+  resolveUsageBalanceSnapshot,
+  userCreditActor,
+  type CreditActor,
+  usageCreditsFromBalance,
+  recordOffPlatformRunUsage,
+  toSummaryGroups,
+  totalUsageGroups,
+} from "@ngriffin_uk/polychat-ai-billing";
+import {
   creditsFromCreditMicros,
   usagePeriodFromDate,
   usagePeriodResetsAt,
@@ -11,11 +20,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { resolveUsageBalanceSnapshot } from "~/lib/usage/balanceSnapshot";
-import { userCreditActor, type CreditActor } from "~/lib/usage/creditActor";
-import { usageCreditsFromBalance } from "~/lib/usage/creditSummary";
-import { recordOffPlatformRunUsage } from "~/lib/usage/modelUsage";
-import { toSummaryGroups, totalUsageGroups } from "~/lib/usage/summary";
+import { createUsageRuntime, createUsageStore } from "~/services/usage/runtime";
 import { decodeCompositeCursor, encodeCompositeCursor } from "~/utils/cursor";
 
 const DEFAULT_EVENT_PAGE_SIZE = 25;
@@ -25,15 +30,16 @@ export async function recordOffPlatformUsage(
   userId: number,
   input: RecordOffPlatformUsageRequest,
 ): Promise<{ success: true; message: string }> {
-  await recordOffPlatformRunUsage({
-    env: context.env,
-    repositories: context.repositories,
-    actor: userCreditActor(userId),
-    provenance: input.provenance,
-    completionId: input.completion_id,
-    conversationId: input.completion_id,
-    messageId: input.message_id,
-  });
+  await recordOffPlatformRunUsage(
+    createUsageRuntime({ env: context.env, repositories: context.repositories }),
+    {
+      actor: userCreditActor(userId),
+      provenance: input.provenance,
+      completionId: input.completion_id,
+      conversationId: input.completion_id,
+      messageId: input.message_id,
+    },
+  );
 
   return { success: true, message: "Off-platform run recorded" };
 }
@@ -43,7 +49,11 @@ export async function getUsageBalance(
   actor: CreditActor,
   period = usagePeriodFromDate(),
 ): Promise<UsageBalanceResponse> {
-  const balance = await resolveUsageBalanceSnapshot(context.repositories, actor, period);
+  const balance = await resolveUsageBalanceSnapshot(
+    createUsageStore(context.repositories),
+    actor,
+    period,
+  );
 
   const included = balance.included_credit_micros;
   const grace = balance.grace_credit_micros;

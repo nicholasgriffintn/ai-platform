@@ -1,22 +1,25 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { ChatCompletionRequestBody } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import { processChatRequest } from "~/lib/chat/core";
-import { formatAssistantMessage } from "~/lib/chat/messages/assistant-format";
-import { buildMessageParts } from "~/lib/chat/messages/parts";
+import { createServiceContext } from "~/lib/context/serviceContext";
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import { sseResponse } from "~/lib/http/streaming";
+import type { ConnectorOperationApprovalRecord } from "~/repositories/ConnectorOperationApprovalRepository";
+import { replayApprovedConnectorOperation } from "~/services/apps/connectors/approved-operation-replay";
+import { processChatRequest } from "~/services/chat/core";
+import { formatAssistantMessage } from "~/services/chat/messages/assistant-format";
+import { buildMessageParts } from "~/services/chat/messages/parts";
 import {
   toProviderMessages,
   toProviderResponseMessagePartSource,
   toProviderResponseMessages,
-} from "~/lib/chat/messages/provider-mapping";
-import { buildChatPostProcessing } from "~/lib/chat/streaming/post-processing";
-import { createServiceContext } from "~/lib/context/serviceContext";
-import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
-import { sseResponse } from "~/lib/http/streaming";
-import type { ConnectorOperationApprovalRecord } from "~/repositories/ConnectorOperationApprovalRepository";
-import { replayApprovedConnectorOperation } from "~/services/apps/connectors/approved-operation-replay";
+} from "~/services/chat/messages/provider-mapping";
+import { buildChatPostProcessing } from "~/services/chat/streaming/post-processing";
 import { withThreadLock } from "~/services/conversations/coordinator/client";
+import { ConversationManager } from "~/services/conversations/manager";
 import { prepareTeammateRunResume } from "~/services/teammates/run-resume";
 import type {
   AnonymousUser,
@@ -25,9 +28,6 @@ import type {
   IEnv,
   IUser,
 } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
 
 import { prependConnectorReplayToStream } from "./connectorApprovalReplayResponse";
 import { normaliseChatCompletionRequest } from "./normaliseChatCompletionRequest";

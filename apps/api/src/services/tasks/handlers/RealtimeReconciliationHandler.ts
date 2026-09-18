@@ -1,14 +1,17 @@
+import {
+  userCreditActor,
+  emitUsageEvents,
+  finishUsageReservation,
+  type UsageEventDraft,
+} from "@ngriffin_uk/polychat-ai-billing";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { rateEntriesFromModelConfig } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import { getModelConfig } from "~/lib/providers/models";
-import { userCreditActor } from "~/lib/usage/creditActor";
-import { emitUsageEvents, type UsageEventDraft } from "~/lib/usage/ledger";
-import { finishUsageReservation } from "~/lib/usage/reservations";
-import { RepositoryManager } from "~/repositories";
+import { getModelConfig } from "~/services/models/resolve";
 import type { RealtimeReconciliationPayload } from "~/services/realtime/sessionUsage";
+import { createUsageRuntime } from "~/services/usage/runtime";
 import type { IEnv } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";
@@ -48,13 +51,11 @@ export class RealtimeReconciliationHandler implements TaskHandler {
     }
 
     try {
-      const repositories = new RepositoryManager(env);
-      const reservation = await finishUsageReservation({
-        repositories,
+      const runtime = createUsageRuntime({ env });
+      const reservation = await finishUsageReservation(runtime, {
         kind: "realtime",
         refId: payload.sessionId,
         outcome: "settled",
-        publisher: { env },
       });
 
       if (!reservation) {
@@ -83,7 +84,7 @@ export class RealtimeReconciliationHandler implements TaskHandler {
         raw: { sessionId: payload.sessionId, provider: payload.provider },
       };
 
-      await emitUsageEvents({ env, repositories, drafts: [draft] });
+      await emitUsageEvents(runtime, { drafts: [draft] });
 
       return {
         status: "success",

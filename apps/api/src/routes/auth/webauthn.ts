@@ -1,4 +1,5 @@
 import { errorResponseSchema } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { type Context, Hono } from "hono";
 import z from "zod/v4";
 
@@ -7,7 +8,6 @@ import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { addRoute } from "~/lib/http/routeBuilder";
 import { requireAuth } from "~/middleware/auth";
 import { deletePasskey, getUserPasskeys } from "~/services/auth/webauthn";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
 

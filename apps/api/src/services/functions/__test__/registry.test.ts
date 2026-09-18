@@ -1,3 +1,4 @@
+import { formatToolCalls } from "@ngriffin_uk/polychat-ai-providers";
 import {
   CAPABILITY_DISCOVERY_TOOL_NAME,
   HOSTED_MCP_APPROVAL_TOOL_NAME,
@@ -6,12 +7,11 @@ import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core
 import { describe, expect, it } from "vitest";
 import z from "zod/v4";
 
-import { formatToolCalls } from "~/lib/chat/tools/provider-tool-definitions";
 import {
   expandFunctionToolNames,
+  functionToolCatalogue,
   listFunctionTools,
   resolveFunctionTool,
-  toolRegistry,
 } from "~/services/functions";
 import {
   resolveEnabledFunctionToolNames,
@@ -21,13 +21,11 @@ import {
 import { listFunctionToolDefinitions } from "~/services/functions/definitions";
 
 describe("functions tool registry", () => {
-  it("registers every function in the tool registry", () => {
+  it("registers every function in the tool catalogue", () => {
     const functionTools = listFunctionTools();
-    const registeredTools = toolRegistry.list("functions");
+    const registeredNames = new Set(functionToolCatalogue.list().map((tool) => tool.name));
 
-    expect(registeredTools).toHaveLength(functionTools.length);
-
-    const registeredNames = new Set(registeredTools.map((tool) => tool.name));
+    expect(registeredNames.size).toBe(functionTools.length);
 
     for (const fn of functionTools) {
       expect(registeredNames.has(fn.name)).toBe(true);

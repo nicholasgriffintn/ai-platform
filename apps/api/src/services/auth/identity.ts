@@ -1,4 +1,5 @@
 import type { ExternalIdentity, IdentityStore } from "@ngriffin_uk/auth-core";
+import { getStringRecordValue } from "@ngriffin_uk/polychat-utility-server/objects";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
@@ -7,7 +8,6 @@ import {
   toAssistantAuthUser,
 } from "~/services/auth/authUser";
 import { resolveGitHubUser } from "~/services/auth/github";
-import { getStringRecordValue } from "~/utils/objects";
 
 export function createAssistantIdentityStore(
   context: ServiceContext,

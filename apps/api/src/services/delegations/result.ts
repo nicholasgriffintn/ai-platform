@@ -1,8 +1,8 @@
+import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 import { userQuestionsSchema, type DelegationResult } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { filterAccessibleOutputs } from "~/services/outputs/access";
-import { extractTextFromMessageContent } from "~/utils/messages";
 
 type DelegationResultMessage = {
   content?: unknown;

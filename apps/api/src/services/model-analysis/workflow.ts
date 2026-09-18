@@ -1,11 +1,12 @@
-import { deriveArtificialAnalysisScores } from "~/lib/artificial-analysis/scoring";
-import type { ArtificialAnalysisModelRecord } from "~/lib/artificial-analysis/types";
-import { detectModelPriceDrift } from "~/lib/pricing/modelPriceDrift";
-import { getModels } from "~/lib/providers/models";
+import { detectModelPriceDrift } from "@ngriffin_uk/polychat-ai-billing";
+import { getModels } from "@ngriffin_uk/polychat-ai-models";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+
 import { RepositoryManager } from "~/repositories";
+import { deriveArtificialAnalysisScores } from "~/services/model-analysis/artificial-analysis/scoring";
+import type { ArtificialAnalysisModelRecord } from "~/services/model-analysis/artificial-analysis/types";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 import { fetchArtificialAnalysisModels } from "./artificialAnalysis";
 

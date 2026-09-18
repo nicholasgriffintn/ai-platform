@@ -9,9 +9,9 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { createChatRunProvenance, parseOutputProvenance } from "~/lib/provenance/output";
 import type { OutputRecord } from "~/repositories/OutputRepository";
 import { hydrateChatRunUsage } from "~/services/chat-runs/usage";
+import { createChatRunProvenance, parseOutputProvenance } from "~/services/outputs/provenance";
 
 const ACTIVE_RUN_STATUSES = new Set([
   "accepted",

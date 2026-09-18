@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 
 const recordMetric = vi.hoisted(() => vi.fn());
 
-vi.mock("~/lib/monitoring", () => ({
-  Monitoring: { getInstance: () => ({ recordMetric }) },
+vi.mock("~/lib/telemetry", () => ({
+  createMetrics: () => ({ recordMetric }),
 }));
 
 import { recordChatRunOperationalMetric } from "../operational-metrics";

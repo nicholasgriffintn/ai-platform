@@ -1,16 +1,16 @@
 import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 import { abortableDelay, isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
-import { handleToolCalls } from "~/lib/chat/tools/execution";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import type { ConversationManager } from "~/lib/conversationManager";
 import { isComposioConnectorSessionHandle } from "~/lib/providers/capabilities/connectors/composio/session-handle";
 import type { ConnectorOperationApprovalRecord } from "~/repositories/ConnectorOperationApprovalRepository";
+import { handleToolCalls } from "~/services/chat/tools/execution";
+import type { ConversationManager } from "~/services/conversations/manager";
 import type { IUser, Message } from "~/types";
 import { canonicalJson } from "~/utils/canonical-json";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { safeParseJson } from "~/utils/json";
 
 import { getRecipeConnectorAdapter } from "./connector-adapters";
 import type { StoredConnectorOperationCall } from "./connector-approval-authority";

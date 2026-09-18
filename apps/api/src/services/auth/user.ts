@@ -1,8 +1,9 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import { listConfigurableUserProviderIds } from "~/lib/providers/userConfigurableProviders";
 import type { RepositoryManager } from "~/repositories";
 import type { IUserSettings, User } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/auth/user" });
 

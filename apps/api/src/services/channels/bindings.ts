@@ -1,10 +1,10 @@
 import type { ChannelBinding, CreateChannelBindingInput } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ChannelBindingRow } from "~/lib/database/schema";
 import { requireProjectTeammate, requireTeammateAccess } from "~/services/teammates/access";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { getChannelAdapter } from "./adapters";
 

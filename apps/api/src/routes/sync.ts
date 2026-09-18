@@ -1,3 +1,4 @@
+import { addInfraUsage } from "@ngriffin_uk/polychat-ai-billing";
 import {
   deviceSyncGrantRequestSchema,
   deviceSyncGrantResponseSchema,
@@ -5,14 +6,13 @@ import {
   errorResponseSchema,
   NO_STORE,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 
 import { getDurableObjectStub } from "~/lib/durable-objects/client";
 import { addRoute } from "~/lib/http/routeBuilder";
-import { addInfraUsage } from "~/lib/usage/requestMeter";
 import { createDeviceSyncGrant, resolveDeviceSyncGrant } from "~/services/sync/grant";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono<{ Bindings: IEnv; Variables: { user?: IUser } }>();
 

@@ -1,10 +1,15 @@
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
+import { readStringField } from "@ngriffin_uk/polychat-utility-server/record-fields";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { getModelConfigByModel } from "~/lib/providers/models";
 import { executeModelGeneration } from "~/services/apps/generation/execute";
 import { executeReplicateModel } from "~/services/apps/replicate/execute";
+import { getModelConfigByModel } from "~/services/models/resolve";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
-import { readStringField } from "~/utils/recordFields";
 
 import { validateCanvasModelInputRequirements } from "./input-requirements";
 import { prepareCanvasInputForModel } from "./prepare-input";

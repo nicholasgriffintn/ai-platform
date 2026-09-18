@@ -1,0 +1,131 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { formatChatStreamSseDone, formatChatStreamSseEvent } from "@ngriffin_uk/polychat-schemas";
+
+import type { SSEEventPayload } from "~/types";
+
+const encoder = new TextEncoder();
+
+const HEARTBEAT_INTERVAL_MS = 15_000;
+
+const logger = getLogger({
+  prefix: "CHAT:EMITTER",
+});
+
+export function createEventData(type: string, payload: SSEEventPayload = {}): string {
+  try {
+    return formatChatStreamSseEvent(type, payload);
+  } catch (error) {
+    logger.error("Error creating event data", { error, type, payload });
+    throw error;
+  }
+}
+
+export function encodeEventData(data: string): Uint8Array {
+  return encoder.encode(data);
+}
+
+export interface ChatEventSink {
+  writeEvent: (type: string, payload?: SSEEventPayload) => Promise<void>;
+}
+
+export const DISCARDING_EVENT_SINK: ChatEventSink = {
+  writeEvent: async () => {},
+};
+
+export interface ChatSseStreamWriter extends ChatEventSink {
+  readable: ReadableStream<Uint8Array>;
+  isDetached: () => boolean;
+  getContinuitySnapshot: () => ChatStreamContinuitySnapshot;
+  writeComment: (text: string) => Promise<void>;
+  writeDone: () => Promise<void>;
+  close: () => Promise<void>;
+  abort: (error: unknown) => Promise<void>;
+}
+
+export type ChatStreamDetachmentReason = "reader_closed" | "write_failed" | "settle_failed";
+
+export interface ChatStreamContinuitySnapshot {
+  detached: boolean;
+  detachedAtMs?: number;
+  detachmentReason?: ChatStreamDetachmentReason;
+}
+
+export function createChatSseStreamWriter(): ChatSseStreamWriter {
+  let detached = false;
+  let settled = false;
+  let detachedAtMs: number | undefined;
+  let detachmentReason: ChatStreamDetachmentReason | undefined;
+  let controller: ReadableStreamDefaultController<Uint8Array> | undefined;
+
+  const markDetached = (reason: ChatStreamDetachmentReason) => {
+    if (detached) {
+      return;
+    }
+
+    detached = true;
+    detachedAtMs = Date.now();
+    detachmentReason = reason;
+  };
+
+  const readable = new ReadableStream<Uint8Array>({
+    start(nextController) {
+      controller = nextController;
+    },
+    cancel() {
+      markDetached("reader_closed");
+      controller = undefined;
+    },
+  });
+
+  const write = async (chunk: Uint8Array) => {
+    if (detached || settled) {
+      return;
+    }
+
+    try {
+      controller?.enqueue(chunk);
+    } catch {
+      markDetached("write_failed");
+      controller = undefined;
+    }
+  };
+
+  const settle = async (settleStream: () => void) => {
+    if (detached || settled) {
+      return;
+    }
+
+    try {
+      settleStream();
+      settled = true;
+      controller = undefined;
+    } catch {
+      markDetached("settle_failed");
+      controller = undefined;
+    }
+  };
+
+  return {
+    readable,
+    isDetached: () => detached,
+    getContinuitySnapshot: () => ({ detached, detachedAtMs, detachmentReason }),
+    writeEvent: (type: string, payload: SSEEventPayload = {}) =>
+      write(encodeEventData(createEventData(type, payload))),
+    writeComment: (text: string) => write(encoder.encode(`: ${text}\n\n`)),
+    writeDone: () => write(encodeEventData(formatChatStreamSseDone())),
+    close: () => settle(() => controller?.close()),
+    abort: (error: unknown) => settle(() => controller?.error(error)),
+  };
+}
+
+export function startChatStreamHeartbeat(stream: ChatSseStreamWriter): () => void {
+  const timer = setInterval(() => {
+    if (stream.isDetached()) {
+      return;
+    }
+
+    void stream.writeComment("ping");
+  }, HEARTBEAT_INTERVAL_MS);
+
+  return () => clearInterval(timer);
+}

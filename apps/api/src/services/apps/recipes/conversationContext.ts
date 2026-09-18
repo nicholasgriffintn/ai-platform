@@ -1,5 +1,6 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { Message } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const DEFAULT_RECIPE_CONTEXT_MESSAGE_LIMIT = 6;
 const RECIPE_CONTEXT_ROLES = new Set(["user", "assistant"]);

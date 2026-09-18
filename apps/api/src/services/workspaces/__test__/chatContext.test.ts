@@ -1,9 +1,9 @@
+import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
-import { resolveProjectModelTier } from "~/lib/chat/policy/project-model-tier";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { resolveProjectModelTier } from "~/services/chat/policy/project-model-tier";
 import { getConversationBranches } from "~/services/completions/conversationThreads";
-import { ErrorType } from "~/utils/errors";
 
 import { applyProjectCodingEnvironment, resolveProjectChatContext } from "../chatContext";
 import {

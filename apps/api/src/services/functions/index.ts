@@ -1,9 +1,16 @@
-import { filterToolsForConversationType } from "~/lib/chat/policy/meta-assistant";
-import type { ConversationManager } from "~/lib/conversationManager";
-import { PermissionChecker } from "~/lib/permissions/PermissionChecker";
-import { ToolRegistry } from "~/lib/tools/ToolRegistry";
+import {
+  createToolCatalogue,
+  isToolError,
+  validateToolInput,
+  type ToolCatalogue,
+} from "@ngriffin_uk/polychat-library-tools";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
+import { filterToolsForConversationType } from "~/services/chat/policy/meta-assistant";
+import type { ConversationManager } from "~/services/conversations/manager";
+import { PermissionChecker } from "~/services/functions/permissions";
 import type { IFunctionResponse, IRequest } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { fromToolError } from "~/utils/errors";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import { analyse_article } from "./analyse_article";
@@ -12,11 +19,7 @@ import { apply_edit_completion } from "./apply_edit";
 import { run_council, select_council_members } from "./council";
 import { create_automation } from "./create_automation";
 import { create_note } from "./create_note";
-import {
-  applyConnectorScope,
-  requireToolPermissions,
-  type FunctionToolCatalogueOptions,
-} from "./definitions";
+import { applyConnectorScope, type FunctionToolCatalogueOptions } from "./definitions";
 import { delegate } from "./delegate";
 import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
@@ -62,7 +65,6 @@ import { get_weather } from "./weather";
 import { web_search } from "./web_search";
 import { write_document } from "./write_document";
 
-const FUNCTIONS_TOOL_CATEGORY = "functions";
 const permissionChecker = new PermissionChecker();
 
 const functionDefinitions: ApiToolDefinition[] = [
@@ -127,89 +129,34 @@ const functionDefinitions: ApiToolDefinition[] = [
 
 export type RegisteredFunctionTool = ApiToolDefinition;
 
-export const toolRegistry = new ToolRegistry();
-
-const toolRepeatLimits = new Map<string, number>();
-const toolCompanions = new Map<string, readonly string[]>();
-
-for (const fn of functionDefinitions) {
-  if (!fn) {
-    continue;
-  }
-
-  if (typeof fn.maxIdenticalCalls === "number") {
-    toolRepeatLimits.set(fn.name, fn.maxIdenticalCalls);
-  }
-
-  if (fn.companionTools?.length) {
-    toolCompanions.set(fn.name, fn.companionTools);
-  }
-
-  const resolvedPermissions = requireToolPermissions(fn.name, fn.permissions);
-
-  toolRegistry.register(FUNCTIONS_TOOL_CATEGORY, {
-    name: fn.name,
-    metadata: {
-      type: fn.type,
-    },
-    create: () => ({
-      ...fn,
-      permissions: resolvedPermissions,
-    }),
-  });
-}
+export const functionToolCatalogue: ToolCatalogue<RegisteredFunctionTool> = createToolCatalogue(
+  functionDefinitions.filter((fn): fn is RegisteredFunctionTool => Boolean(fn)),
+);
 
 export const listFunctionTools = (
   options?: FunctionToolCatalogueOptions,
-): RegisteredFunctionTool[] =>
-  applyConnectorScope(
-    toolRegistry.listDefinitions(FUNCTIONS_TOOL_CATEGORY) as RegisteredFunctionTool[],
-    options,
-  );
+): RegisteredFunctionTool[] => applyConnectorScope(functionToolCatalogue.list(), options);
 
 export const resolveToolRepeatLimit = (functionName: string): number | undefined =>
-  toolRepeatLimits.get(functionName);
+  functionToolCatalogue.repeatLimit(functionName);
 
-export const expandFunctionToolNames = (toolNames: readonly string[]): string[] => {
-  const expanded = new Set<string>();
+export const expandFunctionToolNames = (toolNames: readonly string[]): string[] =>
+  functionToolCatalogue.expandCompanions(toolNames);
 
-  for (const toolName of toolNames) {
-    expanded.add(toolName);
-
-    for (const companion of toolCompanions.get(toolName) ?? []) {
-      expanded.add(companion);
-    }
+export const resolveFunctionTool = (functionName: string): RegisteredFunctionTool => {
+  try {
+    return functionToolCatalogue.resolve(functionName);
+  } catch (error) {
+    throw isToolError(error) ? fromToolError(error) : error;
   }
-
-  return [...expanded];
 };
 
-export const resolveFunctionTool = (functionName: string): RegisteredFunctionTool =>
-  toolRegistry.resolve(FUNCTIONS_TOOL_CATEGORY, functionName) as RegisteredFunctionTool;
-
 export const validateFunctionArgs = (toolDefinition: RegisteredFunctionTool, args: unknown) => {
-  const normalisedArgs = toolDefinition.normaliseInput?.(args) ?? args;
-  const validation = toolDefinition.inputSchema.safeParse(normalisedArgs);
-
-  if (!validation.success) {
-    const validationErrors = validation.error.issues.map((issue) => ({
-      path: issue.path.join("."),
-      message: issue.message,
-    }));
-
-    const detail = validationErrors
-      .map((issue) => `${issue.path || "(root)"}: ${issue.message}`)
-      .join("; ");
-
-    throw new AssistantError(
-      `Invalid arguments for ${toolDefinition.name}. ${detail}`,
-      ErrorType.PARAMS_ERROR,
-      400,
-      { validationErrors },
-    );
+  try {
+    return validateToolInput(toolDefinition, args);
+  } catch (error) {
+    throw isToolError(error) ? fromToolError(error) : error;
   }
-
-  return validation.data;
 };
 
 export const handleFunctions = async ({

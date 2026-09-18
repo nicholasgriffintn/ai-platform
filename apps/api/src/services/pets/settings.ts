@@ -4,9 +4,9 @@ import {
   petModelOverridesSchema,
   type PetSelection,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 function assertPresetExists(selection: PetSelection): void {
   if (selection.pet_source === "preset" && !isPetPresetSlug(selection.pet_id)) {

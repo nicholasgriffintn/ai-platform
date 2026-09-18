@@ -9,9 +9,8 @@ import {
   LISTED_CONVERSATION_TYPES,
   sandboxDeliveryPolicyCreatesCommit,
 } from "@ngriffin_uk/polychat-schemas";
-
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { escapeSqlLikePattern } from "~/utils/sql";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 
 import { BaseRepository } from "./BaseRepository";
 import { buildCapabilityConfigurationUpsert } from "./CapabilityConfigurationRepository";

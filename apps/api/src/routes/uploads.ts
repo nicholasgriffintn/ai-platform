@@ -1,10 +1,10 @@
 import { errorResponseSchema, uploadResponseSchema } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 
 import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { handleFileUpload } from "~/services/uploads";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("uploads");

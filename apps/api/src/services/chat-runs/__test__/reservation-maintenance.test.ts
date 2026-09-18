@@ -13,7 +13,8 @@ vi.mock("~/repositories", () => ({
   },
 }));
 
-vi.mock("~/lib/usage/reservations", () => ({
+vi.mock("@ngriffin_uk/polychat-ai-billing", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-billing")>()),
   finishUsageReservation: mocks.finishUsageReservation,
 }));
 
@@ -45,6 +46,7 @@ describe("releaseExpiredChatRunReservations", () => {
     expect(mocks.finishUsageReservation).toHaveBeenCalledTimes(2);
     expect(mocks.finishUsageReservation).toHaveBeenNthCalledWith(
       1,
+      expect.anything(),
       expect.objectContaining({
         refId: "run-1",
         reservationId: "expired-1",
@@ -53,6 +55,7 @@ describe("releaseExpiredChatRunReservations", () => {
     );
     expect(mocks.finishUsageReservation).toHaveBeenNthCalledWith(
       2,
+      expect.anything(),
       expect.objectContaining({
         refId: "run-2",
         reservationId: "expired-2",

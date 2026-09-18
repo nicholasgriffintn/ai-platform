@@ -1,5 +1,6 @@
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+
 import type { OutputRecord } from "~/repositories/OutputRepository";
-import { safeParseJson } from "~/utils/json";
 
 import type { CanvasGenerationListItem, CanvasGenerationStatus, CanvasMode } from "./types";
 

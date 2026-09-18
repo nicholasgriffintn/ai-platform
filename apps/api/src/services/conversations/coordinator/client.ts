@@ -1,3 +1,4 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   THREAD_LEASE_RENEWAL_INTERVAL_MS,
   threadLeaseAcquisitionSchema,
@@ -7,13 +8,12 @@ import {
   threadStatusSchema,
   type ThreadOperation,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import type { ConversationWriteFence } from "~/lib/conversation/write-fence";
 import { getDurableObjectStub, postDurableObjectJson } from "~/lib/durable-objects/client";
+import type { ConversationWriteFence } from "~/services/conversations/write-fence";
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/conversations/coordinator/client" });
 const COORDINATOR_ORIGIN = "https://conversation-coordinator";

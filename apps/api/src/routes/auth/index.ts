@@ -1,3 +1,4 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   appleLoginSchema,
   githubCallbackSchema,
@@ -7,6 +8,7 @@ import {
   userSchema,
   errorResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { type Context, Hono } from "hono";
 import z from "zod/v4";
 
@@ -30,8 +32,6 @@ import {
 import { createAssistantGitHubAuth } from "~/services/auth/sharedAuth";
 import { getUserSettings } from "~/services/auth/user";
 import type { AnonymousUser, User } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 import authMagicLink from "./magic-link";
 import authWebauthn from "./webauthn";

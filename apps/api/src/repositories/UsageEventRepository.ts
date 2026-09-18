@@ -1,45 +1,13 @@
+import type { UsageBalanceSeed, UsageEventRecord } from "@ngriffin_uk/polychat-ai-billing";
 import type {
   ComputeSite,
   UsageEventReason,
   UsageSource,
   UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
-
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { BaseRepository } from "./BaseRepository";
-
-export interface UsageEventInsert {
-  id: string;
-  idempotency_key: string;
-  user_id: number;
-  workspace_id: string | null;
-  project_id: string | null;
-  conversation_id: string | null;
-  message_id: string | null;
-  activity_id: string | null;
-  completion_id: string | null;
-  run_id: string | null;
-  run_attempt: number | null;
-  occurred_at: string;
-  period: string;
-  source: UsageSource;
-  vendor: string;
-  resource: string;
-  unit: UsageUnit;
-  quantity: number;
-  rate_version: string | null;
-  unit_cost_micros: number | null;
-  cost_micros: number;
-  credit_micros: number;
-  billable: boolean;
-  byok: boolean;
-  estimated: boolean;
-  vendor_units: number | null;
-  reason: UsageEventReason | null;
-  site: ComputeSite | null;
-  raw: string | null;
-}
 
 export interface UsageEventRecordRow {
   id: string;
@@ -89,12 +57,6 @@ export interface ListUsageEventsParams {
   source?: string | null;
 }
 
-export interface UsageBalanceSeed {
-  planId: string | null;
-  includedCreditMicros: number;
-  graceCreditMicros: number;
-}
-
 const INSERT_COLUMNS = [
   "id",
   "idempotency_key",
@@ -137,7 +99,7 @@ const SPEND_PAST_CEILING = `MAX(0, spent_credit_micros + ?
 	- MAX(spent_credit_micros, included_credit_micros + grace_credit_micros))`;
 
 export class UsageEventRepository extends BaseRepository {
-  private buildInsert(event: UsageEventInsert): { query: string; values: unknown[] } {
+  private buildInsert(event: UsageEventRecord): { query: string; values: unknown[] } {
     const placeholders = INSERT_COLUMNS.map(() => "?").join(", ");
     const values = INSERT_COLUMNS.map((column) => {
       const value = event[column];
@@ -153,7 +115,7 @@ export class UsageEventRepository extends BaseRepository {
     };
   }
 
-  private async insertEvent(event: UsageEventInsert): Promise<boolean> {
+  private async insertEvent(event: UsageEventRecord): Promise<boolean> {
     const insert = this.buildInsert(event);
     const result = await this.executeRun(insert.query, insert.values);
 
@@ -161,7 +123,7 @@ export class UsageEventRepository extends BaseRepository {
   }
 
   async insertEventAndApplyBalance(
-    event: UsageEventInsert,
+    event: UsageEventRecord,
     seed: UsageBalanceSeed,
   ): Promise<boolean> {
     if (!event.billable || event.credit_micros === 0) {

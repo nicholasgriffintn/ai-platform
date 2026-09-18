@@ -1,7 +1,8 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { requireOutputRecordAccess } from "~/services/outputs/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 import { PATTERN_OUTPUT_KIND, STRUDEL_APP_ID } from "./utils";
 

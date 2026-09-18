@@ -8,11 +8,11 @@ import {
   type DeviceSyncPresenceEntry,
   type DeviceSyncServerMessage,
 } from "@ngriffin_uk/polychat-schemas";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { Agent } from "agents";
 
 import { TopicEventBus } from "~/lib/durable-objects/event-bus";
 import type { IEnv } from "~/types";
-import { safeParseJson } from "~/utils/json";
 
 interface ConnectionState {
   deviceId: string;

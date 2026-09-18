@@ -1,0 +1,67 @@
+{
+  "defaults": {
+    "contextWindow": 256000,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": ["text"],
+      "output": ["text"]
+    },
+    "contextComplexity": 3,
+    "knowledgeCutoffDate": "August 2024",
+    "releaseDate": "August 15, 2024",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The jamba family includes models that produce text.",
+  "models": {
+    "ai21-jambda-instruct": {
+      "defaults": {
+        "name": "AI21 Jambda Instruct",
+        "description": "Jambda Instruct is an aligned version of Jamba with additional training, chat capabilities, and safety guardrails to make it suitable for immediate and secure enterprise use.",
+        "contextWindow": 128000,
+        "maxTokens": 8000,
+        "strengths": ["summarization", "analysis"],
+        "reliability": 4
+      }
+    },
+    "jamba-1-5-large": {
+      "defaults": {
+        "name": "Jamba 1.5 Large",
+        "description": "Jamba 1.5 Large (94B active/398B total) is built for superior long context handling, speed, and quality. They mark the first time a non-Transformer model has been successfully scaled to the quality and strength of the market's leading models.",
+        "strengths": ["analysis", "reasoning", "tool_use"],
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 5.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "jamba-1-5-mini": {
+      "defaults": {
+        "name": "Jamba 1.5 Mini",
+        "description": "Jamba 1.5 Mini (12B active/52B total) is built for superior long context handling, speed, and quality. They mark the first time a non-Transformer model has been successfully scaled to the quality and strength of the market's leading models.",
+        "strengths": ["analysis", "tool_use"],
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 2.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "jamba-large-1-7": {
+      "defaults": {
+        "name": "Jamba Large 1.7",
+        "openWeights": true,
+        "description": "Jamba Large 1.7 accepts text and produces text.",
+        "knowledgeCutoffDate": "August 31, 2024",
+        "releaseDate": "August 8, 2025",
+        "supportsResponseFormat": false
+      }
+    }
+  }
+}

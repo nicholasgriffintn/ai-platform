@@ -1,8 +1,8 @@
 import type { TeammateComputer, TeammateComputerLease } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { TeammateComputerRow } from "~/lib/database/schema";
 import type { IEnv } from "~/types";
-import { generateId } from "~/utils/id";
 
 import { BaseRepository } from "./BaseRepository";
 

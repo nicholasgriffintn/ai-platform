@@ -1,11 +1,12 @@
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
+
 import {
   MEMORY_SEARCH_TOOL_NAME,
   MEMORY_STORE_TOOL_NAME,
   resolveMemoryPolicy,
-} from "~/lib/chat/policy/memory";
-import { MemoryManager } from "~/lib/memory";
+} from "~/services/chat/policy/memory";
+import { MemoryManager } from "~/services/memory/manager";
 import type { IUserSettings } from "~/types";
-import { sanitiseInput } from "~/utils/sanitise";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import {

@@ -6,19 +6,19 @@ import {
   type RecordGoalIterationResponse,
   type UpdateGoalRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { GOAL_UNSATISFIED_INSTRUCTION } from "~/lib/chat/agent/goal-gate";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
 import { getSandboxRunRecordForUser } from "~/services/apps/sandbox/runs";
+import { GOAL_UNSATISFIED_INSTRUCTION } from "~/services/chat/agent/goal-gate";
 import {
   requireConversationAccess,
   requireOwnConversationForWrite,
 } from "~/services/conversations/access";
+import { ConversationManager } from "~/services/conversations/manager";
 import { createGoalService } from "~/services/goals/createGoalService";
 import { recordGoalMarker } from "~/services/goals/goalMarker";
 import type { GoalService } from "~/services/goals/GoalService";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export type ConversationGoalContext = ServiceContext;
 

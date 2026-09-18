@@ -1,7 +1,3 @@
-import { OCR_BATCH_POLLING_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
-
-import { createServiceContext } from "~/lib/context/serviceContext";
-import { isOutputDeletionPending } from "~/lib/outputs/deletion";
 import {
   cleanupOcrBatchProviderResources,
   getOcrBatchProviderCleanupState as getProviderCleanupState,
@@ -11,16 +7,21 @@ import {
   type OcrBatchClient,
   withOcrBatchProviderCleanup as withProviderCleanup,
   withoutOcrBatchProviderCleanup as withoutProviderCleanup,
-} from "~/lib/providers/capabilities/ocr/batch/MistralOcrBatchClient";
+} from "@ngriffin_uk/polychat-ai-providers";
+import { OCR_BATCH_POLLING_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { ResponseBodyTooLargeError } from "@ngriffin_uk/polychat-utility-server/http";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+
+import { createServiceContext } from "~/lib/context/serviceContext";
+import { providerRuntime } from "~/lib/providers/runtime";
 import { StorageService } from "~/lib/storage";
 import { RepositoryManager } from "~/repositories";
 import { createOutput, getOutputIncludingDeleting, updateOutput } from "~/services/outputs";
+import { isOutputDeletionPending } from "~/services/outputs/deletion";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { ResponseBodyTooLargeError } from "~/utils/http";
-import { generateId } from "~/utils/id";
-import { safeParseJson } from "~/utils/json";
 
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";
@@ -165,7 +166,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
       };
     }
 
-    const batchClient = this.dependencies.batchClient ?? new MistralOcrBatchClient();
+    const batchClient = this.dependencies.batchClient ?? new MistralOcrBatchClient(providerRuntime);
     const cleanupState = getProviderCleanupState(output.content);
 
     if (cleanupState) {
@@ -444,7 +445,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
       return;
     }
 
-    const batchClient = this.dependencies.batchClient ?? new MistralOcrBatchClient();
+    const batchClient = this.dependencies.batchClient ?? new MistralOcrBatchClient(providerRuntime);
     const taskService = new TaskService(env, repositories.tasks);
 
     if (existingCleanup) {

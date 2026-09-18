@@ -3,11 +3,11 @@ import {
   DOCUMENT_WRITE_TOOL_NAME,
   type WriteDocumentInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { writeDocument } from "~/services/documents";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { write_document as writeDocumentDescriptor } from "./definitions/write_document";
 import { resolveRequestProjectId } from "./request-context";

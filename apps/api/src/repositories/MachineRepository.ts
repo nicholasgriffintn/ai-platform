@@ -4,8 +4,7 @@ import {
   type MachineHeartbeat,
   type MachineRuntime,
 } from "@ngriffin_uk/polychat-schemas";
-
-import { safeParseJson } from "~/utils/json";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "./BaseRepository";
 

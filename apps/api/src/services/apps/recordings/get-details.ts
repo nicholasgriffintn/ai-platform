@@ -1,10 +1,9 @@
 import type { Recording } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-
-import { safeParseJson } from "../../../utils/json";
 
 export interface IRecordingDetailRequest {
   context?: ServiceContext;

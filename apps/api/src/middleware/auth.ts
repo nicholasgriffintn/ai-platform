@@ -1,7 +1,10 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   INTERNAL_SERVICE_AUTHORIZATION_HEADER,
   SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { parseBearerToken } from "@ngriffin_uk/polychat-utility-server/http";
 import type { Context, Next } from "hono";
 import { parse as parseCookieHeader } from "hono/utils/cookie";
 import { isbot } from "isbot";
@@ -13,9 +16,6 @@ import { verifyInternalServiceToken } from "~/services/auth/internal-service";
 import { getUserByJwtToken } from "~/services/auth/jwt";
 import { createAssistantAuth } from "~/services/auth/sharedAuth";
 import type { AnonymousUser, User } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { parseBearerToken } from "~/utils/http";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "middleware/auth" });
 

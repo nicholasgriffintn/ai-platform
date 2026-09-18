@@ -1,10 +1,12 @@
+import { formatProviderError } from "@ngriffin_uk/polychat-ai-providers";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { AwsClient } from "aws4fetch";
 
 import {
   buildBedrockRetrievalFilter,
   withEmbeddingScopeMetadata,
 } from "~/lib/providers/capabilities/embedding/utils/scope";
-import { formatProviderError } from "~/lib/providers/utils/errors";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
   EmbeddingMutationResult,
@@ -16,8 +18,6 @@ import type {
   IUser,
   ManagedKnowledgeBaseQueryOptions,
 } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/embedding/bedrock" });
 

@@ -4,10 +4,10 @@ import {
   threadLeaseOwnerRequestSchema,
   type ThreadOperation,
 } from "@ngriffin_uk/polychat-schemas";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { Agent } from "agents";
 
 import type { IEnv } from "~/types";
-import { safeParseJson } from "~/utils/json";
 
 const STATUS_KEY = "status";
 

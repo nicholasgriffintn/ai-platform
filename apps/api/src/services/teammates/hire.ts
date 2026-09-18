@@ -4,10 +4,10 @@ import {
   resolveHiredTeammateBrief,
   type HireTeammateInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { createTeammate } from "./teammateCrud";
 

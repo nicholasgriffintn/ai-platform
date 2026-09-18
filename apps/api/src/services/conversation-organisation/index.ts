@@ -5,6 +5,7 @@ import type {
   CreateConversationGroup,
   UpdateConversationOrganisation,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
@@ -15,7 +16,6 @@ import { requireConversationAccess } from "~/services/conversations/access";
 import { publishUserEvent } from "~/services/sync/conversation-events";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { isConversationUnread } from "~/utils/conversation-organisation";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 function conversationProjectId(conversation: Record<string, unknown>): string | null {
   return typeof conversation.project_id === "string" && conversation.project_id.length > 0

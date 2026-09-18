@@ -1,7 +1,6 @@
 import type { KVNamespace } from "@cloudflare/workers-types";
-
-import { safeParseJson } from "~/utils/json";
-import { getLogger } from "~/utils/logger";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 const logger = getLogger({ prefix: "lib/cache" });
 

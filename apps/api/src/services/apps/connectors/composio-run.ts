@@ -1,5 +1,11 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConnectorProviderConfig } from "~/lib/providers/capabilities/connectors";
@@ -12,8 +18,6 @@ import {
   type ComposioConnectedAccount,
 } from "~/lib/providers/capabilities/connectors/composio/client";
 import type { ComposioConnectorSessionRecord } from "~/repositories/ComposioConnectorSessionRepository";
-import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 import {
   getSelectedRecipeConnectorAccountId,

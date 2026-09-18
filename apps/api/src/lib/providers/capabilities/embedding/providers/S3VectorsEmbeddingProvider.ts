@@ -1,4 +1,9 @@
 import type { Ai } from "@cloudflare/workers-types";
+import { formatProviderError, parseAwsCredentials } from "@ngriffin_uk/polychat-ai-providers";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { paginate } from "@ngriffin_uk/polychat-utility-server/arrays";
+import { parseEmbeddingVectors } from "@ngriffin_uk/polychat-utility-server/embeddings";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { AwsClient } from "aws4fetch";
 
 import { gatewayId } from "~/constants/app";
@@ -9,8 +14,6 @@ import {
   requireEmbeddingScopeTag,
   withEmbeddingScopeMetadata,
 } from "~/lib/providers/capabilities/embedding/utils/scope";
-import { formatProviderError } from "~/lib/providers/utils/errors";
-import { parseAwsCredentials } from "~/lib/providers/utils/helpers";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
 import type {
   EmbeddingMutationResult,
@@ -23,10 +26,6 @@ import type {
   IUser,
   NumericEmbeddingQuery,
 } from "~/types";
-import { paginate } from "~/utils/arrays";
-import { parseEmbeddingVectors } from "~/utils/embeddings";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "lib/embedding/s3vectors" });
 const MAX_S3_VECTOR_DELETE_KEYS = 500;

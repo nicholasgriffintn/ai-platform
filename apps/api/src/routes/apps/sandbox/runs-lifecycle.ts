@@ -11,6 +11,7 @@ import {
   updateGoalRequestSchema,
   updateSandboxRunControlSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { Hono } from "hono";
 
 import { addRoute } from "~/lib/http/routeBuilder";
@@ -34,7 +35,6 @@ import {
   handleSetRunGoal,
   handleUpdateRunGoal,
 } from "~/services/completions/conversationGoal";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export function registerSandboxRunLifecycleRoutes(app: Hono): void {
   addRoute(app, "get", "/runs/:runId", {

@@ -1,0 +1,29 @@
+import { buildAiGenerationProperties } from "./ai-generation-properties.js";
+import { AI_GENERATION_EVENT_NAME, AI_OBSERVABILITY_EVENT_CATEGORY } from "./constants.js";
+import type { TelemetryEvent, TelemetryMessage, TelemetryProperties } from "./types.js";
+
+export type AiGenerationEventInput = {
+  distinctId: string;
+  traceId: string;
+  sessionId?: string;
+  spanId?: string;
+  spanName?: string;
+  model?: string;
+  provider?: string;
+  input?: TelemetryMessage[];
+  output?: TelemetryMessage;
+  usage?: Record<string, unknown>;
+  latencyMs?: number;
+  stream?: boolean;
+  captureContent: boolean;
+  properties?: TelemetryProperties;
+};
+
+export function buildAiGenerationEvent(input: AiGenerationEventInput): TelemetryEvent {
+  return {
+    name: AI_GENERATION_EVENT_NAME,
+    category: AI_OBSERVABILITY_EVENT_CATEGORY,
+    distinctId: input.distinctId,
+    properties: buildAiGenerationProperties(input),
+  };
+}

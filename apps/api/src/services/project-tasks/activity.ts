@@ -12,7 +12,7 @@ import {
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { formatStoredMessage } from "~/lib/conversation/stored-message";
+import { formatStoredMessage } from "~/services/conversations/stored-message";
 import type { Message } from "~/types";
 
 interface ActivityCompletion {

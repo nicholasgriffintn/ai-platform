@@ -1,9 +1,9 @@
+import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 import {
   USER_QUESTION_MAX_OPTIONS,
   USER_QUESTION_SET_MAX_QUESTIONS,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { jsonSchemaToZod } from "../../../utils/jsonSchema";
 import type { FunctionToolDescriptor } from "./types";
 
 export const request_approval: FunctionToolDescriptor = {

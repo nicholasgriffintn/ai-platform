@@ -1,9 +1,9 @@
 import { webcrypto } from "node:crypto";
 
+import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv } from "~/types";
-import { bufferToBase64 } from "~/utils/base64";
 
 import { UserSettingsRepository } from "../UserSettingsRepository";
 

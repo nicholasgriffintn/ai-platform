@@ -6,15 +6,15 @@ import {
   type ResolveProjectTaskToolApprovalInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import { buildMessageParts } from "~/lib/chat/messages/parts";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
 import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
+import { buildMessageParts } from "~/services/chat/messages/parts";
 import { withThreadLock } from "~/services/conversations/coordinator/client";
+import { ConversationManager } from "~/services/conversations/manager";
 import type { Message } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 import { readInteractionMessageData } from "./interaction-messages";
 import { isProjectTaskInteractionExpired } from "./interaction-recovery";

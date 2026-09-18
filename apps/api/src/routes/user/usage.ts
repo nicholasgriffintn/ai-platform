@@ -1,3 +1,4 @@
+import { anonymousCreditActor, userCreditActor } from "@ngriffin_uk/polychat-ai-billing";
 import {
   errorResponseSchema,
   recordOffPlatformUsageRequestSchema,
@@ -11,7 +12,6 @@ import {
 import { Hono } from "hono";
 
 import { addRoute } from "~/lib/http/routeBuilder";
-import { anonymousCreditActor, userCreditActor } from "~/lib/usage/creditActor";
 import {
   getUsageBalance,
   getUsageSummary,

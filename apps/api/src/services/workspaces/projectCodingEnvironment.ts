@@ -3,10 +3,10 @@ import {
   resolveSandboxDeliveryPolicy,
   type ProjectCodingEnvironment,
 } from "@ngriffin_uk/polychat-schemas";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ProjectRow } from "~/repositories/WorkspaceRepository";
 import { run_sandbox_task } from "~/services/functions/definitions/sandbox";
-import { safeParseJson } from "~/utils/json";
 
 export const PROJECT_CODING_TOOL_IDS = [run_sandbox_task.name];
 

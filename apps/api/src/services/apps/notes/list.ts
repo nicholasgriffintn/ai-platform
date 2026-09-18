@@ -6,20 +6,20 @@ import {
   type NoteUpdateRequest,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { OutputRecord } from "~/repositories/OutputRepository";
-import { sanitiseInput } from "~/utils/sanitise";
 
 const NOTE_OUTPUT_KIND = "note";
+
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { describeDocument, formatDocumentBody } from "~/services/documents";
 import { requireOutputRecordAccess } from "~/services/outputs/access";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-
-import { safeParseJson } from "../../../utils/json";
 
 function readNoteMetadata(value: unknown): Record<string, unknown> | undefined {
   if (!isRecord(value)) {

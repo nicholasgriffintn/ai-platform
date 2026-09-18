@@ -1,9 +1,9 @@
+import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import * as schema from "~/lib/database/schema";
-import { ErrorType } from "~/utils/errors";
 
 import { AuthoredSkillRepository, type CreateAuthoredSkillInput } from "../AuthoredSkillRepository";
 

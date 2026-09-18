@@ -1,3 +1,5 @@
+import { extractChatCompletionNotification } from "@ngriffin_uk/polychat-ai-providers";
+
 import { invokeAssistantRecipe, resolveInstalledAssistantRecipe } from "~/services/apps/recipes";
 import { getRecipeConversationContext } from "~/services/apps/recipes/conversationContext";
 import { executeRecipeInvocationChat } from "~/services/apps/recipes/execution";
@@ -5,7 +7,6 @@ import {
   getRecipeExecutionChannelContext,
   getTriggerRecipeChannel,
 } from "~/services/apps/recipes/toolContext";
-import { extractChatCompletionNotification } from "~/utils/messages";
 
 import type { ApiToolDefinition } from "../../../types/functions";
 import { trigger_recipe as trigger_recipeDescriptor } from "../definitions/recipes/trigger_recipe";

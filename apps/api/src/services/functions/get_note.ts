@@ -1,5 +1,6 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import { queryEmbeddings } from "~/services/apps/embeddings/query";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import { get_note as get_noteDescriptor } from "./definitions/get_note";

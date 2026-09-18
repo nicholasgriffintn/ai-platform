@@ -1,3 +1,6 @@
+import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
   getEmbeddingRuntimeForTarget,
@@ -8,8 +11,6 @@ import {
 } from "~/lib/providers/capabilities/embedding/helpers";
 import type { EmbeddingDocumentDeletionTarget } from "~/repositories/EmbeddingRepository";
 import type { IUser, IUserSettings } from "~/types";
-import { mapWithConcurrency } from "~/utils/async";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 type DocumentsByProviderTarget = {
   documents: EmbeddingDocumentDeletionTarget[];

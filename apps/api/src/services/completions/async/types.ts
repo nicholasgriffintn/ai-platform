@@ -1,5 +1,6 @@
-import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
-import type { ConversationManager } from "~/lib/conversationManager";
+import type { AsyncInvocationMetadata } from "@ngriffin_uk/polychat-ai-providers";
+
+import type { ConversationManager } from "~/services/conversations/manager";
 import type { Message, IEnv, IUser } from "~/types";
 
 export interface AsyncRefreshContext {

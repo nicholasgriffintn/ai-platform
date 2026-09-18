@@ -1,15 +1,16 @@
+import { validateReplicatePayload } from "@ngriffin_uk/polychat-ai-models";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { omitNullishValues } from "@ngriffin_uk/polychat-utility-server/objects";
+
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { createExecutionOutputProvenance } from "~/lib/provenance/output";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getModelConfigByModel } from "~/lib/providers/models";
-import { validateReplicatePayload } from "~/lib/providers/models/replicateValidation";
 import { TaskRepository } from "~/repositories/TaskRepository";
+import { getModelConfigByModel } from "~/services/models/resolve";
+import { createExecutionOutputProvenance } from "~/services/outputs/provenance";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { safeParseJson } from "~/utils/json";
-import { getLogger } from "~/utils/logger";
-import { omitNullishValues } from "~/utils/objects";
 
 const logger = getLogger({ prefix: "services/apps/recording/transcribe" });
 

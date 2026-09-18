@@ -1,3 +1,4 @@
+import { addInfraUsage } from "@ngriffin_uk/polychat-ai-billing";
 import {
   sandboxPreviewSessionRecordSchema,
   sandboxRunControlSchema,
@@ -18,7 +19,6 @@ import {
   postDurableObjectJson,
   readDurableObjectJson,
 } from "~/lib/durable-objects/client";
-import { addInfraUsage } from "~/lib/usage/requestMeter";
 import type { IEnv } from "~/types";
 
 import { isStartFiberResult } from "./fibers";

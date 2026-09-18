@@ -2,10 +2,10 @@ import type {
   InternalServiceScope,
   InternalServiceTokenClaims,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { Context } from "hono";
 
 import type { AnonymousUser, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export function requireAuthenticatedUser(ctx: Context): IUser {
   const user = ctx.get("user") as IUser | undefined;

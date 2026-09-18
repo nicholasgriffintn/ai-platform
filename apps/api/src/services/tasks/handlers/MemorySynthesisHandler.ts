@@ -1,12 +1,12 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getAuxiliaryModel } from "~/lib/providers/models";
+import { ai } from "~/lib/ai";
 import { MemorySynthesisRepository } from "~/repositories/MemorySynthesisRepository";
 import { SourceRepository, type SourceRecord } from "~/repositories/SourceRepository";
+import { getAuxiliaryModel } from "~/services/models/resolve";
 import type { IEnv } from "~/types";
-import { safeParseJson } from "~/utils/json";
-import { getLogger } from "~/utils/logger";
 
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";
@@ -170,16 +170,13 @@ Format as a structured document with clear sections.`;
     try {
       const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env);
 
-      const provider = getChatProvider(providerToUse, { env, user: undefined });
-
-      const response = await provider.getResponse({
+      return await ai.generateText({
         env,
         model: modelToUse,
-        messages: [{ role: "user", content: prompt }],
+        provider: providerToUse,
+        prompt,
         reasoning: { effort: "none" },
       });
-
-      return response.response;
     } catch (error) {
       logger.error("Failed to generate synthesis with AI:", error);
 

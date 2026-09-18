@@ -15,10 +15,10 @@ import {
   type SandboxPreviewSessionRecord,
   NO_STORE,
 } from "@ngriffin_uk/polychat-schemas";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { Agent, type FiberContext, type FiberRecoveryContext } from "agents";
 
 import type { IEnv } from "~/types";
-import { safeParseJson } from "~/utils/json";
 
 import {
   parseSandboxDispatchRecoveryMessage,

@@ -1,10 +1,11 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { parseJsonRecord, parseJsonStringArray } from "@ngriffin_uk/polychat-utility-server/json";
+
+import { PaginationHelper } from "~/lib/database/PaginationHelper";
 import type {
   ArtificialAnalysisModelRecord,
   ArtificialAnalysisScoreResult,
-} from "~/lib/artificial-analysis/types";
-import { PaginationHelper } from "~/lib/database/PaginationHelper";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { parseJsonRecord, parseJsonStringArray } from "~/utils/json";
+} from "~/services/model-analysis/artificial-analysis/types";
 
 import { BaseRepository } from "./BaseRepository";
 

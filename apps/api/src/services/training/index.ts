@@ -9,6 +9,7 @@ import {
   type TrainingProviderId,
   type StartTrainingJobRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { exportTrainingExamplesToS3 } from "~/lib/providers/capabilities/training/exportDataset";
@@ -19,7 +20,6 @@ import {
 import { resolveTrainingDeploymentEnvironment } from "~/lib/providers/capabilities/training/trainingDeploymentEnvironment";
 import { resolveTrainingHyperparameters } from "~/lib/providers/capabilities/training/trainingHyperparameters";
 import { resolveTrainingSource } from "~/lib/providers/capabilities/training/trainingSourceArchives";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import {
   deployTrainingWorkerModel,

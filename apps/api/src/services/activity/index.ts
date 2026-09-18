@@ -1,10 +1,10 @@
 import type { ActivityRecord as Activity, ActivityStatus } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ActivityRecord } from "~/repositories/ActivityRepository";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { safeParseJson } from "~/utils/json";
 
 function formatActivity(record: ActivityRecord): Activity {
   return {

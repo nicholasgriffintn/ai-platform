@@ -1,17 +1,21 @@
+import {
+  getModels,
+  getExecutableModelsForAccount,
+  resolveTierModel,
+} from "@ngriffin_uk/polychat-ai-models";
 import type {
   SandboxExecutionProvider,
   SandboxWorkerExecuteRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { resolveProjectDefaultModelTier } from "~/lib/chat/policy/project-model-tier";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { SandboxProviderExecuteOptions } from "~/lib/providers/capabilities/sandbox";
-import { filterModelsForUserAccess, getModels } from "~/lib/providers/models";
-import { getExecutableModelsForAccount, resolveTierModel } from "~/lib/providers/models/policy";
 import { resolveSandboxApiBaseUrl } from "~/services/apps/sandbox/urls";
 import { generateJwtToken } from "~/services/auth/jwt";
+import { resolveProjectDefaultModelTier } from "~/services/chat/policy/project-model-tier";
+import { filterModelsForUserAccess } from "~/services/models/resolve";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const SANDBOX_TOKEN_EXPIRATION_SECONDS = 60 * 60;
 

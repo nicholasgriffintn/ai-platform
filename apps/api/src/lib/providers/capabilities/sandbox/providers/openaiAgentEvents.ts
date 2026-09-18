@@ -1,6 +1,9 @@
 import type { SandboxRunEvent } from "@ngriffin_uk/polychat-schemas";
-
-import { readNumberField, readRecordObjectField, readStringField } from "~/utils/recordFields";
+import {
+  readNumberField,
+  readRecordObjectField,
+  readStringField,
+} from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 type OpenAIAgentTerminalStatus = "completed" | "failed" | "cancelled";
 

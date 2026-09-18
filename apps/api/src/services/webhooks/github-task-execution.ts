@@ -1,4 +1,6 @@
 import type { SandboxWebhookCommand } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { isPlainObject } from "@ngriffin_uk/polychat-utility-server/objects";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
@@ -11,8 +13,6 @@ import {
 } from "~/lib/github";
 import { runFunctionWithOutput } from "~/services/functions/run-with-output";
 import type { IEnv, IRequest, IUser } from "~/types";
-import { generateId } from "~/utils/id";
-import { isPlainObject } from "~/utils/objects";
 
 interface GitHubConnectionCredentials {
   appId: string;

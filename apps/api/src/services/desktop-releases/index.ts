@@ -5,9 +5,9 @@ import type {
   DesktopUpdateTarget,
 } from "@ngriffin_uk/polychat-schemas";
 import { isNewerVersion } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import {
   findArchive,

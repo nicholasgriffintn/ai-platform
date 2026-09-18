@@ -1,3 +1,4 @@
+import { availableModalities } from "@ngriffin_uk/polychat-ai-models";
 import {
   capabilitiesResponseSchema,
   capabilityParamsSchema,
@@ -12,10 +13,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 
-import { availableModalities } from "~/constants/models";
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { addRoute } from "~/lib/http/routeBuilder";
-import { getLineupModelsForUser } from "~/lib/providers/models";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import {
   getModelDetails,
@@ -28,6 +27,7 @@ import {
   listModelsByModality,
   listModelsByOutputModality,
 } from "~/services/models";
+import { getLineupModelsForUser } from "~/services/models/resolve";
 import { resolveTierLineup } from "~/services/models/tiers";
 
 const app = new Hono();

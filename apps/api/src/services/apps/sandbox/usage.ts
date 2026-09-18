@@ -1,20 +1,22 @@
 import {
+  containerSecondQuantities,
+  estimateContainerRunCreditMicros,
+  resolveContainerInstanceType,
+  emitInfraUsage,
+  finishUsageReservation,
+  holdUsageReservation,
+} from "@ngriffin_uk/polychat-ai-billing";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import {
   SANDBOX_TIMEOUT_DEFAULT_SECONDS,
   SANDBOX_TIMEOUT_MAX_SECONDS,
   type SandboxRunUsageReport,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import {
-  containerSecondQuantities,
-  estimateContainerRunCreditMicros,
-  resolveContainerInstanceType,
-} from "~/lib/usage/containerUsage";
-import { emitInfraUsage } from "~/lib/usage/infraUsage";
-import { finishUsageReservation, holdUsageReservation } from "~/lib/usage/reservations";
 import type { RepositoryManager } from "~/repositories";
+import { createUsageRuntime, createUsageStore } from "~/services/usage/runtime";
 import type { IEnv } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 import { persistSandboxRunArtifact } from "./run-artifacts";
 import { getSandboxRunRecordForUser } from "./runs";
@@ -39,15 +41,16 @@ export async function reserveSandboxRun(params: {
       Date.now() + (timeoutSeconds + RESERVATION_EXPIRY_BUFFER_SECONDS) * 1000,
     ).toISOString();
 
-    await holdUsageReservation({
-      repositories: params.repositories,
-      userId: params.userId,
-      kind: "sandbox",
-      refId: params.runId,
-      creditMicros,
-      expiresAt,
-      publisher: { env: params.env },
-    });
+    await holdUsageReservation(
+      createUsageRuntime({ env: params.env, repositories: params.repositories }),
+      {
+        userId: params.userId,
+        kind: "sandbox",
+        refId: params.runId,
+        creditMicros,
+        expiresAt,
+      },
+    );
   } catch (error) {
     logger.error("Failed to reserve credits for a sandbox run", {
       error,
@@ -62,12 +65,10 @@ export async function releaseSandboxRunReservation(params: {
   runId: string;
 }): Promise<void> {
   try {
-    await finishUsageReservation({
-      repositories: params.repositories,
-      kind: "sandbox",
-      refId: params.runId,
-      outcome: "released",
-    });
+    await finishUsageReservation(
+      { store: createUsageStore(params.repositories) },
+      { kind: "sandbox", refId: params.runId, outcome: "released" },
+    );
   } catch (error) {
     logger.error("Failed to release a sandbox run reservation", { error, runId: params.runId });
   }
@@ -91,9 +92,13 @@ export async function recordSandboxRunUsage(params: {
   const instanceType = resolveContainerInstanceType(report.instanceType);
   const quantities = containerSecondQuantities(instanceType, durationSeconds);
 
-  await emitInfraUsage({
+  const runtime = createUsageRuntime({
     env: context.env,
     repositories: context.repositories,
+    publisher: context,
+  });
+
+  await emitInfraUsage(runtime, {
     userId,
     scopeKey: `sandbox:${runId}`,
     quantities,
@@ -102,12 +107,10 @@ export async function recordSandboxRunUsage(params: {
     raw: { ...report, durationSeconds, instanceType },
   });
 
-  const reservation = await finishUsageReservation({
-    repositories: context.repositories,
+  const reservation = await finishUsageReservation(runtime, {
     kind: "sandbox",
     refId: runId,
     outcome: "settled",
-    publisher: context,
   });
 
   const runWithUsage = {

@@ -1,7 +1,7 @@
+import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv } from "~/types";
-import { ErrorType } from "~/utils/errors";
 
 import type { ConnectorProviderConfig } from "../..";
 import {

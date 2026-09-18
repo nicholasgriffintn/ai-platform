@@ -1,4 +1,5 @@
 import type { ChatHostedToolSettings } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ProjectCapabilityRow } from "~/repositories/WorkspaceRepository";
 import { MODEL_TOOL_DEFINITIONS } from "~/services/experiences/config";
@@ -8,7 +9,6 @@ import {
   resolveModelToolConfigurations,
   validateModelToolConfiguration,
 } from "~/services/tools/modelToolConfiguration";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface ResolvedProjectTools {
   enabledTools: string[];

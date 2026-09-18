@@ -1,9 +1,6 @@
-import {
-  DEFAULT_OCR_MODEL,
-  DEFAULT_OCR_PROVIDER,
-} from "~/lib/providers/capabilities/ocr/constants";
+import { DEFAULT_OCR_MODEL, DEFAULT_OCR_PROVIDER } from "@ngriffin_uk/polychat-ai-providers";
+import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 
-import { jsonSchemaToZod } from "../../../utils/jsonSchema";
 import type { FunctionToolDescriptor } from "./types";
 
 export const annotationFormat = {

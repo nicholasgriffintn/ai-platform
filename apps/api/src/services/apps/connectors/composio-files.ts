@@ -1,4 +1,6 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
@@ -11,8 +13,6 @@ import { requireOutputAccess, requireConversationScope } from "~/services/output
 import { getSource } from "~/services/sources";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 import {
   COMPOSIO_FILE_MAX_BYTES,

@@ -1,9 +1,9 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { Stripe } from "stripe";
 
-import { runStripeOverageSync } from "~/lib/billing/stripeOverageSync";
 import { RepositoryManager } from "~/repositories";
+import { runStripeOverageSync } from "~/services/subscription/stripeOverageSync";
 import type { IEnv } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";

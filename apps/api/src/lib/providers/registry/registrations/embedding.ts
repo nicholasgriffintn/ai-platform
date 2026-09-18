@@ -12,8 +12,7 @@ import {
   VectorizeEmbeddingProvider,
   type VectorizeEmbeddingProviderConfig,
 } from "../../capabilities/embedding/providers";
-import type { ProviderRegistry } from "../ProviderRegistry";
-import type { ProviderRegistration } from "../types";
+import type { ProviderRegistration, ProviderRegistry } from "../types";
 import { ensureConfig, ensureEnv, ensureUser } from "./utils";
 
 const embeddingProviders: ProviderRegistration<EmbeddingProvider>[] = [

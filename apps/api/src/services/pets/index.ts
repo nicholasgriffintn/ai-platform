@@ -1,3 +1,4 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   DEFAULT_PET_PRESET_SLUG,
   PET_DESCRIPTION_MAX_LENGTH,
@@ -13,16 +14,15 @@ import {
   type UserPet,
   type UserPetsPage,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { readImageDimensions } from "@ngriffin_uk/polychat-utility-server/image-dimensions";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { StorageService } from "~/lib/storage";
 import type { UserPetRecord } from "~/repositories/UserPetRepository";
 import { generateImage } from "~/services/generate/image";
 import type { IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { readImageDimensions } from "~/utils/imageDimensions";
-import { getLogger } from "~/utils/logger";
 
 const PET_STYLE_PROMPT =
   "A single small chibi mascot character, front facing, standing, full body, centred, " +

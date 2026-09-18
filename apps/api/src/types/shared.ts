@@ -7,14 +7,17 @@ import type {
   Vectorize,
   SendEmail,
 } from "@cloudflare/workers-types";
-import type { ReasoningEffort } from "@ngriffin_uk/polychat-schemas";
 
 export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclude<keyof T, Keys>> &
   {
     [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>;
   }[Keys];
 
-export type CredentialAuthority = "byok" | "platform";
+export type {
+  CredentialAuthority,
+  ReasoningEffortLevel,
+  VerbosityLevel,
+} from "@ngriffin_uk/polychat-ai-models";
 
 type WorkerCacheFetcher<Props> = {
   fetch(input: RequestInfo | URL, init?: RequestInit & { props?: Props }): Promise<Response>;
@@ -183,6 +186,3 @@ export type IEnv = {
   EMBEDDINGS_OUTPUT_BUCKET?: string;
   SEND_EMAIL?: SendEmail;
 };
-
-export type ReasoningEffortLevel = ReasoningEffort;
-export type VerbosityLevel = "low" | "medium" | "high" | "caveman";

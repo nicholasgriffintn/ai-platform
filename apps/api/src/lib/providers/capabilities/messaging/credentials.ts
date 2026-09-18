@@ -1,8 +1,7 @@
 import { formatUnknownValue } from "@ngriffin_uk/polychat-utility-core";
-
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { safeParseJson } from "~/utils/json";
-import { getStringRecordValue } from "~/utils/objects";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { getStringRecordValue } from "@ngriffin_uk/polychat-utility-server/objects";
 
 import { isMessagingProviderId } from "./metadata";
 import { parseAllowedSenders } from "./senders";

@@ -3,11 +3,11 @@ import {
   teammateRunConfigurationSchema,
   type Delegation,
 } from "@ngriffin_uk/polychat-schemas";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { cleanupCancelledChatRun } from "~/services/chat-runs/cancellation-cleanup";
 import { canonicalJson } from "~/utils/canonical-json";
-import { sha256Hex } from "~/utils/crypto";
 
 export async function cancelDelegationChildRun(
   context: ServiceContext,

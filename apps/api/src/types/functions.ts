@@ -1,14 +1,14 @@
-import type { ToolDefinition } from "@ngriffin_uk/polychat-schemas";
+import type { ToolDefinition, ToolExecutionContext } from "@ngriffin_uk/polychat-library-tools";
 
-import type { ToolExecutionContext } from "~/lib/tools/ToolExecutionContext";
-import type { IFunctionResponse } from "~/types";
+import type { ConversationManager } from "~/services/conversations/manager";
+import type { IEnv, IFunctionResponse, IRequest, IUser } from "~/types";
 
-export type ApiToolDefinition = Omit<
-  ToolDefinition<any, IFunctionResponse, ToolExecutionContext>,
-  "execute"
-> & {
-  execute: (input: any, context: ToolExecutionContext) => Promise<IFunctionResponse>;
-  maxIdenticalCalls?: number;
-  normaliseInput?: (input: unknown) => unknown;
-  companionTools?: readonly string[];
-};
+export type ApiToolExecutionContext = ToolExecutionContext<
+  IEnv,
+  IUser,
+  ConversationManager,
+  IRequest,
+  IFunctionResponse
+>;
+
+export type ApiToolDefinition = ToolDefinition<any, IFunctionResponse, ApiToolExecutionContext>;

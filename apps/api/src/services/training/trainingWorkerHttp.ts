@@ -3,10 +3,10 @@ import {
   TRAINING_WORKER_USER_ID_HEADER,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { ZodType } from "zod";
 
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const TRAINING_WORKER_ORIGIN = "https://training.worker.internal";
 

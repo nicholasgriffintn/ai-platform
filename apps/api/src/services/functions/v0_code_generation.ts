@@ -1,5 +1,7 @@
-import { createServiceContext } from "~/lib/context/serviceContext";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
+import { ai } from "~/lib/ai";
+import type { Message } from "~/types";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import { v0_code_generation as v0_code_generationDescriptor } from "./definitions/v0_code_generation";
@@ -18,7 +20,7 @@ export const v0_code_generation: ApiToolDefinition = {
       };
     }
 
-    const messages = [];
+    const messages: Message[] = [];
 
     if (args.system_prompt) {
       messages.push({
@@ -47,19 +49,16 @@ export const v0_code_generation: ApiToolDefinition = {
       });
     }
 
-    const provider = getChatProvider("v0", { env: req.env, user: req.user });
-    const serviceContext = createServiceContext({ env: req.env, user: req.user });
-    const response = await provider.getResponse(
-      {
-        model: "v0-1.0-md",
-        env: req.env,
-        context: serviceContext,
-        messages,
-      },
-      req.user?.id,
-    );
+    const { raw } = await ai.complete({
+      env: req.env,
+      user: req.user,
+      model: "v0-1.0-md",
+      provider: "v0",
+      messages,
+    });
+    const data = isRecord(raw) ? raw.data : undefined;
 
-    if (!response.data) {
+    if (!data) {
       return {
         status: "error",
         name: "v0_code_generation",
@@ -72,7 +71,7 @@ export const v0_code_generation: ApiToolDefinition = {
       status: "success",
       name: "v0_code_generation",
       content: "Code generated successfully",
-      data: response.data,
+      data,
     };
   },
 };

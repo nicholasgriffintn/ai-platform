@@ -1,11 +1,9 @@
+import type { RealtimeTranscriptionDelay } from "@ngriffin_uk/polychat-ai-providers";
 import type { Context } from "hono";
 
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import {
-  getRealtimeProvider,
-  type RealtimeTranscriptionDelay,
-} from "~/lib/providers/capabilities/realtime";
-import { resolveRealtimeMaxSessionSeconds } from "~/lib/realtime/sessionLimits";
+import { getRealtimeProvider } from "~/lib/providers/capabilities/realtime";
+import { resolveRealtimeMaxSessionSeconds } from "~/services/realtime/sessionLimits";
 import type { IEnv, IUser } from "~/types";
 
 import {

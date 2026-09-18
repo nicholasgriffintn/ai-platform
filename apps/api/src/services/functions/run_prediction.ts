@@ -1,12 +1,12 @@
+import { getProviderModels } from "@ngriffin_uk/polychat-ai-models";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type z from "zod/v4";
 
-import { getProviderModels } from "~/lib/providers/models/catalogue";
-import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
+import { hasUserProviderApiKey } from "~/lib/providers/credentials";
 import { executeReplicateModel } from "~/services/apps/replicate/execute";
 import { requireOptionalProjectCapabilityAccess } from "~/services/workspaces/access";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import {
   run_prediction as runPredictionDescriptor,

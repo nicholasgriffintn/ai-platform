@@ -15,6 +15,7 @@ import {
   sandboxEnvironmentCacheRecordSchema,
   toSandboxEnvironmentCacheSummary,
 } from "@ngriffin_uk/polychat-schemas";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type {
   ProjectCapabilityRow,
@@ -25,7 +26,6 @@ import type {
   WorkspaceSummaryRow,
 } from "~/repositories/WorkspaceRepository";
 import { isConversationUnread } from "~/utils/conversation-organisation";
-import { safeParseJson } from "~/utils/json";
 
 export function formatWorkspaceSummary(row: WorkspaceSummaryRow): WorkspaceSummary {
   return {

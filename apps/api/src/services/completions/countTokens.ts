@@ -1,9 +1,10 @@
-import { resolveExecutableModelForRequest } from "~/lib/chat/policy/model-access";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getChatProvider } from "~/lib/providers/capabilities/chat";
+import { resolveExecutableModelForRequest } from "~/services/chat/policy/model-access";
 import type { ChatCompletionParameters, Message } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/completions/countTokens" });
 

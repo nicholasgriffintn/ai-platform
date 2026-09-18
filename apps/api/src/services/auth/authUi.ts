@@ -5,6 +5,7 @@ import {
   type SerializedAuthFlowResult,
 } from "@ngriffin_uk/auth-protocol";
 import { parseWebAuthnResponse } from "@ngriffin_uk/auth-webauthn";
+import { getStringRecordValue } from "@ngriffin_uk/polychat-utility-server/objects";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { handleAppleIdentityTokenSignIn } from "~/services/auth/apple";
@@ -17,7 +18,6 @@ import {
   createAssistantWebAuthn,
   type AssistantAuthUser,
 } from "~/services/auth/sharedAuth";
-import { getStringRecordValue } from "~/utils/objects";
 
 export interface AssistantAuthUiResult {
   readonly result: SerializedAuthFlowResult<AssistantAuthUser["record"]>["result"];

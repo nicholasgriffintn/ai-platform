@@ -1,14 +1,15 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+
+import { ai } from "~/lib/ai";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { createExecutionOutputProvenance } from "~/lib/provenance/output";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { findModelConfig, getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
+import { findModelConfig, getAuxiliaryModelForRetrieval } from "~/services/models/resolve";
+import { createExecutionOutputProvenance } from "~/services/outputs/provenance";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
-import { getLogger } from "~/utils/logger";
 import { verifyQuotes } from "~/utils/verify";
 
-import { safeParseJson } from "../../../utils/json";
 import { generateArticleReportPrompt } from "./prompts";
 
 const logger = getLogger({
@@ -103,43 +104,33 @@ export async function generateArticlesReport({
       user,
     );
     const modelConfig = await findModelConfig(modelToUse, serviceContext.env, providerToUse);
-    const provider = getChatProvider(providerToUse, {
+
+    const reportGenData = await ai.complete({
       env: serviceContext.env,
       user,
-    });
-
-    const reportGenData = await provider.getResponse({
+      model: modelToUse,
+      provider: providerToUse,
       completion_id,
       app_url,
-      model: modelToUse,
-      messages: [
-        {
-          role: "user",
-          content: generateArticleReportPrompt(combinedArticles, {
-            modelId: modelToUse,
-            modelConfig,
-          }),
-        },
-      ],
-      env: serviceContext.env,
-      context: serviceContext,
+      prompt: generateArticleReportPrompt(combinedArticles, {
+        modelId: modelToUse,
+        modelConfig,
+      }),
     });
 
-    const reportGenDataContent = reportGenData.content || reportGenData.response;
-
-    if (!reportGenDataContent) {
+    if (!reportGenData.text) {
       throw new AssistantError("Report content was empty", ErrorType.PARAMS_ERROR);
     }
 
-    const quotes = extractQuotes(reportGenDataContent);
+    const quotes = extractQuotes(reportGenData.text);
     const verifiedQuotes = verifyQuotes(combinedArticles, quotes);
 
     const reportResult = {
-      content: reportGenDataContent,
+      content: reportGenData.text,
       model: modelToUse,
       id: reportGenData.id,
       citations: reportGenData.citations,
-      log_id: reportGenData.log_id,
+      log_id: reportGenData.logId,
       verifiedQuotes: verifiedQuotes,
     };
 

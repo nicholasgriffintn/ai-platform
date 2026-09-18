@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { ArtificialAnalysisModelRecord } from "~/lib/artificial-analysis/types";
+import type { ArtificialAnalysisModelRecord } from "~/services/model-analysis/artificial-analysis/types";
 
 import { ArtificialAnalysisRepository } from "../ArtificialAnalysisRepository";
 

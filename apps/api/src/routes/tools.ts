@@ -9,6 +9,8 @@ import {
   toolsResponseSchema,
   saveToolConfigurationSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { Hono } from "hono";
 import z from "zod/v4";
 
@@ -23,8 +25,6 @@ import { getRunnableTool } from "~/services/tools/runnable";
 import { getAvailableTools } from "~/services/tools/toolsOperations";
 import { projectScopeQuerySchema } from "~/services/workspaces/access";
 import type { IRequest } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 const app = new Hono();
 

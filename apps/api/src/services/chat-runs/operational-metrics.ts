@@ -1,4 +1,4 @@
-import { Monitoring } from "~/lib/monitoring";
+import { createMetrics } from "~/lib/telemetry";
 import type { IEnv } from "~/types";
 
 export type ChatRunOperationalSignal =
@@ -25,9 +25,8 @@ export function recordChatRunOperationalMetric(env: IEnv, metric: ChatRunOperati
   const { signal, value = 1, outcome, ...metadata } = metric;
 
   try {
-    Monitoring.getInstance(env).recordMetric({
+    createMetrics(env).recordMetric({
       traceId: metric.runId ?? metric.taskId ?? "",
-      timestamp: Date.now(),
       type: outcome === "unknown" ? "error" : "performance",
       name: `chat_run_${signal}`,
       value,

@@ -1,3 +1,5 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { isTaskError } from "@ngriffin_uk/polychat-library-tasks";
 import { projectTaskRunDispatchPayloadSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
@@ -5,12 +7,7 @@ import {
   runProjectTaskDispatch,
   settleFailedProjectTaskDispatch,
 } from "~/services/project-tasks/runner";
-import {
-  isTaskExecutionOwnershipLostError,
-  TaskExecutionLeaseBusyError,
-} from "~/services/tasks/task-execution-lease";
 import type { IEnv } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 import type { TaskExecutionContext, TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";
@@ -68,11 +65,8 @@ export class ProjectTaskRunHandler implements TaskHandler {
         data: { taskId: payload.data.taskId, outcome: result.status },
       };
     } catch (error) {
-      if (
-        isTaskExecutionOwnershipLostError(error) ||
-        error instanceof TaskExecutionLeaseBusyError
-      ) {
-        if (isTaskExecutionOwnershipLostError(error)) {
+      if (isTaskError(error, "ownership_lost") || isTaskError(error, "lease_busy")) {
+        if (isTaskError(error, "ownership_lost")) {
           recordChatRunOperationalMetric(env, {
             signal: "ownership_loss",
             taskId: payload.data.taskId,

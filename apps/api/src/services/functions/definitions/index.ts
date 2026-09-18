@@ -1,7 +1,5 @@
-import type { RecipeConnectorProvider, ToolPermission } from "@ngriffin_uk/polychat-schemas";
-
-import { resolveToolPermissions } from "~/lib/permissions/PermissionChecker";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { requireToolPermissions } from "@ngriffin_uk/polychat-library-tools";
+import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
 import { analyse_article } from "./analyse_article";
 import { call_api } from "./api_call";
@@ -121,19 +119,6 @@ const descriptors: FunctionToolDescriptor[] = [
   use_computer,
   ...metaToolDescriptors,
 ];
-
-export function requireToolPermissions(name: string, permissions?: string[]): ToolPermission[] {
-  const resolved = resolveToolPermissions(name, permissions);
-
-  if (resolved.length === 0) {
-    throw new AssistantError(
-      `Tool "${name}" is missing explicit permissions`,
-      ErrorType.CONFIGURATION_ERROR,
-    );
-  }
-
-  return resolved;
-}
 
 export const functionToolDescriptors: FunctionToolDescriptor[] = descriptors.map((descriptor) => ({
   ...descriptor,

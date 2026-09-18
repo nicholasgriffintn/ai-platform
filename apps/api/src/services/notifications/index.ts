@@ -1,8 +1,13 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
+
 import { APP_NAME, MAGIC_LINK_EXPIRATION_MINUTES, PROD_HOST } from "~/constants/app";
 import { sendEmail } from "~/services/email";
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/notifications" });
 

@@ -1,7 +1,7 @@
+import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv, IUser } from "~/types";
-import { ErrorType } from "~/utils/errors";
 
 import {
   cancelSubscription,

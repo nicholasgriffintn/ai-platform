@@ -1,8 +1,8 @@
 import type { D1Database } from "@cloudflare/workers-types";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export * as schema from "./schema";
 export { createDatabaseClient, type DatabaseClient } from "./client";

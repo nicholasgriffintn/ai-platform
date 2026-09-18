@@ -4,6 +4,7 @@ import {
   githubConnectionSchema,
   sandboxConnectionRepositoriesSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { Hono } from "hono";
 import z from "zod/v4";
 
@@ -23,7 +24,6 @@ import {
   upsertGitHubConnectionFromDefaultAppForUser,
   upsertGitHubConnectionForUser,
 } from "~/services/github/manage-connections";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const installationParamsSchema = z.object({
   installationId: z.string().min(1),

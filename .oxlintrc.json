@@ -38,7 +38,7 @@
     "**/.wrangler/**",
     "**/generated/**",
     "**/worker-configuration.d.ts",
-    "apps/api/src/data-model/models/**"
+    "packages/library-model-catalogue/src/data/**"
   ],
   "rules": {
     "curly": ["error", "all"],

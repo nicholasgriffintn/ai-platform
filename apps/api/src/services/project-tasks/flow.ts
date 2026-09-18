@@ -8,6 +8,11 @@ import {
   type ProjectTask,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
+import { toStringArray } from "@ngriffin_uk/polychat-utility-server/arrays";
+import {
+  intersectEnabledTools,
+  intersectGrantedIds,
+} from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Teammate } from "~/lib/database/schema";
@@ -19,8 +24,6 @@ import {
   resolveProjectCodingEnvironment,
 } from "~/services/workspaces/projectCodingEnvironment";
 import { resolveProjectTools } from "~/services/workspaces/projectTools";
-import { toStringArray } from "~/utils/arrays";
-import { intersectEnabledTools, intersectGrantedIds } from "~/utils/enabledTools";
 
 const DEFAULT_TASK_MODE = "teammate";
 

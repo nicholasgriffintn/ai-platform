@@ -1,6 +1,5 @@
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
-
-import { AssistantError } from "~/utils/errors";
 
 import { buildSkillDocument, save_skill } from "../save_skill";
 

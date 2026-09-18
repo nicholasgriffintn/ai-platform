@@ -1,0 +1,149 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
+
+import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "../gateway.js";
+import type { ChatCompletionParameters } from "../types/index.js";
+
+export function validateAiGatewayToken(params: ChatCompletionParameters): void {
+  if (!params.env.AI_GATEWAY_TOKEN) {
+    throw new AssistantError("Missing AI_GATEWAY_TOKEN", ErrorType.CONFIGURATION_ERROR);
+  }
+}
+
+export function buildAiGatewayHeaders(
+  params: ChatCompletionParameters,
+  apiKey: string,
+): Record<string, string> {
+  return {
+    "cf-aig-authorization": params.env.AI_GATEWAY_TOKEN || "",
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+    "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
+    "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
+  };
+}
+
+export function buildMetricsSettings(params: ChatCompletionParameters): Record<string, any> {
+  return {
+    temperature: params.temperature,
+    max_tokens: params.max_tokens,
+    top_p: params.top_p,
+    top_k: params.top_k,
+    seed: params.seed,
+    repetition_penalty: params.repetition_penalty,
+    frequency_penalty: params.frequency_penalty,
+    presence_penalty: params.presence_penalty,
+  };
+}
+
+export function parseDelimitedCredentials(
+  credentialString: string,
+  delimiter = "::@@::",
+  expectedParts: number,
+  errorMessage = "Invalid credentials format",
+): string[] {
+  const parts = credentialString.split(delimiter);
+
+  if (parts.length !== expectedParts) {
+    throw new AssistantError(errorMessage, ErrorType.CONFIGURATION_ERROR);
+  }
+
+  return parts;
+}
+
+export function parseAwsCredentials(credentialString: string): {
+  accessKey: string;
+  secretKey: string;
+} {
+  const [accessKey, secretKey] = parseDelimitedCredentials(
+    credentialString,
+    "::@@::",
+    2,
+    "Invalid AWS credentials format",
+  ).map((part) => part.trim());
+
+  if (!accessKey || !secretKey) {
+    throw new AssistantError("Invalid AWS credentials format", ErrorType.CONFIGURATION_ERROR);
+  }
+
+  return { accessKey, secretKey };
+}
+
+export async function safeParseJSON<T = any>(response: Response, context: string): Promise<T> {
+  try {
+    return (await response.json()) as T;
+  } catch (jsonError) {
+    const responseText = await response.text().catch(() => "[unable to read]");
+    const redactedResponseText = redactSensitiveTokens(responseText);
+
+    throw new AssistantError(
+      `${context} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
+      ErrorType.PROVIDER_ERROR,
+      500,
+      {
+        responsePreview: redactedResponseText.substring(0, 200),
+        originalError: jsonError,
+      },
+    );
+  }
+}
+
+type AssetReference = {
+  key?: string;
+  url?: string;
+};
+
+type AssetResponseShape = {
+  url?: unknown;
+  output?: unknown;
+  attachments?: unknown;
+  data?: {
+    attachments?: unknown;
+  };
+};
+
+export function extractGeneratedAsset(response: AssetResponseShape): AssetReference {
+  const attachments = response?.data?.attachments ?? response?.attachments;
+
+  if (Array.isArray(attachments) && attachments.length > 0) {
+    const [first] = attachments;
+
+    if (first && typeof first === "object") {
+      const asset = first as AssetReference;
+
+      return {
+        url: asset.url,
+        key: asset.key,
+      };
+    }
+  }
+
+  if (typeof response?.url === "string") {
+    return { url: response.url };
+  }
+
+  if (typeof response?.output === "string") {
+    return { url: response.output };
+  }
+
+  if (Array.isArray(response?.output) && response.output.length > 0) {
+    const [first] = response.output;
+
+    if (typeof first === "string") {
+      return { url: first };
+    }
+
+    if (first && typeof first === "object") {
+      const asset = first as AssetReference;
+
+      if (asset.url) {
+        return {
+          url: asset.url,
+          key: asset.key,
+        };
+      }
+    }
+  }
+
+  return {};
+}

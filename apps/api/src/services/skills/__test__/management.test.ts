@@ -1,6 +1,6 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { resolveScopedSkillCatalog } from "~/lib/chat/preparation/skills";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type {
   AppendAuthoredSkillRevisionInput,
@@ -9,8 +9,8 @@ import type {
   AuthoredSkillScope,
   CreateAuthoredSkillInput,
 } from "~/repositories/AuthoredSkillRepository";
+import { resolveScopedSkillCatalog } from "~/services/chat/preparation/skills";
 import { load_skill } from "~/services/functions/load_skill";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { resolveSkillCatalog } from "../catalog";
 import { listScopedSkillSummaries } from "../listing";

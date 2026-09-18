@@ -3,9 +3,9 @@ import {
   SKILL_LOAD_TOOL_NAME,
   type ToolSelectionMode,
 } from "@ngriffin_uk/polychat-schemas";
+import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 
 import type { IUser } from "~/types";
-import { intersectEnabledTools } from "~/utils/enabledTools";
 
 const DISCOVERY_FUNCTION_TOOLS = [CAPABILITY_DISCOVERY_TOOL_NAME, SKILL_LOAD_TOOL_NAME] as const;
 const SIGNED_IN_FUNCTION_TOOLS = ["web_search"] as const;

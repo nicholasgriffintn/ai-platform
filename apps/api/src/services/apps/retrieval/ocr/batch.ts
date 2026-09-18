@@ -1,12 +1,5 @@
 import {
-  OCR_BATCH_POLLING_TASK_TYPE,
-  type OcrBatchRequestItem,
-  type OcrBatchStartRequest,
-} from "@ngriffin_uk/polychat-schemas";
-
-import type { ServiceContext } from "~/lib/context/serviceContext";
-import { requireOcrAccess } from "~/lib/providers/capabilities/ocr/access";
-import {
+  requireOcrAccess,
   cleanupOcrBatchProviderResources,
   MAX_OCR_BATCH_PAYLOAD_BYTES,
   MistralOcrBatchClient,
@@ -14,18 +7,27 @@ import {
   type OcrBatchClient,
   withOcrBatchProviderCleanup,
   withoutOcrBatchProviderCleanup,
-} from "~/lib/providers/capabilities/ocr/batch/MistralOcrBatchClient";
-import type { OcrDocument } from "~/lib/providers/capabilities/ocr/types";
+  type OcrDocument,
+} from "@ngriffin_uk/polychat-ai-providers";
+import {
+  OCR_BATCH_POLLING_TASK_TYPE,
+  type OcrBatchRequestItem,
+  type OcrBatchStartRequest,
+} from "@ngriffin_uk/polychat-schemas";
+import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { getUtf8ByteLength } from "@ngriffin_uk/polychat-utility-server/strings";
+
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import { providerHost } from "~/lib/providers/host";
+import { providerRuntime } from "~/lib/providers/runtime";
 import { readPrivateFile } from "~/lib/storage/read-resource";
 import { createOutput, getOutput, updateOutput } from "~/services/outputs";
 import { requireOutputAccess } from "~/services/outputs/access";
 import { TaskService } from "~/services/tasks/TaskService";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import type { IUser } from "~/types";
-import { bufferToBase64 } from "~/utils/base64";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { getUtf8ByteLength } from "~/utils/strings";
 
 import { getOcrInputKind, MAX_OCR_DOCUMENT_BYTES, MAX_OCR_IMAGE_BYTES } from "./input";
 
@@ -167,7 +169,7 @@ export async function startOcrBatch(
     await requireProjectAccess(context, options.projectId);
   }
 
-  await requireOcrAccess({ env: context.env, user, providerName: "mistral" });
+  await requireOcrAccess(providerHost, { env: context.env, user, providerName: "mistral" });
   const startedAt = new Date().toISOString();
   const resolvedRequests: ResolvedBatchRequest[] = [];
   let payloadBytes = 4_096;
@@ -215,7 +217,7 @@ export async function startOcrBatch(
   const sourceIds = resolvedRequests.flatMap((request) =>
     request.sourceId ? [request.sourceId] : [],
   );
-  const batchClient = options.batchClient ?? new MistralOcrBatchClient();
+  const batchClient = options.batchClient ?? new MistralOcrBatchClient(providerRuntime);
   let providerJobId: string | undefined;
 
   try {
@@ -400,7 +402,7 @@ export async function cancelOcrBatch(
     );
   }
 
-  const batchClient = dependencies.batchClient ?? new MistralOcrBatchClient();
+  const batchClient = dependencies.batchClient ?? new MistralOcrBatchClient(providerRuntime);
   const cancellationOutput = await updateOutput(context, user.id, outputId, {
     status: "pending",
     expectedRevision: output.revision,

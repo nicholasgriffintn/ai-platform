@@ -1,4 +1,4 @@
-import type { AgentMessage } from "@ngriffin_uk/polychat-library-agent-core";
+import type { AgentMessage } from "@ngriffin_uk/polychat-ai-agents";
 import type { SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
 import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 

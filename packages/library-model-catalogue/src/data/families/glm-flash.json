@@ -1,0 +1,155 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
+  "models": {
+    "glm-4-5-flash": {
+      "defaults": {
+        "name": "GLM-4.5-Flash",
+        "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
+        "contextWindow": 131072,
+        "maxTokens": 98304,
+        "modalities": {
+          "input": ["text"],
+          "output": ["text"]
+        },
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "July 28, 2025",
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": ["none", "thinking"],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-4-6v-flash": {
+      "defaults": {
+        "name": "GLM-4.6V-Flash",
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": ["text", "image"],
+          "output": ["text"]
+        },
+        "releaseDate": "December 8, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": ["none", "thinking"],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-4-7-flash": {
+      "defaults": {
+        "name": "GLM-4.7-Flash",
+        "description": "Budget GLM lane for fast coding help, routing, and everyday automation",
+        "contextWindow": 200000,
+        "modalities": {
+          "input": ["text"],
+          "output": ["text"]
+        },
+        "strengths": ["tool_use"],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "January 19, 2026",
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": ["none", "thinking"],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 15.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "glm-4-7-flashx": {
+      "defaults": {
+        "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
+        "contextWindow": 200000,
+        "modalities": {
+          "input": ["text"],
+          "output": ["text"]
+        },
+        "releaseDate": "January 19, 2026",
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": ["none", "thinking"],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5-3-flash": {
+      "defaults": {
+        "name": "GLM-5.3-Flash",
+        "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+        "maxTokens": 131072,
+        "releaseDate": "August 26, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": ["low", "high", "max"],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "glm-5-3-flash-eu": {
+      "defaults": {
+        "name": "GLM-5.3-Flash (EU)",
+        "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+        "contextWindow": 1000000,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": ["text", "image", "video", "pdf"],
+          "output": ["text"]
+        },
+        "releaseDate": "August 26, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": ["none", "low", "medium", "high", "max"],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-flash-latest": {
+      "defaults": {
+        "name": "GLM Flash Latest",
+        "openWeights": false,
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "contextWindow": 1310720,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": ["text", "image", "video"],
+          "output": ["text"]
+        },
+        "releaseDate": "August 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": ["low", "high", "max"],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "glm-flash-latest-glm-5-3-flash": {
+      "defaults": {
+        "name": "GLM Flash Latest (GLM 5.3 Flash)",
+        "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+        "contextWindow": 1048573,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": ["text", "image"],
+          "output": ["text"]
+        },
+        "releaseDate": "August 26, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": ["low", "high", "max"],
+          "defaultEffort": "low"
+        }
+      }
+    }
+  }
+}

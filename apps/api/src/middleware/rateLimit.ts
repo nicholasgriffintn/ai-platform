@@ -1,9 +1,9 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { Context, Next } from "hono";
 
-import { trackUsageMetric } from "~/lib/monitoring";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
+import { createMetrics } from "~/lib/telemetry";
 
 const logger = getLogger({ prefix: "middleware/rateLimit" });
 
@@ -62,7 +62,7 @@ export async function rateLimit(context: Context, next: Next) {
 
   const routeName = pathname.split("/").pop() || "unknown";
 
-  trackUsageMetric(userId || anonymousUserId, routeName, context.env.ANALYTICS);
+  createMetrics(context.env).trackUsageMetric(userId || anonymousUserId, routeName);
 
   return next();
 }

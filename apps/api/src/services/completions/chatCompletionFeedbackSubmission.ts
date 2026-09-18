@@ -1,9 +1,9 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { SubmitChatCompletionFeedbackInput } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { gatewayId } from "~/constants/app";
 import type { TrainingExampleRepository } from "~/repositories";
-import { getErrorMessage } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({
   prefix: "services/chatCompletionFeedbackSubmission",

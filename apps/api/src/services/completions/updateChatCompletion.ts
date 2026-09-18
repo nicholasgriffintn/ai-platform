@@ -1,21 +1,21 @@
+import { userCreditActor, recordOffPlatformRunUsage } from "@ngriffin_uk/polychat-ai-billing";
 import {
   canReplaceStoredConversationMessages,
   permissionModeSchema,
   type PermissionMode,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
   cloneMessagesForBranch,
   selectBranchSourceMessages,
-} from "~/lib/chat/messages/branch-cloning";
-import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
-import { userCreditActor } from "~/lib/usage/creditActor";
-import { recordOffPlatformRunUsage } from "~/lib/usage/modelUsage";
+} from "~/services/chat/messages/branch-cloning";
 import { withThreadLock } from "~/services/conversations/coordinator/client";
+import { ConversationManager } from "~/services/conversations/manager";
 import { publishConversationChanged } from "~/services/sync/conversation-events";
+import { createUsageRuntime } from "~/services/usage/runtime";
 import type { Message } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface ChatCompletionUpdateParams {
   title?: string;
@@ -110,6 +110,11 @@ export const handleUpdateChatCompletion = async (
       },
     );
 
+    const usageRuntime = createUsageRuntime({
+      env: context.env,
+      repositories: context.repositories,
+    });
+
     await Promise.all(
       persistedMessages
         .map((message) => {
@@ -124,9 +129,7 @@ export const handleUpdateChatCompletion = async (
             return null;
           }
 
-          return recordOffPlatformRunUsage({
-            env: context.env,
-            repositories: context.repositories,
+          return recordOffPlatformRunUsage(usageRuntime, {
             actor: userCreditActor(user.id),
             provenance,
             provider: message.provider,

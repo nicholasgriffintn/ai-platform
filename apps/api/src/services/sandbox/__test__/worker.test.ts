@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("~/lib/providers/models", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("~/lib/providers/models")>();
+vi.mock("~/services/models/resolve", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("~/services/models/resolve")>();
 
   return {
     ...actual,
-    filterModelsForUserAccess: async (models: ReturnType<typeof actual.getModels>) => models,
+    filterModelsForUserAccess: async (
+      models: Parameters<typeof actual.filterModelsForUserAccess>[0],
+    ) => models,
   };
 });
 

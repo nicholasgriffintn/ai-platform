@@ -5,6 +5,7 @@ import {
   apiResponseSchema,
   errorResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 
 import { addRoute } from "~/lib/http/routeBuilder";
@@ -13,7 +14,6 @@ import { requirePlan } from "~/middleware/requirePlan";
 import { deleteEmbedding } from "~/services/apps/embeddings/delete";
 import { insertEmbedding } from "~/services/apps/embeddings/insert";
 import { queryEmbeddings } from "~/services/apps/embeddings/query";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
 

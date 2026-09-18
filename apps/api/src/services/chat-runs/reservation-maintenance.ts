@@ -1,5 +1,7 @@
-import { finishUsageReservation } from "~/lib/usage/reservations";
+import { finishUsageReservation } from "@ngriffin_uk/polychat-ai-billing";
+
 import { RepositoryManager } from "~/repositories";
+import { createUsageRuntime } from "~/services/usage/runtime";
 import type { IEnv } from "~/types";
 
 export async function releaseExpiredChatRunReservations(
@@ -7,6 +9,7 @@ export async function releaseExpiredChatRunReservations(
   now = new Date(),
 ): Promise<number> {
   const repositories = new RepositoryManager(env);
+  const runtime = createUsageRuntime({ env, repositories });
   const expired = await repositories.usageReservations.listExpiredHeldReservations(
     "chat_run",
     now.toISOString(),
@@ -14,13 +17,11 @@ export async function releaseExpiredChatRunReservations(
   );
   const finished = await Promise.all(
     expired.map((reservation) =>
-      finishUsageReservation({
-        repositories,
+      finishUsageReservation(runtime, {
         kind: "chat_run",
         refId: reservation.ref_id,
         reservationId: reservation.id,
         outcome: "released",
-        publisher: { env },
       }),
     ),
   );

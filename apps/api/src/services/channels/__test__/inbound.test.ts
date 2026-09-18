@@ -17,7 +17,7 @@ vi.mock("../adapters", async (importOriginal) => {
   return { ...original, getChannelAdapter: mocks.getChannelAdapter };
 });
 
-vi.mock("~/lib/conversationManager", () => ({
+vi.mock("~/services/conversations/manager", () => ({
   ConversationManager: {
     getInstance: mocks.conversationGetInstance,
   },
@@ -37,7 +37,7 @@ vi.mock("~/services/completions/createChatCompletions", () => ({
   handleCreateChatCompletions: mocks.handleCreateChatCompletions,
 }));
 
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { handleInboundChannelMessage, type InboundChannelTaskData } from "../inbound";
 

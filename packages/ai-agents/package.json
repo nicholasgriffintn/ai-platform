@@ -1,0 +1,45 @@
+{
+  "name": "@ngriffin_uk/polychat-ai-agents",
+  "version": "0.1.0",
+  "description": "Agent primitives for Polychat: define an agent from a model, tools and an objective, run it through the bounded decision loop with approvals, and schedule it as a worker",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "polychat-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.typecheck.json"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-ai-functions": "workspace:^",
+    "@ngriffin_uk/polychat-ai-providers": "workspace:^",
+    "@ngriffin_uk/polychat-library-agent-loop": "workspace:^",
+    "@ngriffin_uk/polychat-library-tools": "workspace:^",
+    "@ngriffin_uk/polychat-library-workflows": "workspace:^",
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "@ngriffin_uk/polychat-utility-server": "workspace:^"
+  },
+  "devDependencies": {
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "zod": "catalog:"
+  }
+}

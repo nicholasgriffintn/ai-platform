@@ -160,7 +160,6 @@ export * from "./stripe.js";
 export * from "./tasks.js";
 export * from "./task-notifications.js";
 export * from "./templates.js";
-export * from "./tool-registry.js";
 export * from "./tools.js";
 export * from "./tool-configurations.js";
 export * from "./uploads.js";

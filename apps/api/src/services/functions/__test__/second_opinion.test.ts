@@ -5,8 +5,8 @@ const mocks = vi.hoisted(() => ({
   findModelConfig: vi.fn(),
 }));
 
-vi.mock("~/lib/chat/panel", () => ({ runPanel: mocks.runPanel }));
-vi.mock("~/lib/providers/models", () => ({ findModelConfig: mocks.findModelConfig }));
+vi.mock("~/services/chat/panel", () => ({ runPanel: mocks.runPanel }));
+vi.mock("~/services/models/resolve", () => ({ findModelConfig: mocks.findModelConfig }));
 
 import { second_opinion } from "../second_opinion";
 

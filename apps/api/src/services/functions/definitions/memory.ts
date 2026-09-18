@@ -1,6 +1,7 @@
-import { MEMORY_SEARCH_TOOL_NAME, MEMORY_STORE_TOOL_NAME } from "~/lib/chat/policy/memory";
+import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 
-import { jsonSchemaToZod } from "../../../utils/jsonSchema";
+import { MEMORY_SEARCH_TOOL_NAME, MEMORY_STORE_TOOL_NAME } from "~/services/chat/policy/memory";
+
 import type { FunctionToolDescriptor } from "./types";
 
 export const search_memories: FunctionToolDescriptor = {

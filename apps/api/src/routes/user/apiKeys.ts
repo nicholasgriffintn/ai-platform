@@ -1,16 +1,16 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   errorResponseSchema,
   successResponseSchema,
   createApiKeySchema,
   deleteApiKeyParamsSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
 import { addRoute } from "~/lib/http/routeBuilder";
 import { createUserApiKey, deleteUserApiKey, getUserApiKeys } from "~/services/user/apiKeys";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "routes/user/apiKeys" });
 

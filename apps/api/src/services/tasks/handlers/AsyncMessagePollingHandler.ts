@@ -1,13 +1,14 @@
-import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
-import { isAsyncInvocationPending } from "~/lib/async/asyncInvocation";
-import { ConversationManager } from "~/lib/conversationManager";
+import type { AsyncInvocationMetadata } from "@ngriffin_uk/polychat-ai-providers";
+import { isAsyncInvocationPending } from "@ngriffin_uk/polychat-ai-providers";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+
 import { Database } from "~/lib/database";
 import { TaskRepository } from "~/repositories/TaskRepository";
 import { UserRepository } from "~/repositories/UserRepository";
 import { handleAsyncInvocation } from "~/services/completions/async/handler";
 import { withThreadLockIfFree } from "~/services/conversations/coordinator/client";
+import { ConversationManager } from "~/services/conversations/manager";
 import type { IEnv } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 import type { TaskHandler, TaskResult } from "../TaskHandler";
 import type { TaskMessage } from "../TaskService";

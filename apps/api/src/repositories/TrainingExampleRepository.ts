@@ -1,4 +1,4 @@
-import { generateId } from "~/utils/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { BaseRepository } from "./BaseRepository";
 

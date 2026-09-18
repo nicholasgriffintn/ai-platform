@@ -1,8 +1,8 @@
 import type { DelegationMemoryBinding } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { MemoryDocumentRow } from "~/lib/database/schema";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface RequestedBinding {
   documentId: string;

@@ -1,6 +1,6 @@
 import type { AssistantCapabilityDescriptor, AssistantRecipe } from "@ngriffin_uk/polychat-schemas";
 
-import { normaliseAssistantCapabilityTags } from "~/services/assistant-capabilities";
+import { normaliseAssistantCapabilityTags } from "~/services/assistant-capabilities/tags";
 
 function getRecipeKindCapabilityTag(recipe: AssistantRecipe): string {
   if (recipe.kind === "automate") {

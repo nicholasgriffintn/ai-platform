@@ -3,13 +3,13 @@ import type {
   AuthoredSkillDocument,
   AuthoredSkillInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { recordProjectAudit } from "~/services/audit";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { safeParseJson } from "~/utils/json";
 
 import { getSkillDefinition } from "./catalog";
 import {

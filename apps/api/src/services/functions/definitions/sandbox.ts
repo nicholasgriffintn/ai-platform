@@ -1,6 +1,6 @@
+import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 import { SANDBOX_TASK_TYPES } from "@ngriffin_uk/polychat-schemas";
 
-import { jsonSchemaToZod } from "../../../utils/jsonSchema";
 import type { FunctionToolDescriptor } from "./types";
 
 export const sandboxFunctionParameters = {

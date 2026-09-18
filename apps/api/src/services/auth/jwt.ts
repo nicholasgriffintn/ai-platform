@@ -1,10 +1,10 @@
 import { importHmacSecret, signJwt, verifyJwt, type JwtClaims } from "@ngriffin_uk/auth-jwt";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { RepositoryManager } from "~/repositories";
 import { getUserById } from "~/services/auth/user";
 import type { IEnv, User } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/auth/jwt" });
 const DEFAULT_EXPIRATION = 15 * 60;

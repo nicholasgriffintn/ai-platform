@@ -1,10 +1,10 @@
+import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getGitHubAppInstallationToken } from "~/lib/github";
 import { githubApiRequest } from "~/lib/github/api-client";
 import type { ProviderConnectionRecord } from "~/repositories/ProviderConnectionRepository";
-import { ErrorType } from "~/utils/errors";
 
 import { encryptGitHubConnectionPayload } from "../connection-crypto";
 import {

@@ -4,7 +4,7 @@ import {
   type CouncilMemberId,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { runPanel, type PanelMember, type PanelTurn } from "~/lib/chat/panel";
+import { runPanel, type PanelMember, type PanelTurn } from "~/services/chat/panel";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import {

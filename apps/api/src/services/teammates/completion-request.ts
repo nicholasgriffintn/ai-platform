@@ -7,10 +7,10 @@ import {
   type McpToolConfiguration,
   type ParsedChatCompletionRequestBody,
 } from "@ngriffin_uk/polychat-schemas";
+import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 
 import type { Teammate } from "~/lib/database/schema";
 import type { AssistantPersona, ChatCompletionParameters, Message } from "~/types";
-import { intersectEnabledTools } from "~/utils/enabledTools";
 
 import { readTeammateSkillIds } from "./teammateResponse";
 

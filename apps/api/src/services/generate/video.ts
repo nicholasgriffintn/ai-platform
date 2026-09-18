@@ -1,13 +1,11 @@
 import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
+import { ai } from "~/lib/ai";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { generateWithProviderFallback } from "~/lib/providers/capabilities/utils";
-import { getVideoProvider } from "~/lib/providers/capabilities/video";
-import { resolveModelProvider } from "~/lib/providers/models";
-import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
+import { hasUserProviderApiKey } from "~/lib/providers/credentials";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { sanitiseInput } from "~/utils/sanitise";
 
 export interface VideoGenerationParams {
   prompt: string;
@@ -71,12 +69,11 @@ export async function generateVideo({
       };
     }
 
-    const providerName = await resolveModelProvider({
-      provider: args.provider,
-      model: args.model,
-      defaultProvider: DEFAULT_PROVIDER,
-      env: runtimeEnv,
-    });
+    const { providerName } = await ai.resolveMediaProvider(
+      "video",
+      { env: runtimeEnv, model: args.model },
+      { provider: args.provider, defaultProvider: DEFAULT_PROVIDER },
+    );
 
     if (
       runtimeUser.plan_id !== "pro" &&
@@ -109,15 +106,9 @@ export async function generateVideo({
       model: args.model,
     };
 
-    const videoData = await generateWithProviderFallback({
-      providerName,
+    const videoData = await ai.video(request, {
+      provider: providerName,
       defaultProvider: DEFAULT_PROVIDER,
-      request,
-      getProvider: (name) =>
-        getVideoProvider(name, {
-          env: runtimeEnv,
-          user: runtimeUser,
-        }),
       allowFallback: runtimeUser.plan_id === "pro",
     });
 

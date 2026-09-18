@@ -1,7 +1,10 @@
+import {
+  decryptJsonPayload,
+  isEncryptedJsonPayload,
+} from "@ngriffin_uk/polychat-utility-server/crypto";
 import { describe, expect, it, vi } from "vitest";
 
 import type { IEnv } from "~/types";
-import { decryptJsonPayload, isEncryptedJsonPayload } from "~/utils/crypto";
 
 import { TaskNotificationRepository } from "../TaskNotificationRepository";
 

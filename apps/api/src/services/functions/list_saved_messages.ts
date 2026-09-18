@@ -2,11 +2,11 @@ import {
   SAVED_MESSAGES_TOOL_NAME,
   type ListSavedMessagesInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { listSavedMessages } from "~/services/saved-messages";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { list_saved_messages as listSavedMessagesDescriptor } from "./definitions/list_saved_messages";
 

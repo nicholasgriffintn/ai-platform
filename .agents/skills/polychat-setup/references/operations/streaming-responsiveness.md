@@ -7,7 +7,7 @@ Long responses must keep stop, approval, question and terminal state usable. Tre
 From the repository root, run:
 
 ```sh
-pnpm --filter @assistant/api test src/lib/chat/streaming/__test__/tool-result-preview.test.ts src/repositories/__test__/MessageRepository.test.ts
+pnpm --filter @assistant/api test src/services/chat/streaming/__test__/tool-result-preview.test.ts src/repositories/__test__/MessageRepository.test.ts
 pnpm --filter @assistant/app test src/lib/chat/__test__/stream-progress-coalescer.test.ts
 pnpm test:mobile
 ```

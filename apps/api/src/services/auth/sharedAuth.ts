@@ -3,6 +3,8 @@ import { magicLinkAuth, type MagicLinkDelivery } from "@ngriffin_uk/auth-magic-l
 import { createAppleDirectAuth } from "@ngriffin_uk/auth-provider-apple";
 import { createGitHubAuth } from "@ngriffin_uk/auth-provider-github";
 import { webAuthn } from "@ngriffin_uk/auth-webauthn";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { appendUrlPath } from "@ngriffin_uk/polychat-utility-server/urls";
 
 import {
   APP_NAME,
@@ -15,8 +17,6 @@ import type { ServiceContext } from "~/lib/context/serviceContext";
 import { createAssistantUserStore, resolveAssistantEmailUser } from "~/services/auth/authUser";
 import { resolveGitHubIdentity } from "~/services/auth/github";
 import { createAssistantIdentityStore } from "~/services/auth/identity";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { appendUrlPath } from "~/utils/urls";
 
 export type { AssistantAuthUser } from "~/services/auth/authUser";
 

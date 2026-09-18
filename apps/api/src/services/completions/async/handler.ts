@@ -1,13 +1,14 @@
 import {
   createAsyncInvocationMetadata,
   mergeAsyncInvocationMetadata,
-} from "~/lib/async/asyncInvocation";
-import type { AsyncInvocationMetadata } from "~/lib/async/asyncInvocation";
-import { buildMessageParts } from "~/lib/chat/messages/parts";
-import { resolveExecutableModelForRequest } from "~/lib/chat/policy/model-access";
+} from "@ngriffin_uk/polychat-ai-providers";
+import type { AsyncInvocationMetadata } from "@ngriffin_uk/polychat-ai-providers";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+
 import { getChatProvider, listChatProviders } from "~/lib/providers/capabilities/chat";
+import { buildMessageParts } from "~/services/chat/messages/parts";
+import { resolveExecutableModelForRequest } from "~/services/chat/policy/model-access";
 import type { ChatCompletionParameters, Message } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 import type { AsyncInvocationHandler, AsyncRefreshContext, AsyncRefreshResult } from "./types";
 

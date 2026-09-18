@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { Miniflare } from "miniflare";
 import { afterAll, expect, it } from "vitest";
 
-import { buildAppendRunEventStatements } from "~/lib/chat-runs/event-statements";
+import { buildAppendRunEventStatements } from "~/repositories/run-event-statements";
 
 import { ConversationRunRepository } from "../ConversationRunRepository";
 

@@ -1,7 +1,7 @@
 import { sleep } from "@ngriffin_uk/polychat-utility-core";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { IRequest } from "~/types";
-import { getErrorMessage } from "~/utils/errors";
 
 import type { ContentExtractParams, ExtractedContentPayload } from "../../types/content-extract";
 

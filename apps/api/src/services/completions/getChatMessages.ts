@@ -1,9 +1,10 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
 import type { ConnectorOperationApprovalRepository } from "~/repositories/ConnectorOperationApprovalRepository";
 import { hydrateConnectorApprovalMessageState } from "~/services/apps/connectors/approval-message-state";
+import { ConversationManager } from "~/services/conversations/manager";
 import type { AnonymousUser, Message } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export type GetChatMessagesContext = Pick<
   ServiceContext,

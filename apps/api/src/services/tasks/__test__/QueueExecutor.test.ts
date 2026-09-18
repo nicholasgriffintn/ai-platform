@@ -1,6 +1,5 @@
+import { leaseBusyError, leaseExpiry } from "@ngriffin_uk/polychat-library-tasks";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import { TaskExecutionLeaseBusyError } from "../task-execution-lease";
 
 const mocks = vi.hoisted(() => ({
   execute: vi.fn(),
@@ -45,7 +44,7 @@ describe("QueueExecutor durable ownership", () => {
   it("delays redelivery while the persisted execution owner is live", async () => {
     const message = queueMessage();
 
-    mocks.execute.mockRejectedValue(new TaskExecutionLeaseBusyError(45));
+    mocks.execute.mockRejectedValue(leaseBusyError("task-1", leaseExpiry(Date.now(), 45_000)));
 
     await QueueExecutor.respondToCronQueue({} as any, { messages: [message] } as any);
 

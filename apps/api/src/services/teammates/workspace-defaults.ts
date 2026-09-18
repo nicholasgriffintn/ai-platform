@@ -1,7 +1,8 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 import { requireTeammateAccess, TEAMMATE_CAPABILITY_KIND } from "./access";
 import { archiveProjectTeammateContexts } from "./context-lifecycle";

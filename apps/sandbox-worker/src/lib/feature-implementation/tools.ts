@@ -1,9 +1,9 @@
 import {
-  defineTool,
-  finishToolDefinition,
-  updatePlanToolDefinition,
-  type ToolDefinition,
-} from "@ngriffin_uk/polychat-library-tool-runtime";
+  declareTool,
+  finishToolDeclaration,
+  updatePlanToolDeclaration,
+  type ToolDeclaration,
+} from "@ngriffin_uk/polychat-library-tools";
 
 import { MAX_PARALLEL_COMMANDS, MAX_READ_FILES_BATCH } from "./constants";
 
@@ -32,7 +32,7 @@ export interface RunScriptAction {
   language: ScriptLanguage;
 }
 
-const runCommandToolDefinition = defineTool({
+const runCommandToolDefinition = declareTool({
   name: RUN_COMMAND_TOOL_NAME,
   description:
     "Run one or more shell commands in the repository. Pass several commands only when they are independent and safe to run together.",
@@ -48,7 +48,7 @@ const runCommandToolDefinition = defineTool({
   required: ["commands"],
 });
 
-const readFilesToolDefinition = defineTool({
+const readFilesToolDefinition = declareTool({
   name: READ_FILES_TOOL_NAME,
   description:
     "Read one or more files from the repository, optionally limited to a line range. Prefer reading several related files in one call.",
@@ -71,7 +71,7 @@ const readFilesToolDefinition = defineTool({
   required: ["files"],
 });
 
-const runScriptToolDefinition = defineTool({
+const runScriptToolDefinition = declareTool({
   name: RUN_SCRIPT_TOOL_NAME,
   description:
     "Run a short script in the repository when a shell command would be awkward. Use for multi-step file edits or data processing.",
@@ -86,12 +86,12 @@ const runScriptToolDefinition = defineTool({
   required: ["code"],
 });
 
-export function getSandboxAgentTools(options: { readOnlyCommands: boolean }): ToolDefinition[] {
-  const tools: ToolDefinition[] = [
+export function getSandboxAgentTools(options: { readOnlyCommands: boolean }): ToolDeclaration[] {
+  const tools: ToolDeclaration[] = [
     runCommandToolDefinition,
     readFilesToolDefinition,
-    updatePlanToolDefinition,
-    finishToolDefinition,
+    updatePlanToolDeclaration,
+    finishToolDeclaration,
   ];
 
   if (!options.readOnlyCommands) {

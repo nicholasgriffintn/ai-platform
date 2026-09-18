@@ -3,9 +3,9 @@ import {
   type TeammateComputerInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import type { ComputerProvider, ComputerResource, ComputerScreenConnection } from "./types";
 import { STALE_COMPUTER_LEASE_ERROR_CODE } from "./types";

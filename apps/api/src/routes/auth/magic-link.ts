@@ -3,6 +3,7 @@ import {
   magicLinkVerifySchema,
   errorResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 import z from "zod/v4";
 
@@ -10,7 +11,6 @@ import { addRoute } from "~/lib/http/routeBuilder";
 import { requestAssistantMagicLink } from "~/services/auth/magicLinkRequest";
 import { createSessionCookie } from "~/services/auth/sessions";
 import { createAssistantMagicLinkAuth } from "~/services/auth/sharedAuth";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
 

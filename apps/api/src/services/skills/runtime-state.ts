@@ -1,8 +1,8 @@
 import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
+import type { RequestCache } from "@ngriffin_uk/polychat-utility-server/request-cache";
 
-import { getModelConfigByMatchingModel } from "~/lib/providers/models";
+import { getModelConfigByMatchingModel } from "~/services/models/resolve";
 import type { IRequest } from "~/types";
-import type { RequestCache } from "~/utils/requestCache";
 
 import { listSkillAvailability } from "./availability";
 import type { LoadedSkillRuntime, SkillCatalog } from "./catalog";

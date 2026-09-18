@@ -1,12 +1,12 @@
 import { isLiveDelegationState, type Delegation } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { withThreadLockIfFree } from "~/services/conversations/coordinator/client";
 import { filterAccessibleOutputs } from "~/services/outputs/access";
 import type { IUser } from "~/types";
 import { conversationHandleIdForDelegation } from "~/utils/conversation-handles";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 import { canControlDelegation } from "./authority";
 

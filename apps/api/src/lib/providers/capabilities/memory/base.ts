@@ -1,16 +1,16 @@
+import { fetchProviderJson } from "@ngriffin_uk/polychat-ai-providers";
 import type { SourceStatus } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { appendUrlPath } from "@ngriffin_uk/polychat-utility-server/urls";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { EmbeddingProviderTarget } from "~/lib/providers/capabilities/embedding/helpers";
-import { fetchProviderJson } from "~/lib/providers/lib/fetch";
 import { SourceRepository, type SourceRecord } from "~/repositories/SourceRepository";
 import { getRecipeConnectorAccessToken } from "~/services/apps/connectors";
 import type { IEnv, IUser, IUserSettings, MemoryScope } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { safeParseJson } from "~/utils/json";
-import { appendUrlPath } from "~/utils/urls";
 
 import type {
   MemoryProvider,

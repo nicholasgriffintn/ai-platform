@@ -1,3 +1,4 @@
+import { getProviderModels } from "@ngriffin_uk/polychat-ai-models";
 import {
   executeReplicateRequestSchema,
   type AppTheme,
@@ -8,10 +9,10 @@ import {
   replicatePredictionResponseSchema,
   replicatePredictionsResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 
 import { addRoute } from "~/lib/http/routeBuilder";
-import { getProviderModels } from "~/lib/providers/models/catalogue";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { executeReplicateModel } from "~/services/apps/replicate/execute";
 import { getReplicatePredictionDetails } from "~/services/apps/replicate/get-details";
@@ -20,7 +21,6 @@ import {
   projectScopeQuerySchema,
   requireOptionalProjectCapabilityAccess,
 } from "~/services/workspaces/access";
-import { AssistantError } from "~/utils/errors";
 
 const signatureMetadata: Record<
   string,

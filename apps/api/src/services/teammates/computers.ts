@@ -4,13 +4,13 @@ import type {
   TeammateComputerInput,
   TeammateContext,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generatePrefixedId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getComputerProvider } from "~/lib/providers/capabilities/computer";
 import { STALE_COMPUTER_LEASE_ERROR_CODE } from "~/lib/providers/capabilities/computer/types";
 import type { TeammateComputerRecord } from "~/repositories/TeammateComputerRepository";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generatePrefixedId } from "~/utils/id";
 
 import { requireTeammateContext } from "./contexts";
 

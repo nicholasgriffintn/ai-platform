@@ -1,6 +1,5 @@
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import { AssistantError } from "~/utils/errors";
 
 import { run_prediction } from "../run_prediction";
 
@@ -16,10 +15,10 @@ const getProviderModels = vi.hoisted(() =>
   })),
 );
 
-vi.mock("~/lib/providers/utils/apiKeys", () => ({ hasUserProviderApiKey }));
+vi.mock("~/lib/providers/credentials", () => ({ hasUserProviderApiKey }));
 vi.mock("~/services/apps/replicate/execute", () => ({ executeReplicateModel }));
 vi.mock("~/services/workspaces/access", () => ({ requireOptionalProjectCapabilityAccess }));
-vi.mock("~/lib/providers/models/catalogue", () => ({ getProviderModels }));
+vi.mock("@ngriffin_uk/polychat-ai-models", () => ({ getProviderModels }));
 
 const input = {
   model_id: "replicate-google-nano-banana-pro",

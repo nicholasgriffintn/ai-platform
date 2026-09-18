@@ -1,16 +1,17 @@
-import { requiresAuthenticatedSpeechProvider } from "~/lib/audio/access";
+import type { AudioResponseFormat } from "@ngriffin_uk/polychat-ai-providers";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { resolveServiceContext } from "~/lib/context/serviceContext";
 import { getAudioProvider } from "~/lib/providers/capabilities/audio";
-import type { AudioResponseFormat } from "~/lib/providers/capabilities/audio/formats";
-import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
+import { hasUserProviderApiKey } from "~/lib/providers/credentials";
 import { StorageService } from "~/lib/storage";
 import { RepositoryManager } from "~/repositories";
+import { requiresAuthenticatedSpeechProvider } from "~/services/audio/access";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
-import { sanitiseInput } from "../../utils/sanitise";
 import { prepareSpeechInput } from "./input";
 
 export type SpeechProvider = "polly" | "cartesia" | "elevenlabs" | "melotts" | "mistral";

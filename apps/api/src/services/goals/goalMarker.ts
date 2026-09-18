@@ -1,9 +1,9 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { goalStatusLabels, type Goal, type GoalMarkerEvent } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import type { ConversationManager } from "~/lib/conversationManager";
+import type { ConversationManager } from "~/services/conversations/manager";
 import type { Message } from "~/types";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/goals/goalMarker" });
 

@@ -1,0 +1,47 @@
+{
+  "name": "@ngriffin_uk/polychat-ai-providers",
+  "version": "0.1.0",
+  "private": false,
+  "description": "AI provider primitives for Polychat: the categorised provider library, the vendor implementations for chat, audio, image, music, speech, video, transcription, OCR, guardrails, search, research and realtime, plus credentials, fetch, parameter mapping and response formatting",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "polychat-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.typecheck.json"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-ai-models": "workspace:^",
+    "@ngriffin_uk/polychat-ai-telemetry": "workspace:^",
+    "@ngriffin_uk/polychat-library-registry": "workspace:^",
+    "@ngriffin_uk/polychat-library-tools": "workspace:^",
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "@ngriffin_uk/polychat-utility-server": "workspace:^",
+    "aws4fetch": "1.0.20",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

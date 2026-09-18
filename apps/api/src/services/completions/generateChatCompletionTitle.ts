@@ -1,10 +1,10 @@
 import { DEFAULT_CONVERSATION_TITLE } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { generateConversationTitle } from "~/lib/conversation/title-generation";
-import { ConversationManager } from "~/lib/conversationManager";
+import { ConversationManager } from "~/services/conversations/manager";
+import { generateConversationTitle } from "~/services/conversations/title-generation";
 import type { Message } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 async function resolveTitleMessages(
   conversationManager: ConversationManager,

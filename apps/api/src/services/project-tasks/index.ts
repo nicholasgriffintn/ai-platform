@@ -1,3 +1,4 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   isTerminalGoalStatus,
   isTerminalProjectTaskStatus,
@@ -13,6 +14,12 @@ import {
   type ResolveProjectTaskToolApprovalInput,
   type UpdateProjectTaskInput,
 } from "@ngriffin_uk/polychat-schemas";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ListProjectTaskFilters } from "~/repositories/ProjectTaskRepository";
@@ -24,9 +31,6 @@ import {
 } from "~/services/teammates/access";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import { parseProjectFlow } from "~/services/workspaces/format";
-import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
 
 import { getProjectTaskActivity } from "./activity";
 import { getPendingProjectTaskToolApproval, resolveProjectTaskToolApproval } from "./approvals";

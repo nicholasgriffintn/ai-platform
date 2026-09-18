@@ -9,7 +9,8 @@ const mocks = vi.hoisted(() => ({
   acquireThread: vi.fn(),
 }));
 
-vi.mock("~/lib/usage/reservations", () => ({
+vi.mock("@ngriffin_uk/polychat-ai-billing", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-billing")>()),
   finishUsageReservation: mocks.finishUsageReservation,
 }));
 
@@ -108,6 +109,7 @@ describe("durable project-task run recovery", () => {
       expect.objectContaining({ runId: "run-1", status: "interrupted" }),
     );
     expect(mocks.finishUsageReservation).toHaveBeenCalledWith(
+      expect.anything(),
       expect.objectContaining({ kind: "chat_run", refId: "run-1", outcome: "released" }),
     );
     expect(mocks.scheduleComposioConnectorRunCleanup).toHaveBeenCalledWith(context, "run-1");

@@ -1,7 +1,7 @@
+import { MistralOcrBatchClient } from "@ngriffin_uk/polychat-ai-providers";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { MistralOcrBatchClient } from "~/lib/providers/capabilities/ocr/batch/MistralOcrBatchClient";
 import type { OutputRecord, OutputShareRecord } from "~/repositories/OutputRepository";
 
 const deleteObject = vi.hoisted(() => vi.fn());

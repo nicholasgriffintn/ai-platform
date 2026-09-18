@@ -1,17 +1,17 @@
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { Context, Next } from "hono";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-import { AssistantError } from "~/utils/errors";
 
 import { rateLimit } from "../rateLimit";
 
 const mockTrackUsageMetric = vi.fn();
 
-vi.mock("~/lib/monitoring", () => ({
-  trackUsageMetric: vi.fn(),
+vi.mock("~/lib/telemetry", () => ({
+  createMetrics: () => ({ trackUsageMetric: mockTrackUsageMetric }),
 }));
 
-vi.mock("~/utils/logger", () => ({
+vi.mock("@ngriffin_uk/polychat-ai-telemetry", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-telemetry")>()),
   getLogger: vi.fn(() => ({
     warn: vi.fn(),
     error: vi.fn(),
@@ -47,10 +47,6 @@ const mockNext: Next = vi.fn();
 describe("Rate Limit Middleware", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
-
-    const { trackUsageMetric } = await import("~/lib/monitoring");
-
-    vi.mocked(trackUsageMetric).mockImplementation(mockTrackUsageMetric);
   });
 
   afterEach(() => {
@@ -217,11 +213,7 @@ describe("Rate Limit Middleware", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(mockTrackUsageMetric).toHaveBeenCalledWith(
-        "user-123",
-        "completions",
-        context.env.ANALYTICS,
-      );
+      expect(mockTrackUsageMetric).toHaveBeenCalledWith("user-123", "completions");
     });
 
     it("should track usage metrics for unauthenticated users", async () => {
@@ -236,11 +228,7 @@ describe("Rate Limit Middleware", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(mockTrackUsageMetric).toHaveBeenCalledWith(
-        undefined,
-        "completions",
-        context.env.ANALYTICS,
-      );
+      expect(mockTrackUsageMetric).toHaveBeenCalledWith(undefined, "completions");
     });
 
     it("uses one identity bucket across paths so dynamic IDs cannot evade limits", async () => {
@@ -265,7 +253,7 @@ describe("Rate Limit Middleware", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(mockTrackUsageMetric).toHaveBeenCalledWith(undefined, "speech", context.env.ANALYTICS);
+      expect(mockTrackUsageMetric).toHaveBeenCalledWith(undefined, "speech");
     });
 
     it("should handle usage metric tracking errors gracefully", async () => {

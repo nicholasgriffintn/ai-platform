@@ -1,8 +1,8 @@
 import type { WebAuthnCredential, WebAuthnStore } from "@ngriffin_uk/auth-webauthn";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { and, asc, eq } from "drizzle-orm";
 
 import { passkey, type Passkey } from "~/lib/database/schema";
-import { getLogger } from "~/utils/logger";
 
 import { BaseRepository } from "./BaseRepository";
 

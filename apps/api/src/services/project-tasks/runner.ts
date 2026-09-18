@@ -1,3 +1,12 @@
+import { finishUsageReservation } from "@ngriffin_uk/polychat-ai-billing";
+import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import {
+  isTaskError,
+  leaseBusyError,
+  leaseExpiry,
+  ownershipLostError,
+} from "@ngriffin_uk/polychat-library-tasks";
 import {
   createChatCompletionsJsonSchema,
   nextFlowStageId,
@@ -10,31 +19,28 @@ import {
   type ProjectTask,
   type ProjectTaskBlockedReason,
 } from "@ngriffin_uk/polychat-schemas";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
-import { finishUsageReservation } from "~/lib/usage/reservations";
 import { scheduleComposioConnectorRunCleanup } from "~/services/apps/connectors/composio-run";
 import { recordChatRunOperationalMetric } from "~/services/chat-runs/operational-metrics";
+import { toProviderMessages } from "~/services/chat/messages/provider-mapping";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
 import { acquireThread } from "~/services/conversations/coordinator/client";
+import { ConversationManager } from "~/services/conversations/manager";
 import { createGoalService } from "~/services/goals/createGoalService";
 import { notifyMobileProjectTask } from "~/services/mobile-push";
-import {
-  isTaskExecutionOwnershipLostError,
-  TaskExecutionLeaseBusyError,
-  TaskExecutionOwnershipLostError,
-} from "~/services/tasks/task-execution-lease";
 import type { TaskExecutionLease } from "~/services/tasks/TaskHandler";
 import { TaskService } from "~/services/tasks/TaskService";
 import { enqueueTeammateRun } from "~/services/teammates/run-admission";
+import { createUsageRuntime } from "~/services/usage/runtime";
 import { parseProjectFlow } from "~/services/workspaces/format";
 import type { IEnv, Message } from "~/types";
-import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
-import { extractTextFromMessageContent } from "~/utils/messages";
 
 import { getPendingProjectTaskToolApproval } from "./approvals";
 import { reconcileTaskNotifications } from "./attention";
@@ -311,7 +317,7 @@ async function updateOwnedProjectTask(params: {
   );
 
   if (!updated) {
-    throw new TaskExecutionOwnershipLostError();
+    throw ownershipLostError(params.dispatchTaskId);
   }
 
   await reconcileTaskNotifications(params.context, updated, { notifyMobile: false });
@@ -324,13 +330,14 @@ async function releaseDurableRunResources(
   run: ChatRun,
   options: { keepInteractionResources?: boolean } = {},
 ): Promise<void> {
-  await finishUsageReservation({
-    repositories: context.repositories,
-    kind: "chat_run",
-    refId: run.id,
-    outcome: "released",
-    publisher: context,
-  });
+  await finishUsageReservation(
+    createUsageRuntime({
+      env: context.env,
+      repositories: context.repositories,
+      publisher: context,
+    }),
+    { kind: "chat_run", refId: run.id, outcome: "released" },
+  );
 
   if (!options.keepInteractionResources) {
     await scheduleComposioConnectorRunCleanup(context, run.id);
@@ -350,7 +357,7 @@ export async function recoverRedeliveredProjectTaskRun(params: {
   });
 
   if (lock.acquired === false) {
-    throw new TaskExecutionLeaseBusyError(60);
+    throw leaseBusyError(params.run.id, leaseExpiry(Date.now(), 60_000));
   }
 
   try {
@@ -373,7 +380,7 @@ export async function recoverRedeliveredProjectTaskRun(params: {
       });
 
       if (!interrupted) {
-        throw new TaskExecutionOwnershipLostError();
+        throw ownershipLostError(params.run.id);
       }
 
       recovered = interrupted;
@@ -396,7 +403,7 @@ export async function recoverRedeliveredProjectTaskRun(params: {
         });
 
         if (!failed) {
-          throw new TaskExecutionOwnershipLostError();
+          throw ownershipLostError(params.run.id);
         }
 
         recovered = failed;
@@ -579,7 +586,7 @@ export async function runProjectTaskDispatch(params: {
       });
     }
   } catch (error) {
-    if (isTaskExecutionOwnershipLostError(error) || error instanceof TaskExecutionLeaseBusyError) {
+    if (isTaskError(error, "ownership_lost") || isTaskError(error, "lease_busy")) {
       throw error;
     }
 
@@ -792,7 +799,7 @@ export async function runProjectTaskDispatch(params: {
       responseOutput = extractTextFromMessageContent(response.choices[0]?.message.content).trim();
     }
   } catch (error) {
-    if (isTaskExecutionOwnershipLostError(error)) {
+    if (isTaskError(error, "ownership_lost")) {
       throw error;
     }
 

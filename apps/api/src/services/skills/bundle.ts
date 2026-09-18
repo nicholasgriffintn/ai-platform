@@ -4,8 +4,7 @@ import {
   type AuthoredSkillResource,
 } from "@ngriffin_uk/polychat-schemas";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
-
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 const SKILL_BUNDLE_VERSION = 1;
 

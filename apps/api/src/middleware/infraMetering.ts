@@ -1,13 +1,14 @@
-import type { Context, Next } from "hono";
-
-import { emitInfraUsage } from "~/lib/usage/infraUsage";
 import {
+  emitInfraUsage,
   createRequestInfraMeter,
   drainRequestInfraMeter,
   runWithRequestInfraMeter,
-} from "~/lib/usage/requestMeter";
+} from "@ngriffin_uk/polychat-ai-billing";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import type { Context, Next } from "hono";
+
+import { createUsageRuntime } from "~/services/usage/runtime";
 import type { IEnv, IUser } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "middleware/infraMetering" });
 
@@ -23,8 +24,7 @@ export const infraMeteringMiddleware = async (c: Context, next: Next) => {
     const quantities = drainRequestInfraMeter(meter);
 
     if (user?.id && requestId && env?.DB && quantities.length > 0) {
-      const emission = emitInfraUsage({
-        env,
+      const emission = emitInfraUsage(createUsageRuntime({ env }), {
         userId: user.id,
         scopeKey: requestId,
         quantities,

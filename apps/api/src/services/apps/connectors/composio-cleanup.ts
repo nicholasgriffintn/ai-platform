@@ -1,8 +1,9 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import { deleteComposioToolSession } from "~/lib/providers/capabilities/connectors/composio/client";
 import { RepositoryManager } from "~/repositories";
 import type { IEnv } from "~/types";
-import { getErrorMessage } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const CLEANUP_BATCH_SIZE = 50;
 const CLEANUP_LEASE_MS = 5 * 60 * 1000;

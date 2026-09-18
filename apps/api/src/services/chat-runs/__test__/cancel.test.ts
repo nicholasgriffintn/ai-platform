@@ -9,7 +9,7 @@ const metrics = vi.hoisted(() => ({
   recordTurnCancellationRequested: vi.fn(),
 }));
 
-vi.mock("~/lib/chat/streaming/continuity-telemetry", () => metrics);
+vi.mock("~/services/chat/streaming/continuity-telemetry", () => metrics);
 
 const run: ChatRun = {
   protocolVersion: 1,

@@ -1,4 +1,4 @@
-import { getLogger } from "~/utils/logger";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 
 const logger = getLogger({ prefix: "lib/captcha" });
 

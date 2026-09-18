@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { handleToolCalls } from "~/lib/chat/tools/execution";
+import { handleToolCalls } from "~/services/chat/tools/execution";
 
 import { replayApprovedConnectorOperation } from "../approved-operation-replay";
 import { getConnectorArgumentDigest } from "../operation-approvals";
@@ -9,7 +9,7 @@ const approvalMocks = vi.hoisted(() => ({
   getConnectorArgumentDigest: vi.fn().mockResolvedValue("approved-argument-digest"),
 }));
 
-vi.mock("~/lib/chat/tools/execution", () => ({
+vi.mock("~/services/chat/tools/execution", () => ({
   handleToolCalls: vi.fn(),
 }));
 

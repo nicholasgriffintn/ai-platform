@@ -1,0 +1,27 @@
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+
+import type { VerbosityLevel } from "./types.js";
+
+const PROVIDER_VERBOSITY_LEVELS = new Set<VerbosityLevel>(["low", "medium", "high"]);
+
+export function isConfiguredVerbosity(
+  modelConfig: ModelConfigItem | undefined,
+  verbosity: VerbosityLevel | undefined,
+): verbosity is VerbosityLevel {
+  if (!verbosity) {
+    return false;
+  }
+
+  return modelConfig?.verbosityConfig?.supportedVerbosityLevels?.includes(verbosity) ?? false;
+}
+
+export function shouldSendProviderVerbosity(
+  modelConfig: ModelConfigItem | undefined,
+  verbosity: VerbosityLevel | undefined,
+): verbosity is Exclude<VerbosityLevel, "caveman"> {
+  if (!verbosity || !PROVIDER_VERBOSITY_LEVELS.has(verbosity)) {
+    return false;
+  }
+
+  return isConfiguredVerbosity(modelConfig, verbosity);
+}

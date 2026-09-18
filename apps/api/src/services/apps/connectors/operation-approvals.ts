@@ -1,12 +1,12 @@
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { connectorOperationRequiresApproval } from "~/lib/providers/capabilities/connectors";
 import type { ConnectorOperationApprovalRecord } from "~/repositories/ConnectorOperationApprovalRepository";
 import { publishConnectorApprovalChanged } from "~/services/sync/conversation-events";
 import { canonicalJson } from "~/utils/canonical-json";
-import { sha256Hex } from "~/utils/crypto";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import type { ConnectorRunScope } from "./connector-run-scope";
 

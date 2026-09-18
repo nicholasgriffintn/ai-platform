@@ -1,9 +1,10 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
+
+import { ai } from "~/lib/ai";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getAuxiliaryModel } from "~/lib/providers/models";
+import { getAuxiliaryModel } from "~/services/models/resolve";
 import type { IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { sanitiseInput } from "~/utils/sanitise";
 
 const FORMAT_PROMPT = `Rewrite the document you are given so it is easier to use, without changing what it says.
 
@@ -13,32 +14,6 @@ const FORMAT_PROMPT = `Rewrite the document you are given so it is easier to use
 - Pull anything actionable into a To do section, and any dates into a Timeline section, only if there are some.
 - Open with a short summary when the document is long enough to need one.
 - Return Markdown only, with no commentary about what you changed.`;
-
-function readProviderText(result: unknown): string | null {
-  if (typeof result === "string") {
-    return result;
-  }
-
-  if (!result || typeof result !== "object") {
-    return null;
-  }
-
-  const record = result as { response?: unknown; choices?: unknown };
-
-  if (typeof record.response === "string") {
-    return record.response;
-  }
-
-  if (Array.isArray(record.choices)) {
-    const message = (record.choices[0] as { message?: { content?: unknown } } | undefined)?.message;
-
-    if (typeof message?.content === "string") {
-      return message.content;
-    }
-  }
-
-  return null;
-}
 
 export async function formatDocumentBody({
   context,
@@ -53,24 +28,23 @@ export async function formatDocumentBody({
 }): Promise<string> {
   try {
     const { model, provider } = await getAuxiliaryModel(context.env, user);
-    const chat = getChatProvider(provider, { env: context.env, user });
-    const messages = [
-      { role: "system" as const, content: FORMAT_PROMPT },
-      { role: "user" as const, content: body },
-    ];
+    const messages = [{ role: "user" as const, content: body }];
 
     if (prompt) {
       messages.push({ role: "user" as const, content: sanitiseInput(prompt) });
     }
 
-    const formatted = readProviderText(
-      await chat.getResponse(
-        { model, env: context.env, context, messages, reasoning: { effort: "none" } },
-        user.id,
-      ),
-    );
+    const formatted = await ai.generateText({
+      env: context.env,
+      user,
+      model,
+      provider,
+      system: FORMAT_PROMPT,
+      messages,
+      reasoning: { effort: "none" },
+    });
 
-    if (!formatted?.trim()) {
+    if (!formatted.trim()) {
       throw new AssistantError("The rewrite came back empty", ErrorType.PROVIDER_ERROR);
     }
 

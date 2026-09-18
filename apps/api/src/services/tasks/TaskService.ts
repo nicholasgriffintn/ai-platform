@@ -1,12 +1,12 @@
+import { addInfraUsage } from "@ngriffin_uk/polychat-ai-billing";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Task } from "~/lib/database/schema";
-import { addInfraUsage } from "~/lib/usage/requestMeter";
 import type { TaskRepository } from "~/repositories/TaskRepository";
 import type { IEnv } from "~/types";
 import { normaliseIsoDateTime } from "~/utils/date";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/tasks" });
 

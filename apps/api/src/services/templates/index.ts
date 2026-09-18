@@ -9,16 +9,16 @@ import {
   projectTemplateConfigurationSchema,
   deriveProjectColour,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
-import { validateCapabilityReference } from "~/lib/capabilities";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { TemplateRecord } from "~/repositories/TemplateRepository";
+import { validateCapabilityReference } from "~/services/capabilities/reference";
 import { getProject } from "~/services/workspaces";
 import { requireWorkspaceAccess } from "~/services/workspaces/access";
 import { validateProjectToolConfiguration } from "~/services/workspaces/projectTools";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { safeParseJson } from "~/utils/json";
 
 function parseProjectTemplateConfiguration(value: unknown, message: string) {
   const parsed = projectTemplateConfigurationSchema.safeParse(value);

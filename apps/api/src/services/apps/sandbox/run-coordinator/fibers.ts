@@ -2,9 +2,8 @@ import {
   sandboxRunDispatchMessageSchema,
   type SandboxRunDispatchMessage,
 } from "@ngriffin_uk/polychat-schemas";
+import { isPlainObject } from "@ngriffin_uk/polychat-utility-server/objects";
 import type { FiberRecoveryContext, StartFiberResult } from "agents";
-
-import { isPlainObject } from "~/utils/objects";
 
 export const SANDBOX_RUN_DISPATCH_FIBER_NAME = "sandbox-run-dispatch";
 

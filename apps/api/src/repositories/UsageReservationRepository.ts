@@ -1,8 +1,8 @@
+import { recordD1ResultMeta } from "@ngriffin_uk/polychat-ai-billing";
 import type { UsageReservationKind, UsageReservationStatus } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { recordD1ResultMeta } from "~/lib/usage/requestMeter";
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { BaseRepository } from "./BaseRepository";
 import { usageBalanceId } from "./UsageBalanceRepository";

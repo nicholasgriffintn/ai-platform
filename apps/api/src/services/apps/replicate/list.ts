@@ -1,7 +1,7 @@
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
-
-import { safeParseJson } from "../../../utils/json";
 
 export const listReplicatePredictions = async ({
   context,

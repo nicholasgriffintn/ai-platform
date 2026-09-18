@@ -1,3 +1,4 @@
+import { toSummaryGroups, totalUsageGroups } from "@ngriffin_uk/polychat-ai-billing";
 import {
   creditsFromCreditMicros,
   usagePeriodFromDate,
@@ -6,7 +7,6 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { toSummaryGroups, totalUsageGroups } from "~/lib/usage/summary";
 
 import { requireWorkspaceAccess } from "./access";
 

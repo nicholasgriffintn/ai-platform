@@ -2,6 +2,7 @@ import type {
   RecipeConnectorProvider,
   TeammateRunConfiguration,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getConnectorProviderConfig } from "~/lib/providers/capabilities/connectors";
@@ -10,7 +11,6 @@ import {
   CONNECTOR_ACCOUNT_REFERENCE_KIND,
   isConnectorConnectionKindForAuth,
 } from "~/services/apps/connectors/connection-references";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { requireProjectTeammate } from "./access";
 

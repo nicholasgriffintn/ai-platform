@@ -1,10 +1,11 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import {
   sendTeammateFeaturedNotification,
   sendTeammateModerationNotification,
 } from "~/services/notifications";
 import type { IEnv, IUser } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/admin/sharedTeammates" });
 

@@ -1,9 +1,9 @@
 import type { ProjectCapabilityKind, WorkspaceRole } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { z } from "zod/v4";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ProjectRow, WorkspaceRow } from "~/repositories/WorkspaceRepository";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export interface WorkspaceAccess {
   workspace: WorkspaceRow;

@@ -1,3 +1,6 @@
+import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import {
   getEmbeddingRuntimeForTarget,
@@ -10,8 +13,6 @@ import type {
   EmbeddingDocumentProviderTarget,
 } from "~/repositories/EmbeddingRepository";
 import type { IEnv, IUser } from "~/types";
-import { mapWithConcurrency } from "~/utils/async";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { queryEmbeddingRuntime } from "./provider-query";
 import { parseQueryEmbeddingsRequest } from "./requests";

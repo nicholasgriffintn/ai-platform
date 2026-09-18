@@ -3,11 +3,11 @@ import {
   describeCronExpression,
   type CreateAutomationInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { installAssistantRecipe } from "~/services/apps/recipes";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { create_automation as createAutomationDescriptor } from "./definitions/create_automation";
 

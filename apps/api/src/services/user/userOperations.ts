@@ -1,3 +1,6 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import { KVCache } from "~/lib/cache";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
@@ -6,8 +9,6 @@ import {
 } from "~/lib/providers/userConfigurableProviders";
 import { createUserSettings } from "~/services/auth/user";
 import { validatePetSettingsUpdate } from "~/services/pets/settings";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/user/operations" });
 

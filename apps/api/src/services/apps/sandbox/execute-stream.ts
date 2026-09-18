@@ -1,3 +1,4 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   resolveSandboxDeliveryPolicy,
   resolveSandboxExecutionProvider,
@@ -5,6 +6,7 @@ import {
   type ExecuteSandboxRunPayload as ExecuteSandboxRunStreamPayload,
   SANDBOX_RUNS_CAPABILITY_ID,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { SANDBOX_RUN_ITEM_TYPE } from "~/constants/app";
 import type { ServiceContext } from "~/lib/context/serviceContext";
@@ -12,8 +14,6 @@ import { SSE_HEADERS } from "~/lib/http/streaming";
 import { resolveSandboxModel } from "~/services/sandbox/worker";
 import { resolveProjectEnvironmentCacheForRun } from "~/services/workspaces/environment-cache";
 import type { IEnv, IUser } from "~/types";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
 
 import { buildSandboxTimeoutConfig } from "./config";
 import { buildSandboxRunDispatchMessage, enqueueSandboxRunDispatchTask } from "./dispatch";

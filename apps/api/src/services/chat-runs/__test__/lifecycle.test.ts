@@ -1,10 +1,10 @@
 import type { ChatRun, ChatRunCommandReceipt } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
-import type { AgentLoopExecutionResult } from "~/lib/chat/agent/agent-loop";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import type { AgentLoopExecutionResult } from "~/services/chat/agent/agent-loop";
 import type { CoreChatOptions } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { acceptChatRun, ChatRunLifecycle } from "../lifecycle";
 

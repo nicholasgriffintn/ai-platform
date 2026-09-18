@@ -2,12 +2,12 @@ import type {
   ChatRunCommandReceiptResponse,
   CancelChatRunRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { recordTurnCancellationRequested } from "~/lib/chat/streaming/continuity-telemetry";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { recordTurnCancellationRequested } from "~/services/chat/streaming/continuity-telemetry";
 import { canonicalJson } from "~/utils/canonical-json";
-import { sha256Hex } from "~/utils/crypto";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { cancelDelegationTree } from "../delegations/cancel-tree";
 import { cleanupCancelledChatRun } from "./cancellation-cleanup";

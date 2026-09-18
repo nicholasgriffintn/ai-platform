@@ -1,6 +1,6 @@
-import type { PashiClient } from "~/lib/pashi/client";
-import { getPashiClient } from "~/lib/pashi/client";
-import { runPashiOperations, searchPashiCatalog } from "~/lib/pashi/tool-adapter";
+import type { PashiClient } from "~/services/pashi/client";
+import { getPashiClient } from "~/services/pashi/client";
+import { runPashiOperations, searchPashiCatalog } from "~/services/pashi/tool-adapter";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import {

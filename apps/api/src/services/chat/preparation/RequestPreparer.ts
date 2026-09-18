@@ -1,0 +1,578 @@
+import { chatRunReservationExpiresAt } from "@ngriffin_uk/polychat-ai-billing";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import {
+  getPermissionModeUnavailableReason,
+  resolveEffectivePermissionMode,
+  type ChatHostedToolSettings,
+  type ConversationType,
+  type Goal,
+  type ChatContextDocument,
+  type ModelConfigInfo,
+  type ModelConfigItem,
+  type PermissionMode,
+  type RecipeConnectorProvider,
+  type SkillAvailability,
+} from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { memoizeRequest } from "@ngriffin_uk/polychat-utility-server/request-cache";
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
+
+import { Database } from "~/lib/database";
+import { RepositoryManager } from "~/repositories";
+import {
+  getConnectedRecipeConnectorProviders,
+  listRecipeConnectors,
+} from "~/services/apps/connectors";
+import { isRecipeExecutionRequest } from "~/services/apps/recipes/toolContext";
+import { mergeEnabledGoalToolNames } from "~/services/chat/policy/goal-tools";
+import { mergeEnabledMemoryToolNames, resolveMemoryPolicy } from "~/services/chat/policy/memory";
+import {
+  getMetaAssistantToolNames,
+  type MetaAssistantScope,
+  resolveMetaAssistantScope,
+} from "~/services/chat/policy/meta-assistant";
+import { loadActiveGoal } from "~/services/chat/preparation/goal";
+import {
+  bindRunMemoryDocument,
+  loadRunMemoryDocuments,
+  resolveRunMemoryScope,
+} from "~/services/chat/preparation/memory-scope";
+import { storeUserTurn } from "~/services/chat/preparation/message-store";
+import {
+  buildModelConfigs,
+  clearModelConfigCache,
+} from "~/services/chat/preparation/model-configs";
+import { buildProviderContext } from "~/services/chat/preparation/provider-context";
+import { resolveScopedSkillCatalog, resolveSkillScope } from "~/services/chat/preparation/skills";
+import {
+  appendBoundMemoryContext,
+  appendConversationBriefContext,
+  buildSystemPrompt,
+} from "~/services/chat/preparation/system-prompt";
+import type { ValidationContext } from "~/services/chat/validation/ValidationPipeline";
+import { ConversationManager } from "~/services/conversations/manager";
+import type { ConversationWriteFence } from "~/services/conversations/write-fence";
+import {
+  resolveEnabledFunctionToolNames,
+  resolveRequestFunctionToolNames,
+} from "~/services/functions/availability";
+import { getConversationBrief } from "~/services/memory-documents";
+import {
+  buildSkillAvailabilityInput,
+  listSkillAvailability,
+  mergeSkillLoadToolName,
+  mergeSkillSuggestedToolNames,
+} from "~/services/skills";
+import { resolvePlatformTeammateGrants } from "~/services/teammates/platform-teammates";
+import {
+  getModelToolDefinition,
+  mergePersonalModelToolOptions,
+  resolveModelToolConfigurations,
+  type StoredModelToolConfiguration,
+} from "~/services/tools/modelToolConfiguration";
+import {
+  applyProjectCodingEnvironment,
+  resolveProjectChatContext,
+  type ProjectChatContext,
+} from "~/services/workspaces/chatContext";
+import type { ChatMode, CoreChatOptions, MemoryScope, Message, Platform } from "~/types";
+
+const logger = getLogger({ prefix: "services/chat/preparation/RequestPreparer" });
+
+function assertBackgroundRequestIsSupported(options: CoreChatOptions, primaryProvider: string) {
+  if (!options.background) {
+    return;
+  }
+
+  if (primaryProvider !== "openai") {
+    throw new AssistantError(
+      "Background responses are only supported by OpenAI Responses models.",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+}
+
+export interface PreparedRequest {
+  modelConfigs: ModelConfigInfo[];
+  primaryModel: string;
+  primaryModelConfig: ModelConfigItem;
+  primaryProvider: string;
+  conversationManager: ConversationManager;
+  messages: Message[];
+  systemPrompt: string;
+  messageWithContext: string;
+  userSettings: any;
+  currentMode: ChatMode;
+  conversationType?: ConversationType;
+  permissionMode?: PermissionMode;
+  isProUser: boolean;
+  enabledTools: string[];
+  activeGoal: Goal | null;
+  toolOptions?: ChatHostedToolSettings;
+  requestOptions: CoreChatOptions["options"];
+  memoryScope: MemoryScope;
+  connectedConnectorProviders?: RecipeConnectorProvider[];
+  contextSkills: Array<{ id: string; name: string }>;
+  contextDocuments: ChatContextDocument[];
+}
+
+interface SavedToolConfiguration {
+  capabilityId: string;
+  configuration: StoredModelToolConfiguration["configuration"];
+}
+
+interface RequestScope {
+  options: CoreChatOptions;
+  user: CoreChatOptions["context"] extends { user: infer U } ? U : any;
+  database: Database;
+  repositories: RepositoryManager;
+  projectContext: ProjectChatContext | null;
+  metaAssistant: MetaAssistantScope | null;
+  memoryScope: MemoryScope;
+  isProUser: boolean;
+  platform: Platform;
+  mode: ChatMode;
+}
+
+export class RequestPreparer {
+  private repositories: RepositoryManager;
+
+  constructor(private env: any) {
+    this.repositories = new RepositoryManager(env);
+  }
+
+  public static clearModelConfigCache() {
+    clearModelConfigCache();
+  }
+
+  private async resolveScope(options: CoreChatOptions): Promise<RequestScope> {
+    const { platform = "api", mode = "normal" } = options;
+    const user = options.context?.user;
+    const database = options.context?.database ?? new Database(this.env);
+    const repositories = options.context?.repositories ?? database.repositories;
+    const metaAssistant = options.context
+      ? await resolveMetaAssistantScope(options, repositories)
+      : null;
+    const projectContext =
+      options.context && !metaAssistant
+        ? await resolveProjectChatContext(options.context, options)
+        : null;
+    const scopedOptions: CoreChatOptions = metaAssistant
+      ? {
+          ...options,
+          conversation_type: "meta",
+          store: true,
+          system_prompt: undefined,
+          persona: undefined,
+          metadata: undefined,
+        }
+      : {
+          ...options,
+          ...applyProjectCodingEnvironment(options, projectContext),
+        };
+
+    return {
+      options: scopedOptions,
+      user,
+      database,
+      repositories,
+      projectContext,
+      metaAssistant,
+      memoryScope: await resolveRunMemoryScope({
+        options: scopedOptions,
+        repositories,
+        projectContext,
+      }),
+      isProUser: user?.plan_id === "pro",
+      platform,
+      mode,
+    };
+  }
+
+  private resolveUserSettings(scope: RequestScope) {
+    const { options, user, repositories } = scope;
+
+    if (options.context?.getUserSettings) {
+      return options.context.getUserSettings();
+    }
+
+    if (!user?.id) {
+      return Promise.resolve(null);
+    }
+
+    return memoizeRequest(options.context?.requestCache, `user-settings:${user.id}`, () =>
+      repositories.userSettings.getUserSettings(user.id),
+    );
+  }
+
+  private async resolveStoredPermissionMode(scope: RequestScope): Promise<unknown> {
+    if (!scope.options.completion_id) {
+      return undefined;
+    }
+
+    const conversation = await scope.repositories.conversations.getConversation(
+      scope.options.completion_id,
+    );
+
+    return conversation?.permission_mode;
+  }
+
+  private resolveRequestTools(scope: RequestScope) {
+    if (scope.metaAssistant) {
+      return getMetaAssistantToolNames();
+    }
+
+    return resolveRequestFunctionToolNames({
+      projectTools: scope.projectContext?.enabledTools,
+      requestedToolNames: scope.options.enabled_tools,
+      grantedToolNames: resolvePlatformTeammateGrants(scope.options.resolved_configuration)?.tools,
+      toolSelectionMode: scope.options.tool_selection_mode,
+      user: scope.user,
+    });
+  }
+
+  private resolveConnectedConnectorProviders(scope: RequestScope) {
+    const { options, user, projectContext } = scope;
+    const enabledFunctionTools = resolveEnabledFunctionToolNames(
+      this.resolveRequestTools(scope),
+      user,
+    );
+
+    if (!user?.id || !options.context || !enabledFunctionTools.has("use_recipe_connector")) {
+      return Promise.resolve(undefined);
+    }
+
+    return listRecipeConnectors({
+      context: options.context,
+      userId: user.id,
+      requestUrl: options.app_url,
+    })
+      .then(({ connectors }) => {
+        const connected = getConnectedRecipeConnectorProviders(connectors);
+
+        return projectContext
+          ? connected.filter((provider) => projectContext.connectorProviders.includes(provider))
+          : connected;
+      })
+      .catch((error) => {
+        logger.warn("Failed to resolve connected recipe providers", {
+          error,
+          userId: user.id,
+        });
+
+        return [];
+      });
+  }
+
+  private resolveSavedToolConfigurations(scope: RequestScope) {
+    const { options, user, projectContext, repositories } = scope;
+    const needsSavedToolConfiguration = options.enabled_tools?.some(
+      (toolId) => getModelToolDefinition(toolId)?.requiresConfiguration,
+    );
+
+    if (!user?.id || projectContext || !needsSavedToolConfiguration) {
+      return Promise.resolve([]);
+    }
+
+    return repositories.capabilityConfigurations.list({ type: "user", id: user.id }, "tool");
+  }
+
+  private resolveMessageText(validationContext: ValidationContext): string {
+    const { lastMessage } = validationContext;
+    const lastMessageContent = Array.isArray(lastMessage.content)
+      ? lastMessage.content
+      : [{ type: "text" as const, text: lastMessage.content as string }];
+
+    return sanitiseInput(lastMessageContent.find((c) => c.type === "text")?.text || "");
+  }
+
+  private resolveToolOptions(
+    scope: RequestScope,
+    savedToolConfigurations: SavedToolConfiguration[],
+    enabledTools?: string[],
+  ): ChatHostedToolSettings | undefined {
+    const { options, projectContext } = scope;
+
+    if (projectContext) {
+      return projectContext.toolOptions;
+    }
+
+    return mergePersonalModelToolOptions({
+      configured: resolveModelToolConfigurations(
+        savedToolConfigurations.map((configuration) => ({
+          toolId: configuration.capabilityId,
+          configuration: configuration.configuration,
+        })),
+      ),
+      requestedEnabledTools: enabledTools,
+      requestedToolOptions: options.tool_options,
+    });
+  }
+
+  async prepare(
+    options: CoreChatOptions,
+    validationContext: ValidationContext,
+    writeFence?: ConversationWriteFence,
+    runId?: string,
+  ): Promise<PreparedRequest> {
+    const {
+      sanitisedMessages,
+      lastMessage,
+      modelConfig: primaryModelConfig,
+      messageWithContext,
+    } = validationContext;
+
+    if (!sanitisedMessages || !primaryModelConfig || !messageWithContext) {
+      throw new AssistantError("Missing required validation context", ErrorType.PARAMS_ERROR);
+    }
+
+    const scope = await this.resolveScope(options);
+    const { user, database, repositories, projectContext, memoryScope, platform, mode } = scope;
+
+    const modelConfigsPromise = buildModelConfigs(scope.options, validationContext);
+    const userSettingsPromise = this.resolveUserSettings(scope);
+    const connectedConnectorProvidersPromise = this.resolveConnectedConnectorProviders(scope);
+    const savedToolConfigurationsPromise = this.resolveSavedToolConfigurations(scope);
+    const skillScopePromise = resolveSkillScope(
+      projectContext,
+      user?.id ? repositories : null,
+      user?.id,
+    );
+    const scopedSkillCatalogPromise = resolveScopedSkillCatalog(scope.options, projectContext);
+
+    const finalMessage = this.resolveMessageText(validationContext);
+
+    const [modelConfigs, userSettings, savedToolConfigurations, connectedConnectorProviders] =
+      await Promise.all([
+        modelConfigsPromise,
+        userSettingsPromise,
+        savedToolConfigurationsPromise,
+        connectedConnectorProvidersPromise,
+      ]);
+
+    const memoryPolicy = scope.metaAssistant
+      ? resolveMemoryPolicy({ user, userSettings, store: false })
+      : resolveMemoryPolicy({ user, userSettings, store: scope.options.store });
+    const primaryModel = primaryModelConfig.matchingModel;
+    const primaryProvider = primaryModelConfig.provider;
+
+    let permissionMode: PermissionMode | undefined;
+
+    if (primaryModelConfig.kind === "agent" && primaryModelConfig.agent) {
+      permissionMode = resolveEffectivePermissionMode(
+        scope.options.permission_mode,
+        await this.resolveStoredPermissionMode(scope),
+      );
+
+      const unavailableReason = getPermissionModeUnavailableReason(
+        primaryModelConfig.agent.capabilities,
+        permissionMode,
+        primaryModelConfig.agent.permissionModes,
+      );
+
+      if (unavailableReason) {
+        throw new AssistantError(unavailableReason, ErrorType.PARAMS_ERROR);
+      }
+    }
+
+    assertBackgroundRequestIsSupported(scope.options, primaryProvider);
+
+    const conversationManager = ConversationManager.getInstance({
+      database,
+      repositories,
+      user: user || undefined,
+      anonymousUser: scope.options.anonymousUser,
+      model: primaryModel,
+      provider: primaryProvider,
+      platform,
+      store: scope.options.store,
+      env: this.env,
+      requestCache: scope.options.context?.requestCache,
+      writeFence,
+      runId,
+      ...(runId && scope.options.durable_execution?.kind === "project_task"
+        ? {
+            durableTurnReservation: {
+              kind: "chat_run" as const,
+              refId: runId,
+              expiresAt: chatRunReservationExpiresAt(),
+            },
+          }
+        : runId && scope.options.durable_execution?.kind === "delegation"
+          ? {
+              durableTurnReservation: {
+                kind: "chat_run" as const,
+                refId: runId,
+                creditMicros: scope.options.durable_execution.maxCreditMicros,
+                expiresAt: chatRunReservationExpiresAt(),
+              },
+            }
+          : {}),
+    });
+
+    const shouldStoreMessages =
+      (scope.options.store ?? false) && scope.options.conversation_history_write_mode !== "append";
+
+    const storeMessagesTask = shouldStoreMessages
+      ? storeUserTurn({
+          options: scope.options,
+          conversationManager,
+          lastMessage,
+          finalMessage,
+          primaryModel,
+          modelId: validationContext.selectedModels?.[0] ?? primaryModel,
+          modelTier: validationContext.modelTier ?? null,
+          permissionMode: permissionMode ?? scope.options.permission_mode,
+          platform,
+          mode,
+        })
+      : null;
+
+    const [skillScope, scopedSkillCatalog] = await Promise.all([
+      skillScopePromise,
+      scopedSkillCatalogPromise,
+    ]);
+    const enabledTools = this.resolveRequestTools(scope);
+    const hasFixedToolScope =
+      isRecipeExecutionRequest(scope.options) || Boolean(scope.metaAssistant);
+    const skills: readonly SkillAvailability[] = hasFixedToolScope
+      ? []
+      : await listSkillAvailability(
+          buildSkillAvailabilityInput({
+            skillScope,
+            supportsToolCalls: primaryModelConfig.supportsToolCalls ?? false,
+            enabledToolIds: new Set(enabledTools ?? []),
+          }),
+          scopedSkillCatalog?.listDefinitions(),
+        );
+
+    const activeGoal = await loadActiveGoal(scope.options);
+    let effectiveMemoryScope = memoryScope;
+    let briefDocument: Awaited<ReturnType<typeof getConversationBrief>>["document"] = null;
+
+    if (scope.options.context && scope.options.store !== false) {
+      const storedConversation = await repositories.conversations.getConversation(
+        scope.options.completion_id,
+      );
+
+      if (storedConversation) {
+        const brief = await getConversationBrief(
+          scope.options.context,
+          scope.options.completion_id,
+        );
+
+        briefDocument = brief.document;
+
+        if (briefDocument) {
+          effectiveMemoryScope = bindRunMemoryDocument(memoryScope, {
+            documentId: briefDocument.id,
+            access: "read-write",
+            scopeType: briefDocument.scopeType,
+            scopeId: briefDocument.scopeId,
+            conversationId: scope.options.completion_id,
+          });
+        }
+      }
+    }
+
+    const systemPromptTask = buildSystemPrompt({
+      options: scope.options,
+      repositories: this.repositories,
+      sanitisedMessages,
+      finalMessage,
+      primaryModel,
+      userSettings,
+      memoryPolicy,
+      projectContext,
+      memoryScope: effectiveMemoryScope,
+      skills,
+      activeGoal,
+    });
+
+    if (storeMessagesTask !== null) {
+      await storeMessagesTask;
+    }
+
+    let systemPrompt = await systemPromptTask;
+    let contextDocuments: ChatContextDocument[] = briefDocument
+      ? [
+          {
+            id: briefDocument.id,
+            kind: "conversation_brief",
+            revision: briefDocument.revision,
+            access: "read-write",
+          },
+        ]
+      : [];
+    const runMemoryDocuments = await loadRunMemoryDocuments(effectiveMemoryScope, repositories);
+
+    systemPrompt = appendConversationBriefContext(systemPrompt, briefDocument);
+
+    const briefDocumentId = contextDocuments[0]?.id;
+    const additionalMemoryDocuments = runMemoryDocuments.filter(
+      ({ document }) => document.id !== briefDocumentId,
+    );
+
+    systemPrompt = appendBoundMemoryContext(systemPrompt, additionalMemoryDocuments);
+    contextDocuments = [
+      ...contextDocuments,
+      ...additionalMemoryDocuments.map(({ access, document }) => ({
+        id: document.id,
+        kind: "memory" as const,
+        revision: document.revision,
+        access,
+      })),
+    ];
+
+    const messages = await buildProviderContext({
+      conversationManager,
+      completionId: scope.options.completion_id,
+      shouldStoreMessages,
+      fallbackMessages: sanitisedMessages,
+      messageWithContext,
+    });
+
+    return {
+      modelConfigs,
+      primaryModel,
+      primaryModelConfig,
+      primaryProvider,
+      conversationManager,
+      messages,
+      systemPrompt,
+      messageWithContext,
+      userSettings,
+      currentMode: mode,
+      conversationType: scope.options.conversation_type,
+      permissionMode,
+      isProUser: scope.isProUser,
+      enabledTools: hasFixedToolScope
+        ? [...(enabledTools ?? [])]
+        : mergeSkillSuggestedToolNames({
+            enabledTools: mergeEnabledGoalToolNames({
+              enabledTools: mergeEnabledMemoryToolNames({
+                enabledTools: mergeSkillLoadToolName({ enabledTools, skills }),
+                user,
+                userSettings,
+                store: scope.options.store,
+              }),
+              isProUser: scope.isProUser,
+            }),
+            skills,
+            deferSuggestedTools:
+              enabledTools !== undefined ||
+              ((primaryModelConfig.supportsToolSearch ?? false) &&
+                (enabledTools?.includes("tool_search") ?? false)),
+          }),
+      activeGoal,
+      toolOptions: this.resolveToolOptions(scope, savedToolConfigurations, enabledTools),
+      requestOptions: scope.options.options,
+      memoryScope: effectiveMemoryScope,
+      connectedConnectorProviders,
+      contextSkills: skills
+        .filter((skill) => skill.state === "ready")
+        .map((skill) => ({ id: skill.id, name: skill.name })),
+      contextDocuments,
+    };
+  }
+}

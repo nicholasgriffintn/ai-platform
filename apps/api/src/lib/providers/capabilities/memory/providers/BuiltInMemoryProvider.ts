@@ -1,3 +1,9 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
   EMBEDDING_VECTOR_SPACE_VERSION,
@@ -15,11 +21,6 @@ import {
 } from "~/lib/providers/capabilities/embedding/utils/scope";
 import type { SourceRecord } from "~/repositories/SourceRepository";
 import type { EmbeddingProvider, IEnv, IUser, IUserSettings, MemoryScope } from "~/types";
-import { mapWithConcurrency } from "~/utils/async";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { parseJsonRecord } from "~/utils/json";
-import { getLogger } from "~/utils/logger";
 
 import { BaseMemoryProvider } from "../base";
 import type {
@@ -129,9 +130,7 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
       if (await this.compensateProviderVector(embedding, vectorId)) {
         try {
           await this.removeLocalMemory(id);
-        } catch {
-          // A processing source remains invisible and records the incomplete write for repair.
-        }
+        } catch {}
       }
 
       throw this.providerError();
@@ -163,9 +162,7 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
       ) {
         try {
           await this.removeLocalMemory(id);
-        } catch {
-          // A processing source remains invisible and can be repaired safely.
-        }
+        } catch {}
       }
 
       throw new AssistantError("Unable to confirm memory activation", ErrorType.DATABASE_ERROR);
@@ -211,7 +208,6 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
       }
     }
 
-    // ES2022 Workers do not expose Array#toSorted, and this copied array is safe to mutate.
     const rankedMemories = [...bestByMemory.values()].sort(
       (left, right) => right.score - left.score,
     );
@@ -393,7 +389,6 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
             returnMetadata: "none",
           });
 
-          // ES2022 Workers do not expose Array#toSorted, and this copied array is safe to mutate.
           const candidates = [...matches.matches]
             .sort((left, right) => right.score - left.score)
             .filter(

@@ -1,0 +1,104 @@
+import { describe, expect, it } from "vitest";
+
+import { createChatExecutionRequest } from "~/services/chat/core/execution-request";
+import type { ChatExecutionRequestInput } from "~/services/chat/core/execution-request";
+
+function createInput(): ChatExecutionRequestInput {
+  return {
+    chatOptions: {
+      app_url: "https://example.com",
+      completion_id: "conversation-1",
+      env: {},
+      messages: [],
+      stream: true,
+    } as any,
+    prepared: {
+      currentMode: "normal",
+      enabledTools: [],
+      messageWithContext: "Hello",
+      modelConfigs: [],
+      primaryModel: "test-model",
+      primaryModelConfig: {},
+      primaryProvider: "test-provider",
+      systemPrompt: "You are helpful",
+      userSettings: null,
+    } as any,
+    messages: [
+      { role: "user", content: "Hello" },
+      {
+        role: "compaction",
+        content: "Context automatically compacted",
+        parts: [
+          {
+            type: "compaction",
+            status: "completed",
+            label: "Context automatically compacted",
+          },
+        ],
+      },
+      { role: "assistant", content: "Hi" },
+    ] as any,
+  };
+}
+
+describe("createChatExecutionRequest", () => {
+  it("excludes compaction status messages from provider request parameters", () => {
+    const request = createChatExecutionRequest(createInput());
+
+    expect(request.providerRequest().messages).toEqual([
+      { role: "user", content: "Hello" },
+      { role: "assistant", content: "Hi" },
+    ]);
+  });
+
+  it("sends only the current Poly instructions after changing product mode", () => {
+    const input = createInput();
+
+    input.chatOptions.meta_assistant = { ui_context: { mode: "work" } };
+    input.prepared.systemPrompt = "<mode>Work</mode>";
+    input.messages.unshift({ role: "system", content: "<mode>Chat</mode>" });
+    const request = createChatExecutionRequest(input).providerRequest();
+
+    expect(request.system_prompt).toBe("<mode>Work</mode>");
+    expect(request.messages).not.toContainEqual(expect.objectContaining({ role: "system" }));
+    expect(request.messages).toContainEqual({ role: "user", content: "Hello" });
+  });
+
+  it("uses tool options resolved from project capability configuration", () => {
+    const input = createInput();
+
+    input.prepared.toolOptions = {
+      file_search: { vector_store_ids: ["vs_project"] },
+    };
+    input.chatOptions.tool_options = {
+      file_search: { vector_store_ids: ["vs_untrusted_request"] },
+    };
+
+    expect(createChatExecutionRequest(input).providerRequest().tool_options).toEqual({
+      file_search: { vector_store_ids: ["vs_project"] },
+    });
+  });
+
+  it("preserves an explicit provider service tier", () => {
+    const input = createInput();
+
+    input.chatOptions.service_tier = "fast";
+
+    expect(createChatExecutionRequest(input).providerRequest().service_tier).toBe("fast");
+  });
+
+  it("uses the prepared server-authoritative request options downstream", () => {
+    const input = createInput();
+
+    input.chatOptions.options = {
+      sandbox: { enabled: true, repo: "attacker/repository", installationId: 1 },
+    };
+    input.prepared.requestOptions = {
+      sandbox: { enabled: true, repo: "project/repository", installationId: 42 },
+    };
+
+    const request = createChatExecutionRequest(input);
+
+    expect(request.providerRequest().options).toEqual(input.prepared.requestOptions);
+  });
+});

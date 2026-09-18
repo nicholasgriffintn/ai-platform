@@ -24,10 +24,11 @@ Use this as the ownership and responsibility map. Detailed rationale is in [deci
 - `apps/training`: model training/deployment execution jobs.
 - `apps/mobile/ios`: native client consuming API streams and push.
 - Shared packages own contracts and reusable UI, leaving API calls and storage ownership at hosts.
+- Backend mechanisms live in primitives packages: `ai-*` for host-facing interaction (providers, functions, agents, models, billing, telemetry), `library-*` for the mechanisms they compose (agent loop, tools, workflows, tasks, model catalogue), `utility-*` for helpers. Packages are generic over host types, throw coded errors, and the API maps them at one boundary.
 
 ## Conversation execution
 
-- `lib/chat/core` handles request orchestration.
+- `services/chat/core` handles request orchestration; `apps/api/src/lib` holds only host infrastructure (database, http, storage, cloudflare, durable objects, provider host, telemetry), and every product capability lives under `services/<capability>`.
 - Finalisation owns persistence, cleanup, lock release and run status.
 - Streams are authoritative only for transport; recovery uses stored snapshots and ordered events.
 - Model loops are bounded by provider readiness, context budgets, and usage controls.

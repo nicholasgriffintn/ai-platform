@@ -1,4 +1,4 @@
-import { RegistryError } from "./errors";
+import { RegistryError } from "./errors.js";
 
 export type RegistryLifecycle = "singleton" | "transient";
 

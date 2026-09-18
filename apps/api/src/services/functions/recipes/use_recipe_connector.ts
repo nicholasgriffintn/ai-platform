@@ -3,6 +3,8 @@ import {
   teammateRunConfigurationSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
 import { getConnectorProviderConfig } from "~/lib/providers/capabilities/connectors";
 import {
@@ -29,8 +31,6 @@ import {
   resolveProjectRecipeConnectorScope,
   type ProjectRecipeConnectorScope,
 } from "~/services/workspaces/projectRecipeConnectorScope";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { redactSensitiveTokens } from "~/utils/redaction";
 
 import type { ApiToolDefinition } from "../../../types/functions";
 import { use_recipe_connector as use_recipe_connectorDescriptor } from "../definitions/recipes/use_recipe_connector";

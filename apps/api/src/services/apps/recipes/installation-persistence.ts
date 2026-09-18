@@ -4,10 +4,10 @@ import {
   type RecipeConfiguration,
   type RecipeInstallationTrigger,
 } from "@ngriffin_uk/polychat-schemas";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import z from "zod/v4";
 
 import type { TemplateRecord } from "~/repositories/TemplateRepository";
-import { safeParseJson } from "~/utils/json";
 
 import type { RecipeScheduleState } from "./scheduleState";
 

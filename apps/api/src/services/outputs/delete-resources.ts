@@ -1,19 +1,21 @@
-import type { ServiceContext } from "~/lib/context/serviceContext";
-import {
-  isOutputDeletionPending,
-  parseOutputContent,
-  withOutputDeletionPending,
-} from "~/lib/outputs/deletion";
 import {
   cleanupOcrBatchProviderResources,
   getOcrBatchProviderCleanupState,
   MistralOcrBatchClient,
   withOcrBatchProviderCleanup,
   withoutOcrBatchProviderCleanup,
-} from "~/lib/providers/capabilities/ocr/batch/MistralOcrBatchClient";
+} from "@ngriffin_uk/polychat-ai-providers";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
+import type { ServiceContext } from "~/lib/context/serviceContext";
+import { providerRuntime } from "~/lib/providers/runtime";
 import { StorageService } from "~/lib/storage";
 import type { OutputRecord } from "~/repositories/OutputRepository";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import {
+  isOutputDeletionPending,
+  parseOutputContent,
+  withOutputDeletionPending,
+} from "~/services/outputs/deletion";
 
 import { requireOutputRecordAccess } from "./access";
 
@@ -68,7 +70,7 @@ async function prepareOcrBatchDeletion(
     }
 
     const owner = await getBatchOwner(context, output);
-    const batchClient = new MistralOcrBatchClient();
+    const batchClient = new MistralOcrBatchClient(providerRuntime);
     const job = await batchClient.cancel({ env: context.env, user: owner, jobId: providerJobId });
 
     if (ACTIVE_BATCH_STATUSES.has(job.status)) {
@@ -94,7 +96,7 @@ async function prepareOcrBatchDeletion(
   }
 
   const owner = await getBatchOwner(context, output);
-  const batchClient = new MistralOcrBatchClient();
+  const batchClient = new MistralOcrBatchClient(providerRuntime);
 
   await cleanupOcrBatchProviderResources(
     batchClient,

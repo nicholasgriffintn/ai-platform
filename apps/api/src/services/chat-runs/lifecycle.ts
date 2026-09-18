@@ -1,3 +1,5 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { ownershipLostError } from "@ngriffin_uk/polychat-library-tasks";
 import type {
   ChatContextSnapshot,
   ChatRetrySnapshot,
@@ -7,15 +9,21 @@ import type {
   RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
 import { TEAMMATE_RUN_RECONCILIATION_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import type { AgentLoopExecutionResult } from "~/lib/chat/agent/agent-loop";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { ConversationRunRepository } from "~/repositories/ConversationRunRepository";
 import { reconcileRecipeExecutionTask } from "~/services/apps/recipes/task-reconciliation";
+import type { AgentLoopExecutionResult } from "~/services/chat/agent/agent-loop";
 import { isThreadLeaseOwnershipLostError } from "~/services/conversations/coordinator/client";
 import { publishConversationChanged, publishRunChanged } from "~/services/sync/conversation-events";
 import { withoutOrigin } from "~/services/sync/publish";
-import { TaskExecutionOwnershipLostError } from "~/services/tasks/task-execution-lease";
 import { TaskService } from "~/services/tasks/TaskService";
 import {
   reconcileTeammateRun,
@@ -24,10 +32,6 @@ import {
 import { resolveChatProjectAccess } from "~/services/workspaces/chatProjectAccess";
 import type { CoreChatOptions } from "~/types";
 import { canonicalJson } from "~/utils/canonical-json";
-import { sha256Hex } from "~/utils/crypto";
-import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
 
 import { buildChatRunCommandPayload } from "./command-payload";
 import { readToolInteractionId } from "./interactions";
@@ -509,7 +513,7 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
     );
 
     if (!updated && durableExecution?.kind === "project_task") {
-      throw new TaskExecutionOwnershipLostError();
+      throw ownershipLostError(durableExecution.dispatchTaskId);
     }
   }
 

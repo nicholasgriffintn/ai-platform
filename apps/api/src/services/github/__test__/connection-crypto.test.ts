@@ -1,6 +1,5 @@
+import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it } from "vitest";
-
-import { ErrorType } from "~/utils/errors";
 
 import {
   decryptGitHubConnectionPayload,

@@ -1,3 +1,4 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   DELEGATION_WAKE_TASK_TYPE,
   INFRA_RECONCILIATION_TASK_TYPE,
@@ -5,12 +6,11 @@ import {
   TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { overageSyncHourIso } from "~/lib/billing/stripeOverageSync";
 import { RepositoryManager } from "~/repositories";
 import { scheduleDueRecipeExecutions } from "~/services/apps/recipes/scheduler";
 import { previousUtcDay } from "~/services/infra/reconciliation";
+import { overageSyncHourIso } from "~/services/subscription/stripeOverageSync";
 import type { IEnv } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 import { TaskService } from "./TaskService";
 

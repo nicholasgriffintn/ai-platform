@@ -3,11 +3,11 @@ import {
   type TeammateContext,
   type TeammateContextStatus,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { TaskService } from "~/services/tasks/TaskService";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 import { revokeTeammateContextResources } from "./computers";
 import { requireOwnedTeammateContext } from "./contexts";

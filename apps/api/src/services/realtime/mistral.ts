@@ -1,16 +1,14 @@
+import {
+  type RealtimeTranscriptionDelay,
+  getMistralTargetStreamingDelayMs,
+  resolveMistralRealtimeProxyModel,
+} from "@ngriffin_uk/polychat-ai-providers";
 import { NO_STORE } from "@ngriffin_uk/polychat-schemas";
 import type { Context } from "hono";
 
 import { ResponseFactory } from "~/lib/http/ResponseFactory";
-import {
-  getRealtimeProvider,
-  type RealtimeTranscriptionDelay,
-} from "~/lib/providers/capabilities/realtime";
-import {
-  getMistralTargetStreamingDelayMs,
-  resolveMistralRealtimeProxyModel,
-} from "~/lib/providers/capabilities/realtime/providers";
-import { resolveRealtimeMaxSessionSeconds } from "~/lib/realtime/sessionLimits";
+import { getRealtimeProvider } from "~/lib/providers/capabilities/realtime";
+import { resolveRealtimeMaxSessionSeconds } from "~/services/realtime/sessionLimits";
 import type { IEnv, IUser } from "~/types";
 
 import { isMistralSessionCreatedMessage, toMistralUpstreamMessage } from "./mistralProtocol";

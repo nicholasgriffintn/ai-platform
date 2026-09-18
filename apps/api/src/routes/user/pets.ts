@@ -6,6 +6,7 @@ import {
   userPetsQuerySchema,
   userPetsResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 import * as z from "zod/v4";
 
@@ -19,7 +20,6 @@ import {
   listPets,
   readPetSheet,
 } from "~/services/pets";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
 

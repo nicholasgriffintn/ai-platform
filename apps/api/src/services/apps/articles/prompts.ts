@@ -1,7 +1,7 @@
 import {
   buildAssistantMetadataSection,
   type PromptModelMetadata,
-} from "~/lib/prompts/sections/metadata";
+} from "~/services/chat/prompts/sections/metadata";
 import type { ChatMode } from "~/types";
 
 function buildArticlePromptMetadata(

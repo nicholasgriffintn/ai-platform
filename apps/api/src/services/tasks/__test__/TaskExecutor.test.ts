@@ -1,3 +1,4 @@
+import { createTaskHandlerRegistry } from "@ngriffin_uk/polychat-library-tasks";
 import {
   PROJECT_TASK_RUN_TASK_TYPE,
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
@@ -71,7 +72,10 @@ describe("TaskExecutor", () => {
     const handler: TaskHandler = {
       handle: vi.fn().mockResolvedValue({ status: "success" }),
     };
-    const executor = new TaskExecutor({} as any, new Map([["memory_synthesis", handler]]));
+    const executor = new TaskExecutor(
+      {} as any,
+      createTaskHandlerRegistry({ ["memory_synthesis"]: handler }),
+    );
 
     await executor.execute(createTaskMessage("memory_synthesis"));
 
@@ -94,7 +98,7 @@ describe("TaskExecutor", () => {
     };
     const executor = new TaskExecutor(
       {} as any,
-      new Map([[SANDBOX_RUN_DISPATCH_TASK_TYPE, handler]]),
+      createTaskHandlerRegistry({ [SANDBOX_RUN_DISPATCH_TASK_TYPE]: handler }),
     );
 
     await executor.execute(createTaskMessage(SANDBOX_RUN_DISPATCH_TASK_TYPE));
@@ -119,7 +123,10 @@ describe("TaskExecutor", () => {
     const handler: TaskHandler = {
       handle: vi.fn().mockResolvedValue({ status: "success", data: {} }),
     };
-    const executor = new TaskExecutor({} as any, new Map([[PROJECT_TASK_RUN_TASK_TYPE, handler]]));
+    const executor = new TaskExecutor(
+      {} as any,
+      createTaskHandlerRegistry({ [PROJECT_TASK_RUN_TASK_TYPE]: handler }),
+    );
 
     await executor.execute(createTaskMessage(PROJECT_TASK_RUN_TASK_TYPE), 2);
 
@@ -146,7 +153,10 @@ describe("TaskExecutor", () => {
     const handler: TaskHandler = {
       handle: vi.fn().mockResolvedValue({ status: "success", data: {} }),
     };
-    const executor = new TaskExecutor({} as any, new Map([[PROJECT_TASK_RUN_TASK_TYPE, handler]]));
+    const executor = new TaskExecutor(
+      {} as any,
+      createTaskHandlerRegistry({ [PROJECT_TASK_RUN_TASK_TYPE]: handler }),
+    );
 
     await executor.execute(createTaskMessage(PROJECT_TASK_RUN_TASK_TYPE));
 
@@ -161,7 +171,7 @@ describe("TaskExecutor", () => {
     mockTaskRepository.claimTaskForExecution.mockResolvedValue(null);
     const executor = new TaskExecutor(
       {} as any,
-      new Map([[SANDBOX_RUN_DISPATCH_TASK_TYPE, handler]]),
+      createTaskHandlerRegistry({ [SANDBOX_RUN_DISPATCH_TASK_TYPE]: handler }),
     );
 
     await executor.execute(createTaskMessage(SANDBOX_RUN_DISPATCH_TASK_TYPE));
@@ -182,11 +192,14 @@ describe("TaskExecutor", () => {
       status: "running",
       execution_lease_expires_at: new Date(Date.now() + 60_000).toISOString(),
     });
-    const executor = new TaskExecutor({} as any, new Map([[PROJECT_TASK_RUN_TASK_TYPE, handler]]));
+    const executor = new TaskExecutor(
+      {} as any,
+      createTaskHandlerRegistry({ [PROJECT_TASK_RUN_TASK_TYPE]: handler }),
+    );
 
     await expect(
       executor.execute(createTaskMessage(PROJECT_TASK_RUN_TASK_TYPE), 2),
-    ).rejects.toThrow("live execution owner");
+    ).rejects.toMatchObject({ code: "lease_busy" });
 
     expect(handler.handle).not.toHaveBeenCalled();
     expect(mockTaskRepository.updateOwnedTask).not.toHaveBeenCalled();
@@ -198,11 +211,14 @@ describe("TaskExecutor", () => {
     };
 
     mockTaskRepository.isTaskExecutionOwner.mockResolvedValue(false);
-    const executor = new TaskExecutor({} as any, new Map([[PROJECT_TASK_RUN_TASK_TYPE, handler]]));
-
-    await expect(executor.execute(createTaskMessage(PROJECT_TASK_RUN_TASK_TYPE))).rejects.toThrow(
-      "owned by another delivery",
+    const executor = new TaskExecutor(
+      {} as any,
+      createTaskHandlerRegistry({ [PROJECT_TASK_RUN_TASK_TYPE]: handler }),
     );
+
+    await expect(
+      executor.execute(createTaskMessage(PROJECT_TASK_RUN_TASK_TYPE)),
+    ).rejects.toMatchObject({ code: "ownership_lost" });
 
     expect(mockTaskRepository.updateOwnedTask).not.toHaveBeenCalled();
   });
@@ -213,7 +229,7 @@ describe("TaskExecutor", () => {
     };
     const executor = new TaskExecutor(
       {} as any,
-      new Map([[SANDBOX_RUN_DISPATCH_TASK_TYPE, handler]]),
+      createTaskHandlerRegistry({ [SANDBOX_RUN_DISPATCH_TASK_TYPE]: handler }),
     );
 
     await executor.execute(createTaskMessage("invalid_type"));
@@ -242,7 +258,7 @@ describe("TaskExecutor", () => {
     });
     const executor = new TaskExecutor(
       {} as any,
-      new Map([[SANDBOX_RUN_DISPATCH_TASK_TYPE, handler]]),
+      createTaskHandlerRegistry({ [SANDBOX_RUN_DISPATCH_TASK_TYPE]: handler }),
     );
 
     await expect(

@@ -1,11 +1,11 @@
 import type { TranscriptionResult } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { getTranscriptionProvider } from "~/lib/providers/capabilities/transcription";
-import { getAuxiliarySpeechModel } from "~/lib/providers/models";
-import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
+import { hasUserProviderApiKey } from "~/lib/providers/credentials";
 import { RepositoryManager } from "~/repositories";
+import { getAuxiliarySpeechModel } from "~/services/models/resolve";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { assertValidTranscriptionFile, type TranscriptionAudioSource } from "./transcription-input";
 

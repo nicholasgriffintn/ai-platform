@@ -4,8 +4,8 @@ import {
   type DelegationContext,
 } from "@ngriffin_uk/polychat-schemas";
 
-import type { ToolExecutionContext } from "~/lib/tools/ToolExecutionContext";
 import type { IRequest } from "~/types";
+import type { ApiToolExecutionContext } from "~/types/functions";
 
 const DEPTH_REFUSAL =
   "This conversation is already running as a delegate and cannot delegate further. " +
@@ -29,7 +29,7 @@ export function resolveDelegationContext(request: IRequest): DelegationContext |
 }
 
 export async function checkDelegationSpawn(
-  context: ToolExecutionContext,
+  context: ApiToolExecutionContext,
 ): Promise<DelegationSpawnGuardResult> {
   const delegationContext = resolveDelegationContext(context.request);
   const depth = delegationContext?.depth ?? 0;

@@ -3,7 +3,7 @@ import {
   buildQrImageUrl,
   MAX_QR_PAYLOAD_LENGTH,
   normaliseQrSize,
-} from "~/utils/qr";
+} from "@ngriffin_uk/polychat-utility-server/qr";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import { create_qr_code as create_qr_codeDescriptor } from "./definitions/qr";

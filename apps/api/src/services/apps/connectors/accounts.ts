@@ -3,6 +3,8 @@ import type {
   RecipeConnectorAccountUpdateRequest,
   RecipeConnectorProvider,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import {
@@ -10,8 +12,6 @@ import {
   listComposioConnectedAccounts,
 } from "~/lib/providers/capabilities/connectors/composio/client";
 import type { ProviderConnectionRecord } from "~/repositories/ProviderConnectionRepository";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { parseJsonRecord } from "~/utils/json";
 
 import { CONNECTOR_ACCOUNT_REFERENCE_KIND } from "./connection-references";
 import { getRecipeConnectorProviderConfig } from "./connector-adapters";

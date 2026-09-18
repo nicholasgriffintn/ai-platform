@@ -1,4 +1,4 @@
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 const MAX_COMMAND_PREFIX_BYTES = 64 * 1024;
 const FLUSH_PACKET_LENGTH = 4;

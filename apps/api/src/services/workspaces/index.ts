@@ -12,9 +12,12 @@ import {
   deriveProjectColour,
   sandboxDeliveryPolicyCreatesCommit,
 } from "@ngriffin_uk/polychat-schemas";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId, randomHex } from "@ngriffin_uk/polychat-utility-server/id";
 
-import { validateCapabilityReference } from "~/lib/capabilities";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { validateCapabilityReference } from "~/services/capabilities/reference";
 import { getGitHubAppConnectionForUserInstallation } from "~/services/github/connections";
 import { deleteOutput } from "~/services/outputs";
 import { forgetWorkspaceAudience } from "~/services/sync/audience";
@@ -23,9 +26,6 @@ import {
   archiveProjectTeammateContexts,
   mutateTeammateContextsWithCleanup,
 } from "~/services/teammates/context-lifecycle";
-import { sha256Hex } from "~/utils/crypto";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId, randomHex } from "~/utils/id";
 
 import { requireProjectAccess, requireWorkAccess, requireWorkspaceAccess } from "./access";
 import { invalidateProjectEnvironmentCacheForConfiguration } from "./environment-cache";

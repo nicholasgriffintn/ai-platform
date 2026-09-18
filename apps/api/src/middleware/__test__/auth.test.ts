@@ -1,8 +1,8 @@
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { Context, Next } from "hono";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getServiceContext, serviceContextMiddleware } from "~/lib/context/serviceContext";
-import { AssistantError } from "~/utils/errors";
 
 import { allowRestrictedPaths, authMiddleware, requireAuth } from "../auth";
 
@@ -57,7 +57,8 @@ vi.mock("isbot", () => ({
   isbot: vi.fn(),
 }));
 
-vi.mock("~/utils/logger", () => ({
+vi.mock("@ngriffin_uk/polychat-ai-telemetry", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-telemetry")>()),
   getLogger: vi.fn(() => ({
     error: vi.fn(),
     warn: vi.fn(),

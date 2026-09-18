@@ -11,6 +11,7 @@ import {
   conversationHandleListResponseSchema,
   conversationHandleParamsSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { type Context, Hono } from "hono";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
@@ -27,7 +28,6 @@ import {
   getUserProviderSyncStatus,
   syncUserProviders,
 } from "~/services/user/userOperations";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import apiKeys from "./apiKeys";
 import exportHistoryRoute from "./export-history";

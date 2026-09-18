@@ -6,12 +6,12 @@ import {
   type DocumentMetadata,
   type Output,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { createOutput, getOutput, updateOutput } from "~/services/outputs";
 import type { IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { sanitiseInput } from "~/utils/sanitise";
 
 import { formatDocumentBody } from "./format";
 import { describeDocument } from "./metadata";

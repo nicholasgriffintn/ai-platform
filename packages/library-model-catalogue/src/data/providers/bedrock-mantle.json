@@ -1,0 +1,191 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "apiBaseUrl": "https://bedrock-mantle.${AWS_REGION}.api.aws/openai/v1",
+    "apiShape": "responses"
+  },
+  "models": {
+    "openai.gpt-5.4": {
+      "model": "gpt/gpt-5-4",
+      "matchingModel": "openai.gpt-5.4",
+      "overrides": {
+        "contextWindow": 272000,
+        "contextComplexity": 4,
+        "speed": 4,
+        "lastUpdated": "June 1, 2026",
+        "costPer1kInputTokens": 0.00275,
+        "costPer1kOutputTokens": 0.0165
+      }
+    },
+    "openai.gpt-5.5": {
+      "model": "gpt/gpt-5-5",
+      "matchingModel": "openai.gpt-5.5",
+      "overrides": {
+        "contextWindow": 272000,
+        "contextComplexity": 4,
+        "speed": 3,
+        "lastUpdated": "June 1, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.033,
+        "supportsTemperature": false
+      }
+    },
+    "openai.gpt-oss-120b": {
+      "model": "gpt-oss/gpt-oss-120b",
+      "matchingModel": "openai.gpt-oss-120b",
+      "overrides": {
+        "name": "gpt-oss-120b",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "strengths": ["reasoning", "analysis", "coding", "math", "tool_use"],
+        "speed": 5,
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": false,
+        "apiBaseUrl": "https://bedrock-mantle.${AWS_REGION}.api.aws/v1"
+      }
+    },
+    "openai.gpt-oss-20b": {
+      "model": "gpt-oss/gpt-oss-20b",
+      "matchingModel": "openai.gpt-oss-20b",
+      "overrides": {
+        "name": "gpt-oss-20b",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "strengths": ["reasoning", "analysis", "coding", "tool_use"],
+        "speed": 5,
+        "lastUpdated": "August 5, 2025",
+        "costPer1kInputTokens": 0.00007,
+        "costPer1kOutputTokens": 0.0003,
+        "supportsAttachments": false,
+        "apiBaseUrl": "https://bedrock-mantle.${AWS_REGION}.api.aws/v1"
+      }
+    },
+    "xai.grok-4.3": {
+      "model": "grok/grok-4-3",
+      "matchingModel": "xai.grok-4.3",
+      "overrides": {
+        "maxTokens": 131072,
+        "modalities": {
+          "input": ["text", "image"],
+          "output": ["text"]
+        },
+        "speed": 4,
+        "lastUpdated": "June 28, 2026",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.0025,
+        "reasoningConfig": {
+          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai.gpt-5.6-luna": {
+      "model": "gpt-luna/gpt-5-6-luna",
+      "matchingModel": "openai.gpt-5.6-luna",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.00132,
+        "supportsTemperature": false
+      }
+    },
+    "openai.gpt-5.6-sol": {
+      "model": "gpt-sol/gpt-5-6-sol",
+      "matchingModel": "openai.gpt-5.6-sol",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.0044,
+        "costPer1kOutputTokens": 0.022,
+        "supportsTemperature": false
+      }
+    },
+    "openai.gpt-5.6-terra": {
+      "model": "gpt-terra/gpt-5-6-terra",
+      "matchingModel": "openai.gpt-5.6-terra",
+      "overrides": {
+        "lastUpdated": "July 9, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.0132,
+        "supportsTemperature": false
+      }
+    },
+    "xai.grok-4.6": {
+      "model": "grok/grok-4-6",
+      "matchingModel": "xai.grok-4.6",
+      "overrides": {
+        "lastUpdated": "August 18, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.0066
+      }
+    },
+    "openai.gpt-6-astra": {
+      "model": "gpt-astra/gpt-6-astra",
+      "matchingModel": "openai.gpt-6-astra",
+      "overrides": {
+        "lastUpdated": "September 4, 2026",
+        "costPer1kInputTokens": 0.011,
+        "costPer1kOutputTokens": 0.055,
+        "supportsTemperature": false
+      }
+    },
+    "google.gemma-4-26b-a4b": {
+      "model": "gemma/gemma-4-26b-a4b-it",
+      "matchingModel": "google.gemma-4-26b-a4b",
+      "overrides": {
+        "maxTokens": 32768,
+        "modalities": {
+          "input": ["text", "image", "video"],
+          "output": ["text"]
+        },
+        "lastUpdated": "April 2, 2026",
+        "costPer1kInputTokens": 0.00013,
+        "costPer1kOutputTokens": 0.0004,
+        "reasoningConfig": {
+          "supportedEffortLevels": ["none", "high"],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "google.gemma-4-31b": {
+      "model": "gemma/gemma-4-31b-it",
+      "matchingModel": "google.gemma-4-31b",
+      "overrides": {
+        "maxTokens": 32768,
+        "modalities": {
+          "input": ["text", "image", "video"],
+          "output": ["text"]
+        },
+        "lastUpdated": "April 2, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.0004,
+        "reasoningConfig": {
+          "supportedEffortLevels": ["none", "high"],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "google.gemma-4-e2b": {
+      "model": "gemma/gemma-4-e2b-it",
+      "matchingModel": "google.gemma-4-e2b",
+      "overrides": {
+        "openWeights": true,
+        "modalities": {
+          "input": ["text", "image", "audio", "video"],
+          "output": ["text"]
+        },
+        "lastUpdated": "April 2, 2026",
+        "costPer1kInputTokens": 0.00004,
+        "costPer1kOutputTokens": 0.00008,
+        "reasoningConfig": {
+          "supportedEffortLevels": ["none", "high"],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

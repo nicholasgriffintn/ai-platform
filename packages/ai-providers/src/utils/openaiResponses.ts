@@ -1,0 +1,438 @@
+import {
+  hasProviderReasoningOptions,
+  shouldSendProviderReasoningEffort,
+  hasModelTextOutput,
+  producesNonTextPrimaryOutput,
+  shouldSendProviderVerbosity,
+} from "@ngriffin_uk/polychat-ai-models";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import { isAgentExecutionMode } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { coerceStringArray } from "@ngriffin_uk/polychat-utility-server/objects";
+import {
+  type OptionBag,
+  readOptionBag,
+  readRecordOption,
+} from "@ngriffin_uk/polychat-utility-server/options";
+
+import { MessageFormatter } from "../formatter/index.js";
+import { createSamplingParameters, resolveEffectiveMaxTokens } from "../parameters.js";
+import type { ChatCompletionParameters, Message } from "../types/index.js";
+import { buildOpenAIResponsesTools } from "./openaiResponsesTools.js";
+
+function requiresOpenAIResponsesApi(modelConfig: ModelConfigItem): boolean {
+  return modelConfig.requiresResponsesApi === true;
+}
+
+const OPENAI_HOSTED_TOOL_NAMES = new Set([
+  "code_execution",
+  "code_interpreter",
+  "computer_use",
+  "file_search",
+  "hosted_shell",
+  "image_generation",
+  "mcp",
+  "remote_mcp",
+  "search_grounding",
+  "shell",
+  "tool_search",
+  "web_search",
+]);
+
+function requestsSupportedHostedTool(
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem,
+): boolean {
+  const enabledTools = coerceStringArray(params.enabled_tools);
+
+  return Boolean(
+    (modelConfig.supportsSearchGrounding &&
+      enabledTools.some((tool) => tool === "search_grounding" || tool === "web_search")) ||
+    (modelConfig.supportsCodeExecution &&
+      enabledTools.some((tool) => tool === "code_execution" || tool === "code_interpreter")) ||
+    (modelConfig.supportsFileSearch && enabledTools.includes("file_search")) ||
+    (modelConfig.supportsMcp &&
+      enabledTools.some((tool) => tool === "mcp" || tool === "remote_mcp")) ||
+    (modelConfig.supportsComputerUse && enabledTools.includes("computer_use")) ||
+    (modelConfig.supportsImageGenerationTool && enabledTools.includes("image_generation")) ||
+    (modelConfig.supportsHostedShell &&
+      enabledTools.some((tool) => tool === "hosted_shell" || tool === "shell")) ||
+    (modelConfig.supportsToolSearch && enabledTools.includes("tool_search")),
+  );
+}
+
+function requestsFunctionToolsWithReasoning(params: ChatCompletionParameters): boolean {
+  if (!params.reasoning_effort || params.reasoning_effort === "none") {
+    return false;
+  }
+
+  const hasEnabledFunctionTool = coerceStringArray(params.enabled_tools).some(
+    (tool) => !OPENAI_HOSTED_TOOL_NAMES.has(tool),
+  );
+
+  return hasEnabledFunctionTool || isAgentExecutionMode(params.mode);
+}
+
+function requestsPreferredReasoningApi(
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem,
+): boolean {
+  return (
+    modelConfig.prefersResponsesApiForReasoning === true &&
+    params.reasoning_effort !== undefined &&
+    params.reasoning_effort !== "none"
+  );
+}
+
+function containsDocumentInput(params: ChatCompletionParameters): boolean {
+  return (params.messages || []).some(
+    (message) =>
+      Array.isArray(message.content) &&
+      message.content.some((part) => isRecord(part) && part.type === "document_url"),
+  );
+}
+
+export function shouldUseOpenAIResponsesApi(
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem,
+): boolean {
+  if (requiresOpenAIResponsesApi(modelConfig)) {
+    return true;
+  }
+
+  if (!hasModelTextOutput(modelConfig) || producesNonTextPrimaryOutput(modelConfig)) {
+    return false;
+  }
+
+  return (
+    params.use_responses === true ||
+    requestsPreferredReasoningApi(params, modelConfig) ||
+    containsDocumentInput(params) ||
+    requestsSupportedHostedTool(params, modelConfig) ||
+    requestsFunctionToolsWithReasoning(params)
+  );
+}
+
+function getOpenAIResponseId(message: Message): string | undefined {
+  const data = message.data;
+
+  if (!isRecord(data)) {
+    return undefined;
+  }
+
+  if (typeof data.openai_response_id === "string") {
+    return data.openai_response_id;
+  }
+
+  return undefined;
+}
+
+function getPreviousResponseState(
+  params: ChatCompletionParameters,
+  store: boolean | undefined,
+): { id: string; messageIndex?: number; source: "explicit" | "history" } | undefined {
+  const explicitPreviousResponseId = params.previous_response_id;
+
+  if (typeof explicitPreviousResponseId === "string") {
+    return { id: explicitPreviousResponseId, source: "explicit" };
+  }
+
+  if (!store || !params.auto_previous_response_id || params.conversation !== undefined) {
+    return undefined;
+  }
+
+  const messages = params.messages || [];
+
+  for (let index = messages.length - 1; index >= 0; index--) {
+    const message = messages[index];
+    const responseId = message ? getOpenAIResponseId(message) : undefined;
+
+    if (responseId) {
+      return { id: responseId, messageIndex: index, source: "history" };
+    }
+  }
+
+  return undefined;
+}
+
+function buildResponsesInput(
+  params: ChatCompletionParameters,
+  previousResponseState?: { messageIndex?: number; source: "explicit" | "history" },
+): unknown {
+  const explicitInput = params.input;
+
+  if (explicitInput !== undefined) {
+    return explicitInput;
+  }
+
+  const allMessages = params.messages || [];
+  const messages =
+    previousResponseState?.source === "history" && previousResponseState.messageIndex !== undefined
+      ? allMessages.slice(previousResponseState.messageIndex + 1)
+      : allMessages;
+
+  const formattedInput = MessageFormatter.formatOpenAIResponsesInput(messages);
+  const fallbackInput =
+    formattedInput.length === 0 && messages.length !== allMessages.length
+      ? MessageFormatter.formatOpenAIResponsesInput(allMessages)
+      : formattedInput;
+  const extraInputItems = params.input_items;
+
+  return Array.isArray(extraInputItems) ? [...fallbackInput, ...extraInputItems] : fallbackInput;
+}
+
+function containsConfigurationUpdate(params: ChatCompletionParameters): boolean {
+  const inputItems = [
+    ...(Array.isArray(params.input) ? params.input : []),
+    ...(Array.isArray(params.input_items) ? params.input_items : []),
+  ];
+
+  return inputItems.some((item) => isRecord(item) && item.type === "configuration_update");
+}
+
+function assertConfigurationUpdateCompatibility(
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem,
+): void {
+  if (!containsConfigurationUpdate(params)) {
+    return;
+  }
+
+  if (!modelConfig.supportsReasoningConfigurationUpdates) {
+    throw new AssistantError(
+      `${modelConfig.name || modelConfig.matchingModel} does not support configuration_update items.`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+
+  if (isAgentExecutionMode(params.mode)) {
+    throw new AssistantError(
+      "OpenAI configuration_update items are only supported in standard single-agent requests.",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+
+  if (params.compaction !== "off" || params.truncation === "auto") {
+    throw new AssistantError(
+      "OpenAI configuration_update items require compaction=off and truncation=disabled.",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+}
+
+function buildResponsesTextFormat(responseFormat: unknown): unknown {
+  if (!isRecord(responseFormat)) {
+    return responseFormat;
+  }
+
+  if (responseFormat.type !== "json_schema" || !isRecord(responseFormat.json_schema)) {
+    return responseFormat;
+  }
+
+  const jsonSchema = responseFormat.json_schema;
+
+  return {
+    type: "json_schema",
+    name: jsonSchema.name,
+    description: jsonSchema.description,
+    schema: jsonSchema.schema,
+    strict: jsonSchema.strict,
+  };
+}
+
+function buildResponsesTextParams(
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem,
+): Record<string, any> {
+  const textOptions = isRecord(params.text) ? params.text : {};
+  const format = buildResponsesTextFormat(params.response_format || textOptions.format);
+  const verbositySetting = params.verbosity;
+  const verbosity = shouldSendProviderVerbosity(modelConfig, verbositySetting)
+    ? verbositySetting
+    : undefined;
+
+  const text = {
+    ...textOptions,
+    ...(format ? { format } : {}),
+    ...(verbosity ? { verbosity } : {}),
+  };
+
+  return Object.keys(text).length ? { text } : {};
+}
+
+function buildResponsesReasoningParams(
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem,
+  options: OptionBag,
+): Record<string, any> {
+  const { effort: _toolEffort, ...toolReasoningOptions } = readRecordOption(options, "reasoning");
+  const { effort: _requestEffort, ...requestReasoningOptions } = params.reasoning ?? {};
+  const reasoningEffort = params.reasoning_effort ?? params.reasoning?.effort;
+  const effort = shouldSendProviderReasoningEffort(modelConfig, reasoningEffort)
+    ? reasoningEffort
+    : undefined;
+  const reasoning = {
+    ...toolReasoningOptions,
+    ...requestReasoningOptions,
+    ...(effort ? { effort } : {}),
+    ...(effort &&
+    effort !== "none" &&
+    toolReasoningOptions.summary === undefined &&
+    toolReasoningOptions.generate_summary === undefined
+      ? { summary: "auto" }
+      : {}),
+  };
+
+  return Object.keys(reasoning).length ? { reasoning } : {};
+}
+
+function isChatFunctionToolChoice(
+  toolChoice: unknown,
+): toolChoice is { type: "function"; function: { name: string } } {
+  return (
+    isRecord(toolChoice) &&
+    toolChoice.type === "function" &&
+    isRecord(toolChoice.function) &&
+    typeof toolChoice.function.name === "string"
+  );
+}
+
+function buildResponsesToolChoice(toolChoice: ChatCompletionParameters["tool_choice"]): unknown {
+  if (isChatFunctionToolChoice(toolChoice)) {
+    return {
+      type: "function",
+      name: toolChoice.function.name,
+    };
+  }
+
+  return toolChoice;
+}
+
+function getResponsesStoreValue(
+  params: ChatCompletionParameters,
+  _options: OptionBag,
+): boolean | undefined {
+  return typeof params.store === "boolean" ? params.store : undefined;
+}
+
+function buildResponsesInclude(
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem,
+  options: OptionBag,
+  tools: any[],
+): string[] | undefined {
+  const include = new Set(coerceStringArray(params.include));
+  const includeDefaults = params.include_defaults !== false;
+  const store = getResponsesStoreValue(params, options);
+
+  if (modelConfig.supportsLogprobs === false) {
+    include.delete("message.output_text.logprobs");
+  }
+
+  if (
+    params.include_encrypted_reasoning ||
+    (includeDefaults && !store && hasProviderReasoningOptions(modelConfig))
+  ) {
+    include.add("reasoning.encrypted_content");
+  }
+
+  if (
+    includeDefaults &&
+    tools.some((tool) => tool?.type === "code_interpreter") &&
+    readRecordOption(options, "code_interpreter").include_outputs !== false
+  ) {
+    include.add("code_interpreter_call.outputs");
+  }
+
+  if (
+    tools.some((tool) => tool?.type === "file_search") &&
+    readRecordOption(options, "file_search").include_results === true
+  ) {
+    include.add("file_search_call.results");
+  }
+
+  if (
+    tools.some((tool) => tool?.type === "web_search") &&
+    readRecordOption(options, "web_search").include_sources === true
+  ) {
+    include.add("web_search_call.action.sources");
+  }
+
+  if (
+    tools.some((tool) => tool?.type === "computer") &&
+    readRecordOption(options, "computer_use").include_output_image_url === true
+  ) {
+    include.add("computer_call_output.output.image_url");
+  }
+
+  return include.size ? [...include] : undefined;
+}
+
+export function buildOpenAIResponsesBody(
+  params: ChatCompletionParameters,
+  modelConfig: ModelConfigItem,
+  functionTools: any[] = [],
+  streamingParams: Record<string, any> = {},
+): Record<string, any> {
+  assertConfigurationUpdateCompatibility(params, modelConfig);
+
+  if (params.prompt_cache_options && !modelConfig.supportsPromptCacheOptions) {
+    throw new AssistantError(
+      `${modelConfig.name || modelConfig.matchingModel} does not support prompt_cache_options.`,
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+
+  const toolOptions = readOptionBag(params.tool_options);
+  const tools = buildOpenAIResponsesTools(params, modelConfig, functionTools);
+  const store = getResponsesStoreValue(params, toolOptions);
+  const background = params.background;
+
+  if (background && !store) {
+    throw new AssistantError(
+      "OpenAI background Responses require store=true so the response can be retrieved later.",
+      ErrorType.PARAMS_ERROR,
+    );
+  }
+
+  const previousResponseState = getPreviousResponseState(params, store);
+  const include = buildResponsesInclude(params, modelConfig, toolOptions, tools);
+  const conversation = params.conversation;
+
+  return {
+    model: modelConfig.matchingModel || params.model,
+    input: buildResponsesInput(params, previousResponseState),
+    instructions: MessageFormatter.formatOpenAIResponsesInstructions(
+      params.messages || [],
+      params.system_prompt,
+    ),
+    ...(tools.length ? { tools } : {}),
+    ...(background ? {} : streamingParams),
+    ...createSamplingParameters(params, modelConfig),
+    ...buildResponsesTextParams(params, modelConfig),
+    ...buildResponsesReasoningParams(params, modelConfig, toolOptions),
+    max_output_tokens: resolveEffectiveMaxTokens(params, modelConfig),
+    parallel_tool_calls: params.parallel_tool_calls,
+    tool_choice: buildResponsesToolChoice(params.tool_choice),
+    store,
+    metadata: params.metadata,
+    truncation: params.truncation,
+    ...(conversation ? { conversation } : {}),
+    ...(previousResponseState?.id && !conversation
+      ? { previous_response_id: previousResponseState.id }
+      : {}),
+    ...(include ? { include } : {}),
+    ...(typeof background === "boolean" ? { background } : {}),
+    prompt_cache_key: params.prompt_cache_key,
+    prompt_cache_retention: params.prompt_cache_retention,
+    prompt_cache_options: params.prompt_cache_options,
+    service_tier: params.service_tier,
+    ...(modelConfig.supportsTopLogprobs !== false && params.top_logprobs !== undefined
+      ? { top_logprobs: params.top_logprobs }
+      : {}),
+    max_tool_calls: params.max_tool_calls,
+    stream_options: params.stream_options,
+    safety_identifier: params.safety_identifier || params.context?.user?.id?.toString(),
+  };
+}

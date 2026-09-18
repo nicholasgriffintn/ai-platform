@@ -1,15 +1,19 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   type MarkdownConversionOptions,
   markdownConversionOptionsSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { convertBlobToMarkdownViaCloudflare } from "~/lib/documentConverter";
 import { StorageService, type StoredSourceFileResult } from "~/lib/storage";
+import { convertBlobToMarkdownViaCloudflare } from "~/services/documents/convert";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/uploads" });
 

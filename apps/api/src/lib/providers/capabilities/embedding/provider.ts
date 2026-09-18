@@ -1,8 +1,10 @@
+import { parseAwsCredentials } from "@ngriffin_uk/polychat-ai-providers";
 import {
   awsRegionSchema,
   s3VectorsBucketNameSchema,
   s3VectorsIndexNameSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { RepositoryManager } from "~/repositories";
 import { UserSettingsRepository } from "~/repositories/UserSettingsRepository";
@@ -14,10 +16,8 @@ import type {
   ResolvedEmbeddingRuntime,
   VectorEmbeddingRuntime,
 } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { providerLibrary } from "../../library";
-import { parseAwsCredentials } from "../../utils/helpers";
 import { EMBEDDING_VECTOR_SPACE_VERSION, WORKERS_EMBEDDING_MODEL } from "./constants";
 import { adaptVectorEmbeddingProvider } from "./runtime";
 import {
@@ -194,7 +194,7 @@ export function getEmbeddingProviderForTarget(
       );
     }
 
-    return providerLibrary.embedding("s3vectors", {
+    return providerLibrary.resolve("embedding", "s3vectors", {
       env,
       user,
       config: {
@@ -308,7 +308,7 @@ export function getEmbeddingProvider(
         ai: env.AI,
       };
 
-      return providerLibrary.embedding("s3vectors", { env, user, config });
+      return providerLibrary.resolve("embedding", "s3vectors", { env, user, config });
     }
 
     case "vectorize": {
@@ -323,7 +323,7 @@ export function getEmbeddingProvider(
         repositories,
       };
 
-      return providerLibrary.embedding("vectorize", { env, user, config });
+      return providerLibrary.resolve("embedding", "vectorize", { env, user, config });
     }
 
     default:

@@ -1,7 +1,11 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
+
 import { getResearchProvider } from "~/lib/providers/capabilities/research";
-import { getAuxiliaryResearchProvider } from "~/lib/providers/models";
 import { OutputRepository } from "~/repositories/OutputRepository";
 import { TaskRepository } from "~/repositories/TaskRepository";
+import { getAuxiliaryResearchProvider } from "~/services/models/resolve";
 import { TaskService } from "~/services/tasks/TaskService";
 import type {
   IEnv,
@@ -15,10 +19,6 @@ import type {
   ResearchTaskHandle,
   ResearchResult,
 } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { sanitiseInput } from "~/utils/sanitise";
-
-import { safeParseJson } from "../../utils/json";
 
 const MAX_INPUT_LENGTH = 15000;
 

@@ -13,10 +13,10 @@ import {
   SEARCHABLE_CONVERSATION_TYPES,
 } from "@ngriffin_uk/polychat-schemas";
 import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
+import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 
 import { PaginationHelper } from "~/lib/database/PaginationHelper";
 import { publishUserEvent } from "~/services/sync/conversation-events";
-import { escapeSqlLikePattern } from "~/utils/sql";
 
 import { BaseRepository } from "./BaseRepository";
 

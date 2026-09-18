@@ -1,7 +1,7 @@
+import { DEFAULT_OCR_PROVIDER } from "@ngriffin_uk/polychat-ai-providers";
 import type { OcrInput, OcrRequest } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveServiceContext } from "~/lib/context/serviceContext";
-import { DEFAULT_OCR_PROVIDER } from "~/lib/providers/capabilities/ocr/constants";
 import { performOcr } from "~/services/apps/retrieval/ocr";
 import { resolveRequestProjectId } from "~/services/functions/request-context";
 

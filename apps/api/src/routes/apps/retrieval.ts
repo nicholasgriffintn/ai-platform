@@ -10,6 +10,7 @@ import {
   deepWebSearchSchema,
   deepResearchSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { type Context, Hono } from "hono";
 import z from "zod/v4";
 
@@ -39,7 +40,6 @@ import {
 import { getResearchTaskStatus, startResearchTask } from "~/services/research/task";
 import { projectScopeQuerySchema } from "~/services/workspaces/access";
 import type { IEnv, IUser, ResearchProviderName } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
 
@@ -108,13 +108,15 @@ addRoute(app, "get", "/hackernews/top-stories", {
       return ResponseFactory.success(
         context,
         {
-          analysis: {
-            content: analysis.content || analysis.response,
-            log_id: analysis.log_id,
-            citations: analysis.citations,
-            usage: analysis.usage,
-            model: analysis.model,
-          },
+          analysis: analysis
+            ? {
+                content: analysis.text,
+                log_id: analysis.logId,
+                citations: analysis.citations,
+                usage: analysis.usage,
+                model: analysis.model,
+              }
+            : null,
           stories,
         },
         200,

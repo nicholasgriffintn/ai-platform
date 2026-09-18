@@ -7,6 +7,9 @@ import {
   type UpdateMemoryDocumentInput,
   type ConversationBriefResponse,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { toStringValue } from "@ngriffin_uk/polychat-utility-server/strings";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { MemoryDocumentRow } from "~/lib/database/schema";
@@ -14,9 +17,6 @@ import type { MemoryDocumentScopeKey } from "~/repositories/MemoryDocumentReposi
 import { requireConversationAccess } from "~/services/conversations/access";
 import { publishConversationChanged } from "~/services/sync/conversation-events";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { toStringValue } from "~/utils/strings";
 
 const CONVERSATION_BRIEF_TEMPLATE = `# Objective
 

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ConversationManager } from "~/lib/conversationManager";
 import type { Database } from "~/lib/database";
+import { ConversationManager } from "~/services/conversations/manager";
 import type { IEnv } from "~/types";
 
 import {
@@ -28,7 +28,7 @@ vi.mock("~/services/conversations/coordinator/client", async (importOriginal) =>
   withThreadLockIfFree: mockWithThreadLockIfFree,
 }));
 
-vi.mock("~/lib/providers/models", () => ({
+vi.mock("~/services/models/resolve", () => ({
   getCompactionModel: vi.fn().mockResolvedValue({
     model: "summary-model",
     provider: "test-provider",
@@ -43,7 +43,7 @@ vi.mock("~/lib/providers/capabilities/chat", () => ({
   })),
 }));
 
-vi.mock("~/utils/id", () => ({
+vi.mock("@ngriffin_uk/polychat-utility-server/id", () => ({
   generateId: () => "snapshot-id",
 }));
 

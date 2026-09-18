@@ -4,10 +4,9 @@ import {
   type Delegation,
   type DelegationResult,
 } from "@ngriffin_uk/polychat-schemas";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { DelegationRow } from "~/lib/database/schema";
-
-import { safeParseJson } from "./json";
 
 function parseResult(value: unknown): DelegationResult | null {
   if (!value) {

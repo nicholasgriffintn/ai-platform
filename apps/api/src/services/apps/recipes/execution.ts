@@ -1,3 +1,4 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type {
   ConversationChannelRequestOptions,
   RecipeInvocationResponse,
@@ -7,18 +8,21 @@ import {
   createChatCompletionsJsonSchema,
   createRecipeChatRequestOptions,
 } from "@ngriffin_uk/polychat-schemas";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
-import { getDefaultChatModel } from "~/lib/providers/models";
 import { recoverAcceptedChatCompletionResponse } from "~/services/chat-runs/completion-recovery";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
+import { ConversationManager } from "~/services/conversations/manager";
+import { getDefaultChatModel } from "~/services/models/resolve";
 import { enqueueTeammateRun } from "~/services/teammates/run-admission";
 import type { CreateChatCompletionsResponse, IEnv, IUser, Message } from "~/types";
 import type { ChatRequestOptions } from "~/types/chat";
-import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/apps/recipes/execution" });
 

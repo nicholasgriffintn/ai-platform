@@ -1,5 +1,5 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
+import { ConversationManager } from "~/services/conversations/manager";
 import type { Message } from "~/types";
 
 export async function handleGetSharedConversation(

@@ -1,3 +1,5 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 
 import { getServiceContext } from "~/lib/context/serviceContext";
@@ -9,8 +11,6 @@ import {
   getGitHubAppConnectionForUserInstallation,
 } from "~/services/github/connections";
 import type { IEnv } from "~/types";
-import { getErrorMessage } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 import {
   executeWebhookSandboxCommand,

@@ -10,9 +10,8 @@ import {
   type SandboxEnvironmentSetup,
   type SandboxRunResult,
 } from "@ngriffin_uk/polychat-schemas";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import z from "zod/v4";
-
-import { safeParseJson } from "~/utils/json";
 
 const hostedSandboxResultSchema = z
   .object({

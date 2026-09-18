@@ -1,8 +1,14 @@
+import { getModels } from "@ngriffin_uk/polychat-ai-models";
+import { isProviderPlatformEnabled } from "@ngriffin_uk/polychat-ai-providers";
 import {
   lastModelSelectionSchema,
   onboardingSeenSchema,
   parsePetModelOverrides,
 } from "@ngriffin_uk/polychat-schemas";
+import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { decodeBase64 } from "hono/utils/encode";
 
 import { prepareUserSettingsUpdates } from "~/lib/database/user-settings";
@@ -12,14 +18,8 @@ import {
   parseMessagingCredentialEnvelope,
 } from "~/lib/providers/capabilities/messaging/credentials";
 import { isMessagingProviderId } from "~/lib/providers/capabilities/messaging/metadata";
-import { getModels } from "~/lib/providers/models";
-import { isProviderPlatformEnabled } from "~/lib/providers/models/platformProviders";
 import type { IUserSettings } from "~/types";
-import { bufferToBase64 } from "~/utils/base64";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
-import { safeParseJson } from "../utils/json";
 import { BaseRepository } from "./BaseRepository";
 
 export class UserSettingsRepository extends BaseRepository {

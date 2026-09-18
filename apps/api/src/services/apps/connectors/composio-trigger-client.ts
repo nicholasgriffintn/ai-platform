@@ -1,5 +1,6 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const COMPOSIO_API_BASE_URL = "https://backend.composio.dev/api/v3.1";
 const COMPOSIO_REQUEST_TIMEOUT_MS = 20_000;

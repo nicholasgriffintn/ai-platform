@@ -4,10 +4,10 @@ import type {
   ProjectTaskStatus,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
+import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { intersectEnabledTools } from "~/utils/enabledTools";
 
 import { resolveProjectTaskToolApproval } from "../approvals";
 import { buildStageInstructions, resolveTaskRuntime } from "../flow";

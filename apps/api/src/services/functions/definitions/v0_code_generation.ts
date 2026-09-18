@@ -1,4 +1,5 @@
-import { jsonSchemaToZod } from "../../../utils/jsonSchema";
+import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
+
 import type { FunctionToolDescriptor } from "./types";
 
 export const v0_code_generation: FunctionToolDescriptor = {

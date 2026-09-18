@@ -1,8 +1,7 @@
-import { imagePrompts } from "~/lib/prompts/image";
-import { getProviderModels } from "~/lib/providers/models/catalogue";
-import { getModelIdsByOutput } from "~/utils/models";
+import { getModelIdsByOutput, getProviderModels } from "@ngriffin_uk/polychat-ai-models";
+import { imagePrompts } from "@ngriffin_uk/polychat-ai-providers";
+import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 
-import { jsonSchemaToZod } from "../../../utils/jsonSchema";
 import type { FunctionToolDescriptor } from "./types";
 
 export const IMAGE_PROVIDERS = ["workers-ai", "replicate"] as const;

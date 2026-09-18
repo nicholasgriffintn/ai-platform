@@ -4,7 +4,7 @@ import type { IRequest } from "~/types";
 
 import { runFunctionWithOutput } from "../run-with-output";
 
-vi.mock("~/lib/conversationManager", () => ({
+vi.mock("~/services/conversations/manager", () => ({
   ConversationManager: {
     getInstance: vi.fn(),
   },
@@ -60,7 +60,7 @@ describe("runFunctionWithOutput", () => {
     outputRepository.createOutput.mockReset();
     outputRepository.updateOutput.mockReset();
 
-    const { ConversationManager } = await import("~/lib/conversationManager");
+    const { ConversationManager } = await import("~/services/conversations/manager");
 
     vi.mocked(ConversationManager.getInstance).mockReturnValue({} as any);
   });
@@ -186,7 +186,7 @@ describe("runFunctionWithOutput", () => {
     });
     expect(result.response_id).toBeUndefined();
 
-    const { ConversationManager } = await import("~/lib/conversationManager");
+    const { ConversationManager } = await import("~/services/conversations/manager");
 
     expect(ConversationManager.getInstance).toHaveBeenCalledWith(
       expect.objectContaining({

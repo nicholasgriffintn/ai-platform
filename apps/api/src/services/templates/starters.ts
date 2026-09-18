@@ -5,15 +5,15 @@ import {
   findTeammateRole,
   PROJECT_STARTERS,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import { validateCapabilityReference } from "~/lib/capabilities";
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { validateCapabilityReference } from "~/services/capabilities/reference";
 import { hireTeammate } from "~/services/teammates/hire";
 import { getProject } from "~/services/workspaces";
 import { requireWorkspaceAccess } from "~/services/workspaces/access";
 import { validateProjectToolConfiguration } from "~/services/workspaces/projectTools";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 export function listProjectStarters(): { starters: ProjectStarterSummary[] } {
   return {

@@ -1,8 +1,8 @@
 import type { KVNamespace } from "@cloudflare/workers-types";
+import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ErrorType } from "~/utils/errors";
 
 import { deleteProviderApiKey } from "../userOperations";
 

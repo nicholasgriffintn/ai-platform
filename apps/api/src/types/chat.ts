@@ -1,194 +1,51 @@
-import type { ExecutionContext } from "@cloudflare/workers-types";
+import type { VerbosityLevel } from "@ngriffin_uk/polychat-ai-models";
 import type {
-  ChatCompletionRequestBody as SchemaChatCompletionRequestBody,
-  ChatCompletionResponseBody as SchemaChatCompletionResponseBody,
-  ChatRequestOptions as SchemaChatRequestOptions,
+  ChatCompletionParameters as ProviderChatCompletionParameters,
+  Attachment,
+  ChatInput,
+  ChatMode,
+  ChatRole,
+  Platform,
+} from "@ngriffin_uk/polychat-ai-providers";
+import type {
   AgentMode,
-  ConversationType,
   ComputeSite,
-  MessageRole as SchemaMessageRole,
-  MessagePart as SchemaMessagePart,
+  ConversationType,
   MetaAssistantRequest,
-  RecipeConnectorProvider,
-  RunProvenance,
-  InferenceImpact,
-  ChatMessageSelection,
-  DelegationContext,
-  ChatRunTrigger,
-  ToolPermission,
   PermissionMode,
+  RunProvenance,
+  ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "../lib/context/serviceContext";
 import type { AnonymousUser } from "./anonymous-user";
 import type { MemoryScope } from "./memory";
-import type { CredentialAuthority, IEnv, ReasoningEffortLevel, VerbosityLevel } from "./shared";
+import type { IEnv } from "./shared";
 import type { IUser } from "./user";
 
-export type Platform = string;
-
-export type ContentType =
-  | "text"
-  | "image_url"
-  | "audio_url"
-  | "video_url"
-  | "input_audio"
-  | "thinking"
-  | "document_url"
-  | "markdown_document"
-  | "selection"
-  | "file"
-  | "tool_result";
-export type ChatRole = SchemaMessageRole;
-export type ChatMode = string;
-export type MessagePart = SchemaMessagePart;
-
-export interface ReasoningControls {
-  effort?: ReasoningEffortLevel;
-}
-
-export type MessageContent = {
-  type: ContentType;
-  source_id?: string;
-  text?: string;
-  image_url?: {
-    url: string;
-    detail?: "auto" | "low" | "high";
-  };
-  audio_url?: {
-    url: string;
-  };
-  video_url?: {
-    url: string;
-  };
-  input_audio?: {
-    data?: string;
-    format?: "wav" | "mp3";
-  };
-  document_url?: {
-    url: string;
-    name?: string;
-  };
-  markdown_document?: {
-    markdown: string;
-    name?: string;
-  };
-  selection?: ChatMessageSelection;
-  thinking?: string;
-  signature?: string;
-  image?: number[] | string;
-  tool_use_id?: string;
-  id?: string;
-  name?: string;
-  content?: string;
-  input?: string | Record<string, unknown>;
-  cache_control?: {
-    type: "ephemeral";
-  };
-  prompt_cache_breakpoint?: {
-    mode: "explicit";
-  };
-};
-
-export type Attachment = {
-  type: "image" | "document" | "markdown_document" | "audio" | "video";
-  url?: string;
-  detail?: "low" | "high";
-  name?: string;
-  markdown?: string;
-  sourceId?: string;
-};
-
-export type AsyncInvocationStatus = "in_progress" | "completed" | "failed";
-
-export interface AsyncInvocationContentHints {
-  placeholder?: MessageContent[];
-  progress?: MessageContent[];
-  failure?: MessageContent[];
-}
-
-export interface AsyncInvocationPollConfig {
-  url?: string;
-  method?: string;
-  headers?: Record<string, string>;
-  body?: Record<string, any>;
-  query?: Record<string, string>;
-  intervalMs?: number;
-}
-
-export interface AsyncInvocationData {
-  provider: string;
-  /**
-   * Provider-defined unique identifier for this async task. The client only needs to echo this back.
-   */
-  id: string;
-  /**
-   * Optional classification that helps the server determine the correct polling strategy.
-   */
-  type?: string;
-  poll?: AsyncInvocationPollConfig;
-  pollIntervalMs?: number;
-  status?: AsyncInvocationStatus | string;
-  lastCheckedAt?: number;
-  completedAt?: number;
-  initialResponse?: Record<string, any>;
-  /**
-   * Arbitrary provider context needed to resume polling (e.g. region, model version).
-   */
-  context?: Record<string, any>;
-  /**
-   * Optional UX hints so the UI can present nicer copy while polling or when failures happen.
-   */
-  contentHints?: AsyncInvocationContentHints;
-  [key: string]: any;
-}
-
-export interface MessageDataPayload extends Record<string, any> {
-  codingTaskType?: string;
-  asyncInvocation?: AsyncInvocationData;
-  error?: string;
-}
-
-export interface Message {
-  role: ChatRole;
-  name?: string;
-  tool_calls?: Record<string, any>[];
-  parts?: MessagePart[];
-  content: string | MessageContent[] | Record<string, unknown>;
-  status?: string;
-  data?: MessageDataPayload | null;
-  completion_id?: string;
-  run_id?: string;
-  delegation_context?: DelegationContext;
-  created?: number;
-  model?: string;
-  provider?: string;
-  log_id?: string;
-  citations?: string[];
-  app?: string;
-  mode?: ChatMode;
-  id?: string;
-  parent_message_id?: string;
-  tool_call_id?: string;
-  tool_call_arguments?: string | Record<string, any>;
-  timestamp?: number;
-  platform?: Platform;
-  usage?: Record<string, any>;
-  provenance?: RunProvenance | null;
-}
-
-export type ChatInput = string | { prompt: string };
-
-export interface AssistantPersonaExample {
-  input: string;
-  output: string;
-}
-
-export interface AssistantPersona {
-  name?: string;
-  instructions?: string;
-  examples?: AssistantPersonaExample[];
-}
+export type {
+  AssistantMessageData,
+  AssistantPersona,
+  AssistantPersonaExample,
+  AsyncInvocationContentHints,
+  AsyncInvocationData,
+  AsyncInvocationPollConfig,
+  AsyncInvocationStatus,
+  Attachment,
+  ChatInput,
+  ChatMode,
+  ChatRequestOptions,
+  ChatRole,
+  ContentType,
+  CreateChatCompletionsResponse,
+  Message,
+  MessageContent,
+  MessageDataPayload,
+  MessagePart,
+  Platform,
+  ProviderExecutionParams,
+  ReasoningControls,
+} from "@ngriffin_uk/polychat-ai-providers";
 
 export interface IBody {
   completion_id: string;
@@ -234,134 +91,12 @@ export interface IRequest {
   memoryScope?: MemoryScope;
 }
 
-type InternalExecutionParams = {
-  // Credential source authorised by the account model policy for this execution.
-  credentialAuthority?: CredentialAuthority;
-  // Durable product classification chosen by trusted task and recipe entry points.
-  conversation_type?: ConversationType;
-  trigger?: ChatRunTrigger;
-  teammate_context_id?: string;
-  computer_id?: string;
-  delegation_id?: string;
-  resolved_configuration?: Record<string, unknown>;
-  // The persona layered into the generated system prompt, for saved agents.
-  persona?: AssistantPersona;
-  // Minimum output tokens requested by internal orchestration.
-  min_tokens?: number;
-  // Current orchestration step for streamed multi-step responses.
-  current_step?: number;
-  command_payload?: Record<string, unknown>;
-  // The URL of the app.
-  app_url?: string;
-  // The environment variables to use for the response.
+export type ChatCompletionParameters = Omit<ProviderChatCompletionParameters, "env" | "context"> & {
   env: IEnv;
-  // Runtime service context for authenticated user, repositories, and request cache.
   context?: ServiceContext;
-  // Connector providers confirmed as connected for this request.
-  connectedConnectorProviders?: RecipeConnectorProvider[];
-  // The Worker execution context for background analytics delivery.
-  executionCtx?: ExecutionContext;
-  // Whether analytics tracking is permitted for this request.
-  analyticsTrackingEnabled?: boolean | null;
-  // The version of the API to use for the response.
-  version?: string;
-  // Whether to disable functions for the response.
-  disable_functions?: boolean;
-  // Use provided messages without replacing authoritative stored conversation history.
-  conversation_history_write_mode?: "reconcile" | "append";
-  // Runtime-normalised messages.
-  messages?: Message[];
-  // Provider-formatted tools.
-  tools?: Record<string, any>[];
-  // Provider thinking configuration after request preparation.
-  thinking?: {
-    type: "enabled" | "disabled";
-    budget_tokens?: number;
-  };
-  // The message to use for the response.
-  message?: string;
-  // The prefix text used for FIM requests.
-  prompt?: string;
-  // The suffix text used for FIM requests.
-  suffix?: string;
-  // Whether the request is a Fill-in-the-Middle generation.
-  fim_mode?: boolean;
-  // The Mercury edit operation requested.
-  edit_operation?: "next" | "apply";
-  // The location of the user to use for the response.
-  location?: {
-    latitude: number;
-    longitude: number;
-  };
-  // The language to use for the response.
-  lang?: string;
-  // The body of the request.
-  body?: Record<string, any>;
-  // Tool permissions this turn must seek approval for.
-  require_approval_for?: ToolPermission[];
-  // Tools this turn must refuse outright, whatever the mode allows.
-  denied_tools?: string[];
-  // Permission policy can differ from the execution mode that controls the agent loop.
-  tool_policy_mode?: AgentMode;
-  // Internal Work-task runs use the stage policy instead of the interactive mode defaults.
-  enforce_mode_tool_policy?: boolean;
-  durable_execution?:
-    | {
-        kind: "project_task";
-        dispatchTaskId: string;
-        executionOwnerToken: string;
-      }
-    | {
-        kind: "delegation";
-        maxCreditMicros: number;
-      };
 };
 
-export type ChatRequestOptions = SchemaChatRequestOptions;
-
-type RuntimeChatRequestFields = "messages" | "tools" | "user";
-
-export type ChatCompletionParametersWithModel = Omit<
-  SchemaChatCompletionRequestBody,
-  RuntimeChatRequestFields
-> &
-  InternalExecutionParams;
-
-export type ChatCompletionParameters = Omit<
-  SchemaChatCompletionRequestBody,
-  RuntimeChatRequestFields
-> &
-  InternalExecutionParams;
-
-export type CreateChatCompletionsResponse = SchemaChatCompletionResponseBody;
-
-export interface AssistantMessageData {
-  content: string | MessageContent[];
-  thinking?: string;
-  signature?: string;
-  citations?: any[];
-  tool_calls?: any[];
-  data?: any;
-  usage?: any;
-  impact?: InferenceImpact | null;
-  guardrails?: {
-    passed: boolean;
-    error?: string;
-    violations?: any[];
-  };
-  log_id?: string | null;
-  model?: string;
-  provider?: string;
-  selected_models?: string[];
-  platform?: Platform;
-  timestamp?: number;
-  id?: string;
-  finish_reason?: string;
-  mode?: ChatMode;
-  refusal?: string | null;
-  annotations?: unknown;
-  provenance?: RunProvenance | null;
-}
+export type ChatCompletionParametersWithModel = ChatCompletionParameters;
 
 export type CoreChatOptions = ChatCompletionParameters & {
   anonymousUser?: any;

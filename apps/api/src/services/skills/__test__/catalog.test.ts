@@ -3,8 +3,8 @@ import { readdir, readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 
 import { builtInSkillDocuments } from "~/data-model/skills";
-import { buildSkillsSection } from "~/lib/prompts/sections/skills";
-import { toolRegistry } from "~/services/functions";
+import { buildSkillsSection } from "~/services/chat/prompts/sections/skills";
+import { functionToolCatalogue } from "~/services/functions";
 
 import { listSkillAvailability } from "../availability";
 import {
@@ -289,7 +289,7 @@ describe("built-in skill catalogue", () => {
   });
 
   it("only requires and suggests tools the registry actually publishes", async () => {
-    const registered = new Set(toolRegistry.list().map((tool) => tool.name));
+    const registered = new Set(functionToolCatalogue.list().map((tool) => tool.name));
     const declared = (await listSkillDefinitions()).flatMap((skill) => [
       ...skill.requirement.tools,
       ...skill.requirement.suggestedTools,

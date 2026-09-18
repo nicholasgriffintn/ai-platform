@@ -1,4 +1,5 @@
 import { excerptMemoryDocument } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { MemoryDocumentRow } from "~/lib/database/schema";
@@ -6,7 +7,6 @@ import type { MemoryDocumentScopeKey } from "~/repositories/MemoryDocumentReposi
 import { publishConversationChanged } from "~/services/sync/conversation-events";
 import { requireProjectTeammate } from "~/services/teammates/access";
 import type { IEnv, IUser, IUserSettings, MemoryScope } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import type {
   MemoryProvider,
@@ -30,10 +30,6 @@ export interface DocumentsMemoryProviderConfig {
   memoryScope?: MemoryScope;
 }
 
-/**
- * Keeps memories as plain documents the person can read, edit and roll back, rather than as
- * opaque vectors. Every write appends a revision, so nothing is silently overwritten.
- */
 export class DocumentsMemoryProvider implements MemoryProvider {
   readonly name = "documents" as const;
 

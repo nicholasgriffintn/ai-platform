@@ -1,4 +1,5 @@
 import {
+  getLogger,
   ANALYTICS_ENGINE_BLOB_COLUMNS,
   ANALYTICS_ENGINE_DATASET,
   ANALYTICS_ENGINE_DOUBLE_COLUMNS,
@@ -6,11 +7,11 @@ import {
   ANALYTICS_ENGINE_TYPE_COLUMN,
   analyticsEngineBlobColumn,
   analyticsEngineDoubleColumn,
-} from "~/lib/analytics/dataset-layout";
+} from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { isSimpleSqlLiteral } from "@ngriffin_uk/polychat-utility-server/sql";
+
 import type { IRequest } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
-import { isSimpleSqlLiteral } from "~/utils/sql";
 
 const logger = getLogger({ prefix: "services/metrics/getMetrics" });
 

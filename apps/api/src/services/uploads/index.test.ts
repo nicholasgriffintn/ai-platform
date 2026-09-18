@@ -13,7 +13,7 @@ vi.mock("~/lib/storage", () => ({
   },
 }));
 
-vi.mock("~/lib/documentConverter", () => ({
+vi.mock("~/services/documents/convert", () => ({
   convertBlobToMarkdownViaCloudflare,
 }));
 

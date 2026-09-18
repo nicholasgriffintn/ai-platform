@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsTemperature": true
+  },
+  "models": {
+    "cerebras/gpt-oss-120b": {
+      "model": "gpt-oss/gpt-oss-120b",
+      "matchingModel": "gpt-oss-120b",
+      "overrides": {
+        "maxTokens": 40960,
+        "strengths": ["reasoning", "coding", "analysis", "math", "tool_use"],
+        "speed": 5,
+        "lastUpdated": "June 10, 2026",
+        "costPer1kInputTokens": 0.00035,
+        "costPer1kOutputTokens": 0.00075
+      }
+    },
+    "qwen-3.8-27b": {
+      "model": "qwen/qwen3-8-27b",
+      "matchingModel": "qwen-3.8-27b",
+      "overrides": {
+        "contextWindow": 65536,
+        "maxTokens": 32768,
+        "lastUpdated": "September 3, 2026",
+        "costPer1kInputTokens": 0.00099,
+        "costPer1kOutputTokens": 0.00149,
+        "reasoningConfig": {
+          "supportedEffortLevels": ["none", "low", "medium", "high"],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

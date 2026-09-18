@@ -1,4 +1,4 @@
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { MessagingProvider } from "../../capabilities/messaging";
 import {
@@ -7,8 +7,7 @@ import {
   isTwilioSmsCredentials,
 } from "../../capabilities/messaging";
 import { AwsSmsProvider, TwilioSmsProvider } from "../../capabilities/messaging/providers";
-import type { ProviderRegistry } from "../ProviderRegistry";
-import type { ProviderRegistration } from "../types";
+import type { ProviderRegistration, ProviderRegistry } from "../types";
 
 const messagingProviders: ProviderRegistration<MessagingProvider>[] = [
   {

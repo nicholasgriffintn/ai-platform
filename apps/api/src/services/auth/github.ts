@@ -1,9 +1,9 @@
 import { type ExternalIdentity, isRecord } from "@ngriffin_uk/auth-core";
 import type { OAuthTokenSet } from "@ngriffin_uk/auth-oauth2";
+import { getStringRecordValue } from "@ngriffin_uk/polychat-utility-server/objects";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { type AssistantAuthUser, toAssistantAuthUser } from "~/services/auth/authUser";
-import { getStringRecordValue } from "~/utils/objects";
 
 export async function resolveGitHubIdentity(
   tokens: OAuthTokenSet,

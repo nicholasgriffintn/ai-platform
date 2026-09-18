@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { RegistryError } from "../errors";
-import { CategoryRegistry } from "../registry";
+import { RegistryError } from "../errors.js";
+import { CategoryRegistry } from "../registry.js";
 
 interface Instance {
   id: string;

@@ -1,0 +1,68 @@
+import type { SandboxWebhookCommand } from "@ngriffin_uk/polychat-schemas";
+
+import {
+  defaultShouldCommitForSandboxCommand,
+  defaultTaskForSandboxCommand,
+  extractImplementTask,
+  extractSandboxCommand,
+  extractSandboxPushCommand,
+  getSandboxFunctionName,
+} from "./command";
+import { formatSandboxResultComment, postCommentToIssueOrPullRequest } from "./comments";
+import { getGitHubAppInstallationToken } from "./installation-token";
+import {
+  parseIssueNumberFromAutomationPayload,
+  parseSandboxAutomationCommand,
+  parseSandboxShouldCommit,
+} from "./payload";
+import { validateGitHubWebhookSignature } from "./signature";
+
+export {
+  defaultShouldCommitForSandboxCommand,
+  defaultTaskForSandboxCommand,
+  extractImplementTask,
+  extractSandboxCommand,
+  extractSandboxPushCommand,
+  getGitHubAppInstallationToken,
+  getSandboxFunctionName,
+  parseIssueNumberFromAutomationPayload,
+  parseSandboxAutomationCommand,
+  parseSandboxShouldCommit,
+};
+
+export function validateSignature(
+  payload: string,
+  signature: string | undefined,
+  secret: string,
+): boolean {
+  return validateGitHubWebhookSignature({
+    payload,
+    signature,
+    secret,
+  });
+}
+
+export async function postCommentToIssue(
+  repo: string,
+  issue: number,
+  body: string,
+  token: string,
+): Promise<void> {
+  await postCommentToIssueOrPullRequest({
+    repo,
+    issueOrPrNumber: issue,
+    body,
+    token,
+  });
+}
+
+export function formatResultComment(params: {
+  command?: SandboxWebhookCommand;
+  success: boolean;
+  summary?: string;
+  diff?: string;
+  error?: string;
+  responseId?: string;
+}): string {
+  return formatSandboxResultComment(params);
+}

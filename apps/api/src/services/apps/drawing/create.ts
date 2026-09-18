@@ -1,14 +1,15 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+
 import { gatewayId } from "~/constants/app";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import type { ConversationManager } from "~/lib/conversationManager";
 import {
   StorageService,
   type StoredOutputFileResult,
   type StoredSourceFileResult,
 } from "~/lib/storage";
+import type { ConversationManager } from "~/services/conversations/manager";
 import type { ChatRole, IEnv, IFunctionResponse, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 import { drawingDescriptionPrompt } from "./prompts";
 

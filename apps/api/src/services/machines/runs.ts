@@ -1,9 +1,9 @@
 import { isMachineOnline, machineRunRequestSchema } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getDurableObjectStub, postDurableObjectJson } from "~/lib/durable-objects/client";
 import { publishMachineEvent } from "~/services/sync/conversation-events";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export async function callMachineRun(
   context: ServiceContext,

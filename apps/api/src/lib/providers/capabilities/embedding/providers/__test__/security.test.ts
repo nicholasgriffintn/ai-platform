@@ -10,7 +10,7 @@ const logger = vi.hoisted(() => ({
 }));
 const getProviderApiKey = vi.hoisted(() => vi.fn());
 
-vi.mock("~/utils/logger", () => ({ getLogger: vi.fn(() => logger) }));
+vi.mock("@ngriffin_uk/polychat-ai-telemetry", () => ({ getLogger: vi.fn(() => logger) }));
 vi.mock("~/repositories/UserSettingsRepository", () => ({
   UserSettingsRepository: class {
     getProviderApiKey = getProviderApiKey;

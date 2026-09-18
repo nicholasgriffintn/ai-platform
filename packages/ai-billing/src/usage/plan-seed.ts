@@ -1,0 +1,121 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { creditMicrosFromCredits, creditsFromCreditMicros } from "@ngriffin_uk/polychat-schemas";
+
+import type { UsageBalanceSeed, UsageStore } from "./store.js";
+
+const logger = getLogger({ prefix: "ai-billing/plan-seed" });
+
+const GRACE_INCLUDED_FRACTION = 0.1;
+const GRACE_CEILING_FRACTION = 0.5;
+const GRACE_FLOOR_CREDIT_MICROS = creditMicrosFromCredits(50);
+
+export const ANONYMOUS_PLAN_ID = "anonymous";
+export const DEFAULT_USER_PLAN_ID = "free";
+
+export const DEFAULT_PLAN_INCLUDED_CREDITS: Readonly<Record<string, number>> = {
+  [ANONYMOUS_PLAN_ID]: 15,
+  [DEFAULT_USER_PLAN_ID]: 150,
+  pro: 1500,
+  enterprise: 15_000,
+};
+
+export type UsagePlanResolution = "allowance" | "none" | "unavailable";
+
+export interface UsagePlanSeed extends UsageBalanceSeed {
+  resolution: UsagePlanResolution;
+}
+
+const NO_ALLOWANCE = {
+  includedCreditMicros: 0,
+  graceCreditMicros: 0,
+  resolution: "none",
+} as const;
+
+const ALLOWANCE_UNAVAILABLE = {
+  includedCreditMicros: 0,
+  graceCreditMicros: 0,
+  resolution: "unavailable",
+} as const;
+
+export function defaultGraceCreditMicros(includedCreditMicros: number): number {
+  return Math.min(
+    Math.max(Math.round(includedCreditMicros * GRACE_INCLUDED_FRACTION), GRACE_FLOOR_CREDIT_MICROS),
+    Math.round(includedCreditMicros * GRACE_CEILING_FRACTION),
+  );
+}
+
+export function creditsAreEnforced(seed: Pick<UsagePlanSeed, "includedCreditMicros">): boolean {
+  return seed.includedCreditMicros > 0;
+}
+
+export interface PlanAllowanceCredits {
+  includedCredits: number;
+  graceCredits: number;
+}
+
+export function resolvePlanAllowanceCredits(
+  planId: string,
+  configuredIncludedCredits?: unknown,
+  configuredGraceCredits?: unknown,
+): PlanAllowanceCredits | null {
+  const includedCredits =
+    typeof configuredIncludedCredits === "number"
+      ? configuredIncludedCredits
+      : (DEFAULT_PLAN_INCLUDED_CREDITS[planId] ?? null);
+
+  if (includedCredits === null || includedCredits <= 0) {
+    return null;
+  }
+
+  return {
+    includedCredits,
+    graceCredits:
+      typeof configuredGraceCredits === "number"
+        ? configuredGraceCredits
+        : creditsFromCreditMicros(
+            defaultGraceCreditMicros(creditMicrosFromCredits(includedCredits)),
+          ),
+  };
+}
+
+export async function resolvePlanCreditAllowance(
+  store: UsageStore,
+  planId: string | null | undefined,
+): Promise<UsagePlanSeed> {
+  if (!planId) {
+    return { planId: null, ...NO_ALLOWANCE };
+  }
+
+  const plan = await store.getPlanAllowance(planId);
+  const allowance = resolvePlanAllowanceCredits(
+    planId,
+    plan?.included_credits,
+    plan?.grace_credits,
+  );
+
+  if (!allowance) {
+    return { planId, ...NO_ALLOWANCE };
+  }
+
+  return {
+    planId,
+    includedCreditMicros: creditMicrosFromCredits(allowance.includedCredits),
+    graceCreditMicros: creditMicrosFromCredits(allowance.graceCredits),
+    resolution: "allowance",
+  };
+}
+
+export async function resolveUsagePlanSeed(
+  store: UsageStore,
+  userId: number,
+): Promise<UsagePlanSeed> {
+  try {
+    const user = await store.getUserPlanId(userId);
+
+    return await resolvePlanCreditAllowance(store, user?.planId || DEFAULT_USER_PLAN_ID);
+  } catch (error) {
+    logger.warn("Failed to resolve plan seed for usage balance", { error, userId });
+
+    return { planId: null, ...ALLOWANCE_UNAVAILABLE };
+  }
+}

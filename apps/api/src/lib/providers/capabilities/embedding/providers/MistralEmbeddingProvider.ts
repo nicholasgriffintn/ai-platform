@@ -1,4 +1,8 @@
 import type { Vectorize } from "@cloudflare/workers-types";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { paginate } from "@ngriffin_uk/polychat-utility-server/arrays";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
 import {
@@ -6,7 +10,7 @@ import {
   requireEmbeddingScopeTag,
   withEmbeddingScopeMetadata,
 } from "~/lib/providers/capabilities/embedding/utils/scope";
-import { getModelConfig } from "~/lib/providers/models";
+import { getModelConfig } from "~/services/models/resolve";
 import type {
   EmbeddingMutationResult,
   EmbeddingProvider,
@@ -18,10 +22,6 @@ import type {
   IUser,
   NumericEmbeddingQuery,
 } from "~/types";
-import { paginate } from "~/utils/arrays";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { safeParseJson } from "~/utils/json";
-import { getLogger } from "~/utils/logger";
 
 import { getChatProvider } from "../../chat";
 

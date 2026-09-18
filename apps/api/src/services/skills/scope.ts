@@ -1,7 +1,7 @@
 import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
-import { getModelConfigByMatchingModel } from "~/lib/providers/models";
 import type { CapabilityConfigurationRepository } from "~/repositories/CapabilityConfigurationRepository";
+import { getModelConfigByMatchingModel } from "~/services/models/resolve";
 import { resolvePlatformTeammateGrants } from "~/services/teammates/platform-teammates";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import type { IRequest } from "~/types";

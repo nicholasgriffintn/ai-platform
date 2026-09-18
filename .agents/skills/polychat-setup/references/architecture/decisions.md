@@ -10,6 +10,7 @@ Read the relevant record before changing any durable boundary.
 - [0004: Render one shell with one user-facing vocabulary](decisions/0004-one-shell-and-one-vocabulary.md)
 - [0031: Run workspace tasks through Vite+](decisions/0031-run-workspace-tasks-through-vite-plus.md)
 - [0032: Ship shared packages as preserved modules](decisions/0032-ship-shared-packages-as-preserved-modules.md)
+- [0044: Shape backend systems as primitives packages](decisions/0044-shape-backend-systems-as-provider-primitives.md)
 
 ## Turn execution
 

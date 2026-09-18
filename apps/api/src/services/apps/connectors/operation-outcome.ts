@@ -1,5 +1,6 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ConnectorOperationConfig } from "~/lib/providers/capabilities/connectors";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const DEFINITIVE_FAILURE_TYPES = new Set([
   ErrorType.AUTHENTICATION_ERROR,

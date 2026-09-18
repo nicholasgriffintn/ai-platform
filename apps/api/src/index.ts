@@ -1,3 +1,4 @@
+import { LogLevel, getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   DEVICE_SYNC_DEVICE_ID_HEADER,
   metricsParamsSchema,
@@ -10,6 +11,8 @@ import { openAPIRouteHandler } from "hono-openapi";
 import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
 import z from "zod/v4";
+
+import { handleAIServiceError, normaliseApiError } from "~/utils/errors";
 
 import packageJson from "../package.json";
 import { API_LOCAL_HOST, API_PROD_HOST } from "./constants/app";
@@ -36,8 +39,6 @@ import { QueueExecutor } from "./services/tasks/QueueExecutor";
 import { ScheduleExecutor } from "./services/tasks/ScheduleExecutor";
 import type { TaskMessage } from "./services/tasks/TaskService";
 import type { IEnv } from "./types";
-import { handleAIServiceError, normaliseApiError } from "./utils/errors";
-import { LogLevel, getLogger } from "./utils/logger";
 import { captureApiError, getSentryOptions } from "./utils/sentry";
 
 const app = new Hono<{

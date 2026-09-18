@@ -1,12 +1,13 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
+
+import { ai } from "~/lib/ai";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { createExecutionOutputProvenance } from "~/lib/provenance/output";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { findModelConfig, getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
+import { findModelConfig, getAuxiliaryModelForRetrieval } from "~/services/models/resolve";
+import { createExecutionOutputProvenance } from "~/services/outputs/provenance";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
-import { getLogger } from "~/utils/logger";
-import { sanitiseInput } from "~/utils/sanitise";
 import { verifyQuotes } from "~/utils/verify";
 
 import { summariseArticlePrompt } from "./prompts";
@@ -76,43 +77,33 @@ export async function summariseArticle({
       user,
     );
     const modelConfig = await findModelConfig(modelToUse, serviceContext.env, providerToUse);
-    const provider = getChatProvider(providerToUse, {
+
+    const summaryGenData = await ai.complete({
       env: serviceContext.env,
       user,
-    });
-
-    const summaryGenData = await provider.getResponse({
+      model: modelToUse,
+      provider: providerToUse,
       completion_id,
       app_url,
-      model: modelToUse,
-      messages: [
-        {
-          role: "user",
-          content: summariseArticlePrompt(sanitisedArticle, {
-            modelId: modelToUse,
-            modelConfig,
-          }),
-        },
-      ],
-      env: serviceContext.env,
-      context: serviceContext,
+      prompt: summariseArticlePrompt(sanitisedArticle, {
+        modelId: modelToUse,
+        modelConfig,
+      }),
     });
 
-    const summaryGenDataContent = summaryGenData.content || summaryGenData.response;
-
-    if (!summaryGenDataContent) {
+    if (!summaryGenData.text) {
       throw new AssistantError("Summary content was empty", ErrorType.PARAMS_ERROR);
     }
 
-    const quotes = extractQuotes(summaryGenDataContent);
+    const quotes = extractQuotes(summaryGenData.text);
     const verifiedQuotes = verifyQuotes(args.article, quotes);
 
     const summaryResult = {
-      content: summaryGenDataContent,
+      content: summaryGenData.text,
       model: modelToUse,
       id: summaryGenData.id,
       citations: summaryGenData.citations,
-      log_id: summaryGenData.log_id,
+      log_id: summaryGenData.logId,
       verifiedQuotes,
     };
 

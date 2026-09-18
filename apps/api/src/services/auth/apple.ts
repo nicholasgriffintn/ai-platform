@@ -1,9 +1,9 @@
 import { AuthError } from "@ngriffin_uk/auth-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { createAssistantAppleDirectAuth } from "~/services/auth/sharedAuth";
 import type { IEnv, User } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export async function handleAppleIdentityTokenSignIn({
   context,

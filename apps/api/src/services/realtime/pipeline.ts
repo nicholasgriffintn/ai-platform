@@ -3,12 +3,12 @@ import type {
   RealtimePipelineSessionResponse,
 } from "@ngriffin_uk/polychat-schemas";
 import { realtimeSessionResponseSchema } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { getRealtimeProvider } from "~/lib/providers/capabilities/realtime";
-import { resolveRealtimeMaxSessionSeconds } from "~/lib/realtime/sessionLimits";
 import { RepositoryManager } from "~/repositories";
+import { resolveRealtimeMaxSessionSeconds } from "~/services/realtime/sessionLimits";
 import type { IEnv, IUser } from "~/types";
-import { generateId } from "~/utils/id";
 
 import {
   getAccessibleRealtimeModel,

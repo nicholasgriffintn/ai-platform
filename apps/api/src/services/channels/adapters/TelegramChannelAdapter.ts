@@ -1,5 +1,5 @@
-import { timingSafeEqual } from "~/utils/crypto";
-import { safeParseJson } from "~/utils/json";
+import { timingSafeEqual } from "@ngriffin_uk/polychat-utility-server/crypto";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { requireSuccessfulChannelSend } from "./send-response";
 import type { ChannelAdapter, ChannelIncoming, ChannelReply, ChannelVerification } from "./types";

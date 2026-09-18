@@ -1,9 +1,9 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { SandboxRunData } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { insertEmbedding } from "~/services/apps/embeddings/insert";
-import { getErrorMessage } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/run-indexing" });
 

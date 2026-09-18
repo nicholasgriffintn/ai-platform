@@ -70,6 +70,12 @@ export const AGENT_MODE_CONFIGS: Record<AgentMode, AgentModeConfig> = {
   },
 };
 
+const AGENT_EXECUTION_MODES = new Set<string>(["agent", "plan", "build", "explore"]);
+
+export function isAgentExecutionMode(mode?: string | null): boolean {
+  return typeof mode === "string" && AGENT_EXECUTION_MODES.has(mode);
+}
+
 export function resolveAgentModeFromChatMode(mode?: string | null): AgentMode {
   if (mode === "plan") {
     return "plan";

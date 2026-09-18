@@ -1,3 +1,4 @@
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { z } from "zod";
 
 import { createServiceContext } from "~/lib/context/serviceContext";
@@ -5,7 +6,6 @@ import { parseStoredRecipeInstallationData } from "~/services/apps/recipes/insta
 import { createRecipeExecutionTaskData } from "~/services/apps/recipes/task-data";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IEnv } from "~/types";
-import { sha256Hex } from "~/utils/crypto";
 import { verifyHmacSha256Webhook } from "~/utils/webhook-signatures";
 
 const triggerMessageSchema = z.object({

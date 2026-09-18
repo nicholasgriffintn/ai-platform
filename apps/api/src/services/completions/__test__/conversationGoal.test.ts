@@ -30,7 +30,7 @@ vi.mock("~/services/goals/goalMarker", () => ({
   recordGoalMarker: vi.fn(),
 }));
 
-vi.mock("~/lib/conversationManager", () => ({
+vi.mock("~/services/conversations/manager", () => ({
   ConversationManager: { getInstance: vi.fn().mockReturnValue({}) },
 }));
 

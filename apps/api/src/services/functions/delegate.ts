@@ -1,3 +1,4 @@
+import { userCreditActor, readCreditPosition } from "@ngriffin_uk/polychat-ai-billing";
 import {
   DELEGATION_DEFAULT_MAX_CREDIT_MICROS,
   DELEGATION_RUN_TASK_TYPE,
@@ -7,10 +8,14 @@ import {
   readToolIds,
   resolveDelegationCreditCeiling,
 } from "@ngriffin_uk/polychat-schemas";
+import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import { findModelConfig } from "~/lib/providers/models";
-import { userCreditActor } from "~/lib/usage/creditActor";
-import { readCreditPosition } from "~/lib/usage/credits";
 import { checkDelegationSpawn } from "~/services/delegations/guards";
 import { resolveDelegationMemoryBindings } from "~/services/delegations/memory-bindings";
 import {
@@ -21,15 +26,14 @@ import { scheduleDelegationExpiry } from "~/services/delegations/schedule-expiry
 import { transitionDelegation } from "~/services/delegations/settle";
 import { requireDelegationGroupWaitPolicy } from "~/services/delegations/wait-policy";
 import { copyConversationBrief, ensureConversationBrief } from "~/services/memory-documents";
+import { findModelConfig } from "~/services/models/resolve";
 import { TaskService } from "~/services/tasks/TaskService";
 import { requireProjectTeammate, requireTeammateAccess } from "~/services/teammates/access";
 import { hireTeammate } from "~/services/teammates/hire";
+import { createUsageRuntime } from "~/services/usage/runtime";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 import { conversationHandleIdForDelegation } from "~/utils/conversation-handles";
-import { intersectEnabledTools } from "~/utils/enabledTools";
-import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
-import { generateId } from "~/utils/id";
 
 import { delegate as delegateDescriptor, type DelegateInput } from "./definitions/delegate";
 
@@ -226,11 +230,10 @@ export const delegate: ApiToolDefinition = {
       typeof parent.brief_document_id === "string" ? parent.brief_document_id : null;
     const deadline =
       args.budget?.deadline ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-    const position = await readCreditPosition({
-      repositories: context.repositories,
-      actor: userCreditActor(user.id),
-      planId: user.plan_id,
-    });
+    const position = await readCreditPosition(
+      createUsageRuntime({ env: context.env, repositories: context.repositories }),
+      { actor: userCreditActor(user.id), planId: user.plan_id },
+    );
     const remainingCreditMicros =
       position.includedCreditMicros +
       position.graceCreditMicros -

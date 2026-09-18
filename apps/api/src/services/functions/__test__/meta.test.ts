@@ -2,10 +2,10 @@ import {
   META_NAVIGATION_DATA_KEY,
   type MetaAssistantUiContext,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError } from "~/utils/errors";
 
 import {
   find_places,
@@ -74,7 +74,7 @@ vi.mock("~/services/workspaces/access", () => ({
   })),
 }));
 
-vi.mock("~/services/global-search", () => ({
+vi.mock("~/services/search/global", () => ({
   searchPolychat: vi.fn(async () => ({
     query: "launch",
     conversations: [],

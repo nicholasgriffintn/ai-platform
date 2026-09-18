@@ -1,8 +1,9 @@
-import { toProviderMessages } from "~/lib/chat/messages/provider-mapping";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
 import { Guardrails } from "~/lib/providers/capabilities/guardrails";
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { toProviderMessages } from "~/services/chat/messages/provider-mapping";
+import { ConversationManager } from "~/services/conversations/manager";
 
 export const handleCheckChatCompletion = async (
   context: ServiceContext,

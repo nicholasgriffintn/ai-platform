@@ -1,8 +1,6 @@
-import { createServiceContext } from "~/lib/context/serviceContext";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
+import { ai } from "~/lib/ai";
 import { extractContent } from "~/services/apps/retrieval/content-extract";
-import type { Message } from "~/types";
+import { getAuxiliaryModelForRetrieval } from "~/services/models/resolve";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import { extract_content as extract_contentDescriptor } from "./definitions/extract_content";
@@ -54,48 +52,31 @@ export const extract_content: ApiToolDefinition = {
       };
     }
 
-    const messages: Message[] = [
-      {
-        role: "system",
-        content:
-          "You are a helpful assistant that summarizes web content. Focus on providing accurate, relevant information while maintaining proper citation of sources.",
-      },
-      {
-        role: "user",
-        content: `Please summarize the content from the following URLs:\n\nExtracted Content:\n${result.data?.extracted.results
-          .map((r, i) => `[${i + 1}] URL: ${r.url}\n${r.raw_content}\n`)
-          .join("\n\n")}`,
-      },
-    ];
-
     const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(
       env,
       user,
     );
-    const provider = getChatProvider(providerToUse, {
+    const summary = await ai.generateText({
       env,
       user,
-    });
-    const serviceContext = createServiceContext({ env, user });
-
-    const aiResponse = await provider.getResponse({
+      model: modelToUse,
+      provider: providerToUse,
       completion_id,
       app_url,
-      context: serviceContext,
-      env,
-      messages,
-      message: `Summarize content from ${urls.join(", ")}`,
-      provider: providerToUse,
-      model: modelToUse,
+      system:
+        "You are a helpful assistant that summarizes web content. Focus on providing accurate, relevant information while maintaining proper citation of sources.",
+      prompt: `Please summarize the content from the following URLs:\n\nExtracted Content:\n${result.data?.extracted.results
+        .map((r, i) => `[${i + 1}] URL: ${r.url}\n${r.raw_content}\n`)
+        .join("\n\n")}`,
     });
 
     return {
       status: "success",
       name: "extract_content",
-      content: aiResponse.response || "Content extracted but no summary could be generated",
+      content: summary || "Content extracted but no summary could be generated",
       data: {
         ...result.data,
-        summary: aiResponse.response,
+        summary,
       },
     };
   },

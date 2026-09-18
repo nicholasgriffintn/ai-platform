@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { resolveRealtimeMaxSessionSeconds } from "~/lib/realtime/sessionLimits";
+import { resolveRealtimeMaxSessionSeconds } from "~/services/realtime/sessionLimits";
 
 import { admitRealtimeSession } from "../sessionUsage";
 

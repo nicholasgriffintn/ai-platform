@@ -1,13 +1,17 @@
 import {
+  buildInboundMessageContent,
+  extractChatCompletionNotification,
+} from "@ngriffin_uk/polychat-ai-providers";
+import {
   createChatCompletionsJsonSchema,
   INBOUND_CHANNEL_IDS,
   type InboundChannelId,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { getInboundChannelProfile } from "~/lib/chat/policy/channels";
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
 import {
   isAuthorisedSender,
   MESSAGING_PROVIDER_IDS,
@@ -21,16 +25,15 @@ import {
   selectConfiguredMessagingDelivery,
 } from "~/lib/providers/capabilities/messaging/delivery";
 import { recoverChatCompletionResponse } from "~/services/chat-runs/completion-recovery";
+import { getInboundChannelProfile } from "~/services/chat/policy/channels";
 import { handleCreateChatCompletions } from "~/services/completions/createChatCompletions";
+import { ConversationManager } from "~/services/conversations/manager";
 import { deliverOutboundOperation } from "~/services/delivery/outbound";
 import { requireProjectTeammate } from "~/services/teammates/access";
 import { ensureActiveTeammateContext, requireTeammateContext } from "~/services/teammates/contexts";
 import { enqueueTeammateRun } from "~/services/teammates/run-admission";
 import { requireProjectAccess } from "~/services/workspaces/access";
 import type { IEnv, IUser, Message } from "~/types";
-import { sha256Hex } from "~/utils/crypto";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { buildInboundMessageContent, extractChatCompletionNotification } from "~/utils/messages";
 
 import { getChannelAdapter, type ChannelIncomingMessage } from "./adapters";
 import { getChannelSecrets } from "./secrets";

@@ -6,9 +6,10 @@ import type {
   SourceSummary,
   UpdateSourceInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { MemoryManager } from "~/lib/memory";
 import { isMemoryProviderId } from "~/lib/providers/capabilities/memory/helpers";
 import type {
   SourceCollectionRecord,
@@ -16,9 +17,8 @@ import type {
   SourceSummaryRecord,
 } from "~/repositories/SourceRepository";
 import { recordProjectAudit } from "~/services/audit";
+import { MemoryManager } from "~/services/memory/manager";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { safeParseJson } from "~/utils/json";
 
 function formatFile(record: SourceRecord): Source["file"] {
   if (!record.storage_key || !record.mime_type) {

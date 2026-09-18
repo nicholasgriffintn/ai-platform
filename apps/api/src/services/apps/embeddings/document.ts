@@ -1,9 +1,8 @@
 import type { InsertEmbeddingInput } from "@ngriffin_uk/polychat-schemas";
-
-import { chunkText } from "~/utils/embeddings";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generatePrefixedId } from "~/utils/id";
-import { sanitiseInput } from "~/utils/sanitise";
+import { chunkText } from "@ngriffin_uk/polychat-utility-server/embeddings";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generatePrefixedId } from "@ngriffin_uk/polychat-utility-server/id";
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 const MAX_CHUNKS = 128;
 const CHUNK_SIZE = 2048;

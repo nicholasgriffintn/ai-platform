@@ -1,3 +1,4 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   buildDeviceSyncTopic,
   type DeviceSyncEventType,
@@ -6,7 +7,6 @@ import {
 
 import { getDurableObjectStub, postDurableObjectJson } from "~/lib/durable-objects/client";
 import type { IEnv } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/sync/publish" });
 const COORDINATOR_ORIGIN = "https://user-sync-coordinator";

@@ -6,8 +6,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
+import { hasUserProviderApiKey } from "~/lib/providers/credentials";
 import { providerLibrary } from "~/lib/providers/library";
-import { hasUserProviderApiKey } from "~/lib/providers/utils/apiKeys";
 import { listModels } from "~/services/models";
 
 function hasConfiguredEnvironmentVariable(env: object, name: string): boolean {
@@ -71,7 +71,7 @@ export async function listRealtimeLiveProviders(
       let provider;
 
       try {
-        provider = providerLibrary.realtime(name, {
+        provider = providerLibrary.resolve("realtime", name, {
           env: context.env,
           user,
           serviceContext: context,

@@ -30,7 +30,8 @@ vi.mock("~/lib/providers/capabilities/realtime/providers", () => ({
   },
 }));
 
-vi.mock("~/utils/logger", () => ({
+vi.mock("@ngriffin_uk/polychat-ai-telemetry", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-telemetry")>()),
   getLogger: () => ({ error: mocks.loggerError }),
 }));
 

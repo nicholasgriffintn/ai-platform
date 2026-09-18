@@ -3,9 +3,9 @@ import {
   type Delegation,
   type DelegationContinuation,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 type ContinuationIdentity = Pick<
   Delegation,

@@ -1,6 +1,7 @@
-import { runPanel, type PanelMember, type PanelTurn } from "~/lib/chat/panel";
-import { findModelConfig } from "~/lib/providers/models";
-import { stringifyMessageContent } from "~/utils/messages";
+import { stringifyMessageContent } from "@ngriffin_uk/polychat-ai-providers";
+
+import { runPanel, type PanelMember, type PanelTurn } from "~/services/chat/panel";
+import { findModelConfig } from "~/services/models/resolve";
 
 import type { ApiToolDefinition } from "../../types/functions";
 import {

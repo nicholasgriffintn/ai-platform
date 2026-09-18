@@ -1,11 +1,12 @@
-import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
-
-import { hasPlanEntitlement } from "~/lib/plans";
-import { filterModelsForUserAccess, getModels } from "~/lib/providers/models";
+import { hasPlanEntitlement } from "@ngriffin_uk/polychat-ai-billing";
 import {
+  getModels,
   getExecutableModelsForAccount,
   getModelCredentialAuthority,
-} from "~/lib/providers/models/policy";
+} from "@ngriffin_uk/polychat-ai-models";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+
+import { filterModelsForUserAccess } from "~/services/models/resolve";
 import type { CredentialAuthority, IEnv, IUser } from "~/types";
 
 function matchesRequestedModel(

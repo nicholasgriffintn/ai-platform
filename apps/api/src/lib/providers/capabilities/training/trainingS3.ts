@@ -1,6 +1,7 @@
+import { encodeAwsS3Key, hasAwsS3Object, putAwsS3Object } from "@ngriffin_uk/polychat-ai-providers";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { encodeAwsS3Key, hasAwsS3Object, putAwsS3Object } from "~/lib/providers/utils/awsS3";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 interface SageMakerS3Options {
   context: ServiceContext;

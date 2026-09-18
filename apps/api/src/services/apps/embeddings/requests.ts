@@ -3,9 +3,8 @@ import {
   insertEmbeddingSchema,
   queryEmbeddingsSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { z } from "zod/v4";
-
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const parseEmbeddingRequest = <Schema extends z.ZodType>(
   schema: Schema,

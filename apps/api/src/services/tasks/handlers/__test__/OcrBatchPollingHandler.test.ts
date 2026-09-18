@@ -1,7 +1,6 @@
 import { OCR_BATCH_POLLING_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
+import { ResponseBodyTooLargeError } from "@ngriffin_uk/polychat-utility-server/http";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import { ResponseBodyTooLargeError } from "~/utils/http";
 
 import { OcrBatchPollingHandler } from "../OcrBatchPollingHandler";
 

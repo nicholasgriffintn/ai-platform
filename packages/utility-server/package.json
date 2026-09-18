@@ -1,0 +1,199 @@
+{
+  "name": "@ngriffin_uk/polychat-utility-server",
+  "version": "0.1.0",
+  "description": "Dependency-light server utilities shared by Polychat Workers and AI primitives: errors, logging, JSON, HTTP, streaming, redaction, and encoding helpers",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "polychat-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./arrays": {
+      "polychat-source": "./src/arrays.ts",
+      "types": "./dist/arrays.d.ts",
+      "import": "./dist/arrays.js"
+    },
+    "./async": {
+      "polychat-source": "./src/async.ts",
+      "types": "./dist/async.d.ts",
+      "import": "./dist/async.js"
+    },
+    "./base64": {
+      "polychat-source": "./src/base64.ts",
+      "types": "./dist/base64.d.ts",
+      "import": "./dist/base64.js"
+    },
+    "./base64url": {
+      "polychat-source": "./src/base64url.ts",
+      "types": "./dist/base64url.d.ts",
+      "import": "./dist/base64url.js"
+    },
+    "./cron": {
+      "polychat-source": "./src/cron.ts",
+      "types": "./dist/cron.d.ts",
+      "import": "./dist/cron.js"
+    },
+    "./crypto": {
+      "polychat-source": "./src/crypto.ts",
+      "types": "./dist/crypto.d.ts",
+      "import": "./dist/crypto.js"
+    },
+    "./embeddings": {
+      "polychat-source": "./src/embeddings.ts",
+      "types": "./dist/embeddings.d.ts",
+      "import": "./dist/embeddings.js"
+    },
+    "./enabled-tools": {
+      "polychat-source": "./src/enabled-tools.ts",
+      "types": "./dist/enabled-tools.d.ts",
+      "import": "./dist/enabled-tools.js"
+    },
+    "./env": {
+      "polychat-source": "./src/env.ts",
+      "types": "./dist/env.d.ts",
+      "import": "./dist/env.js"
+    },
+    "./errors": {
+      "polychat-source": "./src/errors.ts",
+      "types": "./dist/errors.d.ts",
+      "import": "./dist/errors.js"
+    },
+    "./http": {
+      "polychat-source": "./src/http.ts",
+      "types": "./dist/http.d.ts",
+      "import": "./dist/http.js"
+    },
+    "./id": {
+      "polychat-source": "./src/id.ts",
+      "types": "./dist/id.d.ts",
+      "import": "./dist/id.js"
+    },
+    "./image-dimensions": {
+      "polychat-source": "./src/image-dimensions.ts",
+      "types": "./dist/image-dimensions.d.ts",
+      "import": "./dist/image-dimensions.js"
+    },
+    "./json": {
+      "polychat-source": "./src/json.ts",
+      "types": "./dist/json.d.ts",
+      "import": "./dist/json.js"
+    },
+    "./markdown": {
+      "polychat-source": "./src/markdown.ts",
+      "types": "./dist/markdown.d.ts",
+      "import": "./dist/markdown.js"
+    },
+    "./mime": {
+      "polychat-source": "./src/mime.ts",
+      "types": "./dist/mime.d.ts",
+      "import": "./dist/mime.js"
+    },
+    "./multipart-input": {
+      "polychat-source": "./src/multipart-input.ts",
+      "types": "./dist/multipart-input.d.ts",
+      "import": "./dist/multipart-input.js"
+    },
+    "./objects": {
+      "polychat-source": "./src/objects.ts",
+      "types": "./dist/objects.d.ts",
+      "import": "./dist/objects.js"
+    },
+    "./options": {
+      "polychat-source": "./src/options.ts",
+      "types": "./dist/options.d.ts",
+      "import": "./dist/options.js"
+    },
+    "./provider-errors": {
+      "polychat-source": "./src/provider-errors.ts",
+      "types": "./dist/provider-errors.d.ts",
+      "import": "./dist/provider-errors.js"
+    },
+    "./qr": {
+      "polychat-source": "./src/qr.ts",
+      "types": "./dist/qr.d.ts",
+      "import": "./dist/qr.js"
+    },
+    "./record-fields": {
+      "polychat-source": "./src/record-fields.ts",
+      "types": "./dist/record-fields.d.ts",
+      "import": "./dist/record-fields.js"
+    },
+    "./redaction": {
+      "polychat-source": "./src/redaction.ts",
+      "types": "./dist/redaction.d.ts",
+      "import": "./dist/redaction.js"
+    },
+    "./request-cache": {
+      "polychat-source": "./src/request-cache.ts",
+      "types": "./dist/request-cache.d.ts",
+      "import": "./dist/request-cache.js"
+    },
+    "./retries": {
+      "polychat-source": "./src/retries.ts",
+      "types": "./dist/retries.d.ts",
+      "import": "./dist/retries.js"
+    },
+    "./sanitise": {
+      "polychat-source": "./src/sanitise.ts",
+      "types": "./dist/sanitise.d.ts",
+      "import": "./dist/sanitise.js"
+    },
+    "./sql": {
+      "polychat-source": "./src/sql.ts",
+      "types": "./dist/sql.d.ts",
+      "import": "./dist/sql.js"
+    },
+    "./streaming": {
+      "polychat-source": "./src/streaming.ts",
+      "types": "./dist/streaming.d.ts",
+      "import": "./dist/streaming.js"
+    },
+    "./strings": {
+      "polychat-source": "./src/strings.ts",
+      "types": "./dist/strings.d.ts",
+      "import": "./dist/strings.js"
+    },
+    "./tool-calls": {
+      "polychat-source": "./src/tool-calls.ts",
+      "types": "./dist/tool-calls.d.ts",
+      "import": "./dist/tool-calls.js"
+    },
+    "./tool-names": {
+      "polychat-source": "./src/tool-names.ts",
+      "types": "./dist/tool-names.d.ts",
+      "import": "./dist/tool-names.js"
+    },
+    "./urls": {
+      "polychat-source": "./src/urls.ts",
+      "types": "./dist/urls.d.ts",
+      "import": "./dist/urls.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.typecheck.json"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

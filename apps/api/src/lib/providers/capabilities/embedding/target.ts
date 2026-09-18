@@ -1,10 +1,11 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type {
   EmbeddingDistanceMetric,
   EmbeddingProviderTarget,
   EmbeddingRuntimeTarget,
   EmbeddingTaskMode,
 } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { EMBEDDING_VECTOR_SPACE_VERSION, WORKERS_EMBEDDING_MODEL } from "./constants";
 

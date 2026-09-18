@@ -1,12 +1,13 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
-import { createExecutionOutputProvenance } from "~/lib/provenance/output";
 import type { OutputRecord } from "~/repositories/OutputRepository";
+import { ConversationManager } from "~/services/conversations/manager";
 import { handleFunctions } from "~/services/functions";
+import { createExecutionOutputProvenance } from "~/services/outputs/provenance";
 import type { IRequest } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/functions/run-with-output" });
 

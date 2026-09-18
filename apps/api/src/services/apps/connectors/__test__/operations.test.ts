@@ -1,6 +1,5 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const mocks = vi.hoisted(() => ({
   getRecipeConnectorAccessToken: vi.fn(),

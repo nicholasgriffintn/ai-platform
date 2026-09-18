@@ -1,13 +1,13 @@
 import { hashSecret } from "@ngriffin_uk/auth-core";
 import { importHmacSecret, signJwt, verifyJwt, type JwtClaims } from "@ngriffin_uk/auth-jwt";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { generateJwtToken } from "~/services/auth/jwt";
 import { createAssistantAuth } from "~/services/auth/sharedAuth";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/auth/sessions" });
 

@@ -1,7 +1,8 @@
 import type { Context, Next } from "hono";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("~/utils/logger", () => ({
+vi.mock("@ngriffin_uk/polychat-ai-telemetry", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-telemetry")>()),
   getLogger: vi.fn(() => ({
     info: vi.fn(),
     error: vi.fn(),
@@ -43,7 +44,7 @@ describe("loggerMiddleware", () => {
 
     mockLogger = { info: vi.fn(), error: vi.fn(), warn: vi.fn() };
 
-    const { getLogger } = await import("~/utils/logger");
+    const { getLogger } = await import("@ngriffin_uk/polychat-ai-telemetry");
 
     vi.mocked(getLogger).mockReturnValue(mockLogger as never);
     ({ loggerMiddleware } = await import("../loggerMiddleware"));

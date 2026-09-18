@@ -1,4 +1,4 @@
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createConnectorJsonClient } from "./http";
 import { getNumberParam, getStringParam, limitPositiveInteger } from "./params";

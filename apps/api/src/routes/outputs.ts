@@ -19,6 +19,7 @@ import {
   restoreOutputRevisionSchema,
   updateOutputSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 import z from "zod/v4";
 
@@ -40,7 +41,6 @@ import {
   restoreOutputRevision,
   updateOutput,
 } from "~/services/outputs";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 const app = new Hono();
 const outputParams = z.object({ outputId: z.string().min(1) });

@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   resolveExecutableModelForRequest: vi.fn(),
 }));
 
-vi.mock("~/lib/chat/policy/model-access", () => ({
+vi.mock("~/services/chat/policy/model-access", () => ({
   resolveExecutableModelForRequest: mocks.resolveExecutableModelForRequest,
 }));
 

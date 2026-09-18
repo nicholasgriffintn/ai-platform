@@ -1,6 +1,7 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import type { IEnv } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { mapCanvasGenerationRecord } from "./records";
 import type { CanvasGenerationListItem } from "./types";

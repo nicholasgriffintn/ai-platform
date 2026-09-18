@@ -1,3 +1,4 @@
+import { extractMessageNotification } from "@ngriffin_uk/polychat-ai-providers";
 import {
   isTerminalChatRunStatus,
   recipeExecutionTaskDataSchema,
@@ -7,12 +8,13 @@ import {
   type DelegationState,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
-import type { AgentLoopExecutionResult } from "~/lib/chat/agent/agent-loop";
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { deliverRecipeOccurrenceToTeammateHome } from "~/services/apps/recipes/occurrences";
 import { deliverRecipeSmsNotification } from "~/services/apps/recipes/sms-notification";
 import { getRecipeExecutionTaskId } from "~/services/apps/recipes/task-reconciliation";
+import type { AgentLoopExecutionResult } from "~/services/chat/agent/agent-loop";
 import {
   buildDelegationPendingResult,
   buildDelegationResultFromMessage,
@@ -25,8 +27,6 @@ import { notifyMobileWork } from "~/services/mobile-push";
 import { isTaskNotificationPreferenceEnabled } from "~/services/notifications/preferences";
 import { TaskService } from "~/services/tasks/TaskService";
 import type { IUser, Message } from "~/types";
-import { safeParseJson } from "~/utils/json";
-import { extractMessageNotification } from "~/utils/messages";
 
 type ResultMessage = Pick<Message, "content" | "data" | "id" | "status" | "citations">;
 type WaitingDelegationState = Extract<

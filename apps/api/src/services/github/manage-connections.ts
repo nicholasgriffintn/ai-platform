@@ -1,6 +1,7 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { validateGitHubPrivateKey } from "~/lib/github/app-jwt";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import { encryptGitHubConnectionPayload } from "./connection-crypto";
 import { GITHUB_CONNECTION_KIND } from "./connections";

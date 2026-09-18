@@ -1,6 +1,6 @@
 import type { ChatRetrySnapshot } from "@ngriffin_uk/polychat-schemas";
 
-import type { ChatEventSink } from "~/lib/chat/streaming/emitter";
+import type { ChatEventSink } from "~/services/chat/streaming/emitter";
 
 import type { ChatRunLifecycle } from "./lifecycle";
 

@@ -1,9 +1,13 @@
-import { buildAppendRunEventStatements } from "~/lib/chat-runs/event-statements";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import {
+  nonEmptyToolCallsOrNull,
+  serialiseToolCallArguments,
+} from "@ngriffin_uk/polychat-utility-server/tool-calls";
+
+import { buildAppendRunEventStatements } from "~/repositories/run-event-statements";
 import { publishMessageChanged } from "~/services/sync/conversation-events";
 import type { Message } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { nonEmptyToolCallsOrNull, serialiseToolCallArguments } from "~/utils/toolCalls";
 
 import { BaseRepository } from "./BaseRepository";
 

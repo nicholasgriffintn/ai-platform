@@ -1,9 +1,10 @@
-import { createServiceContext } from "~/lib/context/serviceContext";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
-import type { ChatRole, IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
+import type { CompletionResult } from "@ngriffin_uk/polychat-ai-functions";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
+import { ai } from "~/lib/ai";
+import { getAuxiliaryModelForRetrieval } from "~/services/models/resolve";
+import type { IEnv, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/apps/retrieval/hackernews" });
 
@@ -122,10 +123,10 @@ export async function analyseHackerNewsStories({
   stories: { title: string; link: string }[];
   env: IEnv;
   user?: IUser;
-}) {
+}): Promise<CompletionResult | null> {
   try {
     if (!stories || stories.length === 0) {
-      return "";
+      return null;
     }
 
     let systemPrompt = "";
@@ -151,38 +152,23 @@ export async function analyseHackerNewsStories({
       env,
       user,
     );
-    const provider = getChatProvider(providerToUse, { env, user });
-    const context = createServiceContext({ env, user });
-
     const stringifiedStories = stories
       .map(
         (story: { title: string; link: string }, index: number) => `${index + 1}. ${story.title}`,
       )
       .join("\n");
 
-    const messages = [
-      {
-        role: "system" as ChatRole,
-        content: systemPrompt,
-      },
-      {
-        role: "user" as ChatRole,
-        content: `Analyze these top Hacker News stories and provide a brief, engaging summary:\n\n${stringifiedStories}`,
-      },
-    ];
+    const response = await ai.complete({
+      env,
+      user,
+      model: modelToUse,
+      provider: providerToUse,
+      system: systemPrompt,
+      prompt: `Analyze these top Hacker News stories and provide a brief, engaging summary:\n\n${stringifiedStories}`,
+      reasoning: { effort: "none" },
+    });
 
-    const response = await provider.getResponse(
-      {
-        model: modelToUse,
-        env,
-        context,
-        messages,
-        reasoning: { effort: "none" },
-      },
-      user?.id,
-    );
-
-    if (!response.response) {
+    if (!response.text) {
       throw new AssistantError("Failed to analyse HackerNews stories", ErrorType.PROVIDER_ERROR);
     }
 
@@ -192,6 +178,6 @@ export async function analyseHackerNewsStories({
       error_message: error instanceof Error ? error.message : "Unknown error",
     });
 
-    return "";
+    return null;
   }
 }

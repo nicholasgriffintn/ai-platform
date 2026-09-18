@@ -4,9 +4,9 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager } from "~/lib/conversationManager";
-import { SessionManager } from "~/lib/session/SessionManager";
 import { acquireThread, threadLockError } from "~/services/conversations/coordinator/client";
+import { ConversationManager } from "~/services/conversations/manager";
+import { SessionManager } from "~/services/conversations/SessionManager";
 
 export type CompactChatCompletionContext = Pick<
   ServiceContext,

@@ -1,11 +1,12 @@
+import { readRecordObjectField } from "@ngriffin_uk/polychat-utility-server/record-fields";
+
 import {
   ARTIFICIAL_ANALYSIS_FREE_MODEL_ENDPOINTS,
   buildArtificialAnalysisEndpointUrl,
-} from "~/lib/artificial-analysis/endpoints";
-import type { ArtificialAnalysisEndpoint } from "~/lib/artificial-analysis/endpoints";
-import { parseArtificialAnalysisModelsResponse } from "~/lib/artificial-analysis/records";
-import type { ArtificialAnalysisModelRecord } from "~/lib/artificial-analysis/types";
-import { readRecordObjectField } from "~/utils/recordFields";
+} from "~/services/model-analysis/artificial-analysis/endpoints";
+import type { ArtificialAnalysisEndpoint } from "~/services/model-analysis/artificial-analysis/endpoints";
+import { parseArtificialAnalysisModelsResponse } from "~/services/model-analysis/artificial-analysis/records";
+import type { ArtificialAnalysisModelRecord } from "~/services/model-analysis/artificial-analysis/types";
 
 async function fetchArtificialAnalysisEndpointModels({
   apiKey,

@@ -1,12 +1,13 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
+
+import { ai } from "~/lib/ai";
 import { createServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { createExecutionOutputProvenance } from "~/lib/provenance/output";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
-import { findModelConfig, getAuxiliaryModelForRetrieval } from "~/lib/providers/models";
+import { findModelConfig, getAuxiliaryModelForRetrieval } from "~/services/models/resolve";
+import { createExecutionOutputProvenance } from "~/services/outputs/provenance";
 import type { IEnv, IUser } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 import { extractQuotes } from "~/utils/extract";
-import { getLogger } from "~/utils/logger";
-import { sanitiseInput } from "~/utils/sanitise";
 import { verifyQuotes } from "~/utils/verify";
 
 import { analyseArticlePrompt } from "./prompts";
@@ -76,42 +77,32 @@ export async function analyseArticle({
       user,
     );
     const modelConfig = await findModelConfig(modelToUse, serviceContext.env, providerToUse);
-    const provider = getChatProvider(providerToUse, {
+    const analysisData = await ai.complete({
       env: serviceContext.env,
       user,
-    });
-    const analysisData = await provider.getResponse({
+      model: modelToUse,
+      provider: providerToUse,
       completion_id,
       app_url,
-      model: modelToUse,
-      messages: [
-        {
-          role: "user",
-          content: analyseArticlePrompt(sanitisedArticle, {
-            modelId: modelToUse,
-            modelConfig,
-          }),
-        },
-      ],
-      env: serviceContext.env,
-      context: serviceContext,
+      prompt: analyseArticlePrompt(sanitisedArticle, {
+        modelId: modelToUse,
+        modelConfig,
+      }),
     });
 
-    const analysisDataContent = analysisData.content || analysisData.response;
-
-    if (!analysisDataContent) {
+    if (!analysisData.text) {
       throw new AssistantError("Analysis content was empty", ErrorType.PARAMS_ERROR);
     }
 
-    const quotes = extractQuotes(analysisDataContent);
+    const quotes = extractQuotes(analysisData.text);
     const verifiedQuotes = verifyQuotes(sanitisedArticle, quotes);
 
     const analysisResult = {
-      content: analysisDataContent,
+      content: analysisData.text,
       model: modelToUse,
       id: analysisData.id,
       citations: analysisData.citations,
-      log_id: analysisData.log_id,
+      log_id: analysisData.logId,
       verifiedQuotes,
     };
 

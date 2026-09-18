@@ -1,13 +1,14 @@
+import { requireOcrAccess } from "@ngriffin_uk/polychat-ai-providers";
+import type { OcrExtractionResult } from "@ngriffin_uk/polychat-ai-providers";
 import { ocrSchema, type OcrRequest } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getOcrProvider, resolveOcrProviderName } from "~/lib/providers/capabilities/ocr";
-import { requireOcrAccess } from "~/lib/providers/capabilities/ocr/access";
-import type { OcrExtractionResult } from "~/lib/providers/capabilities/ocr/types";
+import { providerHost } from "~/lib/providers/host";
 import { recordProjectAudit } from "~/services/audit";
 import { requireConversationScope } from "~/services/outputs/access";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { generateId } from "~/utils/id";
 
 import { resolveOcrInput } from "./input";
 
@@ -39,7 +40,7 @@ export async function performOcr(params: {
     provider: request.provider,
   });
 
-  await requireOcrAccess({
+  await requireOcrAccess(providerHost, {
     env: params.context.env,
     user: params.context.user ?? undefined,
     providerName,

@@ -1,5 +1,6 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
 import type { Embedder, EmbeddingQueryResult, VectorStore } from "~/types";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 export const queryEmbeddingRuntime = async ({
   embedder,

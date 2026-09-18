@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { MemoryManager } from "~/lib/memory";
 import type { SourceCollectionRecord, SourceRecord } from "~/repositories/SourceRepository";
+import { MemoryManager } from "~/services/memory/manager";
 
 import {
   addCollectionSources,
@@ -17,7 +17,7 @@ const deleteMemoryMock = vi.hoisted(() => vi.fn());
 const requireProjectAccessMock = vi.hoisted(() => vi.fn());
 const recordProjectAuditMock = vi.hoisted(() => vi.fn());
 
-vi.mock("~/lib/memory", () => ({
+vi.mock("~/services/memory/manager", () => ({
   MemoryManager: {
     getInstance: vi.fn(() => ({ deleteMemory: deleteMemoryMock })),
   },

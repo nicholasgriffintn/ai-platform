@@ -3,8 +3,7 @@ import {
   PolychatSandboxProvider,
   type SandboxProvider,
 } from "../../capabilities/sandbox";
-import type { ProviderRegistry } from "../ProviderRegistry";
-import type { ProviderRegistration } from "../types";
+import type { ProviderRegistration, ProviderRegistry } from "../types";
 import { ensureEnv, ensureUser } from "./utils";
 
 const sandboxProviders: ProviderRegistration<SandboxProvider>[] = [

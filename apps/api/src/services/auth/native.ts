@@ -1,4 +1,4 @@
-import { AssistantError, ErrorType } from "~/utils/errors";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 const MOBILE_AUTH_SCHEME = "polychat:";
 const MOBILE_AUTH_HOST = "auth";

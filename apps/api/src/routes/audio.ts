@@ -9,9 +9,9 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 
-import { checkSpeechAccess } from "~/lib/audio/access";
 import { addRoute } from "~/lib/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { checkSpeechAccess } from "~/services/audio/access";
 import { handleTextToSpeech } from "~/services/audio/speech";
 import { handleTranscribe } from "~/services/audio/transcribe";
 

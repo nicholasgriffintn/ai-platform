@@ -1,10 +1,13 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import {
+  getBooleanRecordValue,
+  getStringRecordValue,
+} from "@ngriffin_uk/polychat-utility-server/objects";
+import { isPashiQrPngUrl } from "@ngriffin_uk/polychat-utility-server/qr";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import { getPrivateFileResourceFromUrl } from "~/lib/storage/resource-urls";
 import type { IEnv, IUser } from "~/types";
-import { getBooleanRecordValue, getStringRecordValue } from "~/utils/objects";
-import { isPashiQrPngUrl } from "~/utils/qr";
 
 import { providerLibrary } from "../../library";
 import { parseMessagingCredentialEnvelope } from "./credentials";
@@ -139,7 +142,7 @@ export function resolveStoredMessagingProvider(params: {
   });
 
   return {
-    provider: providerLibrary.messaging(params.providerId, {
+    provider: providerLibrary.resolve("messaging", params.providerId, {
       env: params.env,
       user: params.user,
       serviceContext: params.context,

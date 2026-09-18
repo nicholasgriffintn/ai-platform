@@ -1,5 +1,5 @@
-import { getErrorMessage } from "~/utils/errors";
-import { getLogger } from "~/utils/logger";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { githubApiRequest } from "./api-client";
 import { createGitHubAppJwt } from "./app-jwt";

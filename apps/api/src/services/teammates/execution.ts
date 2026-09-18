@@ -8,13 +8,13 @@ import {
   isLiveDelegationState,
   teammateRunConfigurationSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/lib/context/serviceContext";
 import type { Teammate } from "~/lib/database/schema";
 import { parseRecipeInstallationRecord } from "~/services/apps/recipes";
 import { requireConversationAccess } from "~/services/conversations/access";
 import { requireProjectAccess } from "~/services/workspaces/access";
-import { AssistantError, ErrorType } from "~/utils/errors";
 
 import {
   requireProjectTeammate,

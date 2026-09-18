@@ -1,4 +1,4 @@
-import { addInfraUsage } from "~/lib/usage/requestMeter";
+import { addInfraUsage } from "@ngriffin_uk/polychat-ai-billing";
 
 export function getDurableObjectStub(
   namespace: DurableObjectNamespace | undefined,

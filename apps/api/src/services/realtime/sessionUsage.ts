@@ -1,3 +1,5 @@
+import { holdUsageReservation } from "@ngriffin_uk/polychat-ai-billing";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   REALTIME_RECONCILIATION_TASK_TYPE,
   modelRateResource,
@@ -9,15 +11,14 @@ import {
   type UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
 
+import type { RepositoryManager } from "~/repositories";
 import {
   REALTIME_RECONCILIATION_BUFFER_SECONDS,
   REALTIME_RESERVATION_SECONDS,
-} from "~/lib/realtime/sessionLimits";
-import { holdUsageReservation } from "~/lib/usage/reservations";
-import type { RepositoryManager } from "~/repositories";
+} from "~/services/realtime/sessionLimits";
 import { TaskService } from "~/services/tasks/TaskService";
+import { createUsageRuntime } from "~/services/usage/runtime";
 import type { IEnv } from "~/types";
-import { getLogger } from "~/utils/logger";
 
 const logger = getLogger({ prefix: "services/realtime/session-usage" });
 
@@ -131,14 +132,12 @@ export async function registerRealtimeSessionUsage(params: {
   const reconcileAt = new Date(Date.now() + reconcileDelaySeconds * 1000).toISOString();
 
   try {
-    await holdUsageReservation({
-      repositories,
+    await holdUsageReservation(createUsageRuntime({ env: params.env, repositories }), {
       userId: params.userId,
       kind: "realtime",
       refId: params.sessionId,
       creditMicros: params.pricing.creditMicros,
       expiresAt: reconcileAt,
-      publisher: { env: params.env },
     });
   } catch (error) {
     logger.error("Failed to hold a realtime session reservation", {

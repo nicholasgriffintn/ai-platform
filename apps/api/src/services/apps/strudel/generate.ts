@@ -1,17 +1,20 @@
+import { getModels } from "@ngriffin_uk/polychat-ai-models";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { strudelGenerateResponseSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
+import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import type { z } from "zod";
 
+import { ai } from "~/lib/ai";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
-import { buildStrudelSystemPrompt } from "~/lib/prompts/strudel";
-import { getChatProvider } from "~/lib/providers/capabilities/chat";
 import { captureTrainingExample } from "~/lib/providers/capabilities/training/captureTrainingExample";
-import { getAuxiliaryModel, getModels, filterModelsForUserAccess } from "~/lib/providers/models";
-import type { IEnv, IUser, Message } from "~/types";
-import { AssistantError, ErrorType, getErrorMessage } from "~/utils/errors";
-import { generateId } from "~/utils/id";
-import { getLogger } from "~/utils/logger";
-import { formatMessages } from "~/utils/messages";
-import { mergeParametersWithDefaults } from "~/utils/parameters";
+import { buildStrudelSystemPrompt } from "~/services/apps/strudel/prompt";
+import { getAuxiliaryModel, filterModelsForUserAccess } from "~/services/models/resolve";
+import type { IEnv, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/strudel/generate" });
 
@@ -88,40 +91,13 @@ export async function generateStrudelCode({
       providerName = auxiliaryModel.provider;
     }
 
-    const provider = getChatProvider(providerName, {
+    const rawContent = await ai.generateText({
       env: runtimeEnv,
       user,
-    });
-
-    const baseMessages: Message[] = [
-      {
-        role: "user",
-        content: userPrompt,
-      },
-    ];
-
-    let formattedMessages: Message[];
-
-    try {
-      formattedMessages = formatMessages(provider.name, baseMessages, systemPrompt, model);
-    } catch (error) {
-      logger.error("Failed to format messages for provider", {
-        provider: provider.name,
-        error,
-      });
-      throw new AssistantError(
-        "Unable to prepare prompts for the selected model",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
-    const requestParameters = mergeParametersWithDefaults({
       model,
-      env: runtimeEnv,
-      context: serviceContext,
-      system_prompt: systemPrompt,
-      messages: formattedMessages,
-      stream: false,
+      provider: providerName,
+      system: systemPrompt,
+      prompt: userPrompt,
       store: false,
       completion_id: `strudel-${generateId()}`,
       enabled_tools: [],
@@ -134,20 +110,11 @@ export async function generateStrudelCode({
       reasoning: { effort: "none" },
     });
 
-    const aiResponse = await provider.getResponse(requestParameters, user?.id || null);
-
-    const rawContent =
-      aiResponse?.response ||
-      (Array.isArray(aiResponse?.choices) && aiResponse.choices[0]?.message?.content) ||
-      (typeof aiResponse === "string" ? aiResponse : JSON.stringify(aiResponse));
-
     if (!rawContent) {
       throw new AssistantError("No response from AI provider", ErrorType.UNKNOWN_ERROR);
     }
 
-    let generatedCode = String(rawContent);
-
-    generatedCode = generatedCode
+    const generatedCode = rawContent
       .replace(/^```(?:javascript|js|strudel)?\n?/gm, "")
       .replace(/\n?```$/gm, "")
       .trim();

@@ -1,5 +1,8 @@
 import type { ServiceContext } from "~/lib/context/serviceContext";
-import { ConversationManager, type ConversationListOptions } from "~/lib/conversationManager";
+import {
+  ConversationManager,
+  type ConversationListOptions,
+} from "~/services/conversations/manager";
 
 export const handleListChatCompletions = async (
   context: ServiceContext,
