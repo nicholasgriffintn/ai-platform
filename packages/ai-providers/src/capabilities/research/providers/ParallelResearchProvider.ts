@@ -85,7 +85,7 @@ export class ParallelResearchProvider implements ResearchProvider {
   }
 
   private getAiGatewayEndpoint(path = ""): string {
-    return `https://gateway.ai.cloudflare.com/v1/${this.env.ACCOUNT_ID}/${resolveAiGatewayId(this.env)}/parallel/v1/tasks/runs${path}`;
+    return `https://gateway.ai.cloudflare.com/v1/${this.env.ACCOUNT_ID}/${resolveAiGatewayId()}/parallel/v1/tasks/runs${path}`;
   }
 
   private getParallelEndpoint(path = ""): string {

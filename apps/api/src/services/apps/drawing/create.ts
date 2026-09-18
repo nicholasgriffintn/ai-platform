@@ -1,7 +1,7 @@
+import { resolveAiGatewayId } from "@ngriffin_uk/polychat-ai-providers";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import { gatewayId } from "~/constants/app";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import {
   StorageService,
@@ -79,7 +79,7 @@ export async function generateImageFromDrawing({
     },
     {
       gateway: {
-        id: gatewayId,
+        id: resolveAiGatewayId(),
         skipCache: false,
         cacheTtl: 3360,
         metadata: {
@@ -102,7 +102,7 @@ export async function generateImageFromDrawing({
     },
     {
       gateway: {
-        id: gatewayId,
+        id: resolveAiGatewayId(),
         skipCache: false,
         cacheTtl: 3360,
         metadata: {

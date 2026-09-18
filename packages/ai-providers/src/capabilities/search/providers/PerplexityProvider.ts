@@ -84,7 +84,7 @@ export class PerplexityProvider implements SearchProvider {
       requestBody.search_language_filter = [options.language];
     }
 
-    const endpoint = `https://gateway.ai.cloudflare.com/v1/${this.env.ACCOUNT_ID}/${resolveAiGatewayId(this.env)}/perplexity-ai/search`;
+    const endpoint = `https://gateway.ai.cloudflare.com/v1/${this.env.ACCOUNT_ID}/${resolveAiGatewayId()}/perplexity-ai/search`;
 
     const response = await fetch(endpoint, {
       method: "POST",

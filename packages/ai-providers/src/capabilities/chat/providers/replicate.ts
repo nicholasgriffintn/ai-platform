@@ -43,7 +43,7 @@ export class ReplicateProvider extends BaseProvider {
       return `https://api.replicate.com/${endpoint}`;
     }
 
-    return appendUrlPath(await env.AI.gateway(resolveAiGatewayId(env)).getUrl(this.name), endpoint);
+    return appendUrlPath(await env.AI.gateway(resolveAiGatewayId()).getUrl(this.name), endpoint);
   }
 
   protected async getEndpoint(): Promise<string> {

@@ -9,6 +9,10 @@ export type PostHogAnalyticsConfig = {
   host: string;
 };
 
+export type PostHogFeedbackConfig = {
+  surveyId: string;
+};
+
 export type BeaconAnalyticsConfig = {
   endpoint: string;
   siteId: string;
@@ -27,6 +31,16 @@ export function getPostHogAnalyticsConfig(env: TelemetryEnv): PostHogAnalyticsCo
   }
 
   return { apiKey, host };
+}
+
+export function getPostHogFeedbackConfig(env: TelemetryEnv): PostHogFeedbackConfig | null {
+  if (!getPostHogAnalyticsConfig(env)) {
+    return null;
+  }
+
+  const surveyId = readEnvString(env.POSTHOG_FEEDBACK_SURVEY_ID);
+
+  return surveyId ? { surveyId } : null;
 }
 
 export function getBeaconAnalyticsConfig(env: TelemetryEnv): BeaconAnalyticsConfig | null {
@@ -57,8 +71,4 @@ export function shouldCaptureAiObservability(env: TelemetryEnv): boolean {
     !!getBeaconAnalyticsConfig(env) ||
     (!!env.ANALYTICS && typeof env.ANALYTICS.writeDataPoint === "function")
   );
-}
-
-export function shouldCaptureAiContent(env: TelemetryEnv): boolean {
-  return readBooleanEnv(env.POSTHOG_CAPTURE_AI_CONTENT, false);
 }

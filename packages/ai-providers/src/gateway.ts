@@ -1,16 +1,14 @@
 import { omitNullishValues } from "@ngriffin_uk/polychat-utility-server/objects";
 
-import type { ProviderEnv, ProviderUser } from "./env.js";
+import type { ProviderUser } from "./env.js";
 import type { ChatCompletionParameters } from "./types/chat.js";
 
 const DEFAULT_AI_GATEWAY_CACHE_TTL_SECONDS = 60 * 60 * 24;
 
 export const DEFAULT_AI_GATEWAY_ID = "llm-assistant";
 
-export function resolveAiGatewayId(env?: Pick<ProviderEnv, "AI_GATEWAY_ID">): string {
-  return typeof env?.AI_GATEWAY_ID === "string" && env.AI_GATEWAY_ID.trim()
-    ? env.AI_GATEWAY_ID
-    : DEFAULT_AI_GATEWAY_ID;
+export function resolveAiGatewayId(): string {
+  return DEFAULT_AI_GATEWAY_ID;
 }
 
 type AiGatewayMetadataSource = {

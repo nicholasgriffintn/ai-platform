@@ -19,11 +19,11 @@ export function ChatMessage(props: ChatMessageProps) {
       copied={copied}
       onCopy={copy}
       onSubmitFeedback={async (value) => {
-        if (!props.conversationId || !props.message.log_id) {
+        if (!props.conversationId || !props.message.id) {
           return;
         }
 
-        await apiService.submitFeedback(props.conversationId, props.message.log_id, value);
+        await apiService.submitFeedback(props.conversationId, props.message.id, value);
       }}
       renderModelSelector={({ onModelSelect, onCancel }) => (
         <InlineModelSelector onModelSelect={onModelSelect} onCancel={onCancel} className="w-full" />

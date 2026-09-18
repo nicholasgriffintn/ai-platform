@@ -17,9 +17,14 @@ export {
 export type {
   AiEmbeddingSignal,
   AiErrorInfo,
+  AiFeedbackRating,
+  AiFeedbackSignal,
+  AiGatewayBinding,
+  AiGatewayPatchLog,
   AiGenerationSignal,
   BeaconFetcher,
   CreateWorkerTelemetryOptions,
+  ResolvedAiFeedback,
   TelemetryEnv,
   TelemetryEvent,
   TelemetryIdentity,
@@ -49,6 +54,7 @@ export {
 } from "./identity.js";
 export { buildAiEmbeddingEvent, type AiEmbeddingEventInput } from "./ai-embedding.js";
 export { buildAiEmbeddingProperties } from "./ai-embedding-properties.js";
+export { buildAiFeedbackProperties } from "./ai-feedback-properties.js";
 export { buildAiGenerationEvent, type AiGenerationEventInput } from "./ai-generation.js";
 export { buildAiGenerationProperties } from "./ai-generation-properties.js";
 export {
@@ -59,12 +65,14 @@ export {
 export {
   getBeaconAnalyticsConfig,
   getPostHogAnalyticsConfig,
-  shouldCaptureAiContent,
+  getPostHogFeedbackConfig,
   shouldCaptureAiObservability,
   type BeaconAnalyticsConfig,
   type PostHogAnalyticsConfig,
+  type PostHogFeedbackConfig,
 } from "./config.js";
 export * from "./constants.js";
+export { createAiGatewaySink } from "./sinks/ai-gateway.js";
 export { createAnalyticsEngineSink, writeAnalyticsEngineMetric } from "./sinks/analytics-engine.js";
 export * from "./sinks/dataset-layout.js";
 export { createBeaconSink } from "./sinks/beacon.js";

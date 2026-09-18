@@ -7,6 +7,7 @@ export interface ChatExecutionRequestInput {
   prepared: PreparedRequest;
   messages: Message[];
   resolvedMaxSteps?: number;
+  runId?: string;
 }
 
 class ChatExecutionRequest {
@@ -28,7 +29,7 @@ class ChatExecutionRequest {
   }
 
   private providerBase() {
-    const { chatOptions, prepared, messages, resolvedMaxSteps } = this.input;
+    const { chatOptions, prepared, messages, resolvedMaxSteps, runId } = this.input;
     const stop = chatOptions.stop;
 
     return {
@@ -41,6 +42,7 @@ class ChatExecutionRequest {
       analyticsTrackingEnabled: prepared.userSettings?.tracking_enabled ?? null,
       disable_functions: chatOptions.disable_functions,
       completion_id: chatOptions.completion_id,
+      run_id: runId,
       conversation_type: prepared.conversationType ?? chatOptions.conversation_type,
       messages: toProviderMessages(
         chatOptions.meta_assistant

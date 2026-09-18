@@ -114,6 +114,23 @@ export type AiEmbeddingSignal = TelemetryIdentity & {
   properties?: TelemetryProperties;
 };
 
+export type AiFeedbackRating = 1 | -1;
+
+export type AiFeedbackSignal = TelemetryIdentity & {
+  traceId: string;
+  logId?: string;
+  feedback: AiFeedbackRating;
+  score?: number;
+  messageId?: string;
+  conversationId?: string;
+  properties?: TelemetryProperties;
+};
+
+export type ResolvedAiFeedback = AiFeedbackSignal & {
+  distinctId: string;
+  personProperties?: TelemetryPersonProperties;
+};
+
 export type TrainingExampleSignal = TelemetryIdentity & {
   source: string;
   appName: string;
@@ -130,13 +147,28 @@ export type TrainingExampleSignal = TelemetryIdentity & {
 
 export type BeaconFetcher = (input: string, init: RequestInit) => Promise<Response>;
 
+export interface AiGatewayPatchLog {
+  score?: number | null;
+  feedback?: AiFeedbackRating | null;
+  metadata?: Record<string, string | number | boolean | null> | null;
+}
+
+export interface AiGatewayBinding {
+  gateway(gatewayId: string): {
+    patchLog(logId: string, data: AiGatewayPatchLog): Promise<void>;
+  };
+}
+
 export type TelemetryEnv = {
   ANALYTICS?: AnalyticsEngineDataset;
+  AI?: AiGatewayBinding;
+  ACCOUNT_ID?: string;
+  AI_GATEWAY_TOKEN?: string;
   POSTHOG_PROJECT_API_KEY?: string;
   POSTHOG_HOST?: string;
   POSTHOG_BACKEND_ENABLED?: string;
   POSTHOG_AI_OBSERVABILITY_ENABLED?: string;
-  POSTHOG_CAPTURE_AI_CONTENT?: string;
+  POSTHOG_FEEDBACK_SURVEY_ID?: string;
   AI_OBSERVABILITY_ENABLED?: string;
   BEACON_BACKEND_ENABLED?: string;
   BEACON_ENDPOINT?: string;
@@ -148,6 +180,8 @@ export interface TelemetrySink {
   name: string;
   capture?: (event: TelemetryEvent) => void;
   recordMetric?: (metric: TelemetryMetric) => void;
+  captureAiGeneration?: (signal: AiGenerationSignal) => void;
+  captureAiFeedback?: (feedback: ResolvedAiFeedback) => void | Promise<void>;
   captureTrainingExample?: (signal: TrainingExampleSignal) => void | Promise<void>;
   log?: (record: TelemetryLogRecord) => void;
   exportSpan?: (span: TelemetrySpan) => void;
@@ -161,4 +195,5 @@ export type CreateWorkerTelemetryOptions = {
   fetcher?: BeaconFetcher;
   now?: () => number;
   sinks?: TelemetrySink[];
+  resolveAiGatewayId?: () => string;
 };

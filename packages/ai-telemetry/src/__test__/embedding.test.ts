@@ -14,10 +14,10 @@ function recordingSink(): TelemetrySink & { events: TelemetryEvent[] } {
   };
 }
 
-function createTelemetryWithSink(sink: TelemetrySink, captureContent = true) {
+function createTelemetryWithSink(sink: TelemetrySink) {
   return createTelemetry({
     sinks: [sink],
-    aiObservability: { enabled: true, captureContent },
+    aiObservability: { enabled: true },
   });
 }
 
@@ -32,7 +32,7 @@ describe("withEmbeddingTelemetry", () => {
     };
     const wrapped = withEmbeddingTelemetry(provider, {
       telemetry: createTelemetryWithSink(sink),
-      identity: { user: { id: 1 } },
+      identity: { user: { id: 1 }, userTrackingEnabled: true },
       provider: "workers-ai",
       model: "@cf/baai/bge-large-en-v1.5",
       estimateInputTokens: (input) => input.length,

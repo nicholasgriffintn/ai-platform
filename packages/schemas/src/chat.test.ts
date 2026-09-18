@@ -12,11 +12,17 @@ describe("chat schemas", () => {
   it("accepts only thumb feedback and bounded optional scores", () => {
     expect(
       submitChatCompletionFeedbackJsonSchema.parse({
-        log_id: "gateway-log-1",
+        message_id: "message-1",
         feedback: 1,
         score: 100,
       }),
-    ).toEqual({ log_id: "gateway-log-1", feedback: 1, score: 100 });
+    ).toEqual({ message_id: "message-1", feedback: 1, score: 100 });
+    expect(
+      submitChatCompletionFeedbackJsonSchema.parse({
+        log_id: "gateway-log-1",
+        feedback: -1,
+      }),
+    ).toEqual({ log_id: "gateway-log-1", feedback: -1 });
     expect(
       submitChatCompletionFeedbackJsonSchema.safeParse({
         log_id: "gateway-log-1",

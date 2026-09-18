@@ -13,8 +13,6 @@ export const METRICS_PROD_HOST = "metrics.polychat.app";
 export const API_LOCAL_HOST = "localhost:8787";
 export const API_PROD_HOST = "api.polychat.app";
 
-export const gatewayId = "llm-assistant";
-
 export const FREE_TRIAL_DAYS = 90;
 
 export const AUTH_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1_000;

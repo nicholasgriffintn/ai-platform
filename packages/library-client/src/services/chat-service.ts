@@ -722,9 +722,9 @@ export class ChatService {
     }
   }
 
-  async submitFeedback(completion_id: string, log_id: string, feedback: 1 | -1): Promise<void> {
-    if (!completion_id) {
-      throw new Error("No completion ID provided");
+  async submitFeedback(completion_id: string, message_id: string, feedback: 1 | -1): Promise<void> {
+    if (!completion_id || !message_id) {
+      throw new Error("No completion or message ID provided");
     }
 
     let headers = {};
@@ -739,7 +739,7 @@ export class ChatService {
       method: "POST",
       headers,
       body: {
-        log_id,
+        message_id,
         feedback,
       },
     });

@@ -192,16 +192,12 @@ export const ChatMessageView = ({
   };
 
   const submitFeedback = async (value: 1 | -1) => {
-    if (!canSubmitFeedback || !message.log_id || isSubmittingFeedback || isSharedView) {
+    if (!canSubmitFeedback || !conversationId || isSubmittingFeedback || isSharedView) {
       return;
     }
 
     setIsSubmittingFeedback(true);
     try {
-      if (!conversationId) {
-        return;
-      }
-
       await onSubmitFeedback?.(value);
       setFeedbackState(value === 1 ? "liked" : "disliked");
     } catch (error) {
@@ -289,7 +285,7 @@ export const ChatMessageView = ({
 
           {conversationId &&
             (message.content || hasPartContent) &&
-            (message.log_id || message.created) && (
+            (message.created || message.role === "assistant" || message.log_id) && (
               <MessageActions
                 renderModelSelector={renderModelSelector}
                 message={message}

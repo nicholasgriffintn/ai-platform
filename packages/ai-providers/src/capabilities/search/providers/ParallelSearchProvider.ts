@@ -82,7 +82,7 @@ export class ParallelSearchProvider implements SearchProvider {
       max_chars_per_result: options?.parallel_max_chars_per_result ?? 6000,
     };
 
-    const endpoint = `https://gateway.ai.cloudflare.com/v1/${this.env.ACCOUNT_ID}/${resolveAiGatewayId(this.env)}/parallel/v1beta/search`;
+    const endpoint = `https://gateway.ai.cloudflare.com/v1/${this.env.ACCOUNT_ID}/${resolveAiGatewayId()}/parallel/v1beta/search`;
 
     try {
       const response = await fetch(endpoint, {

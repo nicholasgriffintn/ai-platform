@@ -78,6 +78,7 @@ export class CertesiaProvider extends BaseProvider {
       settings: this.buildMetricsSettings(params),
       userId,
       completion_id: params.completion_id,
+      request: params,
     });
   }
 }

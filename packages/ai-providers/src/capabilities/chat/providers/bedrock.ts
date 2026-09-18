@@ -176,7 +176,7 @@ export class BedrockProvider extends BaseProvider {
     const signedUrl = new URL(pollRequest.url);
 
     signedUrl.host = "gateway.ai.cloudflare.com";
-    signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${resolveAiGatewayId(params.env)}/aws-bedrock/bedrock-runtime/${region}/async-invoke/${encodedArn}`;
+    signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${resolveAiGatewayId()}/aws-bedrock/bedrock-runtime/${region}/async-invoke/${encodedArn}`;
 
     const pollResponse = await fetch(signedUrl, {
       method: "GET",
@@ -564,7 +564,7 @@ export class BedrockProvider extends BaseProvider {
     const signedUrl = new URL(presignedRequest.url);
 
     signedUrl.host = "gateway.ai.cloudflare.com";
-    signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${resolveAiGatewayId(params.env)}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/${operation}`;
+    signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${resolveAiGatewayId()}/aws-bedrock/bedrock-runtime/${region}/model/${params.model}/${operation}`;
 
     const response = await fetch(signedUrl, {
       method: "POST",
@@ -681,7 +681,7 @@ export class BedrockProvider extends BaseProvider {
 
         signedUrl.host = "gateway.ai.cloudflare.com";
 
-        signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${resolveAiGatewayId(params.env)}/aws-bedrock/bedrock-runtime/${region}/${cloudflarePath}`;
+        signedUrl.pathname = `/v1/${params.env.ACCOUNT_ID}/${resolveAiGatewayId()}/aws-bedrock/bedrock-runtime/${region}/${cloudflarePath}`;
 
         const response = await fetch(signedUrl, {
           method: "POST",
@@ -740,7 +740,7 @@ export class BedrockProvider extends BaseProvider {
           }
 
           const encodedArn = encodeURIComponent(invocationArn);
-          const invocationUrl = `/v1/${params.env.ACCOUNT_ID}/${resolveAiGatewayId(params.env)}/aws-bedrock/bedrock-runtime/${region}/async-invoke/${encodedArn}`;
+          const invocationUrl = `/v1/${params.env.ACCOUNT_ID}/${resolveAiGatewayId()}/aws-bedrock/bedrock-runtime/${region}/async-invoke/${encodedArn}`;
 
           const placeholderContent = [
             {

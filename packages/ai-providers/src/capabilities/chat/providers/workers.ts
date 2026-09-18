@@ -396,7 +396,7 @@ export class WorkersProvider extends BaseProvider {
       operation: async () => {
         const modelResponse = await ai.run(model, body, {
           gateway: {
-            id: resolveAiGatewayId(env),
+            id: resolveAiGatewayId(),
             skipCache: false,
             cacheTtl: 7200,
             metadata: getAiGatewayMetadataHeaders(params),

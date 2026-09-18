@@ -73,7 +73,7 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
 
       const response = await env.AI.run(modelToUse, body, {
         gateway: {
-          id: resolveAiGatewayId(env),
+          id: resolveAiGatewayId(),
           skipCache: true,
         },
       });

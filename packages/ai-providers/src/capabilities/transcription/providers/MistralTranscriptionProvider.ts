@@ -47,7 +47,7 @@ export class MistralTranscriptionProvider extends BaseTranscriptionProvider {
         formData.append("timestamp_granularities", "segment");
       }
 
-      const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${env.ACCOUNT_ID}/${resolveAiGatewayId(env)}/mistral/v1/audio/transcriptions`;
+      const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${env.ACCOUNT_ID}/${resolveAiGatewayId()}/mistral/v1/audio/transcriptions`;
 
       const response = await fetch(gatewayUrl, {
         method: "POST",

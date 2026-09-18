@@ -67,11 +67,11 @@ describe("createTelemetry", () => {
     );
   });
 
-  it("captures AI generations with content only when observability allows it and the user consented", () => {
+  it("captures AI content only when the user allows training data", () => {
     const sink = recordingSink();
     const telemetry = createTelemetry({
       sinks: [sink],
-      aiObservability: { enabled: true, captureContent: true },
+      aiObservability: { enabled: true },
     });
     const signal = {
       traceId: "t1",
@@ -88,26 +88,32 @@ describe("createTelemetry", () => {
     const fallback: TelemetrySink = { name: "events", capture: vi.fn() };
     const eventsOnly = createTelemetry({
       sinks: [fallback],
-      aiObservability: { enabled: true, captureContent: true },
+      aiObservability: { enabled: true },
     });
 
     eventsOnly.captureAiGeneration(signal);
+    eventsOnly.captureAiGeneration({
+      ...signal,
+      user: undefined,
+      userTrackingEnabled: true,
+    });
     eventsOnly.captureAiGeneration({ ...signal, userTrackingEnabled: true });
 
-    const [withoutConsent, withConsent] = vi
+    const [withoutConsent, anonymousOptIn, authenticatedOptIn] = vi
       .mocked(fallback.capture!)
       .mock.calls.map((call) => call[0].properties ?? {});
 
     expect(JSON.stringify(withoutConsent)).not.toContain("secret");
-    expect(JSON.stringify(withConsent)).toContain("secret");
+    expect(JSON.stringify(anonymousOptIn)).not.toContain("secret");
+    expect(JSON.stringify(authenticatedOptIn)).toContain("secret");
 
     const disabled = createTelemetry({
       sinks: [fallback],
-      aiObservability: { enabled: false, captureContent: true },
+      aiObservability: { enabled: false },
     });
 
     disabled.captureAiGeneration(signal);
-    expect(fallback.capture).toHaveBeenCalledTimes(2);
+    expect(fallback.capture).toHaveBeenCalledTimes(3);
   });
 
   it("isolates sink failures and reports them", () => {

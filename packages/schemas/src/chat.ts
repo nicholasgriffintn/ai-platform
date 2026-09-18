@@ -185,7 +185,12 @@ export const submitChatCompletionFeedbackParamsSchema = z.object({
 });
 
 export const submitChatCompletionFeedbackJsonSchema = z.object({
-  log_id: z.string().min(1, "log_id is required"),
+  message_id: z.string().min(1).optional().meta({
+    description: "The ID of the assistant message the feedback applies to.",
+  }),
+  log_id: z.string().min(1).optional().meta({
+    description: "The AI Gateway log ID the feedback applies to.",
+  }),
   feedback: z.union([z.literal(1), z.literal(-1)]),
   score: z.number().min(0).max(100).optional(),
 });

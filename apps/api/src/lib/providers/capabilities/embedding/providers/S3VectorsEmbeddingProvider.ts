@@ -1,12 +1,15 @@
 import type { Ai } from "@cloudflare/workers-types";
-import { formatProviderError, parseAwsCredentials } from "@ngriffin_uk/polychat-ai-providers";
+import {
+  formatProviderError,
+  parseAwsCredentials,
+  resolveAiGatewayId,
+} from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { paginate } from "@ngriffin_uk/polychat-utility-server/arrays";
 import { parseEmbeddingVectors } from "@ngriffin_uk/polychat-utility-server/embeddings";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { AwsClient } from "aws4fetch";
 
-import { gatewayId } from "~/constants/app";
 import { WORKERS_EMBEDDING_MODEL } from "~/lib/providers/capabilities/embedding/constants";
 import {
   buildS3VectorsMetadataFilter,
@@ -86,7 +89,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
         { text: [content] },
         {
           gateway: {
-            id: gatewayId,
+            id: resolveAiGatewayId(),
             skipCache: false,
             cacheTtl: 259200, // 3 days
           },
@@ -284,7 +287,7 @@ export class S3VectorsEmbeddingProvider implements EmbeddingProvider {
       { text: [query] },
       {
         gateway: {
-          id: gatewayId,
+          id: resolveAiGatewayId(),
           skipCache: false,
           cacheTtl: 259200, // 3 days
         },

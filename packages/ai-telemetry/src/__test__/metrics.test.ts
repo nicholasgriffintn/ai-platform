@@ -19,7 +19,7 @@ describe("telemetry identity", () => {
     const sink = captureOnlySink();
     const telemetry = createTelemetry({
       sinks: [sink],
-      aiObservability: { enabled: true, captureContent: false },
+      aiObservability: { enabled: true },
     });
 
     telemetry.captureAiEmbedding({
@@ -54,7 +54,7 @@ describe("telemetry identity", () => {
     const sink = captureOnlySink();
     const telemetry = createTelemetry({
       sinks: [sink],
-      aiObservability: { enabled: true, captureContent: true },
+      aiObservability: { enabled: true },
     });
 
     telemetry.captureAiEmbedding({
@@ -99,7 +99,7 @@ describe("telemetry identity", () => {
     const sink = captureOnlySink();
     const telemetry = createTelemetry({
       sinks: [sink],
-      aiObservability: { enabled: true, captureContent: false },
+      aiObservability: { enabled: true },
     });
 
     telemetry.captureAiGeneration({

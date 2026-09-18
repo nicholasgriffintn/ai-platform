@@ -230,7 +230,7 @@ export class AnthropicProvider extends BaseProvider {
           "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
         };
 
-        const endpoint = `https://gateway.ai.cloudflare.com/v1/${params.env.ACCOUNT_ID}/${resolveAiGatewayId(params.env)}/anthropic/v1/messages/count_tokens`;
+        const endpoint = `https://gateway.ai.cloudflare.com/v1/${params.env.ACCOUNT_ID}/${resolveAiGatewayId()}/anthropic/v1/messages/count_tokens`;
 
         const response = await fetch(endpoint, {
           method: "POST",

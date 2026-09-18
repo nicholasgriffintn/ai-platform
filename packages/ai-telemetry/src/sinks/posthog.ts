@@ -2,7 +2,9 @@ import type { ExecutionContext } from "@cloudflare/workers-types";
 import { omitNullishValues } from "@ngriffin_uk/polychat-utility-server/objects";
 import { PostHog } from "posthog-node";
 
-import { getPostHogAnalyticsConfig } from "../config.js";
+import { buildAiFeedbackProperties } from "../ai-feedback-properties.js";
+import { getPostHogAnalyticsConfig, getPostHogFeedbackConfig } from "../config.js";
+import { AI_FEEDBACK_EVENT_NAME, AI_OBSERVABILITY_EVENT_CATEGORY } from "../constants.js";
 import type { CreateWorkerTelemetryOptions, TelemetryEnv, TelemetrySink } from "../types.js";
 
 export function createPostHogSink(
@@ -19,6 +21,7 @@ export function createPostHogSink(
   const client = createPostHogClient(config.apiKey, {
     host: config.host,
   });
+  const feedbackConfig = getPostHogFeedbackConfig(env);
 
   return {
     name: "posthog",
@@ -39,6 +42,33 @@ export function createPostHogSink(
       });
       schedulePostHogFlush(client, executionCtx);
     },
+    ...(feedbackConfig
+      ? {
+          captureAiFeedback(feedback) {
+            const personProperties = omitNullishValues(feedback.personProperties ?? {});
+
+            client.capture({
+              distinctId: feedback.distinctId,
+              event: AI_FEEDBACK_EVENT_NAME,
+              properties: omitNullishValues({
+                category: AI_OBSERVABILITY_EVENT_CATEGORY,
+                ...buildAiFeedbackProperties({
+                  surveyId: feedbackConfig.surveyId,
+                  submissionId: crypto.randomUUID(),
+                  traceId: feedback.traceId,
+                  feedback: feedback.feedback,
+                  logId: feedback.logId,
+                  messageId: feedback.messageId,
+                  conversationId: feedback.conversationId,
+                  properties: feedback.properties,
+                }),
+                ...(Object.keys(personProperties).length > 0 ? { $set: personProperties } : {}),
+              }),
+            });
+            schedulePostHogFlush(client, executionCtx);
+          },
+        }
+      : {}),
   };
 }
 

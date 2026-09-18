@@ -362,7 +362,7 @@ export class MistralOcrBatchClient implements OcrBatchClient {
       userId: user.id,
       logger,
     });
-    const url = `https://gateway.ai.cloudflare.com/v1/${env.ACCOUNT_ID}/${resolveAiGatewayId(env)}/mistral${path}`;
+    const url = `https://gateway.ai.cloudflare.com/v1/${env.ACCOUNT_ID}/${resolveAiGatewayId()}/mistral${path}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), OCR_BATCH_REQUEST_TIMEOUT_MS);
     let response: Response;

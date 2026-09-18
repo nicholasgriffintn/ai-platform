@@ -112,7 +112,7 @@ export async function fetchAIResponse<
         );
       }
 
-      const gateway = env.AI.gateway(resolveAiGatewayId(env));
+      const gateway = env.AI.gateway(resolveAiGatewayId());
 
       const providerName = isOpenAiCompatible ? "compat" : provider;
       const providerBaseUrl = await gateway.getUrl(providerName);

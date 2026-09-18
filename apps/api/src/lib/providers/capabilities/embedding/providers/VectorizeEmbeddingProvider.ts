@@ -1,11 +1,11 @@
 import type { Ai, Vectorize } from "@cloudflare/workers-types";
 import { addInfraUsage } from "@ngriffin_uk/polychat-ai-billing";
+import { resolveAiGatewayId } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { paginate } from "@ngriffin_uk/polychat-utility-server/arrays";
 import { parseEmbeddingVectors } from "@ngriffin_uk/polychat-utility-server/embeddings";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { gatewayId } from "~/constants/app";
 import { WORKERS_EMBEDDING_MODEL } from "~/lib/providers/capabilities/embedding/constants";
 import {
   buildVectorizeMetadataFilter,
@@ -62,7 +62,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
         { text: [content] },
         {
           gateway: {
-            id: gatewayId,
+            id: resolveAiGatewayId(),
             skipCache: false,
             cacheTtl: 259200, // 3 days
           },
@@ -150,7 +150,7 @@ export class VectorizeEmbeddingProvider implements EmbeddingProvider {
       { text: [query] },
       {
         gateway: {
-          id: gatewayId,
+          id: resolveAiGatewayId(),
           skipCache: false,
           cacheTtl: 259200, // 3 days
         },

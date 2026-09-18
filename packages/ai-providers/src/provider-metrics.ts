@@ -50,12 +50,13 @@ export function createProviderMetrics(options: CreateProviderMetricsOptions): Pr
       operation: () => Promise<T>,
     ): Promise<T> {
       const request = isChatRequest(metrics.request) ? metrics.request : undefined;
+      const completionId = readStringField(request, "completion_id") ?? metrics.completion_id;
       const context: ProviderGenerationContext = {
         provider: metrics.provider,
         model: metrics.model,
-        traceId: generateId(),
+        traceId: readStringField(request, "run_id") ?? completionId ?? generateId(),
         spanId: generateId(),
-        sessionId: readStringField(request, "completion_id") ?? metrics.completion_id,
+        sessionId: completionId,
         spanName: CHAT_COMPLETION_SPAN_NAME,
         request,
         startTime: performance.now(),

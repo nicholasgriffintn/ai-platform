@@ -1,9 +1,9 @@
+import { resolveAiGatewayId } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
-import { gatewayId } from "~/constants/app";
 import { resolveServiceContext, type ServiceContext } from "~/lib/context/serviceContext";
 import { StorageService } from "~/lib/storage";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
@@ -99,7 +99,7 @@ export const handleRecordingGenerateImage = async (
       },
       {
         gateway: {
-          id: gatewayId,
+          id: resolveAiGatewayId(),
           skipCache: false,
           cacheTtl: 3360,
           metadata: {

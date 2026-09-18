@@ -1,5 +1,5 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
-import { createProviderMetrics } from "@ngriffin_uk/polychat-ai-providers";
+import { createProviderMetrics, resolveAiGatewayId } from "@ngriffin_uk/polychat-ai-providers";
 import {
   createWorkerMetricsRecorder,
   createWorkerTelemetry,
@@ -12,11 +12,19 @@ import {
 import type { ServiceContext } from "~/lib/context/serviceContext";
 
 export function createTelemetry(env: TelemetryEnv, executionCtx?: ExecutionContext): Telemetry {
-  return createWorkerTelemetry({ env, executionCtx });
+  return createWorkerTelemetry({
+    env,
+    executionCtx,
+    resolveAiGatewayId,
+  });
 }
 
 export function createMetrics(env: TelemetryEnv, executionCtx?: ExecutionContext): MetricsRecorder {
-  return createWorkerMetricsRecorder({ env, executionCtx });
+  return createWorkerMetricsRecorder({
+    env,
+    executionCtx,
+    resolveAiGatewayId,
+  });
 }
 
 export function resolveTelemetryIdentity(

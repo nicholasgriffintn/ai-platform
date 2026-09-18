@@ -64,6 +64,14 @@ describe("createChatExecutionRequest", () => {
     expect(request.messages).toContainEqual({ role: "user", content: "Hello" });
   });
 
+  it("carries the chat run id into provider requests", () => {
+    const input = createInput();
+
+    input.runId = "run-1";
+
+    expect(createChatExecutionRequest(input).providerRequest().run_id).toBe("run-1");
+  });
+
   it("uses tool options resolved from project capability configuration", () => {
     const input = createInput();
 

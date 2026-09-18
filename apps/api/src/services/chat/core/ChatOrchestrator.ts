@@ -358,6 +358,7 @@ export class ChatOrchestrator {
       resolvedMaxSteps: resolveTurnStepBudget(chatOptions, currentMode, {
         hasActiveGoal: Boolean(prepared.activeGoal),
       }),
+      runId: runLifecycle?.run.id,
     });
 
     const toolRequestContext = buildToolRequestContext({

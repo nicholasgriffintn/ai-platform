@@ -1059,25 +1059,37 @@ addRoute(app, "post", "/completions/:completion_id/feedback", {
       const body = context.req.valid("json" as never) as SubmitChatCompletionFeedbackInput;
 
       const serviceContext = getServiceContext(context);
+      const user = serviceContext.requireUser();
 
-      const response = await handleChatCompletionFeedbackSubmission(serviceContext, {
-        request: body,
-        completion_id,
-        authorise: async () => {
-          const user = serviceContext.requireUser();
-
-          serviceContext.ensureDatabase();
-          const conversationManager = ConversationManager.getInstance({
-            database: serviceContext.database,
-            user,
-          });
-          const conversation = await conversationManager.getConversationDetails(completion_id);
-
-          if (!conversation.messages.some((message) => message.log_id === body.log_id)) {
-            throw new AssistantError("Feedback target not found", ErrorType.NOT_FOUND, 404);
-          }
-        },
+      serviceContext.ensureDatabase();
+      const conversationManager = ConversationManager.getInstance({
+        database: serviceContext.database,
+        user,
       });
+      const conversation = await conversationManager.getConversationDetails(completion_id);
+      const messages = conversation.messages.flatMap((message) =>
+        message.id
+          ? [
+              {
+                id: message.id,
+                role: message.role,
+                log_id: message.log_id,
+                run_id: message.run_id,
+              },
+            ]
+          : [],
+      );
+
+      const response = await handleChatCompletionFeedbackSubmission(
+        {
+          env: serviceContext.env,
+          user,
+          anonymousUser: serviceContext.anonymousUser,
+          messages,
+          repositories: serviceContext.repositories,
+        },
+        { request: body, completion_id },
+      );
 
       return ResponseFactory.success(context, {
         response,

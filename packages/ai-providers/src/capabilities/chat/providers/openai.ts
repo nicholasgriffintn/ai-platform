@@ -273,7 +273,7 @@ export class OpenAIProvider extends BaseProvider {
     const response = params.env?.AI
       ? await fetch(
           appendUrlPath(
-            await params.env.AI.gateway(resolveAiGatewayId(params.env)).getUrl(this.name),
+            await params.env.AI.gateway(resolveAiGatewayId()).getUrl(this.name),
             endpoint,
           ),
           {

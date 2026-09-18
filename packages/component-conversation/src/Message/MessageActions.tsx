@@ -346,7 +346,7 @@ export const MessageActions = ({
         )}
         {provenance ? <MessageProvenanceMark provenance={message.provenance} /> : null}
       </div>
-      {canSubmitFeedback && !isSharedView && message.role !== "user" && message.log_id && (
+      {canSubmitFeedback && !isSharedView && message.role === "assistant" && (
         <div className="flex items-center space-x-1">
           <span className="text-xs text-muted-foreground">Helpful?</span>
           <Button

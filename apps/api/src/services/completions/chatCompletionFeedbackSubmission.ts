@@ -1,67 +1,73 @@
-import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import {
+  getLogger,
+  type AiFeedbackSignal,
+  type Telemetry,
+  type TelemetryEnv,
+  type TelemetryIdentity,
+} from "@ngriffin_uk/polychat-ai-telemetry";
 import type { SubmitChatCompletionFeedbackInput } from "@ngriffin_uk/polychat-schemas";
-import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { gatewayId } from "~/constants/app";
+import { createTelemetry } from "~/lib/telemetry";
 import type { TrainingExampleRepository } from "~/repositories";
+import { resolveFeedbackTarget, type ChatFeedbackTargetMessage } from "~/utils/feedback-target";
 
 const logger = getLogger({
   prefix: "services/chatCompletionFeedbackSubmission",
 });
 
-interface FeedbackParams {
-  authorise: () => Promise<void>;
-  request: SubmitChatCompletionFeedbackInput;
-  completion_id: string;
-}
-
-interface FeedbackGateway {
-  patchLog(
-    logId: string,
-    data: {
-      feedback: 1 | -1;
-      score?: number;
-      metadata?: Record<string, string>;
-    },
-  ): Promise<void>;
-}
-
 export interface ChatFeedbackContext {
-  env: {
-    AI_GATEWAY_TOKEN?: string;
-    ACCOUNT_ID?: string;
-    AI: {
-      gateway(id: string): FeedbackGateway;
-    };
-  };
-  user?: { email?: string } | null;
+  env: TelemetryEnv;
+  user?: TelemetryIdentity["user"];
+  anonymousUser?: TelemetryIdentity["anonymousUser"];
+  messages: ChatFeedbackTargetMessage[];
   repositories: {
     trainingExamples: Pick<TrainingExampleRepository, "findMany" | "updateById">;
   };
 }
 
+export interface ChatCompletionFeedbackOptions {
+  request: SubmitChatCompletionFeedbackInput;
+  completion_id: string;
+  telemetry?: Pick<Telemetry, "captureAiFeedback">;
+}
+
 export const handleChatCompletionFeedbackSubmission = async (
   context: ChatFeedbackContext,
-  { request, completion_id, authorise }: FeedbackParams,
+  { request, completion_id, telemetry }: ChatCompletionFeedbackOptions,
 ): Promise<{ success: boolean; message: string; completion_id: string }> => {
-  await authorise();
-  const { env, user } = context;
+  const target = resolveFeedbackTarget(context.messages, request);
 
-  if (env.AI_GATEWAY_TOKEN && env.ACCOUNT_ID) {
-    try {
-      const gateway = env.AI.gateway(gatewayId);
+  if (!target || target.role === "user") {
+    throw new AssistantError("Feedback target not found", ErrorType.NOT_FOUND, 404);
+  }
 
-      await gateway.patchLog(request.log_id, {
-        feedback: request.feedback,
-        score: request.score,
-        metadata: user?.email ? { user: user.email } : undefined,
-      });
-    } catch (error) {
-      logger.error("Failed to send feedback to AI Gateway", {
-        error: getErrorMessage(error),
-        logId: request.log_id,
-      });
-    }
+  const signal: AiFeedbackSignal = {
+    traceId: target.run_id ?? completion_id,
+    conversationId: completion_id,
+    messageId: target.id,
+    logId: target.log_id ?? request.log_id,
+    feedback: request.feedback,
+    score: request.score,
+    user: context.user,
+    anonymousUser: context.anonymousUser,
+  };
+
+  try {
+    const feedbackTelemetry = telemetry ?? createTelemetry(context.env);
+
+    await feedbackTelemetry.captureAiFeedback(signal);
+  } catch (error) {
+    logger.error("Failed to capture chat feedback", {
+      error: getErrorMessage(error),
+      completionId: completion_id,
+      messageId: target.id,
+      logId: signal.logId,
+    });
   }
 
   try {

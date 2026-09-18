@@ -7,7 +7,6 @@ export interface ProviderEnv {
   PRIVATE_ASSETS_BUCKET?: R2Bucket;
   ACCOUNT_ID?: string;
   API_BASE_URL?: string;
-  AI_GATEWAY_ID?: string;
   AI_GATEWAY_TOKEN?: string;
   AWS_REGION?: string;
   AZURE_API_VERSION?: string;
