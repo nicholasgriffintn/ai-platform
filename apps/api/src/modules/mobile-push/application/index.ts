@@ -5,21 +5,21 @@ import type {
   MobileWorkNotificationTarget,
   ProjectTask,
 } from "@ngriffin_uk/polychat-schemas";
-import { base64ToBuffer, stringToBase64Url } from "@ngriffin_uk/polychat-utility-server/base64";
-import { encodeBase64Url } from "@ngriffin_uk/polychat-utility-server/base64url";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import {
+  getApnsProviderToken,
+  isApnsConfigured,
+  sendApnsAlert,
+} from "~/modules/mobile-push/infrastructure/apns-client";
 import type { MobilePushDeviceRecord } from "~/modules/mobile-push/infrastructure/MobilePushRepository";
 import {
   isTaskNotificationPreferenceEnabled,
   notificationCategoryForMobileKind,
 } from "~/modules/notifications/application/preferences";
-import type { IEnv } from "~/types";
 
 const logger = getLogger({ prefix: "services/mobile-push" });
-const TOKEN_LIFETIME_MS = 45 * 60 * 1000;
-let cachedProviderToken: { value: string; createdAt: number; keyId: string } | undefined;
 
 const SAFE_ALERTS: Record<MobileWorkNotificationKind, { title: string; body: string }> = {
   assigned: {
@@ -48,64 +48,8 @@ const SAFE_ALERTS: Record<MobileWorkNotificationKind, { title: string; body: str
   },
 };
 
-function hasConfiguration(
-  env: IEnv,
-): env is IEnv &
-  Required<Pick<IEnv, "APNS_KEY_ID" | "APNS_TEAM_ID" | "APNS_PRIVATE_KEY" | "APNS_TOPIC">> {
-  return Boolean(env.APNS_KEY_ID && env.APNS_TEAM_ID && env.APNS_PRIVATE_KEY && env.APNS_TOPIC);
-}
-
-async function createProviderToken(env: IEnv): Promise<string | null> {
-  if (!hasConfiguration(env)) {
-    return null;
-  }
-
-  if (
-    cachedProviderToken?.keyId === env.APNS_KEY_ID &&
-    Date.now() - cachedProviderToken.createdAt < TOKEN_LIFETIME_MS
-  ) {
-    return cachedProviderToken.value;
-  }
-
-  const encodedHeader = stringToBase64Url(JSON.stringify({ alg: "ES256", kid: env.APNS_KEY_ID }));
-  const encodedPayload = stringToBase64Url(
-    JSON.stringify({ iss: env.APNS_TEAM_ID, iat: Math.floor(Date.now() / 1000) }),
-  );
-  const signingInput = `${encodedHeader}.${encodedPayload}`;
-  const privateKeyBytes = base64ToBuffer(
-    env.APNS_PRIVATE_KEY.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, ""),
-  );
-  const privateKeyBuffer = Uint8Array.from(privateKeyBytes).buffer;
-  const privateKey = await crypto.subtle.importKey(
-    "pkcs8",
-    privateKeyBuffer,
-    { name: "ECDSA", namedCurve: "P-256" },
-    false,
-    ["sign"],
-  );
-  const signature = await crypto.subtle.sign(
-    { name: "ECDSA", hash: "SHA-256" },
-    privateKey,
-    new TextEncoder().encode(signingInput),
-  );
-  const value = `${signingInput}.${encodeBase64Url(new Uint8Array(signature))}`;
-
-  cachedProviderToken = { value, createdAt: Date.now(), keyId: env.APNS_KEY_ID };
-
-  return value;
-}
-
 async function deliveryId(notificationId: string, deviceId: string): Promise<string> {
   return sha256Hex(`mobile-push:${notificationId}:${deviceId}`);
-}
-
-function endpoint(device: MobilePushDeviceRecord): string {
-  const host =
-    device.environment === "sandbox"
-      ? "https://api.sandbox.push.apple.com"
-      : "https://api.push.apple.com";
-
-  return `${host}/3/device/${device.token}`;
 }
 
 async function sendToDevice(params: {
@@ -121,65 +65,30 @@ async function sendToDevice(params: {
     return;
   }
 
-  let response: Response;
+  const result = await sendApnsAlert({
+    device: params.device,
+    notification: params.notification,
+    providerToken: params.providerToken,
+    topic: params.topic,
+    collapseId: id,
+  });
 
-  try {
-    response = await fetch(endpoint(params.device), {
-      method: "POST",
-      headers: {
-        authorization: `bearer ${params.providerToken}`,
-        "apns-topic": params.topic,
-        "apns-push-type": "alert",
-        "apns-priority": "10",
-        "apns-expiration": "0",
-        "apns-collapse-id": id.slice(0, 64),
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        aps: {
-          alert: { title: params.notification.title, body: params.notification.body },
-          sound: "default",
-        },
-        polychat: {
-          id: params.notification.id,
-          kind: params.notification.kind,
-          target: params.notification.target,
-        },
-      }),
-    });
-  } catch (error) {
-    const errorCode = error instanceof Error ? error.name : "network_error";
-
-    await params.context.repositories.mobilePush.finishDelivery(id, "failed", errorCode);
-    logger.warn("Mobile push delivery request failed", {
-      notificationId: params.notification.id,
-      deviceId: params.device.id,
-      errorCode,
-    });
-
-    return;
-  }
-
-  if (response.ok) {
+  if (result.status === "sent") {
     await params.context.repositories.mobilePush.finishDelivery(id, "sent");
 
     return;
   }
 
-  const failure = await response.json<{ reason?: string }>().catch((): { reason?: string } => ({}));
-  const reason = failure.reason ?? `APNs ${response.status}`;
+  await params.context.repositories.mobilePush.finishDelivery(id, "failed", result.reason);
 
-  await params.context.repositories.mobilePush.finishDelivery(id, "failed", reason);
-
-  if (response.status === 410 || reason === "BadDeviceToken" || reason === "Unregistered") {
+  if (result.invalidateDevice) {
     await params.context.repositories.mobilePush.invalidateDevice(params.device.id);
   }
 
   logger.warn("Mobile push delivery failed", {
     notificationId: params.notification.id,
     deviceId: params.device.id,
-    status: response.status,
-    reason,
+    reason: result.reason,
   });
 }
 
@@ -188,9 +97,13 @@ export async function sendMobileWorkNotification(params: {
   userId: number;
   notification: MobileWorkNotification;
 }): Promise<void> {
-  const providerToken = await createProviderToken(params.context.env);
+  if (!isApnsConfigured(params.context.env)) {
+    return;
+  }
 
-  if (!providerToken || !params.context.env.APNS_TOPIC) {
+  const providerToken = await getApnsProviderToken(params.context.env);
+
+  if (!providerToken) {
     return;
   }
 

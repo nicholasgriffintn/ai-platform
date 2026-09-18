@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createProviderRetryBudget,
   runProviderCallWithRetry,
-} from "~/modules/chat/application/policy/provider-retry";
+} from "~/modules/chat/domain/provider-retry";
 
 describe("runProviderCallWithRetry", () => {
   it("executes only two repeats across three failing model steps", async () => {

@@ -4,11 +4,11 @@ import {
   connectorProviders,
   type ConnectorProviderConfig,
 } from "~/infrastructure/providers/capabilities/connectors";
+import { executeDevinOperation } from "~/modules/apps/infrastructure/connectors/executors/devin";
+import { executeNetlifyOperation } from "~/modules/apps/infrastructure/connectors/executors/netlify";
 
 import { resolveComposioApprovalAuthority } from "./composio-approval-authority";
 import type { ResolveConnectorApprovalAuthority } from "./connector-approval-authority";
-import { executeDevinOperation } from "./executors/devin";
-import { executeNetlifyOperation } from "./executors/netlify";
 import { resolveLocalApprovalAuthority } from "./local-approval-authority";
 
 export type ConnectorOperationExecutor = (

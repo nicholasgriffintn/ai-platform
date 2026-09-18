@@ -24,11 +24,6 @@ import {
   listRecipeConnectors,
 } from "~/modules/apps/application/connectors";
 import { isRecipeExecutionRequest } from "~/modules/apps/application/recipes/toolContext";
-import { mergeEnabledGoalToolNames } from "~/modules/chat/application/policy/goal-tools";
-import {
-  mergeEnabledMemoryToolNames,
-  resolveMemoryPolicy,
-} from "~/modules/chat/application/policy/memory";
 import {
   getMetaAssistantToolNames,
   type MetaAssistantScope,
@@ -56,6 +51,8 @@ import {
   buildSystemPrompt,
 } from "~/modules/chat/application/preparation/system-prompt";
 import type { ValidationContext } from "~/modules/chat/application/validation/ValidationPipeline";
+import { mergeEnabledGoalToolNames } from "~/modules/chat/domain/goal-tools";
+import { mergeEnabledMemoryToolNames, resolveMemoryPolicy } from "~/modules/chat/domain/memory";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
 import {

@@ -30,13 +30,13 @@ import { buildToolRequestContext } from "~/modules/chat/application/core/request
 import { resolveRunProvenance } from "~/modules/chat/application/core/run-provenance";
 import { resolveAccountDefaultComputeSite } from "~/modules/chat/application/policy/project-model-tier";
 import { resolveTurnStepBudget } from "~/modules/chat/application/policy/step-budget";
-import { applyTierReasoningEffort } from "~/modules/chat/application/policy/tier-reasoning";
 import {
   RequestPreparer,
   type PreparedRequest,
 } from "~/modules/chat/application/preparation/RequestPreparer";
 import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn-cancellation";
 import { ValidationPipeline } from "~/modules/chat/application/validation/ValidationPipeline";
+import { applyTierReasoningEffort } from "~/modules/chat/domain/tier-reasoning";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { SessionManager } from "~/modules/conversations/application/SessionManager";
 import {

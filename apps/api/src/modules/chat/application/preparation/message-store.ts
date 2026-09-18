@@ -8,7 +8,7 @@ import {
   withoutGoalMarkerMessages,
 } from "~/modules/chat/application/messages/goal-marker-history";
 import { hasSnapshotPart } from "~/modules/chat/application/messages/parts";
-import { buildUserMessageData } from "~/modules/chat/application/policy/mode-metadata";
+import { buildUserMessageData } from "~/modules/chat/domain/mode-metadata";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import type { ChatMode, CoreChatOptions, Message, Platform } from "~/types";
 

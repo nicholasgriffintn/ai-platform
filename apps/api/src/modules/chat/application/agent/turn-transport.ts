@@ -12,14 +12,14 @@ import type { TurnOutput } from "~/modules/chat/application/agent/assistant-turn
 import { createAgentProviderIO } from "~/modules/chat/application/agent/provider-io";
 import { consumeProviderStream } from "~/modules/chat/application/agent/provider-stream";
 import {
-  runProviderCallWithRetry,
-  type ProviderRetryExecutionOptions,
-} from "~/modules/chat/application/policy/provider-retry";
-import {
   DISCARDING_EVENT_SINK,
   type ChatEventSink,
 } from "~/modules/chat/application/streaming/emitter";
 import { getAIResponse } from "~/modules/chat/application/streaming/responses";
+import {
+  runProviderCallWithRetry,
+  type ProviderRetryExecutionOptions,
+} from "~/modules/chat/domain/provider-retry";
 import type { ChatCompletionParameters, IEnv, ToolCall } from "~/types";
 
 export interface TurnTransportContext {

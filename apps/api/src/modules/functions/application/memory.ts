@@ -4,7 +4,7 @@ import {
   MEMORY_SEARCH_TOOL_NAME,
   MEMORY_STORE_TOOL_NAME,
   resolveMemoryPolicy,
-} from "~/modules/chat/application/policy/memory";
+} from "~/modules/chat/domain/memory";
 import { MemoryManager } from "~/modules/memory/application/manager";
 import type { IUserSettings } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";

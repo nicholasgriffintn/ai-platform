@@ -3,10 +3,7 @@ import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { hasToolCallNamed } from "@ngriffin_uk/polychat-utility-server/tool-calls";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import {
-  MEMORY_STORE_TOOL_NAME,
-  resolveMemoryPolicy,
-} from "~/modules/chat/application/policy/memory";
+import { MEMORY_STORE_TOOL_NAME, resolveMemoryPolicy } from "~/modules/chat/domain/memory";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { MemoryManager, type MemoryEvent } from "~/modules/memory/application/manager";
 import type { IEnv, IUserSettings, MemoryScope, Message, Platform, ToolCall } from "~/types";

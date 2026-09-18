@@ -2,7 +2,7 @@ import {
   handleCreateEditCompletions,
   type HandleCreateEditCompletionsRequest,
 } from "~/modules/chat/application/edit-completions";
-import { resolveSystemModelId } from "~/modules/chat/application/policy/system-models";
+import { resolveSystemModelId } from "~/modules/chat/domain/system-models";
 
 export const handleCreateNextEditCompletions = async ({
   env,

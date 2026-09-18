@@ -6,7 +6,7 @@ import {
   buildMemoryPromptContext,
   mergeEnabledMemoryToolNames,
   resolveMemoryPolicy,
-} from "~/modules/chat/application/policy/memory";
+} from "~/modules/chat/domain/memory";
 import type { IUser } from "~/types";
 
 function createUser(planId: string | null): IUser {

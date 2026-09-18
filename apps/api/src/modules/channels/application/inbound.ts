@@ -26,7 +26,7 @@ import {
 } from "~/infrastructure/providers/capabilities/messaging/delivery";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import { recoverChatCompletionResponse } from "~/modules/chat-runs/application/completion-recovery";
-import { getInboundChannelProfile } from "~/modules/chat/application/policy/channels";
+import { getInboundChannelProfile } from "~/modules/chat/domain/channels";
 import { handleCreateChatCompletions } from "~/modules/completions/application/createChatCompletions";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";

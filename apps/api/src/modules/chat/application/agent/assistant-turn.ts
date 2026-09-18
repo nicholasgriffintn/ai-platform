@@ -9,8 +9,8 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { Guardrails } from "~/infrastructure/providers/capabilities/guardrails";
 import { formatAssistantMessage } from "~/modules/chat/application/messages/assistant-format";
 import { buildMessageParts } from "~/modules/chat/application/messages/parts";
-import { buildAssistantMessageData } from "~/modules/chat/application/policy/mode-metadata";
 import type { ChatEventSink } from "~/modules/chat/application/streaming/emitter";
+import { buildAssistantMessageData } from "~/modules/chat/domain/mode-metadata";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import type {

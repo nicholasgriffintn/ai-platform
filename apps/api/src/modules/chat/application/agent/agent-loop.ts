@@ -42,7 +42,6 @@ import { createAgentProviderIO } from "~/modules/chat/application/agent/provider
 import type { ChatTurnTransport } from "~/modules/chat/application/agent/turn-transport";
 import { buildMessageParts } from "~/modules/chat/application/messages/parts";
 import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
-import { createProviderRetryBudget } from "~/modules/chat/application/policy/provider-retry";
 import {
   DISCARDING_EVENT_SINK,
   type ChatEventSink,
@@ -61,6 +60,7 @@ import { getResponseScopedCapabilityToolNames } from "~/modules/chat/application
 import { isSuccessfulToolStatus } from "~/modules/chat/application/tools/continuation";
 import { emitCompleteToolInput } from "~/modules/chat/application/tools/events";
 import { handleToolCalls } from "~/modules/chat/application/tools/execution";
+import { createProviderRetryBudget } from "~/modules/chat/domain/provider-retry";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { shouldStopTurnForUsage, USAGE_LIMIT_NOTICE } from "~/modules/usage/application/limitState";
 import {

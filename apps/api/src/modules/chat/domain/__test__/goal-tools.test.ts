@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { mergeEnabledGoalToolNames } from "~/modules/chat/application/policy/goal-tools";
 import { resolveTurnStepBudget } from "~/modules/chat/application/policy/step-budget";
+import { mergeEnabledGoalToolNames } from "~/modules/chat/domain/goal-tools";
 
 describe("mergeEnabledGoalToolNames", () => {
   it("keeps goal completion available when a goal is created during the turn", () => {

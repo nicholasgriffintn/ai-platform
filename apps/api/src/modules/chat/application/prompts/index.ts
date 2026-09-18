@@ -17,9 +17,9 @@ import {
 import { trimTemplateWhitespace } from "@ngriffin_uk/polychat-utility-server/strings";
 
 import { APP_DESCRIPTION, APP_NAME } from "~/config/app";
-import { getInboundChannelProfile } from "~/modules/chat/application/policy/channels";
-import { resolveMemoryPolicy } from "~/modules/chat/application/policy/memory";
 import { toAssistantModelMetadata } from "~/modules/chat/application/prompts/model-metadata";
+import { getInboundChannelProfile } from "~/modules/chat/domain/channels";
+import { resolveMemoryPolicy } from "~/modules/chat/domain/memory";
 import { getModelConfigByMatchingModel } from "~/modules/models/application/resolve";
 import type { AssistantPersona, ChatRequestOptions, IBody, IUser, IUserSettings } from "~/types";
 

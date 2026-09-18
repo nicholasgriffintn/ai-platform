@@ -1,7 +1,7 @@
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { getChatProvider } from "~/infrastructure/providers/capabilities/chat";
 import { resolveExecutableModelForRequest } from "~/modules/chat/application/policy/model-access";
-import { resolveSystemModelId } from "~/modules/chat/application/policy/system-models";
+import { resolveSystemModelId } from "~/modules/chat/domain/system-models";
 import type { IEnv, IUser, ChatCompletionParameters } from "~/types";
 
 interface HandleCreateFimCompletionsRequest {

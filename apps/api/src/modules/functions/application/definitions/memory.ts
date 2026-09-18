@@ -1,9 +1,6 @@
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 
-import {
-  MEMORY_SEARCH_TOOL_NAME,
-  MEMORY_STORE_TOOL_NAME,
-} from "~/modules/chat/application/policy/memory";
+import { MEMORY_SEARCH_TOOL_NAME, MEMORY_STORE_TOOL_NAME } from "~/modules/chat/domain/memory";
 
 import type { FunctionToolDescriptor } from "./types";
 

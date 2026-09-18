@@ -3,12 +3,9 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { Goal, MemoryDocument, SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import {
-  buildMemoryPromptContext,
-  type resolveMemoryPolicy,
-} from "~/modules/chat/application/policy/memory";
 import type { RunMemoryDocument } from "~/modules/chat/application/preparation/memory-scope";
 import { getSystemPrompt } from "~/modules/chat/application/prompts";
+import { buildMemoryPromptContext, type resolveMemoryPolicy } from "~/modules/chat/domain/memory";
 import type { ProjectChatContext } from "~/modules/workspaces/application/chatContext";
 import type { CoreChatOptions, MemoryScope, Message } from "~/types";
 
