@@ -9,7 +9,7 @@ import type { FunctionToolDescriptor } from "./types";
 export const IMAGE_MODELS = [
   ...getModelIdsByOutput(getProviderModels("replicate"), "replicate", "image"),
   ...getModelIdsByOutput(getProviderModels("workers-ai"), "workers-ai", "image"),
-].sort();
+].sort((left, right) => left.localeCompare(right));
 
 export const create_image: FunctionToolDescriptor = {
   name: "create_image",

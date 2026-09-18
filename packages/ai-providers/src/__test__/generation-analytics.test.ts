@@ -150,11 +150,9 @@ describe("captureProviderGenerationResult", () => {
       () => {},
     );
 
-    expect([...(captured[0]?.toolsCalled ?? [])].sort()).toEqual([
-      "anthropic_tool",
-      "bedrock_tool",
-      "openai_tool",
-    ]);
+    expect(
+      [...(captured[0]?.toolsCalled ?? [])].sort((left, right) => left.localeCompare(right)),
+    ).toEqual(["anthropic_tool", "bedrock_tool", "openai_tool"]);
   });
 
   it("captures failures with the error message", () => {

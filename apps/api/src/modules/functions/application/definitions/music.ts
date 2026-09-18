@@ -9,7 +9,7 @@ import type { FunctionToolDescriptor } from "./types";
 export const MUSIC_MODELS = [
   ...getModelIdsByOutput(getProviderModels("workers-ai"), "workers-ai", "audio"),
   ...getModelIdsByOutput(getProviderModels("replicate"), "replicate", "audio"),
-].sort();
+].sort((left, right) => left.localeCompare(right));
 
 export const create_music: FunctionToolDescriptor = {
   name: "create_music",

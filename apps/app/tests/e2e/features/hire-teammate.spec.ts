@@ -1,3 +1,4 @@
+import { getTeammateRoleBrief } from "@ngriffin_uk/polychat-ai-prompts";
 import {
   teammateResponseSchema,
   findTeammateRole,
@@ -126,7 +127,7 @@ test.describe("Hiring a teammate", () => {
     await expect(page).toHaveURL(/\/chat\/teammates\/[^/]+$/);
     const brief = page.getByLabel("System prompt", { exact: true });
 
-    await expect(brief).toHaveValue(new RegExp(`^${ROLE.brief.slice(0, 40)}`));
+    await expect(brief).toHaveValue(new RegExp(`^${getTeammateRoleBrief(ROLE.slug).slice(0, 40)}`));
     await expect(brief).toHaveValue(/Always cite the release notes\.$/);
     await expect(page.getByText(/Tools the teammate may call and skills it loads\./)).toContainText(
       /[1-9]\d* selected/,

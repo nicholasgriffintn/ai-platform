@@ -19,7 +19,7 @@ import type { FunctionToolDescriptor } from "./types";
 export const VIDEO_MODELS = [
   ...getModelIdsByOutput(getProviderModels("workers-ai"), "workers-ai", "video"),
   ...getModelIdsByOutput(getProviderModels("replicate"), "replicate", "video"),
-].sort();
+].sort((left, right) => left.localeCompare(right));
 
 export const create_video: FunctionToolDescriptor = {
   name: "create_video",

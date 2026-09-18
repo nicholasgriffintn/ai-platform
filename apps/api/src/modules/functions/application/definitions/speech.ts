@@ -8,7 +8,7 @@ import type { FunctionToolDescriptor } from "./types";
 export const SPEECH_MODELS = [
   ...getModelIdsByOutput(getProviderModels("workers-ai"), "workers-ai", "speech"),
   ...getModelIdsByOutput(getProviderModels("replicate"), "replicate", "audio"),
-].sort();
+].sort((left, right) => left.localeCompare(right));
 
 export const create_speech: FunctionToolDescriptor = {
   name: "create_speech",
