@@ -1,20 +1,23 @@
 import { readEnvString } from "@ngriffin_uk/polychat-utility-server/env";
 
-import { getPashiToolFields, isPashiToolExecutable } from "~/modules/pashi/application/catalog";
+import { getPashiToolFields, isPashiToolExecutable } from "./catalogue.js";
 import {
   pashiInfoSchema,
   type PashiInfo,
   type PashiOperation,
   type PashiOperationResult,
   type PashiTool,
-} from "~/modules/pashi/application/contracts";
-import type { IEnv } from "~/types";
+} from "./contracts.js";
 
 const PASHI_ORIGIN = "https://pashi.app";
 const PASHI_INFO_PATH = "/api/info";
 const PASHI_CONFIGURATION_ERROR_MESSAGE = "PASHI_API_KEY is required to access Pashi.";
 const DEFAULT_CATALOG_TTL_MS = 5 * 60 * 1000;
 const DEFAULT_TIMEOUT_MS = 10_000;
+
+export interface PashiEnvironment {
+  PASHI_API_KEY?: string;
+}
 
 export type PashiClientErrorCode =
   | "catalog_unavailable"
@@ -236,11 +239,11 @@ export class PashiClient {
 }
 
 const clientsByEnvironment = new WeakMap<
-  Pick<IEnv, "PASHI_API_KEY">,
+  PashiEnvironment,
   { apiKey: string; client: PashiClient }
 >();
 
-export function getPashiClient(env: Pick<IEnv, "PASHI_API_KEY">): PashiClient {
+export function getPashiClient(env: PashiEnvironment): PashiClient {
   const apiKey = readEnvString(env.PASHI_API_KEY);
 
   if (!apiKey) {

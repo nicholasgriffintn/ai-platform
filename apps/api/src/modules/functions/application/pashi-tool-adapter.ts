@@ -1,7 +1,11 @@
-import { searchPashiTools } from "~/modules/pashi/application/catalog";
-import type { PashiOperation, PashiToolType } from "~/modules/pashi/application/contracts";
-import type { PashiClient } from "~/modules/pashi/infrastructure/client";
-import { PashiClientError } from "~/modules/pashi/infrastructure/client";
+import {
+  PashiClientError,
+  searchPashiTools,
+  type PashiClient,
+  type PashiOperation,
+  type PashiToolType,
+} from "@ngriffin_uk/polychat-ai-integrations";
+
 import type { IFunctionResponse } from "~/types";
 
 export async function searchPashiCatalog(

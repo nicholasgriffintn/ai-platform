@@ -1100,6 +1100,9 @@ importers:
       '@ngriffin_uk/polychat-utility-server':
         specifier: workspace:^
         version: link:../utility-server
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.2
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^

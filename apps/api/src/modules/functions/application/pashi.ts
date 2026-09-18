@@ -1,12 +1,12 @@
-import { runPashiOperations, searchPashiCatalog } from "~/modules/pashi/application/tool-adapter";
-import type { PashiClient } from "~/modules/pashi/infrastructure/client";
-import { getPashiClient } from "~/modules/pashi/infrastructure/client";
+import { getPashiClient, type PashiClient } from "@ngriffin_uk/polychat-ai-integrations";
+
 import type { ApiToolDefinition } from "~/types/functions";
 
 import {
   run_pashi_tools as run_pashi_toolsDescriptor,
   search_pashi_tools as search_pashi_toolsDescriptor,
 } from "./definitions/pashi";
+import { runPashiOperations, searchPashiCatalog } from "./pashi-tool-adapter";
 
 export function createPashiFunctionTools(client?: PashiClient): {
   run_pashi_tools: ApiToolDefinition;

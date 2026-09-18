@@ -1,4 +1,4 @@
-import type { PashiField, PashiTool, PashiToolType } from "~/modules/pashi/application/contracts";
+import type { PashiField, PashiTool, PashiToolType } from "./contracts.js";
 
 export interface PashiToolSummary {
   aliases: string[];
