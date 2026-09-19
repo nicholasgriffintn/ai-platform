@@ -1,4 +1,10 @@
-import { buildSiteSandboxTask, generateSiteFiles } from "@ngriffin_uk/polychat-library-sites";
+import {
+  applySitePatch,
+  buildSiteImageRewritePatches,
+  buildSiteSandboxTask,
+  generateSiteFiles,
+  validateSiteProject,
+} from "@ngriffin_uk/polychat-library-sites";
 import {
   sandboxDeliveryPolicyCreatesCommit,
   SITES_CAPABILITY_ID,
@@ -7,6 +13,7 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { getPrivateFileResourceFromUrl } from "~/infrastructure/storage/resource-urls";
 import { executeSandboxRunStream } from "~/modules/apps/application/sandbox/execute-stream";
 import {
   requireProjectAccess,
@@ -46,7 +53,15 @@ export async function buildSiteInSandbox({
   }
 
   const site = await getSite({ context, userId: user.id, projectId }, siteId);
-  const { files } = generateSiteFiles(site.project);
+  const document = structuredClone(site.project) as unknown as Record<string, unknown>;
+
+  for (const patch of buildSiteImageRewritePatches(site.project, (src) =>
+    getPrivateFileResourceFromUrl(src, context.env.API_BASE_URL) ? "" : null,
+  )) {
+    applySitePatch(document, patch);
+  }
+
+  const { files } = generateSiteFiles(validateSiteProject(document).project);
   const task = buildSiteSandboxTask({
     project: site.project,
     brief: site.brief,

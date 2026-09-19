@@ -62,6 +62,8 @@ describe("SitePreview", () => {
     expect(doc.documentElement.style.getPropertyValue("--primary")).toContain("oklch");
     expect(doc.documentElement.style.getPropertyValue("--radius")).toBe("1rem");
     expect(doc.body.dataset.sitePreview).toBe("");
+    expect(doc.head.lastElementChild?.getAttribute("data-site-frame-reset")).toBe("");
+    expect(doc.head.lastElementChild?.textContent).toContain("a { text-decoration: none; }");
   });
 
   it("switches pages when an internal link is followed", () => {
@@ -74,6 +76,53 @@ describe("SitePreview", () => {
 
     view.rerender(<SitePreview project={project} pageId="pricing" onNavigate={onNavigate} />);
     expect(inFrame.getByRole("heading", { level: 1, name: "Simple pricing" })).toBeTruthy();
+  });
+
+  it("selects elements in inspect mode without following links", () => {
+    const onSelect = vi.fn();
+    const onNavigate = vi.fn();
+    const view = render(
+      <SitePreview
+        project={project}
+        inspecting
+        selectedKey={null}
+        onSelect={onSelect}
+        onNavigate={onNavigate}
+      />,
+    );
+    const { within: inFrame, doc } = frameOf(view.container);
+
+    fireEvent.click(inFrame.getByRole("link", { name: "Pricing" }));
+    expect(onSelect).toHaveBeenCalledWith("nav");
+    expect(onNavigate).not.toHaveBeenCalled();
+
+    fireEvent.click(inFrame.getByRole("heading", { level: 1, name: "Cakes worth the drive" }));
+    expect(onSelect).toHaveBeenLastCalledWith("hero");
+
+    const rect = {
+      top: 10,
+      left: 10,
+      width: 100,
+      height: 50,
+      bottom: 60,
+      right: 110,
+      x: 10,
+      y: 10,
+    };
+
+    (
+      doc.defaultView as unknown as { Element: typeof Element }
+    ).Element.prototype.getBoundingClientRect = () => ({ ...rect, toJSON: () => rect });
+    view.rerender(
+      <SitePreview
+        project={project}
+        inspecting
+        selectedKey="hero"
+        onSelect={onSelect}
+        onNavigate={onNavigate}
+      />,
+    );
+    expect(doc.body.textContent).toContain("Hero · hero");
   });
 
   it("renders every catalogue component from its example props", () => {

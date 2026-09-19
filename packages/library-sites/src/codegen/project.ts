@@ -2,6 +2,7 @@ import { listSitePages, type SiteFile, type SiteProject } from "@ngriffin_uk/pol
 
 import type { SiteComponentType } from "../catalog.js";
 import { buildSiteGoogleFontsUrl, renderSiteThemeCss } from "../theme.js";
+import { renderSiteStateModule } from "./expressions.js";
 import { renderPageFile } from "./page.js";
 import { renderIconModule, renderUiModule, renderUtilsModule } from "./support-files.js";
 import { SITE_COMPONENT_TEMPLATES } from "./templates.js";
@@ -167,10 +168,12 @@ export function generateSiteFiles(project: SiteProject): GeneratedSiteFiles {
   const pages = listSitePages(project);
   const used = new Set<SiteComponentType>();
   const pageFiles: SiteFile[] = [];
+  let usesState = false;
 
   for (const { page } of pages) {
     const rendered = renderPageFile(page);
 
+    usesState = usesState || rendered.usesState;
     pageFiles.push({ path: rendered.path, content: rendered.content });
 
     for (const component of rendered.components) {
@@ -200,6 +203,7 @@ export function generateSiteFiles(project: SiteProject): GeneratedSiteFiles {
     { path: "app/layout.tsx", content: renderLayout(project) },
     ...pageFiles,
     { path: "lib/utils.ts", content: renderUtilsModule() },
+    ...(usesState ? [{ path: "lib/site-state.ts", content: renderSiteStateModule() }] : []),
     { path: "components/site/icon.tsx", content: renderIconModule() },
     { path: "components/site/ui.tsx", content: renderUiModule() },
     ...componentFiles,

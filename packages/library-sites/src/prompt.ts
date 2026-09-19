@@ -38,7 +38,7 @@ export function buildSitePlanGuidance(plan: SitePlan): string {
 
   if (plan.interactive) {
     lines.push(
-      "The result needs interaction: use Tabs, Form, Input, Select and Switch where a person would act, not static text describing actions.",
+      "The result needs interaction: seed page state, bind Input, Select, Switch and Tabs with $bindState, gate panels with visible, drive lists with repeat and Table rows from $state, and wire Buttons and Forms with on actions so filters, tabs and additions work.",
     );
   }
 

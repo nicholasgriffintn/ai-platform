@@ -10,7 +10,14 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "research",
     "web_search",
   ],
-  Creative: ["create_image", "create_music", "create_qr_code", "create_speech", "create_video"],
+  Creative: [
+    "build_site",
+    "create_image",
+    "create_music",
+    "create_qr_code",
+    "create_speech",
+    "create_video",
+  ],
   Code: [
     "apply_edit_completion",
     "fill_in_middle_completion",

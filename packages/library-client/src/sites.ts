@@ -1,9 +1,14 @@
 import type {
   SiteBuildRequest,
   SiteBuildResponse,
+  SiteEditRequest,
   SiteFilesResponse,
   SiteGenerateRequest,
+  SiteImagesRequest,
+  SiteImagesResponse,
   SiteListResponse,
+  SitePullRequestRequest,
+  SitePullRequestResponse,
   SiteRecord,
   SiteResponse,
   SiteStreamEvent,
@@ -54,6 +59,17 @@ export const sitesService = {
     return returnFetchedData<SiteFilesResponse>(response);
   },
 
+  async edit(id: string, request: SiteEditRequest): Promise<SiteRecord> {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: request,
+    });
+    const payload = await returnFetchedData<SiteResponse>(response);
+
+    return payload.site;
+  },
+
   async build(id: string, request: SiteBuildRequest): Promise<SiteBuildResponse> {
     const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/build`, {
       method: "POST",
@@ -63,6 +79,28 @@ export const sitesService = {
     });
 
     return returnFetchedData<SiteBuildResponse>(response);
+  },
+
+  async images(id: string, request: SiteImagesRequest): Promise<SiteImagesResponse> {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/images`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: request,
+      timeoutMs: null,
+    });
+
+    return returnFetchedData<SiteImagesResponse>(response);
+  },
+
+  async pullRequest(id: string, request: SitePullRequestRequest): Promise<SitePullRequestResponse> {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/pull-request`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: request,
+      timeoutMs: null,
+    });
+
+    return returnFetchedData<SitePullRequestResponse>(response);
   },
 
   async generate(

@@ -10,5 +10,7 @@ export {
   type SitePreviewProps,
   type SitePreviewViewport,
 } from "./SitePreview.js";
+export { SitePropsForm, type SitePropsFormProps } from "./SitePropsForm.js";
 export { SiteRenderer } from "./SiteRenderer.js";
+export { findSiteElementKey, SiteSelectionOverlay } from "./SiteSelection.js";
 export { SiteNavigationProvider, useSiteNavigation, type SiteNavigation } from "./ui.js";

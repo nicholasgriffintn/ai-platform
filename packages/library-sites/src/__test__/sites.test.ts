@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
 
 import { SITE_CATALOG, SITE_COMPONENT_TYPES } from "../catalog.js";
+import { serialiseExpression } from "../codegen/expressions.js";
 import { renderPageJsx } from "../codegen/page.js";
 import { generateSiteFiles } from "../codegen/project.js";
 import { buildSiteExampleStream, describeSiteCatalog } from "../describe.js";
 import { applySitePatch, createSitePatchStreamReader } from "../patch.js";
 import { resolveSitePlan } from "../plan.js";
+import {
+  evaluateSiteVisibility,
+  resolveDynamicValue,
+  resolveElementProps,
+  runSiteAction,
+} from "../state.js";
 import { validateSiteProject } from "../validate.js";
 
 function compileStream(stream: string, chunkSize: number): Record<string, unknown> {
@@ -289,5 +296,208 @@ describe("codegen", () => {
       expect.arrayContaining(["app/page.tsx", "app/reports/page.tsx", "app/globals.css"]),
     );
     expect(tabs?.content.startsWith('"use client";')).toBe(true);
+  });
+});
+
+describe("state", () => {
+  const page = {
+    path: "/",
+    title: "Orders",
+    root: "page",
+    state: {
+      tab: "open",
+      query: "",
+      orders: [
+        { id: "o1", customer: "Northwind", status: "open" },
+        { id: "o2", customer: "Contoso", status: "paid" },
+      ],
+    },
+    elements: {
+      page: { type: "Page", props: {}, children: ["tabs", "search", "list", "add"] },
+      tabs: {
+        type: "Tabs",
+        props: {
+          tabs: [
+            { label: "Open", value: "open" },
+            { label: "Paid", value: "paid" },
+          ],
+          value: { $bindState: "/tab" },
+        },
+        children: [],
+      },
+      search: { type: "Input", props: { value: { $bindState: "/query" } }, children: [] },
+      list: {
+        type: "Card",
+        props: { title: { $item: "customer" } },
+        repeat: { statePath: "/orders", key: "id" },
+        visible: { $item: "status", eq: { $state: "/tab" } },
+        children: ["remove"],
+      },
+      remove: {
+        type: "Button",
+        props: { label: "Remove" },
+        on: { press: { action: "removeState", params: { statePath: "/orders" } } },
+        children: [],
+      },
+      add: {
+        type: "Button",
+        props: { label: "Add" },
+        on: {
+          press: {
+            action: "pushState",
+            params: {
+              statePath: "/orders",
+              value: { id: { $id: true }, customer: { $state: "/query" }, status: "open" },
+              clearStatePath: "/query",
+            },
+          },
+        },
+        children: [],
+      },
+    },
+  };
+
+  it("keeps dynamic props, visibility, repeat and actions through validation", () => {
+    const { project, issues } = validateSiteProject({ pages: { home: page } });
+    const home = project.pages.home;
+
+    expect(issues).toEqual([]);
+    expect(home.elements.tabs.props.value).toEqual({ $bindState: "/tab" });
+    expect(home.elements.list.repeat).toEqual({ statePath: "/orders", key: "id" });
+    expect(home.elements.list.visible).toBeDefined();
+    expect(home.elements.add.on?.press?.action).toBe("pushState");
+    expect(home.state).toEqual(page.state);
+  });
+
+  it("runs actions immutably and resolves dynamic values against scope", () => {
+    const scope = { state: page.state, item: page.state.orders[1], index: 1 };
+
+    expect(resolveElementProps({ title: { $item: "customer" } }, scope).props.title).toBe(
+      "Contoso",
+    );
+    expect(resolveElementProps({ value: { $bindState: "/tab" } }, scope)).toEqual({
+      props: { value: "open" },
+      bindings: { value: "/tab" },
+    });
+    expect(evaluateSiteVisibility({ $item: "status", eq: "paid" }, scope)).toBe(true);
+    expect(evaluateSiteVisibility({ $item: "status", eq: { $state: "/tab" } }, scope)).toBe(false);
+    expect(
+      evaluateSiteVisibility(
+        {
+          and: [
+            { $state: "/tab", eq: "open" },
+            { $state: "/query", truthy: false },
+          ],
+        },
+        scope,
+      ),
+    ).toBe(true);
+
+    const removed = runSiteAction(
+      { action: "removeState", params: { statePath: "/orders" } },
+      scope,
+    );
+    const pushed = runSiteAction(page.elements.add.on.press as never, {
+      state: { ...page.state, query: "Fabrikam" },
+    });
+
+    expect((removed.state.orders as unknown[]).length).toBe(1);
+    expect(page.state.orders.length).toBe(2);
+    expect((pushed.state.orders as Array<{ customer: string; id: string }>)[2]).toMatchObject({
+      customer: "Fabrikam",
+      status: "open",
+    });
+    expect((pushed.state.orders as Array<{ id: string }>)[2].id).toMatch(/^[a-z0-9]+$/);
+    expect(pushed.state.query).toBe("");
+    expect(runSiteAction({ action: "navigate", params: { href: "/paid" } }, scope).navigate).toBe(
+      "/paid",
+    );
+  });
+
+  it("compiles state, bindings, visibility, repeat and actions into a client page", () => {
+    const { project } = validateSiteProject({ pages: { home: page } });
+    const { files } = generateSiteFiles(project);
+    const source = files.find((file) => file.path === "app/page.tsx")?.content ?? "";
+
+    expect(source.startsWith('"use client";')).toBe(true);
+    expect(source).toContain("const [state, setState] = useState<SiteState>(INITIAL_STATE);");
+    expect(source).toContain(
+      'value={getPath(state, "/tab")} onChange={(next: any) => set("/tab", next)}',
+    );
+    expect(source).toContain(
+      '(getPath(state, "/orders") ?? []).map((item: any, index: number) => (',
+    );
+    expect(source).toContain(
+      '<Card key={String(readItem(item, "id") ?? index)} title={readItem(item, "customer")}',
+    );
+    expect(source).toContain('onPress={() => remove("/orders", index)}');
+    expect(source).toContain('{readItem(item, "status") === getPath(state, "/tab") && (');
+    expect(source).toContain(
+      'push("/orders", { "id": uid(), "customer": getPath(state, "/query"), "status": "open" }, "/query")',
+    );
+    expect(files.some((file) => file.path === "lib/site-state.ts")).toBe(true);
+  });
+});
+
+describe("derived lists", () => {
+  const orders = [
+    { id: "o1", customer: "Northwind", status: "Open" },
+    { id: "o2", customer: "Contoso", status: "Paid" },
+    { id: "o3", customer: "Northwind Traders", status: "Paid" },
+  ];
+
+  it("filters $state reads by where and search, treating All and empty as open", () => {
+    const read = (state: Record<string, unknown>) =>
+      resolveDynamicValue(
+        {
+          $state: "/orders",
+          where: { status: { $state: "/status" } },
+          search: { query: { $state: "/query" }, fields: ["customer"] },
+        },
+        { state: { orders, ...state } },
+      ) as typeof orders;
+
+    expect(read({ status: "All statuses", query: "" }).map((o) => o.id)).toEqual([
+      "o1",
+      "o2",
+      "o3",
+    ]);
+    expect(read({ status: "paid", query: "" }).map((o) => o.id)).toEqual(["o2", "o3"]);
+    expect(read({ status: "", query: "north" }).map((o) => o.id)).toEqual(["o1", "o3"]);
+    expect(read({ status: "Paid", query: "north" }).map((o) => o.id)).toEqual(["o3"]);
+    expect(
+      (
+        resolveDynamicValue(
+          { $state: "/rows", where: { priority: { $state: "/only" } } },
+          { state: { rows: [{ priority: "yes" }, { priority: "no" }], only: true } },
+        ) as unknown[]
+      ).length,
+    ).toBe(1);
+    expect(
+      (
+        resolveDynamicValue(
+          { $state: "/rows", where: { priority: { $state: "/only" } } },
+          { state: { rows: [{ priority: "yes" }, { priority: "no" }], only: false } },
+        ) as unknown[]
+      ).length,
+    ).toBe(2);
+  });
+
+  it("spreads submitted form values into pushed items and compiles the same", () => {
+    const result = runSiteAction(
+      {
+        action: "pushState",
+        params: { statePath: "/orders", value: { id: "fixed", status: "open", $form: true } },
+      },
+      { state: { orders: [] }, form: { customer: "Fabrikam", status: "ignored" } },
+    );
+
+    expect(result.state.orders).toEqual([{ customer: "Fabrikam", id: "fixed", status: "open" }]);
+    expect(serialiseExpression({ id: { $id: true }, status: "open", $form: true })).toBe(
+      '{ ...values, "id": uid(), "status": "open" }',
+    );
+    expect(serialiseExpression({ $state: "/orders", where: { status: { $state: "/tab" } } })).toBe(
+      'filterItems(getPath(state, "/orders"), { "status": getPath(state, "/tab") }, undefined)',
+    );
   });
 });

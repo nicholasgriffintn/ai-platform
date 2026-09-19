@@ -28,7 +28,9 @@
     "@ngriffin_uk/polychat-component-ui": "workspace:^",
     "@ngriffin_uk/polychat-library-sites": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
-    "lucide-react": "1.45.0"
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "lucide-react": "1.45.0",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",

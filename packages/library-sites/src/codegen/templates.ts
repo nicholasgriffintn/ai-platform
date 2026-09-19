@@ -188,13 +188,22 @@ import { Children, useState } from "react";
 export default function Tabs({
   tabs,
   defaultValue,
+  value,
+  onChange,
   children,
 }: {
   tabs: Array<{ label: string; value: string }>;
   defaultValue?: string;
+  value?: string;
+  onChange?: (value: string) => void;
   children?: ReactNode;
 }) {
-  const [active, setActive] = useState(defaultValue ?? tabs[0]?.value);
+  const [internal, setInternal] = useState(defaultValue ?? tabs[0]?.value);
+  const active = value ?? (onChange ? defaultValue : undefined) ?? internal;
+  const setActive = (next: string) => {
+    setInternal(next);
+    onChange?.(next);
+  };
   const panels = Children.toArray(children);
   const index = Math.max(0, tabs.findIndex((tab) => tab.value === active));
 
@@ -1022,6 +1031,7 @@ export default function Button({
   size = "md",
   icon,
   fullWidth,
+  onPress,
 }: {
   label: string;
   href?: string;
@@ -1029,9 +1039,10 @@ export default function Button({
   size?: ButtonSize;
   icon?: string;
   fullWidth?: boolean;
+  onPress?: () => void;
 }) {
   return (
-    <Action href={href} variant={variant} size={size} className={cn(fullWidth && "w-full")}>
+    <Action href={href} variant={variant} size={size} className={cn(fullWidth && "w-full")} onPress={onPress}>
       <Icon name={icon} size="sm" />
       {label}
     </Action>
@@ -1488,6 +1499,7 @@ export default function Form({
   fields,
   submitLabel,
   layout = "stacked",
+  onSubmit,
 }: {
   title?: string;
   description?: string;
@@ -1501,9 +1513,37 @@ export default function Form({
   }>;
   submitLabel: string;
   layout?: "stacked" | "inline";
+  onSubmit?: (values: Record<string, unknown>) => void;
 }) {
   return (
-    <form className="flex w-full max-w-xl flex-col gap-6" onSubmit={(event) => event.preventDefault()}>
+    <form
+      className="flex w-full max-w-xl flex-col gap-6"
+      onSubmit={(event) => {
+        event.preventDefault();
+
+        if (!onSubmit) {
+          return;
+        }
+
+        const form = event.currentTarget;
+        const values = Object.fromEntries(
+          fields.map((field) => {
+            const control = form.elements.namedItem(field.name);
+            const value =
+              control instanceof HTMLInputElement && field.type === "checkbox"
+                ? control.checked
+                : control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement || control instanceof HTMLSelectElement
+                  ? control.value
+                  : "";
+
+            return [field.name, value];
+          }),
+        );
+
+        onSubmit(values);
+        form.reset();
+      }}
+    >
       {(title || description) && (
         <div className="flex flex-col gap-1">
           {title && <h2 className="font-heading text-2xl font-semibold tracking-tight">{title}</h2>}
@@ -1549,7 +1589,9 @@ export default function Form({
           );
         })}
       </div>
-      <Action className="w-fit">{submitLabel}</Action>
+      <Action className="w-fit" type="submit">
+        {submitLabel}
+      </Action>
     </form>
   );
 }
@@ -1565,11 +1607,15 @@ export default function Input({
   placeholder,
   type = "text",
   icon,
+  value,
+  onChange,
 }: {
   label?: string;
   placeholder?: string;
   type?: "text" | "email" | "search" | "number";
   icon?: string;
+  value?: string;
+  onChange?: (value: string) => void;
 }) {
   return (
     <div className="flex w-full max-w-sm flex-col gap-2">
@@ -1580,7 +1626,13 @@ export default function Input({
             <Icon name={icon} size="sm" />
           </span>
         )}
-        <Field type={type} placeholder={placeholder} aria-label={label ?? placeholder} className={cn(icon && "pl-9")} />
+        <Field
+          type={type}
+          placeholder={placeholder}
+          aria-label={label ?? placeholder}
+          className={cn(icon && "pl-9")}
+          {...(onChange ? { value: value ?? "", onChange: (event) => onChange(event.target.value) } : { defaultValue: value })}
+        />
       </div>
     </div>
   );
@@ -1591,11 +1643,24 @@ export default function Input({
   Select: layout(
     `import { FieldLabel, SelectField } from "@/components/site/ui";
 
-export default function Select({ label, options, value }: { label?: string; options: string[]; value?: string }) {
+export default function Select({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label?: string;
+  options: string[];
+  value?: string;
+  onChange?: (value: string) => void;
+}) {
   return (
     <div className="flex w-full max-w-xs flex-col gap-2">
       {label && <FieldLabel>{label}</FieldLabel>}
-      <SelectField defaultValue={value ?? options[0]} aria-label={label}>
+      <SelectField
+        aria-label={label}
+        {...(onChange ? { value: value ?? options[0], onChange: (event) => onChange(event.target.value) } : { defaultValue: value ?? options[0] })}
+      >
         {options.map((option) => (
           <option key={option} value={option}>
             {option}
@@ -1617,12 +1682,19 @@ export default function Switch({
   label,
   description,
   checked = false,
+  onChange,
 }: {
   label: string;
   description?: string;
   checked?: boolean;
+  onChange?: (checked: boolean) => void;
 }) {
-  const [on, setOn] = useState(checked);
+  const [internal, setInternal] = useState(checked);
+  const on = onChange ? checked : internal;
+  const setOn = (next: boolean) => {
+    setInternal(next);
+    onChange?.(next);
+  };
 
   return (
     <label className="flex items-start justify-between gap-4 text-sm">
@@ -1634,7 +1706,7 @@ export default function Switch({
         type="button"
         role="switch"
         aria-checked={on}
-        onClick={() => setOn((value) => !value)}
+        onClick={() => setOn(!on)}
         className={cn("relative h-6 w-11 shrink-0 rounded-full transition-colors", on ? "bg-primary" : "bg-muted")}
       >
         <span className={cn("absolute top-0.5 size-5 rounded-full bg-background shadow transition-transform", on ? "translate-x-5" : "translate-x-0.5")} />

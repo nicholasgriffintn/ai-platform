@@ -148,6 +148,8 @@ describe("streamSiteGeneration", () => {
     expect(streamRequest.system).toContain("OUTPUT FORMAT");
     expect(streamRequest.system).toContain("- Hero");
     expect(streamRequest.system).toContain("BRIEF GUIDANCE");
+    expect(streamRequest.system).not.toContain("- Metric");
+    expect(streamRequest.prompt_cache_key).toMatch(/^sites-generate-/);
     expect(streamRequest.prompt).toContain("A landing page for a bakery in Leeds");
 
     const saved = mocks.createSite.mock.calls[0][1];
@@ -180,6 +182,12 @@ describe("streamSiteGeneration", () => {
 
     expect(events[0]).toMatchObject({ type: "plan", plan: { kind: "dashboard", tier: "low" } });
     expect((events[0].plan as Record<string, unknown>).answers).toBeUndefined();
+
+    const system = mocks.stream.mock.calls[0][0].system as string;
+
+    expect(system).toContain('"type":"AppShell"');
+    expect(system).toContain("- Metric");
+    expect(system).not.toContain("- Hero");
     expect(events.at(-1)).toMatchObject({ type: "error", error: "The site has no pages" });
     expect(mocks.createSite).not.toHaveBeenCalled();
   });
@@ -248,14 +256,114 @@ describe("streamSiteGeneration", () => {
     });
     const events = await readEvents(response);
 
-    expect(mocks.tryDecide).not.toHaveBeenCalled();
+    const intentCall = mocks.tryDecide.mock.calls[0][0];
+
+    expect(intentCall.questions).toHaveProperty("intent");
+    expect(Object.keys(intentCall.questions)).toEqual(["intent", "interactive"]);
+    expect(intentCall.state.outline).toContain("hero: Hero");
     expect(mocks.stream.mock.calls[0][0].system).toContain("CURRENT DOCUMENT");
-    expect(events.map((event) => event.type)).toEqual(["plan", "model", "patch", "saved", "done"]);
+    expect(events.map((event) => event.type)).toEqual([
+      "plan",
+      "intent",
+      "model",
+      "patch",
+      "saved",
+      "done",
+    ]);
+    expect(events[1]).toMatchObject({ type: "intent", intent: "restructure", target: null });
 
     const updated = mocks.updateSite.mock.calls[0][2];
 
     expect(updated.brief).toBe("A landing page for a bakery in Leeds");
     expect(updated.project.pages.home.elements.hero.props.headline).toBe("New headline");
-    expect((events[3].site as { revision: number }).revision).toBe(2);
+    expect((events[4].site as { revision: number }).revision).toBe(2);
+  });
+
+  it("scopes a refinement to a selected element with the outline instead of the whole document", async () => {
+    mocks.getSite.mockResolvedValue({
+      id: "site-1",
+      title: "Crumb",
+      brief: "brief",
+      projectId: null,
+      revision: 1,
+      plan: {
+        kind: "landing",
+        scope: "page",
+        tier: "medium",
+        tone: "friendly",
+        theme: { palette: "sunset", font: "sans", radius: "md", mode: "light" },
+        interactive: false,
+        confidence: 0.9,
+      },
+      project: {
+        title: "Crumb",
+        theme: { palette: "sunset", font: "sans", radius: "md", mode: "light" },
+        pages: {
+          home: {
+            path: "/",
+            title: "Home",
+            root: "page",
+            elements: {
+              page: { type: "Page", props: {}, children: ["hero", "footer"] },
+              hero: { type: "Hero", props: { headline: "Old headline" }, children: [] },
+              footer: { type: "Footer", props: { brand: "Crumb" }, children: [] },
+            },
+          },
+        },
+      },
+      issues: [],
+      turns: [],
+      createdAt: "2026-09-19T00:00:00.000Z",
+      updatedAt: null,
+    });
+    mocks.stream.mockResolvedValue(
+      sseStreamOf([
+        '{"op":"replace","path":"/pages/home/elements/hero/props/headline","value":"Scoped"}\n',
+      ]),
+    );
+    mocks.updateSite.mockImplementation(async (_scope, id, input) => ({
+      id,
+      title: "Crumb",
+      brief: input.brief,
+      projectId: null,
+      revision: 2,
+      plan: input.plan,
+      project: input.project,
+      issues: input.issues,
+      turns: [input.turn],
+      createdAt: "2026-09-19T00:00:00.000Z",
+      updatedAt: null,
+    }));
+
+    const response = await streamSiteGeneration({
+      context,
+      user,
+      request: {
+        prompt: "Punchier",
+        siteId: "site-1",
+        target: { pageId: "home", elementKey: "hero" },
+      },
+    });
+    const events = await readEvents(response);
+    const system = mocks.stream.mock.calls[0][0].system as string;
+
+    expect(system).toContain("SELECTED ELEMENT");
+    expect(system).toContain("/pages/home/elements/hero");
+    expect(system).toContain('hero: Hero "Old headline"');
+    expect(system).not.toContain('"brand":"Crumb"');
+    expect(events.map((event) => event.type)).toEqual(["plan", "model", "patch", "saved", "done"]);
+
+    const missing = await readEvents(
+      await streamSiteGeneration({
+        context,
+        user,
+        request: { prompt: "x", siteId: "site-1", target: { pageId: "home", elementKey: "gone" } },
+      }),
+    );
+
+    expect(missing.at(-1)).toMatchObject({
+      type: "error",
+      error: expect.stringContaining("no longer exists"),
+    });
   });
 });

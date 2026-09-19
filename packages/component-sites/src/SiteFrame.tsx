@@ -27,6 +27,26 @@ function mirrorStyles(source: Document, target: Document): void {
     clone.setAttribute(MIRRORED_ATTRIBUTE, id);
     target.head.append(clone);
   });
+
+  appendFrameReset(target);
+}
+
+const RESET_ATTRIBUTE = "data-site-frame-reset";
+const FRAME_RESET_CSS = `
+a { text-decoration: none; }
+a.hover\\:underline:hover { text-decoration: underline; }
+`;
+
+function appendFrameReset(target: Document): void {
+  const existing = target.head.querySelector(`[${RESET_ATTRIBUTE}]`);
+  const style = existing ?? target.createElement("style");
+
+  if (!existing) {
+    style.setAttribute(RESET_ATTRIBUTE, "");
+    style.textContent = FRAME_RESET_CSS;
+  }
+
+  target.head.append(style);
 }
 
 function applyTheme(target: Document, theme: SiteTheme): void {
@@ -45,7 +65,7 @@ export interface SiteFrameProps {
   width: string;
   title: string;
   className?: string;
-  children: ReactNode;
+  children: ReactNode | ((root: HTMLElement) => ReactNode);
 }
 
 export function SiteFrame({ theme, width, title, className, children }: SiteFrameProps) {
@@ -108,11 +128,12 @@ export function SiteFrame({ theme, width, title, className, children }: SiteFram
     <iframe
       ref={setFrame}
       title={title}
-      sandbox="allow-same-origin"
       style={{ width, maxWidth: "100%" }}
       className={cn("block h-full min-h-full shrink-0 border-0 bg-background", className)}
     >
-      {mount ? createPortal(children, mount) : null}
+      {mount
+        ? createPortal(typeof children === "function" ? children(mount) : children, mount)
+        : null}
     </iframe>
   );
 }

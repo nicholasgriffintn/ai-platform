@@ -1,6 +1,7 @@
-import { Badge, cn } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, Button, cn } from "@ngriffin_uk/polychat-component-ui";
 import { SITE_PALETTE_DEFINITIONS } from "@ngriffin_uk/polychat-library-sites";
-import type { SiteIssue, SitePlan } from "@ngriffin_uk/polychat-schemas";
+import type { SiteIssue, SitePlan, SiteQuality } from "@ngriffin_uk/polychat-schemas";
+import { Wrench } from "lucide-react";
 
 const KIND_LABELS: Record<SitePlan["kind"], string> = {
   landing: "Landing page",
@@ -22,11 +23,22 @@ const SCOPE_LABELS: Record<SitePlan["scope"], string> = {
 export interface SitePlanSummaryProps {
   plan: SitePlan;
   issues?: SiteIssue[];
+  quality?: SiteQuality | null;
   model?: { provider: string; model: string } | null;
+  onRepair?: () => void;
+  isRepairing?: boolean;
   className?: string;
 }
 
-export function SitePlanSummary({ plan, issues = [], model, className }: SitePlanSummaryProps) {
+export function SitePlanSummary({
+  plan,
+  issues = [],
+  quality,
+  model,
+  onRepair,
+  isRepairing,
+  className,
+}: SitePlanSummaryProps) {
   const warnings = issues.filter((issue) => issue.severity === "warning").length;
   const decided = Boolean(plan.answers);
 
@@ -65,6 +77,27 @@ export function SitePlanSummary({ plan, issues = [], model, className }: SitePla
         >
           {model.model}
         </span>
+      )}
+      {quality && (
+        <div className="flex flex-wrap items-center gap-1.5 border-t border-border pt-2">
+          <Badge variant={quality.coverage >= 0.75 ? "secondary" : "outline"}>
+            {Math.round(quality.coverage * 100)}% of the brief
+          </Badge>
+          {quality.placeholders >= 0.65 && <Badge variant="outline">placeholder copy</Badge>}
+          {quality.coherent < 0.5 && <Badge variant="outline">pages disagree</Badge>}
+          {quality.needsRepair && onRepair && (
+            <Button
+              variant="outline"
+              size="xs"
+              icon={<Wrench size={12} />}
+              onClick={onRepair}
+              isLoading={isRepairing}
+              className="ml-auto"
+            >
+              Repair
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );

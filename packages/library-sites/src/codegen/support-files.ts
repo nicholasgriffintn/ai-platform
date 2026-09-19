@@ -132,16 +132,20 @@ export function Action({
   size,
   className,
   children,
+  onPress,
+  type = "button",
 }: {
   href?: string;
   variant?: ButtonVariant;
   size?: ButtonSize;
   className?: string;
   children: ReactNode;
+  onPress?: () => void;
+  type?: "button" | "submit";
 }) {
   const classes = buttonClass(variant, size, className);
 
-  if (href) {
+  if (href && !onPress) {
     return (
       <Link href={href} className={classes}>
         {children}
@@ -150,7 +154,7 @@ export function Action({
   }
 
   return (
-    <button type="button" className={classes}>
+    <button type={type} className={classes} onClick={onPress}>
       {children}
     </button>
   );

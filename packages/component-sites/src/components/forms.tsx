@@ -11,11 +11,36 @@ export function Form({
   fields,
   submitLabel,
   layout = "stacked",
-}: SiteComponentProps<"Form">) {
+  onSubmit,
+}: SiteComponentProps<"Form"> & { onSubmit?: (values: Record<string, unknown>) => void }) {
   return (
     <form
       className="flex w-full max-w-xl flex-col gap-6"
-      onSubmit={(event) => event.preventDefault()}
+      onSubmit={(event) => {
+        event.preventDefault();
+
+        if (!onSubmit) {
+          return;
+        }
+
+        const form = event.currentTarget;
+        const values = Object.fromEntries(
+          fields.map((field) => {
+            const control = form.elements.namedItem(field.name) as {
+              value?: string;
+              checked?: boolean;
+            } | null;
+
+            return [
+              field.name,
+              field.type === "checkbox" ? Boolean(control?.checked) : (control?.value ?? ""),
+            ];
+          }),
+        );
+
+        onSubmit(values);
+        form.reset();
+      }}
     >
       {(title || description) && (
         <div className="flex flex-col gap-1">
@@ -84,12 +109,21 @@ export function Form({
           );
         })}
       </div>
-      <Action className="w-fit">{submitLabel}</Action>
+      <Action className="w-fit" type="submit">
+        {submitLabel}
+      </Action>
     </form>
   );
 }
 
-export function Input({ label, placeholder, type = "text", icon }: SiteComponentProps<"Input">) {
+export function Input({
+  label,
+  placeholder,
+  type = "text",
+  icon,
+  value,
+  onChange,
+}: SiteComponentProps<"Input"> & { value?: string; onChange?: (value: string) => void }) {
   return (
     <div className="flex w-full max-w-sm flex-col gap-2">
       {label && <FieldLabel>{label}</FieldLabel>}
@@ -104,17 +138,30 @@ export function Input({ label, placeholder, type = "text", icon }: SiteComponent
           placeholder={placeholder}
           aria-label={label ?? placeholder}
           className={cn(icon && "pl-9")}
+          {...(onChange
+            ? { value: value ?? "", onChange: (event) => onChange(event.target.value) }
+            : { defaultValue: value })}
         />
       </div>
     </div>
   );
 }
 
-export function Select({ label, options, value }: SiteComponentProps<"Select">) {
+export function Select({
+  label,
+  options,
+  value,
+  onChange,
+}: SiteComponentProps<"Select"> & { onChange?: (value: string) => void }) {
   return (
     <div className="flex w-full max-w-xs flex-col gap-2">
       {label && <FieldLabel>{label}</FieldLabel>}
-      <SelectField defaultValue={value ?? options[0]} aria-label={label}>
+      <SelectField
+        aria-label={label}
+        {...(onChange
+          ? { value: value ?? options[0], onChange: (event) => onChange(event.target.value) }
+          : { defaultValue: value ?? options[0] })}
+      >
         {options.map((option) => (
           <option key={option} value={option}>
             {option}
@@ -125,8 +172,18 @@ export function Select({ label, options, value }: SiteComponentProps<"Select">) 
   );
 }
 
-export function Switch({ label, description, checked = false }: SiteComponentProps<"Switch">) {
-  const [on, setOn] = useState(checked);
+export function Switch({
+  label,
+  description,
+  checked = false,
+  onChange,
+}: SiteComponentProps<"Switch"> & { onChange?: (checked: boolean) => void }) {
+  const [internal, setInternal] = useState(checked);
+  const on = onChange ? checked : internal;
+  const setOn = (next: boolean) => {
+    setInternal(next);
+    onChange?.(next);
+  };
 
   return (
     <label className="flex items-start justify-between gap-4 text-sm">
@@ -138,7 +195,7 @@ export function Switch({ label, description, checked = false }: SiteComponentPro
         type="button"
         role="switch"
         aria-checked={on}
-        onClick={() => setOn((value) => !value)}
+        onClick={() => setOn(!on)}
         className={cn(
           "relative h-6 w-11 shrink-0 rounded-full transition-colors",
           on ? "bg-primary" : "bg-muted",

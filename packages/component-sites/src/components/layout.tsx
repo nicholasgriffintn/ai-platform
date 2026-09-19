@@ -159,8 +159,23 @@ export function Spacer({ size = "md" }: SiteComponentProps<"Spacer">) {
   return <div aria-hidden="true" className={SPACER_SIZES[size]} />;
 }
 
-export function Tabs({ tabs, defaultValue, children }: WithChildren<SiteComponentProps<"Tabs">>) {
-  const [active, setActive] = useState(defaultValue ?? tabs[0]?.value);
+export function Tabs({
+  tabs,
+  defaultValue,
+  value,
+  onChange,
+  children,
+}: WithChildren<SiteComponentProps<"Tabs">> & {
+  value?: string;
+  onChange?: (value: string) => void;
+}) {
+  const [internal, setInternal] = useState(defaultValue ?? tabs[0]?.value);
+  const active = value ?? (onChange ? defaultValue : undefined) ?? internal;
+  const setActive = (next: string) => {
+    setInternal(next);
+    onChange?.(next);
+  };
+
   const panels = Children.toArray(children);
   const index = Math.max(
     0,

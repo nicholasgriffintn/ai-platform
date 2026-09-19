@@ -2,7 +2,11 @@ import {
   DEFAULT_SITE_THEME,
   SITE_ELEMENT_KEY_PATTERN,
   SITE_PAGE_ID_PATTERN,
+  siteActionBindingSchema,
+  siteEventNameSchema,
+  siteRepeatSchema,
   siteThemeSchema,
+  siteVisibilitySchema,
   type SiteElement,
   type SiteIssue,
   type SitePage,
@@ -12,6 +16,7 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import type { z } from "zod";
 
 import { getSiteComponentDefinition } from "./catalog.js";
+import { collectDynamicPropPaths } from "./state.js";
 
 export interface SiteValidationResult {
   project: SiteProject;
@@ -57,23 +62,33 @@ function repairProps(
   const candidate = structuredClone(rawProps);
   const messages: string[] = [];
   const removed = new Set<string>();
+  const dynamicPaths = new Set(collectDynamicPropPaths(candidate));
+  const isDynamicIssue = (path: readonly PropertyKey[]) =>
+    path.some((_, index) => dynamicPaths.has(pathKey(path.slice(0, index + 1))));
 
   for (let round = 0; round < MAX_PROP_REPAIR_ROUNDS; round += 1) {
     const parsed = schema.safeParse(candidate);
 
     if (parsed.success) {
-      return { props: parsed.data as Record<string, unknown>, messages };
+      return {
+        props: dynamicPaths.size > 0 ? candidate : (parsed.data as Record<string, unknown>),
+        messages,
+      };
+    }
+
+    const issues = parsed.error.issues.filter((issue) => !isDynamicIssue(issue.path));
+
+    if (issues.length === 0) {
+      return { props: candidate, messages };
     }
 
     if (round === 0) {
-      messages.push(
-        ...parsed.error.issues.map((issue) => `${pathKey(issue.path) || "props"} ${issue.message}`),
-      );
+      messages.push(...issues.map((issue) => `${pathKey(issue.path) || "props"} ${issue.message}`));
     }
 
     const targets = new Map<string, PropertyKey[]>();
 
-    for (const issue of parsed.error.issues) {
+    for (const issue of issues) {
       let path: PropertyKey[] = [...issue.path];
 
       while (path.length > 0 && removed.has(pathKey(path))) {
@@ -105,6 +120,70 @@ function repairProps(
   }
 
   return null;
+}
+
+type ElementBehaviour = Pick<SiteElement, "visible" | "repeat" | "on">;
+
+function normaliseBehaviour(
+  pageId: string,
+  key: string,
+  raw: Record<string, unknown>,
+  issues: SiteIssue[],
+): ElementBehaviour {
+  const behaviour: ElementBehaviour = {};
+  const warn = (field: string, message: string) =>
+    issues.push({
+      severity: "warning",
+      pageId,
+      elementKey: key,
+      message: `${field} was dropped: ${message}`,
+    });
+
+  if (raw.visible !== undefined) {
+    const parsed = siteVisibilitySchema.safeParse(raw.visible);
+
+    if (parsed.success) {
+      behaviour.visible = parsed.data;
+    } else {
+      warn("visible", parsed.error.issues[0]?.message ?? "invalid condition");
+    }
+  }
+
+  if (raw.repeat !== undefined) {
+    const parsed = siteRepeatSchema.safeParse(raw.repeat);
+
+    if (parsed.success) {
+      behaviour.repeat = parsed.data;
+    } else {
+      warn("repeat", parsed.error.issues[0]?.message ?? "invalid repeat");
+    }
+  }
+
+  if (isRecord(raw.on)) {
+    const on: NonNullable<SiteElement["on"]> = {};
+
+    for (const [event, binding] of Object.entries(raw.on)) {
+      const eventName = siteEventNameSchema.safeParse(event);
+      const parsedBinding = siteActionBindingSchema.safeParse(binding);
+
+      if (eventName.success && parsedBinding.success) {
+        on[eventName.data] = parsedBinding.data;
+      } else {
+        warn(
+          `on.${event}`,
+          parsedBinding.success
+            ? "unknown event"
+            : (parsedBinding.error.issues[0]?.message ?? "invalid action"),
+        );
+      }
+    }
+
+    if (Object.keys(on).length > 0) {
+      behaviour.on = on;
+    }
+  }
+
+  return behaviour;
 }
 
 function normaliseElement(
@@ -157,6 +236,7 @@ function normaliseElement(
 
   const props = repaired.props;
 
+  const behaviour = normaliseBehaviour(pageId, key, raw, issues);
   const children = Array.isArray(raw.children)
     ? raw.children.filter(
         (child): child is string =>
@@ -172,10 +252,10 @@ function normaliseElement(
       message: `${raw.type} does not accept children; ${children.length} dropped`,
     });
 
-    return { type: raw.type, props, children: [] };
+    return { type: raw.type, props, children: [], ...behaviour };
   }
 
-  return { type: raw.type, props, children };
+  return { type: raw.type, props, children, ...behaviour };
 }
 
 function normalisePage(pageId: string, raw: unknown, issues: SiteIssue[]): SitePage | null {

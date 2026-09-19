@@ -16,6 +16,26 @@ export { generateSiteFiles, type GeneratedSiteFiles } from "./codegen/project.js
 export { renderPageJsx } from "./codegen/page.js";
 export { buildSiteExampleStream, describeSiteCatalog, describeSiteComponent } from "./describe.js";
 export {
+  buildDuplicateSiteElementPatches,
+  buildMoveSiteElementPatches,
+  buildRemoveSiteElementPatches,
+  buildSitePropsPatch,
+  collectSiteElementSubtree,
+  describeSiteOutline,
+  elementPatchPath,
+  findSiteElementParent,
+  listSiteElementAncestors,
+} from "./edit.js";
+export {
+  buildSiteImagePatch,
+  buildSiteImagePrompt,
+  buildSiteImageRewritePatches,
+  collectEmptySiteImageSlots,
+  collectSiteImageSlots,
+  SITE_IMAGE_ASPECT_RATIOS,
+  type SiteImageSlot,
+} from "./images.js";
+export {
   applySitePatch,
   createSitePatchStreamReader,
   parseSitePatchLine,
@@ -51,4 +71,48 @@ export {
   SITE_RADIUS_VALUES,
   type SiteThemeVariables,
 } from "./theme.js";
+export {
+  collectDynamicPropPaths,
+  createSiteId,
+  elementUsesState,
+  evaluateSiteVisibility,
+  filterSiteList,
+  getStatePath,
+  isDynamicValue,
+  pushStatePath,
+  readItemField,
+  removeStatePath,
+  repeatItemKey,
+  resolveDynamicValue,
+  resolveElementProps,
+  resolveRepeatItems,
+  runSiteAction,
+  setStatePath,
+  type ResolvedElementProps,
+  type SiteActionResult,
+  type SiteListSearch,
+  type SiteScope,
+  type SiteState,
+} from "./state.js";
+export {
+  buildSiteQualityState,
+  buildSiteRefineIntentState,
+  buildSiteRefineTargetQuestion,
+  buildSiteRepairPrompt,
+  listSiteRefineTargets,
+  resolveSiteQuality,
+  resolveSiteRefineIntent,
+  SITE_QUALITY_QUESTIONS,
+  SITE_REFINE_INTENT_QUESTIONS,
+  type ResolvedRefineIntent,
+  type SiteQualityAnswers,
+  type SiteRefineIntentAnswers,
+  type SiteRefineTargetCandidate,
+} from "./quality.js";
+export {
+  catalogueSubsetId,
+  componentsForSiteKind,
+  componentsForSiteRefinement,
+  componentsUsedInSite,
+} from "./subsets.js";
 export { hasSiteErrors, validateSiteProject, type SiteValidationResult } from "./validate.js";

@@ -1234,7 +1234,18 @@ DESIGN
 - Realistic sample data for tables, metrics and charts: five to eight rows, plausible figures, varied statuses.
 - Vary section rhythm: alternate default and muted backgrounds, do not stack three grids in a row, keep the page to what the brief needs.
 - Omit image src unless the brief gives a real URL; the alt text describes what belongs there.
-- Do not invent props, wrapper divs or CSS classes.{{#guidance}}
+- Do not invent props, wrapper divs or CSS classes.
+
+STATE AND INTERACTION
+Pages that filter, switch, add or remove things carry state. Add "state" to the page shell, then read and write it from elements:
+- {"$state":"/path"} as any prop value reads state. {"$bindState":"/path"} on value or checked makes Input, Select, Switch and Tabs two-way bound.
+- "visible" on an element shows it only when a condition holds: {"$state":"/tab","eq":"orders"}, {"$state":"/query","truthy":false}, {"$item":"status","in":["paid","due"]}, or {"and":[...]}, {"or":[...]}, {"not":{...}}.
+- A list read from state can be filtered in place: {"$state":"/orders","where":{"status":{"$state":"/tab"}},"search":{"query":{"$state":"/query"},"fields":["customer","id"]}}. A where value of "", "All" or an unset state matches everything. This is how a Select, Tabs or search Input drives a Table: bind the control, then read the rows with where or search.
+- "repeat" on a container renders it once per item of a state array (filters allowed): {"repeat":{"statePath":"/orders","key":"id"}}. Inside, {"$item":"field"} reads the item and {"$index":true} its position. Repeat a Card, Stack or Section, never a whole Table; Table takes rows from {"$state":"/orders"} directly.
+- "on" attaches actions: {"on":{"press":{"action":"setState","params":{"statePath":"/tab","value":"orders"}}}}. Actions: setState (statePath, value), toggleState (statePath), pushState (statePath, value, clearStatePath), removeState (statePath, index defaults to the repeated item's index), navigate (href). Button takes press, Form takes submit. A Form that adds records always carries submit: {"on":{"submit":{"action":"pushState","params":{"statePath":"/orders","value":{"id":{"$id":true},"status":"open","$form":true}}}}} where "$form":true spreads the submitted field values into the new item.
+- Seed state with the same realistic data you would otherwise write into props, and keep it small: one object per array item, five to eight items, field values in the same casing the controls use.
+Example: {"op":"add","path":"/pages/home/state","value":{"tab":"open","query":"","orders":[{"id":"o1","customer":"Northwind","status":"open","total":"£320"}]}}
+Static pages (landing, marketing, portfolio) need no state at all.{{#guidance}}
 
 BRIEF GUIDANCE
 {{guidance}}{{/guidance}}`,
@@ -1269,6 +1280,7 @@ RULES
 - Keep to the catalogue below. Props outside the listed set are dropped.
 - Keep existing copy unless asked to change it.
 - New charts, tables and lists need realistic sample data in the same style as the rest of the document, never empty arrays.
+- Interaction uses the same state protocol as the document: {"$state":"/path"} and {"$bindState":"/path"} prop values, "visible" conditions, "repeat" over state arrays and "on" actions (setState, toggleState, pushState, removeState, navigate). Seed new state under /pages/<id>/state.
 
 CATALOGUE
 {{components}}
@@ -1281,6 +1293,44 @@ CURRENT DOCUMENT
         description: "Catalogue reference rendered from the component definitions.",
       },
       { name: "document", description: "The current site project as JSON." },
+    ],
+  },
+  {
+    id: "apps/sites/refine-element",
+    task: "site-refine",
+    title: "Site element refinement",
+    description:
+      "Edits one selected element of a site with JSON patch lines, given the site outline and the element subtree.",
+    text: `You edit one element of an existing website document. The person selected the element below; change it and, only when the request needs it, its descendants or its immediate parent's children list.
+
+OUTPUT FORMAT
+Output JSONL: one JSON Patch operation per line, nothing else. No prose, no markdown fence. Operations are add, replace or remove with an absolute "path" into the document and, for add and replace, a "value".
+
+RULES
+- Every path starts with /pages/{{pageId}}/elements/. The selected element lives at {{targetPath}}.
+- Prefer replacing a single prop path such as {{targetPath}}/props/headline over rewriting the element.
+- To add a child: add the element, then replace {{targetPath}}/children with the new order. New keys are lowercase slugs that are not in the outline.
+- Do not touch other elements, other pages, the theme or the title.
+- Keep to the catalogue below. Props outside the listed set are dropped.
+- Interaction uses the same state protocol as the document: {"$state":"/path"} and {"$bindState":"/path"} prop values, "visible" conditions, "repeat" over state arrays and "on" actions.
+
+CATALOGUE
+{{components}}
+
+SITE OUTLINE
+{{outline}}
+
+SELECTED ELEMENT AND ITS DESCENDANTS
+{{element}}`,
+    variables: [
+      {
+        name: "components",
+        description: "Catalogue reference rendered from the component definitions.",
+      },
+      { name: "pageId", description: "The id of the page the selected element belongs to." },
+      { name: "targetPath", description: "JSON pointer of the selected element." },
+      { name: "outline", description: "Compact outline of every page in the site." },
+      { name: "element", description: "The selected element and its descendants as JSON." },
     ],
   },
 ] as const satisfies readonly PromptEntry[];

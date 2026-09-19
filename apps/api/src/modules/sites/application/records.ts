@@ -5,10 +5,12 @@ import {
   siteIssueSchema,
   sitePlanSchema,
   siteProjectSchema,
+  siteQualitySchema,
   siteTurnSchema,
   type SiteIssue,
   type SitePlan,
   type SiteProject,
+  type SiteQuality,
   type SiteRecord,
   type SiteSummary,
   type SiteTurn,
@@ -26,6 +28,7 @@ const storedSiteSchema = z.object({
   plan: sitePlanSchema,
   project: siteProjectSchema,
   issues: z.array(siteIssueSchema).default([]),
+  quality: siteQualitySchema.nullable().default(null),
   turns: z.array(siteTurnSchema).default([]),
 });
 
@@ -54,6 +57,7 @@ export function mapSiteRecord(record: OutputRecord): SiteRecord | null {
     plan: stored.plan,
     project: stored.project,
     issues: stored.issues,
+    quality: stored.quality,
     turns: stored.turns,
     createdAt: record.created_at,
     updatedAt: record.updated_at,
@@ -149,6 +153,7 @@ export interface SaveSiteInput {
   plan: SitePlan;
   project: SiteProject;
   issues: SiteIssue[];
+  quality?: SiteQuality | null;
   turn: SiteTurn;
   conversationId?: string;
 }
@@ -161,6 +166,7 @@ export async function createSite(scope: SiteScope, input: SaveSiteInput): Promis
     plan: input.plan,
     project: input.project,
     issues: input.issues,
+    quality: input.quality ?? null,
     turns: [input.turn],
   };
   const record = await scope.context.repositories.outputs.createOutput({
@@ -202,6 +208,7 @@ export async function updateSite(
     plan: input.plan,
     project: input.project,
     issues: input.issues,
+    quality: input.quality === undefined ? (existing?.quality ?? null) : input.quality,
     turns: [...(existing?.turns ?? []), input.turn],
   };
   const updated = await scope.context.repositories.outputs.updateOutput(record.id, {

@@ -1,12 +1,22 @@
 import { sitesService } from "@ngriffin_uk/polychat-library-client";
-import { applySitePatch, validateSiteProject } from "@ngriffin_uk/polychat-library-sites";
+import {
+  applySitePatch,
+  collectEmptySiteImageSlots,
+  validateSiteProject,
+} from "@ngriffin_uk/polychat-library-sites";
 import type {
   SiteBuildRequest,
   SiteBuildResponse,
   SiteGenerateRequest,
   SiteIssue,
+  SitePatch,
   SitePlan,
   SiteProject,
+  SitePullRequestRequest,
+  SitePullRequestResponse,
+  SiteQuality,
+  SiteRefineIntent,
+  SiteElementTarget,
   SiteRecord,
   SiteStreamEvent,
   SiteSummary,
@@ -58,6 +68,11 @@ export const useBuildSite = () =>
     mutationFn: ({ id, request }) => sitesService.build(id, request),
   });
 
+export const useOpenSitePullRequest = () =>
+  useMutation<SitePullRequestResponse, Error, { id: string; request: SitePullRequestRequest }>({
+    mutationFn: ({ id, request }) => sitesService.pullRequest(id, request),
+  });
+
 export type SiteGenerationStatus = "idle" | "planning" | "streaming" | "saving" | "done" | "error";
 
 export interface SiteGenerationState {
@@ -69,6 +84,9 @@ export interface SiteGenerationState {
   error: string | null;
   patchCount: number;
   model: { provider: string; model: string } | null;
+  imageStatus: "idle" | "generating" | "done" | "failed";
+  quality: SiteQuality | null;
+  intent: { intent: SiteRefineIntent; target: SiteElementTarget | null } | null;
 }
 
 const IDLE_STATE: SiteGenerationState = {
@@ -80,14 +98,22 @@ const IDLE_STATE: SiteGenerationState = {
   error: null,
   patchCount: 0,
   model: null,
+  imageStatus: "idle",
+  quality: null,
+  intent: null,
 };
 
 export interface UseSiteGenerationOptions {
   projectId?: string;
   initialSite?: SiteRecord | null;
+  autoImages?: boolean;
 }
 
-export function useSiteGeneration({ projectId, initialSite }: UseSiteGenerationOptions = {}) {
+export function useSiteGeneration({
+  projectId,
+  initialSite,
+  autoImages = true,
+}: UseSiteGenerationOptions = {}) {
   const queryClient = useQueryClient();
   const [state, setState] = useState<SiteGenerationState>(() =>
     initialSite
@@ -98,11 +124,17 @@ export function useSiteGeneration({ projectId, initialSite }: UseSiteGenerationO
           project: initialSite.project,
           site: initialSite,
           issues: initialSite.issues,
+          quality: initialSite.quality,
         }
       : IDLE_STATE,
   );
   const documentRef = useRef<Record<string, unknown>>({});
   const projectRef = useRef<SiteProject | null>(initialSite?.project ?? null);
+  const stateRef = useRef(state);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
   const abortRef = useRef<AbortController | null>(null);
   const frameRef = useRef<number | null>(null);
   const patchCountRef = useRef(0);
@@ -141,6 +173,33 @@ export function useSiteGeneration({ projectId, initialSite }: UseSiteGenerationO
     projectRef.current = state.project;
   }, [state.project]);
 
+  const generateImages = useCallback(async () => {
+    const site = stateRef.current.site;
+
+    if (!site || collectEmptySiteImageSlots(site.project).length === 0) {
+      return;
+    }
+
+    setState((previous) => ({ ...previous, imageStatus: "generating" }));
+
+    try {
+      const result = await sitesService.images(site.id, { projectId });
+
+      setState((previous) => ({
+        ...previous,
+        imageStatus: result.generated > 0 ? "done" : "failed",
+        site: result.site,
+        project:
+          previous.status === "streaming" || previous.status === "planning"
+            ? previous.project
+            : result.site.project,
+      }));
+      queryClient.setQueryData(SITES_QUERY_KEYS.detail(projectId, result.site.id), result.site);
+    } catch {
+      setState((previous) => ({ ...previous, imageStatus: "failed" }));
+    }
+  }, [projectId, queryClient]);
+
   const generate = useCallback(
     async (request: Omit<SiteGenerateRequest, "projectId">) => {
       cancel();
@@ -178,6 +237,12 @@ export function useSiteGeneration({ projectId, initialSite }: UseSiteGenerationO
               model: { provider: event.provider, model: event.model },
             }));
             break;
+          case "intent":
+            setState((previous) => ({
+              ...previous,
+              intent: { intent: event.intent, target: event.target },
+            }));
+            break;
           case "patch":
             try {
               applySitePatch(documentRef.current, event.patch);
@@ -200,7 +265,17 @@ export function useSiteGeneration({ projectId, initialSite }: UseSiteGenerationO
             void queryClient.invalidateQueries({ queryKey: SITES_QUERY_KEYS.list(projectId) });
             break;
           case "done":
-            setState((previous) => ({ ...previous, status: "done", issues: event.issues }));
+            setState((previous) => ({
+              ...previous,
+              status: "done",
+              issues: event.issues,
+              quality: event.quality ?? previous.quality,
+            }));
+
+            if (autoImages && !refining) {
+              void generateImages();
+            }
+
             break;
           case "error":
             setState((previous) => ({ ...previous, status: "error", error: event.error }));
@@ -235,7 +310,7 @@ export function useSiteGeneration({ projectId, initialSite }: UseSiteGenerationO
         }
       }
     },
-    [cancel, projectId, queryClient, scheduleFlush],
+    [autoImages, cancel, generateImages, projectId, queryClient, scheduleFlush],
   );
 
   const reset = useCallback(() => {
@@ -245,5 +320,103 @@ export function useSiteGeneration({ projectId, initialSite }: UseSiteGenerationO
     setState(IDLE_STATE);
   }, [cancel]);
 
-  return { state, generate, cancel, reset };
+  const pendingEditsRef = useRef<{ patches: SitePatch[]; summaries: string[] }>({
+    patches: [],
+    summaries: [],
+  });
+  const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const persistEdits = useCallback(async () => {
+    persistTimerRef.current = null;
+
+    const siteId = stateRef.current.site?.id;
+    const pending = pendingEditsRef.current;
+
+    if (!siteId || pending.patches.length === 0) {
+      return;
+    }
+
+    pendingEditsRef.current = { patches: [], summaries: [] };
+
+    try {
+      const saved = await sitesService.edit(siteId, {
+        projectId,
+        patches: pending.patches,
+        summary: [...new Set(pending.summaries)].join(", ").slice(0, 200),
+      });
+
+      setState((previous) => ({ ...previous, site: saved, issues: saved.issues }));
+      queryClient.setQueryData(SITES_QUERY_KEYS.detail(projectId, saved.id), saved);
+      void queryClient.invalidateQueries({ queryKey: SITES_QUERY_KEYS.list(projectId) });
+    } catch (error) {
+      setState((previous) => ({ ...previous, error: getErrorMessage(error, "Edit not saved") }));
+    }
+  }, [projectId, queryClient]);
+
+  const edit = useCallback(
+    (patches: SitePatch[], summary: string) => {
+      if (patches.length === 0 || !projectRef.current) {
+        return;
+      }
+
+      if (Object.keys(documentRef.current).length === 0) {
+        documentRef.current = structuredClone(projectRef.current);
+      }
+
+      for (const patch of patches) {
+        try {
+          applySitePatch(documentRef.current, patch);
+        } catch {
+          return;
+        }
+      }
+
+      const { project } = validateSiteProject(documentRef.current);
+
+      documentRef.current = structuredClone(project);
+      projectRef.current = project;
+      setState((previous) => ({ ...previous, project }));
+
+      pendingEditsRef.current.patches.push(...patches);
+      pendingEditsRef.current.summaries.push(summary);
+
+      if (persistTimerRef.current) {
+        clearTimeout(persistTimerRef.current);
+      }
+
+      persistTimerRef.current = setTimeout(() => void persistEdits(), 800);
+    },
+    [persistEdits],
+  );
+
+  useEffect(
+    () => () => {
+      if (persistTimerRef.current) {
+        clearTimeout(persistTimerRef.current);
+        void persistEdits();
+      }
+    },
+    [persistEdits],
+  );
+
+  const load = useCallback(
+    (site: SiteRecord) => {
+      cancel();
+      documentRef.current = structuredClone(site.project);
+      projectRef.current = site.project;
+      patchCountRef.current = 0;
+      setState({
+        ...IDLE_STATE,
+        status: "done",
+        plan: site.plan,
+        project: site.project,
+        site,
+        issues: site.issues,
+        quality: site.quality,
+      });
+    },
+    [cancel],
+  );
+
+  return { state, generate, edit, generateImages, load, cancel, reset };
 }

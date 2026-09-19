@@ -4,6 +4,7 @@ import { useMemo } from "react";
 
 import { SiteFrame } from "./SiteFrame.js";
 import { SiteRenderer } from "./SiteRenderer.js";
+import { readSiteSelectionFromEvent, SiteSelectionOverlay } from "./SiteSelection.js";
 import { SiteNavigationProvider } from "./ui.js";
 
 export const SITE_PREVIEW_VIEWPORTS = {
@@ -19,6 +20,9 @@ export interface SitePreviewProps {
   pageId?: string;
   viewport?: SitePreviewViewport;
   onNavigate?: (pageId: string) => void;
+  inspecting?: boolean;
+  selectedKey?: string | null;
+  onSelect?: (key: string | null) => void;
   className?: string;
 }
 
@@ -42,6 +46,9 @@ export function SitePreview({
   pageId,
   viewport = "desktop",
   onNavigate,
+  inspecting = false,
+  selectedKey = null,
+  onSelect,
   className,
 }: SitePreviewProps) {
   const resolvedPageId = resolveSitePageId(project, pageId);
@@ -75,9 +82,26 @@ export function SitePreview({
         style={{ width: SITE_PREVIEW_VIEWPORTS[viewport].width, maxWidth: "100%" }}
       >
         <SiteFrame theme={project.theme} width="100%" title={`${project.title} preview`}>
-          <SiteNavigationProvider value={navigation}>
-            {page ? <SiteRenderer page={page} /> : null}
-          </SiteNavigationProvider>
+          {(root) => (
+            <SiteNavigationProvider value={navigation}>
+              <div
+                data-site-inspecting={inspecting || undefined}
+                className={cn(inspecting && "cursor-crosshair [&_a]:pointer-events-auto")}
+                onClickCapture={
+                  inspecting
+                    ? (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        onSelect?.(readSiteSelectionFromEvent(event));
+                      }
+                    : undefined
+                }
+              >
+                {page && resolvedPageId ? <SiteRenderer key={resolvedPageId} page={page} /> : null}
+              </div>
+              <SiteSelectionOverlay root={root} selectedKey={selectedKey} active={inspecting} />
+            </SiteNavigationProvider>
+          )}
         </SiteFrame>
       </div>
     </div>

@@ -72,11 +72,71 @@ export const DEFAULT_SITE_THEME: SiteTheme = {
   mode: "light",
 };
 
+export const SITE_STATE_PATH_PATTERN = /^\/[A-Za-z0-9_\-/]*$/;
+export const siteStatePathSchema = z.string().regex(SITE_STATE_PATH_PATTERN);
+
+export const SITE_ACTIONS = [
+  "setState",
+  "toggleState",
+  "pushState",
+  "removeState",
+  "navigate",
+] as const;
+export const siteActionNameSchema = z.enum(SITE_ACTIONS);
+export type SiteActionName = z.infer<typeof siteActionNameSchema>;
+
+export const siteActionBindingSchema = z
+  .object({
+    action: siteActionNameSchema,
+    params: z.record(z.string(), z.unknown()).optional(),
+  })
+  .strict();
+export type SiteActionBinding = z.infer<typeof siteActionBindingSchema>;
+
+export const SITE_EVENTS = ["press", "change", "submit"] as const;
+export const siteEventNameSchema = z.enum(SITE_EVENTS);
+export type SiteEventName = z.infer<typeof siteEventNameSchema>;
+
+const comparison = {
+  eq: z.unknown().optional(),
+  neq: z.unknown().optional(),
+  in: z.array(z.unknown()).optional(),
+  truthy: z.boolean().optional(),
+};
+
+export type SiteVisibility =
+  | ({ $state: string } & { eq?: unknown; neq?: unknown; in?: unknown[]; truthy?: boolean })
+  | ({ $item: string } & { eq?: unknown; neq?: unknown; in?: unknown[]; truthy?: boolean })
+  | { and: SiteVisibility[] }
+  | { or: SiteVisibility[] }
+  | { not: SiteVisibility };
+
+export const siteVisibilitySchema: z.ZodType<SiteVisibility> = z.lazy(() =>
+  z.union([
+    z.object({ $state: siteStatePathSchema, ...comparison }).strict(),
+    z.object({ $item: z.string().min(1), ...comparison }).strict(),
+    z.object({ and: z.array(siteVisibilitySchema).min(1) }).strict(),
+    z.object({ or: z.array(siteVisibilitySchema).min(1) }).strict(),
+    z.object({ not: siteVisibilitySchema }).strict(),
+  ]),
+);
+
+export const siteRepeatSchema = z
+  .object({
+    statePath: siteStatePathSchema,
+    key: z.string().min(1).optional(),
+  })
+  .strict();
+export type SiteRepeat = z.infer<typeof siteRepeatSchema>;
+
 export const siteElementSchema = z
   .object({
     type: z.string().min(1).max(64),
     props: z.record(z.string(), z.unknown()).default({}),
     children: z.array(z.string().regex(SITE_ELEMENT_KEY_PATTERN)).default([]),
+    visible: siteVisibilitySchema.optional(),
+    repeat: siteRepeatSchema.optional(),
+    on: z.partialRecord(siteEventNameSchema, siteActionBindingSchema).optional(),
   })
   .strict();
 export type SiteElement = z.infer<typeof siteElementSchema>;
@@ -153,13 +213,37 @@ export const siteIssueSchema = z
   .strict();
 export type SiteIssue = z.infer<typeof siteIssueSchema>;
 
+export const SITE_REFINE_INTENTS = ["tweak", "restructure", "page", "theme"] as const;
+export const siteRefineIntentSchema = z.enum(SITE_REFINE_INTENTS);
+export type SiteRefineIntent = z.infer<typeof siteRefineIntentSchema>;
+
+export const siteQualitySchema = z
+  .object({
+    coverage: z.number().min(0).max(1),
+    placeholders: z.number().min(0).max(1),
+    coherent: z.number().min(0).max(1),
+    repairs: z.number().int().nonnegative(),
+    needsRepair: z.boolean(),
+    confidence: z.number().min(0).max(1),
+  })
+  .strict();
+export type SiteQuality = z.infer<typeof siteQualitySchema>;
+
 export const siteTurnSchema = z
   .object({
     id: z.string().min(1),
-    role: z.enum(["user", "assistant"]),
+    role: z.enum(["user", "assistant", "edit"]),
     prompt: z.string().max(SITE_PROMPT_MAX_LENGTH),
     createdAt: z.string(),
     plan: sitePlanSchema.optional(),
+    intent: siteRefineIntentSchema.optional(),
+    target: z
+      .object({
+        pageId: z.string().regex(SITE_PAGE_ID_PATTERN),
+        elementKey: z.string().regex(SITE_ELEMENT_KEY_PATTERN),
+      })
+      .strict()
+      .optional(),
     provider: z.string().optional(),
     model: z.string().optional(),
   })
@@ -176,6 +260,7 @@ export const siteRecordSchema = z
     plan: sitePlanSchema,
     project: siteProjectSchema,
     issues: z.array(siteIssueSchema),
+    quality: siteQualitySchema.nullable(),
     turns: z.array(siteTurnSchema),
     createdAt: z.string(),
     updatedAt: z.string().nullable(),
@@ -202,16 +287,36 @@ export const siteSummarySchema = siteRecordSchema
   .strict();
 export type SiteSummary = z.infer<typeof siteSummarySchema>;
 
+export const siteElementTargetSchema = z
+  .object({
+    pageId: z.string().regex(SITE_PAGE_ID_PATTERN),
+    elementKey: z.string().regex(SITE_ELEMENT_KEY_PATTERN),
+  })
+  .strict();
+export type SiteElementTarget = z.infer<typeof siteElementTargetSchema>;
+
 export const siteGenerateRequestSchema = z
   .object({
     prompt: z.string().trim().min(1).max(SITE_PROMPT_MAX_LENGTH),
     projectId: z.string().min(1).optional(),
     siteId: z.string().min(1).optional(),
+    target: siteElementTargetSchema.optional(),
     model: z.string().min(1).optional(),
     theme: siteThemeSchema.partial().optional(),
   })
   .strict();
 export type SiteGenerateRequest = z.infer<typeof siteGenerateRequestSchema>;
+
+export const SITE_EDIT_MAX_PATCHES = 200;
+
+export const siteEditRequestSchema = z
+  .object({
+    projectId: z.string().min(1).optional(),
+    patches: z.array(sitePatchSchema).min(1).max(SITE_EDIT_MAX_PATCHES),
+    summary: z.string().trim().min(1).max(200),
+  })
+  .strict();
+export type SiteEditRequest = z.infer<typeof siteEditRequestSchema>;
 
 export const siteStreamEventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("plan"), plan: sitePlanSchema }).strict(),
@@ -223,11 +328,21 @@ export const siteStreamEventSchema = z.discriminatedUnion("type", [
     })
     .strict(),
   z.object({ type: z.literal("patch"), patch: sitePatchSchema }).strict(),
+  z
+    .object({
+      type: z.literal("intent"),
+      intent: siteRefineIntentSchema,
+      tier: modelTierSchema,
+      target: siteElementTargetSchema.nullable(),
+      confidence: z.number().min(0).max(1),
+    })
+    .strict(),
   z.object({ type: z.literal("saved"), site: siteRecordSchema }).strict(),
   z
     .object({
       type: z.literal("done"),
       issues: z.array(siteIssueSchema),
+      quality: siteQualitySchema.nullable().optional(),
       usage: z
         .object({
           inputTokens: z.number().int().nonnegative().optional(),
@@ -270,6 +385,96 @@ export const siteBuildResponseSchema = z
   })
   .strict();
 export type SiteBuildResponse = z.infer<typeof siteBuildResponseSchema>;
+
+export const sitePullRequestRequestSchema = z
+  .object({
+    projectId: z.string().min(1),
+    directory: z
+      .string()
+      .trim()
+      .max(120)
+      .regex(/^(?!\.)[A-Za-z0-9._\-/]*$/, "Directory must be a relative path")
+      .optional(),
+    title: z.string().trim().min(1).max(120).optional(),
+  })
+  .strict();
+export type SitePullRequestRequest = z.infer<typeof sitePullRequestRequestSchema>;
+
+export const sitePullRequestResponseSchema = z
+  .object({
+    repo: z.string().min(1),
+    branch: z.string().min(1),
+    number: z.number().int().positive(),
+    url: z.url(),
+    fileCount: z.number().int().nonnegative(),
+  })
+  .strict();
+export type SitePullRequestResponse = z.infer<typeof sitePullRequestResponseSchema>;
+
+export const siteImagesRequestSchema = z
+  .object({
+    projectId: z.string().min(1).optional(),
+    limit: z.number().int().positive().max(12).optional(),
+  })
+  .strict();
+export type SiteImagesRequest = z.infer<typeof siteImagesRequestSchema>;
+
+export const siteImagesResponseSchema = z
+  .object({
+    site: siteRecordSchema,
+    generated: z.number().int().nonnegative(),
+    failed: z.number().int().nonnegative(),
+  })
+  .strict();
+export type SiteImagesResponse = z.infer<typeof siteImagesResponseSchema>;
+
+export const siteEvaluationRequestSchema = z
+  .object({
+    briefs: z.array(z.string().trim().min(1).max(SITE_PROMPT_MAX_LENGTH)).min(1).max(12),
+    guidance: z.array(z.boolean()).min(1).max(2).optional(),
+    subset: z.array(z.boolean()).min(1).max(2).optional(),
+    tiers: z.array(modelTierSchema).min(1).max(4).optional(),
+    model: z.string().min(1).optional(),
+    concurrency: z.number().int().min(1).max(4).optional(),
+  })
+  .strict();
+export type SiteEvaluationRequest = z.infer<typeof siteEvaluationRequestSchema>;
+
+export const siteEvaluationRunSchema = z
+  .object({
+    variantId: z.string(),
+    brief: z.string(),
+    ok: z.boolean(),
+    durationMs: z.number().nonnegative(),
+    score: z.number().min(0).max(1),
+    quality: siteQualitySchema.nullable(),
+    issues: z.number().int().nonnegative(),
+    pages: z.number().int().nonnegative(),
+    model: z.string().nullable(),
+    error: z.string().optional(),
+  })
+  .strict();
+export type SiteEvaluationRun = z.infer<typeof siteEvaluationRunSchema>;
+
+export const siteEvaluationResponseSchema = z
+  .object({
+    key: z.string(),
+    best: z.object({ variantId: z.string(), score: z.number() }).nullable(),
+    variants: z.array(
+      z
+        .object({
+          variantId: z.string(),
+          ok: z.boolean(),
+          score: z.number().nullable(),
+          durationMs: z.number().nonnegative(),
+          error: z.string().nullable(),
+        })
+        .strict(),
+    ),
+    runs: z.array(siteEvaluationRunSchema),
+  })
+  .strict();
+export type SiteEvaluationResponse = z.infer<typeof siteEvaluationResponseSchema>;
 
 export const listSitesQuerySchema = z
   .object({

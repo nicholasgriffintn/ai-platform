@@ -28,6 +28,11 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   run_sandbox_task: { renderer: "sandbox_result", icon: "terminal" },
   run_code: { icon: "terminal", responseType: ToolResponseType.JSON },
   decide: { icon: "sparkles", responseType: ToolResponseType.JSON },
+  build_site: {
+    renderer: "site_preview",
+    icon: "layout",
+    responseType: ToolResponseType.CUSTOM,
+  },
   request_approval: { renderer: "approval_request", icon: "alert-triangle" },
   ask_user: { renderer: "user_question", icon: "lightbulb" },
   create_image: { icon: "image" },

@@ -88,53 +88,111 @@ export function describeSiteComponent(type: SiteComponentType): string {
   return `- ${type}${children}: ${definition.description}\n  props ${props}`;
 }
 
-export function describeSiteCatalog(): string {
-  const sections = SITE_COMPONENT_CATEGORIES.map((category) => {
+export function describeSiteCatalog(include?: readonly SiteComponentType[]): string {
+  const allowed = include ? new Set(include) : null;
+  const sections = SITE_COMPONENT_CATEGORIES.flatMap((category) => {
     const entries = (Object.keys(SITE_CATALOG) as SiteComponentType[])
-      .filter((type) => SITE_CATALOG[type].category === category)
+      .filter((type) => SITE_CATALOG[type].category === category && (!allowed || allowed.has(type)))
       .map(describeSiteComponent);
 
-    return `${CATEGORY_LABELS[category]}\n${entries.join("\n")}`;
+    return entries.length ? [`${CATEGORY_LABELS[category]}\n${entries.join("\n")}`] : [];
   });
 
   return [...sections, `Icon is one of: ${SITE_ICON_NAMES.join(", ")}`].join("\n\n");
 }
 
-export function buildSiteExampleStream(): string {
-  const lines = [
-    { op: "add", path: "/title", value: "Acme" },
-    { op: "add", path: "/description", value: "Invoicing for small studios." },
-    {
-      op: "add",
-      path: "/pages/home",
-      value: { path: "/", title: "Home", root: "page", elements: {} },
-    },
-    {
-      op: "add",
-      path: "/pages/home/elements/page",
-      value: { type: "Page", props: {}, children: ["nav", "hero", "features", "footer"] },
-    },
-    {
-      op: "add",
-      path: "/pages/home/elements/nav",
-      value: { type: "Navbar", props: SITE_CATALOG.Navbar.example, children: [] },
-    },
-    {
-      op: "add",
-      path: "/pages/home/elements/hero",
-      value: { type: "Hero", props: SITE_CATALOG.Hero.example, children: [] },
-    },
-    {
-      op: "add",
-      path: "/pages/home/elements/features",
-      value: { type: "FeatureGrid", props: SITE_CATALOG.FeatureGrid.example, children: [] },
-    },
-    {
-      op: "add",
-      path: "/pages/home/elements/footer",
-      value: { type: "Footer", props: SITE_CATALOG.Footer.example, children: [] },
-    },
-  ];
+export function buildSiteExampleStream(include?: readonly SiteComponentType[]): string {
+  const application = include ? !include.includes("Hero") && include.includes("AppShell") : false;
+  const lines = application
+    ? [
+        { op: "add", path: "/title", value: "Ledger" },
+        { op: "add", path: "/description", value: "Invoices and customers for a small studio." },
+        {
+          op: "add",
+          path: "/pages/home",
+          value: {
+            path: "/",
+            title: "Overview",
+            root: "page",
+            state: { tab: "open", invoices: [{ id: "i1", customer: "Northwind", status: "open" }] },
+            elements: {},
+          },
+        },
+        {
+          op: "add",
+          path: "/pages/home/elements/page",
+          value: { type: "Page", props: {}, children: ["shell"] },
+        },
+        {
+          op: "add",
+          path: "/pages/home/elements/shell",
+          value: {
+            type: "AppShell",
+            props: SITE_CATALOG.AppShell.example,
+            children: ["metrics", "table"],
+          },
+        },
+        {
+          op: "add",
+          path: "/pages/home/elements/metrics",
+          value: { type: "Grid", props: { columns: 3 }, children: ["revenue"] },
+        },
+        {
+          op: "add",
+          path: "/pages/home/elements/revenue",
+          value: { type: "Metric", props: SITE_CATALOG.Metric.example, children: [] },
+        },
+        {
+          op: "add",
+          path: "/pages/home/elements/table",
+          value: {
+            type: "Table",
+            props: {
+              columns: [
+                { key: "id", label: "Invoice" },
+                { key: "customer", label: "Customer" },
+                { key: "status", label: "Status" },
+              ],
+              rows: { $state: "/invoices", where: { status: { $state: "/tab" } } },
+            },
+            children: [],
+          },
+        },
+      ]
+    : [
+        { op: "add", path: "/title", value: "Acme" },
+        { op: "add", path: "/description", value: "Invoicing for small studios." },
+        {
+          op: "add",
+          path: "/pages/home",
+          value: { path: "/", title: "Home", root: "page", elements: {} },
+        },
+        {
+          op: "add",
+          path: "/pages/home/elements/page",
+          value: { type: "Page", props: {}, children: ["nav", "hero", "features", "footer"] },
+        },
+        {
+          op: "add",
+          path: "/pages/home/elements/nav",
+          value: { type: "Navbar", props: SITE_CATALOG.Navbar.example, children: [] },
+        },
+        {
+          op: "add",
+          path: "/pages/home/elements/hero",
+          value: { type: "Hero", props: SITE_CATALOG.Hero.example, children: [] },
+        },
+        {
+          op: "add",
+          path: "/pages/home/elements/features",
+          value: { type: "FeatureGrid", props: SITE_CATALOG.FeatureGrid.example, children: [] },
+        },
+        {
+          op: "add",
+          path: "/pages/home/elements/footer",
+          value: { type: "Footer", props: SITE_CATALOG.Footer.example, children: [] },
+        },
+      ];
 
   return lines.map((line) => JSON.stringify(line)).join("\n");
 }

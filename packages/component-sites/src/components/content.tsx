@@ -94,9 +94,16 @@ export function Button({
   size = "md",
   icon,
   fullWidth,
-}: SiteComponentProps<"Button">) {
+  onPress,
+}: SiteComponentProps<"Button"> & { onPress?: () => void }) {
   return (
-    <Action href={href} variant={variant} size={size} className={cn(fullWidth && "w-full")}>
+    <Action
+      href={href}
+      variant={variant}
+      size={size}
+      className={cn(fullWidth && "w-full")}
+      onPress={onPress}
+    >
       <SiteIcon name={icon} size="sm" />
       {label}
     </Action>
