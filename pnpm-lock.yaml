@@ -598,8 +598,8 @@ importers:
         specifier: 1.45.0
         version: 1.45.0(react@19.3.0)
       posthog-js:
-        specifier: 1.427.2
-        version: 1.427.2(@types/react@19.3.0)(react@19.3.0)
+        specifier: 1.430.2
+        version: 1.430.2(@types/react@19.3.0)(react@19.3.0)
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -2442,8 +2442,8 @@ importers:
         specifier: 1.45.0
         version: 1.45.0(react@19.3.0)
       posthog-js:
-        specifier: 1.427.2
-        version: 1.427.2(@types/react@19.3.0)(react@19.3.0)
+        specifier: 1.430.2
+        version: 1.430.2(@types/react@19.3.0)(react@19.3.0)
       react-markdown:
         specifier: 10.1.0
         version: 10.1.0(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2)
@@ -5211,8 +5211,8 @@ packages:
   '@poppinss/exception@1.2.3':
     resolution: {integrity: sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw==}
 
-  '@posthog/browser-common@0.7.3':
-    resolution: {integrity: sha512-663KkV0SlP4SqrhdMZG0VumuXc8Aq602il6Z/M48ZUjIPMHZW65bzGIh1Sqfzd9ryjKOxdpOOQy9vCCL0zhXXQ==}
+  '@posthog/browser-common@0.8.3':
+    resolution: {integrity: sha512-4Hlbwyn+Hioc2+pjqSGWMTDrA5XsDshssPnGfv34khPKoJaeBe2YvPvsEPoH78jezOS6Wo3LJvCPhqyolg3S8w==}
 
   '@posthog/core@1.54.2':
     resolution: {integrity: sha512-p0NuMjiZkploKG/aASj4nw4QDuhF87SIFWkelaFRrr3G0Myb7KWWUZot2hm5qXpPx7zKozVZJrJkGzC2kGBqbg==}
@@ -9161,8 +9161,8 @@ packages:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-js@1.427.2:
-    resolution: {integrity: sha512-/jRg3ChHuxcHTTJ/xb+IbpXLYxiBKIWdjrsNNqY1tAwjnFoijmz58i4mIR4A2P5MWx+4R7LlpK9vQfBr8v292g==}
+  posthog-js@1.430.2:
+    resolution: {integrity: sha512-JwNTuFyNu2HwTFxcO/4SJJlnr1CkdZdmKxeg2PvuKUO5RMW3xw0sCCBKOMg/76pANUWk4+z1UrMJVLfpJY0KsQ==}
     peerDependencies:
       '@types/react': '>=16.8.0'
       react: '>=16.8.0'
@@ -12299,7 +12299,7 @@ snapshots:
 
   '@poppinss/exception@1.2.3': {}
 
-  '@posthog/browser-common@0.7.3':
+  '@posthog/browser-common@0.8.3':
     dependencies:
       '@posthog/core': 1.54.2
       '@posthog/types': 1.412.1
@@ -16535,9 +16535,9 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  posthog-js@1.427.2(@types/react@19.3.0)(react@19.3.0):
+  posthog-js@1.430.2(@types/react@19.3.0)(react@19.3.0):
     dependencies:
-      '@posthog/browser-common': 0.7.3
+      '@posthog/browser-common': 0.8.3
       '@posthog/core': 1.54.2
       '@posthog/types': 1.412.1
       core-js: 3.50.0
