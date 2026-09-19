@@ -57,7 +57,15 @@
           ]
         },
         "releaseDate": "September 10, 2026",
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "deepseek-v4-1-flash-eu": {

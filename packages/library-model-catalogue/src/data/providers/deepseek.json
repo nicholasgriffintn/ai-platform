@@ -137,15 +137,7 @@
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
-        "costPer1kReasoningTokens": 0.0006,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kReasoningTokens": 0.0006
       }
     }
   }

@@ -3082,8 +3082,8 @@
       "matchingModel": "~moonshotai/kimi-latest",
       "overrides": {
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.00195,
-        "costPer1kOutputTokens": 0.01092,
+        "costPer1kInputTokens": 0.0020695,
+        "costPer1kOutputTokens": 0.0115892,
         "supportsAttachments": true
       }
     },
@@ -3754,8 +3754,8 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.00004844,
-        "costPer1kOutputTokens": 0.00009688,
+        "costPer1kInputTokens": 0.00004816,
+        "costPer1kOutputTokens": 0.00009632,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high",
@@ -3783,11 +3783,11 @@
       "matchingModel": "deepseek/deepseek-v4-pro",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 393216,
+        "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.0016,
-        "costPer1kOutputTokens": 0.0032,
+        "costPer1kInputTokens": 0.000614916,
+        "costPer1kOutputTokens": 0.001229832,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high",
@@ -6756,11 +6756,11 @@
       "matchingModel": "nvidia/nemotron-3-ultra-550b-a55b",
       "overrides": {
         "contextWindow": 262144,
-        "maxTokens": 32768,
+        "maxTokens": 182520,
         "speed": 4,
         "lastUpdated": "June 4, 2026",
-        "costPer1kInputTokens": 0.000625,
-        "costPer1kOutputTokens": 0.003125,
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0024,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "medium",
@@ -7078,8 +7078,8 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 6, 2026",
-        "costPer1kInputTokens": 0.0000825,
-        "costPer1kOutputTokens": 0.00033
+        "costPer1kInputTokens": 0.000132,
+        "costPer1kOutputTokens": 0.000528
       }
     },
     "tencent/hy3:free": {
@@ -7255,8 +7255,8 @@
         "maxTokens": 943718,
         "isFeatured": true,
         "lastUpdated": "July 16, 2026",
-        "costPer1kInputTokens": 0.00195,
-        "costPer1kOutputTokens": 0.01092,
+        "costPer1kInputTokens": 0.0020695,
+        "costPer1kOutputTokens": 0.0115892,
         "supportsAttachments": true
       }
     },
@@ -7438,8 +7438,8 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.00005236,
-        "costPer1kOutputTokens": 0.00015708
+        "costPer1kInputTokens": 0.0000484,
+        "costPer1kOutputTokens": 0.0001452
       }
     },
     "inclusionai/ling-3.0-flash": {
@@ -7558,9 +7558,9 @@
       "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
       "matchingModel": "nvidia/nemotron-3.5-lightning",
       "overrides": {
-        "maxTokens": 131072,
+        "maxTokens": 235929,
         "lastUpdated": "August 11, 2026",
-        "costPer1kInputTokens": 0.00008,
+        "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0002
       }
     },
@@ -8212,15 +8212,7 @@
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsAttachments": true
       }
     },
     "inclusionai/ling-3.0-flash-vl": {
@@ -8411,6 +8403,17 @@
         "lastUpdated": "September 17, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.0075,
+        "supportsResponseFormat": false,
+        "supportsAttachments": true
+      }
+    },
+    "z-ai/glm-5.3-flashx": {
+      "model": "glm/glm-5-3-flashx",
+      "matchingModel": "z-ai/glm-5.3-flashx",
+      "overrides": {
+        "lastUpdated": "September 18, 2026",
+        "costPer1kInputTokens": 0.00037,
+        "costPer1kOutputTokens": 0.00125,
         "supportsResponseFormat": false,
         "supportsAttachments": true
       }
