@@ -19,6 +19,7 @@ export interface ProviderEnv {
   EMBEDDINGS_OUTPUT_BUCKET?: string;
   EMBEDDINGS_OUTPUT_BUCKET_OWNER?: string;
   EXA_API_KEY?: string;
+  GREENPT_API_KEY?: string;
   PARALLEL_API_KEY?: string;
   PERPLEXITY_API_KEY?: string;
   SAGEMAKER_AWS_ACCESS_KEY?: string;

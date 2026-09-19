@@ -32,6 +32,7 @@ import {
 import { createCartesiaRealtimeProxyResponse } from "~/modules/realtime/application/cartesia";
 import { listRealtimeLiveProviders } from "~/modules/realtime/application/catalogue";
 import { createElevenLabsRealtimeProxyResponse } from "~/modules/realtime/application/elevenlabs";
+import { createGreenPtRealtimeProxyResponse } from "~/modules/realtime/application/greenpt";
 import { createMistralRealtimeProxyResponse } from "~/modules/realtime/application/mistral";
 import { createRealtimePipelineSession } from "~/modules/realtime/application/pipeline";
 import {
@@ -330,6 +331,36 @@ addRoute(app, "get", "/cartesia/transcription", {
         env: serviceContext.env,
         user,
         model: query.model,
+        onSessionEnd,
+      }),
+    );
+  },
+});
+
+addRoute(app, "get", "/greenpt/transcription", {
+  tags: ["realtime"],
+  summary: "Connect to GreenPT realtime transcription",
+  auth: true,
+  querySchema: realtimeProxyGrantQuerySchema,
+  handler: async ({ query, raw, serviceContext, user }) => {
+    const reservation = await assertRealtimeProxyGrant({
+      env: serviceContext.env,
+      grant: query.grant,
+      model: query.model,
+      provider: "greenpt",
+      request: raw.req.raw,
+      sessionId: query.session_id,
+      user,
+    });
+
+    return connectReservedRealtimeProxy(reservation, (onSessionEnd) =>
+      createGreenPtRealtimeProxyResponse({
+        context: raw,
+        delay: query.delay,
+        env: serviceContext.env,
+        user,
+        model: query.model,
+        language: query.language,
         onSessionEnd,
       }),
     );

@@ -13,6 +13,7 @@ import { registerImageProviders } from "./registrations/image.js";
 import { registerMusicProviders } from "./registrations/music.js";
 import { registerOcrProviders } from "./registrations/ocr.js";
 import { registerRealtimeProviders } from "./registrations/realtime.js";
+import { registerRerankProviders } from "./registrations/rerank.js";
 import { registerResearchProviders } from "./registrations/research.js";
 import { registerSearchProviders } from "./registrations/search.js";
 import { registerSpeechProviders } from "./registrations/speech.js";
@@ -47,6 +48,7 @@ export function createAiProviderBootstrappers(
     music: [(registry) => registerMusicProviders(registry, runtime)],
     ocr: [(registry) => registerOcrProviders(registry, runtime)],
     realtime: [(registry) => registerRealtimeProviders(registry, runtime)],
+    rerank: [(registry) => registerRerankProviders(registry, runtime)],
     research: [(registry) => registerResearchProviders(registry, runtime)],
     search: [(registry) => registerSearchProviders(registry, runtime)],
     speech: [(registry) => registerSpeechProviders(registry, runtime)],

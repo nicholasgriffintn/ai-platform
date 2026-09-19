@@ -77,6 +77,7 @@ const SEARCH_PROVIDER_OPTIONS: FormSelectOption[] = [
   { value: "perplexity", label: "Perplexity" },
   { value: "parallel", label: "Parallel" },
   { value: "exa", label: "Exa" },
+  { value: "greenpt", label: "GreenPT" },
 ];
 
 export const USER_SETTINGS_FORM_ID = "user-settings-form";

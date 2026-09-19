@@ -17,6 +17,14 @@ export const transcriptionProviderOptions = [
     label: "Replicate",
     models: [{ id: "replicate-whisper-diarization", label: "Whisper Diarization" }],
   },
+  {
+    id: "greenpt",
+    label: "GreenPT",
+    models: [
+      { id: "green-s", label: "Green S" },
+      { id: "green-s-pro", label: "Green S Pro" },
+    ],
+  },
 ] as const;
 
 export type TranscriptionProviderId = (typeof transcriptionProviderOptions)[number]["id"];

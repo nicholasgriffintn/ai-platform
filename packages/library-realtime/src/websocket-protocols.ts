@@ -180,4 +180,17 @@ export const REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG: Partial<
     mediaStartFailedMessage: "Failed to start Cartesia realtime transcription media",
     startingMediaEventLabel: "Starting Cartesia microphone",
   },
+  greenpt: {
+    audioInput: {
+      chunkEncoding: "binary",
+      endMessages: [{ type: "input_audio.end" }],
+      keepSendingSilenceWhenMuted: true,
+      waitForSocketCloseOnStop: true,
+    },
+    closeErrorLabel: "GreenPT realtime transcription",
+    connectedEventLabel: "GreenPT realtime transcription connected",
+    connectionFailedMessage: "GreenPT realtime transcription failed",
+    mediaStartFailedMessage: "Failed to start GreenPT realtime transcription media",
+    startingMediaEventLabel: "Starting GreenPT microphone",
+  },
 };

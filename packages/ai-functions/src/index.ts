@@ -59,7 +59,10 @@ export {
 export { createMediaFunctions, type MediaFunctions, type MediaRoutingOptions } from "./media.js";
 export {
   createRetrievalFunctions,
+  type EmbedRequest,
+  type EmbedResult,
   type GuardRequest,
+  type RerankRequest,
   type ResearchRequest,
   type RetrievalFunctions,
   type RetrievalScope,

@@ -4,7 +4,8 @@ export type SearchProviderName =
   | "parallel"
   | "duckduckgo"
   | "perplexity"
-  | "exa";
+  | "exa"
+  | "greenpt";
 
 export interface SerperSearchResult {
   provider: "serper";
@@ -121,6 +122,19 @@ export interface ExaAnswerResult {
   answer: string;
 }
 
+export interface GreenPtSearchResult {
+  provider: "greenpt";
+  results: Array<{
+    title: string;
+    url: string;
+    snippet: string;
+    position?: number;
+    favicon?: string;
+    relevant_content?: string;
+  }>;
+  note?: string;
+}
+
 export interface SearchResultError {
   status: "error";
   error: string;
@@ -134,6 +148,7 @@ export type SearchResult =
   | PerplexitySearchResult
   | ExaSearchResult
   | ExaAnswerResult
+  | GreenPtSearchResult
   | SearchResultError;
 
 export interface SearchProvider {

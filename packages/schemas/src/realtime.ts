@@ -6,6 +6,7 @@ export const realtimeProviderIds = [
   "mistral",
   "elevenlabs",
   "cartesia",
+  "greenpt",
 ] as const;
 export const realtimeTransports = ["webrtc", "websocket"] as const;
 export const realtimeSessionTypes = ["realtime", "translation", "transcription"] as const;

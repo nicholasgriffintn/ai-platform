@@ -1,0 +1,31 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 32000,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
+    },
+    "strengths": [
+      "search"
+    ],
+    "releaseDate": "January 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The greenpt/qwen3 embedding 8b family includes models that produce embedding.",
+  "models": {
+    "qwen3-embedding-8b": {
+      "defaults": {
+        "name": "Qwen3 Embedding 8B",
+        "description": "Qwen3-Embedding-8B multilingual embedding model with configurable dimensions"
+      }
+    }
+  }
+}
