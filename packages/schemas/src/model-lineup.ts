@@ -351,6 +351,7 @@ export const SYSTEM_MODEL_ROLES = [
   "housekeeping",
   "retrieval",
   "guardrails",
+  "decision",
   "transcription",
   "ocr",
   "image",
@@ -432,6 +433,13 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
       { model: "openai/gpt-oss-safeguard-20b", provider: "groq" },
       { model: "@cf/meta/llama-guard-3-8b", provider: "workers-ai" },
     ],
+  },
+  {
+    id: "decision",
+    label: "Decisions",
+    description:
+      "Fast calibrated judgements: yes/no checks, classifications and ratings that gate other work.",
+    candidates: [{ model: "jev-latest", provider: "typesafe" }],
   },
   {
     id: "transcription",
@@ -530,6 +538,7 @@ const NON_CHAT_STRENGTHS: ModelModality[] = [
   "reranking",
   "ocr",
   "transcription",
+  "decision",
 ];
 
 export function isLineupEligibleModel(model: ModelConfigItem) {

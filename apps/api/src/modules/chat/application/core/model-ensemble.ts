@@ -93,6 +93,29 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
       }
     };
 
+    let turnReleased = false;
+
+    const releaseTurn = async () => {
+      if (turnReleased) {
+        return;
+      }
+
+      turnReleased = true;
+      stopHeartbeat();
+      stopSignal.stop();
+      await params.conversationManager.releaseTurnReservation();
+      await closeRunResources();
+
+      try {
+        await params.onTurnEnd?.();
+      } catch (error) {
+        logger.error("Failed to finalise the turn", {
+          error,
+          completionId: params.completionId,
+        });
+      }
+    };
+
     try {
       if (params.runLifecycle) {
         await stream.writeEvent("state", {
@@ -177,6 +200,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
       await stream.writeEvent("state", { state: StreamState.DONE });
 
       await closeVisibleStream();
+      await releaseTurn();
 
       try {
         await postTurn?.();
@@ -214,20 +238,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
 
       await closeVisibleStream();
     } finally {
-      stopHeartbeat();
-      stopSignal.stop();
-      await params.conversationManager.releaseTurnReservation();
-      await closeRunResources();
-
-      try {
-        await params.onTurnEnd?.();
-      } catch (error) {
-        logger.error("Failed to finalise the turn", {
-          error,
-          completionId: params.completionId,
-        });
-      }
-
+      await releaseTurn();
       await closeVisibleStream();
 
       recordTurnContinuityFinished(

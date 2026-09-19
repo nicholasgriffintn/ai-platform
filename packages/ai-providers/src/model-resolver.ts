@@ -7,6 +7,7 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ProviderModelResolver } from "./host.js";
+import { isProviderPlatformEnabled } from "./platform-credentials.js";
 
 export function createCatalogueModelResolver(): ProviderModelResolver {
   const getModelConfig: ProviderModelResolver["getModelConfig"] = async (model, _env, provider) => {
@@ -69,6 +70,15 @@ export function createCatalogueModelResolver(): ProviderModelResolver {
       const selected = defaultChatModel();
 
       return { model: selected.config.matchingModel, provider: selected.config.provider };
+    },
+    getAuxiliaryDecisionModel: async (env) => {
+      const config = getModelConfigById("jev-latest");
+
+      if (!config || !isProviderPlatformEnabled(config.provider, env)) {
+        return null;
+      }
+
+      return { model: config.matchingModel, provider: config.provider };
     },
     getAuxiliarySpeechModel: async () => {
       const config = getModelConfigById("whisper");

@@ -177,7 +177,6 @@ export interface AgentLoopExecutionParams {
   userSettings?: IUserSettings;
   requestOptions?: ChatRequestOptions;
   guardrailPrompt?: string;
-  deferOutputUntilValidated?: boolean;
   emit?: (event: AgentEvent) => Promise<void>;
   shouldStop?: () => boolean;
   isCancellationRequested?: () => Promise<boolean>;
@@ -262,7 +261,6 @@ export async function runAgentLoop(
     userId: params.context?.user?.id,
     serviceContext: params.context,
     shouldStop: params.shouldStop,
-    deferOutputUntilValidated: params.deferOutputUntilValidated,
   };
 
   const finalise = async (turn: TurnOutput) => {
@@ -282,7 +280,6 @@ export async function runAgentLoop(
       userSettings: params.userSettings,
       requestOptions: params.requestOptions,
       guardrailPrompt: params.guardrailPrompt,
-      deferOutputUntilValidated: params.deferOutputUntilValidated,
       runId: params.runId,
       runAttempt: params.runAttempt,
       provenance: params.provenance,
@@ -298,7 +295,7 @@ export async function runAgentLoop(
   const closingTurn = async (text: string, status?: string) => {
     finalStatus = status;
 
-    if (params.transport.streams && text && !params.deferOutputUntilValidated) {
+    if (params.transport.streams && text) {
       await sink.writeEvent("content_block_delta", { content: text });
     }
 

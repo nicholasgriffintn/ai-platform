@@ -1,6 +1,6 @@
 # @ngriffin_uk/polychat-ai-providers
 
-Provider primitives for Polychat backends, including every provider implementation: chat, image, audio, speech, transcription, video, music, OCR, realtime, search, research, and guardrails. A host supplies a `ProviderHost` (model resolution, storage, key store, metrics) and gets a `ProviderLibrary` that bootstraps each category lazily, resolves by name or alias, handles lifecycles, and maps errors. The package does not know about Cloudflare, D1, or a specific host's error type.
+Provider primitives for Polychat backends, including every provider implementation: chat, decision, image, audio, speech, transcription, video, music, OCR, realtime, search, research, and guardrails. A host supplies a `ProviderHost` (model resolution, storage, key store, metrics) and gets a `ProviderLibrary` that bootstraps each category lazily, resolves by name or alias, handles lifecycles, and maps errors. The package does not know about Cloudflare, D1, or a specific host's error type.
 
 ```ts
 import { createProviderLibrary } from "@ngriffin_uk/polychat-ai-providers";
@@ -44,3 +44,7 @@ Failures throw `ProviderError` with a `code`:
 ## Fallback
 
 `generateWithProviderFallback` calls the requested provider and, when no model was pinned and fallback is allowed, retries once on the default provider.
+
+## Decisions
+
+The `decision` category wraps System One models: a `DecisionProvider` takes a `state` and a map of typed questions (`choice`, `score`, `noul`) from `@ngriffin_uk/polychat-schemas` and returns calibrated answers, never text. TypeSafe's Jev is the first implementation (`typesafe`, aliases `typesafe-ai` and `jev`), authenticated with `TYPESAFE_API_KEY` or a user's stored key; `TYPESAFE_BASE_URL` overrides the endpoint. Questions in one request are independent and run in parallel, so ask everything that might matter in one call. `ProviderHost.models.getAuxiliaryDecisionModel` tells the package whether a decision model is available for the account. The `typesafe` guardrails provider is built on it and screens with four hazard nouls plus a severity score.

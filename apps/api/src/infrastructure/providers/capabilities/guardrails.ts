@@ -3,27 +3,43 @@ import type {
   GuardrailResult,
   GuardrailsProvider,
 } from "@ngriffin_uk/polychat-ai-providers";
+import { DEFAULT_GUARDRAILS_PROVIDER } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createMetrics } from "~/infrastructure/telemetry";
 import type { IEnv, IUser, IUserSettings } from "~/types";
 
+import { providerHost } from "../host";
 import { providerLibrary } from "../library";
 
 export type { GuardrailInput, GuardrailResult, GuardrailsProvider };
 
 const DEFAULT_BEDROCK_GUARDRAIL_VERSION = "1";
 
-export function getGuardrailsProvider(
+function llamaGuardProvider(env: IEnv, user?: IUser): GuardrailsProvider {
+  return providerLibrary.resolve("guardrails", "llamaguard", {
+    env,
+    user,
+    config: {
+      ai: env.AI,
+      env,
+      user,
+    },
+  });
+}
+
+export async function getGuardrailsProvider(
   env: IEnv,
   user?: IUser,
   userSettings?: IUserSettings,
-): GuardrailsProvider | null {
+): Promise<GuardrailsProvider | null> {
   if (!userSettings?.guardrails_enabled) {
     return null;
   }
 
-  if (userSettings.guardrails_provider === "bedrock") {
+  const providerId = userSettings.guardrails_provider ?? DEFAULT_GUARDRAILS_PROVIDER;
+
+  if (providerId === "bedrock") {
     if (!userSettings.bedrock_guardrail_id) {
       throw new AssistantError("Missing required guardrail ID", ErrorType.PARAMS_ERROR);
     }
@@ -43,7 +59,7 @@ export function getGuardrailsProvider(
     });
   }
 
-  if (userSettings.guardrails_provider === "mistral") {
+  if (providerId === "mistral") {
     return providerLibrary.resolve("guardrails", "mistral", {
       env,
       user,
@@ -55,7 +71,7 @@ export function getGuardrailsProvider(
     });
   }
 
-  if (userSettings.guardrails_provider === "shieldstral") {
+  if (providerId === "shieldstral") {
     return providerLibrary.resolve("guardrails", "shieldstral", {
       env,
       user,
@@ -71,26 +87,34 @@ export function getGuardrailsProvider(
     });
   }
 
-  return providerLibrary.resolve("guardrails", "llamaguard", {
-    env,
-    user,
-    config: {
-      ai: env.AI,
-      env,
-      user,
-    },
-  });
+  if (providerId === "typesafe") {
+    const decisionModel = await providerHost.models.getAuxiliaryDecisionModel(env, user);
+
+    if (decisionModel) {
+      return providerLibrary.resolve("guardrails", "typesafe", {
+        env,
+        user,
+        config: { env, user },
+      });
+    }
+  }
+
+  return llamaGuardProvider(env, user);
 }
 
 export class Guardrails {
-  private provider: GuardrailsProvider | null;
+  private provider?: Promise<GuardrailsProvider | null>;
 
   constructor(
     private readonly env: IEnv,
     private readonly user?: IUser,
     private readonly userSettings?: IUserSettings,
-  ) {
-    this.provider = getGuardrailsProvider(env, user, userSettings);
+  ) {}
+
+  private resolveProvider(): Promise<GuardrailsProvider | null> {
+    this.provider ??= getGuardrailsProvider(this.env, this.user, this.userSettings);
+
+    return this.provider;
   }
 
   async validateInput(
@@ -98,11 +122,13 @@ export class Guardrails {
     userId?: number,
     completionId?: string,
   ): Promise<GuardrailResult> {
-    if (!this.userSettings?.guardrails_enabled || !this.provider) {
+    const provider = await this.resolveProvider();
+
+    if (!provider) {
       return { provider: "none", isValid: true, violations: [] };
     }
 
-    const result = await this.provider.validateContent(message, "INPUT");
+    const result = await provider.validateContent(message, "INPUT");
 
     if (!result?.isValid && result?.violations?.length) {
       createMetrics(this.env).trackGuardrailViolation(
@@ -129,11 +155,13 @@ export class Guardrails {
     userId?: number,
     completionId?: string,
   ): Promise<GuardrailResult> {
-    if (!this.userSettings?.guardrails_enabled || !this.provider) {
+    const provider = await this.resolveProvider();
+
+    if (!provider) {
       return { provider: "none", isValid: true, violations: [] };
     }
 
-    const result = await this.provider.validateContent(response, "OUTPUT");
+    const result = await provider.validateContent(response, "OUTPUT");
 
     if (!result?.isValid && result?.violations?.length) {
       createMetrics(this.env).trackGuardrailViolation(

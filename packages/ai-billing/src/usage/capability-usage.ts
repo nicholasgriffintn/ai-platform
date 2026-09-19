@@ -73,6 +73,13 @@ export const DEFAULT_CAPABILITY_METERS: CapabilityMeterTable = {
   audio: {
     synthesize: (args) => measure("characters", stringLength(args, "input")),
   },
+  decision: {
+    decide: (_args, result) =>
+      measure(
+        "input_tokens",
+        isRecord(result) ? positive(findNumericFieldDeep(result, ["input_tokens"], 2)) : null,
+      ),
+  },
   embedding: {
     generate: () => null,
   },

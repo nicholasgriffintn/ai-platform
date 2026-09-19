@@ -29,7 +29,13 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "trigger_recipe",
     "use_recipe_connector",
   ],
-  Automation: ["call_api", "discover_capabilities", "run_pashi_tools", "search_pashi_tools"],
+  Automation: [
+    "call_api",
+    "decide",
+    "discover_capabilities",
+    "run_pashi_tools",
+    "search_pashi_tools",
+  ],
   Collaboration: [
     "ask_user",
     "run_council",

@@ -11,6 +11,7 @@ import { StorageService } from "~/infrastructure/storage";
 import { providerMetrics } from "~/infrastructure/telemetry";
 import {
   findModelConfig,
+  getAuxiliaryDecisionModel,
   getAuxiliaryGuardrailsModel,
   getAuxiliarySpeechModel,
   getModelConfig,
@@ -61,6 +62,7 @@ export const providerHost: ProviderHost = {
       resolveModelProvider({ ...options, env: env ? asEnv(env) : undefined }),
     getAuxiliaryGuardrailsModel: (env, user) =>
       getAuxiliaryGuardrailsModel(asEnv(env), asUser(user)),
+    getAuxiliaryDecisionModel: (env, user) => getAuxiliaryDecisionModel(asEnv(env), asUser(user)),
     getAuxiliarySpeechModel: async (env, user) => {
       const userSettings = user?.id
         ? await new RepositoryManager(asEnv(env)).userSettings.getUserSettings(user.id)

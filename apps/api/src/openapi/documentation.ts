@@ -5,6 +5,7 @@ import { authTagDescription } from "./content/tags/authTagDescription.js";
 import { capabilitiesTagDescription } from "./content/tags/capabilitiesTagDescription.js";
 import { chatTagDescription } from "./content/tags/chatTagDescription";
 import { codeTagDescription } from "./content/tags/codeTagDescription.js";
+import { decisionsTagDescription } from "./content/tags/decisionsTagDescription.js";
 import { flagsTagDescription } from "./content/tags/flagsTagDescription.js";
 import { guardrailsTagDescription } from "./content/tags/guardrailsTagDescription.js";
 import { modelsTagDescription } from "./content/tags/modelsTagDescription.js";
@@ -27,6 +28,7 @@ export const tagDescriptions = {
   auth: authTagDescription,
   chat: chatTagDescription,
   code: codeTagDescription,
+  decisions: decisionsTagDescription,
   flags: flagsTagDescription,
   guardrails: guardrailsTagDescription,
   models: modelsTagDescription,

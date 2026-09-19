@@ -10,6 +10,7 @@ import auth from "~/modules/auth/api";
 import capabilities from "~/modules/capabilities/api/routes";
 import channels from "~/modules/channels/api/routes";
 import chat from "~/modules/conversations/api/routes";
+import decisions from "~/modules/decisions/api/routes";
 import desktop from "~/modules/desktop-releases/api/routes";
 import flags from "~/modules/experiments/api/routes";
 import machines from "~/modules/machines/api/routes";
@@ -67,6 +68,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/realtime", realtime);
   app.route("/sync", sync);
   app.route("/search", search);
+  app.route("/decisions", decisions);
   app.route("/memory/documents", memoryDocuments);
   app.route("/chat/saved-messages", savedMessages);
   app.route("/channels", channels);

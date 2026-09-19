@@ -33,6 +33,8 @@ export interface ProviderEnv {
   SHIELDSTRAL_POLICY_VERSION?: string;
   SHIELDSTRAL_THRESHOLD?: string;
   TAVILY_API_KEY?: string;
+  TYPESAFE_API_KEY?: string;
+  TYPESAFE_BASE_URL?: string;
   [key: string]: unknown;
 }
 

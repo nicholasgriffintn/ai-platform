@@ -111,6 +111,7 @@ export { resolvePrivateAssetUrls } from "./utils/privateAssets.js";
 export * from "./capabilities/audio/index.js";
 export * from "./capabilities/audio/formats.js";
 export * from "./capabilities/chat/index.js";
+export * from "./capabilities/decision/index.js";
 export * from "./capabilities/guardrails/index.js";
 export * from "./capabilities/image/index.js";
 export * from "./capabilities/music/index.js";

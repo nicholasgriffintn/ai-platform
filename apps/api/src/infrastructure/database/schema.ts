@@ -1430,7 +1430,7 @@ export const userSettings = sqliteTable(
     preferences: text(),
     guardrails_enabled: integer({ mode: "boolean" }).default(false),
     guardrails_provider: text({
-      enum: ["bedrock", "llamaguard", "mistral", "shieldstral"],
+      enum: ["bedrock", "llamaguard", "mistral", "shieldstral", "typesafe"],
     }).default("llamaguard"),
     bedrock_guardrail_id: text(),
     bedrock_guardrail_version: text(),

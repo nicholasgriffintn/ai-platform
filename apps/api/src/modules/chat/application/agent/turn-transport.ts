@@ -11,10 +11,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { TurnOutput } from "~/modules/chat/application/agent/assistant-turn";
 import { createAgentProviderIO } from "~/modules/chat/application/agent/provider-io";
 import { consumeProviderStream } from "~/modules/chat/application/agent/provider-stream";
-import {
-  DISCARDING_EVENT_SINK,
-  type ChatEventSink,
-} from "~/modules/chat/application/streaming/emitter";
+import type { ChatEventSink } from "~/modules/chat/application/streaming/emitter";
 import { getAIResponse } from "~/modules/chat/application/streaming/responses";
 import {
   runProviderCallWithRetry,
@@ -30,7 +27,6 @@ export interface TurnTransportContext {
   userId?: number;
   serviceContext?: ServiceContext;
   shouldStop?: () => boolean;
-  deferOutputUntilValidated?: boolean;
   retry?: ProviderRetryExecutionOptions;
   step?: number;
 }
@@ -112,20 +108,16 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
         return formatBufferedTurn(providerResponse);
       }
 
-      const streamed = await consumeProviderStream(
-        providerResponse,
-        context.deferOutputUntilValidated ? DISCARDING_EVENT_SINK : sink,
-        {
-          env: context.env,
-          model: context.model,
-          provider: context.provider,
-          completionId: context.completionId,
-          userId: context.userId,
-          serviceContext: context.serviceContext,
-          shouldStop: context.shouldStop,
-          step: context.step,
-        },
-      );
+      const streamed = await consumeProviderStream(providerResponse, sink, {
+        env: context.env,
+        model: context.model,
+        provider: context.provider,
+        completionId: context.completionId,
+        userId: context.userId,
+        serviceContext: context.serviceContext,
+        shouldStop: context.shouldStop,
+        step: context.step,
+      });
 
       if (
         !streamed.content &&
@@ -155,7 +147,7 @@ export function createStreamingTurnTransport(): ChatTurnTransport {
         error: streamed.error,
         status: streamed.interrupted ? "incomplete" : undefined,
         stopped: streamed.stopped,
-        activityStreamed: !context.deferOutputUntilValidated,
+        activityStreamed: true,
       };
     },
   };

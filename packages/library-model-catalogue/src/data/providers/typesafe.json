@@ -1,0 +1,33 @@
+{
+  "defaults": {
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "models": {
+    "jev-latest": {
+      "model": "typesafe/jev/jev-latest",
+      "matchingModel": "jev-latest",
+      "overrides": {
+        "isFree": true
+      }
+    },
+    "jev-1.13.0": {
+      "model": "typesafe/jev/jev-1.13.0",
+      "matchingModel": "jev-1.13.0",
+      "overrides": {
+        "isFree": true,
+        "hiddenFromDefaultList": true
+      }
+    },
+    "jev-preview": {
+      "model": "typesafe/jev/jev-preview",
+      "matchingModel": "jev-preview",
+      "overrides": {
+        "isFree": true,
+        "hiddenFromDefaultList": true,
+        "status": "beta"
+      }
+    }
+  }
+}

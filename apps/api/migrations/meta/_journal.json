@@ -351,6 +351,13 @@
       "when": 1789241000000,
       "tag": "0049_platform_teammates",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "6",
+      "when": 1789300000000,
+      "tag": "0050_typesafe_default_guardrails",
+      "breakpoints": true
     }
   ]
 }

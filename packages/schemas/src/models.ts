@@ -39,6 +39,7 @@ export const modelModalities = [
   "agents",
   "ocr",
   "transcription",
+  "decision",
 ] as const;
 
 export const modelModalitySchema = z.enum(modelModalities);

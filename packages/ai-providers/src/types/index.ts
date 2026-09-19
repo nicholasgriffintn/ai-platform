@@ -1,4 +1,5 @@
 export * from "./chat.js";
+export * from "./decision.js";
 export * from "./guardrails.js";
 export * from "./research.js";
 export * from "./search.js";

@@ -1,5 +1,9 @@
 import { listConfigurableChatProviders } from "~/infrastructure/providers/capabilities/chat";
 import {
+  getDecisionProviderVendor,
+  listConfigurableDecisionProviders,
+} from "~/infrastructure/providers/capabilities/decision";
+import {
   getMessagingProviderMetadata,
   isMessagingProviderId,
   listConfigurableMessagingProviders,
@@ -8,7 +12,7 @@ import {
 export interface UserConfigurableProvider {
   id: string;
   name: string;
-  type: "chat" | "messaging";
+  type: "chat" | "messaging" | "decision";
   description?: string;
   configurationFields?: Array<{
     key: string;
@@ -22,7 +26,11 @@ export interface UserConfigurableProvider {
 
 export function listConfigurableUserProviderIds(): string[] {
   return Array.from(
-    new Set([...listConfigurableChatProviders(), ...listConfigurableMessagingProviders()]),
+    new Set([
+      ...listConfigurableChatProviders(),
+      ...listConfigurableDecisionProviders(),
+      ...listConfigurableMessagingProviders(),
+    ]),
   ).sort();
 }
 
@@ -39,6 +47,18 @@ export function getUserConfigurableProviderMetadata(providerId: string): UserCon
         configurationFields: metadata.configurationFields,
       };
     }
+  }
+
+  const decisionVendor = getDecisionProviderVendor(providerId);
+
+  if (decisionVendor) {
+    return {
+      id: providerId,
+      name: decisionVendor,
+      type: "decision",
+      description:
+        "Jev, a System One decision model. Calibrated yes/no, choice and score answers for guardrails, memory gating and the decide tool.",
+    };
   }
 
   return {

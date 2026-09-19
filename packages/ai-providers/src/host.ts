@@ -40,6 +40,10 @@ export interface ProviderModelResolver {
     env: ProviderEnv,
     user?: ProviderUser,
   ): Promise<{ model: string; provider: string }>;
+  getAuxiliaryDecisionModel(
+    env: ProviderEnv,
+    user?: ProviderUser,
+  ): Promise<{ model: string; provider: string } | null>;
   getAuxiliarySpeechModel(
     env: ProviderEnv,
     user?: ProviderUser,

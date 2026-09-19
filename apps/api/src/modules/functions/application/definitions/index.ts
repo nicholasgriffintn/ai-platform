@@ -7,6 +7,7 @@ import { apply_edit_completion } from "./apply_edit";
 import { run_council, select_council_members } from "./council";
 import { create_automation } from "./create_automation";
 import { create_note } from "./create_note";
+import { decide } from "./decide";
 import { delegate } from "./delegate";
 import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
@@ -64,6 +65,7 @@ export interface FunctionToolCatalogueOptions {
 
 const descriptors: FunctionToolDescriptor[] = [
   get_weather,
+  decide,
   create_video,
   create_music,
   create_image,

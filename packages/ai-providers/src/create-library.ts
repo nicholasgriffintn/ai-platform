@@ -8,6 +8,7 @@ import {
 } from "./library.js";
 import { registerAudioProviders } from "./registrations/audio.js";
 import { registerChatProviders } from "./registrations/chat.js";
+import { registerDecisionProviders } from "./registrations/decision.js";
 import { registerGuardrailProviders } from "./registrations/guardrails.js";
 import { registerImageProviders } from "./registrations/image.js";
 import { registerMusicProviders } from "./registrations/music.js";
@@ -42,6 +43,7 @@ export function createAiProviderBootstrappers(
   return {
     audio: [(registry) => registerAudioProviders(registry, runtime)],
     chat: [(registry) => registerChatProviders(registry, runtime)],
+    decision: [(registry) => registerDecisionProviders(registry, runtime)],
     guardrails: [(registry) => registerGuardrailProviders(registry, runtime)],
     image: [(registry) => registerImageProviders(registry, runtime)],
     music: [(registry) => registerMusicProviders(registry, runtime)],

@@ -34,6 +34,7 @@ export const promptTasks = [
   "text-list",
   "text-extract",
   "text-classify",
+  "text-score",
   "text-summarise",
   "text-verdict",
   "structured-output",

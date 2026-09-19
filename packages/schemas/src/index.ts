@@ -154,6 +154,7 @@ export * from "./sandbox-services.js";
 export * from "./sandbox-variables.js";
 export * from "./sandbox-preview.js";
 export * from "./search.js";
+export * from "./decisions.js";
 export * from "./shared-teammates.js";
 export * from "./teammate-roles.js";
 export * from "./shared.js";

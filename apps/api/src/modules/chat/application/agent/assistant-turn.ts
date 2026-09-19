@@ -59,7 +59,6 @@ export interface FinaliseAssistantTurnParams {
   userSettings?: IUserSettings;
   requestOptions?: ChatRequestOptions;
   guardrailPrompt?: string;
-  deferOutputUntilValidated?: boolean;
   runId?: string;
   runAttempt?: number;
   provenance?: RunProvenance;
@@ -95,10 +94,6 @@ export async function finaliseAssistantTurn(
         annotations: null,
         parts: [],
       };
-
-  if (params.deferOutputUntilValidated && visibleTurn.content) {
-    await sink.writeEvent("content_block_delta", { content: visibleTurn.content });
-  }
 
   await sink.writeEvent("content_block_stop", {});
 
@@ -195,6 +190,7 @@ export async function finaliseAssistantTurn(
     platform: message.platform,
     provenance: params.provenance,
     nonce: generateId(),
+    ...(guardrailResult.passed ? {} : { content: visibleTurn.content }),
     post_processing: {
       guardrails: assistantMessage.guardrails,
     },

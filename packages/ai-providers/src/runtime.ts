@@ -11,6 +11,7 @@ import type { ProviderEnv, ProviderUser } from "./env.js";
 import type { ProviderHost } from "./host.js";
 import type { ProviderRegistry } from "./registry.js";
 import type { ProviderRegistration } from "./types.js";
+import type { DecisionProvider } from "./types/decision.js";
 import type { GuardrailsProvider } from "./types/guardrails.js";
 import type { ResearchProvider } from "./types/research.js";
 import type { SearchProvider } from "./types/search.js";
@@ -18,6 +19,7 @@ import type { SearchProvider } from "./types/search.js";
 export type AiProviderMap = {
   audio: AudioProvider;
   chat: AIProvider;
+  decision: DecisionProvider;
   guardrails: GuardrailsProvider;
   image: ImageProvider;
   music: MusicProvider;

@@ -5,6 +5,7 @@ import {
   getLineupModels,
   getModelConfigById,
   getModels,
+  getModelsByOutputModality,
   resolveDefaultChatModel,
   resolvePolicyModel,
   getExecutableModelsForAccount,
@@ -463,6 +464,26 @@ export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
   }
 
   return { model: selected.config.matchingModel, provider: selected.config.provider };
+};
+
+export const getAuxiliaryDecisionModel = async (
+  env: IEnv,
+  user?: IUser,
+): Promise<{ model: string; provider: string } | null> => {
+  const visibleModels = await filterModelsForUserAccess(
+    getModelsByOutputModality("decision"),
+    env,
+    user?.id,
+  );
+  const selected = resolvePolicyModel(
+    visibleModels,
+    getSystemModelLineup("decision").candidates,
+    user,
+  );
+
+  return selected
+    ? { model: selected.config.matchingModel, provider: selected.config.provider }
+    : null;
 };
 
 export const getAuxiliarySearchProvider = async (

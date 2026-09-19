@@ -81,6 +81,18 @@ export const functionPromptEntries = [
     text: "Reply with the summary only.",
   },
   {
+    id: "functions/text/score",
+    task: "text-score",
+    title: "Text score system prompt",
+    description:
+      "Places the text on an ordered scale of described levels and answers with the level number.",
+    text: "{{instructions}} Rate the text on this scale and answer with the level number only:\n{{levels}}",
+    variables: [
+      { name: "instructions", description: "The question the level answers." },
+      { name: "levels", description: "Newline-separated level numbers with their descriptions." },
+    ],
+  },
+  {
     id: "functions/text/verdict",
     task: "text-verdict",
     title: "Boolean verdict system prompt",

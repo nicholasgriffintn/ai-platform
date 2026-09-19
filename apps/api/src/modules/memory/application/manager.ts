@@ -14,6 +14,7 @@ import type { MemoryProviderId } from "~/infrastructure/providers/capabilities/m
 import { recordProjectAudit } from "~/modules/audit/application";
 import { toProviderMessages } from "~/modules/chat/application/messages/provider-mapping";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
+import { gateMemoryClassification } from "~/modules/memory/application/gate";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import type { IEnv, IUser, IUserSettings, MemoryScope, Message } from "~/types";
 
@@ -198,7 +199,22 @@ export class MemoryManager {
 
     if (userSettings?.memories_save_enabled) {
       try {
-        if (lastUser.trim()) {
+        const gate = lastUser.trim()
+          ? await gateMemoryClassification({
+              env: this.env,
+              user: this.user,
+              message: lastUser,
+              completionId,
+            })
+          : null;
+
+        if (gate && !gate.proceed) {
+          logger.debug("Memory gate skipped classification", {
+            probability: gate.probability,
+          });
+        }
+
+        if (gate?.proceed) {
           const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(
             this.env,
             this.user,
