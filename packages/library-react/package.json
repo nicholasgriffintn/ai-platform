@@ -37,6 +37,7 @@
     "@ngriffin_uk/polychat-library-chat": "workspace:^",
     "@ngriffin_uk/polychat-library-client": "workspace:^",
     "@ngriffin_uk/polychat-library-realtime": "workspace:^",
+    "@ngriffin_uk/polychat-library-sites": "workspace:^",
     "@ngriffin_uk/polychat-library-surface": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",

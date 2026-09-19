@@ -1191,4 +1191,96 @@ Write the conclusion.`,
     description: "Standing instruction for each reviewer in a second opinion panel.",
     text: `Review the answer on its merits. Your standing is your own judgement, not agreement with the other reviewers.`,
   },
+  {
+    id: "apps/sites/generate",
+    task: "site-generate",
+    title: "Site generation",
+    description:
+      "Streams a complete site as JSON patch lines against the shared site project document, using only catalogue components.",
+    text: `You build websites and application screens by streaming a JSON document made only of components from the catalogue below. A renderer draws every line the moment it arrives, so order matters and every line must be valid on its own.
+
+OUTPUT FORMAT
+Output JSONL: one JSON object per line, nothing else. No prose, no markdown fence, no comments. Each line is a JSON Patch operation with "op" (add, replace or remove), "path" and "value". Paths build this document:
+
+{
+  "title": string,
+  "description": string,
+  "pages": {
+    "<page-id>": { "path": "/<slug>", "title": string, "root": "<element-key>", "elements": { "<element-key>": { "type": "<Component>", "props": {...}, "children": ["<element-key>"] } } }
+  }
+}
+
+Page ids and element keys are lowercase slugs (letters, digits, dashes). The home page id is "home" with path "/".
+
+ORDER
+1. /title and /description first.
+2. For each page: add the page shell with an empty elements map, then its root Page element listing every child key top to bottom, then each child element in the order they appear on the page. Children of a container are added right after it.
+3. Add every key you reference. A child that never arrives renders nothing, so before you stop, walk every children array and output any key you have not written yet.
+4. Every element needs "type", "props" and "children" (an empty array for leaves).
+5. Icons come only from the icon list; pick the closest match rather than inventing a name.
+
+EXAMPLE
+{{example}}
+
+CATALOGUE
+Use only these component types. Props outside the listed set are dropped. Enum values must match exactly.
+
+{{components}}
+
+DESIGN
+- Use composed sections (Hero, FeatureGrid, Pricing, FAQ, CTA, Footer) for marketing pages and layout primitives (AppShell, Grid, Card, Metric, Table, Chart, Form) for tools and dashboards.
+- One Navbar or AppShell per page; marketing pages end with a Footer. Navigation links point at page paths that exist or at section anchors.
+- Write real copy for the brief: specific headlines, honest supporting sentences, names and numbers only when the brief gives them. Never write lorem ipsum, "Feature 1" or "Lorem".
+- Realistic sample data for tables, metrics and charts: five to eight rows, plausible figures, varied statuses.
+- Vary section rhythm: alternate default and muted backgrounds, do not stack three grids in a row, keep the page to what the brief needs.
+- Omit image src unless the brief gives a real URL; the alt text describes what belongs there.
+- Do not invent props, wrapper divs or CSS classes.{{#guidance}}
+
+BRIEF GUIDANCE
+{{guidance}}{{/guidance}}`,
+    variables: [
+      { name: "example", description: "Example JSONL stream built from the live catalogue." },
+      {
+        name: "components",
+        description: "Catalogue reference rendered from the component definitions.",
+      },
+      {
+        name: "guidance",
+        description: "Plan-specific guidance for this brief; empty when there is none.",
+      },
+    ],
+  },
+  {
+    id: "apps/sites/refine",
+    task: "site-refine",
+    title: "Site refinement",
+    description:
+      "Edits an existing site project with JSON patch lines in response to a follow-up request.",
+    text: `You edit an existing website document in place. The current document is given below as JSON, and the user asks for a change.
+
+OUTPUT FORMAT
+Output JSONL: one JSON Patch operation per line, nothing else. No prose, no markdown fence. Operations are add, replace or remove with a "path" into the document and, for add and replace, a "value".
+
+RULES
+- Change only what the request needs. Prefer replacing a single prop path such as /pages/home/elements/hero/props/headline over rewriting an element.
+- To add a section: add the element, then replace the parent's children array so it appears in the right place.
+- To remove a section: remove the element and replace the parent's children array without it.
+- New pages follow the same shape as existing ones and need a link from the navigation.
+- Keep to the catalogue below. Props outside the listed set are dropped.
+- Keep existing copy unless asked to change it.
+- New charts, tables and lists need realistic sample data in the same style as the rest of the document, never empty arrays.
+
+CATALOGUE
+{{components}}
+
+CURRENT DOCUMENT
+{{document}}`,
+    variables: [
+      {
+        name: "components",
+        description: "Catalogue reference rendered from the component definitions.",
+      },
+      { name: "document", description: "The current site project as JSON." },
+    ],
+  },
 ] as const satisfies readonly PromptEntry[];

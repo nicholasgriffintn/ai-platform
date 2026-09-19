@@ -29,6 +29,7 @@ const PERSONAL_CONVERSATION_PATTERN = "/chat/:conversationId";
 const RESERVED_CHAT_SEGMENTS = new Set([
   "attention",
   "canvas",
+  "sites",
   "files",
   "teammates",
   "plugins",
@@ -121,13 +122,16 @@ export function getMetaNavigationHref(target: MetaNavigationTarget): string {
       if (
         target.mode === "work" &&
         (target.place === "canvas" ||
+          target.place === "sites" ||
           target.place === "files" ||
           target.place === "teammates" ||
           target.place === "plugins" ||
           target.place === "scheduled")
       ) {
         return target.workspaceId && target.projectId
-          ? `${getProjectBasePath(target.workspaceId, target.projectId)}/${target.place}`
+          ? `${getProjectBasePath(target.workspaceId, target.projectId)}/${
+              target.place === "sites" ? "apps/sites" : target.place
+            }`
           : MODE_BASE_PATHS.work;
       }
 

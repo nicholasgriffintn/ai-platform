@@ -22,6 +22,7 @@ import notifications from "~/modules/project-tasks/api/notifications";
 import realtime from "~/modules/realtime/api/routes";
 import savedMessages from "~/modules/saved-messages/api/routes";
 import search from "~/modules/search/api/routes";
+import sites from "~/modules/sites/api/routes";
 import skills from "~/modules/skills/api/routes";
 import sources from "~/modules/sources/api/routes";
 import stripe from "~/modules/subscription/api/routes";
@@ -69,6 +70,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/sync", sync);
   app.route("/search", search);
   app.route("/decisions", decisions);
+  app.route("/sites", sites);
   app.route("/memory/documents", memoryDocuments);
   app.route("/chat/saved-messages", savedMessages);
   app.route("/channels", channels);

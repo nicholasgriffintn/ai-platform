@@ -403,6 +403,7 @@ export const projectExperienceRuntimeSchema = z.enum([
   "notes",
   "recordings",
   "replicate",
+  "sites",
   "strudel",
 ]);
 

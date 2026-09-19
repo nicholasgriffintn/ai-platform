@@ -73,6 +73,11 @@
       "polychat-source": "./src/user-profile.ts",
       "types": "./dist/user-profile.d.ts",
       "import": "./dist/user-profile.js"
+    },
+    "./sites": {
+      "polychat-source": "./src/sites.ts",
+      "types": "./dist/sites.d.ts",
+      "import": "./dist/sites.js"
     }
   },
   "publishConfig": {

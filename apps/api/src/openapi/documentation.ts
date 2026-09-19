@@ -12,6 +12,7 @@ import { modelsTagDescription } from "./content/tags/modelsTagDescription.js";
 import { plansTagDescription } from "./content/tags/plansTagDescription.js";
 import { realtimeTagDescription } from "./content/tags/realtimeTagDescription.js";
 import { searchTagDescription } from "./content/tags/searchTagDescription.js";
+import { sitesTagDescription } from "./content/tags/sitesTagDescription.js";
 import { stripeTagDescription } from "./content/tags/stripeTagDescription.js";
 import { systemTagDescription } from "./content/tags/systemTagDescription.js";
 import { teammatesTagDescription } from "./content/tags/teammatesTagDescription.js";
@@ -35,6 +36,7 @@ export const tagDescriptions = {
   plans: plansTagDescription,
   realtime: realtimeTagDescription,
   search: searchTagDescription,
+  sites: sitesTagDescription,
   stripe: stripeTagDescription,
   tools: toolsTagDescription,
   uploads: uploadsTagDescription,

@@ -5,6 +5,8 @@ export * from "./Apps/AppRoute.js";
 export * from "./Apps/AppRuntime.js";
 export * from "./Apps/Canvas/CanvasPage.js";
 export * from "./Apps/Canvas/useCanvasStudio.js";
+export * from "./Apps/Sites/SitesApp.js";
+export * from "./Apps/Sites/SiteStudio.js";
 export * from "./Apps/Training/TrainingDashboard.js";
 export * from "./Attention/AttentionPage.js";
 export * from "./Capabilities/CapabilityLibrary.js";

@@ -51,6 +51,11 @@ const StrudelApp = lazy(async () => {
 
   return { default: module.StrudelApp };
 });
+const SitesApp = lazy(async () => {
+  const module = await import("./Sites/SitesApp.js");
+
+  return { default: module.SitesApp };
+});
 
 function ReplicateExperience({
   basePath,
@@ -105,6 +110,10 @@ function ExperienceContent({ basePath, projectId, runtime, subpath }: AppRuntime
 
   if (runtime === "strudel") {
     return <StrudelApp basePath={basePath} projectId={projectId} subpath={subpath} />;
+  }
+
+  if (runtime === "sites") {
+    return <SitesApp basePath={basePath} projectId={projectId} subpath={subpath} />;
   }
 
   return <EmptyState title="Experience unavailable" message="This experience is not supported." />;

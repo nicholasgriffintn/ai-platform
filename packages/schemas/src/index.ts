@@ -175,6 +175,7 @@ export * from "./headers.js";
 export * from "./research.js";
 export * from "./recipe-trigger-configuration.js";
 export * from "./strudel.js";
+export * from "./sites.js";
 export * from "./conversation-threads.js";
 export * from "./desktop-releases.js";
 export * from "./model-selection-ui.js";

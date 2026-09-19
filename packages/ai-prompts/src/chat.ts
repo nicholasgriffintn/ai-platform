@@ -608,6 +608,7 @@ export function buildStandardChatPrompt({
 export const META_ASSISTANT_PLACE_LABELS: Readonly<Record<string, string>> = {
   conversations: "Conversations",
   canvas: "Canvas",
+  sites: "Sites",
   attention: "Attention",
   files: "Files",
   teammates: "Teammates",

@@ -66,6 +66,24 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     type: "premium",
   },
   {
+    id: "sites",
+    runtime: "sites",
+    capabilityId: "featured-sites",
+    name: "Sites",
+    category: "Creative",
+    when: "You want a website, an app screen or a component from one description, and want to see it appear as it is written.",
+    uses: "A single brief. Jev decides the kind, scope, tone and palette; a coding model writes the site.",
+    produces:
+      "A saved site you can refine in follow-ups, export as a runnable Next.js project, or hand to a project's sandbox for a full build.",
+    ios: "web-only",
+    description:
+      "Describe a site once and watch it build. Refine it in follow-ups, export the code, or send it to the sandbox for a production build",
+    icon: "layout",
+    theme: "sky",
+    tags: ["sites", "react", "generation", "code"],
+    type: "normal",
+  },
+  {
     id: "replicate",
     runtime: "replicate",
     capabilityId: "featured-replicate",

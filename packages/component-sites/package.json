@@ -1,0 +1,49 @@
+{
+  "name": "@ngriffin_uk/polychat-component-sites",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "polychat-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-component-ui": "workspace:^",
+    "@ngriffin_uk/polychat-library-sites": "workspace:^",
+    "@ngriffin_uk/polychat-schemas": "workspace:^",
+    "lucide-react": "1.45.0"
+  },
+  "devDependencies": {
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@testing-library/react": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "jsdom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:react-peer",
+    "react-dom": "catalog:react-peer"
+  }
+}

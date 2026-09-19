@@ -1,6 +1,14 @@
 import { SidebarNavLink } from "@ngriffin_uk/polychat-component-navigation";
 import { getPlacePaths, type ProductMode } from "@ngriffin_uk/polychat-library-react";
-import { BellRing, CalendarClock, FolderOpen, Palette, Plug, UsersRound } from "lucide-react";
+import {
+  BellRing,
+  CalendarClock,
+  FolderOpen,
+  LayoutTemplate,
+  Palette,
+  Plug,
+  UsersRound,
+} from "lucide-react";
 
 export function PlacesNavLinks({
   mode = "chat",
@@ -18,6 +26,9 @@ export function PlacesNavLinks({
       </SidebarNavLink>
       <SidebarNavLink href={places.canvas} icon={<Palette size={16} />} onClick={onNavigate}>
         Canvas
+      </SidebarNavLink>
+      <SidebarNavLink href={places.sites} icon={<LayoutTemplate size={16} />} onClick={onNavigate}>
+        Sites
       </SidebarNavLink>
       <SidebarNavLink href={places.files} icon={<FolderOpen size={16} />} onClick={onNavigate}>
         Files
