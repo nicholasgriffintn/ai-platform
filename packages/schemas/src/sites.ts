@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { decisionAnswerSchema } from "./decisions.js";
+import { decisionAnswerSchema, decisionQuestionSchema } from "./decisions.js";
 import { modelTierSchema } from "./model-lineup.js";
 
 export const SITES_CAPABILITY_ID = "featured-sites";
@@ -222,12 +222,70 @@ export const siteQualitySchema = z
     coverage: z.number().min(0).max(1),
     placeholders: z.number().min(0).max(1),
     coherent: z.number().min(0).max(1),
+    readable: z.number().min(0).max(1).optional(),
     repairs: z.number().int().nonnegative(),
     needsRepair: z.boolean(),
     confidence: z.number().min(0).max(1),
+    repairConfidence: z.number().min(0).max(1).optional(),
   })
   .strict();
 export type SiteQuality = z.infer<typeof siteQualitySchema>;
+
+export const SITE_DECISION_STAGES = ["plan", "refinement", "quality"] as const;
+export const siteDecisionStageSchema = z.enum(SITE_DECISION_STAGES);
+export type SiteDecisionStage = z.infer<typeof siteDecisionStageSchema>;
+
+export const siteDecisionTraceQuestionSchema = z
+  .object({
+    id: z.string().min(1).max(128),
+    question: decisionQuestionSchema,
+    answer: decisionAnswerSchema.optional(),
+  })
+  .strict();
+export type SiteDecisionTraceQuestion = z.infer<typeof siteDecisionTraceQuestionSchema>;
+
+export const siteDecisionTraceEntrySchema = z
+  .object({
+    kind: z.literal("decision"),
+    version: z.literal(1),
+    id: z.string().min(1).max(160),
+    stage: siteDecisionStageSchema,
+    source: z.enum(["decision", "heuristic", "unavailable"]),
+    summary: z.string().min(1).max(300),
+    effects: z.array(z.string().min(1).max(240)).max(16),
+    questions: z.array(siteDecisionTraceQuestionSchema).max(256),
+    provider: z.string().min(1).optional(),
+    model: z.string().min(1).optional(),
+    durationMs: z.number().int().nonnegative().optional(),
+    createdAt: z.string(),
+  })
+  .strict();
+export type SiteDecisionTraceEntry = z.infer<typeof siteDecisionTraceEntrySchema>;
+
+export const siteGenerationTraceEntrySchema = z
+  .object({
+    kind: z.literal("generation"),
+    version: z.literal(1),
+    id: z.string().min(1).max(160),
+    stage: z.enum(["build", "repair"]),
+    outcome: z.enum(["applied", "discarded"]),
+    summary: z.string().min(1).max(300),
+    provider: z.string().min(1),
+    model: z.string().min(1),
+    patchCount: z.number().int().nonnegative(),
+    rejectedPatchCount: z.number().int().nonnegative(),
+    skippedLineCount: z.number().int().nonnegative().optional(),
+    durationMs: z.number().int().nonnegative(),
+    createdAt: z.string(),
+  })
+  .strict();
+export type SiteGenerationTraceEntry = z.infer<typeof siteGenerationTraceEntrySchema>;
+
+export const siteTraceEntrySchema = z.discriminatedUnion("kind", [
+  siteDecisionTraceEntrySchema,
+  siteGenerationTraceEntrySchema,
+]);
+export type SiteTraceEntry = z.infer<typeof siteTraceEntrySchema>;
 
 export const siteTurnSchema = z
   .object({
@@ -246,6 +304,7 @@ export const siteTurnSchema = z
       .optional(),
     provider: z.string().optional(),
     model: z.string().optional(),
+    trace: z.array(siteTraceEntrySchema).optional(),
   })
   .strict();
 export type SiteTurn = z.infer<typeof siteTurnSchema>;
@@ -328,6 +387,13 @@ export const siteStreamEventSchema = z.discriminatedUnion("type", [
     })
     .strict(),
   z.object({ type: z.literal("patch"), patch: sitePatchSchema }).strict(),
+  z.object({ type: z.literal("trace"), entry: siteTraceEntrySchema }).strict(),
+  z
+    .object({
+      type: z.literal("phase"),
+      phase: z.enum(["planning", "selecting", "streaming", "reviewing", "repairing", "saving"]),
+    })
+    .strict(),
   z
     .object({
       type: z.literal("intent"),
@@ -337,7 +403,13 @@ export const siteStreamEventSchema = z.discriminatedUnion("type", [
       confidence: z.number().min(0).max(1),
     })
     .strict(),
-  z.object({ type: z.literal("saved"), site: siteRecordSchema }).strict(),
+  z
+    .object({
+      type: z.literal("saved"),
+      stage: z.enum(["initial", "final"]),
+      site: siteRecordSchema,
+    })
+    .strict(),
   z
     .object({
       type: z.literal("done"),

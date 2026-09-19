@@ -1,5 +1,5 @@
 import { getModels, resolveTierModel } from "@ngriffin_uk/polychat-ai-models";
-import type { ModelTier, ReasoningEffort } from "@ngriffin_uk/polychat-schemas";
+import type { ModelConfig, ModelTier, ReasoningEffort } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import {
@@ -14,19 +14,36 @@ export interface SiteGenerationModel {
   effort?: ReasoningEffort;
 }
 
+export async function loadSiteGenerationModels({
+  env,
+  user,
+  requestedModel,
+}: {
+  env: IEnv;
+  user: IUser;
+  requestedModel?: string;
+}): Promise<ModelConfig> {
+  return requestedModel
+    ? filterModelsForUserAccess(getModels(), env, user.id)
+    : getLineupModelsForUser(env, user);
+}
+
 export async function resolveSiteGenerationModel({
   env,
   user,
   tier,
   requestedModel,
+  availableModels,
 }: {
   env: IEnv;
   user: IUser;
   tier: ModelTier;
   requestedModel?: string;
+  availableModels?: ModelConfig;
 }): Promise<SiteGenerationModel> {
   if (requestedModel) {
-    const accessible = await filterModelsForUserAccess(getModels(), env, user.id);
+    const accessible =
+      availableModels ?? (await filterModelsForUserAccess(getModels(), env, user.id));
     const selected = accessible[requestedModel];
 
     if (!selected) {
@@ -36,7 +53,7 @@ export async function resolveSiteGenerationModel({
     return { model: selected.matchingModel, provider: selected.provider };
   }
 
-  const lineup = await getLineupModelsForUser(env, user);
+  const lineup = availableModels ?? (await getLineupModelsForUser(env, user));
   const selected = resolveTierModel(lineup, user, tier, "coding");
 
   if (!selected) {

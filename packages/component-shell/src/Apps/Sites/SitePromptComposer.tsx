@@ -1,7 +1,7 @@
 import { Button, cn, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import { SITE_PROMPT_MAX_LENGTH } from "@ngriffin_uk/polychat-schemas";
 import { ArrowUp, Square } from "lucide-react";
-import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { useState, type FormEvent, type KeyboardEvent, type Ref } from "react";
 
 export interface SitePromptComposerProps {
   placeholder: string;
@@ -12,6 +12,9 @@ export interface SitePromptComposerProps {
   autoFocus?: boolean;
   size?: "compact" | "hero";
   className?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  inputRef?: Ref<HTMLTextAreaElement>;
 }
 
 export function SitePromptComposer({
@@ -23,10 +26,21 @@ export function SitePromptComposer({
   autoFocus,
   size = "compact",
   className,
+  value,
+  onValueChange,
+  inputRef,
 }: SitePromptComposerProps) {
-  const [value, setValue] = useState("");
-  const trimmed = value.trim();
+  const [internalValue, setInternalValue] = useState("");
+  const currentValue = value ?? internalValue;
+  const trimmed = currentValue.trim();
   const canSubmit = trimmed.length > 0 && !isBusy;
+  const updateValue = (nextValue: string) => {
+    if (value === undefined) {
+      setInternalValue(nextValue);
+    }
+
+    onValueChange?.(nextValue);
+  };
 
   const submit = () => {
     if (!canSubmit) {
@@ -34,7 +48,7 @@ export function SitePromptComposer({
     }
 
     onSubmit(trimmed);
-    setValue("");
+    updateValue("");
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -58,8 +72,9 @@ export function SitePromptComposer({
       )}
     >
       <Textarea
-        value={value}
-        onChange={(event) => setValue(event.target.value)}
+        ref={inputRef}
+        value={currentValue}
+        onChange={(event) => updateValue(event.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         maxLength={SITE_PROMPT_MAX_LENGTH}

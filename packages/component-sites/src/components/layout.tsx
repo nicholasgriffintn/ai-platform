@@ -104,9 +104,9 @@ export function Grid({
 }
 
 const CARD_VARIANTS = {
-  default: "border bg-card shadow-sm",
+  default: "border bg-card text-card-foreground shadow-sm",
   outline: "border bg-transparent",
-  elevated: "border bg-card shadow-lg",
+  elevated: "border bg-card text-card-foreground shadow-lg",
   ghost: "bg-transparent",
 } as const;
 const CARD_PADDINGS = { none: "p-0", sm: "p-4", md: "p-6", lg: "p-8" } as const;
@@ -121,7 +121,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 rounded-lg text-card-foreground",
+        "flex flex-col gap-4 rounded-lg",
         CARD_VARIANTS[variant],
         CARD_PADDINGS[padding],
       )}
@@ -131,7 +131,7 @@ export function Card({
           {title && (
             <h3 className={cn("text-lg leading-tight font-semibold", HEADING_FONT)}>{title}</h3>
           )}
-          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+          {description && <p className="text-sm opacity-70">{description}</p>}
         </div>
       )}
       {children}
@@ -145,7 +145,7 @@ export function Divider({ label }: SiteComponentProps<"Divider">) {
   }
 
   return (
-    <div className="flex items-center gap-3 text-xs tracking-wide text-muted-foreground uppercase">
+    <div className="flex items-center gap-3 text-xs tracking-wide uppercase opacity-70">
       <hr className="flex-1 border-border" />
       <span>{label}</span>
       <hr className="flex-1 border-border" />

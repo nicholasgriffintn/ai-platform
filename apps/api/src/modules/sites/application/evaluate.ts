@@ -28,9 +28,10 @@ export function scoreSiteQuality(quality: SiteQuality | null, issueCount: number
 
   return Math.max(
     0,
-    quality.coverage * 0.6 +
-      (1 - quality.placeholders) * 0.2 +
-      quality.coherent * 0.2 -
+    quality.coverage * 0.5 +
+      (1 - quality.placeholders) * 0.15 +
+      quality.coherent * 0.15 +
+      (quality.readable ?? 1) * 0.2 -
       repairPenalty,
   );
 }

@@ -52,6 +52,21 @@ export function collectSiteElementSubtree(
   return subtree;
 }
 
+export function collectSiteElementRefinementContext(page: SitePage, key: string) {
+  const ancestorKeys = listSiteElementAncestors(page, key).filter((ancestor) => ancestor !== key);
+
+  return {
+    ancestors: Object.fromEntries(
+      ancestorKeys.flatMap((ancestor) => {
+        const element = page.elements[ancestor];
+
+        return element ? [[ancestor, element] as const] : [];
+      }),
+    ),
+    selected: collectSiteElementSubtree(page, key),
+  };
+}
+
 function outlineElement(page: SitePage, key: string, depth: number, seen: Set<string>): string[] {
   const element = page.elements[key];
 

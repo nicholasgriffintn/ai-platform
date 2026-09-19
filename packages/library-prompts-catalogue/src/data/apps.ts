@@ -1213,11 +1213,13 @@ Output JSONL: one JSON object per line, nothing else. No prose, no markdown fenc
 Page ids and element keys are lowercase slugs (letters, digits, dashes). The home page id is "home" with path "/".
 
 ORDER
-1. /title and /description first.
-2. For each page: add the page shell with an empty elements map, then its root Page element listing every child key top to bottom, then each child element in the order they appear on the page. Children of a container are added right after it.
-3. Add every key you reference. A child that never arrives renders nothing, so before you stop, walk every children array and output any key you have not written yet.
-4. Every element needs "type", "props" and "children" (an empty array for leaves).
-5. Icons come only from the icon list; pick the closest match rather than inventing a name.
+1. Make the first page visible before writing metadata or sample data: add its minimal page shell with an empty elements map, add its root Page element, then add the first visible child.
+2. Add /title and /description immediately after that first visible child.
+3. Keep large state arrays out of the page-shell line. Add /pages/<page-id>/state in a separate operation after the first visible child so one long JSON line cannot delay the first render.
+4. Continue each page top to bottom. Children of a container are added right after it.
+5. Add every key you reference. A child that never arrives renders nothing, so before you stop, walk every children array and output any key you have not written yet.
+6. Every element needs "type", "props" and "children" (an empty array for leaves).
+7. Icons come only from the icon list; pick the closest match rather than inventing a name.
 
 EXAMPLE
 {{example}}
@@ -1320,8 +1322,9 @@ CATALOGUE
 SITE OUTLINE
 {{outline}}
 
-SELECTED ELEMENT AND ITS DESCENDANTS
-{{element}}`,
+SELECTED CONTEXT
+The ancestors explain the selected element's layout and surface. Treat them as read-only context except for the immediate parent's children list allowed above.
+{{elementContext}}`,
     variables: [
       {
         name: "components",
@@ -1330,7 +1333,10 @@ SELECTED ELEMENT AND ITS DESCENDANTS
       { name: "pageId", description: "The id of the page the selected element belongs to." },
       { name: "targetPath", description: "JSON pointer of the selected element." },
       { name: "outline", description: "Compact outline of every page in the site." },
-      { name: "element", description: "The selected element and its descendants as JSON." },
+      {
+        name: "elementContext",
+        description: "The selected element subtree and its ancestor elements as JSON.",
+      },
     ],
   },
 ] as const satisfies readonly PromptEntry[];

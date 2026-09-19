@@ -1,4 +1,5 @@
 import {
+  decisionNoulConfidence,
   decisionNoulIsTrue,
   listSitePages,
   normaliseDecisionScore,
@@ -180,6 +181,11 @@ export const SITE_QUALITY_QUESTIONS = {
     instructions:
       "Do the pages read as one site: consistent brand name, matching navigation across pages, and copy in one voice?",
   } satisfies DecisionNoulQuestion,
+  readable: {
+    type: "noul",
+    instructions:
+      "Is the site's important copy likely to remain readable across its component and background combinations? Use the element hierarchy and props to look for foreground/background conflicts, low-emphasis copy on inverted or primary surfaces, and content hidden by its container.",
+  } satisfies DecisionNoulQuestion,
 } as const;
 
 const PLACEHOLDER_THRESHOLD = 0.65;
@@ -189,10 +195,15 @@ export type SiteQualityAnswers = Partial<
 >;
 
 function sampleSiteCopy(project: SiteProject, limit = 6000): string {
-  const lines: string[] = [];
+  const pages = listSitePages(project);
 
-  for (const { page } of listSitePages(project)) {
-    lines.push(`# ${page.title} (${page.path})`);
+  if (pages.length === 0) {
+    return "";
+  }
+
+  const pageBudget = Math.max(1, Math.floor(limit / pages.length));
+  const samples = pages.map(({ page }) => {
+    const lines = [`# ${page.title} (${page.path})`];
 
     for (const [key, element] of Object.entries(page.elements)) {
       const text = JSON.stringify(element.props);
@@ -201,9 +212,11 @@ function sampleSiteCopy(project: SiteProject, limit = 6000): string {
         lines.push(`${key} ${element.type}: ${text.slice(0, 400)}`);
       }
     }
-  }
 
-  return lines.join("\n").slice(0, limit);
+    return lines.join("\n").slice(0, pageBudget);
+  });
+
+  return samples.join("\n").slice(0, limit);
 }
 
 export function buildSiteQualityState(brief: string, project: SiteProject) {
@@ -220,17 +233,39 @@ export function resolveSiteQuality(
     answers.coverage?.type === "score" ? roundDecisionScore(answers.coverage) : 2;
   const placeholders = answers.placeholders?.type === "noul" ? answers.placeholders.noul : 0;
   const coherent = answers.coherent?.type === "noul" ? answers.coherent.noul : 1;
+  const readable = answers.readable?.type === "noul" ? answers.readable.noul : 1;
   const repairs = issues.filter((issue) => issue.severity === "warning").length;
   const needsRepair =
-    coverageLevel <= 1 || placeholders >= PLACEHOLDER_THRESHOLD || coherent < 0.5 || repairs >= 3;
+    coverageLevel <= 1 ||
+    placeholders >= PLACEHOLDER_THRESHOLD ||
+    coherent < 0.5 ||
+    readable < 0.5 ||
+    repairs >= 3;
+  const repairSignals = [
+    ...(coverageLevel <= 1 && answers.coverage?.type === "score"
+      ? [answers.coverage.confidence]
+      : []),
+    ...(placeholders >= PLACEHOLDER_THRESHOLD && answers.placeholders?.type === "noul"
+      ? [decisionNoulConfidence(answers.placeholders)]
+      : []),
+    ...(coherent < 0.5 && answers.coherent?.type === "noul"
+      ? [decisionNoulConfidence(answers.coherent)]
+      : []),
+    ...(readable < 0.5 && answers.readable?.type === "noul"
+      ? [decisionNoulConfidence(answers.readable)]
+      : []),
+    ...(repairs >= 3 ? [1] : []),
+  ];
 
   return {
     coverage,
     placeholders,
     coherent,
+    readable,
     repairs,
     needsRepair,
     confidence: answers.coverage?.type === "score" ? answers.coverage.confidence : 0,
+    repairConfidence: repairSignals.length ? Math.max(...repairSignals) : 0,
   };
 }
 
@@ -260,6 +295,12 @@ export function buildSiteRepairPrompt(
   if (quality.coherent < 0.5) {
     lines.push(
       "The pages do not read as one site. Align the brand name, navigation and voice across every page.",
+    );
+  }
+
+  if ((quality.readable ?? 1) < 0.5) {
+    lines.push(
+      "Some important copy may not be readable against its surface. Prefer semantic backgrounds and tones with clear contrast, and avoid low-emphasis text on inverted or primary sections.",
     );
   }
 

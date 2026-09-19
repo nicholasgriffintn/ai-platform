@@ -13,7 +13,7 @@ import {
   resolveElementProps,
   runSiteAction,
 } from "../state.js";
-import { validateSiteProject } from "../validate.js";
+import { hasRenderableSiteContent, validateSiteProject } from "../validate.js";
 
 function compileStream(stream: string, chunkSize: number): Record<string, unknown> {
   const reader = createSitePatchStreamReader();
@@ -40,6 +40,20 @@ describe("site patch stream", () => {
 
     expect(fragmented).toEqual(whole);
     expect(whole.title).toBe("Acme");
+  });
+
+  it("streams visible page structure before metadata", () => {
+    const paths = buildSiteExampleStream()
+      .split("\n")
+      .map((line) => JSON.parse(line) as { path: string })
+      .map((patch) => patch.path);
+
+    expect(paths.slice(0, 3)).toEqual([
+      "/pages/home",
+      "/pages/home/elements/page",
+      "/pages/home/elements/nav",
+    ]);
+    expect(paths.indexOf("/title")).toBeGreaterThan(paths.indexOf("/pages/home/elements/nav"));
   });
 
   it("ignores prose, fences and malformed lines without losing later patches", () => {
@@ -174,6 +188,33 @@ describe("validateSiteProject", () => {
     expect(project.pages.home.root).toBe("page");
     expect(project.pages.home.path).toBe("/");
   });
+
+  it("does not treat an empty page shell as visible content", () => {
+    const shell = validateSiteProject({
+      pages: {
+        home: {
+          root: "page",
+          elements: {
+            page: { type: "Page", props: {}, children: ["hero"] },
+          },
+        },
+      },
+    }).project;
+    const visible = validateSiteProject({
+      pages: {
+        home: {
+          root: "page",
+          elements: {
+            page: { type: "Page", props: {}, children: ["hero"] },
+            hero: { type: "Hero", props: { headline: "Hello" }, children: [] },
+          },
+        },
+      },
+    }).project;
+
+    expect(hasRenderableSiteContent(shell)).toBe(false);
+    expect(hasRenderableSiteContent(visible)).toBe(true);
+  });
 });
 
 describe("resolveSitePlan", () => {
@@ -296,6 +337,42 @@ describe("codegen", () => {
       expect.arrayContaining(["app/page.tsx", "app/reports/page.tsx", "app/globals.css"]),
     );
     expect(tabs?.content.startsWith('"use client";')).toBe(true);
+  });
+
+  it("keeps generated text contextual inside inverted and transparent surfaces", () => {
+    const { project } = validateSiteProject({
+      title: "Readable",
+      pages: {
+        home: {
+          path: "/",
+          title: "Readable",
+          root: "page",
+          elements: {
+            page: { type: "Page", props: {}, children: ["section"] },
+            section: {
+              type: "Section",
+              props: { background: "inverted" },
+              children: ["card", "alert"],
+            },
+            card: { type: "Card", props: { variant: "outline" }, children: ["text"] },
+            text: { type: "Text", props: { text: "Visible copy" }, children: [] },
+            alert: {
+              type: "Alert",
+              props: { title: "Notice", description: "Visible detail" },
+              children: [],
+            },
+          },
+        },
+      },
+    });
+    const { files } = generateSiteFiles(project);
+    const source = (name: string) =>
+      files.find((file) => file.path === `components/site/${name}.tsx`)?.content ?? "";
+
+    expect(source("Text")).toContain('default: ""');
+    expect(source("Text")).toContain('muted: "opacity-70"');
+    expect(source("Card")).not.toContain('rounded-lg text-card-foreground"');
+    expect(source("Alert")).toContain('className="text-sm opacity-70"');
   });
 });
 

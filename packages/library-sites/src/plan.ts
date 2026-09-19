@@ -1,5 +1,6 @@
 import {
   DEFAULT_SITE_THEME,
+  decisionNoulConfidence,
   decisionNoulIsTrue,
   roundDecisionScore,
   SITE_KINDS,
@@ -123,7 +124,7 @@ function readConfidence(answer: DecisionAnswer | undefined): number | null {
   }
 
   if (answer.type === "noul") {
-    return Math.abs(answer.noul - 0.5) * 2;
+    return decisionNoulConfidence(answer);
   }
 
   return answer.confidence;

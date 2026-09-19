@@ -20,6 +20,7 @@ import {
   useOpenSitePullRequest,
   useProject,
   useSiteGeneration,
+  useTrackEvent,
   SITES_QUERY_KEYS,
   type SiteGenerationState,
 } from "@ngriffin_uk/polychat-library-react";
@@ -28,7 +29,7 @@ import {
   collectEmptySiteImageSlots,
   generateSiteFiles,
 } from "@ngriffin_uk/polychat-library-sites";
-import { listSitePages, type SiteQuality, type SiteRecord } from "@ngriffin_uk/polychat-schemas";
+import { listSitePages, type SiteRecord } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Code2,
@@ -45,30 +46,29 @@ import {
   Tablet,
   Trash2,
 } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { useOwnAppChrome } from "../AppChrome.js";
 import { RecentSites } from "./RecentSites.js";
+import { SiteBuildPlaceholder } from "./SiteBuildPlaceholder.js";
+import { SiteConversationTurn } from "./SiteConversationTurn.js";
 import { SiteHistory, type SiteRevisionPreview } from "./SiteHistory.js";
 import { SiteInspector } from "./SiteInspector.js";
 import { SitePlanSummary } from "./SitePlanSummary.js";
 import { SitePromptComposer } from "./SitePromptComposer.js";
-
-const EXAMPLE_BRIEFS = [
-  "A landing page for a bakery in Leeds that takes wedding cake orders",
-  "An analytics dashboard for a coffee subscription business",
-  "A three-page marketing site for an accountancy firm: home, services, contact",
-  "A pricing section with three tiers for a note-taking app",
-];
+import { SiteStarterPrompt } from "./SiteStarterPrompt.js";
 
 const VIEWPORT_ICONS = { desktop: Monitor, tablet: Tablet, mobile: Smartphone } as const;
 
 const STATUS_LABELS: Record<SiteGenerationState["status"], string> = {
   idle: "",
   planning: "Jev is reading the brief",
+  selecting: "Choosing the build setup",
   streaming: "Building",
+  reviewing: "Jev is reviewing the site",
+  repairing: "Repairing issues Jev found",
   saving: "Saving",
   done: "Saved",
   error: "Failed",
@@ -82,6 +82,7 @@ export interface SiteStudioProps {
 
 export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   const navigate = useNavigate();
+  const { trackEvent } = useTrackEvent();
   const chrome = useOwnAppChrome(true);
   const { state, generate, edit, generateImages, load, cancel } = useSiteGeneration({
     projectId,
@@ -101,6 +102,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   const [view, setView] = useState<"preview" | "code">("preview");
   const [inspecting, setInspecting] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const trackedPreviewLatencyRef = useRef<number | null>(null);
   const project = revisionPreview?.project ?? state.project;
   const pages = useMemo(() => (project ? listSitePages(project) : []), [project]);
   const resolvedPageId = project ? resolveSitePageId(project, activePageId ?? undefined) : null;
@@ -111,15 +113,43 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
     () => (project && view === "code" ? generateSiteFiles(project).files : []),
     [project, view],
   );
-  const isBusy =
-    state.status === "planning" || state.status === "streaming" || state.status === "saving";
+  const isBusy = !["idle", "done", "error"].includes(state.status);
   const savedId = state.site?.id;
+  const repairQuality = state.quality;
+  const hasDecisionTrace =
+    (state.site?.turns.some((turn) => (turn.trace?.length ?? 0) > 0) ?? false) ||
+    state.trace.length > 0;
 
   useEffect(() => {
     if (savedId && !site) {
       void navigate(`${basePath}/${savedId}`, { replace: true });
     }
   }, [basePath, navigate, savedId, site]);
+
+  useEffect(() => {
+    if (state.status === "planning" && state.firstPreviewLatencyMs === null) {
+      trackedPreviewLatencyRef.current = null;
+
+      return;
+    }
+
+    if (state.firstPreviewLatencyMs === null || trackedPreviewLatencyRef.current !== null) {
+      return;
+    }
+
+    trackedPreviewLatencyRef.current = state.firstPreviewLatencyMs;
+    trackEvent({
+      name: "site_generation_first_preview",
+      category: "performance",
+      value: state.firstPreviewLatencyMs,
+      non_interaction: true,
+      properties: {
+        kind: state.plan?.kind ?? "unknown",
+        scope: state.plan?.scope ?? "unknown",
+        patch_count: state.patchCount,
+      },
+    });
+  }, [state.firstPreviewLatencyMs, state.patchCount, state.plan, state.status, trackEvent]);
 
   const loadedRevision = state.site?.revision;
 
@@ -167,6 +197,14 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   const handleSelectPage = (pageId: string) => {
     setActivePageId(pageId);
     setSelectedKey(null);
+  };
+
+  const handleSelectElement = (key: string | null) => {
+    setSelectedKey(key);
+
+    if (key) {
+      setHistoryOpen(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -246,28 +284,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
               watch it land section by section.
             </p>
           </div>
-          <SitePromptComposer
-            size="hero"
-            autoFocus
-            placeholder="A landing page for…"
-            submitLabel="Build"
-            isBusy={false}
-            onSubmit={handleSubmit}
-            className="w-full max-w-2xl"
-          />
-          <ul className="flex max-w-2xl flex-wrap justify-center gap-2">
-            {EXAMPLE_BRIEFS.map((brief) => (
-              <li key={brief}>
-                <button
-                  type="button"
-                  onClick={() => handleSubmit(brief)}
-                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
-                >
-                  {brief}
-                </button>
-              </li>
-            ))}
-          </ul>
+          <SiteStarterPrompt onSubmit={handleSubmit} />
           <RecentSites basePath={basePath} projectId={projectId} className="max-w-5xl pt-8" />
         </div>
       </div>
@@ -297,13 +314,23 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto px-4 py-4">
           {(state.site?.turns ?? []).map((turn) => (
-            <div key={turn.id} className="flex flex-col gap-1">
-              <p className="rounded-lg bg-accent px-3 py-2 text-sm text-accent-foreground">
-                {turn.prompt}
-              </p>
-            </div>
+            <SiteConversationTurn
+              key={turn.id}
+              prompt={turn.prompt}
+              project={project}
+              target={turn.target}
+              entries={turn.trace ?? []}
+            />
           ))}
-          {state.plan && (
+          {state.pendingPrompt && (
+            <SiteConversationTurn
+              prompt={state.pendingPrompt}
+              project={project}
+              target={state.pendingTarget}
+              entries={state.trace}
+            />
+          )}
+          {state.plan && (!hasDecisionTrace || repairQuality?.needsRepair) && (
             <SitePlanSummary
               plan={state.plan}
               issues={state.issues}
@@ -311,12 +338,12 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
               model={state.model}
               isRepairing={isBusy}
               onRepair={
-                state.site && state.quality
+                state.site && repairQuality
                   ? () =>
                       void generate({
                         prompt: buildSiteRepairPrompt(
                           state.site?.brief ?? "",
-                          state.quality as SiteQuality,
+                          repairQuality,
                           state.issues,
                         ),
                         siteId: state.site?.id,
@@ -326,22 +353,21 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
             />
           )}
           {state.imageStatus === "generating" && (
-            <p className="text-xs text-muted-foreground" role="status">
+            <output className="text-xs text-muted-foreground">
               Generating images for the placeholders
-            </p>
+            </output>
           )}
           {state.status !== "idle" && state.status !== "done" && (
-            <p
+            <output
               className={cn(
                 "text-xs",
                 state.status === "error" ? "text-failure" : "text-muted-foreground",
               )}
-              role="status"
             >
               {state.status === "error"
                 ? state.error
                 : `${STATUS_LABELS[state.status]}${state.patchCount ? ` · ${state.patchCount} updates` : ""}`}
-            </p>
+            </output>
           )}
         </div>
         <div className="border-t border-border p-3">
@@ -539,7 +565,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                   onNavigate={handleSelectPage}
                   inspecting={inspecting}
                   selectedKey={selectedKey}
-                  onSelect={setSelectedKey}
+                  onSelect={handleSelectElement}
                   className="flex-1"
                 />
                 {historyOpen && state.site && (
@@ -560,23 +586,25 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                     pageId={resolvedPageId}
                     page={activePage}
                     elementKey={selectedKey as string}
-                    onSelect={setSelectedKey}
+                    onSelect={handleSelectElement}
                     onEdit={edit}
                   />
                 )}
               </>
             )
-          ) : (
+          ) : state.status === "error" ? (
             <div className="flex h-full flex-1 items-center justify-center p-8">
               <EmptyState
-                title={state.status === "error" ? "Nothing to show" : STATUS_LABELS[state.status]}
-                message={
-                  state.status === "error"
-                    ? (state.error ?? "The build failed before anything arrived.")
-                    : "The first section lands as soon as the model writes it."
-                }
+                title="Nothing to show"
+                message={state.error ?? "The build failed before anything arrived."}
               />
             </div>
+          ) : (
+            <SiteBuildPlaceholder
+              status={state.status}
+              plan={state.plan}
+              patchCount={state.patchCount}
+            />
           )}
         </div>
       </section>
@@ -595,13 +623,12 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
 
 function SegmentedGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div
-      role="group"
+    <fieldset
       aria-label={label}
-      className="flex items-center gap-0.5 rounded-md border border-border bg-surface p-0.5"
+      className="m-0 flex min-w-0 items-center gap-0.5 rounded-md border border-border bg-surface p-0.5"
     >
       {children}
-    </div>
+    </fieldset>
   );
 }
 

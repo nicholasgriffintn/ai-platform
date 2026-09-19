@@ -425,3 +425,15 @@ function pickTheme(raw: Record<string, unknown>) {
 export function hasSiteErrors(issues: readonly SiteIssue[]): boolean {
   return issues.some((issue) => issue.severity === "error");
 }
+
+export function hasRenderableSiteContent(project: SiteProject): boolean {
+  return Object.values(project.pages).some((page) => {
+    const root = page.elements[page.root];
+
+    if (!root) {
+      return false;
+    }
+
+    return root.type !== "Page" || root.children.some((child) => child in page.elements);
+  });
+}

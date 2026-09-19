@@ -189,3 +189,25 @@ export function roundDecisionScore(answer: Pick<DecisionScoreAnswer, "score" | "
 export function decisionNoulIsTrue(answer: Pick<DecisionNoulAnswer, "noul">, threshold = 0.5) {
   return answer.noul >= threshold;
 }
+
+export function decisionNoulConfidence(answer: Pick<DecisionNoulAnswer, "noul">) {
+  return Math.abs(answer.noul - 0.5) * 2;
+}
+
+export function formatDecisionEntry(value: DecisionEntry): string {
+  if (value === null) {
+    return "None";
+  }
+
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(formatDecisionEntry).join(", ");
+  }
+
+  return Object.entries(value)
+    .map(([key, entry]) => `${key}: ${formatDecisionEntry(entry)}`)
+    .join(", ");
+}

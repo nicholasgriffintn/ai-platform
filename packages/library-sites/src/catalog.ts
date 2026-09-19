@@ -96,7 +96,7 @@ export const SITE_CATALOG = {
   Section: define({
     category: "layout",
     description:
-      "A full-width band of the page with padding and an optional background. Wrap loose content in one; composed sections (Hero, FeatureGrid, Pricing) already include their own.",
+      "A full-width band of the page with padding and an optional background. Child text automatically keeps readable contrast. Wrap loose content in one; composed sections (Hero, FeatureGrid, Pricing) already include their own.",
     props: z.object({
       background: z.enum(["default", "muted", "primary", "inverted"]).optional(),
       padding: z.enum(["sm", "md", "lg"]).optional(),
@@ -132,7 +132,7 @@ export const SITE_CATALOG = {
   Card: define({
     category: "layout",
     description:
-      "Bordered surface for grouped content. Give it a title when the group needs a label; put the body in children.",
+      "Bordered surface for grouped content. Default and elevated cards provide their own surface; outline and ghost cards inherit their parent contrast. Give it a title when the group needs a label; put the body in children.",
     props: z.object({
       title: optionalText,
       description: optionalText,
@@ -507,7 +507,8 @@ export const SITE_CATALOG = {
   }),
   Text: define({
     category: "content",
-    description: "Paragraph text.",
+    description:
+      "Paragraph text. Default inherits a readable colour from its surface; muted reduces emphasis; primary uses the brand accent.",
     props: z.object({
       text: z.string(),
       size: z.enum(["xs", "sm", "md", "lg"]).optional(),

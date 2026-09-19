@@ -4,8 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   tryDecide: vi.fn(),
   stream: vi.fn(),
+  loadSiteGenerationModels: vi.fn(),
   resolveSiteGenerationModel: vi.fn(),
   createSite: vi.fn(),
+  finaliseSiteGeneration: vi.fn(),
   updateSite: vi.fn(),
   getSite: vi.fn(),
 }));
@@ -14,10 +16,12 @@ vi.mock("~/infrastructure/ai", () => ({
   ai: { tryDecide: mocks.tryDecide, stream: mocks.stream },
 }));
 vi.mock("~/modules/sites/application/model", () => ({
+  loadSiteGenerationModels: mocks.loadSiteGenerationModels,
   resolveSiteGenerationModel: mocks.resolveSiteGenerationModel,
 }));
 vi.mock("~/modules/sites/application/records", () => ({
   createSite: mocks.createSite,
+  finaliseSiteGeneration: mocks.finaliseSiteGeneration,
   updateSite: mocks.updateSite,
   getSite: mocks.getSite,
 }));
@@ -73,10 +77,44 @@ const modelOutput = [
 
 const context = { env: {}, ensureDatabase: () => {}, repositories: {} } as never;
 const user = { id: 7, plan_id: "pro" } as never;
+const planDecision = {
+  provider: "typesafe",
+  model: "jev",
+  answers: {
+    kind: { type: "choice", choice: "landing", probabilities: {}, confidence: 0.9 },
+    scope: { type: "choice", choice: "page", probabilities: {}, confidence: 0.8 },
+    complexity: {
+      type: "score",
+      score: 1.2,
+      legend: { 0: "", 1: "", 2: "", 3: "" },
+      probabilities: {},
+      confidence: 0.7,
+    },
+    palette: { type: "choice", choice: "sunset", probabilities: {}, confidence: 0.6 },
+  },
+};
+const soundQualityDecision = {
+  provider: "typesafe",
+  model: "jev",
+  answers: {
+    coverage: {
+      type: "score",
+      score: 3,
+      legend: { 0: "poor", 1: "partial", 2: "near", 3: "complete" },
+      probabilities: { 3: 0.95 },
+      confidence: 0.95,
+    },
+    placeholders: { type: "noul", noul: 0.05 },
+    coherent: { type: "noul", noul: 0.95 },
+    readable: { type: "noul", noul: 0.95 },
+  },
+};
 
 describe("streamSiteGeneration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.tryDecide.mockResolvedValue(null);
+    mocks.loadSiteGenerationModels.mockResolvedValue({});
     mocks.resolveSiteGenerationModel.mockResolvedValue({
       model: "test-model",
       provider: "test",
@@ -92,29 +130,29 @@ describe("streamSiteGeneration", () => {
       plan: input.plan,
       project: input.project,
       issues: input.issues,
+      quality: input.quality,
       turns: [input.turn],
       createdAt: "2026-09-19T00:00:00.000Z",
       updatedAt: null,
     }));
+    mocks.finaliseSiteGeneration.mockImplementation(async (_scope, id, revision, input) => ({
+      id,
+      title: input.project.title,
+      brief: input.brief,
+      projectId: null,
+      revision: revision + 1,
+      plan: input.plan,
+      project: input.project,
+      issues: input.issues,
+      quality: input.quality,
+      turns: [input.turn],
+      createdAt: "2026-09-19T00:00:00.000Z",
+      updatedAt: "2026-09-19T00:01:00.000Z",
+    }));
   });
 
   it("classifies with Jev, streams patches as they arrive, repairs the document and saves it", async () => {
-    mocks.tryDecide.mockResolvedValue({
-      provider: "typesafe",
-      model: "jev",
-      answers: {
-        kind: { type: "choice", choice: "landing", probabilities: {}, confidence: 0.9 },
-        scope: { type: "choice", choice: "page", probabilities: {}, confidence: 0.8 },
-        complexity: {
-          type: "score",
-          score: 1.2,
-          legend: { 0: "", 1: "", 2: "", 3: "" },
-          probabilities: {},
-          confidence: 0.7,
-        },
-        palette: { type: "choice", choice: "sunset", probabilities: {}, confidence: 0.6 },
-      },
-    });
+    mocks.tryDecide.mockResolvedValueOnce(planDecision).mockResolvedValueOnce(soundQualityDecision);
 
     const response = await streamSiteGeneration({
       context,
@@ -124,23 +162,35 @@ describe("streamSiteGeneration", () => {
     const events = await readEvents(response);
     const types = events.map((event) => event.type);
 
-    expect(types.slice(0, 2)).toEqual(["plan", "model"]);
+    expect(types.slice(0, 3)).toEqual(["phase", "trace", "plan"]);
+    expect(types.indexOf("plan")).toBeLessThan(types.indexOf("model"));
     expect(types.filter((type) => type === "patch")).toHaveLength(5);
     expect(events.at(-1)).not.toHaveProperty("error");
     expect(types.slice(-2)).toEqual(["saved", "done"]);
+    expect(events.filter((event) => event.type === "saved").map((event) => event.stage)).toEqual([
+      "initial",
+      "final",
+    ]);
+    expect(mocks.createSite.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.tryDecide.mock.invocationCallOrder[1],
+    );
 
-    const plan = events[0].plan as Record<string, unknown>;
+    const planEvent = events.find((event) => event.type === "plan");
+    const plan = planEvent?.plan as Record<string, unknown>;
 
     expect(plan).toMatchObject({
       kind: "landing",
       scope: "page",
       tier: "low",
-      provider: "test",
-      model: "test-model",
     });
+    expect(plan).not.toHaveProperty("provider");
+    expect(plan).not.toHaveProperty("model");
     expect((plan.theme as Record<string, unknown>).palette).toBe("sunset");
     expect(mocks.resolveSiteGenerationModel).toHaveBeenCalledWith(
-      expect.objectContaining({ tier: "low", requestedModel: undefined }),
+      expect.objectContaining({ tier: "low", requestedModel: undefined, availableModels: {} }),
+    );
+    expect(mocks.loadSiteGenerationModels.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.tryDecide.mock.invocationCallOrder[0],
     );
 
     const streamRequest = mocks.stream.mock.calls[0][0];
@@ -152,14 +202,22 @@ describe("streamSiteGeneration", () => {
     expect(streamRequest.prompt_cache_key).toMatch(/^sites-generate-/);
     expect(streamRequest.prompt).toContain("A landing page for a bakery in Leeds");
 
-    const saved = mocks.createSite.mock.calls[0][1];
+    const saved = mocks.finaliseSiteGeneration.mock.calls[0][3];
 
+    expect(saved.plan).toMatchObject({ provider: "test", model: "test-model" });
     expect(saved.project.title).toBe("Crumb");
     expect(Object.keys(saved.project.pages.home.elements)).toEqual(["page", "hero"]);
     expect(saved.project.pages.home.elements.page.children).toEqual(["hero"]);
     expect(saved.project.pages.home.elements.hero.props).toEqual({
       headline: "Cakes worth the drive",
     });
+    expect(saved.turn.trace).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "decision", stage: "plan", provider: "typesafe" }),
+        expect.objectContaining({ kind: "generation", stage: "build", model: "test-model" }),
+        expect.objectContaining({ kind: "decision", stage: "quality", provider: "typesafe" }),
+      ]),
+    );
     expect(saved.issues.map((issue: { message: string }) => issue.message)).toEqual(
       expect.arrayContaining([
         expect.stringContaining("Carousel"),
@@ -180,8 +238,19 @@ describe("streamSiteGeneration", () => {
     });
     const events = await readEvents(response);
 
-    expect(events[0]).toMatchObject({ type: "plan", plan: { kind: "dashboard", tier: "low" } });
-    expect((events[0].plan as Record<string, unknown>).answers).toBeUndefined();
+    const planEvent = events.find((event) => event.type === "plan");
+
+    if (!planEvent) {
+      throw new Error("Expected a plan event");
+    }
+
+    expect(planEvent).toMatchObject({ type: "plan", plan: { kind: "dashboard", tier: "low" } });
+    expect((planEvent.plan as Record<string, unknown>).answers).toBeUndefined();
+    expect(events[0]).toMatchObject({ type: "phase", phase: "planning" });
+    expect(events[1]).toMatchObject({
+      type: "trace",
+      entry: { kind: "decision", stage: "plan", source: "heuristic" },
+    });
 
     const system = mocks.stream.mock.calls[0][0].system as string;
 
@@ -263,20 +332,40 @@ describe("streamSiteGeneration", () => {
     expect(intentCall.state.outline).toContain("hero: Hero");
     expect(mocks.stream.mock.calls[0][0].system).toContain("CURRENT DOCUMENT");
     expect(events.map((event) => event.type)).toEqual([
+      "phase",
+      "trace",
       "plan",
       "intent",
+      "phase",
       "model",
+      "phase",
       "patch",
+      "trace",
+      "phase",
+      "saved",
+      "phase",
+      "trace",
+      "phase",
       "saved",
       "done",
     ]);
-    expect(events[1]).toMatchObject({ type: "intent", intent: "restructure", target: null });
+    expect(events.find((event) => event.type === "intent")).toMatchObject({
+      type: "intent",
+      intent: "restructure",
+      target: null,
+    });
 
     const updated = mocks.updateSite.mock.calls[0][2];
 
     expect(updated.brief).toBe("A landing page for a bakery in Leeds");
     expect(updated.project.pages.home.elements.hero.props.headline).toBe("New headline");
-    expect((events[4].site as { revision: number }).revision).toBe(2);
+    const savedEvent = events.find((event) => event.type === "saved");
+
+    if (!savedEvent) {
+      throw new Error("Expected a saved event");
+    }
+
+    expect((savedEvent.site as { revision: number }).revision).toBe(2);
   });
 
   it("scopes a refinement to a selected element with the outline instead of the whole document", async () => {
@@ -304,7 +393,12 @@ describe("streamSiteGeneration", () => {
             title: "Home",
             root: "page",
             elements: {
-              page: { type: "Page", props: {}, children: ["hero", "footer"] },
+              page: { type: "Page", props: {}, children: ["section", "footer"] },
+              section: {
+                type: "Section",
+                props: { background: "inverted" },
+                children: ["hero"],
+              },
               hero: { type: "Hero", props: { headline: "Old headline" }, children: [] },
               footer: { type: "Footer", props: { brand: "Crumb" }, children: [] },
             },
@@ -347,11 +441,50 @@ describe("streamSiteGeneration", () => {
     const events = await readEvents(response);
     const system = mocks.stream.mock.calls[0][0].system as string;
 
-    expect(system).toContain("SELECTED ELEMENT");
+    expect(system).toContain("SELECTED CONTEXT");
     expect(system).toContain("/pages/home/elements/hero");
     expect(system).toContain('hero: Hero "Old headline"');
+    expect(system).toContain('"background":"inverted"');
     expect(system).not.toContain('"brand":"Crumb"');
-    expect(events.map((event) => event.type)).toEqual(["plan", "model", "patch", "saved", "done"]);
+    expect(events.map((event) => event.type)).toEqual([
+      "phase",
+      "plan",
+      "phase",
+      "model",
+      "phase",
+      "patch",
+      "trace",
+      "phase",
+      "saved",
+      "phase",
+      "trace",
+      "phase",
+      "saved",
+      "done",
+    ]);
+
+    mocks.stream.mockResolvedValueOnce(sseStreamOf(["No patch was produced\n"]));
+    const noUpdateEvents = await readEvents(
+      await streamSiteGeneration({
+        context,
+        user,
+        request: {
+          prompt: "Fix it",
+          siteId: "site-1",
+          target: { pageId: "home", elementKey: "hero" },
+        },
+      }),
+    );
+
+    expect(noUpdateEvents.find((event) => event.type === "trace" && event.entry)).toMatchObject({
+      type: "trace",
+      entry: {
+        kind: "generation",
+        stage: "build",
+        outcome: "discarded",
+        summary: "No site updates were applied because the response contained no valid patches",
+      },
+    });
 
     const missing = await readEvents(
       await streamSiteGeneration({
@@ -365,5 +498,141 @@ describe("streamSiteGeneration", () => {
       type: "error",
       error: expect.stringContaining("no longer exists"),
     });
+  });
+
+  it("runs one automatic repair when Jev flags a high-confidence readability risk", async () => {
+    const weakQualityDecision = {
+      provider: "typesafe",
+      model: "jev",
+      answers: {
+        coverage: {
+          type: "score",
+          score: 3,
+          legend: { 0: "poor", 1: "partial", 2: "near", 3: "complete" },
+          probabilities: { 3: 0.96 },
+          confidence: 0.96,
+        },
+        placeholders: { type: "noul", noul: 0.1 },
+        coherent: { type: "noul", noul: 0.9 },
+        readable: { type: "noul", noul: 0.02 },
+      },
+    };
+
+    mocks.tryDecide
+      .mockResolvedValueOnce(planDecision)
+      .mockResolvedValueOnce(weakQualityDecision)
+      .mockResolvedValueOnce(soundQualityDecision);
+    mocks.stream
+      .mockResolvedValueOnce(sseStreamOf(modelOutput))
+      .mockResolvedValueOnce(
+        sseStreamOf([
+          '{"op":"replace","path":"/pages/home/elements/hero/props/headline","value":"Wedding cakes made in Leeds"}\n',
+        ]),
+      );
+
+    const events = await readEvents(
+      await streamSiteGeneration({
+        context,
+        user,
+        request: { prompt: "A landing page for a bakery in Leeds" },
+      }),
+    );
+    const saved = mocks.finaliseSiteGeneration.mock.calls[0][3];
+
+    expect(mocks.stream).toHaveBeenCalledTimes(2);
+    expect(mocks.stream.mock.calls[1][0].prompt).toContain(
+      "may not be readable against its surface",
+    );
+    expect(saved.project.pages.home.elements.hero.props.headline).toBe(
+      "Wedding cakes made in Leeds",
+    );
+    expect(saved.turn.trace).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "generation", stage: "repair", outcome: "applied" }),
+        expect.objectContaining({ id: expect.stringContaining("post-repair:quality") }),
+      ]),
+    );
+    expect(events.filter((event) => event.type === "patch")).toHaveLength(6);
+  });
+
+  it("discards an automatic repair that would invalidate the site", async () => {
+    const weakQualityDecision = {
+      provider: "typesafe",
+      model: "jev",
+      answers: {
+        coverage: {
+          type: "score",
+          score: 0,
+          legend: { 0: "poor", 1: "partial", 2: "near", 3: "complete" },
+          probabilities: { 0: 0.97 },
+          confidence: 0.97,
+        },
+      },
+    };
+
+    mocks.tryDecide.mockResolvedValueOnce(planDecision).mockResolvedValueOnce(weakQualityDecision);
+    mocks.stream
+      .mockResolvedValueOnce(sseStreamOf(modelOutput))
+      .mockResolvedValueOnce(sseStreamOf(['{"op":"remove","path":"/pages/home"}\n']));
+
+    const events = await readEvents(
+      await streamSiteGeneration({
+        context,
+        user,
+        request: { prompt: "A landing page for a bakery in Leeds" },
+      }),
+    );
+    const saved = mocks.finaliseSiteGeneration.mock.calls[0][3];
+
+    expect(saved.project.pages.home).toBeDefined();
+    expect(saved.turn.trace).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "generation", stage: "repair", outcome: "discarded" }),
+      ]),
+    );
+    expect(events.filter((event) => event.type === "patch")).toHaveLength(5);
+  });
+
+  it("keeps the valid initial site when automatic repair is unavailable", async () => {
+    const weakQualityDecision = {
+      provider: "typesafe",
+      model: "jev",
+      answers: {
+        coverage: {
+          type: "score",
+          score: 0,
+          legend: { 0: "poor", 1: "partial", 2: "near", 3: "complete" },
+          probabilities: { 0: 0.97 },
+          confidence: 0.97,
+        },
+      },
+    };
+
+    mocks.tryDecide.mockResolvedValueOnce(planDecision).mockResolvedValueOnce(weakQualityDecision);
+    mocks.stream
+      .mockResolvedValueOnce(sseStreamOf(modelOutput))
+      .mockRejectedValueOnce(new Error("provider unavailable"));
+
+    const events = await readEvents(
+      await streamSiteGeneration({
+        context,
+        user,
+        request: { prompt: "A landing page for a bakery in Leeds" },
+      }),
+    );
+    const saved = mocks.finaliseSiteGeneration.mock.calls[0][3];
+
+    expect(saved.project.pages.home).toBeDefined();
+    expect(saved.turn.trace).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "generation",
+          stage: "repair",
+          outcome: "discarded",
+          summary: expect.stringContaining("original site was kept"),
+        }),
+      ]),
+    );
+    expect(events.at(-1)).toMatchObject({ type: "done" });
   });
 });

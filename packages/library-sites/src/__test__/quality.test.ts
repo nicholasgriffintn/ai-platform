@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildSiteRefineTargetQuestion,
   buildSiteRepairPrompt,
+  buildSiteQualityState,
   listSiteRefineTargets,
   resolveSiteQuality,
   resolveSiteRefineIntent,
@@ -107,6 +108,7 @@ describe("quality", () => {
         },
         placeholders: { type: "noul", noul: 0.7 },
         coherent: { type: "noul", noul: 0.9 },
+        readable: { type: "noul", noul: 0.2 },
       },
       [{ severity: "warning", pageId: "home", elementKey: "faq", message: "FAQ items empty" }],
     );
@@ -114,8 +116,10 @@ describe("quality", () => {
     expect(quality).toMatchObject({
       coverage: 1 / 3,
       placeholders: 0.7,
+      readable: 0.2,
       repairs: 1,
       needsRepair: true,
+      repairConfidence: 0.8,
     });
 
     const prompt = buildSiteRepairPrompt("A bakery site with a menu", quality, [
@@ -125,6 +129,7 @@ describe("quality", () => {
     expect(prompt).toContain("covers only part of the brief");
     expect(prompt).toContain("placeholder or filler");
     expect(prompt).not.toContain("do not read as one site");
+    expect(prompt).toContain("may not be readable against its surface");
     expect(prompt).toContain("home/faq: FAQ items empty");
   });
 
@@ -141,9 +146,70 @@ describe("quality", () => {
           },
           placeholders: { type: "noul", noul: 0.1 },
           coherent: { type: "noul", noul: 0.95 },
+          readable: { type: "noul", noul: 0.95 },
         },
         [],
       ).needsRepair,
     ).toBe(false);
+  });
+
+  it("requests repair for a high-confidence readability risk", () => {
+    const quality = resolveSiteQuality(
+      {
+        coverage: {
+          type: "score",
+          score: 3,
+          legend: { 0: "", 1: "", 2: "", 3: "" },
+          probabilities: {},
+          confidence: 0.9,
+        },
+        placeholders: { type: "noul", noul: 0.05 },
+        coherent: { type: "noul", noul: 0.95 },
+        readable: { type: "noul", noul: 0.02 },
+      },
+      [],
+    );
+
+    expect(quality).toMatchObject({
+      readable: 0.02,
+      needsRepair: true,
+      repairConfidence: 0.96,
+    });
+  });
+
+  it("samples copy from every page within the quality context budget", () => {
+    const { project: multiPage } = validateSiteProject({
+      title: "Long site",
+      pages: {
+        first: {
+          path: "/",
+          title: "First",
+          root: "page",
+          elements: {
+            page: { type: "Page", props: {}, children: ["body"] },
+            body: { type: "Text", props: { text: "early ".repeat(2000) }, children: [] },
+          },
+        },
+        final: {
+          path: "/final",
+          title: "Final",
+          root: "page",
+          elements: {
+            page: { type: "Page", props: {}, children: ["marker"] },
+            marker: {
+              type: "Heading",
+              props: { text: "LATER_PAGE_MARKER" },
+              children: [],
+            },
+          },
+        },
+      },
+    });
+    const state = buildSiteQualityState("Brief", multiPage);
+
+    expect(state.content).toContain("# First (/");
+    expect(state.content).toContain("# Final (/final)");
+    expect(state.content).toContain("LATER_PAGE_MARKER");
+    expect(state.content.length).toBeLessThanOrEqual(6000);
   });
 });

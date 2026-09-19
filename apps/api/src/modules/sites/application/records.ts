@@ -182,8 +182,8 @@ export async function createSite(scope: SiteScope, input: SaveSiteInput): Promis
       origin: "generated",
       completeness: "complete",
       model:
-        input.plan.model && input.plan.provider
-          ? { id: input.plan.model, provider: input.plan.provider }
+        input.turn.model && input.turn.provider
+          ? { id: input.turn.model, provider: input.turn.provider }
           : null,
     }),
   });
@@ -222,6 +222,60 @@ export async function updateSite(
 
   if (!site) {
     throw new AssistantError("Failed to save the site", ErrorType.DATABASE_ERROR);
+  }
+
+  return site;
+}
+
+export async function finaliseSiteGeneration(
+  scope: SiteScope,
+  siteId: string,
+  expectedRevision: number,
+  input: SaveSiteInput,
+): Promise<SiteRecord> {
+  const record = await findSiteOutput(scope, siteId);
+  const existing = parseStoredSite(record);
+
+  if (!existing) {
+    throw new AssistantError("Site record is unreadable", ErrorType.UNKNOWN_ERROR);
+  }
+
+  let turnIndex = -1;
+
+  for (let index = existing.turns.length - 1; index >= 0; index -= 1) {
+    if (existing.turns[index]?.id === input.turn.id) {
+      turnIndex = index;
+      break;
+    }
+  }
+
+  if (turnIndex < 0) {
+    throw new AssistantError("Site generation turn is missing", ErrorType.CONFLICT_ERROR, 409);
+  }
+
+  const turns = [...existing.turns];
+
+  turns[turnIndex] = input.turn;
+
+  const stored: StoredSite = {
+    brief: existing.brief,
+    plan: input.plan,
+    project: input.project,
+    issues: input.issues,
+    quality: input.quality ?? null,
+    turns,
+  };
+  const updated = await scope.context.repositories.outputs.updateOutput(record.id, {
+    title: input.project.title,
+    status: "ready",
+    content: stored,
+    expectedRevision,
+    updatedByUserId: scope.userId,
+  });
+  const site = mapSiteRecord(updated);
+
+  if (!site) {
+    throw new AssistantError("Failed to finalise the site", ErrorType.DATABASE_ERROR);
   }
 
   return site;

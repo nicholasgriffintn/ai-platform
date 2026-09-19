@@ -105,8 +105,6 @@ export function buildSiteExampleStream(include?: readonly SiteComponentType[]): 
   const application = include ? !include.includes("Hero") && include.includes("AppShell") : false;
   const lines = application
     ? [
-        { op: "add", path: "/title", value: "Ledger" },
-        { op: "add", path: "/description", value: "Invoices and customers for a small studio." },
         {
           op: "add",
           path: "/pages/home",
@@ -114,7 +112,6 @@ export function buildSiteExampleStream(include?: readonly SiteComponentType[]): 
             path: "/",
             title: "Overview",
             root: "page",
-            state: { tab: "open", invoices: [{ id: "i1", customer: "Northwind", status: "open" }] },
             elements: {},
           },
         },
@@ -130,6 +127,16 @@ export function buildSiteExampleStream(include?: readonly SiteComponentType[]): 
             type: "AppShell",
             props: SITE_CATALOG.AppShell.example,
             children: ["metrics", "table"],
+          },
+        },
+        { op: "add", path: "/title", value: "Ledger" },
+        { op: "add", path: "/description", value: "Invoices and customers for a small studio." },
+        {
+          op: "add",
+          path: "/pages/home/state",
+          value: {
+            tab: "open",
+            invoices: [{ id: "i1", customer: "Northwind", status: "open" }],
           },
         },
         {
@@ -160,8 +167,6 @@ export function buildSiteExampleStream(include?: readonly SiteComponentType[]): 
         },
       ]
     : [
-        { op: "add", path: "/title", value: "Acme" },
-        { op: "add", path: "/description", value: "Invoicing for small studios." },
         {
           op: "add",
           path: "/pages/home",
@@ -177,6 +182,8 @@ export function buildSiteExampleStream(include?: readonly SiteComponentType[]): 
           path: "/pages/home/elements/nav",
           value: { type: "Navbar", props: SITE_CATALOG.Navbar.example, children: [] },
         },
+        { op: "add", path: "/title", value: "Acme" },
+        { op: "add", path: "/description", value: "Invoicing for small studios." },
         {
           op: "add",
           path: "/pages/home/elements/hero",

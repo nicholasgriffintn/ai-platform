@@ -1,19 +1,18 @@
 import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
-  applySitePatch,
   buildSiteExampleStream,
   buildSiteGenerateUserPrompt,
   buildSitePlanGuidance,
   buildSiteRefineUserPrompt,
   catalogueSubsetId,
-  collectSiteElementSubtree,
+  collectSiteElementRefinementContext,
   componentsForSiteKind,
   componentsForSiteRefinement,
-  createSitePatchStreamReader,
   describeSiteCatalog,
   describeSiteOutline,
   elementPatchPath,
+  hasRenderableSiteContent,
   hasSiteErrors,
   serialiseSiteProjectForPrompt,
   SITE_COMPONENT_TYPES,
@@ -22,6 +21,7 @@ import {
 } from "@ngriffin_uk/polychat-library-sites";
 import type {
   ModelTier,
+  SiteDecisionTraceEntry,
   SiteElementTarget,
   SiteGenerateRequest,
   SiteIssue,
@@ -29,7 +29,10 @@ import type {
   SiteQuality,
   SiteRecord,
   SiteStreamEvent,
+  SiteTraceEntry,
+  SiteTurn,
 } from "@ngriffin_uk/polychat-schemas";
+import { decisionConfidenceBand } from "@ngriffin_uk/polychat-schemas";
 import {
   encodeServerSentEvent,
   encodeServerSentEventDone,
@@ -41,19 +44,18 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { sseResponse } from "~/infrastructure/http/streaming";
 import type { IUser } from "~/types";
 
-import { resolveSiteGenerationModel } from "./model";
+import { attemptAutomaticSiteRepair } from "./automatic-repair";
+import { createSiteGenerationTrace, runSiteGenerationPass } from "./generation-pass";
+import { loadSiteGenerationModels, resolveSiteGenerationModel } from "./model";
+import { createSiteGenerationPerformance } from "./performance";
 import { classifySiteRefinement, planSite, scoreSite } from "./plan";
-import { readProviderTextStream } from "./provider-text-stream";
-import { createSite, getSite, updateSite } from "./records";
+import { createSite, finaliseSiteGeneration, getSite, updateSite } from "./records";
 
 const logger = getLogger({ prefix: "services/sites/generate" });
-
-const SITE_GENERATION_MAX_TOKENS = 24_000;
 
 export interface SiteGenerationOverrides {
   guidance?: boolean;
@@ -79,6 +81,7 @@ interface PreparedGeneration {
   cacheKey: string;
   intent: ResolvedRefineIntent | null;
   target: SiteElementTarget | null;
+  decisionTrace: SiteDecisionTraceEntry[];
 }
 
 function buildInitialDocument(request: SiteGenerateRequest, plan: SitePlan) {
@@ -108,7 +111,7 @@ async function prepareGeneration(
       throw new AssistantError("The selected element no longer exists", ErrorType.NOT_FOUND, 404);
     }
 
-    const intent = request.target
+    const classification = request.target
       ? null
       : await classifySiteRefinement({
           env: context.env,
@@ -118,6 +121,7 @@ async function prepareGeneration(
           plan: existing.plan,
           completionId,
         });
+    const intent = classification?.intent ?? null;
     const target = request.target ?? intent?.target ?? null;
     const targetPage = target ? existing.project.pages[target.pageId] : undefined;
     const subset = componentsForSiteRefinement(existing.project, existing.plan.kind);
@@ -129,6 +133,7 @@ async function prepareGeneration(
       existing,
       intent,
       target,
+      decisionTrace: classification ? [classification.trace] : [],
       system:
         target && targetPage
           ? renderPrompt("apps/sites/refine-element", {
@@ -136,7 +141,9 @@ async function prepareGeneration(
               pageId: target.pageId,
               targetPath: elementPatchPath(target.pageId, target.elementKey),
               outline: describeSiteOutline(existing.project),
-              element: JSON.stringify(collectSiteElementSubtree(targetPage, target.elementKey)),
+              elementContext: JSON.stringify(
+                collectSiteElementRefinementContext(targetPage, target.elementKey),
+              ),
             })
           : renderPrompt("apps/sites/refine", {
               components,
@@ -148,13 +155,14 @@ async function prepareGeneration(
     };
   }
 
-  const plan = await planSite({
+  const planned = await planSite({
     env: context.env,
     user,
     prompt: request.prompt,
     themeHint: request.theme,
     completionId,
   });
+  const plan = planned.plan;
 
   const overrides = options.overrides ?? {};
   const subset =
@@ -166,6 +174,7 @@ async function prepareGeneration(
     existing: null,
     intent: null,
     target: null,
+    decisionTrace: [planned.trace],
     system: renderPrompt("apps/sites/generate", {
       example: buildSiteExampleStream(subset),
       components: describeSiteCatalog(subset),
@@ -190,156 +199,365 @@ export interface SiteGenerationResult {
   quality: SiteQuality | null;
 }
 
+function buildGenerationTurn({
+  completionId,
+  request,
+  plan,
+  prepared,
+  provider,
+  model,
+  trace,
+}: {
+  completionId: string;
+  request: SiteGenerateRequest;
+  plan: SitePlan;
+  prepared: PreparedGeneration;
+  provider: string;
+  model: string;
+  trace: SiteTraceEntry[];
+}): SiteTurn {
+  return {
+    id: completionId,
+    role: "user",
+    prompt: request.prompt,
+    createdAt: new Date().toISOString(),
+    plan,
+    ...(prepared.intent ? { intent: prepared.intent.intent } : {}),
+    ...(prepared.target ? { target: prepared.target } : {}),
+    provider,
+    model,
+    trace,
+  };
+}
+
+async function reviewGeneratedSite({
+  options,
+  completionId,
+  generationModel,
+  plan,
+  brief,
+  initialProject,
+  initialIssues,
+}: {
+  options: RunSiteGenerationOptions;
+  completionId: string;
+  generationModel: Awaited<ReturnType<typeof resolveSiteGenerationModel>>;
+  plan: SitePlan;
+  brief: string;
+  initialProject: SiteRecord["project"];
+  initialIssues: SiteIssue[];
+}): Promise<{
+  project: SiteRecord["project"];
+  issues: SiteIssue[];
+  quality: SiteQuality | null;
+  trace: SiteTraceEntry[];
+}> {
+  const emit = options.emit ?? (() => {});
+  let project = initialProject;
+  let issues = initialIssues;
+  let quality: SiteQuality | null = null;
+  const trace: SiteTraceEntry[] = [];
+
+  if (options.skipQuality) {
+    return { project, issues, quality, trace };
+  }
+
+  emit({ type: "phase", phase: "reviewing" });
+  const scored = await scoreSite({
+    env: options.context.env,
+    user: options.user,
+    brief,
+    project,
+    issues,
+    completionId,
+  });
+
+  quality = scored.quality;
+  trace.push(scored.trace);
+  emit({ type: "trace", entry: scored.trace });
+
+  if (quality?.needsRepair && decisionConfidenceBand(quality.repairConfidence ?? 0) === "high") {
+    emit({ type: "phase", phase: "repairing" });
+    const repair = await attemptAutomaticSiteRepair({
+      env: options.context.env,
+      user: options.user,
+      generationModel,
+      project,
+      plan,
+      brief,
+      quality,
+      issues,
+      completionId,
+      signal: options.signal,
+    });
+
+    trace.push(repair.trace);
+    emit({ type: "trace", entry: repair.trace });
+
+    if (repair.project && repair.issues) {
+      project = repair.project;
+      issues = repair.issues;
+
+      for (const patch of repair.patches) {
+        emit({ type: "patch", patch });
+      }
+
+      emit({ type: "phase", phase: "reviewing" });
+      const rescored = await scoreSite({
+        env: options.context.env,
+        user: options.user,
+        brief,
+        project,
+        issues,
+        completionId: `${completionId}:post-repair`,
+      });
+
+      quality = rescored.quality;
+      trace.push(rescored.trace);
+      emit({ type: "trace", entry: rescored.trace });
+    }
+  }
+
+  return { project, issues, quality, trace };
+}
+
 export async function runSiteGeneration(
   options: RunSiteGenerationOptions,
 ): Promise<SiteGenerationResult> {
   const { context, user, request, signal } = options;
   const emit = options.emit ?? (() => {});
   const completionId = `site-${generateId()}`;
-  const prepared = await prepareGeneration(options, completionId);
-  const generationModel = await resolveSiteGenerationModel({
+  const performance = createSiteGenerationPerformance({
+    context,
+    user,
+    completionId,
+    refining: Boolean(request.siteId),
+  });
+  const availableModelsPromise = loadSiteGenerationModels({
     env: context.env,
     user,
-    tier: prepared.tier,
     requestedModel: request.model,
-  });
-  const plan: SitePlan = {
-    ...prepared.plan,
-    provider: generationModel.provider,
-    model: generationModel.model,
-  };
+  }).then(
+    (availableModels) => ({ availableModels, error: null }),
+    (error: unknown) => ({ availableModels: null, error }),
+  );
 
-  emit({ type: "plan", plan });
+  emit({ type: "phase", phase: "planning" });
 
-  if (prepared.intent) {
-    emit({
-      type: "intent",
-      intent: prepared.intent.intent,
-      tier: prepared.tier,
-      target: prepared.target,
-      confidence: prepared.intent.confidence,
-    });
-  }
+  try {
+    const prepared = await prepareGeneration(options, completionId);
+    let plan: SitePlan =
+      prepared.tier === prepared.plan.tier
+        ? prepared.plan
+        : { ...prepared.plan, tier: prepared.tier };
 
-  emit({ type: "model", provider: generationModel.provider, model: generationModel.model });
+    performance.mark("planCompleted");
 
-  const providerStream = await ai.stream({
-    env: context.env,
-    user,
-    model: generationModel.model,
-    provider: generationModel.provider,
-    system: prepared.system,
-    prompt: prepared.prompt,
-    store: false,
-    completion_id: completionId,
-    enabled_tools: [],
-    tools: [],
-    disable_functions: true,
-    mode: "normal",
-    platform: "tool-run",
-    max_tokens: SITE_GENERATION_MAX_TOKENS,
-    prompt_cache_key: prepared.cacheKey,
-    ...(generationModel.effort
-      ? { reasoning_effort: generationModel.effort }
-      : { reasoning: { effort: "none" } }),
-  });
-
-  if (!(providerStream instanceof ReadableStream)) {
-    throw new AssistantError("The model did not stream a response", ErrorType.PROVIDER_ERROR);
-  }
-
-  const reader = createSitePatchStreamReader();
-  const document = prepared.document;
-  let applied = 0;
-  let rejected = 0;
-  const apply = (patches: ReturnType<typeof reader.push>) => {
-    for (const patch of patches) {
-      try {
-        applySitePatch(document, patch);
-        applied += 1;
-        emit({ type: "patch", patch });
-      } catch (error) {
-        rejected += 1;
-        logger.warn("Dropped a site patch", {
-          completion_id: completionId,
-          path: patch.path,
-          error_message: getErrorMessage(error),
-        });
-      }
+    for (const entry of prepared.decisionTrace) {
+      emit({ type: "trace", entry });
     }
-  };
 
-  for await (const delta of readProviderTextStream(providerStream, signal)) {
-    apply(reader.push(delta));
-  }
+    emit({ type: "plan", plan });
 
-  apply(reader.flush());
+    if (prepared.intent) {
+      emit({
+        type: "intent",
+        intent: prepared.intent.intent,
+        tier: prepared.tier,
+        target: prepared.target,
+        confidence: prepared.intent.confidence,
+      });
+    }
 
-  const { project, issues } = validateSiteProject(document);
+    emit({ type: "phase", phase: "selecting" });
+    const loadedModels = await availableModelsPromise;
 
-  logger.info("Site generation finished", {
-    completion_id: completionId,
-    applied,
-    rejected,
-    skipped_lines: reader.skippedLines(),
-    issues: issues.length,
-    pages: Object.keys(project.pages).length,
-  });
+    if (loadedModels.error) {
+      throw loadedModels.error;
+    }
 
-  if (hasSiteErrors(issues)) {
-    throw new AssistantError(
-      issues.find((issue) => issue.severity === "error")?.message ?? "Generation failed",
-      ErrorType.PROVIDER_ERROR,
-    );
-  }
+    const generationModel = await resolveSiteGenerationModel({
+      env: context.env,
+      user,
+      tier: prepared.tier,
+      requestedModel: request.model,
+      availableModels: loadedModels.availableModels,
+    });
 
-  const brief = prepared.existing?.brief ?? request.prompt;
-  const quality = options.skipQuality
-    ? null
-    : await scoreSite({ env: context.env, user, brief, project, issues, completionId });
-  const scope = { context, userId: user.id, projectId: request.projectId };
-  const turn = {
-    id: completionId,
-    role: "user" as const,
-    prompt: request.prompt,
-    createdAt: new Date().toISOString(),
-    plan,
-    ...(prepared.intent ? { intent: prepared.intent.intent } : {}),
-    ...(prepared.target ? { target: prepared.target } : {}),
-    provider: generationModel.provider,
-    model: generationModel.model,
-  };
-  const site =
-    options.persist === false
-      ? {
-          id: completionId,
-          title: project.title,
-          brief,
-          projectId: request.projectId ?? null,
-          revision: 0,
-          plan,
-          project,
-          issues,
-          quality,
-          turns: [turn],
-          createdAt: turn.createdAt,
-          updatedAt: null,
+    plan = {
+      ...plan,
+      provider: generationModel.provider,
+      model: generationModel.model,
+    };
+
+    performance.mark("modelSelected");
+    emit({ type: "model", provider: generationModel.provider, model: generationModel.model });
+    emit({ type: "phase", phase: "streaming" });
+
+    let renderableRecorded = false;
+    const buildResult = await runSiteGenerationPass({
+      env: context.env,
+      user,
+      generationModel,
+      system: prepared.system,
+      prompt: prepared.prompt,
+      document: prepared.document,
+      completionId,
+      cacheKey: prepared.cacheKey,
+      signal,
+      onProviderStreamOpened: () => performance.mark("providerStreamOpened"),
+      onFirstToken: () => performance.mark("firstToken"),
+      onPatch: (patch) => {
+        performance.mark("firstPatch");
+        emit({ type: "patch", patch });
+
+        if (
+          !renderableRecorded &&
+          hasRenderableSiteContent(validateSiteProject(prepared.document).project)
+        ) {
+          renderableRecorded = true;
+          performance.mark("firstRenderable");
         }
-      : prepared.existing
+      },
+    });
+
+    performance.mark("buildCompleted");
+    const buildTrace = createSiteGenerationTrace({
+      id: `${completionId}:build`,
+      stage: "build",
+      outcome: buildResult.applied > 0 ? "applied" : "discarded",
+      result: buildResult,
+      provider: generationModel.provider,
+      model: generationModel.model,
+    });
+    const initialTrace: SiteTraceEntry[] = [...prepared.decisionTrace, buildTrace];
+
+    emit({ type: "trace", entry: buildTrace });
+
+    const initial = validateSiteProject(prepared.document);
+
+    logger.info("Site generation finished", {
+      completion_id: completionId,
+      applied: buildResult.applied,
+      rejected: buildResult.rejected,
+      skipped_lines: buildResult.skippedLines,
+      issues: initial.issues.length,
+      pages: Object.keys(initial.project.pages).length,
+    });
+
+    if (hasSiteErrors(initial.issues)) {
+      throw new AssistantError(
+        initial.issues.find((issue) => issue.severity === "error")?.message ?? "Generation failed",
+        ErrorType.PROVIDER_ERROR,
+      );
+    }
+
+    const brief = prepared.existing?.brief ?? request.prompt;
+    const scope = { context, userId: user.id, projectId: request.projectId };
+    const initialTurn = buildGenerationTurn({
+      completionId,
+      request,
+      plan,
+      prepared,
+      provider: generationModel.provider,
+      model: generationModel.model,
+      trace: initialTrace,
+    });
+    let initialSite: SiteRecord | null = null;
+
+    if (options.persist !== false) {
+      emit({ type: "phase", phase: "saving" });
+      initialSite = prepared.existing
         ? await updateSite(scope, prepared.existing.id, {
             brief,
             plan,
-            project,
-            issues,
-            quality,
-            turn,
+            project: initial.project,
+            issues: initial.issues,
+            quality: null,
+            turn: initialTurn,
           })
-        : await createSite(scope, { brief, plan, project, issues, quality, turn });
+        : await createSite(scope, {
+            brief,
+            plan,
+            project: initial.project,
+            issues: initial.issues,
+            quality: null,
+            turn: initialTurn,
+          });
 
-  emit({ type: "saved", site });
-  emit({ type: "done", issues, quality });
+      performance.mark("initialSaved");
+      emit({ type: "saved", stage: options.skipQuality ? "final" : "initial", site: initialSite });
+    }
 
-  return { site, plan, issues, quality };
+    const reviewed = await reviewGeneratedSite({
+      options,
+      completionId,
+      generationModel,
+      plan,
+      brief,
+      initialProject: initial.project,
+      initialIssues: initial.issues,
+    });
+
+    performance.mark("reviewCompleted");
+    const finalTurn = buildGenerationTurn({
+      completionId,
+      request,
+      plan,
+      prepared,
+      provider: generationModel.provider,
+      model: generationModel.model,
+      trace: [...initialTrace, ...reviewed.trace],
+    });
+    let site: SiteRecord;
+
+    if (options.persist === false) {
+      site = {
+        id: completionId,
+        title: reviewed.project.title,
+        brief,
+        projectId: request.projectId ?? null,
+        revision: 0,
+        plan,
+        project: reviewed.project,
+        issues: reviewed.issues,
+        quality: reviewed.quality,
+        turns: [finalTurn],
+        createdAt: finalTurn.createdAt,
+        updatedAt: null,
+      };
+      emit({ type: "saved", stage: "final", site });
+    } else if (options.skipQuality && initialSite) {
+      site = initialSite;
+    } else if (initialSite) {
+      emit({ type: "phase", phase: "saving" });
+      site = await finaliseSiteGeneration(scope, initialSite.id, initialSite.revision, {
+        brief,
+        plan,
+        project: reviewed.project,
+        issues: reviewed.issues,
+        quality: reviewed.quality,
+        turn: finalTurn,
+      });
+      emit({ type: "saved", stage: "final", site });
+    } else {
+      throw new AssistantError("The generated site was not saved", ErrorType.STORAGE_ERROR);
+    }
+
+    performance.mark("finalSaved");
+    emit({ type: "done", issues: reviewed.issues, quality: reviewed.quality });
+    performance.finish("success");
+
+    return {
+      site,
+      plan,
+      issues: reviewed.issues,
+      quality: reviewed.quality,
+    };
+  } catch (error) {
+    performance.finish("error", error);
+    throw error;
+  }
 }
 
 export async function streamSiteGeneration(

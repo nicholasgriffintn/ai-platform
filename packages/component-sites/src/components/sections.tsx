@@ -27,6 +27,7 @@ export function Hero({
   background = "default",
 }: SiteComponentProps<"Hero">) {
   const centered = layout === "centered";
+  const supportingTone = background === "inverted" ? "opacity-75" : "text-muted-foreground";
   const copy = (
     <div
       className={cn(
@@ -35,7 +36,12 @@ export function Hero({
       )}
     >
       {eyebrow && (
-        <span className="inline-flex rounded-full border px-3 py-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        <span
+          className={cn(
+            "inline-flex rounded-full border px-3 py-1 text-xs font-medium tracking-wide uppercase",
+            supportingTone,
+          )}
+        >
           {eyebrow}
         </span>
       )}
@@ -47,7 +53,7 @@ export function Hero({
       >
         {headline}
       </h1>
-      {description && <p className="max-w-2xl text-lg text-muted-foreground">{description}</p>}
+      {description && <p className={cn("max-w-2xl text-lg", supportingTone)}>{description}</p>}
       {(primaryCta || secondaryCta) && (
         <div className="flex flex-wrap gap-3">
           {primaryCta && (

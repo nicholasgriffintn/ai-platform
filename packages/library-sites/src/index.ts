@@ -16,10 +16,18 @@ export { generateSiteFiles, type GeneratedSiteFiles } from "./codegen/project.js
 export { renderPageJsx } from "./codegen/page.js";
 export { buildSiteExampleStream, describeSiteCatalog, describeSiteComponent } from "./describe.js";
 export {
+  createSiteDecisionTrace,
+  describeSitePlanDecision,
+  describeSiteQualityDecision,
+  describeSiteRefinementDecision,
+  type CreateSiteDecisionTraceOptions,
+} from "./decision-trace.js";
+export {
   buildDuplicateSiteElementPatches,
   buildMoveSiteElementPatches,
   buildRemoveSiteElementPatches,
   buildSitePropsPatch,
+  collectSiteElementRefinementContext,
   collectSiteElementSubtree,
   describeSiteOutline,
   elementPatchPath,
@@ -115,4 +123,9 @@ export {
   componentsForSiteRefinement,
   componentsUsedInSite,
 } from "./subsets.js";
-export { hasSiteErrors, validateSiteProject, type SiteValidationResult } from "./validate.js";
+export {
+  hasRenderableSiteContent,
+  hasSiteErrors,
+  validateSiteProject,
+  type SiteValidationResult,
+} from "./validate.js";

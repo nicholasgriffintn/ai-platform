@@ -12,6 +12,7 @@ const quality = (coverage: number) => ({
   coverage,
   placeholders: 0.1,
   coherent: 0.9,
+  readable: 0.95,
   repairs: 0,
   needsRepair: false,
   confidence: 0.8,

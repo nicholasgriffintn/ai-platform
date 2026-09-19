@@ -20,6 +20,8 @@ const SCOPE_LABELS: Record<SitePlan["scope"], string> = {
   site: "several pages",
 };
 
+const NO_ISSUES: SiteIssue[] = [];
+
 export interface SitePlanSummaryProps {
   plan: SitePlan;
   issues?: SiteIssue[];
@@ -32,7 +34,7 @@ export interface SitePlanSummaryProps {
 
 export function SitePlanSummary({
   plan,
-  issues = [],
+  issues = NO_ISSUES,
   quality,
   model,
   onRepair,
@@ -53,9 +55,7 @@ export function SitePlanSummary({
         <span className="font-medium text-foreground">
           {KIND_LABELS[plan.kind]}, {SCOPE_LABELS[plan.scope]}
         </span>
-        <span className="text-muted-foreground">
-          {decided ? `Jev, ${Math.round(plan.confidence * 100)}% sure` : "Heuristic plan"}
-        </span>
+        <span className="text-muted-foreground">{decided ? "Jev plan" : "Heuristic plan"}</span>
       </div>
       <div className="flex flex-wrap gap-1.5">
         <Badge variant="secondary">{plan.tier} tier</Badge>
@@ -85,6 +85,7 @@ export function SitePlanSummary({
           </Badge>
           {quality.placeholders >= 0.65 && <Badge variant="outline">placeholder copy</Badge>}
           {quality.coherent < 0.5 && <Badge variant="outline">pages disagree</Badge>}
+          {(quality.readable ?? 1) < 0.5 && <Badge variant="outline">readability risk</Badge>}
           {quality.needsRepair && onRepair && (
             <Button
               variant="outline"

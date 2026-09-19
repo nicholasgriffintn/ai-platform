@@ -123,9 +123,9 @@ export default function Grid({
 
   Card: layout(
     `const VARIANTS = {
-  default: "border bg-card shadow-sm",
+  default: "border bg-card text-card-foreground shadow-sm",
   outline: "border bg-transparent",
-  elevated: "border bg-card shadow-lg",
+  elevated: "border bg-card text-card-foreground shadow-lg",
   ghost: "bg-transparent",
 } as const;
 const PADDINGS = { none: "p-0", sm: "p-4", md: "p-6", lg: "p-8" } as const;
@@ -144,11 +144,11 @@ export default function Card({
   children?: ReactNode;
 }) {
   return (
-    <div className={cn("flex flex-col gap-4 rounded-lg text-card-foreground", VARIANTS[variant], PADDINGS[padding])}>
+    <div className={cn("flex flex-col gap-4 rounded-lg", VARIANTS[variant], PADDINGS[padding])}>
       {(title || description) && (
         <div className="flex flex-col gap-1">
           {title && <h3 className="font-heading text-lg font-semibold leading-tight">{title}</h3>}
-          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+          {description && <p className="text-sm opacity-70">{description}</p>}
         </div>
       )}
       {children}
@@ -164,7 +164,7 @@ export default function Card({
   }
 
   return (
-    <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground">
+    <div className="flex items-center gap-3 text-xs uppercase tracking-wide opacity-70">
       <hr className="flex-1 border-border" />
       <span>{label}</span>
       <hr className="flex-1 border-border" />
@@ -445,17 +445,18 @@ export default function Hero({
   background?: keyof typeof BACKGROUNDS;
 }) {
   const centered = layout === "centered";
+  const supportingTone = background === "inverted" ? "opacity-75" : "text-muted-foreground";
   const copy = (
     <div className={cn("flex flex-col gap-6", centered ? "items-center text-center" : "items-start text-left")}>
       {eyebrow && (
-        <span className="inline-flex rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <span className={cn("inline-flex rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-wide", supportingTone)}>
           {eyebrow}
         </span>
       )}
       <h1 className="max-w-3xl font-heading text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
         {headline}
       </h1>
-      {description && <p className="max-w-2xl text-lg text-muted-foreground">{description}</p>}
+      {description && <p className={cn("max-w-2xl text-lg", supportingTone)}>{description}</p>}
       {(primaryCta || secondaryCta) && (
         <div className="flex flex-wrap gap-3">
           {primaryCta && (
@@ -985,7 +986,7 @@ export default function Heading({
 `),
 
   Text: layout(`const SIZES = { xs: "text-xs", sm: "text-sm", md: "text-base", lg: "text-lg" } as const;
-const TONES = { default: "text-foreground", muted: "text-muted-foreground", primary: "text-primary" } as const;
+const TONES = { default: "", muted: "opacity-70", primary: "text-primary" } as const;
 const WEIGHTS = { normal: "font-normal", medium: "font-medium", semibold: "font-semibold" } as const;
 const ALIGN = { start: "text-left", center: "text-center", end: "text-right" } as const;
 
@@ -1009,10 +1010,10 @@ export default function Text({
   Badge: layout(`const VARIANTS = {
   default: "bg-primary text-primary-foreground",
   secondary: "bg-secondary text-secondary-foreground",
-  outline: "border text-foreground",
-  success: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
-  warning: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
-  danger: "bg-destructive/15 text-destructive",
+  outline: "border",
+  success: "border border-emerald-500/40 bg-emerald-500/15",
+  warning: "border border-amber-500/40 bg-amber-500/15",
+  danger: "border border-destructive/40 bg-destructive/15",
 } as const;
 
 export default function Badge({ text, variant = "default" }: { text: string; variant?: keyof typeof VARIANTS }) {
@@ -1058,7 +1059,7 @@ import { Icon } from "@/components/site/icon";
 
 export default function Link({ label, href, icon }: { label: string; href: string; icon?: string }) {
   return (
-    <NextLink href={href} className="inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline">
+    <NextLink href={href} className="inline-flex items-center gap-1 text-sm font-medium underline decoration-primary/60 underline-offset-4 hover:decoration-primary">
       {label}
       <Icon name={icon} size="sm" />
     </NextLink>
@@ -1128,7 +1129,7 @@ export default function Avatar({ name, src, size = "md" }: { name: string; src?:
   return src ? (
     <img src={src} alt={name} className={cn("rounded-full object-cover", SIZES[size])} />
   ) : (
-    <span className={cn("flex items-center justify-center rounded-full bg-muted font-medium", SIZES[size])} title={name}>
+    <span className={cn("flex items-center justify-center rounded-full bg-muted font-medium text-muted-foreground", SIZES[size])} title={name}>
       <Initials name={name} />
     </span>
   );
@@ -1170,7 +1171,7 @@ export default function List({ items, style = "bullet" }: { items: string[]; sty
     <figure className="flex flex-col gap-4 border-l-2 border-primary pl-6">
       <blockquote className="font-heading text-xl leading-relaxed">“{text}”</blockquote>
       {author && (
-        <figcaption className="text-sm text-muted-foreground">
+        <figcaption className="text-sm opacity-70">
           {author}
           {role ? ", " + role : ""}
         </figcaption>
@@ -1221,7 +1222,7 @@ export default function Alert({
       <Icon name={VARIANTS[variant].icon} size="sm" className="mt-0.5 shrink-0" />
       <div className="flex flex-col gap-1">
         <span className="text-sm font-medium">{title}</span>
-        {description && <span className="text-sm text-muted-foreground">{description}</span>}
+        {description && <span className="text-sm opacity-70">{description}</span>}
       </div>
     </div>
   );

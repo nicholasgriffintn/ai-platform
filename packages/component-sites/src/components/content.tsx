@@ -33,8 +33,8 @@ export function Heading({ text, level = 2, size = "md", align }: SiteComponentPr
 
 const TEXT_SIZES = { xs: "text-xs", sm: "text-sm", md: "text-base", lg: "text-lg" } as const;
 const TEXT_TONES = {
-  default: "text-foreground",
-  muted: "text-muted-foreground",
+  default: "",
+  muted: "opacity-70",
   primary: "text-primary",
 } as const;
 const TEXT_WEIGHTS = {
@@ -68,10 +68,10 @@ export function Text({
 const BADGE_VARIANTS = {
   default: "bg-primary text-primary-foreground",
   secondary: "bg-secondary text-secondary-foreground",
-  outline: "border text-foreground",
-  success: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
-  warning: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
-  danger: "bg-destructive/15 text-destructive",
+  outline: "border",
+  success: "border border-emerald-500/40 bg-emerald-500/15",
+  warning: "border border-amber-500/40 bg-amber-500/15",
+  danger: "border border-destructive/40 bg-destructive/15",
 } as const;
 
 export function Badge({ text, variant = "default" }: SiteComponentProps<"Badge">) {
@@ -114,7 +114,7 @@ export function Link({ label, href, icon }: SiteComponentProps<"Link">) {
   return (
     <SiteLink
       href={href}
-      className="inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
+      className="inline-flex items-center gap-1 text-sm font-medium underline decoration-primary/60 underline-offset-4 hover:decoration-primary"
     >
       {label}
       <SiteIcon name={icon} size="sm" />
@@ -161,6 +161,7 @@ export function Avatar({ name, src, size = "md" }: SiteComponentProps<"Avatar">)
     <span
       className={cn(
         "flex items-center justify-center rounded-full bg-muted font-medium",
+        "text-muted-foreground",
         AVATAR_SIZES[size],
       )}
       title={name}
@@ -200,7 +201,7 @@ export function Quote({ text, author, role }: SiteComponentProps<"Quote">) {
     <figure className="flex flex-col gap-4 border-l-2 border-primary pl-6">
       <blockquote className={cn("text-xl leading-relaxed", HEADING_FONT)}>“{text}”</blockquote>
       {author && (
-        <figcaption className="text-sm text-muted-foreground">
+        <figcaption className="text-sm opacity-70">
           {author}
           {role ? `, ${role}` : ""}
         </figcaption>
@@ -241,7 +242,7 @@ export function Alert({ title, description, variant = "info" }: SiteComponentPro
       <SiteIcon name={ALERT_VARIANTS[variant].icon} size="sm" className="mt-0.5 shrink-0" />
       <div className="flex flex-col gap-1">
         <span className="text-sm font-medium">{title}</span>
-        {description && <span className="text-sm text-muted-foreground">{description}</span>}
+        {description && <span className="text-sm opacity-70">{description}</span>}
       </div>
     </div>
   );

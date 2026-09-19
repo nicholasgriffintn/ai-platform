@@ -50,7 +50,7 @@ export function buildSitePlanGuidance(plan: SitePlan): string {
 }
 
 export function buildSiteGenerateUserPrompt(prompt: string): string {
-  return `Brief:\n${prompt.trim()}\n\nStart streaming the document now, beginning with /title.`;
+  return `Brief:\n${prompt.trim()}\n\nStart streaming the first page shell and its first visible element now.`;
 }
 
 export function buildSiteRefineUserPrompt(prompt: string): string {
