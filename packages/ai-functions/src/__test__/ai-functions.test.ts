@@ -33,6 +33,11 @@ function createRuntime(getResponse: GetResponse) {
       throw new Error("replicate down");
     }),
   };
+  const rerank = {
+    name: "greenpt",
+    models: ["green-rerank"],
+    rerank: vi.fn(async () => ({ provider: "greenpt", model: "green-rerank", results: [] })),
+  };
   const resolve = vi.fn((category: string, name: string) => {
     if (category === "chat") {
       return chat;
@@ -42,13 +47,19 @@ function createRuntime(getResponse: GetResponse) {
       return name === "replicate" ? replicate : image;
     }
 
+    if (category === "rerank") {
+      return rerank;
+    }
+
     throw new Error(`unexpected ${category}`);
   });
   const runtime: ProviderRuntime = {
     host: {
       models: {
         findModelConfig: vi.fn(async (model: string) =>
-          model === "gpt-5" ? ({ matchingModel: "gpt-5", provider: "openai" } as never) : null,
+          model === "gpt-5" || model === "green-embedding"
+            ? ({ matchingModel: model, provider: "openai" } as never)
+            : null,
         ),
         resolveModelProvider: vi.fn(
           async ({ provider, defaultProvider }) => provider ?? defaultProvider,
@@ -60,7 +71,7 @@ function createRuntime(getResponse: GetResponse) {
     providers: { resolve: resolve as never },
   };
 
-  return { runtime, chat, image, replicate, resolve };
+  return { runtime, chat, image, replicate, rerank, resolve };
 }
 
 describe("createAiFunctions", () => {
@@ -169,6 +180,45 @@ describe("createAiFunctions", () => {
     await expect(
       ai.image({ env, user, prompt: "a parrot" }, { provider: "replicate", allowFallback: false }),
     ).rejects.toThrow("replicate down");
+  });
+
+  it("embeds text through the chat provider and returns ordered vectors", async () => {
+    const getResponse = vi.fn<GetResponse>(async () => ({
+      data: [
+        { index: 1, embedding: [3, 4] },
+        { index: 0, embedding: [1, 2] },
+      ],
+      usage: { total_tokens: 4 },
+    }));
+    const { runtime } = createRuntime(getResponse);
+    const ai = createAiFunctions(runtime);
+
+    const result = await ai.embed({ env, user, model: "green-embedding", input: ["a", "b"] });
+
+    expect(result).toEqual({
+      model: "green-embedding",
+      provider: "openai",
+      vectors: [
+        [1, 2],
+        [3, 4],
+      ],
+      usage: { total_tokens: 4 },
+    });
+    expect(lastParams(getResponse).body).toEqual({ input: ["a", "b"] });
+    await expect(ai.embed({ env, model: "green-embedding", input: " " })).rejects.toThrow(
+      "must not be empty",
+    );
+  });
+
+  it("routes rerank requests to the named provider", async () => {
+    const { runtime, rerank } = createRuntime(vi.fn<GetResponse>(async () => ({})));
+    const ai = createAiFunctions(runtime);
+
+    await ai.rerank({ env, user, provider: "greenpt", query: "q", documents: ["a"], topN: 1 });
+
+    expect(rerank.rerank).toHaveBeenCalledWith(
+      expect.objectContaining({ env, user, query: "q", documents: ["a"], topN: 1 }),
+    );
   });
 
   it("renders template literals into a prompt", async () => {

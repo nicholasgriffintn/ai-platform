@@ -33,10 +33,13 @@ const requirePersonalVectorization = (params: ContentExtractParams, req: IReques
 const getExtractionSource = (
   provider: ContentExtractProvider,
   params: ContentExtractParams,
-): string =>
-  provider === "cloudflare"
-    ? `cloudflare_${params.cloudflareCrawlOptions?.enabled ? "crawl" : (params.cloudflareFormat ?? "markdown")}`
-    : "tavily_extract";
+): string => {
+  if (provider === "cloudflare") {
+    return `cloudflare_${params.cloudflareCrawlOptions?.enabled ? "crawl" : (params.cloudflareFormat ?? "markdown")}`;
+  }
+
+  return provider === "greenpt" ? "greenpt_scrape" : "tavily_extract";
+};
 
 const createEmbeddingRequest = async ({
   entry,

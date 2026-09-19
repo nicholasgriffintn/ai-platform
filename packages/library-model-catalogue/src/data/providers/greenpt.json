@@ -27,6 +27,9 @@
         "costPer1kInputTokens": 0.00000437,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
+        "supportsStreaming": true,
+        "supportsAudio": true,
+        "supportsRealtimeSession": true,
         "supportsTemperature": false
       },
       "unset": [
@@ -263,6 +266,9 @@
         "costPer1kInputTokens": 0.00000437,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
+        "supportsStreaming": true,
+        "supportsAudio": true,
+        "supportsRealtimeSession": true,
         "supportsTemperature": false
       },
       "unset": [
@@ -638,6 +644,47 @@
           "defaultEffort": "none"
         }
       }
+    },
+    "green-embedding": {
+      "model": "greenpt/green-embedding/green-embedding",
+      "matchingModel": "green-embedding",
+      "overrides": {
+        "hiddenFromDefaultList": true,
+        "lastUpdated": "January 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "apiOperation": "embeddings"
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "qwen3-embedding-8b": {
+      "model": "greenpt/qwen3-embedding-8b/qwen3-embedding-8b",
+      "matchingModel": "qwen3-embedding-8b",
+      "overrides": {
+        "hiddenFromDefaultList": true,
+        "lastUpdated": "January 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "apiOperation": "embeddings"
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "green-rerank": {
+      "model": "greenpt/green-rerank/green-rerank",
+      "matchingModel": "green-rerank",
+      "overrides": {
+        "hiddenFromDefaultList": true,
+        "lastUpdated": "January 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     }
   }
 }

@@ -20,5 +20,9 @@ export function resolveContentExtractProvider(
     return "cloudflare";
   }
 
+  if (req.env.GREENPT_API_KEY) {
+    return "greenpt";
+  }
+
   return "tavily";
 }

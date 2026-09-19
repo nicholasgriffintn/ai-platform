@@ -1,8 +1,10 @@
 import type { TranscriptionProvider } from "../capabilities/transcription/index.js";
 import {
-  WorkersTranscriptionProvider,
+  GREENPT_TRANSCRIPTION_MODELS,
+  GreenPtTranscriptionProvider,
   MistralTranscriptionProvider,
   ReplicateTranscriptionProvider,
+  WorkersTranscriptionProvider,
 } from "../capabilities/transcription/providers/index.js";
 import type { AiProviderRegistration, AiProviderRegistry, ProviderRuntime } from "../runtime.js";
 
@@ -24,6 +26,16 @@ function transcriptionProviders(
       name: "replicate",
       create: () => new ReplicateTranscriptionProvider(runtime),
       metadata: { vendor: "Replicate", categories: ["transcription"] },
+    },
+    {
+      name: "greenpt",
+      create: () => new GreenPtTranscriptionProvider(runtime),
+      metadata: {
+        vendor: "GreenPT",
+        categories: ["transcription"],
+        models: GREENPT_TRANSCRIPTION_MODELS,
+        defaultModel: "green-s",
+      },
     },
   ];
 }

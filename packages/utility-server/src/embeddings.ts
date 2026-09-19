@@ -21,21 +21,37 @@ export function chunkText(text: string, maxChars = 2000): string[] {
   return chunks;
 }
 
-export function parseEmbeddingVectors(response: unknown, errorMessage: string): number[][] {
-  const vectors = isRecord(response) ? response.data : undefined;
+function isNumericVector(vector: unknown): vector is number[] {
+  return (
+    Array.isArray(vector) &&
+    vector.length > 0 &&
+    vector.every((value) => typeof value === "number" && Number.isFinite(value))
+  );
+}
 
-  if (
-    !Array.isArray(vectors) ||
-    vectors.length === 0 ||
-    !vectors.every(
-      (vector) =>
-        Array.isArray(vector) &&
-        vector.length > 0 &&
-        vector.every((value) => typeof value === "number" && Number.isFinite(value)),
-    )
-  ) {
+function assertVectors(vectors: unknown, errorMessage: string): number[][] {
+  if (!Array.isArray(vectors) || vectors.length === 0 || !vectors.every(isNumericVector)) {
     throw new AssistantError(errorMessage, ErrorType.PROVIDER_ERROR, 502);
   }
 
   return vectors;
+}
+
+export function parseEmbeddingVectors(response: unknown, errorMessage: string): number[][] {
+  return assertVectors(isRecord(response) ? response.data : undefined, errorMessage);
+}
+
+export function parseOpenAiEmbeddingVectors(response: unknown, errorMessage: string): number[][] {
+  const data = isRecord(response) ? response.data : undefined;
+
+  if (!Array.isArray(data)) {
+    throw new AssistantError(errorMessage, ErrorType.PROVIDER_ERROR, 502);
+  }
+
+  const ordered = data
+    .filter(isRecord)
+    .sort((left, right) => Number(left.index ?? 0) - Number(right.index ?? 0))
+    .map((item) => item.embedding);
+
+  return assertVectors(ordered, errorMessage);
 }

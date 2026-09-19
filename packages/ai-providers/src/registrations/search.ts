@@ -3,6 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import {
   DuckDuckGoProvider,
   ExaSearchProvider,
+  GreenPtSearchProvider,
   ParallelSearchProvider,
   PerplexityProvider,
   SerperProvider,
@@ -91,6 +92,17 @@ function searchProviders(runtime: ProviderRuntime): AiProviderRegistration<Searc
         return new ExaSearchProvider(env, user, runtime);
       },
       metadata: { vendor: "Exa", categories: ["search", "research"] },
+    },
+    {
+      name: "greenpt",
+      lifecycle: "transient",
+      create: (context) => {
+        const env = ensureEnv(context);
+        const user = ensureUser(context, { optional: true });
+
+        return new GreenPtSearchProvider(env, user, runtime);
+      },
+      metadata: { vendor: "GreenPT", categories: ["search"], tags: ["websearch"] },
     },
   ];
 }
