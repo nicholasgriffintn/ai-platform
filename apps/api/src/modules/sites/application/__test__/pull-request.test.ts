@@ -125,7 +125,7 @@ describe("openSitePullRequest", () => {
       context: {} as never,
       user: { id: 7 } as never,
       siteId: "site-1",
-      request: { projectId: "project-1", directory: "apps/site/" },
+      request: { projectId: "project-1", directory: "apps/site/", target: "react-router" },
     });
     const calls = mocks.githubApiRequest.mock.calls.map(([params]) => params);
     const tree = calls.find((call) => call.url.endsWith("/git/trees"));
@@ -144,7 +144,9 @@ describe("openSitePullRequest", () => {
       tree.body.tree.every((entry: { path: string }) => entry.path.startsWith("apps/site/")),
     ).toBe(true);
     expect(
-      tree.body.tree.some((entry: { path: string }) => entry.path === "apps/site/app/page.tsx"),
+      tree.body.tree.some(
+        (entry: { path: string }) => entry.path === "apps/site/app/routes/home.tsx",
+      ),
     ).toBe(true);
     expect(tree.body.tree).toContainEqual({
       path: "apps/site/public/images/out-1.png",
@@ -166,7 +168,11 @@ describe("openSitePullRequest", () => {
         context: {} as never,
         user: { id: 7 } as never,
         siteId: "site-1",
-        request: { projectId: "project-1", directory: "../outside" },
+        request: {
+          projectId: "project-1",
+          directory: "../outside",
+          target: "react-router",
+        },
       }),
     ).rejects.toThrow(/leave the repository/);
 
@@ -177,7 +183,7 @@ describe("openSitePullRequest", () => {
         context: {} as never,
         user: { id: 7 } as never,
         siteId: "site-1",
-        request: { projectId: "project-1" },
+        request: { projectId: "project-1", target: "react-router" },
       }),
     ).rejects.toThrow(/no coding environment/);
     expect(mocks.githubApiRequest).not.toHaveBeenCalled();

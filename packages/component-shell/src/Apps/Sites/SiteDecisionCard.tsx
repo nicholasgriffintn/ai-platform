@@ -1,9 +1,12 @@
 import { Badge, cn } from "@ngriffin_uk/polychat-component-ui";
 import {
+  decisionChoiceSelection,
+  decisionNoulIsTrue,
   formatDecisionEntry,
   type SiteDecisionTraceEntry,
   type SiteDecisionTraceQuestion,
 } from "@ngriffin_uk/polychat-schemas";
+import { humaniseIdentifier } from "@ngriffin_uk/polychat-utility-core";
 import { ChevronDown } from "lucide-react";
 
 const STAGE_LABELS: Record<SiteDecisionTraceEntry["stage"], string> = {
@@ -27,32 +30,36 @@ function sourceLabel(entry: SiteDecisionTraceEntry) {
     : "Decision model";
 }
 
-function answerLabel({ question, answer }: SiteDecisionTraceQuestion) {
+function answerLabel({ answer }: SiteDecisionTraceQuestion) {
   if (!answer) {
     return "No answer";
   }
 
   if (answer.type === "choice") {
-    return formatDecisionEntry(
-      question.type === "choice"
-        ? (question.criteria[answer.choice] ?? answer.choice)
-        : answer.choice,
-    );
+    const choice = decisionChoiceSelection(answer);
+    const probability = answer.probabilities[choice] ?? answer.confidence;
+
+    return `${humaniseIdentifier(choice)} · ${Math.round(probability * 100)}%`;
   }
 
   if (answer.type === "score") {
     const rounded = Math.round(answer.score);
+    const probability = answer.probabilities[String(rounded)] ?? answer.confidence;
 
-    return formatDecisionEntry(answer.legend[String(rounded)] ?? rounded);
+    return `Score ${rounded} · ${Math.round(probability * 100)}%`;
   }
 
-  return `${Math.round(answer.noul * 100)}% yes`;
+  const isTrue = decisionNoulIsTrue(answer);
+  const probability = isTrue ? answer.noul : 1 - answer.noul;
+
+  return `${isTrue ? "Yes" : "No"} · ${Math.round(probability * 100)}%`;
 }
 
 function probabilityRows(question: SiteDecisionTraceQuestion): Array<{
   id: string;
   label: string;
   probability: number;
+  selected: boolean;
 }> {
   const answer = question.answer;
 
@@ -61,11 +68,16 @@ function probabilityRows(question: SiteDecisionTraceQuestion): Array<{
   }
 
   if (answer.type === "noul") {
+    const selected = decisionNoulIsTrue(answer) ? "yes" : "no";
+
     return [
-      { id: "yes", label: "Yes", probability: answer.noul },
-      { id: "no", label: "No", probability: 1 - answer.noul },
-    ];
+      { id: "yes", label: "Yes", probability: answer.noul, selected: selected === "yes" },
+      { id: "no", label: "No", probability: 1 - answer.noul, selected: selected === "no" },
+    ].sort((left, right) => right.probability - left.probability);
   }
+
+  const selected =
+    answer.type === "choice" ? decisionChoiceSelection(answer) : String(Math.round(answer.score));
 
   return Object.entries(answer.probabilities)
     .map(([id, probability]) => ({
@@ -77,17 +89,19 @@ function probabilityRows(question: SiteDecisionTraceQuestion): Array<{
               question.question.type === "choice" ? (question.question.criteria[id] ?? id) : id,
             ),
       probability,
+      selected: id === selected,
     }))
     .sort((left, right) => right.probability - left.probability);
 }
 
 function QuestionResult({ result }: { result: SiteDecisionTraceQuestion }) {
   const rows = probabilityRows(result);
+  const label = answerLabel(result);
 
   return (
     <div className="flex flex-col gap-2 border-t border-border/70 pt-3 first:border-t-0 first:pt-0">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="font-mono text-[10px] tracking-wide text-muted-foreground uppercase">
             {result.id.replaceAll("_", " ")}
           </p>
@@ -95,26 +109,30 @@ function QuestionResult({ result }: { result: SiteDecisionTraceQuestion }) {
             {formatDecisionEntry(result.question.instructions)}
           </p>
         </div>
-        <Badge variant="secondary" className="max-w-32 shrink-0 truncate">
-          {answerLabel(result)}
+        <Badge variant="secondary" className="max-w-40 shrink" title={label}>
+          <span className="min-w-0 truncate">{label}</span>
         </Badge>
       </div>
       {rows.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          {rows.map((row, index) => (
-            <div key={row.id} className="grid grid-cols-[minmax(0,1fr)_3rem] items-center gap-2">
+          {rows.map((row) => (
+            <div
+              key={row.id}
+              data-selected={row.selected}
+              className="grid grid-cols-[minmax(0,1fr)_3rem] items-center gap-2"
+            >
               <div className="relative h-5 overflow-hidden rounded-sm bg-accent">
                 <span
                   className={cn(
                     "absolute inset-y-0 left-0 rounded-sm",
-                    index === 0 ? "bg-foreground/85" : "bg-foreground/15",
+                    row.selected ? "bg-foreground/85" : "bg-foreground/15",
                   )}
                   style={{ width: `${Math.max(1, row.probability * 100)}%` }}
                 />
                 <span
                   className={cn(
                     "relative z-10 block truncate px-1.5 font-mono text-[10px] leading-5",
-                    index === 0 && row.probability >= 0.45
+                    row.selected && row.probability >= 0.45
                       ? "text-background"
                       : "text-muted-foreground",
                   )}

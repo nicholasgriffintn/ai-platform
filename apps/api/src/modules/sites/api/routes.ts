@@ -7,6 +7,7 @@ import {
   siteEditRequestSchema,
   siteEvaluationRequestSchema,
   siteEvaluationResponseSchema,
+  siteFilesQuerySchema,
   siteFilesResponseSchema,
   siteGenerateRequestSchema,
   siteImagesRequestSchema,
@@ -184,10 +185,10 @@ addRoute(app, "get", "/:id/files", {
   tags: ["sites"],
   summary: "Export a site as project files",
   description:
-    "Deterministically generates a runnable Next.js and Tailwind project from the saved site.",
+    "Deterministically generates a runnable React Router, Next.js or TanStack Router project from the saved site.",
   auth: true,
   paramSchema: siteParamsSchema,
-  querySchema: projectScopeQuerySchema,
+  querySchema: siteFilesQuerySchema,
   responses: {
     200: { description: "Generated files", schema: siteFilesResponseSchema },
     404: { description: "Not found", schema: errorResponseSchema },
@@ -205,7 +206,9 @@ addRoute(app, "get", "/:id/files", {
       params.id,
     );
 
-    return { files: generateSiteFiles(site.project).files };
+    const generated = generateSiteFiles(site.project, query.target);
+
+    return { target: generated.target, files: generated.files };
   },
 });
 
@@ -228,6 +231,7 @@ addRoute(app, "post", "/:id/build", {
       siteId: params.id,
       projectId: body.projectId,
       instructions: body.instructions,
+      target: body.target,
     }),
 });
 

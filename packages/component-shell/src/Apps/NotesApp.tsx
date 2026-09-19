@@ -19,7 +19,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
-import { useOwnAppChrome } from "./AppChrome.js";
+import { useAppChrome } from "./AppChrome.js";
 import { createNoteSaver } from "./Notes/note-saver.js";
 import { NoteEditor } from "./Notes/NoteEditor.js";
 
@@ -68,7 +68,7 @@ export function NotesApp({ basePath, projectId, subpath }: ExperienceProps) {
 
   const isLocallyCreatedNote = Boolean(noteId) && noteId === createdNoteId;
   const activeThemeMode = themeMode ?? note?.metadata?.themeMode ?? "sepia";
-  const chrome = useOwnAppChrome(isNew || Boolean(noteId));
+  const chrome = useAppChrome();
   const filteredNotes = useMemo(() => {
     const availableNotes = notes ?? [];
     const query = searchQuery.trim().toLowerCase();

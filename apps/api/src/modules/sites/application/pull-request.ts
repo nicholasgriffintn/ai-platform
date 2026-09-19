@@ -112,7 +112,7 @@ export async function openSitePullRequest({
   }
 
   const exportProject = validateSiteProject(document).project;
-  const { files } = generateSiteFiles(exportProject);
+  const { files } = generateSiteFiles(exportProject, request.target);
   const repo = codingEnvironment.repository;
   const token = await resolveSandboxGitHubToken({
     context,
@@ -186,7 +186,7 @@ export async function openSitePullRequest({
       "Pages:",
       pageList,
       "",
-      `${files.length} files${assets.length ? ` and ${assets.length} generated ${assets.length === 1 ? "image" : "images"}` : ""} under \`${directory || "/"}\` as a Next.js app with Tailwind CSS v4. Every page composes the components in \`components/site\`; theme tokens live in \`app/globals.css\`.`,
+      `${files.length} files${assets.length ? ` and ${assets.length} generated ${assets.length === 1 ? "image" : "images"}` : ""} under \`${directory || "/"}\` as a ${request.target} app with Tailwind CSS v4.`,
     ].join("\n"),
   });
 

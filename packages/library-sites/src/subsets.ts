@@ -80,6 +80,14 @@ const KIND_COMPONENTS: Record<SiteKind, readonly SiteComponentType[]> = {
     "CTA",
   ],
   component: SITE_COMPONENT_TYPES,
+  commerce: [...LAYOUT, ...CONTENT, ...APPLICATION, ...MARKETING_SECTIONS],
+  booking: [...LAYOUT, ...CONTENT, ...APPLICATION, "Navbar", "Footer", "Steps", "CTA"],
+  event: [...LAYOUT, ...CONTENT, ...APPLICATION, ...MARKETING_SECTIONS],
+  publication: [...LAYOUT, ...CONTENT, ...MARKETING_SECTIONS, "Breadcrumbs", "Code"],
+  community: [...LAYOUT, ...CONTENT, ...APPLICATION, "Navbar", "Footer"],
+  education: [...LAYOUT, ...CONTENT, ...APPLICATION, "Navbar", "Footer", "Steps", "Articles"],
+  "ai-tool": [...LAYOUT, ...CONTENT, ...APPLICATION, "Navbar", "Footer"],
+  game: SITE_COMPONENT_TYPES,
 };
 
 export function componentsForSiteKind(kind: SiteKind): SiteComponentType[] {

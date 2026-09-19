@@ -3,11 +3,14 @@ import {
   SITE_ELEMENT_KEY_PATTERN,
   SITE_PAGE_ID_PATTERN,
   siteActionBindingSchema,
+  siteCapabilitySchema,
+  siteElementStyleSchema,
   siteEventNameSchema,
   siteRepeatSchema,
   siteThemeSchema,
   siteVisibilitySchema,
   type SiteElement,
+  type SiteCapability,
   type SiteIssue,
   type SitePage,
   type SiteProject,
@@ -122,7 +125,7 @@ function repairProps(
   return null;
 }
 
-type ElementBehaviour = Pick<SiteElement, "visible" | "repeat" | "on">;
+type ElementBehaviour = Pick<SiteElement, "visible" | "repeat" | "on" | "style">;
 
 function normaliseBehaviour(
   pageId: string,
@@ -180,6 +183,16 @@ function normaliseBehaviour(
 
     if (Object.keys(on).length > 0) {
       behaviour.on = on;
+    }
+  }
+
+  if (raw.style !== undefined) {
+    const parsed = siteElementStyleSchema.safeParse(raw.style);
+
+    if (parsed.success) {
+      behaviour.style = parsed.data;
+    } else {
+      warn("style", parsed.error.issues[0]?.message ?? "invalid style");
     }
   }
 
@@ -385,6 +398,13 @@ export function validateSiteProject(raw: unknown): SiteValidationResult {
     : { ...DEFAULT_SITE_THEME, ...(isRecord(source.theme) ? pickTheme(source.theme) : {}) };
   const pages: SiteProject["pages"] = {};
   const rawPages = isRecord(source.pages) ? source.pages : {};
+  const capabilities: SiteCapability[] = Array.isArray(source.capabilities)
+    ? source.capabilities.flatMap((capability) => {
+        const parsed = siteCapabilitySchema.safeParse(capability);
+
+        return parsed.success ? [parsed.data] : [];
+      })
+    : ["content", "navigation"];
 
   for (const [pageId, rawPage] of Object.entries(rawPages)) {
     if (!SITE_PAGE_ID_PATTERN.test(pageId)) {
@@ -410,6 +430,7 @@ export function validateSiteProject(raw: unknown): SiteValidationResult {
         ? { description: source.description.trim().slice(0, 400) }
         : {}),
       theme,
+      capabilities: [...new Set(capabilities)],
       pages,
     },
     issues,

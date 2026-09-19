@@ -100,7 +100,10 @@ describe("places and files routes", () => {
     expect(getActivePlace("/")).toBe("conversations");
     expect(getActivePlace("/chat/abc")).toBe("conversations");
     expect(getActivePlace("/chat/teammates/a1")).toBe("teammates");
-    expect(getActivePlace("/chat/apps/strudel")).toBe("teammates");
+    expect(getActivePlace("/chat/apps/strudel")).toBe("plugins");
+    expect(getActivePlace("/chat/apps/sites")).toBe("sites");
+    expect(getActivePlace("/chat/tools/get-weather")).toBe("plugins");
+    expect(getActivePlace("/chat/skills/research")).toBe("plugins");
     expect(getActivePlace("/chat/canvas")).toBe("canvas");
     expect(getActivePlace("/chat/files/given")).toBe("files");
     expect(getActivePlace("/chat/plugins")).toBe("plugins");
@@ -113,6 +116,8 @@ describe("places and files routes", () => {
     expect(getActivePlace("/work/w1/projects/p1/teammates")).toBe("teammates");
     expect(getActivePlace("/work/w1/projects/p1/scheduled")).toBe("scheduled");
     expect(getActivePlace("/work/w1/projects/p1/plugins")).toBe("plugins");
+    expect(getActivePlace("/work/w1/projects/p1/apps/sites/site-1")).toBe("sites");
+    expect(getActivePlace("/work/w1/projects/p1/apps/notes")).toBe("plugins");
     expect(getActivePlace("/profile")).toBe("you");
     expect(getActivePlace("/pricing")).toBeUndefined();
   });

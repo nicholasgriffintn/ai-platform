@@ -29,7 +29,13 @@ import {
   collectEmptySiteImageSlots,
   generateSiteFiles,
 } from "@ngriffin_uk/polychat-library-sites";
-import { listSitePages, type SiteRecord } from "@ngriffin_uk/polychat-schemas";
+import {
+  DEFAULT_SITE_EXPORT_TARGET,
+  listSitePages,
+  SITE_EXPORT_TARGETS,
+  type SiteExportTarget,
+  type SiteRecord,
+} from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Code2,
@@ -50,7 +56,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
-import { useOwnAppChrome } from "../AppChrome.js";
+import { useAppChrome } from "../AppChrome.js";
 import { RecentSites } from "./RecentSites.js";
 import { SiteBuildPlaceholder } from "./SiteBuildPlaceholder.js";
 import { SiteConversationTurn } from "./SiteConversationTurn.js";
@@ -61,6 +67,11 @@ import { SitePromptComposer } from "./SitePromptComposer.js";
 import { SiteStarterPrompt } from "./SiteStarterPrompt.js";
 
 const VIEWPORT_ICONS = { desktop: Monitor, tablet: Tablet, mobile: Smartphone } as const;
+const EXPORT_TARGET_LABELS: Record<SiteExportTarget, string> = {
+  "react-router": "React Router",
+  next: "Next.js",
+  "tanstack-router": "TanStack Router",
+};
 
 const STATUS_LABELS: Record<SiteGenerationState["status"], string> = {
   idle: "",
@@ -83,7 +94,7 @@ export interface SiteStudioProps {
 export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   const navigate = useNavigate();
   const { trackEvent } = useTrackEvent();
-  const chrome = useOwnAppChrome(true);
+  const chrome = useAppChrome();
   const { state, generate, edit, generateImages, load, cancel } = useSiteGeneration({
     projectId,
     initialSite: site,
@@ -100,6 +111,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   const [activePageId, setActivePageId] = useState<string | null>(null);
   const [viewport, setViewport] = useState<SitePreviewViewport>("desktop");
   const [view, setView] = useState<"preview" | "code">("preview");
+  const [exportTarget, setExportTarget] = useState<SiteExportTarget>(DEFAULT_SITE_EXPORT_TARGET);
   const [inspecting, setInspecting] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const trackedPreviewLatencyRef = useRef<number | null>(null);
@@ -110,8 +122,8 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   const selectedElement =
     selectedKey && activePage?.elements[selectedKey] ? activePage.elements[selectedKey] : null;
   const files = useMemo(
-    () => (project && view === "code" ? generateSiteFiles(project).files : []),
-    [project, view],
+    () => (project && view === "code" ? generateSiteFiles(project, exportTarget).files : []),
+    [exportTarget, project, view],
   );
   const isBusy = !["idle", "done", "error"].includes(state.status);
   const savedId = state.site?.id;
@@ -218,8 +230,8 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   };
 
   const fileCount = useMemo(
-    () => (project && pullRequestOpen ? generateSiteFiles(project).files.length : 0),
-    [project, pullRequestOpen],
+    () => (project && pullRequestOpen ? generateSiteFiles(project, exportTarget).files.length : 0),
+    [exportTarget, project, pullRequestOpen],
   );
   const repository = workProject?.codingEnvironment?.repository;
   const emptyImageSlots = useMemo(
@@ -235,7 +247,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
     try {
       const result = await openPullRequest.mutateAsync({
         id: state.site.id,
-        request: { projectId },
+        request: { projectId, target: exportTarget },
       });
 
       toast.success(`Opened pull request #${result.number} on ${result.repo}`, {
@@ -252,7 +264,10 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
     }
 
     try {
-      const result = await buildSite.mutateAsync({ id: state.site.id, request: { projectId } });
+      const result = await buildSite.mutateAsync({
+        id: state.site.id,
+        request: { projectId, target: exportTarget },
+      });
 
       toast.success(`Queued a sandbox build in ${result.repo}`, {
         action: {
@@ -268,9 +283,11 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   if (!project && !isBusy && state.status !== "error") {
     return (
       <div className="flex h-full min-h-0 flex-col">
-        <div className="px-6 pt-4">
-          <BackLink href={chrome?.backHref ?? basePath} label={chrome?.backLabel ?? "Back"} />
-        </div>
+        {chrome?.backHref && chrome.backLabel && (
+          <div className="px-6 pt-4">
+            <BackLink href={chrome.backHref} label={chrome.backLabel} />
+          </div>
+        )}
         <div className="flex flex-1 flex-col items-center gap-8 overflow-auto px-6 pt-12 pb-16">
           <div className="flex flex-col items-center gap-3 text-center">
             <span className="flex size-12 items-center justify-center rounded-xl bg-accent text-accent-foreground">
@@ -295,7 +312,9 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
     <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[22rem_minmax(0,1fr)]">
       <aside className="flex min-h-0 flex-col border-b border-border lg:border-r lg:border-b-0">
         <div className="flex flex-col gap-3 px-4 pt-4">
-          <BackLink href={chrome?.backHref ?? basePath} label={chrome?.backLabel ?? "Back"} />
+          {chrome?.backHref && chrome.backLabel && (
+            <BackLink href={chrome.backHref} label={chrome.backLabel} />
+          )}
           <div className="flex items-start justify-between gap-2">
             <h1 className="truncate font-display text-lg font-semibold" title={project?.title}>
               {project?.title ?? "New site"}
@@ -480,6 +499,21 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                 <Code2 size={14} />
               </SegmentedButton>
             </SegmentedGroup>
+            <label className="flex h-8 items-center gap-2 rounded-md border border-border bg-surface px-2 text-xs text-muted-foreground">
+              <span className="shrink-0">Export</span>
+              <select
+                value={exportTarget}
+                onChange={(event) => setExportTarget(event.target.value as SiteExportTarget)}
+                className="min-w-0 bg-transparent font-medium text-foreground outline-none"
+                aria-label="Export framework"
+              >
+                {SITE_EXPORT_TARGETS.map((target) => (
+                  <option key={target} value={target}>
+                    {EXPORT_TARGET_LABELS[target]}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
           {state.site && (
             <div className="flex flex-wrap items-center gap-1.5">
@@ -612,7 +646,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
         open={pullRequestOpen}
         onOpenChange={setPullRequestOpen}
         title="Open a pull request"
-        description={`Commit ${fileCount} generated files to a new branch on ${repository ?? "the project repository"} and open a pull request against its default branch. Nothing is pushed to the default branch itself.`}
+        description={`Commit ${fileCount} generated ${EXPORT_TARGET_LABELS[exportTarget]} files to a new branch on ${repository ?? "the project repository"} and open a pull request against its default branch. Nothing is pushed to the default branch itself.`}
         confirmText="Open pull request"
         variant="primary"
         onConfirm={handlePullRequest}

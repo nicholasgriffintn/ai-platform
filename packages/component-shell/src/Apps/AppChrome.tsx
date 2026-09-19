@@ -1,9 +1,8 @@
-import { createContext, useContext, useEffect } from "react";
+import { createContext, useContext } from "react";
 
 export interface AppChrome {
-  backHref: string;
-  backLabel: string;
-  setOwnsChrome: (ownsChrome: boolean) => void;
+  backHref?: string;
+  backLabel?: string;
 }
 
 const AppChromeContext = createContext<AppChrome | null>(null);
@@ -15,18 +14,7 @@ export function useAppChrome(): AppChrome | null {
 }
 
 export function useOwnAppChrome(ownsChrome: boolean): AppChrome | null {
-  const chrome = useAppChrome();
-  const setOwnsChrome = chrome?.setOwnsChrome;
+  void ownsChrome;
 
-  useEffect(() => {
-    if (!setOwnsChrome) {
-      return undefined;
-    }
-
-    setOwnsChrome(ownsChrome);
-
-    return () => setOwnsChrome(false);
-  }, [ownsChrome, setOwnsChrome]);
-
-  return chrome;
+  return useAppChrome();
 }

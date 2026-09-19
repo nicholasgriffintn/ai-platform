@@ -2,6 +2,7 @@ import type {
   SiteBuildRequest,
   SiteBuildResponse,
   SiteEditRequest,
+  SiteExportTarget,
   SiteFilesResponse,
   SiteGenerateRequest,
   SiteImagesRequest,
@@ -50,11 +51,15 @@ export const sitesService = {
     });
   },
 
-  async files(id: string, projectId?: string): Promise<SiteFilesResponse> {
-    const response = await fetchApiOrThrow(
-      withProjectScope(`${SITES_BASE_PATH}/${id}/files`, projectId),
-      { method: "GET" },
-    );
+  async files(
+    id: string,
+    projectId?: string,
+    target?: SiteExportTarget,
+  ): Promise<SiteFilesResponse> {
+    const path = target
+      ? `${SITES_BASE_PATH}/${id}/files?target=${encodeURIComponent(target)}`
+      : `${SITES_BASE_PATH}/${id}/files`;
+    const response = await fetchApiOrThrow(withProjectScope(path, projectId), { method: "GET" });
 
     return returnFetchedData<SiteFilesResponse>(response);
   },

@@ -194,6 +194,27 @@ export function decisionNoulConfidence(answer: Pick<DecisionNoulAnswer, "noul">)
   return Math.abs(answer.noul - 0.5) * 2;
 }
 
+export function decisionChoiceSelection(
+  answer: Pick<DecisionChoiceAnswer, "choice" | "probabilities">,
+) {
+  const entries = Object.entries(answer.probabilities);
+
+  if (entries.length === 0) {
+    return answer.choice;
+  }
+
+  const highestProbability = Math.max(...entries.map(([, probability]) => probability));
+  const chosenProbability = answer.probabilities[answer.choice];
+
+  if (chosenProbability !== undefined && chosenProbability >= highestProbability) {
+    return answer.choice;
+  }
+
+  return (
+    entries.find(([, probability]) => probability === highestProbability)?.[0] ?? answer.choice
+  );
+}
+
 export function formatDecisionEntry(value: DecisionEntry): string {
   if (value === null) {
     return "None";

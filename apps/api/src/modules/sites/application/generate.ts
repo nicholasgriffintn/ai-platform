@@ -88,6 +88,7 @@ function buildInitialDocument(request: SiteGenerateRequest, plan: SitePlan) {
   return {
     title: request.prompt.slice(0, 60).trim(),
     theme: plan.theme,
+    capabilities: plan.capabilities,
     pages: {},
   };
 }

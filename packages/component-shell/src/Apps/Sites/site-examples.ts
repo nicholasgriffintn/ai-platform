@@ -44,4 +44,24 @@ export const SITE_PROMPT_EXAMPLES: readonly SitePromptExample[] = [
     prompt:
       "Design a characterful website for Alder, a small seasonal restaurant in Bristol serving a concise changing menu. The site should help visitors understand the food, reserve a table and plan their visit. Include a confident home page, sample lunch and dinner menus, the restaurant's sourcing philosophy, private dining information, opening hours, location and accessibility details. Make reservation actions prominent without overwhelming the story. Use grounded, specific copy with no luxury clichés. The visual direction should combine forest green, oat and oxblood, tactile food photography, a contemporary serif and a relaxed editorial layout that works beautifully on mobile.",
   },
+  {
+    title: "Independent shop",
+    prompt:
+      "Build a playful online shop for Odd Hours, an independent studio selling limited-run desk objects. Create a working product discovery journey with categories, search, filters, product detail, a stateful basket and checkout form. Use believable products, variants, stock states and prices. The visual system should feel like a colourful 1990s mail-order catalogue: bold borders, unexpected type scale, saturated primary colours and dense but legible product grids. Avoid a generic luxury storefront or empty marketing sections.",
+  },
+  {
+    title: "Clinic booking",
+    prompt:
+      "Create a complete appointment-booking app for Harbour Physio. Let a patient choose a treatment, practitioner, available date and time, enter their details and reach a clear confirmation state. Include rescheduling guidance, pricing, clinic accessibility and preparation notes. Use a calm organic direction with warm white, eucalyptus and ink colours, soft spacing and direct language. The booking flow must work through state changes rather than appearing as a static mock-up.",
+  },
+  {
+    title: "AI research tool",
+    prompt:
+      "Design a focused AI research workspace called Threadline for analysts comparing source material. Build an input area for a research question, source selection, useful presets, an active working state, a structured answer with citations and a searchable history. Include controls to save, rename and remove research runs using realistic stateful interactions. Use a dark futuristic direction with a precise grid, restrained cyan glow, compact information density and excellent keyboard focus. Do not use a generic chatbot layout.",
+  },
+  {
+    title: "Language game",
+    prompt:
+      "Build a genuinely playable vocabulary game called Quickfire for intermediate Spanish learners. Show a short rules screen, timed multiple-choice rounds, immediate feedback, streaks, score, progress and a final result with a restart path. Seed enough question data for a convincing session and implement the game through page state. Use a joyful maximalist direction with oversized type, bold colour fields and expressive motion while respecting reduced-motion preferences.",
+  },
 ];

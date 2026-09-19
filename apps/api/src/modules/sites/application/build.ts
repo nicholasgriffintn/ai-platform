@@ -9,6 +9,7 @@ import {
   sandboxDeliveryPolicyCreatesCommit,
   SITES_CAPABILITY_ID,
   type SiteBuildResponse,
+  type SiteExportTarget,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -30,6 +31,7 @@ export interface BuildSiteOptions {
   siteId: string;
   projectId: string;
   instructions?: string;
+  target: SiteExportTarget;
 }
 
 export async function buildSiteInSandbox({
@@ -38,6 +40,7 @@ export async function buildSiteInSandbox({
   siteId,
   projectId,
   instructions,
+  target,
 }: BuildSiteOptions): Promise<SiteBuildResponse> {
   await requireProjectCapabilityAccess(context, projectId, "app", SITES_CAPABILITY_ID);
 
@@ -61,12 +64,13 @@ export async function buildSiteInSandbox({
     applySitePatch(document, patch);
   }
 
-  const { files } = generateSiteFiles(validateSiteProject(document).project);
+  const { files } = generateSiteFiles(validateSiteProject(document).project, target);
   const task = buildSiteSandboxTask({
     project: site.project,
     brief: site.brief,
     files,
     instructions,
+    target,
   });
   const response = await executeSandboxRunStream({
     env: context.env,

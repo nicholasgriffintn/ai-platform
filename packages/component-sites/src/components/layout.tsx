@@ -12,10 +12,10 @@ export function Page({ children }: WithChildren<SiteComponentProps<"Page">>) {
 }
 
 const SECTION_BACKGROUNDS = {
-  default: "bg-background",
-  muted: "bg-muted/50",
-  primary: "bg-primary text-primary-foreground",
-  inverted: "bg-foreground text-background",
+  default: "bg-background text-foreground",
+  muted: "bg-muted/50 text-foreground",
+  primary: "site-surface-contrast bg-primary text-primary-foreground",
+  inverted: "site-surface-contrast bg-foreground text-background",
 } as const;
 const SECTION_PADDINGS = { sm: "py-8", md: "py-14", lg: "py-24" } as const;
 const SECTION_WIDTHS = {
@@ -52,7 +52,11 @@ const GAPS = {
   lg: "gap-8",
   xl: "gap-12",
 } as const;
-const ALIGN = { start: "items-start", center: "items-center", end: "items-end" } as const;
+const ALIGN = {
+  start: "items-start",
+  center: "items-center",
+  end: "items-end",
+} as const;
 const JUSTIFY = {
   start: "justify-start",
   center: "justify-center",
@@ -183,8 +187,11 @@ export function Tabs({
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div role="tablist" className="inline-flex w-fit items-center gap-1 rounded-md bg-muted p-1">
+    <div className="flex min-w-0 flex-col gap-3 px-2 pt-2 sm:px-3 sm:pt-3">
+      <div
+        role="tablist"
+        className="inline-flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-md bg-muted p-1"
+      >
         {tabs.map((tab) => (
           <button
             key={tab.value}
@@ -203,7 +210,9 @@ export function Tabs({
           </button>
         ))}
       </div>
-      <div role="tabpanel">{panels[index] ?? null}</div>
+      <div role="tabpanel" className="min-w-0">
+        {panels[index] ?? null}
+      </div>
     </div>
   );
 }

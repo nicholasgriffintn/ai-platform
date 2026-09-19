@@ -6,7 +6,17 @@ import { SiteConversationTurn } from "../SiteConversationTurn.js";
 
 const project: SiteProject = {
   title: "Signal/Noise",
-  theme: { palette: "sunset", font: "sans", radius: "md", mode: "light" },
+  theme: {
+    palette: "sunset",
+    font: "sans",
+    radius: "md",
+    mode: "light",
+    direction: "minimal",
+    density: "comfortable",
+    texture: "clean",
+    motion: "restrained",
+  },
+  capabilities: ["content"],
   pages: {
     home: {
       path: "/",

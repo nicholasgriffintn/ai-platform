@@ -1,8 +1,9 @@
-import { CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
+import { EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import { useSite } from "@ngriffin_uk/polychat-library-react";
 
 import { SignInEmptyState } from "../../Account/SignInEmptyState.js";
+import { AppSurfaceLoading } from "../AppSurface.js";
 import { SiteStudio } from "./SiteStudio.js";
 
 interface ExperienceProps {
@@ -34,7 +35,12 @@ function SiteStudioRoute({
   const { data: site, isLoading, error } = useSite(siteId, projectId);
 
   if (isLoading) {
-    return <CardGridLoadingSkeleton count={1} label="Loading site" />;
+    return (
+      <AppSurfaceLoading
+        label="Loading site"
+        presentation={{ layout: "workspace", loading: "studio" }}
+      />
+    );
   }
 
   if (isAuthenticationError(error)) {

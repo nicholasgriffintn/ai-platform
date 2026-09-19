@@ -1,3 +1,4 @@
+import type { SitePlan } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -23,15 +24,25 @@ const { project } = validateSiteProject({
     },
   },
 });
-const plan = {
+const plan: SitePlan = {
   kind: "landing",
   scope: "page",
   tier: "low",
   tone: "friendly",
-  theme: { palette: "sand", font: "sans", radius: "md", mode: "light" },
+  theme: {
+    palette: "sand",
+    font: "sans",
+    radius: "md",
+    mode: "light",
+    direction: "minimal",
+    density: "comfortable",
+    texture: "clean",
+    motion: "restrained",
+  },
   interactive: false,
+  capabilities: ["content", "navigation"],
   confidence: 0.8,
-} as const;
+};
 
 describe("refine intent", () => {
   it("offers every non-root element as a target and scopes confident tweaks to it", () => {

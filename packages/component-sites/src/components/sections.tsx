@@ -10,10 +10,10 @@ const CONTAINER = "mx-auto flex w-full max-w-6xl flex-col gap-10 px-6";
 const SECTION_HEADLINE = cn("text-3xl font-semibold tracking-tight sm:text-4xl", HEADING_FONT);
 
 const HERO_BACKGROUNDS = {
-  default: "bg-background",
-  muted: "bg-muted/50",
-  gradient: "bg-[radial-gradient(ellipse_at_top,var(--accent),transparent_60%)]",
-  inverted: "bg-foreground text-background",
+  default: "bg-background text-foreground",
+  muted: "bg-muted/50 text-foreground",
+  gradient: "bg-[radial-gradient(ellipse_at_top,var(--accent),transparent_60%)] text-foreground",
+  inverted: "site-surface-contrast bg-foreground text-background",
 } as const;
 
 export function Hero({
@@ -81,11 +81,18 @@ export function Hero({
       >
         {copy}
         {layout === "split" && (
-          <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+          <div className="overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
             {image?.src ? (
-              <img src={image.src} alt={image.alt} className="aspect-4/3 w-full object-cover" />
+              <img
+                src={image.src}
+                alt={image.alt}
+                className="h-full min-h-72 w-full object-cover"
+              />
             ) : (
-              <Placeholder label={image?.alt ?? "Product image"} className="aspect-4/3 w-full" />
+              <Placeholder
+                label={image?.alt ?? "Product image"}
+                className="h-full min-h-72 w-full"
+              />
             )}
           </div>
         )}
@@ -131,7 +138,8 @@ export function FeatureGrid({
               key={item.title}
               className={cn(
                 "flex flex-col gap-3",
-                variant === "cards" && "rounded-lg border bg-card p-6 shadow-sm",
+                variant === "cards" &&
+                  "rounded-lg border bg-card p-6 text-card-foreground shadow-sm",
               )}
             >
               {item.icon && (
@@ -151,7 +159,7 @@ export function FeatureGrid({
 
 export function Stats({ headline, items }: SiteComponentProps<"Stats">) {
   return (
-    <section className="w-full border-y bg-muted/40 py-12">
+    <section className="w-full border-y bg-muted/40 py-12 text-foreground">
       <div className={cn(CONTAINER, "gap-8")}>
         {headline && (
           <h2 className={cn("text-2xl font-semibold tracking-tight", HEADING_FONT)}>{headline}</h2>
@@ -212,7 +220,7 @@ export function Testimonials({
           {items.map((item) => (
             <figure
               key={item.author + item.quote}
-              className="flex flex-col justify-between gap-6 rounded-lg border bg-card p-6"
+              className="flex flex-col justify-between gap-6 rounded-lg border bg-card p-6 text-card-foreground"
             >
               <blockquote className="text-base leading-relaxed">“{item.quote}”</blockquote>
               <figcaption className="flex items-center gap-3">
@@ -247,7 +255,7 @@ export function Pricing({ headline, description, tiers }: SiteComponentProps<"Pr
             <div
               key={tier.name}
               className={cn(
-                "flex flex-col gap-6 rounded-lg border bg-card p-6",
+                "flex flex-col gap-6 rounded-lg border bg-card p-6 text-card-foreground",
                 tier.featured && "border-primary shadow-lg ring-1 ring-primary",
               )}
             >
@@ -315,9 +323,9 @@ export function FAQ({ headline, items }: SiteComponentProps<"FAQ">) {
 }
 
 const CTA_VARIANTS = {
-  default: "bg-background",
-  primary: "bg-primary text-primary-foreground",
-  muted: "bg-muted/50",
+  default: "bg-background text-foreground",
+  primary: "site-surface-contrast bg-primary text-primary-foreground",
+  muted: "bg-muted/50 text-foreground",
 } as const;
 
 export function CTA({
@@ -458,7 +466,7 @@ export function Newsletter({
   buttonLabel = "Subscribe",
 }: SiteComponentProps<"Newsletter">) {
   return (
-    <section className="w-full bg-muted/50 py-16">
+    <section className="w-full bg-muted/50 py-16 text-foreground">
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-6 px-6 text-center">
         <h2 className={cn("text-3xl font-semibold tracking-tight", HEADING_FONT)}>{headline}</h2>
         {description && <p className="text-muted-foreground">{description}</p>}

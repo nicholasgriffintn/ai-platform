@@ -5,6 +5,7 @@ import {
   resolveElementProps,
   resolveRepeatItems,
   runSiteAction,
+  siteElementStyleClasses,
   setStatePath,
   type SiteScope,
   type SiteState,
@@ -112,7 +113,7 @@ function renderElement(
       .map((child) => renderElement(page, child, itemScope, runtime, nextTrail))
       .filter((child) => child !== null);
 
-    return (
+    const content = (
       <ElementBoundary key={reactKey} elementKey={key}>
         <span style={CONTENTS_STYLE} data-site-key={key} data-site-type={element.type}>
           <Renderer {...buildElementProps(element, itemScope, runtime)}>
@@ -120,6 +121,16 @@ function renderElement(
           </Renderer>
         </span>
       </ElementBoundary>
+    );
+
+    const styleClasses = siteElementStyleClasses(element.style);
+
+    return styleClasses ? (
+      <div key={`${reactKey}:style`} className={styleClasses} data-site-style-for={key}>
+        {content}
+      </div>
+    ) : (
+      content
     );
   };
 

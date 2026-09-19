@@ -121,7 +121,10 @@ Summary: </s>`,
         description:
           "Assistant metadata section injected before the task text; empty when no model metadata is available.",
       },
-      { name: "articles", description: "Concatenated article summaries to report on." },
+      {
+        name: "articles",
+        description: "Concatenated article summaries to report on.",
+      },
     ],
   },
   {
@@ -526,7 +529,10 @@ COMPLEXITY: {{complexity}}
 {{complexityGuide}}{{/complexityGuide}}
 Generate clean, working Strudel code that matches the user's request and the style/complexity hints. Output ONLY a single Strudel expression.`,
     variables: [
-      { name: "basePrompt", description: "Base instructions from apps/strudel/base." },
+      {
+        name: "basePrompt",
+        description: "Base instructions from apps/strudel/base.",
+      },
       {
         name: "style",
         description: "Selected style key whose guide comes from apps/strudel/style/<key>.",
@@ -879,7 +885,10 @@ Produce a concrete deliverable for this stage in an assistant response before ca
 
 {{/skillIds}}{{#isBot}}Complete this automated assignment independently within the exact granted scope. Pause for questions, approvals or supervised computer control when authority is missing.{{/isBot}}{{^isBot}}Work directly alongside the user in this persistent context. Preserve continuity and make decisions collaboratively.{{/isBot}}`,
     variables: [
-      { name: "systemPrompt", description: "Teammate system prompt; empty when unset." },
+      {
+        name: "systemPrompt",
+        description: "Teammate system prompt; empty when unset.",
+      },
       {
         name: "skillIds",
         description: "Comma-separated teammate skill ids to load; empty when none.",
@@ -942,7 +951,10 @@ ASSISTANT RESPONSE:
 
 Respond with only a single number from 1-10 representing the quality score.`,
     variables: [
-      { name: "userPrompt", description: "User prompt from the training example." },
+      {
+        name: "userPrompt",
+        description: "User prompt from the training example.",
+      },
       {
         name: "assistantResponse",
         description: "Assistant response from the training example.",
@@ -1070,7 +1082,10 @@ You are {{speakerName}}.`,
         name: "memberIds",
         description: "Comma-separated ids of every valid panel member.",
       },
-      { name: "speakerName", description: "Name of the speaking panel member." },
+      {
+        name: "speakerName",
+        description: "Name of the speaking panel member.",
+      },
     ],
   },
   {
@@ -1205,8 +1220,9 @@ Output JSONL: one JSON object per line, nothing else. No prose, no markdown fenc
 {
   "title": string,
   "description": string,
+  "capabilities": string[],
   "pages": {
-    "<page-id>": { "path": "/<slug>", "title": string, "root": "<element-key>", "elements": { "<element-key>": { "type": "<Component>", "props": {...}, "children": ["<element-key>"] } } }
+    "<page-id>": { "path": "/<slug>", "title": string, "root": "<element-key>", "elements": { "<element-key>": { "type": "<Component>", "props": {...}, "children": ["<element-key>"], "style": {...} } } }
   }
 }
 
@@ -1236,7 +1252,12 @@ DESIGN
 - Realistic sample data for tables, metrics and charts: five to eight rows, plausible figures, varied statuses.
 - Vary section rhythm: alternate default and muted backgrounds, do not stack three grids in a row, keep the page to what the brief needs.
 - Omit image src unless the brief gives a real URL; the alt text describes what belongs there.
+- Use Image aspect auto when media should fill the available height in a stretched Grid or Card; fixed aspect values intentionally preserve their ratio.
 - Do not invent props, wrapper divs or CSS classes.
+- Every element may use the optional style object to establish hierarchy and composition. Supported keys are width (narrow, content, wide, full), spacing (none, compact, normal, generous, dramatic), surface (transparent, canvas, muted, card, primary, inverted, glass), align (start, center, end), border (none, subtle, strong), shadow (none, sm, md, xl), radius (none, sm, md, lg, xl, full), motion (none, fade, rise, scale, slide), bleed and sticky. Use these deliberately; do not put the same style on every element.
+- Composed sections, Tabs and Footer already own their internal rhythm. Do not add generous or dramatic spacing to them. Inside each Tabs panel, normally use a Stack or Card rather than another full-width Section.
+- On primary and inverted surfaces, keep supporting copy contextual. Avoid muted or accent text colours that reduce contrast against the surface.
+- Avoid the default SaaS formula unless the brief genuinely asks for it. Vary composition, scale, section depth, media rhythm and information density according to the design direction.
 
 STATE AND INTERACTION
 Pages that filter, switch, add or remove things carry state. Add "state" to the page shell, then read and write it from elements:
@@ -1252,7 +1273,10 @@ Static pages (landing, marketing, portfolio) need no state at all.{{#guidance}}
 BRIEF GUIDANCE
 {{guidance}}{{/guidance}}`,
     variables: [
-      { name: "example", description: "Example JSONL stream built from the live catalogue." },
+      {
+        name: "example",
+        description: "Example JSONL stream built from the live catalogue.",
+      },
       {
         name: "components",
         description: "Catalogue reference rendered from the component definitions.",
@@ -1330,9 +1354,18 @@ The ancestors explain the selected element's layout and surface. Treat them as r
         name: "components",
         description: "Catalogue reference rendered from the component definitions.",
       },
-      { name: "pageId", description: "The id of the page the selected element belongs to." },
-      { name: "targetPath", description: "JSON pointer of the selected element." },
-      { name: "outline", description: "Compact outline of every page in the site." },
+      {
+        name: "pageId",
+        description: "The id of the page the selected element belongs to.",
+      },
+      {
+        name: "targetPath",
+        description: "JSON pointer of the selected element.",
+      },
+      {
+        name: "outline",
+        description: "Compact outline of every page in the site.",
+      },
       {
         name: "elementContext",
         description: "The selected element subtree and its ancestor elements as JSON.",

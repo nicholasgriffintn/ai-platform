@@ -10,9 +10,10 @@ Sites work the way json-render proved generative UI should: a model can only use
 - `describeSiteCatalog()` / `buildSiteExampleStream()` — the catalogue rendered as prompt text, and a worked example built from the live definitions so the prompt never drifts from the code.
 - `createSitePatchStreamReader()` / `applySitePatch()` — the JSONL patch protocol. Lines arrive in any chunking, prose and fences are ignored, and `add`, `replace` and `remove` build the document in place.
 - `validateSiteProject()` — turns the streamed document into a typed `SiteProject`, dropping unknown components, invalid props, dangling children and unreachable elements while recording each repair as an issue. Only a site with no pages is an error.
-- `SITE_PLAN_QUESTIONS` / `resolveSitePlan()` — the Jev question set and the mapping from calibrated answers (or heuristics when no decision model is available) to a plan: kind, scope, tone, theme and the model tier that should write the site.
+- `SITE_PLAN_QUESTIONS` / `resolveSitePlan()` — the Jev question set and the mapping from calibrated answers (or heuristics when no decision model is available) to a plan: product kind, scope, capabilities, tone, visual direction and the model tier that should write it.
 - `buildSiteThemeVariables()` / `renderSiteThemeCss()` — palettes as oklch token sets for the preview wrapper and the exported `globals.css`.
-- `generateSiteFiles()` — a deterministic Next.js and Tailwind v4 project: pages composed from the document, one component file per catalogue entry used, theme, layout and README. It depends only on `next`, `react`, `lucide-react`, `clsx` and `tailwind-merge`.
+- `siteElementStyleClasses()` — the structured composition grammar for width, spacing, surface, alignment, borders, shadows, radii, motion, bleed and sticky positioning. It gives the model expressive control without accepting arbitrary class names.
+- `generateSiteFiles()` — a deterministic React Router, Next.js or TanStack Router project with Tailwind v4. React Router is the default. Pages, state, components, theme and expressive styles come from the same framework-neutral document.
 - `buildSiteSandboxTask()` — the feature-implementation task that hands those files to the sandbox worker.
 
 ## Document shape
@@ -21,7 +22,17 @@ Sites work the way json-render proved generative UI should: a model can only use
 {
   "title": "Acme",
   "description": "Invoicing for small studios.",
-  "theme": { "palette": "ocean", "font": "sans", "radius": "md", "mode": "light" },
+  "theme": {
+    "palette": "ocean",
+    "font": "sans",
+    "radius": "md",
+    "mode": "light",
+    "direction": "editorial",
+    "density": "spacious",
+    "texture": "grain",
+    "motion": "restrained"
+  },
+  "capabilities": ["content", "navigation", "forms"],
   "pages": {
     "home": {
       "path": "/",
@@ -30,7 +41,12 @@ Sites work the way json-render proved generative UI should: a model can only use
       "elements": {
         "page": { "type": "Page", "props": {}, "children": ["nav", "hero"] },
         "nav": { "type": "Navbar", "props": { "brand": "Acme", "links": [] }, "children": [] },
-        "hero": { "type": "Hero", "props": { "headline": "Ship it" }, "children": [] }
+        "hero": {
+          "type": "Hero",
+          "props": { "headline": "Ship it" },
+          "children": [],
+          "style": { "width": "wide", "spacing": "dramatic", "motion": "rise" }
+        }
       }
     }
   }

@@ -15,6 +15,7 @@ export {
 export { generateSiteFiles, type GeneratedSiteFiles } from "./codegen/project.js";
 export { renderPageJsx } from "./codegen/page.js";
 export { buildSiteExampleStream, describeSiteCatalog, describeSiteComponent } from "./describe.js";
+export { siteElementStyleClasses, siteThemeClasses, SITE_EXPRESSION_CSS } from "./element-style.js";
 export {
   createSiteDecisionTrace,
   describeSitePlanDecision,

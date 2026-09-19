@@ -1,7 +1,7 @@
 {
   "name": "@ngriffin_uk/polychat-library-sites",
   "version": "0.1.0",
-  "description": "Generative site primitives for Polychat: a guardrailed component catalogue, the streamed JSON patch protocol that builds a site spec progressively, validation and repair, prompt assembly, theme tokens and deterministic React code generation",
+  "description": "Framework-neutral generative UI primitives for Polychat: expressive site and app documents, streamed JSON patches, validation, design direction and deterministic React code generation",
   "license": "Apache-2.0",
   "files": [
     "dist",

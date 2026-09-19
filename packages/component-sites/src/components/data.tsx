@@ -19,7 +19,7 @@ export function Metric({
   icon,
 }: SiteComponentProps<"Metric">) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border bg-card p-5">
+    <div className="flex flex-col gap-2 rounded-lg border bg-card p-5 text-card-foreground">
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>{label}</span>
         <SiteIcon name={icon} size="sm" />
@@ -167,7 +167,7 @@ export function Chart({ type, title, data, height = "md" }: SiteComponentProps<"
   }
 
   return (
-    <figure className="flex flex-col gap-3 rounded-lg border bg-card p-5">
+    <figure className="flex flex-col gap-3 rounded-lg border bg-card p-5 text-card-foreground">
       {title && <figcaption className="text-sm font-medium">{title}</figcaption>}
       <svg
         viewBox={`0 0 ${w} ${h}`}
@@ -183,7 +183,9 @@ export function Chart({ type, title, data, height = "md" }: SiteComponentProps<"
             <li key={point.label} className="flex items-center gap-1.5">
               <span
                 className="size-2 rounded-full"
-                style={{ background: CHART_COLORS[index % CHART_COLORS.length] }}
+                style={{
+                  background: CHART_COLORS[index % CHART_COLORS.length],
+                }}
               />
               {point.label}
             </li>
@@ -196,7 +198,7 @@ export function Chart({ type, title, data, height = "md" }: SiteComponentProps<"
 
 export function Table({ caption, columns, rows, striped }: SiteComponentProps<"Table">) {
   return (
-    <div className="overflow-x-auto rounded-lg border bg-card">
+    <div className="overflow-x-auto rounded-lg border bg-card text-card-foreground">
       <table className="w-full text-sm">
         {caption && (
           <caption className="px-4 py-3 text-left text-sm font-medium">{caption}</caption>
@@ -244,7 +246,7 @@ export function Table({ caption, columns, rows, striped }: SiteComponentProps<"T
 
 export function KeyValue({ items }: SiteComponentProps<"KeyValue">) {
   return (
-    <dl className="divide-y rounded-lg border bg-card text-sm">
+    <dl className="divide-y rounded-lg border bg-card text-sm text-card-foreground">
       {items.map((item) => (
         <div key={item.label} className="flex items-center justify-between gap-6 px-4 py-3">
           <dt className="text-muted-foreground">{item.label}</dt>

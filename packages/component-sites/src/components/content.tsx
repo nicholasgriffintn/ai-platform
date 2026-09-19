@@ -12,7 +12,11 @@ const HEADING_SIZES = {
   xl: "text-4xl sm:text-5xl",
   display: "text-5xl sm:text-6xl",
 } as const;
-const ALIGN = { start: "text-left", center: "text-center", end: "text-right" } as const;
+const ALIGN = {
+  start: "text-left",
+  center: "text-center",
+  end: "text-right",
+} as const;
 
 export function Heading({ text, level = 2, size = "md", align }: SiteComponentProps<"Heading">) {
   const Tag = `h${Math.min(4, Math.max(1, level))}` as "h1" | "h2" | "h3" | "h4";
@@ -31,7 +35,12 @@ export function Heading({ text, level = 2, size = "md", align }: SiteComponentPr
   );
 }
 
-const TEXT_SIZES = { xs: "text-xs", sm: "text-sm", md: "text-base", lg: "text-lg" } as const;
+const TEXT_SIZES = {
+  xs: "text-xs",
+  sm: "text-sm",
+  md: "text-base",
+  lg: "text-lg",
+} as const;
 const TEXT_TONES = {
   default: "",
   muted: "opacity-70",
@@ -131,12 +140,12 @@ const ASPECTS = {
 } as const;
 
 export function Image({ src, alt, aspect = "video", rounded = true }: SiteComponentProps<"Image">) {
-  const classes = cn("w-full object-cover", ASPECTS[aspect], rounded && "rounded-lg");
+  const classes = cn("h-full w-full object-cover", ASPECTS[aspect], rounded && "rounded-lg");
 
   return src ? (
     <img src={src} alt={alt} className={classes} />
   ) : (
-    <Placeholder label={alt} className={cn(classes, !ASPECTS[aspect] && "aspect-video")} />
+    <Placeholder label={alt} className={cn(classes, !ASPECTS[aspect] && "min-h-64")} />
   );
 }
 
@@ -228,7 +237,10 @@ export function Code({ code, language, title }: SiteComponentProps<"Code">) {
 
 const ALERT_VARIANTS = {
   info: { classes: "border-border bg-muted/40", icon: "info" },
-  success: { classes: "border-emerald-500/40 bg-emerald-500/10", icon: "check" },
+  success: {
+    classes: "border-emerald-500/40 bg-emerald-500/10",
+    icon: "check",
+  },
   warning: { classes: "border-amber-500/40 bg-amber-500/10", icon: "alert" },
   danger: { classes: "border-destructive/40 bg-destructive/10", icon: "alert" },
 } as const;

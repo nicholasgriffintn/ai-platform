@@ -8,7 +8,17 @@ import { SiteRenderer } from "../SiteRenderer.js";
 
 const project: SiteProject = {
   title: "Crumb",
-  theme: { palette: "sunset", font: "display", radius: "lg", mode: "dark" },
+  theme: {
+    palette: "sunset",
+    font: "display",
+    radius: "lg",
+    mode: "dark",
+    direction: "maximalist",
+    density: "spacious",
+    texture: "gradient",
+    motion: "expressive",
+  },
+  capabilities: ["content"],
   pages: {
     home: {
       path: "/",

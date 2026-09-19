@@ -1,10 +1,15 @@
 import {
   DEFAULT_SITE_THEME,
+  decisionChoiceSelection,
   decisionNoulConfidence,
   decisionNoulIsTrue,
   roundDecisionScore,
   SITE_KINDS,
+  SITE_DESIGN_DIRECTIONS,
+  SITE_DENSITIES,
+  SITE_MOTION_LEVELS,
   SITE_PALETTES,
+  SITE_TEXTURES,
   SITE_TONES,
   type DecisionAnswer,
   type DecisionChoiceQuestion,
@@ -12,10 +17,15 @@ import {
   type DecisionScoreQuestion,
   type ModelTier,
   type SiteKind,
+  type SiteCapability,
+  type SiteDensity,
+  type SiteDesignDirection,
+  type SiteMotionLevel,
   type SitePalette,
   type SitePlan,
   type SiteScope,
   type SiteTheme,
+  type SiteTexture,
   type SiteTone,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -34,6 +44,14 @@ export const SITE_PLAN_QUESTIONS = {
       form: "A single form, survey, signup or checkout flow.",
       docs: "Documentation, a help centre or a knowledge base.",
       component: "One reusable UI component or section rather than a page.",
+      commerce: "A store, product catalogue, cart or checkout experience.",
+      booking: "Appointments, reservations, availability or service scheduling.",
+      event: "A conference, festival or event with programme, speakers or tickets.",
+      publication: "A blog, magazine, news site or editorial archive.",
+      community: "A member community, forum, social space or directory.",
+      education: "A course, learning product, tutorial or training experience.",
+      "ai-tool": "An AI-powered workflow, assistant, generator or playground.",
+      game: "A game, quiz, puzzle or playful interactive experience.",
     },
   } satisfies DecisionChoiceQuestion,
   scope: {
@@ -65,6 +83,52 @@ export const SITE_PLAN_QUESTIONS = {
       bold: "Confident, punchy, short sentences.",
       editorial: "Considered, longer-form, magazine-like.",
       technical: "Precise, for developers or specialists.",
+    },
+  } satisfies DecisionChoiceQuestion,
+  direction: {
+    type: "choice",
+    instructions:
+      "Which visual direction best fits the audience, subject and requested references? Choose a committed art direction, not a generic safe default.",
+    criteria: {
+      minimal: "Reduced, quiet and precise with generous negative space.",
+      editorial: "Magazine-like hierarchy, expressive type and asymmetric composition.",
+      utilitarian: "Dense, direct and task-focused with visible structure.",
+      brutalist: "Raw contrast, hard edges, oversized type and intentionally exposed structure.",
+      playful: "Bright, friendly, rounded and characterful with energetic composition.",
+      luxury: "Restrained, high-contrast and typographically led with deliberate whitespace.",
+      organic: "Tactile, warm and natural with soft shapes and irregular rhythm.",
+      retro: "Period-inspired colour, typography and graphic motifs without pastiche copy.",
+      futuristic: "Technical, luminous and spatial with controlled depth and glow.",
+      maximalist: "Layered, expressive and visually dense while retaining clear hierarchy.",
+    },
+  } satisfies DecisionChoiceQuestion,
+  density: {
+    type: "choice",
+    instructions: "How dense should the interface feel?",
+    criteria: {
+      compact: "Information-rich tools, tables and operational screens.",
+      comfortable: "Balanced spacing suitable for most products and sites.",
+      spacious: "Large-scale editorial, premium or image-led presentation.",
+    },
+  } satisfies DecisionChoiceQuestion,
+  texture: {
+    type: "choice",
+    instructions: "Which background treatment supports the direction?",
+    criteria: {
+      clean: "Mostly solid surfaces with minimal decoration.",
+      grain: "Subtle tactile noise for print, craft or editorial work.",
+      grid: "Visible structural grid for technical or utilitarian interfaces.",
+      gradient: "Layered colour fields for expressive product presentation.",
+      glow: "Luminous depth for futuristic, gaming or AI experiences.",
+    },
+  } satisfies DecisionChoiceQuestion,
+  motion: {
+    type: "choice",
+    instructions: "How much purposeful motion should the experience use?",
+    criteria: {
+      none: "No decorative motion; use for serious or highly constrained experiences.",
+      restrained: "Short transitions and a small number of entrance moments.",
+      expressive: "Visible staged entrances and transforms that support the concept.",
     },
   } satisfies DecisionChoiceQuestion,
   palette: {
@@ -104,6 +168,44 @@ export type SitePlanAnswers = Partial<Record<keyof SitePlanQuestions, DecisionAn
 
 const TIER_BY_COMPLEXITY: readonly ModelTier[] = ["low", "low", "medium", "high"];
 
+const DIRECTION_BY_KIND: Record<SiteKind, SiteDesignDirection> = {
+  landing: "minimal",
+  marketing: "minimal",
+  portfolio: "editorial",
+  dashboard: "utilitarian",
+  app: "utilitarian",
+  form: "minimal",
+  docs: "utilitarian",
+  component: "minimal",
+  commerce: "playful",
+  booking: "organic",
+  event: "maximalist",
+  publication: "editorial",
+  community: "playful",
+  education: "organic",
+  "ai-tool": "futuristic",
+  game: "retro",
+};
+
+const PALETTE_BY_KIND: Record<SiteKind, SitePalette> = {
+  landing: "neutral",
+  marketing: "neutral",
+  portfolio: "sand",
+  dashboard: "slate",
+  app: "slate",
+  form: "neutral",
+  docs: "slate",
+  component: "neutral",
+  commerce: "berry",
+  booking: "forest",
+  event: "sunset",
+  publication: "sand",
+  community: "ocean",
+  education: "forest",
+  "ai-tool": "midnight",
+  game: "berry",
+};
+
 const SINGLE_PAGE_KINDS = new Set<SiteKind>(["landing", "form", "component", "dashboard"]);
 
 function pickChoice<T extends string>(
@@ -111,8 +213,12 @@ function pickChoice<T extends string>(
   options: readonly T[],
   fallback: T,
 ): T {
-  if (answer?.type === "choice" && (options as readonly string[]).includes(answer.choice)) {
-    return answer.choice as T;
+  if (answer?.type === "choice") {
+    const choice = decisionChoiceSelection(answer);
+
+    if ((options as readonly string[]).includes(choice)) {
+      return choice as T;
+    }
   }
 
   return fallback;
@@ -147,6 +253,38 @@ export interface ResolveSitePlanOptions {
 
 function heuristicKind(prompt: string): SiteKind {
   const text = prompt.toLowerCase();
+
+  if (/\b(shop|store|commerce|e-?commerce|product catalogue|cart|checkout)\b/.test(text)) {
+    return "commerce";
+  }
+
+  if (/\b(book|booking|reservation|appointment|availability)\b/.test(text)) {
+    return "booking";
+  }
+
+  if (/\b(conference|festival|event|schedule|speakers?|tickets?)\b/.test(text)) {
+    return "event";
+  }
+
+  if (/\b(blog|magazine|publication|news|journal)\b/.test(text)) {
+    return "publication";
+  }
+
+  if (/\b(course|learning|lesson|education|training)\b/.test(text)) {
+    return "education";
+  }
+
+  if (/\b(community|forum|members?|social network|directory)\b/.test(text)) {
+    return "community";
+  }
+
+  if (/\b(ai tool|assistant|copilot|generator|playground)\b/.test(text)) {
+    return "ai-tool";
+  }
+
+  if (/\b(game|quiz|puzzle|arcade)\b/.test(text)) {
+    return "game";
+  }
 
   if (/\b(dashboard|analytics|admin|metrics|kpi)\b/.test(text)) {
     return "dashboard";
@@ -184,11 +322,61 @@ function heuristicScope(kind: SiteKind, prompt: string): SiteScope {
     return "component";
   }
 
-  if (kind === "marketing" || kind === "docs" || /\bpages\b/.test(prompt.toLowerCase())) {
+  if (
+    [
+      "marketing",
+      "docs",
+      "commerce",
+      "booking",
+      "event",
+      "publication",
+      "community",
+      "education",
+    ].includes(kind) ||
+    /\bpages\b/.test(prompt.toLowerCase())
+  ) {
     return "site";
   }
 
   return "page";
+}
+
+function inferCapabilities(kind: SiteKind, prompt: string, interactive: boolean): SiteCapability[] {
+  const text = prompt.toLowerCase();
+  const capabilities = new Set<SiteCapability>(["content", "navigation"]);
+  const include = (pattern: RegExp, capability: SiteCapability) => {
+    if (pattern.test(text)) {
+      capabilities.add(capability);
+    }
+  };
+
+  if (interactive) {
+    capabilities.add("forms");
+  }
+
+  if (["dashboard", "app", "ai-tool"].includes(kind)) {
+    capabilities.add("visualisation");
+  }
+
+  if (kind === "commerce") {
+    capabilities.add("commerce");
+    capabilities.add("payments");
+  }
+
+  if (kind === "booking" || kind === "event") {
+    capabilities.add("booking");
+  }
+
+  include(/\b(search|find|lookup)\b/, "search");
+  include(/\b(filters?|sorting?|segments?)\b/, "filtering");
+  include(/\b(crud|create|edit|delete|manage|admin)\b/, "crud");
+  include(/\b(auth|login|log in|sign in|accounts?|profiles?)\b/, "authentication");
+  include(/\b(upload|attachment|file|document)\b/, "files");
+  include(/\b(ai|assistant|copilot|model|generate)\b/, "ai");
+  include(/\b(realtime|real-time|live|websocket|collaborat)\b/, "realtime");
+  include(/\b(payment|checkout|subscription|billing)\b/, "payments");
+
+  return [...capabilities];
 }
 
 export function resolveSitePlan({
@@ -229,22 +417,62 @@ export function resolveSitePlan({
     SITE_TONES,
     kind === "dashboard" || kind === "app" || kind === "docs" ? "plain" : "friendly",
   );
-  const palette: SitePalette = pickChoice(
-    answers.palette,
-    SITE_PALETTES,
-    kind === "dashboard" || kind === "app" ? "slate" : "neutral",
-  );
-  const dark = answers.dark?.type === "noul" ? decisionNoulIsTrue(answers.dark) : false;
+  const palette: SitePalette = pickChoice(answers.palette, SITE_PALETTES, PALETTE_BY_KIND[kind]);
+  const dark =
+    answers.dark?.type === "noul"
+      ? decisionNoulIsTrue(answers.dark)
+      : /\b(dark|night|noir|neon)\b/i.test(prompt) || kind === "ai-tool";
   const serif = answers.serif?.type === "noul" ? decisionNoulIsTrue(answers.serif) : false;
   const interactive =
     answers.interactive?.type === "noul"
       ? decisionNoulIsTrue(answers.interactive)
       : kind === "dashboard" || kind === "app" || kind === "form";
+  const direction: SiteDesignDirection = pickChoice(
+    answers.direction,
+    SITE_DESIGN_DIRECTIONS,
+    DIRECTION_BY_KIND[kind],
+  );
+  const density: SiteDensity = pickChoice(
+    answers.density,
+    SITE_DENSITIES,
+    kind === "dashboard" || kind === "app"
+      ? "compact"
+      : direction === "luxury"
+        ? "spacious"
+        : "comfortable",
+  );
+  const texture: SiteTexture = pickChoice(
+    answers.texture,
+    SITE_TEXTURES,
+    direction === "editorial" || direction === "organic"
+      ? "grain"
+      : direction === "futuristic"
+        ? "glow"
+        : direction === "utilitarian"
+          ? "grid"
+          : "clean",
+  );
+  const motion: SiteMotionLevel = pickChoice(
+    answers.motion,
+    SITE_MOTION_LEVELS,
+    direction === "playful" || direction === "futuristic" || direction === "maximalist"
+      ? "expressive"
+      : "restrained",
+  );
+  const capabilities = inferCapabilities(kind, prompt, interactive);
   const theme: SiteTheme = {
     palette: themeHint?.palette ?? palette,
-    font: themeHint?.font ?? (serif ? "display" : kind === "docs" ? "sans" : "sans"),
-    radius: themeHint?.radius ?? (kind === "dashboard" || kind === "app" ? "sm" : "md"),
+    font:
+      themeHint?.font ??
+      (serif || direction === "editorial" || direction === "luxury" ? "display" : "sans"),
+    radius:
+      themeHint?.radius ??
+      (direction === "brutalist" ? "none" : direction === "playful" ? "lg" : "md"),
     mode: themeHint?.mode ?? (dark ? "dark" : DEFAULT_SITE_THEME.mode),
+    direction: themeHint?.direction ?? direction,
+    density: themeHint?.density ?? density,
+    texture: themeHint?.texture ?? texture,
+    motion: themeHint?.motion ?? motion,
   };
   const confidences = Object.values(answers)
     .map(readConfidence)
@@ -260,6 +488,7 @@ export function resolveSitePlan({
     tone,
     theme,
     interactive,
+    capabilities,
     confidence,
     ...(decided ? { answers } : {}),
     ...(provider ? { provider } : {}),

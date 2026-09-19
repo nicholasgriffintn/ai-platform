@@ -257,11 +257,11 @@ export function filterItems(
 
   return items.filter((item) => {
     const record = item && typeof item === "object" ? (item as Record<string, unknown>) : {};
-    const matches = Object.entries(where ?? {}).every(
+    const matchesFilters = Object.entries(where ?? {}).every(
       ([field, expected]) => isOpen(expected) || matches(readItem(record, field), expected),
     );
 
-    if (!matches) {
+    if (!matchesFilters) {
       return false;
     }
 

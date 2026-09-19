@@ -12,7 +12,7 @@ export function SiteStarterPrompt({ onSubmit }: { onSubmit: (prompt: string) => 
       <SitePromptComposer
         size="hero"
         autoFocus
-        placeholder="A landing page for…"
+        placeholder="Describe a website, app or interface…"
         submitLabel="Build"
         isBusy={false}
         onSubmit={onSubmit}

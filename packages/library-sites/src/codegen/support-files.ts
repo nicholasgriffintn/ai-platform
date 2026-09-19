@@ -1,3 +1,5 @@
+import type { SiteExportTarget } from "@ngriffin_uk/polychat-schemas";
+
 import { SITE_ICON_NAMES } from "../catalog.js";
 
 const ICON_IMPORTS: Record<(typeof SITE_ICON_NAMES)[number], string> = {
@@ -93,8 +95,37 @@ export function cn(...inputs: ClassValue[]) {
 `;
 }
 
+export function renderLinkModule(target: SiteExportTarget): string {
+  if (target === "react-router") {
+    return `import { Link as RouterLink } from "react-router";
+import type { ComponentProps } from "react";
+
+export default function Link({ href, ...props }: Omit<ComponentProps<typeof RouterLink>, "to"> & { href: string }) {
+  return <RouterLink to={href} {...props} />;
+}
+`;
+  }
+
+  if (target === "tanstack-router") {
+    return `import type { ComponentProps } from "react";
+
+export default function Link(props: ComponentProps<"a">) {
+  return <a {...props} />;
+}
+`;
+  }
+
+  return `import NextLink from "next/link";
+import type { ComponentProps } from "react";
+
+export default function Link(props: ComponentProps<typeof NextLink>) {
+  return <NextLink {...props} />;
+}
+`;
+}
+
 export function renderUiModule(): string {
-  return `import Link from "next/link";
+  return `import Link from "@/components/site/link";
 import type { ComponentProps, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";

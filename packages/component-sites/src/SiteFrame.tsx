@@ -1,5 +1,9 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
-import { buildSiteThemeVariables } from "@ngriffin_uk/polychat-library-sites";
+import {
+  buildSiteThemeVariables,
+  siteThemeClasses,
+  SITE_EXPRESSION_CSS,
+} from "@ngriffin_uk/polychat-library-sites";
 import type { SiteTheme } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -35,6 +39,7 @@ const RESET_ATTRIBUTE = "data-site-frame-reset";
 const FRAME_RESET_CSS = `
 a { text-decoration: none; }
 a.hover\\:underline:hover { text-decoration: underline; }
+${SITE_EXPRESSION_CSS}
 `;
 
 function appendFrameReset(target: Document): void {
@@ -57,6 +62,18 @@ function applyTheme(target: Document, theme: SiteTheme): void {
   }
 
   root.classList.toggle("dark", theme.mode === "dark");
+  for (const className of Array.from(root.classList)) {
+    if (
+      className.startsWith("site-direction-") ||
+      className.startsWith("site-density-") ||
+      className.startsWith("site-texture-") ||
+      className.startsWith("site-motion-")
+    ) {
+      root.classList.remove(className);
+    }
+  }
+
+  root.classList.add(...siteThemeClasses(theme).split(" "));
   root.dataset.siteMode = theme.mode;
 }
 

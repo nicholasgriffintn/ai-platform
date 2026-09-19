@@ -21,10 +21,10 @@ export const SITE_COMPONENT_TEMPLATES: Record<SiteComponentType, string> = {
 `),
 
   Section: layout(`const BACKGROUNDS = {
-  default: "bg-background",
-  muted: "bg-muted/50",
-  primary: "bg-primary text-primary-foreground",
-  inverted: "bg-foreground text-background",
+  default: "bg-background text-foreground",
+  muted: "bg-muted/50 text-foreground",
+  primary: "site-surface-contrast bg-primary text-primary-foreground",
+  inverted: "site-surface-contrast bg-foreground text-background",
 } as const;
 
 const PADDINGS = { sm: "py-8", md: "py-14", lg: "py-24" } as const;
@@ -208,8 +208,8 @@ export default function Tabs({
   const index = Math.max(0, tabs.findIndex((tab) => tab.value === active));
 
   return (
-    <div className="flex flex-col gap-4">
-      <div role="tablist" className="inline-flex w-fit items-center gap-1 rounded-md bg-muted p-1">
+    <div className="flex min-w-0 flex-col gap-3 px-2 pt-2 sm:px-3 sm:pt-3">
+      <div role="tablist" className="inline-flex max-w-full w-fit items-center gap-1 overflow-x-auto rounded-md bg-muted p-1">
         {tabs.map((tab) => (
           <button
             key={tab.value}
@@ -226,7 +226,7 @@ export default function Tabs({
           </button>
         ))}
       </div>
-      <div role="tabpanel">{panels[index] ?? null}</div>
+      <div role="tabpanel" className="min-w-0">{panels[index] ?? null}</div>
     </div>
   );
 }
@@ -314,7 +314,7 @@ export default function Navbar({
   sticky?: boolean;
 }) {
   return (
-    <header className={cn("w-full border-b bg-background/90 backdrop-blur", sticky && "sticky top-0 z-40")}>
+    <header className={cn("w-full border-b bg-background/90 text-foreground backdrop-blur", sticky && "sticky top-0 z-40")}>
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-6 px-6">
         <Link href="/" className="font-heading text-lg font-semibold tracking-tight">
           {brand}
@@ -353,29 +353,33 @@ export default function Footer({
   copyright?: string;
 }) {
   return (
-    <footer className="mt-auto w-full border-t bg-background">
+    <footer className="mt-auto w-full border-t bg-transparent">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12">
-        <div className="grid gap-10 md:grid-cols-[2fr_repeat(auto-fit,minmax(8rem,1fr))]">
+        <div className="grid gap-10 md:grid-cols-[minmax(0,1.5fr)_minmax(0,2fr)]">
           <div className="flex flex-col gap-2">
             <span className="font-heading text-lg font-semibold">{brand}</span>
-            {tagline && <p className="max-w-xs text-sm text-muted-foreground">{tagline}</p>}
+            {tagline && <p className="max-w-xs text-sm opacity-70">{tagline}</p>}
           </div>
-          {columns?.map((column) => (
-            <div key={column.title} className="flex flex-col gap-3">
-              <span className="text-sm font-medium">{column.title}</span>
-              <ul className="flex flex-col gap-2">
-                {column.links.map((link) => (
-                  <li key={link.href + link.label}>
-                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+          {columns && columns.length > 0 && (
+            <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3">
+              {columns.map((column) => (
+                <div key={column.title} className="flex flex-col gap-3">
+                  <span className="text-sm font-medium">{column.title}</span>
+                  <ul className="flex flex-col gap-2">
+                    {column.links.map((link) => (
+                      <li key={link.href + link.label}>
+                        <Link href={link.href} className="text-sm opacity-70 transition-opacity hover:opacity-100">
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
-        {copyright && <p className="text-xs text-muted-foreground">{copyright}</p>}
+        {copyright && <p className="text-xs opacity-70">{copyright}</p>}
       </div>
     </footer>
   );
@@ -419,10 +423,10 @@ export default function Breadcrumbs({ items }: { items: Array<{ label: string; h
     `import { Action, Placeholder } from "@/components/site/ui";
 
 const BACKGROUNDS = {
-  default: "bg-background",
-  muted: "bg-muted/50",
-  gradient: "bg-[radial-gradient(ellipse_at_top,var(--accent),transparent_60%)]",
-  inverted: "bg-foreground text-background",
+  default: "bg-background text-foreground",
+  muted: "bg-muted/50 text-foreground",
+  gradient: "bg-[radial-gradient(ellipse_at_top,var(--accent),transparent_60%)] text-foreground",
+  inverted: "site-surface-contrast bg-foreground text-background",
 } as const;
 
 export default function Hero({
@@ -484,11 +488,11 @@ export default function Hero({
       >
         {copy}
         {layout === "split" && (
-          <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+          <div className="overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
             {image?.src ? (
-              <img src={image.src} alt={image.alt} className="aspect-[4/3] w-full object-cover" />
+              <img src={image.src} alt={image.alt} className="h-full min-h-72 w-full object-cover" />
             ) : (
-              <Placeholder label={image?.alt ?? "Product image"} className="aspect-[4/3] w-full" />
+              <Placeholder label={image?.alt ?? "Product image"} className="h-full min-h-72 w-full" />
             )}
           </div>
         )}
@@ -533,7 +537,7 @@ export default function FeatureGrid({
           {items.map((item) => (
             <div
               key={item.title}
-              className={cn("flex flex-col gap-3", variant === "cards" && "rounded-lg border bg-card p-6 shadow-sm")}
+              className={cn("flex flex-col gap-3", variant === "cards" && "rounded-lg border bg-card p-6 text-card-foreground shadow-sm")}
             >
               {item.icon && (
                 <span className="flex size-10 items-center justify-center rounded-md bg-primary/10 text-primary">
@@ -560,7 +564,7 @@ export default function FeatureGrid({
   items: Array<{ value: string; label: string }>;
 }) {
   return (
-    <section className="w-full border-y bg-muted/40 py-12">
+    <section className="w-full border-y bg-muted/40 py-12 text-foreground">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6">
         {headline && <h2 className="font-heading text-2xl font-semibold tracking-tight">{headline}</h2>}
         <dl className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -614,7 +618,7 @@ export default function Testimonials({
         {headline && <h2 className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">{headline}</h2>}
         <div className={cn("grid gap-6", layout === "grid" ? "md:grid-cols-2 lg:grid-cols-3" : "max-w-3xl")}>
           {items.map((item) => (
-            <figure key={item.author + item.quote} className="flex flex-col justify-between gap-6 rounded-lg border bg-card p-6">
+            <figure key={item.author + item.quote} className="flex flex-col justify-between gap-6 rounded-lg border bg-card p-6 text-card-foreground">
               <blockquote className="text-base leading-relaxed">“{item.quote}”</blockquote>
               <figcaption className="flex items-center gap-3">
                 <span className="flex size-9 items-center justify-center rounded-full bg-muted text-xs font-medium">
@@ -671,7 +675,7 @@ export default function Pricing({
             <div
               key={tier.name}
               className={cn(
-                "flex flex-col gap-6 rounded-lg border bg-card p-6",
+                "flex flex-col gap-6 rounded-lg border bg-card p-6 text-card-foreground",
                 tier.featured && "border-primary ring-1 ring-primary shadow-lg",
               )}
             >
@@ -736,9 +740,9 @@ export default function Pricing({
     `import { Action } from "@/components/site/ui";
 
 const VARIANTS = {
-  default: "bg-background",
-  primary: "bg-primary text-primary-foreground",
-  muted: "bg-muted/50",
+  default: "bg-background text-foreground",
+  primary: "site-surface-contrast bg-primary text-primary-foreground",
+  muted: "bg-muted/50 text-foreground",
 } as const;
 
 export default function CTA({
@@ -901,7 +905,7 @@ export default function Newsletter({
   buttonLabel?: string;
 }) {
   return (
-    <section className="w-full bg-muted/50 py-16">
+    <section className="w-full bg-muted/50 py-16 text-foreground">
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-6 px-6 text-center">
         <h2 className="font-heading text-3xl font-semibold tracking-tight">{headline}</h2>
         {description && <p className="text-muted-foreground">{description}</p>}
@@ -1090,9 +1094,9 @@ export default function Image({
   aspect?: keyof typeof ASPECTS;
   rounded?: boolean;
 }) {
-  const classes = cn("w-full object-cover", ASPECTS[aspect], rounded && "rounded-lg");
+  const classes = cn("h-full w-full object-cover", ASPECTS[aspect], rounded && "rounded-lg");
 
-  return src ? <img src={src} alt={alt} className={classes} /> : <Placeholder label={alt} className={cn(classes, !ASPECTS[aspect] && "aspect-video")} />;
+  return src ? <img src={src} alt={alt} className={classes} /> : <Placeholder label={alt} className={cn(classes, !ASPECTS[aspect] && "min-h-64")} />;
 }
 `,
   ),
@@ -1253,7 +1257,7 @@ export default function Metric({
   icon?: string;
 }) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border bg-card p-5">
+    <div className="flex flex-col gap-2 rounded-lg border bg-card p-5 text-card-foreground">
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>{label}</span>
         <Icon name={icon} size="sm" />
@@ -1380,7 +1384,7 @@ export default function Chart({
   }
 
   return (
-    <figure className="flex flex-col gap-3 rounded-lg border bg-card p-5">
+    <figure className="flex flex-col gap-3 rounded-lg border bg-card p-5 text-card-foreground">
       {title && <figcaption className="text-sm font-medium">{title}</figcaption>}
       <svg viewBox={"0 0 " + w + " " + h} className="h-auto w-full" role="img" aria-label={title ?? type + " chart"}>
         {body}
@@ -1412,7 +1416,7 @@ export default function Chart({
   striped?: boolean;
 }) {
   return (
-    <div className="overflow-x-auto rounded-lg border bg-card">
+    <div className="overflow-x-auto rounded-lg border bg-card text-card-foreground">
       <table className="w-full text-sm">
         {caption && <caption className="px-4 py-3 text-left text-sm font-medium">{caption}</caption>}
         <thead className="border-b bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
@@ -1444,7 +1448,7 @@ export default function Chart({
   KeyValue:
     layout(`export default function KeyValue({ items }: { items: Array<{ label: string; value: string }> }) {
   return (
-    <dl className="divide-y rounded-lg border bg-card text-sm">
+    <dl className="divide-y rounded-lg border bg-card text-sm text-card-foreground">
       {items.map((item) => (
         <div key={item.label} className="flex items-center justify-between gap-6 px-4 py-3">
           <dt className="text-muted-foreground">{item.label}</dt>

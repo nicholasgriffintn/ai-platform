@@ -12,6 +12,14 @@ const KIND_LABELS: Record<SitePlan["kind"], string> = {
   form: "Form",
   docs: "Documentation",
   component: "Component",
+  commerce: "Commerce",
+  booking: "Booking",
+  event: "Event",
+  publication: "Publication",
+  community: "Community",
+  education: "Education",
+  "ai-tool": "AI tool",
+  game: "Game",
 };
 
 const SCOPE_LABELS: Record<SitePlan["scope"], string> = {
@@ -60,10 +68,19 @@ export function SitePlanSummary({
       <div className="flex flex-wrap gap-1.5">
         <Badge variant="secondary">{plan.tier} tier</Badge>
         <Badge variant="secondary">{plan.tone}</Badge>
+        <Badge variant="secondary">{plan.theme.direction}</Badge>
+        <Badge variant="secondary">{plan.theme.density}</Badge>
+        <Badge variant="secondary">{plan.theme.texture}</Badge>
+        <Badge variant="secondary">{plan.theme.motion} motion</Badge>
         <Badge variant="secondary">{SITE_PALETTE_DEFINITIONS[plan.theme.palette].label}</Badge>
         <Badge variant="secondary">{plan.theme.font}</Badge>
         {plan.theme.mode === "dark" && <Badge variant="secondary">dark</Badge>}
         {plan.interactive && <Badge variant="secondary">interactive</Badge>}
+        {plan.capabilities.map((capability) => (
+          <Badge key={capability} variant="outline">
+            {capability}
+          </Badge>
+        ))}
         {warnings > 0 && (
           <Badge variant="outline">
             {warnings} {warnings === 1 ? "repair" : "repairs"}

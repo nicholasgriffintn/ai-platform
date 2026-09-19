@@ -18,6 +18,14 @@ export const SITE_KINDS = [
   "form",
   "docs",
   "component",
+  "commerce",
+  "booking",
+  "event",
+  "publication",
+  "community",
+  "education",
+  "ai-tool",
+  "game",
 ] as const;
 export const siteKindSchema = z.enum(SITE_KINDS);
 export type SiteKind = z.infer<typeof siteKindSchema>;
@@ -55,12 +63,68 @@ export const SITE_TONES = ["plain", "friendly", "bold", "editorial", "technical"
 export const siteToneSchema = z.enum(SITE_TONES);
 export type SiteTone = z.infer<typeof siteToneSchema>;
 
+export const SITE_DESIGN_DIRECTIONS = [
+  "minimal",
+  "editorial",
+  "utilitarian",
+  "brutalist",
+  "playful",
+  "luxury",
+  "organic",
+  "retro",
+  "futuristic",
+  "maximalist",
+] as const;
+export const siteDesignDirectionSchema = z.enum(SITE_DESIGN_DIRECTIONS);
+export type SiteDesignDirection = z.infer<typeof siteDesignDirectionSchema>;
+
+export const SITE_DENSITIES = ["compact", "comfortable", "spacious"] as const;
+export const siteDensitySchema = z.enum(SITE_DENSITIES);
+export type SiteDensity = z.infer<typeof siteDensitySchema>;
+
+export const SITE_TEXTURES = ["clean", "grain", "grid", "gradient", "glow"] as const;
+export const siteTextureSchema = z.enum(SITE_TEXTURES);
+export type SiteTexture = z.infer<typeof siteTextureSchema>;
+
+export const SITE_MOTION_LEVELS = ["none", "restrained", "expressive"] as const;
+export const siteMotionLevelSchema = z.enum(SITE_MOTION_LEVELS);
+export type SiteMotionLevel = z.infer<typeof siteMotionLevelSchema>;
+
+export const SITE_CAPABILITIES = [
+  "content",
+  "navigation",
+  "forms",
+  "search",
+  "filtering",
+  "visualisation",
+  "crud",
+  "authentication",
+  "commerce",
+  "booking",
+  "files",
+  "ai",
+  "realtime",
+  "payments",
+] as const;
+export const siteCapabilitySchema = z.enum(SITE_CAPABILITIES);
+export type SiteCapability = z.infer<typeof siteCapabilitySchema>;
+
+export const SITE_EXPORT_TARGETS = ["react-router", "next", "tanstack-router"] as const;
+export const siteExportTargetSchema = z.enum(SITE_EXPORT_TARGETS);
+export type SiteExportTarget = z.infer<typeof siteExportTargetSchema>;
+
+export const DEFAULT_SITE_EXPORT_TARGET: SiteExportTarget = "react-router";
+
 export const siteThemeSchema = z
   .object({
     palette: sitePaletteSchema,
     font: siteFontSchema,
     radius: siteRadiusSchema,
     mode: siteModeSchema,
+    direction: siteDesignDirectionSchema,
+    density: siteDensitySchema,
+    texture: siteTextureSchema,
+    motion: siteMotionLevelSchema,
   })
   .strict();
 export type SiteTheme = z.infer<typeof siteThemeSchema>;
@@ -70,7 +134,29 @@ export const DEFAULT_SITE_THEME: SiteTheme = {
   font: "sans",
   radius: "md",
   mode: "light",
+  direction: "minimal",
+  density: "comfortable",
+  texture: "clean",
+  motion: "restrained",
 };
+
+export const siteElementStyleSchema = z
+  .object({
+    width: z.enum(["narrow", "content", "wide", "full"]).optional(),
+    spacing: z.enum(["none", "compact", "normal", "generous", "dramatic"]).optional(),
+    surface: z
+      .enum(["transparent", "canvas", "muted", "card", "primary", "inverted", "glass"])
+      .optional(),
+    align: z.enum(["start", "center", "end"]).optional(),
+    border: z.enum(["none", "subtle", "strong"]).optional(),
+    shadow: z.enum(["none", "sm", "md", "xl"]).optional(),
+    radius: z.enum(["none", "sm", "md", "lg", "xl", "full"]).optional(),
+    motion: z.enum(["none", "fade", "rise", "scale", "slide"]).optional(),
+    bleed: z.boolean().optional(),
+    sticky: z.boolean().optional(),
+  })
+  .strict();
+export type SiteElementStyle = z.infer<typeof siteElementStyleSchema>;
 
 export const SITE_STATE_PATH_PATTERN = /^\/[A-Za-z0-9_\-/]*$/;
 export const siteStatePathSchema = z.string().regex(SITE_STATE_PATH_PATTERN);
@@ -137,6 +223,7 @@ export const siteElementSchema = z
     visible: siteVisibilitySchema.optional(),
     repeat: siteRepeatSchema.optional(),
     on: z.partialRecord(siteEventNameSchema, siteActionBindingSchema).optional(),
+    style: siteElementStyleSchema.optional(),
   })
   .strict();
 export type SiteElement = z.infer<typeof siteElementSchema>;
@@ -173,6 +260,7 @@ export const sitePlanSchema = z
     tone: siteToneSchema,
     theme: siteThemeSchema,
     interactive: z.boolean(),
+    capabilities: z.array(siteCapabilitySchema),
     confidence: z.number().min(0).max(1),
     answers: z.record(z.string(), decisionAnswerSchema).optional(),
     provider: z.string().optional(),
@@ -186,6 +274,7 @@ export const siteProjectSchema = z
     title: z.string().min(1).max(120),
     description: z.string().max(400).optional(),
     theme: siteThemeSchema,
+    capabilities: z.array(siteCapabilitySchema),
     pages: z.record(z.string().regex(SITE_PAGE_ID_PATTERN), sitePageSchema),
   })
   .strict();
@@ -437,15 +526,25 @@ export type SiteFile = z.infer<typeof siteFileSchema>;
 
 export const siteFilesResponseSchema = z
   .object({
+    target: siteExportTargetSchema,
     files: z.array(siteFileSchema),
   })
   .strict();
 export type SiteFilesResponse = z.infer<typeof siteFilesResponseSchema>;
 
+export const siteFilesQuerySchema = z
+  .object({
+    projectId: z.string().min(1).optional(),
+    target: siteExportTargetSchema.default(DEFAULT_SITE_EXPORT_TARGET),
+  })
+  .strict();
+export type SiteFilesQuery = z.infer<typeof siteFilesQuerySchema>;
+
 export const siteBuildRequestSchema = z
   .object({
     projectId: z.string().min(1),
     instructions: z.string().trim().max(2000).optional(),
+    target: siteExportTargetSchema.default(DEFAULT_SITE_EXPORT_TARGET),
   })
   .strict();
 export type SiteBuildRequest = z.infer<typeof siteBuildRequestSchema>;
@@ -468,6 +567,7 @@ export const sitePullRequestRequestSchema = z
       .regex(/^(?!\.)[A-Za-z0-9._\-/]*$/, "Directory must be a relative path")
       .optional(),
     title: z.string().trim().min(1).max(120).optional(),
+    target: siteExportTargetSchema.default(DEFAULT_SITE_EXPORT_TARGET),
   })
   .strict();
 export type SitePullRequestRequest = z.infer<typeof sitePullRequestRequestSchema>;
@@ -563,7 +663,7 @@ export const siteResponseSchema = z.object({ site: siteRecordSchema }).strict();
 export type SiteResponse = z.infer<typeof siteResponseSchema>;
 
 export function createEmptySiteProject(theme: SiteTheme = DEFAULT_SITE_THEME): SiteProject {
-  return { title: "Untitled", theme, pages: {} };
+  return { title: "Untitled", theme, capabilities: ["content", "navigation"], pages: {} };
 }
 
 export function listSitePages(project: SiteProject): Array<{ id: string; page: SitePage }> {

@@ -81,9 +81,14 @@ describe("site patch stream", () => {
       path: "/pages/home/elements/page/children/0",
       value: "c",
     });
-    applySitePatch(document, { op: "remove", path: "/pages/home/elements/page/children/1" });
+    applySitePatch(document, {
+      op: "remove",
+      path: "/pages/home/elements/page/children/1",
+    });
 
-    expect(document).toEqual({ pages: { home: { elements: { page: { children: ["c"] } } } } });
+    expect(document).toEqual({
+      pages: { home: { elements: { page: { children: ["c"] } } } },
+    });
   });
 
   it("refuses prototype pollution paths", () => {
@@ -104,8 +109,16 @@ describe("validateSiteProject", () => {
           title: "Home",
           root: "page",
           elements: {
-            page: { type: "Page", props: {}, children: ["hero", "missing", "hero"] },
-            hero: { type: "Hero", props: { headline: "Hi", layout: "diagonal" }, children: ["x"] },
+            page: {
+              type: "Page",
+              props: {},
+              children: ["hero", "missing", "hero"],
+            },
+            hero: {
+              type: "Hero",
+              props: { headline: "Hi", layout: "diagonal" },
+              children: ["x"],
+            },
             orphan: { type: "Text", props: { text: "lost" }, children: [] },
             bogus: { type: "Carousel", props: {}, children: [] },
           },
@@ -114,7 +127,17 @@ describe("validateSiteProject", () => {
     });
 
     expect(project.title).toBe("Acme");
-    expect(project.theme).toEqual({ palette: "ocean", font: "sans", radius: "md", mode: "light" });
+    expect(project.theme).toEqual({
+      palette: "ocean",
+      font: "sans",
+      radius: "md",
+      mode: "light",
+      direction: "minimal",
+      density: "comfortable",
+      texture: "clean",
+      motion: "restrained",
+    });
+    expect(project.capabilities).toEqual(["content", "navigation"]);
     expect(Object.keys(project.pages.home.elements)).toEqual(["page", "hero"]);
     expect(project.pages.home.elements.page.children).toEqual(["hero"]);
     expect(project.pages.home.elements.hero.props).toEqual({ headline: "Hi" });
@@ -160,7 +183,9 @@ describe("validateSiteProject", () => {
         },
       },
     });
-    const shell = project.pages.home.elements.shell.props as { nav: Array<{ icon?: string }> };
+    const shell = project.pages.home.elements.shell.props as {
+      nav: Array<{ icon?: string }>;
+    };
     const features = project.pages.home.elements.features.props as {
       items: Array<{ icon?: string; title: string }>;
     };
@@ -218,12 +243,38 @@ describe("validateSiteProject", () => {
 });
 
 describe("resolveSitePlan", () => {
+  it("uses the highest-probability choice when the provider selection disagrees", () => {
+    const plan = resolveSitePlan({
+      prompt: "a product website",
+      answers: {
+        kind: {
+          type: "choice",
+          choice: "landing",
+          probabilities: { landing: 0.01, marketing: 0.99 },
+          confidence: 0.99,
+        },
+      },
+    });
+
+    expect(plan.kind).toBe("marketing");
+  });
+
   it("maps Jev answers to a plan and keeps component briefs single-scope", () => {
     const plan = resolveSitePlan({
       prompt: "a pricing table component",
       answers: {
-        kind: { type: "choice", choice: "component", probabilities: {}, confidence: 0.95 },
-        scope: { type: "choice", choice: "site", probabilities: {}, confidence: 0.6 },
+        kind: {
+          type: "choice",
+          choice: "component",
+          probabilities: {},
+          confidence: 0.95,
+        },
+        scope: {
+          type: "choice",
+          choice: "site",
+          probabilities: {},
+          confidence: 0.6,
+        },
         complexity: {
           type: "score",
           score: 2.6,
@@ -244,12 +295,57 @@ describe("resolveSitePlan", () => {
   });
 
   it("falls back to heuristics without a decision model", () => {
-    const plan = resolveSitePlan({ prompt: "an analytics dashboard for a coffee roaster" });
+    const plan = resolveSitePlan({
+      prompt: "an analytics dashboard for a coffee roaster",
+    });
 
     expect(plan.kind).toBe("dashboard");
     expect(plan.scope).toBe("page");
     expect(plan.interactive).toBe(true);
     expect(plan.answers).toBeUndefined();
+  });
+
+  it("plans application capabilities and a committed design direction", () => {
+    const plan = resolveSitePlan({
+      prompt: "A futuristic dark shop with product search, filters, accounts and checkout",
+      answers: {
+        kind: {
+          type: "choice",
+          choice: "commerce",
+          probabilities: {},
+          confidence: 0.96,
+        },
+        direction: {
+          type: "choice",
+          choice: "futuristic",
+          probabilities: {},
+          confidence: 0.92,
+        },
+        texture: {
+          type: "choice",
+          choice: "glow",
+          probabilities: {},
+          confidence: 0.9,
+        },
+        motion: {
+          type: "choice",
+          choice: "expressive",
+          probabilities: {},
+          confidence: 0.88,
+        },
+      },
+    });
+
+    expect(plan.kind).toBe("commerce");
+    expect(plan.scope).toBe("site");
+    expect(plan.theme).toMatchObject({
+      direction: "futuristic",
+      texture: "glow",
+      motion: "expressive",
+    });
+    expect(plan.capabilities).toEqual(
+      expect.arrayContaining(["search", "filtering", "authentication", "commerce", "payments"]),
+    );
   });
 });
 
@@ -285,9 +381,19 @@ describe("codegen", () => {
       expect(description).toContain(`- ${type}`);
     }
 
-    expect(files.filter((file) => file.path.startsWith("components/site/")).length).toBe(
-      SITE_COMPONENT_TYPES.length + 2,
+    expect(files.filter((file) => file.path.startsWith("app/components/site/")).length).toBe(
+      SITE_COMPONENT_TYPES.length + 3,
     );
+    const componentSource = (name: string) =>
+      files.find((file) => file.path === `app/components/site/${name}.tsx`)?.content ?? "";
+    const globals = files.find((file) => file.path === "app/globals.css")?.content ?? "";
+
+    expect(componentSource("Image")).toContain('cn("h-full w-full object-cover"');
+    expect(componentSource("Tabs")).toContain("gap-3 px-2 pt-2");
+    expect(componentSource("Tabs")).toContain('role="tabpanel" className="min-w-0"');
+    expect(componentSource("Footer")).toContain("grid-cols-2 gap-x-8 gap-y-8");
+    expect(componentSource("Footer")).toContain("bg-transparent");
+    expect(globals).toContain(".site-surface-contrast .text-muted-foreground");
   });
 
   it("renders nested JSX with serialised props and hoists client directives", () => {
@@ -301,7 +407,10 @@ describe("codegen", () => {
           elements: {
             shell: {
               type: "AppShell",
-              props: { brand: "Ledger", nav: [{ label: "Home", href: "/", active: true }] },
+              props: {
+                brand: "Ledger",
+                nav: [{ label: "Home", href: "/", active: true }],
+              },
               children: ["tabs"],
             },
             tabs: {
@@ -326,7 +435,7 @@ describe("codegen", () => {
     });
     const { jsx, components } = renderPageJsx(project.pages.home);
     const { files } = generateSiteFiles(project);
-    const tabs = files.find((file) => file.path === "components/site/Tabs.tsx");
+    const tabs = files.find((file) => file.path === "app/components/site/Tabs.tsx");
 
     expect(components).toEqual(["AppShell", "Metric", "Tabs"]);
     expect(jsx).toContain(
@@ -334,7 +443,7 @@ describe("codegen", () => {
     );
     expect(jsx).toContain('<Metric label="Revenue" value="£1" trend="up" />');
     expect(files.map((file) => file.path)).toEqual(
-      expect.arrayContaining(["app/page.tsx", "app/reports/page.tsx", "app/globals.css"]),
+      expect.arrayContaining(["app/routes/home.tsx", "app/routes/reports.tsx", "app/globals.css"]),
     );
     expect(tabs?.content.startsWith('"use client";')).toBe(true);
   });
@@ -354,8 +463,16 @@ describe("codegen", () => {
               props: { background: "inverted" },
               children: ["card", "alert"],
             },
-            card: { type: "Card", props: { variant: "outline" }, children: ["text"] },
-            text: { type: "Text", props: { text: "Visible copy" }, children: [] },
+            card: {
+              type: "Card",
+              props: { variant: "outline" },
+              children: ["text"],
+            },
+            text: {
+              type: "Text",
+              props: { text: "Visible copy" },
+              children: [],
+            },
             alert: {
               type: "Alert",
               props: { title: "Notice", description: "Visible detail" },
@@ -367,12 +484,80 @@ describe("codegen", () => {
     });
     const { files } = generateSiteFiles(project);
     const source = (name: string) =>
-      files.find((file) => file.path === `components/site/${name}.tsx`)?.content ?? "";
+      files.find((file) => file.path === `app/components/site/${name}.tsx`)?.content ?? "";
 
     expect(source("Text")).toContain('default: ""');
     expect(source("Text")).toContain('muted: "opacity-70"');
     expect(source("Card")).not.toContain('rounded-lg text-card-foreground"');
     expect(source("Alert")).toContain('className="text-sm opacity-70"');
+  });
+
+  it("exports the same site to React Router, Next.js and TanStack Router", () => {
+    const { project } = validateSiteProject({
+      title: "Portable",
+      pages: {
+        home: {
+          path: "/",
+          title: "Home",
+          root: "page",
+          state: { ready: true },
+          elements: {
+            page: { type: "Page", props: {}, children: ["hero"] },
+            hero: {
+              type: "Hero",
+              props: { headline: "Build anywhere" },
+              children: [],
+              style: {
+                width: "wide",
+                spacing: "dramatic",
+                surface: "glass",
+                motion: "rise",
+              },
+            },
+          },
+        },
+      },
+    });
+    const reactRouter = generateSiteFiles(project, "react-router");
+    const next = generateSiteFiles(project, "next");
+    const tanstack = generateSiteFiles(project, "tanstack-router");
+
+    expect(reactRouter.target).toBe("react-router");
+    expect(reactRouter.files.map((file) => file.path)).toEqual(
+      expect.arrayContaining(["react-router.config.ts", "app/root.tsx", "app/routes/home.tsx"]),
+    );
+    expect(next.files.map((file) => file.path)).toEqual(
+      expect.arrayContaining(["next.config.ts", "app/layout.tsx", "app/page.tsx"]),
+    );
+    expect(tanstack.files.map((file) => file.path)).toEqual(
+      expect.arrayContaining([
+        "vite.config.ts",
+        "src/vite-env.d.ts",
+        "src/main.tsx",
+        "src/routes/index.tsx",
+      ]),
+    );
+    expect(
+      reactRouter.files.find((file) => file.path === "app/routes/home.tsx")?.content,
+    ).toContain("site-motion-rise");
+    expect(next.files.find((file) => file.path === "components/site/link.tsx")?.content).toContain(
+      'from "next/link"',
+    );
+    expect(next.files.find((file) => file.path === "app/page.tsx")?.content).not.toContain(
+      "export const metadata",
+    );
+    expect(tanstack.files.find((file) => file.path === "src/routes/index.tsx")?.content).toContain(
+      'from "@tanstack/react-router"',
+    );
+    expect(tanstack.files.find((file) => file.path === "src/main.tsx")?.content).toContain(
+      'import "./globals.css"',
+    );
+    expect(
+      tanstack.files.find((file) => file.path === "src/routes/__root.tsx")?.content,
+    ).not.toContain("globals.css");
+    expect(tanstack.files.find((file) => file.path === "src/lib/site-state.ts")?.content).toContain(
+      "const matchesFilters =",
+    );
   });
 });
 
@@ -390,7 +575,11 @@ describe("state", () => {
       ],
     },
     elements: {
-      page: { type: "Page", props: {}, children: ["tabs", "search", "list", "add"] },
+      page: {
+        type: "Page",
+        props: {},
+        children: ["tabs", "search", "list", "add"],
+      },
       tabs: {
         type: "Tabs",
         props: {
@@ -402,7 +591,11 @@ describe("state", () => {
         },
         children: [],
       },
-      search: { type: "Input", props: { value: { $bindState: "/query" } }, children: [] },
+      search: {
+        type: "Input",
+        props: { value: { $bindState: "/query" } },
+        children: [],
+      },
       list: {
         type: "Card",
         props: { title: { $item: "customer" } },
@@ -413,7 +606,9 @@ describe("state", () => {
       remove: {
         type: "Button",
         props: { label: "Remove" },
-        on: { press: { action: "removeState", params: { statePath: "/orders" } } },
+        on: {
+          press: { action: "removeState", params: { statePath: "/orders" } },
+        },
         children: [],
       },
       add: {
@@ -424,7 +619,11 @@ describe("state", () => {
             action: "pushState",
             params: {
               statePath: "/orders",
-              value: { id: { $id: true }, customer: { $state: "/query" }, status: "open" },
+              value: {
+                id: { $id: true },
+                customer: { $state: "/query" },
+                status: "open",
+              },
               clearStatePath: "/query",
             },
           },
@@ -440,7 +639,10 @@ describe("state", () => {
 
     expect(issues).toEqual([]);
     expect(home.elements.tabs.props.value).toEqual({ $bindState: "/tab" });
-    expect(home.elements.list.repeat).toEqual({ statePath: "/orders", key: "id" });
+    expect(home.elements.list.repeat).toEqual({
+      statePath: "/orders",
+      key: "id",
+    });
     expect(home.elements.list.visible).toBeDefined();
     expect(home.elements.add.on?.press?.action).toBe("pushState");
     expect(home.state).toEqual(page.state);
@@ -494,7 +696,7 @@ describe("state", () => {
   it("compiles state, bindings, visibility, repeat and actions into a client page", () => {
     const { project } = validateSiteProject({ pages: { home: page } });
     const { files } = generateSiteFiles(project);
-    const source = files.find((file) => file.path === "app/page.tsx")?.content ?? "";
+    const source = files.find((file) => file.path === "app/routes/home.tsx")?.content ?? "";
 
     expect(source.startsWith('"use client";')).toBe(true);
     expect(source).toContain("const [state, setState] = useState<SiteState>(INITIAL_STATE);");
@@ -512,7 +714,7 @@ describe("state", () => {
     expect(source).toContain(
       'push("/orders", { "id": uid(), "customer": getPath(state, "/query"), "status": "open" }, "/query")',
     );
-    expect(files.some((file) => file.path === "lib/site-state.ts")).toBe(true);
+    expect(files.some((file) => file.path === "app/lib/site-state.ts")).toBe(true);
   });
 });
 
@@ -546,7 +748,12 @@ describe("derived lists", () => {
       (
         resolveDynamicValue(
           { $state: "/rows", where: { priority: { $state: "/only" } } },
-          { state: { rows: [{ priority: "yes" }, { priority: "no" }], only: true } },
+          {
+            state: {
+              rows: [{ priority: "yes" }, { priority: "no" }],
+              only: true,
+            },
+          },
         ) as unknown[]
       ).length,
     ).toBe(1);
@@ -554,7 +761,12 @@ describe("derived lists", () => {
       (
         resolveDynamicValue(
           { $state: "/rows", where: { priority: { $state: "/only" } } },
-          { state: { rows: [{ priority: "yes" }, { priority: "no" }], only: false } },
+          {
+            state: {
+              rows: [{ priority: "yes" }, { priority: "no" }],
+              only: false,
+            },
+          },
         ) as unknown[]
       ).length,
     ).toBe(2);
@@ -564,16 +776,27 @@ describe("derived lists", () => {
     const result = runSiteAction(
       {
         action: "pushState",
-        params: { statePath: "/orders", value: { id: "fixed", status: "open", $form: true } },
+        params: {
+          statePath: "/orders",
+          value: { id: "fixed", status: "open", $form: true },
+        },
       },
-      { state: { orders: [] }, form: { customer: "Fabrikam", status: "ignored" } },
+      {
+        state: { orders: [] },
+        form: { customer: "Fabrikam", status: "ignored" },
+      },
     );
 
     expect(result.state.orders).toEqual([{ customer: "Fabrikam", id: "fixed", status: "open" }]);
     expect(serialiseExpression({ id: { $id: true }, status: "open", $form: true })).toBe(
       '{ ...values, "id": uid(), "status": "open" }',
     );
-    expect(serialiseExpression({ $state: "/orders", where: { status: { $state: "/tab" } } })).toBe(
+    expect(
+      serialiseExpression({
+        $state: "/orders",
+        where: { status: { $state: "/tab" } },
+      }),
+    ).toBe(
       'filterItems(getPath(state, "/orders"), { "status": getPath(state, "/tab") }, undefined)',
     );
   });

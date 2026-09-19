@@ -94,10 +94,14 @@ export function getAppBackLink(
   appId: string,
   subpath: string,
   appName?: string,
-): AppBackLink {
+): AppBackLink | null {
   const segments = subpath.split("/").filter(Boolean);
 
   if (segments.length === 0) {
+    if (appId === "sites") {
+      return null;
+    }
+
     return { to: getPluginsPath(surface), label: "Back to plugins" };
   }
 

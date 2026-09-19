@@ -159,7 +159,7 @@ export const SITE_CATALOG = {
   Tabs: define({
     category: "layout",
     description:
-      "Tabbed panels. Each child is one panel, in the same order as the tabs array. Give the tabs and the children the same length.",
+      "Tabbed panels with built-in control and panel spacing. Each child is one panel, in the same order as the tabs array. Give the tabs and children the same length, and use a Stack or Card for panel content rather than a full Section.",
     props: z.object({
       tabs: z.array(z.object({ label: z.string(), value: z.string() })),
       defaultValue: optionalText,
@@ -222,7 +222,8 @@ export const SITE_CATALOG = {
   }),
   Footer: define({
     category: "navigation",
-    description: "Page footer with brand, optional link columns and a copyright line.",
+    description:
+      "Compact responsive page footer with brand, optional link columns and a copyright line. It inherits the surrounding surface, so avoid adding dramatic outer spacing.",
     props: z.object({
       brand: z.string(),
       tagline: optionalText,
@@ -288,7 +289,13 @@ export const SITE_CATALOG = {
       eyebrow: optionalText,
       headline: optionalText,
       description: optionalText,
-      items: z.array(z.object({ icon: optionalIcon, title: z.string(), description: z.string() })),
+      items: z.array(
+        z.object({
+          icon: optionalIcon,
+          title: z.string(),
+          description: z.string(),
+        }),
+      ),
       columns: z.number().int().min(2).max(4).optional(),
       variant: z.enum(["cards", "plain"]).optional(),
     }),
@@ -297,8 +304,16 @@ export const SITE_CATALOG = {
       headline: "Everything in one place",
       items: [
         { icon: "zap", title: "Fast", description: "Loads in under a second." },
-        { icon: "shield", title: "Safe", description: "Your data stays yours." },
-        { icon: "users", title: "Shared", description: "Built for whole teams." },
+        {
+          icon: "shield",
+          title: "Safe",
+          description: "Your data stays yours.",
+        },
+        {
+          icon: "users",
+          title: "Shared",
+          description: "Built for whole teams.",
+        },
       ],
       columns: 3,
       variant: "cards",
@@ -337,7 +352,13 @@ export const SITE_CATALOG = {
     acceptsChildren: false,
     example: {
       headline: "What people say",
-      items: [{ quote: "Saved us a day a week.", author: "Jo Park", role: "Ops lead, Northwind" }],
+      items: [
+        {
+          quote: "Saved us a day a week.",
+          author: "Jo Park",
+          role: "Ops lead, Northwind",
+        },
+      ],
       layout: "grid",
     },
   }),
@@ -435,7 +456,12 @@ export const SITE_CATALOG = {
     props: z.object({
       headline: optionalText,
       members: z.array(
-        z.object({ name: z.string(), role: z.string(), bio: optionalText, image: optionalImage }),
+        z.object({
+          name: z.string(),
+          role: z.string(),
+          bio: optionalText,
+          image: optionalImage,
+        }),
       ),
     }),
     acceptsChildren: false,
@@ -454,7 +480,10 @@ export const SITE_CATALOG = {
       columns: z.number().int().min(2).max(4).optional(),
     }),
     acceptsChildren: false,
-    example: { items: [{ alt: "Studio at dusk", caption: "The studio" }], columns: 3 },
+    example: {
+      items: [{ alt: "Studio at dusk", caption: "The studio" }],
+      columns: 3,
+    },
   }),
   Newsletter: define({
     category: "section",
@@ -489,7 +518,11 @@ export const SITE_CATALOG = {
     example: {
       headline: "Writing",
       items: [
-        { title: "Why we rewrote the importer", excerpt: "It was slow.", date: "2026-03-01" },
+        {
+          title: "Why we rewrote the importer",
+          excerpt: "It was slow.",
+          date: "2026-03-01",
+        },
       ],
     },
   }),
@@ -550,14 +583,18 @@ export const SITE_CATALOG = {
   Link: define({
     category: "content",
     description: "Inline text link.",
-    props: z.object({ label: z.string(), href: z.string(), icon: optionalIcon }),
+    props: z.object({
+      label: z.string(),
+      href: z.string(),
+      icon: optionalIcon,
+    }),
     acceptsChildren: false,
     example: { label: "Read the docs", href: "/docs", icon: "arrow-right" },
   }),
   Image: define({
     category: "content",
     description:
-      "Image with a fixed aspect ratio. Omit src unless the brief gives a real URL; a labelled placeholder renders instead.",
+      "Image with a chosen aspect ratio. Use auto when it should fill the available height in a stretched Grid or Card. Omit src unless the brief gives a real URL; a labelled placeholder renders instead.",
     props: z.object({
       src: optionalText,
       alt: z.string(),
@@ -593,19 +630,30 @@ export const SITE_CATALOG = {
       style: z.enum(["bullet", "number", "check"]).optional(),
     }),
     acceptsChildren: false,
-    example: { items: ["Unlimited projects", "Priority support"], style: "check" },
+    example: {
+      items: ["Unlimited projects", "Priority support"],
+      style: "check",
+    },
   }),
   Quote: define({
     category: "content",
     description: "Single pull quote with attribution.",
-    props: z.object({ text: z.string(), author: optionalText, role: optionalText }),
+    props: z.object({
+      text: z.string(),
+      author: optionalText,
+      role: optionalText,
+    }),
     acceptsChildren: false,
     example: { text: "It just works.", author: "Jo Park", role: "Northwind" },
   }),
   Code: define({
     category: "content",
     description: "Preformatted code block.",
-    props: z.object({ code: z.string(), language: optionalText, title: optionalText }),
+    props: z.object({
+      code: z.string(),
+      language: optionalText,
+      title: optionalText,
+    }),
     acceptsChildren: false,
     example: { code: "npm install acme", language: "bash" },
   }),
@@ -618,7 +666,11 @@ export const SITE_CATALOG = {
       variant: z.enum(["info", "success", "warning", "danger"]).optional(),
     }),
     acceptsChildren: false,
-    example: { title: "Heads up", description: "Exports run nightly.", variant: "info" },
+    example: {
+      title: "Heads up",
+      description: "Exports run nightly.",
+      variant: "info",
+    },
   }),
   Metric: define({
     category: "data",
@@ -631,7 +683,12 @@ export const SITE_CATALOG = {
       icon: optionalIcon,
     }),
     acceptsChildren: false,
-    example: { label: "Revenue", value: "£48,200", change: "+12%", trend: "up" },
+    example: {
+      label: "Revenue",
+      value: "£48,200",
+      change: "+12%",
+      trend: "up",
+    },
   }),
   Progress: define({
     category: "data",
@@ -694,7 +751,9 @@ export const SITE_CATALOG = {
   KeyValue: define({
     category: "data",
     description: "Two-column list of labels and values.",
-    props: z.object({ items: z.array(z.object({ label: z.string(), value: z.string() })) }),
+    props: z.object({
+      items: z.array(z.object({ label: z.string(), value: z.string() })),
+    }),
     acceptsChildren: false,
     example: { items: [{ label: "Plan", value: "Team" }] },
   }),
@@ -753,14 +812,26 @@ export const SITE_CATALOG = {
       icon: optionalIcon,
     }),
     acceptsChildren: false,
-    example: { placeholder: "Search customers", type: "search", icon: "search" },
+    example: {
+      placeholder: "Search customers",
+      type: "search",
+      icon: "search",
+    },
   }),
   Select: define({
     category: "form",
     description: "Single labelled select outside a Form.",
-    props: z.object({ label: optionalText, options: z.array(z.string()), value: optionalText }),
+    props: z.object({
+      label: optionalText,
+      options: z.array(z.string()),
+      value: optionalText,
+    }),
     acceptsChildren: false,
-    example: { label: "Status", options: ["All", "Paid", "Overdue"], value: "All" },
+    example: {
+      label: "Status",
+      options: ["All", "Paid", "Overdue"],
+      value: "All",
+    },
   }),
   Switch: define({
     category: "form",

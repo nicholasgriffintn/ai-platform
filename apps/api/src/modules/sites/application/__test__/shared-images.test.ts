@@ -22,7 +22,17 @@ import { readSharedSiteImage } from "~/modules/sites/application/shared-images";
 
 const project = {
   title: "Crumb",
-  theme: { palette: "sand", font: "sans", radius: "md", mode: "light" },
+  theme: {
+    palette: "sand",
+    font: "sans",
+    radius: "md",
+    mode: "light",
+    direction: "organic",
+    density: "comfortable",
+    texture: "grain",
+    motion: "restrained",
+  },
+  capabilities: ["content", "navigation"],
   pages: {
     home: {
       path: "/",

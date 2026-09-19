@@ -1,5 +1,5 @@
-import { ContentLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
-import { lazy, Suspense } from "react";
+import { EmptyState } from "@ngriffin_uk/polychat-component-ui";
+import { lazy, Suspense, type ReactNode } from "react";
 
 const CanvasStudio = lazy(async () => {
   const module = await import("./Canvas/CanvasStudio.js");
@@ -121,15 +121,18 @@ function ExperienceContent({ basePath, projectId, runtime, subpath }: AppRuntime
 
 interface AppRuntimeProps {
   basePath: string;
+  fallback?: ReactNode;
   projectId?: string;
   runtime: string;
   subpath: string;
 }
 
 export function AppRuntime(props: AppRuntimeProps) {
+  const { fallback, ...contentProps } = props;
+
   return (
-    <Suspense fallback={<ContentLoadingSkeleton />}>
-      <ExperienceContent {...props} />
+    <Suspense fallback={fallback}>
+      <ExperienceContent {...contentProps} />
     </Suspense>
   );
 }

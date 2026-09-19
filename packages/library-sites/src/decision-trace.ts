@@ -17,6 +17,14 @@ const KIND_LABELS: Record<SitePlan["kind"], string> = {
   form: "Form",
   docs: "Documentation",
   component: "Component",
+  commerce: "Commerce",
+  booking: "Booking",
+  event: "Event",
+  publication: "Publication",
+  community: "Community",
+  education: "Education",
+  "ai-tool": "AI tool",
+  game: "Game",
 };
 
 const SCOPE_LABELS: Record<SitePlan["scope"], string> = {
@@ -78,8 +86,10 @@ export function describeSitePlanDecision(plan: SitePlan) {
     effects: [
       `Use the ${plan.tier} coding tier`,
       `Write in a ${plan.tone} voice`,
-      `Use the ${plan.theme.palette} palette with ${plan.theme.font} type`,
+      `Use a ${plan.theme.direction} direction with ${plan.theme.density} density`,
+      `Use the ${plan.theme.palette} palette, ${plan.theme.texture} texture and ${plan.theme.font} type`,
       `${plan.interactive ? "Include" : "Do not require"} interactive behaviour`,
+      `Support ${plan.capabilities.join(", ")}`,
     ],
   };
 }

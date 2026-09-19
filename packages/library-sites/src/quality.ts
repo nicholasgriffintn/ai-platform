@@ -1,4 +1,5 @@
 import {
+  decisionChoiceSelection,
   decisionNoulConfidence,
   decisionNoulIsTrue,
   listSitePages,
@@ -119,10 +120,11 @@ export function resolveSiteRefineIntent(
   candidates: readonly SiteRefineTargetCandidate[],
 ): ResolvedRefineIntent {
   const intentAnswer = answers.intent;
+  const selectedIntent =
+    intentAnswer?.type === "choice" ? decisionChoiceSelection(intentAnswer) : null;
   const intent: SiteRefineIntent =
-    intentAnswer?.type === "choice" &&
-    ["tweak", "restructure", "page", "theme"].includes(intentAnswer.choice)
-      ? (intentAnswer.choice as SiteRefineIntent)
+    selectedIntent && ["tweak", "restructure", "page", "theme"].includes(selectedIntent)
+      ? (selectedIntent as SiteRefineIntent)
       : "restructure";
   const interactive =
     answers.interactive?.type === "noul" ? decisionNoulIsTrue(answers.interactive) : false;
@@ -143,7 +145,7 @@ export function resolveSiteRefineIntent(
     answers.target?.type === "choice" &&
     answers.target.confidence >= TARGET_CONFIDENCE_THRESHOLD
   ) {
-    const [pageId, elementKey] = answers.target.choice.split(":");
+    const [pageId, elementKey] = decisionChoiceSelection(answers.target).split(":");
     const candidate = candidates.find(
       (entry) => entry.pageId === pageId && entry.elementKey === elementKey,
     );

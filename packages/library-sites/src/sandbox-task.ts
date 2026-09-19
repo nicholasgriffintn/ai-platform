@@ -1,4 +1,9 @@
-import { listSitePages, type SiteFile, type SiteProject } from "@ngriffin_uk/polychat-schemas";
+import {
+  listSitePages,
+  type SiteExportTarget,
+  type SiteFile,
+  type SiteProject,
+} from "@ngriffin_uk/polychat-schemas";
 
 export const SITE_SANDBOX_TASK_MAX_FILE_CHARACTERS = 60_000;
 export const SITE_SANDBOX_TASK_MAX_TOTAL_CHARACTERS = 400_000;
@@ -7,8 +12,15 @@ export interface BuildSiteSandboxTaskOptions {
   project: SiteProject;
   brief: string;
   files: readonly SiteFile[];
+  target: SiteExportTarget;
   instructions?: string;
 }
+
+const TARGET_LABELS: Record<SiteExportTarget, string> = {
+  "react-router": "React Router",
+  next: "Next.js",
+  "tanstack-router": "TanStack Router",
+};
 
 function fenceFor(content: string): string {
   let fence = "```";
@@ -34,6 +46,7 @@ export function buildSiteSandboxTask({
   project,
   brief,
   files,
+  target,
   instructions,
 }: BuildSiteSandboxTaskOptions): string {
   const pages = listSitePages(project)
@@ -55,7 +68,7 @@ export function buildSiteSandboxTask({
   }
 
   return [
-    `Build the website "${project.title}" in this repository as a production Next.js application.`,
+    `Build "${project.title}" in this repository as a production ${TARGET_LABELS[target]} application.`,
     "",
     "Original brief:",
     brief.trim(),
@@ -63,13 +76,13 @@ export function buildSiteSandboxTask({
     "Pages:",
     pages,
     "",
-    "The files below were generated from the approved design and are the source of truth for structure, copy and theme. Add them to the repository, adapting paths to the existing project layout if the repository already contains a Next.js or Vite app; otherwise create the app at the repository root from these files.",
+    `The files below capture the generated product direction and starting implementation. Integrate them into the repository using ${TARGET_LABELS[target]} as the routing foundation, adapting the structure where a stronger implementation requires it.`,
     "",
     "Then:",
     "- Install dependencies with the repository's package manager and make `npm run build` (or the equivalent) pass.",
-    "- Keep the copy, section order and theme tokens exactly as generated. Improve markup semantics, accessibility and responsive behaviour where the generated components fall short.",
-    "- Replace image placeholders only with assets that already exist in the repository.",
-    "- Do not add UI libraries beyond Tailwind CSS, lucide-react, clsx and tailwind-merge.",
+    "- Preserve the product intent, information architecture and visual direction while improving weak copy, hierarchy, interaction, accessibility and responsive behaviour.",
+    "- Implement the requested capabilities as working product flows, not decorative placeholders.",
+    "- Reuse suitable repository assets and dependencies. Add focused dependencies when they materially improve the result.",
     instructions?.trim() ? `\nAdditional instructions:\n${instructions.trim()}` : "",
     "",
     "Generated files:",

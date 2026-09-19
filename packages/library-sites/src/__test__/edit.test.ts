@@ -68,7 +68,17 @@ describe("structural edits", () => {
     expect(
       describeSiteOutline({
         title: "T",
-        theme: { palette: "neutral", font: "sans", radius: "md", mode: "light" },
+        theme: {
+          palette: "neutral",
+          font: "sans",
+          radius: "md",
+          mode: "light",
+          direction: "minimal",
+          density: "comfortable",
+          texture: "clean",
+          motion: "restrained",
+        },
+        capabilities: ["content", "navigation"],
         pages: { home: page },
       }),
     ).toContain(

@@ -57,8 +57,8 @@ const PLACE_SEGMENTS: Array<[Exclude<ProductPlace, "conversations" | "you">, str
   ["sites", ["sites"]],
   ["attention", ["attention"]],
   ["files", ["files"]],
-  ["teammates", ["teammates", "apps", "tools"]],
-  ["plugins", ["plugins"]],
+  ["teammates", ["teammates"]],
+  ["plugins", ["plugins", "apps", "tools", "skills"]],
   ["scheduled", ["scheduled"]],
 ];
 

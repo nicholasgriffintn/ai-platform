@@ -1,6 +1,12 @@
-import type { SiteElement, SitePage } from "@ngriffin_uk/polychat-schemas";
+import {
+  DEFAULT_SITE_EXPORT_TARGET,
+  type SiteElement,
+  type SiteExportTarget,
+  type SitePage,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { isSiteComponentType, SITE_CATALOG, type SiteComponentType } from "../catalog.js";
+import { siteElementStyleClasses } from "../element-style.js";
 import { elementUsesState, isDynamicValue } from "../state.js";
 import {
   hasDynamicValue,
@@ -83,6 +89,11 @@ export function renderPageJsx(page: SitePage): RenderedPage {
     let jsx = children
       ? `<${element.type}${attributes}>\n${children}\n</${element.type}>`
       : `<${element.type}${attributes} />`;
+    const styleClasses = siteElementStyleClasses(element.style);
+
+    if (styleClasses) {
+      jsx = `<div className=${JSON.stringify(styleClasses)}>\n${indentLines(jsx, 1)}\n</div>`;
+    }
 
     if (element.repeat) {
       const itemKey = element.repeat.key
@@ -111,13 +122,70 @@ export function renderPageJsx(page: SitePage): RenderedPage {
   return { jsx, components: [...used].sort(), usesState, usesRouter: context.usesRouter };
 }
 
-function pageFilePath(path: string): string {
+function pageFilePath(path: string, target: SiteExportTarget): string {
   const segments = path.split("/").filter(Boolean);
+
+  if (target === "react-router") {
+    return segments.length ? `app/routes/${segments.join(".")}.tsx` : "app/routes/home.tsx";
+  }
+
+  if (target === "tanstack-router") {
+    return segments.length ? `src/routes/${segments.join("/")}.tsx` : "src/routes/index.tsx";
+  }
 
   return segments.length ? `app/${segments.join("/")}/page.tsx` : "app/page.tsx";
 }
 
-export function renderPageFile(page: SitePage): {
+function renderRouteMetadata(
+  page: SitePage,
+  target: SiteExportTarget,
+  name: string,
+): { import: string; declaration: string } {
+  if (target === "react-router") {
+    return {
+      import: 'import type { MetaFunction } from "react-router";\n',
+      declaration: `export const meta: MetaFunction = () => [{ title: ${JSON.stringify(page.title)} }];`,
+    };
+  }
+
+  if (target === "tanstack-router") {
+    return {
+      import: 'import { createFileRoute } from "@tanstack/react-router";\n',
+      declaration: `export const Route = createFileRoute(${JSON.stringify(page.path)})({ component: ${name} });`,
+    };
+  }
+
+  return {
+    import: "",
+    declaration: `export const metadata = { title: ${JSON.stringify(page.title)} };`,
+  };
+}
+
+function renderRouterRuntime(target: SiteExportTarget): { import: string; hook: string } {
+  if (target === "react-router") {
+    return {
+      import: 'import { useNavigate } from "react-router";\n',
+      hook: "  const navigate = useNavigate();\n  const router = { push: navigate };\n",
+    };
+  }
+
+  if (target === "tanstack-router") {
+    return {
+      import: "",
+      hook: "  const router = { push: (href: string) => window.location.assign(href) };\n",
+    };
+  }
+
+  return {
+    import: 'import { useRouter } from "next/navigation";\n',
+    hook: "  const router = useRouter();\n",
+  };
+}
+
+export function renderPageFile(
+  page: SitePage,
+  target: SiteExportTarget = DEFAULT_SITE_EXPORT_TARGET,
+): {
   path: string;
   content: string;
   components: SiteComponentType[];
@@ -128,17 +196,18 @@ export function renderPageFile(page: SitePage): {
     .map((component) => `import ${component} from "@/components/site/${component}";`)
     .join("\n");
   const name = pageComponentName(page.path);
+  const routeMetadata = renderRouteMetadata(page, target, name);
 
   if (!rendered.usesState) {
     return {
-      path: pageFilePath(page.path),
+      path: pageFilePath(page.path, target),
       components: rendered.components,
       usesState: false,
-      content: `${componentImports}
+      content: `${routeMetadata.import}${componentImports}
 
-export const metadata = { title: ${JSON.stringify(page.title)} };
+${routeMetadata.declaration}
 
-export default function ${name}() {
+${target === "tanstack-router" ? "function" : "export default function"} ${name}() {
   return (
 ${indentLines(rendered.jsx, 2)}
   );
@@ -147,23 +216,27 @@ ${indentLines(rendered.jsx, 2)}
     };
   }
 
-  const routerImport = rendered.usesRouter ? 'import { useRouter } from "next/navigation";\n' : "";
-  const routerHook = rendered.usesRouter ? "  const router = useRouter();\n" : "";
+  const routerRuntime = renderRouterRuntime(target);
+  const routerImport = rendered.usesRouter ? routerRuntime.import : "";
+  const routerHook = rendered.usesRouter ? routerRuntime.hook : "";
+  const routeDeclaration = target === "next" ? "" : routeMetadata.declaration;
 
   return {
-    path: pageFilePath(page.path),
+    path: pageFilePath(page.path, target),
     components: rendered.components,
     usesState: true,
     content: `"use client";
 
 import { useState } from "react";
-${routerImport}
+${routerImport}${routeMetadata.import}
 import { filterItems, getPath, pushPath, readItem, removePath, setPath, uid, type SiteState } from "@/lib/site-state";
 ${componentImports}
 
 const INITIAL_STATE: SiteState = ${JSON.stringify(page.state ?? {}, null, 2)};
 
-export default function ${name}() {
+${routeDeclaration}
+
+${target === "tanstack-router" ? "function" : "export default function"} ${name}() {
   const [state, setState] = useState<SiteState>(INITIAL_STATE);
 ${routerHook}  const set = (path: string, value: unknown) =>
     setState((current) => setPath(current, path, value));
