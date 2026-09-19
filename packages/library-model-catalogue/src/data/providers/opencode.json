@@ -1116,6 +1116,33 @@
         "supportsAttachments": false,
         "supportsTemperature": false
       }
+    },
+    "deepseek-v4.1-flash": {
+      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "matchingModel": "deepseek-v4.1-flash",
+      "overrides": {
+        "contextWindow": 1000000,
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
+      }
+    },
+    "qwen3.8-flash": {
+      "model": "qwen/qwen3-8-flash",
+      "matchingModel": "qwen3.8-flash",
+      "overrides": {
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00047,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
     }
   }
 }

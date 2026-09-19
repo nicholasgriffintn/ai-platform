@@ -1,5 +1,6 @@
 {
   "defaults": {
+    "hiddenFromDefaultList": true,
     "supportsToolCalls": false,
     "supportsAttachments": false,
     "supportsTemperature": false
@@ -9,24 +10,34 @@
       "model": "typesafe/jev/jev-latest",
       "matchingModel": "jev-latest",
       "overrides": {
-        "isFree": true
-      }
+        "isFree": true,
+        "speed": 5,
+        "costPer1kInputTokens": 0.000042,
+        "costPer1kOutputTokens": 0
+      },
+      "unset": [
+        "hiddenFromDefaultList"
+      ]
     },
     "jev-1.13.0": {
       "model": "typesafe/jev/jev-1.13.0",
       "matchingModel": "jev-1.13.0",
       "overrides": {
         "isFree": true,
-        "hiddenFromDefaultList": true
+        "speed": 5,
+        "costPer1kInputTokens": 0.000042,
+        "costPer1kOutputTokens": 0
       }
     },
     "jev-preview": {
       "model": "typesafe/jev/jev-preview",
       "matchingModel": "jev-preview",
       "overrides": {
+        "status": "beta",
         "isFree": true,
-        "hiddenFromDefaultList": true,
-        "status": "beta"
+        "speed": 5,
+        "costPer1kInputTokens": 0.000042,
+        "costPer1kOutputTokens": 0
       }
     }
   }

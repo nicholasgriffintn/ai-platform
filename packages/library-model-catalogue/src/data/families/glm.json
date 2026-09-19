@@ -835,6 +835,36 @@
         }
       }
     },
+    "glm-5-3-flashx": {
+      "defaults": {
+        "name": "GLM 5.3 FlashX",
+        "openWeights": false,
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 18, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "glm-5-tee": {
       "defaults": {
         "name": "GLM 5 TEE",

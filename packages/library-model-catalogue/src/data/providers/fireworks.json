@@ -743,15 +743,7 @@
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00066,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsAttachments": true
       }
     },
     "accounts/fireworks/models/mistral-large-3-fp8": {
