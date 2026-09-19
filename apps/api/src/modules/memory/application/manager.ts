@@ -215,15 +215,18 @@ export class MemoryManager {
         }
 
         if (gate?.proceed) {
-          const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(
-            this.env,
-            this.user,
-          );
+          const {
+            model: modelToUse,
+            provider: providerToUse,
+            effort,
+          } = await getAuxiliaryModel(this.env, this.user);
           const scope = {
             env: this.env,
             user: this.user,
             model: modelToUse,
             provider: providerToUse,
+            reasoning_effort: effort,
+            disable_functions: true,
           };
           const { object: classification } = await ai.generateObject({
             ...scope,
@@ -303,10 +306,11 @@ export class MemoryManager {
             )
             .join("\n");
 
-          const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(
-            this.env,
-            this.user,
-          );
+          const {
+            model: modelToUse,
+            provider: providerToUse,
+            effort,
+          } = await getAuxiliaryModel(this.env, this.user);
           const text = (
             await ai.generateText({
               env: this.env,
@@ -315,6 +319,8 @@ export class MemoryManager {
               provider: providerToUse,
               system: buildMemorySummariserPrompt(),
               prompt: snippet,
+              reasoning_effort: effort,
+              disable_functions: true,
             })
           ).trim();
 

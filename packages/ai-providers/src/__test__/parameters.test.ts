@@ -1,3 +1,4 @@
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import type { ProviderEnv } from "../env.js";
@@ -5,6 +6,7 @@ import {
   calculateReasoningBudget,
   createCommonParameters,
   createSamplingParameters,
+  createWorkersReasoningParameters,
   getEffectiveMaxTokens,
   getToolsForProvider,
   resolveEffectiveMaxTokens,
@@ -171,6 +173,7 @@ describe("createCommonParameters", () => {
     "deepinfra",
     "github-copilot",
     "github-models",
+    "groq",
     "mistral",
     "opencode",
     "opencode-go",
@@ -199,6 +202,50 @@ describe("createCommonParameters", () => {
     const body = createCommonParameters(params, hybridModel, "mistral");
 
     expect(body).not.toHaveProperty("reasoning_effort");
+  });
+});
+
+describe("createWorkersReasoningParameters", () => {
+  const unrankedModel: ModelConfigItem = {
+    matchingModel: "@cf/zai-org/glm-5.3-flash",
+    provider: "workers-ai",
+    reasoningConfig: {
+      supportedEffortLevels: ["none", "thinking"],
+      defaultEffort: "none",
+    },
+  };
+  const rankedModel: ModelConfigItem = {
+    matchingModel: "@cf/zai-org/glm-4.7-flash",
+    provider: "workers-ai",
+    reasoningConfig: {
+      supportedEffortLevels: ["low", "medium", "high"],
+      defaultEffort: "low",
+    },
+  };
+
+  it("turns Cloudflare thinking off when the request asks for no reasoning", () => {
+    expect(createWorkersReasoningParameters({ reasoning_effort: "none" }, unrankedModel)).toEqual({
+      chat_template_kwargs: { enable_thinking: false },
+    });
+  });
+
+  it("forwards the ranked effort levels Workers AI accepts", () => {
+    expect(createWorkersReasoningParameters({ reasoning_effort: "low" }, rankedModel)).toEqual({
+      reasoning_effort: "low",
+    });
+    expect(createWorkersReasoningParameters({ reasoning_effort: "high" }, rankedModel)).toEqual({
+      reasoning_effort: "high",
+    });
+  });
+
+  it("sends nothing for unsupported, unconfigured or missing models", () => {
+    expect(createWorkersReasoningParameters({ reasoning_effort: "high" }, unrankedModel)).toEqual(
+      {},
+    );
+    expect(createWorkersReasoningParameters({ reasoning_effort: "thinking" }, rankedModel)).toEqual(
+      {},
+    );
+    expect(createWorkersReasoningParameters({ reasoning_effort: "none" }, undefined)).toEqual({});
   });
 });
 

@@ -17,6 +17,7 @@ import {
   getSystemModelLineup,
   isMachineOnline,
   type ModelConfigItem,
+  type ReasoningEffort,
   type SystemModelRole,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -41,6 +42,12 @@ export interface ResolveModelProviderOptions {
   provider?: string;
   defaultProvider: string;
   env?: IEnv;
+}
+
+export interface ResolvedSystemModel {
+  model: string;
+  provider: string;
+  effort?: ReasoningEffort;
 }
 
 const MODEL_CACHE_TTL = 14400;
@@ -420,20 +427,24 @@ export async function filterModelsForUserAccess(
   }
 }
 
-async function resolveSystemModel(env: IEnv, user: IUser | undefined, role: SystemModelRole) {
+async function resolveSystemModel(
+  env: IEnv,
+  user: IUser | undefined,
+  role: SystemModelRole,
+): Promise<ResolvedSystemModel> {
   const availableModels = await getLineupModelsForUser(env, user);
   const lineup = getSystemModelLineup(role);
-  const selected =
-    resolvePolicyModel(availableModels, lineup.candidates, user) ??
-    resolveDefaultChatModel(availableModels, user);
+  const candidate = resolvePolicyModel(availableModels, lineup.candidates, user);
+  const selected = candidate ?? resolveDefaultChatModel(availableModels, user);
 
-  return { model: selected.config.matchingModel, provider: selected.config.provider };
+  return {
+    model: selected.config.matchingModel,
+    provider: selected.config.provider,
+    effort: candidate?.effort,
+  };
 }
 
-export async function getAuxiliaryModel(
-  env: IEnv,
-  user?: IUser,
-): Promise<{ model: string; provider: string }> {
+export async function getAuxiliaryModel(env: IEnv, user?: IUser): Promise<ResolvedSystemModel> {
   return resolveSystemModel(env, user, "housekeeping");
 }
 

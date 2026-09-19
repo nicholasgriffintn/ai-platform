@@ -102,10 +102,11 @@ export async function generateArticlesReport({
       );
     }
 
-    const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(
-      serviceContext.env,
-      user,
-    );
+    const {
+      model: modelToUse,
+      provider: providerToUse,
+      effort,
+    } = await getAuxiliaryModelForRetrieval(serviceContext.env, user);
     const modelConfig = await findModelConfig(modelToUse, serviceContext.env, providerToUse);
 
     const reportGenData = await ai.complete({
@@ -115,6 +116,8 @@ export async function generateArticlesReport({
       provider: providerToUse,
       completion_id,
       app_url,
+      reasoning_effort: effort,
+      disable_functions: true,
       prompt: generateArticleReportPrompt(combinedArticles, {
         modelId: modelToUse,
         modelConfig,

@@ -75,10 +75,11 @@ export async function analyseArticle({
 
     const sanitisedArticle = sanitiseInput(args.article);
 
-    const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(
-      serviceContext.env,
-      user,
-    );
+    const {
+      model: modelToUse,
+      provider: providerToUse,
+      effort,
+    } = await getAuxiliaryModelForRetrieval(serviceContext.env, user);
     const modelConfig = await findModelConfig(modelToUse, serviceContext.env, providerToUse);
     const analysisData = await ai.complete({
       env: serviceContext.env,
@@ -87,6 +88,8 @@ export async function analyseArticle({
       provider: providerToUse,
       completion_id,
       app_url,
+      reasoning_effort: effort,
+      disable_functions: true,
       prompt: analyseArticlePrompt(sanitisedArticle, {
         modelId: modelToUse,
         modelConfig,

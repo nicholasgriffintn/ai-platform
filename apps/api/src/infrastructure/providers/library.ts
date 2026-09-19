@@ -33,7 +33,11 @@ function registerHostChatProviders(registry: ProviderRegistry): void {
 }
 
 function prepareChatRequest(params: ChatCompletionParameters): ChatCompletionParameters {
-  return params.available_functions ? params : withAvailableFunctions(params);
+  if (params.available_functions || params.disable_functions) {
+    return params;
+  }
+
+  return withAvailableFunctions(params);
 }
 
 const PREPARED_CHAT_METHODS = new Set(["getResponse", "countTokens", "getAsyncInvocationStatus"]);

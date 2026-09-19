@@ -372,11 +372,11 @@ export interface SystemModelRoleDefinition {
 }
 
 const platformHousekeeping: readonly ModelLineupCandidate[] = [
-  { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai" },
-  { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "low" },
-  { model: "deepseek-v4-flash", provider: "deepseek", effort: "low" },
+  { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "minimal" },
   { model: "groq-openai-gpt-oss-120b", provider: "groq", effort: "low" },
-  { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai" },
+  { model: "deepseek-v4-flash", provider: "deepseek", effort: "low" },
+  { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai", effort: "low" },
+  { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "none" },
 ];
 
 export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
@@ -385,7 +385,6 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     label: "Titling",
     description: "Names conversations from their first exchange.",
     candidates: [
-      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai" },
       { model: "groq-openai-gpt-oss-20b", provider: "groq", effort: "low" },
       {
         model: "google-ai-studio/gemini-3.1-flash-lite",
@@ -393,7 +392,8 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
         effort: "minimal",
       },
       { model: "gpt-5.6-luna", provider: "openai", effort: "low" },
-      { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai" },
+      { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai", effort: "low" },
+      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "none" },
     ],
   },
   {

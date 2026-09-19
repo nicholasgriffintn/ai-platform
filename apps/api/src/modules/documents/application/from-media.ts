@@ -121,7 +121,11 @@ export async function generateDocumentFromMedia({
       throw new AssistantError("Empty transcript returned", ErrorType.EXTERNAL_API_ERROR);
     }
 
-    const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
+    const {
+      model: modelToUse,
+      provider: providerToUse,
+      effort,
+    } = await getAuxiliaryModel(env, user);
 
     const userPrompt = `${extraPrompt ? `${extraPrompt}\n\n` : ""}Transcript:\n\n${transcriptText}`;
     const content = await ai.generateText({
@@ -131,7 +135,8 @@ export async function generateDocumentFromMedia({
       provider: providerToUse,
       system: notePrompt,
       prompt: userPrompt,
-      reasoning: { effort: "none" },
+      reasoning_effort: effort,
+      disable_functions: true,
     });
 
     if (!content) {

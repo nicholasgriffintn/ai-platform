@@ -131,13 +131,14 @@ export class TrainingQualityHandler implements TaskHandler {
     });
 
     try {
-      const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env);
+      const { model: modelToUse, provider: providerToUse, effort } = await getAuxiliaryModel(env);
       const response = await ai.generateText({
         env,
         model: modelToUse,
         provider: providerToUse,
         prompt,
-        reasoning: { effort: "none" },
+        reasoning_effort: effort,
+        disable_functions: true,
       });
 
       const scoreMatch = response.match(/(\d+)/);

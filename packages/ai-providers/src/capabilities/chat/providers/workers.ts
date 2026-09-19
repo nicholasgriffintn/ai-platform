@@ -19,6 +19,7 @@ import { requireMessages } from "../../../messages.js";
 import { trackProviderMetrics } from "../../../metrics.js";
 import {
   createCommonParameters,
+  createWorkersReasoningParameters,
   getToolsForProvider,
   shouldEnableStreaming,
 } from "../../../parameters.js";
@@ -366,6 +367,7 @@ export class WorkersProvider extends BaseProvider {
 
     return {
       ...commonParams,
+      ...createWorkersReasoningParameters(params, modelConfig),
       ...streamingParams,
       ...toolConfig,
       stop: params.stop,

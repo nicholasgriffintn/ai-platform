@@ -178,6 +178,7 @@ export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
       provider: selectedProvider,
       messages,
       disable_functions: true,
+      reasoning_effort: speaker?.model ? undefined : fallback?.effort,
       stream: false,
       store: false,
       env: params.env,

@@ -1,6 +1,6 @@
 import { getModels } from "@ngriffin_uk/polychat-ai-models";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import type { strudelGenerateResponseSchema } from "@ngriffin_uk/polychat-schemas";
+import type { ReasoningEffort, strudelGenerateResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import {
   AssistantError,
   ErrorType,
@@ -70,6 +70,7 @@ export async function generateStrudelCode({
 
     let model: string;
     let providerName: string;
+    let reasoningEffort: ReasoningEffort | undefined;
 
     if (request.model) {
       const allModels = getModels();
@@ -92,6 +93,7 @@ export async function generateStrudelCode({
 
       model = auxiliaryModel.model;
       providerName = auxiliaryModel.provider;
+      reasoningEffort = auxiliaryModel.effort;
     }
 
     const rawContent = await ai.generateText({
@@ -105,12 +107,15 @@ export async function generateStrudelCode({
       completion_id: `strudel-${generateId()}`,
       enabled_tools: [],
       tools: [],
+      disable_functions: true,
       mode: "normal",
       platform: "tool-run",
       options: request.options || {
         cache_ttl_seconds: 0,
       },
-      reasoning: { effort: "none" },
+      ...(reasoningEffort
+        ? { reasoning_effort: reasoningEffort }
+        : { reasoning: { effort: "none" } }),
     });
 
     if (!rawContent) {

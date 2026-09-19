@@ -147,14 +147,15 @@ ${mems.map((m) => `- ${m.text}`).join("\n")}
   });
 
   try {
-    const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env);
+    const { model: modelToUse, provider: providerToUse, effort } = await getAuxiliaryModel(env);
 
     return await ai.generateText({
       env,
       model: modelToUse,
       provider: providerToUse,
       prompt,
-      reasoning: { effort: "none" },
+      reasoning_effort: effort,
+      disable_functions: true,
     });
   } catch (error) {
     logger.error("Failed to generate synthesis with AI:", error);

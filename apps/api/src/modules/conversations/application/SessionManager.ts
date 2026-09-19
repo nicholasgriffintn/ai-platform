@@ -142,7 +142,7 @@ export class SessionManager {
     mode?: ChatMode,
   ): Promise<SessionSummaryResult> {
     try {
-      const { model, provider } = await getCompactionModel(this.env, this.user);
+      const { model, provider, effort } = await getCompactionModel(this.env, this.user);
       const modeHint = mode ? `The conversation was in "${mode}" mode.` : "";
       const summary = await ai.generateText({
         env: this.env,
@@ -151,6 +151,8 @@ export class SessionManager {
         provider,
         system: buildConversationSummarisePrompt({ modeHint }),
         prompt: summaryInput,
+        reasoning_effort: effort,
+        disable_functions: true,
       });
 
       if (summary.trim()) {
