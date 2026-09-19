@@ -144,6 +144,8 @@ export const siteElementStyleSchema = z
   .object({
     width: z.enum(["narrow", "content", "wide", "full"]).optional(),
     spacing: z.enum(["none", "compact", "normal", "generous", "dramatic"]).optional(),
+    palette: sitePaletteSchema.optional(),
+    tone: z.enum(["inherit", "muted", "primary"]).optional(),
     surface: z
       .enum(["transparent", "canvas", "muted", "card", "primary", "inverted", "glass"])
       .optional(),

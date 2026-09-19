@@ -254,7 +254,7 @@ export default function AppShell({
 }) {
   return (
     <div className="flex min-h-screen w-full bg-muted/30 text-foreground">
-      <aside className="hidden w-60 shrink-0 flex-col border-r bg-background md:flex">
+      <aside className="hidden w-60 shrink-0 flex-col border-r bg-background text-foreground md:flex">
         <div className="flex h-14 items-center px-5 font-heading text-base font-semibold">{brand}</div>
         <nav className="flex flex-1 flex-col gap-1 px-3 py-2">
           {nav.map((item) => (
@@ -285,7 +285,7 @@ export default function AppShell({
         )}
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center gap-4 border-b bg-background px-6">
+        <header className="flex h-14 items-center gap-4 border-b bg-background px-6 text-foreground">
           <span className="font-heading text-base font-semibold md:hidden">{brand}</span>
           {title && <h1 className="text-sm font-medium text-muted-foreground">{title}</h1>}
         </header>

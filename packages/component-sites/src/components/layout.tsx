@@ -1,7 +1,7 @@
-import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { SiteComponentProps } from "@ngriffin_uk/polychat-library-sites";
 import { Children, useState, type ReactNode } from "react";
 
+import { cn } from "../class-names.js";
 import { SiteIcon } from "../icons.js";
 import { HEADING_FONT, Initials, SiteLink } from "../ui.js";
 
@@ -226,7 +226,7 @@ export function AppShell({
 }: WithChildren<SiteComponentProps<"AppShell">>) {
   return (
     <div className="flex min-h-full w-full bg-muted/30 text-foreground">
-      <aside className="hidden w-60 shrink-0 flex-col border-r bg-background md:flex">
+      <aside className="hidden w-60 shrink-0 flex-col border-r bg-background text-foreground md:flex">
         <div className={cn("flex h-14 items-center px-5 text-base font-semibold", HEADING_FONT)}>
           {brand}
         </div>
@@ -263,7 +263,7 @@ export function AppShell({
         )}
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center gap-4 border-b bg-background px-6">
+        <header className="flex h-14 items-center gap-4 border-b bg-background px-6 text-foreground">
           <span className={cn("text-base font-semibold md:hidden", HEADING_FONT)}>{brand}</span>
           {title && <h1 className="text-sm font-medium text-muted-foreground">{title}</h1>}
         </header>

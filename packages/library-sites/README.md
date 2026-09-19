@@ -11,8 +11,9 @@ Sites work the way json-render proved generative UI should: a model can only use
 - `createSitePatchStreamReader()` / `applySitePatch()` — the JSONL patch protocol. Lines arrive in any chunking, prose and fences are ignored, and `add`, `replace` and `remove` build the document in place.
 - `validateSiteProject()` — turns the streamed document into a typed `SiteProject`, dropping unknown components, invalid props, dangling children and unreachable elements while recording each repair as an issue. Only a site with no pages is an error.
 - `SITE_PLAN_QUESTIONS` / `resolveSitePlan()` — the Jev question set and the mapping from calibrated answers (or heuristics when no decision model is available) to a plan: product kind, scope, capabilities, tone, visual direction and the model tier that should write it.
+- `buildSiteFastRefineCandidates()` / `resolveSiteFastRefineCandidate()` — bounded selected-element visual and enum-prop edits that Jev may apply directly only at high confidence. Ambiguous, compound, textual, structural and behavioural requests remain coding-model work.
 - `buildSiteThemeVariables()` / `renderSiteThemeCss()` — palettes as oklch token sets for the preview wrapper and the exported `globals.css`.
-- `siteElementStyleClasses()` — the structured composition grammar for width, spacing, surface, alignment, borders, shadows, radii, motion, bleed and sticky positioning. It gives the model expressive control without accepting arbitrary class names.
+- `siteElementStyleClasses()` — the structured composition grammar for width, spacing, local palette and tone, surface, alignment, borders, shadows, radii, motion, bleed and sticky positioning. It gives the model expressive control without accepting arbitrary class names.
 - `generateSiteFiles()` — a deterministic React Router, Next.js or TanStack Router project with Tailwind v4. React Router is the default. Pages, state, components, theme and expressive styles come from the same framework-neutral document.
 - `buildSiteSandboxTask()` — the feature-implementation task that hands those files to the sandbox worker.
 

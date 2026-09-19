@@ -1,7 +1,7 @@
-import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { SiteComponentProps } from "@ngriffin_uk/polychat-library-sites";
 import { useState } from "react";
 
+import { cn } from "../class-names.js";
 import { SiteIcon } from "../icons.js";
 import { Action, Field, FieldLabel, HEADING_FONT, SelectField, TextField } from "../ui.js";
 

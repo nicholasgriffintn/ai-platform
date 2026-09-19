@@ -393,7 +393,13 @@ describe("codegen", () => {
     expect(componentSource("Tabs")).toContain('role="tabpanel" className="min-w-0"');
     expect(componentSource("Footer")).toContain("grid-cols-2 gap-x-8 gap-y-8");
     expect(componentSource("Footer")).toContain("bg-transparent");
-    expect(globals).toContain(".site-surface-contrast .text-muted-foreground");
+    expect(componentSource("AppShell")).toContain("bg-background text-foreground md:flex");
+    expect(componentSource("AppShell")).toContain("border-b bg-background px-6 text-foreground");
+    expect(componentSource("ui")).toContain("bg-background text-foreground hover:bg-accent");
+    expect(componentSource("ui")).toContain(
+      "text-sm text-foreground placeholder:text-muted-foreground",
+    );
+    expect(globals).not.toContain(".site-surface-contrast .text-muted-foreground");
   });
 
   it("renders nested JSX with serialised props and hoists client directives", () => {

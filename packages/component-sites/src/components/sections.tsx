@@ -1,7 +1,7 @@
-import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { SiteComponentProps } from "@ngriffin_uk/polychat-library-sites";
 import { Check } from "lucide-react";
 
+import { cn } from "../class-names.js";
 import { SiteIcon } from "../icons.js";
 import { Action, Field, HEADING_FONT, Initials, Placeholder, SiteLink } from "../ui.js";
 

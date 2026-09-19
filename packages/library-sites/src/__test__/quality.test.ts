@@ -18,7 +18,12 @@ const { project } = validateSiteProject({
       root: "page",
       elements: {
         page: { type: "Page", props: {}, children: ["hero", "faq"] },
-        hero: { type: "Hero", props: { headline: "Cakes" }, children: [] },
+        hero: {
+          type: "Hero",
+          props: { headline: "Cakes" },
+          style: { palette: "sunset", surface: "inverted", tone: "muted" },
+          children: [],
+        },
         faq: { type: "FAQ", props: { headline: "Questions", items: [] }, children: [] },
       },
     },
@@ -222,5 +227,14 @@ describe("quality", () => {
     expect(state.content).toContain("# Final (/final)");
     expect(state.content).toContain("LATER_PAGE_MARKER");
     expect(state.content.length).toBeLessThanOrEqual(6000);
+  });
+
+  it("includes visual styles in the quality outline", () => {
+    const state = buildSiteQualityState("Brief", project);
+
+    expect(state.outline).toContain('hero: Hero "Cakes"');
+    expect(state.outline).toContain("palette=sunset");
+    expect(state.outline).toContain("surface=inverted");
+    expect(state.outline).toContain("tone=muted");
   });
 });

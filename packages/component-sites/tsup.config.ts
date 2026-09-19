@@ -5,6 +5,6 @@ export default defineConfig({
   dts: true,
   splitting: false,
   sourcemap: true,
-  clean: true,
+  clean: false,
   external: ["react", "react-dom"],
 });

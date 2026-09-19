@@ -58,4 +58,54 @@ describe("SiteRenderer contextual contrast", () => {
     expect(alertDescription.classList.contains("opacity-70")).toBe(true);
     expect(alertDescription.classList.contains("text-muted-foreground")).toBe(false);
   });
+
+  it("preserves a nested palette's text tokens inside an inverted shell", () => {
+    const nestedPage: SitePage = {
+      path: "/",
+      title: "Threadline",
+      root: "page",
+      elements: {
+        page: { type: "Page", props: {}, children: ["shell"] },
+        shell: {
+          type: "AppShell",
+          props: { brand: "Threadline", nav: [] },
+          style: { palette: "midnight", surface: "inverted" },
+          children: ["tabs"],
+        },
+        tabs: {
+          type: "Tabs",
+          props: {
+            tabs: [
+              { label: "Research canvas", value: "research" },
+              { label: "Searchable history", value: "history" },
+            ],
+            defaultValue: "research",
+          },
+          style: { palette: "ocean", surface: "transparent" },
+          children: ["research", "history"],
+        },
+        research: { type: "Stack", props: {}, children: ["complete"] },
+        complete: {
+          type: "Button",
+          props: { label: "Complete sample", variant: "outline" },
+          children: [],
+        },
+        history: { type: "Text", props: { text: "History" }, children: [] },
+      },
+    };
+
+    const view = render(<SiteRenderer page={nestedPage} />);
+    const inactiveTab = within(view.container).getByRole("tab", { name: "Searchable history" });
+    const brand = within(view.container)
+      .getAllByText("Threadline")
+      .find((candidate) => candidate.closest("aside"));
+    const outlineButton = within(view.container).getByRole("button", { name: "Complete sample" });
+    const paletteBoundary = inactiveTab.closest('[data-site-style-for="tabs"]');
+
+    expect(paletteBoundary?.classList.contains("site-palette-ocean")).toBe(true);
+    expect(inactiveTab.classList.contains("text-muted-foreground")).toBe(true);
+    expect(brand?.closest("aside")?.classList.contains("text-foreground")).toBe(true);
+    expect(outlineButton.classList.contains("bg-background")).toBe(true);
+    expect(outlineButton.classList.contains("text-foreground")).toBe(true);
+  });
 });

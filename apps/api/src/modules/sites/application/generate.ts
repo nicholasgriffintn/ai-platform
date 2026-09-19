@@ -49,10 +49,17 @@ import { sseResponse } from "~/infrastructure/http/streaming";
 import type { IUser } from "~/types";
 
 import { attemptAutomaticSiteRepair } from "./automatic-repair";
+import { applySelectedElementFastRefinement } from "./fast-refinement";
 import { createSiteGenerationTrace, runSiteGenerationPass } from "./generation-pass";
 import { loadSiteGenerationModels, resolveSiteGenerationModel } from "./model";
 import { createSiteGenerationPerformance } from "./performance";
-import { classifySiteRefinement, planSite, scoreSite } from "./plan";
+import {
+  classifySelectedElementRefinement,
+  classifySiteRefinement,
+  planSite,
+  scoreSite,
+  type ClassifiedSelectedElementRefinement,
+} from "./plan";
 import { createSite, finaliseSiteGeneration, getSite, updateSite } from "./records";
 
 const logger = getLogger({ prefix: "services/sites/generate" });
@@ -81,6 +88,7 @@ interface PreparedGeneration {
   cacheKey: string;
   intent: ResolvedRefineIntent | null;
   target: SiteElementTarget | null;
+  selectedRefinement: ClassifiedSelectedElementRefinement | null;
   decisionTrace: SiteDecisionTraceEntry[];
 }
 
@@ -112,6 +120,16 @@ async function prepareGeneration(
       throw new AssistantError("The selected element no longer exists", ErrorType.NOT_FOUND, 404);
     }
 
+    const selectedRefinement = request.target
+      ? await classifySelectedElementRefinement({
+          env: context.env,
+          user,
+          prompt: request.prompt,
+          project: existing.project,
+          target: request.target,
+          completionId,
+        })
+      : null;
     const classification = request.target
       ? null
       : await classifySiteRefinement({
@@ -134,7 +152,10 @@ async function prepareGeneration(
       existing,
       intent,
       target,
-      decisionTrace: classification ? [classification.trace] : [],
+      selectedRefinement,
+      decisionTrace: [classification?.trace, selectedRefinement?.trace].filter(
+        (entry): entry is SiteDecisionTraceEntry => Boolean(entry),
+      ),
       system:
         target && targetPage
           ? renderPrompt("apps/sites/refine-element", {
@@ -175,6 +196,7 @@ async function prepareGeneration(
     existing: null,
     intent: null,
     target: null,
+    selectedRefinement: null,
     decisionTrace: [planned.trace],
     system: renderPrompt("apps/sites/generate", {
       example: buildSiteExampleStream(subset),
@@ -334,14 +356,16 @@ export async function runSiteGeneration(
     completionId,
     refining: Boolean(request.siteId),
   });
-  const availableModelsPromise = loadSiteGenerationModels({
-    env: context.env,
-    user,
-    requestedModel: request.model,
-  }).then(
-    (availableModels) => ({ availableModels, error: null }),
-    (error: unknown) => ({ availableModels: null, error }),
-  );
+  const loadAvailableModels = () =>
+    loadSiteGenerationModels({
+      env: context.env,
+      user,
+      requestedModel: request.model,
+    }).then(
+      (availableModels) => ({ availableModels, error: null }),
+      (error: unknown) => ({ availableModels: null, error }),
+    );
+  const availableModelsPromise = request.siteId && request.target ? null : loadAvailableModels();
 
   emit({ type: "phase", phase: "planning" });
 
@@ -360,6 +384,31 @@ export async function runSiteGeneration(
 
     emit({ type: "plan", plan });
 
+    if (prepared.selectedRefinement?.action && prepared.existing && prepared.target) {
+      const site = await applySelectedElementFastRefinement({
+        context,
+        user,
+        projectId: request.projectId,
+        existing: prepared.existing,
+        plan,
+        prompt: request.prompt,
+        target: prepared.target,
+        completionId,
+        refinement: prepared.selectedRefinement,
+        emit,
+      });
+
+      if (site) {
+        performance.mark("modelSelected");
+        performance.mark("firstPatch");
+        performance.mark("buildCompleted");
+        performance.mark("finalSaved");
+        performance.finish("success");
+
+        return { site, plan, issues: site.issues, quality: null };
+      }
+    }
+
     if (prepared.intent) {
       emit({
         type: "intent",
@@ -371,7 +420,7 @@ export async function runSiteGeneration(
     }
 
     emit({ type: "phase", phase: "selecting" });
-    const loadedModels = await availableModelsPromise;
+    const loadedModels = await (availableModelsPromise ?? loadAvailableModels());
 
     if (loadedModels.error) {
       throw loadedModels.error;

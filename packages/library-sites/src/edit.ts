@@ -94,9 +94,13 @@ function outlineElement(page: SitePage, key: string, depth: number, seen: Set<st
   ]
     .filter(Boolean)
     .join(",");
+  const styles = Object.entries(element.style ?? {})
+    .map(([name, value]) => `${name}=${String(value)}`)
+    .join(", ");
+  const annotations = [styles, flags].filter(Boolean).join("; ");
 
   return [
-    `${"  ".repeat(depth)}${key}: ${element.type}${suffix}${flags ? ` [${flags}]` : ""}`,
+    `${"  ".repeat(depth)}${key}: ${element.type}${suffix}${annotations ? ` [${annotations}]` : ""}`,
     ...element.children.flatMap((child) => outlineElement(page, child, depth + 1, seen)),
   ];
 }

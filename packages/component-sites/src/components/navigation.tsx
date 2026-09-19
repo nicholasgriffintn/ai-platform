@@ -1,6 +1,6 @@
-import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { SiteComponentProps } from "@ngriffin_uk/polychat-library-sites";
 
+import { cn } from "../class-names.js";
 import { Action, HEADING_FONT, SiteLink } from "../ui.js";
 
 export function Navbar({ brand, links, cta, sticky }: SiteComponentProps<"Navbar">) {

@@ -3,9 +3,6 @@ import { listSitePages, type SiteProject } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
 import { SiteFrame } from "./SiteFrame.js";
-import { SiteRenderer } from "./SiteRenderer.js";
-import { readSiteSelectionFromEvent, SiteSelectionOverlay } from "./SiteSelection.js";
-import { SiteNavigationProvider } from "./ui.js";
 
 export const SITE_PREVIEW_VIEWPORTS = {
   desktop: { label: "Desktop", width: "100%" },
@@ -52,19 +49,17 @@ export function SitePreview({
   className,
 }: SitePreviewProps) {
   const resolvedPageId = resolveSitePageId(project, pageId);
-  const page = resolvedPageId ? project.pages[resolvedPageId] : null;
-  const navigation = useMemo(
-    () => ({
-      navigate: (path: string) => {
-        const target = findSitePageIdByPath(project, path);
-
-        if (target && onNavigate) {
-          onNavigate(target);
-        }
-      },
-    }),
-    [project, onNavigate],
+  const payload = useMemo(
+    () => ({ project, pageId: resolvedPageId, inspecting, selectedKey }),
+    [inspecting, project, resolvedPageId, selectedKey],
   );
+  const handleNavigate = (path: string) => {
+    const target = findSitePageIdByPath(project, path);
+
+    if (target && onNavigate) {
+      onNavigate(target);
+    }
+  };
 
   return (
     <div
@@ -81,28 +76,13 @@ export function SitePreview({
         )}
         style={{ width: SITE_PREVIEW_VIEWPORTS[viewport].width, maxWidth: "100%" }}
       >
-        <SiteFrame theme={project.theme} width="100%" title={`${project.title} preview`}>
-          {(root) => (
-            <SiteNavigationProvider value={navigation}>
-              <div
-                data-site-inspecting={inspecting || undefined}
-                className={cn(inspecting && "cursor-crosshair [&_a]:pointer-events-auto")}
-                onClickCapture={
-                  inspecting
-                    ? (event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        onSelect?.(readSiteSelectionFromEvent(event));
-                      }
-                    : undefined
-                }
-              >
-                {page && resolvedPageId ? <SiteRenderer key={resolvedPageId} page={page} /> : null}
-              </div>
-              <SiteSelectionOverlay root={root} selectedKey={selectedKey} active={inspecting} />
-            </SiteNavigationProvider>
-          )}
-        </SiteFrame>
+        <SiteFrame
+          payload={payload}
+          width="100%"
+          title={`${project.title} preview`}
+          onNavigate={handleNavigate}
+          onSelect={onSelect}
+        />
       </div>
     </div>
   );

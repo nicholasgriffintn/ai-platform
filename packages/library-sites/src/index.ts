@@ -36,6 +36,14 @@ export {
   listSiteElementAncestors,
 } from "./edit.js";
 export {
+  buildSiteFastRefineCandidates,
+  buildSiteFastRefineQuestion,
+  buildSiteFastRefineState,
+  resolveSiteFastRefineCandidate,
+  SITE_FAST_REFINE_FALLBACK_ID,
+  type SiteFastRefineCandidate,
+} from "./fast-refine.js";
+export {
   buildSiteImagePatch,
   buildSiteImagePrompt,
   buildSiteImageRewritePatches,
@@ -74,6 +82,7 @@ export {
   buildSiteColorVariables,
   buildSiteGoogleFontsUrl,
   buildSiteThemeVariables,
+  renderSiteElementPaletteCss,
   renderSiteThemeCss,
   SITE_FONT_STACKS,
   SITE_PALETTE_DEFINITIONS,

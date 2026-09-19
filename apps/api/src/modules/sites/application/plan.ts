@@ -2,6 +2,9 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   buildSitePlanState,
   buildSiteQualityState,
+  buildSiteFastRefineCandidates,
+  buildSiteFastRefineQuestion,
+  buildSiteFastRefineState,
   buildSiteRefineIntentState,
   buildSiteRefineTargetQuestion,
   createSiteDecisionTrace,
@@ -11,11 +14,13 @@ import {
   listSiteRefineTargets,
   resolveSitePlan,
   resolveSiteQuality,
+  resolveSiteFastRefineCandidate,
   resolveSiteRefineIntent,
   SITE_PLAN_QUESTIONS,
   SITE_QUALITY_QUESTIONS,
   SITE_REFINE_INTENT_QUESTIONS,
   type ResolvedRefineIntent,
+  type SiteFastRefineCandidate,
   type SitePlanAnswers,
   type SiteRefineIntentAnswers,
 } from "@ngriffin_uk/polychat-library-sites";
@@ -23,6 +28,7 @@ import type {
   DecisionAnswer,
   SiteDecisionTraceEntry,
   SiteIssue,
+  SiteElementTarget,
   SitePlan,
   SiteProject,
   SiteQuality,
@@ -178,6 +184,90 @@ export async function classifySiteRefinement({
       createdAt,
     }),
   };
+}
+
+export interface ClassifySelectedElementRefinementOptions {
+  env: IEnv;
+  user: IUser;
+  prompt: string;
+  project: SiteProject;
+  target: SiteElementTarget;
+  completionId?: string;
+}
+
+export interface ClassifiedSelectedElementRefinement {
+  action: SiteFastRefineCandidate | null;
+  confidence: number;
+  provider: string;
+  model: string;
+  trace: SiteDecisionTraceEntry;
+}
+
+export async function classifySelectedElementRefinement({
+  env,
+  user,
+  prompt,
+  project,
+  target,
+  completionId,
+}: ClassifySelectedElementRefinementOptions): Promise<ClassifiedSelectedElementRefinement | null> {
+  const startedAt = Date.now();
+  const createdAt = new Date().toISOString();
+  const candidates = buildSiteFastRefineCandidates(project, target);
+
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  const questions = { action: buildSiteFastRefineQuestion(candidates) };
+
+  try {
+    const decision = await ai.tryDecide({
+      env,
+      user,
+      completion_id: completionId,
+      state: buildSiteFastRefineState(prompt, project, target),
+      questions,
+    });
+
+    if (!decision) {
+      return null;
+    }
+
+    const answer = decision.answers.action;
+    const action = resolveSiteFastRefineCandidate(answer, candidates);
+    const confidence = answer.confidence;
+
+    return {
+      action,
+      confidence,
+      provider: decision.provider,
+      model: decision.model,
+      trace: createSiteDecisionTrace({
+        id: `${completionId ?? "site"}:refinement`,
+        stage: "refinement",
+        source: "decision",
+        summary: action
+          ? `Jev can apply this directly: ${action.summary}`
+          : "The request needs the coding model",
+        effects: action
+          ? ["Applied one validated selected-element patch without loading a coding model"]
+          : ["Preserved full refinement capability by escalating the request"],
+        questions,
+        answers: decision.answers,
+        provider: decision.provider,
+        model: decision.model,
+        durationMs: Date.now() - startedAt,
+        createdAt,
+      }),
+    };
+  } catch (error) {
+    logger.warn("Jev could not route the selected-element refinement; using the coding model", {
+      error_message: getErrorMessage(error),
+    });
+
+    return null;
+  }
 }
 
 export interface ScoreSiteOptions {

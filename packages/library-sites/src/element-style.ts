@@ -1,5 +1,7 @@
 import type { SiteElementStyle, SiteTheme } from "@ngriffin_uk/polychat-schemas";
 
+import { renderSiteElementPaletteCss } from "./theme.js";
+
 const WIDTH = {
   narrow: "mx-auto w-full max-w-3xl",
   content: "mx-auto w-full max-w-6xl",
@@ -15,14 +17,31 @@ const SPACING = {
   dramatic: "p-10 sm:p-16 lg:p-24",
 } as const;
 
+const PALETTE = {
+  neutral: "site-palette-neutral",
+  slate: "site-palette-slate",
+  ocean: "site-palette-ocean",
+  forest: "site-palette-forest",
+  sunset: "site-palette-sunset",
+  berry: "site-palette-berry",
+  sand: "site-palette-sand",
+  midnight: "site-palette-midnight",
+} as const;
+
+const TONE = {
+  inherit: "",
+  muted: "text-muted-foreground",
+  primary: "text-primary",
+} as const;
+
 const SURFACE = {
   transparent: "bg-transparent",
-  canvas: "bg-background text-foreground",
-  muted: "bg-muted/60 text-foreground",
-  card: "bg-card text-card-foreground",
-  primary: "site-surface-contrast bg-primary text-primary-foreground",
-  inverted: "site-surface-contrast bg-foreground text-background",
-  glass: "bg-background/70 text-foreground backdrop-blur-xl",
+  canvas: "site-surface-override bg-background text-foreground",
+  muted: "site-surface-override bg-muted/60 text-foreground",
+  card: "site-surface-override bg-card text-card-foreground",
+  primary: "site-surface-override site-surface-contrast bg-primary text-primary-foreground",
+  inverted: "site-surface-override site-surface-contrast bg-foreground text-background",
+  glass: "site-surface-override bg-background/70 text-foreground backdrop-blur-xl",
 } as const;
 
 const ALIGN = {
@@ -69,6 +88,8 @@ export function siteElementStyleClasses(style: SiteElementStyle | undefined): st
   return [
     style.width && WIDTH[style.width],
     style.spacing && SPACING[style.spacing],
+    style.palette && PALETTE[style.palette],
+    style.tone && TONE[style.tone],
     style.surface && SURFACE[style.surface],
     style.align && ALIGN[style.align],
     style.border && BORDER[style.border],
@@ -92,6 +113,8 @@ export function siteThemeClasses(theme: SiteTheme): string {
 }
 
 export const SITE_EXPRESSION_CSS = `
+${renderSiteElementPaletteCss()}
+
 @keyframes site-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes site-rise { from { opacity: 0; transform: translateY(1.25rem); } to { opacity: 1; transform: translateY(0); } }
 @keyframes site-scale { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
@@ -104,12 +127,11 @@ export const SITE_EXPRESSION_CSS = `
 .site-motion-none [class*="site-motion-"] { animation: none; }
 .site-motion-restrained [class*="site-motion-"] { animation-duration: .35s; }
 .site-motion-expressive [class*="site-motion-"] { animation-duration: .8s; }
-.site-surface-contrast .text-muted-foreground,
-.site-surface-contrast [class~="text-muted-foreground/70"] {
-  color: inherit !important;
-  opacity: .72;
+.site-surface-override > :first-child,
+.site-surface-override > [data-site-key] > :first-child {
+  background: transparent !important;
+  color: inherit;
 }
-.site-surface-contrast .text-primary { color: inherit !important; }
 .site-bleed { width: 100vw; margin-left: calc(50% - 50vw); }
 .site-density-compact { --site-section-space: 3rem; --site-control-height: 2.25rem; }
 .site-density-comfortable { --site-section-space: 5rem; --site-control-height: 2.5rem; }

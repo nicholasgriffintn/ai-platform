@@ -1,9 +1,10 @@
-import type {
-  SiteFont,
-  SiteMode,
-  SitePalette,
-  SiteRadius,
-  SiteTheme,
+import {
+  SITE_PALETTES,
+  type SiteFont,
+  type SiteMode,
+  type SitePalette,
+  type SiteRadius,
+  type SiteTheme,
 } from "@ngriffin_uk/polychat-schemas";
 
 interface PaletteDefinition {
@@ -138,25 +139,34 @@ export function buildSiteThemeVariables(theme: SiteTheme): SiteThemeVariables {
   };
 }
 
+function renderSiteVariableBlock(variables: SiteThemeVariables): string {
+  return Object.entries(variables)
+    .map(([name, value]) => `  ${name}: ${value};`)
+    .join("\n");
+}
+
+export function renderSiteElementPaletteCss(): string {
+  return SITE_PALETTES.flatMap((palette) => [
+    `.site-palette-${palette} {\n${renderSiteVariableBlock(buildSiteColorVariables(palette, "light"))}\n}`,
+    `.dark .site-palette-${palette} {\n${renderSiteVariableBlock(buildSiteColorVariables(palette, "dark"))}\n}`,
+  ]).join("\n");
+}
+
 export function renderSiteThemeCss(theme: SiteTheme): string {
   const light = buildSiteColorVariables(theme.palette, "light");
   const dark = buildSiteColorVariables(theme.palette, "dark");
   const fonts = SITE_FONT_STACKS[theme.font];
-  const block = (variables: SiteThemeVariables) =>
-    Object.entries(variables)
-      .map(([name, value]) => `  ${name}: ${value};`)
-      .join("\n");
 
   return [
     ":root {",
-    block(light),
+    renderSiteVariableBlock(light),
     `  --radius: ${SITE_RADIUS_VALUES[theme.radius]};`,
     `  --font-sans: ${fonts.body};`,
     `  --font-heading: ${fonts.heading};`,
     "}",
     "",
     ".dark {",
-    block(dark),
+    renderSiteVariableBlock(dark),
     "}",
   ].join("\n");
 }

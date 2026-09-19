@@ -6,7 +6,9 @@
     "dist"
   ],
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -15,6 +17,10 @@
       "polychat-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./styles.css": {
+      "style": "./dist/styles.css",
+      "default": "./dist/styles.css"
     }
   },
   "publishConfig": {
@@ -29,19 +35,24 @@
     "@ngriffin_uk/polychat-library-sites": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "clsx": "2.1.1",
     "lucide-react": "1.45.0",
+    "tailwind-merge": "3.6.0",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
+    "@tailwindcss/vite": "4.3.3",
     "@testing-library/react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "jsdom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "tailwindcss": "4.3.3",
     "tsup": "catalog:",
     "typescript": "catalog:",
+    "vite": "8.3.0",
     "vitest": "catalog:"
   },
   "peerDependencies": {

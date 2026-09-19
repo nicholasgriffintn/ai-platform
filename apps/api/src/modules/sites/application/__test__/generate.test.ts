@@ -368,6 +368,140 @@ describe("streamSiteGeneration", () => {
     expect((savedEvent.site as { revision: number }).revision).toBe(2);
   });
 
+  it("lets Jev apply one high-confidence selected-element visual change without loading a coding model", async () => {
+    const existing = {
+      id: "site-1",
+      title: "Crumb",
+      brief: "A bakery site",
+      projectId: null,
+      revision: 1,
+      plan: {
+        kind: "landing",
+        scope: "page",
+        tier: "medium",
+        tone: "friendly",
+        theme: {
+          palette: "sand",
+          font: "sans",
+          radius: "md",
+          mode: "light",
+          direction: "editorial",
+          density: "comfortable",
+          texture: "clean",
+          motion: "restrained",
+        },
+        interactive: false,
+        capabilities: ["content"],
+        confidence: 0.9,
+      },
+      project: {
+        title: "Crumb",
+        theme: {
+          palette: "sand",
+          font: "sans",
+          radius: "md",
+          mode: "light",
+          direction: "editorial",
+          density: "comfortable",
+          texture: "clean",
+          motion: "restrained",
+        },
+        capabilities: ["content"],
+        pages: {
+          home: {
+            path: "/",
+            title: "Home",
+            root: "page",
+            elements: {
+              page: { type: "Page", props: {}, children: ["hero"] },
+              hero: {
+                type: "Hero",
+                props: { headline: "Bread for Leeds" },
+                style: { radius: "lg" },
+                children: [],
+              },
+            },
+          },
+        },
+      },
+      issues: [],
+      quality: null,
+      turns: [],
+      createdAt: "2026-09-19T00:00:00.000Z",
+      updatedAt: null,
+    };
+
+    mocks.getSite.mockResolvedValue(existing);
+    mocks.tryDecide.mockResolvedValue({
+      provider: "typesafe",
+      model: "jev-latest",
+      answers: {
+        action: {
+          type: "choice",
+          choice: "background-ocean",
+          probabilities: { "background-ocean": 0.96, coding_model: 0.04 },
+          confidence: 0.96,
+        },
+      },
+    });
+    mocks.updateSite.mockImplementation(async (_scope, id, input) => ({
+      ...existing,
+      id,
+      revision: 2,
+      project: input.project,
+      issues: input.issues,
+      quality: input.quality,
+      turns: [input.turn],
+    }));
+
+    const events = await readEvents(
+      await streamSiteGeneration({
+        context,
+        user,
+        request: {
+          prompt: "Make it blue",
+          siteId: "site-1",
+          target: { pageId: "home", elementKey: "hero" },
+        },
+      }),
+    );
+
+    expect(mocks.tryDecide.mock.calls[0][0].questions).toHaveProperty("action");
+    expect(mocks.loadSiteGenerationModels).not.toHaveBeenCalled();
+    expect(mocks.resolveSiteGenerationModel).not.toHaveBeenCalled();
+    expect(mocks.stream).not.toHaveBeenCalled();
+    expect(events.map((event) => event.type)).toEqual([
+      "phase",
+      "trace",
+      "plan",
+      "intent",
+      "model",
+      "patch",
+      "phase",
+      "saved",
+      "done",
+    ]);
+
+    const updated = mocks.updateSite.mock.calls[0][2];
+
+    expect(updated.project.pages.home.elements.hero.style).toEqual({
+      radius: "lg",
+      palette: "ocean",
+      surface: "primary",
+      tone: "inherit",
+    });
+    expect(updated.turn).toMatchObject({
+      prompt: "Make it blue",
+      intent: "tweak",
+      provider: "typesafe",
+      model: "jev-latest",
+      target: { pageId: "home", elementKey: "hero" },
+    });
+    expect(updated.turn.trace).toEqual([
+      expect.objectContaining({ kind: "decision", stage: "refinement", source: "decision" }),
+    ]);
+  });
+
   it("scopes a refinement to a selected element with the outline instead of the whole document", async () => {
     mocks.getSite.mockResolvedValue({
       id: "site-1",

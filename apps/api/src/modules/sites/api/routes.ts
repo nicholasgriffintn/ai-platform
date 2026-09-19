@@ -44,7 +44,7 @@ addRoute(app, "post", "/generate", {
   tags: ["sites"],
   summary: "Generate or refine a site",
   description:
-    "Classifies the brief with Jev, then streams the site as JSON patch events while a tiered coding model writes it. Pass siteId to refine an existing site instead of starting fresh. Ends with the saved record.",
+    "Classifies the brief with Jev, then streams site changes as JSON patch events. High-confidence single visual edits to a selected element are applied directly by Jev; broader or uncertain work uses a tiered coding model. Pass siteId to refine an existing site instead of starting fresh. Ends with the saved record.",
   auth: true,
   bodySchema: siteGenerateRequestSchema,
   responses: {
