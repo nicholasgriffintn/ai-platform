@@ -528,6 +528,7 @@
       "model": "qwen/qwen3-5-35b-a3b",
       "matchingModel": "qwen3.5-35b-a3b",
       "overrides": {
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",

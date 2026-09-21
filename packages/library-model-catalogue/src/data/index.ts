@@ -311,35 +311,38 @@ import family307 from "./families/v0.json" with { type: "json" };
 import family308 from "./families/veo.json" with { type: "json" };
 import family309 from "./families/vercel~2Finception~2Fmercury-edit-2.json" with { type: "json" };
 import family310 from "./families/vercel~2Finterfaze~2Finterfaze-beta.json" with { type: "json" };
-import family311 from "./families/vercel~2Fopenai~2Fcodex-mini.json" with { type: "json" };
-import family312 from "./families/vercel~2Fperplexity~2Fpplx-embed-v1-4b.json" with { type: "json" };
-import family313 from "./families/vercel~2Fperplexity~2Fsonar-reasoning.json" with { type: "json" };
-import family314 from "./families/vercel~2Fprime-intellect~2Fintellect-3.json" with { type: "json" };
-import family315 from "./families/vercel~2Fsakana~2Fnamazu.json" with { type: "json" };
-import family316 from "./families/vercel~2Ftypesafe-ai~2Fjev.json" with { type: "json" };
-import family317 from "./families/vercel~2Fvercel~2Fv0-1.0-md.json" with { type: "json" };
-import family318 from "./families/vercel~2Fvercel~2Fv0-1.5-md.json" with { type: "json" };
-import family319 from "./families/voxtral.json" with { type: "json" };
-import family320 from "./families/voyage.json" with { type: "json" };
-import family321 from "./families/whisper.json" with { type: "json" };
-import family322 from "./families/workers-ai~2F~40cf~2Fai4bharat~2Findictrans2-en-indic-1B.json" with { type: "json" };
-import family323 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-base-en-v1.5.json" with { type: "json" };
-import family324 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-large-en-v1.5.json" with { type: "json" };
-import family325 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-m3.json" with { type: "json" };
-import family326 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-reranker-base.json" with { type: "json" };
-import family327 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-small-en-v1.5.json" with { type: "json" };
-import family328 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-1.json" with { type: "json" };
-import family329 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-2-en.json" with { type: "json" };
-import family330 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-2-es.json" with { type: "json" };
-import family331 from "./families/workers-ai~2F~40cf~2Fhuggingface~2Fdistilbert-sst-2-int8.json" with { type: "json" };
-import family332 from "./families/workers-ai~2F~40cf~2Fleonardo~2Flucid-origin.json" with { type: "json" };
-import family333 from "./families/workers-ai~2F~40cf~2Fleonardo~2Fphoenix-1.0.json" with { type: "json" };
-import family334 from "./families/workers-ai~2F~40cf~2Fllava-hf~2Fllava-1.5-7b-hf.json" with { type: "json" };
-import family335 from "./families/workers-ai~2F~40cf~2Flykon~2Fdreamshaper-8-lcm.json" with { type: "json" };
-import family336 from "./families/workers-ai~2F~40cf~2Fmeta~2Fm2m100-1.2b.json" with { type: "json" };
-import family337 from "./families/workers-ai~2F~40cf~2Fmyshell-ai~2Fmelotts.json" with { type: "json" };
-import family338 from "./families/workers-ai~2F~40cf~2Fpfnet~2Fplamo-embedding-1b.json" with { type: "json" };
-import family339 from "./families/workers-ai~2F~40cf~2Fpipecat-ai~2Fsmart-turn-v2.json" with { type: "json" };
+import family311 from "./families/vercel~2Fmixedbread~2Ftoast-1.json" with { type: "json" };
+import family312 from "./families/vercel~2Fopenai~2Fcodex-mini.json" with { type: "json" };
+import family313 from "./families/vercel~2Fperplexity~2Fpplx-embed-v1-4b.json" with { type: "json" };
+import family314 from "./families/vercel~2Fperplexity~2Fsonar-reasoning.json" with { type: "json" };
+import family315 from "./families/vercel~2Fprime-intellect~2Fintellect-3.json" with { type: "json" };
+import family316 from "./families/vercel~2Fquiverai~2Farrow-2.json" with { type: "json" };
+import family317 from "./families/vercel~2Fquiverai~2Farrow-2-telos.json" with { type: "json" };
+import family318 from "./families/vercel~2Fsakana~2Fnamazu.json" with { type: "json" };
+import family319 from "./families/vercel~2Ftypesafe-ai~2Fjev.json" with { type: "json" };
+import family320 from "./families/vercel~2Fvercel~2Fv0-1.0-md.json" with { type: "json" };
+import family321 from "./families/vercel~2Fvercel~2Fv0-1.5-md.json" with { type: "json" };
+import family322 from "./families/voxtral.json" with { type: "json" };
+import family323 from "./families/voyage.json" with { type: "json" };
+import family324 from "./families/whisper.json" with { type: "json" };
+import family325 from "./families/workers-ai~2F~40cf~2Fai4bharat~2Findictrans2-en-indic-1B.json" with { type: "json" };
+import family326 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-base-en-v1.5.json" with { type: "json" };
+import family327 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-large-en-v1.5.json" with { type: "json" };
+import family328 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-m3.json" with { type: "json" };
+import family329 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-reranker-base.json" with { type: "json" };
+import family330 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-small-en-v1.5.json" with { type: "json" };
+import family331 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-1.json" with { type: "json" };
+import family332 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-2-en.json" with { type: "json" };
+import family333 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-2-es.json" with { type: "json" };
+import family334 from "./families/workers-ai~2F~40cf~2Fhuggingface~2Fdistilbert-sst-2-int8.json" with { type: "json" };
+import family335 from "./families/workers-ai~2F~40cf~2Fleonardo~2Flucid-origin.json" with { type: "json" };
+import family336 from "./families/workers-ai~2F~40cf~2Fleonardo~2Fphoenix-1.0.json" with { type: "json" };
+import family337 from "./families/workers-ai~2F~40cf~2Fllava-hf~2Fllava-1.5-7b-hf.json" with { type: "json" };
+import family338 from "./families/workers-ai~2F~40cf~2Flykon~2Fdreamshaper-8-lcm.json" with { type: "json" };
+import family339 from "./families/workers-ai~2F~40cf~2Fmeta~2Fm2m100-1.2b.json" with { type: "json" };
+import family340 from "./families/workers-ai~2F~40cf~2Fmyshell-ai~2Fmelotts.json" with { type: "json" };
+import family341 from "./families/workers-ai~2F~40cf~2Fpfnet~2Fplamo-embedding-1b.json" with { type: "json" };
+import family342 from "./families/workers-ai~2F~40cf~2Fpipecat-ai~2Fsmart-turn-v2.json" with { type: "json" };
 import provider0 from "./providers/openai.json" with { type: "json" };
 import provider1 from "./providers/anthropic.json" with { type: "json" };
 import provider2 from "./providers/mistral.json" with { type: "json" };
@@ -713,35 +716,38 @@ const catalogue: UnparsedModelCatalogue = {
     "veo": family308,
     "vercel/inception/mercury-edit-2": family309,
     "vercel/interfaze/interfaze-beta": family310,
-    "vercel/openai/codex-mini": family311,
-    "vercel/perplexity/pplx-embed-v1-4b": family312,
-    "vercel/perplexity/sonar-reasoning": family313,
-    "vercel/prime-intellect/intellect-3": family314,
-    "vercel/sakana/namazu": family315,
-    "vercel/typesafe-ai/jev": family316,
-    "vercel/vercel/v0-1.0-md": family317,
-    "vercel/vercel/v0-1.5-md": family318,
-    "voxtral": family319,
-    "voyage": family320,
-    "whisper": family321,
-    "workers-ai/@cf/ai4bharat/indictrans2-en-indic-1B": family322,
-    "workers-ai/@cf/baai/bge-base-en-v1.5": family323,
-    "workers-ai/@cf/baai/bge-large-en-v1.5": family324,
-    "workers-ai/@cf/baai/bge-m3": family325,
-    "workers-ai/@cf/baai/bge-reranker-base": family326,
-    "workers-ai/@cf/baai/bge-small-en-v1.5": family327,
-    "workers-ai/@cf/deepgram/aura-1": family328,
-    "workers-ai/@cf/deepgram/aura-2-en": family329,
-    "workers-ai/@cf/deepgram/aura-2-es": family330,
-    "workers-ai/@cf/huggingface/distilbert-sst-2-int8": family331,
-    "workers-ai/@cf/leonardo/lucid-origin": family332,
-    "workers-ai/@cf/leonardo/phoenix-1.0": family333,
-    "workers-ai/@cf/llava-hf/llava-1.5-7b-hf": family334,
-    "workers-ai/@cf/lykon/dreamshaper-8-lcm": family335,
-    "workers-ai/@cf/meta/m2m100-1.2b": family336,
-    "workers-ai/@cf/myshell-ai/melotts": family337,
-    "workers-ai/@cf/pfnet/plamo-embedding-1b": family338,
-    "workers-ai/@cf/pipecat-ai/smart-turn-v2": family339,
+    "vercel/mixedbread/toast-1": family311,
+    "vercel/openai/codex-mini": family312,
+    "vercel/perplexity/pplx-embed-v1-4b": family313,
+    "vercel/perplexity/sonar-reasoning": family314,
+    "vercel/prime-intellect/intellect-3": family315,
+    "vercel/quiverai/arrow-2": family316,
+    "vercel/quiverai/arrow-2-telos": family317,
+    "vercel/sakana/namazu": family318,
+    "vercel/typesafe-ai/jev": family319,
+    "vercel/vercel/v0-1.0-md": family320,
+    "vercel/vercel/v0-1.5-md": family321,
+    "voxtral": family322,
+    "voyage": family323,
+    "whisper": family324,
+    "workers-ai/@cf/ai4bharat/indictrans2-en-indic-1B": family325,
+    "workers-ai/@cf/baai/bge-base-en-v1.5": family326,
+    "workers-ai/@cf/baai/bge-large-en-v1.5": family327,
+    "workers-ai/@cf/baai/bge-m3": family328,
+    "workers-ai/@cf/baai/bge-reranker-base": family329,
+    "workers-ai/@cf/baai/bge-small-en-v1.5": family330,
+    "workers-ai/@cf/deepgram/aura-1": family331,
+    "workers-ai/@cf/deepgram/aura-2-en": family332,
+    "workers-ai/@cf/deepgram/aura-2-es": family333,
+    "workers-ai/@cf/huggingface/distilbert-sst-2-int8": family334,
+    "workers-ai/@cf/leonardo/lucid-origin": family335,
+    "workers-ai/@cf/leonardo/phoenix-1.0": family336,
+    "workers-ai/@cf/llava-hf/llava-1.5-7b-hf": family337,
+    "workers-ai/@cf/lykon/dreamshaper-8-lcm": family338,
+    "workers-ai/@cf/meta/m2m100-1.2b": family339,
+    "workers-ai/@cf/myshell-ai/melotts": family340,
+    "workers-ai/@cf/pfnet/plamo-embedding-1b": family341,
+    "workers-ai/@cf/pipecat-ai/smart-turn-v2": family342,
   },
   providers: {
     "openai": provider0,

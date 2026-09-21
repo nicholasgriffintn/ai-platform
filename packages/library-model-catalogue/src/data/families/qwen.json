@@ -1879,7 +1879,6 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
-        "maxTokens": 65536,
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 23, 2026",
