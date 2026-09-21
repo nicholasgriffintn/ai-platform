@@ -166,20 +166,9 @@
     },
     "glm-5-3-flashx": {
       "defaults": {
-        "name": "GLM 5.3 FlashX",
         "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
         "contextWindow": 1000000,
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "August 26, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -196,7 +185,7 @@
         "openWeights": false,
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
         "contextWindow": 1310720,
-        "maxTokens": 131072,
+        "maxTokens": 943718,
         "modalities": {
           "input": [
             "text",

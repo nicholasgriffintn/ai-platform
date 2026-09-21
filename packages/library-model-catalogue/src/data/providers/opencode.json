@@ -1093,7 +1093,17 @@
         "maxTokens": 131072,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.00425
+        "costPer1kOutputTokens": 0.00425,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "union-alpha": {
