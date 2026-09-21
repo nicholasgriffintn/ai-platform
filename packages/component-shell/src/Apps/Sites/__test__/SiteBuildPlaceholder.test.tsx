@@ -41,4 +41,10 @@ describe("SiteBuildPlaceholder", () => {
 
     expect(screen.getByRole("status")).toHaveTextContent("The site is ready while Jev checks it");
   });
+
+  it("shows when the selected model is reasoning before it writes the site", () => {
+    render(<SiteBuildPlaceholder status="reasoning" patchCount={0} plan={null} />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Jev is reasoning through the build");
+  });
 });

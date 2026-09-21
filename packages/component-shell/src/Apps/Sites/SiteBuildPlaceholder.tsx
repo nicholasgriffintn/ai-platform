@@ -5,6 +5,8 @@ import type { SiteKind, SitePlan } from "@ngriffin_uk/polychat-schemas";
 const STATUS_COPY: Partial<Record<SiteGenerationStatus, string>> = {
   planning: "Reading the brief",
   selecting: "Preparing the right building blocks",
+  starting: "Starting the model",
+  reasoning: "Jev is reasoning through the build",
   streaming: "Building the first visible section",
   reviewing: "The site is ready while Jev checks it",
   repairing: "Applying a quality fix",

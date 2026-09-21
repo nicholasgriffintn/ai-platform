@@ -8,11 +8,22 @@ import {
   SITE_IMAGE_ASPECT_RATIOS,
   validateSiteProject,
 } from "@ngriffin_uk/polychat-library-sites";
-import type { SiteImagesResponse, SitePatch, SiteProject } from "@ngriffin_uk/polychat-schemas";
+import type {
+  SiteImageProgress,
+  SiteImagesResponse,
+  SiteImageStreamEvent,
+  SitePatch,
+  SiteProject,
+} from "@ngriffin_uk/polychat-schemas";
+import {
+  encodeServerSentEvent,
+  encodeServerSentEventDone,
+} from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { sseResponse } from "~/infrastructure/http/streaming";
 import { StorageService } from "~/infrastructure/storage";
 import { getPrivateFileResourceFromUrl } from "~/infrastructure/storage/resource-urls";
 import { generateImage } from "~/modules/generate/application/image";
@@ -30,6 +41,7 @@ export interface FillSiteImagesOptions {
   siteId: string;
   projectId?: string;
   limit?: number;
+  onProgress?: (progress: SiteImageProgress) => void;
 }
 
 export async function fillSiteImages({
@@ -38,6 +50,7 @@ export async function fillSiteImages({
   siteId,
   projectId,
   limit,
+  onProgress,
 }: FillSiteImagesOptions): Promise<SiteImagesResponse> {
   const scope = { context, userId: user.id, projectId };
   const site = await getSite(scope, siteId);
@@ -49,7 +62,12 @@ export async function fillSiteImages({
 
   const patches: SitePatch[] = [];
   let failed = 0;
+  let completed = 0;
   const queue = [...slots];
+  const reportProgress = (patch?: SitePatch) => {
+    completed += 1;
+    onProgress?.({ completed, total: slots.length, failed, ...(patch ? { patch } : {}) });
+  };
 
   const worker = async () => {
     while (queue.length > 0) {
@@ -74,12 +92,17 @@ export async function fillSiteImages({
 
         if (result.status !== "success" || typeof url !== "string" || !url) {
           failed += 1;
+          reportProgress();
           continue;
         }
 
-        patches.push(buildSiteImagePatch(entry, url));
+        const patch = buildSiteImagePatch(entry, url);
+
+        patches.push(patch);
+        reportProgress(patch);
       } catch (error) {
         failed += 1;
+        reportProgress();
         logger.warn("Site image generation failed", {
           site_id: siteId,
           element: entry.elementKey,
@@ -116,6 +139,41 @@ export async function fillSiteImages({
   });
 
   return { site: saved, generated: patches.length, failed };
+}
+
+export async function streamSiteImages(options: FillSiteImagesOptions): Promise<Response> {
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const emit = (event: SiteImageStreamEvent) => {
+        controller.enqueue(encodeServerSentEvent(event));
+      };
+
+      try {
+        const result = await fillSiteImages({
+          ...options,
+          onProgress: (progress) => emit({ type: "progress", ...progress }),
+        });
+
+        emit({
+          type: "saved",
+          site: result.site,
+          generated: result.generated,
+          failed: result.failed,
+        });
+      } catch (error) {
+        logger.error("Site image fill failed", {
+          site_id: options.siteId,
+          error_message: getErrorMessage(error),
+        });
+        emit({ type: "error", error: getErrorMessage(error) });
+      } finally {
+        controller.enqueue(encodeServerSentEventDone());
+        controller.close();
+      }
+    },
+  });
+
+  return sseResponse(stream);
 }
 
 export interface SiteImageAsset {

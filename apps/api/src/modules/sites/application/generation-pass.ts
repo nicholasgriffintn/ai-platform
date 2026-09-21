@@ -27,6 +27,7 @@ export interface RunSiteGenerationPassOptions {
   cacheKey: string;
   signal?: AbortSignal;
   onProviderStreamOpened?: () => void;
+  onReasoning?: () => void;
   onFirstToken?: () => void;
   onPatch?: (patch: SitePatch) => void;
 }
@@ -96,6 +97,7 @@ export async function runSiteGenerationPass({
   cacheKey,
   signal,
   onProviderStreamOpened,
+  onReasoning,
   onFirstToken,
   onPatch,
 }: RunSiteGenerationPassOptions): Promise<SiteGenerationPassResult> {
@@ -148,8 +150,14 @@ export async function runSiteGenerationPass({
   };
 
   let receivedToken = false;
+  let receivedReasoning = false;
 
-  for await (const delta of readProviderTextStream(providerStream, signal)) {
+  for await (const delta of readProviderTextStream(providerStream, signal, () => {
+    if (!receivedReasoning) {
+      receivedReasoning = true;
+      onReasoning?.();
+    }
+  })) {
     if (!receivedToken) {
       receivedToken = true;
       onFirstToken?.();

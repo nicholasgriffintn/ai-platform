@@ -28,23 +28,23 @@ vi.mock("~/modules/sites/application/records", () => ({
 
 import { streamSiteGeneration } from "~/modules/sites/application/generate";
 
-function sseStreamOf(deltas: string[]): ReadableStream<Uint8Array> {
+function sseProviderEvents(events: Record<string, unknown>[]): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
 
   return new ReadableStream({
     start(controller) {
-      for (const delta of deltas) {
-        controller.enqueue(
-          encoder.encode(
-            `data: ${JSON.stringify({ choices: [{ delta: { content: delta } }] })}\n\n`,
-          ),
-        );
+      for (const event of events) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
       }
 
       controller.enqueue(encoder.encode("data: [DONE]\n\n"));
       controller.close();
     },
   });
+}
+
+function sseStreamOf(deltas: string[]): ReadableStream<Uint8Array> {
+  return sseProviderEvents(deltas.map((content) => ({ choices: [{ delta: { content } }] })));
 }
 
 async function readEvents(response: Response) {
@@ -227,6 +227,32 @@ describe("streamSiteGeneration", () => {
     expect(events.at(-1)).toMatchObject({ type: "done", issues: saved.issues });
   });
 
+  it("reports provider reasoning before visible site updates begin", async () => {
+    mocks.stream.mockResolvedValue(
+      sseProviderEvents([
+        {
+          type: "response.reasoning_summary_text.delta",
+          delta: "Planning the visible page structure",
+        },
+        ...modelOutput.map((content) => ({ choices: [{ delta: { content } }] })),
+      ]),
+    );
+
+    const events = await readEvents(
+      await streamSiteGeneration({
+        context,
+        user,
+        request: { prompt: "A landing page for a bakery in Leeds" },
+      }),
+    );
+    const phases = events
+      .filter((event) => event.type === "phase")
+      .map((event) => event.phase as string);
+
+    expect(phases.indexOf("reasoning")).toBeGreaterThan(phases.indexOf("starting"));
+    expect(phases.indexOf("reasoning")).toBeLessThan(phases.indexOf("streaming"));
+  });
+
   it("falls back to a heuristic plan when Jev is unavailable and reports an empty result", async () => {
     mocks.tryDecide.mockResolvedValue(null);
     mocks.stream.mockResolvedValue(sseStreamOf(["I cannot help with that."]));
@@ -338,6 +364,7 @@ describe("streamSiteGeneration", () => {
       "intent",
       "phase",
       "model",
+      "phase",
       "phase",
       "patch",
       "trace",
@@ -585,6 +612,7 @@ describe("streamSiteGeneration", () => {
       "plan",
       "phase",
       "model",
+      "phase",
       "phase",
       "patch",
       "trace",

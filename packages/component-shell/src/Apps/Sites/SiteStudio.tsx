@@ -77,6 +77,8 @@ const STATUS_LABELS: Record<SiteGenerationState["status"], string> = {
   idle: "",
   planning: "Jev is reading the brief",
   selecting: "Choosing the build setup",
+  starting: "Starting the model",
+  reasoning: "Jev is reasoning through the build",
   streaming: "Building",
   reviewing: "Jev is reviewing the site",
   repairing: "Repairing issues Jev found",
@@ -373,8 +375,14 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
           )}
           {state.imageStatus === "generating" && (
             <output className="text-xs text-muted-foreground">
-              Generating images for the placeholders
+              Generating images
+              {state.imageProgress
+                ? ` · ${state.imageProgress.completed}/${state.imageProgress.total} finished`
+                : ""}
             </output>
+          )}
+          {state.imageError && state.imageStatus !== "generating" && (
+            <output className="text-xs text-failure">{state.imageError}</output>
           )}
           {state.status !== "idle" && state.status !== "done" && (
             <output

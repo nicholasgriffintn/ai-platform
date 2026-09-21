@@ -27,6 +27,8 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { runSiteImageGeneration } from "../lib/sites/site-image-generation.js";
+
 export const SITES_QUERY_KEYS = {
   root: ["sites"] as const,
   list: (projectId?: string) => [...SITES_QUERY_KEYS.root, projectId, "list"] as const,
@@ -79,6 +81,8 @@ export type SiteGenerationStatus =
   | "idle"
   | "planning"
   | "selecting"
+  | "starting"
+  | "reasoning"
   | "streaming"
   | "reviewing"
   | "repairing"
@@ -95,7 +99,9 @@ export interface SiteGenerationState {
   error: string | null;
   patchCount: number;
   model: { provider: string; model: string } | null;
-  imageStatus: "idle" | "generating" | "done" | "failed";
+  imageStatus: "idle" | "generating" | "done" | "partial" | "failed";
+  imageProgress: { completed: number; total: number; failed: number } | null;
+  imageError: string | null;
   quality: SiteQuality | null;
   intent: { intent: SiteRefineIntent; target: SiteElementTarget | null } | null;
   trace: SiteTraceEntry[];
@@ -114,6 +120,8 @@ const IDLE_STATE: SiteGenerationState = {
   patchCount: 0,
   model: null,
   imageStatus: "idle",
+  imageProgress: null,
+  imageError: null,
   quality: null,
   intent: null,
   trace: [],
@@ -221,24 +229,51 @@ export function useSiteGeneration({
       return;
     }
 
-    setState((previous) => ({ ...previous, imageStatus: "generating" }));
+    setState((previous) => ({
+      ...previous,
+      imageStatus: "generating",
+      imageProgress: {
+        completed: 0,
+        total: collectEmptySiteImageSlots(site.project).length,
+        failed: 0,
+      },
+      imageError: null,
+    }));
 
     try {
-      const result = await sitesService.images(site.id, { projectId });
+      const result = await runSiteImageGeneration({
+        site,
+        projectId,
+        onProgress: (progress) => {
+          setState((previous) => ({
+            ...previous,
+            project: progress.project ?? previous.project,
+            imageProgress: {
+              completed: progress.completed,
+              total: progress.total,
+              failed: progress.failed,
+            },
+          }));
+        },
+      });
 
+      siteRef.current = result.site;
+      documentRef.current = structuredClone(result.site.project);
       setState((previous) => ({
         ...previous,
-        imageStatus: result.generated > 0 ? "done" : "failed",
+        imageStatus: result.status,
+        imageError: result.error,
         site: result.site,
-        project:
-          previous.status === "streaming" || previous.status === "planning"
-            ? previous.project
-            : result.site.project,
+        project: result.site.project,
       }));
-      siteRef.current = result.site;
       queryClient.setQueryData(SITES_QUERY_KEYS.detail(projectId, result.site.id), result.site);
-    } catch {
-      setState((previous) => ({ ...previous, imageStatus: "failed" }));
+      void queryClient.invalidateQueries({ queryKey: SITES_QUERY_KEYS.list(projectId) });
+    } catch (error) {
+      setState((previous) => ({
+        ...previous,
+        imageStatus: "failed",
+        imageError: getErrorMessage(error, "Images could not be generated"),
+      }));
     }
   }, [projectId, queryClient]);
 
@@ -324,6 +359,11 @@ export function useSiteGeneration({
             }));
             queryClient.setQueryData(SITES_QUERY_KEYS.detail(projectId, event.site.id), event.site);
             void queryClient.invalidateQueries({ queryKey: SITES_QUERY_KEYS.list(projectId) });
+
+            if (event.stage === "final" && autoImages && !refining) {
+              void generateImages();
+            }
+
             break;
           case "done":
             setState((previous) => ({
@@ -333,10 +373,6 @@ export function useSiteGeneration({
               quality: event.quality ?? previous.quality,
             }));
             generationStartedAtRef.current = null;
-
-            if (autoImages && !refining) {
-              void generateImages();
-            }
 
             break;
           case "error":
@@ -353,6 +389,8 @@ export function useSiteGeneration({
           previous.status === "streaming" ||
           previous.status === "planning" ||
           previous.status === "selecting" ||
+          previous.status === "starting" ||
+          previous.status === "reasoning" ||
           previous.status === "reviewing" ||
           previous.status === "repairing" ||
           previous.status === "saving"

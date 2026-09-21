@@ -442,9 +442,10 @@ export async function runSiteGeneration(
 
     performance.mark("modelSelected");
     emit({ type: "model", provider: generationModel.provider, model: generationModel.model });
-    emit({ type: "phase", phase: "streaming" });
+    emit({ type: "phase", phase: "starting" });
 
     let renderableRecorded = false;
+    let visibleOutputStarted = false;
     const buildResult = await runSiteGenerationPass({
       env: context.env,
       user,
@@ -456,7 +457,16 @@ export async function runSiteGeneration(
       cacheKey: prepared.cacheKey,
       signal,
       onProviderStreamOpened: () => performance.mark("providerStreamOpened"),
-      onFirstToken: () => performance.mark("firstToken"),
+      onReasoning: () => {
+        if (!visibleOutputStarted) {
+          emit({ type: "phase", phase: "reasoning" });
+        }
+      },
+      onFirstToken: () => {
+        visibleOutputStarted = true;
+        performance.mark("firstToken");
+        emit({ type: "phase", phase: "streaming" });
+      },
       onPatch: (patch) => {
         performance.mark("firstPatch");
         emit({ type: "patch", patch });

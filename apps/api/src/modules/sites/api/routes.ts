@@ -11,7 +11,6 @@ import {
   siteFilesResponseSchema,
   siteGenerateRequestSchema,
   siteImagesRequestSchema,
-  siteImagesResponseSchema,
   siteListResponseSchema,
   sitePullRequestRequestSchema,
   sitePullRequestResponseSchema,
@@ -27,7 +26,7 @@ import { buildSiteInSandbox } from "~/modules/sites/application/build";
 import { editSite } from "~/modules/sites/application/edit";
 import { evaluateSitePrompts } from "~/modules/sites/application/evaluate";
 import { streamSiteGeneration } from "~/modules/sites/application/generate";
-import { fillSiteImages } from "~/modules/sites/application/images";
+import { streamSiteImages } from "~/modules/sites/application/images";
 import { openSitePullRequest } from "~/modules/sites/application/pull-request";
 import { deleteSite, getSite, listSites } from "~/modules/sites/application/records";
 import { readSharedSiteImage } from "~/modules/sites/application/shared-images";
@@ -244,7 +243,7 @@ addRoute(app, "post", "/:id/images", {
   paramSchema: siteParamsSchema,
   bodySchema: siteImagesRequestSchema,
   responses: {
-    200: { description: "Site with generated images", schema: siteImagesResponseSchema },
+    200: { description: "Server-sent image progress and the site with generated images" },
   },
   handler: async ({ params, body, serviceContext, user }) => {
     await requireOptionalProjectCapabilityAccess(
@@ -254,7 +253,7 @@ addRoute(app, "post", "/:id/images", {
       SITES_CAPABILITY_ID,
     );
 
-    return fillSiteImages({
+    return streamSiteImages({
       context: serviceContext,
       user,
       siteId: params.id,

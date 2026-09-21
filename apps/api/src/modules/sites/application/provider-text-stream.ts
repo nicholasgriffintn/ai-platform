@@ -29,6 +29,7 @@ function readStreamError(event: Record<string, unknown>): string | null {
 export async function* readProviderTextStream(
   stream: ReadableStream,
   signal?: AbortSignal,
+  onReasoning?: (reasoning: string) => void,
 ): AsyncGenerator<string, void, void> {
   const reader = stream.getReader();
   const decoder = new TextDecoder();
@@ -44,7 +45,14 @@ export async function* readProviderTextStream(
       return;
     }
 
-    const content = StreamingFormatter.extractContentFromChunk(event);
+    const eventType = typeof event.type === "string" ? event.type : "";
+    const reasoning = StreamingFormatter.extractThinkingFromChunk(event, eventType);
+
+    if (typeof reasoning === "string" && reasoning) {
+      onReasoning?.(reasoning);
+    }
+
+    const content = StreamingFormatter.extractContentFromChunk(event, eventType);
 
     if (typeof content === "string" && content) {
       deltas.push(content);

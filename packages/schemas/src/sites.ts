@@ -482,7 +482,16 @@ export const siteStreamEventSchema = z.discriminatedUnion("type", [
   z
     .object({
       type: z.literal("phase"),
-      phase: z.enum(["planning", "selecting", "streaming", "reviewing", "repairing", "saving"]),
+      phase: z.enum([
+        "planning",
+        "selecting",
+        "starting",
+        "reasoning",
+        "streaming",
+        "reviewing",
+        "repairing",
+        "saving",
+      ]),
     })
     .strict(),
   z
@@ -601,6 +610,30 @@ export const siteImagesResponseSchema = z
   })
   .strict();
 export type SiteImagesResponse = z.infer<typeof siteImagesResponseSchema>;
+
+export const siteImageProgressSchema = z
+  .object({
+    completed: z.number().int().nonnegative(),
+    total: z.number().int().nonnegative(),
+    failed: z.number().int().nonnegative(),
+    patch: sitePatchSchema.optional(),
+  })
+  .strict();
+export type SiteImageProgress = z.infer<typeof siteImageProgressSchema>;
+
+export const siteImageStreamEventSchema = z.discriminatedUnion("type", [
+  siteImageProgressSchema.extend({ type: z.literal("progress") }).strict(),
+  z
+    .object({
+      type: z.literal("saved"),
+      site: siteRecordSchema,
+      generated: z.number().int().nonnegative(),
+      failed: z.number().int().nonnegative(),
+    })
+    .strict(),
+  z.object({ type: z.literal("error"), error: z.string() }).strict(),
+]);
+export type SiteImageStreamEvent = z.infer<typeof siteImageStreamEventSchema>;
 
 export const siteEvaluationRequestSchema = z
   .object({

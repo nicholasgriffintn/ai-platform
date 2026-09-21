@@ -5,8 +5,8 @@ import type {
   SiteExportTarget,
   SiteFilesResponse,
   SiteGenerateRequest,
+  SiteImageStreamEvent,
   SiteImagesRequest,
-  SiteImagesResponse,
   SiteListResponse,
   SitePullRequestRequest,
   SitePullRequestResponse,
@@ -86,15 +86,23 @@ export const sitesService = {
     return returnFetchedData<SiteBuildResponse>(response);
   },
 
-  async images(id: string, request: SiteImagesRequest): Promise<SiteImagesResponse> {
-    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/images`, {
+  async images(
+    id: string,
+    request: SiteImagesRequest,
+    onEvent: (event: SiteImageStreamEvent) => void,
+  ): Promise<void> {
+    const response = await fetchApi(`${SITES_BASE_PATH}/${id}/images`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
       body: request,
       timeoutMs: null,
     });
 
-    return returnFetchedData<SiteImagesResponse>(response);
+    if (!response.ok || !response.body) {
+      throw await createApiErrorFromResponse(response, "Failed to generate site images");
+    }
+
+    await readServerSentEvents<SiteImageStreamEvent>(response.body, { onEvent });
   },
 
   async pullRequest(id: string, request: SitePullRequestRequest): Promise<SitePullRequestResponse> {
