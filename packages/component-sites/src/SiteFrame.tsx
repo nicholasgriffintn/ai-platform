@@ -2,6 +2,7 @@ import { cn } from "@ngriffin_uk/polychat-component-ui";
 import { buildSiteGoogleFontsUrl } from "@ngriffin_uk/polychat-library-sites";
 import { useEffect, useId, useMemo, useState } from "react";
 
+import SITE_PREVIEW_RUNTIME_URL from "../dist/preview-runtime.global.js?url";
 import { buildSiteFrameDocument } from "./frame-document.js";
 import {
   isSitePreviewRuntimeMessage,
@@ -10,8 +11,7 @@ import {
   type SitePreviewRenderPayload,
 } from "./preview-protocol.js";
 
-const SITE_PREVIEW_RUNTIME_URL = new URL("../dist/preview-runtime.global.js", import.meta.url).href;
-const SITE_PREVIEW_STYLESHEET_URL = new URL("../dist/styles.css", import.meta.url).href;
+import SITE_PREVIEW_STYLESHEET_URL from "../dist/styles.css?url";
 
 export interface SiteFrameProps {
   payload: SitePreviewRenderPayload;

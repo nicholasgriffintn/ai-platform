@@ -6,5 +6,5 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: false,
-  external: ["react", "react-dom"],
+  external: ["react", "react-dom", /\?url$/],
 });
