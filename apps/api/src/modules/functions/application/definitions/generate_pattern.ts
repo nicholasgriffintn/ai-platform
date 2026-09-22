@@ -32,5 +32,6 @@ export const generate_pattern: FunctionToolDescriptor = {
     "Write a Strudel music pattern the user can play and edit, rather than a rendered audio file. Use it when someone asks for a beat, a loop or a musical idea they will want to change. For finished audio, use create_music instead.",
   type: "normal",
   permissions: ["reasoning", "write"],
+  intentEvidence: (input) => ({ operation: "generate_pattern", ...input }),
   inputSchema: generatePatternInputSchema,
 };

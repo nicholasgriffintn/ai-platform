@@ -8,12 +8,27 @@ test.describe("Acknowledged conversation interactions", () => {
   test("keeps approval retryable after a network failure and acknowledges the successful retry", async ({
     homePage,
     page,
+    polychatApi,
   }) => {
     const interactions = new InteractionPage(page);
+    const teammate = await polychatApi.createToolTeammate("Approval release check", [
+      "request_approval",
+    ]);
 
-    await homePage.navigate("/chat");
-    await homePage.selectModel("GPT OSS 120B");
-    await homePage.sendMessageAndRequireCompletion("Request approval for the release check");
+    await homePage.navigate(`/chat?teammate=${teammate.id}`);
+    const request = await homePage.sendMessageAndReadCompletionRequest(
+      "Request approval for the release check",
+      `/teammates/${teammate.id}/completions`,
+    );
+    const completionId = homePage.completionIdFromRequest(request);
+
+    await expect
+      .poll(async () =>
+        (await polychatApi.getConversation(completionId)).messages?.some(
+          (message) => message.role === "tool" && message.name === "request_approval",
+        ),
+      )
+      .toBe(true);
     await expect(interactions.approval).toBeVisible();
     await expect(homePage.stopResponseButton).toBeHidden();
     await interactions.setOffline(true);
@@ -29,7 +44,10 @@ test.describe("Acknowledged conversation interactions", () => {
       await interactions.setOffline(false);
     }
 
-    const approvalSubmissions = trackCompletionRequests(page);
+    const approvalSubmissions = trackCompletionRequests(
+      page,
+      `/teammates/${teammate.id}/completions`,
+    );
 
     await interactions.doubleClickApproval("Approve");
     await expect(interactions.approvalAction("Approve")).toBeDisabled();
@@ -46,12 +64,25 @@ test.describe("Acknowledged conversation interactions", () => {
   test("keeps question answers editable after a network failure and sends them on retry", async ({
     homePage,
     page,
+    polychatApi,
   }) => {
     const interactions = new InteractionPage(page);
+    const teammate = await polychatApi.createToolTeammate("Questions release check", ["ask_user"]);
 
-    await homePage.navigate("/chat");
-    await homePage.selectModel("GPT OSS 120B");
-    await homePage.sendMessageAndRequireCompletion("Ask questions for the release check");
+    await homePage.navigate(`/chat?teammate=${teammate.id}`);
+    const request = await homePage.sendMessageAndReadCompletionRequest(
+      "Ask questions for the release check",
+      `/teammates/${teammate.id}/completions`,
+    );
+    const completionId = homePage.completionIdFromRequest(request);
+
+    await expect
+      .poll(async () =>
+        (await polychatApi.getConversation(completionId)).messages?.some(
+          (message) => message.role === "tool" && message.name === "ask_user",
+        ),
+      )
+      .toBe(true);
     await expect(interactions.questions).toBeVisible();
     await expect(homePage.stopResponseButton).toBeHidden();
     await interactions.answerReleaseQuestions();

@@ -181,7 +181,10 @@ export abstract class BaseProvider implements AIProvider {
     return await ResponseFormatter.formatResponse(data, providerName, {
       model: params.model,
       modalities: modelConfig?.modalities,
-      storage: this.runtime.host.storage.forEnv(params.env),
+      storage: this.runtime.host.storage.forContext({
+        env: params.env,
+        user: params.context?.user,
+      }),
       userId:
         userId ??
         (typeof params.context?.user?.id === "number" ? params.context?.user.id : undefined),

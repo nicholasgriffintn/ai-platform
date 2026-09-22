@@ -16,14 +16,11 @@ export function trackChatRunRecoveryRequests(page: Page): string[] {
   return requests;
 }
 
-export function trackCompletionRequests(page: Page): string[] {
+export function trackCompletionRequests(page: Page, endpoint = "/chat/completions"): string[] {
   const requests: string[] = [];
 
   page.on("request", (request) => {
-    if (
-      request.method() === "POST" &&
-      new URL(request.url()).pathname.endsWith("/chat/completions")
-    ) {
+    if (request.method() === "POST" && new URL(request.url()).pathname === endpoint) {
       requests.push(request.url());
     }
   });

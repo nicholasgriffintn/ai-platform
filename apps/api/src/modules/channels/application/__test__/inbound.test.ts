@@ -85,6 +85,10 @@ const slackBinding = {
   external_id: "C123",
   enabled: true,
   created_by: 42,
+  scope_type: "personal",
+  scope_id: "42",
+  teammate_id: null,
+  interaction_mode: "direct",
 };
 
 function createBindingTaskData(

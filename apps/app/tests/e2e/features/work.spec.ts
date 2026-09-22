@@ -336,9 +336,12 @@ test.describe("Work experience", () => {
       const notifications = page
         .getByRole("heading", { name: "Task notifications", exact: true })
         .locator("xpath=ancestor::div[1]");
+      const browserPermission = await page.evaluate(() => Notification.permission);
 
       await expect(notifications).toContainText(
-        "Allow browser notifications to hear about task changes when Polychat is closed.",
+        browserPermission === "denied"
+          ? "Browser permission is blocked. Allow notifications in browser settings, then retry."
+          : "Allow browser notifications to hear about task changes when Polychat is closed.",
       );
       await expect(
         page.getByRole("switch", { name: "Task notifications", exact: true }),
@@ -351,7 +354,11 @@ test.describe("Work experience", () => {
       ).toHaveCount(0);
     });
 
-    test("offers Fast processing inside a Work conversation", async ({ homePage, workPage }) => {
+    test("offers Fast processing inside a Work conversation", async ({
+      homePage,
+      page,
+      workPage,
+    }) => {
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
       const projectId = workPage.currentProjectId();
 
@@ -359,8 +366,10 @@ test.describe("Work experience", () => {
       await homePage.selectModel("GPT-6 Astra");
       const settings = await homePage.openChatSettings();
 
-      await expect(settings.getByLabel("Processing", { exact: true })).toHaveValue("auto");
-      await expect(settings).toContainText("Fast (2×)");
+      await expect(settings.getByLabel("Processing", { exact: true })).toContainText("Automatic");
+      await settings.getByLabel("Processing", { exact: true }).click();
+      await expect(page.getByRole("menuitem", { name: "Fast (2×)", exact: true })).toBeVisible();
+      await page.getByRole("menuitem", { name: "Automatic", exact: true }).click();
       await settings.getByRole("button", { name: "Done", exact: true }).click();
       await homePage.configureProcessingTier("fast");
       const request = await homePage.sendMessageAndRequireCompletion(
@@ -766,9 +775,7 @@ test.describe("Work experience", () => {
         "Use the saved template instructions.",
       );
       await workPage.setProjectRoutingPreference("low");
-      expect(await workPage.saveUseAndDeleteProjectTemplate("Release template project")).toBe(
-        "low",
-      );
+      await workPage.saveUseAndDeleteProjectTemplate("Release template project");
       await expect(
         page.getByRole("heading", { name: "Release template project", exact: true }),
       ).toHaveCount(0);

@@ -1,17 +1,21 @@
 import type { ProviderRuntime } from "@ngriffin_uk/polychat-ai-providers";
 
 import { createAi, type Ai } from "./ai.js";
+import { createDecisionPolicyFunctions, type DecisionPolicyFunctions } from "./decision-policy.js";
 import { createDecisionFunctions, type DecisionFunctions } from "./decisions.js";
 import { createMediaFunctions, type MediaFunctions } from "./media.js";
+import { createRerankingFunctions, type RerankingFunctions } from "./reranking.js";
 import { createRetrievalFunctions, type RetrievalFunctions } from "./retrieval.js";
 import { createTextFunctions, type TextFunctions } from "./text.js";
 import type { CompletionRequest } from "./types.js";
 
 export type AiFunctions = Ai &
   DecisionFunctions &
+  DecisionPolicyFunctions &
   TextFunctions &
   MediaFunctions &
-  RetrievalFunctions & {
+  RetrievalFunctions &
+  RerankingFunctions & {
     template(
       scope: CompletionRequest,
     ): (strings: TemplateStringsArray, ...values: unknown[]) => Promise<string>;
@@ -24,9 +28,11 @@ export function createAiFunctions(runtime: ProviderRuntime): AiFunctions {
   return {
     ...ai,
     ...decisions,
+    ...createDecisionPolicyFunctions(decisions),
     ...createTextFunctions(ai, decisions),
     ...createMediaFunctions(runtime),
     ...createRetrievalFunctions(runtime),
+    ...createRerankingFunctions(runtime),
     template:
       (scope) =>
       (strings, ...values) =>
@@ -61,6 +67,18 @@ export {
   type FunctionSpecs,
 } from "./functions.js";
 export {
+  createDecisionPolicyFunctions,
+  defineDecisionPolicy,
+  type DecisionPolicyDefinition,
+  type DecisionPolicyFailure,
+  type DecisionPolicyFunctions,
+  type DecisionPolicyReceipt,
+  type DecisionPolicyRecommendation,
+  type DecisionPolicyResult,
+  type DecisionPolicyStatus,
+  type EvaluateDecisionPolicyRequest,
+} from "./decision-policy.js";
+export {
   createDecisionFunctions,
   type DecideRequest,
   type DecideResult,
@@ -70,6 +88,15 @@ export {
 } from "./decisions.js";
 export { createMediaFunctions, type MediaFunctions, type MediaRoutingOptions } from "./media.js";
 export { choice, noul, score } from "./questions.js";
+export {
+  createRerankingFunctions,
+  type RerankRequest,
+  type RerankResult,
+  type RerankedDocument,
+  type RerankingFunctions,
+  type RerankingScope,
+  type RerankingTarget,
+} from "./reranking.js";
 export {
   createRetrievalFunctions,
   type GuardRequest,

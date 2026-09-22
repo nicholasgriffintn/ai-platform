@@ -174,6 +174,17 @@ describe("model catalogue rate adapter", () => {
     expect(perUnit(entries, "output_tokens")).toBeCloseTo(25, 10);
   });
 
+  it("derives per-search-unit rates independently from search-query pricing", () => {
+    const entries = rateEntriesFromModelConfig({
+      ...model,
+      costPer1kSearches: 5,
+      costPer1kSearchUnits: 2,
+    });
+
+    expect(perUnit(entries, "search_queries")).toBeCloseTo(5_000, 10);
+    expect(perUnit(entries, "search_units")).toBeCloseTo(2_000, 10);
+  });
+
   it("falls back to the provider cache multipliers when no cache price is declared", () => {
     const entries = rateEntriesFromModelConfig(model);
 

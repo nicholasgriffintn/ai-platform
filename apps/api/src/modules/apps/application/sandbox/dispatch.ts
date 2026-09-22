@@ -28,6 +28,7 @@ import { persistProjectEnvironmentCacheCandidate } from "~/modules/workspaces/ap
 import type { IEnv, IUser } from "~/types";
 
 import { createSandboxCredentialBrokerAccess } from "./credential-broker-grants";
+import { resolveSandboxGitHubToken } from "./github-credentials";
 import { persistSandboxRunArtifact } from "./run-artifacts";
 import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "./run-coordinator";
 import {
@@ -271,6 +272,12 @@ export async function processSandboxRunDispatch(params: {
       : undefined;
 
   try {
+    await resolveSandboxGitHubToken({
+      context,
+      userId: user.id,
+      repo: message.payload.repo,
+      installationId: message.payload.installationId,
+    });
     const credentialBroker = await createSandboxCredentialBrokerAccess({
       env,
       apiBaseUrl: resolveSandboxApiBaseUrl(env),

@@ -9,6 +9,8 @@ describe("redactSensitiveTokens", () => {
       authorization: "Bearer Abcdef1234567890Ghijklm_Nopqrs",
       nested: {
         apiKey: "Abcdef1234567890Ghijklm_Nopqrs",
+        password: "do-not-send-this",
+        cookie: "session=private",
       },
     });
 
@@ -17,6 +19,8 @@ describe("redactSensitiveTokens", () => {
       authorization: "[redacted]",
       nested: {
         apiKey: "[redacted]",
+        password: "[redacted]",
+        cookie: "[redacted]",
       },
     });
   });

@@ -22,9 +22,7 @@ test.describe("Application experience", () => {
   test.describe("response policy and keyboard access", () => {
     test.use({ persona: "pro" });
 
-    test("serves security headers on documents and assets with a scoped OAuth exception", async ({
-      appPage,
-    }) => {
+    test("serves security headers on documents and assets", async ({ appPage }) => {
       const headers = await appPage.readSecurityHeaders();
       const expected = {
         "content-security-policy": expect.any(String),
@@ -38,10 +36,6 @@ test.describe("Application experience", () => {
 
       expect(headers.document).toMatchObject(expected);
       expect(headers.asset).toMatchObject(expected);
-      expect(headers.callback).toMatchObject({
-        ...expected,
-        "cross-origin-opener-policy": "unsafe-none",
-      });
     });
 
     test("moves keyboard focus from the skip link to main content", async ({

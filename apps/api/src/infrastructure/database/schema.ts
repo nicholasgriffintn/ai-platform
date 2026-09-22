@@ -1978,6 +1978,7 @@ export const recipeComposioTrigger = sqliteTable(
     connected_account_id: text().notNull(),
     external_user_id: text().notNull(),
     configuration: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+    condition: text(),
     status: text({ enum: ["active", "paused", "error"] })
       .default("active")
       .notNull(),
@@ -1997,6 +1998,42 @@ export const recipeComposioTrigger = sqliteTable(
 );
 
 export type RecipeComposioTrigger = typeof recipeComposioTrigger.$inferSelect;
+
+export const recipeEventReceipt = sqliteTable(
+  "recipe_event_receipt",
+  {
+    id: text().primaryKey(),
+    trigger_id: text()
+      .notNull()
+      .references(() => recipeComposioTrigger.id, { onDelete: "cascade" }),
+    event_id: text().notNull(),
+    state: text({ enum: ["evaluating", "skipped", "queued"] })
+      .default("evaluating")
+      .notNull(),
+    execution_token: text(),
+    execution_lease_expires_at: text(),
+    decision_receipt: text({ mode: "json" }).$type<Record<string, unknown>>(),
+    task_id: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    triggerEventIdx: uniqueIndex("recipe_event_receipt_trigger_event_idx").on(
+      table.trigger_id,
+      table.event_id,
+    ),
+    stateLeaseIdx: index("recipe_event_receipt_state_lease_idx").on(
+      table.state,
+      table.execution_lease_expires_at,
+    ),
+  }),
+);
+
+export type RecipeEventReceiptRow = typeof recipeEventReceipt.$inferSelect;
 
 export const composioConnectorSession = sqliteTable(
   "composio_connector_session",

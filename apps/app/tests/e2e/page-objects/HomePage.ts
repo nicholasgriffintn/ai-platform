@@ -53,11 +53,9 @@ export class HomePage extends BasePage {
       .waitFor({ state: "hidden" });
   }
 
-  async sendMessageAndReadCompletionRequest(message: string) {
+  async sendMessageAndReadCompletionRequest(message: string, endpoint = "/chat/completions") {
     const requestPromise = this.page.waitForRequest(
-      (request) =>
-        request.method() === "POST" &&
-        new URL(request.url()).pathname.endsWith("/chat/completions"),
+      (request) => request.method() === "POST" && new URL(request.url()).pathname === endpoint,
     );
 
     await this.sendMessage(message);
@@ -137,7 +135,7 @@ export class HomePage extends BasePage {
       await tiersTab.click();
     }
 
-    await this.clickElement(this.page.getByRole("option", { name: `${tier} tier` }));
+    await this.clickElement(this.page.getByRole("button", { name: `${tier} tier` }));
   }
 
   chatModeCommand(mode: "Chat" | "Live") {
@@ -222,6 +220,8 @@ export class HomePage extends BasePage {
         `Council continuation failed with ${response.status()}: ${await response.text()}`,
       );
     }
+
+    await response.finished();
   }
 
   async sendMessageWithSkillCommand(skillName: string, message: string) {
@@ -407,13 +407,6 @@ export class HomePage extends BasePage {
 
     await this.page.getByRole("button", { name: "Generate", exact: true }).click();
     const response = await generationResponse;
-
-    if (!response.ok()) {
-      await this.page
-        .getByText(/auth|sign in/i)
-        .first()
-        .waitFor();
-    }
 
     return response.status();
   }
@@ -977,8 +970,8 @@ export class HomePage extends BasePage {
   }
 
   async openRunContext() {
-    await this.clickElement(this.page.getByRole("button", { name: "View run context" }));
-    const panel = this.page.getByRole("dialog", { name: "Run context" });
+    await this.clickElement(this.page.getByRole("button", { name: "Context and trace summary" }));
+    const panel = this.page.getByRole("dialog", { name: "Context and trace summary" });
 
     await this.waitForElement(panel);
 

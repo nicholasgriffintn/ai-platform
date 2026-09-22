@@ -68,7 +68,6 @@ addRoute(app, "get", "/", {
       userId: user.id,
       requestUrl: raw.req.url,
     }),
-  cache: { maxAge: 60, staleWhileRevalidate: 300 },
 });
 
 addRoute(app, "post", "/:provider/start", {

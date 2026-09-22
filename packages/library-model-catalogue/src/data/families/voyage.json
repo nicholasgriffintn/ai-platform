@@ -99,7 +99,18 @@
         "description": "Reranking model for improving retrieval quality in search and recommendation systems",
         "contextWindow": 32000,
         "maxTokens": 32000,
-        "releaseDate": "August 11, 2025"
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "reranking"
+          ]
+        },
+        "releaseDate": "August 11, 2025",
+        "strengths": [
+          "reranking"
+        ]
       }
     },
     "voyage-rerank-2-5-lite": {
@@ -108,7 +119,18 @@
         "description": "Reranking model for improving retrieval quality in search and recommendation systems",
         "contextWindow": 32000,
         "maxTokens": 32000,
-        "releaseDate": "August 11, 2025"
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "reranking"
+          ]
+        },
+        "releaseDate": "August 11, 2025",
+        "strengths": [
+          "reranking"
+        ]
       }
     }
   }

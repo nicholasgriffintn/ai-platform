@@ -12,5 +12,6 @@ export const messageParent: FunctionToolDescriptor = {
     "Send a message to the parent conversation through the handle granted to this delegate. Use only when the parent needs a material update.",
   type: "normal",
   permissions: ["delegate"],
+  intentEvidence: (input) => ({ operation: "message_parent", message: input.message }),
   inputSchema: messageParentInputSchema,
 };

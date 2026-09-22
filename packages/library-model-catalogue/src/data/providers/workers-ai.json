@@ -315,7 +315,7 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "April 9, 2025",
-        "costPer1kInputTokens": 0.0000031,
+        "costPer1kInputTokens": 0.00000311,
         "costPer1kOutputTokens": 0
       }
     },

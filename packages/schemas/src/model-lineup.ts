@@ -352,6 +352,7 @@ export const SYSTEM_MODEL_ROLES = [
   "retrieval",
   "guardrails",
   "decision",
+  "reranking",
   "transcription",
   "ocr",
   "image",
@@ -440,6 +441,17 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description:
       "Fast calibrated judgements: yes/no checks, classifications and ratings that gate other work.",
     candidates: [{ model: "jev-latest", provider: "typesafe" }],
+  },
+  {
+    id: "reranking",
+    label: "Reranking",
+    description: "Reorders retrieved candidates by their relevance to the current query.",
+    candidates: [
+      { model: "@cf/baai/bge-reranker-base", provider: "workers-ai" },
+      { model: "rerank-v4.0-fast", provider: "cohere" },
+      { model: "rerank-v4.0-pro", provider: "cohere" },
+      { model: "rerank-v3.5", provider: "cohere" },
+    ],
   },
   {
     id: "transcription",

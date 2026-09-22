@@ -31,7 +31,10 @@ export type CapabilityQuantityExtractor = (
 
 export type CapabilityMeterTable = Record<string, Record<string, CapabilityQuantityExtractor>>;
 
-const FALLBACK_MEASUREMENT: CapabilityMeasurement = { unit: "requests", quantity: 1 };
+const FALLBACK_MEASUREMENT: CapabilityMeasurement = {
+  unit: "requests",
+  quantity: 1,
+};
 
 function positive(value: number | undefined): number | null {
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : null;
@@ -112,6 +115,17 @@ export const DEFAULT_CAPABILITY_METERS: CapabilityMeterTable = {
   research: {
     createResearchTask: () => null,
     performResearch: () => null,
+  },
+  reranking: {
+    rerank: (_args, result) => {
+      const quantity = isRecord(result)
+        ? positive(findNumericFieldDeep(result, ["search_units"], 2))
+        : null;
+
+      return quantity === null
+        ? { unit: "requests", quantity: 1 }
+        : { unit: "search_units", quantity };
+    },
   },
   search: {
     performWebSearch: () => ({ unit: "search_queries", quantity: 1 }),

@@ -3,6 +3,7 @@ import {
   getExecutableModelsForAccount,
   getFeaturedModels,
   getModels,
+  getModelsByOutputModality,
   type ModelResponseSettings,
 } from "@ngriffin_uk/polychat-ai-models";
 import {
@@ -150,6 +151,17 @@ describe("model response defaults", () => {
 });
 
 describe("central model policy catalogue", () => {
+  it("classifies every reranking lineup candidate as a reranking model", () => {
+    const rerankingModels = getModelsByOutputModality("reranking");
+    const lineup = SYSTEM_MODEL_LINEUP.find((role) => role.id === "reranking");
+
+    expect(lineup).toBeDefined();
+
+    for (const candidate of lineup?.candidates ?? []) {
+      expect(findModelByReference(rerankingModels, candidate)).not.toBeNull();
+    }
+  });
+
   it("keeps every served lineup candidate on an active catalogue model that supports its effort", () => {
     const models = getModels();
     const candidates = [

@@ -28,33 +28,34 @@ export class ProjectTasksPage extends BasePage {
     return this.page.getByRole("dialog", { name: "Configure the teammate pipeline" });
   }
 
-  private stageFieldValues(label: string) {
+  stageNames() {
     return this.pipelineDialog()
-      .getByLabel(label, { exact: true })
-      .evaluateAll((fields) =>
-        fields.map((field) => (field as HTMLInputElement | HTMLSelectElement).value),
-      );
+      .getByLabel("Stage name", { exact: true })
+      .evaluateAll((fields) => fields.map((field) => (field as HTMLInputElement).value));
   }
 
-  stageNames() {
-    return this.stageFieldValues("Stage name");
+  private stageSelectLabels(label: string) {
+    return this.pipelineDialog()
+      .getByLabel(label, { exact: true })
+      .allTextContents()
+      .then((labels) => labels.map((value) => value.trim()));
   }
 
   stageModes() {
-    return this.stageFieldValues("Operating mode");
+    return this.stageSelectLabels("Operating mode");
   }
 
   stageHandoffs() {
-    return this.stageFieldValues("When the goal completes");
+    return this.stageSelectLabels("When the goal completes");
   }
 
   stageTeammates() {
-    return this.stageFieldValues("Teammate");
+    return this.stageSelectLabels("Teammate");
   }
 
   suggestedPipelineButton() {
     return this.pipelineDialog().getByRole("button", {
-      name: "Use suggested pipeline",
+      name: "Start from a workflow",
       exact: true,
     });
   }
@@ -67,7 +68,10 @@ export class ProjectTasksPage extends BasePage {
   }
 
   async useSuggestedPipeline() {
-    await this.suggestedPipelineButton().click();
+    await chooseDropdownOption(
+      this.suggestedPipelineButton(),
+      "Suggested: research → plan → build → review",
+    );
   }
 
   async closePipeline() {

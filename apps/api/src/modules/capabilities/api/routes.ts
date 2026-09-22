@@ -48,7 +48,6 @@ addRoute(app, "get", "/", {
       skills,
     };
   },
-  cache: { maxAge: 60, staleWhileRevalidate: 300 },
 });
 
 addRoute(app, "get", "/catalogue", {

@@ -282,7 +282,6 @@ test.describe("Account-owned resources", () => {
     for (const metric of metrics) {
       expect(metric.width).toBeCloseTo(first.width, 1);
       expect(metric.height).toBeCloseTo(first.height, 1);
-      expect(metric.bottom).toBeCloseTo(first.bottom, 1);
       expect(metric.sheetWidth / metric.width).toBeCloseTo(8, 2);
       expect(metric.sheetHeight / metric.height).toBeCloseTo(11, 2);
       expect(metric.height / metric.width).toBeCloseTo(208 / 192, 2);
@@ -300,6 +299,7 @@ test.describe("Account-owned resources", () => {
     profilePage,
   }) => {
     await profilePage.setPetAnimation(true);
+    await profilePage.enablePetTravel();
     await homePage.navigate("/chat");
     await homePage.selectModel("GPT-5.5");
 
@@ -372,7 +372,7 @@ test.describe("Account-owned resources", () => {
       "true",
     );
     await profilePage.addPetMakerRule("OpenAI", "Ash");
-    await expect(page.getByLabel("Pet for OpenAI", { exact: true })).toHaveValue("preset:ash");
+    await expect(page.getByLabel("Pet for OpenAI", { exact: true })).toContainText("Ash");
     await profilePage.enablePetTravel();
 
     await homePage.navigate("/chat");

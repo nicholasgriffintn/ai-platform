@@ -28,5 +28,6 @@ export const process_recording: FunctionToolDescriptor = {
     "Transcribe a recording that has already been uploaded, keeping the transcript as a durable result. Use it when someone asks what was said in a recording they have added.",
   type: "premium",
   permissions: ["reasoning", "write"],
+  intentEvidence: (input) => ({ operation: "process_recording", ...input }),
   inputSchema: processRecordingInputSchema,
 };

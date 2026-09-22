@@ -48,6 +48,7 @@ test.describe("Places belong to a mode", () => {
     );
 
     await appPage.followSidebarLink("Files");
+    await page.reload();
     const filesNav = page.getByRole("navigation", { name: "Files sections" });
 
     for (const [tab, content] of [
@@ -224,7 +225,7 @@ test.describe("Places belong to a mode", () => {
       waitUntil: "domcontentloaded",
     });
     await expect(homePage.chatInput).toBeEditable();
-    await expect(homePage.chatInput).toHaveValue("");
+    await expect(homePage.chatInput).toHaveText("");
     await expect(page.locator('[data-role="user"]')).toHaveCount(0);
     await expect(page).not.toHaveURL(/\/chat\/[0-9a-f-]{36}/);
   });

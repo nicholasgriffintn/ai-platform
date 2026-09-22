@@ -102,14 +102,16 @@ test.describe("Signed-in tour placement", () => {
     await discover.navigate("/discover");
     await discover.section("models").getByRole("link", { name: "Browse the catalogue" }).click();
     await expect(page).toHaveURL(/\/models$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Every model, one perch");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Every model, one perch" }),
+    ).toBeVisible();
   });
 
   test("resolves every built-in pet sheet on the public pets page", async ({ page }) => {
     const discover = new DiscoverPage(page);
 
     await discover.navigate("/pets");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("The Polychat pets");
+    await expect(page.getByRole("heading", { level: 1, name: "The Polychat pets" })).toBeVisible();
 
     const sheets = await discover.petSheetDimensions();
 

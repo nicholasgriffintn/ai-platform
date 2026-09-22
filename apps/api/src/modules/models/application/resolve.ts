@@ -6,11 +6,15 @@ import {
   getModelConfigById,
   getModels,
   getModelsByOutputModality,
+  getExecutableModelsForAccount,
   resolveDefaultChatModel,
   resolvePolicyModel,
-  getExecutableModelsForAccount,
 } from "@ngriffin_uk/polychat-ai-models";
-import { isProviderPlatformEnabled } from "@ngriffin_uk/polychat-ai-providers";
+import {
+  isProviderPlatformEnabled,
+  selectRerankingModel,
+  type RerankingModelSelection,
+} from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   agentModelConfig,
@@ -474,7 +478,10 @@ export const getAuxiliaryGuardrailsModel = async (env: IEnv, user?: IUser) => {
     );
   }
 
-  return { model: selected.config.matchingModel, provider: selected.config.provider };
+  return {
+    model: selected.config.matchingModel,
+    provider: selected.config.provider,
+  };
 };
 
 export const getAuxiliaryDecisionModel = async (
@@ -493,8 +500,26 @@ export const getAuxiliaryDecisionModel = async (
   );
 
   return selected
-    ? { model: selected.config.matchingModel, provider: selected.config.provider }
+    ? {
+        model: selected.config.matchingModel,
+        provider: selected.config.provider,
+      }
     : null;
+};
+
+export const resolveRerankingModel = async (
+  env: IEnv,
+  user?: IUser,
+  selection: RerankingModelSelection = {},
+): Promise<{ model: string; provider: string } | null> => {
+  const accessibleModels = await filterModelsForUserAccess(
+    getModelsByOutputModality("reranking"),
+    env,
+    user?.id,
+  );
+  const executableModels = getExecutableModelsForAccount(accessibleModels, user);
+
+  return selectRerankingModel(executableModels, env, selection);
 };
 
 export const getAuxiliarySearchProvider = async (

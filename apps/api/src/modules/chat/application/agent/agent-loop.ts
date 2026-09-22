@@ -62,6 +62,7 @@ import { emitCompleteToolInput } from "~/modules/chat/application/tools/events";
 import { handleToolCalls } from "~/modules/chat/application/tools/execution";
 import { createProviderRetryBudget } from "~/modules/chat/domain/provider-retry";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
+import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
 import { shouldStopTurnForUsage, USAGE_LIMIT_NOTICE } from "~/modules/usage/application/limitState";
 import {
   StreamState,
@@ -228,7 +229,12 @@ export async function runAgentLoop(
     store: params.requestParams.store,
   });
   const providerIO = createAgentProviderIO();
-  const callerToolNames = new Set(params.requestParams.tools?.map((tool) => tool.function.name));
+  const platformToolNames = new Set(listFunctionToolDefinitions().map((tool) => tool.name));
+  const callerToolNames = new Set(
+    params.requestParams.tools
+      ?.map((tool) => tool.function.name)
+      .filter((name) => !platformToolNames.has(name)),
+  );
   const runtimeMessages = providerIO.initialMessages(
     toProviderMessages(params.requestParams.messages),
   );

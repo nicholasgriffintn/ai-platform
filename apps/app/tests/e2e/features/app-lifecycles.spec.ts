@@ -52,9 +52,6 @@ test.describe("Apps retain their runtime and scope", () => {
       if (app.runtime === "finetuning") {
         await expect(page.getByRole("tab", { name: "Jobs", exact: true })).toBeVisible();
       }
-
-      await page.getByRole("link", { name: "Back to plugins", exact: true }).click();
-      await expect(page).toHaveURL(/\/chat\/plugins$/);
     }
 
     await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");

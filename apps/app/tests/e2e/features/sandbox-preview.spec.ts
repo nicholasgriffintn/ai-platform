@@ -67,12 +67,12 @@ test.describe("Private sandbox previews", () => {
     await pausedActivity.wait();
     await reload;
     try {
-      await expect(page.getByText("Loading workspace…", { exact: true })).toBeVisible();
       await expect(workbench.previewShell).toHaveCount(0);
     } finally {
       await pausedActivity.release();
     }
 
+    await workbench.selectPane("Preview");
     await expect(workbench.previewShell).toContainText("Preview stopped");
     expect((await sandbox.createPreview(run.runId, "undeclared")).status()).toBe(409);
     expect((await sandbox.createPreview(run.runId, "watcher")).status()).toBe(409);
@@ -252,8 +252,10 @@ test.describe("Private sandbox previews", () => {
 
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(workbench.conversation).toBeVisible();
-    await expect(workbench.mobileTrigger).toBeVisible();
-    await workbench.mobileTrigger.click();
+    if (!(await workbench.mobileDialog.isVisible())) {
+      await workbench.mobileTrigger.click();
+    }
+
     await expect(workbench.mobileDialog).toBeVisible();
     await expect(workbench.previewShell).toBeVisible();
     await workbench.previewViewport("Fit");

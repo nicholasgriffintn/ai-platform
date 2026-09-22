@@ -1349,6 +1349,7 @@ export const recipeComposioTriggerCreateRequestSchema = z.object({
     .regex(/^[A-Z0-9_]+$/),
   connectedAccountId: z.string().trim().min(1).max(200),
   configuration: z.record(z.string().min(1).max(160), z.unknown()).default({}),
+  condition: z.string().trim().min(1).max(2000).optional(),
 });
 
 export const composioTriggerTypeSchema = z.object({
@@ -1372,6 +1373,7 @@ export const recipeComposioTriggerSchema = z.object({
   externalTriggerId: z.string(),
   connectedAccountId: z.string(),
   configuration: z.record(z.string(), z.unknown()),
+  condition: z.string().nullable(),
   status: z.enum(["active", "paused", "error"]),
   lastError: z.string().nullable(),
   createdAt: z.string(),

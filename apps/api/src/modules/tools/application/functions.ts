@@ -28,6 +28,7 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   run_sandbox_task: { renderer: "sandbox_result", icon: "terminal" },
   run_code: { icon: "terminal", responseType: ToolResponseType.JSON },
   decide: { icon: "sparkles", responseType: ToolResponseType.JSON },
+  audit_evidence: { renderer: "evidence_audit", icon: "search" },
   build_site: {
     renderer: "site_preview",
     icon: "layout",

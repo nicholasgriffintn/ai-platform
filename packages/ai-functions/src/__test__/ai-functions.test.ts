@@ -39,15 +39,24 @@ function createRuntime(getResponse: GetResponse, options: { decisionTarget?: boo
             ? {
                 type: "choice",
                 choice: Object.keys(question.criteria)[0],
-                probabilities: { [Object.keys(question.criteria)[0]]: 1 },
+                probabilities: Object.fromEntries(
+                  Object.keys(question.criteria).map((option, index) => [
+                    option,
+                    index === 0 ? 1 : 0,
+                  ]),
+                ),
                 confidence: 1,
               }
             : question.type === "score"
               ? {
                   type: "score",
                   score: 1.5,
-                  legend: { "0": "a", "1": "b" },
-                  probabilities: { "0": 0.5, "1": 0.5 },
+                  legend: Object.fromEntries(
+                    question.criteria.map((level, index) => [String(index), level]),
+                  ),
+                  probabilities: Object.fromEntries(
+                    question.criteria.map((_, index) => [String(index), index === 0 ? 1 : 0]),
+                  ),
                   confidence: 0.2,
                 }
               : { type: "noul", noul: 0.93 },

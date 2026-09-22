@@ -330,6 +330,12 @@ export class ChatRunLifecycle {
   async complete(result: AgentLoopExecutionResult): Promise<ChatRun> {
     const status = completionStatus(result);
     const lastMessageId =
+      (result.pendingInteractionKind
+        ? result.toolResponses
+            .slice()
+            .reverse()
+            .find((message) => message.status === "pending")?.id
+        : undefined) ??
       result.finalMessage?.id ??
       result.memoryMessages.at(-1)?.id ??
       result.toolResponses.at(-1)?.id;

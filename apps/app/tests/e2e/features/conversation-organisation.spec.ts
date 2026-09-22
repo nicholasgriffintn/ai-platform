@@ -14,6 +14,7 @@ test.describe("Conversation organisation", () => {
     page,
     homePage,
     workPage,
+    polychatApi,
   }) => {
     await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
     const projectPath = new URL(page.url()).pathname;
@@ -27,7 +28,7 @@ test.describe("Conversation organisation", () => {
     await homePage.waitForChatResponse(0);
     const title = "Returning release evidence";
 
-    await homePage.renameConversation("Release validation chat", title);
+    await homePage.renameConversation(/Create a snoozable release|Release validation chat/, title);
     await homePage.navigate(projectPath);
     const organisation = new ConversationOrganisationPage(page);
 
@@ -35,17 +36,36 @@ test.describe("Conversation organisation", () => {
     await page.getByRole("menuitem", { name: "Snooze", exact: true }).click();
     await page.getByRole("menuitem", { name: "Until next response", exact: true }).click();
     await expect(organisation.item(title)).toHaveCount(0);
+    const conversationId = homePage.completionIdFromRequest(request);
+    const history = (await polychatApi.getConversation(conversationId)).messages ?? [];
     const response = await page.request.post(`${E2E_API_BASE_URL}/chat/completions`, {
       headers: { origin: E2E_APP_BASE_URL },
       data: {
         ...request,
         command_id: crypto.randomUUID(),
         stream: false,
-        messages: [{ role: "user", content: "Reply after the next-response snooze" }],
+        messages: [
+          ...history.map(({ id, role, content }) => ({ id, role, content })),
+          { role: "user", content: "Reply after the next-response snooze" },
+        ],
       },
     });
 
     await requireSuccessfulResponse(response, "Complete the later reply");
+    await expect
+      .poll(
+        async () => {
+          const conversation = await polychatApi.getConversation(conversationId);
+
+          return (conversation.messages ?? []).some(
+            (message) =>
+              message.role === "assistant" &&
+              JSON.stringify(message.content).includes("Reply after the next-response snooze"),
+          );
+        },
+        { timeout: 15_000 },
+      )
+      .toBe(true);
     await homePage.reload();
     await expect(organisation.item(title).getByLabel("Unread", { exact: true })).toBeVisible();
     await homePage.searchPolychat(title);

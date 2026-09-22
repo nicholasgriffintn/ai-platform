@@ -7,7 +7,23 @@ export const call_api: FunctionToolDescriptor = {
   description:
     "Calls a REST or GraphQL API and returns a structured response. Use this when you need to fetch data from external APIs.",
   type: "normal",
-  permissions: ["network"],
+  permissions: ["network", "write"],
+  intentEvidence: (input) => {
+    let destination: string | undefined;
+
+    try {
+      destination = new URL(input.url).origin;
+    } catch {
+      destination = undefined;
+    }
+
+    return {
+      operation: "call_api",
+      requestType: input.request_type ?? "rest",
+      method: input.method ?? "GET",
+      ...(destination ? { destination } : {}),
+    };
+  },
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {

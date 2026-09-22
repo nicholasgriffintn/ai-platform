@@ -3337,10 +3337,13 @@
             "text"
           ],
           "output": [
-            "text"
+            "reranking"
           ]
         },
         "releaseDate": "February 1, 2026",
+        "strengths": [
+          "reranking"
+        ],
         "supportsToolCalls": false,
         "supportsTemperature": false
       }

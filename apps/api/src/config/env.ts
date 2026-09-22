@@ -68,6 +68,7 @@ export type IEnv = {
   SHIELDSTRAL_POLICY_VERSION?: string;
   SHIELDSTRAL_THRESHOLD?: string;
   OPENROUTER_API_KEY?: string;
+  COHERE_API_KEY?: string;
   FAL_KEY?: string;
   IDEOGRAM_API_KEY?: string;
   PARALLEL_API_KEY?: string;

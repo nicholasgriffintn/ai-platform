@@ -50,7 +50,8 @@ test.describe("Starting a project with its teammates hired", () => {
     ).toContainText(/[1-9]\d* enabled for this project/);
 
     await workPage.leaveProjectSettings();
-    await workPage.searchProjectCapabilities("Developer");
+    await workPage.openProjectSurface("Teammates");
+    await page.getByRole("searchbox", { name: "Search teammates" }).fill("Developer");
     await expect(
       page.getByRole("heading", { name: "Developer", exact: true }).first(),
     ).toBeVisible();

@@ -1,5 +1,6 @@
 export { ProviderError, isProviderError, type ProviderErrorCode } from "./errors.js";
 export { ProviderRegistry } from "./registry.js";
+export { isRerankingModelRuntimeAvailable, selectRerankingModel } from "./model-resolver.js";
 export {
   ProviderLibrary,
   type ProviderBootstrapper,
@@ -56,6 +57,7 @@ export type {
   ProviderStorageFactory,
   RealtimeProxyGrant,
   RealtimeProxyGrantScope,
+  RerankingModelSelection,
   StoreOutputFileRequest,
   StoredOutputFileResult,
 } from "./host.js";
@@ -122,6 +124,7 @@ export * from "./capabilities/ocr/format.js";
 export * from "./capabilities/realtime/index.js";
 export * from "./capabilities/realtime/providers/index.js";
 export * from "./capabilities/research/index.js";
+export * from "./capabilities/reranking/index.js";
 export * from "./capabilities/search/index.js";
 export * from "./capabilities/speech/index.js";
 export * from "./capabilities/transcription/index.js";

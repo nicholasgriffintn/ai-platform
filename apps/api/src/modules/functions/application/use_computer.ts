@@ -1,5 +1,6 @@
 import { pendingTakeover } from "@ngriffin_uk/polychat-library-interactions";
 
+import { judgeComputerObservation } from "~/modules/teammates/application/computer-observation-judgement";
 import {
   operateTeammateComputerAsAgent,
   releaseTeammateComputerAgentLease,
@@ -66,7 +67,9 @@ export const use_computer: ApiToolDefinition = {
           ? { input: { type: "wait" as const, durationMs: args.durationMs } }
           : args.operation === "read"
             ? { input: { type: "read" as const } }
-            : {}),
+            : args.operation === "check"
+              ? { input: { type: "read" as const } }
+              : {}),
     });
     const screenshot = result.observation.screenshot;
     const text =
@@ -77,6 +80,17 @@ export const use_computer: ApiToolDefinition = {
       typeof result.observation.title === "string" ? result.observation.title : "Hosted computer";
     const width = typeof result.observation.width === "number" ? result.observation.width : 1440;
     const height = typeof result.observation.height === "number" ? result.observation.height : 900;
+    const judgement =
+      args.operation === "check"
+        ? await judgeComputerObservation({
+            env: toolContext.request.env,
+            user: toolContext.request.user,
+            completionId: toolContext.completionId,
+            conversationId: toolContext.request.request?.completion_id,
+            condition: args.condition,
+            observation: result.observation,
+          })
+        : undefined;
 
     return {
       status: "success",
@@ -84,6 +98,16 @@ export const use_computer: ApiToolDefinition = {
       content: [
         { type: "text", text: `Active window: ${title}. Viewport: ${width} × ${height}.` },
         ...(text ? [{ type: "text" as const, text }] : []),
+        ...(judgement
+          ? [
+              {
+                type: "text" as const,
+                text: judgement.conditionMet
+                  ? `Checked condition: met — ${args.condition}`
+                  : `Checked condition: not confidently met — ${args.condition}`,
+              },
+            ]
+          : []),
         ...(typeof screenshot === "string"
           ? [
               {
@@ -103,6 +127,15 @@ export const use_computer: ApiToolDefinition = {
         width,
         height,
         contextId,
+        ...(judgement
+          ? {
+              condition: {
+                text: args.condition,
+                met: judgement.conditionMet,
+                receipt: judgement.receipt,
+              },
+            }
+          : {}),
       },
     };
   },

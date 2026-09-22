@@ -2,6 +2,7 @@ import { toolCategories, type ToolCategory } from "@ngriffin_uk/polychat-schemas
 
 const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
   Research: [
+    "audit_evidence",
     "get_hacker_news_stories",
     "capture_screenshot",
     "extract_content",

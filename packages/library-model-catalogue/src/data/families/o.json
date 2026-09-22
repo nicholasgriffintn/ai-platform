@@ -37,10 +37,13 @@
             "text"
           ],
           "output": [
-            "text"
+            "reranking"
           ]
         },
-        "releaseDate": "December 2, 2024"
+        "releaseDate": "December 2, 2024",
+        "strengths": [
+          "reranking"
+        ]
       }
     },
     "cohere-rerank-4-fast": {
@@ -54,10 +57,13 @@
             "text"
           ],
           "output": [
-            "text"
+            "reranking"
           ]
         },
-        "releaseDate": "December 11, 2025"
+        "releaseDate": "December 11, 2025",
+        "strengths": [
+          "reranking"
+        ]
       }
     },
     "cohere-rerank-4-pro": {
@@ -71,10 +77,13 @@
             "text"
           ],
           "output": [
-            "text"
+            "reranking"
           ]
         },
-        "releaseDate": "December 11, 2025"
+        "releaseDate": "December 11, 2025",
+        "strengths": [
+          "reranking"
+        ]
       }
     },
     "o1": {

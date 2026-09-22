@@ -62,4 +62,13 @@ export const extract_content: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["read", "write"],
+  intentEvidence: (input) => ({
+    operation: "extract_content",
+    urls: input.urls,
+    extractDepth: input.extract_depth,
+    includeImages: input.include_images,
+    storesContent: input.should_vectorize,
+    provider: input.provider,
+    crawl: input.cloudflareCrawlOptions,
+  }),
 };

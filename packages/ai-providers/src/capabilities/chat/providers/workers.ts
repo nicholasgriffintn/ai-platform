@@ -432,7 +432,10 @@ export class WorkersProvider extends BaseProvider {
 
             const storedImage = await persistGeneratedOutput({
               mediaContext: {
-                storage: this.runtime.host.storage.forEnv(env),
+                storage: this.runtime.host.storage.forContext({
+                  env,
+                  user: params.context.user,
+                }),
                 model,
                 completionId: params.completion_id,
                 userId: params.context?.user.id,
@@ -488,7 +491,10 @@ export class WorkersProvider extends BaseProvider {
 
             const storedAudio = await persistGeneratedOutput({
               mediaContext: {
-                storage: this.runtime.host.storage.forEnv(env),
+                storage: this.runtime.host.storage.forContext({
+                  env,
+                  user: params.context.user,
+                }),
                 model,
                 completionId: params.completion_id,
                 userId: params.context?.user.id,

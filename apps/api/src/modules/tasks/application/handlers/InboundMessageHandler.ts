@@ -62,12 +62,27 @@ export class InboundMessageHandler implements TaskHandler {
       };
     }
 
+    if (result.status === "ignored") {
+      return {
+        status: "skipped",
+        message: result.needsAttention
+          ? `Inbound ${data.channel} message needs attention but did not need a reply`
+          : `Inbound ${data.channel} message did not need a reply`,
+        data: {
+          channel: data.channel,
+          conversationId: result.conversationId,
+          needsAttention: result.needsAttention ?? false,
+        },
+      };
+    }
+
     return {
       status: "success",
       message: `Inbound ${data.channel} message answered`,
       data: {
         channel: data.channel,
         conversationId: result.conversationId,
+        needsAttention: result.needsAttention ?? false,
       },
     };
   }

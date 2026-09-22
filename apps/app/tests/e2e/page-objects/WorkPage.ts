@@ -1,7 +1,7 @@
 import { MODEL_TIER_DEFINITIONS } from "@ngriffin_uk/polychat-schemas";
 import type { Locator, Response } from "@playwright/test";
 
-import { chooseDropdownOption } from "../support/dropdown";
+import { chooseDropdownOption, expectDropdownValue } from "../support/dropdown";
 import { BasePage } from "./BasePage";
 
 const PROJECT_SURFACES = {
@@ -324,6 +324,7 @@ export class WorkPage extends BasePage {
     await this.clickElement(this.page.getByRole("button", { name: "More project actions" }));
     await this.clickElement(this.page.getByRole("menuitem", { name: "Save template" }));
     await this.page.getByText("Project template saved", { exact: true }).waitFor();
+    await this.clickElement(this.page.getByRole("button", { name: "More project actions" }));
     await this.confirmArchiveProject();
     await this.openProjectSurface("Governance");
 
@@ -348,7 +349,7 @@ export class WorkPage extends BasePage {
     await this.page.waitForURL(/\/projects\/[^/]+$/);
     await this.page.getByRole("heading", { name: projectName, exact: true }).waitFor();
     await this.openProjectSettings();
-    const instantiatedRoutingMode = await this.projectRoutingPreference().inputValue();
+    await expectDropdownValue(this.projectRoutingPreference(), "Low — Fast and cheap");
 
     await this.leaveProjectSettings();
     await this.openProjectSurface("Governance");
@@ -363,8 +364,6 @@ export class WorkPage extends BasePage {
     await confirmation.getByRole("button", { name: "Delete template" }).click();
     await confirmation.waitFor({ state: "hidden" });
     await savedTemplate.waitFor({ state: "detached" });
-
-    return instantiatedRoutingMode;
   }
 
   private capabilityCard(name: string): Locator {
@@ -385,13 +384,15 @@ export class WorkPage extends BasePage {
     );
   }
 
-  private capabilitySearch() {
-    return this.page.getByRole("searchbox", { name: "Search capabilities" });
+  private capabilitySearch(surface: ProjectSurface = "Plugins") {
+    return this.page.getByRole("searchbox", {
+      name: surface === "Plugins" ? "Search plugins" : "Search capabilities",
+    });
   }
 
   private async openCapability(name: string, surface: ProjectSurface = "Plugins") {
     await this.openProjectSurface(surface);
-    await this.capabilitySearch().fill(name);
+    await this.capabilitySearch(surface).fill(name);
 
     return this.capabilityCard(name);
   }
@@ -409,7 +410,7 @@ export class WorkPage extends BasePage {
 
     if (reload) {
       await this.reload();
-      await this.capabilitySearch().fill(name);
+      await this.capabilitySearch(surface).fill(name);
       card = this.capabilityCard(name);
     }
 
@@ -565,7 +566,7 @@ export class WorkPage extends BasePage {
     await configuration.getByRole("button", { name: "Install recipe" }).click();
     await this.requireSuccessfulResponse(installResponse, "Recipe configuration");
     await configuration.waitFor({ state: "hidden" });
-    await card.getByRole("img", { name: "Status: Ready", exact: true }).waitFor();
+    await card.getByText("Status: Ready", { exact: true }).waitFor();
 
     await card.getByRole("button", { name: "Schedule", exact: true }).click();
     const schedule = this.page.getByRole("dialog", { name: `Schedule ${recipeName}` });
@@ -665,7 +666,7 @@ export class WorkPage extends BasePage {
     }
 
     await this.reload();
-    await this.capabilitySearch().fill(recipeName);
+    await this.capabilitySearch("Scheduled").fill(recipeName);
     await this.getCapabilityAddButton(recipeName).waitFor();
   }
 

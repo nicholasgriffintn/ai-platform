@@ -70,7 +70,7 @@ export class MessageRepository extends BaseRepository {
     const placeholders = MESSAGE_INSERT_COLUMNS.map(() => "?").join(", ");
     const insertSql = `INSERT${conflictMode === "ignore" ? " OR IGNORE" : ""} INTO message (
 			${columns}, created_at, updated_at
-		) VALUES (${placeholders}, datetime('now'), datetime('now'))`;
+		) VALUES (${placeholders}, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`;
 
     return messages.flatMap((message) => {
       const insert = database
@@ -286,7 +286,7 @@ export class MessageRepository extends BaseRepository {
          created_at,
          updated_at
        )
-       VALUES (${placeholders}, datetime('now'), datetime('now'))
+       VALUES (${placeholders}, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
        ON CONFLICT(id) DO UPDATE SET
          ${updateClause},
          updated_at = datetime('now')
@@ -400,7 +400,7 @@ export class MessageRepository extends BaseRepository {
          created_at,
          updated_at
        )
-       VALUES (${placeholders}, datetime('now'), datetime('now'))
+       VALUES (${placeholders}, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
        RETURNING *`,
     ).bind(...this.buildMessageValues(messageId, conversationId, role, content, messageData));
     const statements = [insert];

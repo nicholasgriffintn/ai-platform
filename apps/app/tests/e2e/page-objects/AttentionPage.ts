@@ -36,7 +36,7 @@ export class AttentionPage extends BasePage {
   }
 
   private facet(label: AttentionFacet) {
-    return this.page.getByLabel(label, { exact: true });
+    return this.page.getByRole("button", { name: label, exact: true });
   }
 
   async filterBy(label: AttentionFacet, optionLabel: string) {

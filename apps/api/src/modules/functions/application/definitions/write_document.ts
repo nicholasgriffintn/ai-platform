@@ -9,4 +9,8 @@ export const write_document: FunctionToolDescriptor = {
   type: "normal",
   permissions: ["write"],
   inputSchema: writeDocumentInputSchema,
+  intentEvidence: (input) => ({
+    operation: input.outputId ? "revise_document" : "create_document",
+    scope: input.projectId ? "project" : "personal",
+  }),
 };

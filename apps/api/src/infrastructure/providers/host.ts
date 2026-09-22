@@ -19,6 +19,7 @@ import {
   getModelConfigByModel,
   resolveModelConfig,
   resolveModelProvider,
+  resolveRerankingModel,
 } from "~/modules/models/application/resolve";
 import { createRealtimeProxyGrant } from "~/modules/realtime/application/proxy-grant";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
@@ -42,7 +43,10 @@ function storageForContext(context: ProviderRequestContext): StorageService | nu
   }
 
   return StorageService.forPrivateAssets(
-    resolveServiceContext({ env: asEnv(context.env), user: asUser(context.user) }),
+    resolveServiceContext({
+      env: asEnv(context.env),
+      user: asUser(context.user),
+    }),
   );
 }
 
@@ -63,6 +67,8 @@ export const providerHost: ProviderHost = {
     getAuxiliaryGuardrailsModel: (env, user) =>
       getAuxiliaryGuardrailsModel(asEnv(env), asUser(user)),
     getAuxiliaryDecisionModel: (env, user) => getAuxiliaryDecisionModel(asEnv(env), asUser(user)),
+    resolveRerankingModel: (env, user, selection) =>
+      resolveRerankingModel(asEnv(env), asUser(user), selection),
     getAuxiliarySpeechModel: async (env, user) => {
       const userSettings = user?.id
         ? await new RepositoryManager(asEnv(env)).userSettings.getUserSettings(user.id)

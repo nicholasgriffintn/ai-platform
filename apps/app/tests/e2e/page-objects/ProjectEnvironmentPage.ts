@@ -57,7 +57,7 @@ export class ProjectEnvironmentPage extends BasePage {
   }
 
   get deliveryInstructions() {
-    return this.page.getByRole("textbox", { name: "Delivery instructions", exact: true });
+    return this.page.getByRole("textbox", { name: /^Delivery instructions/ });
   }
 
   async disconnect() {

@@ -13,6 +13,7 @@ import type { ProviderRegistry } from "./registry.js";
 import type { ProviderRegistration } from "./types.js";
 import type { DecisionProvider } from "./types/decision.js";
 import type { GuardrailsProvider } from "./types/guardrails.js";
+import type { RerankingProvider } from "./types/reranking.js";
 import type { ResearchProvider } from "./types/research.js";
 import type { SearchProvider } from "./types/search.js";
 
@@ -26,6 +27,7 @@ export type AiProviderMap = {
   ocr: OcrProvider;
   realtime: RealtimeProvider;
   research: ResearchProvider;
+  reranking: RerankingProvider;
   search: SearchProvider;
   speech: SpeechProvider;
   transcription: TranscriptionProvider;

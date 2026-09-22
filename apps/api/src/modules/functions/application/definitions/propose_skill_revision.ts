@@ -11,5 +11,10 @@ export const propose_skill_revision: FunctionToolDescriptor = {
     "When the user corrects something a skill told you to do, propose the corrected playbook so the same mistake does not repeat. This saves a draft for the user to review; it does not change what the skill does until they accept it. Only use it for a correction the user actually made, never to tidy a skill you were not asked about.",
   type: "normal",
   permissions: ["write"],
+  intentEvidence: (input) => ({
+    operation: "propose_skill_revision",
+    name: input.name,
+    changeNote: input.changeNote,
+  }),
   inputSchema: proposeSkillRevisionInputSchema,
 };

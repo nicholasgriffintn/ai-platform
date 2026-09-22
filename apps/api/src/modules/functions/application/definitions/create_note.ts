@@ -26,4 +26,5 @@ export const create_note: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["write"],
+  intentEvidence: () => ({ operation: "create_note" }),
 };

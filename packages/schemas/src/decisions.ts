@@ -142,6 +142,107 @@ export type DecisionAnswers<TQuestions extends DecisionQuestions> = {
   [TId in keyof TQuestions]: DecisionAnswerFor<TQuestions[TId]>;
 };
 
+function sameKeys(actual: Record<string, unknown>, expected: readonly string[]): boolean {
+  const actualKeys = Object.keys(actual);
+
+  return actualKeys.length === expected.length && expected.every((key) => actualKeys.includes(key));
+}
+
+function decisionEntriesEqual(left: DecisionEntry, right: DecisionEntry): boolean {
+  if (left === right) {
+    return true;
+  }
+
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return (
+      Array.isArray(left) &&
+      Array.isArray(right) &&
+      left.length === right.length &&
+      left.every((entry, index) => decisionEntriesEqual(entry, right[index] ?? null))
+    );
+  }
+
+  if (left === null || right === null || typeof left !== "object" || typeof right !== "object") {
+    return false;
+  }
+
+  const leftKeys = Object.keys(left);
+
+  return (
+    sameKeys(right, leftKeys) &&
+    leftKeys.every((key) => decisionEntriesEqual(left[key] ?? null, right[key] ?? null))
+  );
+}
+
+function probabilitiesMatchOptions(
+  probabilities: Record<string, number>,
+  options: readonly string[],
+): boolean {
+  if (!sameKeys(probabilities, options)) {
+    return false;
+  }
+
+  const total = Object.values(probabilities).reduce((sum, probability) => sum + probability, 0);
+
+  return Math.abs(total - 1) <= 0.000001;
+}
+
+function answerMatchesQuestion(answer: DecisionAnswer, question: DecisionQuestion): boolean {
+  if (answer.type !== question.type) {
+    return false;
+  }
+
+  if (question.type === "noul") {
+    return answer.type === "noul";
+  }
+
+  if (question.type === "choice") {
+    if (answer.type !== "choice") {
+      return false;
+    }
+
+    const options = Object.keys(question.criteria);
+
+    return (
+      options.includes(answer.choice) && probabilitiesMatchOptions(answer.probabilities, options)
+    );
+  }
+
+  if (answer.type !== "score") {
+    return false;
+  }
+
+  const levels = question.criteria.map((_, index) => String(index));
+
+  return (
+    answer.score <= question.criteria.length - 1 &&
+    sameKeys(answer.legend, levels) &&
+    levels.every((level, index) =>
+      decisionEntriesEqual(answer.legend[level] ?? null, question.criteria[index] ?? null),
+    ) &&
+    probabilitiesMatchOptions(answer.probabilities, levels)
+  );
+}
+
+export function decisionAnswersMatchQuestions<TQuestions extends DecisionQuestions>(
+  questions: TQuestions,
+  answers: Record<string, DecisionAnswer>,
+): answers is DecisionAnswers<TQuestions> {
+  const questionIds = Object.keys(questions);
+
+  return (
+    sameKeys(answers, questionIds) &&
+    questionIds.every((id) => {
+      const question = questions[id];
+      const answer = answers[id];
+
+      return (
+        question !== undefined && answer !== undefined && answerMatchesQuestion(answer, question)
+      );
+    })
+  );
+}
+
 export const decisionUsageSchema = z.object({
   input_tokens: z.number().int().min(0),
   output_tokens: z.number().int().min(0),
@@ -155,6 +256,55 @@ export const decisionResponseSchema = z.object({
   usage: decisionUsageSchema,
 });
 export type DecisionResponse = z.infer<typeof decisionResponseSchema>;
+
+export const councilDecisionOptionSchema = z
+  .object({
+    id: z.string().regex(/^[a-zA-Z0-9_-]{1,64}$/),
+    label: z.string().trim().min(1).max(160),
+    description: z.string().trim().min(1).max(1_000).optional(),
+  })
+  .strict();
+export type CouncilDecisionOption = z.infer<typeof councilDecisionOptionSchema>;
+
+export const councilDecisionCriterionSchema = z
+  .object({
+    label: z.string().trim().min(1).max(160),
+    description: z.string().trim().min(1).max(1_000).optional(),
+    weight: z.number().min(0).max(10).optional(),
+  })
+  .strict();
+export type CouncilDecisionCriterion = z.infer<typeof councilDecisionCriterionSchema>;
+
+export const councilDecisionInputSchema = z
+  .object({
+    options: z
+      .array(councilDecisionOptionSchema)
+      .min(2)
+      .max(8)
+      .superRefine((options, context) => {
+        if (new Set(options.map(({ id }) => id)).size !== options.length) {
+          context.addIssue({ code: "custom", message: "Decision option IDs must be unique" });
+        }
+      }),
+    criteria: z.array(councilDecisionCriterionSchema).max(8).optional(),
+  })
+  .strict();
+export type CouncilDecisionInput = z.infer<typeof councilDecisionInputSchema>;
+
+export const councilDecisionResultSchema = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("unavailable") }).strict(),
+  z
+    .object({
+      status: z.literal("evaluated"),
+      optionId: z.string().regex(/^[a-zA-Z0-9_-]{1,64}$/),
+      confidence: probabilitySchema,
+      probabilities: z.record(z.string(), probabilitySchema),
+      provider: z.string().min(1),
+      model: z.string().min(1),
+    })
+    .strict(),
+]);
+export type CouncilDecisionResult = z.infer<typeof councilDecisionResultSchema>;
 
 export const DECISION_CONFIDENCE_THRESHOLDS = {
   escalate: 0.5,

@@ -19,7 +19,7 @@ const STATIC_HEADERS: Record<string, string> = {
 
 function isConnectorAuthCallback(url: URL): boolean {
   return (
-    url.pathname === "/profile" &&
+    url.pathname === "/chat/plugins" &&
     url.searchParams.get("connected") === "1" &&
     Boolean(url.searchParams.get("connector"))
   );

@@ -69,7 +69,9 @@ test.describe("Live device sync", () => {
       await leader.homePage.waitForChatResponse(1);
 
       await expect(
-        follower.page.getByText("Send a second turn for the follower to receive"),
+        follower.page
+          .locator('[data-role="user"]')
+          .getByText("Send a second turn for the follower to receive"),
       ).toBeVisible({ timeout: SYNC_TIMEOUT });
       await expect(follower.page.locator('[data-role="assistant"]')).toHaveCount(2, {
         timeout: SYNC_TIMEOUT,

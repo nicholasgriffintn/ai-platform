@@ -4,6 +4,7 @@ import { expect, test } from "../fixtures/polychat-test";
 import { SANDBOX_E2E_REPOSITORIES, SandboxApi } from "../fixtures/sandbox-api";
 import { ProjectEnvironmentPage } from "../page-objects/ProjectEnvironmentPage";
 import { WorkbenchPage } from "../page-objects/WorkbenchPage";
+import { expectDropdownValue } from "../support/dropdown";
 
 test.describe("Project sandbox environment", () => {
   test.use({ persona: "pro" });
@@ -27,10 +28,13 @@ test.describe("Project sandbox environment", () => {
     await environment.save();
     await environment.reload();
     await environment.edit();
-    await expect(page.getByLabel("Environment setup", { exact: true })).toHaveValue("polychat");
-    await expect(page.getByLabel("Runtime", { exact: true })).toHaveValue("node");
+    await expectDropdownValue(
+      page.getByLabel("Environment setup", { exact: true }),
+      "Configure in Polychat",
+    );
+    await expectDropdownValue(page.getByLabel("Runtime", { exact: true }), "Node");
     await expect(page.getByLabel("Runtime version", { exact: true })).toHaveValue("22");
-    await expect(page.getByLabel("Package manager", { exact: true })).toHaveValue("npm");
+    await expectDropdownValue(page.getByLabel("Package manager", { exact: true }), "npm");
     await expect(page.getByLabel("Setup timeout (seconds)", { exact: true })).toHaveValue("60");
     await expect(
       page
@@ -104,8 +108,13 @@ test.describe("Project sandbox environment", () => {
     await environment.removeSetup();
     await environment.reload();
     await environment.edit();
-    await expect(page.getByLabel("Environment setup", { exact: true })).toHaveValue("none");
-    await expect(page.getByLabel("GitHub repository", { exact: true })).not.toHaveValue("");
+    await expectDropdownValue(
+      page.getByLabel("Environment setup", { exact: true }),
+      "No setup commands",
+    );
+    await expect(page.getByLabel("GitHub repository", { exact: true })).not.toContainText(
+      "Choose a repository",
+    );
   });
 
   test("keeps the queued setup revision while a later run uses the saved replacement", async ({

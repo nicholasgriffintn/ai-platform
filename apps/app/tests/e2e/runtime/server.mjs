@@ -114,13 +114,13 @@ export class MockAi extends WorkerEntrypoint {
   }
 
 	async run(model, body) {
-    if (body?.messages?.some((message) => typeof message?.content === "string" && message.content.includes("Generate Strudel code for: Release drum loop"))) {
+    if (JSON.stringify(body).includes("Generate Strudel code for: Release drum loop")) {
       return { response: 'sound("bd sd bd sd")' };
     }
-		if (body?.messages?.some((message) => typeof message?.content === "string" && message.content.startsWith("Read the document and describe it as JSON"))) {
+		if (body?.response_format?.json_schema?.name === "document_metadata" || JSON.stringify(body).includes("Read the document and describe it as JSON")) {
 		  return { response: JSON.stringify({ summary: "Release document summary", tags: ["release"], keyTopics: ["Launch"], contentType: "text", sentiment: "neutral" }) };
 		}
-		if (body?.messages?.some((message) => typeof message?.content === "string" && message.content.startsWith("Rewrite the document you are given"))) {
+		if (JSON.stringify(body).includes("Rewrite the document you are given")) {
 		  return { response: "# Rewritten release brief" };
 		}
 		if (
@@ -146,6 +146,14 @@ export class MockAi extends WorkerEntrypoint {
 		if (String(model).includes("bge-large-en-v1.5")) {
 			return { data: [[0.25, 0.5, 0.75, 1]] };
 		}
+		if (String(model).includes("bge-reranker")) {
+			return {
+				response: (body.contexts ?? []).map((_, id) => ({
+					id,
+					score: id === 0 ? 0.1 : 0.9 - id * 0.01,
+				})),
+			};
+		}
 		if (String(model).includes("llava")) {
 			return { description: "E2E release validation sketch" };
 		}
@@ -158,7 +166,7 @@ export class MockAi extends WorkerEntrypoint {
 			]).buffer;
 		}
     const content = body?.messages?.at(-1)?.content;
-    const prompt = typeof content === "string" ? content : JSON.stringify(content ?? "");
+    const prompt = typeof body?.prompt === "string" ? body.prompt : typeof content === "string" ? content : JSON.stringify(content ?? "");
     const responseText = prompt.includes("You are a title generator") ? "Release validation chat" : "E2E response: " + prompt;
     if (body?.stream) {
       const chunks = [
@@ -248,6 +256,10 @@ export default {
 `;
 
 function extractPrompt(body) {
+  if (typeof body.prompt === "string") {
+    return body.prompt;
+  }
+
   const content = body.messages?.at(-1)?.content;
 
   if (typeof content === "string") {
@@ -338,6 +350,11 @@ function toolCallStreamingResponse(toolCall) {
  */
 const TOOL_CALL_TRIGGERS = [
   {
+    marker: "Search my release documents for canary",
+    name: "search_documents",
+    arguments: () => JSON.stringify({ query: "canary release", top_k: 2 }),
+  },
+  {
     marker: "Generate a playable release drum loop",
     name: "generate_pattern",
     arguments: () => JSON.stringify({ prompt: "Release drum loop", style: "drums", tempo: 120 }),
@@ -390,6 +407,7 @@ const TOOL_CALL_TRIGGERS = [
   {
     marker: "List my saved messages for the release check",
     name: "list_saved_messages",
+    activateThroughDiscovery: true,
     arguments: () => JSON.stringify({ limit: 10 }),
   },
   {
@@ -415,6 +433,7 @@ const TOOL_CALL_TRIGGERS = [
   {
     marker: "Convene a council on",
     name: "select_council_members",
+    activateThroughDiscovery: true,
     arguments: () =>
       JSON.stringify({
         question: "Which release validation approach is safest?",
@@ -520,6 +539,12 @@ const TOOL_CALL_TRIGGERS = [
         input: { type: "navigate", url },
       });
     },
+  },
+  {
+    marker: "Check the hosted computer for Example Domain",
+    name: "use_computer",
+    arguments: () =>
+      JSON.stringify({ operation: "check", condition: "The page title is Example Domain" }),
   },
 ];
 
@@ -686,6 +711,34 @@ function googleStreamingResponse(content) {
 async function mockComposioRequest(request, url) {
   const pathname = url.pathname.replace(/^\/api\/v3\.1/, "");
 
+  if (request.method === "GET" && pathname === "/triggers_types/AIRTABLE_RECORD_CREATED") {
+    return Response.json({ slug: "AIRTABLE_RECORD_CREATED", toolkit: { slug: "airtable" } });
+  }
+
+  if (request.method === "GET" && pathname === "/triggers_types") {
+    return Response.json({
+      items: [
+        {
+          slug: "AIRTABLE_RECORD_CREATED",
+          name: "Record created",
+          description: "An Airtable record was created",
+          type: "webhook",
+          toolkit: { slug: "airtable" },
+          config: {},
+        },
+      ],
+    });
+  }
+
+  if (
+    request.method === "POST" &&
+    pathname === "/trigger_instances/AIRTABLE_RECORD_CREATED/upsert"
+  ) {
+    const body = await request.json();
+
+    return Response.json({ trigger_id: `trigger_${body.connected_account_id}` });
+  }
+
   if (request.method === "GET" && pathname === "/connected_accounts") {
     const filters = [
       ["user_ids", "user_id"],
@@ -843,6 +896,93 @@ async function mockExternalRequest(request) {
 
   const url = new URL(request.url);
 
+  if (
+    url.hostname === "host.docker.internal" &&
+    url.port === String(apiPort) &&
+    url.pathname.startsWith("/apps/sandbox/credential-broker/")
+  ) {
+    return fetch(new Request(`${apiBaseUrl}${url.pathname}${url.search}`, request));
+  }
+
+  if (
+    request.method === "POST" &&
+    url.hostname === "api.typesafe.ai" &&
+    url.pathname === "/v1/systemone"
+  ) {
+    const body = await request.json();
+    const state = body.state ?? {};
+    const answers = Object.fromEntries(
+      Object.entries(body.questions ?? {}).map(([id, question]) => {
+        if (question.type === "noul") {
+          const requestText =
+            typeof state.user_request === "string" ? state.user_request.toLowerCase() : "";
+          const probability =
+            id === "matches_request"
+              ? state.proposed_tool_call?.name === "save_skill" &&
+                /do not save|don't save|never save|without saving/.test(requestText)
+                ? 0.05
+                : 0.95
+              : id === "needs_attention"
+                ? String(state.message).includes("Flag this for owner review")
+                  ? 0.95
+                  : 0.05
+                : id === "expands_scope" || id === "needs_clarification"
+                  ? 0.05
+                  : id === "matches_condition"
+                    ? String(state.event).includes('"priority":"high"')
+                      ? 0.95
+                      : 0.05
+                    : id === "needs_reply"
+                      ? String(state.message).includes("Flag this for owner review")
+                        ? 0.05
+                        : 0.95
+                      : id === "condition_met"
+                        ? 0.95
+                        : 0.05;
+
+          return [id, { type: "noul", noul: probability }];
+        }
+
+        if (question.type === "choice") {
+          const criteria = Object.keys(question.criteria ?? {});
+
+          return [
+            id,
+            {
+              type: "choice",
+              choice: criteria[0],
+              probabilities: Object.fromEntries(
+                criteria.map((option, index) => [option, index === 0 ? 1 : 0]),
+              ),
+              confidence: 1,
+            },
+          ];
+        }
+
+        const criteria = question.criteria ?? [];
+
+        return [
+          id,
+          {
+            type: "score",
+            score: 0,
+            legend: Object.fromEntries(criteria.map((level, index) => [String(index), level])),
+            probabilities: Object.fromEntries(
+              criteria.map((_, index) => [String(index), index === 0 ? 1 : 0]),
+            ),
+            confidence: 1,
+          },
+        ];
+      }),
+    );
+
+    return Response.json({
+      model: body.model,
+      answers,
+      usage: { input_tokens: 16, output_tokens: 8 },
+    });
+  }
+
   if (url.hostname === "backend.composio.dev") {
     return mockComposioRequest(request, url);
   }
@@ -917,36 +1057,7 @@ async function mockExternalRequest(request) {
   }
 
   const body = await request.json();
-
-  if (
-    body?.messages?.some(
-      (message) =>
-        typeof message?.content === "string" &&
-        message.content.startsWith("Read the document and describe it as JSON"),
-    )
-  ) {
-    return Response.json(
-      openAiResponse(
-        JSON.stringify({
-          summary: "Release document summary",
-          tags: ["release"],
-          keyTopics: ["Launch"],
-          contentType: "text",
-          sentiment: "neutral",
-        }),
-      ),
-    );
-  }
-
-  if (
-    body?.messages?.some(
-      (message) =>
-        typeof message?.content === "string" &&
-        message.content.startsWith("Rewrite the document you are given"),
-    )
-  ) {
-    return Response.json(openAiResponse("# Rewritten release brief"));
-  }
+  const requestText = JSON.stringify(body);
 
   if (
     body?.response_format?.json_schema?.name === "prompt_requirements" ||
@@ -1052,8 +1163,14 @@ async function mockExternalRequest(request) {
 
   const prompt = extractPrompt(body);
 
-  if (prompt.includes("Generate Strudel code for: Release drum loop")) {
-    return Response.json(openAiResponse('sound("bd sd bd sd")'));
+  if (
+    body.stream &&
+    prompt.includes("The active goal is not satisfied yet") &&
+    JSON.stringify(body).includes(
+      "Make the release checks pass without changing public API behaviour",
+    )
+  ) {
+    return streamingResponse("E2E response: goal lifecycle in progress", " and continued", 12_000);
   }
 
   if (prompt.includes("Trigger an error")) {
@@ -1074,13 +1191,26 @@ async function mockExternalRequest(request) {
 
   const content = taskResponse
     ? taskResponse.content
-    : JSON.stringify(body.messages).includes("Corrected child continuity note E2E")
-      ? "E2E delegation used the corrected child continuity note."
-      : prompt.includes("Polychat sandbox E2E")
-        ? "Update README.md, then validate the change with:\n```sh\nnode verify.cjs\n```"
-        : prompt.includes("You are a title generator")
-          ? "Release validation chat"
-          : `E2E response: ${prompt}`;
+    : body?.response_format?.json_schema?.name === "document_metadata" ||
+        requestText.includes("Read the document and describe it as JSON")
+      ? JSON.stringify({
+          summary: "Release document summary",
+          tags: ["release"],
+          keyTopics: ["Launch"],
+          contentType: "text",
+          sentiment: "neutral",
+        })
+      : requestText.includes("Rewrite the document you are given")
+        ? "# Rewritten release brief"
+        : requestText.includes("Generate Strudel code for: Release drum loop")
+          ? 'sound("bd sd bd sd")'
+          : JSON.stringify(body.messages ?? []).includes("Corrected child continuity note E2E")
+            ? "E2E delegation used the corrected child continuity note."
+            : prompt.includes("Polychat sandbox E2E")
+              ? "Update README.md, then validate the change with:\n```sh\nnode verify.cjs\n```"
+              : prompt.includes("You are a title generator")
+                ? "Release validation chat"
+                : `E2E response: ${prompt}`;
 
   if (url.pathname.includes("v1beta/models/")) {
     return url.pathname.includes("streamGenerateContent")
@@ -1172,6 +1302,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
 		import api, { MachineRunCoordinator, ConversationCoordinator, SandboxRunCoordinator, UserSyncCoordinator } from "./api.js";
 
 		export { MachineRunCoordinator, ConversationCoordinator, SandboxRunCoordinator, UserSyncCoordinator };
+		const vectors = new Map();
 
 	function withExternalBindingShape(env) {
 			const ai = env.AI;
@@ -1189,12 +1320,19 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
 					})),
 				},
 				VECTOR_DB: {
-					deleteByIds: async () => undefined,
-					query: async () => ({
-						count: 1,
-						matches: [{ id: "e2e-vector-match", metadata: { type: "source" }, score: 0.99 }],
-					}),
-					upsert: async (vectors) => ({ count: vectors.length, ids: vectors.map(({ id }) => id) }),
+					deleteByIds: async (ids) => { for (const id of ids) vectors.delete(id); },
+					query: async (_values, options) => {
+						const matches = [...vectors.values()]
+							.filter((vector) => vector.namespace === options.namespace)
+							.filter((vector) => Object.entries(options.filter ?? {}).every(([key, value]) => vector.metadata?.[key] === value))
+							.slice(0, options.topK)
+							.map((vector, index) => ({ id: vector.id, metadata: vector.metadata, score: 0.99 - index * 0.01 }));
+						return { count: matches.length, matches };
+					},
+					upsert: async (entries) => {
+						for (const entry of entries) vectors.set(entry.id, entry);
+						return { count: entries.length, ids: entries.map(({ id }) => id) };
+					},
 				},
 			};
 		}
@@ -1265,6 +1403,10 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
           SANDBOX_MAX_RUN_STARTS_PER_MINUTE: "1000",
           COMPOSIO_USER_NAMESPACE: "e2e",
           COMPOSIO_API_KEY: "e2e-composio-api-key",
+          COMPOSIO_WEBHOOK_SECRET: "e2e-composio-webhook-secret",
+          TELEGRAM_WEBHOOK_SECRET: "e2e-telegram-webhook-secret",
+          TELEGRAM_BOT_TOKEN: "e2e-telegram-bot-token",
+          EMBEDDING_SCOPE_SECRET: "e2e-embedding-scope-secret-32-characters",
           ENV: "development",
           GROQ_API_KEY: "e2e-groq-key",
           GOOGLE_STUDIO_API_KEY: "e2e-google-key",
@@ -1281,6 +1423,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
           REPLICATE_API_TOKEN: "e2e-replicate-token",
           SES_EMAIL_FROM: "e2e@polychat.invalid",
           STRIPE_SECRET_KEY: stripeSecretKey,
+          TYPESAFE_API_KEY: "e2e-typesafe-key",
           TRAINING_WORKER_TOKEN: "polychat-e2e-training-worker-token",
         },
         d1Databases: { DB: "polychat-e2e" },

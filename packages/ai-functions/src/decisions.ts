@@ -5,6 +5,7 @@ import type {
   DecisionResponse,
   DecisionState,
 } from "@ngriffin_uk/polychat-schemas";
+import { decisionAnswersMatchQuestions } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { AiRequestScope } from "./types.js";
@@ -63,13 +64,25 @@ export function createDecisionFunctions(runtime: ProviderRuntime) {
       conversationId: request.conversationId,
     });
 
-    return response as DecideResult<TQuestions>;
+    const answers = response.answers;
+
+    if (!decisionAnswersMatchQuestions(request.questions, answers)) {
+      throw new AssistantError(
+        "The decision provider returned answers that do not match the requested questions",
+        ErrorType.PROVIDER_ERROR,
+      );
+    }
+
+    return {
+      provider: response.provider,
+      model: response.model,
+      usage: response.usage,
+      answers,
+    };
   };
 
   return {
     resolveDecisionTarget,
-    canDecide: async (scope: DecisionScope): Promise<boolean> =>
-      (await resolveDecisionTarget(scope)) !== null,
     decide: async <TQuestions extends DecisionQuestions>(
       request: DecideRequest<TQuestions>,
     ): Promise<DecideResult<TQuestions>> => {

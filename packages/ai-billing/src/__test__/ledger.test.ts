@@ -90,6 +90,7 @@ describe("buildUsageEventRow", () => {
 
     expect(row.cost_micros).toBe(0);
     expect(row.credit_micros).toBe(0);
+    expect(row.billable).toBe(false);
     expect(row.estimated).toBe(true);
   });
 

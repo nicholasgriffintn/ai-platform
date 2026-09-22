@@ -11,6 +11,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { notifyMobileProjectRun } from "~/modules/mobile-push/application";
+import { publishProjectEvent } from "~/modules/sync/application/conversation-events";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import {
@@ -263,6 +264,13 @@ export async function requestSandboxRunInstruction(params: {
         serviceAction: instruction.serviceAction,
       },
     });
+
+    if (runRecord.projectId) {
+      void publishProjectEvent({ env: context.env }, runRecord.projectId, "workbench_run.changed", {
+        conversationId: runRecord.conversationId,
+        activityId: runRecord.id,
+      });
+    }
 
     if (instruction.kind === "approval_request") {
       await context.repositories.activities.updateActivity(runRecord.id, { status: "waiting" });

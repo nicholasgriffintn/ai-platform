@@ -83,6 +83,7 @@ export function priceUsageDraft(
 
   const byok = draft.byok === true;
   const exemptFromCredits = byok && BYOK_EXEMPT_SOURCES.has(draft.source);
+  const billable = !exemptFromCredits && !priced.estimated;
   const costMicros = Math.round(priced.costMicros);
 
   return {
@@ -91,10 +92,10 @@ export function priceUsageDraft(
     rateVersion: priced.rateVersion,
     unitCostMicros: priced.unitCostMicros,
     costMicros,
-    creditMicros: exemptFromCredits
-      ? 0
-      : creditMicrosFromCostMicros(costMicros, draft.margin ?? DEFAULT_MARGIN),
-    billable: !exemptFromCredits,
+    creditMicros: billable
+      ? creditMicrosFromCostMicros(costMicros, draft.margin ?? DEFAULT_MARGIN)
+      : 0,
+    billable,
     byok,
     estimated: priced.estimated,
   };

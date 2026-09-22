@@ -23,7 +23,7 @@ export function useCapabilityCatalog(projectId?: string, options: { enabled?: bo
     queryKey: capabilityCatalogQueryKey(projectId),
     queryFn: () => fetchCapabilityCatalog(projectId),
     enabled: (options.enabled ?? true) && isAuthenticated && !isAuthenticationLoading,
-    staleTime: CATALOG_STALE_TIME,
+    staleTime: 0,
     gcTime: CATALOG_GC_TIME,
   });
 }

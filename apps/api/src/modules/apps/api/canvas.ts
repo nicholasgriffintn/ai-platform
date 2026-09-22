@@ -8,7 +8,6 @@ import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { requirePlan } from "~/middleware/requirePlan";
 import { generateCanvasBatch } from "~/modules/apps/application/canvas/generate";
 import { getCanvasGenerationDetails } from "~/modules/apps/application/canvas/get-generation";
 import { listCanvasGenerations } from "~/modules/apps/application/canvas/list-generations";
@@ -61,7 +60,6 @@ addRoute(app, "post", "/generate", {
   description: "Queue multi-model image/video generations using a standard Canvas payload",
   auth: true,
   bodySchema: generateCanvasSchema,
-  middleware: [requirePlan("pro")],
   responses: {
     200: { description: "Generation queue results", schema: z.any() },
   },

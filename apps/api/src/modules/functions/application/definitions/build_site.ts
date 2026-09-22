@@ -27,5 +27,10 @@ export const build_site: FunctionToolDescriptor = {
     "Build a website, landing page, dashboard, form or UI component from a brief and show it inline as a working preview the user can open in Sites to refine, export or ship. Use it when someone asks for a site, a page, a screen or a mockup rather than a description of one. Pass siteId to change a site this conversation already built.",
   type: "normal",
   permissions: ["reasoning", "write"],
+  intentEvidence: (input) => ({
+    operation: input.siteId ? "update_site" : "create_site",
+    brief: input.brief,
+    siteId: input.siteId,
+  }),
   inputSchema: buildSiteInputSchema,
 };

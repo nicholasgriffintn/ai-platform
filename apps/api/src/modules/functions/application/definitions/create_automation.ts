@@ -12,4 +12,11 @@ export const create_automation: FunctionToolDescriptor = {
   type: "premium",
   permissions: ["write"],
   inputSchema: createAutomationInputSchema,
+  intentEvidence: (input) => ({
+    operation: "create_automation",
+    schedule: input.cronExpression,
+    notificationChannel: input.notificationChannel ?? "none",
+    hasNotificationTarget: Boolean(input.notificationTarget),
+    scope: input.projectId ? "project" : "personal",
+  }),
 };

@@ -52,6 +52,7 @@ export interface ToolDefinition<
   normaliseInput?: (input: unknown) => unknown;
   maxIdenticalCalls?: number;
   companionTools?: readonly string[];
+  intentEvidence?: (input: TInput) => unknown;
 }
 
 export type ToolDescriptor<

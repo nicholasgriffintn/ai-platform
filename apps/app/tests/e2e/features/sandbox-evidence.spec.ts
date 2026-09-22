@@ -86,7 +86,10 @@ test.describe("Sandbox run evidence", () => {
       await page.keyboard.press("Enter");
       await expect(context).not.toHaveAttribute("open", "");
       await page.setViewportSize({ width: 390, height: 844 });
-      await workbench.mobileTrigger.click();
+      if (!(await workbench.mobileDialog.isVisible())) {
+        await workbench.mobileTrigger.click();
+      }
+
       await expect(workbench.mobileDialog).toBeVisible();
       await workbench.paneTab("Changes").click();
       await workbench.changedFileSearch.fill("schema");

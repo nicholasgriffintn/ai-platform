@@ -2,12 +2,65 @@ import {
   findModelConfigByMatchingModel,
   getModelConfigById,
   getModels,
+  getModelsByOutputModality,
   resolveDefaultChatModel,
 } from "@ngriffin_uk/polychat-ai-models";
+import {
+  getSystemModelLineup,
+  modelHasOutputModality,
+  type ModelConfig,
+  type ModelConfigItem,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type { ProviderModelResolver } from "./host.js";
+import type { ProviderModelResolver, RerankingModelSelection } from "./host.js";
 import { isProviderPlatformEnabled } from "./platform-credentials.js";
+
+export function isRerankingModelRuntimeAvailable(
+  model: Pick<ModelConfigItem, "provider">,
+  env: Record<string, unknown>,
+): boolean {
+  if (["workers", "workers-ai"].includes(model.provider)) {
+    return Boolean(env.AI);
+  }
+
+  return isProviderPlatformEnabled(model.provider, env);
+}
+
+export function selectRerankingModel(
+  models: ModelConfig,
+  env: Record<string, unknown>,
+  selection: RerankingModelSelection = {},
+): { model: string; provider: string } | null {
+  const availableModels = Object.entries(models).filter(
+    ([, model]) =>
+      (!selection.provider || model.provider === selection.provider) &&
+      modelHasOutputModality(model, "reranking") &&
+      isRerankingModelRuntimeAvailable(model, env),
+  );
+
+  if (selection.model) {
+    const selected = availableModels.find(
+      ([id, model]) => id === selection.model || model.matchingModel === selection.model,
+    );
+
+    return selected ? { model: selected[1].matchingModel, provider: selected[1].provider } : null;
+  }
+
+  for (const candidate of getSystemModelLineup("reranking").candidates) {
+    const match = availableModels.find(
+      ([id, model]) =>
+        model.provider === candidate.provider &&
+        (id === candidate.model || model.matchingModel === candidate.model),
+    );
+
+    if (match) {
+      return { model: match[1].matchingModel, provider: match[1].provider };
+    }
+  }
+
+  return null;
+}
 
 export function createCatalogueModelResolver(): ProviderModelResolver {
   const getModelConfig: ProviderModelResolver["getModelConfig"] = async (model, _env, provider) => {
@@ -80,6 +133,8 @@ export function createCatalogueModelResolver(): ProviderModelResolver {
 
       return { model: config.matchingModel, provider: config.provider };
     },
+    resolveRerankingModel: async (env, _user, selection) =>
+      selectRerankingModel(getModelsByOutputModality("reranking"), env, selection),
     getAuxiliarySpeechModel: async () => {
       const config = getModelConfigById("whisper");
 

@@ -90,6 +90,7 @@ export const organise_conversation: FunctionToolDescriptor = {
     "Archive, restore, pin, unpin, mark read or unread, snooze, clear a snooze or rename one conversation the user can access. Confirm before acting on a conversation the user did not name explicitly.",
   type: "normal",
   permissions: ["write"],
+  intentEvidence: (input) => ({ operation: input.action, conversationId: input.conversationId }),
   inputSchema: organiseConversationInputSchema,
 };
 
@@ -168,6 +169,14 @@ export const start_conversation: FunctionToolDescriptor = {
     "Start a new conversation for the user, personally or in a project they belong to, and take them to it. Put the first message in the composer rather than sending it, so the user stays in control of what gets asked.",
   type: "normal",
   permissions: ["write"],
+  intentEvidence: (input) => ({
+    operation: "start_conversation",
+    scope: input.scope,
+    projectId: input.projectId,
+    title: input.title,
+    openingMessage: input.openingMessage,
+    teammateId: input.teammateId,
+  }),
   inputSchema: startConversationInputSchema,
 };
 
@@ -177,6 +186,13 @@ export const hire_teammate: FunctionToolDescriptor = {
     "Hire a teammate from a built-in role, from a description of the job, or both. Confirm the role and the name with the user before calling this; it creates a real teammate they will see in their library.",
   type: "normal",
   permissions: ["write"],
+  intentEvidence: (input) => ({
+    operation: "hire_teammate",
+    roleSlug: input.roleSlug,
+    jobDescription: input.jobDescription,
+    name: input.name,
+    workspaceId: input.workspaceId,
+  }),
   inputSchema: hireTeammateInputSchema,
 };
 

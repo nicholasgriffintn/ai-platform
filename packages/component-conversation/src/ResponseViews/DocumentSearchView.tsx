@@ -8,7 +8,12 @@ interface RetrievedDocument {
   type?: string;
   title?: string;
   score?: number;
-  rankingMethod?: "provider-score" | "reciprocal-rank-fusion";
+  rankingMethod?: "provider-score" | "reciprocal-rank-fusion" | "model-rerank";
+  reranking?: {
+    provider: string;
+    model: string;
+    score: number;
+  };
   content: string;
 }
 
@@ -22,6 +27,8 @@ const readDocument = (value: unknown): RetrievedDocument | null => {
     return null;
   }
 
+  const reranking = isRecord(value.reranking) ? value.reranking : undefined;
+
   return {
     id: value.id,
     content: value.content,
@@ -31,8 +38,22 @@ const readDocument = (value: unknown): RetrievedDocument | null => {
     score:
       typeof value.score === "number" && Number.isFinite(value.score) ? value.score : undefined,
     rankingMethod:
-      value.rankingMethod === "provider-score" || value.rankingMethod === "reciprocal-rank-fusion"
+      value.rankingMethod === "provider-score" ||
+      value.rankingMethod === "reciprocal-rank-fusion" ||
+      value.rankingMethod === "model-rerank"
         ? value.rankingMethod
+        : undefined,
+    reranking:
+      reranking &&
+      typeof reranking.provider === "string" &&
+      typeof reranking.model === "string" &&
+      typeof reranking.score === "number" &&
+      Number.isFinite(reranking.score)
+        ? {
+            provider: reranking.provider,
+            model: reranking.model,
+            score: reranking.score,
+          }
         : undefined,
   };
 };
@@ -82,10 +103,21 @@ export function DocumentSearchView({ data }: { data: unknown }) {
               </span>
               {document.type && <span>{document.type}</span>}
               {typeof document.score === "number" &&
-                document.rankingMethod !== "reciprocal-rank-fusion" && (
+                document.rankingMethod === "provider-score" && (
                   <span className="tabular-nums">{Math.round(document.score * 100)}% match</span>
                 )}
               {document.rankingMethod === "reciprocal-rank-fusion" && <span>combined ranking</span>}
+              {document.rankingMethod === "model-rerank" && (
+                <span
+                  title={
+                    document.reranking
+                      ? `${document.reranking.provider} · ${document.reranking.model}`
+                      : undefined
+                  }
+                >
+                  model-ranked
+                </span>
+              )}
             </div>
             <MemoizedMarkdown className="max-w-none text-sm">{document.content}</MemoizedMarkdown>
           </li>

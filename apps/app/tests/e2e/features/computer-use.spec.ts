@@ -39,5 +39,10 @@ test.describe("Hosted computer use", () => {
     await page.getByRole("button", { name: "Watch live" }).click();
     await expect(page.locator('iframe[title="Hosted computer live view"]')).toBeVisible();
     await expect(page.getByRole("button", { name: "Stop watching" })).toBeVisible();
+
+    await homePage.sendMessage("Check the hosted computer for Example Domain");
+    await expect(
+      page.getByText("Checked condition: met — The page title is Example Domain").last(),
+    ).toBeVisible();
   });
 });

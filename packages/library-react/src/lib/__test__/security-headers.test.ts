@@ -60,16 +60,17 @@ describe("applySecurityHeaders", () => {
   it("keeps the opener attached when a connector popup returns to the callback", () => {
     const headers = applySecurityHeaders(
       new Headers(),
-      "https://polychat.app/profile?tab=providers&type=connector&connector=airtable&connected=1",
+      "https://polychat.app/chat/plugins?connector=airtable&connected=1",
     );
 
     expect(headers.get("Cross-Origin-Opener-Policy")).toBe("unsafe-none");
   });
 
-  it("does not relax the opener policy for profile routes that are not the callback", () => {
+  it("does not relax the opener policy outside the connector callback", () => {
     for (const url of [
       "https://polychat.app/profile?tab=providers",
       "https://polychat.app/profile?connected=1",
+      "https://polychat.app/chat/plugins?connector=airtable",
       "https://polychat.app/chat?connector=airtable&connected=1",
     ]) {
       expect(applySecurityHeaders(new Headers(), url).get("Cross-Origin-Opener-Policy")).toBe(

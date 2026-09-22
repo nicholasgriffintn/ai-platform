@@ -4,6 +4,7 @@ import {
   DOCUMENT_OUTPUT_KIND,
   outputSchema,
   sourceListResponseSchema,
+  teammateResponseSchema,
   teammateListResponseSchema,
   authoredSkillHistoryResponseSchema,
   authoredSkillVersionedDocumentSchema,
@@ -33,6 +34,22 @@ const BROWSER_REQUEST_HEADERS = { origin: E2E_APP_BASE_URL };
 
 export class PolychatApi {
   constructor(private readonly request: APIRequestContext) {}
+
+  async createToolTeammate(name: string, enabledTools: string[]) {
+    const response = await this.request.post(`${API_BASE_URL}/teammates`, {
+      headers: BROWSER_REQUEST_HEADERS,
+      data: {
+        name,
+        kind: "colleague",
+        model: "groq-openai-gpt-oss-120b",
+        enabled_tools: enabledTools,
+      },
+    });
+
+    await requireSuccessfulResponse(response, "Create tool teammate");
+
+    return teammateResponseSchema.parse(await response.json());
+  }
 
   async getConversation(completionId: string) {
     const response = await this.request.get(`${API_BASE_URL}/chat/completions/${completionId}`, {

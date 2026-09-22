@@ -5,7 +5,8 @@ const mocks = vi.hoisted(() => ({
   resolveToolRepeatLimit: vi.fn(),
 }));
 
-vi.mock("~/modules/functions/application", () => ({
+vi.mock("~/modules/functions/application", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("~/modules/functions/application")>()),
   handleFunctions: mocks.handleFunctions,
   resolveToolRepeatLimit: mocks.resolveToolRepeatLimit,
 }));
@@ -16,7 +17,11 @@ import type { ConversationManager } from "~/modules/conversations/application/ma
 import type { IRequest } from "~/types";
 
 function toolCall(name: string, args: Record<string, unknown>, id: string) {
-  return { id, type: "function", function: { name, arguments: JSON.stringify(args) } };
+  return {
+    id,
+    type: "function",
+    function: { name, arguments: JSON.stringify(args) },
+  };
 }
 
 function createConversationManager() {
@@ -27,7 +32,12 @@ function createRequest() {
   return {
     env: { AI: {} },
     mode: "chat",
-    request: { model: "test-model", platform: "api" },
+    user: { id: 1, plan_id: "pro" },
+    request: {
+      model: "test-model",
+      platform: "api",
+      approved_tools: ["use_recipe_connector"],
+    },
   } as unknown as IRequest;
 }
 
@@ -47,7 +57,10 @@ async function run(
 describe("repeated tool call guard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.handleFunctions.mockResolvedValue({ status: "success", content: "result" });
+    mocks.handleFunctions.mockResolvedValue({
+      status: "success",
+      content: "result",
+    });
     mocks.resolveToolRepeatLimit.mockReturnValue(undefined);
   });
 
@@ -69,10 +82,24 @@ describe("repeated tool call guard", () => {
     mocks.resolveToolRepeatLimit.mockReturnValue(1);
     const ledger = createToolCallLedger();
 
-    mocks.handleFunctions.mockResolvedValueOnce({ status: "error", content: "not ready yet" });
+    mocks.handleFunctions.mockResolvedValueOnce({
+      status: "error",
+      content: "not ready yet",
+    });
 
-    const [first] = await run([toolCall("complete_goal", { summary: "done" }, "call-1")], ledger);
-    const [second] = await run([toolCall("complete_goal", { summary: "done" }, "call-2")], ledger);
+    const args = {
+      summary: "done",
+      evidence: [
+        {
+          claim: "done",
+          route: "test",
+          evidence_surface: "result",
+          status: "confirmed",
+        },
+      ],
+    };
+    const [first] = await run([toolCall("complete_goal", args, "call-1")], ledger);
+    const [second] = await run([toolCall("complete_goal", args, "call-2")], ledger);
 
     expect(first.status).toBe("error");
     expect(second.status).toBe("success");
@@ -89,11 +116,23 @@ describe("repeated tool call guard", () => {
     const ledger = createToolCallLedger();
 
     const [first] = await run(
-      [toolCall("use_recipe_connector", { operation: "create_item" }, "call-1")],
+      [
+        toolCall(
+          "use_recipe_connector",
+          { provider: "hindsight", operation: "create_item" },
+          "call-1",
+        ),
+      ],
       ledger,
     );
     const [second] = await run(
-      [toolCall("use_recipe_connector", { operation: "create_item" }, "call-2")],
+      [
+        toolCall(
+          "use_recipe_connector",
+          { provider: "hindsight", operation: "create_item" },
+          "call-2",
+        ),
+      ],
       ledger,
     );
 
@@ -114,7 +153,13 @@ describe("repeated tool call guard", () => {
 
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       const [result] = await run(
-        [toolCall("use_recipe_connector", { operation: "set_item" }, `call-${attempt}`)],
+        [
+          toolCall(
+            "use_recipe_connector",
+            { provider: "hindsight", operation: "set_item" },
+            `call-${attempt}`,
+          ),
+        ],
         ledger,
       );
 
@@ -128,18 +173,12 @@ describe("repeated tool call guard", () => {
   it("spends the repeat budget on deterministic argument failures", async () => {
     mocks.resolveToolRepeatLimit.mockReturnValue(1);
     const ledger = createToolCallLedger();
-    const validationError = Object.assign(new Error("skill is required"), {
-      type: "PARAMS_ERROR",
-    });
-
-    mocks.handleFunctions.mockRejectedValueOnce(validationError);
-
     const [first] = await run([toolCall("load_skill", {}, "call-1")], ledger);
     const [second] = await run([toolCall("load_skill", {}, "call-2")], ledger);
 
     expect(first.status).toBe("error");
     expect(second.data.errorCode).toBe("REPEATED_TOOL_CALL");
-    expect(mocks.handleFunctions).toHaveBeenCalledTimes(1);
+    expect(mocks.handleFunctions).not.toHaveBeenCalled();
   });
 
   it("stops an identical call after an approval requirement cannot change within the run", async () => {
@@ -147,6 +186,7 @@ describe("repeated tool call guard", () => {
     const request = createRequest();
 
     request.mode = "build";
+    request.user = { id: 1, plan_id: "pro" } as IRequest["user"];
     request.request = {
       completion_id: "completion-1",
       input: "create the spec",
@@ -190,13 +230,6 @@ describe("repeated tool call guard", () => {
 
   it("corrects malformed artifact-shaped tool names as response markup", async () => {
     const ledger = createToolCallLedger();
-    const unknownToolError = Object.assign(new Error("unknown tool"), {
-      type: "PARAMS_ERROR",
-      context: { reason: "unknown_tool" },
-    });
-
-    mocks.handleFunctions.mockRejectedValueOnce(unknownToolError);
-
     const [result] = await run(
       [
         toolCall(
@@ -211,6 +244,7 @@ describe("repeated tool call guard", () => {
     expect(result.content).toContain("Artifacts are response markup, not tools");
     expect(result.content).toContain("<artifact ...>...</artifact>");
     expect(result.data.responseType).toBe("hidden");
+    expect(mocks.handleFunctions).not.toHaveBeenCalled();
   });
 
   it("still answers the model when it repeats a call, so the provider keeps a result per call", async () => {

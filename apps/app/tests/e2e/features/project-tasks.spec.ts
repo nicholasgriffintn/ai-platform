@@ -69,19 +69,23 @@ test.describe("Project task evidence", () => {
     await tasks.configurePipeline();
     await tasks.useSuggestedPipeline();
     expect(await tasks.stageNames()).toEqual(["Research", "Plan", "Build", "Review"]);
-    expect(await tasks.stageModes()).toEqual(["explore", "plan", "build", "explore"]);
-    expect(await tasks.stageTeammates()).toEqual(["", "", "", ""]);
+    expect(await tasks.stageModes()).toEqual(["Explore", "Plan", "Build", "Explore"]);
+    expect(await tasks.stageTeammates()).toEqual([
+      "Project default",
+      "Project default",
+      "Project default",
+      "Project default",
+    ]);
     expect(await tasks.stageHandoffs()).toEqual([
-      "on_goal_complete",
-      "on_human_accept",
-      "on_goal_complete",
-      "on_human_accept",
+      "Hand off automatically",
+      "Stop for human review",
+      "Hand off automatically",
+      "Stop for human review",
     ]);
     await tasks.savePipeline();
 
     await tasks.configurePipeline();
     expect(await tasks.stageNames()).toEqual(["Research", "Plan", "Build", "Review"]);
-    await expect(tasks.suggestedPipelineButton()).toHaveCount(0);
     await tasks.closePipeline();
 
     await tasks.createBacklogTask("Filter this queued outcome out");

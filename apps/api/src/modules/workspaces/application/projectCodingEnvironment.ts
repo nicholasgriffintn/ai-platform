@@ -24,6 +24,7 @@ export function resolveProjectCodingEnvironment(
     promptStrategy: project.coding_prompt_strategy,
     deliveryPolicy: resolveSandboxDeliveryPolicy(
       project.coding_delivery_policy ? safeParseJson(project.coding_delivery_policy) : null,
+      project.coding_should_commit === undefined ? undefined : project.coding_should_commit === 1,
     ),
     environmentSetup: project.coding_environment_setup
       ? safeParseJson(project.coding_environment_setup)

@@ -103,7 +103,7 @@ test.describe("Poly keeps its own conversation and tool authority", () => {
 
     await input.fill("Save the agreed release skill");
     await poly.getByRole("button", { name: /send message/i }).click();
-    await expect(poly).toContainText('Tool "save_skill" is not allowed in this conversation', {
+    await expect(poly).toContainText('Tool "save_skill" is not available', {
       timeout: 20_000,
     });
     expect(
