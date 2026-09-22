@@ -135,214 +135,213 @@ import family131 from "./families/mai.json" with { type: "json" };
 import family132 from "./families/mercury.json" with { type: "json" };
 import family133 from "./families/mimo.json" with { type: "json" };
 import family134 from "./families/mimo-v2.5.json" with { type: "json" };
-import family135 from "./families/mimo-v2.5-free.json" with { type: "json" };
-import family136 from "./families/mimo-v2.5-pro.json" with { type: "json" };
-import family137 from "./families/minimax.json" with { type: "json" };
-import family138 from "./families/minimax-m2.7.json" with { type: "json" };
-import family139 from "./families/minimax-m3.json" with { type: "json" };
-import family140 from "./families/minimax-music.json" with { type: "json" };
-import family141 from "./families/ministral.json" with { type: "json" };
-import family142 from "./families/mistral.json" with { type: "json" };
-import family143 from "./families/mistral-embed.json" with { type: "json" };
-import family144 from "./families/mistral-large.json" with { type: "json" };
-import family145 from "./families/mistral-medium.json" with { type: "json" };
-import family146 from "./families/mistral-nemo.json" with { type: "json" };
-import family147 from "./families/mistral-small.json" with { type: "json" };
-import family148 from "./families/mistral~2Fcodestral-embed.json" with { type: "json" };
-import family149 from "./families/mistral~2Fministral-14b-latest.json" with { type: "json" };
-import family150 from "./families/mistral~2Fvoxtral-mini-transcribe-realtime-2602.json" with { type: "json" };
-import family151 from "./families/mixtral.json" with { type: "json" };
-import family152 from "./families/model-router.json" with { type: "json" };
-import family153 from "./families/morph.json" with { type: "json" };
-import family154 from "./families/muse.json" with { type: "json" };
-import family155 from "./families/muse-free.json" with { type: "json" };
-import family156 from "./families/nemotron.json" with { type: "json" };
-import family157 from "./families/nemotron-free.json" with { type: "json" };
-import family158 from "./families/north.json" with { type: "json" };
-import family159 from "./families/nousresearch.json" with { type: "json" };
-import family160 from "./families/nova.json" with { type: "json" };
-import family161 from "./families/nova-lite.json" with { type: "json" };
-import family162 from "./families/nova-micro.json" with { type: "json" };
-import family163 from "./families/nova-pro.json" with { type: "json" };
-import family164 from "./families/o.json" with { type: "json" };
-import family165 from "./families/o-mini.json" with { type: "json" };
-import family166 from "./families/o-pro.json" with { type: "json" };
-import family167 from "./families/olmo.json" with { type: "json" };
-import family168 from "./families/openai~2Fcodex-mini-latest.json" with { type: "json" };
-import family169 from "./families/opencode-go~2Funion-alpha.json" with { type: "json" };
-import family170 from "./families/opencode~2Fjev-latest.json" with { type: "json" };
-import family171 from "./families/opencode~2Funion-alpha.json" with { type: "json" };
-import family172 from "./families/openrouter~2Faion-labs~2Faion-1.0.json" with { type: "json" };
-import family173 from "./families/openrouter~2Faion-labs~2Faion-1.0-mini.json" with { type: "json" };
-import family174 from "./families/openrouter~2Faion-labs~2Faion-2.0.json" with { type: "json" };
-import family175 from "./families/openrouter~2Faion-labs~2Faion-3.0.json" with { type: "json" };
-import family176 from "./families/openrouter~2Faion-labs~2Faion-3.0-mini.json" with { type: "json" };
-import family177 from "./families/openrouter~2Falibaba~2Ftongyi-deepresearch-30b-a3b.json" with { type: "json" };
-import family178 from "./families/openrouter~2Fanthracite-org~2Fmagnum-v4-72b.json" with { type: "json" };
-import family179 from "./families/openrouter~2Farcee-ai~2Fcoder-large.json" with { type: "json" };
-import family180 from "./families/openrouter~2Farcee-ai~2Fmaestro-reasoning.json" with { type: "json" };
-import family181 from "./families/openrouter~2Farcee-ai~2Fspotlight.json" with { type: "json" };
-import family182 from "./families/openrouter~2Farcee-ai~2Ftrinity-large-preview.json" with { type: "json" };
-import family183 from "./families/openrouter~2Farcee-ai~2Ftrinity-large-preview~3Afree.json" with { type: "json" };
-import family184 from "./families/openrouter~2Farcee-ai~2Ftrinity-large-thinking~3Afree.json" with { type: "json" };
-import family185 from "./families/openrouter~2Farcee-ai~2Ftrinity-mini~3Afree.json" with { type: "json" };
-import family186 from "./families/openrouter~2Farcee-ai~2Fvirtuoso-large.json" with { type: "json" };
-import family187 from "./families/openrouter~2Fbaidu~2Fcobuddy~3Afree.json" with { type: "json" };
-import family188 from "./families/openrouter~2Fbaidu~2Fernie-4.5-21b-a3b.json" with { type: "json" };
-import family189 from "./families/openrouter~2Fbaidu~2Fernie-4.5-21b-a3b-thinking.json" with { type: "json" };
-import family190 from "./families/openrouter~2Fbaidu~2Fernie-4.5-300b-a47b.json" with { type: "json" };
-import family191 from "./families/openrouter~2Fbaidu~2Fernie-4.5-vl-28b-a3b.json" with { type: "json" };
-import family192 from "./families/openrouter~2Fbaidu~2Fqianfan-ocr-fast.json" with { type: "json" };
-import family193 from "./families/openrouter~2Fbytedance~2Fui-tars-1.5-7b.json" with { type: "json" };
-import family194 from "./families/openrouter~2Fdots-studio~2Fdots-3-note-preview~3Afree.json" with { type: "json" };
-import family195 from "./families/openrouter~2Fessentialai~2Frnj-1-instruct.json" with { type: "json" };
-import family196 from "./families/openrouter~2Ffeatherless~2Fqwerky-72b.json" with { type: "json" };
-import family197 from "./families/openrouter~2Fgryphe~2Fmythomax-l2-13b.json" with { type: "json" };
-import family198 from "./families/openrouter~2Finference-net~2Fschematron-v2-small.json" with { type: "json" };
-import family199 from "./families/openrouter~2Finference-net~2Fschematron-v2-turbo.json" with { type: "json" };
-import family200 from "./families/openrouter~2Finflection~2Finflection-3-pi.json" with { type: "json" };
-import family201 from "./families/openrouter~2Finflection~2Finflection-3-productivity.json" with { type: "json" };
-import family202 from "./families/openrouter~2Fkwaipilot~2Fkat-coder-pro~3Afree.json" with { type: "json" };
-import family203 from "./families/openrouter~2Fmicrosoft~2Fmai-ds-r1~3Afree.json" with { type: "json" };
-import family204 from "./families/openrouter~2Fmicrosoft~2Fwizardlm-2-8x22b.json" with { type: "json" };
-import family205 from "./families/openrouter~2Fnex-agi~2Fnex-n2-pro~3Afree.json" with { type: "json" };
-import family206 from "./families/openrouter~2Fopenrouter~2Fbodybuilder.json" with { type: "json" };
-import family207 from "./families/openrouter~2Fopenrouter~2Ffree.json" with { type: "json" };
-import family208 from "./families/openrouter~2Fopenrouter~2Ffusion.json" with { type: "json" };
-import family209 from "./families/openrouter~2Fopenrouter~2Fpareto-code.json" with { type: "json" };
-import family210 from "./families/openrouter~2Fopenrouter~2Fsherlock-dash-alpha.json" with { type: "json" };
-import family211 from "./families/openrouter~2Fopenrouter~2Fsherlock-think-alpha.json" with { type: "json" };
-import family212 from "./families/openrouter~2Fperceptron~2Fperceptron-mk1.json" with { type: "json" };
-import family213 from "./families/openrouter~2Fpoolside~2Flaguna-xs.2.json" with { type: "json" };
-import family214 from "./families/openrouter~2Fpoolside~2Flaguna-xs.2~3Afree.json" with { type: "json" };
-import family215 from "./families/openrouter~2Fprime-intellect~2Fintellect-3.json" with { type: "json" };
-import family216 from "./families/openrouter~2Fprism-ml~2Fternary-bonsai-2-27b.json" with { type: "json" };
-import family217 from "./families/openrouter~2Frelace~2Frelace-apply-3.json" with { type: "json" };
-import family218 from "./families/openrouter~2Frelace~2Frelace-search.json" with { type: "json" };
-import family219 from "./families/openrouter~2Fsao10k~2Fl3-euryale-70b.json" with { type: "json" };
-import family220 from "./families/openrouter~2Fsarvamai~2Fsarvam-m~3Afree.json" with { type: "json" };
-import family221 from "./families/openrouter~2Fsourceful~2Friverflow-v2-fast-preview.json" with { type: "json" };
-import family222 from "./families/openrouter~2Fsourceful~2Friverflow-v2-max-preview.json" with { type: "json" };
-import family223 from "./families/openrouter~2Fsourceful~2Friverflow-v2-standard-preview.json" with { type: "json" };
-import family224 from "./families/openrouter~2Fstepfun~2Fstep-3.5-flash.json" with { type: "json" };
-import family225 from "./families/openrouter~2Fstepfun~2Fstep-3.5-flash~3Afree.json" with { type: "json" };
-import family226 from "./families/openrouter~2Fstepfun~2Fstep-3.7-flash.json" with { type: "json" };
-import family227 from "./families/openrouter~2Fswitchpoint~2Frouter.json" with { type: "json" };
-import family228 from "./families/openrouter~2Fthedrummer~2Fcydonia-24b-v4.1.json" with { type: "json" };
-import family229 from "./families/openrouter~2Fthedrummer~2Frocinante-12b.json" with { type: "json" };
-import family230 from "./families/openrouter~2Fthedrummer~2Fskyfall-36b-v2.json" with { type: "json" };
-import family231 from "./families/openrouter~2Fthedrummer~2Funslopnemo-12b.json" with { type: "json" };
-import family232 from "./families/openrouter~2Ftngtech~2Ftng-r1t-chimera~3Afree.json" with { type: "json" };
-import family233 from "./families/openrouter~2Funbiased~2Fpareto.json" with { type: "json" };
-import family234 from "./families/openrouter~2Fundi95~2Fremm-slerp-l2-13b.json" with { type: "json" };
-import family235 from "./families/openrouter~2Fxiaomi~2Fmimo-v2-flash.json" with { type: "json" };
-import family236 from "./families/openrouter~2Fxiaomi~2Fmimo-v2-omni.json" with { type: "json" };
-import family237 from "./families/openrouter~2Fxiaomi~2Fmimo-v2-pro.json" with { type: "json" };
-import family238 from "./families/osmosis.json" with { type: "json" };
-import family239 from "./families/palmyra.json" with { type: "json" };
-import family240 from "./families/parallel~2Fspeed.json" with { type: "json" };
-import family241 from "./families/perplexity-ai~2Fr1-1776.json" with { type: "json" };
-import family242 from "./families/perplexity-ai~2Fsonar-deep-research.json" with { type: "json" };
-import family243 from "./families/perplexity-ai~2Fsonar-reasoning.json" with { type: "json" };
-import family244 from "./families/phi.json" with { type: "json" };
-import family245 from "./families/pixtral.json" with { type: "json" };
-import family246 from "./families/qvq.json" with { type: "json" };
-import family247 from "./families/qwen.json" with { type: "json" };
-import family248 from "./families/qwen3.5.json" with { type: "json" };
-import family249 from "./families/qwen3.6.json" with { type: "json" };
-import family250 from "./families/qwen3.7-max.json" with { type: "json" };
-import family251 from "./families/qwen3.7-plus.json" with { type: "json" };
-import family252 from "./families/qwen3.8-max.json" with { type: "json" };
-import family253 from "./families/recraft.json" with { type: "json" };
-import family254 from "./families/rednote.json" with { type: "json" };
-import family255 from "./families/regolo-ai~2Fapertus-70b.json" with { type: "json" };
-import family256 from "./families/regolo-ai~2Fbrick-complexity-pro.json" with { type: "json" };
-import family257 from "./families/reka.json" with { type: "json" };
-import family258 from "./families/replicate~2F5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637.json" with { type: "json" };
-import family259 from "./families/replicate~2F671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb.json" with { type: "json" };
-import family260 from "./families/replicate~2F826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9.json" with { type: "json" };
-import family261 from "./families/replicate~2F847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405.json" with { type: "json" };
-import family262 from "./families/replicate~2Falibaba~2Fhappyhorse-1.0.json" with { type: "json" };
-import family263 from "./families/replicate~2Fbria~2Fremove-background.json" with { type: "json" };
-import family264 from "./families/replicate~2Fcbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f.json" with { type: "json" };
-import family265 from "./families/replicate~2Felevenlabs~2Fmusic.json" with { type: "json" };
-import family266 from "./families/replicate~2Fgoogle~2Fnano-banana.json" with { type: "json" };
-import family267 from "./families/replicate~2Fgoogle~2Fnano-banana-2.json" with { type: "json" };
-import family268 from "./families/replicate~2Fgoogle~2Fnano-banana-pro.json" with { type: "json" };
-import family269 from "./families/replicate~2Fnightmareai~2Freal-esrgan.json" with { type: "json" };
-import family270 from "./families/replicate~2Fprunaai~2Fp-video.json" with { type: "json" };
-import family271 from "./families/replicate~2Fresemble-ai~2Fchatterbox-turbo.json" with { type: "json" };
-import family272 from "./families/replicate~2Frunwayml~2Fgen-4.5.json" with { type: "json" };
-import family273 from "./families/replicate~2Fstability-ai~2Fstable-audio-2.5.json" with { type: "json" };
-import family274 from "./families/requesty~2Fleanstral-1-5.json" with { type: "json" };
-import family275 from "./families/requesty~2Fleanstral-1-5~40eu.json" with { type: "json" };
-import family276 from "./families/requesty~2Fstep-3.7-flash.json" with { type: "json" };
-import family277 from "./families/ring.json" with { type: "json" };
-import family278 from "./families/sakana-namazu.json" with { type: "json" };
-import family279 from "./families/seed.json" with { type: "json" };
-import family280 from "./families/solar.json" with { type: "json" };
-import family281 from "./families/solar-mini.json" with { type: "json" };
-import family282 from "./families/solar-pro.json" with { type: "json" };
-import family283 from "./families/sonar.json" with { type: "json" };
-import family284 from "./families/sonar-deep-research.json" with { type: "json" };
-import family285 from "./families/sonar-pro.json" with { type: "json" };
-import family286 from "./families/sonar-reasoning.json" with { type: "json" };
-import family287 from "./families/sora.json" with { type: "json" };
-import family288 from "./families/stable-diffusion.json" with { type: "json" };
-import family289 from "./families/step.json" with { type: "json" };
-import family290 from "./families/text-embedding.json" with { type: "json" };
-import family291 from "./families/the-grid-ai~2Fagent-max.json" with { type: "json" };
-import family292 from "./families/the-grid-ai~2Fagent-prime.json" with { type: "json" };
-import family293 from "./families/the-grid-ai~2Fagent-standard.json" with { type: "json" };
-import family294 from "./families/the-grid-ai~2Fcode-max.json" with { type: "json" };
-import family295 from "./families/the-grid-ai~2Fcode-prime.json" with { type: "json" };
-import family296 from "./families/the-grid-ai~2Fcode-standard.json" with { type: "json" };
-import family297 from "./families/the-grid-ai~2Ftext-max.json" with { type: "json" };
-import family298 from "./families/the-grid-ai~2Ftext-prime.json" with { type: "json" };
-import family299 from "./families/the-grid-ai~2Ftext-standard.json" with { type: "json" };
-import family300 from "./families/titan-embed.json" with { type: "json" };
-import family301 from "./families/together-ai~2Ftogethercomputer~2FRefuel-Llm-V2.json" with { type: "json" };
-import family302 from "./families/together-ai~2Ftogethercomputer~2FRefuel-Llm-V2-Small.json" with { type: "json" };
-import family303 from "./families/trinity.json" with { type: "json" };
-import family304 from "./families/trinity-mini.json" with { type: "json" };
-import family305 from "./families/typesafe~2Fjev.json" with { type: "json" };
-import family306 from "./families/unsloth.json" with { type: "json" };
-import family307 from "./families/v0.json" with { type: "json" };
-import family308 from "./families/veo.json" with { type: "json" };
-import family309 from "./families/vercel~2Finception~2Fmercury-edit-2.json" with { type: "json" };
-import family310 from "./families/vercel~2Finterfaze~2Finterfaze-beta.json" with { type: "json" };
-import family311 from "./families/vercel~2Fmixedbread~2Ftoast-1.json" with { type: "json" };
-import family312 from "./families/vercel~2Fopenai~2Fcodex-mini.json" with { type: "json" };
-import family313 from "./families/vercel~2Fperplexity~2Fpplx-embed-v1-4b.json" with { type: "json" };
-import family314 from "./families/vercel~2Fperplexity~2Fsonar-reasoning.json" with { type: "json" };
-import family315 from "./families/vercel~2Fprime-intellect~2Fintellect-3.json" with { type: "json" };
-import family316 from "./families/vercel~2Fquiverai~2Farrow-2.json" with { type: "json" };
-import family317 from "./families/vercel~2Fquiverai~2Farrow-2-telos.json" with { type: "json" };
-import family318 from "./families/vercel~2Fsakana~2Fnamazu.json" with { type: "json" };
-import family319 from "./families/vercel~2Ftypesafe-ai~2Fjev.json" with { type: "json" };
-import family320 from "./families/vercel~2Fvercel~2Fv0-1.0-md.json" with { type: "json" };
-import family321 from "./families/vercel~2Fvercel~2Fv0-1.5-md.json" with { type: "json" };
-import family322 from "./families/voxtral.json" with { type: "json" };
-import family323 from "./families/voyage.json" with { type: "json" };
-import family324 from "./families/whisper.json" with { type: "json" };
-import family325 from "./families/workers-ai~2F~40cf~2Fai4bharat~2Findictrans2-en-indic-1B.json" with { type: "json" };
-import family326 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-base-en-v1.5.json" with { type: "json" };
-import family327 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-large-en-v1.5.json" with { type: "json" };
-import family328 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-m3.json" with { type: "json" };
-import family329 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-reranker-base.json" with { type: "json" };
-import family330 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-small-en-v1.5.json" with { type: "json" };
-import family331 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-1.json" with { type: "json" };
-import family332 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-2-en.json" with { type: "json" };
-import family333 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-2-es.json" with { type: "json" };
-import family334 from "./families/workers-ai~2F~40cf~2Fhuggingface~2Fdistilbert-sst-2-int8.json" with { type: "json" };
-import family335 from "./families/workers-ai~2F~40cf~2Fleonardo~2Flucid-origin.json" with { type: "json" };
-import family336 from "./families/workers-ai~2F~40cf~2Fleonardo~2Fphoenix-1.0.json" with { type: "json" };
-import family337 from "./families/workers-ai~2F~40cf~2Fllava-hf~2Fllava-1.5-7b-hf.json" with { type: "json" };
-import family338 from "./families/workers-ai~2F~40cf~2Flykon~2Fdreamshaper-8-lcm.json" with { type: "json" };
-import family339 from "./families/workers-ai~2F~40cf~2Fmeta~2Fm2m100-1.2b.json" with { type: "json" };
-import family340 from "./families/workers-ai~2F~40cf~2Fmyshell-ai~2Fmelotts.json" with { type: "json" };
-import family341 from "./families/workers-ai~2F~40cf~2Fpfnet~2Fplamo-embedding-1b.json" with { type: "json" };
-import family342 from "./families/workers-ai~2F~40cf~2Fpipecat-ai~2Fsmart-turn-v2.json" with { type: "json" };
+import family135 from "./families/mimo-v2.5-pro.json" with { type: "json" };
+import family136 from "./families/minimax.json" with { type: "json" };
+import family137 from "./families/minimax-m2.7.json" with { type: "json" };
+import family138 from "./families/minimax-m3.json" with { type: "json" };
+import family139 from "./families/minimax-music.json" with { type: "json" };
+import family140 from "./families/ministral.json" with { type: "json" };
+import family141 from "./families/mistral.json" with { type: "json" };
+import family142 from "./families/mistral-embed.json" with { type: "json" };
+import family143 from "./families/mistral-large.json" with { type: "json" };
+import family144 from "./families/mistral-medium.json" with { type: "json" };
+import family145 from "./families/mistral-nemo.json" with { type: "json" };
+import family146 from "./families/mistral-small.json" with { type: "json" };
+import family147 from "./families/mistral~2Fcodestral-embed.json" with { type: "json" };
+import family148 from "./families/mistral~2Fministral-14b-latest.json" with { type: "json" };
+import family149 from "./families/mistral~2Fvoxtral-mini-transcribe-realtime-2602.json" with { type: "json" };
+import family150 from "./families/mixtral.json" with { type: "json" };
+import family151 from "./families/model-router.json" with { type: "json" };
+import family152 from "./families/morph.json" with { type: "json" };
+import family153 from "./families/muse.json" with { type: "json" };
+import family154 from "./families/muse-free.json" with { type: "json" };
+import family155 from "./families/nemotron.json" with { type: "json" };
+import family156 from "./families/nemotron-free.json" with { type: "json" };
+import family157 from "./families/north.json" with { type: "json" };
+import family158 from "./families/nousresearch.json" with { type: "json" };
+import family159 from "./families/nova.json" with { type: "json" };
+import family160 from "./families/nova-lite.json" with { type: "json" };
+import family161 from "./families/nova-micro.json" with { type: "json" };
+import family162 from "./families/nova-pro.json" with { type: "json" };
+import family163 from "./families/o.json" with { type: "json" };
+import family164 from "./families/o-mini.json" with { type: "json" };
+import family165 from "./families/o-pro.json" with { type: "json" };
+import family166 from "./families/olmo.json" with { type: "json" };
+import family167 from "./families/openai~2Fcodex-mini-latest.json" with { type: "json" };
+import family168 from "./families/opencode-go~2Funion-alpha.json" with { type: "json" };
+import family169 from "./families/opencode~2Fjev-latest.json" with { type: "json" };
+import family170 from "./families/opencode~2Funion-alpha.json" with { type: "json" };
+import family171 from "./families/openrouter~2Faion-labs~2Faion-1.0.json" with { type: "json" };
+import family172 from "./families/openrouter~2Faion-labs~2Faion-1.0-mini.json" with { type: "json" };
+import family173 from "./families/openrouter~2Faion-labs~2Faion-2.0.json" with { type: "json" };
+import family174 from "./families/openrouter~2Faion-labs~2Faion-3.0.json" with { type: "json" };
+import family175 from "./families/openrouter~2Faion-labs~2Faion-3.0-mini.json" with { type: "json" };
+import family176 from "./families/openrouter~2Falibaba~2Ftongyi-deepresearch-30b-a3b.json" with { type: "json" };
+import family177 from "./families/openrouter~2Fanthracite-org~2Fmagnum-v4-72b.json" with { type: "json" };
+import family178 from "./families/openrouter~2Farcee-ai~2Fcoder-large.json" with { type: "json" };
+import family179 from "./families/openrouter~2Farcee-ai~2Fmaestro-reasoning.json" with { type: "json" };
+import family180 from "./families/openrouter~2Farcee-ai~2Fspotlight.json" with { type: "json" };
+import family181 from "./families/openrouter~2Farcee-ai~2Ftrinity-large-preview.json" with { type: "json" };
+import family182 from "./families/openrouter~2Farcee-ai~2Ftrinity-large-preview~3Afree.json" with { type: "json" };
+import family183 from "./families/openrouter~2Farcee-ai~2Ftrinity-large-thinking~3Afree.json" with { type: "json" };
+import family184 from "./families/openrouter~2Farcee-ai~2Ftrinity-mini~3Afree.json" with { type: "json" };
+import family185 from "./families/openrouter~2Farcee-ai~2Fvirtuoso-large.json" with { type: "json" };
+import family186 from "./families/openrouter~2Fbaidu~2Fcobuddy~3Afree.json" with { type: "json" };
+import family187 from "./families/openrouter~2Fbaidu~2Fernie-4.5-21b-a3b.json" with { type: "json" };
+import family188 from "./families/openrouter~2Fbaidu~2Fernie-4.5-21b-a3b-thinking.json" with { type: "json" };
+import family189 from "./families/openrouter~2Fbaidu~2Fernie-4.5-300b-a47b.json" with { type: "json" };
+import family190 from "./families/openrouter~2Fbaidu~2Fernie-4.5-vl-28b-a3b.json" with { type: "json" };
+import family191 from "./families/openrouter~2Fbaidu~2Fqianfan-ocr-fast.json" with { type: "json" };
+import family192 from "./families/openrouter~2Fbytedance~2Fui-tars-1.5-7b.json" with { type: "json" };
+import family193 from "./families/openrouter~2Fdots-studio~2Fdots-3-note-preview~3Afree.json" with { type: "json" };
+import family194 from "./families/openrouter~2Fessentialai~2Frnj-1-instruct.json" with { type: "json" };
+import family195 from "./families/openrouter~2Ffeatherless~2Fqwerky-72b.json" with { type: "json" };
+import family196 from "./families/openrouter~2Fgryphe~2Fmythomax-l2-13b.json" with { type: "json" };
+import family197 from "./families/openrouter~2Finference-net~2Fschematron-v2-small.json" with { type: "json" };
+import family198 from "./families/openrouter~2Finference-net~2Fschematron-v2-turbo.json" with { type: "json" };
+import family199 from "./families/openrouter~2Finflection~2Finflection-3-pi.json" with { type: "json" };
+import family200 from "./families/openrouter~2Finflection~2Finflection-3-productivity.json" with { type: "json" };
+import family201 from "./families/openrouter~2Fkwaipilot~2Fkat-coder-pro~3Afree.json" with { type: "json" };
+import family202 from "./families/openrouter~2Fmicrosoft~2Fmai-ds-r1~3Afree.json" with { type: "json" };
+import family203 from "./families/openrouter~2Fmicrosoft~2Fwizardlm-2-8x22b.json" with { type: "json" };
+import family204 from "./families/openrouter~2Fnex-agi~2Fnex-n2-pro~3Afree.json" with { type: "json" };
+import family205 from "./families/openrouter~2Fopenrouter~2Fbodybuilder.json" with { type: "json" };
+import family206 from "./families/openrouter~2Fopenrouter~2Ffree.json" with { type: "json" };
+import family207 from "./families/openrouter~2Fopenrouter~2Ffusion.json" with { type: "json" };
+import family208 from "./families/openrouter~2Fopenrouter~2Fpareto-code.json" with { type: "json" };
+import family209 from "./families/openrouter~2Fopenrouter~2Fsherlock-dash-alpha.json" with { type: "json" };
+import family210 from "./families/openrouter~2Fopenrouter~2Fsherlock-think-alpha.json" with { type: "json" };
+import family211 from "./families/openrouter~2Fperceptron~2Fperceptron-mk1.json" with { type: "json" };
+import family212 from "./families/openrouter~2Fpoolside~2Flaguna-xs.2.json" with { type: "json" };
+import family213 from "./families/openrouter~2Fpoolside~2Flaguna-xs.2~3Afree.json" with { type: "json" };
+import family214 from "./families/openrouter~2Fprime-intellect~2Fintellect-3.json" with { type: "json" };
+import family215 from "./families/openrouter~2Fprism-ml~2Fternary-bonsai-2-27b.json" with { type: "json" };
+import family216 from "./families/openrouter~2Frelace~2Frelace-apply-3.json" with { type: "json" };
+import family217 from "./families/openrouter~2Frelace~2Frelace-search.json" with { type: "json" };
+import family218 from "./families/openrouter~2Fsao10k~2Fl3-euryale-70b.json" with { type: "json" };
+import family219 from "./families/openrouter~2Fsarvamai~2Fsarvam-m~3Afree.json" with { type: "json" };
+import family220 from "./families/openrouter~2Fsourceful~2Friverflow-v2-fast-preview.json" with { type: "json" };
+import family221 from "./families/openrouter~2Fsourceful~2Friverflow-v2-max-preview.json" with { type: "json" };
+import family222 from "./families/openrouter~2Fsourceful~2Friverflow-v2-standard-preview.json" with { type: "json" };
+import family223 from "./families/openrouter~2Fstepfun~2Fstep-3.5-flash.json" with { type: "json" };
+import family224 from "./families/openrouter~2Fstepfun~2Fstep-3.5-flash~3Afree.json" with { type: "json" };
+import family225 from "./families/openrouter~2Fstepfun~2Fstep-3.7-flash.json" with { type: "json" };
+import family226 from "./families/openrouter~2Fswitchpoint~2Frouter.json" with { type: "json" };
+import family227 from "./families/openrouter~2Fthedrummer~2Fcydonia-24b-v4.1.json" with { type: "json" };
+import family228 from "./families/openrouter~2Fthedrummer~2Frocinante-12b.json" with { type: "json" };
+import family229 from "./families/openrouter~2Fthedrummer~2Fskyfall-36b-v2.json" with { type: "json" };
+import family230 from "./families/openrouter~2Fthedrummer~2Funslopnemo-12b.json" with { type: "json" };
+import family231 from "./families/openrouter~2Ftngtech~2Ftng-r1t-chimera~3Afree.json" with { type: "json" };
+import family232 from "./families/openrouter~2Funbiased~2Fpareto.json" with { type: "json" };
+import family233 from "./families/openrouter~2Fundi95~2Fremm-slerp-l2-13b.json" with { type: "json" };
+import family234 from "./families/openrouter~2Fxiaomi~2Fmimo-v2-flash.json" with { type: "json" };
+import family235 from "./families/openrouter~2Fxiaomi~2Fmimo-v2-omni.json" with { type: "json" };
+import family236 from "./families/openrouter~2Fxiaomi~2Fmimo-v2-pro.json" with { type: "json" };
+import family237 from "./families/osmosis.json" with { type: "json" };
+import family238 from "./families/palmyra.json" with { type: "json" };
+import family239 from "./families/parallel~2Fspeed.json" with { type: "json" };
+import family240 from "./families/perplexity-ai~2Fr1-1776.json" with { type: "json" };
+import family241 from "./families/perplexity-ai~2Fsonar-deep-research.json" with { type: "json" };
+import family242 from "./families/perplexity-ai~2Fsonar-reasoning.json" with { type: "json" };
+import family243 from "./families/phi.json" with { type: "json" };
+import family244 from "./families/pixtral.json" with { type: "json" };
+import family245 from "./families/qvq.json" with { type: "json" };
+import family246 from "./families/qwen.json" with { type: "json" };
+import family247 from "./families/qwen3.5.json" with { type: "json" };
+import family248 from "./families/qwen3.6.json" with { type: "json" };
+import family249 from "./families/qwen3.7-max.json" with { type: "json" };
+import family250 from "./families/qwen3.7-plus.json" with { type: "json" };
+import family251 from "./families/qwen3.8-max.json" with { type: "json" };
+import family252 from "./families/recraft.json" with { type: "json" };
+import family253 from "./families/rednote.json" with { type: "json" };
+import family254 from "./families/regolo-ai~2Fapertus-70b.json" with { type: "json" };
+import family255 from "./families/regolo-ai~2Fbrick-complexity-pro.json" with { type: "json" };
+import family256 from "./families/reka.json" with { type: "json" };
+import family257 from "./families/replicate~2F5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637.json" with { type: "json" };
+import family258 from "./families/replicate~2F671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb.json" with { type: "json" };
+import family259 from "./families/replicate~2F826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9.json" with { type: "json" };
+import family260 from "./families/replicate~2F847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405.json" with { type: "json" };
+import family261 from "./families/replicate~2Falibaba~2Fhappyhorse-1.0.json" with { type: "json" };
+import family262 from "./families/replicate~2Fbria~2Fremove-background.json" with { type: "json" };
+import family263 from "./families/replicate~2Fcbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f.json" with { type: "json" };
+import family264 from "./families/replicate~2Felevenlabs~2Fmusic.json" with { type: "json" };
+import family265 from "./families/replicate~2Fgoogle~2Fnano-banana.json" with { type: "json" };
+import family266 from "./families/replicate~2Fgoogle~2Fnano-banana-2.json" with { type: "json" };
+import family267 from "./families/replicate~2Fgoogle~2Fnano-banana-pro.json" with { type: "json" };
+import family268 from "./families/replicate~2Fnightmareai~2Freal-esrgan.json" with { type: "json" };
+import family269 from "./families/replicate~2Fprunaai~2Fp-video.json" with { type: "json" };
+import family270 from "./families/replicate~2Fresemble-ai~2Fchatterbox-turbo.json" with { type: "json" };
+import family271 from "./families/replicate~2Frunwayml~2Fgen-4.5.json" with { type: "json" };
+import family272 from "./families/replicate~2Fstability-ai~2Fstable-audio-2.5.json" with { type: "json" };
+import family273 from "./families/requesty~2Fleanstral-1-5.json" with { type: "json" };
+import family274 from "./families/requesty~2Fleanstral-1-5~40eu.json" with { type: "json" };
+import family275 from "./families/requesty~2Fstep-3.7-flash.json" with { type: "json" };
+import family276 from "./families/ring.json" with { type: "json" };
+import family277 from "./families/sakana-namazu.json" with { type: "json" };
+import family278 from "./families/seed.json" with { type: "json" };
+import family279 from "./families/solar.json" with { type: "json" };
+import family280 from "./families/solar-mini.json" with { type: "json" };
+import family281 from "./families/solar-pro.json" with { type: "json" };
+import family282 from "./families/sonar.json" with { type: "json" };
+import family283 from "./families/sonar-deep-research.json" with { type: "json" };
+import family284 from "./families/sonar-pro.json" with { type: "json" };
+import family285 from "./families/sonar-reasoning.json" with { type: "json" };
+import family286 from "./families/sora.json" with { type: "json" };
+import family287 from "./families/stable-diffusion.json" with { type: "json" };
+import family288 from "./families/step.json" with { type: "json" };
+import family289 from "./families/text-embedding.json" with { type: "json" };
+import family290 from "./families/the-grid-ai~2Fagent-max.json" with { type: "json" };
+import family291 from "./families/the-grid-ai~2Fagent-prime.json" with { type: "json" };
+import family292 from "./families/the-grid-ai~2Fagent-standard.json" with { type: "json" };
+import family293 from "./families/the-grid-ai~2Fcode-max.json" with { type: "json" };
+import family294 from "./families/the-grid-ai~2Fcode-prime.json" with { type: "json" };
+import family295 from "./families/the-grid-ai~2Fcode-standard.json" with { type: "json" };
+import family296 from "./families/the-grid-ai~2Ftext-max.json" with { type: "json" };
+import family297 from "./families/the-grid-ai~2Ftext-prime.json" with { type: "json" };
+import family298 from "./families/the-grid-ai~2Ftext-standard.json" with { type: "json" };
+import family299 from "./families/titan-embed.json" with { type: "json" };
+import family300 from "./families/together-ai~2Ftogethercomputer~2FRefuel-Llm-V2.json" with { type: "json" };
+import family301 from "./families/together-ai~2Ftogethercomputer~2FRefuel-Llm-V2-Small.json" with { type: "json" };
+import family302 from "./families/trinity.json" with { type: "json" };
+import family303 from "./families/trinity-mini.json" with { type: "json" };
+import family304 from "./families/typesafe~2Fjev.json" with { type: "json" };
+import family305 from "./families/unsloth.json" with { type: "json" };
+import family306 from "./families/v0.json" with { type: "json" };
+import family307 from "./families/veo.json" with { type: "json" };
+import family308 from "./families/vercel~2Finception~2Fmercury-edit-2.json" with { type: "json" };
+import family309 from "./families/vercel~2Finterfaze~2Finterfaze-beta.json" with { type: "json" };
+import family310 from "./families/vercel~2Fmixedbread~2Ftoast-1.json" with { type: "json" };
+import family311 from "./families/vercel~2Fopenai~2Fcodex-mini.json" with { type: "json" };
+import family312 from "./families/vercel~2Fperplexity~2Fpplx-embed-v1-4b.json" with { type: "json" };
+import family313 from "./families/vercel~2Fperplexity~2Fsonar-reasoning.json" with { type: "json" };
+import family314 from "./families/vercel~2Fprime-intellect~2Fintellect-3.json" with { type: "json" };
+import family315 from "./families/vercel~2Fquiverai~2Farrow-2.json" with { type: "json" };
+import family316 from "./families/vercel~2Fquiverai~2Farrow-2-telos.json" with { type: "json" };
+import family317 from "./families/vercel~2Fsakana~2Fnamazu.json" with { type: "json" };
+import family318 from "./families/vercel~2Ftypesafe-ai~2Fjev.json" with { type: "json" };
+import family319 from "./families/vercel~2Fvercel~2Fv0-1.0-md.json" with { type: "json" };
+import family320 from "./families/vercel~2Fvercel~2Fv0-1.5-md.json" with { type: "json" };
+import family321 from "./families/voxtral.json" with { type: "json" };
+import family322 from "./families/voyage.json" with { type: "json" };
+import family323 from "./families/whisper.json" with { type: "json" };
+import family324 from "./families/workers-ai~2F~40cf~2Fai4bharat~2Findictrans2-en-indic-1B.json" with { type: "json" };
+import family325 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-base-en-v1.5.json" with { type: "json" };
+import family326 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-large-en-v1.5.json" with { type: "json" };
+import family327 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-m3.json" with { type: "json" };
+import family328 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-reranker-base.json" with { type: "json" };
+import family329 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-small-en-v1.5.json" with { type: "json" };
+import family330 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-1.json" with { type: "json" };
+import family331 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-2-en.json" with { type: "json" };
+import family332 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-2-es.json" with { type: "json" };
+import family333 from "./families/workers-ai~2F~40cf~2Fhuggingface~2Fdistilbert-sst-2-int8.json" with { type: "json" };
+import family334 from "./families/workers-ai~2F~40cf~2Fleonardo~2Flucid-origin.json" with { type: "json" };
+import family335 from "./families/workers-ai~2F~40cf~2Fleonardo~2Fphoenix-1.0.json" with { type: "json" };
+import family336 from "./families/workers-ai~2F~40cf~2Fllava-hf~2Fllava-1.5-7b-hf.json" with { type: "json" };
+import family337 from "./families/workers-ai~2F~40cf~2Flykon~2Fdreamshaper-8-lcm.json" with { type: "json" };
+import family338 from "./families/workers-ai~2F~40cf~2Fmeta~2Fm2m100-1.2b.json" with { type: "json" };
+import family339 from "./families/workers-ai~2F~40cf~2Fmyshell-ai~2Fmelotts.json" with { type: "json" };
+import family340 from "./families/workers-ai~2F~40cf~2Fpfnet~2Fplamo-embedding-1b.json" with { type: "json" };
+import family341 from "./families/workers-ai~2F~40cf~2Fpipecat-ai~2Fsmart-turn-v2.json" with { type: "json" };
 import provider0 from "./providers/openai.json" with { type: "json" };
 import provider1 from "./providers/anthropic.json" with { type: "json" };
 import provider2 from "./providers/mistral.json" with { type: "json" };
@@ -540,214 +539,213 @@ const catalogue: UnparsedModelCatalogue = {
     "mercury": family132,
     "mimo": family133,
     "mimo-v2.5": family134,
-    "mimo-v2.5-free": family135,
-    "mimo-v2.5-pro": family136,
-    "minimax": family137,
-    "minimax-m2.7": family138,
-    "minimax-m3": family139,
-    "minimax-music": family140,
-    "ministral": family141,
-    "mistral": family142,
-    "mistral-embed": family143,
-    "mistral-large": family144,
-    "mistral-medium": family145,
-    "mistral-nemo": family146,
-    "mistral-small": family147,
-    "mistral/codestral-embed": family148,
-    "mistral/ministral-14b-latest": family149,
-    "mistral/voxtral-mini-transcribe-realtime-2602": family150,
-    "mixtral": family151,
-    "model-router": family152,
-    "morph": family153,
-    "muse": family154,
-    "muse-free": family155,
-    "nemotron": family156,
-    "nemotron-free": family157,
-    "north": family158,
-    "nousresearch": family159,
-    "nova": family160,
-    "nova-lite": family161,
-    "nova-micro": family162,
-    "nova-pro": family163,
-    "o": family164,
-    "o-mini": family165,
-    "o-pro": family166,
-    "olmo": family167,
-    "openai/codex-mini-latest": family168,
-    "opencode-go/union-alpha": family169,
-    "opencode/jev-latest": family170,
-    "opencode/union-alpha": family171,
-    "openrouter/aion-labs/aion-1.0": family172,
-    "openrouter/aion-labs/aion-1.0-mini": family173,
-    "openrouter/aion-labs/aion-2.0": family174,
-    "openrouter/aion-labs/aion-3.0": family175,
-    "openrouter/aion-labs/aion-3.0-mini": family176,
-    "openrouter/alibaba/tongyi-deepresearch-30b-a3b": family177,
-    "openrouter/anthracite-org/magnum-v4-72b": family178,
-    "openrouter/arcee-ai/coder-large": family179,
-    "openrouter/arcee-ai/maestro-reasoning": family180,
-    "openrouter/arcee-ai/spotlight": family181,
-    "openrouter/arcee-ai/trinity-large-preview": family182,
-    "openrouter/arcee-ai/trinity-large-preview:free": family183,
-    "openrouter/arcee-ai/trinity-large-thinking:free": family184,
-    "openrouter/arcee-ai/trinity-mini:free": family185,
-    "openrouter/arcee-ai/virtuoso-large": family186,
-    "openrouter/baidu/cobuddy:free": family187,
-    "openrouter/baidu/ernie-4.5-21b-a3b": family188,
-    "openrouter/baidu/ernie-4.5-21b-a3b-thinking": family189,
-    "openrouter/baidu/ernie-4.5-300b-a47b": family190,
-    "openrouter/baidu/ernie-4.5-vl-28b-a3b": family191,
-    "openrouter/baidu/qianfan-ocr-fast": family192,
-    "openrouter/bytedance/ui-tars-1.5-7b": family193,
-    "openrouter/dots-studio/dots-3-note-preview:free": family194,
-    "openrouter/essentialai/rnj-1-instruct": family195,
-    "openrouter/featherless/qwerky-72b": family196,
-    "openrouter/gryphe/mythomax-l2-13b": family197,
-    "openrouter/inference-net/schematron-v2-small": family198,
-    "openrouter/inference-net/schematron-v2-turbo": family199,
-    "openrouter/inflection/inflection-3-pi": family200,
-    "openrouter/inflection/inflection-3-productivity": family201,
-    "openrouter/kwaipilot/kat-coder-pro:free": family202,
-    "openrouter/microsoft/mai-ds-r1:free": family203,
-    "openrouter/microsoft/wizardlm-2-8x22b": family204,
-    "openrouter/nex-agi/nex-n2-pro:free": family205,
-    "openrouter/openrouter/bodybuilder": family206,
-    "openrouter/openrouter/free": family207,
-    "openrouter/openrouter/fusion": family208,
-    "openrouter/openrouter/pareto-code": family209,
-    "openrouter/openrouter/sherlock-dash-alpha": family210,
-    "openrouter/openrouter/sherlock-think-alpha": family211,
-    "openrouter/perceptron/perceptron-mk1": family212,
-    "openrouter/poolside/laguna-xs.2": family213,
-    "openrouter/poolside/laguna-xs.2:free": family214,
-    "openrouter/prime-intellect/intellect-3": family215,
-    "openrouter/prism-ml/ternary-bonsai-2-27b": family216,
-    "openrouter/relace/relace-apply-3": family217,
-    "openrouter/relace/relace-search": family218,
-    "openrouter/sao10k/l3-euryale-70b": family219,
-    "openrouter/sarvamai/sarvam-m:free": family220,
-    "openrouter/sourceful/riverflow-v2-fast-preview": family221,
-    "openrouter/sourceful/riverflow-v2-max-preview": family222,
-    "openrouter/sourceful/riverflow-v2-standard-preview": family223,
-    "openrouter/stepfun/step-3.5-flash": family224,
-    "openrouter/stepfun/step-3.5-flash:free": family225,
-    "openrouter/stepfun/step-3.7-flash": family226,
-    "openrouter/switchpoint/router": family227,
-    "openrouter/thedrummer/cydonia-24b-v4.1": family228,
-    "openrouter/thedrummer/rocinante-12b": family229,
-    "openrouter/thedrummer/skyfall-36b-v2": family230,
-    "openrouter/thedrummer/unslopnemo-12b": family231,
-    "openrouter/tngtech/tng-r1t-chimera:free": family232,
-    "openrouter/unbiased/pareto": family233,
-    "openrouter/undi95/remm-slerp-l2-13b": family234,
-    "openrouter/xiaomi/mimo-v2-flash": family235,
-    "openrouter/xiaomi/mimo-v2-omni": family236,
-    "openrouter/xiaomi/mimo-v2-pro": family237,
-    "osmosis": family238,
-    "palmyra": family239,
-    "parallel/speed": family240,
-    "perplexity-ai/r1-1776": family241,
-    "perplexity-ai/sonar-deep-research": family242,
-    "perplexity-ai/sonar-reasoning": family243,
-    "phi": family244,
-    "pixtral": family245,
-    "qvq": family246,
-    "qwen": family247,
-    "qwen3.5": family248,
-    "qwen3.6": family249,
-    "qwen3.7-max": family250,
-    "qwen3.7-plus": family251,
-    "qwen3.8-max": family252,
-    "recraft": family253,
-    "rednote": family254,
-    "regolo-ai/apertus-70b": family255,
-    "regolo-ai/brick-complexity-pro": family256,
-    "reka": family257,
-    "replicate/5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637": family258,
-    "replicate/671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb": family259,
-    "replicate/826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9": family260,
-    "replicate/847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405": family261,
-    "replicate/alibaba/happyhorse-1.0": family262,
-    "replicate/bria/remove-background": family263,
-    "replicate/cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f": family264,
-    "replicate/elevenlabs/music": family265,
-    "replicate/google/nano-banana": family266,
-    "replicate/google/nano-banana-2": family267,
-    "replicate/google/nano-banana-pro": family268,
-    "replicate/nightmareai/real-esrgan": family269,
-    "replicate/prunaai/p-video": family270,
-    "replicate/resemble-ai/chatterbox-turbo": family271,
-    "replicate/runwayml/gen-4.5": family272,
-    "replicate/stability-ai/stable-audio-2.5": family273,
-    "requesty/leanstral-1-5": family274,
-    "requesty/leanstral-1-5@eu": family275,
-    "requesty/step-3.7-flash": family276,
-    "ring": family277,
-    "sakana-namazu": family278,
-    "seed": family279,
-    "solar": family280,
-    "solar-mini": family281,
-    "solar-pro": family282,
-    "sonar": family283,
-    "sonar-deep-research": family284,
-    "sonar-pro": family285,
-    "sonar-reasoning": family286,
-    "sora": family287,
-    "stable-diffusion": family288,
-    "step": family289,
-    "text-embedding": family290,
-    "the-grid-ai/agent-max": family291,
-    "the-grid-ai/agent-prime": family292,
-    "the-grid-ai/agent-standard": family293,
-    "the-grid-ai/code-max": family294,
-    "the-grid-ai/code-prime": family295,
-    "the-grid-ai/code-standard": family296,
-    "the-grid-ai/text-max": family297,
-    "the-grid-ai/text-prime": family298,
-    "the-grid-ai/text-standard": family299,
-    "titan-embed": family300,
-    "together-ai/togethercomputer/Refuel-Llm-V2": family301,
-    "together-ai/togethercomputer/Refuel-Llm-V2-Small": family302,
-    "trinity": family303,
-    "trinity-mini": family304,
-    "typesafe/jev": family305,
-    "unsloth": family306,
-    "v0": family307,
-    "veo": family308,
-    "vercel/inception/mercury-edit-2": family309,
-    "vercel/interfaze/interfaze-beta": family310,
-    "vercel/mixedbread/toast-1": family311,
-    "vercel/openai/codex-mini": family312,
-    "vercel/perplexity/pplx-embed-v1-4b": family313,
-    "vercel/perplexity/sonar-reasoning": family314,
-    "vercel/prime-intellect/intellect-3": family315,
-    "vercel/quiverai/arrow-2": family316,
-    "vercel/quiverai/arrow-2-telos": family317,
-    "vercel/sakana/namazu": family318,
-    "vercel/typesafe-ai/jev": family319,
-    "vercel/vercel/v0-1.0-md": family320,
-    "vercel/vercel/v0-1.5-md": family321,
-    "voxtral": family322,
-    "voyage": family323,
-    "whisper": family324,
-    "workers-ai/@cf/ai4bharat/indictrans2-en-indic-1B": family325,
-    "workers-ai/@cf/baai/bge-base-en-v1.5": family326,
-    "workers-ai/@cf/baai/bge-large-en-v1.5": family327,
-    "workers-ai/@cf/baai/bge-m3": family328,
-    "workers-ai/@cf/baai/bge-reranker-base": family329,
-    "workers-ai/@cf/baai/bge-small-en-v1.5": family330,
-    "workers-ai/@cf/deepgram/aura-1": family331,
-    "workers-ai/@cf/deepgram/aura-2-en": family332,
-    "workers-ai/@cf/deepgram/aura-2-es": family333,
-    "workers-ai/@cf/huggingface/distilbert-sst-2-int8": family334,
-    "workers-ai/@cf/leonardo/lucid-origin": family335,
-    "workers-ai/@cf/leonardo/phoenix-1.0": family336,
-    "workers-ai/@cf/llava-hf/llava-1.5-7b-hf": family337,
-    "workers-ai/@cf/lykon/dreamshaper-8-lcm": family338,
-    "workers-ai/@cf/meta/m2m100-1.2b": family339,
-    "workers-ai/@cf/myshell-ai/melotts": family340,
-    "workers-ai/@cf/pfnet/plamo-embedding-1b": family341,
-    "workers-ai/@cf/pipecat-ai/smart-turn-v2": family342,
+    "mimo-v2.5-pro": family135,
+    "minimax": family136,
+    "minimax-m2.7": family137,
+    "minimax-m3": family138,
+    "minimax-music": family139,
+    "ministral": family140,
+    "mistral": family141,
+    "mistral-embed": family142,
+    "mistral-large": family143,
+    "mistral-medium": family144,
+    "mistral-nemo": family145,
+    "mistral-small": family146,
+    "mistral/codestral-embed": family147,
+    "mistral/ministral-14b-latest": family148,
+    "mistral/voxtral-mini-transcribe-realtime-2602": family149,
+    "mixtral": family150,
+    "model-router": family151,
+    "morph": family152,
+    "muse": family153,
+    "muse-free": family154,
+    "nemotron": family155,
+    "nemotron-free": family156,
+    "north": family157,
+    "nousresearch": family158,
+    "nova": family159,
+    "nova-lite": family160,
+    "nova-micro": family161,
+    "nova-pro": family162,
+    "o": family163,
+    "o-mini": family164,
+    "o-pro": family165,
+    "olmo": family166,
+    "openai/codex-mini-latest": family167,
+    "opencode-go/union-alpha": family168,
+    "opencode/jev-latest": family169,
+    "opencode/union-alpha": family170,
+    "openrouter/aion-labs/aion-1.0": family171,
+    "openrouter/aion-labs/aion-1.0-mini": family172,
+    "openrouter/aion-labs/aion-2.0": family173,
+    "openrouter/aion-labs/aion-3.0": family174,
+    "openrouter/aion-labs/aion-3.0-mini": family175,
+    "openrouter/alibaba/tongyi-deepresearch-30b-a3b": family176,
+    "openrouter/anthracite-org/magnum-v4-72b": family177,
+    "openrouter/arcee-ai/coder-large": family178,
+    "openrouter/arcee-ai/maestro-reasoning": family179,
+    "openrouter/arcee-ai/spotlight": family180,
+    "openrouter/arcee-ai/trinity-large-preview": family181,
+    "openrouter/arcee-ai/trinity-large-preview:free": family182,
+    "openrouter/arcee-ai/trinity-large-thinking:free": family183,
+    "openrouter/arcee-ai/trinity-mini:free": family184,
+    "openrouter/arcee-ai/virtuoso-large": family185,
+    "openrouter/baidu/cobuddy:free": family186,
+    "openrouter/baidu/ernie-4.5-21b-a3b": family187,
+    "openrouter/baidu/ernie-4.5-21b-a3b-thinking": family188,
+    "openrouter/baidu/ernie-4.5-300b-a47b": family189,
+    "openrouter/baidu/ernie-4.5-vl-28b-a3b": family190,
+    "openrouter/baidu/qianfan-ocr-fast": family191,
+    "openrouter/bytedance/ui-tars-1.5-7b": family192,
+    "openrouter/dots-studio/dots-3-note-preview:free": family193,
+    "openrouter/essentialai/rnj-1-instruct": family194,
+    "openrouter/featherless/qwerky-72b": family195,
+    "openrouter/gryphe/mythomax-l2-13b": family196,
+    "openrouter/inference-net/schematron-v2-small": family197,
+    "openrouter/inference-net/schematron-v2-turbo": family198,
+    "openrouter/inflection/inflection-3-pi": family199,
+    "openrouter/inflection/inflection-3-productivity": family200,
+    "openrouter/kwaipilot/kat-coder-pro:free": family201,
+    "openrouter/microsoft/mai-ds-r1:free": family202,
+    "openrouter/microsoft/wizardlm-2-8x22b": family203,
+    "openrouter/nex-agi/nex-n2-pro:free": family204,
+    "openrouter/openrouter/bodybuilder": family205,
+    "openrouter/openrouter/free": family206,
+    "openrouter/openrouter/fusion": family207,
+    "openrouter/openrouter/pareto-code": family208,
+    "openrouter/openrouter/sherlock-dash-alpha": family209,
+    "openrouter/openrouter/sherlock-think-alpha": family210,
+    "openrouter/perceptron/perceptron-mk1": family211,
+    "openrouter/poolside/laguna-xs.2": family212,
+    "openrouter/poolside/laguna-xs.2:free": family213,
+    "openrouter/prime-intellect/intellect-3": family214,
+    "openrouter/prism-ml/ternary-bonsai-2-27b": family215,
+    "openrouter/relace/relace-apply-3": family216,
+    "openrouter/relace/relace-search": family217,
+    "openrouter/sao10k/l3-euryale-70b": family218,
+    "openrouter/sarvamai/sarvam-m:free": family219,
+    "openrouter/sourceful/riverflow-v2-fast-preview": family220,
+    "openrouter/sourceful/riverflow-v2-max-preview": family221,
+    "openrouter/sourceful/riverflow-v2-standard-preview": family222,
+    "openrouter/stepfun/step-3.5-flash": family223,
+    "openrouter/stepfun/step-3.5-flash:free": family224,
+    "openrouter/stepfun/step-3.7-flash": family225,
+    "openrouter/switchpoint/router": family226,
+    "openrouter/thedrummer/cydonia-24b-v4.1": family227,
+    "openrouter/thedrummer/rocinante-12b": family228,
+    "openrouter/thedrummer/skyfall-36b-v2": family229,
+    "openrouter/thedrummer/unslopnemo-12b": family230,
+    "openrouter/tngtech/tng-r1t-chimera:free": family231,
+    "openrouter/unbiased/pareto": family232,
+    "openrouter/undi95/remm-slerp-l2-13b": family233,
+    "openrouter/xiaomi/mimo-v2-flash": family234,
+    "openrouter/xiaomi/mimo-v2-omni": family235,
+    "openrouter/xiaomi/mimo-v2-pro": family236,
+    "osmosis": family237,
+    "palmyra": family238,
+    "parallel/speed": family239,
+    "perplexity-ai/r1-1776": family240,
+    "perplexity-ai/sonar-deep-research": family241,
+    "perplexity-ai/sonar-reasoning": family242,
+    "phi": family243,
+    "pixtral": family244,
+    "qvq": family245,
+    "qwen": family246,
+    "qwen3.5": family247,
+    "qwen3.6": family248,
+    "qwen3.7-max": family249,
+    "qwen3.7-plus": family250,
+    "qwen3.8-max": family251,
+    "recraft": family252,
+    "rednote": family253,
+    "regolo-ai/apertus-70b": family254,
+    "regolo-ai/brick-complexity-pro": family255,
+    "reka": family256,
+    "replicate/5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637": family257,
+    "replicate/671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb": family258,
+    "replicate/826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9": family259,
+    "replicate/847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405": family260,
+    "replicate/alibaba/happyhorse-1.0": family261,
+    "replicate/bria/remove-background": family262,
+    "replicate/cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f": family263,
+    "replicate/elevenlabs/music": family264,
+    "replicate/google/nano-banana": family265,
+    "replicate/google/nano-banana-2": family266,
+    "replicate/google/nano-banana-pro": family267,
+    "replicate/nightmareai/real-esrgan": family268,
+    "replicate/prunaai/p-video": family269,
+    "replicate/resemble-ai/chatterbox-turbo": family270,
+    "replicate/runwayml/gen-4.5": family271,
+    "replicate/stability-ai/stable-audio-2.5": family272,
+    "requesty/leanstral-1-5": family273,
+    "requesty/leanstral-1-5@eu": family274,
+    "requesty/step-3.7-flash": family275,
+    "ring": family276,
+    "sakana-namazu": family277,
+    "seed": family278,
+    "solar": family279,
+    "solar-mini": family280,
+    "solar-pro": family281,
+    "sonar": family282,
+    "sonar-deep-research": family283,
+    "sonar-pro": family284,
+    "sonar-reasoning": family285,
+    "sora": family286,
+    "stable-diffusion": family287,
+    "step": family288,
+    "text-embedding": family289,
+    "the-grid-ai/agent-max": family290,
+    "the-grid-ai/agent-prime": family291,
+    "the-grid-ai/agent-standard": family292,
+    "the-grid-ai/code-max": family293,
+    "the-grid-ai/code-prime": family294,
+    "the-grid-ai/code-standard": family295,
+    "the-grid-ai/text-max": family296,
+    "the-grid-ai/text-prime": family297,
+    "the-grid-ai/text-standard": family298,
+    "titan-embed": family299,
+    "together-ai/togethercomputer/Refuel-Llm-V2": family300,
+    "together-ai/togethercomputer/Refuel-Llm-V2-Small": family301,
+    "trinity": family302,
+    "trinity-mini": family303,
+    "typesafe/jev": family304,
+    "unsloth": family305,
+    "v0": family306,
+    "veo": family307,
+    "vercel/inception/mercury-edit-2": family308,
+    "vercel/interfaze/interfaze-beta": family309,
+    "vercel/mixedbread/toast-1": family310,
+    "vercel/openai/codex-mini": family311,
+    "vercel/perplexity/pplx-embed-v1-4b": family312,
+    "vercel/perplexity/sonar-reasoning": family313,
+    "vercel/prime-intellect/intellect-3": family314,
+    "vercel/quiverai/arrow-2": family315,
+    "vercel/quiverai/arrow-2-telos": family316,
+    "vercel/sakana/namazu": family317,
+    "vercel/typesafe-ai/jev": family318,
+    "vercel/vercel/v0-1.0-md": family319,
+    "vercel/vercel/v0-1.5-md": family320,
+    "voxtral": family321,
+    "voyage": family322,
+    "whisper": family323,
+    "workers-ai/@cf/ai4bharat/indictrans2-en-indic-1B": family324,
+    "workers-ai/@cf/baai/bge-base-en-v1.5": family325,
+    "workers-ai/@cf/baai/bge-large-en-v1.5": family326,
+    "workers-ai/@cf/baai/bge-m3": family327,
+    "workers-ai/@cf/baai/bge-reranker-base": family328,
+    "workers-ai/@cf/baai/bge-small-en-v1.5": family329,
+    "workers-ai/@cf/deepgram/aura-1": family330,
+    "workers-ai/@cf/deepgram/aura-2-en": family331,
+    "workers-ai/@cf/deepgram/aura-2-es": family332,
+    "workers-ai/@cf/huggingface/distilbert-sst-2-int8": family333,
+    "workers-ai/@cf/leonardo/lucid-origin": family334,
+    "workers-ai/@cf/leonardo/phoenix-1.0": family335,
+    "workers-ai/@cf/llava-hf/llava-1.5-7b-hf": family336,
+    "workers-ai/@cf/lykon/dreamshaper-8-lcm": family337,
+    "workers-ai/@cf/meta/m2m100-1.2b": family338,
+    "workers-ai/@cf/myshell-ai/melotts": family339,
+    "workers-ai/@cf/pfnet/plamo-embedding-1b": family340,
+    "workers-ai/@cf/pipecat-ai/smart-turn-v2": family341,
   },
   providers: {
     "openai": provider0,

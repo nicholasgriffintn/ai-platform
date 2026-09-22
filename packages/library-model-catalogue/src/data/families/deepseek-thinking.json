@@ -227,6 +227,8 @@
         "releaseDate": "August 12, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "none",
+            "low",
             "high",
             "max"
           ],

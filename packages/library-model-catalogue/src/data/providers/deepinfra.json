@@ -819,6 +819,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "Qwen/Qwen3.6-27B",
       "overrides": {
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -899,8 +900,8 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 6, 2026",
-        "costPer1kInputTokens": 0.00014,
-        "costPer1kOutputTokens": 0.00058,
+        "costPer1kInputTokens": 0.00013,
+        "costPer1kOutputTokens": 0.00053,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [

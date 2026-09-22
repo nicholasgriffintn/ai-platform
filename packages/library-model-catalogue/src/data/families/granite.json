@@ -21,7 +21,7 @@
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
         "contextWindow": 131000,
         "maxTokens": 131000,
-        "releaseDate": "October 7, 2025",
+        "releaseDate": "October 2, 2025",
         "supportsResponseFormat": false
       }
     },

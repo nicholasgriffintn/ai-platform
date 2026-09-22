@@ -38,17 +38,7 @@
       "defaults": {
         "name": "GLM-4.6V-Flash",
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "contextWindow": 131072,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "December 8, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [

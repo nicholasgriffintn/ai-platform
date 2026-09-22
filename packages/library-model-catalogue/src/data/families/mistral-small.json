@@ -122,7 +122,8 @@
             "text"
           ]
         },
-        "releaseDate": "March 18, 2025",
+        "knowledgeCutoffDate": "June 2024",
+        "releaseDate": "March 17, 2025",
         "supportsResponseFormat": false,
         "supportsAttachments": false
       }

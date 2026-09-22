@@ -108,6 +108,7 @@
       "matchingModel": "claude-sonnet-4",
       "overrides": {
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "contextWindow": 1000000,
         "lastUpdated": "May 22, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
@@ -600,18 +601,6 @@
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
-    "mimo-v2.5-free": {
-      "model": "mimo-v2.5-free/mimo-v2-5-free",
-      "matchingModel": "mimo-v2.5-free",
-      "overrides": {
-        "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
       },
       "unset": [
         "supportsResponseFormat"
@@ -1152,6 +1141,15 @@
           ],
           "defaultEffort": "low"
         }
+      }
+    },
+    "mimo-v2.6-flash-free": {
+      "model": "mimo/mimo-v2-6-flash-free",
+      "matchingModel": "mimo-v2.6-flash-free",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
       }
     }
   }
