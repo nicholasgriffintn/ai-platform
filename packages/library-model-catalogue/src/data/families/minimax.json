@@ -463,6 +463,30 @@
           "audio"
         ]
       }
+    },
+    "image-01": {
+      "defaults": {
+        "name": "MiniMax Image 01",
+        "openWeights": false,
+        "description": "MiniMax image generation model with prompt optimisation and character reference support.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "strengths": [
+          "creative",
+          "vision",
+          "image"
+        ],
+        "supportsToolCalls": false,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
     }
   }
 }

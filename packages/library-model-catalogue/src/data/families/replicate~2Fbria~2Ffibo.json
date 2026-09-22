@@ -1,0 +1,31 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "creative",
+      "vision",
+      "image"
+    ],
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The Replicate BRIA FIBO family includes controlled image generation models.",
+  "models": {
+    "fibo": {
+      "defaults": {
+        "name": "FIBO",
+        "description": "BRIA image generation model with structured prompts, image guidance, and reproducible refinement controls."
+      }
+    }
+  }
+}
