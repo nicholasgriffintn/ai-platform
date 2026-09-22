@@ -1,6 +1,5 @@
-import { escapeRegExp, isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { escapeRegExp, isRecord, safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 
-import { safeParseJson } from "../json";
 import type { RalphPrdContext, RalphPrdUserStory, SandboxFileInstance } from "./types";
 import { formatStoryLabel, toPrioritySortValue } from "./utils";
 

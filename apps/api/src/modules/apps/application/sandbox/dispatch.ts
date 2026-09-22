@@ -14,8 +14,8 @@ import {
   type SandboxRunStatus,
   SANDBOX_RUNS_CAPABILITY_ID,
 } from "@ngriffin_uk/polychat-schemas";
+import { parseServerSentEventBuffer } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
-import { parseSseBuffer } from "@ngriffin_uk/polychat-utility-server/streaming";
 
 import { MAX_STORED_STREAM_EVENTS } from "~/config/chat";
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -467,7 +467,7 @@ export async function processSandboxRunDispatch(params: {
           }
 
           buffer += decoder.decode(value, { stream: true });
-          buffer = parseSseBuffer(buffer, {
+          buffer = parseServerSentEventBuffer(buffer, {
             onEvent: (rawEvent) => {
               const parsed = sandboxRunEventSchema.safeParse(rawEvent);
 
