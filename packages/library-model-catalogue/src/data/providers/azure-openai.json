@@ -1,7 +1,6 @@
 {
   "defaults": {
     "supportsToolCalls": true,
-    "supportsAttachments": false,
     "supportsTemperature": true
   },
   "models": {
@@ -72,7 +71,6 @@
         "lastUpdated": "April 16, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
-        "supportsAttachments": true,
         "supportsParallelToolCalls": false,
         "supportsTemperature": false
       },
@@ -88,7 +86,6 @@
         "lastUpdated": "November 18, 2025",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
-        "supportsAttachments": true,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
     },
@@ -101,7 +98,6 @@
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.075,
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       },
       "unset": [
@@ -118,7 +114,6 @@
         "lastUpdated": "August 1, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
-        "supportsAttachments": true,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -142,7 +137,6 @@
         "lastUpdated": "July 17, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
-        "supportsAttachments": true,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -168,7 +162,6 @@
         "lastUpdated": "November 18, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
-        "supportsAttachments": true,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
     },
@@ -227,7 +220,6 @@
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
-        "supportsAttachments": true,
         "supportsTemperature": false
       }
     },
@@ -321,7 +313,6 @@
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
-        "supportsAttachments": true,
         "supportsTemperature": false
       },
       "unset": [
@@ -339,7 +330,6 @@
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "supportsToolCalls": false,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -367,6 +357,7 @@
         "lastUpdated": "September 15, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": false,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -390,7 +381,6 @@
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -415,7 +405,6 @@
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0004,
-        "supportsAttachments": true,
         "supportsTemperature": false
       },
       "unset": [
@@ -429,7 +418,6 @@
         "lastUpdated": "October 6, 2025",
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.12,
-        "supportsAttachments": true,
         "supportsTemperature": false
       },
       "unset": [
@@ -464,7 +452,6 @@
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
-        "supportsAttachments": true,
         "supportsTemperature": false
       }
     },
@@ -488,7 +475,6 @@
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -530,6 +516,7 @@
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": false,
         "supportsTemperature": false
       }
     },
@@ -541,7 +528,6 @@
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
-        "supportsAttachments": true,
         "supportsTemperature": false
       },
       "unset": [
@@ -563,6 +549,7 @@
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
+        "supportsAttachments": false,
         "supportsTemperature": false
       }
     },
@@ -575,7 +562,6 @@
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
-        "supportsAttachments": true,
         "supportsTemperature": false
       }
     },
@@ -586,7 +572,6 @@
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
-        "supportsAttachments": true,
         "supportsTemperature": false
       },
       "unset": [
@@ -607,6 +592,7 @@
         "lastUpdated": "January 14, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
+        "supportsAttachments": false,
         "supportsTemperature": false
       }
     },
@@ -657,8 +643,7 @@
       "overrides": {
         "lastUpdated": "September 19, 2025",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0005,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.0005
       },
       "unset": [
         "openWeights"
@@ -740,6 +725,7 @@
         "lastUpdated": "February 6, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
+        "supportsAttachments": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
         "apiShape": "completions"
       }
@@ -752,8 +738,7 @@
         "maxTokens": 8192,
         "lastUpdated": "September 25, 2024",
         "costPer1kInputTokens": 0.00037,
-        "costPer1kOutputTokens": 0.00037,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.00037
       }
     },
     "meta/llama-3.2-90b-vision-instruct": {
@@ -763,8 +748,7 @@
         "name": "Llama-3.2-90B-Vision-Instruct",
         "lastUpdated": "September 25, 2024",
         "costPer1kInputTokens": 0.00204,
-        "costPer1kOutputTokens": 0.00204,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.00204
       }
     },
     "meta/llama-3.3-70b-instruct": {
@@ -789,8 +773,7 @@
         "maxTokens": 16384,
         "lastUpdated": "April 5, 2025",
         "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.001,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.001
       }
     },
     "meta/llama-4-scout-17b-16e-instruct": {
@@ -801,8 +784,7 @@
         "maxTokens": 8192,
         "lastUpdated": "April 5, 2025",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.00078,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.00078
       }
     },
     "microsoft/mai-ds-r1": {
@@ -897,8 +879,7 @@
         "knowledgeCutoffDate": "May 2025",
         "lastUpdated": "May 7, 2025",
         "costPer1kInputTokens": 0.0004,
-        "costPer1kOutputTokens": 0.002,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.002
       },
       "unset": [
         "supportsResponseFormat"
@@ -922,8 +903,7 @@
         "speed": 4,
         "lastUpdated": "March 1, 2025",
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0003,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.0003
       }
     },
     "azure/model-router": {
@@ -932,8 +912,7 @@
       "overrides": {
         "lastUpdated": "November 18, 2025",
         "costPer1kInputTokens": 0.00014,
-        "costPer1kOutputTokens": 0,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0
       },
       "unset": [
         "supportsTemperature"
@@ -1059,8 +1038,7 @@
         "lastUpdated": "December 11, 2024",
         "costPer1kInputTokens": 0.00008,
         "costPer1kOutputTokens": 0.00032,
-        "supportsToolCalls": false,
-        "supportsAttachments": true
+        "supportsToolCalls": false
       }
     },
     "microsoft/phi-4-reasoning": {
@@ -1132,7 +1110,6 @@
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
-        "supportsAttachments": true,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1152,7 +1129,6 @@
         "lastUpdated": "March 3, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
-        "supportsAttachments": true,
         "supportsTemperature": false
       },
       "unset": [
@@ -1182,6 +1158,7 @@
         "lastUpdated": "February 24, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
+        "supportsAttachments": false,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1202,8 +1179,7 @@
         "speed": 4,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.0025,
-        "costPer1kOutputTokens": 0.015,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.015
       }
     },
     "gpt-5.4-mini": {
@@ -1213,8 +1189,7 @@
         "speed": 4,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.00075,
-        "costPer1kOutputTokens": 0.0045,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.0045
       }
     },
     "gpt-5.4-nano": {
@@ -1235,8 +1210,7 @@
         "speed": 4,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.00125,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.00125
       }
     },
     "gpt-5.4-pro": {
@@ -1255,7 +1229,6 @@
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.03,
         "costPer1kOutputTokens": 0.18,
-        "supportsAttachments": true,
         "supportsTemperature": false
       }
     },
@@ -1268,7 +1241,6 @@
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
-        "supportsAttachments": true,
         "supportsTemperature": false
       }
     },
@@ -1300,7 +1272,6 @@
         "lastUpdated": "June 27, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005,
-        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 16.9,
           "codingIndex": null,
@@ -1330,8 +1301,7 @@
         "releaseDate": "June 27, 2025",
         "lastUpdated": "June 27, 2025",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0005,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.0005
       }
     },
     "grok-4-20-non-reasoning": {
@@ -1359,7 +1329,8 @@
         "releaseDate": "April 8, 2026",
         "lastUpdated": "April 8, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.006
+        "costPer1kOutputTokens": 0.006,
+        "supportsAttachments": false
       }
     },
     "grok-4-20-reasoning": {
@@ -1389,6 +1360,7 @@
         "lastUpdated": "April 8, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 37,
           "codingIndex": null,
@@ -1420,6 +1392,7 @@
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
+        "supportsAttachments": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
         "apiShape": "completions"
       }
@@ -1483,7 +1456,6 @@
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
@@ -1531,7 +1503,6 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.032,
         "supportsToolCalls": false,
-        "supportsAttachments": true,
         "supportsTemperature": false
       }
     },
@@ -1550,7 +1521,6 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
         "supportsToolCalls": false,
-        "supportsAttachments": true,
         "supportsTemperature": false
       }
     },
@@ -1569,7 +1539,6 @@
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
@@ -1582,7 +1551,6 @@
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
@@ -1595,7 +1563,6 @@
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0012,
-        "supportsAttachments": true,
         "supportsTemperature": false
       }
     },
@@ -1607,7 +1574,6 @@
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
-        "supportsAttachments": true,
         "supportsTemperature": false
       }
     },
@@ -1619,7 +1585,6 @@
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
-        "supportsAttachments": true,
         "supportsTemperature": false
       }
     },
@@ -1634,7 +1599,6 @@
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1653,7 +1617,6 @@
         "lastUpdated": "July 24, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       },
@@ -1684,7 +1647,6 @@
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
         "apiShape": "completions"
@@ -1698,7 +1660,6 @@
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
@@ -1711,7 +1672,6 @@
         "lastUpdated": "April 16, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
@@ -1724,7 +1684,6 @@
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
@@ -1736,8 +1695,7 @@
         "status": "beta",
         "contextWindow": 200000,
         "maxTokens": 128000,
-        "lastUpdated": "August 12, 2026",
-        "supportsAttachments": true
+        "lastUpdated": "August 12, 2026"
       }
     },
     "gpt-6-astra": {
@@ -1747,7 +1705,6 @@
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1802,6 +1759,17 @@
         "supportsToolCalls": false,
         "supportsAttachments": true,
         "supportsTemperature": false
+      }
+    },
+    "claude-opus-5-5": {
+      "model": "claude-opus/claude-opus-5-5",
+      "matchingModel": "claude-opus-5-5",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
     }
   }

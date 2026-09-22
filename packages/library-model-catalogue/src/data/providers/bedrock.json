@@ -716,7 +716,6 @@
       "model": "claude-sonnet/claude-sonnet-4",
       "matchingModel": "anthropic.claude-sonnet-4-20250514-v1:0",
       "overrides": {
-        "contextWindow": 200000,
         "deprecated": true,
         "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "May 22, 2025",
@@ -2494,6 +2493,79 @@
         "costPer1kInputTokens": 0.000084,
         "costPer1kOutputTokens": 0.00036,
         "supportsAttachments": false
+      }
+    },
+    "anthropic.claude-opus-5-5": {
+      "model": "claude-opus/claude-opus-5-5",
+      "matchingModel": "anthropic.claude-opus-5-5",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "au.anthropic.claude-opus-5-5": {
+      "model": "claude-opus/claude-opus-5-5-au",
+      "matchingModel": "au.anthropic.claude-opus-5-5",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0044,
+        "costPer1kOutputTokens": 0.022,
+        "supportsTemperature": false
+      }
+    },
+    "eu.anthropic.claude-opus-5-5": {
+      "model": "claude-opus/claude-opus-5-5-eu",
+      "matchingModel": "eu.anthropic.claude-opus-5-5",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0044,
+        "costPer1kOutputTokens": 0.022,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "global.anthropic.claude-opus-5-5": {
+      "model": "claude-opus/claude-opus-5-5-global",
+      "matchingModel": "global.anthropic.claude-opus-5-5",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "supportsTemperature": false
+      }
+    },
+    "jp.anthropic.claude-opus-5-5": {
+      "model": "claude-opus/claude-opus-5-5-jp",
+      "matchingModel": "jp.anthropic.claude-opus-5-5",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0044,
+        "costPer1kOutputTokens": 0.022,
+        "supportsTemperature": false
+      }
+    },
+    "us.anthropic.claude-opus-5-5": {
+      "model": "claude-opus/claude-opus-5-5-us",
+      "matchingModel": "us.anthropic.claude-opus-5-5",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0044,
+        "costPer1kOutputTokens": 0.022,
+        "supportsTemperature": false
       }
     }
   }

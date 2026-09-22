@@ -182,19 +182,18 @@
       "overrides": {
         "name": "gpt-oss-20b",
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
-        "maxTokens": 117964,
+        "maxTokens": 32768,
         "strengths": [
           "reasoning",
           "analysis",
           "coding",
           "tool_use"
         ],
-        "contextComplexity": 4,
         "speed": 5,
         "knowledgeCutoffDate": "June 30, 2024",
         "lastUpdated": "August 5, 2025",
-        "costPer1kInputTokens": 0.00003,
-        "costPer1kOutputTokens": 0.00013
+        "costPer1kInputTokens": 0.000018,
+        "costPer1kOutputTokens": 0.00009
       }
     },
     "openai/gpt-4.1": {
@@ -2624,7 +2623,7 @@
       "matchingModel": "qwen/qwen3-next-80b-a3b-thinking",
       "overrides": {
         "description": "Efficient Qwen thinking model for local reasoning, math, and coding agents",
-        "maxTokens": 32768,
+        "maxTokens": 235929,
         "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "September 2025",
@@ -3011,8 +3010,8 @@
       "matchingModel": "~anthropic/claude-opus-latest",
       "overrides": {
         "lastUpdated": "April 21, 2026",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025,
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
         "supportsAttachments": true,
         "supportsTemperature": false
       },
@@ -3081,8 +3080,8 @@
       "matchingModel": "~moonshotai/kimi-latest",
       "overrides": {
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.0017,
-        "costPer1kOutputTokens": 0.0085,
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.0075,
         "supportsAttachments": true
       }
     },
@@ -3753,8 +3752,8 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.000088606,
-        "costPer1kOutputTokens": 0.000177212,
+        "costPer1kInputTokens": 0.000049,
+        "costPer1kOutputTokens": 0.000098,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high",
@@ -3785,8 +3784,8 @@
         "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.00095526,
-        "costPer1kOutputTokens": 0.00191052,
+        "costPer1kInputTokens": 0.000904104,
+        "costPer1kOutputTokens": 0.001808208,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high",
@@ -4317,9 +4316,10 @@
       "matchingModel": "meta-llama/llama-3.1-70b-instruct",
       "overrides": {
         "contextWindow": 131072,
+        "maxTokens": 16384,
         "lastUpdated": "July 23, 2024",
-        "costPer1kInputTokens": 0.00072,
-        "costPer1kOutputTokens": 0.00072
+        "costPer1kInputTokens": 0.0004,
+        "costPer1kOutputTokens": 0.0004
       }
     },
     "meta-llama/llama-3.1-8b-instruct": {
@@ -4395,8 +4395,8 @@
         "speed": 4,
         "knowledgeCutoffDate": "August 31, 2024",
         "lastUpdated": "April 5, 2025",
-        "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0008,
+        "costPer1kInputTokens": 0.0001875,
+        "costPer1kOutputTokens": 0.0006525,
         "supportsAttachments": true
       }
     },
@@ -4817,8 +4817,8 @@
         "maxTokens": 235929,
         "speed": 4,
         "lastUpdated": "December 15, 2025",
-        "costPer1kInputTokens": 0.00006,
-        "costPer1kOutputTokens": 0.00024
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.0002
       }
     },
     "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
@@ -6062,6 +6062,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "qwen/qwen3.6-27b",
       "overrides": {
+        "maxTokens": 262140,
         "modalities": {
           "input": [
             "text",
@@ -6080,8 +6081,8 @@
         ],
         "speed": 3,
         "lastUpdated": "April 22, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.002,
+        "costPer1kInputTokens": 0.00032,
+        "costPer1kOutputTokens": 0.0027,
         "supportsAttachments": true
       }
     },
@@ -6858,7 +6859,7 @@
         "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.0007062,
-        "costPer1kOutputTokens": 0.00321,
+        "costPer1kOutputTokens": 0.0033,
         "supportsAttachments": true
       }
     },
@@ -7077,8 +7078,8 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 6, 2026",
-        "costPer1kInputTokens": 0.000132,
-        "costPer1kOutputTokens": 0.000528
+        "costPer1kInputTokens": 0.0000825,
+        "costPer1kOutputTokens": 0.00033
       }
     },
     "tencent/hy3:free": {
@@ -7117,8 +7118,8 @@
       "matchingModel": "~x-ai/grok-latest",
       "overrides": {
         "lastUpdated": "July 8, 2026",
-        "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.006,
+        "costPer1kInputTokens": 0.0016,
+        "costPer1kOutputTokens": 0.0048,
         "supportsAttachments": true
       }
     },
@@ -7254,8 +7255,8 @@
         "maxTokens": 943718,
         "isFeatured": true,
         "lastUpdated": "July 16, 2026",
-        "costPer1kInputTokens": 0.0017,
-        "costPer1kOutputTokens": 0.0085,
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
         "supportsAttachments": true
       }
     },
@@ -7437,8 +7438,8 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.00004,
-        "costPer1kOutputTokens": 0.00016
+        "costPer1kInputTokens": 0.00003,
+        "costPer1kOutputTokens": 0.001
       }
     },
     "inclusionai/ling-3.0-flash": {
@@ -7677,8 +7678,8 @@
           ]
         },
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0025,
+        "costPer1kInputTokens": 0.00042,
+        "costPer1kOutputTokens": 0.003,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -7710,8 +7711,8 @@
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 1310720,
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.00091,
-        "costPer1kOutputTokens": 0.00286
+        "costPer1kInputTokens": 0.0006538,
+        "costPer1kOutputTokens": 0.0020548
       }
     },
     "~z-ai/glm-latest": {
@@ -7720,11 +7721,11 @@
       "overrides": {
         "openWeights": false,
         "contextWindow": 1310720,
-        "maxTokens": 943718,
+        "maxTokens": 131072,
         "releaseDate": "August 19, 2026",
         "lastUpdated": "August 19, 2026",
-        "costPer1kInputTokens": 0.0007735,
-        "costPer1kOutputTokens": 0.002431
+        "costPer1kInputTokens": 0.0006538,
+        "costPer1kOutputTokens": 0.0020548
       }
     },
     "stealth/ox-alpha": {
@@ -7954,6 +7955,7 @@
       "overrides": {
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
         "contextWindow": 1310720,
+        "maxTokens": 943718,
         "modalities": {
           "input": [
             "text",
@@ -7965,8 +7967,8 @@
           ]
         },
         "lastUpdated": "August 26, 2026",
-        "costPer1kInputTokens": 0.00009,
-        "costPer1kOutputTokens": 0.0003,
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": true
       }
     },
@@ -7975,8 +7977,8 @@
       "matchingModel": "ibm-granite/granite-4.2-8b",
       "overrides": {
         "lastUpdated": "August 31, 2026",
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.00015
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00025
       }
     },
     "~z-ai/glm-flash-latest": {
@@ -8175,8 +8177,8 @@
       "matchingModel": "~openai/gpt-luna-latest",
       "overrides": {
         "lastUpdated": "September 11, 2026",
-        "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0012,
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": true,
         "supportsTemperature": false
       }
@@ -8349,8 +8351,8 @@
       "matchingModel": "~deepseek/deepseek-pro-latest",
       "overrides": {
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.00066,
-        "costPer1kOutputTokens": 0.00198
+        "costPer1kInputTokens": 0.00054384,
+        "costPer1kOutputTokens": 0.00163152
       }
     },
     "stealth/union-alpha": {
@@ -8414,6 +8416,159 @@
         "costPer1kInputTokens": 0.00037,
         "costPer1kOutputTokens": 0.00125,
         "supportsResponseFormat": false,
+        "supportsAttachments": true
+      }
+    },
+    "anthropic/claude-opus-5.5": {
+      "model": "claude-opus/claude-opus-5-5",
+      "matchingModel": "anthropic/claude-opus-5.5",
+      "overrides": {
+        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "nex-agi/nex-n2.5-mini": {
+      "model": "agi/nex-n2-5-mini",
+      "matchingModel": "nex-agi/nex-n2.5-mini",
+      "overrides": {
+        "lastUpdated": "September 8, 2026",
+        "costPer1kInputTokens": 0.000025,
+        "costPer1kOutputTokens": 0.0001,
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "nex-agi/nex-n2.5-pro": {
+      "model": "agi/nex-n2-5-pro",
+      "matchingModel": "nex-agi/nex-n2.5-pro",
+      "overrides": {
+        "lastUpdated": "September 8, 2026",
+        "costPer1kInputTokens": 0.000075,
+        "costPer1kOutputTokens": 0.00025,
+        "supportsAttachments": true
+      }
+    },
+    "openai/gpt-6-luna": {
+      "model": "gpt/gpt-6-luna",
+      "matchingModel": "openai/gpt-6-luna",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "openai/gpt-6-luna-pro": {
+      "model": "gpt/gpt-6-luna-pro",
+      "matchingModel": "openai/gpt-6-luna-pro",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "openai/gpt-6-sol": {
+      "model": "gpt/gpt-6-sol",
+      "matchingModel": "openai/gpt-6-sol",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "openai/gpt-6-sol-pro": {
+      "model": "gpt/gpt-6-sol-pro",
+      "matchingModel": "openai/gpt-6-sol-pro",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "x-ai/grok-4.7": {
+      "model": "grok/grok-4-7",
+      "matchingModel": "x-ai/grok-4.7",
+      "overrides": {
+        "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
+        "maxTokens": 450000,
+        "lastUpdated": "September 21, 2026",
+        "costPer1kInputTokens": 0.0016,
+        "costPer1kOutputTokens": 0.0048,
+        "supportsAttachments": true
+      }
+    },
+    "xiaomi/mimo-v2.6-flash": {
+      "model": "mimo/mimo-v2-6-flash",
+      "matchingModel": "xiaomi/mimo-v2.6-flash",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00028,
+        "supportsAttachments": true
+      }
+    },
+    "xiaomi/mimo-v2.6-pro": {
+      "model": "mimo/mimo-v2-6-pro",
+      "matchingModel": "xiaomi/mimo-v2.6-pro",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.000435,
+        "costPer1kOutputTokens": 0.00087,
+        "supportsAttachments": true
+      }
+    },
+    "xiaomi/mimo-v2.6-pro-ultraspeed": {
+      "model": "mimo/mimo-v2-6-pro-ultraspeed",
+      "matchingModel": "xiaomi/mimo-v2.6-pro-ultraspeed",
+      "overrides": {
+        "name": "MiMo-V2.6-Pro-UltraSpeed",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 21, 2026",
+        "costPer1kInputTokens": 0.00435,
+        "costPer1kOutputTokens": 0.0087,
         "supportsAttachments": true
       }
     }

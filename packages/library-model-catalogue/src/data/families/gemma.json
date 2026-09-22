@@ -720,7 +720,7 @@
       "defaults": {
         "name": "Gemma SEA-LION v4 27B IT",
         "openWeights": true,
-        "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
+        "description": "Gemma 3 27B tuned by AI Singapore for Southeast Asian languages and instruction following",
         "contextWindow": 128000,
         "maxTokens": 128000,
         "modalities": {

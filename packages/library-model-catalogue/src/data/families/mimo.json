@@ -1,18 +1,11 @@
 {
   "defaults": {
-    "openWeights": true,
-    "modalities": {
-      "input": [
-        "text"
-      ],
-      "output": [
-        "text"
-      ]
-    },
+    "maxTokens": 131072,
     "reliability": 2,
     "knowledgeCutoffDate": "December 2024",
     "supportsToolCalls": true,
-    "supportsAttachments": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [
@@ -27,6 +20,7 @@
     "mimo-m2-5": {
       "defaults": {
         "name": "MiMo M2.5",
+        "openWeights": true,
         "description": "Open MiMo model for multimodal coding agents and long-context automation",
         "contextWindow": 1050000,
         "maxTokens": 131100,
@@ -50,7 +44,6 @@
         ],
         "contextComplexity": 5,
         "releaseDate": "April 22, 2026",
-        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 40.1,
           "codingIndex": null,
@@ -62,8 +55,8 @@
     "mimo-v2-5": {
       "defaults": {
         "name": "MiMo-V2.5",
+        "openWeights": true,
         "description": "Open MiMo model for multimodal coding agents and long-context automation",
-        "maxTokens": 131072,
         "strengths": [
           "vision",
           "audio",
@@ -72,8 +65,6 @@
           "tool_use"
         ],
         "releaseDate": "April 22, 2026",
-        "supportsResponseFormat": true,
-        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 40.1,
           "codingIndex": null,
@@ -85,12 +76,20 @@
     "mimo-v2-5-pro": {
       "defaults": {
         "name": "MiMo-V2.5-Pro",
+        "openWeights": true,
         "description": "Stronger MiMo Pro tier for multimodal reasoning and coding-agent execution",
         "contextWindow": 1048576,
-        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "contextComplexity": 5,
         "releaseDate": "April 22, 2026",
-        "supportsResponseFormat": true,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 42.2,
           "codingIndex": 60.2,
@@ -102,21 +101,90 @@
     "mimo-v2-5-pro-ultraspeed": {
       "defaults": {
         "name": "MiMo V2.5 Pro UltraSpeed",
+        "openWeights": true,
         "description": "MiMo pro model for strong multimodal reasoning and agent execution",
         "contextWindow": 1048576,
-        "maxTokens": 131072,
-        "releaseDate": "June 8, 2026"
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "June 8, 2026",
+        "supportsAttachments": false
+      }
+    },
+    "mimo-v2-6-flash": {
+      "defaults": {
+        "name": "MiMo-V2.6-Flash",
+        "openWeights": false,
+        "description": "MiMo flash model for fast multimodal assistance and agent workflows",
+        "contextWindow": 1048576,
+        "knowledgeCutoffDate": "September 22, 2026",
+        "releaseDate": "September 22, 2026"
+      }
+    },
+    "mimo-v2-6-flash-free": {
+      "defaults": {
+        "name": "MiMo-V2.6-Flash Free",
+        "openWeights": false,
+        "description": "MiMo Flash model for multimodal coding agents and long-context automation",
+        "contextWindow": 200000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "September 22, 2026",
+        "releaseDate": "September 22, 2026"
+      }
+    },
+    "mimo-v2-6-pro": {
+      "defaults": {
+        "name": "MiMo-V2.6-Pro",
+        "openWeights": false,
+        "description": "MiMo pro model for strong multimodal reasoning and agent execution",
+        "contextWindow": 1048576,
+        "knowledgeCutoffDate": "September 22, 2026",
+        "releaseDate": "September 22, 2026"
+      }
+    },
+    "mimo-v2-6-pro-ultraspeed": {
+      "defaults": {
+        "openWeights": false,
+        "description": "MiMo pro model for strong multimodal reasoning and agent execution",
+        "contextWindow": 1048576,
+        "releaseDate": "September 21, 2026"
       }
     },
     "mimo-v2-flash": {
       "defaults": {
         "description": "MiMo flash model for fast multimodal assistance and agent workflows",
         "contextWindow": 262144,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "tool_use"
         ],
         "reliability": 1,
         "releaseDate": "December 16, 2025",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 33.2,
           "codingIndex": null,
@@ -128,12 +196,21 @@
     "mimo-v2-flash-tee": {
       "defaults": {
         "name": "MiMo V2 Flash TEE",
+        "openWeights": true,
         "description": "MiMo V2 Flash TEE accepts text and produces text.",
         "contextWindow": 262144,
         "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "knowledgeCutoffDate": "December 1, 2024",
         "releaseDate": "December 16, 2025",
-        "supportsResponseFormat": true
+        "supportsAttachments": false
       }
     },
     "mimo-v2-pro": {
@@ -143,11 +220,20 @@
         "description": "MiMo V2 Pro accepts text and produces text.",
         "contextWindow": 1000000,
         "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 5,
         "releaseDate": "March 18, 2026",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 40.3,
           "codingIndex": null,
