@@ -7,10 +7,9 @@ import {
   type TelemetryEnv,
   type TelemetryProperties,
 } from "@ngriffin_uk/polychat-ai-telemetry";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, parseServerSentEventBuffer } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { readNumberField } from "@ngriffin_uk/polychat-utility-server/record-fields";
-import { parseSseBuffer } from "@ngriffin_uk/polychat-utility-server/streaming";
 
 import { StreamingFormatter } from "./formatter/streaming.js";
 import type { ChatCompletionParameters, Message } from "./types/index.js";
@@ -208,7 +207,7 @@ function observeProviderStream(
     new TransformStream({
       transform(chunk, controller) {
         buffer += decoder.decode(chunk, { stream: true });
-        buffer = parseSseBuffer(buffer, {
+        buffer = parseServerSentEventBuffer(buffer, {
           onEvent: handleEvent,
           onError: onParseError,
         });
@@ -223,7 +222,7 @@ function observeProviderStream(
         }
 
         if (buffer.trim()) {
-          parseSseBuffer(`${buffer}\n\n`, {
+          parseServerSentEventBuffer(`${buffer}\n\n`, {
             onEvent: handleEvent,
             onError: onParseError,
           });

@@ -36,7 +36,7 @@ import { handleGetMetrics } from "./modules/metrics/application/getMetrics";
 import { RealtimeProxyCoordinator } from "./modules/realtime/infrastructure/proxy-coordinator/object";
 import { UserSyncCoordinator } from "./modules/sync/infrastructure/coordinator/object";
 import { QueueExecutor } from "./modules/tasks/application/QueueExecutor";
-import { ScheduleExecutor } from "./modules/tasks/application/ScheduleExecutor";
+import { workflows } from "./modules/tasks/application/registry";
 import type { TaskMessage } from "./modules/tasks/application/types";
 import { apiInfoDescription } from "./openapi/content/apiDescription";
 import { tagDescriptions } from "./openapi/documentation";
@@ -310,7 +310,7 @@ const handler = {
     return app.fetch(request, env, ctx);
   },
   async scheduled(event: ScheduledController, env: IEnv): Promise<void> {
-    await ScheduleExecutor.respondToCronSchedules(env, event);
+    await workflows.runCron(env, event);
   },
   async queue(batch: MessageBatch, env: IEnv): Promise<void> {
     await QueueExecutor.respondToCronQueue(env, {
