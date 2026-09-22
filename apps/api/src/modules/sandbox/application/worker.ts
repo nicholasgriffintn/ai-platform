@@ -88,7 +88,7 @@ export async function resolveSandboxModel(params: {
       ([modelId, config]) => modelId === requestedModel || config.matchingModel === requestedModel,
     );
 
-    if (!selected && (explicitModel || executionProvider === "polychat")) {
+    if (!selected && (explicitModel || executionProvider !== "openai")) {
       throw new AssistantError(
         `Sandbox model "${requestedModel}" is not available for this account`,
         ErrorType.AUTHORISATION_ERROR,
@@ -141,6 +141,7 @@ export async function executeSandboxWorker(
     installationId,
     stream,
     runId,
+    machineId,
     signal,
   } = options;
 
@@ -167,6 +168,7 @@ export async function executeSandboxWorker(
 
   const workerPayload: SandboxWorkerExecuteRequest = {
     userId: user.id,
+    machineId,
     projectId,
     taskType: taskType || "feature-implementation",
     repo,

@@ -105,6 +105,8 @@ export async function buildMachineHeartbeatPayload(
   const hasAgentRuntime = agentRuntimes.some(
     (runtime) => runtime.readiness.state === "ready" && runtime.supportsSessions,
   );
+  const hasLocalSandbox = await backend.localSandboxAvailable().catch(() => false);
+  const hasLocalBrowser = await backend.localBrowserAvailable().catch(() => false);
 
   return machineHeartbeatSchema.parse({
     machineId: diagnostics.machineId,
@@ -115,6 +117,8 @@ export async function buildMachineHeartbeatPayload(
     capabilities: [
       ...(modelEndpoints.length > 0 ? (["model-run", "model-relay"] as const) : []),
       ...(hasAgentRuntime ? (["agent-run"] as const) : []),
+      ...(hasLocalSandbox ? (["sandbox"] as const) : []),
+      ...(hasLocalBrowser ? (["computer"] as const) : []),
     ],
   });
 }

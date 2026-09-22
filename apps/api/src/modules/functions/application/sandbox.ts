@@ -109,6 +109,7 @@ async function executeSandboxFunction(params: {
 
   const payload: ExecuteSandboxRunPayload = {
     executionProvider: sandboxOptions?.executionProvider,
+    machineId: sandboxOptions?.machineId,
     installationId,
     repo,
     task: args.task,

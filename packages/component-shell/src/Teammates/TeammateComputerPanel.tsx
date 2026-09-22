@@ -1,3 +1,4 @@
+import { InlineSettingSelect } from "@ngriffin_uk/polychat-component-conversation";
 import {
   Button,
   COMPUTER_SCREEN_SANDBOX,
@@ -12,6 +13,7 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { MonitorUp } from "lucide-react";
 import { useState } from "react";
 
+import { useAvailableLocalMachines } from "../useAvailableLocalMachines.js";
 import { TeammateTeachingDraft } from "./TeammateTeachingDraft.js";
 
 export function TeammateComputerPanel({ contextId }: { contextId: string }) {
@@ -23,7 +25,46 @@ export function TeammateComputerPanel({ contextId }: { contextId: string }) {
   } | null>(null);
   const [teaching, setTeaching] = useState(false);
   const [confirmDestroy, setConfirmDestroy] = useState(false);
+  const [chosenProvider, setChosenProvider] = useState<string | null>(null);
+  const { available: localMachines, currentMachineId } = useAvailableLocalMachines("computer");
+  const currentLocal = localMachines.find((machine) => machine.machineId === currentMachineId);
+  const savedLocal = localMachines.find(
+    (machine) => computer?.provider === `local:${machine.machineId}`,
+  );
+  const providerOptions = [
+    ...localMachines.map((machine) => ({
+      value: `local:${machine.machineId}`,
+      label:
+        machine.machineId === currentMachineId
+          ? "This device (Chrome)"
+          : `${machine.label} (Chrome)`,
+    })),
+    { value: "hosted", label: "Hosted computer" },
+  ];
+  const preferredProvider = savedLocal
+    ? `local:${savedLocal.machineId}`
+    : currentLocal
+      ? `local:${currentLocal.machineId}`
+      : "hosted";
+  const selectedProvider =
+    chosenProvider && providerOptions.some((option) => option.value === chosenProvider)
+      ? chosenProvider
+      : preferredProvider;
+  const isLocal = computer?.provider.startsWith("local:") ?? false;
+  const canStart = !computer || ["stopped", "error", "destroyed"].includes(computer.status);
   const busy = action.isPending || takeover.isPending || release.isPending;
+
+  const start = () => {
+    action.mutate(
+      selectedProvider === "hosted"
+        ? { action: "provision", provider: "hosted" }
+        : {
+            action: "provision",
+            provider: "local",
+            machineId: selectedProvider.slice("local:".length),
+          },
+    );
+  };
 
   const takeControl = (teach = false) => {
     takeover.mutate(teach, {
@@ -63,13 +104,14 @@ export function TeammateComputerPanel({ contextId }: { contextId: string }) {
           <p className="text-sm font-medium text-foreground">Computer</p>
           <p className="text-xs text-muted-foreground">
             {computer?.status ?? "Loading"}
+            {computer ? ` · ${isLocal ? "Local Chrome" : "Hosted"}` : ""}
             {computer?.checkpointReference ? " · checkpoint saved" : ""}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {(!computer || computer.status === "stopped" || computer.status === "error") && (
+          {canStart && (
             <>
-              {computer?.checkpointReference ? (
+              {computer?.checkpointReference && selectedProvider === computer.provider ? (
                 <Button
                   size="sm"
                   variant="outline"
@@ -79,53 +121,44 @@ export function TeammateComputerPanel({ contextId }: { contextId: string }) {
                   Restore checkpoint
                 </Button>
               ) : null}
-              <Button
-                size="sm"
-                variant="outline"
-                isLoading={action.isPending}
-                onClick={() => action.mutate({ action: "provision" })}
-              >
+              <Button size="sm" variant="outline" isLoading={action.isPending} onClick={start}>
                 Start
               </Button>
             </>
           )}
-          {computer?.status === "destroyed" && (
-            <Button
-              size="sm"
-              variant="outline"
-              isLoading={action.isPending}
-              onClick={() => action.mutate({ action: "provision" })}
-            >
-              Start
-            </Button>
-          )}
           {computer?.status === "ready" && (
             <>
-              <Button
-                size="sm"
-                variant="outline"
-                isLoading={action.isPending}
-                onClick={() => action.mutate({ action: "checkpoint" })}
-              >
-                Save checkpoint
-              </Button>
-              <Button
-                size="sm"
-                variant="primary"
-                icon={<MonitorUp className="size-4" />}
-                isLoading={takeover.isPending}
-                onClick={() => takeControl(false)}
-              >
-                Take control
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                isLoading={takeover.isPending}
-                onClick={() => takeControl(true)}
-              >
-                Teach workflow
-              </Button>
+              {!isLocal && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  isLoading={action.isPending}
+                  onClick={() => action.mutate({ action: "checkpoint" })}
+                >
+                  Save checkpoint
+                </Button>
+              )}
+              {!isLocal && (
+                <Button
+                  size="sm"
+                  variant="primary"
+                  icon={<MonitorUp className="size-4" />}
+                  isLoading={takeover.isPending}
+                  onClick={() => takeControl(false)}
+                >
+                  Take control
+                </Button>
+              )}
+              {!isLocal && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  isLoading={takeover.isPending}
+                  onClick={() => takeControl(true)}
+                >
+                  Teach workflow
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="outline"
@@ -148,6 +181,31 @@ export function TeammateComputerPanel({ contextId }: { contextId: string }) {
           ) : null}
         </div>
       </div>
+
+      {canStart && (
+        <InlineSettingSelect<string>
+          id={`teammate-computer-provider-${contextId}`}
+          label="Computer environment"
+          icon={<MonitorUp className="size-4" />}
+          value={selectedProvider}
+          displayLabel={
+            providerOptions.find((option) => option.value === selectedProvider)?.label ??
+            "Hosted computer"
+          }
+          options={providerOptions}
+          isDisabled={busy}
+          onChange={(next) => {
+            if (next) {
+              setChosenProvider(next);
+            }
+          }}
+        />
+      )}
+      {isLocal && computer?.status === "ready" && (
+        <p className="text-xs text-muted-foreground">
+          The browser is open on the selected desktop.
+        </p>
+      )}
 
       {(error || action.error || takeover.error || release.error) && (
         <p className="text-sm text-destructive">
@@ -196,7 +254,11 @@ export function TeammateComputerPanel({ contextId }: { contextId: string }) {
         open={confirmDestroy}
         onOpenChange={setConfirmDestroy}
         title="Destroy teammate computer"
-        description="Destroy this computer and its current workspace. Saved checkpoints remain available to a replacement computer."
+        description={
+          isLocal
+            ? "Close this local browser and remove its isolated profile."
+            : "Destroy this computer and its current workspace. Saved checkpoints remain available to a replacement computer."
+        }
         confirmText="Destroy"
         variant="destructive"
         isLoading={action.isPending}

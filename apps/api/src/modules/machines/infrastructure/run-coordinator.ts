@@ -18,6 +18,7 @@ interface StoredRun {
 }
 
 const RETENTION_MS = 10 * 60_000;
+const SANDBOX_RETENTION_MS = 20 * 60_000;
 const CONNECTION_TIMEOUT_MS = 30_000;
 
 export class MachineRunCoordinator extends Agent<IEnv> {
@@ -106,12 +107,14 @@ export class MachineRunCoordinator extends Agent<IEnv> {
           request: input,
           snapshot: { id: input.id, state: "pending", text: "" },
           sequence: -1,
-          expiresAt: now + RETENTION_MS,
+          expiresAt:
+            now +
+            ("kind" in input && input.kind === "sandbox" ? SANDBOX_RETENTION_MS : RETENTION_MS),
           updatedAt: now,
         };
 
         await this.ctx.storage.put(`run:${input.id}`, run);
-        await this.ctx.storage.setAlarm(now + RETENTION_MS);
+        await this.ctx.storage.setAlarm(run.expiresAt);
 
         return Response.json(run.snapshot);
       }

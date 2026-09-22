@@ -27,6 +27,7 @@ tauri-plugin-notification = "2"
 tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 time = { version = "0.3", features = ["formatting"] }
 url = "2"
+tokio-tungstenite = { version = "0.28", features = ["connect"] }
 
 [features]
 default = ["custom-protocol"]

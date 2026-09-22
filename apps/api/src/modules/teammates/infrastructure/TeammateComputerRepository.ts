@@ -64,6 +64,25 @@ export class TeammateComputerRepository extends BaseRepository<Pick<IEnv, "DB">>
     return computer;
   }
 
+  async selectProvider(
+    contextId: string,
+    provider: string,
+  ): Promise<TeammateComputerRecord | null> {
+    const row = await this.runQuery<TeammateComputerRow>(
+      `UPDATE teammate_computer
+       SET provider = ?, provider_handle = NULL, checkpoint_reference = NULL,
+           status = 'stopped', last_error = NULL, updated_at = CURRENT_TIMESTAMP
+       WHERE context_id = ?
+         AND (status IN ('stopped', 'destroyed') OR (status = 'error' AND provider_handle IS NULL))
+         AND (lease_expires_at IS NULL OR lease_expires_at <= CURRENT_TIMESTAMP)
+       RETURNING *`,
+      [provider, contextId],
+      true,
+    );
+
+    return row ? formatComputer(row) : null;
+  }
+
   async updateState(params: {
     id: string;
     status: TeammateComputer["status"];

@@ -1,8 +1,8 @@
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
-import type { MachineRunRequest } from "@ngriffin_uk/polychat-schemas";
+import type { MachineRunMessages } from "@ngriffin_uk/polychat-schemas";
 
-export function toRunMessages(messages: Message[]): MachineRunRequest["messages"] {
+export function toRunMessages(messages: Message[]): MachineRunMessages {
   return messages.flatMap((message) => {
     if (message.role !== "system" && message.role !== "user" && message.role !== "assistant") {
       return [];

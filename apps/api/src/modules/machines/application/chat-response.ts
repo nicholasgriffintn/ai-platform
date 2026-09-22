@@ -5,6 +5,7 @@ import {
   machineRunRequestSchema,
   modelRuntimeVendorSchema,
   teammateRunConfigurationSchema,
+  type MachineRunMessages,
   type MachineRunRequest,
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
@@ -18,9 +19,7 @@ import { callMachineRun } from "./runs";
 const MACHINE_RUN_POLL_INTERVAL_MS = 1000;
 const MACHINE_RUN_MAX_DURATION_MS = 10 * 60 * 1000;
 
-function machineMessages(
-  messages: ChatCompletionParameters["messages"],
-): MachineRunRequest["messages"] {
+function machineMessages(messages: ChatCompletionParameters["messages"]): MachineRunMessages {
   return (messages ?? []).flatMap((message) => {
     if (message.role !== "system" && message.role !== "user" && message.role !== "assistant") {
       return [];

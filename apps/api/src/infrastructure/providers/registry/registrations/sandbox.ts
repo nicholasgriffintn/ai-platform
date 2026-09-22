@@ -1,12 +1,28 @@
 import {
   OpenAIAgentsSandboxProvider,
   PolychatSandboxProvider,
+  LocalSandboxProvider,
   type SandboxProvider,
 } from "../../capabilities/sandbox";
 import type { ProviderRegistration, ProviderRegistry } from "../types";
 import { ensureEnv, ensureUser } from "./utils";
 
 const sandboxProviders: ProviderRegistration<SandboxProvider>[] = [
+  {
+    name: "local",
+    lifecycle: "transient",
+    create: (context) => {
+      const env = ensureEnv(context);
+      const user = ensureUser(context);
+
+      if (!context.serviceContext || !user) {
+        throw new Error("Local sandbox provider requires a service context and user");
+      }
+
+      return new LocalSandboxProvider(env, context.serviceContext, user);
+    },
+    metadata: { vendor: "Polychat", categories: ["sandbox"] },
+  },
   {
     name: "polychat",
     lifecycle: "transient",

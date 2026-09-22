@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { machineRunRequestSchema } from "./machine-runs.js";
 import { MACHINE_ONLINE_WINDOW_MS, isMachineOnline, machineHeartbeatSchema } from "./machines.js";
 
 const heartbeat = {
@@ -47,5 +48,40 @@ describe("machine heartbeat contract", () => {
     expect(isMachineOnline({ lastSeenAt }, now - 1)).toBe(true);
     expect(isMachineOnline({ lastSeenAt }, now)).toBe(false);
     expect(isMachineOnline({ lastSeenAt: "not-a-date" }, now)).toBe(false);
+  });
+
+  it("accepts bounded local sandbox and browser operations", () => {
+    const id = "a3e414e8-af39-41c2-8cb2-e35fe41aeb6a";
+
+    expect(
+      machineRunRequestSchema.safeParse({
+        id,
+        kind: "sandbox",
+        operation: {
+          type: "request",
+          containerId: "a".repeat(64),
+          path: "/api/ping",
+          method: "GET",
+        },
+      }).success,
+    ).toBe(true);
+    expect(
+      machineRunRequestSchema.safeParse({
+        id,
+        kind: "computer",
+        resourceId: "teammate_computer_1",
+        fence: 2,
+        operation: { type: "input", input: { type: "click", x: 1439, y: 899 } },
+      }).success,
+    ).toBe(true);
+    expect(
+      machineRunRequestSchema.safeParse({
+        id,
+        kind: "computer",
+        resourceId: "../other-browser",
+        fence: 2,
+        operation: { type: "observe" },
+      }).success,
+    ).toBe(false);
   });
 });

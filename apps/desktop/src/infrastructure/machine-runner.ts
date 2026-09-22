@@ -11,10 +11,13 @@ import type {
 import { buildDeviceSyncTopic } from "@ngriffin_uk/polychat-schemas";
 import { delay } from "@ngriffin_uk/polychat-utility-core";
 
+import type { LocalBrowserBackend } from "./local-browser";
+import type { LocalSandboxBackend } from "./local-sandbox";
+
 const MACHINE_CLAIM_FALLBACK_MS = 30_000;
 
 type MachineRunnerBackend = Pick<
-  DesktopBackend,
+  DesktopBackend & LocalSandboxBackend & LocalBrowserBackend,
   | "listEndpoints"
   | "startModelRun"
   | "discoverModels"
@@ -25,6 +28,14 @@ type MachineRunnerBackend = Pick<
   | "pickAgentDirectory"
   | "saveAgentDirectory"
   | "probeAgentTool"
+  | "startLocalSandbox"
+  | "requestLocalSandbox"
+  | "stopLocalSandbox"
+  | "startLocalBrowser"
+  | "localBrowserAction"
+  | "observeLocalBrowser"
+  | "revokeLocalBrowser"
+  | "stopLocalBrowser"
 >;
 
 async function executeClaim(
@@ -91,7 +102,47 @@ async function executeClaim(
       }
     });
     void flushing.catch(() => undefined);
-    if ("kind" in claim.request && claim.request.kind === "agent") {
+    if ("kind" in claim.request && claim.request.kind === "computer") {
+      const { operation, resourceId, fence } = claim.request;
+      const result =
+        operation.type === "start"
+          ? { handle: await backend.startLocalBrowser(resourceId) }
+          : operation.type === "stop"
+            ? await backend.stopLocalBrowser(resourceId, fence).then(() => ({}))
+            : operation.type === "revoke"
+              ? await backend.revokeLocalBrowser(resourceId, fence).then(() => ({}))
+              : operation.type === "observe"
+                ? await backend.observeLocalBrowser(resourceId, fence)
+                : await backend.localBrowserAction(resourceId, fence, operation.input);
+
+      pendingText = JSON.stringify(result);
+      if (pendingText.length > 1_000_000) {
+        throw new Error("The browser observation exceeded the machine relay limit.");
+      }
+
+      state = "completed";
+    } else if ("kind" in claim.request && claim.request.kind === "sandbox") {
+      const operation = claim.request.operation;
+      const result =
+        operation.type === "start"
+          ? { containerId: await backend.startLocalSandbox() }
+          : operation.type === "stop"
+            ? await backend.stopLocalSandbox(operation.containerId).then(() => ({}))
+            : await backend.requestLocalSandbox({
+                id: operation.containerId,
+                path: operation.path,
+                method: operation.method,
+                body: operation.body,
+                contentType: operation.contentType,
+              });
+
+      pendingText = JSON.stringify(result);
+      if (pendingText.length > 1_000_000) {
+        throw new Error("The sandbox response exceeded the machine relay limit.");
+      }
+
+      state = "completed";
+    } else if ("kind" in claim.request && claim.request.kind === "agent") {
       const agentModel: ModelConfigItem = {
         kind: "agent",
         matchingModel: claim.request.driver,

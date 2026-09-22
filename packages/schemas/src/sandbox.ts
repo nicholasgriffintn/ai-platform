@@ -70,6 +70,7 @@ export const sandboxModelSettingsSchema = z.object({
 
 export const executeSandboxRunSchema = z.object({
   executionProvider: sandboxExecutionProviderSchema.optional(),
+  machineId: z.string().trim().min(1).max(128).optional(),
   installationId: z.number().int().positive(),
   repo: sandboxRepoSchema,
   task: z.string().trim().min(1),
@@ -92,6 +93,7 @@ export const executeSandboxRunSchema = z.object({
 
 export const sandboxRunDispatchPayloadSchema = z.object({
   executionProvider: sandboxExecutionProviderSchema.optional(),
+  machineId: z.string().trim().min(1).max(128).optional(),
   projectId: z.string().trim().min(1).optional(),
   installationId: z.number().int().positive(),
   repo: sandboxRepoSchema,
@@ -523,6 +525,7 @@ export const sandboxRunDataSchema = z.object({
   taskType: z.enum(SANDBOX_TASK_TYPES).optional(),
   model: z.string().trim().min(1),
   executionProvider: sandboxExecutionProviderSchema.optional(),
+  machineId: z.string().trim().min(1).max(128).optional(),
   trustLevel: z.enum(SANDBOX_TRUST_LEVELS).optional(),
   promptStrategy: sandboxPromptStrategySchema.optional(),
   deliveryPolicy: sandboxDeliveryPolicySchema.optional(),
@@ -581,6 +584,7 @@ export const sandboxRequestOptionsSchema = z
   .object({
     enabled: z.boolean(),
     executionProvider: sandboxExecutionProviderSchema.optional(),
+    machineId: z.string().trim().min(1).max(128).optional(),
     repo: z.string().trim().optional(),
     installationId: z.number().int().positive().optional(),
     model: z.string().trim().min(1).optional(),
@@ -671,6 +675,7 @@ export const sandboxRunEventEnvelopeSchema = z.object({
 
 export const sandboxWorkerExecuteRequestSchema = z.object({
   userId: z.number().int().positive(),
+  machineId: z.string().trim().min(1).max(128).optional(),
   projectId: z.string().trim().min(1).optional(),
   taskType: sandboxTaskTypeSchema.optional(),
   repo: sandboxRepoSchema,

@@ -49,10 +49,30 @@ export function ComputerTakeoverView({
     released: boolean;
   } | null>(null);
   const [isReturning, setIsReturning] = useState(false);
+  const [interactionError, setInteractionError] = useState<unknown>(null);
 
   if (!request) {
     return null;
   }
+
+  const isLocal = computer.data?.provider.startsWith("local:") ?? false;
+
+  const finishLocalControl = async () => {
+    setIsReturning(true);
+    setInteractionError(null);
+
+    try {
+      await onToolInteraction?.("use_computer", "submitPrompt", {
+        input: "I finished using the local browser. Continue from its current state.",
+        interactionId: request.interactionId,
+        resolution: "completed",
+      });
+    } catch (error) {
+      setInteractionError(error);
+    } finally {
+      setIsReturning(false);
+    }
+  };
 
   const takeControl = () => {
     computer.takeover.mutate(undefined, {
@@ -93,7 +113,8 @@ export function ComputerTakeoverView({
     }
   };
 
-  const error = computer.error ?? computer.takeover.error ?? computer.release.error;
+  const error =
+    interactionError ?? computer.error ?? computer.takeover.error ?? computer.release.error;
 
   return (
     <section className="space-y-3 rounded-lg border border-attention/45 bg-attention/10 p-3 text-sm">
@@ -101,14 +122,25 @@ export function ComputerTakeoverView({
         <p className="font-medium text-foreground">Teammate needs computer control</p>
         <p className="text-muted-foreground">{request.reason}</p>
       </div>
-      <Button
-        size="sm"
-        icon={<MonitorUp className="size-4" />}
-        isLoading={computer.takeover.isPending}
-        onClick={takeControl}
-      >
-        Take control
-      </Button>
+      {isLocal ? (
+        <>
+          <p className="text-muted-foreground">
+            Use the Chrome window on the selected desktop, then continue here.
+          </p>
+          <Button size="sm" isLoading={isReturning} onClick={() => void finishLocalControl()}>
+            Continue
+          </Button>
+        </>
+      ) : (
+        <Button
+          size="sm"
+          icon={<MonitorUp className="size-4" />}
+          isLoading={computer.takeover.isPending}
+          onClick={takeControl}
+        >
+          Take control
+        </Button>
+      )}
       {error && (
         <p className="text-sm text-destructive">
           {getErrorMessage(error, "Computer control could not be updated")}
