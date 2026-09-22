@@ -262,89 +262,96 @@ import family258 from "./families/replicate~2F671ac645ce5e552cc63a54a2bbff63fcf7
 import family259 from "./families/replicate~2F826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9.json" with { type: "json" };
 import family260 from "./families/replicate~2F847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405.json" with { type: "json" };
 import family261 from "./families/replicate~2Falibaba~2Fhappyhorse-1.0.json" with { type: "json" };
-import family262 from "./families/replicate~2Fbria~2Ffibo.json" with { type: "json" };
-import family263 from "./families/replicate~2Fbria~2Fremove-background.json" with { type: "json" };
-import family264 from "./families/replicate~2Fcbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f.json" with { type: "json" };
-import family265 from "./families/replicate~2Fdatacte~2Fproteus-v0.3.json" with { type: "json" };
-import family266 from "./families/replicate~2Felevenlabs~2Fmusic.json" with { type: "json" };
-import family267 from "./families/replicate~2Fgoogle~2Fnano-banana-2.json" with { type: "json" };
-import family268 from "./families/replicate~2Fgoogle~2Fnano-banana-pro.json" with { type: "json" };
-import family269 from "./families/replicate~2Fgoogle~2Fnano-banana.json" with { type: "json" };
-import family270 from "./families/replicate~2Fluma~2Fray-3.2.json" with { type: "json" };
-import family271 from "./families/replicate~2Fnightmareai~2Freal-esrgan.json" with { type: "json" };
-import family272 from "./families/replicate~2Fprunaai~2Fp-video.json" with { type: "json" };
-import family273 from "./families/replicate~2Fresemble-ai~2Fchatterbox-turbo.json" with { type: "json" };
-import family274 from "./families/replicate~2Frunwayml~2Fgen-4.5.json" with { type: "json" };
-import family275 from "./families/replicate~2Fstability-ai~2Fstable-audio-2.5.json" with { type: "json" };
-import family276 from "./families/requesty~2Fleanstral-1-5.json" with { type: "json" };
-import family277 from "./families/requesty~2Fleanstral-1-5~40eu.json" with { type: "json" };
-import family278 from "./families/requesty~2Fstep-3.7-flash.json" with { type: "json" };
-import family279 from "./families/ring.json" with { type: "json" };
-import family280 from "./families/sakana-namazu.json" with { type: "json" };
-import family281 from "./families/seed.json" with { type: "json" };
-import family282 from "./families/solar-mini.json" with { type: "json" };
-import family283 from "./families/solar-pro.json" with { type: "json" };
-import family284 from "./families/solar.json" with { type: "json" };
-import family285 from "./families/sonar-deep-research.json" with { type: "json" };
-import family286 from "./families/sonar-pro.json" with { type: "json" };
-import family287 from "./families/sonar-reasoning.json" with { type: "json" };
-import family288 from "./families/sonar.json" with { type: "json" };
-import family289 from "./families/sora.json" with { type: "json" };
-import family290 from "./families/stable-diffusion.json" with { type: "json" };
-import family291 from "./families/step.json" with { type: "json" };
-import family292 from "./families/text-embedding.json" with { type: "json" };
-import family293 from "./families/the-grid-ai~2Fagent-max.json" with { type: "json" };
-import family294 from "./families/the-grid-ai~2Fagent-prime.json" with { type: "json" };
-import family295 from "./families/the-grid-ai~2Fagent-standard.json" with { type: "json" };
-import family296 from "./families/the-grid-ai~2Fcode-max.json" with { type: "json" };
-import family297 from "./families/the-grid-ai~2Fcode-prime.json" with { type: "json" };
-import family298 from "./families/the-grid-ai~2Fcode-standard.json" with { type: "json" };
-import family299 from "./families/the-grid-ai~2Ftext-max.json" with { type: "json" };
-import family300 from "./families/the-grid-ai~2Ftext-prime.json" with { type: "json" };
-import family301 from "./families/the-grid-ai~2Ftext-standard.json" with { type: "json" };
-import family302 from "./families/titan-embed.json" with { type: "json" };
-import family303 from "./families/together-ai~2Ftogethercomputer~2FRefuel-Llm-V2-Small.json" with { type: "json" };
-import family304 from "./families/together-ai~2Ftogethercomputer~2FRefuel-Llm-V2.json" with { type: "json" };
-import family305 from "./families/trinity-mini.json" with { type: "json" };
-import family306 from "./families/trinity.json" with { type: "json" };
-import family307 from "./families/typesafe~2Fjev.json" with { type: "json" };
-import family308 from "./families/unsloth.json" with { type: "json" };
-import family309 from "./families/v0.json" with { type: "json" };
-import family310 from "./families/veo.json" with { type: "json" };
-import family311 from "./families/vercel~2Finception~2Fmercury-edit-2.json" with { type: "json" };
-import family312 from "./families/vercel~2Finterfaze~2Finterfaze-beta.json" with { type: "json" };
-import family313 from "./families/vercel~2Fmixedbread~2Ftoast-1.json" with { type: "json" };
-import family314 from "./families/vercel~2Fopenai~2Fcodex-mini.json" with { type: "json" };
-import family315 from "./families/vercel~2Fperplexity~2Fpplx-embed-v1-4b.json" with { type: "json" };
-import family316 from "./families/vercel~2Fperplexity~2Fsonar-reasoning.json" with { type: "json" };
-import family317 from "./families/vercel~2Fprime-intellect~2Fintellect-3.json" with { type: "json" };
-import family318 from "./families/vercel~2Fquiverai~2Farrow-2-telos.json" with { type: "json" };
-import family319 from "./families/vercel~2Fquiverai~2Farrow-2.json" with { type: "json" };
-import family320 from "./families/vercel~2Fsakana~2Fnamazu.json" with { type: "json" };
-import family321 from "./families/vercel~2Ftypesafe-ai~2Fjev.json" with { type: "json" };
-import family322 from "./families/vercel~2Fvercel~2Fv0-1.0-md.json" with { type: "json" };
-import family323 from "./families/vercel~2Fvercel~2Fv0-1.5-md.json" with { type: "json" };
-import family324 from "./families/voxtral.json" with { type: "json" };
-import family325 from "./families/voyage.json" with { type: "json" };
-import family326 from "./families/whisper.json" with { type: "json" };
-import family327 from "./families/workers-ai~2F~40cf~2Fai4bharat~2Findictrans2-en-indic-1B.json" with { type: "json" };
-import family328 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-base-en-v1.5.json" with { type: "json" };
-import family329 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-large-en-v1.5.json" with { type: "json" };
-import family330 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-m3.json" with { type: "json" };
-import family331 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-reranker-base.json" with { type: "json" };
-import family332 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-small-en-v1.5.json" with { type: "json" };
-import family333 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-1.json" with { type: "json" };
-import family334 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-2-en.json" with { type: "json" };
-import family335 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-2-es.json" with { type: "json" };
-import family336 from "./families/workers-ai~2F~40cf~2Fhuggingface~2Fdistilbert-sst-2-int8.json" with { type: "json" };
-import family337 from "./families/workers-ai~2F~40cf~2Fleonardo~2Flucid-origin.json" with { type: "json" };
-import family338 from "./families/workers-ai~2F~40cf~2Fleonardo~2Fphoenix-1.0.json" with { type: "json" };
-import family339 from "./families/workers-ai~2F~40cf~2Fllava-hf~2Fllava-1.5-7b-hf.json" with { type: "json" };
-import family340 from "./families/workers-ai~2F~40cf~2Flykon~2Fdreamshaper-8-lcm.json" with { type: "json" };
-import family341 from "./families/workers-ai~2F~40cf~2Fmeta~2Fm2m100-1.2b.json" with { type: "json" };
-import family342 from "./families/workers-ai~2F~40cf~2Fmyshell-ai~2Fmelotts.json" with { type: "json" };
-import family343 from "./families/workers-ai~2F~40cf~2Fpfnet~2Fplamo-embedding-1b.json" with { type: "json" };
-import family344 from "./families/workers-ai~2F~40cf~2Fpipecat-ai~2Fsmart-turn-v2.json" with { type: "json" };
+import family262 from "./families/replicate~2Falibaba~2Fqwen-image-3.json" with { type: "json" };
+import family263 from "./families/replicate~2Fblack-forest-labs~2Fflux-video-upscale.json" with { type: "json" };
+import family264 from "./families/replicate~2Fbria~2Ffibo.json" with { type: "json" };
+import family265 from "./families/replicate~2Fbria~2Fremove-background.json" with { type: "json" };
+import family266 from "./families/replicate~2Fcbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f.json" with { type: "json" };
+import family267 from "./families/replicate~2Fdatacte~2Fproteus-v0.3.json" with { type: "json" };
+import family268 from "./families/replicate~2Felevenlabs~2Fdubbing.json" with { type: "json" };
+import family269 from "./families/replicate~2Felevenlabs~2Fmusic.json" with { type: "json" };
+import family270 from "./families/replicate~2Fgoogle~2Fgemini-omni-1.1.json" with { type: "json" };
+import family271 from "./families/replicate~2Fgoogle~2Fnano-banana-2.json" with { type: "json" };
+import family272 from "./families/replicate~2Fgoogle~2Fnano-banana-pro.json" with { type: "json" };
+import family273 from "./families/replicate~2Fgoogle~2Fnano-banana.json" with { type: "json" };
+import family274 from "./families/replicate~2Flightricks~2Fltx-2.5-fast.json" with { type: "json" };
+import family275 from "./families/replicate~2Fluma~2Fray-3.2.json" with { type: "json" };
+import family276 from "./families/replicate~2Fnightmareai~2Freal-esrgan.json" with { type: "json" };
+import family277 from "./families/replicate~2Fprunaai~2Fp-image-ideogram.json" with { type: "json" };
+import family278 from "./families/replicate~2Fprunaai~2Fp-video-2-pro.json" with { type: "json" };
+import family279 from "./families/replicate~2Fprunaai~2Fp-video.json" with { type: "json" };
+import family280 from "./families/replicate~2Fresemble-ai~2Fchatterbox-turbo.json" with { type: "json" };
+import family281 from "./families/replicate~2Frunwayml~2Fgen-4.5.json" with { type: "json" };
+import family282 from "./families/replicate~2Fstability-ai~2Fstable-audio-2.5.json" with { type: "json" };
+import family283 from "./families/requesty~2Fleanstral-1-5.json" with { type: "json" };
+import family284 from "./families/requesty~2Fleanstral-1-5~40eu.json" with { type: "json" };
+import family285 from "./families/requesty~2Fstep-3.7-flash.json" with { type: "json" };
+import family286 from "./families/ring.json" with { type: "json" };
+import family287 from "./families/sakana-namazu.json" with { type: "json" };
+import family288 from "./families/seed.json" with { type: "json" };
+import family289 from "./families/solar-mini.json" with { type: "json" };
+import family290 from "./families/solar-pro.json" with { type: "json" };
+import family291 from "./families/solar.json" with { type: "json" };
+import family292 from "./families/sonar-deep-research.json" with { type: "json" };
+import family293 from "./families/sonar-pro.json" with { type: "json" };
+import family294 from "./families/sonar-reasoning.json" with { type: "json" };
+import family295 from "./families/sonar.json" with { type: "json" };
+import family296 from "./families/sora.json" with { type: "json" };
+import family297 from "./families/stable-diffusion.json" with { type: "json" };
+import family298 from "./families/step.json" with { type: "json" };
+import family299 from "./families/text-embedding.json" with { type: "json" };
+import family300 from "./families/the-grid-ai~2Fagent-max.json" with { type: "json" };
+import family301 from "./families/the-grid-ai~2Fagent-prime.json" with { type: "json" };
+import family302 from "./families/the-grid-ai~2Fagent-standard.json" with { type: "json" };
+import family303 from "./families/the-grid-ai~2Fcode-max.json" with { type: "json" };
+import family304 from "./families/the-grid-ai~2Fcode-prime.json" with { type: "json" };
+import family305 from "./families/the-grid-ai~2Fcode-standard.json" with { type: "json" };
+import family306 from "./families/the-grid-ai~2Ftext-max.json" with { type: "json" };
+import family307 from "./families/the-grid-ai~2Ftext-prime.json" with { type: "json" };
+import family308 from "./families/the-grid-ai~2Ftext-standard.json" with { type: "json" };
+import family309 from "./families/titan-embed.json" with { type: "json" };
+import family310 from "./families/together-ai~2Ftogethercomputer~2FRefuel-Llm-V2-Small.json" with { type: "json" };
+import family311 from "./families/together-ai~2Ftogethercomputer~2FRefuel-Llm-V2.json" with { type: "json" };
+import family312 from "./families/trinity-mini.json" with { type: "json" };
+import family313 from "./families/trinity.json" with { type: "json" };
+import family314 from "./families/typesafe~2Fjev.json" with { type: "json" };
+import family315 from "./families/unsloth.json" with { type: "json" };
+import family316 from "./families/v0.json" with { type: "json" };
+import family317 from "./families/veo.json" with { type: "json" };
+import family318 from "./families/vercel~2Finception~2Fmercury-edit-2.json" with { type: "json" };
+import family319 from "./families/vercel~2Finterfaze~2Finterfaze-beta.json" with { type: "json" };
+import family320 from "./families/vercel~2Fmixedbread~2Ftoast-1.json" with { type: "json" };
+import family321 from "./families/vercel~2Fopenai~2Fcodex-mini.json" with { type: "json" };
+import family322 from "./families/vercel~2Fperplexity~2Fpplx-embed-v1-4b.json" with { type: "json" };
+import family323 from "./families/vercel~2Fperplexity~2Fsonar-reasoning.json" with { type: "json" };
+import family324 from "./families/vercel~2Fprime-intellect~2Fintellect-3.json" with { type: "json" };
+import family325 from "./families/vercel~2Fquiverai~2Farrow-2-telos.json" with { type: "json" };
+import family326 from "./families/vercel~2Fquiverai~2Farrow-2.json" with { type: "json" };
+import family327 from "./families/vercel~2Fsakana~2Fnamazu.json" with { type: "json" };
+import family328 from "./families/vercel~2Ftypesafe-ai~2Fjev.json" with { type: "json" };
+import family329 from "./families/vercel~2Fvercel~2Fv0-1.0-md.json" with { type: "json" };
+import family330 from "./families/vercel~2Fvercel~2Fv0-1.5-md.json" with { type: "json" };
+import family331 from "./families/voxtral.json" with { type: "json" };
+import family332 from "./families/voyage.json" with { type: "json" };
+import family333 from "./families/whisper.json" with { type: "json" };
+import family334 from "./families/workers-ai~2F~40cf~2Fai4bharat~2Findictrans2-en-indic-1B.json" with { type: "json" };
+import family335 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-base-en-v1.5.json" with { type: "json" };
+import family336 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-large-en-v1.5.json" with { type: "json" };
+import family337 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-m3.json" with { type: "json" };
+import family338 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-reranker-base.json" with { type: "json" };
+import family339 from "./families/workers-ai~2F~40cf~2Fbaai~2Fbge-small-en-v1.5.json" with { type: "json" };
+import family340 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-1.json" with { type: "json" };
+import family341 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-2-en.json" with { type: "json" };
+import family342 from "./families/workers-ai~2F~40cf~2Fdeepgram~2Faura-2-es.json" with { type: "json" };
+import family343 from "./families/workers-ai~2F~40cf~2Fhuggingface~2Fdistilbert-sst-2-int8.json" with { type: "json" };
+import family344 from "./families/workers-ai~2F~40cf~2Fleonardo~2Flucid-origin.json" with { type: "json" };
+import family345 from "./families/workers-ai~2F~40cf~2Fleonardo~2Fphoenix-1.0.json" with { type: "json" };
+import family346 from "./families/workers-ai~2F~40cf~2Fllava-hf~2Fllava-1.5-7b-hf.json" with { type: "json" };
+import family347 from "./families/workers-ai~2F~40cf~2Flykon~2Fdreamshaper-8-lcm.json" with { type: "json" };
+import family348 from "./families/workers-ai~2F~40cf~2Fmeta~2Fm2m100-1.2b.json" with { type: "json" };
+import family349 from "./families/workers-ai~2F~40cf~2Fmyshell-ai~2Fmelotts.json" with { type: "json" };
+import family350 from "./families/workers-ai~2F~40cf~2Fpfnet~2Fplamo-embedding-1b.json" with { type: "json" };
+import family351 from "./families/workers-ai~2F~40cf~2Fpipecat-ai~2Fsmart-turn-v2.json" with { type: "json" };
 import provider0 from "./providers/openai.json" with { type: "json" };
 import provider1 from "./providers/anthropic.json" with { type: "json" };
 import provider2 from "./providers/mistral.json" with { type: "json" };
@@ -669,89 +676,96 @@ const catalogue: UnparsedModelCatalogue = {
     "replicate/826801120720e563620006b99e412f7ed7b991dd4477e9160473d44a405ef9d9": family259,
     "replicate/847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405": family260,
     "replicate/alibaba/happyhorse-1.0": family261,
-    "replicate/bria/fibo": family262,
-    "replicate/bria/remove-background": family263,
-    "replicate/cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f": family264,
-    "replicate/datacte/proteus-v0.3": family265,
-    "replicate/elevenlabs/music": family266,
-    "replicate/google/nano-banana-2": family267,
-    "replicate/google/nano-banana-pro": family268,
-    "replicate/google/nano-banana": family269,
-    "replicate/luma/ray-3.2": family270,
-    "replicate/nightmareai/real-esrgan": family271,
-    "replicate/prunaai/p-video": family272,
-    "replicate/resemble-ai/chatterbox-turbo": family273,
-    "replicate/runwayml/gen-4.5": family274,
-    "replicate/stability-ai/stable-audio-2.5": family275,
-    "requesty/leanstral-1-5": family276,
-    "requesty/leanstral-1-5@eu": family277,
-    "requesty/step-3.7-flash": family278,
-    "ring": family279,
-    "sakana-namazu": family280,
-    "seed": family281,
-    "solar-mini": family282,
-    "solar-pro": family283,
-    "solar": family284,
-    "sonar-deep-research": family285,
-    "sonar-pro": family286,
-    "sonar-reasoning": family287,
-    "sonar": family288,
-    "sora": family289,
-    "stable-diffusion": family290,
-    "step": family291,
-    "text-embedding": family292,
-    "the-grid-ai/agent-max": family293,
-    "the-grid-ai/agent-prime": family294,
-    "the-grid-ai/agent-standard": family295,
-    "the-grid-ai/code-max": family296,
-    "the-grid-ai/code-prime": family297,
-    "the-grid-ai/code-standard": family298,
-    "the-grid-ai/text-max": family299,
-    "the-grid-ai/text-prime": family300,
-    "the-grid-ai/text-standard": family301,
-    "titan-embed": family302,
-    "together-ai/togethercomputer/Refuel-Llm-V2-Small": family303,
-    "together-ai/togethercomputer/Refuel-Llm-V2": family304,
-    "trinity-mini": family305,
-    "trinity": family306,
-    "typesafe/jev": family307,
-    "unsloth": family308,
-    "v0": family309,
-    "veo": family310,
-    "vercel/inception/mercury-edit-2": family311,
-    "vercel/interfaze/interfaze-beta": family312,
-    "vercel/mixedbread/toast-1": family313,
-    "vercel/openai/codex-mini": family314,
-    "vercel/perplexity/pplx-embed-v1-4b": family315,
-    "vercel/perplexity/sonar-reasoning": family316,
-    "vercel/prime-intellect/intellect-3": family317,
-    "vercel/quiverai/arrow-2-telos": family318,
-    "vercel/quiverai/arrow-2": family319,
-    "vercel/sakana/namazu": family320,
-    "vercel/typesafe-ai/jev": family321,
-    "vercel/vercel/v0-1.0-md": family322,
-    "vercel/vercel/v0-1.5-md": family323,
-    "voxtral": family324,
-    "voyage": family325,
-    "whisper": family326,
-    "workers-ai/@cf/ai4bharat/indictrans2-en-indic-1B": family327,
-    "workers-ai/@cf/baai/bge-base-en-v1.5": family328,
-    "workers-ai/@cf/baai/bge-large-en-v1.5": family329,
-    "workers-ai/@cf/baai/bge-m3": family330,
-    "workers-ai/@cf/baai/bge-reranker-base": family331,
-    "workers-ai/@cf/baai/bge-small-en-v1.5": family332,
-    "workers-ai/@cf/deepgram/aura-1": family333,
-    "workers-ai/@cf/deepgram/aura-2-en": family334,
-    "workers-ai/@cf/deepgram/aura-2-es": family335,
-    "workers-ai/@cf/huggingface/distilbert-sst-2-int8": family336,
-    "workers-ai/@cf/leonardo/lucid-origin": family337,
-    "workers-ai/@cf/leonardo/phoenix-1.0": family338,
-    "workers-ai/@cf/llava-hf/llava-1.5-7b-hf": family339,
-    "workers-ai/@cf/lykon/dreamshaper-8-lcm": family340,
-    "workers-ai/@cf/meta/m2m100-1.2b": family341,
-    "workers-ai/@cf/myshell-ai/melotts": family342,
-    "workers-ai/@cf/pfnet/plamo-embedding-1b": family343,
-    "workers-ai/@cf/pipecat-ai/smart-turn-v2": family344,
+    "replicate/alibaba/qwen-image-3": family262,
+    "replicate/black-forest-labs/flux-video-upscale": family263,
+    "replicate/bria/fibo": family264,
+    "replicate/bria/remove-background": family265,
+    "replicate/cbd15da9f839c5f932742f86ce7def3a03c22e2b4171d42823e83e314547003f": family266,
+    "replicate/datacte/proteus-v0.3": family267,
+    "replicate/elevenlabs/dubbing": family268,
+    "replicate/elevenlabs/music": family269,
+    "replicate/google/gemini-omni-1.1": family270,
+    "replicate/google/nano-banana-2": family271,
+    "replicate/google/nano-banana-pro": family272,
+    "replicate/google/nano-banana": family273,
+    "replicate/lightricks/ltx-2.5-fast": family274,
+    "replicate/luma/ray-3.2": family275,
+    "replicate/nightmareai/real-esrgan": family276,
+    "replicate/prunaai/p-image-ideogram": family277,
+    "replicate/prunaai/p-video-2-pro": family278,
+    "replicate/prunaai/p-video": family279,
+    "replicate/resemble-ai/chatterbox-turbo": family280,
+    "replicate/runwayml/gen-4.5": family281,
+    "replicate/stability-ai/stable-audio-2.5": family282,
+    "requesty/leanstral-1-5": family283,
+    "requesty/leanstral-1-5@eu": family284,
+    "requesty/step-3.7-flash": family285,
+    "ring": family286,
+    "sakana-namazu": family287,
+    "seed": family288,
+    "solar-mini": family289,
+    "solar-pro": family290,
+    "solar": family291,
+    "sonar-deep-research": family292,
+    "sonar-pro": family293,
+    "sonar-reasoning": family294,
+    "sonar": family295,
+    "sora": family296,
+    "stable-diffusion": family297,
+    "step": family298,
+    "text-embedding": family299,
+    "the-grid-ai/agent-max": family300,
+    "the-grid-ai/agent-prime": family301,
+    "the-grid-ai/agent-standard": family302,
+    "the-grid-ai/code-max": family303,
+    "the-grid-ai/code-prime": family304,
+    "the-grid-ai/code-standard": family305,
+    "the-grid-ai/text-max": family306,
+    "the-grid-ai/text-prime": family307,
+    "the-grid-ai/text-standard": family308,
+    "titan-embed": family309,
+    "together-ai/togethercomputer/Refuel-Llm-V2-Small": family310,
+    "together-ai/togethercomputer/Refuel-Llm-V2": family311,
+    "trinity-mini": family312,
+    "trinity": family313,
+    "typesafe/jev": family314,
+    "unsloth": family315,
+    "v0": family316,
+    "veo": family317,
+    "vercel/inception/mercury-edit-2": family318,
+    "vercel/interfaze/interfaze-beta": family319,
+    "vercel/mixedbread/toast-1": family320,
+    "vercel/openai/codex-mini": family321,
+    "vercel/perplexity/pplx-embed-v1-4b": family322,
+    "vercel/perplexity/sonar-reasoning": family323,
+    "vercel/prime-intellect/intellect-3": family324,
+    "vercel/quiverai/arrow-2-telos": family325,
+    "vercel/quiverai/arrow-2": family326,
+    "vercel/sakana/namazu": family327,
+    "vercel/typesafe-ai/jev": family328,
+    "vercel/vercel/v0-1.0-md": family329,
+    "vercel/vercel/v0-1.5-md": family330,
+    "voxtral": family331,
+    "voyage": family332,
+    "whisper": family333,
+    "workers-ai/@cf/ai4bharat/indictrans2-en-indic-1B": family334,
+    "workers-ai/@cf/baai/bge-base-en-v1.5": family335,
+    "workers-ai/@cf/baai/bge-large-en-v1.5": family336,
+    "workers-ai/@cf/baai/bge-m3": family337,
+    "workers-ai/@cf/baai/bge-reranker-base": family338,
+    "workers-ai/@cf/baai/bge-small-en-v1.5": family339,
+    "workers-ai/@cf/deepgram/aura-1": family340,
+    "workers-ai/@cf/deepgram/aura-2-en": family341,
+    "workers-ai/@cf/deepgram/aura-2-es": family342,
+    "workers-ai/@cf/huggingface/distilbert-sst-2-int8": family343,
+    "workers-ai/@cf/leonardo/lucid-origin": family344,
+    "workers-ai/@cf/leonardo/phoenix-1.0": family345,
+    "workers-ai/@cf/llava-hf/llava-1.5-7b-hf": family346,
+    "workers-ai/@cf/lykon/dreamshaper-8-lcm": family347,
+    "workers-ai/@cf/meta/m2m100-1.2b": family348,
+    "workers-ai/@cf/myshell-ai/melotts": family349,
+    "workers-ai/@cf/pfnet/plamo-embedding-1b": family350,
+    "workers-ai/@cf/pipecat-ai/smart-turn-v2": family351,
   },
   providers: {
     "openai": provider0,

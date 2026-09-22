@@ -1,0 +1,24 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsTemperature": false
+  },
+  "description": "Fast video generation with text-to-video and image-to-video, portrait and landscape support, synchronized audio, and frame interpolation. Up to 20 seconds at 1080p, and 4K resolution.",
+  "models": {
+    "ltx-2-5-fast": {
+      "defaults": {
+        "name": "LTX 2.5 Fast",
+        "description": "Fast video generation with text-to-video and image-to-video, portrait and landscape support, synchronized audio, and frame interpolation. Up to 20 seconds at 1080p, and 4K resolution."
+      }
+    }
+  }
+}

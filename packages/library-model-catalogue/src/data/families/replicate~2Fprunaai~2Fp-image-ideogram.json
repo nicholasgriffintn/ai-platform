@@ -1,0 +1,23 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsTemperature": false
+  },
+  "description": "P-Image-Ideogram is Pruna AI’s text-to-image model starting from 0,003$ per generation.",
+  "models": {
+    "p-image-ideogram": {
+      "defaults": {
+        "name": "P-Image Ideogram",
+        "description": "P-Image-Ideogram is Pruna AI’s text-to-image model starting from 0,003$ per generation."
+      }
+    }
+  }
+}
