@@ -1,0 +1,24 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsTemperature": false
+  },
+  "description": "Pruna's highest-quality video model. Generate video from text or images with speed and quality modes, first- and last-frame control, and durations up to 15 seconds.",
+  "models": {
+    "p-video-2-pro": {
+      "defaults": {
+        "name": "P-Video 2 Pro",
+        "description": "Pruna's highest-quality video model. Generate video from text or images with speed and quality modes, first- and last-frame control, and durations up to 15 seconds."
+      }
+    }
+  }
+}

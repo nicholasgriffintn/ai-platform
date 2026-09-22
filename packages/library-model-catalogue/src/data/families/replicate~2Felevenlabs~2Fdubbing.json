@@ -1,0 +1,24 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "audio",
+        "video"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsTemperature": false
+  },
+  "description": "Translate audio and video into 90+ languages while preserving each speaker's voice, emotion, and timing",
+  "models": {
+    "dubbing": {
+      "defaults": {
+        "name": "ElevenLabs Dubbing",
+        "description": "Translate audio and video into 90+ languages while preserving each speaker's voice, emotion, and timing"
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "video"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsTemperature": false
+  },
+  "description": "Upscale videos to higher resolution with FLUX super-resolution. Precise mode sharpens and stays faithful to the source; creative mode restores and invents fine detail.",
+  "models": {
+    "flux-video-upscale": {
+      "defaults": {
+        "name": "FLUX Video Upscale",
+        "description": "Upscale videos to higher resolution with FLUX super-resolution. Precise mode sharpens and stays faithful to the source; creative mode restores and invents fine detail."
+      }
+    }
+  }
+}
