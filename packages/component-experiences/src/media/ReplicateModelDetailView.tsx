@@ -43,19 +43,17 @@ export function ReplicateModelDetailView({
         )}
 
         <div className="text-sm text-muted-foreground">
-          Cost: ${model.costPerRun} per run
+          {model.costPerRun !== undefined && <>Cost: ${model.costPerRun} per run</>}
+          {model.costPerRun !== undefined && model.reference && " • "}
           {model.reference && (
-            <>
-              {" • "}
-              <a
-                href={model.reference}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={textLinkClassName({ tone: "accent" })}
-              >
-                View documentation
-              </a>
-            </>
+            <a
+              href={model.reference}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={textLinkClassName({ tone: "accent" })}
+            >
+              View documentation
+            </a>
           )}
         </div>
       </div>

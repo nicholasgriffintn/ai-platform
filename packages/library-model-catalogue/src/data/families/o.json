@@ -688,6 +688,26 @@
         "releaseDate": "August 28, 2026",
         "supportsAttachments": true
       }
+    },
+    "arrow-1-1-max": {
+      "defaults": {
+        "name": "Arrow 1.1 Max",
+        "description": "High-fidelity text-to-SVG model for dense illustrations, detailed logos, and technical diagrams.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "strengths": [
+          "creative",
+          "image"
+        ],
+        "supportsAttachments": true
+      }
     }
   }
 }
