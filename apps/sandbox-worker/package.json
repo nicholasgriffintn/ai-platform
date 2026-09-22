@@ -11,6 +11,7 @@
     "coverage": "vitest run --coverage",
     "deploy": "pnpm run build:deps && pnpm typecheck && wrangler deploy",
     "dev": "WRANGLER_BUILD_CONDITIONS=polychat-source,workerd,worker,browser wrangler dev src/index.ts",
+    "preview": "pnpm run build:deps && pnpm typecheck && wrangler preview",
     "start": "vp run --filter=@ngriffin_uk/polychat-schemas build && wrangler dev src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",

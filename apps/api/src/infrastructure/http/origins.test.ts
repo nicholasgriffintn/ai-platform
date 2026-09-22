@@ -22,4 +22,22 @@ describe("isAllowedOrigin", () => {
     expect(isAllowedOrigin("", "production")).toBe(false);
     expect(isAllowedOrigin("not a url", "development")).toBe(false);
   });
+
+  it("allows only the configured app origin in a Worker Preview", () => {
+    const appBaseUrl = "https://feature-login-assistant-app.example.workers.dev";
+
+    expect(isAllowedOrigin(appBaseUrl, "preview", appBaseUrl)).toBe(true);
+    expect(
+      isAllowedOrigin("https://other-assistant-app.example.workers.dev", "preview", appBaseUrl),
+    ).toBe(false);
+    expect(
+      isAllowedOrigin(
+        "http://feature-login-assistant-app.example.workers.dev",
+        "preview",
+        appBaseUrl,
+      ),
+    ).toBe(false);
+    expect(isAllowedOrigin("https://polychat.app", "preview", appBaseUrl)).toBe(false);
+    expect(isAllowedOrigin(appBaseUrl, "preview")).toBe(false);
+  });
 });

@@ -64,7 +64,12 @@ function encryptionColumns(keys) {
   ]);
 }
 
-export async function identityStatements({ serverKey }) {
+export async function identityStatements({
+  serverKey,
+  sessionToken = SESSION_TOKEN,
+  apiKey = API_KEY,
+  sessionExpiresAt = "2099-01-01T00:00:00.000Z",
+}) {
   const statements = [];
   const keys = serverKey ? await createUserKeyPair(serverKey) : null;
 
@@ -98,9 +103,9 @@ export async function identityStatements({ serverKey }) {
       user_id: OWNER.id,
     }),
     insert("session", {
-      id: sha256Base64Url(SESSION_TOKEN),
+      id: sha256Base64Url(sessionToken),
       user_id: OWNER.id,
-      expires_at: "2099-01-01T00:00:00.000Z",
+      expires_at: sessionExpiresAt,
     }),
     insert("user_settings", {
       id: seedId("settings", "owner"),
@@ -134,18 +139,22 @@ export async function identityStatements({ serverKey }) {
       created_at: at({ days: 400 }),
       updated_at: at({ days: 1 }),
     }),
-    insert(
-      "user_api_keys",
-      Object.fromEntries([
-        ["id", seedId("apikey", "debug")],
-        ["user_id", OWNER.id],
-        ["api_key", REVEAL_UNAVAILABLE],
-        ["hashed_key", sha256Hex(API_KEY)],
-        ["name", "Seed debugging key"],
-        ["created_at", at({ days: 30 })],
-        ["updated_at", at({ days: 30 })],
-      ]),
-    ),
+    ...(apiKey
+      ? [
+          insert(
+            "user_api_keys",
+            Object.fromEntries([
+              ["id", seedId("apikey", "debug")],
+              ["user_id", OWNER.id],
+              ["api_key", REVEAL_UNAVAILABLE],
+              ["hashed_key", sha256Hex(apiKey)],
+              ["name", "Seed debugging key"],
+              ["created_at", at({ days: 30 })],
+              ["updated_at", at({ days: 30 })],
+            ]),
+          ),
+        ]
+      : []),
     insert("task_notification_preference", {
       user_id: OWNER.id,
       enabled: true,

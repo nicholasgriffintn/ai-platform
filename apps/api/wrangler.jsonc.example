@@ -1,4 +1,5 @@
 {
+  "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "assistant",
   "main": "src/index.ts",
   "rules": [
@@ -16,7 +17,7 @@
     "nodejs_compat_populate_process_env"
   ],
   "workers_dev": false,
-  "preview_urls": false,
+  "preview_urls": true,
   "placement": {
     "mode": "smart"
   },
@@ -144,13 +145,13 @@
     {
       "binding": "ASSETS_BUCKET",
       "bucket_name": "assistant-assets",
-      "preview_bucket_name": "assistant-assets",
+      "preview_bucket_name": "assistant-assets-preview",
       "remote": true
     },
     {
       "binding": "PRIVATE_ASSETS_BUCKET",
       "bucket_name": "assistant-private-assets",
-      "preview_bucket_name": "assistant-private-assets",
+      "preview_bucket_name": "assistant-private-assets-preview",
       "remote": true
     }
   ],
@@ -161,12 +162,6 @@
       "database_id": "<REPLACE_ME>",
       "preview_database_id": "<REPLACE_ME>",
       "remote": true
-    },
-    {
-      "binding": "PREVIEW_DB",
-      "database_name": "personal-assistant-preview",
-      "database_id": "<REPLACE_ME>",
-      "remote": false
     }
   ],
   "kv_namespaces": [
@@ -215,6 +210,108 @@
         "queue": "polychat-task-queue",
         "max_batch_size": 10,
         "dead_letter_queue": "polychat-task-queue-dlq"
+      }
+    ]
+  },
+  "previews": {
+    "vars": {
+      "ACCOUNT_ID": "<REPLACE_ME>",
+      "API_BASE_URL": "<REPLACE_WITH_PREVIEW_API_ORIGIN>",
+      "APP_BASE_URL": "<REPLACE_WITH_PREVIEW_APP_ORIGIN>",
+      "APPLE_IOS_CLIENT_ID": "<REPLACE_ME>",
+      "APPLE_WEB_CLIENT_ID": "<REPLACE_ME>",
+      "PUBLIC_ASSETS_URL": "<REPLACE_ME>",
+      "PUBLIC_ASSETS_BUCKET": "assistant-assets-preview",
+      "REQUIRE_CAPTCHA_SECRET_KEY": "false",
+      "LOG_LEVEL": "error",
+      "SENTRY_DSN": "<REPLACE_ME>",
+      "ENV": "preview",
+      "MEMORY_SYNTHESIS_ENABLED": "false",
+      "COMPOSIO_USER_NAMESPACE": "preview",
+      "DESKTOP_RELEASES_REPOSITORY": "<github-owner>/<github-repository>"
+    },
+    "ai": {
+      "binding": "AI",
+      "remote": true
+    },
+    "vectorize": [
+      {
+        "binding": "VECTOR_DB",
+        "index_name": "polychat-preview",
+        "remote": true
+      }
+    ],
+    "worker_loaders": [
+      {
+        "binding": "LOADER"
+      }
+    ],
+    "durable_objects": {
+      "bindings": [
+        { "name": "MACHINE_RUN_COORDINATOR", "class_name": "MachineRunCoordinator" },
+        {
+          "name": "SANDBOX_RUN_COORDINATOR",
+          "class_name": "SandboxRunCoordinator"
+        },
+        {
+          "name": "CONVERSATION_COORDINATOR",
+          "class_name": "ConversationCoordinator"
+        },
+        {
+          "name": "USER_SYNC_COORDINATOR",
+          "class_name": "UserSyncCoordinator"
+        }
+      ]
+    },
+    "analytics_engine_datasets": [
+      {
+        "binding": "ANALYTICS",
+        "dataset": "assistant_preview_analytics"
+      }
+    ],
+    "r2_buckets": [
+      {
+        "binding": "ASSETS_BUCKET",
+        "bucket_name": "assistant-assets-preview",
+        "remote": true
+      },
+      {
+        "binding": "PRIVATE_ASSETS_BUCKET",
+        "bucket_name": "assistant-private-assets-preview",
+        "remote": true
+      }
+    ],
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "personal-assistant-preview",
+        "database_id": "<REPLACE_ME>",
+        "remote": true
+      }
+    ],
+    "kv_namespaces": [
+      {
+        "binding": "CACHE",
+        "id": "<REPLACE_ME>",
+        "remote": true
+      }
+    ],
+    "ratelimits": [
+      {
+        "name": "FREE_RATE_LIMITER",
+        "namespace_id": "2001",
+        "simple": {
+          "limit": 60,
+          "period": 60
+        }
+      },
+      {
+        "name": "PRO_RATE_LIMITER",
+        "namespace_id": "2002",
+        "simple": {
+          "limit": 120,
+          "period": 60
+        }
       }
     ]
   }

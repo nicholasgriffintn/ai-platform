@@ -1,0 +1,11 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "d1_databases": [
+    {
+      "binding": "PREVIEW_DB",
+      "database_name": "personal-assistant-preview",
+      "database_id": "<REPLACE_ME>",
+      "migrations_dir": "migrations",
+    },
+  ],
+}

@@ -4,7 +4,7 @@
   "compatibility_date": "2026-08-28",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
-  "preview_urls": false,
+  "preview_urls": true,
   "routes": [
     {
       "pattern": "*.computer.polychat.app/*",
@@ -26,7 +26,7 @@
     {
       "binding": "BACKUP_BUCKET",
       "bucket_name": "assistant-private-assets",
-      "preview_bucket_name": "assistant-private-assets",
+      "preview_bucket_name": "assistant-private-assets-preview",
       "remote": true,
     },
   ],
@@ -51,4 +51,32 @@
       "new_sqlite_classes": ["Computer"],
     },
   ],
+  "previews": {
+    "vars": {
+      "COMPUTER_SCREEN_HOST": "computer.preview.invalid",
+      "SANDBOX_TRANSPORT": "rpc",
+    },
+    "r2_buckets": [
+      {
+        "binding": "BACKUP_BUCKET",
+        "bucket_name": "assistant-private-assets-preview",
+        "remote": true,
+      },
+    ],
+    "containers": [
+      {
+        "class_name": "Computer",
+        "image": "./Dockerfile",
+        "instance_type": "standard-1",
+      },
+    ],
+    "durable_objects": {
+      "bindings": [
+        {
+          "class_name": "Computer",
+          "name": "Computer",
+        },
+      ],
+    },
+  },
 }

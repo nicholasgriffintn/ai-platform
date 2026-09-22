@@ -10,12 +10,19 @@ import {
 } from "./identity.mjs";
 import { workStatements } from "./work.mjs";
 
-export async function buildSeed({ serverKey }) {
+export async function buildSeed({ serverKey, credentials }) {
+  const sessionToken = credentials?.sessionToken ?? SESSION_TOKEN;
+  const apiKey = credentials ? (credentials.apiKey ?? null) : API_KEY;
   const teammates = teammateStatements();
   const chat = chatStatements({ teammates });
   const work = await workStatements({ serverKey, teammates });
   const statements = [
-    ...(await identityStatements({ serverKey })),
+    ...(await identityStatements({
+      serverKey,
+      sessionToken,
+      apiKey,
+      sessionExpiresAt: credentials?.sessionExpiresAt,
+    })),
     ...teammates.statements,
     ...chat.statements,
     ...guideStatements(),
@@ -31,8 +38,8 @@ export async function buildSeed({ serverKey }) {
     login: {
       email: OWNER.email,
       githubUsername: OWNER.githubUsername,
-      sessionToken: SESSION_TOKEN,
-      apiKey: API_KEY,
+      sessionToken,
+      apiKey,
       encryptedKeysSeeded: Boolean(serverKey),
     },
   };

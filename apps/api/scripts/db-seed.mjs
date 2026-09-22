@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
+import { randomBytes } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -9,8 +10,13 @@ import { buildSeed } from "./seed/index.mjs";
 
 const API_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const TARGETS = {
-  local: { database: "personal-assistant", flag: "--local" },
-  preview: { database: "personal-assistant-preview", flag: "--remote" },
+  local: { database: "personal-assistant", arguments: ["--local"] },
+  preview: {
+    database: "PREVIEW_DB",
+    arguments: ["--remote"],
+    config: "wrangler.preview-migrations.jsonc",
+    expectedDatabaseName: "personal-assistant-preview",
+  },
 };
 const CHUNK_BYTES = 80_000;
 
@@ -100,6 +106,32 @@ function wrangler(args, { json = false } = {}) {
   return json ? JSON.parse(result.stdout) : null;
 }
 
+function targetArguments(target, persist = []) {
+  const config = target.config ? ["--config", target.config] : [];
+
+  return [target.database, ...target.arguments, ...config, ...persist];
+}
+
+function createPreviewCredentials() {
+  return {
+    sessionToken: `polychat_preview_${randomBytes(32).toString("base64url")}`,
+    apiKey: null,
+    sessionExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+  };
+}
+
+function assertPreviewDatabase(target) {
+  const info = wrangler(["d1", "info", target.database, "--config", target.config, "--json"], {
+    json: true,
+  });
+
+  if (info.name !== target.expectedDatabaseName) {
+    throw new Error(
+      `Refusing to seed D1 database ${info.name ?? "unknown"}; expected ${target.expectedDatabaseName}.`,
+    );
+  }
+}
+
 function childrenFirst(tables) {
   const parents = new Map(
     tables.map((table) => [
@@ -134,9 +166,7 @@ function dropAllTables(target, persist) {
     [
       "d1",
       "execute",
-      target.database,
-      target.flag,
-      ...persist,
+      ...targetArguments(target, persist),
       "--json",
       "--command",
       "SELECT type, name, sql FROM sqlite_master WHERE type IN ('trigger', 'view', 'table')",
@@ -165,7 +195,7 @@ function dropAllTables(target, persist) {
   const file = path.join(mkdtempSync(path.join(tmpdir(), "polychat-seed-")), "drop.sql");
 
   writeFileSync(file, ["PRAGMA defer_foreign_keys = ON;", ...drops].join("\n"));
-  wrangler(["d1", "execute", target.database, target.flag, ...persist, "--file", file]);
+  wrangler(["d1", "execute", ...targetArguments(target, persist), "--file", file]);
   console.log(`Dropped ${drops.length} objects from ${target.database}`);
 }
 
@@ -207,7 +237,9 @@ function printSummary(seed, target, options) {
     `  GitHub: ${seed.login.githubUsername} (${seed.login.email}) is the admin on the Pro plan.`,
   );
   console.log(`  Cookie: set session=${seed.login.sessionToken} on the app origin to skip OAuth.`);
-  console.log(`  API:    Authorization: Bearer ${seed.login.apiKey}`);
+  if (seed.login.apiKey) {
+    console.log(`  API:    Authorization: Bearer ${seed.login.apiKey}`);
+  }
 
   if (!seed.login.encryptedKeysSeeded) {
     console.log(
@@ -230,7 +262,8 @@ async function main() {
   const options = parseArguments(process.argv.slice(2));
   const target = options.target ? TARGETS[options.target] : null;
   const serverKey = resolveServerKey(options.target);
-  const seed = await buildSeed({ serverKey });
+  const credentials = options.target === "preview" ? createPreviewCredentials() : undefined;
+  const seed = await buildSeed({ serverKey, credentials });
 
   if (options.sqlOut) {
     writeFileSync(options.sqlOut, seed.statements.join("\n"));
@@ -249,11 +282,15 @@ async function main() {
 
   const persist = options.persistTo ? ["--persist-to", options.persistTo] : [];
 
+  if (options.target === "preview") {
+    assertPreviewDatabase(target);
+  }
+
   if (!options.keep) {
     dropAllTables(target, persist);
   }
 
-  wrangler(["d1", "migrations", "apply", target.database, target.flag, ...persist]);
+  wrangler(["d1", "migrations", "apply", ...targetArguments(target, persist)]);
 
   const directory = mkdtempSync(path.join(tmpdir(), "polychat-seed-"));
   const chunks = chunkStatements(seed.statements);
@@ -262,7 +299,7 @@ async function main() {
     const file = path.join(directory, `seed-${String(index + 1).padStart(3, "0")}.sql`);
 
     writeFileSync(file, renderChunk(chunk));
-    wrangler(["d1", "execute", target.database, target.flag, "--file", file, ...persist]);
+    wrangler(["d1", "execute", ...targetArguments(target, persist), "--file", file]);
     console.log(`Applied chunk ${index + 1}/${chunks.length} (${chunk.length} statements)`);
   });
 

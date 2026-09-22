@@ -8,7 +8,9 @@ Use the Worker's example variables and Wrangler manifest. Match `JWT_SECRET` to 
 
 Keep the SDK and Docker image versions aligned and use the Python-enabled image for the advertised Python script tool. The script runner explicitly sets each interpreter's working directory before executing repository code. The local E2E image inherits this production Dockerfile and adds only the isolated repository fixture.
 
-For service previews, set the same `SANDBOX_PREVIEW_HOST` on the API and Worker, route `*.<host>/*` to the sandbox Worker and set `APP_BASE_URL` to the exact trusted embedding origin. The host must be a custom domain with wildcard DNS and TLS; `.workers.dev` cannot provide the Sandbox SDK's required wildcard routing. Keep preview routes, signing secrets and service bindings separate between local, preview and production deployments.
+For product service previews, set the same `SANDBOX_PREVIEW_HOST` on the API and Worker, route `*.<host>/*` to the sandbox Worker and set `APP_BASE_URL` to the exact trusted embedding origin. The host must be a custom domain with wildcard DNS and TLS; `.workers.dev` cannot provide the Sandbox SDK's required wildcard routing. Keep preview routes, signing secrets and service bindings separate between local, preview and production deployments.
+
+Cloudflare Worker Previews are a different mechanism. They isolate the Sandbox Durable Object and Container for each named Preview, but production wildcard routes do not point at a Worker Preview and a service binding would still call the production API. The Worker Preview therefore omits `POLYCHAT_API`. Use it to inspect the Worker and container in isolation; use the product service-preview environment for the complete browser gateway and API flow.
 
 Build the web app with `VITE_SANDBOX_PREVIEW_HOST` set to that same host so its content security policy permits the isolated preview frame. Omit the value to deny preview framing; malformed hosts must not widen the policy. Local development may use HTTP only for the configured localhost preview host.
 

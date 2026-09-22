@@ -8,6 +8,7 @@
     "cf-typegen": "wrangler types",
     "deploy": "pnpm typecheck && wrangler deploy",
     "dev": "WRANGLER_BUILD_CONDITIONS=workerd,worker,browser wrangler dev src/index.ts",
+    "preview": "pnpm typecheck && wrangler preview",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

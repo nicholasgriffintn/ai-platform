@@ -7,11 +7,11 @@ import {
   PROD_HOST,
 } from "~/config/app";
 
-function getOriginHost(origin: string): string {
+function parseOrigin(origin: string): URL | null {
   try {
-    return new URL(origin).host;
+    return new URL(origin);
   } catch {
-    return "";
+    return null;
   }
 }
 
@@ -24,23 +24,28 @@ export function isAllowedOrigin(origin: string, environment: string, appBaseUrl?
     return true;
   }
 
-  const host = getOriginHost(origin);
+  const parsedOrigin = parseOrigin(origin);
 
-  if (!host) {
+  if (!parsedOrigin) {
     return false;
   }
+
+  const configuredAppOrigin = appBaseUrl ? parseOrigin(appBaseUrl) : null;
+  const host = parsedOrigin.host;
 
   if (environment === "production") {
     return host === PROD_HOST || host === METRICS_PROD_HOST;
   }
 
-  if (environment === "development") {
-    const configuredAppHost = appBaseUrl ? getOriginHost(appBaseUrl) : "";
+  if (environment === "preview") {
+    return parsedOrigin.origin === configuredAppOrigin?.origin;
+  }
 
+  if (environment === "development") {
     return (
       host === LOCAL_HOST ||
       host === DESKTOP_LOCAL_HOST ||
-      host === configuredAppHost ||
+      host === configuredAppOrigin?.host ||
       host === METRICS_LOCAL_HOST
     );
   }
