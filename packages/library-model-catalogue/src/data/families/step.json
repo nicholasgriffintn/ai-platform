@@ -54,8 +54,9 @@
         "description": "StepFun flash model for efficient multimodal reasoning, coding, and tool use",
         "contextWindow": 1000000,
         "maxTokens": 1000000,
-        "releaseDate": "September 20, 2026",
-        "supportsToolCalls": false
+        "releaseDate": "September 16, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
       }
     },
     "stepfun-3-5-flash": {

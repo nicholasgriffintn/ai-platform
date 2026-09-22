@@ -4,7 +4,8 @@
     "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsCodeExecution": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "supportsTopP": false
   },
   "models": {
     "claude-4.6-opus": {
@@ -92,13 +93,15 @@
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.1
         }
-      }
+      },
+      "unset": [
+        "supportsTopP"
+      ]
     },
     "claude-4-sonnet": {
       "model": "claude-sonnet/claude-sonnet-4",
       "matchingModel": "claude-sonnet-4-0",
       "overrides": {
-        "contextWindow": 200000,
         "card": "https://www.prompthub.us/models/claude-sonnet-4",
         "strengths": [
           "chat",
@@ -130,6 +133,7 @@
       },
       "unset": [
         "supportsResponseFormat",
+        "supportsTopP",
         "supportsCodeExecution"
       ]
     },
@@ -147,6 +151,7 @@
       },
       "unset": [
         "supportsResponseFormat",
+        "supportsTopP",
         "supportsCodeExecution"
       ]
     },
@@ -175,6 +180,7 @@
         "restrictsCombinedTopPAndTemperature": true
       },
       "unset": [
+        "supportsTopP",
         "supportsCodeExecution"
       ]
     },
@@ -295,7 +301,10 @@
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
-      }
+      },
+      "unset": [
+        "supportsTopP"
+      ]
     },
     "claude-opus-4-8": {
       "model": "claude-opus/claude-opus-4-8",
@@ -456,6 +465,16 @@
       "unset": [
         "supportsCodeExecution"
       ]
+    },
+    "claude-opus-5-5": {
+      "model": "claude-opus/claude-opus-5-5",
+      "matchingModel": "claude-opus-5-5",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "supportsTemperature": false
+      }
     }
   }
 }

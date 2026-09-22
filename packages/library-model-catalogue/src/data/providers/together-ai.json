@@ -595,7 +595,14 @@
       "overrides": {
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.00014,
-        "costPer1kOutputTokens": 0.00028
+        "costPer1kOutputTokens": 0.00028,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "zai-org/GLM-5.3": {

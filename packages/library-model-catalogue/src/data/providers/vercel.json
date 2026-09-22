@@ -775,6 +775,7 @@
       "matchingModel": "anthropic/claude-sonnet-4",
       "overrides": {
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "contextWindow": 1000000,
         "maxTokens": 8192,
         "lastUpdated": "May 22, 2025",
         "costPer1kInputTokens": 0.003,
@@ -1303,6 +1304,7 @@
       "matchingModel": "meta/llama-3.1-70b",
       "overrides": {
         "openWeights": false,
+        "maxTokens": 8192,
         "lastUpdated": "July 23, 2024",
         "costPer1kInputTokens": 0.00072,
         "costPer1kOutputTokens": 0.00072
@@ -2468,7 +2470,10 @@
         "lastUpdated": "February 4, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0003
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "zai/glm-4.5": {
       "model": "glm/glm-4-5",
@@ -3425,7 +3430,10 @@
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.003
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "xiaomi/mimo-v2.5": {
       "model": "mimo/mimo-m2-5",
@@ -3436,7 +3444,10 @@
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "xiaomi/mimo-v2.5-pro": {
       "model": "mimo/mimo-v2-5-pro",
@@ -6511,7 +6522,8 @@
         "costPer1kOutputTokens": 0.00261
       },
       "unset": [
-        "reliability"
+        "reliability",
+        "supportsResponseFormat"
       ]
     },
     "anthropic/claude-fable-5.1": {
@@ -7015,6 +7027,165 @@
         "supportsToolCalls": false,
         "supportsAttachments": true
       }
+    },
+    "anthropic/claude-opus-5.5": {
+      "model": "claude-opus/claude-opus-5-5",
+      "matchingModel": "anthropic/claude-opus-5.5",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "anthropic/claude-opus-5.5-fast": {
+      "model": "claude-opus/claude-opus-5-5-fast",
+      "matchingModel": "anthropic/claude-opus-5.5-fast",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.008,
+        "costPer1kOutputTokens": 0.04,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "spacexai/grok-4.7": {
+      "model": "grok/grok-4-7",
+      "matchingModel": "spacexai/grok-4.7",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 21, 2026",
+        "costPer1kInputTokens": 0.0012,
+        "costPer1kOutputTokens": 0.0036,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "xiaomi/mimo-v2.6-flash": {
+      "model": "mimo/mimo-v2-6-flash",
+      "matchingModel": "xiaomi/mimo-v2.6-flash",
+      "overrides": {
+        "name": "MiMo V2.6 Flash",
+        "description": "MiMo Flash model for multimodal coding agents and long-context automation",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00028,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "xiaomi/mimo-v2.6-pro": {
+      "model": "mimo/mimo-v2-6-pro",
+      "matchingModel": "xiaomi/mimo-v2.6-pro",
+      "overrides": {
+        "name": "MiMo V2.6 Pro",
+        "description": "Stronger MiMo Pro tier for multimodal reasoning and coding-agent execution",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.000435,
+        "costPer1kOutputTokens": 0.00087,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "xiaomi/mimo-v2.6-pro-ultraspeed": {
+      "model": "mimo/mimo-v2-6-pro-ultraspeed",
+      "matchingModel": "xiaomi/mimo-v2.6-pro-ultraspeed",
+      "overrides": {
+        "name": "MiMo V2.6 Pro UltraSpeed",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 21, 2026",
+        "costPer1kInputTokens": 0.00435,
+        "costPer1kOutputTokens": 0.0087,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     }
   }
 }

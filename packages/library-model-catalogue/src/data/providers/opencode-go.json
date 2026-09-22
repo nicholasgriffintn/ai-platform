@@ -414,14 +414,7 @@
         "lastUpdated": "August 28, 2026",
         "costPer1kInputTokens": 0.000834,
         "costPer1kOutputTokens": 0.002501,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -472,6 +465,59 @@
         "lastUpdated": "September 16, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
+      }
+    },
+    "grok-4.7": {
+      "model": "grok/grok-4-7",
+      "matchingModel": "grok-4.7",
+      "overrides": {
+        "lastUpdated": "September 21, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006
+      }
+    },
+    "mimo-v2.6-flash": {
+      "model": "mimo/mimo-v2-6-flash",
+      "matchingModel": "mimo-v2.6-flash",
+      "overrides": {
+        "description": "MiMo Flash model for multimodal coding agents and long-context automation",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00028
+      }
+    },
+    "mimo-v2.6-pro": {
+      "model": "mimo/mimo-v2-6-pro",
+      "matchingModel": "mimo-v2.6-pro",
+      "overrides": {
+        "description": "Stronger MiMo Pro tier for multimodal reasoning and coding-agent execution",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.000435,
+        "costPer1kOutputTokens": 0.00087
       }
     }
   }

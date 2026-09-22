@@ -43,7 +43,14 @@
       "overrides": {
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0004
+        "costPer1kOutputTokens": 0.0004,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "glm-5.2": {
@@ -607,6 +614,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "qwen3.6-27b",
       "overrides": {
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",

@@ -121,14 +121,7 @@
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "releaseDate": "July 31, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "max"
-          ],
-          "defaultEffort": "high"
-        }
+        "releaseDate": "July 31, 2026"
       }
     },
     "deepseek-v4-flash-0731-eu": {

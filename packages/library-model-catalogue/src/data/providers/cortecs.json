@@ -744,12 +744,12 @@
       "matchingModel": "qwen3-32b",
       "overrides": {
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "contextWindow": 32000,
-        "maxTokens": 32000,
+        "contextWindow": 16384,
+        "contextComplexity": 2,
         "speed": 3,
         "lastUpdated": "April 2025",
-        "costPer1kInputTokens": 0.000089,
-        "costPer1kOutputTokens": 0.000312,
+        "costPer1kInputTokens": 0.000179,
+        "costPer1kOutputTokens": 0.000697,
         "supportsAttachments": false
       }
     },

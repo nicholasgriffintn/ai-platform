@@ -291,6 +291,7 @@
       "matchingModel": "XiaomiMiMo/MiMo-V2-Flash",
       "overrides": {
         "name": "MiMo-V2-Flash",
+        "openWeights": true,
         "maxTokens": 4096,
         "contextComplexity": 3,
         "speed": 3,
@@ -853,6 +854,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "Qwen/Qwen3.6-27B",
       "overrides": {
+        "maxTokens": 65536,
         "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00047,
@@ -927,6 +929,14 @@
       "overrides": {
         "description": "MiMo model for long-context reasoning, perception, and agentic tasks",
         "contextWindow": 262144,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "tool_use"
         ],
@@ -1159,6 +1169,16 @@
       "model": "glm-flash/glm-4-6v-flash",
       "matchingModel": "zai-org/GLM-4.6V-Flash",
       "overrides": {
+        "contextWindow": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "lastUpdated": "December 8, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
@@ -1289,6 +1309,16 @@
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0001,
         "supportsAttachments": true
+      }
+    },
+    "tencent/Hy4-preview": {
+      "model": "Hy/hy4-preview",
+      "matchingModel": "tencent/Hy4-preview",
+      "overrides": {
+        "contextWindow": 1000000,
+        "lastUpdated": "August 28, 2026",
+        "costPer1kInputTokens": 0.000834,
+        "costPer1kOutputTokens": 0.002501
       }
     }
   }
