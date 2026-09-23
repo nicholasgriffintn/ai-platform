@@ -9,7 +9,13 @@
         "video"
       ]
     },
+    "strengths": [
+      "creative",
+      "video",
+      "vision"
+    ],
     "supportsToolCalls": false,
+    "supportsAttachments": true,
     "supportsTemperature": false
   },
   "description": "Pruna's highest-quality video model. Generate video from text or images with speed and quality modes, first- and last-frame control, and durations up to 15 seconds.",

@@ -107,10 +107,10 @@
             "reranking"
           ]
         },
-        "releaseDate": "August 11, 2025",
         "strengths": [
           "reranking"
-        ]
+        ],
+        "releaseDate": "August 11, 2025"
       }
     },
     "voyage-rerank-2-5-lite": {
@@ -127,10 +127,10 @@
             "reranking"
           ]
         },
-        "releaseDate": "August 11, 2025",
         "strengths": [
           "reranking"
-        ]
+        ],
+        "releaseDate": "August 11, 2025"
       }
     }
   }

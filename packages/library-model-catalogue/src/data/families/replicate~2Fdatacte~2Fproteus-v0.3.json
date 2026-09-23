@@ -16,7 +16,7 @@
       "image"
     ],
     "supportsToolCalls": false,
-    "supportsAttachments": true,
+    "supportsAttachments": false,
     "supportsTemperature": false
   },
   "description": "The Replicate Proteus family includes anime and artistic image generation models.",

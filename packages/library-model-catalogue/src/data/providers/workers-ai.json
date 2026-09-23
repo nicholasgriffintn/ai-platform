@@ -393,6 +393,18 @@
       "model": "workers-ai/@cf/leonardo/lucid-origin/leonardo-lucid-origin",
       "matchingModel": "@cf/leonardo/lucid-origin",
       "overrides": {
+        "name": "Leonardo Lucid Origin",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "creative"
+        ],
         "speed": 4
       },
       "unset": [
@@ -651,14 +663,7 @@
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0003,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.0003
       }
     },
     "@cf/pfnet/plamo-embedding-1b": {

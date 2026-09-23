@@ -72,8 +72,12 @@
       "model": "command-a/command-a",
       "matchingModel": "command-a-03-2025",
       "overrides": {
+        "contextWindow": 256000,
         "maxTokens": 8000,
         "isFree": true,
+        "strengths": [
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0.0025,

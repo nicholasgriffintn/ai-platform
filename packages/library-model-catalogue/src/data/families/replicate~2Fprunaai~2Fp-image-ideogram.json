@@ -8,7 +8,12 @@
         "image"
       ]
     },
+    "strengths": [
+      "creative",
+      "image"
+    ],
     "supportsToolCalls": false,
+    "supportsAttachments": false,
     "supportsTemperature": false
   },
   "description": "P-Image-Ideogram is Pruna AI’s text-to-image model starting from 0,003$ per generation.",

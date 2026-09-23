@@ -12,6 +12,7 @@
         "text"
       ]
     },
+    "releaseDate": "July 16, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
@@ -39,7 +40,6 @@
       "defaults": {
         "name": "Kimi K3",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
-        "releaseDate": "July 16, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -55,7 +55,6 @@
         "name": "Kimi K3-256K",
         "description": "256K-context version of Kimi K3, reducing token consumption for shorter coding sessions",
         "contextWindow": 262144,
-        "releaseDate": "July 16, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -81,7 +80,6 @@
             "text"
           ]
         },
-        "releaseDate": "July 16, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -98,6 +96,19 @@
       "defaults": {
         "name": "Kimi K3 Fast",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work"
+      }
+    },
+    "kimi-k3-global": {
+      "defaults": {
+        "name": "Kimi K3 (Global)",
+        "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "kimi-k3-tee": {
@@ -117,6 +128,19 @@
         },
         "releaseDate": "July 29, 2026",
         "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "kimi-k3-us": {
+      "defaults": {
+        "name": "Kimi K3 (US)",
+        "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

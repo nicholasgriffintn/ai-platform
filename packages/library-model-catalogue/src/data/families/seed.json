@@ -204,6 +204,7 @@
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "contextComplexity": 4,
         "reliability": 5,
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,

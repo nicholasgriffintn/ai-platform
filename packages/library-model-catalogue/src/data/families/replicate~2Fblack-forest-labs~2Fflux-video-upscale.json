@@ -9,7 +9,12 @@
         "video"
       ]
     },
+    "strengths": [
+      "video",
+      "vision"
+    ],
     "supportsToolCalls": false,
+    "supportsAttachments": true,
     "supportsTemperature": false
   },
   "description": "Upscale videos to higher resolution with FLUX super-resolution. Precise mode sharpens and stays faithful to the source; creative mode restores and invents fine detail.",
