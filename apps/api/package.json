@@ -64,7 +64,7 @@
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@ngriffin_uk/polychat-utility-server": "workspace:^",
-    "@scalar/hono-api-reference": "0.12.1",
+    "@scalar/hono-api-reference": "0.12.2",
     "@sentry/cloudflare": "10.74.0",
     "@tsndr/cloudflare-worker-jwt": "3.2.3",
     "agents": "0.23.0",
