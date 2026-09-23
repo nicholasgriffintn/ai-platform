@@ -18,8 +18,8 @@ function getGreenPtApiOperation(modelConfig: ModelConfigItem): GreenPtApiOperati
     return undefined;
   }
 
-  if (operation in GREENPT_OPERATION_ENDPOINTS) {
-    return operation as GreenPtApiOperation;
+  if (operation === "embeddings") {
+    return operation;
   }
 
   throw new AssistantError(

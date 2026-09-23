@@ -1,0 +1,45 @@
+{
+  "defaults": {
+    "contextWindow": 65536,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "decision"
+      ]
+    },
+    "strengths": [
+      "decision",
+      "analysis"
+    ],
+    "contextComplexity": 3,
+    "reliability": 5,
+    "releaseDate": "September 10, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The typesafe/jev family includes System One decision models that return calibrated probabilities instead of text.",
+  "models": {
+    "jev-1.13.0": {
+      "defaults": {
+        "name": "Jev 1.13",
+        "description": "Pinned Jev 1.13.0 release of TypeSafe's System One decision model."
+      }
+    },
+    "jev-latest": {
+      "defaults": {
+        "name": "Jev",
+        "description": "TypeSafe's System One decision model. Answers choice, score and yes/no questions about a state with calibrated probabilities in around 150ms. Text only."
+      }
+    },
+    "jev-preview": {
+      "defaults": {
+        "name": "Jev Preview",
+        "description": "Preview of the next Jev release. Should be better in most ways, but may change without notice."
+      }
+    }
+  }
+}

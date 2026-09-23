@@ -1,5 +1,10 @@
 import { resolveGreenPtApiKey, greenPtJsonRequest } from "@ngriffin_uk/polychat-ai-providers";
-import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
+import z from "zod/v4";
 
 import { providerHost } from "~/infrastructure/providers/host";
 import type {
@@ -8,27 +13,20 @@ import type {
 } from "~/modules/apps/application/ports/content-extract";
 import type { IRequest } from "~/types";
 
-interface GreenPtScrapeResponse {
-  success?: boolean;
-  data?: {
-    markdown?: string;
-    html?: string;
-    rawHtml?: string;
-    links?: string[];
-    metadata?: {
-      title?: string;
-      description?: string;
-      language?: string;
-      sourceURL?: string;
-      statusCode?: number;
-    };
-  };
-  error?: string;
-}
+const greenPtScrapeResponseSchema = z.object({
+  success: z.boolean().optional(),
+  data: z
+    .object({
+      markdown: z.string().optional(),
+      html: z.string().optional(),
+      rawHtml: z.string().optional(),
+      links: z.array(z.string()).optional(),
+    })
+    .optional(),
+  error: z.string().optional(),
+});
 
-function toUrlList(urls: string | string[]): string[] {
-  return Array.isArray(urls) ? urls : [urls];
-}
+type GreenPtScrapeResponse = z.infer<typeof greenPtScrapeResponseSchema>;
 
 export function mapGreenPtScrapeResult(data: GreenPtScrapeResponse): string {
   const content = data.data?.markdown ?? data.data?.html ?? data.data?.rawHtml;
@@ -55,10 +53,11 @@ export async function extractWithGreenPt(
   const startedAt = Date.now();
   const results: ExtractedContentPayload["results"] = [];
   const failed_results: ExtractedContentPayload["failed_results"] = [];
+  const urls = Array.isArray(params.urls) ? params.urls : [params.urls];
 
-  for (const url of toUrlList(params.urls)) {
+  for (const url of urls) {
     try {
-      const data = await greenPtJsonRequest<GreenPtScrapeResponse>({
+      const response = await greenPtJsonRequest({
         apiKey,
         path: "/tools/crawl/scrape",
         label: "GreenPT scrape",
@@ -70,6 +69,17 @@ export async function extractWithGreenPt(
           blockAds: true,
         },
       });
+      const parsed = greenPtScrapeResponseSchema.safeParse(response);
+
+      if (!parsed.success) {
+        throw new AssistantError(
+          "GreenPT scrape returned an unexpected response",
+          ErrorType.PROVIDER_ERROR,
+          502,
+        );
+      }
+
+      const data = parsed.data;
 
       if (data.success === false) {
         throw new Error(data.error || "GreenPT scrape failed");

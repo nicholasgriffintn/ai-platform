@@ -84,6 +84,14 @@ export const request_approval: ApiToolDefinition = {
         options: approvalOptions,
         context: parsedContext,
         timestamp: new Date().toISOString(),
+        ...(context.toolCallId
+          ? {
+              approval: {
+                interactionId: context.toolCallId,
+                toolName: "request_approval",
+              },
+            }
+          : {}),
         humanInTheLoop: pendingApproval({ message, options: approvalOptions }),
       },
     };
@@ -121,7 +129,7 @@ export const ask_user: ApiToolDefinition = {
       }
     }
 
-    const interactionId = generateId();
+    const interactionId = context.toolCallId ?? generateId();
     const requestedAt = new Date().toISOString();
 
     logger.info("User question created", {

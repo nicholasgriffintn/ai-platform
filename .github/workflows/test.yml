@@ -120,6 +120,10 @@ jobs:
       - name: Typecheck end-to-end tests
         run: pnpm typecheck:e2e
       - name: Run core release journeys
+        env:
+          PVC_TOKEN: ${{ secrets.PVC_TOKEN }}
+          PVC_SERVER_URL: https://pvc.pashi.app
+          PVC_FAIL_ON_DIFF: 0
         run: pnpm test:e2e:release
       - name: Upload failure artefacts
         if: failure()

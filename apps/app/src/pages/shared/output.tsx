@@ -1,4 +1,9 @@
-import { PageShell, ResponseRenderer } from "@ngriffin_uk/polychat-component-shell";
+import {
+  PageShell,
+  readSharedSiteProject,
+  ResponseRenderer,
+  SharedSite,
+} from "@ngriffin_uk/polychat-component-shell";
 import {
   ButtonLink,
   Card,
@@ -56,6 +61,16 @@ export default function SharedOutputPage() {
     return (
       <PageShell className="flex min-h-screen items-center justify-center" displayNavBar={false}>
         <Loader2 size={40} className="animate-spin text-muted-foreground" />
+      </PageShell>
+    );
+  }
+
+  const sharedSite = readSharedSiteProject(output, token);
+
+  if (sharedSite) {
+    return (
+      <PageShell title={output.title} displayNavBar={false}>
+        <SharedSite project={sharedSite} />
       </PageShell>
     );
   }

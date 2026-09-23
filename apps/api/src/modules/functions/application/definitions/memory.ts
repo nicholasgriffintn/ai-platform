@@ -54,4 +54,10 @@ export const store_memory: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["write"],
+  intentEvidence: (input) => ({
+    operation: "store_memory",
+    text: input.text,
+    category: input.category,
+    documentId: input.document_id,
+  }),
 };

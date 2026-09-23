@@ -1,0 +1,32 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "strengths": [
+      "creative",
+      "video",
+      "vision"
+    ],
+    "contextComplexity": 4,
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The Replicate Luma Ray family includes cinematic video generation models.",
+  "models": {
+    "ray-3-2": {
+      "defaults": {
+        "name": "Ray 3.2",
+        "description": "Luma AI reasoning video model for cinematic text-to-video and image-to-video generation with HDR and EXR export."
+      }
+    }
+  }
+}

@@ -151,3 +151,44 @@ describe("discoverAssistantCapabilities", () => {
     expect(result.items[0]?.invocation.autoActivate).toBeUndefined();
   });
 });
+
+describe("discoverAssistantCapabilities with semantic relevance", () => {
+  const tools = [
+    {
+      id: "create_qr_code",
+      name: "Create QR code",
+      description: "Create a QR code from text.",
+      type: "normal" as const,
+      activation: { allowed: true },
+    },
+    {
+      id: "web_search",
+      name: "Web search",
+      description: "Search the web for current information.",
+      type: "normal" as const,
+      activation: { allowed: true },
+    },
+  ];
+
+  it("surfaces a capability with no keyword overlap when the decision model rates it relevant", () => {
+    const result = discoverAssistantCapabilities(
+      sources({ tools }),
+      { query: "make something my phone can scan", limit: 8 },
+      new Date(),
+      new Map([["tool:create_qr_code", 0.92]]),
+    );
+
+    expect(result.items.map((item) => item.id)).toEqual(["tool:create_qr_code"]);
+  });
+
+  it("lets a confident semantic match outrank a weak keyword match", () => {
+    const result = discoverAssistantCapabilities(
+      sources({ tools }),
+      { query: "search for a code", limit: 8 },
+      new Date(),
+      new Map([["tool:create_qr_code", 0.9]]),
+    );
+
+    expect(result.items.map((item) => item.id)).toEqual(["tool:create_qr_code", "tool:web_search"]);
+  });
+});

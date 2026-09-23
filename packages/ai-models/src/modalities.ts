@@ -31,6 +31,7 @@ export const availableModalities = [
   "agents",
   "ocr",
   "transcription",
+  "decision",
 ] as const;
 
 const DEFAULT_MODALITIES: ModelModalities = {

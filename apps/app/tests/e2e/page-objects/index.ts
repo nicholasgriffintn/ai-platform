@@ -1,11 +1,3 @@
 export { BasePage } from "./BasePage";
 export { HomePage } from "./HomePage";
-export { AuthPage } from "./AuthPage";
-export { AppPage } from "./AppPage";
-export { BillingPage } from "./BillingPage";
-export { CapabilitiesPage } from "./CapabilitiesPage";
-export { PluginsPage } from "./PluginsPage";
-export { PricingPage } from "./PricingPage";
-export { ProfilePage } from "./ProfilePage";
 export { WorkPage } from "./WorkPage";
-export { WorkbenchPage } from "./WorkbenchPage";

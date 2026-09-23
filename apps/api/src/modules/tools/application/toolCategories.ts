@@ -2,6 +2,7 @@ import { toolCategories, type ToolCategory } from "@ngriffin_uk/polychat-schemas
 
 const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
   Research: [
+    "audit_evidence",
     "get_hacker_news_stories",
     "capture_screenshot",
     "extract_content",
@@ -10,7 +11,14 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "research",
     "web_search",
   ],
-  Creative: ["create_image", "create_music", "create_qr_code", "create_speech", "create_video"],
+  Creative: [
+    "build_site",
+    "create_image",
+    "create_music",
+    "create_qr_code",
+    "create_speech",
+    "create_video",
+  ],
   Code: [
     "apply_edit_completion",
     "fill_in_middle_completion",
@@ -29,7 +37,13 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "trigger_recipe",
     "use_recipe_connector",
   ],
-  Automation: ["call_api", "discover_capabilities", "run_pashi_tools", "search_pashi_tools"],
+  Automation: [
+    "call_api",
+    "decide",
+    "discover_capabilities",
+    "run_pashi_tools",
+    "search_pashi_tools",
+  ],
   Collaboration: [
     "ask_user",
     "run_council",

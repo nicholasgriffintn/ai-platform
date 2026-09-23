@@ -38,6 +38,8 @@ Duplicate consumed approvals reuse their stored result. **Consumed without a res
 
 Triggers belong to one active installation and account. Pause/resume them with the recipe; delete upstream before removing local authority. Signed events still need an exact active mapping. HTTP 200 with `queued: false` acknowledges an unmatched or inactive mapping and is not a retryable delivery error.
 
+An optional **Only run when** condition is evaluated against bounded, redacted event data. False, uncertain or unavailable judgement skips the occurrence. Duplicate provider delivery reuses the trigger/event receipt and does not call the decision provider again. If an evaluation lease expires, the next delivery may reclaim it; after a task is queued, its deterministic identity remains authoritative even if receipt settlement was interrupted.
+
 ## Private files
 
 Use authorised Source/Output references or the `$assistantFile` marker. The bridge validates scope, relative mount paths, MIME, size, transfer time and presigned hosts. Imported files become private governed Outputs; provider URLs are not durable results. Restore the private bucket/key when file discovery fails rather than making files public.
@@ -48,7 +50,7 @@ Use authorised Source/Output references or the `$assistantFile` marker. The brid
 | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
 | Callback denied         | Signed-in browser, matching origins/namespace, generated auth-config IDs and account ownership                 |
 | Webhook 401/503         | Unmodified raw body and signature headers, timestamp, matching signing secret                                  |
-| Valid event not queued  | Trigger and installation status, account, namespace and trigger slug                                           |
+| Valid event not queued  | Trigger and installation status, account, namespace, trigger slug, condition receipt and decision availability |
 | Session rejected        | Expiry and original run/conversation/recipe/operation scope; rediscover instead of substituting an upstream ID |
 | Approval indeterminate  | Stored receipt/result, Composio log and actual external effect                                                 |
 | Cleanup attempts rising | Upstream Session deletion permission and provider availability                                                 |

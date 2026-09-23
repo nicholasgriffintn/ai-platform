@@ -1,9 +1,19 @@
 {
   "defaults": {
     "openWeights": true,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
     "contextComplexity": 4,
     "reliability": 1,
     "supportsToolCalls": true,
+    "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [
@@ -22,15 +32,6 @@
         "description": "Newer StepFun flash model for faster agents, coding, and multimodal prompts",
         "contextWindow": 256000,
         "maxTokens": 256000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -38,13 +39,24 @@
         ],
         "knowledgeCutoffDate": "March 1, 2026",
         "releaseDate": "May 29, 2026",
-        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 29.7,
           "codingIndex": 37.3,
           "agenticIndex": 21.5,
           "intelligenceIndexVersion": 4.1
         }
+      }
+    },
+    "step-5-preview": {
+      "defaults": {
+        "name": "Step 5 Preview",
+        "openWeights": false,
+        "description": "StepFun flash model for efficient multimodal reasoning, coding, and tool use",
+        "contextWindow": 1000000,
+        "maxTokens": 1000000,
+        "releaseDate": "September 16, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
       }
     },
     "stepfun-3-5-flash": {

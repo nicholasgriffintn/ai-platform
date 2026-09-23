@@ -4,7 +4,7 @@ import { updateUserSettingsSchema } from "./userSettings.js";
 
 describe("updateUserSettingsSchema", () => {
   it("accepts each supported guardrail provider", () => {
-    for (const provider of ["llamaguard", "bedrock", "mistral", "shieldstral"]) {
+    for (const provider of ["llamaguard", "bedrock", "mistral", "shieldstral", "typesafe"]) {
       expect(updateUserSettingsSchema.safeParse({ guardrails_provider: provider }).success).toBe(
         true,
       );

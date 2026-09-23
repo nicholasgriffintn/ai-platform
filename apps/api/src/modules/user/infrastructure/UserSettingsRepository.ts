@@ -1,6 +1,8 @@
 import { getModels } from "@ngriffin_uk/polychat-ai-models";
 import { isProviderPlatformEnabled } from "@ngriffin_uk/polychat-ai-providers";
 import {
+  DEFAULT_GUARDRAILS_ENABLED,
+  DEFAULT_GUARDRAILS_PROVIDER,
   lastModelSelectionSchema,
   onboardingSeenSchema,
   parsePetModelOverrides,
@@ -210,6 +212,8 @@ export class UserSettingsRepository extends BaseRepository {
         user_id: userId,
         public_key: publicKeyString,
         private_key: encryptedPrivateKeyString,
+        guardrails_enabled: DEFAULT_GUARDRAILS_ENABLED ? 1 : 0,
+        guardrails_provider: DEFAULT_GUARDRAILS_PROVIDER,
       });
 
       if (!insert) {

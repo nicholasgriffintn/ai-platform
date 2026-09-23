@@ -33,7 +33,7 @@ function transcriptionProviders(
       metadata: {
         vendor: "GreenPT",
         categories: ["transcription"],
-        models: GREENPT_TRANSCRIPTION_MODELS,
+        models: [...GREENPT_TRANSCRIPTION_MODELS],
         defaultModel: "green-s",
       },
     },

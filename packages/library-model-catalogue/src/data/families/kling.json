@@ -36,22 +36,7 @@
     },
     "kling-video-3-0": {
       "defaults": {
-        "name": "Kling Video 3.0",
-        "description": "Generate cinematic videos up to 15 seconds with multi-shot control, native audio, and improved consistency",
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "video"
-          ]
-        },
-        "strengths": [
-          "creative",
-          "video"
-        ],
-        "supportsAttachments": false
+        "description": "Generate cinematic videos up to 15 seconds with multi-shot control, native audio, and improved consistency"
       }
     }
   }

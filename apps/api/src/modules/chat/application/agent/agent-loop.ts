@@ -62,6 +62,7 @@ import { emitCompleteToolInput } from "~/modules/chat/application/tools/events";
 import { handleToolCalls } from "~/modules/chat/application/tools/execution";
 import { createProviderRetryBudget } from "~/modules/chat/domain/provider-retry";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
+import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
 import { shouldStopTurnForUsage, USAGE_LIMIT_NOTICE } from "~/modules/usage/application/limitState";
 import {
   StreamState,
@@ -177,7 +178,6 @@ export interface AgentLoopExecutionParams {
   userSettings?: IUserSettings;
   requestOptions?: ChatRequestOptions;
   guardrailPrompt?: string;
-  deferOutputUntilValidated?: boolean;
   emit?: (event: AgentEvent) => Promise<void>;
   shouldStop?: () => boolean;
   isCancellationRequested?: () => Promise<boolean>;
@@ -229,7 +229,12 @@ export async function runAgentLoop(
     store: params.requestParams.store,
   });
   const providerIO = createAgentProviderIO();
-  const callerToolNames = new Set(params.requestParams.tools?.map((tool) => tool.function.name));
+  const platformToolNames = new Set(listFunctionToolDefinitions().map((tool) => tool.name));
+  const callerToolNames = new Set(
+    params.requestParams.tools
+      ?.map((tool) => tool.function.name)
+      .filter((name) => !platformToolNames.has(name)),
+  );
   const runtimeMessages = providerIO.initialMessages(
     toProviderMessages(params.requestParams.messages),
   );
@@ -262,7 +267,6 @@ export async function runAgentLoop(
     userId: params.context?.user?.id,
     serviceContext: params.context,
     shouldStop: params.shouldStop,
-    deferOutputUntilValidated: params.deferOutputUntilValidated,
   };
 
   const finalise = async (turn: TurnOutput) => {
@@ -282,7 +286,6 @@ export async function runAgentLoop(
       userSettings: params.userSettings,
       requestOptions: params.requestOptions,
       guardrailPrompt: params.guardrailPrompt,
-      deferOutputUntilValidated: params.deferOutputUntilValidated,
       runId: params.runId,
       runAttempt: params.runAttempt,
       provenance: params.provenance,
@@ -298,7 +301,7 @@ export async function runAgentLoop(
   const closingTurn = async (text: string, status?: string) => {
     finalStatus = status;
 
-    if (params.transport.streams && text && !params.deferOutputUntilValidated) {
+    if (params.transport.streams && text) {
       await sink.writeEvent("content_block_delta", { content: text });
     }
 

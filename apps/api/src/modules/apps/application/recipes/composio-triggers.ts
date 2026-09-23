@@ -67,6 +67,7 @@ function toTrigger(record: RecipeComposioTriggerRecord): RecipeComposioTrigger {
     externalTriggerId: record.external_trigger_id,
     connectedAccountId: record.connected_account_id,
     configuration: record.configuration,
+    condition: record.condition,
     status: record.status,
     lastError: record.last_error,
     createdAt: record.created_at,
@@ -202,6 +203,7 @@ export async function createRecipeComposioTrigger(params: {
         connectedAccountId: account.id,
         externalUserId,
         configuration: params.input.configuration,
+        condition: params.input.condition,
       }),
     );
   } catch (error) {

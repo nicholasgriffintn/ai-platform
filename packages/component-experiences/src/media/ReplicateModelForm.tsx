@@ -4,6 +4,7 @@ import {
   formatUnknownValue,
   getNumberInputValue,
   parseNumberInputValue,
+  splitNonEmptyLines,
 } from "@ngriffin_uk/polychat-utility-core";
 import { useId, useState } from "react";
 
@@ -105,6 +106,10 @@ function isReplicateRequiredValueMissing(value: unknown): boolean {
     return !Number.isFinite(value);
   }
 
+  if (Array.isArray(value)) {
+    return value.length === 0;
+  }
+
   return !value;
 }
 
@@ -144,14 +149,16 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
       {hasEnum ? (
         <FormSelect
           id={fieldId}
-          value={fieldValue}
+          value={String(fieldValue)}
           placeholder="Select..."
           aria-describedby={describedBy}
           options={(field.enum ?? []).map((option) => ({
             value: String(option),
             label: String(option),
           }))}
-          onValueChange={onChange}
+          onValueChange={(option) =>
+            onChange(typeof field.enum?.[0] === "number" ? Number(option) : option)
+          }
         />
       ) : fieldTypes.includes("boolean") ? (
         <Checkbox
@@ -184,6 +191,18 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
           aria-describedby={describedBy}
           aria-invalid={Boolean(error)}
           className="h-auto bg-surface px-4 py-2"
+        />
+      ) : fieldTypes.includes("array") ? (
+        <Textarea
+          id={fieldId}
+          value={Array.isArray(value) ? value.join("\n") : ""}
+          onChange={(e) => onChange(splitNonEmptyLines(e.target.value))}
+          placeholder="One URL per line"
+          rows={4}
+          required={field.required}
+          aria-describedby={describedBy}
+          aria-invalid={Boolean(error)}
+          className="bg-surface px-4 py-2"
         />
       ) : isFileField ? (
         <div className="space-y-2">

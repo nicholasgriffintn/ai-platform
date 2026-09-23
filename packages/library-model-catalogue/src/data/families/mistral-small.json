@@ -105,7 +105,6 @@
         "maxTokens": 102400,
         "knowledgeCutoffDate": "October 31, 2023",
         "releaseDate": "March 17, 2025",
-        "supportsToolCalls": false,
         "supportsResponseFormat": false
       }
     },
@@ -123,7 +122,8 @@
             "text"
           ]
         },
-        "releaseDate": "March 18, 2025",
+        "knowledgeCutoffDate": "June 2024",
+        "releaseDate": "March 17, 2025",
         "supportsResponseFormat": false,
         "supportsAttachments": false
       }

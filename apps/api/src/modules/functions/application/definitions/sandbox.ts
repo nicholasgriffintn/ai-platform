@@ -49,5 +49,11 @@ export const run_sandbox_task: FunctionToolDescriptor = {
     "Run a coding task against a GitHub repository in the sandbox worker. Covers implementation, bug fixes, refactoring, migrations, documentation, code review and test runs; the task type decides whether the run may change files. Load the sandbox-tasks skill before calling this to pick the type and write the task properly.",
   type: "premium",
   permissions: ["sandbox", "write"],
+  intentEvidence: (input) => ({
+    operation: "run_sandbox_task",
+    repository: input.repo ?? "current",
+    taskType: input.taskType,
+    shouldCommit: input.shouldCommit === true,
+  }),
   inputSchema: jsonSchemaToZod(sandboxFunctionParameters),
 };

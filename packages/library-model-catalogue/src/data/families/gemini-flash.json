@@ -354,7 +354,6 @@
         "name": "Gemini 3.7 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "contextWindow": 1048576,
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -416,7 +415,6 @@
         "name": "Gemini 3.8 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "contextWindow": 1048576,
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -684,7 +682,7 @@
         "name": "Nano Banana (Gemini 2.5 Flash Image)",
         "description": "Nano Banana image model for fast generation, edits, and character-consistent assets",
         "contextWindow": 32768,
-        "maxTokens": 65536,
+        "maxTokens": 65535,
         "modalities": {
           "input": [
             "text"
@@ -700,6 +698,7 @@
         ],
         "contextComplexity": 3,
         "reliability": 4,
+        "knowledgeCutoffDate": "June 2024",
         "releaseDate": "August 26, 2025",
         "supportsToolCalls": false,
         "supportsAttachments": false,

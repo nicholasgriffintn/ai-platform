@@ -76,7 +76,7 @@ describe("Composio webhook", () => {
     createServiceContextMock.mockReturnValue({
       repositories: {
         recipeComposioTriggers: {
-          getTriggerByExternalId: vi.fn().mockResolvedValue({
+          getTriggerByExternalId: async () => ({
             id: "local_trigger_1",
             installation_id: "installation_1",
             created_by_user_id: 42,
@@ -85,8 +85,11 @@ describe("Composio webhook", () => {
             external_user_id: "polychat:test:user:42",
             connected_account_id: "ca_1",
             trigger_slug: "GMAIL_NEW_GMAIL_MESSAGE",
+            condition: null,
           }),
           markConnectedAccountError,
+          claimEvent: async () => ({ status: "execute", executionToken: "lease_1" }),
+          settleEvent: async () => true,
         },
         templates: {
           getTemplateById: vi.fn().mockResolvedValue({
@@ -102,7 +105,8 @@ describe("Composio webhook", () => {
             }),
           }),
         },
-        tasks: { createTaskIfAbsent, updateTask },
+        tasks: { createTaskIfAbsent, updateTask, getTaskById: async () => null },
+        users: { getUserById: async () => ({ id: 42, plan_id: "pro" }) },
       },
     });
   });

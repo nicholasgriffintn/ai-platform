@@ -1,5 +1,7 @@
+import { score as scoreQuestion } from "@ngriffin_uk/polychat-ai-functions";
 import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { normaliseDecisionScore } from "@ngriffin_uk/polychat-schemas";
 
 import { ai } from "~/infrastructure/ai";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
@@ -9,6 +11,19 @@ import type { IEnv } from "~/types";
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";
 
 const logger = getLogger({ prefix: "services/tasks/training-quality" });
+
+const TRAINING_QUALITY_QUESTIONS = {
+  quality: scoreQuestion(
+    "How good is `assistant_response` as a reply to `user_prompt` (with `system_prompt` as context), judged on accuracy, helpfulness, clarity, tone and completeness?",
+    [
+      "Poor: incorrect, harmful or nonsensical",
+      "Below average: partially correct but unclear or incomplete",
+      "Average: correct but could be more helpful or detailed",
+      "Good: accurate, helpful and well structured",
+      "Excellent: exceptional clarity, accuracy and helpfulness",
+    ],
+  ),
+} as const;
 
 interface TrainingQualityData {
   batchSize?: number;
@@ -87,6 +102,28 @@ export class TrainingQualityHandler implements TaskHandler {
   }
 
   private async scoreExample(example: any, env: IEnv): Promise<number> {
+    const decided = await ai
+      .tryDecide({
+        env,
+        state: {
+          system_prompt: example.system_prompt ?? null,
+          user_prompt: example.user_prompt,
+          assistant_response: example.assistant_response,
+        },
+        questions: TRAINING_QUALITY_QUESTIONS,
+      })
+      .catch((error: unknown) => {
+        logger.warn("Decision-based quality scoring failed; falling back to text scoring", {
+          error,
+        });
+
+        return null;
+      });
+
+    if (decided) {
+      return Math.round(1 + normaliseDecisionScore(decided.answers.quality) * 9);
+    }
+
     const prompt = renderPrompt("apps/quality/scoring", {
       userPrompt: example.user_prompt,
       assistantResponse: example.assistant_response,
@@ -94,13 +131,14 @@ export class TrainingQualityHandler implements TaskHandler {
     });
 
     try {
-      const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env);
+      const { model: modelToUse, provider: providerToUse, effort } = await getAuxiliaryModel(env);
       const response = await ai.generateText({
         env,
         model: modelToUse,
         provider: providerToUse,
         prompt,
-        reasoning: { effort: "none" },
+        reasoning_effort: effort,
+        disable_functions: true,
       });
 
       const scoreMatch = response.match(/(\d+)/);

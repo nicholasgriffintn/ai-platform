@@ -8,6 +8,7 @@ import {
 
 import { MAX_COUNCIL_MEMBERS, MAX_COUNCIL_TURNS } from "~/config/limits";
 import { runPanel, type PanelMember, type PanelTurn } from "~/modules/chat/application/panel";
+import { judgeCouncilDecision } from "~/modules/decisions/application/council-decision";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import {
@@ -102,6 +103,7 @@ export const select_council_members: ApiToolDefinition = {
         })),
         recommended,
         reason: args.reason,
+        decision: args.decision,
         maxSelection: MAX_COUNCIL_MEMBERS,
         humanInTheLoop: pendingSelection(),
       },
@@ -134,6 +136,17 @@ export const run_council: ApiToolDefinition = {
         await context.emitToolResult?.(buildTurnResponse(turn));
       },
     });
+    const decision = args.decision
+      ? await judgeCouncilDecision({
+          env: request.env,
+          user: request.user,
+          completionId: context.completionId,
+          question: String(args.question),
+          decision: args.decision,
+          turns: result.turns,
+          conclusion: result.conclusion,
+        })
+      : undefined;
 
     return {
       status: "success",
@@ -147,6 +160,7 @@ export const run_council: ApiToolDefinition = {
         conclusion: result.conclusion,
         stoppedReason: result.stoppedReason,
         model: result.model,
+        ...(decision ? { decision, decisionOptions: args.decision?.options } : {}),
       },
     };
   },

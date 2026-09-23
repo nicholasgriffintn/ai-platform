@@ -4,6 +4,925 @@
     "supportsAttachments": false
   },
   "models": {
+    "replicate-prunaai-p-video-2-pro": {
+      "model": "replicate/prunaai/p-video-2-pro/p-video-2-pro",
+      "matchingModel": "prunaai/p-video-2-pro",
+      "overrides": {
+        "supportsAttachments": true,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for video generation.",
+              "required": true
+            },
+            {
+              "name": "mode",
+              "type": "string",
+              "description": "Generation mode: quality, speed, or cost.",
+              "default": "speed",
+              "enum": [
+                "quality",
+                "speed",
+                "cost"
+              ]
+            },
+            {
+              "name": "prompt_upsampler",
+              "type": "string",
+              "description": "Expand your prompt before video generation.",
+              "default": "turbo",
+              "enum": [
+                "off",
+                "turbo",
+                "max"
+              ]
+            },
+            {
+              "name": "image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "First-frame reference image."
+            },
+            {
+              "name": "last_frame_image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Last-frame reference image."
+            },
+            {
+              "name": "duration",
+              "type": "integer",
+              "description": "Video duration in seconds.",
+              "default": 5
+            },
+            {
+              "name": "resolution",
+              "type": "string",
+              "description": "Video resolution.",
+              "default": "768p",
+              "enum": [
+                "480p",
+                "768p"
+              ]
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Aspect ratio; reference images determine the canvas when provided.",
+              "default": "16:9",
+              "enum": [
+                "16:9",
+                "9:16",
+                "4:3",
+                "3:4",
+                "3:2",
+                "2:3",
+                "1:1"
+              ]
+            },
+            {
+              "name": "seed",
+              "type": "integer",
+              "description": "Random seed for reproducible generation."
+            }
+          ],
+          "reference": "https://replicate.com/prunaai/p-video-2-pro"
+        }
+      }
+    },
+    "replicate-prunaai-p-image-ideogram": {
+      "model": "replicate/prunaai/p-image-ideogram/p-image-ideogram",
+      "matchingModel": "prunaai/p-image-ideogram",
+      "overrides": {
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Short text prompt for image generation.",
+              "required": true
+            },
+            {
+              "name": "thinking",
+              "type": "string",
+              "description": "the higher the thinking, the higher the quality of the image",
+              "default": "high",
+              "enum": [
+                "very low",
+                "low",
+                "medium",
+                "high",
+                "very high"
+              ]
+            },
+            {
+              "name": "prompt_upsampling",
+              "type": "boolean",
+              "description": "Enable prompt enhancement before image generation. Set to false to pass the raw prompt directly to the image model.",
+              "default": true
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Aspect ratio for generation. Use 'custom' to set width/height directly.",
+              "default": "1:1",
+              "enum": [
+                "1:1",
+                "16:9",
+                "9:16",
+                "4:3",
+                "3:4",
+                "3:2",
+                "2:3",
+                "custom"
+              ]
+            },
+            {
+              "name": "image_size",
+              "type": "string",
+              "description": "Output resolution budget (ignored when aspect_ratio=custom).",
+              "default": "1K",
+              "enum": [
+                "1K",
+                "2K"
+              ]
+            },
+            {
+              "name": "width",
+              "type": "integer",
+              "description": "Width when aspect_ratio=custom (rounded to nearest multiple of 16).",
+              "default": 1024
+            },
+            {
+              "name": "height",
+              "type": "integer",
+              "description": "Height when aspect_ratio=custom (rounded to nearest multiple of 16).",
+              "default": 1024
+            },
+            {
+              "name": "seed",
+              "type": "integer",
+              "description": "Random seed."
+            },
+            {
+              "name": "output_format",
+              "type": "string",
+              "description": "Output image format.",
+              "default": "jpg",
+              "enum": [
+                "png",
+                "jpg",
+                "webp"
+              ]
+            },
+            {
+              "name": "output_quality",
+              "type": "integer",
+              "description": "Output quality (0-100; ignored for png).",
+              "default": 80
+            }
+          ],
+          "reference": "https://replicate.com/prunaai/p-image-ideogram"
+        }
+      }
+    },
+    "replicate-openai-gpt-image-2.5-flare": {
+      "model": "gpt-image/gpt-image-2-5-flare",
+      "matchingModel": "openai/gpt-image-2.5-flare",
+      "overrides": {
+        "description": "OpenAI's fastest model for high-quality, everyday image generation. Generate and edit images from text and image inputs with strong instruction following and sharp text rendering.",
+        "strengths": [
+          "creative",
+          "vision",
+          "document",
+          "image"
+        ],
+        "supportsAttachments": true,
+        "supportsImageEdits": true,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "A text description of the desired image",
+              "required": true
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "The size of the generated image. Use 'auto' to let the model pick. Sizes above 2560x1440 are experimental and may give more variable results.",
+              "default": "1:1",
+              "enum": [
+                "1:1",
+                "3:2",
+                "2:3",
+                "4:3",
+                "3:4",
+                "16:9",
+                "9:16",
+                "auto",
+                "1024x1024",
+                "1536x1024",
+                "1024x1536",
+                "1536x1152",
+                "1152x1536",
+                "2048x2048",
+                "2048x1152",
+                "1152x2048",
+                "3840x2160",
+                "2160x3840"
+              ]
+            },
+            {
+              "name": "input_images",
+              "type": "array",
+              "description": "A list of images to use as input for the generation"
+            },
+            {
+              "name": "number_of_images",
+              "type": "integer",
+              "description": "Number of images to generate (1-10)",
+              "default": 1
+            },
+            {
+              "name": "quality",
+              "type": "string",
+              "description": "The quality of the generated image. Higher quality takes longer and costs more.",
+              "default": "auto",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "xhigh",
+                "max",
+                "auto"
+              ]
+            },
+            {
+              "name": "background",
+              "type": "string",
+              "description": "Set whether the background is transparent or opaque or choose automatically",
+              "default": "auto",
+              "enum": [
+                "auto",
+                "transparent",
+                "opaque"
+              ]
+            },
+            {
+              "name": "output_compression",
+              "type": "integer",
+              "description": "Compression level (0-100%)",
+              "default": 90
+            },
+            {
+              "name": "output_format",
+              "type": "string",
+              "description": "Output format",
+              "default": "webp",
+              "enum": [
+                "png",
+                "jpeg",
+                "webp"
+              ]
+            },
+            {
+              "name": "moderation",
+              "type": "string",
+              "description": "Content moderation level",
+              "default": "auto",
+              "enum": [
+                "auto",
+                "low"
+              ]
+            },
+            {
+              "name": "user_id",
+              "type": "string",
+              "description": "An optional unique identifier representing your end-user. This helps OpenAI monitor and detect abuse."
+            }
+          ],
+          "reference": "https://replicate.com/openai/gpt-image-2.5-flare"
+        }
+      }
+    },
+    "replicate-google-gemini-omni-1.1": {
+      "model": "replicate/google/gemini-omni-1.1/gemini-omni-1-1",
+      "matchingModel": "google/gemini-omni-1.1",
+      "overrides": {
+        "supportsAttachments": true,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt describing the video. Include details like scene, camera movement, lighting, mood, and audio for best results. Put anything you want to avoid in the prompt too (e.g. 'no dialogue').",
+              "required": true
+            },
+            {
+              "name": "image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Starting image to animate into a video. When provided without last_frame, the video is generated from this image."
+            },
+            {
+              "name": "last_frame",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Ending image. When provided together with image, the model interpolates a smooth transition between the two frames."
+            },
+            {
+              "name": "reference_images",
+              "type": "array",
+              "description": "Reference images that guide the subject and style of the video (not used as literal frames). Use this to generate a video featuring specific characters or objects.",
+              "default": []
+            },
+            {
+              "name": "video",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "An existing video to edit. Describe the change in the prompt (e.g. 'make the sky stormy, keep everything else the same'). The model applies the edit while preserving the rest of the video."
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Video aspect ratio. Ignored when editing an existing video.",
+              "default": "16:9",
+              "enum": [
+                "16:9",
+                "9:16"
+              ]
+            },
+            {
+              "name": "resolution",
+              "type": "string",
+              "description": "Resolution of the generated video. 360p is a fast draft mode.",
+              "default": "720p",
+              "enum": [
+                "360p",
+                "720p",
+                "1080p",
+                "4k"
+              ]
+            }
+          ],
+          "reference": "https://replicate.com/google/gemini-omni-1.1"
+        }
+      }
+    },
+    "replicate-alibaba-qwen-image-3-pro": {
+      "model": "replicate/alibaba/qwen-image-3/qwen-image-3-pro",
+      "matchingModel": "alibaba/qwen-image-3-pro",
+      "overrides": {
+        "supportsAttachments": true,
+        "supportsImageEdits": true,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for image generation or editing",
+              "required": true
+            },
+            {
+              "name": "image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Optional reference image for image editing, style transfer, or image-to-image generation"
+            },
+            {
+              "name": "match_input_image",
+              "type": "boolean",
+              "description": "When true and an image is provided, use the input image's aspect ratio and resolution instead of the aspect_ratio parameter",
+              "default": false
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Aspect ratio of the generated image",
+              "default": "1:1",
+              "enum": [
+                "1:1",
+                "16:9",
+                "9:16",
+                "4:3",
+                "3:4",
+                "3:2",
+                "2:3",
+                "2:1",
+                "1:2"
+              ]
+            },
+            {
+              "name": "enable_prompt_expansion",
+              "type": "boolean",
+              "description": "Automatically expand and optimize the prompt for better results",
+              "default": true
+            },
+            {
+              "name": "negative_prompt",
+              "type": "string",
+              "description": "Negative prompt to specify elements to avoid in the generated image",
+              "default": ""
+            },
+            {
+              "name": "seed",
+              "type": "integer",
+              "description": "Random seed for reproducible generation. Range: 0-2147483647"
+            }
+          ],
+          "reference": "https://replicate.com/alibaba/qwen-image-3-pro"
+        }
+      }
+    },
+    "replicate-alibaba-qwen-image-3": {
+      "model": "replicate/alibaba/qwen-image-3/qwen-image-3",
+      "matchingModel": "alibaba/qwen-image-3",
+      "overrides": {
+        "supportsAttachments": true,
+        "supportsImageEdits": true,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for image generation or editing",
+              "required": true
+            },
+            {
+              "name": "image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Optional reference image for image editing, style transfer, or image-to-image generation"
+            },
+            {
+              "name": "match_input_image",
+              "type": "boolean",
+              "description": "When true and an image is provided, use the input image's aspect ratio and resolution instead of the aspect_ratio parameter",
+              "default": false
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Aspect ratio of the generated image",
+              "default": "1:1",
+              "enum": [
+                "1:1",
+                "16:9",
+                "9:16",
+                "4:3",
+                "3:4",
+                "3:2",
+                "2:3",
+                "2:1",
+                "1:2"
+              ]
+            },
+            {
+              "name": "enable_prompt_expansion",
+              "type": "boolean",
+              "description": "Automatically expand and optimize the prompt for better results",
+              "default": true
+            },
+            {
+              "name": "negative_prompt",
+              "type": "string",
+              "description": "Negative prompt to specify elements to avoid in the generated image",
+              "default": ""
+            },
+            {
+              "name": "seed",
+              "type": "integer",
+              "description": "Random seed for reproducible generation. Range: 0-2147483647"
+            }
+          ],
+          "reference": "https://replicate.com/alibaba/qwen-image-3"
+        }
+      }
+    },
+    "replicate-black-forest-labs-flux-video-upscale": {
+      "model": "replicate/black-forest-labs/flux-video-upscale/flux-video-upscale",
+      "matchingModel": "black-forest-labs/flux-video-upscale",
+      "overrides": {
+        "supportsAttachments": true,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "input_video",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "The video to upscale. Must be an mp4, at most 50MB, 20 seconds, and 2560x1440 (2K) of source footage.",
+              "required": true
+            },
+            {
+              "name": "upscale_factor",
+              "type": "number",
+              "description": "How much to scale the output relative to the source resolution. The output keeps the source aspect ratio. Output frames are capped at about 14.4 megapixels (4K), so very large sources are upscaled by less than the requested factor.",
+              "default": 2
+            },
+            {
+              "name": "creativity",
+              "type": "integer",
+              "description": "How the upscaler treats your footage. 0 (precise) preserves the source exactly and sharpens it — use it for faces, products, and real people. 1 (creative) restores and invents fine detail more aggressively — use it for generated footage, textures, and scenery, but it doesn't preserve identity as strictly.",
+              "default": 1,
+              "enum": [
+                0,
+                1
+              ]
+            },
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Optional description of the clip's content to steer the enhanced detail. Leave empty for a neutral upscale.",
+              "default": ""
+            },
+            {
+              "name": "safety_tolerance",
+              "type": "integer",
+              "description": "Moderation strictness for the prompt and the delivered frames, 0 (strictest) to 4 (most permissive).",
+              "default": 2
+            }
+          ],
+          "reference": "https://replicate.com/black-forest-labs/flux-video-upscale"
+        }
+      }
+    },
+    "replicate-elevenlabs-dubbing": {
+      "model": "replicate/elevenlabs/dubbing/dubbing",
+      "matchingModel": "elevenlabs/dubbing",
+      "overrides": {
+        "supportsAttachments": true,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "target_language",
+              "type": "string",
+              "description": "Language to dub the content into, as a BCP-47 tag. Some languages also offer region-qualified dialects (e.g. 'es-MX', 'pt-BR', 'en-GB').",
+              "enum": [
+                "af",
+                "ak",
+                "sq",
+                "am",
+                "ar",
+                "ar-EG",
+                "hy",
+                "as",
+                "az",
+                "eu",
+                "be",
+                "bs",
+                "bg",
+                "my",
+                "yue",
+                "ca",
+                "ceb",
+                "zh",
+                "zh-TW",
+                "hr",
+                "cs",
+                "da",
+                "dgo",
+                "nl",
+                "en",
+                "en-AU",
+                "en-CA",
+                "en-GB",
+                "en-US",
+                "et",
+                "fil",
+                "fi",
+                "fr",
+                "fr-CA",
+                "fr-FR",
+                "gl",
+                "ka",
+                "de",
+                "el",
+                "gu",
+                "ha",
+                "he",
+                "hi",
+                "hu",
+                "is",
+                "id",
+                "it",
+                "ja",
+                "jv",
+                "kn",
+                "kk",
+                "ki",
+                "rw",
+                "rn",
+                "ko",
+                "ky",
+                "lv",
+                "lt",
+                "lg",
+                "mk",
+                "ms",
+                "ml",
+                "cmn",
+                "mr",
+                "mn",
+                "ne",
+                "no",
+                "fa",
+                "pl",
+                "pt",
+                "pt-BR",
+                "pt-PT",
+                "pa",
+                "ro",
+                "ru",
+                "nso",
+                "st",
+                "sd",
+                "sk",
+                "sl",
+                "es",
+                "es-AR",
+                "es-CL",
+                "es-ES",
+                "es-MX",
+                "su",
+                "sw",
+                "ss",
+                "sv",
+                "tg",
+                "ta",
+                "te",
+                "th",
+                "bo",
+                "ts",
+                "tn",
+                "tr",
+                "uk",
+                "ur",
+                "ug",
+                "uz",
+                "ve",
+                "vi",
+                "war",
+                "cy",
+                "wo",
+                "yo",
+                "zu"
+              ],
+              "required": true
+            },
+            {
+              "name": "audio_or_video_file",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Audio or video file to dub. Provide this or source_url."
+            },
+            {
+              "name": "source_url",
+              "type": "string",
+              "description": "Public URL of the source audio or video file to dub (e.g. a direct link, YouTube, or TikTok URL). Provide this or audio_or_video_file."
+            },
+            {
+              "name": "source_language",
+              "type": "string",
+              "description": "Language of the source media, as a BCP-47 tag. Leave as 'auto' to detect it automatically.",
+              "default": "auto",
+              "enum": [
+                "auto",
+                "af",
+                "ak",
+                "sq",
+                "am",
+                "ar",
+                "ar-EG",
+                "hy",
+                "as",
+                "az",
+                "eu",
+                "be",
+                "bs",
+                "bg",
+                "my",
+                "yue",
+                "ca",
+                "ceb",
+                "zh",
+                "zh-TW",
+                "hr",
+                "cs",
+                "da",
+                "dgo",
+                "nl",
+                "en",
+                "en-AU",
+                "en-CA",
+                "en-GB",
+                "en-US",
+                "et",
+                "fil",
+                "fi",
+                "fr",
+                "fr-CA",
+                "fr-FR",
+                "gl",
+                "ka",
+                "de",
+                "el",
+                "gu",
+                "ha",
+                "he",
+                "hi",
+                "hu",
+                "is",
+                "id",
+                "it",
+                "ja",
+                "jv",
+                "kn",
+                "kk",
+                "ki",
+                "rw",
+                "rn",
+                "ko",
+                "ky",
+                "lv",
+                "lt",
+                "lg",
+                "mk",
+                "ms",
+                "ml",
+                "cmn",
+                "mr",
+                "mn",
+                "ne",
+                "no",
+                "fa",
+                "pl",
+                "pt",
+                "pt-BR",
+                "pt-PT",
+                "pa",
+                "ro",
+                "ru",
+                "nso",
+                "st",
+                "sd",
+                "sk",
+                "sl",
+                "es",
+                "es-AR",
+                "es-CL",
+                "es-ES",
+                "es-MX",
+                "su",
+                "sw",
+                "ss",
+                "sv",
+                "tg",
+                "ta",
+                "te",
+                "th",
+                "bo",
+                "ts",
+                "tn",
+                "tr",
+                "uk",
+                "ur",
+                "ug",
+                "uz",
+                "ve",
+                "vi",
+                "war",
+                "cy",
+                "wo",
+                "yo",
+                "zu"
+              ]
+            },
+            {
+              "name": "cloning_strength",
+              "type": "integer",
+              "description": "How strongly the dubbed speakers clone the source voices, from 0 to 10. Higher values prioritize resemblance to the original voice; lower values give the model more freedom for natural delivery in the target language. The default of 7 works well for most content.",
+              "default": 7
+            }
+          ],
+          "reference": "https://replicate.com/elevenlabs/dubbing"
+        }
+      }
+    },
+    "replicate-lightricks-ltx-2.5-fast": {
+      "model": "replicate/lightricks/ltx-2.5-fast/ltx-2-5-fast",
+      "matchingModel": "lightricks/ltx-2.5-fast",
+      "overrides": {
+        "supportsAttachments": true,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt describing the video to generate",
+              "required": true
+            },
+            {
+              "name": "image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "First frame image for image-to-video generation"
+            },
+            {
+              "name": "last_frame_image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Last frame image for image-to-video generation. When provided, the video interpolates between the first frame and this last frame."
+            },
+            {
+              "name": "resolution",
+              "type": "string",
+              "description": "Resolution quality of the generated video. Higher resolutions cap the maximum duration.",
+              "default": "1080p",
+              "enum": [
+                "720p",
+                "1080p",
+                "2k",
+                "4k"
+              ]
+            },
+            {
+              "name": "duration",
+              "type": "integer",
+              "description": "Duration of the video in seconds. Durations longer than 10 seconds are only available at 720p or 1080p resolution with 24 or 25 FPS. 48/50 FPS caps at 10 seconds.",
+              "default": 6,
+              "enum": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                8,
+                10,
+                12,
+                14,
+                16,
+                18,
+                20
+              ]
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Aspect ratio of the generated video",
+              "default": "16:9",
+              "enum": [
+                "16:9",
+                "9:16"
+              ]
+            },
+            {
+              "name": "fps",
+              "type": "integer",
+              "description": "Frame rate in frames per second",
+              "default": 25,
+              "enum": [
+                24,
+                25,
+                48,
+                50
+              ]
+            },
+            {
+              "name": "generate_audio",
+              "type": "boolean",
+              "description": "Generate audio for the video. Used for text_to_video and image_to_video tasks.",
+              "default": true
+            }
+          ],
+          "reference": "https://replicate.com/lightricks/ltx-2.5-fast"
+        }
+      }
+    },
     "replicate-musicgen": {
       "model": "replicate/671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb/musicgen",
       "matchingModel": "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
@@ -2029,15 +2948,17 @@
           "creative",
           "video",
           "vision",
-          "audio"
+          "audio",
+          "document"
         ],
         "isFeatured": true,
+        "supportsAttachments": true,
         "inputSchema": {
           "fields": [
             {
               "name": "prompt",
               "type": "string",
-              "description": "Text prompt for video generation",
+              "description": "Text prompt for video generation. Maximum 4000 characters. BytePlus recommends keeping prompts under 600 English words for best results.",
               "required": true
             },
             {
@@ -2077,18 +2998,19 @@
             {
               "name": "duration",
               "type": "integer",
-              "description": "Video duration in seconds. Set to -1 for intelligent duration (model picks the best length).",
+              "description": "Video duration in seconds. Set to -1 for intelligent duration (model picks the best length). Allowed range: -1–15.",
               "default": 5
             },
             {
               "name": "resolution",
               "type": "string",
-              "description": "Video resolution.",
+              "description": "Video resolution. 4K outputs 10-bit H.265/HEVC at high bitrate.",
               "default": "720p",
               "enum": [
                 "480p",
                 "720p",
-                "1080p"
+                "1080p",
+                "4k"
               ]
             },
             {
@@ -2280,6 +3202,7 @@
       "model": "replicate/prunaai/p-video/p-video",
       "matchingModel": "prunaai/p-video",
       "overrides": {
+        "supportsAttachments": true,
         "inputSchema": {
           "fields": [
             {
@@ -2368,7 +3291,7 @@
             {
               "name": "disable_safety_filter",
               "type": "boolean",
-              "description": "Disable safety filter for prompts and input image. When disabled, prompts are not checked for unsafe content before generation.",
+              "description": "Disable safety filter for prompts (and input image). When disabled, prompts are not checked for unsafe content before generation.",
               "default": true
             },
             {
@@ -2437,6 +3360,20 @@
       "model": "kling/kling-video-3-0",
       "matchingModel": "kwaivgi/kling-v3-video",
       "overrides": {
+        "name": "Kling Video 3.0",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "strengths": [
+          "creative",
+          "video"
+        ],
         "inputSchema": {
           "fields": [
             {
@@ -2503,6 +3440,1152 @@
             }
           ],
           "reference": "https://replicate.com/kwaivgi/kling-v3-video"
+        }
+      }
+    },
+    "replicate-alibaba-wan-3": {
+      "model": "o/wan-v3-0-video",
+      "matchingModel": "alibaba/wan-3",
+      "overrides": {
+        "description": "Alibaba Wan 3.0 video generation model with text-to-video, first-frame animation, and output up to 30 seconds.",
+        "strengths": [
+          "creative",
+          "video",
+          "vision"
+        ],
+        "supportsAttachments": true,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for video generation",
+              "required": true
+            },
+            {
+              "name": "image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Optional first-frame image to animate into a video (jpg/png/bmp/webp, ≤10MB). When provided, the video is generated from this image guided by the prompt."
+            },
+            {
+              "name": "negative_prompt",
+              "type": "string",
+              "description": "Negative prompt — describes content that should not appear in the video",
+              "default": ""
+            },
+            {
+              "name": "resolution",
+              "type": "string",
+              "description": "Output video resolution",
+              "default": "1080p",
+              "enum": [
+                "480p",
+                "720p",
+                "1080p"
+              ]
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Aspect ratio of the generated video. 'adaptive' lets the model choose the best ratio for the prompt. Ignored when an image is provided (the input image's aspect ratio is used).",
+              "default": "adaptive",
+              "enum": [
+                "adaptive",
+                "16:9",
+                "9:16",
+                "1:1",
+                "4:3",
+                "3:4"
+              ]
+            },
+            {
+              "name": "duration",
+              "type": "integer",
+              "description": "Duration of the generated video in seconds Allowed range: 2–30.",
+              "default": 5
+            },
+            {
+              "name": "enable_prompt_expansion",
+              "type": "boolean",
+              "description": "Automatically expand and optimize the prompt for better results. Improves quality for short prompts but increases latency.",
+              "default": true
+            },
+            {
+              "name": "seed",
+              "type": "integer",
+              "description": "Random seed for reproducible generation. Range: 0-2147483647"
+            }
+          ],
+          "reference": "https://replicate.com/alibaba/wan-3"
+        }
+      },
+      "unset": [
+        "openWeights",
+        "supportsToolCalls"
+      ]
+    },
+    "replicate-kwaivgi-kling-v3-omni-video": {
+      "model": "kling/kling-video-3-0",
+      "matchingModel": "kwaivgi/kling-v3-omni-video",
+      "overrides": {
+        "name": "Kling Video 3.0 Omni",
+        "description": "Kling Video 3.0 Omni unifies text-to-video, image-to-video, reference generation, video editing, multi-shot control, and native audio.",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "strengths": [
+          "creative",
+          "video",
+          "vision",
+          "audio"
+        ],
+        "supportsAttachments": true,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for video generation. Supports <<<image_1>>>, <<<video_1>>> template references. Max 2500 characters.",
+              "required": true
+            },
+            {
+              "name": "start_image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "First frame image. Supports .jpg/.jpeg/.png, max 10MB, min 300px, aspect ratio 1:2.5 to 2.5:1."
+            },
+            {
+              "name": "end_image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Last frame image. Requires start_image. Supports .jpg/.jpeg/.png, max 10MB, min 300px."
+            },
+            {
+              "name": "reference_images",
+              "type": "array",
+              "description": "Reference images for elements, scenes, or styles. Supports .jpg/.jpeg/.png. Max 7 without video, 4 with video."
+            },
+            {
+              "name": "reference_video",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Reference video (.mp4/.mov). Duration 3-10s, resolution 720-2160px per side, max 200MB."
+            },
+            {
+              "name": "video_reference_type",
+              "type": "string",
+              "description": "How to use reference video: 'feature' for style/camera reference, 'base' for video editing.",
+              "default": "feature",
+              "enum": [
+                "feature",
+                "base"
+              ]
+            },
+            {
+              "name": "keep_original_sound",
+              "type": "boolean",
+              "description": "Keep original sound from reference video.",
+              "default": true
+            },
+            {
+              "name": "generate_audio",
+              "type": "boolean",
+              "description": "Generate native audio. Mutually exclusive with reference video.",
+              "default": false
+            },
+            {
+              "name": "mode",
+              "type": "string",
+              "description": "'standard' generates 720p, 'pro' generates 1080p, '4k' generates 4K. 4K does not support reference_video.",
+              "default": "pro",
+              "enum": [
+                "standard",
+                "pro",
+                "4k"
+              ]
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Aspect ratio. Required when not using start frame or video editing.",
+              "default": "16:9",
+              "enum": [
+                "16:9",
+                "9:16",
+                "1:1"
+              ]
+            },
+            {
+              "name": "duration",
+              "type": "integer",
+              "description": "Video duration in seconds (3-15). Ignored for video editing (base).",
+              "default": 5
+            },
+            {
+              "name": "multi_prompt",
+              "type": "string",
+              "description": "JSON array of shot definitions for multi-shot mode. Each shot: {\"prompt\": \"...\", \"duration\": N}. Max 6 shots, min duration 1s per shot, total must equal duration. Example: [{\"prompt\":\"A cat jumps\",\"duration\":3},{\"prompt\":\"It lands\",\"duration\":2}]"
+            }
+          ],
+          "reference": "https://replicate.com/kwaivgi/kling-v3-omni-video"
+        }
+      }
+    },
+    "replicate-luma-ray-3-2": {
+      "model": "replicate/luma/ray-3.2/ray-3-2",
+      "matchingModel": "luma/ray-3.2",
+      "overrides": {
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt describing the video. Be specific about subject, motion, camera movement, lighting, and pacing.",
+              "required": true
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Aspect ratio of the generated video. Ignored when start_image or end_image is set — the model derives the ratio from the anchor frame(s).",
+              "default": "16:9",
+              "enum": [
+                "9:16",
+                "3:4",
+                "1:1",
+                "4:3",
+                "16:9",
+                "21:9"
+              ]
+            },
+            {
+              "name": "resolution",
+              "type": "string",
+              "description": "Output resolution. 540p is not available when hdr is true.",
+              "default": "720p",
+              "enum": [
+                "540p",
+                "720p",
+                "1080p"
+              ]
+            },
+            {
+              "name": "duration",
+              "type": "integer",
+              "description": "Video duration in seconds. 10s is not supported with hdr, start_image, end_image, or loop.",
+              "default": 5,
+              "enum": [
+                5,
+                10
+              ]
+            },
+            {
+              "name": "hdr",
+              "type": "boolean",
+              "description": "Generate HDR-encoded MP4. Requires 720p or 1080p, 5s duration, and no loop.",
+              "default": false
+            },
+            {
+              "name": "exr_export",
+              "type": "boolean",
+              "description": "Export an EXR file alongside the MP4 for professional colour-grading workflows. Requires hdr=true.",
+              "default": false
+            },
+            {
+              "name": "loop",
+              "type": "boolean",
+              "description": "Generate a seamlessly looping video. Not supported with 10s duration, hdr, or end_image.",
+              "default": false
+            },
+            {
+              "name": "start_image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Optional first frame of the video. Only valid with 5s duration."
+            },
+            {
+              "name": "end_image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Optional last frame of the video. Only valid with 5s duration; not supported with loop."
+            }
+          ],
+          "reference": "https://replicate.com/luma/ray-3.2"
+        }
+      }
+    },
+    "replicate-openai-gpt-image-2": {
+      "model": "gpt-image/gpt-image-2",
+      "matchingModel": "openai/gpt-image-2",
+      "overrides": {
+        "name": "GPT Image 2",
+        "description": "OpenAI image generation and editing model with strong instruction following, text rendering, and high-fidelity reference handling.",
+        "strengths": [
+          "creative",
+          "vision",
+          "document",
+          "image"
+        ],
+        "supportsAttachments": true,
+        "supportsImageEdits": true,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "A text description of the desired image",
+              "required": true
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "The size of the generated image. Use 'auto' to let the model pick. Sizes above 2560x1440 are experimental and may give more variable results.",
+              "default": "1:1",
+              "enum": [
+                "1:1",
+                "3:2",
+                "2:3",
+                "4:3",
+                "3:4",
+                "16:9",
+                "9:16",
+                "auto",
+                "1024x1024",
+                "1536x1024",
+                "1024x1536",
+                "1536x1152",
+                "1152x1536",
+                "2048x2048",
+                "2048x1152",
+                "1152x2048",
+                "3840x2160",
+                "2160x3840"
+              ]
+            },
+            {
+              "name": "input_images",
+              "type": "array",
+              "description": "A list of images to use as input for the generation"
+            },
+            {
+              "name": "number_of_images",
+              "type": "integer",
+              "description": "Number of images to generate (1-10)",
+              "default": 1
+            },
+            {
+              "name": "quality",
+              "type": "string",
+              "description": "The quality of the generated image",
+              "default": "auto",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "auto"
+              ]
+            },
+            {
+              "name": "background",
+              "type": "string",
+              "description": "Set whether the background is transparent or opaque or choose automatically",
+              "default": "auto",
+              "enum": [
+                "auto",
+                "transparent",
+                "opaque"
+              ]
+            },
+            {
+              "name": "output_compression",
+              "type": "integer",
+              "description": "Compression level (0-100%)",
+              "default": 90
+            },
+            {
+              "name": "output_format",
+              "type": "string",
+              "description": "Output format",
+              "default": "webp",
+              "enum": [
+                "png",
+                "jpeg",
+                "webp"
+              ]
+            },
+            {
+              "name": "moderation",
+              "type": "string",
+              "description": "Content moderation level",
+              "default": "auto",
+              "enum": [
+                "auto",
+                "low"
+              ]
+            },
+            {
+              "name": "user_id",
+              "type": "string",
+              "description": "An optional unique identifier representing your end-user. This helps OpenAI monitor and detect abuse."
+            }
+          ],
+          "reference": "https://replicate.com/openai/gpt-image-2"
+        }
+      },
+      "unset": [
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
+    },
+    "replicate-leonardoai-lucid-origin": {
+      "model": "workers-ai/@cf/leonardo/lucid-origin/leonardo-lucid-origin",
+      "matchingModel": "leonardoai/lucid-origin",
+      "overrides": {
+        "name": "Lucid Origin",
+        "description": "Leonardo AI image generation model with strong prompt adherence, accurate text rendering, and broad visual style control.",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "strengths": [
+          "creative",
+          "image"
+        ],
+        "supportsToolCalls": false,
+        "supportsTemperature": false,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for generation",
+              "required": true
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Aspect ratio of the output image",
+              "default": "16:9",
+              "enum": [
+                "1:1",
+                "16:9",
+                "9:16",
+                "3:2",
+                "2:3",
+                "4:5",
+                "5:4",
+                "3:4",
+                "4:3",
+                "2:1",
+                "1:2",
+                "3:1",
+                "1:3"
+              ]
+            },
+            {
+              "name": "generation_mode",
+              "type": "string",
+              "description": "Generation mode",
+              "default": "standard",
+              "enum": [
+                "standard",
+                "ultra"
+              ]
+            },
+            {
+              "name": "contrast",
+              "type": "string",
+              "description": "Contrast level",
+              "default": "medium",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            {
+              "name": "prompt_enhance",
+              "type": "boolean",
+              "description": "Whether to enhance the prompt",
+              "default": true
+            },
+            {
+              "name": "num_images",
+              "type": "integer",
+              "description": "Number of images to generate Allowed range: 1–8.",
+              "default": 1
+            },
+            {
+              "name": "style",
+              "type": "string",
+              "description": "Style to use for the output image",
+              "default": "none",
+              "enum": [
+                "bokeh",
+                "cinematic",
+                "cinematic_close_up",
+                "creative",
+                "dynamic",
+                "fashion",
+                "film",
+                "food",
+                "hdr",
+                "long_exposure",
+                "macro",
+                "minimalist",
+                "monochrome",
+                "moody",
+                "neutral",
+                "none",
+                "portrait",
+                "retro",
+                "stock_photo",
+                "unprocessed",
+                "vibrant"
+              ]
+            }
+          ],
+          "reference": "https://replicate.com/leonardoai/lucid-origin"
+        }
+      }
+    },
+    "replicate-quiverai-arrow-1-1-max": {
+      "model": "o/arrow-1-1-max",
+      "matchingModel": "quiverai/arrow-1.1-max",
+      "overrides": {
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text description of the desired SVG.",
+              "required": true
+            },
+            {
+              "name": "instructions",
+              "type": "string",
+              "description": "Additional style or formatting guidance, separate from the prompt.",
+              "default": ""
+            },
+            {
+              "name": "references",
+              "type": "array",
+              "description": "Optional reference images (PNG, JPEG, or WebP) to guide generation. Arrow 1.1 supports up to 4; Arrow 1.1 Max supports up to 16.",
+              "default": []
+            },
+            {
+              "name": "temperature",
+              "type": "number",
+              "description": "Sampling temperature. Lower is more deterministic. Allowed range: 0–2.",
+              "default": 1
+            },
+            {
+              "name": "top_p",
+              "type": "number",
+              "description": "Nucleus sampling probability. Allowed range: 0–1.",
+              "default": 1
+            },
+            {
+              "name": "presence_penalty",
+              "type": "number",
+              "description": "Penalty for tokens already present in prior output. Allowed range: -2–2.",
+              "default": 0
+            }
+          ],
+          "reference": "https://replicate.com/quiverai/arrow-1.1-max"
+        }
+      }
+    },
+    "replicate-quiverai-arrow-1-1": {
+      "model": "o/arrow-1-1",
+      "matchingModel": "quiverai/arrow-1.1",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "strengths": [
+          "creative",
+          "image"
+        ],
+        "supportsAttachments": true,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text description of the desired SVG.",
+              "required": true
+            },
+            {
+              "name": "instructions",
+              "type": "string",
+              "description": "Additional style or formatting guidance, separate from the prompt.",
+              "default": ""
+            },
+            {
+              "name": "references",
+              "type": "array",
+              "description": "Optional reference images (PNG, JPEG, or WebP) to guide generation. Arrow 1.1 supports up to 4; Arrow 1.1 Max supports up to 16.",
+              "default": []
+            },
+            {
+              "name": "temperature",
+              "type": "number",
+              "description": "Sampling temperature. Lower is more deterministic. Allowed range: 0–2.",
+              "default": 1
+            },
+            {
+              "name": "top_p",
+              "type": "number",
+              "description": "Nucleus sampling probability. Allowed range: 0–1.",
+              "default": 1
+            },
+            {
+              "name": "presence_penalty",
+              "type": "number",
+              "description": "Penalty for tokens already present in prior output. Allowed range: -2–2.",
+              "default": 0
+            }
+          ],
+          "reference": "https://replicate.com/quiverai/arrow-1.1"
+        }
+      }
+    },
+    "replicate-bria-fibo": {
+      "model": "replicate/bria/fibo/fibo",
+      "matchingModel": "bria/fibo",
+      "overrides": {
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for image generation",
+              "required": true
+            },
+            {
+              "name": "image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Image file"
+            },
+            {
+              "name": "structured_prompt",
+              "type": "string",
+              "description": "Structured prompt (JSON string). Use a structured_prompt from a previous generation's response or the /v2/structured_prompt/generate endpoint for precise refinement.",
+              "default": ""
+            },
+            {
+              "name": "negative_prompt",
+              "type": "string",
+              "description": "Negative prompt for image generation"
+            },
+            {
+              "name": "guidance_scale",
+              "type": "integer",
+              "description": "Guidance scale (1-10) Allowed range: 3–5."
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Aspect ratio for expansion. Either aspect_ratio or canvas_size with original_image_size/location must be provided. Can be a predefined string like '1:1', '16:9' etc. or a custom float between 0.5 and 3.0",
+              "default": "1:1",
+              "enum": [
+                "1:1",
+                "2:3",
+                "3:2",
+                "3:4",
+                "4:3",
+                "4:5",
+                "5:4",
+                "9:16",
+                "16:9"
+              ]
+            },
+            {
+              "name": "seed",
+              "type": "integer",
+              "description": "Random seed. Set for reproducible generation"
+            }
+          ],
+          "reference": "https://replicate.com/bria/fibo"
+        }
+      }
+    },
+    "replicate-google-imagen-4": {
+      "model": "imagen/imagen-4",
+      "matchingModel": "google/imagen-4",
+      "overrides": {
+        "strengths": [
+          "creative",
+          "image"
+        ],
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for image generation",
+              "required": true
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Aspect ratio of the generated image",
+              "default": "1:1",
+              "enum": [
+                "1:1",
+                "9:16",
+                "16:9",
+                "3:4",
+                "4:3"
+              ]
+            },
+            {
+              "name": "image_size",
+              "type": "string",
+              "description": "Resolution of the generated image",
+              "default": "1K",
+              "enum": [
+                "1K",
+                "2K"
+              ]
+            },
+            {
+              "name": "safety_filter_level",
+              "type": "string",
+              "description": "block_low_and_above is strictest, block_medium_and_above blocks some prompts, block_only_high is most permissive but some prompts will still be blocked",
+              "default": "block_only_high",
+              "enum": [
+                "block_low_and_above",
+                "block_medium_and_above",
+                "block_only_high"
+              ]
+            },
+            {
+              "name": "output_format",
+              "type": "string",
+              "description": "Format of the output image",
+              "default": "jpg",
+              "enum": [
+                "jpg",
+                "png"
+              ]
+            }
+          ],
+          "reference": "https://replicate.com/google/imagen-4"
+        }
+      }
+    },
+    "replicate-google-imagen-4-ultra": {
+      "model": "imagen/imagen-4-ultra",
+      "matchingModel": "google/imagen-4-ultra",
+      "overrides": {
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for image generation",
+              "required": true
+            },
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Aspect ratio of the generated image",
+              "default": "1:1",
+              "enum": [
+                "1:1",
+                "9:16",
+                "16:9",
+                "3:4",
+                "4:3"
+              ]
+            },
+            {
+              "name": "image_size",
+              "type": "string",
+              "description": "Resolution of the generated image",
+              "default": "1K",
+              "enum": [
+                "1K",
+                "2K"
+              ]
+            },
+            {
+              "name": "safety_filter_level",
+              "type": "string",
+              "description": "block_low_and_above is strictest, block_medium_and_above blocks some prompts, block_only_high is most permissive but some prompts will still be blocked",
+              "default": "block_only_high",
+              "enum": [
+                "block_low_and_above",
+                "block_medium_and_above",
+                "block_only_high"
+              ]
+            },
+            {
+              "name": "output_format",
+              "type": "string",
+              "description": "Format of the output image",
+              "default": "jpg",
+              "enum": [
+                "jpg",
+                "png"
+              ]
+            }
+          ],
+          "reference": "https://replicate.com/google/imagen-4-ultra"
+        }
+      }
+    },
+    "replicate-qwen-qwen-image": {
+      "model": "qwen/qwen-image",
+      "matchingModel": "qwen/qwen-image",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "strengths": [
+          "creative",
+          "vision",
+          "image",
+          "document"
+        ],
+        "contextComplexity": 4,
+        "supportsAttachments": true,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Aspect ratio for the generated image",
+              "default": "16:9",
+              "enum": [
+                "1:1",
+                "16:9",
+                "9:16",
+                "4:3",
+                "3:4",
+                "3:2",
+                "2:3"
+              ]
+            },
+            {
+              "name": "image_size",
+              "type": "string",
+              "description": "Image size for the generated image",
+              "default": "optimize_for_quality",
+              "enum": [
+                "optimize_for_quality",
+                "optimize_for_speed"
+              ]
+            },
+            {
+              "name": "output_format",
+              "type": "string",
+              "description": "Format of the output images",
+              "default": "webp",
+              "enum": [
+                "webp",
+                "jpg",
+                "png"
+              ]
+            },
+            {
+              "name": "seed",
+              "type": "integer",
+              "description": "Random seed. Set for reproducible generation"
+            },
+            {
+              "name": "image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Input image for img2img pipeline"
+            },
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Prompt for generated image",
+              "required": true
+            },
+            {
+              "name": "go_fast",
+              "type": "boolean",
+              "description": "Run faster predictions with additional optimizations.",
+              "default": true
+            },
+            {
+              "name": "guidance",
+              "type": "number",
+              "description": "Guidance for generated image. Lower values can give more realistic images. Good values to try are 2, 2.5, 3 and 3.5 Allowed range: 0–10.",
+              "default": 3
+            },
+            {
+              "name": "strength",
+              "type": "number",
+              "description": "Strength for img2img pipeline Allowed range: 0–1.",
+              "default": 0.9
+            },
+            {
+              "name": "lora_scale",
+              "type": "number",
+              "description": "Determines how strongly the main LoRA should be applied.",
+              "default": 1
+            },
+            {
+              "name": "lora_weights",
+              "type": "string",
+              "description": "Load LoRA weights. Only works with text to image pipeline. Supports arbitrary .safetensors URLs, tar files, and zip files from the Internet (for example, 'https://huggingface.co/flymy-ai/qwen-image-lora/resolve/main/pytorch_lora_weights.safetensors', 'https://example.com/lora_weights.tar.gz', or 'https://example.com/lora_weights.zip')"
+            },
+            {
+              "name": "enhance_prompt",
+              "type": "boolean",
+              "description": "Enhance the prompt with positive magic.",
+              "default": false
+            },
+            {
+              "name": "output_quality",
+              "type": "integer",
+              "description": "Quality when saving the output images, from 0 to 100. 100 is best quality, 0 is lowest quality. Not relevant for .png outputs",
+              "default": 80
+            },
+            {
+              "name": "negative_prompt",
+              "type": "string",
+              "description": "Negative prompt for generated image",
+              "default": " "
+            },
+            {
+              "name": "extra_lora_scale",
+              "type": "array",
+              "description": "Scales for additional LoRAs as an array of numbers (e.g., [0.5, 0.7]). Must match the number of weights in extra_lora_weights."
+            },
+            {
+              "name": "extra_lora_weights",
+              "type": "array",
+              "description": "Additional LoRA weights as an array of URLs. Same formats supported as lora_weights (e.g., ['https://huggingface.co/flymy-ai/qwen-image-lora/resolve/main/pytorch_lora_weights.safetensors', 'https://huggingface.co/flymy-ai/qwen-image-realism-lora/resolve/main/flymy_realism.safetensors'])"
+            },
+            {
+              "name": "num_inference_steps",
+              "type": "integer",
+              "description": "Number of denoising steps. Recommended range is 28-50, and lower number of steps produce lower quality outputs, faster. Allowed range: 1–50.",
+              "default": 30
+            },
+            {
+              "name": "disable_safety_checker",
+              "type": "boolean",
+              "description": "Disable safety checker for generated images.",
+              "default": false
+            }
+          ],
+          "reference": "https://replicate.com/qwen/qwen-image"
+        }
+      },
+      "unset": [
+        "supportsToolCalls",
+        "supportsTemperature"
+      ]
+    },
+    "replicate-minimax-image-01": {
+      "model": "minimax/image-01",
+      "matchingModel": "minimax/image-01",
+      "overrides": {
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "aspect_ratio",
+              "type": "string",
+              "description": "Image aspect ratio",
+              "default": "1:1",
+              "enum": [
+                "1:1",
+                "16:9",
+                "4:3",
+                "3:2",
+                "2:3",
+                "3:4",
+                "9:16",
+                "21:9"
+              ]
+            },
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for generation",
+              "required": true
+            },
+            {
+              "name": "number_of_images",
+              "type": "integer",
+              "description": "Number of images to generate Allowed range: 1–9.",
+              "default": 1
+            },
+            {
+              "name": "prompt_optimizer",
+              "type": "boolean",
+              "description": "Use prompt optimizer",
+              "default": true
+            },
+            {
+              "name": "subject_reference",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "An optional character reference image (human face) to use as the subject in the generated image(s)."
+            }
+          ],
+          "reference": "https://replicate.com/minimax/image-01"
+        }
+      },
+      "unset": [
+        "reasoningConfig"
+      ]
+    },
+    "replicate-datacte-proteus-v0-3": {
+      "model": "replicate/datacte/proteus-v0.3/proteus-v0-3",
+      "matchingModel": "datacte/proteus-v0.3",
+      "overrides": {
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Input prompt",
+              "default": "Anime full body portrait of a swordsman holding his weapon in front of him. He is facing the camera with a fierce look on his face. Anime key visual (best quality, HD, ~+~aesthetic~+~:1.2)"
+            },
+            {
+              "name": "negative_prompt",
+              "type": "string",
+              "description": "Negative Input prompt",
+              "default": "worst quality, low quality"
+            },
+            {
+              "name": "image",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Input image for img2img or inpaint mode"
+            },
+            {
+              "name": "mask",
+              "type": [
+                "file",
+                "string"
+              ],
+              "description": "Input mask for inpaint mode. Black areas will be preserved, white areas will be inpainted."
+            },
+            {
+              "name": "width",
+              "type": "integer",
+              "description": "Width of output image. Recommended 1024 or 1280",
+              "default": 1024
+            },
+            {
+              "name": "height",
+              "type": "integer",
+              "description": "Height of output image. Recommended 1024 or 1280",
+              "default": 1024
+            },
+            {
+              "name": "num_outputs",
+              "type": "integer",
+              "description": "Number of images to output. Allowed range: 1–4.",
+              "default": 1
+            },
+            {
+              "name": "scheduler",
+              "type": "string",
+              "description": "scheduler",
+              "default": "DPM++2MSDE",
+              "enum": [
+                "DDIM",
+                "DPMSolverMultistep",
+                "HeunDiscrete",
+                "KarrasDPM",
+                "K_EULER_ANCESTRAL",
+                "K_EULER",
+                "PNDM",
+                "DPM++2MSDE"
+              ]
+            },
+            {
+              "name": "num_inference_steps",
+              "type": "integer",
+              "description": "Number of denoising steps. 20 to 60 steps for more detail, 20 steps for faster results. Allowed range: 1–100.",
+              "default": 20
+            },
+            {
+              "name": "guidance_scale",
+              "type": "number",
+              "description": "Scale for classifier-free guidance. Recommended 7-8 Allowed range: 1–50.",
+              "default": 7.5
+            },
+            {
+              "name": "prompt_strength",
+              "type": "number",
+              "description": "Prompt strength when using img2img / inpaint. 1.0 corresponds to full destruction of information in image",
+              "default": 0.8
+            },
+            {
+              "name": "seed",
+              "type": "integer",
+              "description": "Random seed. Leave blank to randomize the seed"
+            },
+            {
+              "name": "apply_watermark",
+              "type": "boolean",
+              "description": "Applies a watermark to enable determining if an image is generated in downstream applications. If you have other provisions for generating or deploying images safely, you can use this to disable watermarking.",
+              "default": true
+            },
+            {
+              "name": "disable_safety_checker",
+              "type": "boolean",
+              "description": "Disable safety checker for generated images. This feature is only available through the API. See https://replicate.com/docs/how-does-replicate-work#safety",
+              "default": false
+            }
+          ],
+          "reference": "https://replicate.com/datacte/proteus-v0.3"
         }
       }
     }

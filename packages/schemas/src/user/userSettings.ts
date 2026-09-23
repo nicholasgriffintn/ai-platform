@@ -4,10 +4,18 @@ import { computeSiteSchema } from "../compute-sites.js";
 import { modelTierSchema } from "../model-lineup.js";
 import { petModelOverridesSchema } from "../pets.js";
 
-export const guardrailsProviderIds = ["llamaguard", "bedrock", "mistral", "shieldstral"] as const;
+export const guardrailsProviderIds = [
+  "llamaguard",
+  "bedrock",
+  "mistral",
+  "shieldstral",
+  "typesafe",
+] as const;
 
 export const guardrailsProviderSchema = z.enum(guardrailsProviderIds);
 export type GuardrailsProviderId = z.infer<typeof guardrailsProviderSchema>;
+export const DEFAULT_GUARDRAILS_PROVIDER: GuardrailsProviderId = "typesafe";
+export const DEFAULT_GUARDRAILS_ENABLED = true;
 
 export const updateUserSettingsResponseSchema = z.object({
   success: z.boolean(),

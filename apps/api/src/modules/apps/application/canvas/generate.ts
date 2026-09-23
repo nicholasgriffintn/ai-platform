@@ -5,7 +5,11 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 import { readStringField } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
-import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import {
+  resolveServiceContext,
+  type ServiceContext,
+} from "~/infrastructure/context/serviceContext";
+import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
 import { executeModelGeneration } from "~/modules/apps/application/generation/execute";
 import { executeReplicateModel } from "~/modules/apps/application/replicate/execute";
 import { getModelConfigByModel } from "~/modules/models/application/resolve";
@@ -133,11 +137,12 @@ export async function generateCanvasBatch(
     throw new AssistantError("At least one model must be selected", ErrorType.PARAMS_ERROR);
   }
 
+  const runtimeEnv = resolveServiceContext({ context, env, user }).env;
   const uniqueModelIds = Array.from(new Set(params.modelIds));
 
   const generations = await Promise.all(
     uniqueModelIds.map(async (modelId) => {
-      const modelConfig = await getModelConfigByModel(modelId, env);
+      const modelConfig = await getModelConfigByModel(modelId, runtimeEnv);
 
       if (!modelConfig) {
         return createFailedCanvasResult({
@@ -148,6 +153,21 @@ export async function generateCanvasBatch(
       }
 
       try {
+        if (
+          user.plan_id !== "pro" &&
+          !(await hasUserProviderApiKey({
+            env: runtimeEnv,
+            user,
+            providerName: modelConfig.provider ?? "replicate",
+          }))
+        ) {
+          throw new AssistantError(
+            `Generation requires a configured ${modelConfig.provider ?? "replicate"} provider key`,
+            ErrorType.AUTHORISATION_ERROR,
+            403,
+          );
+        }
+
         const outputs = modelConfig.modalities?.output ?? [];
 
         if (!outputs.includes(params.mode)) {

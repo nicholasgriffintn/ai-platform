@@ -1,9 +1,4 @@
-import {
-  BackLink,
-  ButtonLink,
-  ContentLoadingSkeleton,
-  EmptyState,
-} from "@ngriffin_uk/polychat-component-ui";
+import { BackLink, ButtonLink, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import { isAuthenticationError, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useCapabilityCatalog,
@@ -15,12 +10,13 @@ import {
   isExperienceEnabled,
 } from "@ngriffin_uk/polychat-library-react";
 import { Puzzle } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { AppChromeProvider } from "./AppChrome.js";
 import { AppRuntime } from "./AppRuntime.js";
+import { AppSurface, AppSurfaceLoading, getAppSurfacePresentation } from "./AppSurface.js";
 
 export function AppRoute({
   appId,
@@ -46,20 +42,21 @@ export function AppRoute({
   const title = titleOverride ?? definition?.name;
   const backLink = getAppBackLink(surface, appId, subpath, title);
   const basePath = getAppPath(surface, appId);
+  const presentation = getAppSurfacePresentation(appId, subpath);
   const needsSignIn = !isAuthenticationLoading && !isAuthenticated;
   const isLoading = isCatalogLoading || isAuthenticationLoading || Boolean(project?.isLoading);
   const pageError = project?.error ?? catalogError;
   const isEnabled =
     !project || (definition ? isExperienceEnabled(definition, project.capabilities ?? []) : false);
-  const [ownsChrome, setOwnsChrome] = useState(false);
   const chrome = useMemo(
-    () => ({ backHref: backLink.to, backLabel: backLink.label, setOwnsChrome }),
-    [backLink.to, backLink.label],
+    () => ({ backHref: backLink?.to, backLabel: backLink?.label }),
+    [backLink?.to, backLink?.label],
   );
   const runtime = (
     <AppChromeProvider value={chrome}>
       <AppRuntime
         basePath={basePath}
+        fallback={<AppSurfaceLoading presentation={presentation} />}
         projectId={surface.projectId}
         runtime={definition?.runtime ?? "notes"}
         subpath={subpath}
@@ -67,20 +64,20 @@ export function AppRoute({
     </AppChromeProvider>
   );
 
-  if (isEnabled && definition && !isLoading && !pageError && ownsChrome) {
-    return <div className="flex h-full min-h-0 flex-col overflow-hidden">{runtime}</div>;
-  }
-
   return (
-    <PageShell.Content className="max-w-7xl">
-      <PageShell.Header title={title ?? "App"} />
-      <BackLink href={backLink.to} label={backLink.label} />
-      {definition && (
-        <p className="mb-6 max-w-3xl text-sm text-muted-foreground">{definition.description}</p>
+    <AppSurface presentation={presentation}>
+      {presentation.layout === "contained" && (
+        <>
+          <PageShell.Header title={title ?? "App"} />
+          {backLink && <BackLink href={backLink.to} label={backLink.label} />}
+          {definition && (
+            <p className="mb-6 max-w-3xl text-sm text-muted-foreground">{definition.description}</p>
+          )}
+        </>
       )}
 
       {isLoading ? (
-        <ContentLoadingSkeleton />
+        <AppSurfaceLoading presentation={presentation} />
       ) : needsSignIn || isAuthenticationError(pageError) ? (
         <SignInEmptyState
           title="Sign in to open this app"
@@ -105,6 +102,6 @@ export function AppRoute({
       ) : (
         runtime
       )}
-    </PageShell.Content>
+    </AppSurface>
   );
 }

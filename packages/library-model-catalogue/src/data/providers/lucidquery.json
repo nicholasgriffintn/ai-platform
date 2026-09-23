@@ -11,7 +11,10 @@
         "lastUpdated": "June 16, 2026",
         "costPer1kInputTokens": 0.0045,
         "costPer1kOutputTokens": 0.022
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "lucidquery-nexus-coder": {
       "model": "lucid/lucidquery-nexus-coder",
@@ -38,7 +41,10 @@
         "lastUpdated": "June 16, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.015
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     }
   }
 }

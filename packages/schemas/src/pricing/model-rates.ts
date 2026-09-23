@@ -130,6 +130,10 @@ export function rateEntriesFromModelConfig(
     push("search_queries", usdToMicros(model.costPer1kSearches) / TOKENS_PER_COST_UNIT);
   }
 
+  if (isPositive(model.costPer1kSearchUnits)) {
+    push("search_units", usdToMicros(model.costPer1kSearchUnits) / TOKENS_PER_COST_UNIT);
+  }
+
   if (isPositive(model.costPerCodeExecutionHour)) {
     push("code_execution_seconds", usdToMicros(model.costPerCodeExecutionHour) / SECONDS_PER_HOUR);
   }

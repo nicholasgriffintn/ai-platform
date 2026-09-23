@@ -40,10 +40,24 @@ export interface ProviderModelResolver {
     env: ProviderEnv,
     user?: ProviderUser,
   ): Promise<{ model: string; provider: string }>;
+  getAuxiliaryDecisionModel(
+    env: ProviderEnv,
+    user?: ProviderUser,
+  ): Promise<{ model: string; provider: string } | null>;
+  resolveRerankingModel(
+    env: ProviderEnv,
+    user?: ProviderUser,
+    selection?: RerankingModelSelection,
+  ): Promise<{ model: string; provider: string } | null>;
   getAuxiliarySpeechModel(
     env: ProviderEnv,
     user?: ProviderUser,
   ): Promise<{ model: string; provider: string; transcriptionProvider: string }>;
+}
+
+export interface RerankingModelSelection {
+  model?: string;
+  provider?: string;
 }
 
 export interface StoreOutputFileRequest {

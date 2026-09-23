@@ -41,17 +41,33 @@ export function parseEmbeddingVectors(response: unknown, errorMessage: string): 
   return assertVectors(isRecord(response) ? response.data : undefined, errorMessage);
 }
 
-export function parseOpenAiEmbeddingVectors(response: unknown, errorMessage: string): number[][] {
+export function parseOpenAiEmbeddingVectors(
+  response: unknown,
+  expectedCount: number,
+  errorMessage: string,
+): number[][] {
   const data = isRecord(response) ? response.data : undefined;
 
-  if (!Array.isArray(data)) {
+  if (!Array.isArray(data) || data.length !== expectedCount) {
     throw new AssistantError(errorMessage, ErrorType.PROVIDER_ERROR, 502);
   }
 
-  const ordered = data
-    .filter(isRecord)
-    .sort((left, right) => Number(left.index ?? 0) - Number(right.index ?? 0))
-    .map((item) => item.embedding);
+  const vectors: unknown[] = Array.from({ length: expectedCount });
 
-  return assertVectors(ordered, errorMessage);
+  for (const item of data) {
+    if (
+      !isRecord(item) ||
+      typeof item.index !== "number" ||
+      !Number.isSafeInteger(item.index) ||
+      item.index < 0 ||
+      item.index >= expectedCount ||
+      vectors[item.index] !== undefined
+    ) {
+      throw new AssistantError(errorMessage, ErrorType.PROVIDER_ERROR, 502);
+    }
+
+    vectors[item.index] = item.embedding;
+  }
+
+  return assertVectors(vectors, errorMessage);
 }

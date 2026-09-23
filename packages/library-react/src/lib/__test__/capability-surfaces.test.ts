@@ -89,6 +89,15 @@ describe("capability surfaces", () => {
     });
   });
 
+  it("does not show a plugins back link on the top-level Sites place", () => {
+    expect(getAppBackLink(PERSONAL_SURFACE, "sites", "", "Sites")).toBeNull();
+    expect(getAppBackLink(getProjectSurface("w1", "p1"), "sites", "", "Sites")).toBeNull();
+    expect(getAppBackLink(PERSONAL_SURFACE, "sites", "site-1", "Sites")).toEqual({
+      to: "/chat/apps/sites",
+      label: "Back to Sites",
+    });
+  });
+
   it("steps back one level rather than jumping to the library", () => {
     expect(getAppBackLink(PERSONAL_SURFACE, "strudel", "pattern-1", "Strudel")).toEqual({
       to: "/chat/apps/strudel",

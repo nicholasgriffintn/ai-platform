@@ -1,16 +1,5 @@
 {
   "defaults": {
-    "modalities": {
-      "input": [
-        "text"
-      ],
-      "output": [
-        "text"
-      ]
-    },
-    "strengths": [
-      "creative"
-    ],
     "contextComplexity": 4,
     "reliability": 4
   },
@@ -18,7 +7,6 @@
   "models": {
     "leonardo-lucid-origin": {
       "defaults": {
-        "name": "Leonardo Lucid Origin",
         "description": "Leonardo.AI's most adaptable and prompt-responsive model to date. Whether you're generating images with sharp graphic design, stunning full-HD renders, or highly specific creative direction, it adheres closely to your prompts, renders text with accuracy, and supports a wide array of visual styles and aesthetics."
       }
     }

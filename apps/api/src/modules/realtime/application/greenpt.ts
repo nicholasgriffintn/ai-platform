@@ -1,4 +1,5 @@
 import type { RealtimeTranscriptionDelay } from "@ngriffin_uk/polychat-ai-providers";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import type { Context } from "hono";
 
@@ -60,19 +61,19 @@ export function toGreenPtClientMessage(data: unknown): string | undefined {
     return undefined;
   }
 
-  const payload = safeParseJson<Record<string, unknown>>(data);
+  const payload = safeParseJson<unknown>(data);
 
-  if (!payload || typeof payload !== "object") {
+  if (!isRecord(payload)) {
     return undefined;
   }
 
   const type = getString(payload.type);
 
   if (type === "Results") {
-    const channel = payload.channel as
-      | { alternatives?: Array<{ transcript?: unknown }> }
-      | undefined;
-    const text = getString(channel?.alternatives?.[0]?.transcript);
+    const channel = isRecord(payload.channel) ? payload.channel : undefined;
+    const alternatives = Array.isArray(channel?.alternatives) ? channel.alternatives : [];
+    const firstAlternative = isRecord(alternatives[0]) ? alternatives[0] : undefined;
+    const text = getString(firstAlternative?.transcript);
 
     if (!text) {
       return undefined;

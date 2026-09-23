@@ -42,72 +42,90 @@ export function formatGoogleStudioModelResource(model: string): string {
 }
 
 export function formatGoogleStudioContents(params: GoogleStudioContentParameters): any[] {
-  return (params.messages || []).map((message) => {
-    if (message.role === "tool") {
-      const output =
-        typeof message.content === "string" ? message.content : JSON.stringify(message.content);
+  return (params.messages || [])
+    .filter((message) => message.role !== "system" && message.role !== "developer")
+    .map((message) => {
+      if (message.role === "tool") {
+        const output =
+          typeof message.content === "string" ? message.content : JSON.stringify(message.content);
 
-      if (!message.name) {
+        if (!message.name) {
+          return {
+            role: "user",
+            parts: [{ text: output }],
+          };
+        }
+
         return {
           role: "user",
-          parts: [{ text: output }],
+          parts: [
+            {
+              functionResponse: omitUndefinedValues({
+                id: message.tool_call_id,
+                name: message.name,
+                response: { output },
+              }),
+            },
+          ],
         };
+      }
+
+      const parts = message.parts?.length
+        ? [...message.parts]
+        : typeof message.content === "string" && message.content
+          ? [{ text: message.content }]
+          : [];
+
+      if (message.role === "assistant") {
+        const functionCallParts = (message.tool_calls || []).flatMap((toolCall) => {
+          const call = isRecord(toolCall.function) ? toolCall.function : undefined;
+          const name = call && typeof call.name === "string" ? call.name : undefined;
+
+          if (!call || !name) {
+            return [];
+          }
+
+          return [
+            {
+              ...omitUndefinedValues({
+                thoughtSignature: readGoogleThoughtSignature(toolCall),
+              }),
+              functionCall: omitUndefinedValues({
+                id: typeof toolCall.id === "string" ? toolCall.id : undefined,
+                name,
+                args: parseToolCallArguments(call.arguments),
+              }),
+            },
+          ];
+        });
+
+        if (functionCallParts.length > 0) {
+          const nonEmptyParts = parts.filter((part) => !(isRecord(part) && part.text === ""));
+
+          return {
+            role: "model",
+            parts: [...nonEmptyParts, ...functionCallParts],
+          };
+        }
       }
 
       return {
-        role: "user",
-        parts: [
-          {
-            functionResponse: omitUndefinedValues({
-              id: message.tool_call_id,
-              name: message.name,
-              response: { output },
-            }),
-          },
-        ],
+        role: message.role === "assistant" ? "model" : "user",
+        parts,
       };
-    }
+    });
+}
 
-    const parts = [...(message.parts || [])];
+export function resolveGoogleStudioSystemPrompt(
+  params: Pick<ChatCompletionParameters, "messages" | "system_prompt">,
+): string | undefined {
+  const messages = (params.messages || [])
+    .filter((message) => message.role === "system" || message.role === "developer")
+    .map((message) => (typeof message.content === "string" ? message.content : ""))
+    .filter(Boolean);
+  const instructions = [params.system_prompt, ...messages].filter(Boolean);
 
-    if (message.role === "assistant") {
-      const functionCallParts = (message.tool_calls || []).flatMap((toolCall) => {
-        const call = isRecord(toolCall.function) ? toolCall.function : undefined;
-        const name = call && typeof call.name === "string" ? call.name : undefined;
-
-        if (!call || !name) {
-          return [];
-        }
-
-        return [
-          {
-            ...omitUndefinedValues({
-              thoughtSignature: readGoogleThoughtSignature(toolCall),
-            }),
-            functionCall: omitUndefinedValues({
-              id: typeof toolCall.id === "string" ? toolCall.id : undefined,
-              name,
-              args: parseToolCallArguments(call.arguments),
-            }),
-          },
-        ];
-      });
-
-      if (functionCallParts.length > 0) {
-        const nonEmptyParts = parts.filter((part) => !(isRecord(part) && part.text === ""));
-
-        return {
-          role: "model",
-          parts: [...nonEmptyParts, ...functionCallParts],
-        };
-      }
-    }
-
-    return {
-      role: message.role === "assistant" ? "model" : "user",
-      parts,
-    };
-  });
+  return instructions.length ? instructions.join("\n\n") : undefined;
 }
 
 export function buildGoogleStudioSystemInstruction(

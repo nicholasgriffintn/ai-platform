@@ -60,7 +60,7 @@ export default defineConfig({
     ["html", { open: "never" }],
     ["json", { outputFile: "test-results/results.json" }],
     ["junit", { outputFile: "test-results/results.xml" }],
-    ...(process.env.PVC_ENVIRONMENT && process.env.PVC_SERVER_URL && process.env.PVC_TOKEN
+    ...(process.env.PVC_ENVIRONMENT && process.env.PVC_TOKEN
       ? [["playwright-visual-cloud/reporter"] satisfies ReporterDescription]
       : []),
   ],

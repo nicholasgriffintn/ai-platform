@@ -15,7 +15,6 @@
       "defaults": {
         "name": "Gemini 2.5 Flash Lite",
         "description": "Lean Gemini 2.5 lane for cheap multimodal traffic and quick agents",
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",

@@ -1,11 +1,11 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
 import { hasAnyEnabledTool } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { buildMessageParts } from "~/modules/chat/application/messages/parts";
+import { createPendingToolApprovalMessage } from "~/modules/chat/application/tools/approval";
 import {
   ARTIFACT_MARKUP_TOOL_CORRECTION,
   isArtifactMarkupToolName,
@@ -16,12 +16,22 @@ import {
   type ToolCallLedger,
 } from "~/modules/chat/application/tools/call-ledger";
 import {
+  evaluateToolIntentGate,
+  requiresToolIntentVerification,
+} from "~/modules/chat/application/tools/tool-intent";
+import {
   formatToolErrorResponse,
   formatToolResponse,
 } from "~/modules/chat/application/tools/tool-responses";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
-import { handleFunctions, resolveToolRepeatLimit } from "~/modules/functions/application";
+import {
+  handleFunctions,
+  resolveFunctionTool,
+  resolveToolRepeatLimit,
+  validateFunctionArgs,
+} from "~/modules/functions/application";
 import { PermissionChecker } from "~/modules/functions/application/permissions";
+import { applyFunctionRequestContext } from "~/modules/functions/application/request-context";
 import type { IRequest, Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/tools/execution" });
@@ -138,6 +148,63 @@ export const handleToolCalls = async (
         throw new AssistantError("Missing tool call ID", ErrorType.TOOL_CALL_ERROR);
       }
 
+      if (
+        req.request?.enabled_tools &&
+        !hasAnyEnabledTool(req.request.enabled_tools, functionName)
+      ) {
+        throw new AssistantError(
+          `Tool "${functionName}" was not enabled for this run`,
+          ErrorType.TOOL_CALL_ERROR,
+          400,
+          { reason: "unknown_tool" },
+        );
+      }
+
+      const functionDefinition =
+        functionName === "memory" ? null : resolveFunctionTool(functionName);
+
+      const permissionResult = permissionChecker.checkRequestToolAccess({
+        toolName: functionName,
+        mode,
+        user: req.user,
+        toolType: functionDefinition?.type,
+        toolPermissions: functionDefinition?.permissions ?? toolPermissionsMap[functionName],
+        approvedTools: req.request?.approved_tools,
+        requireApprovalFor: req.request?.require_approval_for,
+        deniedTools: req.request?.denied_tools,
+        enforceModePolicy: req.request?.enforce_mode_tool_policy,
+      });
+
+      if (!permissionResult.allowed) {
+        recordDeterministicFailure?.();
+        logger.warn(`Tool "${functionName}" blocked by permission check`, {
+          reason: permissionResult.reason,
+          mode,
+        });
+        const blockedError = formatToolErrorResponse(
+          functionName,
+          permissionResult.reason ??
+            `Tool "${functionName}" is not permitted in ${permissionResult.mode} mode`,
+          "PERMISSION_DENIED",
+        );
+
+        await recordToolResult({
+          role: "tool",
+          name: functionName,
+          content: blockedError.content,
+          status: "error",
+          data: blockedError.data,
+          log_id: modelResponseLogId || "",
+          id: generateId(),
+          tool_call_id: toolCall.id,
+          tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
+          timestamp,
+          model: req.request?.model || "unknown",
+          platform: req.request?.platform || "api",
+        });
+        continue;
+      }
+
       if (options?.callLedger) {
         const repeat = checkToolCallRepeat(
           options.callLedger,
@@ -177,46 +244,34 @@ export const handleToolCalls = async (
         recordDeterministicFailure = repeat.recordDeterministicFailure;
       }
 
-      const permissionResult = permissionChecker.checkRequestToolAccess({
-        toolName: functionName,
-        mode,
-        user: req.user,
-        toolPermissions: toolPermissionsMap[functionName],
-        approvedTools: req.request?.approved_tools,
-        requireApprovalFor: req.request?.require_approval_for,
-        deniedTools: req.request?.denied_tools,
-        enforceModePolicy: req.request?.enforce_mode_tool_policy,
-      });
+      const rawArgs = toolCall.function?.arguments || toolCall.arguments || "{}";
+      const functionArgs = safeParseJson(rawArgs);
 
-      if (!permissionResult.allowed) {
-        recordDeterministicFailure?.();
-        logger.warn(`Tool "${functionName}" blocked by permission check`, {
-          reason: permissionResult.reason,
-          mode,
-        });
-        const blockedError = formatToolErrorResponse(
-          functionName,
-          permissionResult.reason ??
-            `Tool "${functionName}" is not permitted in ${permissionResult.mode} mode`,
-          "PERMISSION_DENIED",
+      if (!functionArgs) {
+        logger.error(`Failed to parse arguments for ${functionName}`);
+        throw new AssistantError(
+          `Invalid arguments for ${functionName}`,
+          ErrorType.TOOL_CALL_ERROR,
         );
-
-        await recordToolResult({
-          role: "tool",
-          name: functionName,
-          content: blockedError.content,
-          status: "error",
-          data: blockedError.data,
-          log_id: modelResponseLogId || "",
-          id: generateId(),
-          tool_call_id: toolCall.id,
-          tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
-          timestamp,
-          model: req.request?.model || "unknown",
-          platform: req.request?.platform || "api",
-        });
-        continue;
       }
+
+      if (typeof functionArgs !== "object" || Array.isArray(functionArgs)) {
+        throw new AssistantError(
+          `Invalid arguments format for ${functionName}: expected object`,
+          ErrorType.TOOL_CALL_ERROR,
+        );
+      }
+
+      const validatedFunctionArgs = functionDefinition
+        ? validateFunctionArgs(
+            functionDefinition,
+            applyFunctionRequestContext({
+              args: functionArgs,
+              functionName,
+              requestOptions: req.request?.options,
+            }),
+          )
+        : functionArgs;
 
       if (permissionResult.requiresApproval && !permissionResult.approved) {
         recordDeterministicFailure?.();
@@ -226,58 +281,65 @@ export const handleToolCalls = async (
         const approvalReason =
           permissionResult.reason ??
           `Tool "${functionName}" requires explicit approval before it can run. Ask the user to confirm.`;
-        const approvalError = formatToolErrorResponse(
-          functionName,
-          approvalReason,
-          "APPROVAL_REQUIRED",
-        );
 
-        await recordToolResult({
-          role: "tool",
-          name: functionName,
-          content: approvalError.content,
-          status: "pending",
-          data: {
-            ...approvalError.data,
-            renderer: "approval_request",
-            message: approvalReason,
-            options: ["Approve", "Reject"],
-            approvalRequired: true,
-            approval: {
-              toolName: functionName,
-              toolCallId: toolCall.id,
-              interactionId: toolCall.id,
-              reason: approvalReason,
-            },
-            humanInTheLoop: pendingApproval({
-              interactionId: toolCall.id,
-              toolName: functionName,
-            }),
-          },
-          log_id: modelResponseLogId || "",
-          id: generateId(),
-          tool_call_id: toolCall.id,
-          tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
-          timestamp,
-          model: req.request?.model || "unknown",
-          platform: req.request?.platform || "api",
-        });
+        await recordToolResult(
+          createPendingToolApprovalMessage({
+            toolName: functionName,
+            toolCallId: toolCall.id,
+            toolCallArguments: toolCall.arguments || toolCall.function?.arguments,
+            reason: approvalReason,
+            logId: modelResponseLogId || "",
+            timestamp,
+            model: req.request?.model || "unknown",
+            platform: req.request?.platform || "api",
+          }),
+        );
         continue;
       }
 
-      if (functionName === "memory") {
-        await options?.onToolExecutionStart?.({ id: toolCall.id, name: functionName });
+      if (
+        requiresToolIntentVerification({
+          permissions: permissionResult.permissions,
+          alreadyApproved: permissionResult.approved,
+        })
+      ) {
+        const intent = await evaluateToolIntentGate({
+          env: req.env,
+          user: req.user,
+          completionId: completion_id,
+          conversationId: req.request?.completion_id,
+          request: req.request?.input,
+          toolName: functionName,
+          permissions: permissionResult.permissions,
+          hasEvidenceProjector: Boolean(functionDefinition?.intentEvidence),
+          evidence: functionDefinition?.intentEvidence?.(validatedFunctionArgs),
+        });
 
-        const rawArgs = toolCall.function?.arguments || toolCall.arguments || "{}";
-        const memoryArgs = safeParseJson(rawArgs);
-
-        if (!memoryArgs) {
-          logger.error(`Failed to parse memory arguments: ${rawArgs}`);
-          throw new AssistantError(
-            `Invalid memory tool arguments: ${rawArgs}`,
-            ErrorType.TOOL_CALL_ERROR,
+        if (intent.outcome === "require_approval") {
+          recordDeterministicFailure?.();
+          await recordToolResult(
+            createPendingToolApprovalMessage({
+              toolName: functionName,
+              toolCallId: toolCall.id,
+              toolCallArguments: toolCall.arguments || toolCall.function?.arguments,
+              reason: intent.reason,
+              logId: modelResponseLogId || "",
+              timestamp,
+              model: req.request?.model || "unknown",
+              platform: req.request?.platform || "api",
+            }),
           );
+          continue;
         }
+      }
+
+      if (functionName === "memory") {
+        await options?.onToolExecutionStart?.({
+          id: toolCall.id,
+          name: functionName,
+        });
+
+        const memoryArgs = functionArgs;
 
         const memMessage: Message = {
           role: "tool",
@@ -306,42 +368,14 @@ export const handleToolCalls = async (
         continue;
       }
 
-      const rawArgs = toolCall.function?.arguments || toolCall.arguments;
-
-      await options?.onToolExecutionStart?.({ id: toolCall.id, name: functionName });
-
-      const functionArgs = safeParseJson(rawArgs);
-
-      if (!functionArgs) {
-        logger.error(`Failed to parse arguments for ${functionName}: ${rawArgs}`);
-        throw new AssistantError(
-          `Invalid arguments for ${functionName}: ${rawArgs}`,
-          ErrorType.TOOL_CALL_ERROR,
-        );
-      }
-
-      if (!functionArgs || typeof functionArgs !== "object") {
-        throw new AssistantError(
-          `Invalid arguments format for ${functionName}: expected object`,
-          ErrorType.TOOL_CALL_ERROR,
-        );
-      }
+      await options?.onToolExecutionStart?.({
+        id: toolCall.id,
+        name: functionName,
+      });
 
       let result: any;
 
       try {
-        if (
-          req.request?.enabled_tools &&
-          !hasAnyEnabledTool(req.request.enabled_tools, functionName)
-        ) {
-          throw new AssistantError(
-            `Tool "${functionName}" was not enabled for this run`,
-            ErrorType.TOOL_CALL_ERROR,
-            400,
-            { reason: "unknown_tool" },
-          );
-        }
-
         result = await handleFunctions({
           completion_id,
           tool_call_id: toolCall.id,
@@ -484,7 +518,9 @@ export const handleToolCalls = async (
 
       const formattedError = formatToolErrorResponse(
         functionName,
-        functionError.message || "Unknown error occurred",
+        isUnknownToolError(functionError)
+          ? buildUnknownToolCorrection(functionName)
+          : functionError.message || "Unknown error occurred",
         errorType,
       );
       const recoverable = isRecoverableToolCallError({
@@ -498,7 +534,16 @@ export const handleToolCalls = async (
         name: toolCall.name || functionName,
         content: formattedError.content,
         status: "error",
-        data: recoverable ? { ...formattedError.data, recoverable: true } : formattedError.data,
+        data: isUnknownToolError(functionError)
+          ? {
+              ...formattedError.data,
+              errorCode: "UNKNOWN_TOOL",
+              ...(isArtifactMarkupToolName(functionName) ? { responseType: "hidden" } : {}),
+              ...(options?.recoverUnknownToolCalls ? { recoverable: true } : {}),
+            }
+          : recoverable
+            ? { ...formattedError.data, recoverable: true }
+            : formattedError.data,
         log_id: modelResponseLogId || "",
         id: generateId(),
         tool_call_id: toolCall.id,

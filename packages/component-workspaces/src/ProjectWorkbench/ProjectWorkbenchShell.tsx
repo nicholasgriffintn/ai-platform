@@ -503,6 +503,7 @@ export function ProjectWorkbenchShell({
       </div>
       <DialogContent
         id="project-workbench-mobile"
+        aria-label={title}
         className="inset-y-0 top-0 right-0 left-auto flex h-[100dvh] max-h-none w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 border-l p-0 sm:w-[min(88vw,32rem)] sm:max-w-lg lg:hidden"
       >
         <DialogHeader className="border-b border-border px-4 py-3 pr-14 text-left">

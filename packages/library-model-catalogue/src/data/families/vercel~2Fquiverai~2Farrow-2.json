@@ -1,0 +1,39 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 131072,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text",
+        "image"
+      ]
+    },
+    "releaseDate": "September 16, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The vercel/quiverai/arrow 2 family includes models that produce image, text.",
+  "models": {
+    "arrow-2": {
+      "defaults": {
+        "name": "Arrow 2",
+        "description": "Fast SVG generation model for creation, vectorization, editing, and animation"
+      }
+    }
+  }
+}

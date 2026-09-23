@@ -13,15 +13,9 @@
       ]
     },
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "thinking"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
   "models": {
@@ -41,7 +35,14 @@
           ]
         },
         "knowledgeCutoffDate": "June 5, 2026",
-        "releaseDate": "June 16, 2026"
+        "releaseDate": "June 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "agi-01-swift": {
@@ -52,7 +53,30 @@
         "contextWindow": 300000,
         "maxTokens": 120000,
         "knowledgeCutoffDate": "June 5, 2026",
-        "releaseDate": "June 16, 2026"
+        "releaseDate": "June 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nex-n2-5-mini": {
+      "defaults": {
+        "name": "Nex-N2.5-Mini",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "releaseDate": "September 8, 2026",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nex-n2-5-mini-free": {
@@ -68,7 +92,21 @@
           ]
         },
         "releaseDate": "September 8, 2026",
-        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nex-n2-5-pro": {
+      "defaults": {
+        "name": "Nex-N2.5-Pro",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "releaseDate": "September 8, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -84,7 +122,6 @@
         "name": "Nex-N2.5-Pro (free)",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "releaseDate": "September 8, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -100,7 +137,13 @@
         "name": "Nex-N2-Mini",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "releaseDate": "June 24, 2026",
-        "supportsResponseFormat": true
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nex-n2-pro": {
@@ -108,7 +151,14 @@
         "name": "Nex-N2-Pro",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "releaseDate": "June 8, 2026",
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

@@ -39,6 +39,8 @@ import { enqueueTeammateRun } from "~/modules/teammates/application/run-admissio
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv, IUser, Message } from "~/types";
 
+import { recordChannelAttention } from "./channel-attention";
+import { judgeChannelEvent, type ChannelEventJudgement } from "./channel-event-judgement";
 import type { ChannelIncomingMessage } from "./ports/channel-adapter";
 import { getChannelSecrets } from "./secrets";
 
@@ -326,6 +328,8 @@ type ChannelDelivery =
       projectId?: string;
       bindingId?: string;
       teammateContextId?: string;
+      interactionMode: "direct" | "automated";
+      validate(): Promise<void>;
       send(reply: ChannelReplyPayload): Promise<void>;
     };
 
@@ -359,6 +363,8 @@ async function resolveProviderDelivery(params: {
   return {
     status: "ready",
     conversationId,
+    interactionMode: "direct",
+    validate: async () => undefined,
     send: async (reply) => {
       const replyMediaUrls = await resolveProviderReplyMediaUrls({
         context: params.context,
@@ -430,6 +436,51 @@ async function resolveBindingDelivery(params: {
           : { type: "personal", id: String(params.user.id) },
       )
     : null;
+  const validate = async () => {
+    const current = await params.context.repositories.channelBindings.getById(binding.id);
+
+    if (
+      !current ||
+      !current.enabled ||
+      current.channel !== binding.channel ||
+      current.external_id !== binding.external_id ||
+      current.created_by !== binding.created_by ||
+      current.scope_type !== binding.scope_type ||
+      current.scope_id !== binding.scope_id ||
+      current.teammate_id !== binding.teammate_id ||
+      current.interaction_mode !== binding.interaction_mode
+    ) {
+      throw new AssistantError("Channel binding changed before use", ErrorType.FORBIDDEN, 403);
+    }
+
+    if (current.scope_type === "project") {
+      if (current.teammate_id) {
+        await requireProjectTeammate(params.context, current.scope_id, current.teammate_id);
+      } else {
+        await requireProjectAccess(params.context, current.scope_id);
+      }
+    }
+
+    if (teammateContext) {
+      const activeContext = await requireTeammateContext(params.context, teammateContext.id);
+      const expectedScope =
+        current.scope_type === "project"
+          ? { type: "project" as const, id: current.scope_id }
+          : { type: "personal" as const, id: String(params.user.id) };
+
+      if (
+        activeContext.teammateId !== current.teammate_id ||
+        activeContext.scope.type !== expectedScope.type ||
+        activeContext.scope.id !== expectedScope.id
+      ) {
+        throw new AssistantError(
+          "Teammate context changed before channel use",
+          ErrorType.FORBIDDEN,
+          403,
+        );
+      }
+    }
+  };
 
   return {
     status: "ready",
@@ -437,63 +488,25 @@ async function resolveBindingDelivery(params: {
     ...(binding.teammate_id ? { teammateId: binding.teammate_id } : {}),
     ...(teammateContext ? { teammateContextId: teammateContext.id } : {}),
     bindingId: binding.id,
+    interactionMode: binding.interaction_mode,
+    validate,
     ...(binding.scope_type === "project" ? { projectId: binding.scope_id } : {}),
     send: async (reply) => {
-      const current = await params.context.repositories.channelBindings.getById(binding.id);
+      await validate();
 
-      if (
-        !current ||
-        !current.enabled ||
-        current.channel !== binding.channel ||
-        current.external_id !== binding.external_id ||
-        current.created_by !== binding.created_by ||
-        current.scope_type !== binding.scope_type ||
-        current.scope_id !== binding.scope_id ||
-        current.teammate_id !== binding.teammate_id ||
-        current.interaction_mode !== binding.interaction_mode
-      ) {
-        throw new AssistantError(
-          "Channel binding changed before delivery",
-          ErrorType.FORBIDDEN,
-          403,
-        );
-      }
-
-      if (current.scope_type === "project") {
-        if (current.teammate_id) {
-          await requireProjectTeammate(params.context, current.scope_id, current.teammate_id);
-        } else {
-          await requireProjectAccess(params.context, current.scope_id);
-        }
-      }
-
-      if (teammateContext) {
-        const activeContext = await requireTeammateContext(params.context, teammateContext.id);
-        const expectedScope =
-          current.scope_type === "project"
-            ? { type: "project" as const, id: current.scope_id }
-            : { type: "personal" as const, id: String(params.user.id) };
-
-        if (
-          activeContext.teammateId !== current.teammate_id ||
-          activeContext.scope.type !== expectedScope.type ||
-          activeContext.scope.id !== expectedScope.id
-        ) {
-          throw new AssistantError(
-            "Teammate context changed before delivery",
-            ErrorType.FORBIDDEN,
-            403,
-          );
-        }
-      }
-
-      await adapter.sendReply({ externalId: current.external_id, body: reply.body }, replySecret);
+      await adapter.sendReply({ externalId: binding.external_id, body: reply.body }, replySecret);
     },
   };
 }
 
 export type InboundChannelResult =
-  | { status: "delivered"; conversationId: string; body: string }
+  | {
+      status: "delivered";
+      conversationId: string;
+      body: string;
+      needsAttention?: boolean;
+    }
+  | { status: "ignored"; conversationId: string; needsAttention?: boolean }
   | { status: "unauthorised_sender" }
   | { status: "channel_unavailable" };
 
@@ -523,6 +536,7 @@ export async function handleInboundChannelMessage(params: {
     commandId,
   );
   let completion;
+  let judgement: ChannelEventJudgement | undefined;
 
   if (existing?.run.conversationId === conversationId) {
     const recovery = await recoverChatCompletionResponse(params.context, existing);
@@ -537,6 +551,37 @@ export async function handleInboundChannelMessage(params: {
 
     completion = recovery.response;
   } else {
+    if (delivery.interactionMode === "automated") {
+      judgement = await judgeChannelEvent({
+        env: params.env,
+        user: params.user,
+        channel: params.data.channel,
+        conversationId,
+        message,
+      });
+      await delivery.validate();
+
+      if (!judgement.shouldReply) {
+        if (judgement.needsAttention) {
+          await recordChannelAttention({
+            context: params.context,
+            user: params.user,
+            conversationId,
+            projectId: delivery.projectId,
+            channelLabel: profile.label,
+            message,
+            messageId: `channel_attention_${commandDigest.slice(0, 40)}`,
+          });
+        }
+
+        return {
+          status: "ignored",
+          conversationId,
+          ...(judgement.needsAttention ? { needsAttention: true } : {}),
+        };
+      }
+    }
+
     const activeMessages = await getActiveChannelMessages({
       context: params.context,
       user: params.user,
@@ -617,5 +662,17 @@ export async function handleInboundChannelMessage(params: {
     send: () => delivery.send({ body: notification.body, mediaUrls: notification.mediaUrls }),
   });
 
-  return { status: "delivered", conversationId, body: notification.body };
+  if (judgement?.needsAttention) {
+    await params.context.repositories.conversations.markUnreadForUser(
+      conversationId,
+      params.user.id,
+    );
+  }
+
+  return {
+    status: "delivered",
+    conversationId,
+    body: notification.body,
+    ...(judgement?.needsAttention ? { needsAttention: true } : {}),
+  };
 }

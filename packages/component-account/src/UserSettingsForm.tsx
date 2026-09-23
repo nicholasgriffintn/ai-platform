@@ -43,6 +43,7 @@ const COMPUTE_SITE_OPTIONS: FormSelectOption[] = [
 ];
 
 const GUARDRAILS_PROVIDER_OPTIONS: FormSelectOption[] = [
+  { value: "typesafe", label: "TypeSafe (Jev)" },
   { value: "llamaguard", label: "LlamaGuard" },
   { value: "bedrock", label: "Bedrock" },
   { value: "mistral", label: "Mistral" },

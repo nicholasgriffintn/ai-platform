@@ -75,10 +75,11 @@ export async function summariseArticle({
       throw new AssistantError("Service context is required", ErrorType.CONFIGURATION_ERROR);
     }
 
-    const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(
-      serviceContext.env,
-      user,
-    );
+    const {
+      model: modelToUse,
+      provider: providerToUse,
+      effort,
+    } = await getAuxiliaryModelForRetrieval(serviceContext.env, user);
     const modelConfig = await findModelConfig(modelToUse, serviceContext.env, providerToUse);
 
     const summaryGenData = await ai.complete({
@@ -88,6 +89,8 @@ export async function summariseArticle({
       provider: providerToUse,
       completion_id,
       app_url,
+      reasoning_effort: effort,
+      disable_functions: true,
       prompt: summariseArticlePrompt(sanitisedArticle, {
         modelId: modelToUse,
         modelConfig,

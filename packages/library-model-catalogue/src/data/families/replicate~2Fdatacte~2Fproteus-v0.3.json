@@ -1,0 +1,31 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "creative",
+      "vision",
+      "image"
+    ],
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The Replicate Proteus family includes anime and artistic image generation models.",
+  "models": {
+    "proteus-v0-3": {
+      "defaults": {
+        "name": "Proteus v0.3",
+        "description": "Proteus v0.3 generates and edits anime and artistic images with img2img and inpainting support."
+      }
+    }
+  }
+}

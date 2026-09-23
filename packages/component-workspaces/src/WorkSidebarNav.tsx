@@ -10,6 +10,7 @@ import {
   FolderOpen,
   LayoutDashboard,
   ListChecks,
+  LayoutTemplate,
   Palette,
   Plug,
   SquarePen,
@@ -40,6 +41,7 @@ export interface WorkSidebarWorkspace {
 export interface WorkSidebarProject {
   newConversationHref: string;
   canvasHref: string;
+  sitesHref: string;
   filesHref: string;
   tasksHref: string;
   activityHref: string;
@@ -181,6 +183,9 @@ export function WorkSidebarNav({
           </NavLink>
           <NavLink href={project.canvasHref} className={linkClass} onClick={onNavigate}>
             <Palette size={16} /> Canvas
+          </NavLink>
+          <NavLink href={project.sitesHref} className={linkClass} onClick={onNavigate}>
+            <LayoutTemplate size={16} /> Sites
           </NavLink>
           <NavLink href={project.filesHref} className={linkClass} onClick={onNavigate}>
             <FolderOpen size={16} /> Files

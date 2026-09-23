@@ -40,7 +40,7 @@ function canCaptureVisualSnapshot(): boolean {
     return false;
   }
 
-  if (!process.env.PVC_SERVER_URL || !process.env.PVC_TOKEN) {
+  if (!process.env.PVC_TOKEN) {
     return false;
   }
 

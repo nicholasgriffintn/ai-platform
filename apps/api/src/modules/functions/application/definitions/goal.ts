@@ -19,6 +19,7 @@ export const set_goal: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["write"],
+  intentEvidence: (input) => ({ operation: "set_goal", objective: input.objective }),
 };
 
 export const complete_goal: FunctionToolDescriptor = {

@@ -1,8 +1,10 @@
 import type {
   AIProvider,
   ChatCompletionParameters,
+  DecisionRequest,
   ProviderRuntime,
 } from "@ngriffin_uk/polychat-ai-providers";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 import z from "zod/v4";
 
@@ -24,19 +26,64 @@ function lastParams(getResponse: ReturnType<typeof vi.fn<GetResponse>>): ChatCom
   return params;
 }
 
-function createRuntime(getResponse: GetResponse) {
+function createRuntime(getResponse: GetResponse, options: { decisionTarget?: boolean } = {}) {
+  const modelConfigs: Record<string, ModelConfigItem> = {
+    "gpt-5": {
+      matchingModel: "gpt-5",
+      provider: "openai",
+      modalities: { input: ["text"], output: ["text"] },
+    },
+    "green-embedding": {
+      matchingModel: "green-embedding",
+      provider: "greenpt",
+      modalities: { input: ["text"], output: ["embedding"] },
+    },
+  };
   const chat: AIProvider = { name: "openai", supportsStreaming: true, getResponse };
+  const decision = {
+    name: "typesafe",
+    decide: vi.fn(async (request: DecisionRequest) => ({
+      provider: "typesafe",
+      model: request.model ?? "jev-latest",
+      answers: Object.fromEntries(
+        Object.entries(request.questions).map(([id, question]) => [
+          id,
+          question.type === "choice"
+            ? {
+                type: "choice",
+                choice: Object.keys(question.criteria)[0],
+                probabilities: Object.fromEntries(
+                  Object.keys(question.criteria).map((option, index) => [
+                    option,
+                    index === 0 ? 1 : 0,
+                  ]),
+                ),
+                confidence: 1,
+              }
+            : question.type === "score"
+              ? {
+                  type: "score",
+                  score: 1.5,
+                  legend: Object.fromEntries(
+                    question.criteria.map((level, index) => [String(index), level]),
+                  ),
+                  probabilities: Object.fromEntries(
+                    question.criteria.map((_, index) => [String(index), index === 0 ? 1 : 0]),
+                  ),
+                  confidence: 0.2,
+                }
+              : { type: "noul", noul: 0.93 },
+        ]),
+      ),
+      usage: { input_tokens: 42, output_tokens: 3 },
+    })),
+  };
   const image = { name: "workers-ai", generate: vi.fn(async () => ({ url: "https://img" })) };
   const replicate = {
     name: "replicate",
     generate: vi.fn(async () => {
       throw new Error("replicate down");
     }),
-  };
-  const rerank = {
-    name: "greenpt",
-    models: ["green-rerank"],
-    rerank: vi.fn(async () => ({ provider: "greenpt", model: "green-rerank", results: [] })),
   };
   const resolve = vi.fn((category: string, name: string) => {
     if (category === "chat") {
@@ -47,8 +94,8 @@ function createRuntime(getResponse: GetResponse) {
       return name === "replicate" ? replicate : image;
     }
 
-    if (category === "rerank") {
-      return rerank;
+    if (category === "decision") {
+      return decision;
     }
 
     throw new Error(`unexpected ${category}`);
@@ -56,13 +103,12 @@ function createRuntime(getResponse: GetResponse) {
   const runtime: ProviderRuntime = {
     host: {
       models: {
-        findModelConfig: vi.fn(async (model: string) =>
-          model === "gpt-5" || model === "green-embedding"
-            ? ({ matchingModel: model, provider: "openai" } as never)
-            : null,
-        ),
+        findModelConfig: vi.fn(async (model: string) => modelConfigs[model] ?? null),
         resolveModelProvider: vi.fn(
           async ({ provider, defaultProvider }) => provider ?? defaultProvider,
+        ),
+        getAuxiliaryDecisionModel: vi.fn(async () =>
+          options.decisionTarget ? { model: "jev-latest", provider: "typesafe" } : null,
         ),
       } as never,
       storage: { forEnv: () => null, forContext: () => null },
@@ -71,7 +117,7 @@ function createRuntime(getResponse: GetResponse) {
     providers: { resolve: resolve as never },
   };
 
-  return { runtime, chat, image, replicate, rerank, resolve };
+  return { runtime, chat, image, replicate, resolve, decision };
 }
 
 describe("createAiFunctions", () => {
@@ -197,7 +243,7 @@ describe("createAiFunctions", () => {
 
     expect(result).toEqual({
       model: "green-embedding",
-      provider: "openai",
+      provider: "greenpt",
       vectors: [
         [1, 2],
         [3, 4],
@@ -208,17 +254,78 @@ describe("createAiFunctions", () => {
     await expect(ai.embed({ env, model: "green-embedding", input: " " })).rejects.toThrow(
       "must not be empty",
     );
+    await expect(
+      ai.embed({ env, model: "green-embedding", input: Array.from({ length: 2_049 }, () => "x") }),
+    ).rejects.toThrow("at most 2048 inputs");
   });
 
-  it("routes rerank requests to the named provider", async () => {
-    const { runtime, rerank } = createRuntime(vi.fn<GetResponse>(async () => ({})));
+  it("rejects incomplete embedding responses", async () => {
+    const { runtime } = createRuntime(
+      vi.fn<GetResponse>(async () => ({ data: [{ index: 0, embedding: [1, 2] }] })),
+    );
     const ai = createAiFunctions(runtime);
 
-    await ai.rerank({ env, user, provider: "greenpt", query: "q", documents: ["a"], topN: 1 });
+    await expect(
+      ai.embed({ env, user, model: "green-embedding", input: ["a", "b"] }),
+    ).rejects.toMatchObject({ type: "PROVIDER_ERROR" });
+  });
 
-    expect(rerank.rerank).toHaveBeenCalledWith(
-      expect.objectContaining({ env, user, query: "q", documents: ["a"], topN: 1 }),
+  it("routes classify and is through the decision provider when one resolves", async () => {
+    const getResponse = vi.fn<GetResponse>();
+    const { runtime, decision } = createRuntime(getResponse, { decisionTarget: true });
+    const ai = createAiFunctions(runtime);
+
+    await expect(
+      ai.classify({ env, user, input: "hello", labels: ["greeting", "farewell"] }),
+    ).resolves.toBe("greeting");
+    await expect(ai.is({ env, user, statement: "the sky is blue" })).resolves.toBe(true);
+    await expect(ai.is({ env, user, statement: "the sky is blue", threshold: 0.95 })).resolves.toBe(
+      false,
     );
+    expect(getResponse).not.toHaveBeenCalled();
+    expect(decision.decide).toHaveBeenCalledTimes(3);
+    expect(decision.decide.mock.calls[0]?.[0]).toMatchObject({
+      state: "hello",
+      questions: { label: { type: "choice", criteria: { greeting: null, farewell: null } } },
+    });
+  });
+
+  it("falls back to the chat model when no decision target resolves", async () => {
+    const getResponse = vi.fn<GetResponse>(async () => ({ response: '{"label": "farewell"}' }));
+    const { runtime, decision } = createRuntime(getResponse);
+    const ai = createAiFunctions(runtime);
+    const questions = { q: { type: "noul", instructions: "?" } } as const;
+
+    await expect(
+      ai.classify({ env, model: "gpt-5", input: "bye", labels: ["greeting", "farewell"] }),
+    ).resolves.toBe("farewell");
+    expect(decision.decide).not.toHaveBeenCalled();
+    await expect(ai.tryDecide({ env, state: "x", questions })).resolves.toBeNull();
+    await expect(ai.decide({ env, state: "x", questions })).rejects.toMatchObject({
+      type: "CONFIGURATION_ERROR",
+    });
+  });
+
+  it("returns typed answers from decide and honours an explicit provider", async () => {
+    const { runtime, decision } = createRuntime(vi.fn<GetResponse>());
+    const ai = createAiFunctions(runtime);
+
+    const result = await ai.decide({
+      env,
+      user,
+      provider: "typesafe",
+      model: "jev-1.13.0",
+      state: { message: "refund please" },
+      questions: {
+        wants_refund: { type: "noul", instructions: "Does `message` ask for a refund?" },
+        tone: { type: "choice", instructions: "Tone?", criteria: { calm: null, angry: null } },
+      },
+    });
+
+    expect(result.answers.wants_refund.noul).toBe(0.93);
+    expect(result.answers.tone.choice).toBe("calm");
+    expect(result.usage).toEqual({ input_tokens: 42, output_tokens: 3 });
+    expect(decision.decide.mock.calls[0]?.[0]).toMatchObject({ model: "jev-1.13.0" });
   });
 
   it("renders template literals into a prompt", async () => {

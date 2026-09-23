@@ -171,6 +171,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
             ? {
                 newConversationHref: projectChatPath,
                 canvasHref: `${projectBasePath}/canvas`,
+                sitesHref: `${projectBasePath}/apps/sites`,
                 filesHref: `${projectBasePath}/files`,
                 tasksHref: `${projectBasePath}/tasks`,
                 attentionCount: projectAttentionCount,

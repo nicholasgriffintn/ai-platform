@@ -836,7 +836,7 @@ describe("ChatOrchestrator", () => {
         );
       });
 
-      it("withholds guarded streams and stops blocked tool calls before execution", async () => {
+      it("streams guarded output live, retracts it when blocked, and stops blocked tool calls", async () => {
         mockPreparer.prepare.mockResolvedValue({
           modelConfigs: [{ model: "test-model" }],
           primaryModel: "test-model",
@@ -878,8 +878,21 @@ describe("ChatOrchestrator", () => {
 
         const streamOutput = await readStream(result.stream);
 
-        expect(streamOutput).not.toContain("unsafe streamed output");
-        expect(streamOutput).toContain("Response blocked by safety checks.");
+        expect(streamOutput).toContain("unsafe streamed output");
+        expect(streamOutput.indexOf("unsafe streamed output")).toBeLessThan(
+          streamOutput.indexOf("Response blocked by safety checks."),
+        );
+        const retraction = streamOutput
+          .split("\n")
+          .filter((line) => line.startsWith("data: {"))
+          .map((line) => JSON.parse(line.slice("data: ".length)))
+          .find((event) => event.type === "message_delta");
+
+        expect(retraction).toMatchObject({
+          content: "Response blocked by safety checks.",
+          tool_calls: [],
+        });
+        expect(retraction.post_processing.guardrails.passed).toBe(false);
         expect(mockHandleToolCalls).not.toHaveBeenCalled();
         expect(mockConversationManager.add).toHaveBeenCalledWith(
           "test-completion-id",

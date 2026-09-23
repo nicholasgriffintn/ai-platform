@@ -14,11 +14,12 @@
       "creative",
       "video",
       "vision",
-      "audio"
+      "audio",
+      "document"
     ],
     "contextComplexity": 4,
     "reliability": 3,
-    "supportsAttachments": false,
+    "supportsAttachments": true,
     "artificialAnalysis": {
       "intelligenceIndex": null,
       "codingIndex": null,

@@ -259,8 +259,8 @@
           ]
         },
         "lastUpdated": "August 26, 2026",
-        "costPer1kInputTokens": 0.000075,
-        "costPer1kOutputTokens": 0.00025,
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": true
       }
     },
@@ -296,6 +296,52 @@
       "unset": [
         "supportsResponseFormat"
       ]
+    },
+    "glm-5.3-flashx": {
+      "model": "glm-flash/glm-5-3-flashx",
+      "matchingModel": "glm-5.3-flashx",
+      "overrides": {
+        "name": "GLM-5.3-FlashX",
+        "description": "High-speed GLM-5.3-Flash serving option for coding and agent workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 18, 2026",
+        "lastUpdated": "September 18, 2026",
+        "costPer1kInputTokens": 0.00037,
+        "costPer1kOutputTokens": 0.00125,
+        "supportsAttachments": true
+      }
+    },
+    "glm-4.6v-flash": {
+      "model": "glm-flash/glm-4-6v-flash",
+      "matchingModel": "glm-4.6v-flash",
+      "overrides": {
+        "description": "Lightweight GLM vision model for visual reasoning, documents, and multimodal agents",
+        "contextWindow": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "December 8, 2025",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": true
+      }
     }
   }
 }

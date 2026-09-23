@@ -33,7 +33,7 @@ export const extract_content: FunctionToolDescriptor = {
         type: "string",
         enum: ["auto", "tavily", "cloudflare", "greenpt"],
         description:
-          "Extraction provider. Use 'cloudflare' for Browser Rendering endpoints or 'auto' to choose based on configured keys.",
+          "Extraction provider. Use 'cloudflare' for Browser Rendering endpoints, 'greenpt' for GreenPT scraping, or 'auto' to choose based on configured keys.",
         default: "auto",
       },
       cloudflareFormat: {
@@ -62,4 +62,13 @@ export const extract_content: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["read", "write"],
+  intentEvidence: (input) => ({
+    operation: "extract_content",
+    urls: input.urls,
+    extractDepth: input.extract_depth,
+    includeImages: input.include_images,
+    storesContent: input.should_vectorize,
+    provider: input.provider,
+    crawl: input.cloudflareCrawlOptions,
+  }),
 };

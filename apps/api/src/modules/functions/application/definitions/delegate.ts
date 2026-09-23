@@ -51,5 +51,16 @@ export const delegate: FunctionToolDescriptor = {
   description: `Ask a teammate to do a job in its own conversation and report back. It runs in the background with a bounded budget and at most ${DELEGATION_MAX_FAN_OUT} children in flight.`,
   type: "normal",
   permissions: ["delegate"],
+  intentEvidence: (input) => ({
+    operation: input.child_conversation_id ? "continue_delegation" : "create_delegation",
+    teammateId: input.teammate_id,
+    teammate: input.teammate,
+    goal: input.goal,
+    waitFor: input.wait_for,
+    budget: input.budget,
+    childConversationId: input.child_conversation_id,
+    continuationMode: input.continuation_mode,
+    memoryBindings: input.memory_bindings,
+  }),
   inputSchema: delegateInputSchema,
 };

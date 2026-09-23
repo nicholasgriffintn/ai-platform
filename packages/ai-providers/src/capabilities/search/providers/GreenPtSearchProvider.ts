@@ -1,3 +1,6 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import z from "zod/v4";
+
 import type { ProviderEnv, ProviderUser } from "../../../env.js";
 import type { ProviderRuntime } from "../../../runtime.js";
 import type {
@@ -14,24 +17,47 @@ const DEFAULT_RESULT_COUNT = 10;
 const MAX_INDEX_RESULTS = 50;
 const MAX_ENRICHED_RESULTS = 20;
 
-interface GreenPtWebIndexResponse {
-  results?: Array<{
-    url?: string;
-    title?: string;
-    description?: string;
-    position?: number;
-    favicon?: string;
-  }>;
-}
+const greenPtWebIndexResponseSchema = z.object({
+  results: z
+    .array(
+      z.object({
+        url: z.string().optional(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        position: z.number().optional(),
+        favicon: z.string().optional(),
+      }),
+    )
+    .optional(),
+});
 
-interface GreenPtEnrichedSearchResponse {
-  note?: string;
-  results?: Array<{
-    title?: string;
-    link?: string;
-    snippet?: string;
-    relevant_content?: string;
-  }>;
+const greenPtEnrichedSearchResponseSchema = z.object({
+  note: z.string().optional(),
+  results: z
+    .array(
+      z.object({
+        title: z.string().optional(),
+        link: z.string().optional(),
+        snippet: z.string().optional(),
+        relevant_content: z.string().optional(),
+      }),
+    )
+    .optional(),
+});
+
+type GreenPtWebIndexResponse = z.infer<typeof greenPtWebIndexResponseSchema>;
+type GreenPtEnrichedSearchResponse = z.infer<typeof greenPtEnrichedSearchResponseSchema>;
+
+function parseGreenPtSearchResponse<T>(result: { success: true; data: T } | { success: false }): T {
+  if (!result.success) {
+    throw new AssistantError(
+      "GreenPT returned an unexpected search payload",
+      ErrorType.PROVIDER_ERROR,
+      502,
+    );
+  }
+
+  return result.data;
 }
 
 function clampCount(value: number | undefined, max: number): number {
@@ -91,7 +117,7 @@ export class GreenPtSearchProvider implements SearchProvider {
       const wantsEnrichment = options?.include_raw_content || options?.search_depth === "advanced";
 
       if (wantsEnrichment) {
-        const data = await greenPtJsonRequest<GreenPtEnrichedSearchResponse>({
+        const response = await greenPtJsonRequest({
           apiKey,
           path: "/tools/websearch",
           label: "GreenPT web search",
@@ -102,11 +128,14 @@ export class GreenPtSearchProvider implements SearchProvider {
             ...(language ? { language } : {}),
           },
         });
+        const data = parseGreenPtSearchResponse(
+          greenPtEnrichedSearchResponseSchema.safeParse(response),
+        );
 
         return mapGreenPtEnrichedResults(data);
       }
 
-      const data = await greenPtJsonRequest<GreenPtWebIndexResponse>({
+      const response = await greenPtJsonRequest({
         apiKey,
         path: "/tools/search/web",
         label: "GreenPT search",
@@ -117,6 +146,7 @@ export class GreenPtSearchProvider implements SearchProvider {
           ...(language ? { country: language } : {}),
         },
       });
+      const data = parseGreenPtSearchResponse(greenPtWebIndexResponseSchema.safeParse(response));
 
       return mapGreenPtIndexResults(data);
     } catch (error) {

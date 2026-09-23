@@ -3,10 +3,12 @@ import {
   resolveSandboxDeliveryPolicy,
   SANDBOX_EXECUTION_PROVIDER_DEFINITIONS,
 } from "@ngriffin_uk/polychat-schemas";
-import { encodeServerSentEvent } from "@ngriffin_uk/polychat-utility-core";
+import {
+  encodeServerSentEvent,
+  parseServerSentEventBuffer,
+} from "@ngriffin_uk/polychat-utility-core";
 import { readResponseTextWithinLimit } from "@ngriffin_uk/polychat-utility-server/http";
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
-import { parseSseBuffer } from "@ngriffin_uk/polychat-utility-server/streaming";
 
 import { SSE_HEADERS } from "~/infrastructure/http/streaming";
 import { resolveProviderApiKey } from "~/infrastructure/providers/credentials";
@@ -131,7 +133,7 @@ export class OpenAIAgentsSandboxProvider implements SandboxProvider {
             }
 
             buffer += decoder.decode(value, { stream: true });
-            buffer = parseSseBuffer(buffer, {
+            buffer = parseServerSentEventBuffer(buffer, {
               onEvent: (event) => {
                 for (const translated of translator.handle(event)) {
                   controller.enqueue(
@@ -143,7 +145,7 @@ export class OpenAIAgentsSandboxProvider implements SandboxProvider {
           }
 
           if (buffer.trim()) {
-            parseSseBuffer(`${buffer}\n\n`, {
+            parseServerSentEventBuffer(`${buffer}\n\n`, {
               onEvent: (event) => {
                 for (const translated of translator.handle(event)) {
                   controller.enqueue(

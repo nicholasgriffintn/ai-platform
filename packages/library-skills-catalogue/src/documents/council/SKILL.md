@@ -47,11 +47,13 @@ You choose who is in the room; the council decides the running order itself. `ch
 
 If you do not pass members, the tool convenes a sensible default.
 
+When the user is choosing among concrete alternatives, pass `decision.options` with short stable IDs and labels. Add only criteria the user actually cares about, with relative weights when they stated priorities. The council still debates the question in full; after it closes, an independent decision model projects the surviving arguments into one recommended option with calibrated probabilities. Do not invent options for an open-ended design question, and do not present a low-confidence recommendation as consensus.
+
 Turns stream into the conversation as they happen, so the user watches the debate unfold. Do not narrate it while it runs, and do not repeat the turns back afterwards — they are already on screen.
 
 ## Using what comes back
 
-The tool returns the chamber's conclusion, with the full transcript in its data. Neither is your answer — they are input to it.
+The tool returns the chamber's conclusion, with the full transcript in its data. A structured decision also returns the recommended option, probability distribution and confidence. None is your answer — they are input to it.
 
 - Lead with the answer the council reached and what changed your view, not with a summary of the proceedings.
 - Name a member only when their specific objection survived and matters to the user. "The security reviewer flagged X" earns its place; "the strategist agreed" does not.

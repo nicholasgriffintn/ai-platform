@@ -39,6 +39,7 @@ export const modelModalities = [
   "agents",
   "ocr",
   "transcription",
+  "decision",
 ] as const;
 
 export const modelModalitySchema = z.enum(modelModalities);
@@ -185,6 +186,7 @@ export const modelConfigItemSchema = z.object({
   costPer1kOutputTokens: z.number().optional(),
   costPer1kReasoningTokens: z.number().optional(),
   costPer1kSearches: z.number().optional(),
+  costPer1kSearchUnits: z.number().optional(),
   costPerRun: z.number().optional(),
   costPer1kCachedInputTokens: z.number().optional(),
   costPer1kCacheWriteTokens: z.number().optional(),

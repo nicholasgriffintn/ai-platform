@@ -249,7 +249,9 @@ export const complete_goal: ApiToolDefinition = {
         goal.status === "blocked"
           ? `Goal recorded as blocked: ${args.summary}`
           : `Goal completed: ${goal.objective}`,
-      data: { goal },
+      data: {
+        goal,
+      },
     };
   },
 };

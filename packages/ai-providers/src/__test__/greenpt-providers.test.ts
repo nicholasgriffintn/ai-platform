@@ -4,10 +4,11 @@ import {
   GreenPtOcrProvider,
   mapPageRange,
 } from "../capabilities/ocr/providers/GreenPtOcrProvider.js";
-import { GreenPtRerankProvider } from "../capabilities/rerank/providers/GreenPtRerankProvider.js";
+import { GreenPtRerankingProvider } from "../capabilities/reranking/providers/greenpt.js";
 import { GreenPtSearchProvider } from "../capabilities/search/providers/GreenPtSearchProvider.js";
 import { GreenPtTranscriptionProvider } from "../capabilities/transcription/providers/GreenPtTranscriptionProvider.js";
 import type { ProviderEnv, ProviderUser } from "../env.js";
+import { selectRerankingModel } from "../model-resolver.js";
 import { createTestRuntime, createTestStorage } from "./test-runtime.js";
 
 const mocks = vi.hoisted(() => ({
@@ -19,8 +20,8 @@ vi.mock("../capabilities/ocr/format.js", async (importOriginal) => ({
   persistOcrOutput: mocks.persistOcrOutput,
 }));
 
-const env = { GREENPT_API_KEY: "greenpt-key" } as ProviderEnv;
-const user = { id: 42, plan_id: "pro" } as ProviderUser;
+const env: ProviderEnv = { GREENPT_API_KEY: "greenpt-key" };
+const user: ProviderUser = { id: 42, plan_id: "pro" };
 const runtime = createTestRuntime({
   storage: { forEnv: () => null, forContext: () => createTestStorage() },
 });
@@ -120,13 +121,34 @@ describe("GreenPtSearchProvider", () => {
 
     const result = await new GreenPtSearchProvider(env, user, runtime).performWebSearch("x");
 
-    expect(result).toMatchObject({ status: "error" });
-    expect((result as { error: string }).error).toContain("429");
+    if (!("status" in result) || result.status !== "error") {
+      throw new Error("Expected GreenPT search to return an error result");
+    }
+
+    expect(result.error).toContain("429");
   });
 });
 
-describe("GreenPtRerankProvider", () => {
-  it("posts the rerank contract and maps scores back to the caller's documents", async () => {
+describe("GreenPtRerankingProvider", () => {
+  it("selects GreenPT reranking when access comes from a user key", () => {
+    expect(
+      selectRerankingModel(
+        {
+          "greenpt/green-rerank": {
+            matchingModel: "green-rerank",
+            provider: "greenpt",
+            modalities: { input: ["text"], output: ["reranking"] },
+            isPlatformEnabled: false,
+            isByokEnabled: true,
+          },
+        },
+        {},
+        { provider: "greenpt" },
+      ),
+    ).toEqual({ model: "green-rerank", provider: "greenpt" });
+  });
+
+  it("posts the shared reranking contract and maps scores back to opaque document IDs", async () => {
     fetchMock.mockResolvedValue(
       jsonResponse({
         model: "green-rerank",
@@ -138,13 +160,13 @@ describe("GreenPtRerankProvider", () => {
       }),
     );
 
-    const result = await new GreenPtRerankProvider(runtime).rerank({
-      env,
-      user,
+    const result = await new GreenPtRerankingProvider(env, user, runtime).rerank({
       query: "which is second",
-      documents: ["first", { text: "second", id: "doc-2" }],
-      topN: 2,
-      returnDocuments: true,
+      documents: [
+        { id: "doc-1", text: "first" },
+        { id: "doc-2", text: "second" },
+      ],
+      topK: 2,
     });
     const { url, init } = lastRequest();
 
@@ -152,29 +174,29 @@ describe("GreenPtRerankProvider", () => {
     expect(JSON.parse(String(init.body))).toEqual({
       model: "green-rerank",
       query: "which is second",
-      documents: ["first", { text: "second" }],
+      documents: ["first", "second"],
       top_n: 2,
-      return_documents: true,
+      return_documents: false,
     });
     expect(result).toEqual({
       provider: "greenpt",
       model: "green-rerank",
-      usage: { totalTokens: 12 },
       results: [
-        { index: 1, relevanceScore: 0.9, document: { text: "second", id: "doc-2" } },
-        { index: 0, relevanceScore: 0.1, document: "first" },
+        { id: "doc-2", score: 0.9 },
+        { id: "doc-1", score: 0.1 },
       ],
+      usage: { input_tokens: 12 },
     });
   });
 
   it("rejects unsupported models and empty document sets before calling upstream", async () => {
-    const provider = new GreenPtRerankProvider(runtime);
+    const provider = new GreenPtRerankingProvider(env, user, runtime);
 
     await expect(
-      provider.rerank({ env, query: "q", documents: [], model: "green-rerank" }),
-    ).rejects.toThrow("Missing rerank documents");
+      provider.rerank({ query: "q", documents: [], model: "green-rerank" }),
+    ).rejects.toThrow("Invalid reranking request");
     await expect(
-      provider.rerank({ env, query: "q", documents: ["a"], model: "other" }),
+      provider.rerank({ query: "q", documents: [{ id: 0, text: "a" }], model: "other" }),
     ).rejects.toThrow("not supported");
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -244,8 +266,9 @@ describe("GreenPtOcrProvider", () => {
 
   it("maps zero-based page selections onto docling's one-based page_range", () => {
     expect(mapPageRange(undefined)).toBeUndefined();
-    expect(mapPageRange([0, 2])).toBe("1,3");
-    expect(mapPageRange("1-3,7")).toBe("2,8");
+    expect(mapPageRange([0, 1, 2])).toBe("1,3");
+    expect(mapPageRange("1-3")).toBe("2,4");
+    expect(() => mapPageRange("1-3,7")).toThrow("one continuous page range");
   });
 
   it("uploads data URLs as multipart files and persists the markdown output", async () => {
@@ -268,12 +291,22 @@ describe("GreenPtOcrProvider", () => {
       pages: [0, 1],
     });
     const { url, init } = lastRequest();
-    const form = init.body as FormData;
+
+    if (!(init.body instanceof FormData)) {
+      throw new Error("Expected GreenPT OCR to send multipart form data");
+    }
+
+    const form = init.body;
+    const file = form.get("files");
+
+    if (!(file instanceof File)) {
+      throw new Error("Expected GreenPT OCR to upload a file");
+    }
 
     expect(url.pathname).toBe("/v1/tools/documents/convert/file");
     expect(form.get("to_formats")).toBe("md");
     expect(form.get("page_range")).toBe("1,2");
-    expect((form.get("files") as File).name).toBe("report.pdf");
+    expect(file.name).toBe("report.pdf");
     expect(result.extractedText).toContain("# Report");
     expect(result.response.pages[0]?.markdown).toBe("# Report\n\nBody");
     expect(mocks.persistOcrOutput).toHaveBeenCalledWith(
@@ -292,5 +325,23 @@ describe("GreenPtOcrProvider", () => {
       }),
     ).rejects.toThrow("public HTTP(S) URL");
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses redirects from public document URLs to private hosts", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(null, {
+        status: 302,
+        headers: { Location: "http://169.254.169.254/latest" },
+      }),
+    );
+
+    await expect(
+      new GreenPtOcrProvider(runtime).extractText({
+        env,
+        user,
+        document: { type: "document_url", document_url: "https://files.example/report.pdf" },
+      }),
+    ).rejects.toThrow("public HTTP(S) URL");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

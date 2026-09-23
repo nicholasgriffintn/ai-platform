@@ -121,6 +121,35 @@ describe("createChatTurnStream", () => {
     completePostTurn();
   });
 
+  it("releases the thread before post-turn work runs", async () => {
+    const order: string[] = [];
+    const onTurnEnd = vi.fn(async () => {
+      order.push("released");
+    });
+
+    mocks.runAgentLoop.mockResolvedValue({
+      response: {},
+      postTurn: vi.fn(async () => {
+        order.push("post-turn");
+      }),
+    });
+
+    const releaseTurnReservation = vi.fn();
+
+    await readEvents(
+      createChatTurnStream({
+        ...(createParams() as Record<string, unknown>),
+        conversationManager: { getUsageLimits: vi.fn(async () => null), releaseTurnReservation },
+        onTurnEnd,
+      } as never),
+    );
+    await vi.waitFor(() => expect(order).toContain("post-turn"));
+
+    expect(order).toEqual(["released", "post-turn"]);
+    expect(releaseTurnReservation).toHaveBeenCalledOnce();
+    expect(onTurnEnd).toHaveBeenCalledOnce();
+  });
+
   it("emits terminal failure activity before the public error", async () => {
     mocks.runAgentLoop.mockRejectedValue(new Error("provider failed"));
 

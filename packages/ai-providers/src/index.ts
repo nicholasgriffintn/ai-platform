@@ -1,5 +1,6 @@
 export { ProviderError, isProviderError, type ProviderErrorCode } from "./errors.js";
 export { ProviderRegistry } from "./registry.js";
+export { isRerankingModelRuntimeAvailable, selectRerankingModel } from "./model-resolver.js";
 export {
   ProviderLibrary,
   type ProviderBootstrapper,
@@ -56,6 +57,7 @@ export type {
   ProviderStorageFactory,
   RealtimeProxyGrant,
   RealtimeProxyGrantScope,
+  RerankingModelSelection,
   StoreOutputFileRequest,
   StoredOutputFileResult,
 } from "./host.js";
@@ -112,6 +114,7 @@ export { resolvePrivateAssetUrls } from "./utils/privateAssets.js";
 export * from "./capabilities/audio/index.js";
 export * from "./capabilities/audio/formats.js";
 export * from "./capabilities/chat/index.js";
+export * from "./capabilities/decision/index.js";
 export * from "./capabilities/guardrails/index.js";
 export * from "./capabilities/image/index.js";
 export * from "./capabilities/music/index.js";
@@ -122,8 +125,8 @@ export * from "./capabilities/ocr/format.js";
 export { GREENPT_OCR_MODEL } from "./capabilities/ocr/providers/GreenPtOcrProvider.js";
 export * from "./capabilities/realtime/index.js";
 export * from "./capabilities/realtime/providers/index.js";
-export * from "./capabilities/rerank/index.js";
 export * from "./capabilities/research/index.js";
+export * from "./capabilities/reranking/index.js";
 export * from "./capabilities/search/index.js";
 export * from "./capabilities/speech/index.js";
 export * from "./capabilities/transcription/index.js";

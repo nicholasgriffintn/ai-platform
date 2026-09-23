@@ -18,6 +18,8 @@ Manage schedules only from recipe capability and project Scheduled recipes surfa
 
 Keep event triggers under the same recipe installation and connector-authority model. Project membership permits authorised reads but does not transfer schedule ownership, charging responsibility or another member's connector credentials.
 
+Event triggers may add one natural-language condition at creation. Conditions are evaluated only after signature, mapping and account checks and before deterministic task enqueue. A trigger-scoped event receipt owns the evaluation lease, decision receipt and queued task ID, so duplicate webhooks do not repeat paid judgement and a crashed evaluation can be reclaimed without creating a second occurrence. Changing or pausing a trigger invalidates an in-flight judgement at the final authority check.
+
 ## Consequences
 
 Scheduling has one interface and one implementation path. Scheduled runs create separate result conversations, so durable context must live in recipe configuration, project instructions or Sources rather than in the mutable history of an earlier conversation. Supporting a new timing form means extending recipe triggers and their scheduler, not introducing another scheduled resource.

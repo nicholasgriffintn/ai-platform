@@ -14,8 +14,8 @@ import {
   type SandboxRunStatus,
   SANDBOX_RUNS_CAPABILITY_ID,
 } from "@ngriffin_uk/polychat-schemas";
+import { parseServerSentEventBuffer } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
-import { parseSseBuffer } from "@ngriffin_uk/polychat-utility-server/streaming";
 
 import { MAX_STORED_STREAM_EVENTS } from "~/config/chat";
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -28,6 +28,7 @@ import { persistProjectEnvironmentCacheCandidate } from "~/modules/workspaces/ap
 import type { IEnv, IUser } from "~/types";
 
 import { createSandboxCredentialBrokerAccess } from "./credential-broker-grants";
+import { resolveSandboxGitHubToken } from "./github-credentials";
 import { persistSandboxRunArtifact } from "./run-artifacts";
 import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "./run-coordinator";
 import {
@@ -271,6 +272,12 @@ export async function processSandboxRunDispatch(params: {
       : undefined;
 
   try {
+    await resolveSandboxGitHubToken({
+      context,
+      userId: user.id,
+      repo: message.payload.repo,
+      installationId: message.payload.installationId,
+    });
     const credentialBroker = await createSandboxCredentialBrokerAccess({
       env,
       apiBaseUrl: resolveSandboxApiBaseUrl(env),
@@ -467,7 +474,7 @@ export async function processSandboxRunDispatch(params: {
           }
 
           buffer += decoder.decode(value, { stream: true });
-          buffer = parseSseBuffer(buffer, {
+          buffer = parseServerSentEventBuffer(buffer, {
             onEvent: (rawEvent) => {
               const parsed = sandboxRunEventSchema.safeParse(rawEvent);
 

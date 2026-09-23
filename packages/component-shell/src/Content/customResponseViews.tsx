@@ -3,6 +3,7 @@ import { sharedResponseViews } from "@ngriffin_uk/polychat-component-conversatio
 
 import { DelegationTimelineView } from "../Delegations/DelegationTimelineView.js";
 import { CapabilityDiscoveryView } from "./CapabilityDiscoveryView.js";
+import { SiteMessageView } from "./SiteMessageView.js";
 
 export const customResponseViews: CustomResponseViewRegistry = {
   ...sharedResponseViews,
@@ -10,4 +11,5 @@ export const customResponseViews: CustomResponseViewRegistry = {
   delegation_card: ({ data, onToolInteraction }) => (
     <DelegationTimelineView data={data} onToolInteraction={onToolInteraction} />
   ),
+  site_preview: ({ data, embedded }) => <SiteMessageView data={data} embedded={embedded} />,
 };

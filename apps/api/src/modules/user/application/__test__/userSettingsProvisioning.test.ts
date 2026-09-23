@@ -135,6 +135,8 @@ describe("user settings provisioning", () => {
 
       expect(saved?.nickname).toBe("New nickname");
       expect(saved?.memories_save_enabled).toBe(true);
+      expect(saved?.guardrails_provider).toBe("typesafe");
+      expect(saved?.guardrails_enabled).toBe(true);
       expect(provisioned.public_key).toBeTruthy();
       expect(provisioned.private_key).toBeTruthy();
       expect(rows.count).toBe(1);

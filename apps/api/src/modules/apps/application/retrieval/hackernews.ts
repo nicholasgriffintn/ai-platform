@@ -144,10 +144,11 @@ export async function analyseHackerNewsStories({
       systemPrompt = getPromptText("apps/hacker-news/normal");
     }
 
-    const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(
-      env,
-      user,
-    );
+    const {
+      model: modelToUse,
+      provider: providerToUse,
+      effort,
+    } = await getAuxiliaryModelForRetrieval(env, user);
     const stringifiedStories = stories
       .map(
         (story: { title: string; link: string }, index: number) => `${index + 1}. ${story.title}`,
@@ -161,7 +162,8 @@ export async function analyseHackerNewsStories({
       provider: providerToUse,
       system: systemPrompt,
       prompt: `Analyze these top Hacker News stories and provide a brief, engaging summary:\n\n${stringifiedStories}`,
-      reasoning: { effort: "none" },
+      reasoning_effort: effort,
+      disable_functions: true,
     });
 
     if (!response.text) {

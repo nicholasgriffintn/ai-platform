@@ -12,6 +12,7 @@ import {
   buildGoogleStudioTools,
   formatGoogleStudioContents,
   GOOGLE_STUDIO_SAFETY_SETTINGS,
+  resolveGoogleStudioSystemPrompt,
 } from "../../../utils/googleStudio.js";
 import { BaseProvider } from "./base.js";
 
@@ -78,7 +79,9 @@ export class GoogleStudioProvider extends BaseProvider {
       contents: formatGoogleStudioContents(providerParams),
       tools: buildGoogleStudioTools(providerParams, modelConfig),
       toolConfig: buildGoogleStudioToolConfig(providerParams, modelConfig),
-      systemInstruction: buildGoogleStudioSystemInstruction(providerParams.system_prompt),
+      systemInstruction: buildGoogleStudioSystemInstruction(
+        resolveGoogleStudioSystemPrompt(providerParams),
+      ),
       safetySettings: GOOGLE_STUDIO_SAFETY_SETTINGS,
       generationConfig: buildGoogleStudioGenerationConfig(providerParams, modelConfig),
     });

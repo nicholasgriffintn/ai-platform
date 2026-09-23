@@ -110,6 +110,7 @@ TINKER_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
 CEREBRAS_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
 COHERE_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
 BEDROCK_MANTLE_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
+TYPESAFE_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
 
 ###
 ### External Services Configuration

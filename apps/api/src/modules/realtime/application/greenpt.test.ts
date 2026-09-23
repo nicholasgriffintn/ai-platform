@@ -24,7 +24,27 @@ vi.mock("./transcriptionProxy", async (importOriginal) => ({
   createRealtimeTranscriptionProxyResponse: mocks.createRealtimeTranscriptionProxyResponse,
 }));
 
-const user = { id: 42, plan_id: "pro" } as IUser;
+const user: IUser = {
+  id: 42,
+  name: "Realtime Tester",
+  avatar_url: null,
+  email: "realtime@example.com",
+  github_username: null,
+  company: null,
+  site: null,
+  location: null,
+  bio: null,
+  twitter_username: null,
+  created_at: "2026-08-31T09:00:00.000Z",
+  updated_at: "2026-08-31T09:00:00.000Z",
+  setup_at: "2026-08-31T09:00:00.000Z",
+  terms_accepted_at: "2026-08-31T09:00:00.000Z",
+  plan_id: "pro",
+};
+
+function createEnv(): IEnv {
+  return Object.assign(Object.create(null), {});
+}
 
 describe("GreenPT realtime protocol", () => {
   beforeEach(() => {
@@ -61,7 +81,7 @@ describe("GreenPT realtime protocol", () => {
     app.get("/", (context) =>
       createGreenPtRealtimeProxyResponse({
         context,
-        env: {} as IEnv,
+        env: createEnv(),
         model: "green-s",
         onSessionEnd,
         user,
@@ -84,7 +104,7 @@ describe("GreenPT realtime protocol", () => {
     const app = new Hono();
 
     app.get("/", (context) =>
-      createGreenPtRealtimeProxyResponse({ context, env: {} as IEnv, model: "nova-2", user }),
+      createGreenPtRealtimeProxyResponse({ context, env: createEnv(), model: "nova-2", user }),
     );
 
     const response = await app.request("https://api.polychat.test/");
@@ -96,7 +116,11 @@ describe("GreenPT realtime protocol", () => {
   it("forwards raw PCM and closes the stream on end", () => {
     const audio = toGreenPtUpstreamMessage({ type: "input_audio.append", audio: "AAE=" });
 
-    expect(Array.from(new Uint8Array(audio as ArrayBuffer))).toEqual([0, 1]);
+    if (!(audio instanceof ArrayBuffer)) {
+      throw new Error("Expected GreenPT audio to be decoded into an ArrayBuffer");
+    }
+
+    expect(Array.from(new Uint8Array(audio))).toEqual([0, 1]);
     expect(toGreenPtUpstreamMessage({ type: "input_audio.flush" })).toBeNull();
     expect(toGreenPtUpstreamMessage({ type: "input_audio.end" })).toBe(
       JSON.stringify({ type: "CloseStream" }),

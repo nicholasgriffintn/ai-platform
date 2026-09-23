@@ -1,8 +1,15 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { isPrivateHostname } from "@ngriffin_uk/polychat-utility-core";
 import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import {
+  fetchFollowingSafeRedirects,
+  parsePublicHttpUrl,
+  readResponseBytesWithinLimit,
+  ResponseBodyTooLargeError,
+  UnsafeUrlError,
+} from "@ngriffin_uk/polychat-utility-server/http";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import z from "zod/v4";
 
 import type { ProviderRuntime } from "../../../runtime.js";
 import { formatProviderError } from "../../../utils/errors.js";
@@ -28,17 +35,21 @@ const DATA_URL_PATTERN = /^data:([^;,]+)?(;base64)?,(.*)$/s;
 
 export const GREENPT_OCR_MODEL = "greenpt-documents";
 
-interface GreenPtDocumentResponse {
-  document?: {
-    filename?: string;
-    md_content?: string | null;
-    text_content?: string | null;
-    html_content?: string | null;
-  };
-  status?: string;
-  errors?: unknown[];
-  processing_time?: number;
-}
+const greenPtDocumentResponseSchema = z.object({
+  document: z
+    .object({
+      filename: z.string().optional(),
+      md_content: z.string().nullable().optional(),
+      text_content: z.string().nullable().optional(),
+      html_content: z.string().nullable().optional(),
+    })
+    .optional(),
+  status: z.string().optional(),
+  errors: z.array(z.unknown()).optional(),
+  processing_time: z.number().optional(),
+});
+
+type GreenPtDocumentResponse = z.infer<typeof greenPtDocumentResponseSchema>;
 
 interface LoadedDocument {
   bytes: Uint8Array;
@@ -106,7 +117,30 @@ export function mapPageRange(pages: OcrExtractionRequest["pages"]): string | und
     return undefined;
   }
 
-  return `${Math.min(...numbers) + 1},${Math.max(...numbers) + 1}`;
+  const ordered = [...new Set(numbers)].sort((left, right) => left - right);
+
+  if (
+    ordered.slice(1).some((page, index) => {
+      const previousPage = ordered[index];
+
+      return previousPage === undefined || page !== previousPage + 1;
+    })
+  ) {
+    throw new AssistantError(
+      "GreenPT OCR supports one continuous page range",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  const firstPage = ordered[0];
+  const lastPage = ordered.at(-1);
+
+  if (firstPage === undefined || lastPage === undefined) {
+    return undefined;
+  }
+
+  return `${firstPage + 1},${lastPage + 1}`;
 }
 
 export function buildGreenPtOcrResponse(
@@ -150,12 +184,23 @@ export class GreenPtOcrProvider implements OcrProvider {
         env: request.env,
         userId: request.user.id,
       });
-      const data = await greenPtRequest<GreenPtDocumentResponse>({
+      const rawResponse = await greenPtRequest({
         apiKey,
         path: "/tools/documents/convert/file",
         body: this.buildFormData(request, loaded),
         label: "GreenPT document conversion",
       });
+      const parsed = greenPtDocumentResponseSchema.safeParse(rawResponse);
+
+      if (!parsed.success) {
+        throw new AssistantError(
+          "GreenPT returned an unexpected document conversion payload",
+          ErrorType.PROVIDER_ERROR,
+          502,
+        );
+      }
+
+      const data = parsed.data;
 
       if (data.status && data.status !== "completed" && data.status !== "success") {
         throw new AssistantError(
@@ -223,19 +268,25 @@ export class GreenPtOcrProvider implements OcrProvider {
     let parsed: URL;
 
     try {
-      parsed = new URL(url);
+      parsed = parsePublicHttpUrl(url);
     } catch {
-      throw new AssistantError("Document URL is invalid", ErrorType.PARAMS_ERROR);
-    }
-
-    if (
-      (parsed.protocol !== "http:" && parsed.protocol !== "https:") ||
-      isPrivateHostname(parsed.hostname)
-    ) {
       throw new AssistantError("Document URL must be a public HTTP(S) URL", ErrorType.PARAMS_ERROR);
     }
 
-    const response = await fetch(parsed, { redirect: "error" });
+    let response: Response;
+
+    try {
+      response = await fetchFollowingSafeRedirects(parsed);
+    } catch (error) {
+      if (error instanceof UnsafeUrlError) {
+        throw new AssistantError(
+          "Document URL must remain a public HTTP(S) URL after redirects",
+          ErrorType.PARAMS_ERROR,
+        );
+      }
+
+      throw error;
+    }
 
     if (!response.ok) {
       throw new AssistantError(
@@ -244,13 +295,17 @@ export class GreenPtOcrProvider implements OcrProvider {
       );
     }
 
-    const declaredLength = Number(response.headers.get("content-length") ?? 0);
+    let bytes: Uint8Array;
 
-    assertDocumentSize(declaredLength);
+    try {
+      bytes = await readResponseBytesWithinLimit(response, MAX_DOCUMENT_BYTES);
+    } catch (error) {
+      if (error instanceof ResponseBodyTooLargeError) {
+        throw new AssistantError("Document must be 25MB or smaller", ErrorType.PARAMS_ERROR, 400);
+      }
 
-    const bytes = new Uint8Array(await response.arrayBuffer());
-
-    assertDocumentSize(bytes.byteLength);
+      throw error;
+    }
 
     return {
       bytes,
@@ -265,7 +320,7 @@ export class GreenPtOcrProvider implements OcrProvider {
 
     formData.append(
       "files",
-      new Blob([loaded.bytes as BlobPart], { type: loaded.mimeType }),
+      new Blob([new Uint8Array(loaded.bytes)], { type: loaded.mimeType }),
       loaded.filename,
     );
     formData.append("to_formats", "md");

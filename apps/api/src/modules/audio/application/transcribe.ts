@@ -99,5 +99,5 @@ export const handleTranscribe = async (req: TranscribeRequest): Promise<Transcri
 };
 
 function isTranscriptionProvider(value: string | undefined): value is TranscriptionProvider {
-  return TRANSCRIPTION_PROVIDERS.includes(value as TranscriptionProvider);
+  return TRANSCRIPTION_PROVIDERS.some((provider) => provider === value);
 }

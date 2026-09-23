@@ -14,6 +14,10 @@ import {
   ShieldstralGuardProvider,
   type ShieldstralGuardConfig,
 } from "../capabilities/guardrails/providers/shieldstral.js";
+import {
+  TypeSafeGuardProvider,
+  type TypeSafeGuardConfig,
+} from "../capabilities/guardrails/providers/typesafe.js";
 import type { AiProviderRegistration, AiProviderRegistry, ProviderRuntime } from "../runtime.js";
 import type { GuardrailsProvider } from "../types/index.js";
 import { ensureEnv, ensureConfig } from "./utils.js";
@@ -88,6 +92,24 @@ function guardrailsProviders(
         vendor: "Mistral AI",
         categories: ["guardrails"],
         tags: ["multimodal", "open-weights", "policy-adaptive"],
+      },
+    },
+    {
+      name: "typesafe",
+      lifecycle: "transient",
+      create: (context) => {
+        ensureEnv(context);
+        const config = ensureConfig<TypeSafeGuardConfig>(
+          context,
+          "TypeSafe guardrails config required",
+        );
+
+        return new TypeSafeGuardProvider(config, runtime);
+      },
+      metadata: {
+        vendor: "TypeSafe",
+        categories: ["guardrails"],
+        tags: ["system-one", "calibrated"],
       },
     },
   ];

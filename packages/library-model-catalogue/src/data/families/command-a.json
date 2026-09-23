@@ -20,11 +20,6 @@
       "defaults": {
         "name": "Command A",
         "description": "Cohere command model for multilingual enterprise agents, tools, and chat",
-        "contextWindow": 256000,
-        "maxTokens": 8192,
-        "strengths": [
-          "tool_use"
-        ],
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "March 13, 2025",

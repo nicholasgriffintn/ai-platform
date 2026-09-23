@@ -3,7 +3,7 @@ import { isPlainObject } from "./objects.js";
 const REDACTED = "[redacted]";
 
 const SENSITIVE_FIELD_NAMES =
-  "(?:authorization|api[-_ ]?key|x[-_ ]?api[-_ ]?key|x[-_ ]?goog[-_ ]?api[-_ ]?key|xi[-_ ]?api[-_ ]?key|cf[-_ ]?aig[-_ ]?authorization|token|access[-_ ]?token|refresh[-_ ]?token|secret|secret[-_ ]?key|client[-_ ]?secret|account[-_ ]?id|connected[-_ ]?account[-_ ]?id)";
+  "(?:authorization|api[-_ ]?key|x[-_ ]?api[-_ ]?key|x[-_ ]?goog[-_ ]?api[-_ ]?key|xi[-_ ]?api[-_ ]?key|cf[-_ ]?aig[-_ ]?authorization|token|access[-_ ]?token|refresh[-_ ]?token|secret|secret[-_ ]?key|client[-_ ]?secret|password|passphrase|cookie|set[-_ ]?cookie|session[-_ ]?id|account[-_ ]?id|connected[-_ ]?account[-_ ]?id)";
 const TOKEN_VALUE = "[^\"'\\s,;}&\\]\\[]{4,}";
 const MIN_SECRET_TOKEN_LENGTH = 24;
 const MIN_SECRET_TOKEN_ENTROPY = 3.5;

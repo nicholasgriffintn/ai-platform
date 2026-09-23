@@ -4,9 +4,12 @@ import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { analyse_article } from "./analyse_article";
 import { call_api } from "./api_call";
 import { apply_edit_completion } from "./apply_edit";
+import { audit_evidence } from "./audit_evidence";
+import { build_site } from "./build_site";
 import { run_council, select_council_members } from "./council";
 import { create_automation } from "./create_automation";
 import { create_note } from "./create_note";
+import { decide } from "./decide";
 import { delegate } from "./delegate";
 import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
@@ -64,6 +67,9 @@ export interface FunctionToolCatalogueOptions {
 
 const descriptors: FunctionToolDescriptor[] = [
   get_weather,
+  decide,
+  audit_evidence,
+  build_site,
   create_video,
   create_music,
   create_image,

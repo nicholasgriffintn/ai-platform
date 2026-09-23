@@ -54,10 +54,11 @@ export const extract_content: ApiToolDefinition = {
       };
     }
 
-    const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModelForRetrieval(
-      env,
-      user,
-    );
+    const {
+      model: modelToUse,
+      provider: providerToUse,
+      effort,
+    } = await getAuxiliaryModelForRetrieval(env, user);
     const summary = await ai.generateText({
       env,
       user,
@@ -66,6 +67,8 @@ export const extract_content: ApiToolDefinition = {
       completion_id,
       app_url,
       system: buildContentExtractionPrompt(),
+      reasoning_effort: effort,
+      disable_functions: true,
       prompt: `Please summarize the content from the following URLs:\n\nExtracted Content:\n${result.data?.extracted.results
         .map((r, i) => `[${i + 1}] URL: ${r.url}\n${r.raw_content}\n`)
         .join("\n\n")}`,

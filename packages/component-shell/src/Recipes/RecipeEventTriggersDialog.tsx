@@ -54,6 +54,7 @@ export function RecipeEventTriggersDialog({
   const [configurationValues, setConfigurationValues] = useState<
     Record<string, RecipeTriggerConfigurationValue>
   >({});
+  const [condition, setCondition] = useState("");
   const [validationError, setValidationError] = useState<string>();
   const [triggerToDelete, setTriggerToDelete] = useState<RecipeComposioTrigger | null>(null);
   const provider = providers.find((candidate) => candidate.id === providerId) ?? providers[0];
@@ -125,6 +126,7 @@ export function RecipeEventTriggersDialog({
       connectedAccountId: accountId,
       triggerSlug: selectedTriggerType.slug,
       configuration: result.configuration,
+      condition: condition.trim() || undefined,
     });
   };
 
@@ -183,6 +185,8 @@ export function RecipeEventTriggersDialog({
               onConfigurationChange={(key, value) =>
                 setConfigurationValues((current) => ({ ...current, [key]: value }))
               }
+              condition={condition}
+              onConditionChange={setCondition}
               hasUnsupportedRequiredFields={configuration.unsupportedRequiredLabels.length > 0}
               validationError={validationError}
               canCreate={canCreate}

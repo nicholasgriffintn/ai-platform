@@ -4,6 +4,7 @@
     "contextWindow": 0,
     "maxTokens": 0,
     "supportsToolCalls": false,
+    "supportsAttachments": true,
     "supportsTemperature": false
   },
   "description": "Image model for prompt-driven generation, editing, and visual design workflows",
@@ -22,8 +23,7 @@
             "image"
           ]
         },
-        "releaseDate": "December 16, 2025",
-        "supportsAttachments": true
+        "releaseDate": "December 16, 2025"
       }
     },
     "gpt-image-1": {
@@ -65,7 +65,6 @@
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "November 25, 2025",
-        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -121,7 +120,6 @@
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "April 21, 2026",
-        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -144,6 +142,15 @@
       "defaults": {
         "name": "GPT Image 2.5 Flare",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
         "releaseDate": "September 8, 2026"
       }
     },

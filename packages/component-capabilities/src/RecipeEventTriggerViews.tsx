@@ -110,6 +110,11 @@ export function TriggerList({
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   {provider?.name ?? "Connected integration"}
                 </p>
+                {trigger.condition && (
+                  <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
+                    Only when: {trigger.condition}
+                  </p>
+                )}
               </div>
               <Badge variant={trigger.status === "error" ? "destructive" : "outline"}>
                 {trigger.status === "error" ? "Needs attention" : active ? "Active" : "Paused"}

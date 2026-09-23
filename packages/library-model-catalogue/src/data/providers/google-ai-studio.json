@@ -182,6 +182,7 @@
       "model": "gemini-flash-lite/gemini-2-5-flash-lite",
       "matchingModel": "gemini-2.5-flash-lite",
       "overrides": {
+        "maxTokens": 65536,
         "isFree": true,
         "strengths": [
           "vision",
@@ -1099,6 +1100,7 @@
       "matchingModel": "gemini-3.7-flash",
       "overrides": {
         "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
+        "maxTokens": 65536,
         "isFeatured": true,
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.00075,
@@ -1114,6 +1116,7 @@
       "matchingModel": "gemini-3.8-flash",
       "overrides": {
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
+        "maxTokens": 65536,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375

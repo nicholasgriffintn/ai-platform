@@ -1,4 +1,5 @@
 import {
+  isConfiguredReasoningEffort,
   resolveReasoningModel,
   shouldSendProviderReasoningEffort,
 } from "@ngriffin_uk/polychat-ai-models";
@@ -20,6 +21,7 @@ const FLAT_REASONING_EFFORT_PROVIDERS = new Set([
   "deepinfra",
   "github-copilot",
   "github-models",
+  "groq",
   "mistral",
   "opencode",
   "opencode-go",
@@ -212,6 +214,25 @@ function returnValidatedPenalty(
   }
 
   return value;
+}
+
+export function createWorkersReasoningParameters(
+  params: Pick<ChatCompletionParameters, "reasoning_effort">,
+  modelConfig: ModelConfigItem | undefined,
+): Record<string, unknown> {
+  const effort = params.reasoning_effort;
+
+  if (!isConfiguredReasoningEffort(modelConfig, effort)) {
+    return {};
+  }
+
+  if (effort === "none") {
+    return { chat_template_kwargs: { enable_thinking: false } };
+  }
+
+  return effort === "low" || effort === "medium" || effort === "high"
+    ? { reasoning_effort: effort }
+    : {};
 }
 
 export function createCommonParameters(

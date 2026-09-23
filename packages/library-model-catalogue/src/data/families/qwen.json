@@ -622,6 +622,7 @@
     },
     "qwen-image": {
       "defaults": {
+        "name": "Qwen Image",
         "description": "Qwen Image is a large-scale image generation model capable of generating high-quality images from text descriptions.",
         "modalities": {
           "input": [
@@ -1879,7 +1880,6 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
-        "maxTokens": 65536,
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 23, 2026",
@@ -2106,7 +2106,6 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -2638,6 +2637,36 @@
             "xhigh"
           ],
           "defaultEffort": "minimal"
+        }
+      }
+    },
+    "qwen3-8-omni-flash": {
+      "defaults": {
+        "name": "Qwen3.8 Omni Flash",
+        "openWeights": false,
+        "description": "Qwen omni model for text, vision, audio, and multimodal agent tasks",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 17, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
         }
       }
     },
@@ -3339,9 +3368,12 @@
             "text"
           ],
           "output": [
-            "text"
+            "reranking"
           ]
         },
+        "strengths": [
+          "reranking"
+        ],
         "releaseDate": "February 1, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false

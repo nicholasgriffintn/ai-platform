@@ -1,15 +1,9 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import type { ZodType } from "zod/v4";
 
 import { getErrorMessage } from "./errors.js";
 
-export function safeParseJson<T = any>(jsonString: string): T | null {
-  try {
-    return JSON.parse(jsonString) as T;
-  } catch {
-    return null;
-  }
-}
+export { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 
 export function parseJsonRecord(value: unknown): Record<string, unknown> {
   const parsed = typeof value === "string" ? safeParseJson<unknown>(value) : value;

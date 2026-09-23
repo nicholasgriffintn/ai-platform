@@ -4,6 +4,7 @@ import { queryEmbeddings } from "~/modules/apps/application/embeddings/query";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { search_documents as search_documentsDescriptor } from "./definitions/search_documents";
+import { rerankAuthorisedDocuments } from "./document-reranking";
 import { resolveRequestProjectId } from "./request-context";
 
 export const search_documents: ApiToolDefinition = {
@@ -28,7 +29,15 @@ export const search_documents: ApiToolDefinition = {
         type: args.type as string | undefined,
       },
     });
-    const documents = response.data.slice(0, (args.top_k as number | undefined) ?? 3);
+    const reranked = await rerankAuthorisedDocuments({
+      env: request.env,
+      user: request.user,
+      completionId: context.completionId,
+      conversationId: request.request?.completion_id,
+      query: String(args.query),
+      documents: response.data,
+    });
+    const documents = reranked.slice(0, (args.top_k as number | undefined) ?? 3);
 
     if (documents.length === 0) {
       return {

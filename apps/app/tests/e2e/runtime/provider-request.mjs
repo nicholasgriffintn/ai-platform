@@ -19,6 +19,106 @@ export function normaliseResponsesRequest(body) {
   };
 }
 
+export function validateReleaseProviderRequest(url, body) {
+  const requestText = JSON.stringify(body);
+  const contracts = [
+    {
+      marker: "Release provider contract: Groq Chat",
+      applies: () => String(body.model).includes("gpt-oss-120b"),
+      valid: () =>
+        url.pathname.endsWith("/chat/completions") &&
+        Array.isArray(body.messages) &&
+        body.messages.some((message) => message.role === "user"),
+    },
+    {
+      marker: "Release provider contract: OpenAI Responses",
+      applies: () => body.model === "gpt-6-astra",
+      valid: () =>
+        url.pathname.endsWith("/responses") &&
+        Array.isArray(body.input) &&
+        body.input.some((item) => item.role === "user"),
+    },
+    {
+      marker: "Release provider contract: Anthropic Messages",
+      applies: () => body.model === "claude-sonnet-4-6",
+      valid: () =>
+        url.pathname.endsWith("/v1/messages") &&
+        Array.isArray(body.messages) &&
+        body.messages.some((message) => message.role === "user") &&
+        typeof body.max_tokens === "number",
+    },
+    {
+      marker: "Release provider contract: Cohere Chat",
+      applies: () => body.model === "command-a-03-2025",
+      valid: () =>
+        url.pathname.endsWith("/v2/chat") &&
+        Array.isArray(body.messages) &&
+        body.messages.some((message) => message.role === "user"),
+    },
+    {
+      marker: "Release provider contract: Google Image",
+      applies: () => body.model === "gemini-flash-lite-latest",
+      valid: () =>
+        url.pathname.includes("/v1beta/models/") &&
+        Array.isArray(body.contents) &&
+        body.contents.some(
+          (item) =>
+            item.role === "user" &&
+            item.parts?.some(
+              (part) => part.inlineData?.mimeType === "image/png" && part.inlineData?.data,
+            ),
+        ),
+    },
+    {
+      marker: "Release provider contract: OpenAI Audio",
+      applies: () => body.model === "gpt-audio-mini",
+      valid: () =>
+        url.pathname.endsWith("/chat/completions") &&
+        Array.isArray(body.messages) &&
+        body.messages.some(
+          (message) =>
+            Array.isArray(message.content) &&
+            message.content.some(
+              (part) => part.type === "input_audio" && part.input_audio?.format === "wav",
+            ),
+        ),
+    },
+    {
+      marker: "Release provider contract: Replicate Image",
+      applies: () => body.version === "prunaai/p-image-ideogram",
+      valid: () =>
+        url.pathname.endsWith("/v1/predictions") &&
+        body.input?.prompt?.includes("Release provider contract: Replicate Image"),
+    },
+    {
+      marker: "Release provider contract: Replicate Video",
+      applies: () => body.version === "prunaai/p-video-2-pro",
+      valid: () =>
+        url.pathname.endsWith("/v1/predictions") &&
+        body.input?.prompt?.includes("Release provider contract: Replicate Video"),
+    },
+  ];
+
+  for (const contract of contracts) {
+    if (
+      contract.applies() &&
+      (body.version || requestText.includes(contract.marker)) &&
+      !contract.valid()
+    ) {
+      const contentTypes = body.messages?.map((message) => ({
+        role: message.role,
+        content: Array.isArray(message.content)
+          ? message.content.map((part) => `${part.type}:${part.input_audio?.format ?? ""}`)
+          : typeof message.content,
+      }));
+
+      throw new Error(
+        `Invalid provider request for ${contract.marker}: ${url.pathname} ${JSON.stringify(contentTypes ?? [])}`,
+      );
+    }
+  }
+}
+
 export function responsesToolCallResponse(toolCall, model, stream) {
   const item = {
     id: toolCall.id,

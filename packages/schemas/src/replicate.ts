@@ -25,7 +25,7 @@ export const replicateModelSchema = z.object({
     .optional(),
   modalitySignature: z.string(),
   modalityLabel: z.string(),
-  costPerRun: z.number(),
+  costPerRun: z.number().optional(),
   inputSchema: z.object({
     fields: z.array(replicateInputFieldSchema),
     reference: z.string().optional(),

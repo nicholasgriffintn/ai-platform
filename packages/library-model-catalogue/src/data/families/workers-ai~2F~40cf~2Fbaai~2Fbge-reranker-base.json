@@ -7,11 +7,12 @@
         "text"
       ],
       "output": [
-        "embedding"
+        "reranking"
       ]
     },
     "strengths": [
-      "search"
+      "search",
+      "reranking"
     ],
     "contextComplexity": 3,
     "reliability": 5,
@@ -20,7 +21,7 @@
     "supportsAttachments": false,
     "supportsTemperature": true
   },
-  "description": "The workers ai/@cf/baai/bge reranker base family includes models that produce embedding.",
+  "description": "The Workers AI BGE reranker family scores candidate text by relevance to a query.",
   "models": {
     "bge-reranker-base": {
       "defaults": {

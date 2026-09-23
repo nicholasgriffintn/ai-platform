@@ -11,6 +11,12 @@ export const run_code: FunctionToolDescriptor = {
   type: "normal",
   permissions: ["sandbox"],
   maxIdenticalCalls: 3,
+  intentEvidence: (input) => ({
+    operation: "run_code",
+    tools: input.tools ?? [],
+    network: input.network ?? [],
+    timeoutMs: input.timeout_ms ?? 5_000,
+  }),
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {

@@ -27,6 +27,8 @@ Use [`polychat-setup`](.agents/skills/polychat-setup/SKILL.md) as setup/ops refe
 
 ## Validation
 
+Add tests only when they protect observable behaviour, a meaningful invariant, or a real regression. Do not add catalogue field snapshots or trivial rendering assertions that merely restate the implementation.
+
 Run these before every commit:
 
 ```sh

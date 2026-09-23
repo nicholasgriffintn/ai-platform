@@ -6,12 +6,14 @@ metadata:
   polychat-display-name: Article analysis
   polychat-category: Research
   polychat-tags: "articles, bias, summary, media"
-  polychat-suggests-tools: "extract_content"
+  polychat-suggests-tools: "extract_content, audit_evidence"
 ---
 
 # Article analysis
 
 Work from the article itself. Use `extract_content` when the user gives a link, and analyse only what the piece actually contains — not what you know about the outlet, the author, or the topic from elsewhere. Outside knowledge belongs in a clearly separate paragraph if it belongs at all.
+
+Use `audit_evidence` when the user asks whether specific factual claims are actually supported by their citations. Pass each claim with the public source URLs attached to it. Report unsupported and contradicted claims plainly; the tool's probability is evidence quality, not a truth score for the whole article.
 
 If extraction fails or returns a paywall stub, say so and stop. Analysing a headline as though it were an article is worse than admitting you could not read it.
 

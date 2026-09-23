@@ -35,7 +35,11 @@ export async function performDeepWebSearch(
     throw new AssistantError("Missing query or options", ErrorType.PARAMS_ERROR);
   }
 
-  const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
+  const {
+    model: modelToUse,
+    provider: providerToUse,
+    effort: reasoningEffort,
+  } = await getAuxiliaryModel(env, user);
 
   const [webSearchResults, similarQuestions] = await Promise.all([
     handleWebSearch({
@@ -64,6 +68,8 @@ export async function performDeepWebSearch(
         prompt: query,
         max_tokens: 1024,
         store: false,
+        reasoning_effort: reasoningEffort,
+        disable_functions: true,
       })
       .then((result) => result.object.questions)
       .catch(() => []),
@@ -137,6 +143,8 @@ export async function performDeepWebSearch(
     prompt: query,
     max_tokens: 2048,
     store: false,
+    reasoning_effort: reasoningEffort,
+    disable_functions: true,
   });
 
   if (conversationManager) {

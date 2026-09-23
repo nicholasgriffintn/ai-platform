@@ -99,6 +99,17 @@
         "description": "Reranking model for improving retrieval quality in search and recommendation systems",
         "contextWindow": 32000,
         "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "reranking"
+          ]
+        },
+        "strengths": [
+          "reranking"
+        ],
         "releaseDate": "August 11, 2025"
       }
     },
@@ -108,6 +119,17 @@
         "description": "Reranking model for improving retrieval quality in search and recommendation systems",
         "contextWindow": 32000,
         "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "reranking"
+          ]
+        },
+        "strengths": [
+          "reranking"
+        ],
         "releaseDate": "August 11, 2025"
       }
     }

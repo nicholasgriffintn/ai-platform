@@ -1,4 +1,4 @@
-import { Button, FormSelect } from "@ngriffin_uk/polychat-component-ui";
+import { Button, FormSelect, Label, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import type {
   RecipeTriggerConfigurationField,
   RecipeTriggerConfigurationValue,
@@ -23,6 +23,8 @@ export interface RecipeEventTriggerFormProps {
   configurationFields: RecipeTriggerConfigurationField[];
   configurationValues: Record<string, RecipeTriggerConfigurationValue>;
   onConfigurationChange: (key: string, value: RecipeTriggerConfigurationValue) => void;
+  condition: string;
+  onConditionChange: (condition: string) => void;
   hasUnsupportedRequiredFields?: boolean;
   validationError?: string | null;
   canCreate: boolean;
@@ -45,6 +47,8 @@ export function RecipeEventTriggerForm({
   configurationFields,
   configurationValues,
   onConfigurationChange,
+  condition,
+  onConditionChange,
   hasUnsupportedRequiredFields = false,
   validationError,
   canCreate,
@@ -97,6 +101,20 @@ export function RecipeEventTriggerForm({
         values={configurationValues}
         onChange={onConfigurationChange}
       />
+      <div className="space-y-1.5">
+        <Label htmlFor="recipe-event-condition">Only run when</Label>
+        <Textarea
+          id="recipe-event-condition"
+          value={condition}
+          maxLength={2000}
+          placeholder="Optional — for example: the subject mentions a production outage"
+          onChange={(event) => onConditionChange(event.target.value)}
+        />
+        <p className="text-xs leading-5 text-muted-foreground">
+          Polychat checks this condition against the event before starting the recipe. If the check
+          is unavailable or uncertain, the recipe does not run.
+        </p>
+      </div>
       {hasUnsupportedRequiredFields && (
         <p role="alert" className="flex gap-2 text-sm text-attention">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />

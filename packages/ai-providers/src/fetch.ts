@@ -37,6 +37,8 @@ export interface FetchAIResponseOptions {
   backoff?: "exponential" | "linear";
   responseType?: "json" | "raw";
   maxResponseBytes?: number;
+  includeErrorBodyInLogs?: boolean;
+  timeoutIncludesBody?: boolean;
 }
 
 export interface FetchProviderJsonOptions {
@@ -89,12 +91,14 @@ export async function fetchAIResponse<
   const requestBody = isFormData ? body : omitUndefinedValues(body);
 
   let response: Response;
+  let responseHeadersReceived = false;
 
   const controller = new AbortController();
   const headersTimeout = setTimeout(
     () => controller.abort(),
     options.requestTimeout ?? DEFAULT_REQUEST_TIMEOUT_MS,
   );
+  const timeoutIncludesBody = options.timeoutIncludesBody === true;
 
   try {
     if (!isUrl) {
@@ -131,137 +135,163 @@ export async function fetchAIResponse<
         signal: controller.signal,
       });
     }
+
+    responseHeadersReceived = true;
   } finally {
-    clearTimeout(headersTimeout);
+    if (!timeoutIncludesBody || !responseHeadersReceived) {
+      clearTimeout(headersTimeout);
+    }
   }
 
-  const requestId =
-    response.headers.get("x-request-id") ??
-    response.headers.get("request-id") ??
-    response.headers.get("cf-aig-event-id") ??
-    undefined;
-  const retryAfterMs = parseProviderRetryAfterMs(response.headers.get("retry-after"));
+  try {
+    const requestId =
+      response.headers.get("x-request-id") ??
+      response.headers.get("request-id") ??
+      response.headers.get("cf-aig-event-id") ??
+      undefined;
+    const retryAfterMs = parseProviderRetryAfterMs(response.headers.get("retry-after"));
 
-  if (!response.ok) {
-    let responseText: string;
+    if (!response.ok) {
+      let responseText: string;
 
-    try {
-      responseText = await readResponseTextWithinLimit(response, MAX_PROVIDER_ERROR_BODY_BYTES);
-    } catch (textError) {
-      if (textError instanceof ResponseBodyTooLargeError) {
-        responseText = "[provider error body exceeded limit]";
-      } else {
-        logger.error(`Failed to read response body for ${provider} from ${endpointOrUrl}:`, {
-          error: textError,
-          status: response.status,
-          statusText: response.statusText,
-        });
+      try {
+        responseText = await readResponseTextWithinLimit(response, MAX_PROVIDER_ERROR_BODY_BYTES);
+      } catch (textError) {
+        if (textError instanceof ResponseBodyTooLargeError) {
+          responseText = "[provider error body exceeded limit]";
+        } else {
+          logger.error(`Failed to read response body for ${provider} from ${endpointOrUrl}:`, {
+            error: textError,
+            status: response.status,
+            statusText: response.statusText,
+          });
+          throw new AssistantError(
+            `Failed to get response for ${provider} from ${endpointOrUrl}: ${response.statusText}`,
+            ErrorType.PROVIDER_ERROR,
+            response.status,
+            { requestId },
+          );
+        }
+      }
+
+      const errorDetails = buildProviderResponseErrorDetails({
+        provider,
+        endpoint: endpointOrUrl,
+        status: response.status,
+        statusText: response.statusText,
+        requestId,
+        responseText,
+      });
+
+      logger.error(
+        `Failed to get response for ${provider} from ${endpointOrUrl}`,
+        options.includeErrorBodyInLogs === false
+          ? {
+              provider,
+              endpoint: endpointOrUrl,
+              status: response.status,
+              statusText: response.statusText,
+              requestId,
+            }
+          : errorDetails,
+      );
+
+      if (isProviderRateLimit(response.status, errorDetails.responseJson)) {
         throw new AssistantError(
-          `Failed to get response for ${provider} from ${endpointOrUrl}: ${response.statusText}`,
-          ErrorType.PROVIDER_ERROR,
+          getProviderErrorMessage(errorDetails.responseJson) || "Rate limit exceeded",
+          ErrorType.RATE_LIMIT_ERROR,
           response.status,
-          { requestId },
+          {
+            ...errorDetails,
+            upstreamStatus: errorDetails.responseJson?.raw_status_code ?? response.status,
+            ...(retryAfterMs === undefined ? {} : { retryAfterMs }),
+          },
         );
       }
-    }
 
-    const errorDetails = buildProviderResponseErrorDetails({
-      provider,
-      endpoint: endpointOrUrl,
-      status: response.status,
-      statusText: response.statusText,
-      requestId,
-      responseText,
-    });
-
-    logger.error(`Failed to get response for ${provider} from ${endpointOrUrl}`, errorDetails);
-
-    if (isProviderRateLimit(response.status, errorDetails.responseJson)) {
       throw new AssistantError(
-        getProviderErrorMessage(errorDetails.responseJson) || "Rate limit exceeded",
-        ErrorType.RATE_LIMIT_ERROR,
+        getProviderResponseErrorMessage(errorDetails),
+        ErrorType.PROVIDER_ERROR,
         response.status,
-        {
-          ...errorDetails,
-          upstreamStatus: errorDetails.responseJson?.raw_status_code ?? response.status,
-          ...(retryAfterMs === undefined ? {} : { retryAfterMs }),
-        },
+        { ...errorDetails, ...(retryAfterMs === undefined ? {} : { retryAfterMs }) },
       );
     }
 
-    throw new AssistantError(
-      getProviderResponseErrorMessage(errorDetails),
-      ErrorType.PROVIDER_ERROR,
-      response.status,
-      { ...errorDetails, ...(retryAfterMs === undefined ? {} : { retryAfterMs }) },
-    );
-  }
+    if (isStreaming) {
+      return response.body as unknown as T;
+    }
 
-  if (isStreaming) {
-    return response.body as unknown as T;
-  }
+    if (options.responseType === "raw") {
+      return response as unknown as T;
+    }
 
-  if (options.responseType === "raw") {
-    return response as unknown as T;
-  }
+    let data: Record<string, any>;
+    let boundedResponseText: string | undefined;
+    const responseForLogging = options.maxResponseBytes ? undefined : response.clone();
 
-  let data: Record<string, any>;
-  let boundedResponseText: string | undefined;
-  const responseForLogging = options.maxResponseBytes ? undefined : response.clone();
+    try {
+      if (options.maxResponseBytes) {
+        boundedResponseText = await readResponseTextWithinLimit(response, options.maxResponseBytes);
+        const parsed = safeParseJson<Record<string, any>>(boundedResponseText);
 
-  try {
-    if (options.maxResponseBytes) {
-      boundedResponseText = await readResponseTextWithinLimit(response, options.maxResponseBytes);
-      const parsed = safeParseJson<Record<string, any>>(boundedResponseText);
+        if (!parsed) {
+          throw new SyntaxError("Response is not a JSON object");
+        }
 
-      if (!parsed) {
-        throw new SyntaxError("Response is not a JSON object");
+        data = parsed;
+      } else {
+        data = (await response.json()) as Record<string, any>;
+      }
+    } catch (jsonError) {
+      if (jsonError instanceof ResponseBodyTooLargeError) {
+        throw new AssistantError(
+          `${provider} returned a response larger than the configured limit`,
+          ErrorType.PROVIDER_ERROR,
+          502,
+          { requestId },
+        );
       }
 
-      data = parsed;
-    } else {
-      data = (await response.json()) as Record<string, any>;
-    }
-  } catch (jsonError) {
-    if (jsonError instanceof ResponseBodyTooLargeError) {
+      let responseText = boundedResponseText ?? "[unavailable]";
+
+      if (responseForLogging) {
+        try {
+          responseText = await readResponseTextWithinLimit(
+            responseForLogging,
+            MAX_PROVIDER_ERROR_BODY_BYTES,
+          );
+        } catch {}
+      }
+
+      logger.error(
+        `Failed to parse JSON response from ${provider}`,
+        options.includeErrorBodyInLogs === false
+          ? { error: jsonError instanceof Error ? jsonError.name : "unknown" }
+          : {
+              error: jsonError,
+              responseText: redactSensitiveTokens(responseText.substring(0, 200)),
+            },
+      );
       throw new AssistantError(
-        `${provider} returned a response larger than the configured limit`,
+        `${provider} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
         ErrorType.PROVIDER_ERROR,
         502,
         { requestId },
       );
     }
 
-    let responseText = boundedResponseText ?? "[unavailable]";
+    const eventId = response.headers.get("cf-aig-event-id");
+    const log_id = response.headers.get("cf-aig-log-id");
+    const cacheStatus = response.headers.get("cf-aig-cache-status");
 
-    if (responseForLogging) {
-      try {
-        responseText = await readResponseTextWithinLimit(
-          responseForLogging,
-          MAX_PROVIDER_ERROR_BODY_BYTES,
-        );
-      } catch {}
+    const result = { ...data, eventId, log_id, cacheStatus };
+
+    return result as T;
+  } finally {
+    if (timeoutIncludesBody) {
+      clearTimeout(headersTimeout);
     }
-
-    logger.error(`Failed to parse JSON response from ${provider}`, {
-      error: jsonError,
-      responseText: redactSensitiveTokens(responseText.substring(0, 200)),
-    });
-    throw new AssistantError(
-      `${provider} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
-      ErrorType.PROVIDER_ERROR,
-      502,
-      { requestId },
-    );
   }
-
-  const eventId = response.headers.get("cf-aig-event-id");
-  const log_id = response.headers.get("cf-aig-log-id");
-  const cacheStatus = response.headers.get("cf-aig-cache-status");
-
-  const result = { ...data, eventId, log_id, cacheStatus };
-
-  return result as T;
 }
 
 export async function fetchProviderJson<T>(

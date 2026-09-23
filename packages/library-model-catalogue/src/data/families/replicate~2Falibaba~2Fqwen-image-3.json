@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "creative",
+      "vision",
+      "image"
+    ],
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "Qwen-Image-3.0-Pro generates and edits images with dense, accurate text rendering, complex multi-element layouts, and photographic detail.",
+  "models": {
+    "qwen-image-3": {
+      "defaults": {
+        "name": "Qwen Image 3",
+        "description": "Qwen-Image-3.0 generates and edits images with accurate text rendering, complex layouts, and photographic detail."
+      }
+    },
+    "qwen-image-3-pro": {
+      "defaults": {
+        "name": "Qwen Image 3 Pro",
+        "description": "Qwen-Image-3.0-Pro generates and edits images with dense, accurate text rendering, complex multi-element layouts, and photographic detail."
+      }
+    }
+  }
+}

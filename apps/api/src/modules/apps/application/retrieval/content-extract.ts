@@ -1,4 +1,5 @@
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
+import { parsePublicHttpUrl } from "@ngriffin_uk/polychat-utility-server/http";
 
 import { extractWithCloudflare } from "~/modules/apps/infrastructure/retrieval/content-extract/cloudflare";
 import { extractWithGreenPt } from "~/modules/apps/infrastructure/retrieval/content-extract/greenpt";
@@ -25,13 +26,24 @@ const extractors: Record<
   tavily: extractWithTavily,
 };
 
+function normalisePublicUrls(input: string | string[]): string[] {
+  const values = Array.isArray(input) ? input : [input];
+
+  if (values.length < 1 || values.length > 10) {
+    throw new Error("Content extraction requires between 1 and 10 URLs");
+  }
+
+  return values.map((value) => parsePublicHttpUrl(value).toString());
+}
+
 export const extractContent = async (
   params: ContentExtractParams,
   req: IRequest,
 ): Promise<ContentExtractResult> => {
   try {
-    const provider = resolveContentExtractProvider(params, req);
-    const extracted = await extractors[provider](params, req);
+    const safeParams = { ...params, urls: normalisePublicUrls(params.urls) };
+    const provider = resolveContentExtractProvider(safeParams, req);
+    const extracted = await extractors[provider](safeParams, req);
 
     const result: ContentExtractResult = {
       status: "success",
@@ -41,7 +53,7 @@ export const extractContent = async (
     };
 
     await maybeVectorizeExtractedContent({
-      params,
+      params: safeParams,
       req,
       provider,
       extracted,

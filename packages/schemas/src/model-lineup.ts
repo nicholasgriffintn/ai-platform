@@ -113,7 +113,7 @@ const hostedFreeAgent = {
     { model: "minimax/minimax-m3:free", provider: "openrouter", effort: "thinking" },
   ],
   low: [
-    { model: "deepseek-v4-flash", provider: "deepseek", effort: "low" },
+    { model: "deepseek-flash", provider: "deepseek", effort: "low" },
     { model: "groq-openai-gpt-oss-120b", provider: "groq", effort: "low" },
     {
       model: "google-ai-studio/gemini-3.1-flash-lite",
@@ -140,7 +140,7 @@ const hostedFreeCoding = {
     { model: "minimax/minimax-m3:free", provider: "openrouter", effort: "thinking" },
   ],
   low: [
-    { model: "deepseek-v4-flash", provider: "deepseek", effort: "low" },
+    { model: "deepseek-flash", provider: "deepseek", effort: "low" },
     { model: "groq-openai-gpt-oss-120b", provider: "groq", effort: "low" },
     {
       model: "google-ai-studio/gemini-3.1-flash-lite",
@@ -202,13 +202,13 @@ const HOSTED_LINEUP: TierLineup = {
         effort: "medium",
       },
       { model: "google/gemini-3.8-flash", provider: "openrouter", effort: "medium" },
-      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "medium" },
+      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "low" },
       ...hostedFreeAgent.medium,
     ],
     coding: [
       { model: "gpt-5.6-sol", provider: "openai", effort: "medium" },
       { model: "openai/gpt-5.6-sol", provider: "openrouter", effort: "medium" },
-      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "medium" },
+      { model: "@cf/zai-org/glm-5.3", provider: "workers-ai", effort: "low" },
       { model: "@cf/moonshotai/kimi-k2.7-code", provider: "workers-ai", effort: "medium" },
       ...hostedFreeCoding.medium,
     ],
@@ -217,7 +217,7 @@ const HOSTED_LINEUP: TierLineup = {
     agent: [
       { model: "gpt-5.6-luna", provider: "openai", effort: "low" },
       { model: "openai/gpt-5.6-luna", provider: "openrouter", effort: "low" },
-      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "thinking" },
+      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
       { model: "glm-5.3-flash", provider: "zai", effort: "low" },
       { model: "z-ai/glm-5.3-flash", provider: "openrouter", effort: "low" },
       {
@@ -230,7 +230,7 @@ const HOSTED_LINEUP: TierLineup = {
     coding: [
       { model: "gpt-5.6-luna", provider: "openai", effort: "low" },
       { model: "openai/gpt-5.6-luna", provider: "openrouter", effort: "low" },
-      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "thinking" },
+      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
       { model: "glm-5.3-flash", provider: "zai", effort: "low" },
       { model: "z-ai/glm-5.3-flash", provider: "openrouter", effort: "low" },
       ...hostedFreeCoding.low,
@@ -351,6 +351,8 @@ export const SYSTEM_MODEL_ROLES = [
   "housekeeping",
   "retrieval",
   "guardrails",
+  "decision",
+  "reranking",
   "transcription",
   "ocr",
   "image",
@@ -371,11 +373,11 @@ export interface SystemModelRoleDefinition {
 }
 
 const platformHousekeeping: readonly ModelLineupCandidate[] = [
-  { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai" },
-  { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "low" },
-  { model: "deepseek-v4-flash", provider: "deepseek", effort: "low" },
+  { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "minimal" },
   { model: "groq-openai-gpt-oss-120b", provider: "groq", effort: "low" },
-  { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai" },
+  { model: "deepseek-flash", provider: "deepseek", effort: "low" },
+  { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai", effort: "low" },
+  { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
 ];
 
 export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
@@ -384,7 +386,6 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     label: "Titling",
     description: "Names conversations from their first exchange.",
     candidates: [
-      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai" },
       { model: "groq-openai-gpt-oss-20b", provider: "groq", effort: "low" },
       {
         model: "google-ai-studio/gemini-3.1-flash-lite",
@@ -392,7 +393,8 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
         effort: "minimal",
       },
       { model: "gpt-5.6-luna", provider: "openai", effort: "low" },
-      { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai" },
+      { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai", effort: "low" },
+      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
     ],
   },
   {
@@ -402,7 +404,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     candidates: [
       { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai" },
       { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "low" },
-      { model: "deepseek-v4-flash", provider: "deepseek", effort: "low" },
+      { model: "deepseek-flash", provider: "deepseek", effort: "low" },
       { model: "gpt-5.6-sol", provider: "openai", effort: "low" },
       { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai" },
     ],
@@ -431,6 +433,25 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     candidates: [
       { model: "openai/gpt-oss-safeguard-20b", provider: "groq" },
       { model: "@cf/meta/llama-guard-3-8b", provider: "workers-ai" },
+    ],
+  },
+  {
+    id: "decision",
+    label: "Decisions",
+    description:
+      "Fast calibrated judgements: yes/no checks, classifications and ratings that gate other work.",
+    candidates: [{ model: "jev-latest", provider: "typesafe" }],
+  },
+  {
+    id: "reranking",
+    label: "Reranking",
+    description: "Reorders retrieved candidates by their relevance to the current query.",
+    candidates: [
+      { model: "@cf/baai/bge-reranker-base", provider: "workers-ai" },
+      { model: "green-rerank", provider: "greenpt" },
+      { model: "rerank-v4.0-fast", provider: "cohere" },
+      { model: "rerank-v4.0-pro", provider: "cohere" },
+      { model: "rerank-v3.5", provider: "cohere" },
     ],
   },
   {
@@ -530,6 +551,7 @@ const NON_CHAT_STRENGTHS: ModelModality[] = [
   "reranking",
   "ocr",
   "transcription",
+  "decision",
 ];
 
 export function isLineupEligibleModel(model: ModelConfigItem) {

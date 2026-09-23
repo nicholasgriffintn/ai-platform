@@ -3,11 +3,20 @@ import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import type { RecipeComposioTrigger } from "~/infrastructure/database/schema";
+import type {
+  RecipeComposioTrigger,
+  RecipeEventReceiptRow,
+} from "~/infrastructure/database/schema";
 
 export interface RecipeComposioTriggerRecord extends Omit<RecipeComposioTrigger, "configuration"> {
   configuration: Record<string, unknown>;
 }
+
+export type RecipeEventReceiptState = "evaluating" | "skipped" | "queued";
+
+export type RecipeEventClaim =
+  | { status: "execute"; executionToken: string }
+  | { status: RecipeEventReceiptState; taskId: string | null };
 
 function parseTrigger(record: RecipeComposioTrigger): RecipeComposioTriggerRecord {
   return {
@@ -30,6 +39,7 @@ export class RecipeComposioTriggerRepository extends BaseRepository {
     connectedAccountId: string;
     externalUserId: string;
     configuration?: Record<string, unknown>;
+    condition?: string;
   }): Promise<RecipeComposioTriggerRecord> {
     const insert = this.buildInsertQuery(
       "recipe_composio_trigger",
@@ -44,6 +54,7 @@ export class RecipeComposioTriggerRepository extends BaseRepository {
         connected_account_id: input.connectedAccountId,
         external_user_id: input.externalUserId,
         configuration: input.configuration ?? {},
+        condition: input.condition ?? null,
         status: "active",
       },
       { jsonFields: ["configuration"], returning: "*" },
@@ -66,6 +77,99 @@ export class RecipeComposioTriggerRepository extends BaseRepository {
     }
 
     return parseTrigger(result);
+  }
+
+  async claimEvent(input: {
+    id: string;
+    triggerId: string;
+    eventId: string;
+    now: string;
+    leaseExpiresAt: string;
+  }): Promise<RecipeEventClaim> {
+    const executionToken = generateId();
+    const inserted = await this.executeRun(
+      `INSERT OR IGNORE INTO recipe_event_receipt (
+         id, trigger_id, event_id, state, execution_token,
+         execution_lease_expires_at, created_at, updated_at
+       ) VALUES (?, ?, ?, 'evaluating', ?, ?, ?, ?)`,
+      [
+        input.id,
+        input.triggerId,
+        input.eventId,
+        executionToken,
+        input.leaseExpiresAt,
+        input.now,
+        input.now,
+      ],
+    );
+
+    if (inserted.meta?.changes) {
+      return { status: "execute", executionToken };
+    }
+
+    const reclaimed = await this.runQuery<RecipeEventReceiptRow>(
+      `UPDATE recipe_event_receipt
+       SET execution_token = ?, execution_lease_expires_at = ?, updated_at = ?
+       WHERE id = ? AND trigger_id = ? AND event_id = ?
+         AND state = 'evaluating'
+         AND (execution_lease_expires_at IS NULL OR execution_lease_expires_at <= ?)
+       RETURNING *`,
+      [
+        executionToken,
+        input.leaseExpiresAt,
+        input.now,
+        input.id,
+        input.triggerId,
+        input.eventId,
+        input.now,
+      ],
+      true,
+    );
+
+    if (reclaimed) {
+      return { status: "execute", executionToken };
+    }
+
+    const existing = await this.runQuery<RecipeEventReceiptRow>(
+      `SELECT * FROM recipe_event_receipt
+       WHERE id = ? AND trigger_id = ? AND event_id = ?`,
+      [input.id, input.triggerId, input.eventId],
+      true,
+    );
+
+    if (!existing) {
+      throw new AssistantError("Recipe event receipt conflict", ErrorType.CONFLICT_ERROR, 409);
+    }
+
+    return { status: existing.state, taskId: existing.task_id };
+  }
+
+  async settleEvent(input: {
+    id: string;
+    triggerId: string;
+    executionToken: string;
+    state: Exclude<RecipeEventReceiptState, "evaluating">;
+    decisionReceipt?: unknown;
+    taskId?: string;
+    now: string;
+  }): Promise<boolean> {
+    const result = await this.executeRun(
+      `UPDATE recipe_event_receipt
+       SET state = ?, decision_receipt = ?, task_id = ?, execution_token = NULL,
+           execution_lease_expires_at = NULL, updated_at = ?
+       WHERE id = ? AND trigger_id = ? AND state = 'evaluating' AND execution_token = ?`,
+      [
+        input.state,
+        input.decisionReceipt ? JSON.stringify(input.decisionReceipt) : null,
+        input.taskId ?? null,
+        input.now,
+        input.id,
+        input.triggerId,
+        input.executionToken,
+      ],
+    );
+
+    return Boolean(result.meta?.changes);
   }
 
   async getTriggerByExternalId(

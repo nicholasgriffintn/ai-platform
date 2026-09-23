@@ -1,4 +1,4 @@
-import { councilMemberIds } from "@ngriffin_uk/polychat-schemas";
+import { councilDecisionInputSchema, councilMemberIds } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
 import { MAX_COUNCIL_MEMBERS, MAX_COUNCIL_TURNS } from "~/config/limits";
@@ -29,6 +29,11 @@ export const select_council_members: FunctionToolDescriptor = {
       .max(280)
       .optional()
       .describe("One short line on why you recommend those members. Shown above the picker."),
+    decision: councilDecisionInputSchema
+      .optional()
+      .describe(
+        "Optional concrete options and evaluation criteria when the council should make a structured decision.",
+      ),
   }),
 };
 
@@ -38,6 +43,12 @@ export const run_council: FunctionToolDescriptor = {
     "Convene a council of named perspectives to debate one question. Each member answers in its own completion using the conversation's model, reading what came before, and each turn chooses who speaks next until the chamber converges. Turns appear in the conversation as they happen. Use for genuinely contested decisions and designs, not for questions with a retrievable answer.",
   type: "normal",
   permissions: ["orchestration"],
+  intentEvidence: (input) => ({
+    operation: "run_council",
+    question: input.question,
+    memberIds: input.memberIds ?? [],
+    structuredDecision: Boolean(input.decision),
+  }),
   inputSchema: z.object({
     question: z
       .string()
@@ -59,6 +70,11 @@ export const run_council: FunctionToolDescriptor = {
       .optional()
       .describe(
         `Upper bound on debate turns before the council must conclude. Defaults to ${MAX_COUNCIL_TURNS}.`,
+      ),
+    decision: councilDecisionInputSchema
+      .optional()
+      .describe(
+        "Optional concrete options and evaluation criteria. After the debate, an independent decision model returns the recommended option and calibrated probabilities.",
       ),
   }),
 };

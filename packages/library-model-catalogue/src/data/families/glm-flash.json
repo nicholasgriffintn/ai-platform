@@ -38,17 +38,7 @@
       "defaults": {
         "name": "GLM-4.6V-Flash",
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "contextWindow": 131072,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "December 8, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -166,20 +156,9 @@
     },
     "glm-5-3-flashx": {
       "defaults": {
-        "name": "GLM 5.3 FlashX",
         "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
         "contextWindow": 1000000,
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "August 26, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",

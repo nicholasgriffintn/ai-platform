@@ -53,6 +53,12 @@ export const use_recipe_connector: FunctionToolDescriptor = {
   description:
     "Discover and use the exact tools available from a connector. Start with useCase to receive authoritative Composio schemas and a sessionId, then call again with an exact operation, its params, and that sessionId. Treat identifiers as operation-specific: never pass an ID returned by one operation to another unless their schemas explicitly describe the same identifier. Recipe configuration is merged into execution params as defaults.",
   type: "premium",
-  permissions: ["network", "read"],
+  permissions: ["network", "read", "write"],
+  intentEvidence: (input) => ({
+    operation: input.operation ?? "discover_connector_operation",
+    provider: input.provider,
+    useCase: input.useCase,
+    parameterNames: Object.keys(input.params ?? {}),
+  }),
   inputSchema: createUseRecipeConnectorInputSchema(),
 };

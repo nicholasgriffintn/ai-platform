@@ -6,7 +6,11 @@ import { GoogleStudioProvider } from "../capabilities/chat/providers/googlestudi
 import type { ProviderEnv } from "../env.js";
 import { MessageFormatter } from "../formatter/index.js";
 import type { ChatCompletionParameters } from "../types/index.js";
-import { buildGoogleStudioTools, formatGoogleStudioContents } from "./googleStudio.js";
+import {
+  buildGoogleStudioTools,
+  formatGoogleStudioContents,
+  resolveGoogleStudioSystemPrompt,
+} from "./googleStudio.js";
 
 function createTestEnv(): ProviderEnv {
   return Object.assign(Object.create(null), {});
@@ -23,6 +27,18 @@ function catalogueModel(provider: string, modelId: string) {
 }
 
 describe("formatGoogleStudioContents", () => {
+  it("preserves direct text generation messages and separates instructions", () => {
+    const messages = [
+      { role: "system" as const, content: "Rewrite the document." },
+      { role: "user" as const, content: "Original release body" },
+    ];
+
+    expect(formatGoogleStudioContents({ messages })).toEqual([
+      { role: "user", parts: [{ text: "Original release body" }] },
+    ]);
+    expect(resolveGoogleStudioSystemPrompt({ messages })).toBe("Rewrite the document.");
+  });
+
   it("converts shared function-call history to Google's model and user parts", () => {
     const messages = MessageFormatter.formatMessages(
       [

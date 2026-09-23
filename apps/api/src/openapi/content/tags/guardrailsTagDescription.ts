@@ -27,8 +27,8 @@ Guardrails protect your application by validating content for safety violations.
 
 Guardrails are configured per-user via settings:
 
-- \`guardrails_enabled\` (boolean) - Enable/disable guardrails
-- \`guardrails_provider\` (string) - \`"llamaguard"\`, \`"bedrock"\`, \`"mistral"\`, or \`"shieldstral"\`
+- \`guardrails_enabled\` (boolean) - Enable/disable guardrails (on by default)
+- \`guardrails_provider\` (string) - \`"typesafe"\` (default), \`"llamaguard"\`, \`"bedrock"\`, \`"mistral"\`, or \`"shieldstral"\`. TypeSafe falls back to LlamaGuard when no TypeSafe key is available to the account.
 
 ### Bedrock Settings
 

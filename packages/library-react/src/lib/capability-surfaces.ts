@@ -48,6 +48,14 @@ export function getProjectSurface(workspaceId: string, projectId: string): Capab
   return { basePath: `/work/${workspaceId}/projects/${projectId}`, projectId, workspaceId };
 }
 
+const PROJECT_SURFACE_PATTERN = /^\/work\/([^/]+)\/projects\/([^/]+)/;
+
+export function getSurfaceFromPathname(pathname: string): CapabilitySurface {
+  const match = PROJECT_SURFACE_PATTERN.exec(pathname);
+
+  return match ? getProjectSurface(match[1], match[2]) : PERSONAL_SURFACE;
+}
+
 export const NEW_TEAMMATE_ID = "new";
 
 export function getTeammateEditorPath(surface: CapabilitySurface, teammateId: string): string {
@@ -86,10 +94,14 @@ export function getAppBackLink(
   appId: string,
   subpath: string,
   appName?: string,
-): AppBackLink {
+): AppBackLink | null {
   const segments = subpath.split("/").filter(Boolean);
 
   if (segments.length === 0) {
+    if (appId === "sites") {
+      return null;
+    }
+
     return { to: getPluginsPath(surface), label: "Back to plugins" };
   }
 

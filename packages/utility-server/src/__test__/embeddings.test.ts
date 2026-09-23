@@ -12,6 +12,7 @@ describe("parseOpenAiEmbeddingVectors", () => {
             { index: 0, embedding: [0.1, 0.2] },
           ],
         },
+        2,
         "bad",
       ),
     ).toEqual([
@@ -21,10 +22,22 @@ describe("parseOpenAiEmbeddingVectors", () => {
   });
 
   it("rejects empty or non-numeric embeddings", () => {
-    expect(() => parseOpenAiEmbeddingVectors({ data: [] }, "bad")).toThrow("bad");
+    expect(() => parseOpenAiEmbeddingVectors({ data: [] }, 1, "bad")).toThrow("bad");
     expect(() =>
-      parseOpenAiEmbeddingVectors({ data: [{ index: 0, embedding: ["x"] }] }, "bad"),
+      parseOpenAiEmbeddingVectors({ data: [{ index: 0, embedding: ["x"] }] }, 1, "bad"),
     ).toThrow("bad");
-    expect(() => parseOpenAiEmbeddingVectors({ data: "base64" }, "bad")).toThrow("bad");
+    expect(() => parseOpenAiEmbeddingVectors({ data: "base64" }, 1, "bad")).toThrow("bad");
+    expect(() =>
+      parseOpenAiEmbeddingVectors(
+        {
+          data: [
+            { index: 0, embedding: [1] },
+            { index: 0, embedding: [2] },
+          ],
+        },
+        2,
+        "bad",
+      ),
+    ).toThrow("bad");
   });
 });

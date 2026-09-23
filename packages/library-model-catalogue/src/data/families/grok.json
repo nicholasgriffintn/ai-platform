@@ -2,7 +2,6 @@
   "defaults": {
     "openWeights": false,
     "supportsToolCalls": true,
-    "supportsAttachments": false,
     "supportsTemperature": true
   },
   "description": "The grok family includes models that produce audio, image, text, video.",
@@ -33,6 +32,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "August 20, 2024",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -72,6 +72,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "December 12, 2024",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 8,
           "codingIndex": null,
@@ -103,7 +104,8 @@
         "contextComplexity": 4,
         "reliability": 4,
         "knowledgeCutoffDate": "August 2024",
-        "releaseDate": "August 20, 2024"
+        "releaseDate": "August 20, 2024",
+        "supportsAttachments": false
       }
     },
     "grok-2-vision": {
@@ -192,6 +194,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "November 2024",
         "releaseDate": "February 17, 2025",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 18.4,
           "codingIndex": null,
@@ -215,7 +218,8 @@
           ]
         },
         "knowledgeCutoffDate": "November 2024",
-        "releaseDate": "February 17, 2025"
+        "releaseDate": "February 17, 2025",
+        "supportsAttachments": false
       }
     },
     "grok-3-fast": {
@@ -233,7 +237,8 @@
           ]
         },
         "knowledgeCutoffDate": "November 2024",
-        "releaseDate": "February 17, 2025"
+        "releaseDate": "February 17, 2025",
+        "supportsAttachments": false
       }
     },
     "grok-3-fast-latest": {
@@ -259,7 +264,8 @@
         "contextComplexity": 4,
         "reliability": 4,
         "knowledgeCutoffDate": "November 2024",
-        "releaseDate": "February 17, 2025"
+        "releaseDate": "February 17, 2025",
+        "supportsAttachments": false
       }
     },
     "grok-3-latest": {
@@ -285,7 +291,8 @@
         "contextComplexity": 4,
         "reliability": 4,
         "knowledgeCutoffDate": "November 2024",
-        "releaseDate": "February 17, 2025"
+        "releaseDate": "February 17, 2025",
+        "supportsAttachments": false
       }
     },
     "grok-3-mini": {
@@ -303,7 +310,8 @@
           ]
         },
         "knowledgeCutoffDate": "November 2024",
-        "releaseDate": "February 17, 2025"
+        "releaseDate": "February 17, 2025",
+        "supportsAttachments": false
       }
     },
     "grok-3-mini-beta": {
@@ -321,7 +329,8 @@
           ]
         },
         "knowledgeCutoffDate": "November 2024",
-        "releaseDate": "February 17, 2025"
+        "releaseDate": "February 17, 2025",
+        "supportsAttachments": false
       }
     },
     "grok-3-mini-fast": {
@@ -339,7 +348,8 @@
           ]
         },
         "knowledgeCutoffDate": "November 2024",
-        "releaseDate": "February 17, 2025"
+        "releaseDate": "February 17, 2025",
+        "supportsAttachments": false
       }
     },
     "grok-3-mini-fast-latest": {
@@ -364,7 +374,8 @@
         "contextComplexity": 3,
         "reliability": 4,
         "knowledgeCutoffDate": "November 2024",
-        "releaseDate": "February 17, 2025"
+        "releaseDate": "February 17, 2025",
+        "supportsAttachments": false
       }
     },
     "grok-3-mini-latest": {
@@ -389,7 +400,8 @@
         "contextComplexity": 3,
         "reliability": 4,
         "knowledgeCutoffDate": "November 2024",
-        "releaseDate": "February 17, 2025"
+        "releaseDate": "February 17, 2025",
+        "supportsAttachments": false
       }
     },
     "grok-4": {
@@ -413,6 +425,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "July 9, 2025",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 33.3,
           "codingIndex": null,
@@ -800,6 +813,68 @@
         }
       }
     },
+    "grok-4-7": {
+      "defaults": {
+        "name": "Grok 4.7",
+        "description": "xAI's frontier model for long-running agents, coding, knowledge work, and visual projects",
+        "contextWindow": 500000,
+        "maxTokens": 500000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "September 21, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "grok-4-7-30-off": {
+      "defaults": {
+        "name": "Grok 4.7 (30% Off)",
+        "description": "xAI's frontier model for long-running agents, coding, knowledge work, and visual projects",
+        "contextWindow": 500000,
+        "maxTokens": 500000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "September 21, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "grok-4-fast": {
       "defaults": {
         "name": "Grok 4 Fast",
@@ -901,6 +976,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "November 1, 2024",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 7.5,
           "codingIndex": null,
@@ -930,6 +1006,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "October 2023",
         "releaseDate": "August 28, 2025",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 21.6,
           "codingIndex": null,
@@ -959,6 +1036,7 @@
         "reliability": 4,
         "releaseDate": "January 28, 2026",
         "supportsToolCalls": false,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -985,6 +1063,7 @@
         "reliability": 4,
         "releaseDate": "January 28, 2026",
         "supportsToolCalls": false,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1019,6 +1098,7 @@
         },
         "releaseDate": "August 7, 2026",
         "supportsToolCalls": false,
+        "supportsAttachments": false,
         "supportsTemperature": false
       }
     },
@@ -1037,7 +1117,8 @@
           ]
         },
         "releaseDate": "August 8, 2026",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsAttachments": false
       }
     },
     "grok-imagine-image-pro": {
@@ -1061,6 +1142,7 @@
         "reliability": 3,
         "releaseDate": "January 28, 2026",
         "supportsToolCalls": false,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1082,7 +1164,7 @@
     "grok-imagine-image-quality": {
       "defaults": {
         "name": "Grok Imagine Image Quality",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "description": "Higher-fidelity Grok Imagine image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 16000,
         "maxTokens": 0,
         "modalities": {
@@ -1173,6 +1255,7 @@
         },
         "releaseDate": "May 30, 2026",
         "supportsToolCalls": false,
+        "supportsAttachments": false,
         "supportsTemperature": false
       }
     },
@@ -1197,6 +1280,7 @@
         "reliability": 5,
         "releaseDate": "May 30, 2026",
         "supportsToolCalls": false,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1260,7 +1344,8 @@
           ]
         },
         "releaseDate": "March 16, 2026",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsAttachments": false
       }
     },
     "grok-tts": {
@@ -1278,7 +1363,8 @@
           ]
         },
         "releaseDate": "March 16, 2026",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsAttachments": false
       }
     },
     "grok-vision-beta": {
@@ -1332,6 +1418,7 @@
         "reliability": 5,
         "releaseDate": "April 23, 2026",
         "supportsToolCalls": false,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1380,7 +1467,8 @@
           ]
         },
         "releaseDate": "July 29, 2026",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsAttachments": false
       }
     }
   }

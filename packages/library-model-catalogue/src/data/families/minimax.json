@@ -57,6 +57,47 @@
         }
       }
     },
+    "image-01": {
+      "defaults": {
+        "name": "MiniMax Image 01",
+        "openWeights": false,
+        "description": "MiniMax image generation model with prompt optimisation and character reference support.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "strengths": [
+          "creative",
+          "vision",
+          "image"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
+        "supportsToolCalls": false,
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1054,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 9
+            }
+          ]
+        }
+      }
+    },
     "minimax-01": {
       "defaults": {
         "name": "MiniMax-01",

@@ -5,6 +5,35 @@
     "supportsTemperature": true
   },
   "models": {
+    "rerank-v3.5": {
+      "model": "o/cohere-rerank-3-5",
+      "matchingModel": "rerank-v3.5",
+      "overrides": {
+        "lastUpdated": "December 2, 2024",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "rerank-v4.0-fast": {
+      "model": "o/cohere-rerank-4-fast",
+      "matchingModel": "rerank-v4.0-fast",
+      "overrides": {
+        "lastUpdated": "December 11, 2025",
+        "costPer1kSearchUnits": 2,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "rerank-v4.0-pro": {
+      "model": "o/cohere-rerank-4-pro",
+      "matchingModel": "rerank-v4.0-pro",
+      "overrides": {
+        "lastUpdated": "December 11, 2025",
+        "costPer1kSearchUnits": 2.5,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
     "c4ai-aya-expanse-32b": {
       "model": "cohere/c4ai-aya-expanse-32b/aya-expanse-32b",
       "matchingModel": "c4ai-aya-expanse-32b",
@@ -43,8 +72,12 @@
       "model": "command-a/command-a",
       "matchingModel": "command-a-03-2025",
       "overrides": {
+        "contextWindow": 256000,
         "maxTokens": 8000,
         "isFree": true,
+        "strengths": [
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0.0025,

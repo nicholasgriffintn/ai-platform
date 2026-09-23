@@ -51,6 +51,6 @@
     "typescript": "catalog:",
     "vite": "8.3.0",
     "vitest": "catalog:",
-    "webdriverio": "9.31.7"
+    "webdriverio": "9.31.9"
   }
 }

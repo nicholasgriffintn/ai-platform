@@ -31,7 +31,11 @@ export async function generateConversationTitle(
     return DEFAULT_CONVERSATION_TITLE;
   }
 
-  const { model: modelToUse, provider: providerToUse } = await getTitlingModel(runtimeEnv, user);
+  const {
+    model: modelToUse,
+    provider: providerToUse,
+    effort,
+  } = await getTitlingModel(runtimeEnv, user);
 
   try {
     const title = stripSurroundingQuotes(
@@ -42,6 +46,8 @@ export async function generateConversationTitle(
         provider: providerToUse,
         prompt: buildConversationTitlePrompt({ messages: messagesToUse }),
         max_tokens: TITLE_MAX_OUTPUT_TOKENS,
+        reasoning_effort: effort,
+        disable_functions: true,
       }),
     );
 

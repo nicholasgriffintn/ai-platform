@@ -334,7 +334,6 @@
       "model": "claude-sonnet/claude-sonnet-4",
       "matchingModel": "anthropic/claude-sonnet-4",
       "overrides": {
-        "contextWindow": 200000,
         "lastUpdated": "May 22, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
@@ -3818,6 +3817,106 @@
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015
+      }
+    },
+    "claude-opus-5-5": {
+      "model": "claude-opus/claude-opus-5-5",
+      "matchingModel": "claude-opus-5-5",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "claude-opus-5-5@eu": {
+      "model": "claude-opus/claude-opus-5-5-eu",
+      "matchingModel": "claude-opus-5-5@eu",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-6-luna": {
+      "model": "gpt-luna/gpt-6-luna",
+      "matchingModel": "gpt-6-luna",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-6-luna@eu": {
+      "model": "gpt-luna/gpt-6-luna-eu",
+      "matchingModel": "gpt-6-luna@eu",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.00012,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-6-sol": {
+      "model": "gpt-sol/gpt-6-sol",
+      "matchingModel": "gpt-6-sol",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-6-sol@eu": {
+      "model": "gpt-sol/gpt-6-sol-eu",
+      "matchingModel": "gpt-6-sol@eu",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0024,
+        "costPer1kOutputTokens": 0.012,
+        "supportsTemperature": false
       }
     }
   }

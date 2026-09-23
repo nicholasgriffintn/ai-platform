@@ -79,11 +79,10 @@
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "low",
-            "medium",
+            "none",
             "high"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "none"
         }
       }
     },
@@ -316,7 +315,7 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "April 9, 2025",
-        "costPer1kInputTokens": 0.0000031,
+        "costPer1kInputTokens": 0.00000311,
         "costPer1kOutputTokens": 0
       }
     },
@@ -343,11 +342,10 @@
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "low",
-            "medium",
+            "none",
             "high"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "none"
         }
       }
     },
@@ -395,6 +393,18 @@
       "model": "workers-ai/@cf/leonardo/lucid-origin/leonardo-lucid-origin",
       "matchingModel": "@cf/leonardo/lucid-origin",
       "overrides": {
+        "name": "Leonardo Lucid Origin",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "creative"
+        ],
         "speed": 4
       },
       "unset": [
@@ -526,7 +536,7 @@
       "model": "granite/granite-4-0-h-micro",
       "matchingModel": "@cf/ibm-granite/granite-4.0-h-micro",
       "overrides": {
-        "lastUpdated": "October 7, 2025",
+        "lastUpdated": "October 2, 2025",
         "costPer1kInputTokens": 0.000017,
         "costPer1kOutputTokens": 0.000112
       }
@@ -574,7 +584,7 @@
       "model": "mistral-small/mistral-small-3-1-24b-instruct",
       "matchingModel": "@cf/mistralai/mistral-small-3.1-24b-instruct",
       "overrides": {
-        "lastUpdated": "March 18, 2025",
+        "lastUpdated": "March 17, 2025",
         "costPer1kInputTokens": 0.000351,
         "costPer1kOutputTokens": 0.000555
       }
@@ -653,14 +663,7 @@
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0003,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.0003
       }
     },
     "@cf/pfnet/plamo-embedding-1b": {
@@ -744,11 +747,11 @@
         "costPer1kOutputTokens": 0.0044,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
+            "none",
+            "high",
+            "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "none"
         }
       }
     },
@@ -760,7 +763,16 @@
         "maxTokens": 1048576,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.00044,
-        "costPer1kOutputTokens": 0.00132
+        "costPer1kOutputTokens": 0.00132,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "@cf/deepseek-ai/deepseek-v4-pro-0813": {
@@ -803,18 +815,10 @@
         "name": "Glm 5.3",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 1310720,
-        "maxTokens": 1310720,
+        "maxTokens": 1048576,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.0044
       }
     },
     "@cf/zai-org/glm-5.3-flash": {
@@ -838,14 +842,7 @@
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": true
       }
     },
     "workers-ai-google-veo-3-1-fast": {

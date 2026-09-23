@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 131000,
+    "maxTokens": 4000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "August 13, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The vercel/mixedbread/toast 1 family includes models that produce text.",
+  "models": {
+    "toast-1": {
+      "defaults": {
+        "name": "Toast 1",
+        "description": "Specialized search model for knowledge-intensive questions, multi-step retrieval, and evidence synthesis"
+      }
+    }
+  }
+}

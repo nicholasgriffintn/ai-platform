@@ -5,15 +5,18 @@ import type {
   ProviderEnv,
   ProviderRuntime,
   ProviderUser,
-  RerankDocument,
-  RerankResult,
   ResearchOptions,
   ResearchResult,
   SearchOptions,
   SearchResult,
 } from "@ngriffin_uk/polychat-ai-providers";
+import { modelHasOutputModality } from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { parseOpenAiEmbeddingVectors } from "@ngriffin_uk/polychat-utility-server/embeddings";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
+const MAX_EMBEDDING_INPUTS = 2_048;
+const MAX_EMBEDDING_INPUT_BYTES = 1024 * 1024;
 
 export interface RetrievalScope {
   env: ProviderEnv;
@@ -37,15 +40,6 @@ export interface GuardRequest extends RetrievalScope {
   config?: unknown;
   content: GuardrailInput;
   source: GuardrailSource;
-}
-
-export interface RerankRequest extends RetrievalScope {
-  provider: string;
-  query: string;
-  documents: RerankDocument[];
-  model?: string;
-  topN?: number;
-  returnDocuments?: boolean;
 }
 
 export interface EmbedRequest extends RetrievalScope {
@@ -77,10 +71,31 @@ export function createRetrievalFunctions(runtime: ProviderRuntime) {
       throw new AssistantError("Embedding input must not be empty", ErrorType.PARAMS_ERROR, 400);
     }
 
-    const providerName =
-      provider ?? (await runtime.host.models.findModelConfig(model, env))?.provider;
+    if (inputs.length > MAX_EMBEDDING_INPUTS) {
+      throw new AssistantError(
+        `Embedding requests support at most ${MAX_EMBEDDING_INPUTS} inputs`,
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
 
-    if (!providerName) {
+    const inputBytes = inputs.reduce(
+      (total, value) => total + new TextEncoder().encode(value).byteLength,
+      0,
+    );
+
+    if (inputBytes > MAX_EMBEDDING_INPUT_BYTES) {
+      throw new AssistantError(
+        "Embedding input must not exceed 1 MiB",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
+    const modelConfig = await runtime.host.models.findModelConfig(model, env, provider, user?.id);
+    const providerName = provider ?? modelConfig?.provider;
+
+    if (!modelConfig || !providerName || !modelHasOutputModality(modelConfig, "embedding")) {
       throw new AssistantError(
         `No provider is registered for embedding model ${model}`,
         ErrorType.PARAMS_ERROR,
@@ -91,7 +106,7 @@ export function createRetrievalFunctions(runtime: ProviderRuntime) {
     const raw = await runtime.providers.resolve("chat", providerName, { env, user }).getResponse(
       {
         env,
-        model,
+        model: modelConfig.matchingModel,
         provider: providerName,
         completion_id,
         messages: [],
@@ -102,28 +117,19 @@ export function createRetrievalFunctions(runtime: ProviderRuntime) {
     );
 
     return {
-      model,
+      model: modelConfig.matchingModel,
       provider: providerName,
-      vectors: parseOpenAiEmbeddingVectors(raw, `Invalid embedding response from ${providerName}`),
-      usage: raw && typeof raw === "object" ? (raw as { usage?: unknown }).usage : undefined,
+      vectors: parseOpenAiEmbeddingVectors(
+        raw,
+        inputs.length,
+        `Invalid embedding response from ${providerName}`,
+      ),
+      usage: isRecord(raw) ? raw.usage : undefined,
     };
   };
 
   return {
     embed,
-    rerank: ({
-      provider,
-      query,
-      documents,
-      model,
-      topN,
-      returnDocuments,
-      env,
-      user,
-    }: RerankRequest): Promise<RerankResult> =>
-      runtime.providers
-        .resolve("rerank", provider, { env, user })
-        .rerank({ env, user, query, documents, model, topN, returnDocuments }),
     search: ({ provider, query, options, env, user }: SearchRequest): Promise<SearchResult> =>
       runtime.providers.resolve("search", provider, { env, user }).performWebSearch(query, options),
     research: ({ provider, input, options, env, user }: ResearchRequest): Promise<ResearchResult> =>

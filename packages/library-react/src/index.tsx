@@ -69,6 +69,7 @@ export * from "./hooks/useSkills.js";
 export * from "./hooks/useSources.js";
 export * from "./hooks/useStartNewChat.js";
 export * from "./hooks/useStableRandomSeed.js";
+export * from "./hooks/useSites.js";
 export * from "./hooks/useStrudel.js";
 export * from "./hooks/useTabAudioCapture.js";
 export * from "./hooks/useTaskNotifications.js";
@@ -138,7 +139,10 @@ export * from "./lib/realtime/live-session-controller.js";
 export * from "./lib/realtime/live-websocket-connection.js";
 export * from "./lib/realtime/live-websocket-resumption.js";
 export * from "./lib/router-link.js";
-export * from "./lib/sandbox/sse.js";
+export {
+  parseServerSentEventBuffer as parseSseBuffer,
+  type ServerSentEventParserOptions as SseParserOptions,
+} from "@ngriffin_uk/polychat-utility-core";
 export * from "./lib/security-headers.js";
 export * from "./lib/sidebar-usage.js";
 export * from "./lib/sidebar.js";

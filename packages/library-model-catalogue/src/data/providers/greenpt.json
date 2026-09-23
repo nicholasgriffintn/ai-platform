@@ -650,8 +650,8 @@
       "matchingModel": "green-embedding",
       "overrides": {
         "hiddenFromDefaultList": true,
-        "lastUpdated": "January 2026",
-        "costPer1kInputTokens": 0,
+        "lastUpdated": "June 2025",
+        "costPer1kInputTokens": 0.000228,
         "costPer1kOutputTokens": 0,
         "apiOperation": "embeddings"
       },
@@ -665,7 +665,7 @@
       "overrides": {
         "hiddenFromDefaultList": true,
         "lastUpdated": "January 2026",
-        "costPer1kInputTokens": 0,
+        "costPer1kInputTokens": 0.000285,
         "costPer1kOutputTokens": 0,
         "apiOperation": "embeddings"
       },
@@ -678,8 +678,8 @@
       "matchingModel": "green-rerank",
       "overrides": {
         "hiddenFromDefaultList": true,
-        "lastUpdated": "January 2026",
-        "costPer1kInputTokens": 0,
+        "lastUpdated": "June 2025",
+        "costPer1kInputTokens": 0.0001368,
         "costPer1kOutputTokens": 0
       },
       "unset": [

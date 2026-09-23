@@ -16,6 +16,8 @@ Persist interactive write approvals against the exact stored tool call and argum
 
 Verify webhook signatures over the raw body and enforce timestamp tolerance before parsing. Match events to an active local trigger, installation and account, then enqueue idempotently in the original scope. Event text remains untrusted input.
 
+An event trigger may carry a user-authored condition. Claim a durable trigger-and-event receipt before asking the decision provider, project a bounded redacted event into the condition policy, and fail closed when the condition is false, uncertain or unavailable. Revalidate the trigger, installation, account and exact condition after model latency and before enqueueing. Store only the compact policy receipt and terminal task identity; never persist the event body in the receipt. A queued deterministic task wins over an expired evaluation lease so provider retries cannot repeat either judgement or execution.
+
 Bridge files through authorised private Sources and Outputs and bounded Session mounts. Persist governed Outputs, not upstream URLs. Keep arguments, results, credentials and upstream Session IDs out of Activity metadata.
 
 ## Consequences

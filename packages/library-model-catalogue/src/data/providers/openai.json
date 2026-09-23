@@ -2239,6 +2239,24 @@
         "supportsResponseFormat": false,
         "supportsRealtimeSession": true
       }
+    },
+    "gpt-6-luna": {
+      "model": "gpt-luna/gpt-6-luna",
+      "matchingModel": "gpt-6-luna",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005
+      }
+    },
+    "gpt-6-sol": {
+      "model": "gpt-sol/gpt-6-sol",
+      "matchingModel": "gpt-6-sol",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01
+      }
     }
   }
 }

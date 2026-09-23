@@ -1,5 +1,5 @@
-import { ContentLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
-import { lazy, Suspense } from "react";
+import { EmptyState } from "@ngriffin_uk/polychat-component-ui";
+import { lazy, Suspense, type ReactNode } from "react";
 
 const CanvasStudio = lazy(async () => {
   const module = await import("./Canvas/CanvasStudio.js");
@@ -50,6 +50,11 @@ const StrudelApp = lazy(async () => {
   const module = await import("./StrudelApp.js");
 
   return { default: module.StrudelApp };
+});
+const SitesApp = lazy(async () => {
+  const module = await import("./Sites/SitesApp.js");
+
+  return { default: module.SitesApp };
 });
 
 function ReplicateExperience({
@@ -107,20 +112,27 @@ function ExperienceContent({ basePath, projectId, runtime, subpath }: AppRuntime
     return <StrudelApp basePath={basePath} projectId={projectId} subpath={subpath} />;
   }
 
+  if (runtime === "sites") {
+    return <SitesApp basePath={basePath} projectId={projectId} subpath={subpath} />;
+  }
+
   return <EmptyState title="Experience unavailable" message="This experience is not supported." />;
 }
 
 interface AppRuntimeProps {
   basePath: string;
+  fallback?: ReactNode;
   projectId?: string;
   runtime: string;
   subpath: string;
 }
 
 export function AppRuntime(props: AppRuntimeProps) {
+  const { fallback, ...contentProps } = props;
+
   return (
-    <Suspense fallback={<ContentLoadingSkeleton />}>
-      <ExperienceContent {...props} />
+    <Suspense fallback={fallback}>
+      <ExperienceContent {...contentProps} />
     </Suspense>
   );
 }

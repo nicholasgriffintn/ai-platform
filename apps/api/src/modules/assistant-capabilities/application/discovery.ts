@@ -56,6 +56,10 @@ export interface CapabilityDiscoveryFilters {
   query: string;
 }
 
+export type CapabilityRelevance = ReadonlyMap<string, number>;
+
+const SEMANTIC_RELEVANCE_WEIGHT = 60;
+
 const CAPABILITY_READINESS_TTL_MS = 60_000;
 
 function capabilityReadiness(
@@ -315,7 +319,11 @@ function createRecipeItem(params: {
   };
 }
 
-function scoreItem(item: CapabilityDiscoveryItem, query: string): number {
+function scoreItem(
+  item: CapabilityDiscoveryItem,
+  query: string,
+  relevance?: CapabilityRelevance,
+): number {
   const normalisedQuery = query.trim().toLowerCase();
   const terms = normalisedQuery.split(/\s+/).filter(Boolean);
   const name = item.name.toLowerCase();
@@ -350,18 +358,19 @@ function scoreItem(item: CapabilityDiscoveryItem, query: string): number {
     }
   }
 
-  return score;
+  const semantic = relevance?.get(item.id) ?? 0;
+
+  return score + Math.round(semantic * SEMANTIC_RELEVANCE_WEIGHT);
 }
 
-export function discoverAssistantCapabilities(
+export function collectCapabilityItems(
   sources: CapabilityDiscoverySources,
-  filters: CapabilityDiscoveryFilters,
-  now = new Date(),
-): CapabilityDiscoveryResult {
+): CapabilityDiscoveryItem[] {
   const ownInstallations = new Map(
     sources.installations.map((installation) => [installation.recipeId, installation]),
   );
-  const items = [
+
+  return [
     ...sources.tools.map((tool) => createToolItem(tool, sources)),
     ...sources.recipes.map((recipe) =>
       createRecipeItem({
@@ -375,13 +384,29 @@ export function discoverAssistantCapabilities(
       createConnectorItem(connector, sources.isPro, sources),
     ),
   ];
+}
+
+export function filterCapabilityItems(
+  items: readonly CapabilityDiscoveryItem[],
+  filters: Pick<CapabilityDiscoveryFilters, "configured" | "kinds">,
+): CapabilityDiscoveryItem[] {
   const allowedKinds = filters.kinds?.length ? new Set(filters.kinds) : null;
-  const matches = items
+
+  return items
     .filter((item) => !allowedKinds || allowedKinds.has(item.kind))
     .filter((item) =>
       filters.configured === undefined ? true : item.configured === filters.configured,
-    )
-    .map((item) => ({ item, score: scoreItem(item, filters.query) }))
+    );
+}
+
+export function discoverAssistantCapabilities(
+  sources: CapabilityDiscoverySources,
+  filters: CapabilityDiscoveryFilters,
+  now = new Date(),
+  relevance?: CapabilityRelevance,
+): CapabilityDiscoveryResult {
+  const matches = filterCapabilityItems(collectCapabilityItems(sources), filters)
+    .map((item) => ({ item, score: scoreItem(item, filters.query, relevance) }))
     .filter(({ score }) => score > 0)
     .sort(
       (left, right) => right.score - left.score || left.item.name.localeCompare(right.item.name),
