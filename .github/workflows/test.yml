@@ -119,7 +119,15 @@ jobs:
         run: pnpm build:e2e
       - name: Typecheck end-to-end tests
         run: pnpm typecheck:e2e
+      - name: Require visual comparison credentials
+        env:
+          PVC_SERVER_URL: ${{ secrets.PVC_SERVER_URL }}
+          PVC_TOKEN: ${{ secrets.PVC_TOKEN }}
+        run: test -n "$PVC_SERVER_URL" && test -n "$PVC_TOKEN"
       - name: Run core release journeys
+        env:
+          PVC_SERVER_URL: ${{ secrets.PVC_SERVER_URL }}
+          PVC_TOKEN: ${{ secrets.PVC_TOKEN }}
         run: pnpm test:e2e:release
       - name: Upload failure artefacts
         if: failure()

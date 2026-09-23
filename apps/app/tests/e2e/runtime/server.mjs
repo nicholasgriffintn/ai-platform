@@ -7,25 +7,19 @@ import { fileURLToPath } from "node:url";
 
 import { Miniflare } from "miniflare";
 
-import { CONTAINER_EGRESS_IMAGE } from "../support/docker-engine.mjs";
 import { resolveMetaModelTool } from "./meta-model.mjs";
 import { resolveProjectTaskModelResponse } from "./project-task-model.mjs";
-import { normaliseResponsesRequest, responsesToolCallResponse } from "./provider-request.mjs";
 import {
-  createSandboxWorkerOptions,
-  mockSandboxGitHubRequest,
-  resolveSandboxContainerEngine,
-  resolveSandboxModelTool,
-  SANDBOX_WORKER_NAME,
-  stopSandboxContainers,
-} from "./sandbox-runtime.mjs";
+  normaliseResponsesRequest,
+  responsesToolCallResponse,
+  validateReleaseProviderRequest,
+} from "./provider-request.mjs";
 
 const runtimeDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(runtimeDirectory, "../../../../../");
 const temporaryDirectory = mkdtempSync(path.join(tmpdir(), "polychat-e2e-"));
 const buildDirectory = path.join(temporaryDirectory, "api");
 const trainingBuildDirectory = path.join(temporaryDirectory, "training");
-const sandboxBuildDirectory = path.join(temporaryDirectory, "sandbox");
 const sandboxGitHubPrivateKey = generateKeyPairSync("rsa", {
   modulusLength: 2048,
   privateKeyEncoding: { type: "pkcs8", format: "pem" },
@@ -888,21 +882,7 @@ async function mockStripeRequest(request, url) {
 }
 
 async function mockExternalRequest(request) {
-  const githubResponse = mockSandboxGitHubRequest(request);
-
-  if (githubResponse) {
-    return githubResponse;
-  }
-
   const url = new URL(request.url);
-
-  if (
-    url.hostname === "host.docker.internal" &&
-    url.port === String(apiPort) &&
-    url.pathname.startsWith("/apps/sandbox/credential-broker/")
-  ) {
-    return fetch(new Request(`${apiBaseUrl}${url.pathname}${url.search}`, request));
-  }
 
   if (
     request.method === "POST" &&
@@ -1059,6 +1039,8 @@ async function mockExternalRequest(request) {
   const body = await request.json();
   const requestText = JSON.stringify(body);
 
+  validateReleaseProviderRequest(url, body);
+
   if (
     body?.response_format?.json_schema?.name === "prompt_requirements" ||
     body?.messages?.some(
@@ -1083,7 +1065,7 @@ async function mockExternalRequest(request) {
   }
 
   if (request.method === "POST" && url.pathname.endsWith("/v1/predictions")) {
-    const isVideo = body.version === "bytedance/seedance-2.0";
+    const isVideo = ["bytedance/seedance-2.0", "prunaai/p-video-2-pro"].includes(body.version);
 
     return Response.json({
       id: "e2e-replicate-prediction",
@@ -1120,7 +1102,6 @@ async function mockExternalRequest(request) {
     const prompt = extractPrompt(normalised);
     const taskResponse = resolveProjectTaskModelResponse(normalised);
     const toolCall =
-      resolveSandboxModelTool(normalised) ??
       resolveMetaModelTool(normalised, prompt) ??
       taskResponse?.toolCall ??
       resolveToolCallTrigger(normalised, prompt);
@@ -1179,7 +1160,6 @@ async function mockExternalRequest(request) {
 
   const taskResponse = resolveProjectTaskModelResponse(body);
   const toolCall =
-    resolveSandboxModelTool(body) ??
     resolveMetaModelTool(body, prompt) ??
     (taskResponse ? taskResponse.toolCall : resolveToolCallTrigger(body, prompt));
 
@@ -1211,6 +1191,65 @@ async function mockExternalRequest(request) {
               : prompt.includes("You are a title generator")
                 ? "Release validation chat"
                 : `E2E response: ${prompt}`;
+
+  if (url.pathname.endsWith("/v1/messages")) {
+    if (body.stream) {
+      const events = [
+        [
+          "message_start",
+          {
+            type: "message_start",
+            message: { id: "e2e-anthropic", type: "message", role: "assistant", content: [] },
+          },
+        ],
+        [
+          "content_block_start",
+          { type: "content_block_start", index: 0, content_block: { type: "text", text: "" } },
+        ],
+        [
+          "content_block_delta",
+          { type: "content_block_delta", index: 0, delta: { type: "text_delta", text: content } },
+        ],
+        ["content_block_stop", { type: "content_block_stop", index: 0 }],
+        ["message_delta", { type: "message_delta", delta: { stop_reason: "end_turn" } }],
+        ["message_stop", { type: "message_stop" }],
+      ];
+
+      return new Response(
+        events
+          .map(([event, data]) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
+          .join(""),
+        {
+          headers: { "content-type": "text/event-stream; charset=utf-8" },
+        },
+      );
+    }
+
+    return Response.json({
+      id: "e2e-anthropic",
+      type: "message",
+      role: "assistant",
+      content: [{ type: "text", text: content }],
+    });
+  }
+
+  if (url.pathname.endsWith("/v2/chat")) {
+    if (body.stream) {
+      const events = [
+        { type: "content-delta", delta: { message: { content: { text: content } } } },
+        { type: "message-end", delta: { finish_reason: "COMPLETE" } },
+      ];
+
+      return new Response(
+        events.map((event) => `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`).join(""),
+        {
+          headers: { "content-type": "text/event-stream; charset=utf-8" },
+        },
+      );
+    }
+
+    return Response.json({ message: { content: [{ type: "text", text: content }] } });
+  }
 
   if (url.pathname.includes("v1beta/models/")) {
     return url.pathname.includes("streamGenerateContent")
@@ -1288,7 +1327,7 @@ function buildWorkerBundle(workspace, configPath, outputDirectory) {
   };
 }
 
-function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, seedMaterial) {
+function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
   const readinessSessionHash = createHash("sha256")
     .update("polychat-e2e-pro-0")
     .digest("base64url");
@@ -1356,12 +1395,6 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
   return {
     host: "127.0.0.1",
     port,
-    containerEngine: {
-      localDocker: {
-        socketPath: resolveSandboxContainerEngine(),
-        containerEgressInterceptorImage: CONTAINER_EGRESS_IMAGE,
-      },
-    },
     workers: [
       {
         name: "api",
@@ -1394,6 +1427,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
         bindings: {
           ACCOUNT_ID: "e2e-account",
           AI_GATEWAY_TOKEN: "e2e-gateway-token",
+          ANTHROPIC_API_KEY: "e2e-anthropic-key",
           API_BASE_URL: apiBaseUrl,
           SANDBOX_API_BASE_URL: `http://host.docker.internal:${port}`,
           APP_BASE_URL: appBaseUrl,
@@ -1404,6 +1438,7 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
           COMPOSIO_USER_NAMESPACE: "e2e",
           COMPOSIO_API_KEY: "e2e-composio-api-key",
           COMPOSIO_WEBHOOK_SECRET: "e2e-composio-webhook-secret",
+          COHERE_API_KEY: "e2e-cohere-key",
           TELEGRAM_WEBHOOK_SECRET: "e2e-telegram-webhook-secret",
           TELEGRAM_BOT_TOKEN: "e2e-telegram-bot-token",
           EMBEDDING_SCOPE_SECRET: "e2e-embedding-scope-secret-32-characters",
@@ -1469,18 +1504,23 @@ function createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, port, se
           AI: { name: "external-services", entrypoint: "MockAi" },
           SEND_EMAIL: { name: "external-services", entrypoint: "MockEmail" },
           TRAINING_WORKER: { name: "training" },
-          SANDBOX_WORKER: { name: SANDBOX_WORKER_NAME },
+          SANDBOX_WORKER: { name: "sandbox" },
           COMPUTER_WORKER: { name: "computer" },
         },
         outboundService: mockExternalRequest,
       },
-      createSandboxWorkerOptions(
-        sandboxBundle,
-        appBaseUrl,
-        apiBaseUrl,
-        "polychat-e2e-jwt-secret-at-least-thirty-two-characters",
-        mockExternalRequest,
-      ),
+      {
+        name: "sandbox",
+        modules: [
+          {
+            type: "ESModule",
+            path: "sandbox.js",
+            contents:
+              'export default { fetch() { return new Response("Sandbox is outside release checks", { status: 503 }); } };',
+          },
+        ],
+        compatibilityDate,
+      },
       {
         name: "training",
         modules: [
@@ -2127,15 +2167,8 @@ async function start() {
     trainingBuildDirectory,
   );
   const seedMaterial = await createPersonaSeedMaterial();
-  const sandboxBundle = buildWorkerBundle(
-    "@assistant/sandbox-worker",
-    path.join(runtimeDirectory, "sandbox-wrangler.jsonc"),
-    sandboxBuildDirectory,
-  );
 
-  runtime = new Miniflare(
-    createRuntimeOptions(apiBundle, trainingBundle, sandboxBundle, apiPort, seedMaterial),
-  );
+  runtime = new Miniflare(createRuntimeOptions(apiBundle, trainingBundle, apiPort, seedMaterial));
   await runtime.ready;
   const database = await runtime.getD1Database("DB", "api");
 
@@ -2151,14 +2184,10 @@ async function stop(exitCode = 0) {
 
   stopping = true;
   try {
-    stopSandboxContainers();
+    await runtime?.dispose();
   } finally {
-    try {
-      await runtime?.dispose();
-    } finally {
-      rmSync(temporaryDirectory, { recursive: true, force: true });
-      process.exit(exitCode);
-    }
+    rmSync(temporaryDirectory, { recursive: true, force: true });
+    process.exit(exitCode);
   }
 }
 

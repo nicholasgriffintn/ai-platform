@@ -17,12 +17,16 @@ type AttachmentContentPart =
       source_id?: string;
       markdown_document: { markdown: string; name?: string };
     }
+  | { type: "audio_url"; source_id?: string; audio_url: { url: string } }
+  | { type: "video_url"; source_id?: string; video_url: { url: string } }
   | { type: string; [key: string]: unknown };
 
 export interface ParsedAttachments {
   imageAttachments: Attachment[];
   documentAttachments: Attachment[];
   markdownAttachments: Attachment[];
+  audioAttachments: Attachment[];
+  videoAttachments: Attachment[];
 }
 
 export interface ResolvedAttachments extends ParsedAttachments {
@@ -48,6 +52,18 @@ function isMarkdownPart(
     part.type === "markdown_document" &&
     Boolean((part as { markdown_document?: unknown }).markdown_document)
   );
+}
+
+function isAudioPart(
+  part: AttachmentContentPart,
+): part is Extract<AttachmentContentPart, { type: "audio_url" }> {
+  return part.type === "audio_url" && Boolean((part as { audio_url?: unknown }).audio_url);
+}
+
+function isVideoPart(
+  part: AttachmentContentPart,
+): part is Extract<AttachmentContentPart, { type: "video_url" }> {
+  return part.type === "video_url" && Boolean((part as { video_url?: unknown }).video_url);
 }
 
 export function parseAttachments(contents: readonly unknown[]): ParsedAttachments {
@@ -93,6 +109,16 @@ export function parseAttachments(contents: readonly unknown[]): ParsedAttachment
 
       return attachment;
     }),
+    audioAttachments: parts.filter(isAudioPart).map((part): Attachment => ({
+      type: "audio",
+      url: part.audio_url.url,
+      ...(part.source_id ? { sourceId: part.source_id } : {}),
+    })),
+    videoAttachments: parts.filter(isVideoPart).map((part): Attachment => ({
+      type: "video",
+      url: part.video_url.url,
+      ...(part.source_id ? { sourceId: part.source_id } : {}),
+    })),
   };
 }
 
@@ -146,7 +172,15 @@ export function getAllAttachments(contents: readonly unknown[]): ResolvedAttachm
   const imageAttachments = dedupeAttachments(parsed.imageAttachments);
   const documentAttachments = dedupeAttachments(parsed.documentAttachments);
   const markdownAttachments = dedupeAttachments(parsed.markdownAttachments);
-  const allAttachments = [...imageAttachments, ...documentAttachments, ...markdownAttachments];
+  const audioAttachments = dedupeAttachments(parsed.audioAttachments);
+  const videoAttachments = dedupeAttachments(parsed.videoAttachments);
+  const allAttachments = [
+    ...imageAttachments,
+    ...documentAttachments,
+    ...markdownAttachments,
+    ...audioAttachments,
+    ...videoAttachments,
+  ];
 
   enforceAttachmentLimits(allAttachments);
 
@@ -154,6 +188,8 @@ export function getAllAttachments(contents: readonly unknown[]): ResolvedAttachm
     imageAttachments,
     documentAttachments,
     markdownAttachments,
+    audioAttachments,
+    videoAttachments,
     allAttachments,
   };
 }

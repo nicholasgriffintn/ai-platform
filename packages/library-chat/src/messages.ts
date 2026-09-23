@@ -54,6 +54,14 @@ type ChatRequestContent =
       input_audio: NonNullable<MessageContent["input_audio"]>;
     }
   | {
+      type: "audio_url";
+      audio_url: NonNullable<MessageContent["audio_url"]>;
+    }
+  | {
+      type: "video_url";
+      video_url: NonNullable<MessageContent["video_url"]>;
+    }
+  | {
       type: "document_url";
       document_url: NonNullable<MessageContent["document_url"]>;
     }
@@ -70,6 +78,8 @@ const chatRequestContentTypes = new Set([
   "text",
   "image_url",
   "input_audio",
+  "audio_url",
+  "video_url",
   "document_url",
   "markdown_document",
   "selection",
@@ -239,6 +249,20 @@ function toChatRequestContentPart(part: MessageContent): ChatRequestContent | nu
     return {
       type: "input_audio",
       input_audio: part.input_audio,
+    };
+  }
+
+  if (part.type === "audio_url" && part.audio_url?.url) {
+    return {
+      type: "audio_url",
+      audio_url: part.audio_url,
+    };
+  }
+
+  if (part.type === "video_url" && part.video_url?.url) {
+    return {
+      type: "video_url",
+      video_url: part.video_url,
     };
   }
 

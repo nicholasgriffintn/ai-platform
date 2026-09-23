@@ -2,7 +2,8 @@ import { SANDBOX_RUN_DISPATCH_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import { executeSandboxWorker } from "~/modules/sandbox/application/worker";
+import type { SandboxProvider } from "~/infrastructure/providers/capabilities/sandbox";
+import { providerLibrary } from "~/infrastructure/providers/library";
 
 import { createSandboxCredentialBrokerAccess } from "../credential-broker-grants";
 import {
@@ -10,6 +11,7 @@ import {
   isSandboxRunDispatchMessage,
   processSandboxRunDispatch,
 } from "../dispatch";
+import { resolveSandboxGitHubToken } from "../github-credentials";
 import { persistSandboxRunArtifact } from "../run-artifacts";
 import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "../run-coordinator";
 import { indexSandboxRunResult } from "../run-indexing";
@@ -20,8 +22,8 @@ const mockEnqueueTask = vi.fn();
 vi.mock("~/infrastructure/context/serviceContext", () => ({
   createServiceContext: vi.fn(),
 }));
-vi.mock("~/modules/sandbox/application/worker", () => ({
-  executeSandboxWorker: vi.fn(),
+vi.mock("~/infrastructure/providers/library", () => ({
+  providerLibrary: { resolve: vi.fn() },
 }));
 vi.mock("../credential-broker-grants", () => ({
   createSandboxCredentialBrokerAccess: vi.fn(async () => ({
@@ -29,6 +31,9 @@ vi.mock("../credential-broker-grants", () => ({
     expiresAt: "2026-09-12T12:00:00.000Z",
     grant: "test-broker-grant",
   })),
+}));
+vi.mock("../github-credentials", () => ({
+  resolveSandboxGitHubToken: vi.fn(async () => "github-installation-token"),
 }));
 vi.mock("../run-coordinator", () => ({
   appendRunCoordinatorEvent: vi.fn(),
@@ -53,6 +58,20 @@ vi.mock("~/modules/tasks/application/TaskService", () => ({
 const mockGetUserById = vi.fn();
 const mockGetActivityById = vi.fn();
 const mockUpdateActivity = vi.fn();
+const mockExecuteSandboxProvider = vi.fn();
+
+const sandboxProvider: SandboxProvider = {
+  name: "polychat",
+  capabilities: {
+    credentialBroker: true,
+    environmentSetup: true,
+    environmentCache: true,
+    inspection: true,
+    remoteDelivery: true,
+    runControls: true,
+  },
+  execute: mockExecuteSandboxProvider,
+};
 
 const mockServiceContext = {
   env: {},
@@ -97,7 +116,8 @@ describe("sandbox dispatch", () => {
     });
     mockEnqueueTask.mockResolvedValue("task-123");
     mockUpdateActivity.mockResolvedValue(undefined);
-    vi.mocked(executeSandboxWorker).mockResolvedValue(
+    vi.mocked(providerLibrary.resolve).mockReturnValue(sandboxProvider);
+    mockExecuteSandboxProvider.mockResolvedValue(
       Response.json({
         success: true,
         summary: "Completed",
@@ -210,7 +230,15 @@ describe("sandbox dispatch", () => {
       },
     });
 
-    expect(executeSandboxWorker).toHaveBeenCalledWith(
+    expect(providerLibrary.resolve).toHaveBeenCalledWith(
+      "sandbox",
+      "polychat",
+      expect.objectContaining({ user: expect.objectContaining({ id: 42 }) }),
+    );
+    expect(resolveSandboxGitHubToken).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 42, repo: "owner/repo", installationId: 99 }),
+    );
+    expect(mockExecuteSandboxProvider).toHaveBeenCalledWith(
       expect.objectContaining({
         credentialBroker: {
           baseUrl: "https://api.polychat.app/apps/sandbox/credential-broker/run-123",
@@ -221,7 +249,7 @@ describe("sandbox dispatch", () => {
         repo: "owner/repo",
       }),
     );
-    expect(vi.mocked(executeSandboxWorker).mock.calls[0]?.[0]).toHaveProperty(
+    expect(mockExecuteSandboxProvider.mock.calls[0]?.[0]).toHaveProperty(
       "environmentVariables",
       undefined,
     );
@@ -273,7 +301,7 @@ describe("sandbox dispatch", () => {
         deliveryPolicy: { mode: "leave_uncommitted" },
       }),
     );
-    expect(executeSandboxWorker).toHaveBeenCalledWith(
+    expect(mockExecuteSandboxProvider).toHaveBeenCalledWith(
       expect.objectContaining({
         task: expect.stringContaining("Do not modify files or create commits"),
         taskType: "code-review",
@@ -284,7 +312,7 @@ describe("sandbox dispatch", () => {
   });
 
   it("marks queued runs as failed when worker startup throws", async () => {
-    vi.mocked(executeSandboxWorker).mockRejectedValueOnce(new Error("worker startup failed"));
+    mockExecuteSandboxProvider.mockRejectedValueOnce(new Error("worker startup failed"));
 
     await processSandboxRunDispatch({
       env: {} as any,
@@ -368,7 +396,7 @@ describe("sandbox dispatch", () => {
         }),
       }),
     );
-    expect(executeSandboxWorker).not.toHaveBeenCalled();
+    expect(mockExecuteSandboxProvider).not.toHaveBeenCalled();
   });
 
   it("folds an early infrastructure usage report into terminal persistence", async () => {
