@@ -1,5 +1,6 @@
 {
   "defaults": {
+    "openWeights": true,
     "maxTokens": 131072,
     "reliability": 2,
     "knowledgeCutoffDate": "December 2024",
@@ -20,7 +21,6 @@
     "mimo-m2-5": {
       "defaults": {
         "name": "MiMo M2.5",
-        "openWeights": true,
         "description": "Open MiMo model for multimodal coding agents and long-context automation",
         "contextWindow": 1050000,
         "maxTokens": 131100,
@@ -55,7 +55,6 @@
     "mimo-v2-5": {
       "defaults": {
         "name": "MiMo-V2.5",
-        "openWeights": true,
         "description": "Open MiMo model for multimodal coding agents and long-context automation",
         "strengths": [
           "vision",
@@ -76,7 +75,6 @@
     "mimo-v2-5-pro": {
       "defaults": {
         "name": "MiMo-V2.5-Pro",
-        "openWeights": true,
         "description": "Stronger MiMo Pro tier for multimodal reasoning and coding-agent execution",
         "contextWindow": 1048576,
         "modalities": {
@@ -101,7 +99,6 @@
     "mimo-v2-5-pro-ultraspeed": {
       "defaults": {
         "name": "MiMo V2.5 Pro UltraSpeed",
-        "openWeights": true,
         "description": "MiMo pro model for strong multimodal reasoning and agent execution",
         "contextWindow": 1048576,
         "modalities": {
@@ -119,7 +116,6 @@
     "mimo-v2-6-flash": {
       "defaults": {
         "name": "MiMo-V2.6-Flash",
-        "openWeights": false,
         "description": "MiMo flash model for fast multimodal assistance and agent workflows",
         "contextWindow": 1048576,
         "knowledgeCutoffDate": "September 22, 2026",
@@ -129,7 +125,6 @@
     "mimo-v2-6-flash-free": {
       "defaults": {
         "name": "MiMo-V2.6-Flash Free",
-        "openWeights": false,
         "description": "MiMo Flash model for multimodal coding agents and long-context automation",
         "contextWindow": 200000,
         "maxTokens": 32000,
@@ -152,7 +147,6 @@
     "mimo-v2-6-pro": {
       "defaults": {
         "name": "MiMo-V2.6-Pro",
-        "openWeights": false,
         "description": "MiMo pro model for strong multimodal reasoning and agent execution",
         "contextWindow": 1048576,
         "knowledgeCutoffDate": "September 22, 2026",
@@ -161,7 +155,6 @@
     },
     "mimo-v2-6-pro-ultraspeed": {
       "defaults": {
-        "openWeights": false,
         "description": "MiMo pro model for strong multimodal reasoning and agent execution",
         "contextWindow": 1048576,
         "releaseDate": "September 21, 2026"
@@ -196,7 +189,6 @@
     "mimo-v2-flash-tee": {
       "defaults": {
         "name": "MiMo V2 Flash TEE",
-        "openWeights": true,
         "description": "MiMo V2 Flash TEE accepts text and produces text.",
         "contextWindow": 262144,
         "maxTokens": 65536,

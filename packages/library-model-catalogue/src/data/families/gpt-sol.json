@@ -98,6 +98,74 @@
         "supportsResponseFormat": false
       }
     },
+    "gpt-6-sol": {
+      "defaults": {
+        "name": "GPT-6 Sol",
+        "description": "OpenAI model for complex coding and agentic workflows",
+        "knowledgeCutoffDate": "April 20, 2026",
+        "releaseDate": "September 22, 2026"
+      }
+    },
+    "gpt-6-sol-eu": {
+      "defaults": {
+        "name": "GPT-6 Sol (EU)",
+        "description": "OpenAI model for complex coding and agentic workflows",
+        "knowledgeCutoffDate": "April 20, 2026",
+        "releaseDate": "September 22, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-6-sol-fast": {
+      "defaults": {
+        "name": "GPT-6 Sol (Fast)",
+        "description": "OpenAI model for complex coding and agentic workflows",
+        "knowledgeCutoffDate": "April 20, 2026",
+        "releaseDate": "September 22, 2026"
+      }
+    },
+    "gpt-6-sol-global": {
+      "defaults": {
+        "name": "GPT-6 Sol (Global)",
+        "description": "OpenAI model for complex coding and agentic workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 20, 2026",
+        "releaseDate": "September 22, 2026"
+      }
+    },
+    "gpt-6-sol-us": {
+      "defaults": {
+        "name": "GPT-6 Sol (US)",
+        "description": "OpenAI model for complex coding and agentic workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 20, 2026",
+        "releaseDate": "September 22, 2026"
+      }
+    },
     "gpt-sol-latest": {
       "defaults": {
         "name": "OpenAI GPT Sol Latest",

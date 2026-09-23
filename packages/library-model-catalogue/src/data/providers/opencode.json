@@ -948,6 +948,7 @@
       "matchingModel": "gemini-3.7-flash",
       "overrides": {
         "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
+        "maxTokens": 65536,
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.0075
@@ -1002,6 +1003,7 @@
       "matchingModel": "gemini-3.8-flash",
       "overrides": {
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
+        "maxTokens": 65536,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.0075
@@ -1150,6 +1152,45 @@
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
+      }
+    },
+    "claude-opus-5-5": {
+      "model": "claude-opus/claude-opus-5-5",
+      "matchingModel": "claude-opus-5-5",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-6-luna": {
+      "model": "gpt-luna/gpt-6-luna",
+      "matchingModel": "gpt-6-luna",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-6-sol": {
+      "model": "gpt-sol/gpt-6-sol",
+      "matchingModel": "gpt-6-sol",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "grok-4.7": {
+      "model": "grok/grok-4-7-30-off",
+      "matchingModel": "grok-4.7",
+      "overrides": {
+        "lastUpdated": "September 21, 2026",
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0042
       }
     }
   }

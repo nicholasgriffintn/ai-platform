@@ -8,7 +8,6 @@
       "model": "qwen/qwen-image",
       "matchingModel": "fal-ai/qwen-image",
       "overrides": {
-        "name": "Qwen Image",
         "strengths": [
           "creative",
           "image"

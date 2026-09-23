@@ -15,9 +15,27 @@
       "vision",
       "image"
     ],
+    "contextComplexity": 4,
+    "reliability": 3,
     "supportsToolCalls": false,
-    "supportsAttachments": true,
-    "supportsTemperature": false
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_imageElo",
+          "label": "Text-to-image arena",
+          "value": 1070,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 9
+        }
+      ]
+    }
   },
   "description": "The Replicate BRIA FIBO family includes controlled image generation models.",
   "models": {

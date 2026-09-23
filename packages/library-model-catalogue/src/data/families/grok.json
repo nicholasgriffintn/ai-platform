@@ -844,6 +844,37 @@
         }
       }
     },
+    "grok-4-7-30-off": {
+      "defaults": {
+        "name": "Grok 4.7 (30% Off)",
+        "description": "xAI's frontier model for long-running agents, coding, knowledge work, and visual projects",
+        "contextWindow": 500000,
+        "maxTokens": 500000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "September 21, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "grok-4-fast": {
       "defaults": {
         "name": "Grok 4 Fast",

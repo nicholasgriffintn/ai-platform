@@ -4,8 +4,7 @@
     "contextWindow": 0,
     "maxTokens": 0,
     "supportsToolCalls": false,
-    "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsAttachments": false
   },
   "description": "The o family includes models that produce audio, image, text, video.",
   "models": {
@@ -15,15 +14,28 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 131072,
         "maxTokens": 131072,
+        "releaseDate": "April 16, 2026",
+        "supportsTemperature": true
+      }
+    },
+    "arrow-1-1-max": {
+      "defaults": {
+        "name": "Arrow 1.1 Max",
+        "description": "High-fidelity text-to-SVG model for dense illustrations, detailed logos, and technical diagrams.",
         "modalities": {
           "input": [
-            "text"
+            "text",
+            "image"
           ],
           "output": [
             "image"
           ]
         },
-        "releaseDate": "April 16, 2026"
+        "strengths": [
+          "creative",
+          "image"
+        ],
+        "supportsTemperature": true
       }
     },
     "cohere-rerank-3-5": {
@@ -40,10 +52,10 @@
             "reranking"
           ]
         },
-        "releaseDate": "December 2, 2024",
         "strengths": [
           "reranking"
-        ]
+        ],
+        "releaseDate": "December 2, 2024"
       }
     },
     "cohere-rerank-4-fast": {
@@ -60,10 +72,10 @@
             "reranking"
           ]
         },
-        "releaseDate": "December 11, 2025",
         "strengths": [
           "reranking"
-        ]
+        ],
+        "releaseDate": "December 11, 2025"
       }
     },
     "cohere-rerank-4-pro": {
@@ -80,10 +92,10 @@
             "reranking"
           ]
         },
-        "releaseDate": "December 11, 2025",
         "strengths": [
           "reranking"
-        ]
+        ],
+        "releaseDate": "December 11, 2025"
       }
     },
     "o1": {
@@ -175,6 +187,7 @@
         "releaseDate": "June 26, 2024",
         "supportsToolCalls": true,
         "supportsAttachments": true,
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -424,7 +437,8 @@
             "text"
           ]
         },
-        "releaseDate": "April 16, 2026"
+        "releaseDate": "April 16, 2026",
+        "supportsTemperature": true
       }
     },
     "schematron-v2-turbo": {
@@ -441,7 +455,8 @@
             "text"
           ]
         },
-        "releaseDate": "April 16, 2026"
+        "releaseDate": "April 16, 2026",
+        "supportsTemperature": true
       }
     },
     "transcribe-1": {
@@ -491,6 +506,7 @@
         ],
         "reliability": 3,
         "releaseDate": "November 6, 2023",
+        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -526,6 +542,7 @@
         ],
         "reliability": 3,
         "releaseDate": "November 6, 2023",
+        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -556,7 +573,8 @@
             "video"
           ]
         },
-        "releaseDate": "September 24, 2025"
+        "releaseDate": "September 24, 2025",
+        "supportsTemperature": true
       }
     },
     "wan-v2-6-image-to-video": {
@@ -571,7 +589,8 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025"
+        "releaseDate": "December 16, 2025",
+        "supportsTemperature": true
       }
     },
     "wan-v2-6-image-to-video-flash": {
@@ -586,7 +605,8 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025"
+        "releaseDate": "December 16, 2025",
+        "supportsTemperature": true
       }
     },
     "wan-v2-6-reference-to-video": {
@@ -601,7 +621,8 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025"
+        "releaseDate": "December 16, 2025",
+        "supportsTemperature": true
       }
     },
     "wan-v2-6-reference-to-video-flash": {
@@ -616,7 +637,8 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025"
+        "releaseDate": "December 16, 2025",
+        "supportsTemperature": true
       }
     },
     "wan-v2-6-text-to-video": {
@@ -631,7 +653,8 @@
             "video"
           ]
         },
-        "releaseDate": "December 16, 2025"
+        "releaseDate": "December 16, 2025",
+        "supportsTemperature": true
       }
     },
     "wan-v2-7-reference-to-video": {
@@ -646,7 +669,8 @@
             "video"
           ]
         },
-        "releaseDate": "April 7, 2026"
+        "releaseDate": "April 7, 2026",
+        "supportsTemperature": true
       }
     },
     "wan-v2-7-text-to-video": {
@@ -661,7 +685,8 @@
             "video"
           ]
         },
-        "releaseDate": "April 7, 2026"
+        "releaseDate": "April 7, 2026",
+        "supportsTemperature": true
       }
     },
     "wan-v3-0-video": {
@@ -695,26 +720,6 @@
           ]
         },
         "releaseDate": "August 28, 2026",
-        "supportsAttachments": true
-      }
-    },
-    "arrow-1-1-max": {
-      "defaults": {
-        "name": "Arrow 1.1 Max",
-        "description": "High-fidelity text-to-SVG model for dense illustrations, detailed logos, and technical diagrams.",
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "image"
-          ]
-        },
-        "strengths": [
-          "creative",
-          "image"
-        ],
         "supportsAttachments": true
       }
     }

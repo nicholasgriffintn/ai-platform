@@ -13,8 +13,7 @@
     },
     "contextComplexity": 1,
     "supportsToolCalls": false,
-    "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsAttachments": false
   },
   "description": "The imagen family includes models that produce image.",
   "models": {
@@ -34,6 +33,7 @@
         ],
         "reliability": 3,
         "releaseDate": "June 1, 2025",
+        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -62,7 +62,6 @@
         ],
         "reliability": 4,
         "releaseDate": "May 24, 2025",
-        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,

@@ -17,7 +17,7 @@
     ],
     "contextComplexity": 4,
     "supportsToolCalls": false,
-    "supportsAttachments": true,
+    "supportsAttachments": false,
     "supportsTemperature": false
   },
   "description": "The Replicate Luma Ray family includes cinematic video generation models.",

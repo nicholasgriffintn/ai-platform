@@ -85,6 +85,74 @@
         "description": "Cost-efficient GPT-5.6 model for fast, high-volume workloads"
       }
     },
+    "gpt-6-luna": {
+      "defaults": {
+        "name": "GPT-6 Luna",
+        "description": "OpenAI's most efficient model for focused, high-volume tasks",
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "September 22, 2026"
+      }
+    },
+    "gpt-6-luna-eu": {
+      "defaults": {
+        "name": "GPT-6 Luna (EU)",
+        "description": "OpenAI's most efficient model for focused, high-volume tasks",
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "September 22, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-6-luna-fast": {
+      "defaults": {
+        "name": "GPT-6 Luna (Fast)",
+        "description": "OpenAI's most efficient model for focused, high-volume tasks",
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "September 22, 2026"
+      }
+    },
+    "gpt-6-luna-global": {
+      "defaults": {
+        "name": "GPT-6 Luna (Global)",
+        "description": "OpenAI's most efficient model for focused, high-volume tasks",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "September 22, 2026"
+      }
+    },
+    "gpt-6-luna-us": {
+      "defaults": {
+        "name": "GPT-6 Luna (US)",
+        "description": "OpenAI's most efficient model for focused, high-volume tasks",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "September 22, 2026"
+      }
+    },
     "gpt-luna-latest": {
       "defaults": {
         "name": "OpenAI GPT Luna Latest",

@@ -10,7 +10,14 @@
         "video"
       ]
     },
+    "strengths": [
+      "creative",
+      "video",
+      "vision",
+      "audio"
+    ],
     "supportsToolCalls": false,
+    "supportsAttachments": true,
     "supportsTemperature": false
   },
   "description": "Google's fast multimodal video generation and editing model with native audio, using the Interactions API",

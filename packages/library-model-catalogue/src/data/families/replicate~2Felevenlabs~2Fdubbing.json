@@ -9,7 +9,12 @@
         "audio"
       ]
     },
+    "strengths": [
+      "audio",
+      "multilingual"
+    ],
     "supportsToolCalls": false,
+    "supportsAttachments": true,
     "supportsTemperature": false
   },
   "description": "Translate audio and video into 90+ languages while preserving each speaker's voice, emotion, and timing",

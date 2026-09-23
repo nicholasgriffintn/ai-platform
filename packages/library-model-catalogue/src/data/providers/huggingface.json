@@ -291,7 +291,6 @@
       "matchingModel": "XiaomiMiMo/MiMo-V2-Flash",
       "overrides": {
         "name": "MiMo-V2-Flash",
-        "openWeights": true,
         "maxTokens": 4096,
         "contextComplexity": 3,
         "speed": 3,

@@ -2567,6 +2567,66 @@
         "costPer1kOutputTokens": 0.022,
         "supportsTemperature": false
       }
+    },
+    "global.moonshotai.kimi-k3": {
+      "model": "kimi-k3/kimi-k3-global",
+      "matchingModel": "global.moonshotai.kimi-k3",
+      "overrides": {
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsTemperature": false
+      }
+    },
+    "global.openai.gpt-6-luna": {
+      "model": "gpt-luna/gpt-6-luna-global",
+      "matchingModel": "global.openai.gpt-6-luna",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsTemperature": false
+      }
+    },
+    "global.openai.gpt-6-sol": {
+      "model": "gpt-sol/gpt-6-sol-global",
+      "matchingModel": "global.openai.gpt-6-sol",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "us.moonshotai.kimi-k3": {
+      "model": "kimi-k3/kimi-k3-us",
+      "matchingModel": "us.moonshotai.kimi-k3",
+      "overrides": {
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0.0033,
+        "costPer1kOutputTokens": 0.0165,
+        "supportsTemperature": false
+      }
+    },
+    "us.openai.gpt-6-luna": {
+      "model": "gpt-luna/gpt-6-luna-us",
+      "matchingModel": "us.openai.gpt-6-luna",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.00011,
+        "costPer1kOutputTokens": 0.00055,
+        "supportsTemperature": false
+      }
+    },
+    "us.openai.gpt-6-sol": {
+      "model": "gpt-sol/gpt-6-sol-us",
+      "matchingModel": "us.openai.gpt-6-sol",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.011,
+        "supportsTemperature": false
+      }
     }
   }
 }

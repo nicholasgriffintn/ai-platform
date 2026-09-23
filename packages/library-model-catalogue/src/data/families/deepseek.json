@@ -65,7 +65,7 @@
         "openWeights": false,
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
         "contextWindow": 1048576,
-        "maxTokens": 393216,
+        "maxTokens": 384000,
         "releaseDate": "September 14, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {

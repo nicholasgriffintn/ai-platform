@@ -9,7 +9,14 @@
         "video"
       ]
     },
+    "strengths": [
+      "creative",
+      "video",
+      "vision",
+      "audio"
+    ],
     "supportsToolCalls": false,
+    "supportsAttachments": true,
     "supportsTemperature": false
   },
   "description": "Fast video generation with text-to-video and image-to-video, portrait and landscape support, synchronized audio, and frame interpolation. Up to 20 seconds at 1080p, and 4K resolution.",
