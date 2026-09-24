@@ -17,6 +17,7 @@ function context(overrides: Record<string, unknown> = {}): ServiceContext {
     repositories: {
       taskNotifications: {
         listInbox: vi.fn().mockResolvedValue([]),
+        countUnreadInbox: vi.fn().mockResolvedValue(0),
         updateInboxReceipts: vi.fn().mockResolvedValue(1),
         upsertRegistration: vi.fn().mockResolvedValue({
           id: "registration-1",
@@ -84,9 +85,11 @@ describe("task attention inbox", () => {
       },
     ]);
 
+    vi.mocked(serviceContext.repositories.taskNotifications.countUnreadInbox).mockResolvedValue(64);
+
     const response = await listProjectTaskAttention(serviceContext);
 
-    expect(response).toMatchObject({ total: 2, unread: 1 });
+    expect(response).toMatchObject({ total: 2, unread: 64 });
     expect(response.items.map((item) => [item.id, item.kind, item.requiresAction])).toEqual([
       ["failed-task:v3", "blocked", true],
       ["done-task:v2", "completion", false],

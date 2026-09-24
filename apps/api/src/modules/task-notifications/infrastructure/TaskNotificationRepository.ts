@@ -22,6 +22,29 @@ import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { TaskNotificationDeliveryRow } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
+/**
+ * The tasks in a user's inbox. Binds the user id five times: membership, receipt,
+ * backlog assignee, and completed creator or assignee.
+ */
+const INBOX_SOURCE = `FROM project_task pt
+       JOIN project p ON p.id = pt.project_id
+       JOIN workspace_member member
+         ON member.workspace_id = pt.workspace_id AND member.user_id = ?
+       LEFT JOIN task_inbox_receipt receipt
+         ON receipt.user_id = ?
+        AND receipt.task_id = pt.id
+        AND receipt.task_version = pt.attention_version
+       WHERE receipt.dismissed_at IS NULL
+         AND (
+           pt.status IN ('blocked', 'review')
+           OR (pt.status = 'backlog' AND pt.assignee_user_id = ?)
+           OR (
+             pt.status = 'done'
+             AND (pt.created_by_user_id = ? OR pt.assignee_user_id = ?)
+             AND datetime(pt.completed_at) >= datetime('now', '-30 days')
+           )
+         )`;
+
 const DEFAULT_PREFERENCES: TaskNotificationPreferences = {
   enabled: true,
   decisions: true,
@@ -256,28 +279,24 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
          pt.updated_at,
          pt.completed_at,
          receipt.read_at
-       FROM project_task pt
-       JOIN project p ON p.id = pt.project_id
-       JOIN workspace_member member
-         ON member.workspace_id = pt.workspace_id AND member.user_id = ?
-       LEFT JOIN task_inbox_receipt receipt
-         ON receipt.user_id = ?
-        AND receipt.task_id = pt.id
-        AND receipt.task_version = pt.attention_version
-       WHERE receipt.dismissed_at IS NULL
-         AND (
-           pt.status IN ('blocked', 'review')
-           OR (pt.status = 'backlog' AND pt.assignee_user_id = ?)
-           OR (
-             pt.status = 'done'
-             AND (pt.created_by_user_id = ? OR pt.assignee_user_id = ?)
-             AND datetime(pt.completed_at) >= datetime('now', '-30 days')
-           )
-         )
+       ${INBOX_SOURCE}
        ORDER BY (receipt.read_at IS NULL) DESC, pt.updated_at DESC
        LIMIT ?`,
       [userId, userId, userId, userId, userId, limit],
     );
+  }
+
+  /** Unread inbox items across the whole inbox, not only the page listInbox returns. */
+  async countUnreadInbox(userId: number): Promise<number> {
+    const row = await this.runQuery<{ unread: number }>(
+      `SELECT COUNT(*) AS unread
+       ${INBOX_SOURCE}
+         AND receipt.read_at IS NULL`,
+      [userId, userId, userId, userId, userId],
+      true,
+    );
+
+    return row?.unread ?? 0;
   }
 
   async updateInboxReceipts(

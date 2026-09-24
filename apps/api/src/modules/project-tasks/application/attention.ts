@@ -142,7 +142,10 @@ export async function listProjectTaskAttention(
 ) {
   const user = requireWorkAccess(context);
   const limit = Math.min(options.limit ?? DEFAULT_ATTENTION_LIMIT, 100);
-  const rows = await context.repositories.taskNotifications.listInbox(user.id, limit);
+  const [rows, unread] = await Promise.all([
+    context.repositories.taskNotifications.listInbox(user.id, limit),
+    context.repositories.taskNotifications.countUnreadInbox(user.id),
+  ]);
   const items = rows
     .map(formatInboxItem)
     .filter((item): item is ProjectTaskAttentionItem => item !== null);
@@ -150,7 +153,7 @@ export async function listProjectTaskAttention(
   return {
     items,
     total: items.length,
-    unread: items.filter((item) => !item.isRead).length,
+    unread,
   };
 }
 

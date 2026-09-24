@@ -69,8 +69,11 @@ it("filters inbox eligibility and retains account receipts without changing task
     "recent",
   ]);
   expect(await repository.listInbox(8, 100)).toEqual([]);
+  expect(await repository.countUnreadInbox(7)).toBe(3);
+  expect(await repository.countUnreadInbox(8)).toBe(0);
   expect(await repository.updateInboxReceipts(7, ["decision:v1"], "read")).toBe(1);
   expect(await repository.updateInboxReceipts(7, ["mine:v1"], "dismiss")).toBe(1);
+  expect(await repository.countUnreadInbox(7)).toBe(1);
   const reopened = new TaskNotificationRepository({
     DB: database,
     PRIVATE_KEY: "isolated-notification-test-key",
