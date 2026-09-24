@@ -1,6 +1,7 @@
 export * from "./TaskCreditSummary";
 export * from "./ProjectActivityList";
 export * from "./ProjectBriefCard";
+export * from "./ProjectBriefPreview";
 export * from "./ProjectTeammatesCard";
 export * from "./ProjectCodingEnvironmentCard";
 export * from "./ProjectEnvironmentSetupFields";

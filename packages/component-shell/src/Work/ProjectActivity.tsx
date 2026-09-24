@@ -2,7 +2,14 @@ import { ProjectActivityList } from "@ngriffin_uk/polychat-component-workspaces"
 import { useActivity } from "@ngriffin_uk/polychat-library-react";
 
 import { PageShell } from "../Shell/PageShell.js";
-export function ProjectActivity({ projectId }: { projectId: string }) {
+import { ProjectHomeHeader } from "./ProjectHomeHeader.js";
+export function ProjectActivity({
+  workspaceId,
+  projectId,
+}: {
+  workspaceId: string;
+  projectId: string;
+}) {
   const {
     data: activities,
     isLoading,
@@ -14,10 +21,7 @@ export function ProjectActivity({ projectId }: { projectId: string }) {
 
   return (
     <PageShell.Content className="max-w-6xl">
-      <PageShell.Header title="Activity" />
-      <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
-        Runs and background work across this project.
-      </p>
+      <ProjectHomeHeader workspaceId={workspaceId} projectId={projectId} />
 
       <ProjectActivityList
         activities={activities ?? []}

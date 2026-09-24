@@ -1,12 +1,15 @@
 import { ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import {
+  ProjectBriefPreview,
   ProjectConversationList,
   ProjectHomeActions,
   ProjectOverviewSkeleton,
+  ProjectTasksSummary,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useArchiveProject,
+  useProjectTasks,
   getProjectBasePath,
   getProjectConversationPath,
 } from "@ngriffin_uk/polychat-library-react";
@@ -34,6 +37,7 @@ export function ProjectHome({
   const { data: project, isLoading, error } = projectQuery;
   const { data: workspace } = workspaceQuery;
   const saveTemplate = useProjectTemplateSave(workspaceId, project ?? null);
+  const projectTasks = useProjectTasks(projectId);
 
   if (isLoading) {
     return <ProjectOverviewSkeleton />;
@@ -81,18 +85,34 @@ export function ProjectHome({
           }
         />
 
-        <div className="space-y-6">
-          <ProjectConversationStarter workspaceId={workspaceId} projectId={projectId} />
-          <ProjectConversationList
-            conversationCount={conversations.length}
-            conversations={conversations.map((conversation) => ({
-              id: conversation.id,
-              title: conversation.title,
-              messageCount: conversation.messageCount,
-              createdByName: conversation.createdBy.name,
-              href: getProjectConversationPath(workspaceId, projectId, conversation.id),
-            }))}
-          />
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="min-w-0 space-y-6">
+            <ProjectConversationStarter workspaceId={workspaceId} projectId={projectId} />
+            <ProjectConversationList
+              conversationCount={conversations.length}
+              conversations={conversations.map((conversation) => ({
+                id: conversation.id,
+                title: conversation.title,
+                messageCount: conversation.messageCount,
+                createdByName: conversation.createdBy.name,
+                href: getProjectConversationPath(workspaceId, projectId, conversation.id),
+              }))}
+            />
+          </div>
+          <aside aria-label="Project overview" className="min-w-0 space-y-8">
+            <ProjectTasksSummary
+              tasks={projectTasks.tasks}
+              isLoading={projectTasks.isLoading}
+              boardHref={`${basePath}/tasks`}
+              taskHref={(task) => `${basePath}/tasks/${task.id}`}
+              onCreateTask={() => void navigate(`${basePath}/tasks?new=1`)}
+            />
+            <ProjectBriefPreview
+              instructions={project.instructions}
+              settingsHref={`${basePath}/settings`}
+              canManage={canManage}
+            />
+          </aside>
         </div>
       </PageShell.Content>
       <ConfirmationDialog

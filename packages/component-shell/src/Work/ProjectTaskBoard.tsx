@@ -19,6 +19,7 @@ import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
@@ -34,7 +35,25 @@ export function ProjectTaskBoard({
   workspaceId: string;
   projectId: string;
 }) {
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [isCreateOpen, setIsCreateDialogOpen] = useState(() => searchParams.get("new") === "1");
+  const setIsCreateOpen = (open: boolean) => {
+    setIsCreateDialogOpen(open);
+
+    if (!open && searchParams.has("new")) {
+      setSearchParams(
+        (current) => {
+          const next = new URLSearchParams(current);
+
+          next.delete("new");
+
+          return next;
+        },
+        { replace: true },
+      );
+    }
+  };
+
   const [isFlowOpen, setIsFlowOpen] = useState(false);
   const { projectQuery, workspaceQuery } = useWorkData();
   const teammates = useProjectTaskTeammates(projectQuery.data?.capabilities);

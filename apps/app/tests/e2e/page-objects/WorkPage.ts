@@ -8,7 +8,7 @@ const PROJECT_SURFACES = {
   People: { link: "People", heading: "People & access" },
   Governance: { link: "Governance", heading: "Governance" },
   Files: { link: "Files", navigation: "Files sections" },
-  Activity: { link: "Activity", heading: "Activity" },
+  Activity: { link: "Activity", projectTab: "Activity" },
   Teammates: { link: "Teammates", heading: "Teammates" },
   Plugins: { link: "Plugins", heading: "Plugins" },
   Scheduled: { link: "Scheduled", heading: "Scheduled" },
@@ -83,6 +83,15 @@ export class WorkPage extends BasePage {
 
     if ("navigation" in surface) {
       await this.page.getByRole("navigation", { name: surface.navigation }).waitFor();
+
+      return;
+    }
+
+    if ("projectTab" in surface) {
+      await this.page
+        .getByRole("navigation", { name: "Project sections" })
+        .locator('a[aria-current="page"]', { hasText: surface.projectTab })
+        .waitFor();
 
       return;
     }
