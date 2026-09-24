@@ -20,4 +20,4 @@ Refresh the data from models.dev with:
 pnpm --filter @ngriffin_uk/polychat-library-model-catalogue models:sync
 ```
 
-The `sync-models-dev` workflow runs the same script on a schedule and opens a pull request when the data changes. `resolveModelCatalogue` validates the generated files against `modelCatalogueSchema`, so a bad sync fails at build time rather than at runtime. See `references/operations/model-catalogue.md` in the setup skill for the full procedure.
+The `sync-models-dev` workflow runs the same script on a schedule and opens a pull request when the data changes. The package build validates the generated files against `modelCatalogueSchema` and emits a pre-resolved runtime module, so a bad catalogue fails the build without adding schema validation to Worker startup. See `references/operations/model-catalogue.md` in the setup skill for the full procedure.

@@ -1,7 +1,7 @@
 import {
-  getCatalogueModels,
-  getCatalogueProviderModels,
-} from "@ngriffin_uk/polychat-library-model-catalogue";
+  modelConfig as catalogueModelConfig,
+  providerModelIds,
+} from "@ngriffin_uk/polychat-library-model-catalogue/resolved";
 import {
   agentModelConfig,
   isLineupEligibleModel,
@@ -20,17 +20,46 @@ export interface ModelQueryOptions {
 }
 
 export const modelConfig: ModelConfig = {
-  ...getCatalogueModels(),
+  ...catalogueModelConfig,
   ...agentModelConfig,
 };
 
-export const getProviderModels = getCatalogueProviderModels;
-
 const cachedModelsByOptions = new Map<string, ModelConfig>();
+const cachedProviderModels = new Map<string, ModelConfig>();
 let cachedFreeModels: ModelConfig | null = null;
 let cachedFeaturedModels: ModelConfig | null = null;
 let cachedLineupModels: ModelConfig | null = null;
 let cachedStrengths: string[] | null = null;
+
+export function getProviderModels(provider: string): ModelConfig {
+  const cached = cachedProviderModels.get(provider);
+
+  if (cached) {
+    return cached;
+  }
+
+  const resolvedIds = providerModelIds[provider];
+
+  if (!resolvedIds) {
+    throw new Error(`Unknown catalogue provider: ${provider}`);
+  }
+
+  const models = Object.fromEntries(
+    Object.entries(resolvedIds).map(([id, resolvedId]) => {
+      const model = catalogueModelConfig[resolvedId];
+
+      if (!model) {
+        throw new Error(`Unknown resolved catalogue model: ${resolvedId}`);
+      }
+
+      return [id, model];
+    }),
+  );
+
+  cachedProviderModels.set(provider, models);
+
+  return models;
+}
 
 function filterModels(predicate: (model: ModelConfigItem) => boolean): ModelConfig {
   return Object.fromEntries(Object.entries(modelConfig).filter(([, model]) => predicate(model)));

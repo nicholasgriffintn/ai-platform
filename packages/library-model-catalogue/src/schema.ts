@@ -48,6 +48,11 @@ export interface UnparsedModelCatalogue {
   providers: Record<string, unknown>;
 }
 
+export interface ResolvedModelCatalogue {
+  modelConfig: ModelConfig;
+  providerModelIds: Record<string, Record<string, string>>;
+}
+
 export function resolveCatalogueProvider(
   catalogue: ModelCatalogue,
   providerId: string,
@@ -100,25 +105,37 @@ export function resolveCatalogueProvider(
   );
 }
 
-export function resolveModelCatalogue(catalogue: ModelCatalogue): ModelConfig {
-  const models: ModelConfig = {};
+export function resolveModelCatalogueWithProviderIds(
+  catalogue: ModelCatalogue,
+): ResolvedModelCatalogue {
+  const modelConfig: ModelConfig = {};
+  const providerModelIds: Record<string, Record<string, string>> = {};
 
   for (const provider of Object.keys(catalogue.providers)) {
+    const resolvedIds: Record<string, string> = {};
+
     for (const [id, config] of Object.entries(resolveCatalogueProvider(catalogue, provider))) {
       let resolvedId = id;
 
-      if (Object.hasOwn(models, resolvedId)) {
+      if (Object.hasOwn(modelConfig, resolvedId)) {
         resolvedId = `${provider}/${id}`;
         let suffix = 2;
 
-        while (Object.hasOwn(models, resolvedId)) {
+        while (Object.hasOwn(modelConfig, resolvedId)) {
           resolvedId = `${provider}/${id}-${suffix++}`;
         }
       }
 
-      models[resolvedId] = config;
+      modelConfig[resolvedId] = config;
+      resolvedIds[id] = resolvedId;
     }
+
+    providerModelIds[provider] = resolvedIds;
   }
 
-  return models;
+  return { modelConfig, providerModelIds };
+}
+
+export function resolveModelCatalogue(catalogue: ModelCatalogue): ModelConfig {
+  return resolveModelCatalogueWithProviderIds(catalogue).modelConfig;
 }

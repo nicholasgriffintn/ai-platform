@@ -16,6 +16,10 @@
       "polychat-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./resolved": {
+      "types": "./dist/resolved.d.ts",
+      "import": "./dist/resolved.js"
     }
   },
   "publishConfig": {

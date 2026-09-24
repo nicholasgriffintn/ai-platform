@@ -9,6 +9,8 @@ export {
   modelDefaultsSchema,
   resolveCatalogueProvider,
   resolveModelCatalogue,
+  resolveModelCatalogueWithProviderIds,
   type ModelCatalogue,
+  type ResolvedModelCatalogue,
   type UnparsedModelCatalogue,
 } from "./schema.js";
