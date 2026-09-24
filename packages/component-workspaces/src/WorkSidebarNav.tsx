@@ -1,5 +1,9 @@
-import { SidebarNavButton, sidebarNavLinkClass } from "@ngriffin_uk/polychat-component-navigation";
-import { Badge, cn, Link, NavLink } from "@ngriffin_uk/polychat-component-ui";
+import {
+  SidebarCountBadge,
+  SidebarNavButton,
+  sidebarNavLinkClass,
+} from "@ngriffin_uk/polychat-component-navigation";
+import { cn, Link, NavLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   Activity,
   BellRing,
@@ -58,6 +62,8 @@ export interface WorkSidebarProject {
 export interface WorkSidebarNavProps {
   workspacesHref: string;
   attentionHref: string;
+  /** Unread notifications waiting in Attention. */
+  attentionCount?: number;
   workspace?: WorkSidebarWorkspace;
   activeProjectId?: string;
   project?: WorkSidebarProject;
@@ -72,6 +78,7 @@ export interface WorkSidebarNavProps {
 export function WorkSidebarNav({
   workspacesHref,
   attentionHref,
+  attentionCount = 0,
   workspace,
   activeProjectId,
   project,
@@ -94,6 +101,10 @@ export function WorkSidebarNav({
         </SidebarNavButton>
         <NavLink href={attentionHref} className={linkClass} onClick={onNavigate}>
           <BellRing size={17} /> Attention
+          <SidebarCountBadge
+            count={attentionCount}
+            label={`${attentionCount} unread notifications`}
+          />
         </NavLink>
       </div>
 
@@ -171,15 +182,10 @@ export function WorkSidebarNav({
           </Link>
           <NavLink href={project.tasksHref} className={linkClass} onClick={onNavigate}>
             <ListChecks size={16} /> Tasks
-            {project.attentionCount ? (
-              <Badge
-                variant="warning"
-                className="ml-auto min-w-5 px-1.5"
-                aria-label={`${project.attentionCount} tasks need attention`}
-              >
-                {project.attentionCount}
-              </Badge>
-            ) : null}
+            <SidebarCountBadge
+              count={project.attentionCount ?? 0}
+              label={`${project.attentionCount} tasks need attention`}
+            />
           </NavLink>
           <NavLink href={project.canvasHref} className={linkClass} onClick={onNavigate}>
             <Palette size={16} /> Canvas

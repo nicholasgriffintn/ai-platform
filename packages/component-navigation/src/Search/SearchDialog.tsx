@@ -36,6 +36,16 @@ export interface SearchDialogProps {
   onOpened?: () => void;
 }
 
+type SearchFilter = "all" | SearchResultKind;
+
+const SEARCH_FILTERS: Array<{ id: SearchFilter; label: string }> = [
+  { id: "all", label: "All" },
+  { id: "conversation", label: "Chats" },
+  { id: "project", label: "Projects" },
+  { id: "workspace", label: "Workspaces" },
+  { id: "capability", label: "Capabilities" },
+];
+
 const RESULT_ICONS: Record<SearchResultKind, ReactNode> = {
   conversation: <MessageSquareText size={18} />,
   project: <FolderKanban size={18} />,
@@ -70,7 +80,7 @@ function getSearchStatusMessage({
 export function SearchDialog({
   isOpen,
   query,
-  results,
+  results: allResults,
   hasQuery,
   hasError,
   isLoading,
@@ -83,6 +93,18 @@ export function SearchDialog({
   const inputRef = useRef<HTMLInputElement>(null);
   const focusedResultRef = useRef<HTMLButtonElement>(null);
   const [focusedIndex, setFocusedIndex] = useState(0);
+  const [filter, setFilter] = useState<SearchFilter>("all");
+  const kindCounts = new Map<SearchResultKind, number>();
+
+  for (const result of allResults) {
+    kindCounts.set(result.kind, (kindCounts.get(result.kind) ?? 0) + 1);
+  }
+
+  const availableFilters = SEARCH_FILTERS.filter(
+    (option) => option.id === "all" || option.id === filter || kindCounts.has(option.id),
+  );
+  const results =
+    filter === "all" ? allResults : allResults.filter((result) => result.kind === filter);
 
   useEffect(() => {
     if (!isOpen) {
@@ -169,6 +191,39 @@ export function SearchDialog({
             </kbd>
           </div>
         </div>
+
+        {availableFilters.length > 2 ? (
+          <fieldset className="m-0 flex min-w-0 gap-1 overflow-x-auto border-0 border-b border-border px-5 py-2">
+            <legend className="sr-only">Filter results</legend>
+            {availableFilters.map((option) => {
+              const count =
+                option.id === "all" ? allResults.length : (kindCounts.get(option.id) ?? 0);
+              const isActive = filter === option.id;
+
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  aria-pressed={isActive}
+                  className={cn(
+                    "shrink-0 rounded-full px-3 py-1 text-xs transition-colors",
+                    isActive
+                      ? "bg-selection font-medium text-foreground"
+                      : "text-muted-foreground hover:bg-selection/60 hover:text-foreground",
+                  )}
+                  onClick={() => {
+                    setFilter(option.id);
+                    setFocusedIndex(0);
+                    inputRef.current?.focus();
+                  }}
+                >
+                  {option.label}
+                  <span className="ml-1.5 text-muted-foreground">{count}</span>
+                </button>
+              );
+            })}
+          </fieldset>
+        ) : null}
 
         <output className="sr-only" aria-live="polite">
           {getSearchStatusMessage({ resultCount: results.length, isLoading, hasError })}

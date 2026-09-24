@@ -1,5 +1,9 @@
 import { SidebarNavLink } from "@ngriffin_uk/polychat-component-navigation";
-import { getPlacePaths, type ProductMode } from "@ngriffin_uk/polychat-library-react";
+import {
+  getPlacePaths,
+  type ProductMode,
+  useTaskAttention,
+} from "@ngriffin_uk/polychat-library-react";
 import {
   BellRing,
   CalendarClock,
@@ -18,10 +22,17 @@ export function PlacesNavLinks({
   onNavigate?: () => void;
 }) {
   const places = getPlacePaths(mode);
+  const { unread } = useTaskAttention();
 
   return (
     <>
-      <SidebarNavLink href={places.attention} icon={<BellRing size={16} />} onClick={onNavigate}>
+      <SidebarNavLink
+        href={places.attention}
+        icon={<BellRing size={16} />}
+        count={unread}
+        countLabel={`${unread} unread notifications`}
+        onClick={onNavigate}
+      >
         Attention
       </SidebarNavLink>
       <SidebarNavLink href={places.canvas} icon={<Palette size={16} />} onClick={onNavigate}>

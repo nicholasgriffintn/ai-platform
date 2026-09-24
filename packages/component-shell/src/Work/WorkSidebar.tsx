@@ -65,7 +65,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const activeConversationId =
     pathConversationId ??
     project?.conversations.find((conversation) => conversation.id === currentConversationId)?.id;
-  const { items: attentionItems } = useTaskAttention();
+  const { items: attentionItems, unread: unreadAttention } = useTaskAttention();
   const projectConversations = project?.conversations ?? EMPTY_CONVERSATIONS;
   const conversationStreams = useStreamActivityStore(
     useShallow((state) =>
@@ -147,6 +147,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
         attentionHref={
           projectId ? `${workPlaces.attention}?projectId=${projectId}` : workPlaces.attention
         }
+        attentionCount={unreadAttention}
         workspace={
           workspace
             ? {
