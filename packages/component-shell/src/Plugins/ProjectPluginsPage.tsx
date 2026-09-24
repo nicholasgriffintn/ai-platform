@@ -1,4 +1,5 @@
 import { useProjectCapabilityScope } from "../Capabilities/useCapabilityLibraryController.js";
+import { ProjectHomeTabs } from "../Work/ProjectHomeTabs.js";
 import { useWorkData } from "../Work/WorkDataContext.js";
 import { PluginsLibrary } from "./PluginsLibrary.js";
 
@@ -19,5 +20,11 @@ export function ProjectPluginsPage({
     projectQuery.isLoading,
   );
 
-  return <PluginsLibrary scope={scope} projectName={projectQuery.data?.name} />;
+  return (
+    <PluginsLibrary
+      scope={scope}
+      projectName={projectQuery.data?.name}
+      navigation={<ProjectHomeTabs workspaceId={workspaceId} projectId={projectId} />}
+    />
+  );
 }

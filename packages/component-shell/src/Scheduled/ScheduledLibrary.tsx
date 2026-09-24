@@ -6,6 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import { isAuthenticationError, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { SearchX } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import type { CapabilityLibraryScope } from "../Capabilities/useCapabilityLibraryController.js";
@@ -15,7 +16,7 @@ import { PageShell } from "../Shell/PageShell.js";
 import { ScheduledGroups } from "./ScheduledGroups.js";
 import { useScheduledLibraryController } from "./useScheduledLibraryController.js";
 
-export function ScheduledLibrary({ scope, title, subtitle }: ScheduledLibraryProps) {
+export function ScheduledLibrary({ scope, title, subtitle, navigation }: ScheduledLibraryProps) {
   const controller = useScheduledLibraryController(scope);
   const projectMutations = scope.requiresExplicitEnablement ? scope.projectMutations : undefined;
   const pendingAddCapabilityId = projectMutations?.add.isPending
@@ -36,6 +37,7 @@ export function ScheduledLibrary({ scope, title, subtitle }: ScheduledLibraryPro
       <PageShell.Content className="max-w-6xl">
         <PageShell.Header title={title} />
         <p className="mb-6 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>
+        {navigation}
         <CapabilityFilters
           availableFilters={["configured", "recipe"]}
           categories={controller.categories}
@@ -111,4 +113,6 @@ interface ScheduledLibraryProps {
   scope: CapabilityLibraryScope;
   title: string;
   subtitle: string;
+  /** Rendered under the subtitle, e.g. a project's section tabs. */
+  navigation?: ReactNode;
 }

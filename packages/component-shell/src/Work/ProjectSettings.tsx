@@ -1,16 +1,16 @@
-import { ButtonLink, Card } from "@ngriffin_uk/polychat-component-ui";
+import { Card } from "@ngriffin_uk/polychat-component-ui";
 import {
   ProjectTeammatesCard,
   ProjectOverviewSkeleton,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import { getProjectBasePath } from "@ngriffin_uk/polychat-library-react";
-import { ChevronLeft } from "lucide-react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { ProjectBriefCard } from "./ProjectBriefCard.js";
 import { ProjectCodingEnvironmentCard } from "./ProjectCodingEnvironmentCard.js";
+import { ProjectHomeTabs } from "./ProjectHomeTabs.js";
 import { ProjectKnowledgeCard } from "./ProjectKnowledgeCard.js";
 import { ProjectRoutingCard } from "./ProjectRoutingCard.js";
 import { ProjectSchedulesCard } from "./ProjectSchedulesCard.js";
@@ -53,23 +53,12 @@ export function ProjectSettings({
 
   return (
     <PageShell.Content className="max-w-4xl">
-      <PageShell.Header
-        title={`${project.name} settings`}
-        actionContent={
-          <ButtonLink
-            variant="ghost"
-            size="sm"
-            href={getProjectBasePath(workspaceId, projectId)}
-            icon={<ChevronLeft size={16} />}
-          >
-            Back to project
-          </ButtonLink>
-        }
-      />
+      <PageShell.Header title={`${project.name} settings`} />
       <p className="mb-6 max-w-2xl text-sm text-muted-foreground">
         How this project briefs its teammates, which model tier it runs on, what it knows, and what
         runs on a schedule.
       </p>
+      <ProjectHomeTabs workspaceId={workspaceId} projectId={projectId} />
 
       <Card className="gap-0 overflow-hidden py-0 shadow-none">
         <ProjectBriefCard

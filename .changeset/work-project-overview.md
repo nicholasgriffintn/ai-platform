@@ -12,3 +12,4 @@ Give Work projects an overview page and consistent section navigation.
 - The Activity page uses the shared project header, so its tabs match the other project pages. `ProjectActivity` now takes `workspaceId`.
 - "Add a task" on the overview opens the task board with the create dialog already open (`?new=1`).
 - `component-workspaces` exports a new `ProjectBriefPreview`.
+- Teammates, Scheduled, Plugins and Settings now show the project tabs as well: `CapabilityLibrary`, `ScheduledLibrary` and `PluginsLibrary` accept an optional `navigation` slot. On Settings the tabs replace the "Back to project" link.

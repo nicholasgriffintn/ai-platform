@@ -251,10 +251,14 @@ export class WorkPage extends BasePage {
     await member.waitFor({ state: "detached" });
   }
 
-  async openProjectSettings() {
-    const backToProject = this.page.getByRole("link", { name: "Back to project" });
+  private projectSettingsHeading() {
+    return this.page.getByRole("heading", { name: / settings$/ }).first();
+  }
 
-    if (await backToProject.isVisible()) {
+  async openProjectSettings() {
+    const settingsHeading = this.projectSettingsHeading();
+
+    if (await settingsHeading.isVisible()) {
       return;
     }
 
@@ -262,7 +266,7 @@ export class WorkPage extends BasePage {
 
     if (await gear.isVisible()) {
       await gear.click();
-      await backToProject.waitFor();
+      await settingsHeading.waitFor();
 
       return;
     }
@@ -270,18 +274,21 @@ export class WorkPage extends BasePage {
     await this.navigate(
       `/work/${this.currentWorkspaceId()}/projects/${this.currentProjectId()}/settings`,
     );
-    await backToProject.waitFor();
+    await settingsHeading.waitFor();
   }
 
   async leaveProjectSettings() {
-    const back = this.page.getByRole("link", { name: "Back to project" });
+    const settingsHeading = this.projectSettingsHeading();
 
-    if (!(await back.isVisible())) {
+    if (!(await settingsHeading.isVisible())) {
       return;
     }
 
-    await back.click();
-    await back.waitFor({ state: "hidden" });
+    await this.page
+      .getByRole("navigation", { name: "Project sections" })
+      .getByRole("link", { name: "Overview", exact: true })
+      .click();
+    await settingsHeading.waitFor({ state: "hidden" });
   }
 
   async updateProjectBrief(instructions: string) {

@@ -1,5 +1,6 @@
 import { useProjectCapabilityScope } from "../Capabilities/useCapabilityLibraryController.js";
 import { ScheduledLibrary } from "../Scheduled/ScheduledLibrary.js";
+import { ProjectHomeTabs } from "./ProjectHomeTabs.js";
 import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectScheduledLibrary({
@@ -26,6 +27,7 @@ export function ProjectScheduledLibrary({
       subtitle={`The automations ${
         projectQuery.data?.name ?? "this project"
       } runs on a schedule or a trigger.`}
+      navigation={<ProjectHomeTabs workspaceId={workspaceId} projectId={projectId} />}
     />
   );
 }

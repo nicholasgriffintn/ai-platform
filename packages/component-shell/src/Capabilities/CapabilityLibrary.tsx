@@ -37,6 +37,7 @@ export function CapabilityLibrary({
   scope,
   title,
   subtitle,
+  navigation,
   kinds = DEFAULT_CAPABILITY_KINDS,
   extraItems,
   renderGroup,
@@ -83,6 +84,7 @@ export function CapabilityLibrary({
           actionContent={<CapabilityAddMenu choices={authoring.addChoices} />}
         />
         <p className="mb-6 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>
+        {navigation}
         <CapabilityFilters
           availableFilters={availableFilters}
           categories={controller.filters.categories}
@@ -223,4 +225,6 @@ interface CapabilityLibraryProps {
   scope: CapabilityLibraryScope;
   title: string;
   subtitle: string;
+  /** Rendered under the subtitle, e.g. a project's section tabs. */
+  navigation?: ReactNode;
 }
