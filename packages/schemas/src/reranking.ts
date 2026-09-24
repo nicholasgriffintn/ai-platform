@@ -85,6 +85,7 @@ export type RerankingResult = z.infer<typeof rerankingResultSchema>;
 
 export const rerankingUsageSchema = z
   .object({
+    input_tokens: z.number().int().min(0).optional(),
     search_units: z.number().int().min(0).optional(),
   })
   .strict();

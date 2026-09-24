@@ -1,0 +1,31 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 32000,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
+    },
+    "strengths": [
+      "search"
+    ],
+    "releaseDate": "June 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The greenpt/green embedding family includes models that produce embedding.",
+  "models": {
+    "green-embedding": {
+      "defaults": {
+        "name": "Green Embedding",
+        "description": "Qwen3-Embedding-4B multilingual embedding model with configurable dimensions"
+      }
+    }
+  }
+}

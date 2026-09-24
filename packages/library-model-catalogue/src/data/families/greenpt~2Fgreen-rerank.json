@@ -1,0 +1,31 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 32000,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "reranking"
+      ]
+    },
+    "strengths": [
+      "reranking"
+    ],
+    "releaseDate": "June 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The greenpt/green rerank family includes models that rerank documents.",
+  "models": {
+    "green-rerank": {
+      "defaults": {
+        "name": "Green Rerank",
+        "description": "Qwen3-Reranker-4B multilingual reranking model for retrieval pipelines"
+      }
+    }
+  }
+}

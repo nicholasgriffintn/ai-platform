@@ -4,6 +4,7 @@ import type {
   DecisionRequest,
   ProviderRuntime,
 } from "@ngriffin_uk/polychat-ai-providers";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 import z from "zod/v4";
 
@@ -26,6 +27,18 @@ function lastParams(getResponse: ReturnType<typeof vi.fn<GetResponse>>): ChatCom
 }
 
 function createRuntime(getResponse: GetResponse, options: { decisionTarget?: boolean } = {}) {
+  const modelConfigs: Record<string, ModelConfigItem> = {
+    "gpt-5": {
+      matchingModel: "gpt-5",
+      provider: "openai",
+      modalities: { input: ["text"], output: ["text"] },
+    },
+    "green-embedding": {
+      matchingModel: "green-embedding",
+      provider: "greenpt",
+      modalities: { input: ["text"], output: ["embedding"] },
+    },
+  };
   const chat: AIProvider = { name: "openai", supportsStreaming: true, getResponse };
   const decision = {
     name: "typesafe",
@@ -90,9 +103,7 @@ function createRuntime(getResponse: GetResponse, options: { decisionTarget?: boo
   const runtime: ProviderRuntime = {
     host: {
       models: {
-        findModelConfig: vi.fn(async (model: string) =>
-          model === "gpt-5" ? ({ matchingModel: "gpt-5", provider: "openai" } as never) : null,
-        ),
+        findModelConfig: vi.fn(async (model: string) => modelConfigs[model] ?? null),
         resolveModelProvider: vi.fn(
           async ({ provider, defaultProvider }) => provider ?? defaultProvider,
         ),
@@ -215,6 +226,48 @@ describe("createAiFunctions", () => {
     await expect(
       ai.image({ env, user, prompt: "a parrot" }, { provider: "replicate", allowFallback: false }),
     ).rejects.toThrow("replicate down");
+  });
+
+  it("embeds text through the chat provider and returns ordered vectors", async () => {
+    const getResponse = vi.fn<GetResponse>(async () => ({
+      data: [
+        { index: 1, embedding: [3, 4] },
+        { index: 0, embedding: [1, 2] },
+      ],
+      usage: { total_tokens: 4 },
+    }));
+    const { runtime } = createRuntime(getResponse);
+    const ai = createAiFunctions(runtime);
+
+    const result = await ai.embed({ env, user, model: "green-embedding", input: ["a", "b"] });
+
+    expect(result).toEqual({
+      model: "green-embedding",
+      provider: "greenpt",
+      vectors: [
+        [1, 2],
+        [3, 4],
+      ],
+      usage: { total_tokens: 4 },
+    });
+    expect(lastParams(getResponse).body).toEqual({ input: ["a", "b"] });
+    await expect(ai.embed({ env, model: "green-embedding", input: " " })).rejects.toThrow(
+      "must not be empty",
+    );
+    await expect(
+      ai.embed({ env, model: "green-embedding", input: Array.from({ length: 2_049 }, () => "x") }),
+    ).rejects.toThrow("at most 2048 inputs");
+  });
+
+  it("rejects incomplete embedding responses", async () => {
+    const { runtime } = createRuntime(
+      vi.fn<GetResponse>(async () => ({ data: [{ index: 0, embedding: [1, 2] }] })),
+    );
+    const ai = createAiFunctions(runtime);
+
+    await expect(
+      ai.embed({ env, user, model: "green-embedding", input: ["a", "b"] }),
+    ).rejects.toMatchObject({ type: "PROVIDER_ERROR" });
   });
 
   it("routes classify and is through the decision provider when one resolves", async () => {

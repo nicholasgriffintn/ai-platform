@@ -7,6 +7,8 @@ export interface TranscriptionRequest {
   audio: TranscriptionAudioSource;
   user: ProviderUser;
   provider?: string;
+  model?: string;
+  language?: string;
   timestamps?: boolean;
 }
 

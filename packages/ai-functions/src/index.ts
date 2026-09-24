@@ -99,6 +99,8 @@ export {
 } from "./reranking.js";
 export {
   createRetrievalFunctions,
+  type EmbedRequest,
+  type EmbedResult,
   type GuardRequest,
   type ResearchRequest,
   type RetrievalFunctions,

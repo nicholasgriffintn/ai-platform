@@ -118,13 +118,21 @@ export const DEFAULT_CAPABILITY_METERS: CapabilityMeterTable = {
   },
   reranking: {
     rerank: (_args, result) => {
-      const quantity = isRecord(result)
+      const inputTokens = isRecord(result)
+        ? positive(findNumericFieldDeep(result, ["input_tokens"], 2))
+        : null;
+
+      if (inputTokens !== null) {
+        return { unit: "input_tokens", quantity: inputTokens };
+      }
+
+      const searchUnits = isRecord(result)
         ? positive(findNumericFieldDeep(result, ["search_units"], 2))
         : null;
 
-      return quantity === null
+      return searchUnits === null
         ? { unit: "requests", quantity: 1 }
-        : { unit: "search_units", quantity };
+        : { unit: "search_units", quantity: searchUnits };
     },
   },
   search: {

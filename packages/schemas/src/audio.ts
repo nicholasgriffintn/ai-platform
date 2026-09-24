@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
 export const transcribeQuerySchema = z.object({
-  provider: z.enum(["workers", "mistral", "replicate"]).optional(),
+  provider: z.enum(["workers", "mistral", "replicate", "greenpt"]).optional(),
   timestamps: z.coerce.boolean().optional(),
 });
 

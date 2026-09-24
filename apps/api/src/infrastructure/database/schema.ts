@@ -1449,7 +1449,7 @@ export const userSettings = sqliteTable(
       enum: ["built-in", "documents", "hindsight", "honcho"],
     }).default("built-in"),
     transcription_provider: text({
-      enum: ["workers", "mistral", "replicate"],
+      enum: ["workers", "mistral", "replicate", "greenpt"],
     }).default("workers"),
     transcription_model: text().default("whisper"),
     speech_provider: text({
@@ -1457,7 +1457,7 @@ export const userSettings = sqliteTable(
     }).default("melotts"),
     speech_model: text().default("@cf/myshell-ai/melotts"),
     search_provider: text({
-      enum: ["duckduckgo", "tavily", "serper", "parallel", "perplexity", "exa"],
+      enum: ["duckduckgo", "tavily", "serper", "parallel", "perplexity", "exa", "greenpt"],
     }),
     sandbox_model: text(),
     default_model_tier: text({ enum: ["low", "medium", "high", "ultra"] }),

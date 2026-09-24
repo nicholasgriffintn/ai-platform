@@ -3,6 +3,7 @@ import {
   CartesiaRealtimeProvider,
   ElevenLabsRealtimeProvider,
   GoogleRealtimeProvider,
+  GreenPtRealtimeProvider,
   MistralRealtimeProvider,
   OpenAIRealtimeProvider,
 } from "../capabilities/realtime/providers/index.js";
@@ -43,6 +44,11 @@ function realtimeProviders(runtime: ProviderRuntime): AiProviderRegistration<Rea
       aliases: ["ink"],
       create: () => new CartesiaRealtimeProvider(runtime),
       metadata: { vendor: "Cartesia", categories: ["realtime"], tags: ["transcription"] },
+    },
+    {
+      name: "greenpt",
+      create: () => new GreenPtRealtimeProvider(runtime),
+      metadata: { vendor: "GreenPT", categories: ["realtime"], tags: ["transcription"] },
     },
   ];
 }

@@ -28,7 +28,7 @@ describe("realtime provider catalogue", () => {
   it("derives every public descriptor from a matching registry entry", () => {
     const registrations = providerLibrary.list("realtime");
 
-    expect(registrations).toHaveLength(5);
+    expect(registrations).toHaveLength(6);
     for (const registration of registrations) {
       expect(providerLibrary.resolve("realtime", registration.name, {}).descriptor.id).toBe(
         registration.name,
@@ -99,7 +99,7 @@ describe("realtime provider catalogue", () => {
 
     expect(catalogue).toHaveLength(registrations.length);
     expect(catalogue.every(({ readiness }) => readiness === "ready")).toBe(true);
-    expect(catalogue.map(({ order }) => order)).toEqual([0, 1, 2, 3, 4]);
+    expect(catalogue.map(({ order }) => order)).toEqual([0, 1, 2, 3, 4, 5]);
     expect(error).not.toHaveBeenCalled();
   });
 

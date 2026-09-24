@@ -31,9 +31,9 @@ export const extract_content: FunctionToolDescriptor = {
       },
       provider: {
         type: "string",
-        enum: ["auto", "tavily", "cloudflare"],
+        enum: ["auto", "tavily", "cloudflare", "greenpt"],
         description:
-          "Extraction provider. Use 'cloudflare' for Browser Rendering endpoints or 'auto' to choose based on configured keys.",
+          "Extraction provider. Use 'cloudflare' for Browser Rendering endpoints, 'greenpt' for GreenPT scraping, or 'auto' to choose based on configured keys.",
         default: "auto",
       },
       cloudflareFormat: {

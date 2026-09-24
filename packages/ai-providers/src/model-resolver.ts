@@ -17,11 +17,15 @@ import type { ProviderModelResolver, RerankingModelSelection } from "./host.js";
 import { isProviderPlatformEnabled } from "./platform-credentials.js";
 
 export function isRerankingModelRuntimeAvailable(
-  model: Pick<ModelConfigItem, "provider">,
+  model: Pick<ModelConfigItem, "provider" | "isByokEnabled" | "isPlatformEnabled">,
   env: Record<string, unknown>,
 ): boolean {
   if (["workers", "workers-ai"].includes(model.provider)) {
     return Boolean(env.AI);
+  }
+
+  if (model.isPlatformEnabled !== undefined || model.isByokEnabled !== undefined) {
+    return model.isPlatformEnabled === true || model.isByokEnabled === true;
   }
 
   return isProviderPlatformEnabled(model.provider, env);

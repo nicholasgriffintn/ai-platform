@@ -6,6 +6,7 @@ export {
   ELEVENLABS_REALTIME_DESCRIPTOR,
   ElevenLabsRealtimeProvider,
 } from "./ElevenLabsRealtimeProvider.js";
+export { GREENPT_REALTIME_DESCRIPTOR, GreenPtRealtimeProvider } from "./GreenPtRealtimeProvider.js";
 export { OPENAI_REALTIME_DESCRIPTOR, OpenAIRealtimeProvider } from "./OpenAIRealtimeProvider.js";
 export { GOOGLE_REALTIME_DESCRIPTOR, GoogleRealtimeProvider } from "./GoogleRealtimeProvider.js";
 

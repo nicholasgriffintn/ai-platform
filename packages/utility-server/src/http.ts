@@ -6,8 +6,8 @@ const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 const MAX_REDIRECTS = 5;
 
 export class UnsafeUrlError extends Error {
-  constructor(url: string) {
-    super(`Refusing to fetch non-public URL: ${url}`);
+  constructor(_url: string) {
+    super("Refusing to fetch non-public URL");
     this.name = "UnsafeUrlError";
   }
 }
@@ -18,21 +18,33 @@ export function isPublicHttpUrl(url: URL): boolean {
   );
 }
 
+export function parsePublicHttpUrl(input: string | URL): URL {
+  let url: URL;
+
+  try {
+    url = new URL(input.toString());
+  } catch {
+    throw new UnsafeUrlError(input.toString());
+  }
+
+  if (!isPublicHttpUrl(url) || url.username || url.password) {
+    throw new UnsafeUrlError(url.toString());
+  }
+
+  return url;
+}
+
 export async function fetchFollowingSafeRedirects(
   input: string | URL,
   init: RequestInit = {},
   maxRedirects = MAX_REDIRECTS,
 ): Promise<Response> {
-  const initialUrl = new URL(input.toString());
+  const initialUrl = parsePublicHttpUrl(input);
   let currentUrl = initialUrl;
   const currentInit: RequestInit = { ...init };
   let redirectCount = 0;
 
   while (true) {
-    if (!isPublicHttpUrl(currentUrl)) {
-      throw new UnsafeUrlError(currentUrl.toString());
-    }
-
     const response = await fetch(currentUrl.toString(), {
       ...currentInit,
       redirect: "manual",
@@ -65,7 +77,7 @@ export async function fetchFollowingSafeRedirects(
       Object.assign(currentInit, { method: "GET", body: undefined });
     }
 
-    currentUrl = new URL(location, currentUrl);
+    currentUrl = parsePublicHttpUrl(new URL(location, currentUrl));
   }
 }
 
@@ -73,6 +85,60 @@ export class ResponseBodyTooLargeError extends Error {
   constructor(maxBytes: number) {
     super(`Response body exceeds the ${maxBytes}-byte limit`);
     this.name = "ResponseBodyTooLargeError";
+  }
+}
+
+export async function readResponseBytesWithinLimit(
+  response: Response,
+  maxBytes: number,
+): Promise<Uint8Array> {
+  const declaredLength = Number(response.headers.get("content-length"));
+
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
+    throw new ResponseBodyTooLargeError(maxBytes);
+  }
+
+  if (!response.body) {
+    const bytes = new Uint8Array(await response.arrayBuffer());
+
+    if (bytes.byteLength > maxBytes) {
+      throw new ResponseBodyTooLargeError(maxBytes);
+    }
+
+    return bytes;
+  }
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let byteLength = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        const bytes = new Uint8Array(byteLength);
+        let offset = 0;
+
+        for (const chunk of chunks) {
+          bytes.set(chunk, offset);
+          offset += chunk.byteLength;
+        }
+
+        return bytes;
+      }
+
+      byteLength += value.byteLength;
+
+      if (byteLength > maxBytes) {
+        await reader.cancel();
+        throw new ResponseBodyTooLargeError(maxBytes);
+      }
+
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
   }
 }
 

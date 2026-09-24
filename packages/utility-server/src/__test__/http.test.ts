@@ -5,8 +5,10 @@ import {
   fetchFollowingSafeRedirects,
   headersToRecord,
   isPublicHttpUrl,
+  parsePublicHttpUrl,
   parseBearerToken,
   readHttpResponseBody,
+  readResponseBytesWithinLimit,
   readResponseTextWithinLimit,
   setDefaultHeader,
 } from "../http.js";
@@ -97,6 +99,27 @@ describe("isPublicHttpUrl", () => {
     expect(isPublicHttpUrl(new URL("http://localhost:3000/"))).toBe(false);
     expect(isPublicHttpUrl(new URL("http://10.0.0.5/"))).toBe(false);
     expect(isPublicHttpUrl(new URL("file:///etc/passwd"))).toBe(false);
+  });
+});
+
+describe("parsePublicHttpUrl", () => {
+  it("normalises public URLs and rejects credentials", () => {
+    expect(parsePublicHttpUrl("https://example.com/a").toString()).toBe("https://example.com/a");
+    expect(() => parsePublicHttpUrl("https://user:secret@example.com/a")).toThrow("non-public URL");
+  });
+});
+
+describe("readResponseBytesWithinLimit", () => {
+  it("reads binary responses within the limit", async () => {
+    await expect(
+      readResponseBytesWithinLimit(new Response(new Uint8Array([0, 1, 2])), 3),
+    ).resolves.toEqual(new Uint8Array([0, 1, 2]));
+  });
+
+  it("cancels a streamed response after it exceeds the limit", async () => {
+    await expect(readResponseBytesWithinLimit(new Response("too large"), 3)).rejects.toThrow(
+      "3-byte limit",
+    );
   });
 });
 

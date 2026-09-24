@@ -4,7 +4,7 @@ export interface ContentExtractParams {
   include_images?: boolean;
   should_vectorize?: boolean;
   namespace?: string;
-  provider?: "auto" | "tavily" | "cloudflare";
+  provider?: "auto" | ContentExtractProvider;
   cloudflareFormat?: "markdown" | "content" | "json" | "links" | "scrape" | "snapshot";
   cloudflareJsonOptions?: Record<string, unknown>;
   cloudflareScrapeOptions?: {
@@ -59,4 +59,4 @@ export interface ContentExtractResult {
   };
 }
 
-export type ContentExtractProvider = "tavily" | "cloudflare";
+export type ContentExtractProvider = "tavily" | "cloudflare" | "greenpt";

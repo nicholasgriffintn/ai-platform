@@ -9,7 +9,9 @@ import type { IEnv, IUser } from "~/types";
 
 import { assertValidTranscriptionFile, type TranscriptionAudioSource } from "./transcription-input";
 
-export type TranscriptionProvider = "workers" | "mistral" | "replicate";
+const TRANSCRIPTION_PROVIDERS = ["workers", "mistral", "replicate", "greenpt"] as const;
+
+export type TranscriptionProvider = (typeof TRANSCRIPTION_PROVIDERS)[number];
 
 type TranscribeRequest = {
   env: IEnv;
@@ -33,6 +35,7 @@ export const handleTranscribe = async (req: TranscribeRequest): Promise<Transcri
 
   try {
     let selectedProvider = provider;
+    let selectedModel: string | undefined;
 
     if (!selectedProvider) {
       const repositories = new RepositoryManager(env);
@@ -50,6 +53,7 @@ export const handleTranscribe = async (req: TranscribeRequest): Promise<Transcri
       }
 
       selectedProvider = speechModel.transcriptionProvider;
+      selectedModel = speechModel.model;
     }
 
     const resolvedProvider = selectedProvider || "workers";
@@ -74,6 +78,7 @@ export const handleTranscribe = async (req: TranscribeRequest): Promise<Transcri
       audio,
       user,
       provider: resolvedProvider,
+      model: selectedModel,
       timestamps,
     });
 
@@ -94,5 +99,5 @@ export const handleTranscribe = async (req: TranscribeRequest): Promise<Transcri
 };
 
 function isTranscriptionProvider(value: string | undefined): value is TranscriptionProvider {
-  return value === "workers" || value === "mistral" || value === "replicate";
+  return TRANSCRIPTION_PROVIDERS.some((provider) => provider === value);
 }
