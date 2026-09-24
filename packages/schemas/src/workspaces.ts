@@ -12,7 +12,7 @@ import {
 import { sandboxEnvironmentSetupSchema } from "./sandbox-environment.js";
 import {
   DEFAULT_SANDBOX_EXECUTION_PROVIDER,
-  sandboxExecutionProviderSchema,
+  sandboxRemoteExecutionProviderSchema,
 } from "./sandbox-provider.js";
 
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
@@ -27,7 +27,9 @@ export const projectCodingPromptStrategySchema = z.enum([
 
 export const projectCodingEnvironmentSchema = z
   .object({
-    executionProvider: sandboxExecutionProviderSchema.default(DEFAULT_SANDBOX_EXECUTION_PROVIDER),
+    executionProvider: sandboxRemoteExecutionProviderSchema.default(
+      DEFAULT_SANDBOX_EXECUTION_PROVIDER,
+    ),
     installationId: z.number().int().positive(),
     repository: z
       .string()

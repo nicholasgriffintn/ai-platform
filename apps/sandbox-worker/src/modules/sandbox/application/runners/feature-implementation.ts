@@ -51,6 +51,8 @@ import {
 import { runStoryTracker } from "../../infrastructure/feature-implementation/story-tracker";
 import { deliverCommitToGitHub, prepareGitHubDelivery } from "../../infrastructure/github-delivery";
 import { waitForInspectionWindow } from "../../infrastructure/inspection-window";
+import { createLocalSandbox } from "../../infrastructure/local-sandbox";
+import { LocalSandboxRelay } from "../../infrastructure/local-sandbox-relay";
 import { PolychatClient } from "../../infrastructure/polychat-client";
 import { RunControlClient } from "../../infrastructure/run-control-client";
 import { ProjectServiceSupervisor } from "../../infrastructure/service-supervisor";
@@ -120,7 +122,11 @@ export async function executeFeatureImplementation(
   const runId = params.runId || crypto.randomUUID().slice(0, 8);
   const deliveryPolicy = resolveSandboxDeliveryPolicy(params.deliveryPolicy, params.shouldCommit);
   const shouldCommit = sandboxDeliveryPolicyCreatesCommit(deliveryPolicy);
-  const sandbox = getSandbox(env.Sandbox, runId);
+  const sandbox = params.machineId
+    ? await createLocalSandbox(
+        new LocalSandboxRelay(params.machineId, secrets.userToken, env.POLYCHAT_API, abortSignal),
+      )
+    : getSandbox(env.Sandbox, runId);
   const client = new PolychatClient(secrets.userToken, env.POLYCHAT_API);
   const executionLogs: string[] = [];
   const redactionSecrets = [

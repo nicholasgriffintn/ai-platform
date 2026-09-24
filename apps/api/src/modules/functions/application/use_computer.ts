@@ -25,7 +25,7 @@ export const use_computer: ApiToolDefinition = {
       return {
         status: "error",
         name: descriptor.name,
-        content: "A hosted computer is only available inside a durable teammate context.",
+        content: "A computer is only available inside a durable teammate context.",
       };
     }
 
@@ -77,7 +77,7 @@ export const use_computer: ApiToolDefinition = {
         ? result.observation.text
         : null;
     const title =
-      typeof result.observation.title === "string" ? result.observation.title : "Hosted computer";
+      typeof result.observation.title === "string" ? result.observation.title : "Computer";
     const width = typeof result.observation.width === "number" ? result.observation.width : 1440;
     const height = typeof result.observation.height === "number" ? result.observation.height : 900;
     const judgement =

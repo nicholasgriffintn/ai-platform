@@ -13,7 +13,14 @@ export const MACHINE_ONLINE_WINDOW_MS = 5 * 60_000;
 export const machinePlatformSchema = z.enum(["macos", "windows", "linux"]);
 export type MachinePlatform = z.infer<typeof machinePlatformSchema>;
 
-export const machineCapabilitySchema = z.enum(["model-run", "agent-run", "handoff", "model-relay"]);
+export const machineCapabilitySchema = z.enum([
+  "model-run",
+  "agent-run",
+  "handoff",
+  "model-relay",
+  "sandbox",
+  "computer",
+]);
 export type MachineCapability = z.infer<typeof machineCapabilitySchema>;
 
 export const machineModelSchema = z
@@ -59,7 +66,7 @@ export const machineHeartbeatSchema = z
     platform: machinePlatformSchema,
     appVersion: z.string().trim().min(1).max(64),
     runtimes: z.array(machineRuntimeSchema).max(32),
-    capabilities: z.array(machineCapabilitySchema).max(4),
+    capabilities: z.array(machineCapabilitySchema).max(6),
   })
   .strict();
 

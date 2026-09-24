@@ -25,6 +25,7 @@ export function WorkbenchComputerPreview({
     observations[observations.length - 1];
   const contextId = selected?.contextId;
   const computer = useTeammateComputer(contextId);
+  const isLocal = computer.data?.provider.startsWith("local:") ?? false;
   const requestView = computer.view.mutate;
 
   const applyConnection = useCallback((connection: { screenUrl: string; expiresAt: string }) => {
@@ -73,14 +74,19 @@ export function WorkbenchComputerPreview({
   }
 
   return (
-    <section aria-label="Hosted computer" className="flex min-h-full flex-col gap-3">
+    <section
+      aria-label={isLocal ? "Local computer" : "Hosted computer"}
+      className="flex min-h-full flex-col gap-3"
+    >
       <div className="flex min-w-0 items-center gap-2">
         <MonitorPlay className="size-4 shrink-0 text-creative" aria-hidden="true" />
-        <h2 className="truncate text-sm font-medium text-foreground">Hosted computer</h2>
+        <h2 className="truncate text-sm font-medium text-foreground">
+          {isLocal ? "Local computer" : "Hosted computer"}
+        </h2>
         <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
           {observations.length} {observations.length === 1 ? "capture" : "captures"}
         </span>
-        {contextId && !live ? (
+        {contextId && !live && !isLocal ? (
           <Button
             size="sm"
             variant="outline"

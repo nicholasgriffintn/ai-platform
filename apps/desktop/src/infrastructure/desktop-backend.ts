@@ -31,6 +31,8 @@ import { Channel, invoke } from "@tauri-apps/api/core";
 import z from "zod/v4";
 
 import type { DesktopAnnouncement } from "./inbox-announcements";
+import { tauriLocalBrowserBackend, type LocalBrowserBackend } from "./local-browser";
+import { tauriLocalSandboxBackend, type LocalSandboxBackend } from "./local-sandbox";
 import { notifyMachineEndpointsChanged } from "./machine-heartbeat-events";
 import { describeRunFailure } from "./run-failures";
 
@@ -47,7 +49,8 @@ export const desktopDiagnosticsSchema = z.object({
 
 export type DesktopDiagnostics = z.infer<typeof desktopDiagnosticsSchema>;
 
-export interface ConnectedDesktopBackend extends DesktopBackend {
+export interface ConnectedDesktopBackend
+  extends DesktopBackend, LocalSandboxBackend, LocalBrowserBackend {
   collectDiagnostics: () => Promise<DesktopDiagnostics>;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -140,6 +143,9 @@ async function startAgentSession(
 }
 
 export const tauriDesktopBackend: ConnectedDesktopBackend = {
+  ...tauriLocalSandboxBackend,
+  ...tauriLocalBrowserBackend,
+  getMachineId: async () => (await tauriDesktopBackend.collectDiagnostics()).machineId,
   listEndpoints: async () => desktopEndpointSchema.array().parse(await invoke("list_endpoints")),
   saveEndpoint: async (endpoint, pairingSecret) => {
     await invoke("save_endpoint", { endpoint, pairingSecret: pairingSecret ?? null });

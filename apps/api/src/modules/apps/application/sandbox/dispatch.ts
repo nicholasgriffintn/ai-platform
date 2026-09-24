@@ -295,6 +295,7 @@ export async function processSandboxRunDispatch(params: {
     });
 
     workerResponse = await executeSandboxProvider(sandboxProvider, {
+      machineId: message.payload.machineId,
       repo: message.payload.repo,
       task: taskProfile.task,
       taskType: taskProfile.taskType,

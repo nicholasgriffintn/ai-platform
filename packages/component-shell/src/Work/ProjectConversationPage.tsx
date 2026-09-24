@@ -19,10 +19,12 @@ import { toast } from "sonner";
 
 import { ConversationPage } from "../Conversations/ConversationPage.js";
 import { ConversationProductHeader } from "../Header/ConversationProductHeader.js";
+import { ProjectCodingExecutionControl } from "./ProjectCodingExecutionControl.js";
 import { ProjectCodingTaskControl } from "./ProjectCodingTaskControl.js";
 import { ProjectFileAsTaskControl } from "./ProjectFileAsTaskControl.js";
 import { ProjectWorkbenchConversation } from "./ProjectWorkbenchConversation.js";
 import { useFileMessageAsTask } from "./useFileMessageAsTask.js";
+import { useProjectCodingExecution } from "./useProjectCodingExecution.js";
 import { useProjectCodingTaskType } from "./useProjectCodingTaskType.js";
 import { useProjectTaskInteractions } from "./useProjectTaskInteractions.js";
 import { useWorkData } from "./WorkDataContext.js";
@@ -81,6 +83,9 @@ export function ProjectConversationPage({
     [projectCapabilities],
   );
   const codingEnvironment = project?.codingEnvironment;
+  const codingExecution = useProjectCodingExecution(
+    codingEnvironment?.executionProvider ?? "polychat",
+  );
   const { taskType, handleTaskTypeChange } = useProjectCodingTaskType({
     projectId,
     currentConversationId,
@@ -172,11 +177,19 @@ export function ProjectConversationPage({
         followUp: codingEnvironment ? codingPresentation.placeholder : "Reply…",
       },
       inputControls: codingEnvironment ? (
-        <ProjectCodingTaskControl
-          taskType={taskType}
-          isDisabled={isStreamLoading}
-          onChange={handleTaskTypeChange}
-        />
+        <>
+          <ProjectCodingTaskControl
+            taskType={taskType}
+            isDisabled={isStreamLoading}
+            onChange={handleTaskTypeChange}
+          />
+          <ProjectCodingExecutionControl
+            value={codingExecution.selection}
+            options={codingExecution.options}
+            isDisabled={isStreamLoading}
+            onChange={codingExecution.onChange}
+          />
+        </>
       ) : (
         <ProjectFileAsTaskControl
           isEnabled={fileAsTask.isEnabled}
@@ -192,6 +205,8 @@ export function ProjectConversationPage({
               options: {
                 sandbox: {
                   enabled: true,
+                  executionProvider: codingExecution.executionProvider,
+                  machineId: codingExecution.machineId,
                   installationId: codingEnvironment.installationId,
                   repo: codingEnvironment.repository,
                   taskType,
@@ -212,6 +227,7 @@ export function ProjectConversationPage({
     [
       capabilities,
       codingEnvironment,
+      codingExecution,
       codingPresentation,
       fileAsTask,
       handleTaskTypeChange,

@@ -1,6 +1,8 @@
 import z from "zod/v4";
 
-export const sandboxExecutionProviderSchema = z.enum(["polychat", "openai"]);
+export const sandboxRemoteExecutionProviderSchema = z.enum(["polychat", "openai"]);
+export type SandboxRemoteExecutionProvider = z.infer<typeof sandboxRemoteExecutionProviderSchema>;
+export const sandboxExecutionProviderSchema = z.enum(["polychat", "openai", "local"]);
 export type SandboxExecutionProvider = z.infer<typeof sandboxExecutionProviderSchema>;
 
 export interface SandboxProviderCapabilities {
@@ -47,9 +49,26 @@ export const SANDBOX_EXECUTION_PROVIDER_DEFINITIONS = {
       runControls: false,
     },
   },
+  local: {
+    id: "local",
+    label: "This device",
+    description: "Run the coding sandbox in Docker on your desktop.",
+    capabilities: {
+      credentialBroker: true,
+      environmentSetup: true,
+      environmentCache: false,
+      inspection: false,
+      remoteDelivery: true,
+      runControls: true,
+    },
+  },
 } as const satisfies Record<SandboxExecutionProvider, SandboxExecutionProviderDefinition>;
 
 export const SANDBOX_EXECUTION_PROVIDERS = Object.values(SANDBOX_EXECUTION_PROVIDER_DEFINITIONS);
+export const SANDBOX_REMOTE_EXECUTION_PROVIDERS = [
+  SANDBOX_EXECUTION_PROVIDER_DEFINITIONS.polychat,
+  SANDBOX_EXECUTION_PROVIDER_DEFINITIONS.openai,
+];
 
 export function resolveSandboxExecutionProvider(value: unknown) {
   const parsed = sandboxExecutionProviderSchema.safeParse(value);

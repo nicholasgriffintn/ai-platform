@@ -30,7 +30,11 @@ export const teammateComputerSchema = z.object({
 });
 
 export const teammateComputerActionSchema = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("provision") }),
+  z.object({
+    action: z.literal("provision"),
+    provider: z.enum(["hosted", "local"]).optional(),
+    machineId: z.string().trim().min(1).max(128).optional(),
+  }),
   z.object({ action: z.literal("observe") }),
   z.object({ action: z.literal("checkpoint") }),
   z.object({ action: z.literal("restore") }),

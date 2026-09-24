@@ -6,6 +6,7 @@ import {
   type ExecuteSandboxRunPayload as ExecuteSandboxRunStreamPayload,
   SANDBOX_RUNS_CAPABILITY_ID,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -43,6 +44,15 @@ export async function executeSandboxRunStream(
 ): Promise<Response> {
   const { env, context: serviceContext, user, payload, projectId, conversationId } = params;
   const executionProvider = resolveSandboxExecutionProvider(payload.executionProvider);
+  const machineId = executionProvider === "local" ? payload.machineId : undefined;
+
+  if (executionProvider === "local" && !machineId) {
+    throw new AssistantError(
+      "Choose a desktop for this local sandbox",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
 
   await assertSandboxRunCanStart({
     context: serviceContext,
@@ -86,6 +96,7 @@ export async function executeSandboxRunStream(
     taskType: payload.taskType,
     model,
     executionProvider,
+    machineId,
     trustLevel: payload.trustLevel ?? "balanced",
     promptStrategy: payload.promptStrategy,
     deliveryPolicy,
@@ -98,7 +109,8 @@ export async function executeSandboxRunStream(
     updatedAt: now,
     events: [],
     timeoutSeconds: timeoutConfig.timeoutSeconds,
-    inspectionWindowSeconds: projectEnvironment.inspectionWindowSeconds ?? 0,
+    inspectionWindowSeconds:
+      executionProvider === "polychat" ? (projectEnvironment.inspectionWindowSeconds ?? 0) : 0,
     timeoutAt: timeoutConfig.timeoutAt,
     workflowPhase: "queued",
   };
@@ -145,6 +157,7 @@ export async function executeSandboxRunStream(
       payload: {
         projectId,
         executionProvider,
+        machineId,
         installationId: payload.installationId,
         repo: payload.repo,
         task: payload.task,
@@ -157,7 +170,8 @@ export async function executeSandboxRunStream(
         environmentCache: projectEnvironment.environmentCache,
         environmentCacheGeneration: projectEnvironment.environmentCacheGeneration,
         timeoutSeconds: timeoutConfig.timeoutSeconds,
-        inspectionWindowSeconds: projectEnvironment.inspectionWindowSeconds ?? 0,
+        inspectionWindowSeconds:
+          executionProvider === "polychat" ? (projectEnvironment.inspectionWindowSeconds ?? 0) : 0,
         trustLevel: payload.trustLevel ?? "balanced",
         modelSettings: payload.modelSettings,
       },

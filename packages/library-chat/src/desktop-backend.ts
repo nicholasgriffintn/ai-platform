@@ -32,6 +32,7 @@ export interface DesktopAgentSession {
 }
 
 export interface DesktopBackend {
+  getMachineId?: () => Promise<string>;
   listEndpoints: () => Promise<DesktopEndpoint[]>;
   saveEndpoint: (endpoint: DesktopEndpoint, pairingSecret?: string) => Promise<void>;
   forgetEndpoint: (endpointId: string) => Promise<void>;

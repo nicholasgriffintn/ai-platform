@@ -49,6 +49,10 @@ export function applyProjectCodingEnvironment(
       sandbox: {
         ...options.options?.sandbox,
         ...projectContext.sandboxOptions,
+        executionProvider:
+          options.options?.sandbox?.executionProvider ??
+          projectContext.sandboxOptions.executionProvider,
+        machineId: options.options?.sandbox?.machineId,
         model: projectContext.sandboxOptions.model,
         taskType: options.options?.sandbox?.taskType ?? projectContext.sandboxOptions.taskType,
         enabled: true,

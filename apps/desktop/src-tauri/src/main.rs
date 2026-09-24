@@ -10,6 +10,8 @@ mod encoding;
 mod lines;
 mod link;
 mod links;
+mod local_browser;
+mod local_sandbox;
 mod model_runner;
 mod programs;
 mod runs;
@@ -829,6 +831,8 @@ fn main() {
             let directories = store.list_agent_directories()?;
             app.manage(store);
             app.manage(RunRegistry::default());
+            app.manage(local_sandbox::LocalSandboxes::default());
+            app.manage(local_browser::LocalBrowsers::default());
             app.manage(AgentSessionRegistry::default());
             app.manage(DirectoryGrants::from_grants(directories));
 
@@ -870,7 +874,17 @@ fn main() {
             cancel_model_run,
             cancel_agent_process_run,
             announce_attention,
-            set_attention_badge
+            set_attention_badge,
+            local_sandbox::local_sandbox_available,
+            local_sandbox::start_local_sandbox,
+            local_sandbox::request_local_sandbox,
+            local_sandbox::stop_local_sandbox,
+            local_browser::local_browser_available,
+            local_browser::start_local_browser,
+            local_browser::local_browser_action,
+            local_browser::observe_local_browser,
+            local_browser::revoke_local_browser,
+            local_browser::stop_local_browser
         ])
         .build(context)
         .expect("Polychat desktop failed to start")
@@ -878,6 +892,10 @@ fn main() {
             if let tauri::RunEvent::Exit = event {
                 let sessions = app.state::<AgentSessionRegistry>().inner().clone();
                 tauri::async_runtime::block_on(sessions.stop_all());
+                let sandboxes = app.state::<local_sandbox::LocalSandboxes>();
+                tauri::async_runtime::block_on(sandboxes.stop_all());
+                let browsers = app.state::<local_browser::LocalBrowsers>();
+                tauri::async_runtime::block_on(browsers.stop_all());
             }
         });
 }

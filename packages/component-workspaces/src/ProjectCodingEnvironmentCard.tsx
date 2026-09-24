@@ -1,9 +1,9 @@
 import { Button, Card, FormInput, FormSelect, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import {
   DEFAULT_SANDBOX_DELIVERY_POLICY,
-  SANDBOX_EXECUTION_PROVIDERS,
+  SANDBOX_REMOTE_EXECUTION_PROVIDERS,
   sandboxEnvironmentSetupSchema,
-  type SandboxExecutionProvider,
+  type SandboxRemoteExecutionProvider,
   type SandboxDeliveryPolicy,
   type SandboxEnvironmentCacheSummary,
   type SandboxEnvironmentSetup,
@@ -21,7 +21,7 @@ export interface CodingRepositoryOption {
 }
 
 export interface ProjectCodingEnvironment {
-  executionProvider: SandboxExecutionProvider;
+  executionProvider: SandboxRemoteExecutionProvider;
   installationId: number;
   repository: string;
   deliveryPolicy: SandboxDeliveryPolicy;
@@ -41,7 +41,7 @@ export interface ProjectCodingEnvironmentCardProps {
   cacheMessage?: string;
   isUpdatingCache?: boolean;
   onConnect: (input: {
-    executionProvider: SandboxExecutionProvider;
+    executionProvider: SandboxRemoteExecutionProvider;
     installationId: number;
     repository: string;
     deliveryPolicy: SandboxDeliveryPolicy;
@@ -70,7 +70,8 @@ export function ProjectCodingEnvironmentCard({
   onDeleteCache,
 }: ProjectCodingEnvironmentCardProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [executionProvider, setExecutionProvider] = useState<SandboxExecutionProvider>("polychat");
+  const [executionProvider, setExecutionProvider] =
+    useState<SandboxRemoteExecutionProvider>("polychat");
   const [repositoryKey, setRepositoryKey] = useState("");
   const [deliveryMode, setDeliveryMode] = useState<string>(DEFAULT_SANDBOX_DELIVERY_POLICY.mode);
   const [reviewDestination, setReviewDestination] = useState<string>(
@@ -202,15 +203,16 @@ export function ProjectCodingEnvironmentCard({
             onValueChange={(value) =>
               setExecutionProvider(value === "openai" ? "openai" : "polychat")
             }
-            options={SANDBOX_EXECUTION_PROVIDERS.map((provider) => ({
+            options={SANDBOX_REMOTE_EXECUTION_PROVIDERS.map((provider) => ({
               value: provider.id,
               label: provider.label,
             }))}
           />
           <p className="text-xs text-muted-foreground">
             {
-              SANDBOX_EXECUTION_PROVIDERS.find((provider) => provider.id === executionProvider)
-                ?.description
+              SANDBOX_REMOTE_EXECUTION_PROVIDERS.find(
+                (provider) => provider.id === executionProvider,
+              )?.description
             }
           </p>
           <FormSelect
@@ -342,7 +344,7 @@ export function ProjectCodingEnvironmentCard({
                 {codingEnvironment.repository}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                {SANDBOX_EXECUTION_PROVIDERS.find(
+                {SANDBOX_REMOTE_EXECUTION_PROVIDERS.find(
                   (provider) => provider.id === codingEnvironment.executionProvider,
                 )?.label ?? "Polychat managed"}
               </p>

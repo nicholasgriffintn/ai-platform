@@ -1,4 +1,4 @@
-import type { getSandbox } from "@cloudflare/sandbox";
+import type { getSandbox, SandboxClient } from "@cloudflare/sandbox";
 import type {
   SandboxModelSettings,
   SandboxTaskType,
@@ -10,7 +10,26 @@ import type { PolychatClient } from "../polychat-client";
 import type { RunControlClient } from "../run-control-client";
 import type { PromptStrategySelection } from "./prompt-strategy";
 
-export type SandboxInstance = ReturnType<typeof getSandbox>;
+export type SandboxInstance = Pick<
+  ReturnType<typeof getSandbox>,
+  | "exec"
+  | "gitCheckout"
+  | "writeFile"
+  | "exists"
+  | "startProcess"
+  | "getProcess"
+  | "unexposePort"
+  | "createCodeContext"
+  | "runCode"
+  | "deleteCodeContext"
+  | "watch"
+  | "destroy"
+> & {
+  readFile: (
+    path: string,
+    options?: { encoding?: "utf-8" | "utf8" | "base64" },
+  ) => ReturnType<SandboxClient["files"]["readFile"]>;
+} & Partial<Pick<ReturnType<typeof getSandbox>, "execStream" | "createBackup" | "restoreBackup">>;
 export type SandboxExecInstance = Pick<SandboxInstance, "exec"> &
   Partial<Pick<SandboxInstance, "execStream">>;
 export type SandboxFileInstance = Pick<SandboxInstance, "readFile" | "writeFile" | "exists">;

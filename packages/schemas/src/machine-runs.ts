@@ -3,6 +3,7 @@ import z from "zod/v4";
 import { agentRuntimeVendorSchema, modelRuntimeVendorSchema } from "./desktop-runtimes.js";
 import { permissionModeSchema } from "./providers.js";
 import { reasoningEffortSchema } from "./reasoning.js";
+import { teammateComputerInputSchema } from "./teammate-computers.js";
 
 const machineRunMessagesSchema = z
   .array(
@@ -41,10 +42,58 @@ export const machineAgentRunRequestSchema = z
   })
   .strict();
 
+export const machineSandboxRunRequestSchema = z
+  .object({
+    id: z.uuid(),
+    kind: z.literal("sandbox"),
+    operation: z.discriminatedUnion("type", [
+      z.object({ type: z.literal("start") }).strict(),
+      z
+        .object({
+          type: z.literal("request"),
+          containerId: z.string().regex(/^[a-f0-9]{64}$/),
+          path: z.string().startsWith("/").max(1000),
+          method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+          body: z.string().max(700_000).optional(),
+          contentType: z.literal("application/json").optional(),
+        })
+        .strict(),
+      z
+        .object({
+          type: z.literal("stop"),
+          containerId: z.string().regex(/^[a-f0-9]{64}$/),
+        })
+        .strict(),
+    ]),
+  })
+  .strict();
+
+export const machineComputerRunRequestSchema = z
+  .object({
+    id: z.uuid(),
+    kind: z.literal("computer"),
+    resourceId: z.string().regex(/^[a-zA-Z0-9_-]{1,200}$/),
+    fence: z.number().int().nonnegative(),
+    operation: z.discriminatedUnion("type", [
+      z.object({ type: z.literal("start") }).strict(),
+      z.object({ type: z.literal("observe") }).strict(),
+      z.object({ type: z.literal("input"), input: teammateComputerInputSchema }).strict(),
+      z.object({ type: z.literal("stop") }).strict(),
+      z.object({ type: z.literal("revoke") }).strict(),
+    ]),
+  })
+  .strict();
+
 export const machineRunRequestSchema = z
-  .union([machineModelRunRequestSchema, machineAgentRunRequestSchema])
+  .union([
+    machineModelRunRequestSchema,
+    machineAgentRunRequestSchema,
+    machineSandboxRunRequestSchema,
+    machineComputerRunRequestSchema,
+  ])
   .refine(
     (request) =>
+      !("messages" in request) ||
       request.messages.reduce((size, message) => size + message.content.length, 0) <= 200_000,
     "The conversation is too large for a machine run.",
   );
@@ -78,6 +127,7 @@ export const machineRunClaimSchema = z
   .nullable();
 
 export type MachineRunRequest = z.infer<typeof machineRunRequestSchema>;
+export type MachineRunMessages = z.infer<typeof machineRunMessagesSchema>;
 export type MachineRunUpdate = z.infer<typeof machineRunUpdateSchema>;
 export type MachineRunSnapshot = z.infer<typeof machineRunSnapshotSchema>;
 export type MachineRunClaim = z.infer<typeof machineRunClaimSchema>;

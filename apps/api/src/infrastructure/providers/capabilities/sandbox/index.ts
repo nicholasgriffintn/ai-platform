@@ -14,6 +14,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 export interface SandboxProviderExecuteOptions {
+  machineId?: string;
   repo: string;
   task: string;
   model?: string;

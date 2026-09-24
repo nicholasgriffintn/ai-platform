@@ -30,8 +30,11 @@ The platform includes:
 - Custom agents, MCP servers, delegation, approval-aware tools, and reusable workflows.
 - Retrieval, memories, web research, generated media, realtime audio, and interactive artefacts.
 - Project-scoped experiences for longer workflows such as notes, podcasts, media generation, and model training.
-- Isolated coding runs against GitHub repositories through Cloudflare Sandboxes.
+- Isolated coding runs against GitHub repositories through Cloudflare or OpenAI sandboxes, or Docker on an online desktop.
+- Teammate computer control through a hosted browser or an isolated Chrome profile on an online desktop.
 - Authentication, guardrails, subscriptions, rate limiting, audit history, and observability.
+
+Desktop uses Docker for local coding sandboxes and Google Chrome for local teammate computers. When the desktop advertises either capability, it is the preferred choice in that desktop's controls; hosted providers remain selectable. Web defaults to hosted execution and can select an online desktop; mobile continues to use hosted execution. Local browser control uses a separate Chrome profile; hosted screen sharing, teaching recordings and checkpoints remain hosted-only.
 
 ## Repository
 

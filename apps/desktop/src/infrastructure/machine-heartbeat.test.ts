@@ -50,6 +50,8 @@ describe("machine heartbeat", () => {
       agentSupportsSessions: vi
         .fn()
         .mockImplementation((vendor: string) => Promise.resolve(vendor === "codex")),
+      localSandboxAvailable: vi.fn().mockResolvedValue(true),
+      localBrowserAvailable: vi.fn().mockResolvedValue(true),
     } as unknown as ConnectedDesktopBackend;
 
     const payload = await buildMachineHeartbeatPayload(backend, diagnostics);
@@ -58,7 +60,7 @@ describe("machine heartbeat", () => {
     expect(payload).toMatchObject({
       machineId: "machine-1",
       platform: "macos",
-      capabilities: ["model-run", "model-relay", "agent-run"],
+      capabilities: ["model-run", "model-relay", "agent-run", "sandbox", "computer"],
     });
     expect(payload.runtimes).toContainEqual(
       expect.objectContaining({
