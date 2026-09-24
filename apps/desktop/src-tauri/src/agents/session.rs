@@ -107,6 +107,7 @@ impl AgentSessionRegistry {
         }
     }
 
+    #[cfg(test)]
     pub fn is_running(&self, key: &str) -> bool {
         self.get(key).is_some()
     }
