@@ -13,6 +13,7 @@ import {
   CreateTaskDialog,
   FlowEditorDialog,
   ProjectBriefCard,
+  ProjectTasksSummary,
   TaskBoard,
   TaskDetail,
 } from "./index";
@@ -126,6 +127,23 @@ const emptyPlan: ProjectTaskPlanEvidence = {
   ],
   resume: { supported: true, reason: null },
 };
+
+describe("ProjectTasksSummary", () => {
+  it("reports a failed load instead of claiming the project has no tasks", () => {
+    render(
+      <ProjectTasksSummary
+        tasks={[]}
+        boardHref="/tasks"
+        taskHref={() => "/tasks/1"}
+        onCreateTask={vi.fn()}
+        errorMessage="Tasks could not be loaded"
+      />,
+    );
+
+    expect(screen.getByRole("alert").textContent).toBe("Tasks could not be loaded");
+    expect(screen.queryByText("No tasks yet")).toBeNull();
+  });
+});
 
 describe("TaskBoard", () => {
   it("does not mark a pipeline stage as active before backlog work starts", () => {

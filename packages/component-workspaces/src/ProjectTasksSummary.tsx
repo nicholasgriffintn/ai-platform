@@ -31,6 +31,7 @@ export interface ProjectTasksSummaryProps {
   taskHref: (task: ProjectTask) => string;
   onCreateTask: () => void;
   isLoading?: boolean;
+  errorMessage?: string;
 }
 
 export function ProjectTasksSummary({
@@ -39,6 +40,7 @@ export function ProjectTasksSummary({
   taskHref,
   onCreateTask,
   isLoading = false,
+  errorMessage,
 }: ProjectTasksSummaryProps) {
   const openTasks = tasks.filter((task) => task.status !== "done" && task.status !== "cancelled");
   const needsAttention = openTasks.filter((task) => HIGHLIGHTED_STATUSES.has(task.status));
@@ -58,6 +60,10 @@ export function ProjectTasksSummary({
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading tasks…</p>
+      ) : errorMessage ? (
+        <p role="alert" className="text-sm text-failure">
+          {errorMessage}
+        </p>
       ) : openTasks.length === 0 ? (
         <EmptyState
           icon={<ListChecks className="text-muted-foreground" size={24} />}

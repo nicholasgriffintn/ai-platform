@@ -13,6 +13,7 @@ import {
   getProjectBasePath,
   getProjectConversationPath,
 } from "@ngriffin_uk/polychat-library-react";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -103,6 +104,11 @@ export function ProjectHome({
             <ProjectTasksSummary
               tasks={projectTasks.tasks}
               isLoading={projectTasks.isLoading}
+              errorMessage={
+                projectTasks.error
+                  ? getErrorMessage(projectTasks.error, "Tasks could not be loaded")
+                  : undefined
+              }
               boardHref={`${basePath}/tasks`}
               taskHref={(task) => `${basePath}/tasks/${task.id}`}
               onCreateTask={() => void navigate(`${basePath}/tasks?new=1`)}
