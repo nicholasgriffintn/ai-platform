@@ -26,8 +26,13 @@ import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
 import { Loader2, SquarePen } from "lucide-react";
 import { type ReactNode, lazy, Suspense, useCallback, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
 
 import { ConversationItemActions } from "../Conversations/ConversationItemActions.js";
+import {
+  RenameConversationDialog,
+  type RenameConversationTarget,
+} from "../Conversations/RenameConversationDialog.js";
 import { DiscoverSidebarSection } from "../Sidebar/DiscoverSidebarSection.js";
 import { PlacesNavLinks } from "../Sidebar/PlacesNavLinks.js";
 import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
@@ -93,6 +98,9 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [conversationForGroups, setConversationForGroups] = useState<string | null>(null);
   const [confirmArchiveAll, setConfirmArchiveAll] = useState<boolean | null>(null);
+  const [conversationToRename, setConversationToRename] = useState<RenameConversationTarget | null>(
+    null,
+  );
   const loadMoreConversations = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       void fetchNextPage();
@@ -141,23 +149,21 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
     closeOnMobile();
   };
 
-  const handleEditTitle = async (completion_id: string, currentTitle: string) => {
-    const newTitle = prompt("Enter new title:", currentTitle);
+  const handleRenameConversation = async (completion_id: string, title: string) => {
+    trackEvent({
+      name: "edit_title",
+      category: "sidebar",
+      label: "edit_title",
+      value: 1,
+    });
 
-    if (newTitle && newTitle !== currentTitle) {
-      try {
-        trackEvent({
-          name: "edit_title",
-          category: "sidebar",
-          label: "edit_title",
-          value: 1,
-        });
-
-        await updateTitle.mutateAsync({ completion_id, title: newTitle });
-      } catch (error) {
-        console.error("Failed to update title:", error);
-        alert("Failed to update title. Please try again.");
-      }
+    try {
+      await updateTitle.mutateAsync({ completion_id, title });
+      setConversationToRename(null);
+    } catch (error) {
+      console.error("Failed to update title:", error);
+      toast.error("Couldn't rename the conversation. Please try again.");
+      throw error;
     }
   };
 
@@ -319,9 +325,9 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
                     conversation={conversation}
                     canOrganise={!conversation.isLocalOnly}
                     canManageGroups
-                    onEditTitle={(conversationId, currentTitle) => {
-                      void handleEditTitle(conversationId, currentTitle);
-                    }}
+                    onEditTitle={(conversationId, currentTitle) =>
+                      setConversationToRename({ id: conversationId, title: currentTitle })
+                    }
                     onDelete={setConfirmDelete}
                     onManageGroups={setConversationForGroups}
                   />
@@ -355,6 +361,12 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
         variant="destructive"
         onConfirm={confirmDeleteChat}
         isLoading={deleteChat.isPending}
+      />
+      <RenameConversationDialog
+        target={conversationToRename}
+        isSaving={updateTitle.isPending}
+        onOpenChange={(open) => !open && setConversationToRename(null)}
+        onRename={handleRenameConversation}
       />
       <Suspense fallback={null}>
         <ConversationGroupsDialog

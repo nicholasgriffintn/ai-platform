@@ -1,12 +1,16 @@
-import { Button, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
-  TaskAttentionList,
+  Button,
+  ButtonLink,
+  CardGridLoadingSkeleton,
+  EmptyState,
+} from "@ngriffin_uk/polychat-component-ui";
+import {
   WorkAccessEmptyState,
   WorkspaceCardGrid,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { isAuthenticationError, useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { useTaskAttention } from "@ngriffin_uk/polychat-library-react";
-import { BriefcaseBusiness, Plus } from "lucide-react";
+import { getPlacePaths, useTaskAttention } from "@ngriffin_uk/polychat-library-react";
+import { BellRing, BriefcaseBusiness, Plus } from "lucide-react";
 import { useState } from "react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
@@ -23,7 +27,7 @@ export function WorkOverview() {
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const isPro = useChatStore((state) => state.isPro);
   const canAccessWork = isAuthenticated && isPro;
-  const { items: attentionItems, unread, markRead, dismiss } = useTaskAttention();
+  const { unread } = useTaskAttention();
   const { TaskNotificationSettings } = useShellHost();
 
   return (
@@ -44,6 +48,17 @@ export function WorkOverview() {
           }
         />
         <p className="mb-6 text-sm text-muted-foreground">Create and manage shared workspaces.</p>
+        {canAccessWork && unread > 0 ? (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3">
+            <p className="flex items-center gap-2 text-sm text-foreground">
+              <BellRing size={16} className="text-attention" aria-hidden="true" />
+              {unread === 1 ? "1 unread notification" : `${unread} unread notifications`}
+            </p>
+            <ButtonLink href={getPlacePaths("work").attention} variant="outline" size="sm">
+              Open Attention
+            </ButtonLink>
+          </div>
+        ) : null}
 
         {isAuthenticationLoading ? (
           <CardGridLoadingSkeleton
@@ -99,20 +114,6 @@ export function WorkOverview() {
             }))}
           />
         ) : null}
-
-        {canAccessWork && (
-          <section className="mt-10">
-            <h2 className="mb-3 text-sm font-semibold text-foreground">
-              Notification inbox{unread > 0 ? ` · ${unread} unread` : ""}
-            </h2>
-            <TaskAttentionList
-              items={attentionItems}
-              itemHref={(item) => item.deepLink}
-              onRead={(item) => void markRead([item.id])}
-              onDismiss={(item) => void dismiss([item.id])}
-            />
-          </section>
-        )}
 
         {canAccessWork && <TaskNotificationSettings />}
       </PageShell.Content>

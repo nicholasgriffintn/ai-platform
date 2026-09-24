@@ -6,6 +6,7 @@ import {
   useDeleteAllRemoteChats,
 } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { ProfileTab } from "../ProfileTabLayout.js";
 
@@ -38,9 +39,9 @@ export function ProfileHistoryTab() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Failed to export chat history:", error);
-      alert(
-        error instanceof Error ? error.message : "Failed to export chat history. Please try again.",
-      );
+      toast.error("Couldn't export chat history", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
     } finally {
       setIsExporting(false);
     }

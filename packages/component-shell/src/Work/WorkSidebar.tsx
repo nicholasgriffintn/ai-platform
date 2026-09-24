@@ -25,6 +25,7 @@ import { useShallow } from "zustand/react/shallow";
 
 import { ConversationGroupsDialog } from "../Conversations/ConversationGroupsDialog.js";
 import { ConversationItemActions } from "../Conversations/ConversationItemActions.js";
+import { RenameConversationDialog } from "../Conversations/RenameConversationDialog.js";
 import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
 import { SidebarHeader } from "../Sidebar/SidebarHeader.js";
 import { useSidebarPeekPanel } from "../Sidebar/SidebarPeekContext.js";
@@ -84,7 +85,11 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     confirmDeleteConversation,
     conversationToDelete,
     deletePending,
-    editConversationTitle,
+    conversationToRename,
+    renameConversation,
+    renamePending,
+    requestRenameConversation,
+    setConversationToRename,
     requestDeleteConversation,
     setConversationToDelete,
   } = useProjectConversationActions({
@@ -204,9 +209,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                             projectId={projectId}
                             canOrganise
                             canManageGroups={canManageGroups}
-                            onEditTitle={(conversationId, currentTitle) => {
-                              void editConversationTitle(conversationId, currentTitle);
-                            }}
+                            onEditTitle={requestRenameConversation}
                             onDelete={requestDeleteConversation}
                             onManageGroups={setConversationForGroups}
                           />
@@ -250,6 +253,12 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
         variant="destructive"
         onConfirm={confirmDeleteConversation}
         isLoading={deletePending}
+      />
+      <RenameConversationDialog
+        target={conversationToRename}
+        isSaving={renamePending}
+        onOpenChange={(open) => !open && setConversationToRename(null)}
+        onRename={renameConversation}
       />
       <ConversationGroupsDialog
         conversationId={conversationForGroups}
