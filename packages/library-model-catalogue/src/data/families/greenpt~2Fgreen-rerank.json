@@ -15,9 +15,9 @@
       "reranking"
     ],
     "releaseDate": "June 2025",
-    "supportsToolCalls": false,
+    "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": false
+    "supportsTemperature": true
   },
   "description": "The greenpt/green rerank family includes models that rerank documents.",
   "models": {

@@ -35,15 +35,7 @@
     "fugu-max": {
       "defaults": {
         "name": "Fugu Max",
-        "description": "Multi-agent model for routing expert agents across complex analytical tasks",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "high"
-        }
+        "description": "Multi-agent model for routing expert agents across complex analytical tasks"
       }
     },
     "fugu-ultra": {
@@ -67,15 +59,7 @@
       "defaults": {
         "name": "Fugu Ultra v2",
         "description": "Quality-first multi-agent model for hard research, analysis, and competitions",
-        "knowledgeCutoffDate": "August 28, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "high"
-        }
+        "knowledgeCutoffDate": "August 28, 2026"
       }
     }
   }

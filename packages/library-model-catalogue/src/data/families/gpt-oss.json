@@ -33,7 +33,7 @@
         "strengths": [
           "tool_use"
         ],
-        "contextComplexity": 3,
+        "contextComplexity": 4,
         "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": 23.8,

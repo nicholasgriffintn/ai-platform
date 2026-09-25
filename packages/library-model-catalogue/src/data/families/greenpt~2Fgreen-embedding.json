@@ -15,9 +15,9 @@
       "search"
     ],
     "releaseDate": "June 2025",
-    "supportsToolCalls": false,
+    "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": false
+    "supportsTemperature": true
   },
   "description": "The greenpt/green embedding family includes models that produce embedding.",
   "models": {

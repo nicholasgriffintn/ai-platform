@@ -1,6 +1,7 @@
 {
   "defaults": {
     "openWeights": true,
+    "contextWindow": 262144,
     "modalities": {
       "input": [
         "text",
@@ -73,7 +74,6 @@
       "defaults": {
         "name": "Mistral Large 3",
         "description": "Mistral's largest general model for enterprise agents, coding, and multilingual reasoning",
-        "contextWindow": 256000,
         "maxTokens": 256000,
         "knowledgeCutoffDate": "November 2024",
         "releaseDate": "December 2, 2025",
@@ -90,7 +90,6 @@
       "defaults": {
         "name": "mistral-large-3:675b",
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
-        "contextWindow": 262144,
         "maxTokens": 262144,
         "releaseDate": "December 2, 2025"
       }
@@ -99,7 +98,6 @@
       "defaults": {
         "name": "Mistral Large 3 675B Instruct 2512",
         "description": "Mistral's largest general model for enterprise agents, coding, and multilingual reasoning",
-        "contextWindow": 262144,
         "maxTokens": 262144,
         "knowledgeCutoffDate": "November 2024",
         "releaseDate": "December 2, 2025"
@@ -109,7 +107,6 @@
       "defaults": {
         "name": "Mistral Large",
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
-        "contextWindow": 262144,
         "maxTokens": 262144,
         "card": "https://www.prompthub.us/models/mistral-large",
         "strengths": [

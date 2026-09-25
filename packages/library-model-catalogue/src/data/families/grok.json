@@ -606,14 +606,7 @@
           ]
         },
         "releaseDate": "March 11, 2026",
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": true
       }
     },
     "grok-4-20-multi-agent": {
@@ -630,14 +623,7 @@
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "contextWindow": 2000000,
         "maxTokens": 2000000,
-        "releaseDate": "March 11, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "releaseDate": "March 11, 2026"
       }
     },
     "grok-4-20-non-reasoning": {

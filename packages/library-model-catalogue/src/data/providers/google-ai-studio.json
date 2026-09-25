@@ -519,7 +519,16 @@
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0015,
         "supportsUrlContext": true,
-        "supportsWebFetch": true
+        "supportsWebFetch": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "gemini-3.1-pro-preview": {
@@ -802,7 +811,14 @@
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.0175,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "gemini-3.5-flash-lite": {
@@ -877,7 +893,7 @@
       "model": "gemini-pro/nano-banana-pro",
       "matchingModel": "gemini-3-pro-image",
       "overrides": {
-        "contextWindow": 131072,
+        "contextWindow": 65536,
         "strengths": [
           "vision",
           "document",
@@ -905,8 +921,6 @@
       "matchingModel": "gemini-3.1-flash-image",
       "overrides": {
         "name": "Nano Banana 2",
-        "contextWindow": 65536,
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -942,7 +956,7 @@
       "overrides": {
         "name": "Nano Banana 2 Lite",
         "description": "Fastest, most cost-efficient Gemini image model for high-volume 1K generation and editing",
-        "maxTokens": 65536,
+        "maxTokens": 4096,
         "modalities": {
           "input": [
             "text",

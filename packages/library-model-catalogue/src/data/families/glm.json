@@ -391,6 +391,7 @@
       "defaults": {
         "name": "GLM-5.1",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],
@@ -807,15 +808,7 @@
       "defaults": {
         "name": "GLM 5.3 Fast",
         "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
-        "maxTokens": 262144,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "maxTokens": 262144
       }
     },
     "glm-5-3-fast-latest": {
@@ -865,6 +858,25 @@
         }
       }
     },
+    "glm-5-3-prime": {
+      "defaults": {
+        "name": "GLM 5.3 Prime",
+        "openWeights": false,
+        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "releaseDate": "September 23, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "glm-5-tee": {
       "defaults": {
         "name": "GLM 5 TEE",
@@ -887,6 +899,7 @@
         "openWeights": false,
         "description": "Faster GLM-5 lane for coding agents that need lower latency",
         "contextWindow": 202752,
+        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],

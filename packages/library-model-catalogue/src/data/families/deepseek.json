@@ -65,7 +65,7 @@
         "openWeights": false,
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
         "contextWindow": 1048576,
-        "maxTokens": 384000,
+        "maxTokens": 943718,
         "releaseDate": "September 14, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -415,18 +415,13 @@
         "name": "DeepSeek V3.1 Terminus",
         "openWeights": true,
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "maxTokens": 32768,
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "September 22, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 21.4,
           "codingIndex": null,

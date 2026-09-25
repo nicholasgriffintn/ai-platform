@@ -158,7 +158,6 @@
       "model": "kimi-thinking/kimi-k2-thinking",
       "matchingModel": "moonshot.kimi-k2-thinking",
       "overrides": {
-        "contextWindow": 262143,
         "maxTokens": 16000,
         "contextComplexity": 3,
         "speed": 4,
@@ -920,7 +919,6 @@
       "matchingModel": "google.gemma-3-27b-it",
       "overrides": {
         "name": "Google Gemma 3 27B Instruct",
-        "contextWindow": 202752,
         "maxTokens": 8192,
         "lastUpdated": "March 12, 2025",
         "costPer1kInputTokens": 0.00023,
@@ -1078,6 +1076,7 @@
       "matchingModel": "minimax.minimax-m2.1",
       "overrides": {
         "name": "MiniMax M2.1",
+        "contextWindow": 196608,
         "speed": 4,
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -1168,7 +1167,6 @@
       "model": "kimi-k2/kimi-k2-5",
       "matchingModel": "moonshotai.kimi-k2.5",
       "overrides": {
-        "contextWindow": 262143,
         "maxTokens": 16384,
         "modalities": {
           "input": [
@@ -1196,8 +1194,7 @@
       "matchingModel": "openai.gpt-oss-120b-1:0",
       "overrides": {
         "name": "gpt-oss-120b",
-        "contextWindow": 128000,
-        "maxTokens": 16384,
+        "maxTokens": 128000,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00015,
@@ -1210,8 +1207,8 @@
       "matchingModel": "openai.gpt-oss-20b-1:0",
       "overrides": {
         "name": "gpt-oss-20b",
-        "contextWindow": 128000,
-        "maxTokens": 16384,
+        "maxTokens": 128000,
+        "contextComplexity": 4,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00007,
@@ -1349,7 +1346,7 @@
       "matchingModel": "zai.glm-4.7",
       "overrides": {
         "name": "GLM-4.7",
-        "contextWindow": 204800,
+        "contextWindow": 202752,
         "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "December 22, 2025",
@@ -1362,6 +1359,7 @@
       "model": "glm-flash/glm-4-7-flash",
       "matchingModel": "zai.glm-4.7-flash",
       "overrides": {
+        "contextWindow": 202752,
         "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "January 19, 2026",

@@ -183,10 +183,10 @@
         "supportsToolCalls": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "minimal",
+            "low",
             "high"
           ],
-          "defaultEffort": "minimal"
+          "defaultEffort": "low"
         }
       }
     },
@@ -255,15 +255,6 @@
         "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "May 19, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 50.2,
           "codingIndex": 70.1,
@@ -476,15 +467,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "December 17, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 27.4,
           "codingIndex": null,

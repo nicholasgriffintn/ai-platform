@@ -40,14 +40,6 @@
         ],
         "reliability": 1,
         "releaseDate": "November 13, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 34.7,
           "codingIndex": null,
@@ -59,16 +51,7 @@
     "gpt-5-1-codex-max": {
       "defaults": {
         "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
-        "releaseDate": "November 13, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "low"
-        }
+        "releaseDate": "November 13, 2025"
       }
     },
     "gpt-5-1-codex-mini": {
@@ -81,14 +64,6 @@
         ],
         "reliability": 1,
         "releaseDate": "November 13, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 30.6,
           "codingIndex": null,
@@ -126,15 +101,6 @@
         "reliability": 2,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "December 11, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "low"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 40.1,
           "codingIndex": null,
@@ -214,6 +180,8 @@
         "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "none",
+            "minimal",
             "low",
             "medium",
             "high",

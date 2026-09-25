@@ -50,7 +50,7 @@
       "overrides": {
         "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
         "contextWindow": 1000000,
-        "maxTokens": 384000,
+        "maxTokens": 393216,
         "isFree": true,
         "strengths": [
           "reasoning",
@@ -84,6 +84,7 @@
       "matchingModel": "deepseek-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 393216,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,

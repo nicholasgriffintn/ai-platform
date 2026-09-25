@@ -412,17 +412,7 @@
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsTemperature": false,
-        "supportsTopP": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsTopP": false
       }
     },
     "claude-sonnet-5-au": {

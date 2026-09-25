@@ -3280,7 +3280,6 @@
       "matchingModel": "qwen3.7-max",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "May 21, 2026",
         "costPer1kInputTokens": 0.0025,

@@ -28,7 +28,6 @@
       "defaults": {
         "name": "text-embedding-3-large",
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
-        "contextWindow": 8191,
         "maxTokens": 3072,
         "releaseDate": "January 25, 2024"
       }
@@ -37,7 +36,6 @@
       "defaults": {
         "name": "text-embedding-3-small",
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
-        "contextWindow": 8191,
         "releaseDate": "January 25, 2024"
       }
     },

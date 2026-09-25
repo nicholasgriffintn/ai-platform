@@ -195,7 +195,6 @@
       "overrides": {
         "name": "GLM-5-Turbo",
         "contextWindow": 200000,
-        "maxTokens": 131072,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.004
@@ -207,7 +206,6 @@
       "overrides": {
         "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
         "contextWindow": 200000,
-        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.0014,

@@ -541,6 +541,46 @@
         "supportsAttachments": false
       }
     },
+    "gemini-3-8-flash-lite-tts": {
+      "defaults": {
+        "name": "Gemini 3.8 Flash-Lite TTS",
+        "openWeights": false,
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "September 23, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "gemini-3-8-flash-tts": {
+      "defaults": {
+        "name": "Gemini 3.8 Flash TTS",
+        "openWeights": false,
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "September 23, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
     "gemini-3-8-live": {
       "defaults": {
         "name": "Gemini 3.8 Live",
@@ -750,14 +790,7 @@
         "openWeights": false,
         "description": "Video generation and editing model for fast, conversational text- and image-to-video workflows",
         "releaseDate": "June 30, 2026",
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsToolCalls": false
       }
     },
     "gemini-robotics-er-1-6-preview": {

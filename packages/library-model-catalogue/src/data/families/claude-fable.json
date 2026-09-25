@@ -17,17 +17,7 @@
     "supportsToolCalls": true,
     "supportsAttachments": true,
     "supportsTemperature": false,
-    "supportsTopP": false,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "low",
-        "medium",
-        "high",
-        "xhigh",
-        "max"
-      ],
-      "defaultEffort": "low"
-    }
+    "supportsTopP": false
   },
   "description": "Claude model for creative writing, analysis, and controlled agent workflows",
   "models": {
@@ -57,7 +47,17 @@
         "name": "Claude Fable 5.1",
         "description": "Claude model for demanding reasoning and long-horizon agentic work",
         "knowledgeCutoffDate": "June 2026",
-        "releaseDate": "September 1, 2026"
+        "releaseDate": "September 1, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "claude-fable-5-1-eu": {
@@ -84,7 +84,17 @@
         "name": "Claude Fable 5.1 (Global)",
         "description": "Claude model for demanding reasoning and long-horizon agentic work",
         "knowledgeCutoffDate": "June 2026",
-        "releaseDate": "September 1, 2026"
+        "releaseDate": "September 1, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "claude-fable-5-1-us": {
@@ -92,7 +102,17 @@
         "name": "Claude Fable 5.1 (US)",
         "description": "Claude model for demanding reasoning and long-horizon agentic work",
         "knowledgeCutoffDate": "June 2026",
-        "releaseDate": "September 1, 2026"
+        "releaseDate": "September 1, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "claude-fable-5-eu": {
@@ -202,7 +222,17 @@
       "defaults": {
         "name": "Claude Fable Latest",
         "description": "Claude model for creative writing, analysis, and controlled agent workflows",
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

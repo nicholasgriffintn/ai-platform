@@ -1,7 +1,6 @@
 {
   "defaults": {
     "openWeights": false,
-    "maxTokens": 65536,
     "knowledgeCutoffDate": "January 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -22,6 +21,7 @@
         "name": "Deep Research Max Preview",
         "description": "Maximum-comprehensiveness agentic researcher for multi-step investigation, synthesis, and cited reports",
         "contextWindow": 131072,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -43,6 +43,7 @@
         "name": "Gemini Deep Research Preview",
         "description": "Agentic model for autonomous multi-step research, synthesis, and cited reports",
         "contextWindow": 131072,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -63,7 +64,8 @@
       "defaults": {
         "name": "Gemini 2.5 Computer Use Preview",
         "description": "Specialized Gemini 2.5 model for browser-control agents that automate UI tasks",
-        "contextWindow": 131072,
+        "contextWindow": 128000,
+        "maxTokens": 64000,
         "modalities": {
           "input": [
             "text",
@@ -81,6 +83,7 @@
         "name": "Gemini 2.5 Pro",
         "description": "Google's proven reasoning model for coding, math, and multimodal analysis",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -197,6 +200,7 @@
         "name": "Gemini 3.1 Pro Preview",
         "description": "Reasoning-first Gemini preview for agentic coding and complex problem solving",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -241,6 +245,7 @@
         "name": "Gemini 3.1 Pro Preview Custom Tools",
         "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -289,6 +294,7 @@
         "name": "Gemini 3 Pro",
         "description": "Gemini 3 Pro accepts text, image, audio, video, pdf and produces text.",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -360,6 +366,7 @@
         "name": "Google Gemini Pro Latest",
         "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "audio",

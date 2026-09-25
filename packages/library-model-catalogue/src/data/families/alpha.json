@@ -3,6 +3,7 @@
     "openWeights": false,
     "supportsToolCalls": true,
     "supportsResponseFormat": false,
+    "supportsAttachments": true,
     "supportsTemperature": true
   },
   "description": "The alpha family includes models that produce text.",
@@ -43,13 +44,41 @@
           ]
         },
         "releaseDate": "August 20, 2026",
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
             "thinking"
           ],
           "defaultEffort": "none"
+        }
+      }
+    },
+    "space-bunny-alpha": {
+      "defaults": {
+        "name": "Space Bunny Alpha",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1000000,
+        "maxTokens": 524288,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
         }
       }
     },
@@ -68,8 +97,7 @@
             "text"
           ]
         },
-        "releaseDate": "September 16, 2026",
-        "supportsAttachments": true
+        "releaseDate": "September 16, 2026"
       }
     },
     "weaver-alpha": {
