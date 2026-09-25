@@ -1,4 +1,4 @@
-import { cn, NavLink } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, cn, NavLink } from "@ngriffin_uk/polychat-component-ui";
 import type { ReactNode } from "react";
 
 export function sidebarNavLinkClass({ isActive }: { isActive: boolean }): string {
@@ -7,6 +7,19 @@ export function sidebarNavLinkClass({ isActive }: { isActive: boolean }): string
     isActive
       ? "bg-sidebar-accent text-sidebar-accent-foreground"
       : "text-muted-foreground hover:text-foreground",
+  );
+}
+
+export function SidebarCountBadge({ count, label }: { count: number; label: string }) {
+  if (count <= 0) {
+    return null;
+  }
+
+  return (
+    <Badge variant="warning" className="ml-auto min-w-5 px-1.5">
+      <span aria-hidden="true">{count > 99 ? "99+" : count}</span>
+      <span className="sr-only">{label}</span>
+    </Badge>
   );
 }
 
@@ -25,12 +38,16 @@ export function SidebarNavSection({ children, title }: { children: ReactNode; ti
 
 export function SidebarNavLink({
   children,
+  count = 0,
+  countLabel,
   end,
   href,
   icon,
   onClick,
 }: {
   children: ReactNode;
+  count?: number;
+  countLabel?: string;
   end?: boolean;
   href: string;
   icon: ReactNode;
@@ -40,6 +57,7 @@ export function SidebarNavLink({
     <NavLink href={href} end={end} className={sidebarNavLinkClass} onClick={onClick}>
       {icon}
       <span className="min-w-0 flex-1 truncate">{children}</span>
+      <SidebarCountBadge count={count} label={countLabel ?? `${count} waiting`} />
     </NavLink>
   );
 }
