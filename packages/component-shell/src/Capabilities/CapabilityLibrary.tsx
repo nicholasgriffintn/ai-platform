@@ -225,6 +225,5 @@ interface CapabilityLibraryProps {
   scope: CapabilityLibraryScope;
   title: string;
   subtitle: string;
-  /** Rendered under the subtitle, e.g. a project's section tabs. */
   navigation?: ReactNode;
 }
