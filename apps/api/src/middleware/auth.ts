@@ -21,7 +21,7 @@ const logger = getLogger({ prefix: "middleware/auth" });
 
 const ANONYMOUS_ID_COOKIE = "anon_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const BOT_CACHE_TTL = 86400; // 24 hours - bot detection is very stable
+const BOT_CACHE_TTL = 86400; // 24 hours
 
 let botCache: KVCache | null = null;
 

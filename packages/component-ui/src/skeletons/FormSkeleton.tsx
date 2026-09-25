@@ -1,9 +1,7 @@
 import { Skeleton } from "../Skeleton";
 
 interface FormSkeletonProps {
-  /** Number of form fields */
   fields?: number;
-  /** Whether to show submit button */
   showButton?: boolean;
 }
 

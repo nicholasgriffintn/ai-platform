@@ -3,10 +3,6 @@ import { useMemo } from "react";
 
 import { useTrackEvent } from "../hooks/use-track-event.js";
 
-/**
- * Binds the uploader's product intents to analytics. The render package stays host-neutral and the
- * reporting policy lives here, next to every other tracking decision.
- */
 export function useFileUploadAnalytics(uploaderId: string) {
   const { trackFeatureUsage } = useTrackEvent();
 

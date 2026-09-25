@@ -10,27 +10,16 @@ export type SidebarPeekPointerHandlers = Pick<
 >;
 
 interface SidebarShellProps {
-  /** Whether the sidebar is visible */
   visible: boolean;
-  /** Whether this is a mobile viewport */
   isMobile: boolean;
-  /** Whether to preview the hidden sidebar without pinning it open */
   peeking?: boolean;
-  /** Pointer handlers that keep the preview open while the panel is hovered */
   peekProps?: SidebarPeekPointerHandlers;
-  /** Callback to close/hide the sidebar */
   onClose: () => void;
-  /** Content to render in the sidebar header */
   header?: ReactNode;
-  /** Content to render in the sidebar footer */
   footer?: ReactNode;
-  /** Main sidebar content */
   children: ReactNode;
-  /** Custom className for the sidebar container */
   className?: string;
-  /** Custom className for the content wrapper */
   contentClassName?: string;
-  /** Names the drawer for screen readers while it overlays the page */
   label?: string;
 }
 
@@ -47,11 +36,7 @@ export function SidebarShell({
   contentClassName,
   label = "Sidebar",
 }: SidebarShellProps) {
-  // Only the mobile drawer overlays the page, so only it takes focus and Escape.
   const isDrawer = visible && isMobile;
-  // A peek is a desktop-only preview: it overlays the page instead of taking
-  // layout space, so the header keeps its buttons and title in place and paints
-  // above it.
   const isPeek = peeking && !visible && !isMobile;
   const isShown = visible || isPeek;
   const drawerRef = useOverlayDismiss<HTMLDivElement>({ open: isDrawer, onClose });

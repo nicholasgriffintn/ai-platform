@@ -2,10 +2,6 @@ import type { IconType } from "./icon-type";
 
 type IconModule = { default: IconType };
 
-/**
- * Static import map so bundlers can code-split each icon. A dynamic specifier would leave the
- * published package unable to resolve its own icons.
- */
 export const ICON_LOADERS: Record<string, () => Promise<IconModule>> = {
   adobe: () => import("./Icons/adobe"),
   "adobe-firefly": () => import("./Icons/adobe-firefly"),

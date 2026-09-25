@@ -9,11 +9,6 @@ export type GoalCommand =
 
 const RESERVED_SUBCOMMANDS = new Set(["pause", "resume", "clear"]);
 
-/**
- * `/goal` on its own reports the current goal; `/goal <anything else>` is an
- * objective. A reserved word only counts as a subcommand when it stands alone,
- * so "/goal pause the rollout until errors drop" still reads as an objective.
- */
 export function parseGoalCommand(input: string): GoalCommand | null {
   const trimmed = input.trim();
 

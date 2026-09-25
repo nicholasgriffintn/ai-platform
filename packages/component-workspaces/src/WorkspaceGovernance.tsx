@@ -20,7 +20,6 @@ export interface WorkspaceTemplateListProps {
   templates: ProjectTemplateSummary[];
   isLoading: boolean;
   errorMessage?: string;
-  /** Template currently being turned into a project, so only that row shows progress. */
   instantiatingTemplateId?: string | null;
   onUse: (templateId: string) => void;
   onDelete: (templateId: string) => void;

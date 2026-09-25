@@ -11,27 +11,16 @@ import {
 } from "./Dialog";
 
 interface FormDialogProps {
-  /** Whether the dialog is open */
   open: boolean;
-  /** Callback when dialog open state changes */
   onOpenChange: (open: boolean) => void;
-  /** Dialog title */
   title: string;
-  /** Optional dialog description */
   description?: string;
-  /** Form content */
   children: ReactNode;
-  /** Callback when form is submitted */
   onSubmit: () => void | Promise<void>;
-  /** Text for submit button */
   submitText?: string;
-  /** Text for cancel button */
   cancelText?: string;
-  /** Whether the form is currently submitting */
   isLoading?: boolean;
-  /** Whether submit button should be disabled */
   submitDisabled?: boolean;
-  /** Variant for submit button */
   submitVariant?: "default" | "primary" | "secondary";
 }
 

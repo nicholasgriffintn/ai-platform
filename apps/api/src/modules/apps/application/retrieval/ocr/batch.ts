@@ -176,7 +176,6 @@ export async function startOcrBatch(
   let payloadBytes = 4_096;
 
   for (const item of input.requests) {
-    // Resolve sequentially so one batch cannot materialise every private file in memory at once.
     const resolved = await buildBatchRequest(
       context,
       user.id,

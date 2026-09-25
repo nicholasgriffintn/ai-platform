@@ -1,7 +1,3 @@
-/**
- * Model patterns are matched with a case-insensitive substring test in declaration order, so more
- * specific patterns must be declared before the shorter patterns they contain.
- */
 export const MODEL_ICONS: Record<string, string> = {
   claude: "claude",
   command: "command-a",

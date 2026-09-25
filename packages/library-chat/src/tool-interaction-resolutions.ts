@@ -93,10 +93,6 @@ function resolvePendingToolInteraction(
   };
 }
 
-/**
- * Project append-only user interaction records onto their earlier pending tool result so stored
- * conversations and optimistic streams render the same terminal state.
- */
 export function applyToolInteractionResolutions(messages: readonly Message[]): Message[] {
   const projected: Message[] = [];
   const pendingByToolName = new Map<string, PendingToolInteraction[]>();

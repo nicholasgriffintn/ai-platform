@@ -13,11 +13,6 @@ export interface ProjectWorkflow {
   stages: readonly ProjectFlowStage[];
 }
 
-/**
- * Ordered phases a project can start from in the flow editor. Applying a workflow copies its
- * stages into the project flow, where every phase stays editable, and the flow engine executes
- * them like any other stage.
- */
 export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
   {
     slug: "architecture-discovery",

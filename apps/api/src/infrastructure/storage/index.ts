@@ -217,7 +217,6 @@ export class StorageService {
       try {
         persistedOutput = await context.repositories.outputs.getOutputIncludingDeleting(outputId);
       } catch {
-        // Preserve the object when commit state is unknown; an orphan is safer than a dangling Output.
         throw error;
       }
 

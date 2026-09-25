@@ -26,14 +26,9 @@ export interface ChannelReply {
   body: string;
 }
 
-/**
- * One contract for every way a message can reach Polychat from outside. An adapter proves the
- * request came from its service, says which conversation it belongs to, and sends the reply back.
- */
 export interface ChannelAdapter {
   readonly id: InboundChannelId;
   readonly label: string;
-  /** Whether a binding for this channel may point at a project, a person, or either. */
   readonly scopes: readonly ("personal" | "project")[];
   verify(request: Request, secret: string, rawBody: string): Promise<ChannelVerification>;
   parse(rawBody: string): ChannelIncoming;

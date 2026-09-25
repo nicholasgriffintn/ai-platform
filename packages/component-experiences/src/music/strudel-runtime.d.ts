@@ -3,12 +3,8 @@ declare module "@strudel/core" {
   export function evalScope(...modules: unknown[]): Promise<void>;
   export function silence(): Pattern;
   export const controls: Record<string, unknown>;
-  // The upstream runtime is untyped; these are the members the loader touches.
-  // biome-ignore lint: untyped runtime surface
   export const noteToMidi: any;
-  // biome-ignore lint: untyped runtime surface
   export const valueToMidi: any;
-  // biome-ignore lint: untyped runtime surface
   export const Pattern: any;
   const strudelCore: Record<string, unknown>;
 
@@ -21,9 +17,7 @@ declare module "@strudel/webaudio" {
   export function registerSynthSounds(): Promise<void>;
   export function samples(url: string): Promise<void>;
   export function webaudioOutput(...args: unknown[]): unknown;
-  // biome-ignore lint: untyped runtime surface
   export const aliasBank: any;
-  // biome-ignore lint: untyped runtime surface
   export const registerZZFXSounds: any;
   const strudelWebaudio: Record<string, unknown>;
 

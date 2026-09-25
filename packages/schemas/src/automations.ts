@@ -42,10 +42,6 @@ export type CreateAutomationInput = z.infer<typeof createAutomationInputSchema>;
 
 const CRON_DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-/**
- * Says a five-field cron back in words, so a person can check the schedule they asked for is
- * the schedule that was saved.
- */
 export function describeCronExpression(expression: string): string {
   const [minute, hour, dayOfMonth, month, dayOfWeek] = expression.trim().split(/\s+/u);
 

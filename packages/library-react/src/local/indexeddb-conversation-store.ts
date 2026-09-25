@@ -19,11 +19,6 @@ import { getDatabase, isIndexedDBSupported, storeName } from "./useIndexedDB.js"
 
 const LS_PREFIX = "polychat_conversation_";
 
-/**
- * Service for managing local chat conversations using IndexedDB.
- * This is a singleton service that provides methods for CRUD operations on chat data.
- * Falls back to LocalStorage when IndexedDB is not supported.
- */
 class LocalChatService {
   private static instance: LocalChatService;
   private isDBSupported: boolean;
@@ -44,9 +39,6 @@ class LocalChatService {
     return getLocalChatScope(useChatStore.getState().user?.id);
   }
 
-  /**
-   * Get the singleton instance of the LocalChatService.
-   */
   public static getInstance(): LocalChatService {
     if (!LocalChatService.instance) {
       LocalChatService.instance = new LocalChatService();
@@ -55,9 +47,6 @@ class LocalChatService {
     return LocalChatService.instance;
   }
 
-  /**
-   * Save a chat to LocalStorage.
-   */
   private saveToLocalStorage(chat: Conversation): void {
     try {
       window.localStorage.setItem(`${LS_PREFIX}${chat.id}`, JSON.stringify(chat));
@@ -67,9 +56,6 @@ class LocalChatService {
     }
   }
 
-  /**
-   * Get a chat from LocalStorage.
-   */
   private getFromLocalStorage(chatId: string): Conversation | null {
     try {
       const chatJson = window.localStorage.getItem(`${LS_PREFIX}${chatId}`);
@@ -83,9 +69,6 @@ class LocalChatService {
     }
   }
 
-  /**
-   * Get all chats from LocalStorage.
-   */
   private getAllFromLocalStorage(): Conversation[] {
     try {
       const chats: Conversation[] = [];
@@ -110,9 +93,6 @@ class LocalChatService {
     }
   }
 
-  /**
-   * Delete a chat from LocalStorage.
-   */
   private deleteFromLocalStorage(chatId: string): void {
     try {
       window.localStorage.removeItem(`${LS_PREFIX}${chatId}`);
@@ -121,9 +101,6 @@ class LocalChatService {
     }
   }
 
-  /**
-   * Get the database connection, caching it for future use
-   */
   private async getDB(): Promise<IDBPDatabase> {
     if (!this.dbPromise) {
       this.dbPromise = getDatabase();
@@ -132,9 +109,6 @@ class LocalChatService {
     return this.dbPromise;
   }
 
-  /**
-   * Get all local chats from storage.
-   */
   private async getLocalChats(): Promise<Conversation[]> {
     if (!this.isDBSupported) {
       return this.getAllFromLocalStorage();
@@ -153,10 +127,6 @@ class LocalChatService {
     }
   }
 
-  /**
-   * Save a chat to storage.
-   * @param chat The chat to save
-   */
   public async saveLocalChat(chat: Conversation): Promise<void> {
     const chatWithFlag = {
       ...chat,
@@ -186,17 +156,10 @@ class LocalChatService {
     }
   }
 
-  /**
-   * List all local chats.
-   */
   public async listLocalChats(): Promise<Conversation[]> {
     return this.getLocalChats();
   }
 
-  /**
-   * Get a specific chat by ID.
-   * @param chatId The ID of the chat to get
-   */
   public async getLocalChat(chatId: string): Promise<Conversation | null> {
     if (!this.isDBSupported) {
       return this.getFromLocalStorage(chatId);
@@ -214,11 +177,6 @@ class LocalChatService {
     }
   }
 
-  /**
-   * Update the messages of a chat.
-   * @param chatId The ID of the chat to update
-   * @param messages The new messages
-   */
   public async updateLocalChatMessages(chatId: string, messages: Message[]): Promise<void> {
     try {
       const chat = await this.getLocalChat(chatId);
@@ -233,11 +191,6 @@ class LocalChatService {
     }
   }
 
-  /**
-   * Update the title of a chat.
-   * @param chatId The ID of the chat to update
-   * @param title The new title
-   */
   public async updateLocalChatTitle(chatId: string, title: string): Promise<void> {
     try {
       const chat = await this.getLocalChat(chatId);
@@ -252,12 +205,6 @@ class LocalChatService {
     }
   }
 
-  /**
-   * Set the archived state of every local chat matching the supplied list options.
-   * @param archived The state to move matching chats into
-   * @param options The same filters the sidebar list is showing
-   * @returns The number of chats whose state changed
-   */
   public async setLocalChatsArchived(
     archived: boolean,
     options: ConversationListOptions = {},
@@ -274,10 +221,6 @@ class LocalChatService {
     return matching.length;
   }
 
-  /**
-   * Delete a chat.
-   * @param chatId The ID of the chat to delete
-   */
   public async deleteLocalChat(chatId: string): Promise<void> {
     if (!(await this.getLocalChat(chatId))) {
       return;
@@ -299,9 +242,6 @@ class LocalChatService {
     }
   }
 
-  /**
-   * Delete all local chats from storage.
-   */
   public async exportLocalChats(): Promise<LocalChatExport> {
     return buildLocalChatExport(await this.listLocalChats(), new Date().toISOString());
   }

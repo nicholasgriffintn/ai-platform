@@ -40,7 +40,7 @@ export function useTranscription({
   const MAX_RETRIES = 3;
   const RETRY_DELAY = 2000;
   const SPEECH_DETECTION_THRESHOLD = 0.05;
-  const SILENCE_DURATION_THRESHOLD = 1500; // 1.5 seconds of silence before considering speech stopped
+  const SILENCE_DURATION_THRESHOLD = 1500; // 1.5 seconds
 
   const lastSpeechTimeRef = useRef<number>(0);
   const isSpeechActiveRef = useRef<boolean>(false);

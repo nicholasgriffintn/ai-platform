@@ -10,10 +10,6 @@ import { useCallback } from "react";
 import { createTemporaryConversationTitle } from "../chat/title-source.js";
 import { useConversationStorage } from "./useConversationStorage.js";
 
-/**
- * Hook for managing message operations within conversations.
- * Handles adding, updating, and deleting messages.
- */
 export function useMessageOperations(requestOptions?: ChatRequestOptions) {
   const { updateConversation } = useConversationStorage(requestOptions);
   const { model } = useChatStore();

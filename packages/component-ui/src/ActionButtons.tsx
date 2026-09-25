@@ -4,30 +4,19 @@ import { Button } from "./Button";
 import { cn } from "./utils";
 
 interface ActionButton {
-  /** Unique identifier for the action */
   id: string;
-  /** Icon to display */
   icon: ReactNode;
-  /** Accessible label */
   label: string;
-  /** Click handler */
   onClick: () => void;
-  /** Visual variant */
   variant?: "default" | "success" | "destructive" | "active";
-  /** Whether the action is disabled */
   disabled?: boolean;
-  /** Whether the action is loading */
   loading?: boolean;
-  /** Custom className */
   className?: string;
 }
 
 interface ActionButtonsProps {
-  /** Array of action button configurations */
   actions: ActionButton[];
-  /** Alignment of the action buttons */
   align?: "left" | "right" | "center";
-  /** Custom className for the container */
   className?: string;
 }
 

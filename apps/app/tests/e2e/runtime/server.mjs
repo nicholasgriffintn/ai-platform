@@ -338,10 +338,6 @@ function toolCallStreamingResponse(toolCall) {
   });
 }
 
-/**
- * Deterministic tool calls for journeys that exercise tool-driven UI. The marker phrase keeps the
- * provider mock free of model behaviour: a test asks for the tool by name in its prompt.
- */
 const TOOL_CALL_TRIGGERS = [
   {
     marker: "Search my release documents for canary",

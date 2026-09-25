@@ -7,12 +7,6 @@ export interface CategorizedItems<T> {
   older: T[];
 }
 
-/**
- * Generic function to categorize items by date into common time periods
- * @param items - Array of items to categorize
- * @param getDate - Function to extract a Date from each item
- * @returns Object with items categorized by time period
- */
 export function categorizeItemsByDate<T>(
   items: T[] = [],
   getDate: (item: T) => Date,

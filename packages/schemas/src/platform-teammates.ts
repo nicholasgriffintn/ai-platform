@@ -5,10 +5,6 @@ export const PLATFORM_TEAMMATE_ID_PREFIX = "platform-";
 
 export const PLATFORM_TEAMMATE_SCOPE_ID = "platform";
 
-/**
- * The reserved account platform teammates are authored by. The migration creates it,
- * and every platform teammate row points at it so the normal teammate foreign keys hold.
- */
 export const PLATFORM_TEAMMATE_AUTHOR_USER_ID = -1;
 
 export const PLATFORM_TEAMMATE_CATEGORIES = ["engineering", "product", "organisation"] as const;
@@ -38,11 +34,6 @@ export function platformTeammateId(slug: string): string {
   return `${PLATFORM_TEAMMATE_ID_PREFIX}${slug}`;
 }
 
-/**
- * The teammates every signed-in user gets by default. Adding an entry here is enough: the API
- * syncs the row on the next read, and tests assert every tool and skill exists in the shipped
- * catalogues.
- */
 export const PLATFORM_TEAMMATES: readonly PlatformTeammate[] = [
   {
     id: platformTeammateId("architecture-discovery"),

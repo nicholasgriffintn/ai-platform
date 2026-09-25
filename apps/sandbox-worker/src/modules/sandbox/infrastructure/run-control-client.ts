@@ -243,11 +243,6 @@ export class RunControlClient {
     return mapApprovalInstructionToApproval(match?.instruction ?? null);
   }
 
-  /**
-   * Records the run's progress against its goal and asks whether it should keep
-   * working. A run that cannot reach its control plane keeps its old behaviour
-   * and finishes, rather than looping without oversight.
-   */
   public async recordGoalIteration(
     iteration: {
       summary: string;

@@ -94,10 +94,6 @@ export interface SurfaceAnalyticsEvent {
   properties?: Record<string, string | number | boolean | undefined>;
 }
 
-/**
- * Reporting is a host concern: render modules describe what happened and the application decides
- * where it goes. Implementations must never throw into the render path.
- */
 export interface SurfaceAnalytics {
   track(event: SurfaceAnalyticsEvent): void;
 }

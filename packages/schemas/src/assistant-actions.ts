@@ -60,7 +60,6 @@ export const assistantActionItemMetadataSchema = z.object({
   recipeId: z.string().optional(),
   skillSource: skillSourceSchema.optional(),
   toolId: z.string().optional(),
-  /** Function tools can be run directly from the interface; model tools cannot. */
   toolRunnable: z.boolean().optional(),
 });
 

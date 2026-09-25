@@ -9,10 +9,6 @@ interface HeaderRegistration {
   definition: PageShellHeaderDefinition;
 }
 
-/**
- * Nested routes register the header they want the shell to display. The last registration wins so
- * a child surface can take over the header its parent shell already rendered.
- */
 export function usePageShellHeaderRegistry() {
   const [registrations, setRegistrations] = useState<HeaderRegistration[]>([]);
 
@@ -42,10 +38,8 @@ export function usePageShellHeaderRegistry() {
 export interface PageShellFrameProps {
   children: ReactNode;
   className?: string;
-  /** Render the body edge to edge and let it own its own scrolling. */
   fullBleed?: boolean;
   header?: ReactNode;
-  /** Rendered above the frame, outside the scroll container. */
   notification?: ReactNode;
 }
 

@@ -9,15 +9,10 @@ interface SearchInputProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
   "type" | "onChange"
 > {
-  /** Current search value */
   value: string;
-  /** Change handler */
   onChange: (value: string) => void;
-  /** Optional clear handler (if different from setting value to empty) */
   onClear?: () => void;
-  /** Keyboard shortcut hint to display */
   shortcut?: string;
-  /** Custom className */
   className?: string;
 }
 

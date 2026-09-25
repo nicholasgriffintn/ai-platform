@@ -6,10 +6,6 @@ import { useMemo } from "react";
 
 import { useTrackEvent } from "../hooks/use-track-event.js";
 
-/**
- * Bridges the render packages' host-neutral analytics contract onto the web app's event pipeline,
- * so shared components report without knowing which provider is behind it.
- */
 export function useAnalyticsAdapter(): SurfaceAnalytics {
   const { trackEvent } = useTrackEvent();
 

@@ -138,7 +138,6 @@ const queryStoredTargets = async (
   const rankingMethod = useRankFusion ? "reciprocal-rank-fusion" : "provider-score";
 
   for (const { matches, target } of successfulProviderResults) {
-    // ES2022 Workers do not expose Array#toSorted, and this copied array is safe to mutate.
     const rankedTargetMatches = [...matches].sort((left, right) => right.score - left.score);
 
     for (const [rank, match] of rankedTargetMatches.entries()) {
@@ -152,7 +151,6 @@ const queryStoredTargets = async (
     }
   }
 
-  // ES2022 Workers do not expose Array#toSorted, and this copied array is safe to mutate.
   const matches = [...matchesByTargetAndVectorId.values()].sort(
     (left, right) => right.score - left.score,
   );

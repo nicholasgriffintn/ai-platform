@@ -20,9 +20,6 @@ import { useConversationScope } from "../state/conversation-scope.js";
 import { useLoadingActions } from "../state/LoadingContext.js";
 import { useConversationStorage } from "./useConversationStorage.js";
 
-/**
- * Hook for advanced conversation actions like editing, retrying, and branching.
- */
 export function useConversationActions(
   generateResponse: (
     messages: Message[],

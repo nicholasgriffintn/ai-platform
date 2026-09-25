@@ -54,7 +54,6 @@ export interface WorkSidebarProject {
   scheduledHref: string;
   conversationList?: ReactNode;
   attentionCount?: number;
-  /** True while the project chat route is open, which decides conversation highlighting. */
   isConversationRoute: boolean;
   activeConversationId?: string;
 }
@@ -67,7 +66,6 @@ export interface WorkSidebarNavProps {
   workspace?: WorkSidebarWorkspace;
   activeProjectId?: string;
   project?: WorkSidebarProject;
-  /** Listed only when no workspace is open, as a way back into one. */
   workspaceShortcuts?: Array<{ id: string; name: string; href: string }>;
   onNavigate: () => void;
   onNewChat: () => void;

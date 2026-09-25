@@ -5,12 +5,9 @@ import { ConversationSurfaceLayout } from "../ConversationSurfaceLayout.js";
 import { ConversationThread, type ThreadModeConfig } from "./index.js";
 
 export interface ConversationSurfaceProps {
-  /** Rendered above the thread, inside the same height context. */
   header?: ReactNode;
-  /** Rendered alongside the thread, ahead of it in the reading order. */
   sidebar?: ReactNode;
   modeConfig?: ThreadModeConfig;
-  /** Fill the window rather than the space a host layout has already given. */
   ownsWindow?: boolean;
   className?: string;
 }

@@ -504,7 +504,6 @@ describe("EmbeddingRepository", () => {
 
     await repository.insertEmbeddings(records, { namespace: "user_kb_42", userId: 42 });
 
-    // 120 records at 50 per batch means 3 batches: 50, 50, 20.
     expect(batch).toHaveBeenCalledTimes(3);
     expect(batch.mock.calls[0][0]).toHaveLength(50);
     expect(batch.mock.calls[1][0]).toHaveLength(50);
@@ -537,8 +536,6 @@ describe("EmbeddingRepository", () => {
       repository.insertEmbeddings(records, { namespace: "user_kb_42", userId: 42 }),
     ).rejects.toThrow("d1 batch failed");
 
-    // The first 100 committed IDs are compensated in pages of 98 and 2, leaving room for
-    // the user and namespace parameters in D1's 100-parameter ceiling.
     expect(run).toHaveBeenCalledTimes(2);
     const deleteCalls = bind.mock.calls.filter((call) => call[0] === 42);
 

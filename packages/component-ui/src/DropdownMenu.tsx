@@ -95,10 +95,6 @@ export function DropdownMenu({
     setIsOpen((open) => !open);
   };
 
-  /**
-   * The menu renders as a sibling of the trigger, so keys pressed while the
-   * trigger still holds focus only reach a handler on their shared wrapper.
-   */
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLElement>) => {
     if (!isOpen) {
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {

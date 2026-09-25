@@ -64,7 +64,6 @@ export class RealtimeProxyCoordinator extends Agent<IEnv> {
           await this.storage.delete(expiredKeys);
         }
 
-        // Consume before the quota decision so a refused grant cannot be replayed later.
         await this.storage.put(grantKey, request.expiresAt);
 
         if (storedSessions.size - expiredKeys.length >= MAX_REALTIME_PROXY_SESSIONS_PER_USER) {

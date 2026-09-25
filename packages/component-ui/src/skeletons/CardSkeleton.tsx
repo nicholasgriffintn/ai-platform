@@ -1,13 +1,9 @@
 import { Skeleton } from "../Skeleton";
 
 interface CardSkeletonProps {
-  /** Number of skeleton cards to render */
   count?: number;
-  /** Whether to show header section */
   showHeader?: boolean;
-  /** Whether to show footer section */
   showFooter?: boolean;
-  /** Number of content lines */
   contentLines?: number;
 }
 

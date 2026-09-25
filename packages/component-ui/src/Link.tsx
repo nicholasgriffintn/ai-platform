@@ -26,7 +26,6 @@ const AnchorLink: LinkComponent = forwardRef<HTMLAnchorElement, LinkRenderProps>
   },
 );
 
-/** Without a host router there is no route to compare against, so nothing is ever active. */
 const AnchorNavLink: NavLinkComponent = forwardRef<HTMLAnchorElement, NavLinkRenderProps>(
   function AnchorNavLink({ children, className, end: _end, ...rest }, ref) {
     const resolvedClassName =

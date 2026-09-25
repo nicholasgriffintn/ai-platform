@@ -11,7 +11,6 @@ export type EmbeddingDistanceMetric =
   | "unknown";
 export type EmbeddingTaskMode = "symmetric" | "asymmetric" | "unknown";
 
-/** The Phase 1 column shape. Keep this at repository boundaries until the schema migrates. */
 export interface EmbeddingProviderTarget {
   provider: string;
   target: string;
@@ -20,7 +19,6 @@ export interface EmbeddingProviderTarget {
   vectorSpaceVersion: string;
 }
 
-/** Complete runtime identity used to decide whether vectors can share a search space. */
 export interface EmbeddingRuntimeTarget {
   embeddingProvider: string;
   providerTarget: string;

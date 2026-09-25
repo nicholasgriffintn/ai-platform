@@ -22,9 +22,7 @@ export interface AccountSidebarShellProps {
   footer?: ReactNode;
   isMobile: boolean;
   sidebarVisible: boolean;
-  /** Whether to preview the hidden sidebar without pinning it open */
   peeking?: boolean;
-  /** Pointer handlers that keep the preview open while the panel is hovered */
   peekProps?: SidebarPeekPointerHandlers;
   onClose: () => void;
   isAuthenticated: boolean;
@@ -48,10 +46,7 @@ export function AccountSidebarShell({
   isLoggingOut = false,
   onLogout,
 }: AccountSidebarShellProps) {
-  // Only the mobile drawer overlays the page, so only it takes focus and Escape.
   const isDrawer = sidebarVisible && isMobile;
-  // A peek overlays the page without taking layout space, so the header above
-  // it keeps its buttons and title in place and paints above it.
   const isPeek = peeking && !sidebarVisible && !isMobile;
   const drawerRef = useOverlayDismiss<HTMLDivElement>({ open: isDrawer, onClose });
 

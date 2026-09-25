@@ -9,10 +9,6 @@ import { useCapabilityCatalog } from "./useCapabilityCatalog.js";
 import { useAssistantRecipes } from "./useRecipes.js";
 import { useTools } from "./useTools.js";
 
-/**
- * An experience that declares an owning capability is the thing a project or person enables,
- * so it is presented as an app in the capability library.
- */
 function toEnableableApp(experience: ProjectExperienceDefinition) {
   if (experience.requirement.kind !== "capability") {
     return null;

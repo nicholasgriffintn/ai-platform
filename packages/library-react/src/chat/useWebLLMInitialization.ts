@@ -35,8 +35,7 @@ export function useWebLLMInitialization(apiModels: ModelConfig = {}) {
 
     if (!shouldLoadBrowserModel) {
       stopLoading(loadingId);
-      // Idempotent reset for a download superseded mid-flight; React bails out when unchanged.
-      // eslint-disable-next-line react/set-state-in-effect
+      // eslint-disable-next-line react/set-state-in-effect - Idempotent reset for a download superseded mid-flight; React bails out when unchanged.
       setIsInitializing(false);
 
       return () => {
@@ -50,7 +49,6 @@ export function useWebLLMInitialization(apiModels: ModelConfig = {}) {
       }
 
       stopLoading(loadingId);
-      // Idempotent reset while blocked on consent; React bails out when unchanged.
       setIsInitializing(false);
 
       return () => {

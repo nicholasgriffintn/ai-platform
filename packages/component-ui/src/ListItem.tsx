@@ -3,25 +3,15 @@ import type { ReactNode } from "react";
 import { cn } from "./utils";
 
 interface ListItemProps {
-  /** Whether this item is currently active/selected */
   isActive?: boolean;
-  /** Icon to display before the label */
   icon?: ReactNode;
-  /** Badge or indicator to display (e.g., temporary conversation, branch icon) */
   badge?: ReactNode;
-  /** Main label text */
   label: ReactNode;
-  /** Optional sublabel/description text */
   sublabel?: string;
-  /** Actions to show on hover (use HoverActions component) */
   actions?: ReactNode;
-  /** Space reserved for the action controls */
   actionsWidth?: "compact" | "standard";
-  /** Click handler */
   onClick?: () => void;
-  /** Custom className */
   className?: string;
-  /** Additional data attributes */
   "data-id"?: string;
 }
 

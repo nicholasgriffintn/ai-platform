@@ -2,15 +2,10 @@ import { cn } from "./utils";
 
 export interface SidebarBackdropProps {
   onClose: () => void;
-  /** Names the dismiss control for screen readers. */
   label?: string;
   className?: string;
 }
 
-/**
- * The scrim behind a mobile sidebar drawer. It is a real button so that pointer
- * and keyboard users get the same dismiss affordance.
- */
 export function SidebarBackdrop({
   onClose,
   label = "Close sidebar",

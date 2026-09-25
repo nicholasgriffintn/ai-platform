@@ -10,10 +10,6 @@ export const isIndexedDBSupported = () => {
   return typeof window !== "undefined" && "indexedDB" in window;
 };
 
-/**
- * Get or initialize the database connection.
- * This can be used directly in services that don't need React hooks.
- */
 export const getDatabase = async (): Promise<IDBPDatabase> => {
   if (!isIndexedDBSupported()) {
     return Promise.reject(new Error("IndexedDB is not supported in this browser"));

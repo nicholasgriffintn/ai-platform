@@ -76,7 +76,6 @@ export function ImageModal({
         )}
       </div>
       <DialogContent
-        // The image is the whole content, so there is nothing to describe beyond its label.
         aria-describedby={undefined}
         className={cn("w-auto max-w-[95vw] gap-0 p-4 pt-12 sm:max-w-[min(95vw,72rem)]", className)}
       >

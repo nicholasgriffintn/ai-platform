@@ -96,7 +96,6 @@ export async function maybeVectorizeExtractedContent({
 
     try {
       for (const request of requests) {
-        // Keep writes ordered so a later failure can compensate the exact durable prefix.
         const response = await insertEmbedding({
           context: req.context,
           env: req.env,

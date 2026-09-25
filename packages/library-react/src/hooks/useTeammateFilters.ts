@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
 
-/**
- * Hook for managing teammate filtering and search state
- */
 export function useTeammateFilters() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");

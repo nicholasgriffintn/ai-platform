@@ -636,5 +636,4 @@ export class SharedTeammateRepository extends BaseRepository {
   }
 }
 
-// Re-export types for use in services
 export type { SharedTeammate, TeammateInstall, TeammateRating };

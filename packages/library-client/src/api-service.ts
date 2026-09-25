@@ -48,11 +48,6 @@ import { UserService } from "./services/user-service.js";
 import { useToolsStore } from "./toolsStore.js";
 import { getHeaders } from "./utils/headers.js";
 
-/**
- * Main API service class that acts as a facade for all domain-specific services.
- * This provides a single entry point for all API operations while delegating
- * to specialized services internally.
- */
 class ApiService {
   private static instance: ApiService;
 
@@ -85,8 +80,6 @@ class ApiService {
   }
 
   public getHeaders = getHeaders;
-
-  // ===== Chat/Conversation Methods =====
 
   listChats = (options?: ConversationListOptions): Promise<ConversationListPage> => {
     return this.chatService.listChats(options);
@@ -232,8 +225,6 @@ class ApiService {
     return formatMessageContent(messageContent);
   }
 
-  // ===== Teammate Methods =====
-
   listTeammates = (): Promise<TeammateResponse[]> => {
     return this.teammateService.listTeammates();
   };
@@ -374,8 +365,6 @@ class ApiService {
     return this.teammateService.deleteTeammate(teammateId);
   };
 
-  // ===== User/Settings Methods =====
-
   exportChatHistory = (): Promise<Blob> => {
     return this.userService.exportChatHistory();
   };
@@ -452,8 +441,6 @@ class ApiService {
     return this.userService.deleteApiKey(keyId);
   };
 
-  // ===== Subscription Methods =====
-
   getSubscription = (): Promise<any> => {
     return this.subscriptionService.getSubscription();
   };
@@ -474,13 +461,9 @@ class ApiService {
     return this.subscriptionService.reactivateSubscription();
   };
 
-  // ===== Research Methods =====
-
   fetchResearchStatus = (runId: string, provider?: string) => {
     return this.researchService.fetchStatus(runId, provider);
   };
-
-  // ===== Upload Methods =====
 
   transcribeAudio = (audioBlob: Blob): ReturnType<UploadService["transcribeAudio"]> => {
     return this.uploadService.transcribeAudio(audioBlob);

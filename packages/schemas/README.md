@@ -15,9 +15,7 @@ pnpm install
 ```typescript
 import { messageSchema } from "@ngriffin_uk/polychat-schemas";
 
-// Use for validation
 const result = messageSchema.parse(data);
 
-// Use for TypeScript types
 type Message = z.infer<typeof messageSchema>;
 ```

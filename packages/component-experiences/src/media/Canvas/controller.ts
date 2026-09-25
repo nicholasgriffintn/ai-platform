@@ -11,10 +11,6 @@ export type CanvasStudioMode = CanvasMode | "drawing";
 
 export type CanvasOptionValues = Record<string, string | boolean>;
 
-/**
- * The contract the host controller fulfils for the canvas views. Hosts own the queries, mutations,
- * and persistence; these views only present the resulting state and emit intents.
- */
 export interface CanvasStudioState {
   mode: CanvasStudioMode;
   mediaMode: CanvasMode;

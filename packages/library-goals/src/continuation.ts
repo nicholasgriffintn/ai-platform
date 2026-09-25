@@ -32,12 +32,6 @@ export interface GoalContinuationDecision {
   nextStallStreak: number;
 }
 
-/**
- * The single rule for whether a goal keeps working. Consumed by the client
- * dispatcher, the agent loop's finish gate and the sandbox coordinator, so the
- * behaviour cannot drift between them. Deliberately counts no turns: a goal
- * making progress runs as long as it needs to.
- */
 export function evaluateGoalContinuation(input: GoalContinuationInput): GoalContinuationDecision {
   const currentStreak = input.goal?.stall_streak ?? 0;
   const madeProgress = input.lastTurn.producedEvidence || input.lastTurn.calledTool;

@@ -527,7 +527,6 @@ export class EmbeddingRepository extends BaseRepository {
       const page = inserts.slice(start, start + MAX_STATEMENTS_PER_BATCH);
 
       try {
-        // Keep pages ordered so compensation knows exactly which IDs reached durable storage.
         await database.batch(page.map((insert) => insert.statement));
       } catch (error) {
         await this.rollbackInsertedEmbeddings(insertedIds, scope);
@@ -543,7 +542,6 @@ export class EmbeddingRepository extends BaseRepository {
       const page = ids.slice(start, start + MAX_SCOPED_IDS_PER_QUERY);
 
       try {
-        // Bound each cleanup statement so it stays below D1's parameter limit.
         await this.executeRun(
           `DELETE FROM embedding
             WHERE user_id = ? AND namespace = ?

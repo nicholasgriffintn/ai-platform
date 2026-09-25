@@ -10,11 +10,9 @@ export interface ProjectSourceSummary {
 
 export interface ProjectKnowledgeCardProps {
   canManage: boolean;
-  /** Rendered without its own card chrome when the parent already provides one. */
   embedded?: boolean;
   memories: ProjectSourceSummary[];
   contextSources: ProjectSourceSummary[];
-  /** Sources that may be pinned as persistent conversation context. */
   contextCandidates: ProjectSourceSummary[];
   sourcesHref: string;
   isSavingContext?: boolean;

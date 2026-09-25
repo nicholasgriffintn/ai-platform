@@ -882,7 +882,6 @@ export const authoredSkillRevision = sqliteTable(
     digest: text().notNull(),
     storage_key: text().notNull().unique(),
     size: integer().notNull(),
-    // Keep lineage readable even when the originating personal skill is later purged.
     source_skill_id: text(),
     source_revision_id: text(),
     created_by: integer()

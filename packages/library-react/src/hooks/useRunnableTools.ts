@@ -12,7 +12,6 @@ export function useRunnableTool(id: string | null) {
     queryKey: RUNNABLE_TOOL_QUERY_KEYS.byId(id),
     queryFn: () => fetchRunnableTool(id as string),
     enabled: Boolean(id),
-    // An output's capability may be an experience rather than a tool, so a miss is expected.
     retry: false,
     staleTime: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,

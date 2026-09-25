@@ -10,19 +10,12 @@ interface SuggestionItem {
 }
 
 interface EmptyStateProps {
-  /** Display variant - 'empty' for standard empty states, 'inset' when rendered inside a card that already provides a border, 'welcome' for welcoming first-time users */
   variant?: "empty" | "inset" | "welcome";
-  /** Icon to display (larger in welcome variant) */
   icon?: ReactNode;
-  /** Title text or element */
   title?: ReactNode;
-  /** Description message */
   message?: string;
-  /** Primary action button or element */
   action?: ReactNode;
-  /** Suggested actions (displayed as clickable chips) */
   suggestions?: SuggestionItem[];
-  /** Custom className */
   className?: string;
 }
 

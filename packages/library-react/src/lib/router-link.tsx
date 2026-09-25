@@ -7,10 +7,6 @@ import type {
 import { forwardRef } from "react";
 import { Link, NavLink } from "react-router";
 
-/**
- * Render packages emit resolved hrefs; these adapters turn them into client-side router links so
- * shared components never import a router themselves.
- */
 export const RouterLink: LinkComponent = forwardRef<HTMLAnchorElement, LinkRenderProps>(
   function RouterLink({ href, children, ...props }, ref) {
     return (

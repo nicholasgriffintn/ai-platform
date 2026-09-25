@@ -52,7 +52,6 @@ const removeInsertedVectors = async (
 
     return result.status === "success";
   } catch {
-    // The inactive D1 document prevents an orphaned provider vector from becoming queryable.
     return false;
   }
 };

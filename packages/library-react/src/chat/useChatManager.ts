@@ -35,10 +35,6 @@ import { useModels } from "./useModels.js";
 import { useStreamingResponse } from "./useStreamingResponse.js";
 import { useWebLLMInitialization } from "./useWebLLMInitialization.js";
 
-/**
- * Main hook for managing chat operations.
- * Composes smaller hooks to handle streaming, storage, WebLLM, and conversation actions.
- */
 export function useChatManager(
   requestOptions?: ChatRequestOptions,
   conversationMode?: ConversationModeMetadata,

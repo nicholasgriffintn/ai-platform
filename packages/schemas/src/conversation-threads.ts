@@ -33,7 +33,6 @@ export function flattenConversationThreads(threads: ConversationThread[]) {
   const visited = new Set<string>();
   const stack = [...(children.get(null) ?? [])].reverse().map((thread) => ({ thread, depth: 0 }));
 
-  // Disconnected or cyclic legacy records still remain navigable once each.
   for (const thread of threads) {
     if (stack.length === 0 && !visited.has(thread.id)) {
       stack.push({ thread, depth: 0 });

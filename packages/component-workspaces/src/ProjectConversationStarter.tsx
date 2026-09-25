@@ -3,7 +3,6 @@ import { Send } from "lucide-react";
 import { useState } from "react";
 
 export interface ProjectConversationStarterProps {
-  /** Receives the trimmed prompt; the host decides where the conversation opens. */
   onStart: (prompt: string) => void;
 }
 

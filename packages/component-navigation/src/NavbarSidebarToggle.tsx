@@ -10,7 +10,6 @@ export interface NavbarSidebarToggleProps {
   isMobile: boolean;
   sidebarVisible: boolean;
   onToggleSidebar: (visible: boolean) => void;
-  /** Pointer handlers that preview the hidden sidebar on hover */
   peekProps?: NavbarSidebarTogglePeekProps;
 }
 

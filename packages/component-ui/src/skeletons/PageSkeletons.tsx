@@ -5,10 +5,6 @@ import { PageShellHeader } from "../Page/PageShellHeader";
 import { Skeleton } from "../Skeleton";
 import { cn } from "../utils";
 
-/**
- * Scope-neutral loading states. Nothing here may name a workspace, a project, or a person:
- * Chat and Work render the same surfaces and must not borrow each other's vocabulary.
- */
 export function LoadingRegion({
   children,
   className,
@@ -111,7 +107,6 @@ export function CardGridLoadingSkeleton({
   );
 }
 
-/** Body content for a surface whose header is already rendered by its route. */
 export function ContentLoadingSkeleton({ label = "Loading" }: { label?: string }) {
   return (
     <LoadingRegion label={label} className="space-y-5">
@@ -121,7 +116,6 @@ export function ContentLoadingSkeleton({ label = "Loading" }: { label?: string }
   );
 }
 
-/** A form-and-result surface, such as running a tool. */
 export function FormLoadingSkeleton({ label = "Loading" }: { label?: string }) {
   return (
     <LoadingRegion label={label} className="mx-auto max-w-5xl px-6 py-10 md:px-10 md:py-14">

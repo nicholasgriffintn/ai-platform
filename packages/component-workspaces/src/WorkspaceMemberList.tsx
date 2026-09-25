@@ -19,7 +19,6 @@ export interface WorkspaceInvitationSummary {
 
 export interface WorkspaceMemberListProps {
   members: WorkspaceMemberSummary[];
-  /** The viewer's own role, which decides who they may re-role, remove, or promote. */
   viewerRole: WorkspaceRole;
   viewerUserId?: number;
   onChangeRole: (userId: number, role: "admin" | "member") => void;

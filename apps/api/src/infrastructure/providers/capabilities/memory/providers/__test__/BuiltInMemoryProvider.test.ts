@@ -19,7 +19,6 @@ const s3Target = {
   vectorSpaceVersion: "v1",
 };
 const mocks = vi.hoisted(() => {
-  // Vitest must construct these providers inside its hoisted mock initialiser.
   const createProvider = () => ({
     delete: vi.fn().mockResolvedValue({ status: "success", error: null }),
     generate: vi

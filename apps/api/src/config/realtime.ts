@@ -1,7 +1,3 @@
-/**
- * Realtime session and proxy limits. Env overrides are read and clamped by the realtime module.
- */
-
 export const REALTIME_MAX_SESSION_SECONDS_DEFAULT = 1800;
 export const REALTIME_MAX_SESSION_SECONDS_MIN = 60;
 export const REALTIME_MAX_SESSION_SECONDS_MAX = 3600;

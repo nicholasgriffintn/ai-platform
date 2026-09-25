@@ -126,7 +126,6 @@ export class TaskService {
         max_attempts: task.max_attempts ?? 3,
       };
 
-      // A duplicate delivery is safe because the consumer atomically claims the durable task.
       await this.sendMessage(message);
       await this.taskRepository.updateTask(task.id, { status: "queued" });
       dispatched++;

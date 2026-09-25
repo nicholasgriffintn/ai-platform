@@ -12,10 +12,6 @@ import { upsertConversationInChatCaches } from "../conversation-cache.js";
 import { localChatService } from "../index.js";
 import { useSelectedModelRunsOnDevice } from "./useSelectedModelRunsOnDevice.js";
 
-/**
- * Hook for managing conversation storage across local and remote storage.
- * Handles query cache updates and IndexedDB persistence.
- */
 export function useConversationStorage(requestOptions?: ChatRequestOptions) {
   const queryClient = useQueryClient();
   const {

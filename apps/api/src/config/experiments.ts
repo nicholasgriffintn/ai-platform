@@ -6,7 +6,6 @@ export interface TaskFlagConfig {
   variants: Record<string, boolean>;
 }
 
-/** Code-defined task flags. The experiments module turns these into flag definitions. */
 export const TASK_FLAGS = {
   memory_synthesis: {
     description: "Run the nightly memory synthesis task",

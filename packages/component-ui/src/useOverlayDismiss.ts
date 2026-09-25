@@ -10,10 +10,8 @@ const FOCUSABLE_SELECTOR = [
 ].join(",");
 
 export interface OverlayDismissOptions {
-  /** Whether the overlay is currently rendered and interactive. */
   open: boolean;
   onClose: () => void;
-  /** Set false when the overlay places initial focus itself. */
   autoFocus?: boolean;
 }
 
@@ -107,7 +105,6 @@ export function useOverlayDismiss<T extends HTMLElement>({
     }
 
     return () => {
-      // Only restore when the opener is still on the page; a route change makes it stale.
       if (previouslyFocused?.isConnected) {
         previouslyFocused.focus();
       }

@@ -249,7 +249,6 @@ export function AnalyticsProvider({ analytics, children }: AnalyticsProviderProp
   return <AnalyticsContext.Provider value={analytics}>{children}</AnalyticsContext.Provider>;
 }
 
-/** Render packages report through this; without a provider the events are dropped. */
 export function useAnalytics(): SurfaceAnalytics {
   return useContext(AnalyticsContext);
 }

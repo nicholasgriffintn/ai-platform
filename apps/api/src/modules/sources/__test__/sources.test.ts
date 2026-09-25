@@ -327,7 +327,6 @@ describe("project conversation context", () => {
       user: { id: 42 },
       repositories: {
         sources: {
-          // Only one of the two requested ids comes back from the batched lookup.
           getSourcesByIds: vi.fn().mockResolvedValue([projectSource]),
           ensureProjectContextCollection: vi.fn(),
           replaceCollectionSources: vi.fn(),
@@ -366,7 +365,6 @@ describe("project conversation context", () => {
       "source-2",
     ]);
 
-    // Once for the collection itself, once for the two sources (deduped since they share a project).
     expect(requireProjectAccessMock).toHaveBeenCalledTimes(2);
     expect(addCollectionSourcesRepo).toHaveBeenCalledWith(contextCollection.id, [
       projectSource.id,

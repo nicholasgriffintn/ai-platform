@@ -20,7 +20,6 @@ export interface DiscoverableFunctionTool {
 }
 
 export interface CapabilityDiscoverySources {
-  /** Function tools the current tool policy would let this turn activate, internal ones included. */
   activatableToolIds: ReadonlySet<string>;
   connectors: readonly RecipeConnectorManifest[];
   enabledToolIds: ReadonlySet<string>;

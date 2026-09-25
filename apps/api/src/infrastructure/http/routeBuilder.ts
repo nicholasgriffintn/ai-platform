@@ -28,19 +28,12 @@ interface RouteResponseSpec {
 }
 
 export interface HandlerContext<TBody = unknown, TParams = unknown, TQuery = unknown> {
-  /** Pre-built ServiceContext for the request. */
   serviceContext: ServiceContext;
-  /** The raw Hono context, for cases where you need direct access. */
   raw: Context;
-  /** Validated request body (if bodySchema provided). */
   body: TBody;
-  /** Validated route params (if paramSchema provided). */
   params: TParams;
-  /** Validated query params (if querySchema provided). */
   query: TQuery;
-  /** Authenticated user, when present. */
   user: IUser | undefined;
-  /** Anonymous user context, when present. */
   anonymousUser: AnonymousUser | undefined;
 }
 
@@ -61,42 +54,26 @@ export interface ServiceHandlerContext<
 }
 
 interface BaseRouteConfig<TBody, TParams, TQuery> {
-  /** OpenAPI tag(s). */
   tags: string[];
-  /** Short summary for OpenAPI docs. */
   summary?: string;
-  /** Longer description for OpenAPI docs. */
   description?: string;
-  /** Additional Hono middleware to run before the handler. */
   middleware?: MiddlewareHandler[];
-  /** Zod schema for JSON request body validation. */
   bodySchema?: ZodType<TBody>;
-  /** Zod schema for form-data request body validation. */
   formSchema?: ZodType;
-  /** Zod schema for route parameter validation. */
   paramSchema?: ZodType<TParams>;
-  /** Zod schema for query string validation. */
   querySchema?: ZodType<TQuery>;
-  /** OpenAPI response definitions. Keyed by status code. */
   responses?: Record<number, RouteResponseSpec>;
-  /**
-   * Opt-in browser caching for GET JSON responses. Emits a weak ETag,
-   */
   cache?: RouteCacheConfig | "no-store";
 }
 
 export interface RouteCacheConfig {
-  /** Browser max-age in seconds. */
   maxAge: number;
-  /** stale-while-revalidate window in seconds. Defaults to maxAge. */
   staleWhileRevalidate?: number;
 }
 
 type RouteConfig<TBody, TParams, TQuery> =
   | (BaseRouteConfig<TBody, TParams, TQuery> & {
-      /** Require a signed-in user. Throws 401 if only anonymous context is present. */
       auth: true;
-      /** The handler function. Return data for JSON, or a Response for streaming. */
       handler: (ctx: AuthenticatedHandlerContext<TBody, TParams, TQuery>) => Promise<unknown>;
     })
   | (BaseRouteConfig<TBody, TParams, TQuery> & {
@@ -105,14 +82,11 @@ type RouteConfig<TBody, TParams, TQuery> =
       handler: (ctx: ServiceHandlerContext<TBody, TParams, TQuery>) => Promise<unknown>;
     })
   | (BaseRouteConfig<TBody, TParams, TQuery> & {
-      /** Require either a signed-in user or anonymous-user context. */
       auth: "user-or-anonymous";
-      /** The handler function. Return data for JSON, or a Response for streaming. */
       handler: (ctx: HandlerContext<TBody, TParams, TQuery>) => Promise<unknown>;
     })
   | (BaseRouteConfig<TBody, TParams, TQuery> & {
       auth?: false;
-      /** The handler function. Return data for JSON, or a Response for streaming. */
       handler: (ctx: HandlerContext<TBody, TParams, TQuery>) => Promise<unknown>;
     });
 

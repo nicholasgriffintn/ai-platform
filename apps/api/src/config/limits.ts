@@ -1,11 +1,3 @@
-/**
- * Service-wide size, time and count limits.
- *
- * Anything a module enforces against user input or provider output belongs here so the bounds can
- * be reviewed in one place. Module-specific rules (what to do when a limit is hit) stay with the
- * module.
- */
-
 // Content and streaming
 export const MAX_CONTENT_LENGTH = 1_000_000; // 1MB
 export const MAX_THINKING_LENGTH = 500_000; // 500KB

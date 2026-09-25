@@ -10,21 +10,12 @@ import {
 } from "./assistant-action-launch.js";
 import { getPlacePaths } from "./navigation/places.js";
 
-/**
- * Where a set of capability surfaces lives. Work nests them under a project; Chat nests them
- * under the personal conversation. Everything below takes the base path rather than ids so
- * both scopes share one implementation.
- */
 export interface CapabilitySurface {
   basePath: string;
   projectId?: string;
   workspaceId?: string;
 }
 
-/**
- * The shape both a project capability and a personal capability satisfy. `createdBy` is
- * absent personally, where there is only ever one owner.
- */
 export interface EnabledCapability {
   id: string;
   kind: ProjectCapabilityKind;

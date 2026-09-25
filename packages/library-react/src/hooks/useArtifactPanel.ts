@@ -1,10 +1,6 @@
 import type { ArtifactProps } from "@ngriffin_uk/polychat-utility-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-/**
- * The panel unmounts its artifact only after the close transition, so the data
- * outlives the visibility flag by this much.
- */
 const CLOSE_TRANSITION_MS = 300;
 
 interface UseArtifactPanelOptions {

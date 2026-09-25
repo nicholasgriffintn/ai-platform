@@ -65,10 +65,6 @@ export interface StreamResponseOptions {
   models?: string[];
 }
 
-/**
- * Hook for managing streaming responses and abort control.
- * Handles both local WebLLM and remote API streaming.
- */
 export function useStreamingResponse(
   webLLMService: any,
   onTitleGeneration?: (conversationId: string, messages: Message[]) => Promise<void>,

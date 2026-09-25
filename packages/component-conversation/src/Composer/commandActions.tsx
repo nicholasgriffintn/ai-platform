@@ -5,10 +5,6 @@ import type {
 } from "@ngriffin_uk/polychat-utility-react";
 import { createContext, type ReactNode, useContext } from "react";
 
-/**
- * Command resolution reads teammates, capability catalogues, and chat settings, so the host owns it
- * and supplies the result. The composer surface only presents and emits selections.
- */
 export interface ComposerCommandActions {
   activeSlashCommand: ComposerCommandAction | null;
   teammates: ComposerTeammateOption[];

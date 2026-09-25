@@ -1,7 +1,3 @@
-/**
- * Process custom XML tags in markdown content, converting them to markdown format
- * Example: <custom_tag>content</custom_tag> becomes **Custom Tag**\n\ncontent\n\n
- */
 export function processCustomXmlTags(text: string): string {
   const protectedRegionRegex = /(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]*`|^(?: {4}|\t).*$)/gm;
   const protectedRegions: string[] = [];

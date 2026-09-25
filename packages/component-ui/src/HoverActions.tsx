@@ -7,28 +7,18 @@ const hoverActionButtonClassName =
   "text-muted-foreground hover:bg-selection hover:text-foreground min-h-0 min-w-0 rounded-lg border-0 p-2 font-normal";
 
 interface HoverAction {
-  /** Unique identifier */
   id: string;
-  /** Icon to display */
   icon: ReactNode;
-  /** Accessible label */
   label: string;
-  /** Click handler */
   onClick: (e: React.MouseEvent) => void;
-  /** Whether the action is disabled */
   disabled?: boolean;
-  /** Custom className */
   className?: string;
 }
 
 interface HoverActionsProps {
-  /** Array of action configurations */
   actions: HoverAction[];
-  /** Whether actions should always be visible (e.g., on mobile) */
   alwaysVisible?: boolean;
-  /** Position of the actions */
   position?: "right" | "left";
-  /** Custom className */
   className?: string;
 }
 

@@ -1,10 +1,6 @@
 import type { Drawing } from "@ngriffin_uk/polychat-schemas/experiences";
 import type { RefObject } from "react";
 
-/**
- * The contract the host controller fulfils for the drawing views. Canvas element access stays a
- * ref the host owns, so the views never reach for the document themselves.
- */
 export interface DrawingStudioState {
   canvasRef: RefObject<HTMLCanvasElement | null>;
   currentColor: string;

@@ -11,25 +11,15 @@ import {
 } from "./Dialog";
 
 interface ConfirmationDialogProps {
-  /** Whether the dialog is open */
   open: boolean;
-  /** Callback when dialog open state changes */
   onOpenChange: (open: boolean) => void;
-  /** Dialog title */
   title: string;
-  /** Dialog description/message */
   description: string | ReactNode;
-  /** Text for confirm button */
   confirmText?: string;
-  /** Text for cancel button */
   cancelText?: string;
-  /** Callback when confirmed */
   onConfirm: () => void | Promise<void>;
-  /** Style variant of confirm button */
   variant?: "default" | "destructive" | "primary";
-  /** Whether the action is currently loading */
   isLoading?: boolean;
-  /** Additional content to show in the dialog */
   children?: ReactNode;
 }
 

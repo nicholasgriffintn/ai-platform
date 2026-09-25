@@ -84,7 +84,6 @@ export const research: ApiToolDefinition = {
 
     const options: ResearchOptions = {};
 
-    // Parallel-specific options
     if (typeof processor === "string" && processor.trim().length > 0) {
       options.processor = processor;
     }
@@ -99,7 +98,6 @@ export const research: ApiToolDefinition = {
       options.enable_events = enable_events;
     }
 
-    // Exa-specific options
     if (typeof model === "string" && model.trim().length > 0) {
       options.model = model;
     }
@@ -116,7 +114,6 @@ export const research: ApiToolDefinition = {
       };
     }
 
-    // Common options
     const polling = coercePollingOptions(args);
 
     if (polling) {
