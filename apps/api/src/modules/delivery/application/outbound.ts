@@ -1,8 +1,8 @@
+import { canonicalJson } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import { canonicalJson } from "~/infrastructure/canonical-json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
 const DELIVERY_LEASE_MS = 5 * 60 * 1000;

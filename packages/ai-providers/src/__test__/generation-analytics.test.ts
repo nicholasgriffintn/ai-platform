@@ -40,6 +40,33 @@ function context(): ProviderGenerationContext {
 }
 
 describe("captureProviderGenerationResult", () => {
+  it("tags generations with the governed route and version", () => {
+    const captured: AiGenerationSignal[] = [];
+    const base = context();
+    const tagged: ProviderGenerationContext = {
+      ...base,
+      request: {
+        ...base.request,
+        analyticsProperties: {
+          "polychat.route_id": "route-1",
+          "polychat.asset_version_id": "version-1",
+        },
+      } as never,
+    };
+
+    captureProviderGenerationResult(
+      { response: "ok" },
+      tagged,
+      (input) => captured.push(input),
+      () => {},
+    );
+
+    expect(captured[0]?.properties).toEqual({
+      "polychat.route_id": "route-1",
+      "polychat.asset_version_id": "version-1",
+    });
+  });
+
   it("captures usage from a final event that is not blank-line terminated", async () => {
     const captured: AiGenerationSignal[] = [];
     const stream = streamOf(

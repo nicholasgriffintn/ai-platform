@@ -34,6 +34,17 @@ Read the relevant record before changing any durable boundary.
 - [0043: Keep platform teammates in the teammate system and route task phases through them](decisions/0043-platform-teammates-and-task-workflows.md)
 - [0045: Make decisions a provider category, starting with TypeSafe Jev](decisions/0045-make-decisions-a-provider-category.md)
 
+## Model governance
+
+- [0062: Govern model versions, not model names](decisions/0062-govern-model-versions-not-names.md)
+- [0063: Approve routes separately from versions](decisions/0063-approve-routes-separately-from-versions.md)
+- [0064: Keep evidence append-only and make policy a pure function](decisions/0064-append-only-evidence-and-pure-policy.md)
+- [0065: Inspect untrusted weights statically and never load them](decisions/0065-never-execute-untrusted-weights.md)
+- [0066: Read weights from the Hub at pinned commits instead of mirroring them](decisions/0066-read-weights-from-the-hub.md)
+- [0067: Add third-party model scanners as a provider category](decisions/0067-third-party-scanners-as-providers.md) (proposed)
+- [0068: Treat fine-tunes as versions that re-enter the gate](decisions/0068-derived-models-reenter-the-gate.md)
+- [0069: Let workspaces bring their own Hugging Face connection](decisions/0069-workspaces-bring-their-own-hub-connection.md)
+
 ## Work orchestration
 
 - [0018: Run project tasks through governed flows](decisions/0018-project-tasks-run-through-governed-flows.md)

@@ -1,5 +1,6 @@
 export * from "./arrays.js";
 export * from "./async-queue.js";
+export * from "./binary.js";
 export * from "./collections.js";
 export * from "./colors.js";
 export * from "./crypto.js";

@@ -22,6 +22,11 @@ export function resolveTrainingDeploymentEnvironment({
 
   if (isHuggingFaceHubDeployment(model, request) && !environment.HF_MODEL_ID) {
     environment.HF_MODEL_ID = model.baseModel;
+
+    if (model.baseModelRevision) {
+      environment.HF_MODEL_REVISION = model.baseModelRevision;
+      environment.SM_VLLM_REVISION = model.baseModelRevision;
+    }
   }
 
   normaliseHuggingFaceEnvironment(environment);

@@ -69,8 +69,20 @@ function baseSignal(
     tools: collectAvailableToolNames(request),
     temperature: readNumberField(request, "temperature"),
     maxTokens: readNumberField(request, "max_tokens"),
-    properties: experimentProperties(request?.context?.experimentAssignments),
+    properties: generationProperties(
+      request?.context?.experimentAssignments,
+      request?.analyticsProperties,
+    ),
   };
+}
+
+function generationProperties(
+  assignments: Readonly<Record<string, string>> | undefined,
+  extra: Readonly<Record<string, string>> | undefined,
+): TelemetryProperties | undefined {
+  const merged = { ...experimentProperties(assignments), ...extra };
+
+  return Object.keys(merged).length > 0 ? merged : undefined;
 }
 
 function experimentProperties(

@@ -4,6 +4,7 @@ const HUGGING_FACE_LLM_TRAINING_IMAGE =
   "763104351884.dkr.ecr.{region}.amazonaws.com/huggingface-pytorch-training:2.8.0-transformers4.56.2-gpu-py312-cu129-ubuntu22.04";
 const SAGEMAKER_VLLM_INFERENCE_IMAGE =
   "763104351884.dkr.ecr.{region}.amazonaws.com/vllm:0.20.2-gpu-py312-cu130-ubuntu22.04-sagemaker";
+const LIZZY_7B_REVISION = "830c14022d19d80e3b09a6a3264dc0fd33a55f23";
 
 export const trainingModelCatalog: TrainingModelDefinition[] = [
   {
@@ -29,10 +30,12 @@ export const trainingModelCatalog: TrainingModelDefinition[] = [
     description:
       "Flower Labs Lizzy 7B configured for Hugging Face causal language modelling on SageMaker.",
     baseModel: "flwrlabs/Lizzy-7B",
+    baseModelRevision: LIZZY_7B_REVISION,
     defaultInstanceType: "ml.p3.2xlarge",
     defaultDeploymentInstanceType: "ml.g4dn.xlarge",
     defaultHyperparameters: {
       model_name_or_path: "flwrlabs/Lizzy-7B",
+      model_revision: LIZZY_7B_REVISION,
       output_dir: "/opt/ml/model",
       trust_remote_code: "True",
     },

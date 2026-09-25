@@ -7,6 +7,7 @@ import { cn, Link, NavLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   Activity,
   BellRing,
+  Boxes,
   CalendarClock,
   ChevronRight,
   ClipboardList,
@@ -39,6 +40,7 @@ export interface WorkSidebarWorkspace {
   projectsHref: string;
   membersHref: string;
   governanceHref: string;
+  modelsHref: string;
   projects: WorkSidebarProjectLink[];
 }
 
@@ -52,6 +54,7 @@ export interface WorkSidebarProject {
   teammatesHref: string;
   pluginsHref: string;
   scheduledHref: string;
+  modelsHref: string;
   conversationList?: ReactNode;
   attentionCount?: number;
   isConversationRoute: boolean;
@@ -124,6 +127,9 @@ export function WorkSidebarNav({
           </NavLink>
           <NavLink href={workspace.membersHref} className={linkClass} onClick={onNavigate}>
             <Users size={16} /> People
+          </NavLink>
+          <NavLink href={workspace.modelsHref} className={linkClass} onClick={onNavigate}>
+            <Boxes size={16} /> Models
           </NavLink>
           {(workspace.role === "owner" || workspace.role === "admin") && (
             <NavLink href={workspace.governanceHref} className={linkClass} onClick={onNavigate}>
@@ -205,6 +211,9 @@ export function WorkSidebarNav({
           </NavLink>
           <NavLink href={project.pluginsHref} className={linkClass} onClick={onNavigate}>
             <Plug size={16} /> Plugins
+          </NavLink>
+          <NavLink href={project.modelsHref} className={linkClass} onClick={onNavigate}>
+            <Boxes size={16} /> Models
           </NavLink>
           {project.conversationList}
         </div>

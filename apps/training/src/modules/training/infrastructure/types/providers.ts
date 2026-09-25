@@ -1,4 +1,6 @@
 import type {
+  TrainingProviderCredentials,
+  TrainingRecipe,
   TrainingDeployment,
   TrainingDeploymentTarget,
   TrainingJob,
@@ -24,6 +26,7 @@ export interface CreateTrainingJobOptions {
   entryPoint?: string;
   sourceS3Uri?: string;
   trainingImage?: string;
+  recipe?: TrainingRecipe;
 }
 
 export interface CreateTrainingJobResult {
@@ -76,4 +79,5 @@ export interface TrainingProvider {
 
 export interface TrainingProviderContext {
   env: Env;
+  credentials: TrainingProviderCredentials;
 }

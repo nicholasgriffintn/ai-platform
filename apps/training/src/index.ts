@@ -1,5 +1,6 @@
 import {
   TRAINING_WORKER_USER_ID_HEADER,
+  trainingProviderCredentialsSchema,
   trainingWorkerDeployModelSchema,
   trainingWorkerStartJobSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -24,6 +25,7 @@ import {
 
 type TrainingWorkerProps = {
   userId?: number | string;
+  credentials?: unknown;
 };
 
 export default {
@@ -46,7 +48,10 @@ async function route(
   props: TrainingWorkerProps | undefined,
 ): Promise<Response> {
   const url = new URL(request.url);
-  const service = new TrainingWorkerService(env);
+  const service = new TrainingWorkerService(
+    env,
+    trainingProviderCredentialsSchema.safeParse(props?.credentials).data ?? {},
+  );
 
   if (request.method === "GET" && url.pathname === "/status") {
     return jsonResponse(

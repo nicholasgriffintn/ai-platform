@@ -4,6 +4,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { getAllAttachments } from "~/modules/chat/application/messages/attachments";
 import { selectModels } from "~/modules/chat/application/policy/model-access";
+import { applyProjectModelGovernance } from "~/modules/chat/application/policy/project-model-governance";
 import {
   resolveConversationModelSelection,
   resolveProjectModelTier,
@@ -79,9 +80,15 @@ export class ModelConfigValidator implements Validator {
         useMultiModel: use_multi_model,
       });
 
-      logger.info("Selected models", { selectedModels: selection.models, tier });
+      const governed = await applyProjectModelGovernance(options, {
+        models: selection.models,
+        provider: requestedProvider,
+        usesModelTier,
+      });
 
-      if (selection.models.length === 0) {
+      logger.info("Selected models", { selectedModels: governed.models, tier });
+
+      if (governed.models.length === 0) {
         return {
           validation: {
             isValid: false,
@@ -92,11 +99,11 @@ export class ModelConfigValidator implements Validator {
         };
       }
 
-      const primaryModelName = selection.models[0];
+      const primaryModelName = governed.models[0];
       const primaryModelConfig = await findModelConfig(
         primaryModelName,
         env,
-        requestedProvider,
+        governed.provider,
         user?.id,
       );
 
@@ -115,9 +122,12 @@ export class ModelConfigValidator implements Validator {
         validation: { isValid: true },
         context: {
           modelConfig: primaryModelConfig,
-          selectedModels: selection.models,
+          selectedModels: governed.models,
           ...(usesModelTier ? { modelTier: tier } : {}),
           reasoningEffort: selection.reasoningEffort,
+          ...(governed.analyticsProperties
+            ? { analyticsProperties: governed.analyticsProperties }
+            : {}),
         },
       };
     } catch (error: any) {

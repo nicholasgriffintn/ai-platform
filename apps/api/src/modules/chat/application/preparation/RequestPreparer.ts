@@ -117,6 +117,7 @@ export interface PreparedRequest {
   connectedConnectorProviders?: RecipeConnectorProvider[];
   contextSkills: Array<{ id: string; name: string }>;
   contextDocuments: ChatContextDocument[];
+  analyticsProperties?: Record<string, string>;
 }
 
 interface SavedToolConfiguration {
@@ -536,6 +537,7 @@ export class RequestPreparer {
     });
 
     return {
+      analyticsProperties: validationContext.analyticsProperties,
       modelConfigs,
       primaryModel,
       primaryModelConfig,

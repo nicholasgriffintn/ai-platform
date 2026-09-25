@@ -47,6 +47,29 @@ export class S3ObjectStore {
       .join("/");
   }
 
+  static parseUri(uri: string): { bucket: string; key: string } {
+    const match = uri.match(/^s3:\/\/([a-z0-9][a-z0-9.-]{1,61}[a-z0-9])\/(.+)$/);
+
+    if (!match) {
+      throw new Error(`Not an S3 object URI: ${uri}`);
+    }
+
+    return { bucket: match[1], key: match[2] };
+  }
+
+  async presignGet(key: string, expiresInSeconds: number): Promise<string> {
+    const url = this.getObjectUrl(key);
+
+    url.searchParams.set("X-Amz-Expires", String(expiresInSeconds));
+
+    const signed = await this.client.sign(url.toString(), {
+      method: "GET",
+      aws: { signQuery: true },
+    });
+
+    return signed.url;
+  }
+
   getPrefixUri(keyPrefix: string): string {
     return `s3://${this.options.bucket}/${trimKey(keyPrefix)}/`;
   }

@@ -11,6 +11,7 @@ import {
   type TrainingDeploymentDeleteResponse,
   type TrainingJob,
   type TrainingJobEvent,
+  type TrainingProviderCredentials,
   type TrainingProviderId,
   type TrainingWorkerDeployModelRequest,
   type TrainingWorkerStartJobRequest,
@@ -24,6 +25,7 @@ export async function startTrainingWorkerJob(
   env: IEnv,
   request: TrainingWorkerStartJobRequest,
   userId: number,
+  credentials?: TrainingProviderCredentials,
 ): Promise<TrainingJob> {
   const body = trainingWorkerStartJobSchema.parse(request);
 
@@ -31,6 +33,7 @@ export async function startTrainingWorkerJob(
     method: "POST",
     body,
     userId,
+    credentials,
   });
 }
 
@@ -39,12 +42,13 @@ export async function getTrainingWorkerJob(
   providerId: TrainingProviderId,
   jobName: string,
   userId: number,
+  credentials?: TrainingProviderCredentials,
 ): Promise<TrainingJob> {
   return requestTrainingWorker(
     env,
     `/jobs/${encodeURIComponent(providerId)}/${encodeURIComponent(jobName)}`,
     trainingJobSchema,
-    { userId },
+    { userId, credentials },
   );
 }
 
@@ -92,6 +96,7 @@ export async function deployTrainingWorkerModel(
   env: IEnv,
   request: TrainingWorkerDeployModelRequest,
   userId: number,
+  credentials?: TrainingProviderCredentials,
 ): Promise<TrainingDeployment> {
   const body = trainingWorkerDeployModelSchema.parse(request);
 
@@ -99,6 +104,7 @@ export async function deployTrainingWorkerModel(
     method: "POST",
     body,
     userId,
+    credentials,
   });
 }
 
@@ -107,12 +113,13 @@ export async function getTrainingWorkerDeployment(
   providerId: TrainingProviderId,
   endpointName: string,
   userId: number,
+  credentials?: TrainingProviderCredentials,
 ): Promise<TrainingDeployment> {
   return requestTrainingWorker(
     env,
     `/deployments/${encodeURIComponent(providerId)}/${encodeURIComponent(endpointName)}`,
     trainingDeploymentSchema,
-    { userId },
+    { userId, credentials },
   );
 }
 
@@ -135,6 +142,7 @@ export async function deleteTrainingWorkerDeployment(
   providerId: TrainingProviderId,
   endpointName: string,
   userId: number,
+  credentials?: TrainingProviderCredentials,
 ): Promise<TrainingDeploymentDeleteResponse> {
   return requestTrainingWorker(
     env,
@@ -143,6 +151,7 @@ export async function deleteTrainingWorkerDeployment(
     {
       method: "DELETE",
       userId,
+      credentials,
     },
   );
 }

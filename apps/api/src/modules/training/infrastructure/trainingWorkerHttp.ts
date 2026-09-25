@@ -1,6 +1,7 @@
 import {
   TRAINING_WORKER_TOKEN_HEADER,
   TRAINING_WORKER_USER_ID_HEADER,
+  type TrainingProviderCredentials,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -16,7 +17,12 @@ export async function requestTrainingWorker<T>(
   env: TrainingWorkerEnv,
   path: string,
   responseSchema: ZodType<T>,
-  init: { method?: string; body?: unknown; userId: number },
+  init: {
+    method?: string;
+    body?: unknown;
+    userId: number;
+    credentials?: TrainingProviderCredentials;
+  },
 ): Promise<T> {
   if (!env.TRAINING_WORKER) {
     throw new AssistantError(
@@ -43,7 +49,7 @@ export async function requestTrainingWorker<T>(
     body: init.body === undefined ? undefined : JSON.stringify(init.body),
   });
   const response = await env.TRAINING_WORKER.fetch(request, {
-    props: { userId: String(init.userId) },
+    props: { userId: String(init.userId), credentials: init.credentials },
   });
   const payload = await readTrainingWorkerJson(response);
 

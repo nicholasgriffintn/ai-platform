@@ -83,6 +83,10 @@ GROK_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
 GROQ_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
 HETZNER_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
 HUGGINGFACE_TOKEN=pass://VAULT_SHARE_ID/ITEM_ID/api_key
+# Optional platform defaults for workspaces without their own Hugging Face connection.
+# HUGGINGFACE_NAMESPACE=your-hub-org
+# HUGGINGFACE_ENDPOINT_VENDOR=aws
+# HUGGINGFACE_ENDPOINT_REGION=eu-west-1
 MISTRAL_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
 OPENAI_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key
 OPENROUTER_API_KEY=pass://VAULT_SHARE_ID/ITEM_ID/api_key

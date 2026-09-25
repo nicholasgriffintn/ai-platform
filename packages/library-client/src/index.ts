@@ -21,6 +21,7 @@ export * from "./drawings.js";
 export * from "./fetch-wrapper.js";
 export * from "./global-search.js";
 export * from "./governance.js";
+export * from "./model-registry.js";
 export * from "./installation.js";
 export * from "./memory-documents.js";
 export * from "./outputs.js";

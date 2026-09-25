@@ -15,6 +15,9 @@ BEDROCK_ROLE_ARN=arn:aws:iam::ACCOUNT_ID:role/BedrockFineTuningRole
 
 # Optional for private or gated Hugging Face models staged for Bedrock import.
 HUGGINGFACE_TOKEN=hf_xxx
+HUGGINGFACE_NAMESPACE=your-hub-org
+HUGGINGFACE_ENDPOINT_VENDOR=aws
+HUGGINGFACE_ENDPOINT_REGION=eu-west-1
 
 # SageMaker jobs. Falls back to shared AWS credentials when overrides are unset.
 SAGEMAKER_REGION=us-east-1

@@ -3,9 +3,9 @@ import {
   teammateRunConfigurationSchema,
   type Delegation,
 } from "@ngriffin_uk/polychat-schemas";
+import { canonicalJson } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 
-import { canonicalJson } from "~/infrastructure/canonical-json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { cleanupCancelledChatRun } from "~/modules/chat-runs/application/cancellation-cleanup";
 

@@ -26,6 +26,9 @@ export interface Env extends SageMakerEnv {
   BEDROCK_VPC_SECURITY_GROUP_IDS?: string;
   BEDROCK_VPC_SUBNET_IDS?: string;
   HUGGINGFACE_TOKEN?: string;
+  HUGGINGFACE_NAMESPACE?: string;
+  HUGGINGFACE_ENDPOINT_VENDOR?: string;
+  HUGGINGFACE_ENDPOINT_REGION?: string;
   TRAINING_WORKER_TOKEN?: string;
   LOG_LEVEL?: string;
 }

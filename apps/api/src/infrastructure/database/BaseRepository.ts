@@ -1,5 +1,6 @@
 import { recordD1ResultMeta } from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { chunkArray } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createDatabaseClient, type DatabaseClient } from "~/infrastructure/database/client";
@@ -7,6 +8,9 @@ import { QueryBuilder } from "~/infrastructure/database/QueryBuilder";
 import type { IEnv } from "~/types";
 
 const IDENTIFIER_PATTERN = /^[A-Za-z_][A-Za-z0-9_$]*$/;
+
+export const D1_MAX_BOUND_PARAMETERS = 100;
+const RESERVED_FILTER_PARAMETERS = 10;
 
 const logger = getLogger({ prefix: "repositories/BaseRepository" });
 
@@ -58,6 +62,25 @@ export abstract class BaseRepository<Environment extends Pick<IEnv, "DB"> = IEnv
         { originalError: error },
       );
     }
+  }
+
+  protected static rowsPerInsert(columnCount: number): number {
+    return Math.max(1, Math.floor(D1_MAX_BOUND_PARAMETERS / columnCount));
+  }
+
+  protected async selectInChunks<TValue, TRow>(
+    values: readonly TValue[],
+    select: (chunk: TValue[]) => Promise<TRow[]>,
+  ): Promise<TRow[]> {
+    const unique = [...new Set(values)];
+
+    if (unique.length === 0) {
+      return [];
+    }
+
+    const pages = chunkArray(unique, D1_MAX_BOUND_PARAMETERS - RESERVED_FILTER_PARAMETERS);
+
+    return (await Promise.all(pages.map(select))).flat();
   }
 
   protected async executeRun(query: string, params: any[] = []): Promise<D1Result> {

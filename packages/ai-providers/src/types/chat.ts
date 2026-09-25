@@ -191,6 +191,7 @@ export type ProviderExecutionParams = {
   connectedConnectorProviders?: RecipeConnectorProvider[];
   executionCtx?: ExecutionContext;
   analyticsTrackingEnabled?: boolean | null;
+  analyticsProperties?: Record<string, string>;
   version?: string;
   disable_functions?: boolean;
   conversation_history_write_mode?: "reconcile" | "append";

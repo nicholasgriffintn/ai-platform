@@ -1,11 +1,8 @@
-import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
-import { decodeBase64 } from "hono/utils/encode";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { ProjectEnvironmentVariableRow } from "~/infrastructure/database/schema";
+import { openSecret, sealSecret } from "~/infrastructure/secret-envelope";
 
 export interface ProjectEnvironmentVariableMetadata {
   name: string;
@@ -14,58 +11,6 @@ export interface ProjectEnvironmentVariableMetadata {
 }
 
 export class ProjectEnvironmentVariableRepository extends BaseRepository {
-  private async encryptionKey(): Promise<CryptoKey> {
-    if (!this.env.PRIVATE_KEY) {
-      throw new AssistantError("Server key not configured", ErrorType.CONFIGURATION_ERROR);
-    }
-
-    return crypto.subtle.importKey(
-      "raw",
-      decodeBase64(this.env.PRIVATE_KEY),
-      { name: "AES-GCM" },
-      false,
-      ["encrypt", "decrypt"],
-    );
-  }
-
-  private async encrypt(value: string): Promise<string> {
-    try {
-      const iv = crypto.getRandomValues(new Uint8Array(12));
-      const encrypted = await crypto.subtle.encrypt(
-        { name: "AES-GCM", iv },
-        await this.encryptionKey(),
-        new TextEncoder().encode(value),
-      );
-
-      return JSON.stringify({
-        iv: bufferToBase64(iv),
-        data: bufferToBase64(new Uint8Array(encrypted)),
-      });
-    } catch {
-      throw new AssistantError("Failed to encrypt environment variable", ErrorType.UNKNOWN_ERROR);
-    }
-  }
-
-  private async decrypt(envelope: string): Promise<string> {
-    try {
-      const parsed = safeParseJson<{ iv?: string; data?: string }>(envelope);
-
-      if (!parsed?.iv || !parsed.data) {
-        throw new Error("Invalid encrypted environment variable");
-      }
-
-      const decrypted = await crypto.subtle.decrypt(
-        { name: "AES-GCM", iv: decodeBase64(parsed.iv) },
-        await this.encryptionKey(),
-        decodeBase64(parsed.data),
-      );
-
-      return new TextDecoder().decode(decrypted);
-    } catch {
-      throw new AssistantError("Failed to decrypt environment variable", ErrorType.UNKNOWN_ERROR);
-    }
-  }
-
   async list(projectId: string): Promise<ProjectEnvironmentVariableMetadata[]> {
     const rows = await this.runQuery<Pick<ProjectEnvironmentVariableRow, "name" | "updated_at">>(
       `SELECT name, updated_at FROM project_environment_variable
@@ -92,14 +37,14 @@ export class ProjectEnvironmentVariableRepository extends BaseRepository {
     const values: Record<string, string> = {};
 
     for (const row of rows) {
-      values[row.name] = await this.decrypt(row.encrypted_value);
+      values[row.name] = await openSecret(this.env, row.encrypted_value);
     }
 
     return values;
   }
 
   async set(projectId: string, name: string, value: string): Promise<void> {
-    const encryptedValue = await this.encrypt(value);
+    const encryptedValue = await sealSecret(this.env, value);
 
     await this.executeRun(
       `INSERT INTO project_environment_variable

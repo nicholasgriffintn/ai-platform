@@ -17,6 +17,7 @@ Use the repository as implementation authority. If a request includes deploy, mi
 - [Architecture context and ownership](references/architecture/context.md)
 - [Durable decisions](references/architecture/decisions.md)
 - [Model catalogue](references/operations/model-catalogue.md)
+- [Model governance](references/operations/model-governance.md)
 - [Billing and spend](references/operations/loop-cost-controls.md)
 - [Connector operations](references/operations/composio-connectors.md)
 

@@ -1,6 +1,6 @@
+import { HuggingFaceHubClient, type HubFile } from "@ngriffin_uk/polychat-ai-model-sources";
 import type { TrainingModelDefinition } from "@ngriffin_uk/polychat-schemas";
 
-import { HuggingFaceHub, type HuggingFaceHubModelFile } from "../lib/HuggingFaceHub.js";
 import { S3ObjectStore, type AwsS3Credentials } from "../lib/S3ObjectStore.js";
 import type { Env } from "../types/env.js";
 import type { TrainingProviderEvent } from "../types/providers.js";
@@ -48,16 +48,33 @@ export async function stageBedrockImportSource({
     credentials,
     fetcher,
   });
-  const hub = new HuggingFaceHub({
-    token: env.HUGGINGFACE_TOKEN,
-    fetcher,
+  const hub = new HuggingFaceHubClient({ token: env.HUGGINGFACE_TOKEN, fetcher });
+  const repo = model.baseModel;
+  const { sha } = await hub.getRepoInfo({
+    kind: "model",
+    repo,
+    revision: model.baseModelRevision ?? "main",
   });
   const keyPrefix = S3ObjectStore.joinKey(
     "models",
-    sanitiseResourceName(model.baseModel, { fallback: "model" }),
+    sanitiseResourceName(repo, { fallback: "model" }),
+    sha,
   );
   const modelArtifactsS3Uri = objectStore.getPrefixUri(keyPrefix);
-  const files = await hub.listModelFiles(model.baseModel);
+  const files = (await hub.listFiles({ kind: "model", repo, revision: sha })).filter(
+    (file) => file.path !== ".gitattributes",
+  );
+  const unsafe = files.filter((file) => file.scanStatus === "unsafe");
+
+  if (files.length === 0) {
+    throw new Error(`Hugging Face model ${repo}@${sha} did not expose importable files`);
+  }
+
+  if (unsafe.length > 0) {
+    throw new Error(
+      `Refusing to stage ${repo}@${sha}: the Hub scan marks ${unsafe.map((file) => file.path).join(", ")} unsafe`,
+    );
+  }
 
   await onEvent?.({
     level: "info",
@@ -65,6 +82,7 @@ export async function stageBedrockImportSource({
     metadata: {
       modelId: model.id,
       baseModel: model.baseModel,
+      revision: sha,
       fileCount: files.length,
       modelArtifactsS3Uri,
     },
@@ -72,6 +90,8 @@ export async function stageBedrockImportSource({
 
   const result = await stageHubModelFiles({
     hub,
+    repo,
+    revision: sha,
     objectStore,
     keyPrefix,
     files,
@@ -106,14 +126,18 @@ function getAwsS3Credentials(env: BedrockImportSourceEnv): AwsS3Credentials {
 
 async function stageHubModelFiles({
   hub,
+  repo,
+  revision,
   objectStore,
   keyPrefix,
   files,
 }: {
-  hub: HuggingFaceHub;
+  hub: HuggingFaceHubClient;
+  repo: string;
+  revision: string;
   objectStore: S3ObjectStore;
   keyPrefix: string;
-  files: HuggingFaceHubModelFile[];
+  files: HubFile[];
 }): Promise<{ uploaded: number; skipped: number }> {
   let uploaded = 0;
   let skipped = 0;
@@ -126,7 +150,7 @@ async function stageHubModelFiles({
       continue;
     }
 
-    const source = await hub.downloadModelFile(file);
+    const source = await hub.openFile({ kind: "model", repo, revision, path: file.path });
 
     await objectStore.putObject({
       key,

@@ -13,6 +13,17 @@ Use this as the ownership and responsibility map. Detailed rationale is in [deci
 - **Platform teammate**: a read-only teammate defined in code and available to every project by default; its tools and skills are platform grants.
 - **Workflow**: a code-defined sequence of project flow stages that can be applied and then edited as task phases.
 - **Brief**: a revisioned memory document explicitly bound to a conversation and loaded into its runs.
+- **Model version**: an open model or dataset pinned to a Hub commit with hashed files; the unit that evidence, decisions and lineage attach to (Work › Models).
+- **Evidence / Decision**: dated, append-only observations about a version, and the approval that cites them for a workspace or project scope.
+- **Route**: a version served by a provider in a region; approved separately from the version and enforced in project chats when a workspace opts in.
+- **Build**: a fine-tune from an approved base and a governed dataset snapshot whose output is a derived version that re-enters review.
+
+## Model governance
+
+- `modules/model-registry` owns import, inspection, policies, decisions, routes, evals, builds, deployment and ML-BOM export; pure mechanisms live in `library-model-registry` and Hub access in `ai-model-sources`.
+- Inspection parses byte ranges and never loads weights. Policy evaluation is a pure function shared by enforcement, previews and dry runs.
+- Hugging Face credentials resolve per workspace (`workspace_provider_connection`, sealed with `PRIVATE_KEY`) before the platform `HUGGINGFACE_*` defaults, and reach the training worker through service-binding props.
+- Queue tasks: `model_registry_inspect`, `model_registry_eval`. Build sync runs every cron tick; replays and decision expiry run daily.
 
 ## Deployables and owners
 

@@ -5,6 +5,8 @@ import {
   DELEGATION_RUN_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
   INFRA_RECONCILIATION_TASK_TYPE,
+  MODEL_REGISTRY_EVAL_TASK_TYPE,
+  MODEL_REGISTRY_INSPECT_TASK_TYPE,
   OCR_BATCH_POLLING_TASK_TYPE,
   PROJECT_TASK_RUN_TASK_TYPE,
   REALTIME_RECONCILIATION_TASK_TYPE,
@@ -29,6 +31,10 @@ import { DelegationWakeHandler } from "./handlers/DelegationWakeHandler";
 import { InboundMessageHandler } from "./handlers/InboundMessageHandler";
 import { InfraReconciliationHandler } from "./handlers/InfraReconciliationHandler";
 import { memorySynthesis } from "./handlers/memory-synthesis";
+import {
+  ModelRegistryEvalHandler,
+  ModelRegistryInspectHandler,
+} from "./handlers/ModelRegistryHandlers";
 import { OcrBatchPollingHandler } from "./handlers/OcrBatchPollingHandler";
 import { ProjectTaskRunHandler } from "./handlers/ProjectTaskRunHandler";
 import { RealtimeReconciliationHandler } from "./handlers/RealtimeReconciliationHandler";
@@ -72,5 +78,7 @@ workflows.register(TASK_NOTIFICATION_DELIVERY_TASK_TYPE, new TaskNotificationDel
 workflows.register(TEAMMATE_RUN_RECONCILIATION_TASK_TYPE, new TeammateRunReconciliationHandler());
 workflows.register(TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE, new TeammateContextCleanupHandler());
 workflows.register(CONVERSATION_TITLE_TASK_TYPE, new ConversationTitleHandler());
+workflows.register(MODEL_REGISTRY_INSPECT_TASK_TYPE, new ModelRegistryInspectHandler());
+workflows.register(MODEL_REGISTRY_EVAL_TASK_TYPE, new ModelRegistryEvalHandler());
 
 export { workflows };

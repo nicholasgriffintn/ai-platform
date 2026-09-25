@@ -27,6 +27,11 @@ import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRe
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
 import { MobilePushRepository } from "~/modules/mobile-push/infrastructure/MobilePushRepository";
 import { ArtificialAnalysisRepository } from "~/modules/model-analysis/infrastructure/ArtificialAnalysisRepository";
+import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
+import { ModelBuildRepository } from "~/modules/model-registry/infrastructure/ModelBuildRepository";
+import { ModelEvalRepository } from "~/modules/model-registry/infrastructure/ModelEvalRepository";
+import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
+import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetRepository";
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
@@ -51,6 +56,7 @@ import { ApiKeyRepository } from "~/modules/user/infrastructure/ApiKeyRepository
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import { ProjectEnvironmentVariableRepository } from "~/modules/workspaces/infrastructure/ProjectEnvironmentVariableRepository";
+import { WorkspaceProviderConnectionRepository } from "~/modules/workspaces/infrastructure/WorkspaceProviderConnectionRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IEnv } from "~/types";
 
@@ -78,6 +84,11 @@ export {
   GoalRepository,
   InfraCostDailyRepository,
   MemorySynthesisRepository,
+  ModelAssetRepository,
+  ModelBuildRepository,
+  ModelEvalRepository,
+  ModelGovernanceRepository,
+  ModelRouteRepository,
   MessageRepository,
   MachineRepository,
   MobilePushRepository,
@@ -354,8 +365,35 @@ export class RepositoryManager {
     return this.resolve("memorySyntheses", (env) => new MemorySynthesisRepository(env));
   }
 
+  public get modelAssets(): ModelAssetRepository {
+    return this.resolve("modelAssets", (env) => new ModelAssetRepository(env));
+  }
+
+  public get modelBuilds(): ModelBuildRepository {
+    return this.resolve("modelBuilds", (env) => new ModelBuildRepository(env));
+  }
+
+  public get modelGovernance(): ModelGovernanceRepository {
+    return this.resolve("modelGovernance", (env) => new ModelGovernanceRepository(env));
+  }
+
+  public get modelRoutes(): ModelRouteRepository {
+    return this.resolve("modelRoutes", (env) => new ModelRouteRepository(env));
+  }
+
+  public get modelEvals(): ModelEvalRepository {
+    return this.resolve("modelEvals", (env) => new ModelEvalRepository(env));
+  }
+
   public get trainingExamples(): TrainingExampleRepository {
     return this.resolve("trainingExamples", (env) => new TrainingExampleRepository(env));
+  }
+
+  public get workspaceProviderConnections(): WorkspaceProviderConnectionRepository {
+    return this.resolve(
+      "workspaceProviderConnections",
+      (env) => new WorkspaceProviderConnectionRepository(env),
+    );
   }
 
   public get workspaces(): WorkspaceRepository {

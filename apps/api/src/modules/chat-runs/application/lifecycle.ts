@@ -9,6 +9,7 @@ import type {
   RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
 import { TEAMMATE_RUN_RECONCILIATION_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
+import { canonicalJson } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import {
   AssistantError,
@@ -17,7 +18,6 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
-import { canonicalJson } from "~/infrastructure/canonical-json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { reconcileRecipeExecutionTask } from "~/modules/apps/application/recipes/task-reconciliation";

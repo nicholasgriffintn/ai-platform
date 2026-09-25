@@ -7,6 +7,10 @@ import {
   DELEGATION_RUN_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
 } from "./delegations.js";
+import {
+  MODEL_REGISTRY_EVAL_TASK_TYPE,
+  MODEL_REGISTRY_INSPECT_TASK_TYPE,
+} from "./model-registry.js";
 
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
@@ -46,6 +50,8 @@ export const TASK_TYPES = [
   TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
   TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
   CONVERSATION_TITLE_TASK_TYPE,
+  MODEL_REGISTRY_INSPECT_TASK_TYPE,
+  MODEL_REGISTRY_EVAL_TASK_TYPE,
 ] as const;
 
 export const teammateRunReconciliationTaskDataSchema = z.object({

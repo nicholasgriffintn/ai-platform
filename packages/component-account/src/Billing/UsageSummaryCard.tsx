@@ -85,11 +85,11 @@ export function UsageSummaryCard({ summary, projectRows }: UsageSummaryCardProps
       }
     >
       {summary.totals.event_count === 0 ? (
-        <p className="mt-3 text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Nothing spent yet this period. The ledger fills in as you work.
         </p>
       ) : (
-        <div className="mt-4 grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-6 sm:grid-cols-2">
           <SummaryGroup title="By source" rows={sourceRows} totalCredits={totalCredits} />
           <SummaryGroup title="By vendor" rows={vendorRows} totalCredits={totalCredits} />
           {projectRows && (

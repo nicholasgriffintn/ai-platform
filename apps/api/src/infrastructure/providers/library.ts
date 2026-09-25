@@ -6,6 +6,7 @@ import { withCapabilityMetering } from "~/modules/usage/application/capabilityMe
 import type { ChatCompletionParameters } from "~/types";
 
 import { PolychatSandboxChatProvider } from "./capabilities/sandbox/providers/PolychatSandboxChatProvider";
+import { HuggingFaceEndpointProvider } from "./capabilities/training/HuggingFaceEndpointChatProvider";
 import { SageMakerProvider } from "./capabilities/training/SageMakerChatProvider";
 import { providerHost } from "./host";
 import { registerEmbeddingProviders } from "./registry/registrations/embedding";
@@ -29,6 +30,11 @@ function registerHostChatProviders(registry: ProviderRegistry): void {
     aliases: ["aws-sagemaker-runtime"],
     create: () => new SageMakerProvider(),
     metadata: { vendor: "AWS", categories: ["chat"], tags: ["training"] },
+  });
+  registry.register("chat", {
+    name: "huggingface-endpoint",
+    create: () => new HuggingFaceEndpointProvider(),
+    metadata: { vendor: "Hugging Face", categories: ["chat"], tags: ["training"] },
   });
 }
 

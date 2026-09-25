@@ -12,7 +12,14 @@ import type {
   LastModelSelection,
   MachineCapability,
   MachineRuntime,
+  EvalCase,
+  EvalScorer,
+  ModelVersionAttributes,
+  PolicyRule,
+  PolicyVerdict,
+  ScoreSummary,
 } from "@ngriffin_uk/polychat-schemas";
+import { EVIDENCE_KINDS, EVIDENCE_SOURCES, EVIDENCE_STATUSES } from "@ngriffin_uk/polychat-schemas";
 import { sql } from "drizzle-orm";
 import {
   check,
@@ -2421,6 +2428,8 @@ export const tasks = sqliteTable(
         "delegation_expiry",
         "teammate_run_reconciliation",
         "teammate_context_cleanup",
+        "model_registry_inspect",
+        "model_registry_eval",
       ],
     }).notNull(),
     status: text({
@@ -3052,3 +3061,333 @@ export const infraCostDaily = sqliteTable(
 );
 
 export type InfraCostDailyRow = typeof infraCostDaily.$inferSelect;
+
+const createdAtColumn = () =>
+  text()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull();
+
+export const modelAsset = sqliteTable(
+  "model_asset",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    kind: text({ enum: ["model", "dataset"] }).notNull(),
+    source: text({ enum: ["huggingface", "derived"] }).notNull(),
+    source_ref: text().notNull(),
+    display_name: text().notNull(),
+    created_by: integer().references(() => user.id, { onDelete: "set null" }),
+    created_at: createdAtColumn(),
+  },
+  (table) => ({
+    sourceIdx: uniqueIndex("model_asset_source_idx").on(
+      table.workspace_id,
+      table.kind,
+      table.source,
+      table.source_ref,
+    ),
+  }),
+);
+
+export type ModelAssetRow = typeof modelAsset.$inferSelect;
+
+export const modelAssetVersion = sqliteTable(
+  "model_asset_version",
+  {
+    id: text().primaryKey(),
+    asset_id: text()
+      .notNull()
+      .references(() => modelAsset.id, { onDelete: "cascade" }),
+    workspace_id: text().notNull(),
+    revision: text().notNull(),
+    status: text({ enum: ["importing", "inspecting", "ready", "failed"] })
+      .default("importing")
+      .notNull(),
+    attributes: text({ mode: "json" }).$type<ModelVersionAttributes>().notNull(),
+    failure_reason: text(),
+    created_by: integer().references(() => user.id, { onDelete: "set null" }),
+    created_at: createdAtColumn(),
+    updated_at: createdAtColumn(),
+  },
+  (table) => ({
+    revisionIdx: uniqueIndex("model_asset_version_revision_idx").on(table.asset_id, table.revision),
+    workspaceIdx: index("model_asset_version_workspace_idx").on(
+      table.workspace_id,
+      table.created_at,
+    ),
+  }),
+);
+
+export const modelAssetFile = sqliteTable(
+  "model_asset_file",
+  {
+    version_id: text()
+      .notNull()
+      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
+    path: text().notNull(),
+    size: integer().notNull(),
+    sha256: text(),
+    format: text(),
+  },
+  (table) => ({ pk: primaryKey({ columns: [table.version_id, table.path] }) }),
+);
+
+export const modelEvidence = sqliteTable(
+  "model_evidence",
+  {
+    id: text().primaryKey(),
+    version_id: text()
+      .notNull()
+      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
+    route_id: text(),
+    kind: text({ enum: EVIDENCE_KINDS }).notNull(),
+    source: text({ enum: EVIDENCE_SOURCES }).notNull(),
+    status: text({ enum: EVIDENCE_STATUSES }).notNull(),
+    summary: text().notNull(),
+    details: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+    observed_at: createdAtColumn(),
+  },
+  (table) => ({
+    versionKindIdx: index("model_evidence_version_kind_idx").on(
+      table.version_id,
+      table.kind,
+      table.observed_at,
+    ),
+  }),
+);
+
+export const modelPolicy = sqliteTable(
+  "model_policy",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    scope_key: text().notNull(),
+    rules: text({ mode: "json" }).$type<PolicyRule[]>().notNull(),
+    revision: integer().default(1).notNull(),
+    hash: text().notNull(),
+    enforcement: text({ enum: ["advisory", "enforced"] })
+      .default("advisory")
+      .notNull(),
+    updated_by: integer().references(() => user.id, { onDelete: "set null" }),
+    updated_at: createdAtColumn(),
+  },
+  (table) => ({
+    scopeIdx: uniqueIndex("model_policy_scope_idx").on(table.workspace_id, table.scope_key),
+  }),
+);
+
+export const modelPolicyRevision = sqliteTable(
+  "model_policy_revision",
+  {
+    policy_id: text()
+      .notNull()
+      .references(() => modelPolicy.id, { onDelete: "cascade" }),
+    revision: integer().notNull(),
+    hash: text().notNull(),
+    rules: text({ mode: "json" }).$type<PolicyRule[]>().notNull(),
+    enforcement: text({ enum: ["advisory", "enforced"] }).notNull(),
+    created_by: integer(),
+    created_at: createdAtColumn(),
+  },
+  (table) => ({ pk: primaryKey({ columns: [table.policy_id, table.revision] }) }),
+);
+
+export const modelRoute = sqliteTable(
+  "model_route",
+  {
+    id: text().primaryKey(),
+    workspace_id: text().notNull(),
+    version_id: text()
+      .notNull()
+      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
+    provider: text().notNull(),
+    provider_model_id: text().notNull(),
+    region: text().notNull(),
+    weights_verified: integer({ mode: "boolean" }).default(false).notNull(),
+    status: text({ enum: ["active", "retired"] })
+      .default("active")
+      .notNull(),
+    deployment_ref: text(),
+    created_by: integer().references(() => user.id, { onDelete: "set null" }),
+    created_at: createdAtColumn(),
+  },
+  (table) => ({
+    targetIdx: uniqueIndex("model_route_target_idx").on(
+      table.workspace_id,
+      table.version_id,
+      table.provider,
+      table.provider_model_id,
+    ),
+    providerModelIdx: index("model_route_provider_model_idx").on(
+      table.provider,
+      table.provider_model_id,
+    ),
+  }),
+);
+
+export const modelDecision = sqliteTable(
+  "model_decision",
+  {
+    id: text().primaryKey(),
+    workspace_id: text().notNull(),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    version_id: text()
+      .notNull()
+      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
+    route_id: text().references(() => modelRoute.id, { onDelete: "cascade" }),
+    state: text({ enum: ["pending", "approved", "rejected", "revoked", "expired"] })
+      .default("pending")
+      .notNull(),
+    verdict: text({ mode: "json" }).$type<PolicyVerdict>().notNull(),
+    evidence_ids: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
+    is_exception: integer({ mode: "boolean" }).default(false).notNull(),
+    conditions: text(),
+    note: text(),
+    requested_by: integer().references(() => user.id, { onDelete: "set null" }),
+    decided_by: integer().references(() => user.id, { onDelete: "set null" }),
+    decided_at: text(),
+    expires_at: text(),
+    created_at: createdAtColumn(),
+  },
+  (table) => ({
+    workspaceStateIdx: index("model_decision_workspace_state_idx").on(
+      table.workspace_id,
+      table.state,
+      table.created_at,
+    ),
+    versionIdx: index("model_decision_version_idx").on(table.version_id, table.route_id),
+  }),
+);
+
+export const modelLineageEdge = sqliteTable(
+  "model_lineage_edge",
+  {
+    from_version_id: text()
+      .notNull()
+      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
+    to_version_id: text()
+      .notNull()
+      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
+    relation: text({
+      enum: ["fine_tuned_from", "trained_on", "evaluated_on", "quantised_from"],
+    }).notNull(),
+    created_at: createdAtColumn(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.from_version_id, table.to_version_id, table.relation] }),
+    toIdx: index("model_lineage_edge_to_idx").on(table.to_version_id),
+  }),
+);
+
+export const modelEvalSuite = sqliteTable(
+  "model_eval_suite",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    description: text(),
+    system_prompt: text(),
+    cases: text({ mode: "json" }).$type<EvalCase[]>().notNull(),
+    scorers: text({ mode: "json" }).$type<EvalScorer[]>().notNull(),
+    replay_sample_size: integer().default(50).notNull(),
+    created_by: integer().references(() => user.id, { onDelete: "set null" }),
+    created_at: createdAtColumn(),
+    updated_at: createdAtColumn(),
+  },
+  (table) => ({
+    workspaceIdx: index("model_eval_suite_workspace_idx").on(table.workspace_id, table.project_id),
+  }),
+);
+
+export const modelEvalRun = sqliteTable(
+  "model_eval_run",
+  {
+    id: text().primaryKey(),
+    suite_id: text()
+      .notNull()
+      .references(() => modelEvalSuite.id, { onDelete: "cascade" }),
+    route_id: text()
+      .notNull()
+      .references(() => modelRoute.id, { onDelete: "cascade" }),
+    version_id: text().notNull(),
+    trigger: text({ enum: ["manual", "build", "replay"] }).notNull(),
+    status: text({ enum: ["queued", "running", "completed", "failed"] })
+      .default("queued")
+      .notNull(),
+    scores: text({ mode: "json" }).$type<Record<string, ScoreSummary>>().default({}).notNull(),
+    latency_p95_ms: integer(),
+    cases_completed: integer().default(0).notNull(),
+    cases_total: integer().notNull(),
+    failure_reason: text(),
+    created_by: integer().references(() => user.id, { onDelete: "set null" }),
+    created_at: createdAtColumn(),
+    completed_at: text(),
+  },
+  (table) => ({
+    routeIdx: index("model_eval_run_route_idx").on(table.route_id, table.created_at),
+    suiteIdx: index("model_eval_run_suite_idx").on(table.suite_id, table.created_at),
+  }),
+);
+
+export const modelBuild = sqliteTable(
+  "model_build",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    version_id: text()
+      .notNull()
+      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
+    base_version_id: text()
+      .notNull()
+      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
+    dataset_version_id: text()
+      .notNull()
+      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
+    provider: text({ enum: ["aws-bedrock", "aws-sagemaker", "huggingface"] }).notNull(),
+    job_name: text().notNull(),
+    recipe: text({ enum: ["sft-full", "sft-lora"] }).notNull(),
+    status: text({ enum: ["running", "completed", "failed"] })
+      .default("running")
+      .notNull(),
+    failure_reason: text(),
+    created_by: integer().references(() => user.id, { onDelete: "set null" }),
+    created_at: createdAtColumn(),
+    completed_at: text(),
+  },
+  (table) => ({
+    workspaceStatusIdx: index("model_build_workspace_status_idx").on(
+      table.workspace_id,
+      table.status,
+      table.created_at,
+    ),
+  }),
+);
+
+export const workspaceProviderConnection = sqliteTable(
+  "workspace_provider_connection",
+  {
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    provider: text({ enum: ["huggingface"] }).notNull(),
+    encrypted_secret: text().notNull(),
+    account: text(),
+    config: text({ mode: "json" }).$type<Record<string, string>>().default({}).notNull(),
+    updated_by: integer().references(() => user.id, { onDelete: "set null" }),
+    updated_at: createdAtColumn(),
+  },
+  (table) => ({ pk: primaryKey({ columns: [table.workspace_id, table.provider] }) }),
+);
+
+export type WorkspaceProviderConnectionRow = typeof workspaceProviderConnection.$inferSelect;

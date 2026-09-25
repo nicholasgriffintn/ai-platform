@@ -35,6 +35,14 @@ vi.mock("~/modules/chat-runs/application/reservation-maintenance", () => ({
   releaseExpiredChatRunReservations: mocks.releaseExpiredChatRunReservations,
 }));
 
+vi.mock("~/modules/model-registry/application/builds", () => ({
+  syncRunningBuilds: vi.fn().mockResolvedValue(0),
+}));
+
+vi.mock("~/modules/model-registry/application/maintenance", () => ({
+  runModelGovernanceMaintenance: vi.fn().mockResolvedValue({ expired: 0, replays: 0 }),
+}));
+
 vi.mock("~/modules/task-notifications/application/delivery", () => ({
   schedulePendingTaskNotificationDeliveries: mocks.schedulePendingTaskNotificationDeliveries,
   TaskNotificationDeliveryHandler: vi.fn(),

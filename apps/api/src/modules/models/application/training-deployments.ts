@@ -38,10 +38,12 @@ export interface TrainingDeploymentRuntimeRecord {
   modelId: string;
   deploymentTarget?: TrainingDeploymentTarget;
   importedModelArn?: string;
+  url?: string;
 }
 
 const SAGEMAKER_READY_STATUSES = new Set(["inservice", "in service"]);
 const BEDROCK_IMPORT_READY_STATUSES = new Set(["completed"]);
+const HUGGINGFACE_ENDPOINT_READY_STATUSES = new Set(["inservice"]);
 
 export async function getTrainingDeploymentModelConfigs(
   env: IEnv | undefined,
@@ -91,12 +93,9 @@ export async function findTrainingDeploymentModelConfig(
     );
   }
 
-  const record = await getTrainingDeploymentRuntimeRecord(
-    env,
-    userId,
-    parsed.provider,
-    parsed.endpointName,
-  );
+  const record =
+    (await getTrainingDeploymentRuntimeRecord(env, userId, parsed.provider, parsed.endpointName)) ??
+    (await getWorkspaceRoutedDeploymentRecord(env, userId, model, parsed));
   const config = record ? getTrainingDeploymentModelConfig(record) : null;
 
   if (!config) {
@@ -120,6 +119,52 @@ export async function getSageMakerTrainingDeploymentRuntimeRecordByEndpointName(
   }
 
   return getTrainingDeploymentRuntimeRecord(env, userId, "aws-sagemaker", endpointName);
+}
+
+export async function getHuggingFaceEndpointRuntimeRecord(
+  env: IEnv,
+  endpointName: string,
+): Promise<TrainingDeploymentRuntimeRecord | null> {
+  if (!hasD1DatabaseBinding(env)) {
+    return null;
+  }
+
+  const row = await env.DB.prepare(
+    `SELECT * FROM training_deployments WHERE provider = 'huggingface' AND endpoint_name = ?`,
+  )
+    .bind(endpointName)
+    .first<TrainingDeploymentRow>();
+
+  return row ? mapTrainingDeploymentRuntimeRecord(row) : null;
+}
+
+async function getWorkspaceRoutedDeploymentRecord(
+  env: EnvWithD1Database,
+  userId: number,
+  chatModelId: string,
+  parsed: { provider: TrainingProviderId; endpointName: string },
+): Promise<TrainingDeploymentRuntimeRecord | null> {
+  const route = await env.DB.prepare(
+    `SELECT model_route.id FROM model_route
+		JOIN workspace_member ON workspace_member.workspace_id = model_route.workspace_id
+		WHERE model_route.provider_model_id = ? AND model_route.status = 'active'
+		  AND workspace_member.user_id = ?
+		LIMIT 1`,
+  )
+    .bind(chatModelId, userId)
+    .first<{ id: string }>();
+
+  if (!route) {
+    return null;
+  }
+
+  const row = await env.DB.prepare(
+    `SELECT * FROM training_deployments WHERE provider = ? AND endpoint_name = ?`,
+  )
+    .bind(parsed.provider, parsed.endpointName)
+    .first<TrainingDeploymentRow>();
+
+  return row ? mapTrainingDeploymentRuntimeRecord(row) : null;
 }
 
 async function listTrainingDeploymentRuntimeRecords(
@@ -169,6 +214,7 @@ function mapTrainingDeploymentRuntimeRecord(
     modelId: row.model_id,
     deploymentTarget: parseDeploymentTarget(request),
     importedModelArn: parseImportedModelArn(response),
+    url: parseEndpointUrl(response),
   };
 }
 
@@ -191,6 +237,24 @@ function getTrainingDeploymentModelConfig(
       name: record.deploymentName,
       description: `Training deployment for ${record.modelId}`,
       provider: "sagemaker",
+      supportsStreaming: false,
+      supportsTemperature: true,
+      supportsTopP: true,
+      modalities: { input: ["text"], output: ["text"] },
+      card: modelId,
+    };
+  }
+
+  if (record.provider === "huggingface") {
+    if (!HUGGINGFACE_ENDPOINT_READY_STATUSES.has(normalisedStatus) || !record.url) {
+      return null;
+    }
+
+    return {
+      matchingModel: record.endpointName,
+      name: record.deploymentName,
+      description: `Hugging Face Inference Endpoint for ${record.modelId}`,
+      provider: "huggingface-endpoint",
       supportsStreaming: false,
       supportsTemperature: true,
       supportsTopP: true,
@@ -232,4 +296,16 @@ function parseImportedModelArn(value: Record<string, unknown>): string | undefin
   const importedModelArn = value.importedModelArn || value.modelArn;
 
   return typeof importedModelArn === "string" && importedModelArn ? importedModelArn : undefined;
+}
+
+function parseEndpointUrl(value: Record<string, unknown>): string | undefined {
+  const status = value.status;
+
+  if (!status || typeof status !== "object" || !("url" in status)) {
+    return undefined;
+  }
+
+  return typeof status.url === "string" && status.url.startsWith("https://")
+    ? status.url
+    : undefined;
 }

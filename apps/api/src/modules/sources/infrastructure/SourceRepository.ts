@@ -4,8 +4,6 @@ import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 
-const MAX_BOUND_PARAMETERS = 100;
-
 export interface SourceRecord {
   id: string;
   created_by_user_id: number;
@@ -127,28 +125,12 @@ export class SourceRepository extends BaseRepository {
   }
 
   async getSourcesByIds(sourceIds: string[]): Promise<SourceRecord[]> {
-    const uniqueIds = [...new Set(sourceIds)];
-
-    if (uniqueIds.length === 0) {
-      return [];
-    }
-
-    const pages: string[][] = [];
-
-    for (let start = 0; start < uniqueIds.length; start += MAX_BOUND_PARAMETERS) {
-      pages.push(uniqueIds.slice(start, start + MAX_BOUND_PARAMETERS));
-    }
-
-    const results = await Promise.all(
-      pages.map((page) =>
-        this.runQuery<SourceRecord>(
-          `SELECT * FROM source WHERE id IN (${page.map(() => "?").join(", ")})`,
-          page,
-        ),
+    return this.selectInChunks(sourceIds, (page) =>
+      this.runQuery<SourceRecord>(
+        `SELECT * FROM source WHERE id IN (${page.map(() => "?").join(", ")})`,
+        page,
       ),
     );
-
-    return results.flat();
   }
 
   async getSourceByVectorId(vectorId: string): Promise<SourceRecord | null> {

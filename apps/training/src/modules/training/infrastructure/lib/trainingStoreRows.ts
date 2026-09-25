@@ -22,6 +22,7 @@ export function mapTrainingJobRow(row: Record<string, unknown>): TrainingJob {
   return {
     provider: trainingProviderSchema.parse(row.provider),
     jobName: toStringValue(row.job_name ?? "", ""),
+    providerJobId: optionalString(row.provider_job_id),
     status: toStringValue(row.status ?? "Unknown", "Unknown"),
     modelId: toStringValue(row.model_id ?? "unknown", "unknown"),
     baseModel: toStringValue(row.base_model ?? "unknown", "unknown"),

@@ -1,12 +1,11 @@
 import { isComposioConnectorSessionHandle } from "@ngriffin_uk/polychat-ai-integrations";
 import { mergeHumanInTheLoop } from "@ngriffin_uk/polychat-library-interactions";
 import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
-import { abortableDelay, isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { abortableDelay, canonicalJson, isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
-import { canonicalJson } from "~/infrastructure/canonical-json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ConnectorOperationApprovalRecord } from "~/modules/apps/infrastructure/ConnectorOperationApprovalRepository";
 import { handleToolCalls } from "~/modules/chat/application/tools/execution";

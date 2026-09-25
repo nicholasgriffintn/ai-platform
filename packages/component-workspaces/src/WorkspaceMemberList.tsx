@@ -83,7 +83,6 @@ export function WorkspaceMemberList({
                     : [{ value: "member", label: "Member" }]
                 }
                 onValueChange={(role) => onChangeRole(member.userId, role)}
-                className="w-28"
               />
             ) : (
               <span className="flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground capitalize">
@@ -94,7 +93,7 @@ export function WorkspaceMemberList({
             {isManageable ? (
               <Button
                 size="sm"
-                variant="ghost"
+                variant="destructive"
                 icon={<Trash2 size={14} />}
                 onClick={() => onRemove(member.userId)}
               >

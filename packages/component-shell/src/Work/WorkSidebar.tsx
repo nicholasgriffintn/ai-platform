@@ -162,6 +162,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                 projectsHref: `/work/${workspace.id}`,
                 membersHref: `/work/${workspace.id}/members`,
                 governanceHref: `/work/${workspace.id}/governance`,
+                modelsHref: `/work/${workspace.id}/models`,
                 projects: workspace.projects.map((item) => ({
                   id: item.id,
                   name: item.name,
@@ -185,6 +186,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                 teammatesHref: `${projectBasePath}/teammates`,
                 pluginsHref: `${projectBasePath}/plugins`,
                 scheduledHref: `${projectBasePath}/scheduled`,
+                modelsHref: `${projectBasePath}/models`,
                 conversationList: (
                   <div className="-mx-2 pt-3">
                     <ConversationListSection

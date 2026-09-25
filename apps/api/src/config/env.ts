@@ -8,6 +8,7 @@ import type {
   SendEmail,
 } from "@cloudflare/workers-types";
 import type { FlagshipBinding } from "@ngriffin_uk/polychat-library-flags";
+import type { TrainingProviderCredentials } from "@ngriffin_uk/polychat-schemas";
 
 export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclude<keyof T, Keys>> &
   {
@@ -48,7 +49,10 @@ export type IEnv = {
   COMPUTER_WORKER?: Fetcher;
   LOADER?: WorkerLoader;
   FLAGS?: FlagshipBinding;
-  TRAINING_WORKER?: WorkerCacheFetcher<{ userId: string }>;
+  TRAINING_WORKER?: WorkerCacheFetcher<{
+    userId: string;
+    credentials?: TrainingProviderCredentials;
+  }>;
   TRAINING_WORKER_TOKEN?: string;
   SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;
   MACHINE_RUN_COORDINATOR?: DurableObjectNamespace;
@@ -57,6 +61,9 @@ export type IEnv = {
   REALTIME_PROXY_COORDINATOR?: DurableObjectNamespace;
   GROK_API_KEY?: string;
   HUGGINGFACE_TOKEN?: string;
+  HUGGINGFACE_NAMESPACE?: string;
+  HUGGINGFACE_ENDPOINT_VENDOR?: string;
+  HUGGINGFACE_ENDPOINT_REGION?: string;
   REPLICATE_API_TOKEN?: string;
   ASSETS_BUCKET_ACCESS_KEY_ID: string;
   ASSETS_BUCKET_SECRET_ACCESS_KEY: string;

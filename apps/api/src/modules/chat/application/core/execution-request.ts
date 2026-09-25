@@ -40,6 +40,7 @@ class ChatExecutionRequest {
       connectedConnectorProviders: prepared.connectedConnectorProviders,
       executionCtx: chatOptions.executionCtx,
       analyticsTrackingEnabled: prepared.userSettings?.tracking_enabled ?? null,
+      analyticsProperties: prepared.analyticsProperties,
       disable_functions: chatOptions.disable_functions,
       completion_id: chatOptions.completion_id,
       run_id: runId,

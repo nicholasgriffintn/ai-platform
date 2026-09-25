@@ -44,10 +44,6 @@ export function AttentionPage() {
   return (
     <PageShell.Content className="max-w-6xl">
       <PageShell.Header title="Attention" />
-      <p className="mb-6 text-sm text-muted-foreground">
-        Everything waiting on you: project work across every workspace you can access, and your own
-        background tasks.
-      </p>
 
       {isAuthenticationLoading ? null : !isAuthenticated ? (
         <SignInEmptyState

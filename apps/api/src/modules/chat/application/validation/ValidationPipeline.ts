@@ -24,6 +24,7 @@ export interface ValidationContext {
   selectedModels?: string[];
   modelTier?: ModelTier;
   reasoningEffort?: ReasoningEffort;
+  analyticsProperties?: Record<string, string>;
 }
 
 export interface ValidatorResult {

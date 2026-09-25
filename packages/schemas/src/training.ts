@@ -1,15 +1,35 @@
 import { z } from "zod";
 
-export const trainingProviderSchema = z.enum(["aws-bedrock", "aws-sagemaker"]);
+export const trainingProviderSchema = z.enum(["aws-bedrock", "aws-sagemaker", "huggingface"]);
 export const trainingModelFamilySchema = z.enum(["bedrock", "huggingface"]);
-export const trainingInferenceRuntimeSchema = z.enum(["sagemaker-huggingface", "sagemaker-openai"]);
+export const trainingInferenceRuntimeSchema = z.enum([
+  "sagemaker-huggingface",
+  "sagemaker-openai",
+  "huggingface-endpoint",
+]);
+export const trainingRecipeSchema = z.enum(["sft-full", "sft-lora"]);
+export type TrainingRecipe = z.infer<typeof trainingRecipeSchema>;
 export const trainingDeploymentTargetSchema = z.enum([
   "sagemaker-endpoint",
   "sagemaker-serverless-endpoint",
   "bedrock-import",
+  "huggingface-endpoint",
 ]);
 export const TRAINING_WORKER_USER_ID_HEADER = "X-Assistant-User-Id";
 export const TRAINING_WORKER_TOKEN_HEADER = "X-Assistant-Worker-Token";
+
+export const huggingFaceCredentialsSchema = z.object({
+  token: z.string().min(1),
+  namespace: z.string().min(1).nullable(),
+  endpointVendor: z.string().min(1),
+  endpointRegion: z.string().min(1),
+});
+export type HuggingFaceCredentials = z.infer<typeof huggingFaceCredentialsSchema>;
+
+export const trainingProviderCredentialsSchema = z.object({
+  huggingface: huggingFaceCredentialsSchema.optional(),
+});
+export type TrainingProviderCredentials = z.infer<typeof trainingProviderCredentialsSchema>;
 export const TRAINING_CHAT_MODEL_PREFIX = "training";
 export const BEDROCK_IMPORT_ARCHIVE_EXTENSIONS = [".tar.gz", ".tgz", ".zip"] as const;
 export const SAGEMAKER_GPU_ENDPOINT_INSTANCE_PREFIXES = [
@@ -36,6 +56,11 @@ export const trainingModelSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   baseModel: z.string(),
+  baseModelRevision: z
+    .string()
+    .regex(/^[0-9a-f]{40}$/)
+    .optional(),
+  registryVersionId: z.string().optional(),
   defaultInstanceType: z.string().optional(),
   defaultDeploymentInstanceType: z.string().optional(),
   defaultHyperparameters: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
@@ -88,6 +113,7 @@ export const startTrainingJobSchema = z.object({
   entryPoint: z.string().optional(),
   sourceS3Uri: z.string().startsWith("s3://").optional(),
   trainingImage: z.string().optional(),
+  recipe: trainingRecipeSchema.optional(),
   tags: z.record(z.string(), z.string()).optional(),
 });
 
@@ -123,6 +149,9 @@ export const trainingDeploymentParamsSchema = z.object({
 export const trainingJobSchema = z.object({
   provider: trainingProviderSchema,
   jobName: z.string(),
+  providerJobId: z.string().optional(),
+  recipe: trainingRecipeSchema.optional(),
+  outputModelRepository: z.string().optional(),
   status: z.string(),
   modelId: z.string(),
   baseModel: z.string(),

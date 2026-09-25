@@ -86,6 +86,8 @@ export * from "./Teammates/TeammateComputerPanel.js";
 export * from "./Teammates/TeammateConnectionGrantsPanel.js";
 export * from "./Teammates/TeammateRoutinesPanel.js";
 export * from "./Work/InvitationAcceptPage.js";
+export * from "./Work/Models/ModelVersionView.js";
+export * from "./Work/Models/WorkspaceModels.js";
 export * from "./Work/ProjectPickerDialog.js";
 export * from "./Work/ProjectActivity.js";
 export * from "./Work/ProjectCapabilityLibrary.js";

@@ -117,7 +117,7 @@ export function WorkspaceAuditList({ records, isLoading, errorMessage }: Workspa
           className="min-h-[180px]"
         />
       ) : (
-        <Card className="gap-0 overflow-hidden py-0 shadow-none">
+        <Card className="max-h-[560px] gap-0 overflow-auto py-0 shadow-none">
           {records.map((record) => (
             <div key={record.id} className="border-b border-border px-5 py-4 last:border-0">
               <p className="text-sm font-medium capitalize">{record.action.replaceAll(".", " ")}</p>

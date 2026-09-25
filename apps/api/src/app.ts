@@ -15,6 +15,7 @@ import desktop from "~/modules/desktop-releases/api/routes";
 import flags from "~/modules/experiments/api/routes";
 import machines from "~/modules/machines/api/routes";
 import memoryDocuments from "~/modules/memory-documents/api/routes";
+import modelRegistry from "~/modules/model-registry/api/routes";
 import models from "~/modules/models/api/routes";
 import outputs from "~/modules/outputs/api/routes";
 import plans from "~/modules/plans/api/routes";
@@ -78,6 +79,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/admin", admin);
   app.route("/webhooks", webhook);
   app.route("/training", training);
+  app.route("/model-registry", modelRegistry);
   app.route("/workspaces", workspaces);
   app.route("/projects", projects);
   app.route("/workspace-invitations", workspaceInvitations);

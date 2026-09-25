@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-bedrock": "3.1135.0",
+    "@ngriffin_uk/polychat-ai-model-sources": "workspace:^",
     "@ngriffin_uk/polychat-ai-providers": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",

@@ -152,3 +152,11 @@ export function truncateToWords(input: string, maxWords: number): string {
 
   return matches.slice(0, maxWords).join("").trimEnd();
 }
+
+export function shortenHash(value: string, length = 7): string {
+  return /^[0-9a-f]{40,64}$/.test(value) ? value.slice(0, length) : value;
+}
+
+export function isGitCommitSha(value: string): boolean {
+  return /^[0-9a-f]{40}$/.test(value);
+}

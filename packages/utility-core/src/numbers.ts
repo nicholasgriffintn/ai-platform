@@ -152,3 +152,30 @@ export function formatBytes(bytes: number, decimals = 2): string {
 
   return Number.parseFloat((bytes / k ** i).toFixed(dm)) + sizes[i];
 }
+
+export function formatParameterCount(count: number): string {
+  if (!Number.isFinite(count) || count <= 0) {
+    return "0";
+  }
+
+  if (count >= 1e9) {
+    return `${(count / 1e9).toFixed(1)}B`;
+  }
+
+  if (count >= 1e6) {
+    return `${Math.round(count / 1e6)}M`;
+  }
+
+  return formatCompactCount(count);
+}
+
+export function percentile(values: readonly number[], fraction: number): number | null {
+  if (values.length === 0) {
+    return null;
+  }
+
+  const sorted = [...values].sort((left, right) => left - right);
+  const index = Math.min(sorted.length - 1, Math.max(0, Math.ceil(fraction * sorted.length) - 1));
+
+  return sorted[index];
+}

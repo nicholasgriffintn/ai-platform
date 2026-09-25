@@ -326,6 +326,9 @@ importers:
       '@ngriffin_uk/polychat-ai-integrations':
         specifier: workspace:^
         version: link:../../packages/ai-integrations
+      '@ngriffin_uk/polychat-ai-model-sources':
+        specifier: workspace:^
+        version: link:../../packages/ai-model-sources
       '@ngriffin_uk/polychat-ai-models':
         specifier: workspace:^
         version: link:../../packages/ai-models
@@ -356,6 +359,9 @@ importers:
       '@ngriffin_uk/polychat-library-interactions':
         specifier: workspace:^
         version: link:../../packages/library-interactions
+      '@ngriffin_uk/polychat-library-model-registry':
+        specifier: workspace:^
+        version: link:../../packages/library-model-registry
       '@ngriffin_uk/polychat-library-registry':
         specifier: workspace:^
         version: link:../../packages/library-registry
@@ -918,6 +924,9 @@ importers:
       '@aws-sdk/client-bedrock':
         specifier: 3.1135.0
         version: 3.1135.0
+      '@ngriffin_uk/polychat-ai-model-sources':
+        specifier: workspace:^
+        version: link:../../packages/ai-model-sources
       '@ngriffin_uk/polychat-ai-providers':
         specifier: workspace:^
         version: link:../../packages/ai-providers
@@ -1122,6 +1131,28 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@4.1.11)(@vitest/browser-preview@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
+
+  packages/ai-model-sources:
+    dependencies:
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
+    devDependencies:
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.5.1
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@4.1.11)(@vitest/browser-preview@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.0)(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))
 
   packages/ai-models:
     dependencies:
@@ -1868,6 +1899,9 @@ importers:
       '@ngriffin_uk/polychat-library-client':
         specifier: workspace:^
         version: link:../library-client
+      '@ngriffin_uk/polychat-library-model-registry':
+        specifier: workspace:^
+        version: link:../library-model-registry
       '@ngriffin_uk/polychat-library-react':
         specifier: workspace:^
         version: link:../library-react
@@ -2372,6 +2406,28 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@4.1.11)(@vitest/browser-preview@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
+
+  packages/library-model-registry:
+    dependencies:
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
+      '@ngriffin_uk/polychat-utility-core':
+        specifier: workspace:^
+        version: link:../utility-core
+    devDependencies:
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.5.1
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@4.1.11)(@vitest/browser-preview@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.0)(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))
 
   packages/library-prompts-catalogue:
     dependencies:

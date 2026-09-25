@@ -4,6 +4,7 @@ import type {
   TrainingDeployment,
   TrainingDeploymentDeleteResponse,
   TrainingJob,
+  TrainingProviderCredentials,
   TrainingProviderId,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -24,13 +25,20 @@ import {
 } from "../infrastructure/utils/trainingDeploymentVersions.js";
 import { requireTrainingResourceName } from "../infrastructure/utils/trainingNames.js";
 
-type UserScopedStartJobRequest = TrainingWorkerStartJobRequest & { userId: number };
-type UserScopedDeployModelRequest = TrainingWorkerDeployModelRequest & { userId: number };
+type UserScopedStartJobRequest = TrainingWorkerStartJobRequest & {
+  userId: number;
+};
+type UserScopedDeployModelRequest = TrainingWorkerDeployModelRequest & {
+  userId: number;
+};
 
 export class TrainingWorkerService {
   private readonly store: TrainingStore;
 
-  constructor(private readonly env: Env) {
+  constructor(
+    private readonly env: Env,
+    private readonly credentials: TrainingProviderCredentials = {},
+  ) {
     this.store = new TrainingStore(env.DB);
   }
 
@@ -53,7 +61,10 @@ export class TrainingWorkerService {
     });
 
     try {
-      const provider = createTrainingProvider(request.provider, { env: this.env });
+      const provider = createTrainingProvider(request.provider, {
+        env: this.env,
+        credentials: this.credentials,
+      });
       const result = await provider.createTrainingJob({
         provider: request.provider,
         jobName,
@@ -70,6 +81,7 @@ export class TrainingWorkerService {
         entryPoint: request.entryPoint,
         sourceS3Uri: request.sourceS3Uri,
         trainingImage: request.trainingImage,
+        recipe: request.recipe,
       });
 
       await this.store.saveJob({
@@ -102,13 +114,20 @@ export class TrainingWorkerService {
         failureReason: getErrorMessage(error),
       };
 
-      await this.store.saveJob({ userId: request.userId, job: failedJob, request });
+      await this.store.saveJob({
+        userId: request.userId,
+        job: failedJob,
+        request,
+      });
       await this.store.addEvent({
         provider: request.provider,
         jobName,
         level: "error",
         message: "Training job failed before submission",
-        metadata: { error: failedJob.failureReason, requestId: request.requestId },
+        metadata: {
+          error: failedJob.failureReason,
+          requestId: request.requestId,
+        },
       });
 
       throw error;
@@ -126,10 +145,13 @@ export class TrainingWorkerService {
       throw new HttpError("Training job not found", 404);
     }
 
-    const provider = createTrainingProvider(providerId, { env: this.env });
+    const provider = createTrainingProvider(providerId, {
+      env: this.env,
+      credentials: this.credentials,
+    });
 
     try {
-      const live = await provider.getJobStatus(jobName);
+      const live = await provider.getJobStatus(stored.providerJobId ?? jobName);
       const job = mergeTrainingJob(stored, live);
 
       await this.store.saveJob({ job, response: live.providerResponse });
@@ -179,7 +201,10 @@ export class TrainingWorkerService {
   async deployModel(request: UserScopedDeployModelRequest): Promise<TrainingDeployment> {
     const deploymentProviderId =
       request.deploymentTarget === "bedrock-import" ? "aws-bedrock" : request.provider;
-    const provider = createTrainingProvider(deploymentProviderId, { env: this.env });
+    const provider = createTrainingProvider(deploymentProviderId, {
+      env: this.env,
+      credentials: this.credentials,
+    });
 
     if (!provider.deployModel) {
       throw new HttpError(`Provider ${deploymentProviderId} does not support deployments`, 400);
@@ -318,13 +343,12 @@ export class TrainingWorkerService {
       throw new HttpError("Training deployment not found", 404);
     }
 
-    const provider = createTrainingProvider(providerId, { env: this.env });
+    const provider = createTrainingProvider(providerId, {
+      env: this.env,
+      credentials: this.credentials,
+    });
 
     if (!provider.getDeployment) {
-      if (!stored) {
-        throw new HttpError(`Provider ${providerId} does not support deployment lookups`, 400);
-      }
-
       return stored;
     }
 
@@ -364,7 +388,10 @@ export class TrainingWorkerService {
       throw new HttpError("Training deployment not found", 404);
     }
 
-    const provider = createTrainingProvider(providerId, { env: this.env });
+    const provider = createTrainingProvider(providerId, {
+      env: this.env,
+      credentials: this.credentials,
+    });
 
     if (!provider.deleteDeployment) {
       throw new HttpError(`Provider ${providerId} does not support deployment deletion`, 400);
@@ -423,7 +450,10 @@ export class TrainingWorkerService {
   }
 
   private async refreshDeployment(stored: TrainingDeployment): Promise<TrainingDeployment> {
-    const provider = createTrainingProvider(stored.provider, { env: this.env });
+    const provider = createTrainingProvider(stored.provider, {
+      env: this.env,
+      credentials: this.credentials,
+    });
 
     if (!provider.getDeployment) {
       return stored;

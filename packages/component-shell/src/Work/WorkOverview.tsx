@@ -47,18 +47,6 @@ export function WorkOverview() {
               : undefined
           }
         />
-        <p className="mb-6 text-sm text-muted-foreground">Create and manage shared workspaces.</p>
-        {canAccessWork && unread > 0 ? (
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3">
-            <p className="flex items-center gap-2 text-sm text-foreground">
-              <BellRing size={16} className="text-attention" aria-hidden="true" />
-              {unread === 1 ? "1 unread notification" : `${unread} unread notifications`}
-            </p>
-            <ButtonLink href={getPlacePaths("work").attention} variant="outline" size="sm">
-              Open Attention
-            </ButtonLink>
-          </div>
-        ) : null}
 
         {isAuthenticationLoading ? (
           <CardGridLoadingSkeleton
@@ -113,6 +101,18 @@ export function WorkOverview() {
               href: `/work/${workspace.id}`,
             }))}
           />
+        ) : null}
+
+        {canAccessWork && unread > 0 ? (
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3">
+            <p className="flex items-center gap-2 text-sm text-foreground">
+              <BellRing size={16} className="text-attention" aria-hidden="true" />
+              {unread === 1 ? "1 unread notification" : `${unread} unread notifications`}
+            </p>
+            <ButtonLink href={getPlacePaths("work").attention} variant="outline" size="sm">
+              Open Attention
+            </ButtonLink>
+          </div>
         ) : null}
 
         {canAccessWork && <TaskNotificationSettings />}

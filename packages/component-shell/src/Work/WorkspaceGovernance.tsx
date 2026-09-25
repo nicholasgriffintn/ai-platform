@@ -46,10 +46,6 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
   return (
     <PageShell.Content className="max-w-6xl">
       <PageShell.Header title="Governance" />
-      <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
-        Review workspace spend, start a project from a starter, manage reusable project templates,
-        and review workspace changes.
-      </p>
 
       {workspaceQuery.isLoading ? (
         <Card className="p-6 text-sm text-muted-foreground shadow-none">Loading governance…</Card>
@@ -67,26 +63,28 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
             projects={workspaceQuery.data?.projects ?? []}
           />
           <div className="grid gap-8 lg:grid-cols-2">
-            <ProjectStarterList
-              starters={starters.data ?? []}
-              isLoading={starters.isLoading}
-              errorMessage={starters.error?.message}
-              startingSlug={
-                mutations.startFromStarter.isPending ? mutations.startFromStarter.variables : null
-              }
-              onStart={(starterSlug) => void startFromStarter(starterSlug)}
-            />
+            <div className="flex w-full flex-col gap-4">
+              <ProjectStarterList
+                starters={starters.data ?? []}
+                isLoading={starters.isLoading}
+                errorMessage={starters.error?.message}
+                startingSlug={
+                  mutations.startFromStarter.isPending ? mutations.startFromStarter.variables : null
+                }
+                onStart={(starterSlug) => void startFromStarter(starterSlug)}
+              />
 
-            <WorkspaceTemplateList
-              templates={projectTemplates}
-              isLoading={templates.isLoading}
-              errorMessage={templates.error?.message}
-              instantiatingTemplateId={
-                mutations.instantiate.isPending ? mutations.instantiate.variables : null
-              }
-              onUse={(templateId) => void instantiateTemplate(templateId)}
-              onDelete={setTemplateIdToDelete}
-            />
+              <WorkspaceTemplateList
+                templates={projectTemplates}
+                isLoading={templates.isLoading}
+                errorMessage={templates.error?.message}
+                instantiatingTemplateId={
+                  mutations.instantiate.isPending ? mutations.instantiate.variables : null
+                }
+                onUse={(templateId) => void instantiateTemplate(templateId)}
+                onDelete={setTemplateIdToDelete}
+              />
+            </div>
 
             <WorkspaceAuditList
               records={audit.data ?? []}

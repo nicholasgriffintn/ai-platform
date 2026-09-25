@@ -2,10 +2,10 @@ import type {
   ChatRunCommandReceiptResponse,
   CancelChatRunRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { canonicalJson } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { canonicalJson } from "~/infrastructure/canonical-json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { recordTurnCancellationRequested } from "~/modules/chat/application/streaming/continuity-telemetry";

@@ -43,3 +43,23 @@ export function hasUrlExtension(value: string, extensions: ReadonlySet<string>):
 export function isHttpUrl(value: string): boolean {
   return /^https?:\/\//iu.test(value);
 }
+
+export function encodePathSegments(path: string): string {
+  return path.split("/").map(encodeURIComponent).join("/");
+}
+
+export function toQueryString(
+  params: Record<string, string | number | boolean | undefined | null>,
+): string {
+  const search = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== "") {
+      search.set(key, String(value));
+    }
+  }
+
+  const text = search.toString();
+
+  return text ? `?${text}` : "";
+}

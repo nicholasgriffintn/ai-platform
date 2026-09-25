@@ -254,6 +254,38 @@ export class UsageEventRepository extends BaseRepository {
     );
   }
 
+  async summariseModelUsage(input: {
+    workspaceId: string;
+    vendor: string;
+    resources: readonly string[];
+    since: string;
+  }): Promise<{
+    requests: number;
+    input_tokens: number;
+    output_tokens: number;
+    cost_micros: number;
+  }> {
+    const placeholders = input.resources.map(() => "?").join(", ");
+    const row = await this.runQuery<{
+      requests: number;
+      input_tokens: number;
+      output_tokens: number;
+      cost_micros: number;
+    }>(
+      `SELECT COUNT(DISTINCT COALESCE(message_id, completion_id, id)) AS requests,
+              COALESCE(SUM(CASE WHEN unit LIKE '%input_tokens' THEN quantity ELSE 0 END), 0) AS input_tokens,
+              COALESCE(SUM(CASE WHEN unit LIKE '%output_tokens' THEN quantity ELSE 0 END), 0) AS output_tokens,
+              COALESCE(SUM(cost_micros), 0) AS cost_micros
+       FROM usage_event
+       WHERE workspace_id = ? AND source = 'model' AND vendor = ?
+         AND resource IN (${placeholders}) AND occurred_at >= ?`,
+      [input.workspaceId, input.vendor, ...input.resources, input.since],
+      true,
+    );
+
+    return row ?? { requests: 0, input_tokens: 0, output_tokens: 0, cost_micros: 0 };
+  }
+
   async summariseInfrastructureDay(
     day: string,
   ): Promise<Array<{ resource: string; unit: UsageUnit; quantity: number; cost_micros: number }>> {

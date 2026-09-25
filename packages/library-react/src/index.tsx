@@ -28,6 +28,7 @@ export * from "./hooks/useDrawings.js";
 export * from "./hooks/useDelegations.js";
 export * from "./hooks/useFileUploadAnalytics.js";
 export * from "./hooks/useGovernance.js";
+export * from "./hooks/useModelRegistry.js";
 export * from "./hooks/useIsHydrated.js";
 export * from "./hooks/useKeyboardShortcuts.js";
 export * from "./hooks/useMemoryDocuments.js";
