@@ -3,6 +3,7 @@ import {
   TEAMMATE_LIBRARY_KINDS,
   useProjectCapabilityScope,
 } from "../Capabilities/useCapabilityLibraryController.js";
+import { ProjectHomeTabs } from "./ProjectHomeTabs.js";
 import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectCapabilityLibrary({
@@ -28,6 +29,7 @@ export function ProjectCapabilityLibrary({
       kinds={TEAMMATE_LIBRARY_KINDS}
       title="Teammates"
       subtitle={`The teammates ${projectQuery.data?.name ?? "this project"} can work with. Anything you add here is available to every member.`}
+      navigation={<ProjectHomeTabs workspaceId={workspaceId} projectId={projectId} />}
     />
   );
 }

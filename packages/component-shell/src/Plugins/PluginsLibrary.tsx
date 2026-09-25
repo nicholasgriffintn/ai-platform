@@ -16,9 +16,11 @@ import { usePluginsController } from "./usePluginsController.js";
 export function PluginsLibrary({
   scope,
   projectName,
+  navigation,
 }: {
   scope: CapabilityLibraryScope;
   projectName?: string;
+  navigation?: ReactNode;
 }) {
   const controller = usePluginsController();
 
@@ -43,6 +45,7 @@ export function PluginsLibrary({
       kinds={PLUGIN_LIBRARY_KINDS}
       extraItems={controller.items}
       renderGroup={renderGroup}
+      navigation={navigation}
       title="Plugins"
       subtitle={
         projectName
