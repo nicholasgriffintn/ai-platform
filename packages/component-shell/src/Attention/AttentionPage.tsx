@@ -1,7 +1,7 @@
 import { SettingsSection, TaskList } from "@ngriffin_uk/polychat-component-account";
+import { ButtonLink, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
   TaskAttentionList,
-  WorkAccessEmptyState,
   WorkAttentionView,
   type WorkAttentionFilters,
 } from "@ngriffin_uk/polychat-component-workspaces";
@@ -15,6 +15,7 @@ import {
   writeWorkAttentionFilters,
 } from "@ngriffin_uk/polychat-library-react";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
+import { BriefcaseBusiness } from "lucide-react";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 
@@ -53,9 +54,7 @@ export function AttentionPage() {
           title="Sign in to review your work"
           message="Attention only includes workspaces you can currently access."
         />
-      ) : !isPro ? (
-        <WorkAccessEmptyState />
-      ) : (
+      ) : !isPro ? null : (
         <WorkAttentionView
           items={attention.data?.items ?? []}
           facets={attention.data?.facets}
@@ -97,7 +96,7 @@ export function AttentionPage() {
       ) : null}
 
       {isAuthenticated ? (
-        <div className="mt-10">
+        <div className={isPro ? "mt-10" : undefined}>
           <SettingsSection
             title="Your background tasks"
             description="Automations, media processing and other work running for your account."
@@ -105,6 +104,20 @@ export function AttentionPage() {
             <TaskList tasks={tasks} isLoading={isLoadingTasks} />
           </SettingsSection>
         </div>
+      ) : null}
+
+      {isAuthenticated && !isPro ? (
+        <EmptyState
+          icon={<BriefcaseBusiness className="text-muted-foreground" size={22} />}
+          title="Shared project work lives in Work"
+          message="Upgrade to see blocked tasks, reviews and approvals from every workspace you belong to here."
+          action={
+            <ButtonLink href="/work" variant="outline" size="sm">
+              See what Work includes
+            </ButtonLink>
+          }
+          className="mt-10 min-h-[200px]"
+        />
       ) : null}
     </PageShell.Content>
   );

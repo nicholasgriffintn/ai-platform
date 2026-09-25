@@ -500,14 +500,14 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
         for (const result of uploadResults) {
           if (result.status === "rejected") {
-            alert(
-              `Failed to upload file: ${result.reason instanceof Error ? result.reason.message : "Unknown error"}`,
-            );
+            toast.error("Couldn't upload file", {
+              description: result.reason instanceof Error ? result.reason.message : "Unknown error",
+            });
             continue;
           }
 
           if ("error" in result.value) {
-            alert(result.value.error);
+            toast.error("Couldn't attach file", { description: result.value.error });
           } else {
             uploadedAttachments.push(result.value.attachment);
           }
@@ -522,7 +522,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         }
       } catch (error) {
         console.error("Failed to upload file:", error);
-        alert(`Failed to upload file: ${error instanceof Error ? error.message : "Unknown error"}`);
+        toast.error("Couldn't upload file", {
+          description: error instanceof Error ? error.message : "Unknown error",
+        });
       } finally {
         setIsUploading(false);
         if (fileInputRef.current) {

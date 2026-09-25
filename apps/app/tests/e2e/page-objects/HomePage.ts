@@ -1,4 +1,4 @@
-import type { Dialog, Locator, Page, Response } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import { chooseDropdownOption } from "../support/dropdown";
@@ -510,38 +510,25 @@ export class HomePage extends BasePage {
     const uploadResponse = this.page.waitForResponse(
       (response) => response.request().method() === "POST" && response.url().endsWith("/uploads"),
     );
-    let resolveUploadError: (outcome: { error: string }) => void = () => undefined;
-    const uploadError = new Promise<{ error: string }>((resolve) => {
-      resolveUploadError = resolve;
-    });
-    const handleDialog = async (dialog: Dialog) => {
-      const message = dialog.message();
-
-      await dialog.dismiss();
-      resolveUploadError({ error: message });
-    };
-
-    this.page.on("dialog", handleDialog);
+    const uploadErrorToast = this.page.locator('[data-sonner-toast][data-type="error"]').first();
+    const uploadError = uploadErrorToast
+      .waitFor()
+      .then(async () => ({ error: (await uploadErrorToast.textContent()) ?? "Upload rejected" }));
     const networkOutcome = uploadResponse.then((response) => ({ response }));
 
     void networkOutcome.catch(() => undefined);
-    const uploadOutcome = Promise.race([networkOutcome, uploadError]);
-    let response: Response;
+    void uploadError.catch(() => undefined);
 
-    try {
-      await this.page
-        .getByLabel("Upload a file (images, documents, audio, and code)")
-        .setInputFiles(file);
-      const outcome = await uploadOutcome;
+    await this.page
+      .getByLabel("Upload a file (images, documents, audio, and code)")
+      .setInputFiles(file);
+    const outcome = await Promise.race([networkOutcome, uploadError]);
 
-      if ("error" in outcome) {
-        throw new Error(`Attachment was rejected before upload: ${outcome.error}`);
-      }
-
-      response = outcome.response;
-    } finally {
-      this.page.off("dialog", handleDialog);
+    if ("error" in outcome) {
+      throw new Error(`Attachment was rejected before upload: ${outcome.error}`);
     }
+
+    const { response } = outcome;
 
     if (!response.ok()) {
       throw new Error(
@@ -581,16 +568,13 @@ export class HomePage extends BasePage {
   async renameConversation(title: string | RegExp, replacement: string) {
     const item = await this.hoverConversation(title);
 
-    this.page.once("dialog", async (dialog) => {
-      if (dialog.type() !== "prompt") {
-        await dialog.dismiss();
-        throw new Error(`Expected a rename prompt, received ${dialog.type()}`);
-      }
-
-      await dialog.accept(replacement);
-    });
     await item.getByRole("button", { name: "Conversation actions" }).click();
     await this.page.getByRole("menuitem", { name: "Rename", exact: true }).click();
+    const dialog = this.page.getByRole("dialog", { name: "Rename conversation" });
+
+    await dialog.getByRole("textbox", { name: "Title" }).fill(replacement);
+    await dialog.getByRole("button", { name: "Rename", exact: true }).click();
+    await dialog.waitFor({ state: "hidden" });
     await this.conversationItem(replacement).waitFor();
   }
 

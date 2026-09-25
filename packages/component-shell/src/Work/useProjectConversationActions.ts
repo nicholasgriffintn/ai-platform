@@ -2,6 +2,9 @@ import { apiService, useStreamActivityStore } from "@ngriffin_uk/polychat-librar
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
+
+import type { RenameConversationTarget } from "../Conversations/RenameConversationDialog.js";
 
 interface ProjectConversationActionsOptions {
   activeConversationId?: string;
@@ -23,20 +26,19 @@ export function useProjectConversationActions({
       apiService.updateConversationTitle(conversationId, title),
   });
   const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
+  const [conversationToRename, setConversationToRename] = useState<RenameConversationTarget | null>(
+    null,
+  );
 
-  const editConversationTitle = async (conversationId: string, currentTitle: string) => {
-    const title = prompt("Enter new title:", currentTitle);
-
-    if (!title || title === currentTitle) {
-      return;
-    }
-
+  const renameConversation = async (conversationId: string, title: string) => {
     try {
       await updateTitle.mutateAsync({ conversationId, title });
       await refreshProject();
+      setConversationToRename(null);
     } catch (error) {
       console.error("Failed to update project conversation title:", error);
-      alert("Failed to update the conversation title. Please try again.");
+      toast.error("Couldn't rename the conversation. Please try again.");
+      throw error;
     }
   };
 
@@ -60,7 +62,12 @@ export function useProjectConversationActions({
     confirmDeleteConversation,
     conversationToDelete,
     deletePending: deleteConversation.isPending,
-    editConversationTitle,
+    conversationToRename,
+    renameConversation,
+    renamePending: updateTitle.isPending,
+    requestRenameConversation: (id: string, title: string) =>
+      setConversationToRename({ id, title }),
+    setConversationToRename,
     requestDeleteConversation: setConversationToDelete,
     setConversationToDelete,
   };
