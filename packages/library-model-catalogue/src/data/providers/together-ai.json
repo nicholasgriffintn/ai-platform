@@ -186,7 +186,6 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 131072,
-        "contextComplexity": 4,
         "speed": 5,
         "knowledgeCutoffDate": "August 2025",
         "lastUpdated": "August 5, 2025",
@@ -278,7 +277,8 @@
       "matchingModel": "MiniMaxAI/MiniMax-M2.7",
       "overrides": {
         "name": "MiniMax-M2.7",
-        "contextWindow": 202752,
+        "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
+        "contextWindow": 196608,
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -527,9 +527,8 @@
       "model": "glm/glm-5-2",
       "matchingModel": "zai-org/GLM-5.2",
       "overrides": {
-        "contextWindow": 512000,
+        "contextWindow": 1048575,
         "maxTokens": 164000,
-        "contextComplexity": 4,
         "speed": 4,
         "releaseDate": "June 16, 2026",
         "lastUpdated": "June 16, 2026",

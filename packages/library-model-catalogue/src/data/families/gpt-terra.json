@@ -58,7 +58,19 @@
     "gpt-5-6-terra-fast": {
       "defaults": {
         "name": "GPT 5.6 Terra (Fast)",
-        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work"
+        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "gpt-5-6-terra-global": {

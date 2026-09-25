@@ -108,6 +108,13 @@
         }
       }
     },
+    "recraft-v4-1-flash": {
+      "defaults": {
+        "name": "Recraft V4.1 Flash",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "releaseDate": "September 23, 2026"
+      }
+    },
     "recraft-v4-1-pro": {
       "defaults": {
         "name": "Recraft V4.1 Pro",

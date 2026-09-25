@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 22, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The fireworks/accounts/fireworks/models/ember 1 family includes models that produce text.",
+  "models": {
+    "ember-1": {
+      "defaults": {
+        "name": "Ember-1",
+        "description": "Specialized model from Fireworks built on Kimi K3, producing shorter reasoning traces with approximately 40% fewer tokens while maintaining comparable quality"
+      }
+    }
+  }
+}

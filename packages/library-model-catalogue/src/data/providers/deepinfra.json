@@ -218,6 +218,7 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 16384,
+        "contextComplexity": 3,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.000037,
@@ -928,10 +929,7 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "thinkingmachines/Inkling-Small": {
       "model": "ling/inkling-small",
@@ -1155,7 +1153,7 @@
       "overrides": {
         "contextWindow": 1048576,
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.0012,
+        "costPer1kInputTokens": 0.0009,
         "costPer1kOutputTokens": 0.004,
         "supportsAttachments": false
       }
@@ -1258,6 +1256,46 @@
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.000113,
         "costPer1kOutputTokens": 0.000382
+      }
+    },
+    "XiaomiMiMo/MiMo-V2.6-Flash": {
+      "model": "mimo/mimo-v2-6-flash",
+      "matchingModel": "XiaomiMiMo/MiMo-V2.6-Flash",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00028
+      }
+    },
+    "XiaomiMiMo/MiMo-V2.6-Pro": {
+      "model": "mimo/mimo-v2-6-pro",
+      "matchingModel": "XiaomiMiMo/MiMo-V2.6-Pro",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.000435,
+        "costPer1kOutputTokens": 0.00087
       }
     }
   }

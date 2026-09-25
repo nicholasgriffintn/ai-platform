@@ -599,9 +599,11 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
+            "minimal",
             "low",
             "medium",
-            "high"
+            "high",
+            "xhigh"
           ],
           "defaultEffort": "none"
         }
@@ -627,7 +629,11 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
           ],
           "defaultEffort": "none"
         }
@@ -731,6 +737,7 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
+            "minimal",
             "low",
             "medium",
             "high",
@@ -886,6 +893,7 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
+            "minimal",
             "low",
             "medium",
             "high",
@@ -1050,6 +1058,7 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
+            "minimal",
             "low",
             "medium",
             "high",
@@ -1395,6 +1404,8 @@
       "defaults": {
         "name": "GPT Chat Latest",
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
         "modalities": {
           "input": [
             "text",

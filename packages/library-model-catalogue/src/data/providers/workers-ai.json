@@ -641,6 +641,7 @@
           "math",
           "tool_use"
         ],
+        "contextComplexity": 3,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00035,

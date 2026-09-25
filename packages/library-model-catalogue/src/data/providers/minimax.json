@@ -46,6 +46,7 @@
       "matchingModel": "MiniMax-M2.1",
       "overrides": {
         "name": "MiniMax-M2.1",
+        "contextWindow": 204800,
         "speed": 4,
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -88,7 +89,7 @@
       "model": "minimax/minimax-m3",
       "matchingModel": "MiniMax-M3",
       "overrides": {
-        "contextWindow": 1048576,
+        "contextWindow": 1000000,
         "contextComplexity": 5,
         "speed": 3,
         "lastUpdated": "June 25, 2026",

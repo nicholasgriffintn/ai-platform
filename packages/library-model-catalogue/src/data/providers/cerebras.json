@@ -17,6 +17,7 @@
           "math",
           "tool_use"
         ],
+        "contextComplexity": 3,
         "speed": 5,
         "lastUpdated": "June 10, 2026",
         "costPer1kInputTokens": 0.00035,
@@ -27,8 +28,8 @@
       "model": "qwen/qwen3-8-27b",
       "matchingModel": "qwen-3.8-27b",
       "overrides": {
-        "contextWindow": 65536,
-        "maxTokens": 32768,
+        "contextWindow": 131072,
+        "maxTokens": 40960,
         "lastUpdated": "September 3, 2026",
         "costPer1kInputTokens": 0.00099,
         "costPer1kOutputTokens": 0.00149,

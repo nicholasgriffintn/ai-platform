@@ -192,7 +192,12 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
           ],
           "defaultEffort": "none"
         }
@@ -221,7 +226,12 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
           ],
           "defaultEffort": "none"
         }
@@ -233,7 +243,7 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 256000,
-        "maxTokens": 256000,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -301,14 +311,7 @@
       "defaults": {
         "name": "Qwen 3.6 Plus",
         "description": "Earlier Qwen multimodal workhorse for million-token agent and document tasks",
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": true
       }
     },
     "qwen-3-7-flash": {
@@ -334,7 +337,12 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
           ],
           "defaultEffort": "none"
         }
@@ -370,7 +378,12 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
           ],
           "defaultEffort": "none"
         },
@@ -412,10 +425,11 @@
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
-            "thinking"
+            "low",
+            "medium",
+            "xhigh"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "low"
         }
       }
     },
@@ -497,12 +511,9 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "minimal",
             "low",
             "medium",
-            "high",
-            "xhigh",
-            "max"
+            "xhigh"
           ],
           "defaultEffort": "none"
         }
@@ -2329,6 +2340,7 @@
         "openWeights": false,
         "description": "Qwen frontier model tuned for agent frameworks, coding assistants, and long tasks",
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text"
@@ -3509,7 +3521,7 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
-        "maxTokens": 32768,
+        "maxTokens": 16384,
         "modalities": {
           "input": [
             "text",

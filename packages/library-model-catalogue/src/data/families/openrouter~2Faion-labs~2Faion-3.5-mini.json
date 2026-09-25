@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 23, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "high",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The openrouter/aion labs/aion 3.5 mini family includes models that produce text.",
+  "models": {
+    "aion-3-5-mini": {
+      "defaults": {
+        "name": "Aion 3.5 Mini",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation"
+      }
+    }
+  }
+}

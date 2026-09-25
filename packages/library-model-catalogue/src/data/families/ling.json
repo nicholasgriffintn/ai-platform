@@ -440,7 +440,9 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "low",
+            "medium",
+            "high"
           ],
           "defaultEffort": "none"
         }
@@ -457,14 +459,7 @@
             "text"
           ]
         },
-        "releaseDate": "September 4, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "releaseDate": "September 4, 2026"
       }
     },
     "ling-3-0-flash-vl": {

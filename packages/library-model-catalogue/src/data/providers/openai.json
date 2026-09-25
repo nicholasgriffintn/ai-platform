@@ -1267,6 +1267,7 @@
       "model": "text-embedding/text-embedding-3-large",
       "matchingModel": "text-embedding-3-large",
       "overrides": {
+        "contextWindow": 8191,
         "knowledgeCutoffDate": "January 2024",
         "lastUpdated": "January 25, 2024",
         "costPer1kInputTokens": 0.00013,
@@ -1282,6 +1283,7 @@
       "model": "text-embedding/text-embedding-3-small",
       "matchingModel": "text-embedding-3-small",
       "overrides": {
+        "contextWindow": 8191,
         "knowledgeCutoffDate": "January 2024",
         "lastUpdated": "January 25, 2024",
         "costPer1kInputTokens": 0.00002,

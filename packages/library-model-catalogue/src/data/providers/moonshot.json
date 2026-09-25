@@ -67,8 +67,7 @@
         "costPer1kOutputTokens": 0.0025
       },
       "unset": [
-        "supportsResponseFormat",
-        "reasoningConfig"
+        "supportsResponseFormat"
       ]
     },
     "kimi-k2-0905-preview": {
@@ -81,8 +80,7 @@
         "costPer1kOutputTokens": 0.0025
       },
       "unset": [
-        "supportsResponseFormat",
-        "reasoningConfig"
+        "supportsResponseFormat"
       ]
     },
     "kimi-k2-thinking-turbo": {
@@ -106,8 +104,7 @@
         "costPer1kOutputTokens": 0.01
       },
       "unset": [
-        "supportsResponseFormat",
-        "reasoningConfig"
+        "supportsResponseFormat"
       ]
     },
     "kimi-k2.6": {
@@ -180,6 +177,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
+        "maxTokens": 1048576,
         "modalities": {
           "input": [
             "text",

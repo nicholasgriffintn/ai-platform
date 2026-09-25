@@ -420,16 +420,6 @@
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 53.5,
           "codingIndex": 73.6,
@@ -620,16 +610,6 @@
         "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 55.7,
           "codingIndex": 74.3,
@@ -698,16 +678,6 @@
         "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 55.7,
           "codingIndex": 74.3,
@@ -839,17 +809,7 @@
         "description": "Strongest Claude Opus model for coding, agents, and professional work",
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
-        "supportsResponseFormat": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsResponseFormat": true
       }
     },
     "claude-opus-5-5": {
@@ -1001,17 +961,7 @@
         "name": "Claude Opus 5 (Fast)",
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
         "knowledgeCutoffDate": "May 2026",
-        "releaseDate": "July 24, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "releaseDate": "July 24, 2026"
       }
     },
     "claude-opus-5-global": {

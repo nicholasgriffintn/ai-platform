@@ -41,18 +41,7 @@
     "gpt-6-astra-fast": {
       "defaults": {
         "name": "GPT-6 Astra (Fast)",
-        "description": "Fast variant of GPT-6 Astra for low-latency assistance and high-volume workloads.",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "description": "Fast variant of GPT-6 Astra for low-latency assistance and high-volume workloads."
       }
     },
     "gpt-6-astra-global": {

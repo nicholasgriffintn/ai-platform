@@ -19,7 +19,9 @@
     "reasoningConfig": {
       "supportedEffortLevels": [
         "none",
-        "thinking"
+        "low",
+        "medium",
+        "high"
       ],
       "defaultEffort": "none"
     }

@@ -41,6 +41,7 @@
       "model": "deepseek-flash/deepseek-v4-flash-0731",
       "matchingModel": "deepseek-v4-flash-0731",
       "overrides": {
+        "contextWindow": 1000000,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0004,
@@ -711,8 +712,6 @@
       "model": "qwen/qwen3-7-max",
       "matchingModel": "qwen3.7-max",
       "overrides": {
-        "maxTokens": 65536,
-        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "May 21, 2026",
         "costPer1kInputTokens": 0.0025,
@@ -726,13 +725,11 @@
       "model": "qwen/qwen3-7-plus",
       "matchingModel": "qwen3.7-plus",
       "overrides": {
-        "maxTokens": 65536,
         "strengths": [
           "vision",
           "video",
           "tool_use"
         ],
-        "contextComplexity": 4,
         "speed": 2,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0005,

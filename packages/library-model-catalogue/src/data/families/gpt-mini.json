@@ -181,6 +181,7 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
+            "minimal",
             "low",
             "medium",
             "high",

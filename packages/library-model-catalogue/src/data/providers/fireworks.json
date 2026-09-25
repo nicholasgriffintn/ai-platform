@@ -228,6 +228,7 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 32768,
+        "contextComplexity": 3,
         "speed": 5,
         "lastUpdated": "June 16, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -362,7 +363,6 @@
       "overrides": {
         "name": "GLM 5.1",
         "contextWindow": 202800,
-        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "April 1, 2026",
         "lastUpdated": "April 1, 2026",
@@ -409,7 +409,14 @@
         "lastUpdated": "April 4, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "accounts/fireworks/routers/kimi-k2p5-turbo": {
@@ -732,7 +739,15 @@
         "releaseDate": "August 28, 2026",
         "lastUpdated": "September 7, 2026",
         "costPer1kInputTokens": 0.0021,
-        "costPer1kOutputTokens": 0.0066
+        "costPer1kOutputTokens": 0.0066,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "accounts/fireworks/models/deepseek-v4p1-flash": {
@@ -847,6 +862,16 @@
         "lastUpdated": "September 16, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
+        "supportsAttachments": true
+      }
+    },
+    "accounts/fireworks/models/ember-1": {
+      "model": "fireworks/accounts/fireworks/models/ember-1/ember-1",
+      "matchingModel": "accounts/fireworks/models/ember-1",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
         "supportsAttachments": true
       }
     }

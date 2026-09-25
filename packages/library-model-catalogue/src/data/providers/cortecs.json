@@ -246,6 +246,7 @@
       "matchingModel": "devstral-2512",
       "overrides": {
         "name": "Devstral 2 2512",
+        "contextWindow": 256000,
         "maxTokens": 256000,
         "speed": 2,
         "lastUpdated": "December 9, 2025",
@@ -416,7 +417,6 @@
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "contextWindow": 131000,
         "maxTokens": 131000,
-        "contextComplexity": 4,
         "speed": 5,
         "knowledgeCutoffDate": "January 2024",
         "lastUpdated": "August 5, 2025",
@@ -460,8 +460,7 @@
         "supportsAttachments": false
       },
       "unset": [
-        "supportsResponseFormat",
-        "reasoningConfig"
+        "supportsResponseFormat"
       ]
     },
     "kimi-k2-thinking": {
@@ -543,8 +542,8 @@
         ],
         "speed": 3,
         "lastUpdated": "April 21, 2026",
-        "costPer1kInputTokens": 0.000516,
-        "costPer1kOutputTokens": 0.002869
+        "costPer1kInputTokens": 0.000475,
+        "costPer1kOutputTokens": 0.00297
       }
     },
     "llama-3.1-405b-instruct": {
@@ -642,6 +641,7 @@
       "matchingModel": "mistral-large-2512",
       "overrides": {
         "name": "Mistral Large 3 2512",
+        "contextWindow": 256000,
         "strengths": [
           "vision",
           "document",
@@ -1989,8 +1989,8 @@
         "maxTokens": 1000000,
         "speed": 4,
         "lastUpdated": "June 13, 2026",
-        "costPer1kInputTokens": 0.0011,
-        "costPer1kOutputTokens": 0.00299,
+        "costPer1kInputTokens": 0.0009,
+        "costPer1kOutputTokens": 0.00324,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2024,8 +2024,8 @@
         ],
         "speed": 3,
         "lastUpdated": "June 12, 2026",
-        "costPer1kInputTokens": 0.000706,
-        "costPer1kOutputTokens": 0.003208,
+        "costPer1kInputTokens": 0.000656,
+        "costPer1kOutputTokens": 0.0033,
         "supportsTemperature": false
       }
     },
@@ -2180,8 +2180,8 @@
           ]
         },
         "lastUpdated": "July 9, 2026",
-        "costPer1kInputTokens": 0.0055,
-        "costPer1kOutputTokens": 0.032998,
+        "costPer1kInputTokens": 0.004399,
+        "costPer1kOutputTokens": 0.021998,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2248,11 +2248,10 @@
       "model": "deepseek-flash/deepseek-v4-flash-0731",
       "matchingModel": "deepseek-v4-flash-0731",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "lastUpdated": "July 31, 2026",
-        "costPer1kInputTokens": 0.000055,
-        "costPer1kOutputTokens": 0.000174,
+        "costPer1kInputTokens": 0.00009,
+        "costPer1kOutputTokens": 0.00017,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2353,8 +2352,8 @@
         "contextWindow": 1048576,
         "maxTokens": 1048576,
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.001114,
-        "costPer1kOutputTokens": 0.003899,
+        "costPer1kInputTokens": 0.000873,
+        "costPer1kOutputTokens": 0.003306,
         "supportsAttachments": false
       }
     },
@@ -2435,6 +2434,60 @@
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.001499,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "claude-opus-5.5": {
+      "model": "claude-opus/claude-opus-5-5",
+      "matchingModel": "claude-opus-5.5",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.004399,
+        "costPer1kOutputTokens": 0.021998,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gpt-6-luna": {
+      "model": "gpt-luna/gpt-6-luna",
+      "matchingModel": "gpt-6-luna",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.00012,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gpt-6-sol": {
+      "model": "gpt-sol/gpt-6-sol",
+      "matchingModel": "gpt-6-sol",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0024,
+        "costPer1kOutputTokens": 0.011999,
+        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",

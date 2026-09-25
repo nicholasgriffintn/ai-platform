@@ -15,9 +15,9 @@
       "search"
     ],
     "releaseDate": "January 2026",
-    "supportsToolCalls": false,
+    "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": false
+    "supportsTemperature": true
   },
   "description": "The greenpt/qwen3 embedding 8b family includes models that produce embedding.",
   "models": {

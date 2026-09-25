@@ -103,7 +103,7 @@
         "name": "MiniMax-01",
         "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
         "contextWindow": 1000192,
-        "maxTokens": 900172,
+        "maxTokens": 40000,
         "modalities": {
           "input": [
             "text",
@@ -212,7 +212,6 @@
     "minimax-m2-1": {
       "defaults": {
         "description": "Earlier MiniMax agent model for practical coding and productivity tasks",
-        "contextWindow": 204800,
         "maxTokens": 131072,
         "strengths": [
           "tool_use"

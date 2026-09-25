@@ -6,14 +6,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "thinking"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "The kimi k2 family includes models that produce text.",
   "models": {
@@ -73,7 +66,14 @@
           ]
         },
         "releaseDate": "June 12, 2026",
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "kimi-k2-0711": {
@@ -128,6 +128,13 @@
         "maxTokens": 262144,
         "contextComplexity": 4,
         "reliability": 1,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 29.4,
           "codingIndex": null,
@@ -152,7 +159,14 @@
           ]
         },
         "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "January 2026"
+        "releaseDate": "January 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "kimi-k2-6": {
@@ -162,6 +176,13 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "April 21, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 42.8,
           "codingIndex": 56,
@@ -229,7 +250,14 @@
           ]
         },
         "knowledgeCutoffDate": "December 2025",
-        "releaseDate": "April 21, 2026"
+        "releaseDate": "April 21, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "kimi-k2-7-code": {
@@ -241,6 +269,13 @@
         "reliability": 2,
         "releaseDate": "June 12, 2026",
         "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 41.9,
           "codingIndex": 60.8,
@@ -308,7 +343,14 @@
             "text"
           ]
         },
-        "releaseDate": "June 12, 2026"
+        "releaseDate": "June 12, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "kimi-k2-7-code-high-speed": {
@@ -326,7 +368,16 @@
             "text"
           ]
         },
-        "releaseDate": "June 12, 2026"
+        "releaseDate": "June 12, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "kimi-k2-7-code-highspeed": {
@@ -345,7 +396,14 @@
           ]
         },
         "releaseDate": "June 12, 2026",
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "kimi-k2-instruct": {

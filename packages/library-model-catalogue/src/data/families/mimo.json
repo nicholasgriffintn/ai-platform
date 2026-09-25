@@ -116,7 +116,7 @@
     "mimo-v2-6-flash": {
       "defaults": {
         "name": "MiMo-V2.6-Flash",
-        "description": "MiMo flash model for fast multimodal assistance and agent workflows",
+        "description": "MiMo Flash model for multimodal coding agents and long-context automation",
         "contextWindow": 1048576,
         "knowledgeCutoffDate": "September 22, 2026",
         "releaseDate": "September 22, 2026"
@@ -147,7 +147,7 @@
     "mimo-v2-6-pro": {
       "defaults": {
         "name": "MiMo-V2.6-Pro",
-        "description": "MiMo pro model for strong multimodal reasoning and agent execution",
+        "description": "Stronger MiMo Pro tier for multimodal reasoning and coding-agent execution",
         "contextWindow": 1048576,
         "knowledgeCutoffDate": "September 22, 2026",
         "releaseDate": "September 22, 2026"

@@ -40,6 +40,7 @@
       "model": "deepseek-flash/deepseek-v4-flash-0731",
       "matchingModel": "deepseek-v4-flash-0731",
       "overrides": {
+        "contextWindow": 1000000,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.0001596,
         "costPer1kOutputTokens": 0.000399,
@@ -217,7 +218,6 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 4,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.000228,

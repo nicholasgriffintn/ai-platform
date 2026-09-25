@@ -53,8 +53,7 @@
         "costPer1kOutputTokens": 0.003
       },
       "unset": [
-        "supportsResponseFormat",
-        "reasoningConfig"
+        "supportsResponseFormat"
       ]
     },
     "Qwen/Qwen3-Coder-480B-A35B-Instruct": {
@@ -164,6 +163,7 @@
       "overrides": {
         "name": "MiniMax-M2.1",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "contextWindow": 204800,
         "speed": 4,
         "knowledgeCutoffDate": "October 2025",
         "lastUpdated": "December 23, 2025",
@@ -494,7 +494,6 @@
       "matchingModel": "zai-org/GLM-5.1",
       "overrides": {
         "contextWindow": 202752,
-        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "April 3, 2026",
         "lastUpdated": "April 3, 2026",
@@ -904,6 +903,7 @@
       "matchingModel": "openai/gpt-oss-120b",
       "overrides": {
         "maxTokens": 32768,
+        "contextComplexity": 3,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00025,

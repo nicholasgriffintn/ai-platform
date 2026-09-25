@@ -37,13 +37,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 1, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 24.5,
           "codingIndex": null,

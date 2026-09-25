@@ -446,7 +446,9 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "low",
+            "medium",
+            "high"
           ],
           "defaultEffort": "none",
           "modelOverrides": {
@@ -659,7 +661,6 @@
       "model": "nova/nova-2-lite",
       "matchingModel": "amazon/nova-2-lite",
       "overrides": {
-        "maxTokens": 1000000,
         "modalities": {
           "input": [
             "text",
@@ -737,7 +738,9 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "low",
+            "medium",
+            "high"
           ],
           "defaultEffort": "none"
         }
@@ -757,9 +760,11 @@
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "none",
             "low",
             "medium",
-            "high"
+            "high",
+            "max"
           ],
           "defaultEffort": "low"
         }
@@ -882,7 +887,7 @@
       "overrides": {
         "name": "Seed 1.8",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "maxTokens": 64000,
+        "maxTokens": 32768,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "September 1, 2025",
         "lastUpdated": "October 2025",
@@ -948,7 +953,16 @@
         "knowledgeCutoffDate": "July 2024",
         "lastUpdated": "August 21, 2025",
         "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.00095
+        "costPer1kOutputTokens": 0.00095,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -959,12 +973,19 @@
       "matchingModel": "deepseek/deepseek-v3.1-terminus",
       "overrides": {
         "contextWindow": 131072,
-        "maxTokens": 65536,
-        "contextComplexity": 4,
         "knowledgeCutoffDate": "July 2025",
         "lastUpdated": "September 22, 2025",
         "costPer1kInputTokens": 0.00027,
-        "costPer1kOutputTokens": 0.001
+        "costPer1kOutputTokens": 0.001,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "deepseek/deepseek-v3.2": {
@@ -1069,7 +1090,6 @@
       "model": "gemini-flash-lite/gemini-2-5-flash-lite",
       "matchingModel": "google/gemini-2.5-flash-lite",
       "overrides": {
-        "maxTokens": 65535,
         "strengths": [
           "vision",
           "document",
@@ -1080,7 +1100,16 @@
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "google/gemini-2.5-flash-lite-preview-09-2025": {
@@ -1161,7 +1190,14 @@
         "lastUpdated": "December 17, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -1429,7 +1465,7 @@
       "matchingModel": "minimax/minimax-m2",
       "overrides": {
         "contextWindow": 205000,
-        "maxTokens": 205000,
+        "maxTokens": 196608,
         "speed": 4,
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "October 27, 2025",
@@ -1442,6 +1478,7 @@
       "matchingModel": "minimax/minimax-m2.1",
       "overrides": {
         "name": "MiniMax M2.1",
+        "contextWindow": 204800,
         "speed": 4,
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "December 23, 2025",
@@ -1473,6 +1510,7 @@
       "matchingModel": "mistral/devstral-2",
       "overrides": {
         "openWeights": false,
+        "contextWindow": 256000,
         "maxTokens": 256000,
         "speed": 2,
         "knowledgeCutoffDate": "October 2024",
@@ -1533,7 +1571,6 @@
       "overrides": {
         "openWeights": false,
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
-        "contextWindow": 262144,
         "strengths": [
           "vision",
           "document"
@@ -1597,7 +1634,16 @@
         "speed": 4,
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.00047,
-        "costPer1kOutputTokens": 0.002
+        "costPer1kOutputTokens": 0.002,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "moonshotai/kimi-k2-turbo": {
@@ -1841,7 +1887,16 @@
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "openai/gpt-5.1-codex-max": {
@@ -1862,7 +1917,16 @@
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       },
       "unset": [
         "contextComplexity"
@@ -1888,7 +1952,16 @@
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "openai/gpt-5.1-instant": {
@@ -1932,11 +2005,21 @@
           ]
         },
         "speed": 3,
-        "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "openai/gpt-5.2-chat": {
@@ -1971,7 +2054,16 @@
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "openai/gpt-5.2-pro": {
@@ -1990,7 +2082,6 @@
       "matchingModel": "openai/gpt-oss-120b",
       "overrides": {
         "maxTokens": 131072,
-        "contextComplexity": 4,
         "speed": 5,
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "August 5, 2025",
@@ -2068,7 +2159,6 @@
       "model": "text-embedding/text-embedding-3-large",
       "matchingModel": "openai/text-embedding-3-large",
       "overrides": {
-        "contextWindow": 8192,
         "maxTokens": 1536,
         "lastUpdated": "January 25, 2024",
         "costPer1kInputTokens": 0.00013,
@@ -2080,7 +2170,6 @@
       "model": "text-embedding/text-embedding-3-small",
       "matchingModel": "openai/text-embedding-3-small",
       "overrides": {
-        "contextWindow": 8192,
         "lastUpdated": "January 25, 2024",
         "costPer1kInputTokens": 0.00002,
         "costPer1kOutputTokens": 0,
@@ -2708,6 +2797,18 @@
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
         "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 39.6,
           "codingIndex": 54.5,
@@ -2725,7 +2826,18 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "anthropic/claude-sonnet-4.6": {
@@ -2739,9 +2851,11 @@
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "none",
             "low",
             "medium",
-            "high"
+            "high",
+            "max"
           ],
           "defaultEffort": "low"
         }
@@ -2756,9 +2870,18 @@
       "overrides": {
         "contextWindow": 262100,
         "speed": 4,
-        "lastUpdated": "April 3, 2026",
+        "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.0009
+        "costPer1kOutputTokens": 0.0009,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "knowledgeCutoffDate"
@@ -2775,8 +2898,10 @@
         "costPer1kOutputTokens": 0.00026,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "high",
-            "xhigh"
+            "none",
+            "low",
+            "medium",
+            "high"
           ],
           "defaultEffort": "high"
         }
@@ -2794,8 +2919,9 @@
         "costPer1kOutputTokens": 0.00198,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "none",
             "high",
-            "xhigh"
+            "max"
           ],
           "defaultEffort": "high"
         }
@@ -2840,7 +2966,14 @@
         "lastUpdated": "May 7, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0015,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "google/gemini-3.1-flash-lite-preview": {
@@ -2880,7 +3013,14 @@
         "lastUpdated": "February 19, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "google/gemini-embedding-2": {
@@ -2948,8 +3088,6 @@
       "model": "mercury/mercury-2",
       "matchingModel": "inception/mercury-2",
       "overrides": {
-        "maxTokens": 128000,
-        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "March 6, 2026",
         "costPer1kInputTokens": 0.00025,
@@ -3099,7 +3237,15 @@
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00065,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "strengths",
@@ -3131,6 +3277,8 @@
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "none",
+            "minimal",
             "low",
             "medium",
             "high",
@@ -3149,7 +3297,18 @@
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.015,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "openai/gpt-5.4-mini": {
@@ -3161,7 +3320,18 @@
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0045,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "openai/gpt-5.4-nano": {
@@ -3183,7 +3353,18 @@
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00125,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "openai/gpt-5.4-pro": {
@@ -3194,7 +3375,18 @@
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.03,
         "costPer1kOutputTokens": 0.18,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "medium"
+        }
       }
     },
     "openai/gpt-5.5": {
@@ -3207,7 +3399,18 @@
         "lastUpdated": "April 23, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "openai/gpt-5.5-pro": {
@@ -3286,7 +3489,14 @@
         },
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.0025
+        "costPer1kOutputTokens": 0.0025,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "xai/grok-4.20-non-reasoning": {
@@ -3356,7 +3566,14 @@
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "xai/grok-4.3": {
@@ -3506,7 +3723,6 @@
       "matchingModel": "zai/glm-5-turbo",
       "overrides": {
         "contextWindow": 202800,
-        "maxTokens": 131100,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.004
@@ -3609,7 +3825,14 @@
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.009,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "mistral/mistral-medium-3.5": {
@@ -3666,7 +3889,18 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "alibaba/qwen3.7-plus": {
@@ -3703,7 +3937,12 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
           ],
           "defaultEffort": "none"
         },
@@ -3740,7 +3979,14 @@
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
         "supportsToolCalls": false,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -3793,6 +4039,14 @@
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 37.8,
           "codingIndex": 49.3,
@@ -4396,7 +4650,18 @@
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "moonshotai/kimi-k2": {
@@ -4423,8 +4688,7 @@
       },
       "unset": [
         "knowledgeCutoffDate",
-        "supportsResponseFormat",
-        "reasoningConfig"
+        "supportsResponseFormat"
       ]
     },
     "moonshotai/kimi-k2.7-code": {
@@ -4453,7 +4717,16 @@
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "moonshotai/kimi-k2.7-code-highspeed": {
@@ -4479,8 +4752,9 @@
         "costPer1kOutputTokens": 0.00255,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "none",
             "high",
-            "xhigh"
+            "max"
           ],
           "defaultEffort": "high"
         }
@@ -4497,10 +4771,10 @@
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
-            "thinking"
+            "high",
+            "xhigh"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "high"
         }
       }
     },
@@ -4680,8 +4954,10 @@
         "costPer1kOutputTokens": 0.0066,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "high",
-            "xhigh"
+            "none",
+            "low",
+            "medium",
+            "high"
           ],
           "defaultEffort": "high"
         }
@@ -4724,7 +5000,18 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -4794,7 +5081,16 @@
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.009,
         "supportsToolCalls": false,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "xai/grok-4.5": {
@@ -4856,7 +5152,19 @@
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "openai/gpt-5.6-terra": {
@@ -4868,7 +5176,19 @@
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "kwaipilot/kat-coder-air-v2.5": {
@@ -4970,7 +5290,18 @@
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "moonshotai/kimi-k3": {
@@ -4997,7 +5328,9 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "low",
+            "high",
+            "max"
           ],
           "defaultEffort": "none"
         }
@@ -5064,7 +5397,14 @@
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       },
       "unset": [
         "contextComplexity"
@@ -5089,7 +5429,14 @@
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "poolside/laguna-s-2.1": {
@@ -5148,7 +5495,18 @@
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       },
       "unset": [
         "contextComplexity",
@@ -5163,7 +5521,18 @@
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       },
       "unset": [
         "contextComplexity"
@@ -5192,7 +5561,9 @@
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "none",
             "low",
+            "medium",
             "high",
             "max"
           ],
@@ -5344,14 +5715,7 @@
         "lastUpdated": "August 5, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": true
       }
     },
     "meta/muse-spark-1.2-contributor": {
@@ -5480,7 +5844,16 @@
         "lastUpdated": "August 10, 2026",
         "costPer1kInputTokens": 0.00035,
         "costPer1kOutputTokens": 0.0015,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "sakana/namazu": {
@@ -5558,7 +5931,14 @@
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "alibaba/qwen3.8-27b": {
@@ -5898,7 +6278,16 @@
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005,
         "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "spacexai/grok-4.20-multi-agent": {
@@ -5924,7 +6313,9 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "low",
+            "medium",
+            "high"
           ],
           "defaultEffort": "none"
         }
@@ -5950,7 +6341,16 @@
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsTemperature"
@@ -6019,7 +6419,16 @@
         "lastUpdated": "March 10, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsTemperature"
@@ -6032,7 +6441,16 @@
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsTemperature"
@@ -6088,15 +6506,7 @@
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsAttachments": true
       }
     },
     "spacexai/grok-build-0.1": {
@@ -6107,7 +6517,16 @@
         "lastUpdated": "April 16, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.002,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "spacexai/grok-imagine-image": {
@@ -6269,8 +6688,10 @@
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "high",
-            "xhigh"
+            "none",
+            "low",
+            "medium",
+            "high"
           ],
           "defaultEffort": "high"
         }
@@ -6542,7 +6963,18 @@
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "google/gemini-3.8-flash": {
@@ -6568,10 +7000,10 @@
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
-            "thinking"
+            "low",
+            "high"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "low"
         }
       },
       "unset": [
@@ -6632,7 +7064,16 @@
         "releaseDate": "August 14, 2026",
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0021,
-        "costPer1kOutputTokens": 0.0066
+        "costPer1kOutputTokens": 0.0066,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "zai/glm-5.3-promo-50": {
@@ -6669,7 +7110,16 @@
         "maxTokens": 32000,
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsTemperature"
@@ -6683,18 +7133,7 @@
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsAttachments": true,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsTemperature": false
       }
     },
     "openai/gpt-6-astra-fast": {
@@ -6779,8 +7218,9 @@
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "none",
             "high",
-            "xhigh"
+            "max"
           ],
           "defaultEffort": "high"
         }
@@ -6808,12 +7248,9 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "minimal",
             "low",
             "medium",
-            "high",
-            "xhigh",
-            "max"
+            "high"
           ],
           "defaultEffort": "none"
         }
@@ -6856,8 +7293,8 @@
         },
         "releaseDate": "September 8, 2026",
         "lastUpdated": "September 8, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
+        "costPer1kInputTokens": 0.000075,
+        "costPer1kOutputTokens": 0.00022,
         "supportsAttachments": true
       }
     },
@@ -6930,7 +7367,14 @@
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "sakana/fugu-ultra-v2": {
@@ -6951,7 +7395,14 @@
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "alibaba/qwen3.8-omni-flash": {
@@ -7077,15 +7528,7 @@
         "lastUpdated": "September 21, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.0036,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsAttachments": true
       }
     },
     "xiaomi/mimo-v2.6-flash": {
@@ -7093,7 +7536,6 @@
       "matchingModel": "xiaomi/mimo-v2.6-flash",
       "overrides": {
         "name": "MiMo V2.6 Flash",
-        "description": "MiMo Flash model for multimodal coding agents and long-context automation",
         "modalities": {
           "input": [
             "text",
@@ -7113,9 +7555,7 @@
             "minimal",
             "low",
             "medium",
-            "high",
-            "xhigh",
-            "max"
+            "high"
           ],
           "defaultEffort": "none"
         }
@@ -7129,7 +7569,6 @@
       "matchingModel": "xiaomi/mimo-v2.6-pro",
       "overrides": {
         "name": "MiMo V2.6 Pro",
-        "description": "Stronger MiMo Pro tier for multimodal reasoning and coding-agent execution",
         "modalities": {
           "input": [
             "text",
@@ -7149,9 +7588,7 @@
             "minimal",
             "low",
             "medium",
-            "high",
-            "xhigh",
-            "max"
+            "high"
           ],
           "defaultEffort": "none"
         }
@@ -7184,9 +7621,7 @@
             "minimal",
             "low",
             "medium",
-            "high",
-            "xhigh",
-            "max"
+            "high"
           ],
           "defaultEffort": "none"
         }
@@ -7237,6 +7672,63 @@
         "costPer1kOutputTokens": 0.02,
         "supportsAttachments": true,
         "supportsTemperature": false
+      }
+    },
+    "alibaba/qwen3.8-max-prime": {
+      "model": "qwen3.8-max/qwen-3-8-max-prime",
+      "matchingModel": "alibaba/qwen3.8-max-prime",
+      "overrides": {
+        "description": "High-throughput edition of Qwen3.8 Max for coding, professional work, multimodal understanding, and long-running agent workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 23, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.012,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "google/gemini-3.8-flash-lite-tts": {
+      "model": "gemini/gemini-3-8-flash-lite-tts",
+      "matchingModel": "google/gemini-3.8-flash-lite-tts",
+      "overrides": {
+        "lastUpdated": "September 23, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.006,
+        "supportsToolCalls": false
+      }
+    },
+    "google/gemini-3.8-flash-tts": {
+      "model": "gemini/gemini-3-8-flash-tts",
+      "matchingModel": "google/gemini-3.8-flash-tts",
+      "overrides": {
+        "lastUpdated": "September 23, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.009,
+        "supportsToolCalls": false
+      }
+    },
+    "recraft/recraft-v4.1-flash": {
+      "model": "recraft/recraft-v4-1-flash",
+      "matchingModel": "recraft/recraft-v4.1-flash",
+      "overrides": {
+        "lastUpdated": "September 23, 2026",
+        "supportsToolCalls": false
       }
     }
   }

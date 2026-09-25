@@ -15,6 +15,7 @@
           "coding",
           "tool_use"
         ],
+        "contextComplexity": 3,
         "speed": 5,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -108,7 +109,6 @@
       "overrides": {
         "name": "glm-5.1",
         "contextWindow": 202752,
-        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "March 27, 2026",
         "lastUpdated": "April 7, 2026",
