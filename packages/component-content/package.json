@@ -33,7 +33,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@babel/standalone": "8.0.4",
+    "@babel/standalone": "8.0.6",
     "@ngriffin_uk/polychat-component-ui": "workspace:^",
     "@ngriffin_uk/polychat-library-chat": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
