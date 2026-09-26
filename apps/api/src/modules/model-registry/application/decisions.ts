@@ -13,14 +13,15 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 
 import type { ModelDecisionRecord } from "../infrastructure/ModelGovernanceRepository";
-import {
-  notFound,
-  requireRegistryGovernor,
-  requireRegistryMember,
-  requireWorkspaceProject,
-} from "./access";
+import { notFound, requireModelAction, requireWorkspaceProject } from "./access";
 import { toModelDecision } from "./mappers";
-import { loadRegistryScope, routeStanding, versionStanding, type RegistryScope } from "./scope";
+import {
+  isRevoked,
+  loadRegistryScope,
+  routeStanding,
+  versionStanding,
+  type RegistryScope,
+} from "./scope";
 
 const DEFAULT_EXCEPTION_DAYS = 90;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -65,7 +66,7 @@ export async function requestDecision(
   workspaceId: string,
   input: RequestDecisionInput,
 ): Promise<ModelDecision> {
-  const { userId } = await requireRegistryMember(context, workspaceId);
+  const { userId } = await requireModelAction(context, workspaceId, "import");
   const projectId = await requireWorkspaceProject(context, workspaceId, input.projectId);
   const routeId = input.routeId ?? null;
   const repositories = context.repositories;
@@ -106,7 +107,8 @@ export async function requestDecision(
     return toModelDecision(pending);
   }
 
-  const automatic = !input.exception && !needsHumanDecision(current.verdict);
+  const automatic =
+    !input.exception && !needsHumanDecision(current.verdict) && !isRevoked(scope, input.versionId);
   const record = await repositories.modelGovernance.createDecision({
     workspaceId,
     projectId,
@@ -144,12 +146,24 @@ export async function resolveDecision(
   decisionId: string,
   input: ResolveDecisionInput,
 ): Promise<ModelDecision> {
-  const { userId } = await requireRegistryGovernor(context, workspaceId);
+  const { userId, separationOfDuties } = await requireModelAction(context, workspaceId, "approve");
   const repositories = context.repositories;
   const decision = await repositories.modelGovernance.getDecision(workspaceId, decisionId);
 
   if (!decision) {
     throw notFound("Decision");
+  }
+
+  if (separationOfDuties && input.state === "approved") {
+    const version = await repositories.modelAssets.getVersion(workspaceId, decision.version_id);
+
+    if (decision.requested_by === userId || version?.created_by === userId) {
+      throw new AssistantError(
+        "Separation of duties: someone other than the requester or author must approve",
+        ErrorType.FORBIDDEN,
+        403,
+      );
+    }
   }
 
   const allowedFrom: Record<ResolveDecisionInput["state"], ModelDecisionState> = {
@@ -234,7 +248,7 @@ export async function listDecisions(
   workspaceId: string,
   filters: { state?: ModelDecisionState; projectId?: string },
 ): Promise<DecisionsResponse> {
-  await requireRegistryMember(context, workspaceId);
+  await requireModelAction(context, workspaceId, "view");
 
   const repositories = context.repositories;
   const decisions = await repositories.modelGovernance.listDecisions(workspaceId, filters);

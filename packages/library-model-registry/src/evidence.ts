@@ -94,7 +94,7 @@ export function hubScanEvidence(files: readonly ScannedFile[]): EvidenceDraft {
 }
 
 export function cardEvidence(markdown: string | null, kind: ModelAssetKind): EvidenceDraft {
-  const card = assessCard(markdown, kind);
+  const card = assessCard(markdown, kind === "dataset" ? "dataset" : "model");
 
   return {
     kind: "card",

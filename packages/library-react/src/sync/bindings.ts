@@ -20,7 +20,6 @@ import { PROJECT_WORKBENCH_PREVIEW_QUERY_KEY } from "../hooks/useProjectWorkbenc
 import { projectWorkbenchRunsQueryKey } from "../hooks/useProjectWorkbenchRuns.js";
 import { REPLICATE_QUERY_KEY } from "../hooks/useReplicate.js";
 import { TASK_QUERY_KEYS } from "../hooks/useTasks.js";
-import { TRAINING_QUERY_KEYS } from "../hooks/useTraining.js";
 
 export interface SyncBindingContext {
   queryClient: QueryClient;
@@ -139,7 +138,6 @@ export const SYNC_BINDINGS: SyncBinding[] = [
     },
   },
   { type: "research.changed", apply: (context) => invalidate(context, ["research-status"]) },
-  { type: "training.changed", apply: (context) => invalidate(context, TRAINING_QUERY_KEYS.jobs) },
   { type: "canvas.changed", apply: (context) => invalidate(context, ["canvas"]) },
   { type: "replicate.changed", apply: (context) => invalidate(context, [REPLICATE_QUERY_KEY]) },
   { type: "connector_approval.changed", apply: refreshConversationDetail },

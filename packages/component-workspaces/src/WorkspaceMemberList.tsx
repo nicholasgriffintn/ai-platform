@@ -152,7 +152,7 @@ export function WorkspaceInvitationList({
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="destructive"
               icon={<Trash2 size={14} />}
               isLoading={revokingInvitationId === invite.id}
               onClick={() => onRevoke(invite.id)}

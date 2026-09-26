@@ -2,9 +2,10 @@ import type {
   HubFile,
   HubRepoReference,
   HuggingFaceHubClient,
-} from "@ngriffin_uk/polychat-ai-model-sources";
+} from "@ngriffin_uk/polychat-ai-model-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
+  architectureFromConfig,
   assessPiiSample,
   assessRemoteCode,
   cardEvidence,
@@ -28,14 +29,14 @@ import {
   type PickleStreamScan,
 } from "@ngriffin_uk/polychat-library-model-registry";
 import type { ModelVersionAttributes } from "@ngriffin_uk/polychat-schemas";
-import { getErrorMessage, isGitCommitSha, isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { getErrorMessage, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import type { IEnv } from "~/types";
+import { workspaceHubClient } from "~/modules/model-governance/application/connections";
 
 import type { ModelAssetRecord, ModelVersionRecord } from "../infrastructure/ModelAssetRepository";
 import { syncVersionReviews } from "./decisions";
-import { workspaceHubClient } from "./hub";
+import { weightsLocation } from "./handles";
 
 const logger = getLogger({ prefix: "modules/model-registry/inspection" });
 
@@ -128,10 +129,8 @@ async function inspectModel(
   info: Awaited<ReturnType<HuggingFaceHubClient["getRepoInfo"]>>,
 ): Promise<{ evidence: EvidenceDraft[]; attributes: ModelVersionAttributes }> {
   const paths = files.map((file) => file.path);
-  const remote = assessRemoteCode(
-    info.config ?? (await readJson(inspection, "config.json")),
-    paths,
-  );
+  const config = await readJson(inspection, "config.json");
+  const remote = assessRemoteCode(info.config ?? config, paths);
   const headers = await checkSafetensorsHeaders(
     files
       .filter((file) => file.path.endsWith(".safetensors"))
@@ -153,6 +152,8 @@ async function inspectModel(
       remoteCode: remote.remoteCode,
       formats: collectWeightFormats(paths),
       parameterCount: version.attributes.parameterCount ?? headers.parameterCount,
+      architecture:
+        version.attributes.architecture ?? architectureFromConfig(isRecord(config) ? config : null),
     },
   };
 }
@@ -163,7 +164,7 @@ async function inspectDataset(
   files: HubFile[],
 ): Promise<EvidenceDraft[]> {
   const sample = await inspection.hub.sampleDatasetRows({
-    repo: asset.source_ref,
+    repo: inspection.reference.repo,
     limit: DATASET_SAMPLE_ROWS,
   });
 
@@ -177,11 +178,7 @@ async function inspectDataset(
   ];
 }
 
-export async function inspectVersion(
-  env: IEnv,
-  repositories: RepositoryManager,
-  versionId: string,
-) {
+export async function inspectVersion(repositories: RepositoryManager, versionId: string) {
   const version = await repositories.modelAssets.getVersionById(versionId);
   const asset = version ? await repositories.modelAssets.getAssetById(version.asset_id) : null;
 
@@ -189,7 +186,9 @@ export async function inspectVersion(
     return { status: "skipped" as const, message: `Version ${versionId} no longer exists` };
   }
 
-  if (!isGitCommitSha(version.revision)) {
+  const location = weightsLocation(asset, version);
+
+  if (location?.kind !== "hub") {
     await repositories.modelAssets.updateVersion(versionId, { status: "ready" });
     await syncVersionReviews(repositories, asset.workspace_id, versionId);
 
@@ -197,8 +196,12 @@ export async function inspectVersion(
   }
 
   const inspection: Inspection = {
-    hub: await workspaceHubClient(env, repositories, asset.workspace_id),
-    reference: { kind: asset.kind, repo: asset.source_ref, revision: version.revision },
+    hub: await workspaceHubClient(repositories, asset.workspace_id),
+    reference: {
+      kind: asset.kind === "dataset" ? "dataset" : "model",
+      repo: location.repo,
+      revision: location.revision,
+    },
   };
   const evidence: EvidenceDraft[] = [];
   const record = (drafts: EvidenceDraft[]) =>
@@ -216,14 +219,14 @@ export async function inspectVersion(
       gatingEvidence(info.gated),
       cardEvidence(
         await inspection.hub.fetchText({ ...inspection.reference, path: "README.md" }),
-        asset.kind,
+        asset.kind === "dataset" ? "dataset" : "model",
       ),
       signatureEvidence(files.map((file) => file.path)),
     );
 
     let attributes = version.attributes;
 
-    if (asset.kind === "model") {
+    if (asset.kind !== "dataset") {
       const model = await inspectModel(inspection, version, files, info);
 
       evidence.push(...model.evidence);

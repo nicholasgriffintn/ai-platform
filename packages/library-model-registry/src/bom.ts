@@ -142,3 +142,113 @@ export function buildMlBom(input: BuildMlBomInput) {
     ],
   };
 }
+
+const SPDX_RELATIONSHIPS: Record<LineageEdge["relation"], string> = {
+  fine_tuned_from: "descendantOf",
+  adapter_of: "descendantOf",
+  merged_from: "descendantOf",
+  quantised_from: "descendantOf",
+  distilled_from: "descendantOf",
+  checkpoint_of: "descendantOf",
+  derived_from: "descendantOf",
+  trained_on: "trainedOn",
+  evaluated_on: "testedOn",
+};
+
+function spdxId(versionId: string): string {
+  return `urn:polychat:version:${versionId}`;
+}
+
+function spdxElement(input: BomVersionInput) {
+  const { asset, version, files } = input;
+  const common = {
+    spdxId: spdxId(version.id),
+    creationInfo: "_:creationinfo",
+    name: asset.sourceRef,
+    software_packageVersion: version.revision,
+    software_downloadLocation:
+      asset.source === "huggingface"
+        ? `https://huggingface.co/${asset.kind === "dataset" ? "datasets/" : ""}${asset.sourceRef}/tree/${version.revision}`
+        : "NOASSERTION",
+    verifiedUsing: files
+      .filter((file) => file.sha256)
+      .map((file) => ({
+        type: "Hash",
+        algorithm: "sha256",
+        hashValue: file.sha256,
+        comment: file.path,
+      })),
+  };
+
+  return asset.kind === "dataset"
+    ? { type: "dataset_DatasetPackage", ...common, dataset_datasetType: ["text"] }
+    : {
+        type: "ai_AIPackage",
+        ...common,
+        ai_typeOfModel: [asset.kind === "adapter" ? "lora-adapter" : "transformer"],
+        ai_informationAboutTraining: version.attributes.trainingComputeFlops
+          ? `Estimated modification compute ${version.attributes.trainingComputeFlops.toExponential(2)} FLOPs`
+          : undefined,
+      };
+}
+
+export function buildSpdxAiBom(input: BuildMlBomInput) {
+  const subjects = [input.subject, ...input.ancestors];
+  const elements = subjects.map(spdxElement);
+  const relationships = input.lineage.map((edge, index) => ({
+    type: "Relationship",
+    spdxId: `urn:polychat:relationship:${index}`,
+    creationInfo: "_:creationinfo",
+    from: spdxId(edge.toVersionId),
+    relationshipType: SPDX_RELATIONSHIPS[edge.relation],
+    to: [spdxId(edge.fromVersionId)],
+  }));
+  const licences = subjects.flatMap((subject, index) =>
+    subject.version.attributes.licence
+      ? [
+          {
+            type: "Relationship",
+            spdxId: `urn:polychat:licence:${index}`,
+            creationInfo: "_:creationinfo",
+            from: spdxId(subject.version.id),
+            relationshipType: "hasDeclaredLicense",
+            to: [`https://spdx.org/licenses/${subject.version.attributes.licence}`],
+          },
+        ]
+      : [],
+  );
+
+  return {
+    "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+    "@graph": [
+      {
+        type: "CreationInfo",
+        "@id": "_:creationinfo",
+        specVersion: "3.0.1",
+        created: input.generatedAt,
+        createdBy: ["urn:polychat:tool"],
+      },
+      {
+        type: "Tool",
+        spdxId: "urn:polychat:tool",
+        name: "Polychat",
+        creationInfo: "_:creationinfo",
+      },
+      ...elements,
+      ...relationships,
+      ...licences,
+      {
+        type: "SpdxDocument",
+        spdxId: `urn:uuid:${input.serialNumber}`,
+        creationInfo: "_:creationinfo",
+        profileConformance: ["core", "software", "ai", "dataset"],
+        rootElement: [spdxId(input.subject.version.id)],
+        element: [
+          ...elements.map((element) => element.spdxId),
+          ...relationships.map((relationship) => relationship.spdxId),
+          ...licences.map((relationship) => relationship.spdxId),
+        ],
+      },
+    ],
+  };
+}

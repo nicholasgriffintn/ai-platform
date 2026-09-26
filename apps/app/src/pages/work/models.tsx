@@ -1,4 +1,4 @@
-import { WorkspaceModels } from "@ngriffin_uk/polychat-component-shell";
+import { isModelPlace, WorkspaceModels } from "@ngriffin_uk/polychat-component-shell";
 import { useParams } from "react-router";
 
 export function meta() {
@@ -6,7 +6,9 @@ export function meta() {
 }
 
 export default function WorkspaceModelsPage() {
-  const { workspaceId = "" } = useParams();
+  const { workspaceId = "", place } = useParams();
 
-  return <WorkspaceModels workspaceId={workspaceId} />;
+  return (
+    <WorkspaceModels workspaceId={workspaceId} place={isModelPlace(place) ? place : "overview"} />
+  );
 }

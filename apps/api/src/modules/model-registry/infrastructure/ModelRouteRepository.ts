@@ -15,9 +15,18 @@ export class ModelRouteRepository extends BaseRepository<Pick<IEnv, "DB">> {
     providerModelId: string;
     region: string;
     weightsVerified: boolean;
-    deploymentRef?: string | null;
+    deploymentId?: string | null;
+    jurisdiction?: ModelRouteRecord["jurisdiction"];
+    retention?: ModelRouteRecord["retention"];
     createdBy: number | null;
   }): Promise<ModelRouteRecord> {
+    const values = {
+      region: input.region,
+      weights_verified: input.weightsVerified,
+      deployment_id: input.deploymentId ?? null,
+      jurisdiction: input.jurisdiction ?? null,
+      retention: input.retention ?? null,
+    };
     const [record] = await this.database
       .insert(modelRoute)
       .values({
@@ -26,10 +35,8 @@ export class ModelRouteRepository extends BaseRepository<Pick<IEnv, "DB">> {
         version_id: input.versionId,
         provider: input.provider,
         provider_model_id: input.providerModelId,
-        region: input.region,
-        weights_verified: input.weightsVerified,
-        deployment_ref: input.deploymentRef ?? null,
         created_by: input.createdBy,
+        ...values,
       })
       .onConflictDoUpdate({
         target: [
@@ -38,12 +45,7 @@ export class ModelRouteRepository extends BaseRepository<Pick<IEnv, "DB">> {
           modelRoute.provider,
           modelRoute.provider_model_id,
         ],
-        set: {
-          status: "active",
-          region: input.region,
-          weights_verified: input.weightsVerified,
-          deployment_ref: input.deploymentRef ?? null,
-        },
+        set: { status: "active", ...values },
       })
       .returning();
 
@@ -108,20 +110,20 @@ export class ModelRouteRepository extends BaseRepository<Pick<IEnv, "DB">> {
       );
   }
 
-  async getRouteByDeployment(
-    provider: string,
-    deploymentRef: string,
-  ): Promise<ModelRouteRecord | null> {
-    const [route] = await this.database
-      .select()
-      .from(modelRoute)
-      .where(and(eq(modelRoute.provider, provider), eq(modelRoute.deployment_ref, deploymentRef)))
-      .limit(1);
-
-    return route ?? null;
+  async listByIds(routeIds: string[]): Promise<ModelRouteRecord[]> {
+    return this.selectInChunks(routeIds, (chunk) =>
+      this.database.select().from(modelRoute).where(inArray(modelRoute.id, chunk)),
+    );
   }
 
   async setStatus(routeId: string, status: "active" | "retired"): Promise<void> {
     await this.database.update(modelRoute).set({ status }).where(eq(modelRoute.id, routeId));
+  }
+
+  async updateLocation(
+    routeId: string,
+    changes: Pick<ModelRouteRecord, "region" | "jurisdiction">,
+  ): Promise<void> {
+    await this.database.update(modelRoute).set(changes).where(eq(modelRoute.id, routeId));
   }
 }

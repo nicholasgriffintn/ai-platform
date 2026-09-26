@@ -28,6 +28,12 @@ const EVIDENCE_LABELS: Record<ModelEvidence["kind"], string> = {
   pii: "Personal data",
   residency: "Residency",
   drift: "Drift",
+  provenance: "Provenance",
+  upload_integrity: "Upload integrity",
+  teacher_terms: "Teacher terms",
+  decontamination: "Decontamination",
+  erasure: "Erasure",
+  compute: "Compute",
 };
 
 export function VerdictPanel({ verdict }: { verdict: PolicyVerdict }) {
@@ -156,7 +162,7 @@ export function DecisionList({
           {canGovern && onResolve && decision.state === "approved" && (
             <Button
               size="sm"
-              variant="ghost"
+              variant="destructive"
               disabled={busyId === decision.id}
               onClick={() => onResolve(decision, "revoked")}
             >
@@ -260,6 +266,11 @@ export function LineageList({
     trained_on: "trained on",
     evaluated_on: "evaluated on",
     quantised_from: "quantised from",
+    adapter_of: "adapter of",
+    merged_from: "merged from",
+    distilled_from: "distilled from",
+    derived_from: "derived from",
+    checkpoint_of: "checkpoint of",
   };
 
   return (

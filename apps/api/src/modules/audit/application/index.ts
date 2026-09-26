@@ -5,7 +5,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { WorkspaceAuditRecordRow } from "~/modules/audit/infrastructure/AuditRepository";
 import { requireWorkspaceAccess } from "~/modules/workspaces/application/access";
 
-function formatAuditRecord(record: WorkspaceAuditRecordRow): WorkspaceAuditRecord {
+export function formatAuditRecord(record: WorkspaceAuditRecordRow): WorkspaceAuditRecord {
   return {
     id: record.id,
     workspaceId: record.workspace_id,

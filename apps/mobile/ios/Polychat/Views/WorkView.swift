@@ -7,6 +7,7 @@ struct WorkView: View {
     @State private var selectedTarget: MobileWorkTarget?
     @State private var isLoading = true
     @State private var error: String?
+    @State private var showingModels = false
     let onOpenConversation: (String) -> Void
 
     var body: some View {
@@ -34,9 +35,16 @@ struct WorkView: View {
             }
             .navigationTitle("Work")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Models") { showingModels = true }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
                 }
+            }
+            .sheet(isPresented: $showingModels) {
+                ModelApprovalsView()
+                    .environmentObject(apiClient)
             }
             .task { await load() }
             .alert("Couldn’t load work", isPresented: errorBinding) {

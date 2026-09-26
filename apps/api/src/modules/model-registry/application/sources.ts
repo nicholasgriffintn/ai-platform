@@ -1,4 +1,4 @@
-import type { HubSearchItem } from "@ngriffin_uk/polychat-ai-model-sources";
+import type { HubSearchItem } from "@ngriffin_uk/polychat-ai-model-providers";
 import {
   evaluatePolicies,
   isPermissiveLicence,
@@ -12,10 +12,10 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { workspaceHubClient } from "~/modules/model-governance/application/connections";
+import { withProviderErrors } from "~/modules/model-governance/application/provider-errors";
 
-import { requireRegistryMember, requireWorkspaceProject } from "./access";
-import { workspaceHubClient } from "./hub";
-import { withHubErrors } from "./hub-errors";
+import { requireModelAction, requireWorkspaceProject } from "./access";
 import { loadPolicyStack } from "./policies";
 
 const DECISION_STATE_PRIORITY: ModelDecisionState[] = [
@@ -54,13 +54,13 @@ export async function searchSources(
   workspaceId: string,
   query: SourceSearchQuery,
 ): Promise<{ results: SourceSearchResult[] }> {
-  await requireRegistryMember(context, workspaceId);
+  await requireModelAction(context, workspaceId, "view");
 
   const projectId = await requireWorkspaceProject(context, workspaceId, query.projectId);
   const repositories = context.repositories;
   const [items, stack, assets, versions, decisions] = await Promise.all([
-    withHubErrors(async () =>
-      (await workspaceHubClient(context.env, repositories, workspaceId)).search({
+    withProviderErrors(async () =>
+      (await workspaceHubClient(repositories, workspaceId)).search({
         kind: query.kind,
         query: query.q,
         limit: query.limit,
@@ -114,6 +114,8 @@ export async function searchSources(
               baseModels: [],
               totalBytes: 0,
               trainingComputeFlops: null,
+              architecture: null,
+              location: null,
             },
             evidence: [],
           },

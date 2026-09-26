@@ -3,9 +3,12 @@ import {
   evaluatePolicies,
   hashPolicyRules,
   type PolicySubject,
+  type PolicySubjectDataset,
+  type PolicySubjectRoute,
   type ScopedPolicy,
 } from "@ngriffin_uk/polychat-library-model-registry";
 import type {
+  DatasetGovernance,
   ModelEvidence,
   ModelPolicy,
   PolicyDryRunRequest,
@@ -21,7 +24,7 @@ import type { RepositoryManager } from "~/infrastructure/database/repositoryMana
 import type { ModelAssetRecord, ModelVersionRecord } from "../infrastructure/ModelAssetRepository";
 import { WORKSPACE_POLICY_SCOPE_KEY } from "../infrastructure/ModelGovernanceRepository";
 import type { ModelRouteRecord } from "../infrastructure/ModelRouteRepository";
-import { requireRegistryGovernor, requireRegistryMember, requireWorkspaceProject } from "./access";
+import { requireModelAction, requireWorkspaceProject } from "./access";
 import { toModelEvidence, toModelPolicy } from "./mappers";
 
 export interface PolicyStack {
@@ -69,11 +72,29 @@ export async function loadPolicyStack(
   return { workspace, project, scoped };
 }
 
-function buildPolicySubject(
+export function routeSubject(route: ModelRouteRecord): PolicySubjectRoute {
+  return {
+    region: route.region,
+    weightsVerified: route.weights_verified,
+    jurisdiction: route.jurisdiction,
+    retention: route.retention,
+  };
+}
+
+export function datasetSubject(
+  governance: DatasetGovernance | null | undefined,
+): PolicySubjectDataset | null {
+  return governance
+    ? { lawfulBasis: governance.lawfulBasis, containsCustomerData: governance.containsCustomerData }
+    : null;
+}
+
+export function buildPolicySubject(
   asset: ModelAssetRecord,
   version: ModelVersionRecord,
   evidence: readonly ModelEvidence[],
-  route?: ModelRouteRecord | null,
+  route?: PolicySubjectRoute & { id?: string | null },
+  dataset?: PolicySubjectDataset | null,
 ): PolicySubject {
   const latest = new Map<string, ModelEvidence>();
 
@@ -82,7 +103,7 @@ function buildPolicySubject(
       continue;
     }
 
-    if (item.routeId !== null && item.routeId !== route?.id) {
+    if (item.routeId !== null && item.routeId !== (route?.id ?? null)) {
       continue;
     }
 
@@ -103,7 +124,8 @@ function buildPolicySubject(
       status: item.status,
       summary: item.summary,
     })),
-    route: route ? { region: route.region, weightsVerified: route.weights_verified } : undefined,
+    route,
+    dataset,
   };
 }
 
@@ -113,6 +135,26 @@ export function evaluateVersion(
   version: ModelVersionRecord,
   evidence: readonly ModelEvidence[],
   route?: ModelRouteRecord | null,
+  dataset?: DatasetGovernance | null,
+): PolicyVerdict {
+  return evaluatePolicies(
+    buildPolicySubject(
+      asset,
+      version,
+      evidence,
+      route ? { ...routeSubject(route), id: route.id } : undefined,
+      datasetSubject(dataset),
+    ),
+    stack.scoped,
+  );
+}
+
+export function evaluateCandidateRoute(
+  stack: PolicyStack,
+  asset: ModelAssetRecord,
+  version: ModelVersionRecord,
+  evidence: readonly ModelEvidence[],
+  route: PolicySubjectRoute,
 ): PolicyVerdict {
   return evaluatePolicies(buildPolicySubject(asset, version, evidence, route), stack.scoped);
 }
@@ -121,7 +163,7 @@ export async function getPolicies(
   context: ServiceContext,
   workspaceId: string,
 ): Promise<PoliciesResponse> {
-  await requireRegistryMember(context, workspaceId);
+  await requireModelAction(context, workspaceId, "view");
 
   const records = await context.repositories.modelGovernance.listPolicies(workspaceId);
   const workspaceRecord = records.find((record) => record.scope_key === WORKSPACE_POLICY_SCOPE_KEY);
@@ -141,7 +183,7 @@ export async function upsertPolicy(
   workspaceId: string,
   request: UpsertPolicyRequest,
 ): Promise<ModelPolicy> {
-  const { userId } = await requireRegistryGovernor(context, workspaceId);
+  const { userId } = await requireModelAction(context, workspaceId, "manage_policy");
   const projectId = await requireWorkspaceProject(context, workspaceId, request.projectId);
   const existing = await context.repositories.modelGovernance.getPolicy(
     workspaceId,
@@ -185,7 +227,7 @@ export async function dryRunPolicy(
   workspaceId: string,
   request: PolicyDryRunRequest,
 ): Promise<PolicyDryRunResult> {
-  await requireRegistryGovernor(context, workspaceId);
+  await requireModelAction(context, workspaceId, "manage_policy");
 
   const projectId = await requireWorkspaceProject(context, workspaceId, request.projectId);
   const repositories = context.repositories;

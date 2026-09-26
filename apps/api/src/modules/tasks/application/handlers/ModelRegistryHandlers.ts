@@ -4,7 +4,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import { executeEvalRun } from "~/modules/model-registry/application/eval-runner";
+import { executeEvalRun } from "~/modules/model-evaluation/application/runner";
 import { inspectVersion } from "~/modules/model-registry/application/inspection";
 import type { IEnv } from "~/types";
 
@@ -18,7 +18,7 @@ export class ModelRegistryInspectHandler implements TaskHandler {
       return { status: "error", message: "versionId is required to inspect a model version" };
     }
 
-    return inspectVersion(env, RepositoryManager.getInstance(env), parsed.data.versionId);
+    return inspectVersion(RepositoryManager.getInstance(env), parsed.data.versionId);
   }
 }
 

@@ -5,8 +5,13 @@ import {
   DELEGATION_RUN_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
   INFRA_RECONCILIATION_TASK_TYPE,
+  MODEL_DATASET_PROCESS_TASK_TYPE,
+  MODEL_DEPLOYMENT_SYNC_TASK_TYPE,
+  MODEL_PLATFORM_RECONCILE_TASK_TYPE,
   MODEL_REGISTRY_EVAL_TASK_TYPE,
   MODEL_REGISTRY_INSPECT_TASK_TYPE,
+  MODEL_TRAINING_SYNC_TASK_TYPE,
+  MODEL_UPLOAD_FINALISE_TASK_TYPE,
   OCR_BATCH_POLLING_TASK_TYPE,
   PROJECT_TASK_RUN_TASK_TYPE,
   REALTIME_RECONCILIATION_TASK_TYPE,
@@ -32,6 +37,13 @@ import { InboundMessageHandler } from "./handlers/InboundMessageHandler";
 import { InfraReconciliationHandler } from "./handlers/InfraReconciliationHandler";
 import { memorySynthesis } from "./handlers/memory-synthesis";
 import {
+  modelDatasetProcessing,
+  modelDeploymentSync,
+  modelPlatformReconcile,
+  modelTrainingSync,
+  modelUploadFinalise,
+} from "./handlers/model-platform";
+import {
   ModelRegistryEvalHandler,
   ModelRegistryInspectHandler,
 } from "./handlers/ModelRegistryHandlers";
@@ -53,11 +65,16 @@ import "./schedules";
 
 workflows.on("memory_synthesis", memorySynthesis);
 workflows.on(USAGE_ROLLUP_TASK_TYPE, usageRollup);
+workflows.on(MODEL_PLATFORM_RECONCILE_TASK_TYPE, modelPlatformReconcile);
 
 workflows.poll("research_polling", researchPolling);
 workflows.poll("replicate_polling", replicatePolling);
 workflows.poll("async_message_polling", asyncMessagePolling);
 workflows.poll("recording_transcription_polling", recordingTranscriptionPolling);
+workflows.poll(MODEL_DATASET_PROCESS_TASK_TYPE, modelDatasetProcessing);
+workflows.poll(MODEL_TRAINING_SYNC_TASK_TYPE, modelTrainingSync);
+workflows.poll(MODEL_DEPLOYMENT_SYNC_TASK_TYPE, modelDeploymentSync);
+workflows.poll(MODEL_UPLOAD_FINALISE_TASK_TYPE, modelUploadFinalise);
 
 workflows.register("training_quality_scoring", new TrainingQualityHandler());
 workflows.register("recipe_execution", new RecipeExecutionHandler());

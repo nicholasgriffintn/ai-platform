@@ -29,7 +29,8 @@ The platform includes:
 - Multi-provider chat with streaming, multimodal messages, model routing, sharing, feedback, and conversation compaction.
 - Custom agents, MCP servers, delegation, approval-aware tools, and reusable workflows.
 - Retrieval, memories, web research, generated media, realtime audio, and interactive artefacts.
-- Project-scoped experiences for longer workflows such as notes, podcasts, media generation, and model training.
+- Project-scoped experiences for longer workflows such as notes, podcasts and media generation.
+- A governed model platform in Work: datasets, fine-tuning, deployments behind aliases, evals and audit on your own provider accounts.
 - Isolated coding runs against GitHub repositories through Cloudflare Sandboxes.
 - Authentication, guardrails, subscriptions, rate limiting, audit history, and observability.
 
@@ -38,7 +39,6 @@ The platform includes:
 - `apps/app` — React Router web application and PWA.
 - `apps/api` — public Hono API Worker and platform control plane.
 - `apps/sandbox-worker` — isolated coding-task execution Worker.
-- `apps/training` — provider-backed model training and deployment Worker.
 - `apps/mobile/ios` — native iOS client under active development.
 - `packages/*` — shared schemas, utilities, runtime libraries, and reusable React components published under the `@ngriffin_uk/polychat-*` scope.
 

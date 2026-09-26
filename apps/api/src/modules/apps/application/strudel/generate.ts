@@ -14,8 +14,8 @@ import {
   resolveServiceContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
-import { captureTrainingExample } from "~/infrastructure/providers/capabilities/training/captureTrainingExample";
 import { buildStrudelSystemPrompt } from "~/modules/apps/application/strudel/prompt";
+import { captureTrainingExample } from "~/modules/model-datasets/application/capture";
 import { getAuxiliaryModel, filterModelsForUserAccess } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
 

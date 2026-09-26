@@ -160,3 +160,12 @@ export function shortenHash(value: string, length = 7): string {
 export function isGitCommitSha(value: string): boolean {
   return /^[0-9a-f]{40}$/.test(value);
 }
+
+export function decodeXmlEntities(value: string): string {
+  return value
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}

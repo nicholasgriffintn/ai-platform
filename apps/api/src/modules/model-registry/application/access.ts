@@ -1,6 +1,8 @@
+import type { ModelPlatformAction } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { loadModelPermissions } from "~/modules/model-governance/application/permission-grants";
 import {
   requireWorkspaceAccess,
   type WorkspaceAccess,
@@ -8,29 +10,47 @@ import {
 
 export interface RegistryAccess extends WorkspaceAccess {
   userId: number;
-  canGovern: boolean;
+  actions: ReadonlySet<ModelPlatformAction>;
+  separationOfDuties: boolean;
 }
 
-export async function requireRegistryMember(
+const ACTION_LABELS: Record<ModelPlatformAction, string> = {
+  view: "view models",
+  import: "import models and datasets",
+  upload: "upload weights and data",
+  build_datasets: "build datasets",
+  train: "start training runs",
+  deploy: "deploy models",
+  promote: "move aliases",
+  approve: "approve models and spend",
+  manage_policy: "change model policy",
+  manage_connections: "manage provider connections",
+  manage_budgets: "manage budgets",
+};
+
+export async function requireModelAction(
   context: ServiceContext,
   workspaceId: string,
+  action: ModelPlatformAction,
 ): Promise<RegistryAccess> {
   const access = await requireWorkspaceAccess(context, workspaceId);
+  const permissions = await loadModelPermissions(context.repositories, workspaceId);
+  const actions = new Set(permissions.grants[access.role]);
+
+  if (!actions.has(action)) {
+    throw new AssistantError(
+      `Your role cannot ${ACTION_LABELS[action]} in this workspace`,
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
 
   return {
     ...access,
     userId: context.requireUser().id,
-    canGovern: access.role === "owner" || access.role === "admin",
+    actions,
+    separationOfDuties: permissions.separationOfDuties,
   };
-}
-
-export async function requireRegistryGovernor(
-  context: ServiceContext,
-  workspaceId: string,
-): Promise<RegistryAccess> {
-  const access = await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
-
-  return { ...access, userId: context.requireUser().id, canGovern: true };
 }
 
 export async function requireWorkspaceProject(
@@ -53,4 +73,12 @@ export async function requireWorkspaceProject(
 
 export function notFound(what: string): AssistantError {
   return new AssistantError(`${what} not found`, ErrorType.NOT_FOUND, 404);
+}
+
+export function conflict(message: string): AssistantError {
+  return new AssistantError(message, ErrorType.CONFLICT_ERROR, 409);
+}
+
+export function badRequest(message: string): AssistantError {
+  return new AssistantError(message, ErrorType.PARAMS_ERROR, 400);
 }

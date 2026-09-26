@@ -26,11 +26,6 @@
       "types": "./dist/music.d.ts",
       "import": "./dist/music.js"
     },
-    "./training": {
-      "polychat-source": "./src/training/index.tsx",
-      "types": "./dist/training.d.ts",
-      "import": "./dist/training.js"
-    },
     "./styles.css": {
       "polychat-source": "./src/styles.css",
       "style": "./src/styles.css",

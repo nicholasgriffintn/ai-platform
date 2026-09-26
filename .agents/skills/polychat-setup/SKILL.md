@@ -24,7 +24,7 @@ Use the repository as implementation authority. If a request includes deploy, mi
 ## Operating rules
 
 - Keep scope narrow and report unresolved external actions in `references/verification.md`.
-- Prefer optional worker details only when the task explicitly touches sandbox, training or local runtime setup.
+- Prefer optional worker details only when the task explicitly touches sandbox or local runtime setup.
 - Never invent identifiers or credentials, and never paste ignored secrets into tracked files.
 - Treat `setup` as local unless the user authorises a deployment action.
 

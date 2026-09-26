@@ -87,7 +87,7 @@ export async function listModelsByStrength(env: IEnv, capability: string, userId
   const models = getModelsByCapability(capability);
   const filteredModels = await filterModelsForUserAccess(models, env, userId, {
     shouldUseCache: false,
-    includeTrainingDeployments: false,
+    includePlatformModels: false,
   });
 
   return includeModelIds(filteredModels);
@@ -101,7 +101,7 @@ export async function listModelsByModality(env: IEnv, modality: string, userId?:
   const models = getModelsByModality(modality as (typeof availableModalities)[number]);
   const filteredModels = await filterModelsForUserAccess(models, env, userId, {
     shouldUseCache: false,
-    includeTrainingDeployments: modality === "text",
+    includePlatformModels: modality === "text",
   });
 
   return includeModelIds(filteredModels);
@@ -111,7 +111,7 @@ export async function listModelsByOutputModality(env: IEnv, modality: string, us
   const models = getModelsByOutputModality(modality as (typeof availableModalities)[number]);
   const filteredModels = await filterModelsForUserAccess(models, env, userId, {
     shouldUseCache: false,
-    includeTrainingDeployments: modality === "text",
+    includePlatformModels: modality === "text",
   });
 
   return includeModelIds(filteredModels);

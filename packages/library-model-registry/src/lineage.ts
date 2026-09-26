@@ -26,3 +26,29 @@ export function collectAncestry(edges: readonly LineageEdge[], versionId: string
 
   return collected;
 }
+
+export function collectDescendants(edges: readonly LineageEdge[], versionId: string): string[] {
+  const bySource = new Map<string, LineageEdge[]>();
+
+  for (const edge of edges) {
+    bySource.set(edge.fromVersionId, [...(bySource.get(edge.fromVersionId) ?? []), edge]);
+  }
+
+  const visited = new Set<string>([versionId]);
+  const queue = [versionId];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+
+    for (const edge of current ? (bySource.get(current) ?? []) : []) {
+      if (!visited.has(edge.toVersionId)) {
+        visited.add(edge.toVersionId);
+        queue.push(edge.toVersionId);
+      }
+    }
+  }
+
+  visited.delete(versionId);
+
+  return [...visited];
+}

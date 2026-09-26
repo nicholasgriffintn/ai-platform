@@ -1,5 +1,9 @@
 import { isVerdictCovered } from "@ngriffin_uk/polychat-library-model-registry";
-import type { ModelEvidence, PolicyVerdict } from "@ngriffin_uk/polychat-schemas";
+import type {
+  DatasetGovernance,
+  ModelEvidence,
+  PolicyVerdict,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
@@ -20,6 +24,7 @@ export interface RegistryScope {
   evidence: ModelEvidence[];
   decisions: ModelDecisionRecord[];
   routes: ModelRouteRecord[];
+  datasets: Map<string, DatasetGovernance>;
 }
 
 export interface Standing {
@@ -40,10 +45,11 @@ export async function loadRegistryScope(
     repositories.modelAssets.listVersions(workspaceId, versionIds),
   ]);
   const ids = versions.map((version) => version.id);
-  const [evidence, decisions, routes] = await Promise.all([
+  const [evidence, decisions, routes, datasets] = await Promise.all([
     repositories.modelGovernance.listEvidence(ids),
     repositories.modelGovernance.listDecisions(workspaceId, { versionIds: ids }),
     repositories.modelRoutes.listRoutes(workspaceId, { versionIds: ids }),
+    repositories.modelDatasets.list(workspaceId, versionIds ? ids : undefined),
   ]);
 
   return {
@@ -57,6 +63,7 @@ export async function loadRegistryScope(
       (decision) => decision.project_id === null || decision.project_id === projectId,
     ),
     routes,
+    datasets: new Map(datasets.map((dataset) => [dataset.version_id, dataset.governance])),
   };
 }
 
@@ -88,6 +95,17 @@ function latestDecision(
   );
 }
 
+export function isRevoked(scope: RegistryScope, versionId: string): boolean {
+  const resolved = scope.decisions.find(
+    (decision) =>
+      decision.version_id === versionId &&
+      decision.route_id === null &&
+      decision.state !== "pending",
+  );
+
+  return resolved?.state === "revoked";
+}
+
 function standing(
   scope: RegistryScope,
   version: ModelVersionRecord,
@@ -100,7 +118,14 @@ function standing(
     return null;
   }
 
-  const verdict = evaluateVersion(scope.stack, asset, version, scope.evidence, route);
+  const verdict = evaluateVersion(
+    scope.stack,
+    asset,
+    version,
+    scope.evidence,
+    route,
+    scope.datasets.get(version.id),
+  );
   const approvals = coveringApprovals(scope, version.id, route?.id ?? null).map((decision) => ({
     verdict: decision.verdict,
     isException: decision.is_exception,
@@ -109,7 +134,10 @@ function standing(
 
   return {
     verdict,
-    usable: version.status === "ready" && isVerdictCovered(verdict, approvals, now),
+    usable:
+      version.status === "ready" &&
+      !isRevoked(scope, version.id) &&
+      isVerdictCovered(verdict, approvals, now),
     decision: latestDecision(scope, version.id, route?.id ?? null),
   };
 }

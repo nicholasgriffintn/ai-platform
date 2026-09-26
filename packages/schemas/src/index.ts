@@ -172,7 +172,7 @@ export * from "./pricing/index.js";
 export * from "./user/index.js";
 export * from "./webhooks.js";
 export * from "./model-registry.js";
-export * from "./training.js";
+export * from "./model-platform.js";
 export * from "./headers.js";
 export * from "./research.js";
 export * from "./reranking.js";

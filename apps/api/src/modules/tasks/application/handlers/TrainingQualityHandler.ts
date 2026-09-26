@@ -4,8 +4,8 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { normaliseDecisionScore } from "@ngriffin_uk/polychat-schemas";
 
 import { ai } from "~/infrastructure/ai";
+import { TrainingExampleRepository } from "~/modules/model-datasets/infrastructure/TrainingExampleRepository";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
-import { TrainingExampleRepository } from "~/modules/training/infrastructure/TrainingExampleRepository";
 import type { IEnv } from "~/types";
 
 import type { TaskHandler, TaskMessage, TaskResult } from "../types";

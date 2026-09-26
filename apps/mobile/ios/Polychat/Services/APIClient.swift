@@ -253,6 +253,64 @@ final class APIClient: ObservableObject {
         try await send(path: "/apps/recipes", method: "GET")
     }
 
+    func fetchWorkspaces() async throws -> [WorkspaceSummary] {
+        let response: WorkspaceListResponse = try await send(path: "/workspaces", method: "GET")
+        return response.workspaces
+    }
+
+    func fetchMyModelPermissions(workspaceId: String) async throws -> MyModelPermissions {
+        try await send(path: "/model-platform/workspaces/\(workspaceId)/permissions/me", method: "GET")
+    }
+
+    func fetchPendingModelDecisions(workspaceId: String) async throws -> [ModelDecisionItem] {
+        let response: ModelDecisionsResponse = try await send(
+            path: "/model-platform/workspaces/\(workspaceId)/decisions",
+            method: "GET",
+            queryItems: [URLQueryItem(name: "state", value: "pending")]
+        )
+        return response.decisions
+    }
+
+    func resolveModelDecision(workspaceId: String, decisionId: String, state: String) async throws {
+        let _: ModelActionResult = try await send(
+            path: "/model-platform/workspaces/\(workspaceId)/decisions/\(decisionId)/resolve",
+            method: "POST",
+            body: ResolveModelDecisionRequest(state: state)
+        )
+    }
+
+    func fetchSpendRequests(workspaceId: String) async throws -> [SpendRequestItem] {
+        let response: SpendRequestsResponse = try await send(
+            path: "/model-platform/workspaces/\(workspaceId)/spend-requests",
+            method: "GET"
+        )
+        return response.requests
+    }
+
+    func resolveSpendRequest(workspaceId: String, requestId: String, state: String) async throws {
+        let _: ModelActionResult = try await send(
+            path: "/model-platform/workspaces/\(workspaceId)/spend-requests/\(requestId)/resolve",
+            method: "POST",
+            body: ResolveSpendRequestBody(state: state)
+        )
+    }
+
+    func fetchModelDeployments(workspaceId: String) async throws -> [ModelDeploymentItem] {
+        let response: ModelDeploymentsResponse = try await send(
+            path: "/model-platform/workspaces/\(workspaceId)/deployments",
+            method: "GET"
+        )
+        return response.deployments
+    }
+
+    func changeModelDeployment(workspaceId: String, deploymentId: String, action: String) async throws {
+        let _: ModelActionResult = try await send(
+            path: "/model-platform/workspaces/\(workspaceId)/deployments/\(deploymentId)/\(action)",
+            method: "POST",
+            emptyBody: true
+        )
+    }
+
     func fetchWorkAttention(limit: Int = 25) async throws -> WorkAttentionResponse {
         try await send(
             path: "/workspaces/attention",

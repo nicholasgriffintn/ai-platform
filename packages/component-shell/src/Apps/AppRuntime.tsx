@@ -26,11 +26,6 @@ const ReplicatePredictions = lazy(async () => {
 
   return { default: module.ReplicatePredictions };
 });
-const TrainingDashboard = lazy(async () => {
-  const module = await import("./Training/TrainingDashboard.js");
-
-  return { default: module.TrainingDashboard };
-});
 const ArticlesApp = lazy(async () => {
   const module = await import("./ArticlesApp.js");
 
@@ -86,10 +81,6 @@ function ReplicateExperience({
 function ExperienceContent({ basePath, projectId, runtime, subpath }: AppRuntimeProps) {
   if (runtime === "replicate") {
     return <ReplicateExperience basePath={basePath} projectId={projectId} subpath={subpath} />;
-  }
-
-  if (runtime === "finetuning") {
-    return <TrainingDashboard />;
   }
 
   if (runtime === "articles") {

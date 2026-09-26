@@ -2,10 +2,10 @@ import { collectAncestry } from "@ngriffin_uk/polychat-library-model-registry";
 import type { LibraryEntry, LibraryQuery, VersionDetail } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { toEvalRun } from "~/modules/model-evaluation/application/mappers";
 
-import { notFound, requireRegistryMember, requireWorkspaceProject } from "./access";
+import { notFound, requireModelAction, requireWorkspaceProject } from "./access";
 import {
-  toEvalRun,
   toModelAsset,
   toModelDecision,
   toModelFile,
@@ -19,7 +19,7 @@ export async function listLibrary(
   workspaceId: string,
   query: LibraryQuery,
 ): Promise<{ entries: LibraryEntry[] }> {
-  await requireRegistryMember(context, workspaceId);
+  await requireModelAction(context, workspaceId, "view");
 
   const projectId = await requireWorkspaceProject(context, workspaceId, query.projectId);
   const scope = await loadRegistryScope(context.repositories, workspaceId, projectId);
@@ -66,7 +66,7 @@ export async function getVersionDetail(
   versionId: string,
   projectIdInput?: string,
 ): Promise<VersionDetail> {
-  await requireRegistryMember(context, workspaceId);
+  await requireModelAction(context, workspaceId, "view");
 
   const projectId = await requireWorkspaceProject(context, workspaceId, projectIdInput);
   const repositories = context.repositories;

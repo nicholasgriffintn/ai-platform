@@ -12,14 +12,41 @@ import type {
   LastModelSelection,
   MachineCapability,
   MachineRuntime,
+  AliasGate,
+  ConnectionCapabilities,
+  CostEstimate,
+  DatasetGovernance,
+  DatasetMapping,
+  DatasetStats,
+  DeploymentSpec,
   EvalCase,
-  EvalScorer,
+  GraderConfig,
+  ModelPlatformAction,
   ModelVersionAttributes,
+  ModificationCompute,
   PolicyRule,
   PolicyVerdict,
   ScoreSummary,
+  TrainingSpec,
+  UploadFile,
 } from "@ngriffin_uk/polychat-schemas";
-import { EVIDENCE_KINDS, EVIDENCE_SOURCES, EVIDENCE_STATUSES } from "@ngriffin_uk/polychat-schemas";
+import {
+  ALIAS_EVENT_KINDS,
+  COST_SUBJECTS,
+  DATASET_COLLECTION_METHODS,
+  DATASET_SHAPES,
+  DEPLOYMENT_STATUSES,
+  EVIDENCE_KINDS,
+  EVIDENCE_SOURCES,
+  EVIDENCE_STATUSES,
+  JURISDICTIONS,
+  LINEAGE_RELATIONS,
+  MODEL_ASSET_KINDS,
+  MODEL_ASSET_SOURCES,
+  MODEL_PROVIDER_IDS,
+  TRAINING_RUN_STATUSES,
+  UPLOAD_PURPOSES,
+} from "@ngriffin_uk/polychat-schemas";
 import { sql } from "drizzle-orm";
 import {
   check,
@@ -2430,6 +2457,11 @@ export const tasks = sqliteTable(
         "teammate_context_cleanup",
         "model_registry_inspect",
         "model_registry_eval",
+        "model_dataset_process",
+        "model_training_sync",
+        "model_deployment_sync",
+        "model_upload_finalise",
+        "model_platform_reconcile",
       ],
     }).notNull(),
     status: text({
@@ -2603,105 +2635,6 @@ export const trainingExamples = sqliteTable(
 );
 
 export type TrainingExample = typeof trainingExamples.$inferSelect;
-
-export const trainingJobs = sqliteTable(
-  "training_jobs",
-  {
-    provider: text().notNull(),
-    job_name: text().notNull(),
-    provider_job_id: text(),
-    user_id: integer().references(() => user.id, { onDelete: "set null" }),
-    status: text().notNull(),
-    model_id: text().notNull(),
-    base_model: text().notNull(),
-    training_image: text(),
-    training_data_s3_uri: text(),
-    validation_data_s3_uri: text(),
-    output_s3_uri: text(),
-    model_artifacts_s3_uri: text(),
-    failure_reason: text(),
-    request_json: text({
-      mode: "json",
-    }),
-    response_json: text({
-      mode: "json",
-    }),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-    updated_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.provider, table.job_name] }),
-    userIdIdx: index("training_jobs_user_id_idx").on(table.user_id),
-    statusIdx: index("training_jobs_status_idx").on(table.status),
-    updatedAtIdx: index("training_jobs_updated_at_idx").on(table.updated_at),
-  }),
-);
-
-export type TrainingJob = typeof trainingJobs.$inferSelect;
-
-export const trainingDeployments = sqliteTable(
-  "training_deployments",
-  {
-    provider: text().notNull(),
-    endpoint_name: text().notNull(),
-    deployment_name: text().notNull(),
-    model_name: text().notNull(),
-    endpoint_config_name: text().notNull(),
-    user_id: integer().references(() => user.id, { onDelete: "set null" }),
-    status: text().notNull(),
-    model_id: text().notNull(),
-    model_artifacts_s3_uri: text(),
-    failure_reason: text(),
-    request_json: text({
-      mode: "json",
-    }),
-    response_json: text({
-      mode: "json",
-    }),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-    updated_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.provider, table.endpoint_name] }),
-    userIdIdx: index("training_deployments_user_id_idx").on(table.user_id),
-    statusIdx: index("training_deployments_status_idx").on(table.status),
-  }),
-);
-
-export type TrainingDeployment = typeof trainingDeployments.$inferSelect;
-
-export const trainingJobEvents = sqliteTable(
-  "training_job_events",
-  {
-    id: text().primaryKey(),
-    provider: text().notNull(),
-    job_name: text().notNull(),
-    level: text({
-      enum: ["info", "warn", "error"],
-    }).notNull(),
-    message: text().notNull(),
-    metadata_json: text({
-      mode: "json",
-    }),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-  },
-  (table) => ({
-    jobIdx: index("training_job_events_job_idx").on(table.provider, table.job_name),
-    createdAtIdx: index("training_job_events_created_at_idx").on(table.created_at),
-  }),
-);
-
-export type TrainingJobEvent = typeof trainingJobEvents.$inferSelect;
 
 export const projectTask = sqliteTable(
   "project_task",
@@ -3074,8 +3007,8 @@ export const modelAsset = sqliteTable(
     workspace_id: text()
       .notNull()
       .references(() => workspace.id, { onDelete: "cascade" }),
-    kind: text({ enum: ["model", "dataset"] }).notNull(),
-    source: text({ enum: ["huggingface", "derived"] }).notNull(),
+    kind: text({ enum: MODEL_ASSET_KINDS }).notNull(),
+    source: text({ enum: MODEL_ASSET_SOURCES }).notNull(),
     source_ref: text().notNull(),
     display_name: text().notNull(),
     created_by: integer().references(() => user.id, { onDelete: "set null" }),
@@ -3212,7 +3145,9 @@ export const modelRoute = sqliteTable(
     status: text({ enum: ["active", "retired"] })
       .default("active")
       .notNull(),
-    deployment_ref: text(),
+    deployment_id: text(),
+    jurisdiction: text({ enum: JURISDICTIONS }),
+    retention: text({ enum: ["zero", "provider", "self"] }),
     created_by: integer().references(() => user.id, { onDelete: "set null" }),
     created_at: createdAtColumn(),
   },
@@ -3273,9 +3208,7 @@ export const modelLineageEdge = sqliteTable(
     to_version_id: text()
       .notNull()
       .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
-    relation: text({
-      enum: ["fine_tuned_from", "trained_on", "evaluated_on", "quantised_from"],
-    }).notNull(),
+    relation: text({ enum: LINEAGE_RELATIONS }).notNull(),
     created_at: createdAtColumn(),
   },
   (table) => ({
@@ -3296,7 +3229,7 @@ export const modelEvalSuite = sqliteTable(
     description: text(),
     system_prompt: text(),
     cases: text({ mode: "json" }).$type<EvalCase[]>().notNull(),
-    scorers: text({ mode: "json" }).$type<EvalScorer[]>().notNull(),
+    grader_ids: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     replay_sample_size: integer().default(50).notNull(),
     created_by: integer().references(() => user.id, { onDelete: "set null" }),
     created_at: createdAtColumn(),
@@ -3318,7 +3251,9 @@ export const modelEvalRun = sqliteTable(
       .notNull()
       .references(() => modelRoute.id, { onDelete: "cascade" }),
     version_id: text().notNull(),
-    trigger: text({ enum: ["manual", "build", "replay"] }).notNull(),
+    trigger: text({
+      enum: ["manual", "deployment", "checkpoint", "promotion", "replay"],
+    }).notNull(),
     status: text({ enum: ["queued", "running", "completed", "failed"] })
       .default("queued")
       .notNull(),
@@ -3337,53 +3272,20 @@ export const modelEvalRun = sqliteTable(
   }),
 );
 
-export const modelBuild = sqliteTable(
-  "model_build",
-  {
-    id: text().primaryKey(),
-    workspace_id: text()
-      .notNull()
-      .references(() => workspace.id, { onDelete: "cascade" }),
-    project_id: text().references(() => project.id, { onDelete: "cascade" }),
-    version_id: text()
-      .notNull()
-      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
-    base_version_id: text()
-      .notNull()
-      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
-    dataset_version_id: text()
-      .notNull()
-      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
-    provider: text({ enum: ["aws-bedrock", "aws-sagemaker", "huggingface"] }).notNull(),
-    job_name: text().notNull(),
-    recipe: text({ enum: ["sft-full", "sft-lora"] }).notNull(),
-    status: text({ enum: ["running", "completed", "failed"] })
-      .default("running")
-      .notNull(),
-    failure_reason: text(),
-    created_by: integer().references(() => user.id, { onDelete: "set null" }),
-    created_at: createdAtColumn(),
-    completed_at: text(),
-  },
-  (table) => ({
-    workspaceStatusIdx: index("model_build_workspace_status_idx").on(
-      table.workspace_id,
-      table.status,
-      table.created_at,
-    ),
-  }),
-);
-
 export const workspaceProviderConnection = sqliteTable(
   "workspace_provider_connection",
   {
     workspace_id: text()
       .notNull()
       .references(() => workspace.id, { onDelete: "cascade" }),
-    provider: text({ enum: ["huggingface"] }).notNull(),
+    provider: text({ enum: MODEL_PROVIDER_IDS }).notNull(),
     encrypted_secret: text().notNull(),
     account: text(),
     config: text({ mode: "json" }).$type<Record<string, string>>().default({}).notNull(),
+    capabilities: text({ mode: "json" })
+      .$type<ConnectionCapabilities>()
+      .default({ read: false, store: false, train: false, host: false })
+      .notNull(),
     updated_by: integer().references(() => user.id, { onDelete: "set null" }),
     updated_at: createdAtColumn(),
   },
@@ -3391,3 +3293,314 @@ export const workspaceProviderConnection = sqliteTable(
 );
 
 export type WorkspaceProviderConnectionRow = typeof workspaceProviderConnection.$inferSelect;
+
+export const modelDatasetProfile = sqliteTable("model_dataset_profile", {
+  version_id: text()
+    .primaryKey()
+    .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
+  workspace_id: text()
+    .notNull()
+    .references(() => workspace.id, { onDelete: "cascade" }),
+  status: text({ enum: ["processing", "ready", "failed"] })
+    .default("processing")
+    .notNull(),
+  shape: text({ enum: DATASET_SHAPES }).notNull(),
+  mapping: text({ mode: "json" }).$type<DatasetMapping>().notNull(),
+  governance: text({ mode: "json" }).$type<DatasetGovernance>().notNull(),
+  collection_method: text({ enum: DATASET_COLLECTION_METHODS }).notNull(),
+  source_ref: text().notNull(),
+  request: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+  stats: text({ mode: "json" }).$type<DatasetStats>().default({}).notNull(),
+  failure_reason: text(),
+  processed_at: text(),
+  created_at: createdAtColumn(),
+});
+
+export const modelUpload = sqliteTable(
+  "model_upload",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    purpose: text({ enum: UPLOAD_PURPOSES }).notNull(),
+    name: text().notNull(),
+    status: text({ enum: ["uploading", "hashing", "ready", "failed", "aborted"] })
+      .default("uploading")
+      .notNull(),
+    files: text({ mode: "json" })
+      .$type<
+        Array<UploadFile & { key: string; multipartId: string; etags: Record<string, string> }>
+      >()
+      .notNull(),
+    part_bytes: integer().notNull(),
+    failure_reason: text(),
+    consumed_by: text(),
+    created_by: integer().references(() => user.id, { onDelete: "set null" }),
+    created_at: createdAtColumn(),
+    updated_at: createdAtColumn(),
+  },
+  (table) => ({
+    workspaceIdx: index("model_upload_workspace_idx").on(table.workspace_id, table.created_at),
+  }),
+);
+
+export const modelTrainingRun = sqliteTable(
+  "model_training_run",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    spec: text({ mode: "json" }).$type<TrainingSpec>().notNull(),
+    spec_hash: text().notNull(),
+    status: text({ enum: TRAINING_RUN_STATUSES }).default("queued").notNull(),
+    provider: text({ enum: MODEL_PROVIDER_IDS }).notNull(),
+    trainer: text().notNull(),
+    provider_job_id: text(),
+    output_repository: text(),
+    output_version_id: text().references(() => modelAssetVersion.id, { onDelete: "set null" }),
+    dataset_version_ids: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
+    estimate: text({ mode: "json" }).$type<CostEstimate>().notNull(),
+    cost_usd: real(),
+    compute: text({ mode: "json" }).$type<ModificationCompute | null>(),
+    failure_reason: text(),
+    created_by: integer().references(() => user.id, { onDelete: "set null" }),
+    created_at: createdAtColumn(),
+    started_at: text(),
+    completed_at: text(),
+    last_checked_at: text(),
+  },
+  (table) => ({
+    workspaceIdx: index("model_training_run_workspace_idx").on(
+      table.workspace_id,
+      table.status,
+      table.created_at,
+    ),
+  }),
+);
+
+export const modelTrainingCheckpoint = sqliteTable(
+  "model_training_checkpoint",
+  {
+    id: text().primaryKey(),
+    run_id: text()
+      .notNull()
+      .references(() => modelTrainingRun.id, { onDelete: "cascade" }),
+    step: integer().notNull(),
+    provider_ref: text().notNull(),
+    version_id: text().references(() => modelAssetVersion.id, { onDelete: "set null" }),
+    metrics: text({ mode: "json" }).$type<Record<string, number>>().default({}).notNull(),
+    created_at: createdAtColumn(),
+  },
+  (table) => ({
+    runStepIdx: uniqueIndex("model_training_checkpoint_run_step_idx").on(table.run_id, table.step),
+  }),
+);
+
+export const modelDeployment = sqliteTable(
+  "model_deployment",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    version_id: text()
+      .notNull()
+      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
+    spec: text({ mode: "json" }).$type<DeploymentSpec>().notNull(),
+    spec_hash: text().notNull(),
+    status: text({ enum: DEPLOYMENT_STATUSES }).default("pending").notNull(),
+    desired_state: text({ enum: ["running", "paused", "deleted"] })
+      .default("running")
+      .notNull(),
+    provider: text({ enum: MODEL_PROVIDER_IDS }).notNull(),
+    host: text().notNull(),
+    provider_ref: text(),
+    region: text(),
+    jurisdiction: text({ enum: JURISDICTIONS }),
+    weights_verified: integer({ mode: "boolean" }).default(false).notNull(),
+    route_id: text(),
+    hourly_usd: real(),
+    failure_reason: text(),
+    created_by: integer().references(() => user.id, { onDelete: "set null" }),
+    created_at: createdAtColumn(),
+    updated_at: createdAtColumn(),
+    last_checked_at: text(),
+    billed_until: text(),
+  },
+  (table) => ({
+    workspaceIdx: index("model_deployment_workspace_idx").on(table.workspace_id, table.status),
+    nameIdx: uniqueIndex("model_deployment_name_idx").on(table.workspace_id, table.name),
+  }),
+);
+
+export const modelAlias = sqliteTable(
+  "model_alias",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    scope_key: text().notNull(),
+    name: text().notNull(),
+    description: text(),
+    route_id: text().references(() => modelRoute.id, { onDelete: "set null" }),
+    canary_route_id: text().references(() => modelRoute.id, { onDelete: "set null" }),
+    canary_percent: integer().default(0).notNull(),
+    gate: text({ mode: "json" }).$type<AliasGate | null>(),
+    requires_approval: integer({ mode: "boolean" }).default(false).notNull(),
+    updated_by: integer().references(() => user.id, { onDelete: "set null" }),
+    updated_at: createdAtColumn(),
+    created_at: createdAtColumn(),
+  },
+  (table) => ({
+    nameIdx: uniqueIndex("model_alias_name_idx").on(
+      table.workspace_id,
+      table.scope_key,
+      table.name,
+    ),
+  }),
+);
+
+export const modelAliasEvent = sqliteTable(
+  "model_alias_event",
+  {
+    id: text().primaryKey(),
+    alias_id: text()
+      .notNull()
+      .references(() => modelAlias.id, { onDelete: "cascade" }),
+    kind: text({
+      enum: ALIAS_EVENT_KINDS,
+    }).notNull(),
+    from_route_id: text(),
+    to_route_id: text(),
+    reason: text(),
+    gate: text({ mode: "json" }).$type<{
+      passed: boolean;
+      scores: Record<string, number>;
+      failures: string[];
+      runId: string | null;
+    } | null>(),
+    actor_user_id: integer().references(() => user.id, { onDelete: "set null" }),
+    created_at: createdAtColumn(),
+  },
+  (table) => ({
+    aliasIdx: index("model_alias_event_alias_idx").on(table.alias_id, table.created_at),
+  }),
+);
+
+export const modelGrader = sqliteTable(
+  "model_grader",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    metric: text().notNull(),
+    description: text(),
+    config: text({ mode: "json" }).$type<GraderConfig>().notNull(),
+    revision: integer().default(1).notNull(),
+    created_by: integer().references(() => user.id, { onDelete: "set null" }),
+    created_at: createdAtColumn(),
+    updated_at: createdAtColumn(),
+  },
+  (table) => ({
+    workspaceIdx: index("model_grader_workspace_idx").on(table.workspace_id, table.project_id),
+  }),
+);
+
+export const modelBudget = sqliteTable(
+  "model_budget",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    scope_key: text().notNull(),
+    monthly_limit_usd: real().notNull(),
+    soft_limit_percent: integer().default(80).notNull(),
+    hard_stop: integer({ mode: "boolean" }).default(true).notNull(),
+    approval_above_usd: real(),
+    idle_pause_minutes: integer(),
+    updated_by: integer().references(() => user.id, { onDelete: "set null" }),
+    updated_at: createdAtColumn(),
+  },
+  (table) => ({
+    scopeIdx: uniqueIndex("model_budget_scope_idx").on(table.workspace_id, table.scope_key),
+  }),
+);
+
+export const modelCostEntry = sqliteTable(
+  "model_cost_entry",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "set null" }),
+    subject_type: text({ enum: COST_SUBJECTS }).notNull(),
+    subject_id: text().notNull(),
+    provider: text({ enum: MODEL_PROVIDER_IDS }).notNull(),
+    usd: real().notNull(),
+    basis: text({ enum: ["estimate", "reported", "metered"] }).notNull(),
+    period_start: text().notNull(),
+    period_end: text().notNull(),
+    created_at: createdAtColumn(),
+  },
+  (table) => ({
+    workspacePeriodIdx: index("model_cost_entry_workspace_period_idx").on(
+      table.workspace_id,
+      table.period_start,
+    ),
+    subjectIdx: index("model_cost_entry_subject_idx").on(table.subject_type, table.subject_id),
+  }),
+);
+
+export const modelSpendRequest = sqliteTable(
+  "model_spend_request",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    subject_type: text({ enum: ["training_run", "deployment"] }).notNull(),
+    payload: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    estimate_usd: real(),
+    reason: text(),
+    state: text({ enum: ["pending", "approved", "rejected"] })
+      .default("pending")
+      .notNull(),
+    subject_id: text(),
+    requested_by: integer().references(() => user.id, { onDelete: "set null" }),
+    decided_by: integer().references(() => user.id, { onDelete: "set null" }),
+    decided_at: text(),
+    created_at: createdAtColumn(),
+  },
+  (table) => ({
+    workspaceStateIdx: index("model_spend_request_workspace_idx").on(
+      table.workspace_id,
+      table.state,
+    ),
+  }),
+);
+
+export const modelPermission = sqliteTable("model_permission", {
+  workspace_id: text()
+    .primaryKey()
+    .references(() => workspace.id, { onDelete: "cascade" }),
+  grants: text({ mode: "json" })
+    .$type<{ admin: ModelPlatformAction[]; member: ModelPlatformAction[] }>()
+    .notNull(),
+  separation_of_duties: integer({ mode: "boolean" }).default(false).notNull(),
+  updated_by: integer().references(() => user.id, { onDelete: "set null" }),
+  updated_at: createdAtColumn(),
+});

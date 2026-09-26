@@ -1,5 +1,5 @@
 import { Badge } from "@ngriffin_uk/polychat-component-ui";
-import type { EvalRun, EvalSuite, ScoreSummary } from "@ngriffin_uk/polychat-schemas";
+import type { EvalRun, ScoreSummary } from "@ngriffin_uk/polychat-schemas";
 
 export interface ComparisonRoute {
   id: string;
@@ -8,7 +8,7 @@ export interface ComparisonRoute {
 }
 
 export interface EvalComparisonProps {
-  suite: EvalSuite;
+  metrics: readonly string[];
   runs: readonly EvalRun[];
   routes: readonly ComparisonRoute[];
   onOpenRun?: (run: EvalRun) => void;
@@ -47,9 +47,8 @@ function bestSeparated(scores: ScoreSummary[]): ScoreSummary | null {
   return !runnerUp || best.low > runnerUp.high ? best : null;
 }
 
-export function EvalComparison({ suite, runs, routes, onOpenRun }: EvalComparisonProps) {
+export function EvalComparison({ metrics, runs, routes, onOpenRun }: EvalComparisonProps) {
   const latest = latestRunsByRoute(runs);
-  const metrics = suite.scorers.map((scorer) => scorer.metric);
   const rows = routes.flatMap((route) => {
     const run = latest.get(route.id);
 

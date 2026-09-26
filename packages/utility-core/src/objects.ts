@@ -111,3 +111,29 @@ export function parseRecordValue(value: unknown): Record<string, unknown> {
     return {};
   }
 }
+
+export function readRecord(value: unknown): Record<string, unknown> {
+  return isRecord(value) ? value : {};
+}
+
+export function readArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+export function readFiniteNumber(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  return undefined;
+}
+
+export function readStringArray(value: unknown): string[] {
+  return toStringArray(value);
+}

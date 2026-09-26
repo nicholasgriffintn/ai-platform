@@ -1,6 +1,4 @@
 import type {
-  EvalRun,
-  EvalSuite,
   ModelAsset,
   ModelDecision,
   ModelEvidence,
@@ -17,10 +15,6 @@ import type {
   ModelFileRecord,
   ModelVersionRecord,
 } from "../infrastructure/ModelAssetRepository";
-import type {
-  ModelEvalRunRecord,
-  ModelEvalSuiteRecord,
-} from "../infrastructure/ModelEvalRepository";
 import type {
   ModelDecisionRecord,
   ModelEvidenceRecord,
@@ -128,41 +122,9 @@ export function toModelRoute(record: ModelRouteRecord): ModelRoute {
     region: record.region,
     weightsVerified: record.weights_verified,
     status: record.status,
-    deploymentRef: record.deployment_ref,
+    deploymentId: record.deployment_id,
+    jurisdiction: record.jurisdiction,
+    retention: record.retention,
     createdAt: record.created_at,
-  };
-}
-
-export function toEvalSuite(record: ModelEvalSuiteRecord): EvalSuite {
-  return {
-    id: record.id,
-    workspaceId: record.workspace_id,
-    projectId: record.project_id,
-    name: record.name,
-    description: record.description,
-    systemPrompt: record.system_prompt,
-    cases: record.cases,
-    scorers: record.scorers,
-    replaySampleSize: record.replay_sample_size,
-    createdAt: record.created_at,
-    updatedAt: record.updated_at,
-  };
-}
-
-export function toEvalRun(record: ModelEvalRunRecord): EvalRun {
-  return {
-    id: record.id,
-    suiteId: record.suite_id,
-    routeId: record.route_id,
-    versionId: record.version_id,
-    trigger: record.trigger,
-    status: record.status,
-    scores: record.scores,
-    latencyP95Ms: record.latency_p95_ms,
-    casesCompleted: record.cases_completed,
-    casesTotal: record.cases_total,
-    failureReason: record.failure_reason,
-    createdAt: record.created_at,
-    completedAt: record.completed_at,
   };
 }

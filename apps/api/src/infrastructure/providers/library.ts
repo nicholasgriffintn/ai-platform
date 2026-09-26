@@ -1,13 +1,13 @@
 import { createProviderLibrary, type AIProvider } from "@ngriffin_uk/polychat-ai-providers";
+import { PLATFORM_DEPLOYMENT_CHAT_PROVIDER } from "@ngriffin_uk/polychat-schemas";
 
 import { fromProviderError } from "~/infrastructure/errors";
 import { withAvailableFunctions } from "~/modules/chat/application/tools/available-functions";
 import { withCapabilityMetering } from "~/modules/usage/application/capabilityMetering";
 import type { ChatCompletionParameters } from "~/types";
 
+import { DeploymentChatProvider } from "./capabilities/model-platform/DeploymentChatProvider";
 import { PolychatSandboxChatProvider } from "./capabilities/sandbox/providers/PolychatSandboxChatProvider";
-import { HuggingFaceEndpointProvider } from "./capabilities/training/HuggingFaceEndpointChatProvider";
-import { SageMakerProvider } from "./capabilities/training/SageMakerChatProvider";
 import { providerHost } from "./host";
 import { registerEmbeddingProviders } from "./registry/registrations/embedding";
 import { registerMemoryProviders } from "./registry/registrations/memory";
@@ -26,15 +26,9 @@ function registerHostChatProviders(registry: ProviderRegistry): void {
     metadata: { vendor: "Polychat", categories: ["chat"], tags: ["coding"] },
   });
   registry.register("chat", {
-    name: "sagemaker",
-    aliases: ["aws-sagemaker-runtime"],
-    create: () => new SageMakerProvider(),
-    metadata: { vendor: "AWS", categories: ["chat"], tags: ["training"] },
-  });
-  registry.register("chat", {
-    name: "huggingface-endpoint",
-    create: () => new HuggingFaceEndpointProvider(),
-    metadata: { vendor: "Hugging Face", categories: ["chat"], tags: ["training"] },
+    name: PLATFORM_DEPLOYMENT_CHAT_PROVIDER,
+    create: () => new DeploymentChatProvider(),
+    metadata: { vendor: "Polychat", categories: ["chat"], tags: ["model-platform"] },
   });
 }
 

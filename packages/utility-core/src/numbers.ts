@@ -118,6 +118,10 @@ export function formatUsdFromMicros(usdMicros: number): string {
   return `$${usd.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
+export function formatUsd(usd: number | null): string {
+  return usd === null ? "—" : formatUsdFromMicros(Math.round(usd * 1_000_000));
+}
+
 export function parseNumberInputValue(
   value: string,
   { integer = false }: { integer?: boolean } = {},

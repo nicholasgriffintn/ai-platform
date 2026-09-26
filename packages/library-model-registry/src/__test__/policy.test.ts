@@ -20,6 +20,8 @@ const attributes: ModelVersionAttributes = {
   baseModels: [],
   totalBytes: 15_000_000_000,
   trainingComputeFlops: null,
+  architecture: null,
+  location: null,
 };
 
 const inspected: PolicySubject["evidence"] = [
@@ -81,7 +83,7 @@ describe("evaluatePolicies", () => {
       source: "huggingface",
       attributes: { ...attributes, gated: true },
       evidence: inspected,
-      route: { region: "us", weightsVerified: true },
+      route: { region: "us", weightsVerified: true, jurisdiction: "us", retention: "provider" },
     };
     const project = {
       id: "project-policy",
@@ -121,6 +123,65 @@ describe("evaluatePolicies", () => {
     );
 
     expect(verdict.effect).toBe("allow");
+  });
+});
+
+describe("residency and data governance", () => {
+  it("blocks routes outside the allowed jurisdictions and sends unknown lawful bases to review", () => {
+    const project = {
+      id: "residency",
+      hash: "residency-hash",
+      scope: "project" as const,
+      rules: [
+        {
+          id: "uk-only",
+          effect: "block" as const,
+          when: { type: "route_jurisdiction" as const, op: "not_in" as const, values: ["uk"] },
+        },
+      ],
+    };
+    const route = { region: "eu-west-2", weightsVerified: true, retention: "zero" as const };
+
+    expect(
+      evaluatePolicies(
+        {
+          kind: "model",
+          source: "huggingface",
+          attributes,
+          evidence: inspected,
+          route: { ...route, jurisdiction: "uk" },
+        },
+        [workspace(), project],
+      ).effect,
+    ).toBe("allow");
+    expect(
+      evaluatePolicies(
+        {
+          kind: "model",
+          source: "huggingface",
+          attributes,
+          evidence: inspected,
+          route: { ...route, jurisdiction: "us" },
+        },
+        [workspace(), project],
+      ).effect,
+    ).toBe("block");
+
+    const dataset = evaluatePolicies(
+      {
+        kind: "dataset",
+        source: "upload",
+        attributes,
+        evidence: inspected,
+        dataset: { lawfulBasis: "unknown", containsCustomerData: true },
+      },
+      [workspace()],
+    );
+
+    expect(dataset.effect).toBe("review");
+    expect(dataset.matches.map((match) => match.ruleId)).toEqual(
+      expect.arrayContaining(["dataset-lawful-basis", "customer-data", "uploaded-provenance"]),
+    );
   });
 });
 

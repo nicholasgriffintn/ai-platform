@@ -6,7 +6,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { isAbortError } from "~/infrastructure/abort";
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
-import { captureTrainingExample } from "~/infrastructure/providers/capabilities/training/captureTrainingExample";
 import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
 import {
   acceptChatRun,
@@ -49,6 +48,7 @@ import {
   GOAL_STATUS_MARKER_EVENTS,
   recordGoalMarker,
 } from "~/modules/goals/application/goalMarker";
+import { captureTrainingExample } from "~/modules/model-datasets/application/capture";
 import { releaseTeammateComputerAgentLease } from "~/modules/teammates/application/computers";
 import type { ChatMode, CoreChatOptions, Message } from "~/types";
 

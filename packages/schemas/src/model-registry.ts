@@ -1,10 +1,16 @@
 import z from "zod/v4";
 
-export const MODEL_ASSET_KINDS = ["model", "dataset"] as const;
+export const MODEL_ASSET_KINDS = ["model", "adapter", "dataset"] as const;
 export const modelAssetKindSchema = z.enum(MODEL_ASSET_KINDS);
 export type ModelAssetKind = z.infer<typeof modelAssetKindSchema>;
 
-export const MODEL_ASSET_SOURCES = ["huggingface", "derived"] as const;
+export const MODEL_ASSET_SOURCES = [
+  "huggingface",
+  "upload",
+  "bucket",
+  "derived",
+  "provider",
+] as const;
 export const modelAssetSourceSchema = z.enum(MODEL_ASSET_SOURCES);
 export type ModelAssetSource = z.infer<typeof modelAssetSourceSchema>;
 
@@ -31,6 +37,12 @@ export const EVIDENCE_KINDS = [
   "pii",
   "residency",
   "drift",
+  "provenance",
+  "upload_integrity",
+  "teacher_terms",
+  "decontamination",
+  "erasure",
+  "compute",
 ] as const;
 export const evidenceKindSchema = z.enum(EVIDENCE_KINDS);
 export type EvidenceKind = z.infer<typeof evidenceKindSchema>;
@@ -48,6 +60,10 @@ export const EVIDENCE_SOURCES = [
   "guardrails",
   "route_registry",
   "replay",
+  "upload",
+  "dataset_pipeline",
+  "provider",
+  "erasure_request",
 ] as const;
 export const evidenceSourceSchema = z.enum(EVIDENCE_SOURCES);
 export type EvidenceSource = z.infer<typeof evidenceSourceSchema>;
@@ -55,6 +71,18 @@ export type EvidenceSource = z.infer<typeof evidenceSourceSchema>;
 export const POLICY_EFFECTS = ["allow", "warn", "review", "block"] as const;
 export const policyEffectSchema = z.enum(POLICY_EFFECTS);
 export type PolicyEffect = z.infer<typeof policyEffectSchema>;
+
+export const modelArchitectureSchema = z.object({
+  modelType: z.string().nullable(),
+  layers: z.number().int().positive().nullable(),
+  hiddenSize: z.number().int().positive().nullable(),
+  attentionHeads: z.number().int().positive().nullable(),
+  kvHeads: z.number().int().positive().nullable(),
+  headDim: z.number().int().positive().nullable(),
+  contextLength: z.number().int().positive().nullable(),
+  torchDtype: z.string().nullable(),
+});
+export type ModelArchitecture = z.infer<typeof modelArchitectureSchema>;
 
 export const modelVersionAttributesSchema = z.object({
   licence: z.string().nullable(),
@@ -68,6 +96,8 @@ export const modelVersionAttributesSchema = z.object({
   baseModels: z.array(z.string()),
   totalBytes: z.number().int().nonnegative(),
   trainingComputeFlops: z.number().nonnegative().nullable(),
+  architecture: modelArchitectureSchema.nullable(),
+  location: z.string().nullable(),
 });
 export type ModelVersionAttributes = z.infer<typeof modelVersionAttributesSchema>;
 
@@ -99,6 +129,21 @@ export const policyConditionSchema = z.discriminatedUnion("type", [
     values: stringListSchema,
   }),
   z.object({ type: z.literal("route_weights_unverified") }),
+  z.object({
+    type: z.literal("route_jurisdiction"),
+    op: inclusionOperatorSchema,
+    values: stringListSchema,
+  }),
+  z.object({
+    type: z.literal("route_retention"),
+    values: z.array(z.enum(["zero", "provider", "self"])).min(1),
+  }),
+  z.object({
+    type: z.literal("lawful_basis"),
+    op: inclusionOperatorSchema,
+    values: stringListSchema,
+  }),
+  z.object({ type: z.literal("customer_data") }),
 ]);
 export type PolicyCondition = z.infer<typeof policyConditionSchema>;
 
@@ -241,7 +286,9 @@ export const modelRouteSchema = z.object({
   region: z.string(),
   weightsVerified: z.boolean(),
   status: modelRouteStatusSchema,
-  deploymentRef: z.string().nullable(),
+  deploymentId: z.string().nullable(),
+  jurisdiction: z.string().nullable(),
+  retention: z.enum(["zero", "provider", "self"]).nullable(),
   createdAt: z.string(),
 });
 export type ModelRoute = z.infer<typeof modelRouteSchema>;
@@ -251,6 +298,11 @@ export const LINEAGE_RELATIONS = [
   "trained_on",
   "evaluated_on",
   "quantised_from",
+  "adapter_of",
+  "merged_from",
+  "distilled_from",
+  "derived_from",
+  "checkpoint_of",
 ] as const;
 export const lineageRelationSchema = z.enum(LINEAGE_RELATIONS);
 export type LineageRelation = z.infer<typeof lineageRelationSchema>;
@@ -269,22 +321,6 @@ export const evalCaseSchema = z.object({
 });
 export type EvalCase = z.infer<typeof evalCaseSchema>;
 
-export const evalScorerSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("exact"), metric: z.string().min(1).max(40) }),
-  z.object({ type: z.literal("contains"), metric: z.string().min(1).max(40) }),
-  z.object({
-    type: z.literal("regex"),
-    metric: z.string().min(1).max(40),
-    pattern: z.string().min(1).max(200),
-  }),
-  z.object({
-    type: z.literal("judge"),
-    metric: z.string().min(1).max(40),
-    rubric: z.string().min(1).max(4000),
-  }),
-]);
-export type EvalScorer = z.infer<typeof evalScorerSchema>;
-
 export const evalSuiteSchema = z.object({
   id: z.string(),
   workspaceId: z.string(),
@@ -293,7 +329,7 @@ export const evalSuiteSchema = z.object({
   description: z.string().nullable(),
   systemPrompt: z.string().nullable(),
   cases: z.array(evalCaseSchema),
-  scorers: z.array(evalScorerSchema),
+  graderIds: z.array(z.string()),
   replaySampleSize: z.number().int().positive(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -308,7 +344,13 @@ export const scoreSummarySchema = z.object({
 });
 export type ScoreSummary = z.infer<typeof scoreSummarySchema>;
 
-export const evalRunTriggerSchema = z.enum(["manual", "build", "replay"]);
+export const evalRunTriggerSchema = z.enum([
+  "manual",
+  "deployment",
+  "checkpoint",
+  "promotion",
+  "replay",
+]);
 export const evalRunStatusSchema = z.enum(["queued", "running", "completed", "failed"]);
 
 export const evalRunSchema = z.object({
@@ -461,7 +503,7 @@ export const createEvalSuiteRequestSchema = z.object({
   description: z.string().max(1000).optional(),
   systemPrompt: z.string().max(8000).optional(),
   cases: z.array(evalCaseSchema).min(1).max(500),
-  scorers: z.array(evalScorerSchema).min(1).max(8),
+  graderIds: z.array(z.string().min(1)).min(1).max(8),
   replaySampleSize: z.number().int().positive().max(200).default(50),
 });
 export type CreateEvalSuiteRequest = z.infer<typeof createEvalSuiteRequestSchema>;
@@ -578,12 +620,15 @@ export const evalCaseResultsResponseSchema = z.object({ results: z.array(evalCas
 export const registryRunParamsSchema = registryWorkspaceParamsSchema.extend({
   runId: z.string().min(1),
 });
-export const bomQuerySchema = z.object({ routeId: z.string().min(1).optional() });
+export const bomFormatSchema = z.enum(["cyclonedx", "spdx"]);
+export type BomFormat = z.infer<typeof bomFormatSchema>;
+export const bomQuerySchema = z.object({
+  routeId: z.string().min(1).optional(),
+  format: bomFormatSchema.default("cyclonedx"),
+});
 export const registryProjectScopeQuerySchema = z.object({
   projectId: z.string().min(1).optional(),
 });
-
-export const modelBuildStatusSchema = z.enum(["running", "completed", "failed"]);
 
 export const modificationComputeSchema = z.object({
   modificationFlops: z.number().nonnegative(),
@@ -593,84 +638,3 @@ export const modificationComputeSchema = z.object({
   basis: z.enum(["reported", "fallback"]),
 });
 export type ModificationCompute = z.infer<typeof modificationComputeSchema>;
-
-export const modelBuildSchema = z.object({
-  id: z.string(),
-  workspaceId: z.string(),
-  projectId: z.string().nullable(),
-  versionId: z.string(),
-  baseVersionId: z.string(),
-  datasetVersionId: z.string(),
-  provider: z.string(),
-  jobName: z.string(),
-  recipe: z.enum(["sft-full", "sft-lora"]),
-  status: modelBuildStatusSchema,
-  failureReason: z.string().nullable(),
-  createdAt: z.string(),
-  completedAt: z.string().nullable(),
-  compute: modificationComputeSchema.nullable(),
-});
-export type ModelBuild = z.infer<typeof modelBuildSchema>;
-
-export const startBuildRequestSchema = z.object({
-  projectId: z.string().min(1).nullable(),
-  baseVersionId: z.string().min(1),
-  recipe: z.enum(["sft-full", "sft-lora"]).default("sft-lora"),
-  epochs: z.number().positive().max(20).default(2),
-  flavor: z.string().min(1).max(40).optional(),
-  minFeedbackRating: z.number().int().min(1).max(5).optional(),
-  minQualityScore: z.number().min(0).max(10).optional(),
-  exampleLimit: z.number().int().positive().max(5000).default(1000),
-});
-export type StartBuildRequest = z.infer<typeof startBuildRequestSchema>;
-
-export const buildsResponseSchema = z.object({ builds: z.array(modelBuildSchema) });
-
-export const deployVersionRequestSchema = z.object({
-  projectId: z.string().min(1).nullable(),
-  instanceType: z.string().min(1).max(60).optional(),
-});
-export type DeployVersionRequest = z.infer<typeof deployVersionRequestSchema>;
-
-export const HUGGINGFACE_ENDPOINT_LOCATIONS = [
-  { vendor: "aws", region: "eu-west-1", label: "AWS Ireland" },
-  { vendor: "aws", region: "us-east-1", label: "AWS N. Virginia" },
-  { vendor: "gcp", region: "us-east4", label: "Google Cloud Virginia" },
-  { vendor: "azure", region: "eastus", label: "Azure East US" },
-] as const;
-
-export const huggingFaceConnectionSourceSchema = z.enum(["workspace", "platform", "none"]);
-export type HuggingFaceConnectionSource = z.infer<typeof huggingFaceConnectionSourceSchema>;
-
-export const huggingFaceConnectionSchema = z.object({
-  source: huggingFaceConnectionSourceSchema,
-  account: z.string().nullable(),
-  organisation: z.string().nullable(),
-  endpointVendor: z.string(),
-  endpointRegion: z.string(),
-  canTrainAndDeploy: z.boolean(),
-  updatedAt: z.string().nullable(),
-});
-export type HuggingFaceConnection = z.infer<typeof huggingFaceConnectionSchema>;
-
-export const huggingFaceTokenCheckRequestSchema = z.object({
-  token: z.string().trim().min(8).max(500).optional(),
-});
-export type HuggingFaceTokenCheckRequest = z.infer<typeof huggingFaceTokenCheckRequestSchema>;
-
-export const huggingFaceTokenCheckSchema = z.object({
-  account: z.string(),
-  canWrite: z.boolean(),
-  organisations: z.array(z.object({ name: z.string(), canWrite: z.boolean() })),
-});
-export type HuggingFaceTokenCheck = z.infer<typeof huggingFaceTokenCheckSchema>;
-
-export const saveHuggingFaceConnectionRequestSchema = z.object({
-  token: z.string().trim().min(8).max(500).optional(),
-  organisation: z.string().trim().min(1).max(96).nullable(),
-  endpointVendor: z.string().trim().min(1).max(20),
-  endpointRegion: z.string().trim().min(1).max(40),
-});
-export type SaveHuggingFaceConnectionRequest = z.infer<
-  typeof saveHuggingFaceConnectionRequestSchema
->;

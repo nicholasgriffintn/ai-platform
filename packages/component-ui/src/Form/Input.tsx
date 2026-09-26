@@ -34,7 +34,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     const describedBy = mergeDescribedBy(ariaDescribedBy, descriptionId);
 
     return (
-      <div className={cn("space-y-1", fullWidth && "w-full")}>
+      <div className={cn("min-w-0 space-y-1", fullWidth && "w-full")}>
         {label && <Label htmlFor={controlId}>{label}</Label>}
         <Input
           ref={ref}

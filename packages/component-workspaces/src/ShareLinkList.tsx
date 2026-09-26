@@ -41,7 +41,7 @@ export function ShareLinkList({ shares, onRevoke, revokingShareId }: ShareLinkLi
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="destructive"
               icon={<Trash2 size={14} />}
               isLoading={revokingShareId === share.id}
               onClick={() => onRevoke(share.id)}

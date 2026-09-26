@@ -19,7 +19,6 @@ const runtimeDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(runtimeDirectory, "../../../../../");
 const temporaryDirectory = mkdtempSync(path.join(tmpdir(), "polychat-e2e-"));
 const buildDirectory = path.join(temporaryDirectory, "api");
-const trainingBuildDirectory = path.join(temporaryDirectory, "training");
 const sandboxGitHubPrivateKey = generateKeyPairSync("rsa", {
   modulusLength: 2048,
   privateKeyEncoding: { type: "pkcs8", format: "pem" },
@@ -1323,7 +1322,7 @@ function buildWorkerBundle(workspace, configPath, outputDirectory) {
   };
 }
 
-function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
+function createRuntimeOptions(apiBundle, port, seedMaterial) {
   const readinessSessionHash = createHash("sha256")
     .update("polychat-e2e-pro-0")
     .digest("base64url");
@@ -1455,7 +1454,6 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
           SES_EMAIL_FROM: "e2e@polychat.invalid",
           STRIPE_SECRET_KEY: stripeSecretKey,
           TYPESAFE_API_KEY: "e2e-typesafe-key",
-          TRAINING_WORKER_TOKEN: "polychat-e2e-training-worker-token",
         },
         d1Databases: { DB: "polychat-e2e" },
         kvNamespaces: ["CACHE"],
@@ -1499,7 +1497,6 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
         serviceBindings: {
           AI: { name: "external-services", entrypoint: "MockAi" },
           SEND_EMAIL: { name: "external-services", entrypoint: "MockEmail" },
-          TRAINING_WORKER: { name: "training" },
           SANDBOX_WORKER: { name: "sandbox" },
           COMPUTER_WORKER: { name: "computer" },
         },
@@ -1516,24 +1513,6 @@ function createRuntimeOptions(apiBundle, trainingBundle, port, seedMaterial) {
           },
         ],
         compatibilityDate,
-      },
-      {
-        name: "training",
-        modules: [
-          {
-            type: "ESModule",
-            path: "training.js",
-            contents: trainingBundle.script,
-          },
-          ...trainingBundle.textModules,
-        ],
-        compatibilityDate,
-        compatibilityFlags: ["nodejs_compat"],
-        bindings: {
-          TRAINING_WORKER_TOKEN: "polychat-e2e-training-worker-token",
-          LOG_LEVEL: "error",
-        },
-        d1Databases: { DB: "polychat-e2e" },
       },
       {
         name: "external-services",
@@ -2157,14 +2136,9 @@ async function start() {
     path.join(runtimeDirectory, "wrangler.jsonc"),
     buildDirectory,
   );
-  const trainingBundle = buildWorkerBundle(
-    "@assistant/training",
-    path.join(runtimeDirectory, "training-wrangler.jsonc"),
-    trainingBuildDirectory,
-  );
   const seedMaterial = await createPersonaSeedMaterial();
 
-  runtime = new Miniflare(createRuntimeOptions(apiBundle, trainingBundle, apiPort, seedMaterial));
+  runtime = new Miniflare(createRuntimeOptions(apiBundle, apiPort, seedMaterial));
   await runtime.ready;
   const database = await runtime.getD1Database("DB", "api");
 

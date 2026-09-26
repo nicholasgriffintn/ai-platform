@@ -44,6 +44,7 @@ Read the relevant record before changing any durable boundary.
 - [0067: Add third-party model scanners as a provider category](decisions/0067-third-party-scanners-as-providers.md) (proposed)
 - [0068: Treat fine-tunes as versions that re-enter the gate](decisions/0068-derived-models-reenter-the-gate.md)
 - [0069: Let workspaces bring their own Hugging Face connection](decisions/0069-workspaces-bring-their-own-hub-connection.md)
+- [0070: Run the model platform on workspace accounts](decisions/0070-run-the-model-platform-on-workspace-accounts.md)
 
 ## Work orchestration
 

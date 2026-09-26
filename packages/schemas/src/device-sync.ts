@@ -62,7 +62,6 @@ export const deviceSyncEventTypeSchema = z.enum([
   "usage.changed",
   "goal.changed",
   "research.changed",
-  "training.changed",
   "canvas.changed",
   "replicate.changed",
   "connector_approval.changed",

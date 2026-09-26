@@ -45,7 +45,7 @@
     "@ngriffin_uk/polychat-ai-experiments": "workspace:^",
     "@ngriffin_uk/polychat-ai-functions": "workspace:^",
     "@ngriffin_uk/polychat-ai-integrations": "workspace:^",
-    "@ngriffin_uk/polychat-ai-model-sources": "workspace:^",
+    "@ngriffin_uk/polychat-ai-model-providers": "workspace:^",
     "@ngriffin_uk/polychat-ai-models": "workspace:^",
     "@ngriffin_uk/polychat-ai-prompts": "workspace:^",
     "@ngriffin_uk/polychat-ai-providers": "workspace:^",
@@ -74,6 +74,7 @@
     "drizzle-orm": "0.45.2",
     "hono": "4.13.8",
     "hono-openapi": "1.3.3",
+    "hyparquet": "1.31.1",
     "isbot": "5.2.2",
     "stripe": "22.6.2",
     "zod": "catalog:"

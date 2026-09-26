@@ -177,7 +177,7 @@ function ButtonContent({
   children?: ReactNode;
 }) {
   return (
-    <span className="inline-flex items-center justify-center gap-2">
+    <span className="contents">
       {icon}
       <ButtonLabel collapseLabel={collapseLabel}>{children}</ButtonLabel>
     </span>
@@ -212,7 +212,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading ? (
-          <span className="inline-flex items-center justify-center gap-2">
+          <span className="contents">
             <span
               className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
               aria-hidden="true"

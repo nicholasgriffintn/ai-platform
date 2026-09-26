@@ -29,16 +29,16 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { KVCache } from "~/infrastructure/cache";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import {
-  findTrainingDeploymentModelConfig,
-  getTrainingDeploymentModelConfigs,
-} from "~/modules/models/application/training-deployments";
+  findPlatformChatModel,
+  listPlatformChatModels,
+} from "~/modules/model-serving/application/chat-models";
 import type { IEnv, IUser, IUserSettings, ResearchProviderName, SearchProviderName } from "~/types";
 
 const logger = getLogger({ prefix: "services/models/resolve" });
 
 export interface ModelAccessOptions {
   shouldUseCache?: boolean;
-  includeTrainingDeployments?: boolean;
+  includePlatformModels?: boolean;
 }
 
 export interface ResolveModelProviderOptions {
@@ -153,19 +153,19 @@ function getModelCache(env: IEnv): KVCache | null {
   return modelCache;
 }
 
-async function withTrainingDeploymentModels(
+async function withPlatformModels(
   models: Record<string, ModelConfigItem>,
   env: IEnv,
   userId: number | undefined,
   options: ModelAccessOptions,
 ): Promise<Record<string, ModelConfigItem>> {
-  if (!userId || !options.includeTrainingDeployments) {
+  if (!userId || !options.includePlatformModels) {
     return models;
   }
 
   return {
     ...models,
-    ...(await getTrainingDeploymentModelConfigs(env, userId)),
+    ...(await listPlatformChatModels(env, userId)),
   };
 }
 
@@ -240,7 +240,9 @@ export async function getModelConfig(
     return machineConfig;
   }
 
-  return findTrainingDeploymentModelConfig(model, env, userId, provider);
+  const platform = await findPlatformChatModel(model, env, userId);
+
+  return platform && (!provider || platform.provider === provider) ? platform : null;
 }
 
 export async function getModelConfigByModel(model: string, env?: IEnv) {
@@ -266,7 +268,11 @@ export async function getModelConfigByMatchingModel(
     return staticConfig;
   }
 
-  return findTrainingDeploymentModelConfig(matchingModel, env, userId, resolvedProvider);
+  const platform = await findPlatformChatModel(matchingModel, env, userId);
+
+  return platform && (!resolvedProvider || platform.provider === resolvedProvider)
+    ? platform
+    : null;
 }
 
 export async function findModelConfig(
@@ -387,7 +393,7 @@ export async function filterModelsForUserAccess(
       }
     }
 
-    return withTrainingDeploymentModels(filteredModels, env, userId, options);
+    return withPlatformModels(filteredModels, env, userId, options);
   }
 
   try {
@@ -419,7 +425,7 @@ export async function filterModelsForUserAccess(
       }
     }
 
-    return withTrainingDeploymentModels(filteredModels, env, userId, options);
+    return withPlatformModels(filteredModels, env, userId, options);
   } catch (error) {
     logger.error(`Error during model filtering for user ${userId}`, { error });
 

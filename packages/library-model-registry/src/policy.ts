@@ -28,6 +28,13 @@ export interface PolicySubjectEvidence {
 export interface PolicySubjectRoute {
   region: string;
   weightsVerified: boolean;
+  jurisdiction: string | null;
+  retention: "zero" | "provider" | "self" | null;
+}
+
+export interface PolicySubjectDataset {
+  lawfulBasis: string;
+  containsCustomerData: boolean;
 }
 
 export interface PolicySubject {
@@ -35,6 +42,7 @@ export interface PolicySubject {
   source: ModelAssetSource;
   attributes: ModelVersionAttributes;
   evidence: readonly PolicySubjectEvidence[];
+  dataset?: PolicySubjectDataset | null;
   route?: PolicySubjectRoute;
 }
 
@@ -114,6 +122,49 @@ export const DEFAULT_WORKSPACE_POLICY_RULES: PolicyRule[] = [
     effect: "warn",
     when: { type: "route_weights_unverified" },
   },
+  {
+    id: "uploaded-provenance",
+    description: "Uploaded or bucket weights need a person to confirm where they came from",
+    effect: "review",
+    when: { type: "source", op: "in", values: ["upload", "bucket"] },
+  },
+  {
+    id: "upload-integrity",
+    description: "Uploaded files must hash to what the uploader declared",
+    effect: "block",
+    when: { type: "evidence", kind: "upload_integrity", statuses: ["fail"] },
+  },
+  {
+    id: "dataset-lawful-basis",
+    description: "Datasets without a stated lawful basis for personal data need review",
+    effect: "review",
+    when: { type: "lawful_basis", op: "in", values: ["unknown"] },
+  },
+  {
+    id: "customer-data",
+    description: "Customer data needs a person to confirm contracts allow training on it",
+    effect: "review",
+    when: { type: "customer_data" },
+  },
+  {
+    id: "teacher-terms",
+    description:
+      "Outputs of models whose terms forbid training competitors cannot train new models",
+    effect: "block",
+    when: { type: "evidence", kind: "teacher_terms", statuses: ["fail"] },
+  },
+  {
+    id: "erasure-withdrawn",
+    description: "A withdrawal erasure request stops every version trained on the erased rows",
+    effect: "block",
+    when: { type: "evidence", kind: "erasure", statuses: ["fail"] },
+  },
+  {
+    id: "erasure-retrain",
+    description: "A retrain-by erasure request flags versions until a clean retrain replaces them",
+    effect: "warn",
+    when: { type: "evidence", kind: "erasure", statuses: ["warn"] },
+  },
 ];
 
 export async function hashPolicyRules(rules: readonly PolicyRule[]): Promise<string> {
@@ -139,6 +190,8 @@ const METADATA_ONLY_CONDITIONS = new Set<PolicyCondition["type"]>([
   "remote_code",
   "gated",
   "parameters_above",
+  "lawful_basis",
+  "customer_data",
 ]);
 
 export function evaluatePolicies(
@@ -255,6 +308,37 @@ function matchCondition(condition: PolicyCondition, subject: PolicySubject): str
       return subject.route && !subject.route.weightsVerified
         ? "Provider does not prove which weights it serves"
         : null;
+    case "route_jurisdiction": {
+      if (!subject.route) {
+        return null;
+      }
+
+      const jurisdiction = subject.route.jurisdiction ?? "unknown";
+      const listed = condition.values.includes(jurisdiction);
+
+      return (condition.op === "in" ? listed : !listed)
+        ? `Route runs in jurisdiction ${jurisdiction}`
+        : null;
+    }
+
+    case "route_retention":
+      return subject.route?.retention && condition.values.includes(subject.route.retention)
+        ? `Route retention is ${subject.route.retention}`
+        : null;
+    case "lawful_basis": {
+      if (!subject.dataset) {
+        return null;
+      }
+
+      const listed = condition.values.includes(subject.dataset.lawfulBasis);
+
+      return (condition.op === "in" ? listed : !listed)
+        ? `Lawful basis is ${subject.dataset.lawfulBasis}`
+        : null;
+    }
+
+    case "customer_data":
+      return subject.dataset?.containsCustomerData ? "Dataset contains customer data" : null;
 
     default:
       return assertUnreachable(condition);

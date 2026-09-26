@@ -22,7 +22,15 @@ interface FormDialogProps {
   isLoading?: boolean;
   submitDisabled?: boolean;
   submitVariant?: "default" | "primary" | "secondary";
+  size?: FormDialogSize;
 }
+
+export type FormDialogSize = "md" | "lg";
+
+const SIZE_CLASSES: Record<FormDialogSize, string> = {
+  md: "sm:max-w-md",
+  lg: "sm:max-w-2xl",
+};
 
 export function FormDialog({
   open,
@@ -36,6 +44,7 @@ export function FormDialog({
   isLoading = false,
   submitDisabled = false,
   submitVariant = "primary",
+  size = "md",
 }: FormDialogProps) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -48,7 +57,7 @@ export function FormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className={SIZE_CLASSES[size]}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
@@ -58,7 +67,7 @@ export function FormDialog({
           onSubmit={(event) => {
             void handleSubmit(event);
           }}
-          className="space-y-4 py-2"
+          className="min-w-0 space-y-4 py-2"
         >
           {children}
 

@@ -1,9 +1,16 @@
-import { Badge } from "@ngriffin_uk/polychat-component-ui";
-import type { ModelBuild, RouteHealth } from "@ngriffin_uk/polychat-schemas";
-import { formatCompactCount } from "@ngriffin_uk/polychat-utility-core";
+import type { ModificationCompute, RouteHealth } from "@ngriffin_uk/polychat-schemas";
+import { formatCompactCount, formatUsd } from "@ngriffin_uk/polychat-utility-core";
 import { useId } from "react";
 
-function Stat({ label, value, detail }: { label: string; value: string; detail?: string }) {
+export function StatTile({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail?: string;
+}) {
   return (
     <div className="rounded-lg border border-border p-3">
       <div className="text-[11px] tracking-wider text-muted-foreground uppercase">{label}</div>
@@ -68,18 +75,22 @@ export function RouteHealthPanel({ health }: { health: RouteHealth }) {
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="Requests" value={formatCompactCount(health.requests)} detail="last 14 days" />
-        <Stat
+        <StatTile
+          label="Requests"
+          value={formatCompactCount(health.requests)}
+          detail="last 14 days"
+        />
+        <StatTile
           label="p95 latency"
           value={health.latencyP95Ms === null ? "—" : `${(health.latencyP95Ms / 1000).toFixed(1)}s`}
           detail="from the latest eval"
         />
-        <Stat
+        <StatTile
           label="Spend"
-          value={`$${health.costUsd.toFixed(2)}`}
+          value={formatUsd(health.costUsd)}
           detail={`${formatCompactCount(health.inputTokens)} in · ${formatCompactCount(health.outputTokens)} out`}
         />
-        <Stat
+        <StatTile
           label="Replay"
           value={latest ? `${(latest.score * 100).toFixed(1)}%` : "—"}
           detail={
@@ -102,7 +113,7 @@ export function RouteHealthPanel({ health }: { health: RouteHealth }) {
   );
 }
 
-export function ComputeMeter({ compute }: { compute: NonNullable<ModelBuild["compute"]> }) {
+export function ComputeMeter({ compute }: { compute: ModificationCompute }) {
   const logRatio = Math.log10(Math.max(compute.ratio, 1e-12));
   const position = Math.min(100, Math.max(2, ((logRatio + 12) / 12) * 100));
 
@@ -125,55 +136,5 @@ export function ComputeMeter({ compute }: { compute: NonNullable<ModelBuild["com
           : "Well below one third of base compute, so the workspace remains a deployer."}
       </div>
     </div>
-  );
-}
-
-export function BuildList({
-  builds,
-  names,
-  onOpenVersion,
-}: {
-  builds: readonly ModelBuild[];
-  names: Record<string, string>;
-  onOpenVersion: (versionId: string) => void;
-}) {
-  if (builds.length === 0) {
-    return <p className="text-sm text-muted-foreground">No fine-tunes yet.</p>;
-  }
-
-  return (
-    <ul className="divide-y divide-border rounded-lg border border-border">
-      {builds.map((build) => (
-        <li key={build.id} className="space-y-2 px-3 py-3">
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <button
-              type="button"
-              className="font-medium text-foreground hover:underline"
-              onClick={() => onOpenVersion(build.versionId)}
-            >
-              {build.jobName}
-            </button>
-            <Badge
-              variant={
-                build.status === "completed"
-                  ? "success"
-                  : build.status === "failed"
-                    ? "destructive"
-                    : "info"
-              }
-            >
-              {build.status}
-            </Badge>
-            <Badge variant="outline">{build.recipe}</Badge>
-            <span className="text-xs text-muted-foreground">
-              from {names[build.baseVersionId] ?? "base"} on{" "}
-              {names[build.datasetVersionId] ?? "dataset"}
-            </span>
-          </div>
-          {build.failureReason && <p className="text-sm text-failure">{build.failureReason}</p>}
-          {build.compute && <ComputeMeter compute={build.compute} />}
-        </li>
-      ))}
-    </ul>
   );
 }

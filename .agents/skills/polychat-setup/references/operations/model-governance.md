@@ -1,27 +1,25 @@
-# Operate model governance
+# Operate the model platform
 
-Work › Models lets a workspace find, vet, evaluate, fine-tune and serve open models, with every approval pinned to a Hub commit. Read ADRs 0062–0069 before changing how versions, policies, routes or builds behave.
+Work › Models lets a workspace bring in models and data, train and evaluate them, and serve them behind stable aliases on provider accounts it connects itself. Every step leaves evidence, and approvals pin exact commits or content hashes. Read ADRs 0062–0070 before changing how versions, policies, routes, deployments or spend behave.
 
 ## Configure
 
-- **Workspaces:** an admin connects Hugging Face under Models › Govern (ADR 0069). Use a write token, or a fine-grained token with write access to the organisation's repositories and Inference Endpoints, and pick the organisation that owns and pays for jobs, output repositories and endpoints. Without a connection, search and import still work for public repositories, but Build and Deploy stay off.
-- **Platform default (optional):** `HUGGINGFACE_TOKEN`, `HUGGINGFACE_NAMESPACE`, `HUGGINGFACE_ENDPOINT_VENDOR` and `HUGGINGFACE_ENDPOINT_REGION` on the API act as the connection for workspaces that have not added their own. Prefer an organisation token, because personal tokens hit the 1,000 requests per 5 minutes free-tier limit quickly. The training worker's own copies only serve the legacy provider jobs; registry calls pass credentials to it per request.
-- **Storage:** connection tokens are sealed with `PRIVATE_KEY`. Eval case results use the existing `PRIVATE_ASSETS_BUCKET` under `model-registry/eval-runs/`. Weights are never copied and everything reads from the Hub at the pinned commit (ADR 0066). Hugging Face Jobs read training data from a 12-hour presigned S3 URL, so the worker also needs the AWS credentials it already uses for SageMaker.
-- **Database:** apply migrations `0052_model_registry` and `0053_workspace_provider_connections` with the usual D1 commands. Neither needs a backfill.
+- **Provider accounts:** anyone with the `manage_connections` action connects providers under Models › Governance: Hugging Face, AWS (Bedrock and SageMaker), Together, Fireworks, Nebius, Google Vertex, Azure AI Foundry, RunPod, Cloudflare Workers AI and any OpenAI-compatible endpoint. Training and serving run in those accounts and bill them directly. "Check before saving" shows what the credentials can read, store, train and host.
+- **Storage:** secrets are sealed with `PRIVATE_KEY` and never returned. Uploads, dataset splits, training reports and eval results live in `PRIVATE_ASSETS_BUCKET`. Presigned part and report URLs need `ASSETS_BUCKET_ACCESS_KEY_ID`, `ASSETS_BUCKET_SECRET_ACCESS_KEY`, `ACCOUNT_ID` and `PRIVATE_ASSETS_BUCKET_NAME`. Uploaded weights are published to a private repository in the workspace's Hugging Face namespace when one is connected (ADR 0070).
+- **Database:** apply migration `0054_model_platform` with the usual D1 commands. It drops the old training worker tables and `model_build`, clears the pre-platform Hugging Face connections and removes the retired personal Training app, so workspaces reconnect once.
+- **Cron:** the `*/15 * * * *` trigger queues `model_platform_reconcile` for every workspace with live deployments or runs. The 03:00 schedule expires approvals and queues replays.
 
 ## Run
 
-- Imports queue `model_registry_inspect`. Inspection records evidence and opens or auto-approves a workspace decision.
-- Eval runs execute 20 cases per `model_registry_eval` task and write per-case results to R2. Runs against a new endpoint wait up to three hours for it to come up.
-- Every cron tick syncs running builds, pinning the output commit and queuing inspection when a job completes. The 03:00 schedule expires lapsed approvals and queues a replay for each suite and route pair that has a completed baseline run.
-
-## Enforce
-
-Governance is advisory until an admin ticks "Enforce in project chats" on the workspace policy. Then project chats may only use approved routes; tier-selected models fall back to the first approved route, and explicitly chosen models that are not approved return a 403 that names them. Generations through approved routes carry `polychat.route_id` and `polychat.asset_version_id` in analytics.
+- Datasets process in batches through `model_dataset_process`: canonicalise, deduplicate, drop rows that overlap chosen eval suites, redact personal data and split deterministically. Empty column mappings are detected from the first row.
+- Training runs submit to the chosen trainer and poll through `model_training_sync`. Trainers report metrics to a presigned R2 URL. Outputs register as new versions with lineage, compute and dataset evidence, and re-enter review.
+- Deployments create and poll the host through `model_deployment_sync`, accrue estimated cost while billable and register a route that chat reaches as `deployment:<id>`. Aliases (`alias:<id>`) are what clients should call.
+- Starts check the budget first. Over the approval threshold, members file a spend request; an approver with `approve` starts it from Governance. Over a hard stop, starts are refused and reconcile pauses running deployments.
 
 ## Recover
 
-- **Inspection failed:** the version page shows the reason. Admins can queue a fresh inspection with "Re-inspect".
-- **Build or deploy returns 409:** the workspace has no Hugging Face connection that can write to its namespace. Connect or change it under Govern.
-- **Retired route still billing:** retiring deletes the endpoint with the workspace's credentials. If the audit record shows `endpointDeleted: false`, delete it in the Hugging Face console.
-- **Build stuck:** check the job in the Hugging Face console under the workspace's organisation. The build finishes once the job reports `COMPLETED` or `ERROR`.
+- **Provider refused credentials:** re-check the connection under Governance. The message names the missing capability.
+- **Run stuck in submitted or running:** reconcile resyncs anything not checked for 30 minutes. Check the job in the provider console with the run's provider job id.
+- **Deployment still billing after delete:** the audit trail records `model_deployment.removed_from_provider`. If it is missing, remove the resource in the provider console.
+- **A version must stop now:** Revoke on the version page revokes approvals, retires routes, pauses deployments and clears aliases for it and everything trained from it.
+- **Erasure request:** select the rows on the dataset page and erase them. A clean revision is cut and every model trained on the old one is flagged to retrain or withdrawn.

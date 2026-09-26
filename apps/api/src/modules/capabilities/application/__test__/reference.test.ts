@@ -93,13 +93,6 @@ describe("project capability references", () => {
     await expect(validateCapabilityReference("tool", "web_fetch")).resolves.toBeUndefined();
   });
 
-  it("refuses a personal-only app in a project, and says why", async () => {
-    await expect(validateCapabilityReference("app", "featured-finetuning")).rejects.toMatchObject({
-      statusCode: 400,
-      message: expect.stringContaining("your own provider credentials"),
-    });
-  });
-
   it("still accepts an app that projects are allowed to enable", async () => {
     await expect(
       validateCapabilityReference("app", "featured-note-taker"),

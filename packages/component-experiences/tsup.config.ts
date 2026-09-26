@@ -4,7 +4,6 @@ export default defineConfig({
     content: "src/content/index.tsx",
     media: "src/media/index.tsx",
     music: "src/music/index.tsx",
-    training: "src/training/index.tsx",
   },
   format: ["esm"],
   dts: true,

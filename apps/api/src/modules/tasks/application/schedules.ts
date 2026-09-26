@@ -4,8 +4,10 @@ import { reapComposioConnectorSessions } from "~/modules/apps/application/connec
 import { deleteExpiredConnectorOperationApprovals } from "~/modules/apps/application/connectors/connector-approval-cleanup";
 import { releaseExpiredChatRunReservations } from "~/modules/chat-runs/application/reservation-maintenance";
 import { evaluateServerFlag, taskFlags } from "~/modules/experiments/application";
-import { syncRunningBuilds } from "~/modules/model-registry/application/builds";
-import { runModelGovernanceMaintenance } from "~/modules/model-registry/application/maintenance";
+import {
+  runModelGovernanceMaintenance,
+  scheduleModelPlatformReconciles,
+} from "~/modules/model-governance/application/maintenance";
 import { schedulePendingTaskNotificationDeliveries } from "~/modules/task-notifications/application/delivery";
 
 import {
@@ -26,15 +28,6 @@ workflows.always(
     run: async ({ env }) => {
       await recoverFailedDurableTasks(env);
       await redispatchPendingTasks(env);
-    },
-  }),
-);
-
-workflows.always(
-  defineSchedule({
-    name: "model-build-sync",
-    run: async ({ env }) => {
-      await syncRunningBuilds(env, RepositoryManager.getInstance(env));
     },
   }),
 );
@@ -80,6 +73,16 @@ workflows.every(
     name: "training-quality-scoring",
     enabledWhen: (env) => evaluateServerFlag(env, taskFlags(env).training_quality_scoring),
     run: ({ env }) => scheduleTrainingQualityScoring(env),
+  }),
+);
+
+workflows.every(
+  SCHEDULES.MODEL_PLATFORM_RECONCILE,
+  defineSchedule({
+    name: "model-platform-reconcile",
+    run: async ({ env }) => {
+      await scheduleModelPlatformReconciles(env, RepositoryManager.getInstance(env));
+    },
   }),
 );
 

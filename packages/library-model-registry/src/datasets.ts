@@ -93,3 +93,23 @@ export function assessPiiSample(
 
   return { status, rowsSampled: rows.length, rowsWithPii, counts };
 }
+
+const PII_PLACEHOLDERS: Record<PiiKind, string> = {
+  email: "[EMAIL]",
+  phone: "[PHONE]",
+  card_number: "[CARD]",
+  uk_national_insurance: "[NI_NUMBER]",
+  ip_address: "[IP_ADDRESS]",
+};
+
+export function redactPii(text: string): string {
+  let redacted = text.replace(CARD_CANDIDATE, (candidate) =>
+    passesLuhn(candidate.replace(/[ -]/g, "")) ? PII_PLACEHOLDERS.card_number : candidate,
+  );
+
+  for (const [kind, pattern] of PII_PATTERNS) {
+    redacted = redacted.replace(pattern, PII_PLACEHOLDERS[kind]);
+  }
+
+  return redacted;
+}

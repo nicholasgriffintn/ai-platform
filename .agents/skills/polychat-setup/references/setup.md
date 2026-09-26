@@ -12,7 +12,7 @@ pnpm exec vp run --filter=@ngriffin_uk/polychat-schemas build
 ## 2. Create required local env files
 
 - API: copy `.dev.vars.example` and `wrangler.jsonc.example` to `apps/api/.dev.vars` and `apps/api/wrangler.json`
-- Optional workers: copy their `.dev.vars.example` files into `apps/sandbox-worker` and `apps/training` if those components are enabled.
+- Optional workers: copy the `.dev.vars.example` file into `apps/sandbox-worker` if you enable it.
 
 ## 3. Configure and migrate locally
 
@@ -39,4 +39,4 @@ Stop any long-running process you start once validation is complete.
 ## Native setup
 
 - iOS: open `apps/mobile/ios/Polychat.xcodeproj`, then run `pnpm dev:mobile`, `pnpm test:mobile`, or `pnpm build:mobile`.
-- Desktop and training worker details are optional and documented where needed in the operations docs.
+- Desktop details are optional and documented where needed in the operations docs.

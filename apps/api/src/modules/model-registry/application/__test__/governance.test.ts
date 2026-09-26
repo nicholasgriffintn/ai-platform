@@ -12,9 +12,14 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { ModelDatasetRepository } from "~/modules/model-datasets/infrastructure/ModelDatasetRepository";
+import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
+import { revokeVersion } from "~/modules/model-governance/application/revocation";
+import { ModelPermissionRepository } from "~/modules/model-governance/infrastructure/ModelPermissionRepository";
+import { ModelAliasRepository } from "~/modules/model-serving/infrastructure/ModelAliasRepository";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 
 import { ModelAssetRepository } from "../../infrastructure/ModelAssetRepository";
-import { ModelEvalRepository } from "../../infrastructure/ModelEvalRepository";
 import { ModelGovernanceRepository } from "../../infrastructure/ModelGovernanceRepository";
 import { ModelRouteRepository } from "../../infrastructure/ModelRouteRepository";
 import {
@@ -47,7 +52,11 @@ let repositories: RepositoryManager;
 let audit: Array<{ action: string; targetId?: string | null }>;
 
 const REGISTRY_TABLES_CHILD_FIRST = [
-  "model_build",
+  "model_alias_event",
+  "model_alias",
+  "model_deployment",
+  "model_permission",
+  "model_dataset_profile",
   "model_eval_run",
   "model_eval_suite",
   "model_decision",
@@ -75,15 +84,30 @@ beforeAll(async () => {
     database.prepare("INSERT INTO user VALUES (1), (2)"),
     database.prepare(`INSERT INTO workspace VALUES ('${WORKSPACE}'), ('${OTHER_WORKSPACE}')`),
     database.prepare(`INSERT INTO project VALUES ('${PROJECT}'), ('${FOREIGN_PROJECT}')`),
+    database.prepare("CREATE TABLE training_jobs (id TEXT PRIMARY KEY)"),
+    database.prepare("CREATE TABLE training_deployments (id TEXT PRIMARY KEY)"),
+    database.prepare("CREATE TABLE training_job_events (id TEXT PRIMARY KEY)"),
+    database.prepare("CREATE TABLE project_capability (id TEXT PRIMARY KEY, capability_id TEXT)"),
+    database.prepare(
+      "CREATE TABLE capability_configuration (id TEXT PRIMARY KEY, capability_id TEXT)",
+    ),
   ]);
 
-  const migration = await readFile(
-    new URL("../../../../../migrations/0052_model_registry.sql", import.meta.url),
-    "utf8",
-  );
+  for (const name of [
+    "0052_model_registry",
+    "0053_workspace_provider_connections",
+    "0054_model_platform",
+  ]) {
+    const migration = await readFile(
+      new URL(`../../../../../migrations/${name}.sql`, import.meta.url),
+      "utf8",
+    );
 
-  for (const statement of migration.split("--> statement-breakpoint")) {
-    await database.prepare(statement).run();
+    for (const statement of migration.split("--> statement-breakpoint")) {
+      if (statement.trim()) {
+        await database.prepare(statement).run();
+      }
+    }
   }
 });
 
@@ -100,6 +124,10 @@ beforeEach(async () => {
     modelGovernance: new ModelGovernanceRepository(env),
     modelRoutes: new ModelRouteRepository(env),
     modelEvals: new ModelEvalRepository(env),
+    modelDatasets: new ModelDatasetRepository(env),
+    modelPermissions: new ModelPermissionRepository(env),
+    modelAliases: new ModelAliasRepository(env),
+    modelDeployments: new ModelDeploymentRepository(env),
     audit: {
       createRecord: async (record: { action: string; targetId?: string | null }) => {
         audit.push(record);
@@ -391,5 +419,73 @@ describe("model governance", () => {
     ]);
     expect(enforced.routeFor({ id: "model-us", provider: "together-ai" })).toBeUndefined();
     expect(audit.filter((record) => record.action === "model_policy.updated")).toHaveLength(2);
+  });
+  it("revokes a version and everything trained from it in one step", async () => {
+    const baseId = await importedVersion({}, []);
+    const childId = await importedVersion({}, []);
+
+    await syncVersionReviews(repositories, WORKSPACE, baseId);
+    await syncVersionReviews(repositories, WORKSPACE, childId);
+    await repositories.modelAssets.addLineageEdge({
+      fromVersionId: baseId,
+      toVersionId: childId,
+      relation: "fine_tuned_from",
+    });
+
+    const route = (versionId: string) =>
+      repositories.modelRoutes.createRoute({
+        workspaceId: WORKSPACE,
+        versionId,
+        provider: "together-ai",
+        providerModelId: `model-${versionId}`,
+        region: "us",
+        weightsVerified: false,
+        createdBy: ADMIN.id,
+      });
+    const baseRoute = await route(baseId);
+    const childRoute = await route(childId);
+    const alias = await repositories.modelAliases.create({
+      workspaceId: WORKSPACE,
+      projectId: null,
+      name: "support",
+      description: null,
+      routeId: childRoute.id,
+      gate: null,
+      requiresApproval: false,
+      updatedBy: ADMIN.id,
+    });
+
+    await expect(
+      revokeVersion(contextFor(MEMBER), WORKSPACE, baseId, { reason: "licence withdrawn" }),
+    ).rejects.toMatchObject({ statusCode: 403 });
+
+    const result = await revokeVersion(contextFor(ADMIN), WORKSPACE, baseId, {
+      reason: "licence withdrawn",
+    });
+
+    expect(new Set(result.retiredRouteIds)).toEqual(new Set([baseRoute.id, childRoute.id]));
+    expect(result.clearedAliasIds).toEqual([alias.id]);
+    expect(await isUsable(baseId)).toBe(false);
+    expect(await isUsable(childId)).toBe(false);
+    expect((await repositories.modelAliases.get(WORKSPACE, alias.id))?.route_id).toBeNull();
+    expect(
+      (await repositories.modelRoutes.listRoutes(WORKSPACE, { activeOnly: true })).map(
+        (item) => item.id,
+      ),
+    ).toEqual([]);
+    expect(audit.map((record) => record.action)).toContain("model_version.revoked");
+
+    const request = await requestDecision(contextFor(MEMBER), WORKSPACE, {
+      versionId: baseId,
+      projectId: null,
+      exception: false,
+    });
+
+    expect(request.state).toBe("pending");
+    expect(await isUsable(baseId)).toBe(false);
+
+    await resolveDecision(contextFor(ADMIN), WORKSPACE, request.id, { state: "approved" });
+
+    expect(await isUsable(baseId)).toBe(true);
   });
 });

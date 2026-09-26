@@ -27,11 +27,20 @@ import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRe
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
 import { MobilePushRepository } from "~/modules/mobile-push/infrastructure/MobilePushRepository";
 import { ArtificialAnalysisRepository } from "~/modules/model-analysis/infrastructure/ArtificialAnalysisRepository";
+import { ModelDatasetRepository } from "~/modules/model-datasets/infrastructure/ModelDatasetRepository";
+import { TrainingExampleRepository } from "~/modules/model-datasets/infrastructure/TrainingExampleRepository";
+import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
+import { ModelGraderRepository } from "~/modules/model-evaluation/infrastructure/ModelGraderRepository";
+import { ModelConnectionRepository } from "~/modules/model-governance/infrastructure/ModelConnectionRepository";
+import { ModelPermissionRepository } from "~/modules/model-governance/infrastructure/ModelPermissionRepository";
+import { ModelSpendRepository } from "~/modules/model-governance/infrastructure/ModelSpendRepository";
 import { ModelAssetRepository } from "~/modules/model-registry/infrastructure/ModelAssetRepository";
-import { ModelBuildRepository } from "~/modules/model-registry/infrastructure/ModelBuildRepository";
-import { ModelEvalRepository } from "~/modules/model-registry/infrastructure/ModelEvalRepository";
 import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { ModelUploadRepository } from "~/modules/model-registry/infrastructure/ModelUploadRepository";
+import { ModelAliasRepository } from "~/modules/model-serving/infrastructure/ModelAliasRepository";
+import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
+import { ModelTrainingRepository } from "~/modules/model-training/infrastructure/ModelTrainingRepository";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetRepository";
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
@@ -47,7 +56,6 @@ import { TeammateContextRepository } from "~/modules/teammates/infrastructure/Te
 import { TeammateFeedbackRepository } from "~/modules/teammates/infrastructure/TeammateFeedbackRepository";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
-import { TrainingExampleRepository } from "~/modules/training/infrastructure/TrainingExampleRepository";
 import { UsageBalanceRepository } from "~/modules/usage/infrastructure/UsageBalanceRepository";
 import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 import { UsageReservationRepository } from "~/modules/usage/infrastructure/UsageReservationRepository";
@@ -56,7 +64,6 @@ import { ApiKeyRepository } from "~/modules/user/infrastructure/ApiKeyRepository
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import { ProjectEnvironmentVariableRepository } from "~/modules/workspaces/infrastructure/ProjectEnvironmentVariableRepository";
-import { WorkspaceProviderConnectionRepository } from "~/modules/workspaces/infrastructure/WorkspaceProviderConnectionRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IEnv } from "~/types";
 
@@ -84,11 +91,19 @@ export {
   GoalRepository,
   InfraCostDailyRepository,
   MemorySynthesisRepository,
+  ModelAliasRepository,
   ModelAssetRepository,
-  ModelBuildRepository,
+  ModelConnectionRepository,
+  ModelDatasetRepository,
+  ModelDeploymentRepository,
   ModelEvalRepository,
+  ModelGraderRepository,
   ModelGovernanceRepository,
+  ModelPermissionRepository,
   ModelRouteRepository,
+  ModelSpendRepository,
+  ModelTrainingRepository,
+  ModelUploadRepository,
   MessageRepository,
   MachineRepository,
   MobilePushRepository,
@@ -369,10 +384,6 @@ export class RepositoryManager {
     return this.resolve("modelAssets", (env) => new ModelAssetRepository(env));
   }
 
-  public get modelBuilds(): ModelBuildRepository {
-    return this.resolve("modelBuilds", (env) => new ModelBuildRepository(env));
-  }
-
   public get modelGovernance(): ModelGovernanceRepository {
     return this.resolve("modelGovernance", (env) => new ModelGovernanceRepository(env));
   }
@@ -389,11 +400,40 @@ export class RepositoryManager {
     return this.resolve("trainingExamples", (env) => new TrainingExampleRepository(env));
   }
 
-  public get workspaceProviderConnections(): WorkspaceProviderConnectionRepository {
-    return this.resolve(
-      "workspaceProviderConnections",
-      (env) => new WorkspaceProviderConnectionRepository(env),
-    );
+  public get modelConnections(): ModelConnectionRepository {
+    return this.resolve("modelConnections", (env) => new ModelConnectionRepository(env));
+  }
+
+  public get modelPermissions(): ModelPermissionRepository {
+    return this.resolve("modelPermissions", (env) => new ModelPermissionRepository(env));
+  }
+
+  public get modelSpend(): ModelSpendRepository {
+    return this.resolve("modelSpend", (env) => new ModelSpendRepository(env));
+  }
+
+  public get modelUploads(): ModelUploadRepository {
+    return this.resolve("modelUploads", (env) => new ModelUploadRepository(env));
+  }
+
+  public get modelDatasets(): ModelDatasetRepository {
+    return this.resolve("modelDatasets", (env) => new ModelDatasetRepository(env));
+  }
+
+  public get modelTraining(): ModelTrainingRepository {
+    return this.resolve("modelTraining", (env) => new ModelTrainingRepository(env));
+  }
+
+  public get modelDeployments(): ModelDeploymentRepository {
+    return this.resolve("modelDeployments", (env) => new ModelDeploymentRepository(env));
+  }
+
+  public get modelAliases(): ModelAliasRepository {
+    return this.resolve("modelAliases", (env) => new ModelAliasRepository(env));
+  }
+
+  public get modelGraders(): ModelGraderRepository {
+    return this.resolve("modelGraders", (env) => new ModelGraderRepository(env));
   }
 
   public get workspaces(): WorkspaceRepository {

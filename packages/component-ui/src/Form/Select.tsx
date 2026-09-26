@@ -58,7 +58,7 @@ export function FormSelect<T extends string = string>({
   const selected = options.find((option) => option.value === value);
   const trigger = (
     <>
-      <span className={cn("truncate", !selected && "text-muted-foreground")}>
+      <span className={cn("min-w-0 truncate", !selected && "text-muted-foreground")}>
         {selected?.label ?? placeholder}
       </span>
       <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-60" aria-hidden="true" />
@@ -73,7 +73,10 @@ export function FormSelect<T extends string = string>({
     disabled,
     "aria-label": label ? undefined : ariaLabel,
     "aria-describedby": describedBy,
-    className: cn("justify-between font-normal", triggerClassName),
+    className: cn(
+      "h-9 min-h-9 min-w-0 justify-between border-input bg-surface px-3 py-0 font-normal shadow-xs hover:border-ring hover:bg-surface dark:bg-input/30 dark:hover:bg-input/40",
+      triggerClassName,
+    ),
   };
 
   const menuItems = options.map((option) => (
@@ -89,12 +92,8 @@ export function FormSelect<T extends string = string>({
   ));
 
   return (
-    <div className={cn("space-y-1", fullWidth && "w-full", className)}>
-      {label && (
-        <Label htmlFor={controlId} className="text-sm font-medium">
-          {label}
-        </Label>
-      )}
+    <div className={cn("min-w-0 space-y-1", fullWidth && "w-full", className)}>
+      {label && <Label htmlFor={controlId}>{label}</Label>}
       {portal ? (
         <OptionsMenu
           trigger={<Button {...triggerProps}>{trigger}</Button>}

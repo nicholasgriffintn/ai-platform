@@ -379,6 +379,13 @@
       "when": 1789500000000,
       "tag": "0053_workspace_provider_connections",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "6",
+      "when": 1790378797682,
+      "tag": "0054_model_platform",
+      "breakpoints": true
     }
   ]
 }

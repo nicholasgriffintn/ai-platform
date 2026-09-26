@@ -286,6 +286,22 @@ export class UsageEventRepository extends BaseRepository {
     return row ?? { requests: 0, input_tokens: 0, output_tokens: 0, cost_micros: 0 };
   }
 
+  async lastModelUseAt(input: {
+    workspaceId: string;
+    vendor: string;
+    resource: string;
+  }): Promise<string | null> {
+    const row = await this.runQuery<{ occurred_at: string | null }>(
+      `SELECT MAX(occurred_at) AS occurred_at
+       FROM usage_event
+       WHERE workspace_id = ? AND source = 'model' AND vendor = ? AND resource = ?`,
+      [input.workspaceId, input.vendor, input.resource],
+      true,
+    );
+
+    return row?.occurred_at ?? null;
+  }
+
   async summariseInfrastructureDay(
     day: string,
   ): Promise<Array<{ resource: string; unit: UsageUnit; quantity: number; cost_micros: number }>> {

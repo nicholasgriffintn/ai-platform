@@ -1,18 +1,28 @@
-import type { EvalCase, EvalScorer } from "@ngriffin_uk/polychat-schemas";
+import type { EvalCase, GraderConfig } from "@ngriffin_uk/polychat-schemas";
 import { assertUnreachable } from "@ngriffin_uk/polychat-utility-core";
 
-export type DeterministicScorer = Exclude<EvalScorer, { type: "judge" }>;
+export type DeterministicGrader = Exclude<GraderConfig, { kind: "judge" }>;
 
 function normaliseAnswer(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
+function lastNumber(value: string): number | null {
+  const matches = value.match(/-?\d+(?:\.\d+)?/g);
+
+  return matches ? Number(matches[matches.length - 1]) : null;
+}
+
+export function isDeterministicGrader(config: GraderConfig): config is DeterministicGrader {
+  return config.kind !== "judge";
+}
+
 export function scoreDeterministic(
-  scorer: DeterministicScorer,
+  config: DeterministicGrader,
   output: string,
   expected: string | undefined,
 ): number {
-  switch (scorer.type) {
+  switch (config.kind) {
     case "exact":
       return expected !== undefined && normaliseAnswer(output) === normaliseAnswer(expected)
         ? 1
@@ -23,14 +33,38 @@ export function scoreDeterministic(
         : 0;
     case "regex": {
       try {
-        return new RegExp(scorer.pattern, "i").test(output) ? 1 : 0;
+        return new RegExp(config.pattern, "i").test(output) ? 1 : 0;
       } catch {
         return 0;
       }
     }
 
+    case "json_schema": {
+      try {
+        const parsed: unknown = JSON.parse(output.trim());
+
+        return typeof parsed === "object" &&
+          parsed !== null &&
+          !Array.isArray(parsed) &&
+          config.requiredKeys.every((key) => key in parsed)
+          ? 1
+          : 0;
+      } catch {
+        return 0;
+      }
+    }
+
+    case "numeric": {
+      const actual = lastNumber(output);
+      const target = expected === undefined ? null : lastNumber(expected);
+
+      return actual !== null && target !== null && Math.abs(actual - target) <= config.tolerance
+        ? 1
+        : 0;
+    }
+
     default:
-      return assertUnreachable(scorer);
+      return assertUnreachable(config);
   }
 }
 

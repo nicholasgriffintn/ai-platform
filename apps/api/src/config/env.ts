@@ -8,7 +8,6 @@ import type {
   SendEmail,
 } from "@cloudflare/workers-types";
 import type { FlagshipBinding } from "@ngriffin_uk/polychat-library-flags";
-import type { TrainingProviderCredentials } from "@ngriffin_uk/polychat-schemas";
 
 export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclude<keyof T, Keys>> &
   {
@@ -20,10 +19,6 @@ export type {
   ReasoningEffortLevel,
   VerbosityLevel,
 } from "@ngriffin_uk/polychat-ai-models";
-
-type WorkerCacheFetcher<Props> = {
-  fetch(input: RequestInfo | URL, init?: RequestInit & { props?: Props }): Promise<Response>;
-};
 
 export type IEnv = {
   ANALYTICS: AnalyticsEngineDataset;
@@ -39,6 +34,7 @@ export type IEnv = {
   TRAINING_QUALITY_SCORING_ENABLED?: string;
   ASSETS_BUCKET: any;
   PRIVATE_ASSETS_BUCKET: any;
+  PRIVATE_ASSETS_BUCKET_NAME: string;
   ACCOUNT_ID: string;
   APP_BASE_URL?: string;
   API_BASE_URL?: string;
@@ -49,11 +45,6 @@ export type IEnv = {
   COMPUTER_WORKER?: Fetcher;
   LOADER?: WorkerLoader;
   FLAGS?: FlagshipBinding;
-  TRAINING_WORKER?: WorkerCacheFetcher<{
-    userId: string;
-    credentials?: TrainingProviderCredentials;
-  }>;
-  TRAINING_WORKER_TOKEN?: string;
   SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;
   MACHINE_RUN_COORDINATOR?: DurableObjectNamespace;
   CONVERSATION_COORDINATOR?: DurableObjectNamespace;
@@ -61,9 +52,6 @@ export type IEnv = {
   REALTIME_PROXY_COORDINATOR?: DurableObjectNamespace;
   GROK_API_KEY?: string;
   HUGGINGFACE_TOKEN?: string;
-  HUGGINGFACE_NAMESPACE?: string;
-  HUGGINGFACE_ENDPOINT_VENDOR?: string;
-  HUGGINGFACE_ENDPOINT_REGION?: string;
   REPLICATE_API_TOKEN?: string;
   ASSETS_BUCKET_ACCESS_KEY_ID: string;
   ASSETS_BUCKET_SECRET_ACCESS_KEY: string;
@@ -92,9 +80,6 @@ export type IEnv = {
   SAGEMAKER_AWS_SECRET_KEY?: string;
   SAGEMAKER_AWS_SESSION_TOKEN?: string;
   SAGEMAKER_AWS_REGION?: string;
-  SAGEMAKER_ROLE_ARN?: string;
-  SAGEMAKER_BUCKET?: string;
-  SAGEMAKER_VOLUME_SIZE_GB?: string;
   S3VECTORS_AWS_ACCESS_KEY?: string;
   S3VECTORS_AWS_SECRET_KEY?: string;
   AWS_REGION?: string;

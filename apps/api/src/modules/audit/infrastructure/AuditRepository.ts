@@ -73,4 +73,31 @@ export class AuditRepository extends BaseRepository {
       options.after ? [workspaceId, options.after, options.limit] : [workspaceId, options.limit],
     );
   }
+
+  async listModelRecords(
+    workspaceId: string,
+    filters: { targetType?: string; targetId?: string; limit: number },
+  ): Promise<WorkspaceAuditRecordRow[]> {
+    const conditions = ["workspace_id = ?", "target_type LIKE 'model_%'"];
+    const params: Array<string | number> = [workspaceId];
+
+    if (filters.targetType) {
+      conditions.push("target_type = ?");
+      params.push(filters.targetType);
+    }
+
+    if (filters.targetId) {
+      conditions.push("target_id = ?");
+      params.push(filters.targetId);
+    }
+
+    params.push(filters.limit);
+
+    return this.runQuery<WorkspaceAuditRecordRow>(
+      `SELECT * FROM workspace_audit_record
+       WHERE ${conditions.join(" AND ")}
+       ORDER BY created_at DESC, id DESC LIMIT ?`,
+      params,
+    );
+  }
 }

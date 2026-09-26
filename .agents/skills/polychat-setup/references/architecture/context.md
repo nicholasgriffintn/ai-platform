@@ -18,12 +18,13 @@ Use this as the ownership and responsibility map. Detailed rationale is in [deci
 - **Route**: a version served by a provider in a region; approved separately from the version and enforced in project chats when a workspace opts in.
 - **Build**: a fine-tune from an approved base and a governed dataset snapshot whose output is a derived version that re-enters review.
 
-## Model governance
+## Model platform
 
-- `modules/model-registry` owns import, inspection, policies, decisions, routes, evals, builds, deployment and ML-BOM export; pure mechanisms live in `library-model-registry` and Hub access in `ai-model-sources`.
+- Work › Models is six API modules: `model-registry` (sources, imports, uploads, inspection, policies, decisions), `model-datasets`, `model-training`, `model-serving` (deployments, aliases, routes, the deployment chat provider), `model-evaluation` (graders, suites, runs) and `model-governance` (provider connections, permissions, budgets, spend requests, revocation, audit, exports). All mount under `/model-platform`.
+- Provider calls go through `ai-model-providers` adapters from the API; there is no separate training Worker. Pure mechanisms (policy, sizing, costs, dataset pipeline, promotion gates, BOMs) live in `library-model-registry`.
 - Inspection parses byte ranges and never loads weights. Policy evaluation is a pure function shared by enforcement, previews and dry runs.
-- Hugging Face credentials resolve per workspace (`workspace_provider_connection`, sealed with `PRIVATE_KEY`) before the platform `HUGGINGFACE_*` defaults, and reach the training worker through service-binding props.
-- Queue tasks: `model_registry_inspect`, `model_registry_eval`. Build sync runs every cron tick; replays and decision expiry run daily.
+- Workspaces bring their own provider accounts (`workspace_provider_connection`, secrets sealed with `PRIVATE_KEY`). Uploads and dataset splits live in `PRIVATE_ASSETS_BUCKET` and are published to the workspace's private Hub repository when Hugging Face is connected.
+- Queue tasks: `model_registry_inspect`, `model_registry_eval`, and polls `model_dataset_process`, `model_training_sync`, `model_deployment_sync`, `model_upload_finalise`. `model_platform_reconcile` runs per workspace every 15 minutes for idle pause, budget hard stops and stale syncs; replays and decision expiry run daily.
 
 ## Deployables and owners
 
@@ -32,7 +33,6 @@ Use this as the ownership and responsibility map. Detailed rationale is in [deci
 - `apps/desktop`: native shell, secure signing/everything local-first where possible.
 - `apps/sandbox-worker`: coding execution boundary, approvals, preview gateway.
 - `apps/computer-worker`: hosted graphical computer lifecycle, screen sessions, checkpoints and fenced control.
-- `apps/training`: model training/deployment execution jobs.
 - `apps/mobile/ios`: native client consuming API streams and push.
 - Shared packages own contracts and reusable UI, leaving API calls and storage ownership at hosts.
 - Backend mechanisms live in primitives packages: `ai-*` for host-facing interaction (providers, functions, agents, workflows, models, billing, telemetry), `library-*` for the mechanisms they compose (agent loop, tools, tasks, model catalogue), `utility-*` for helpers. Packages are generic over host types, throw coded errors, and the API maps them at one boundary.
