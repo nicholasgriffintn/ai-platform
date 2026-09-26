@@ -794,6 +794,7 @@
       "matchingModel": "@cf/qwen/qwen3.8-27b",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
         "maxTokens": 262144,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00045,

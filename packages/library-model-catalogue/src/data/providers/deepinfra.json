@@ -935,7 +935,6 @@
       "model": "ling/inkling-small",
       "matchingModel": "thinkingmachines/Inkling-Small",
       "overrides": {
-        "contextWindow": 524288,
         "maxTokens": 1048576,
         "modalities": {
           "input": [
@@ -1133,6 +1132,7 @@
       "model": "qwen/qwen3-8-27b",
       "matchingModel": "Qwen/Qwen3.8-27B",
       "overrides": {
+        "contextWindow": 262144,
         "maxTokens": 32768,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0002,

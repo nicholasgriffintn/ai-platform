@@ -88,7 +88,6 @@
       "defaults": {
         "name": "Nemotron 3.5 Lightning 30B A3B",
         "description": "Nemotron model for efficient reasoning, coding, and specialized AI agents",
-        "contextWindow": 262144,
         "releaseDate": "August 11, 2026",
         "supportsResponseFormat": true
       }

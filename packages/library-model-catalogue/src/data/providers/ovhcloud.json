@@ -294,6 +294,7 @@
       "overrides": {
         "name": "Qwen3.8-27B",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 262144,
         "maxTokens": 262144,
         "releaseDate": "September 2, 2026",
         "lastUpdated": "September 2, 2026",

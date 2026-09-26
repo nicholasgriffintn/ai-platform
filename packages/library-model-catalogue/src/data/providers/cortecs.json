@@ -225,8 +225,8 @@
         "maxTokens": 1048576,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.00173,
-        "costPer1kOutputTokens": 0.00346,
+        "costPer1kInputTokens": 0.0017,
+        "costPer1kOutputTokens": 0.0034,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1977,8 +1977,8 @@
         "contextComplexity": 5,
         "speed": 3,
         "lastUpdated": "June 1, 2026",
-        "costPer1kInputTokens": 0.000395,
-        "costPer1kOutputTokens": 0.001977
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "glm-5.2": {
@@ -2132,7 +2132,6 @@
       "model": "gemma/gemma-4-31b-it",
       "matchingModel": "gemma-4-31b-it",
       "overrides": {
-        "contextWindow": 262000,
         "maxTokens": 262000,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.000223,
@@ -2331,7 +2330,8 @@
       "model": "qwen/qwen3-8-27b",
       "matchingModel": "qwen3.8-27b",
       "overrides": {
-        "maxTokens": 262144,
+        "contextWindow": 1000000,
+        "maxTokens": 500000,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004,
@@ -2430,10 +2430,10 @@
       "model": "deepseek-flash/deepseek-v4-1-flash",
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
-        "maxTokens": 64000,
+        "maxTokens": 393216,
         "lastUpdated": "September 10, 2026",
-        "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.001499,
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
