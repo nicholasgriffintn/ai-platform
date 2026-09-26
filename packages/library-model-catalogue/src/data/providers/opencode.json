@@ -1064,15 +1064,6 @@
         "costPer1kOutputTokens": 0.00425
       }
     },
-    "muse-spark-1.2-contributor-free": {
-      "model": "muse-free/muse-spark-1-2-free",
-      "matchingModel": "muse-spark-1.2-contributor-free",
-      "overrides": {
-        "lastUpdated": "August 5, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
-      }
-    },
     "ling-3.0-flash-fin-free": {
       "model": "ling/ling-3-0-flash-fin-free",
       "matchingModel": "ling-3.0-flash-fin-free",
@@ -1291,6 +1282,32 @@
         "lastUpdated": "September 23, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
+      }
+    },
+    "qwen3.8-max": {
+      "model": "qwen/qwen3-8-max",
+      "matchingModel": "qwen3.8-max",
+      "overrides": {
+        "contextWindow": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "August 3, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

@@ -1014,7 +1014,6 @@
       "matchingModel": "thinkingmachines/Inkling-Small",
       "overrides": {
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "contextWindow": 524288,
         "maxTokens": 1048576,
         "modalities": {
           "input": [
@@ -1192,6 +1191,7 @@
       "matchingModel": "Qwen/Qwen3.8-27B",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
         "maxTokens": 32768,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0004,

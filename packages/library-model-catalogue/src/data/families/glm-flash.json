@@ -175,7 +175,7 @@
         "openWeights": false,
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
         "contextWindow": 1310720,
-        "maxTokens": 128000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

@@ -3823,8 +3823,8 @@
       "matchingModel": "claude-opus-5-5",
       "overrides": {
         "lastUpdated": "September 22, 2026",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025,
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -3843,8 +3843,8 @@
       "matchingModel": "claude-opus-5-5@eu",
       "overrides": {
         "lastUpdated": "September 22, 2026",
-        "costPer1kInputTokens": 0.0055,
-        "costPer1kOutputTokens": 0.0275,
+        "costPer1kInputTokens": 0.0044,
+        "costPer1kOutputTokens": 0.022,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [

@@ -94,6 +94,7 @@
         "name": "Inkling Small",
         "openWeights": true,
         "description": "Multimodal MoE reasoning model (276B total, 12B active) for text, image, and audio",
+        "contextWindow": 524288,
         "releaseDate": "July 30, 2026",
         "supportsAttachments": true
       }

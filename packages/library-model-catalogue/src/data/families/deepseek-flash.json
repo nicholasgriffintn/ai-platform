@@ -2,6 +2,7 @@
   "defaults": {
     "openWeights": true,
     "contextWindow": 1048576,
+    "maxTokens": 384000,
     "modalities": {
       "input": [
         "text"
@@ -46,7 +47,6 @@
       "defaults": {
         "name": "DeepSeek V4.1 Flash",
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
-        "maxTokens": 384000,
         "modalities": {
           "input": [
             "text",
@@ -100,7 +100,6 @@
       "defaults": {
         "name": "DeepSeek V4 Flash",
         "description": "Fast DeepSeek V4 lane for economical reasoning, coding, and long-context work",
-        "maxTokens": 384000,
         "strengths": [
           "tool_use"
         ],
@@ -119,7 +118,6 @@
       "defaults": {
         "name": "DeepSeek V4 Flash 0731",
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
-        "maxTokens": 384000,
         "releaseDate": "July 31, 2026"
       }
     },
@@ -176,7 +174,6 @@
       "defaults": {
         "name": "DeepSeek V4 Flash Vision Exp",
         "description": "Experimental multimodal DeepSeek V4 Flash model for image understanding, coding, and agentic work",
-        "maxTokens": 384000,
         "modalities": {
           "input": [
             "text",
