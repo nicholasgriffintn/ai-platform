@@ -27,7 +27,7 @@
     "wrangler:dev": "pnpm run build && wrangler dev --remote"
   },
   "dependencies": {
-    "@babel/standalone": "8.0.4",
+    "@babel/standalone": "8.0.6",
     "@mlc-ai/web-llm": "0.2.85",
     "@ngriffin_uk/auth-encoding": "^0.2.4",
     "@ngriffin_uk/auth-react": "^0.7.1",
@@ -95,7 +95,7 @@
     "zustand": "5.0.15"
   },
   "devDependencies": {
-    "@babel/core": "8.0.1",
+    "@babel/core": "8.0.6",
     "@babel/preset-typescript": "8.0.1",
     "@cloudflare/vite-plugin": "1.54.9",
     "@cloudflare/workers-types": "catalog:",
