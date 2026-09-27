@@ -42,7 +42,7 @@ export function DeployDialog({
   onOpenChange: (open: boolean) => void;
   initialVersionId?: string;
 }) {
-  const { workspaceId, projectId, open: openObject } = useModelsScope();
+  const { workspaceId, projectId, can, open: openObject } = useModelsScope();
   const scopeProject = projectId ?? null;
   const [draft, setDraft] = useState<DeploymentDraft>({
     ...EMPTY_DEPLOYMENT_DRAFT,
@@ -66,7 +66,7 @@ export function DeployDialog({
     const result = await runWithToast(
       (started) =>
         started.deployment
-          ? "Deployment requested. It appears behind its alias once healthy."
+          ? "Deployment requested. Promote its route to an alias once healthy and approved."
           : "Spend request filed for approval",
       () => mutations.createDeployment.mutateAsync(request),
     );
@@ -180,13 +180,15 @@ export function DeployDialog({
                 value={draft.name}
                 onChange={(event) => update({ name: event.target.value })}
               />
-              <FormInput
-                label="Alias (optional)"
-                placeholder="support"
-                description="Creates an alias pointing here."
-                value={draft.aliasName}
-                onChange={(event) => update({ aliasName: event.target.value })}
-              />
+              {can("promote") && (
+                <FormInput
+                  label="Alias (optional)"
+                  placeholder="support"
+                  description="Creates an empty alias. Promote the deployment once healthy and approved."
+                  value={draft.aliasName}
+                  onChange={(event) => update({ aliasName: event.target.value })}
+                />
+              )}
             </FormGrid>
             {option.shape === "dedicated" && (
               <FormGrid>

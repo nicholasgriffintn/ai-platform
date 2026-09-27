@@ -1,5 +1,5 @@
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
-import { and, desc, eq, inArray, or } from "drizzle-orm";
+import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { modelAlias, modelAliasEvent } from "~/infrastructure/database/schema";
@@ -164,7 +164,7 @@ export class ModelAliasRepository extends BaseRepository<Pick<IEnv, "DB">> {
       .select()
       .from(modelAliasEvent)
       .where(eq(modelAliasEvent.alias_id, aliasId))
-      .orderBy(desc(modelAliasEvent.created_at))
+      .orderBy(desc(modelAliasEvent.created_at), desc(sql`${modelAliasEvent}.rowid`))
       .limit(100);
   }
 }

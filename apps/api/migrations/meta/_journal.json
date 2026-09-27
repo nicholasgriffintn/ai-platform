@@ -386,6 +386,13 @@
       "when": 1790378797682,
       "tag": "0054_model_platform",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "6",
+      "when": 1790518520663,
+      "tag": "0055_model_provider_claims",
+      "breakpoints": true
     }
   ]
 }

@@ -15,8 +15,7 @@ import { conflict } from "~/modules/model-registry/application/access";
 import { buildModelHandle } from "~/modules/model-registry/application/handles";
 
 import type { ModelDeploymentRecord } from "../infrastructure/ModelDeploymentRepository";
-
-const INVOCABLE_STATUSES = new Set(["running", "scaled_to_zero", "updating"]);
+import { isDeploymentInvocable } from "./deployment-state";
 
 export async function hostFor(
   repositories: RepositoryManager,
@@ -32,7 +31,22 @@ export async function hostFor(
     deployment.workspace_id,
     deployment.provider,
   );
-  const host = createHost(deployment.provider, deployment.host, context);
+  const host = createHost(deployment.provider, deployment.host, {
+    ...context,
+    claimProvisioningContinuation: async () => {
+      if (
+        !deployment.provider_ref ||
+        !(await repositories.modelDeployments.claimProvisioningContinuation(
+          deployment.id,
+          deployment.provider_ref,
+        ))
+      ) {
+        throw conflict(
+          "Provisioning continuation is already claimed. Reconcile the provider endpoint before retrying an interrupted request.",
+        );
+      }
+    },
+  });
   const model = await buildModelHandle(
     repositories,
     deployment.workspace_id,
@@ -54,7 +68,7 @@ export async function hostFor(
           spec: deployment.spec,
           model,
           adapters,
-          desired: deployment.desired_state === "paused" ? "paused" : "running",
+          desired: deployment.desired_state,
         }
       : null,
   };
@@ -74,9 +88,17 @@ export async function applyHostState(
     last_checked_at: new Date().toISOString(),
   };
 
-  await repositories.modelDeployments.update(deployment.id, changes);
+  const updated = await repositories.modelDeployments.recordProviderState(
+    deployment.id,
+    deployment.provider_ref,
+    changes,
+  );
 
-  return { ...deployment, ...changes };
+  if (!updated) {
+    throw conflict("The deployment was removed while its provider state was being updated");
+  }
+
+  return updated;
 }
 
 export async function runHostAction(
@@ -90,11 +112,13 @@ export async function runHostAction(
     throw conflict("The deployment has not been created with the provider yet");
   }
 
-  return applyHostState(
+  const updated = await applyHostState(
     repositories,
     deployment,
     await withProviderErrors(() => action(host, hosted)),
   );
+
+  return { ...updated, desired_state: deployment.desired_state };
 }
 
 export async function invokeDeployment(
@@ -102,7 +126,7 @@ export async function invokeDeployment(
   deployment: ModelDeploymentRecord,
   request: ChatInvocation,
 ): Promise<ChatInvocationResult> {
-  if (deployment.desired_state !== "running" || !INVOCABLE_STATUSES.has(deployment.status)) {
+  if (!isDeploymentInvocable(deployment)) {
     throw conflict(`Deployment ${deployment.name} is ${deployment.status.replace(/_/g, " ")}`);
   }
 

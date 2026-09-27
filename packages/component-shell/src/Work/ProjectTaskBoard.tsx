@@ -3,13 +3,10 @@ import {
   CreateTaskDialog,
   FlowEditorDialog,
   TaskBoard,
-  type CreateTaskInput,
-  type CreateTaskIntent,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   useCapabilityCatalog,
-  useProjectTasks,
   getTeammateEditorPath,
   getProjectSurface,
   getProjectConversationPath,
@@ -19,12 +16,12 @@ import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { useSearchParams } from "react-router";
-import { toast } from "sonner";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
+import { useQueryDialog } from "../utils/useQueryDialog.js";
 import { ProjectHomeHeader } from "./ProjectHomeHeader.js";
+import { useProjectTaskBoardActions } from "./useProjectTaskBoardActions.js";
 import { projectTaskSkills, useProjectTaskTeammates } from "./useProjectTaskTeammates.js";
 import { useWorkData } from "./WorkDataContext.js";
 
@@ -35,32 +32,30 @@ export function ProjectTaskBoard({
   workspaceId: string;
   projectId: string;
 }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [isCreateOpen, setIsCreateDialogOpen] = useState(() => searchParams.get("new") === "1");
-  const setIsCreateOpen = (open: boolean) => {
-    setIsCreateDialogOpen(open);
-
-    if (!open && searchParams.has("new")) {
-      setSearchParams(
-        (current) => {
-          const next = new URLSearchParams(current);
-
-          next.delete("new");
-
-          return next;
-        },
-        { replace: true },
-      );
-    }
-  };
-
+  const [isCreateOpen, setIsCreateOpen] = useQueryDialog("new");
   const [isFlowOpen, setIsFlowOpen] = useState(false);
   const { projectQuery, workspaceQuery } = useWorkData();
   const teammates = useProjectTaskTeammates(projectQuery.data?.capabilities);
   const capabilityCatalog = useCapabilityCatalog(projectId);
   const skills = projectTaskSkills(projectQuery.data?.capabilities, capabilityCatalog.data?.skills);
-  const { tasks, flow, isLoading, error, create, start, accept, saveFlow } =
-    useProjectTasks(projectId);
+  const {
+    tasks,
+    flow,
+    isLoading,
+    error,
+    create,
+    start,
+    accept,
+    saveFlow,
+    runTask,
+    acceptTask,
+    addTask,
+    saveProjectFlow,
+  } = useProjectTaskBoardActions({
+    projectId,
+    onTaskCreated: () => setIsCreateOpen(false),
+    onFlowSaved: () => setIsFlowOpen(false),
+  });
 
   if (isAuthenticationError(error)) {
     return (
@@ -89,40 +84,6 @@ export function ProjectTaskBoard({
     task.conversationId
       ? getProjectConversationPath(workspaceId, projectId, task.conversationId)
       : null;
-
-  const runTask = async (task: ProjectTask) => {
-    try {
-      await start.mutateAsync(task.id);
-      toast.success("Task queued");
-    } catch (mutationError) {
-      toast.error(getErrorMessage(mutationError, "Unable to run this task"));
-    }
-  };
-
-  const acceptTask = async (task: ProjectTask) => {
-    try {
-      const { task: accepted } = await accept.mutateAsync(task.id);
-
-      toast.success(accepted.status === "done" ? "Task accepted" : "Moved to the next stage");
-    } catch (mutationError) {
-      toast.error(getErrorMessage(mutationError, "Unable to accept this task"));
-    }
-  };
-
-  const addTask = async (input: CreateTaskInput, intent: CreateTaskIntent) => {
-    try {
-      const { task } = await create.mutateAsync(input);
-
-      if (intent === "run") {
-        await start.mutateAsync(task.id);
-      }
-
-      setIsCreateOpen(false);
-      toast.success(intent === "run" ? "Task added and queued" : "Task added to the backlog");
-    } catch (mutationError) {
-      toast.error(getErrorMessage(mutationError, "Unable to add this task"));
-    }
-  };
 
   return (
     <>
@@ -200,15 +161,7 @@ export function ProjectTaskBoard({
         isSaving={saveFlow.isPending}
         errorMessage={saveFlow.error ? getErrorMessage(saveFlow.error, "") : undefined}
         onOpenChange={setIsFlowOpen}
-        onSave={async (nextFlow) => {
-          try {
-            await saveFlow.mutateAsync(nextFlow);
-            setIsFlowOpen(false);
-            toast.success("Teammate pipeline saved");
-          } catch (mutationError) {
-            toast.error(getErrorMessage(mutationError, "Unable to save the teammate pipeline"));
-          }
-        }}
+        onSave={saveProjectFlow}
       />
     </>
   );

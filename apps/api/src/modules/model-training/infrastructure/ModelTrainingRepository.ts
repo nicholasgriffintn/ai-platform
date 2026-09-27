@@ -1,6 +1,6 @@
 import { ACTIVE_TRAINING_RUN_STATUSES } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { modelTrainingCheckpoint, modelTrainingRun } from "~/infrastructure/database/schema";
@@ -10,6 +10,82 @@ export type ModelTrainingRunRecord = typeof modelTrainingRun.$inferSelect;
 export type ModelTrainingCheckpointRecord = typeof modelTrainingCheckpoint.$inferSelect;
 
 export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
+  async claimSubmission(id: string): Promise<ModelTrainingRunRecord | null> {
+    const now = new Date().toISOString();
+    const [record] = await this.database
+      .update(modelTrainingRun)
+      .set({
+        status: "preparing",
+        submission_started_at: now,
+        last_checked_at: now,
+      })
+      .where(
+        and(
+          eq(modelTrainingRun.id, id),
+          eq(modelTrainingRun.status, "queued"),
+          isNull(modelTrainingRun.provider_job_id),
+          isNull(modelTrainingRun.submission_started_at),
+        ),
+      )
+      .returning();
+
+    return record ?? null;
+  }
+
+  async requestCancellation(
+    workspaceId: string,
+    id: string,
+  ): Promise<ModelTrainingRunRecord | null> {
+    const [record] = await this.database
+      .update(modelTrainingRun)
+      .set({
+        status: sql`CASE WHEN ${modelTrainingRun.submission_started_at} IS NULL AND ${modelTrainingRun.provider_job_id} IS NULL AND ${modelTrainingRun.status} = 'queued' THEN 'cancelled' ELSE 'cancelling' END`,
+        failure_reason: "Cancellation requested by a workspace member",
+      })
+      .where(
+        and(
+          eq(modelTrainingRun.workspace_id, workspaceId),
+          eq(modelTrainingRun.id, id),
+          inArray(modelTrainingRun.status, [...ACTIVE_TRAINING_RUN_STATUSES]),
+        ),
+      )
+      .returning();
+
+    return record ?? null;
+  }
+
+  async recordProviderState(
+    id: string,
+    changes: Partial<
+      Pick<
+        ModelTrainingRunRecord,
+        | "status"
+        | "provider_job_id"
+        | "output_version_id"
+        | "cost_usd"
+        | "failure_reason"
+        | "started_at"
+        | "completed_at"
+        | "last_checked_at"
+      >
+    >,
+  ): Promise<ModelTrainingRunRecord | null> {
+    const [record] = await this.database
+      .update(modelTrainingRun)
+      .set({
+        ...changes,
+        ...(changes.status && changes.status !== "cancelled"
+          ? {
+              status: sql`CASE WHEN ${modelTrainingRun.status} IN ('cancelling', 'cancelled') THEN ${modelTrainingRun.status} ELSE ${changes.status} END`,
+            }
+          : {}),
+      })
+      .where(eq(modelTrainingRun.id, id))
+      .returning();
+
+    return record ?? null;
+  }
+
   async create(input: {
     workspaceId: string;
     projectId: string | null;

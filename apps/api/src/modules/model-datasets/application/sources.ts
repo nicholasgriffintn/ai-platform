@@ -74,18 +74,23 @@ async function* csvRows(
     }
   };
 
-  while (true) {
-    const { value, done } = await reader.read();
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
 
-    if (done) {
-      break;
+      if (done) {
+        break;
+      }
+
+      yield* emit(parser.push(decoder.decode(value, { stream: true })));
     }
 
-    yield* emit(parser.push(decoder.decode(value, { stream: true })));
+    yield* emit(parser.push(decoder.decode()));
+    yield* emit(parser.finish());
+  } finally {
+    await reader.cancel().catch(() => undefined);
+    reader.releaseLock();
   }
-
-  yield* emit(parser.push(decoder.decode()));
-  yield* emit(parser.finish());
 }
 
 async function* jsonArray(
@@ -165,20 +170,37 @@ export function httpAsyncBuffer(
   url: string,
   byteLength: number,
   headers: Record<string, string>,
-  fetcher: typeof fetch,
+  fetcher: (url: string, init?: RequestInit) => Promise<Response>,
 ): AsyncBuffer {
   return {
     byteLength,
     async slice(start: number, end?: number) {
+      const rangeEnd = end ?? byteLength;
       const response = await fetcher(url, {
-        headers: { ...headers, Range: `bytes=${start}-${(end ?? byteLength) - 1}` },
+        headers: { ...headers, Range: `bytes=${start}-${rangeEnd - 1}` },
       });
 
       if (!response.ok) {
         throw new Error(`Reading ${url} failed with ${response.status}`);
       }
 
-      return response.arrayBuffer();
+      const expectedRange = `bytes ${start}-${rangeEnd - 1}/${byteLength}`;
+
+      if (
+        (response.status !== 206 && (start !== 0 || rangeEnd !== byteLength)) ||
+        (response.status === 206 && response.headers.get("content-range") !== expectedRange)
+      ) {
+        await response.body?.cancel();
+        throw new Error("The dataset server did not return the requested byte range");
+      }
+
+      const bytes = await response.arrayBuffer();
+
+      if (bytes.byteLength !== rangeEnd - start) {
+        throw new Error("The dataset server returned an incomplete byte range");
+      }
+
+      return bytes;
     },
   };
 }

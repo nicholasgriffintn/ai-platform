@@ -67,17 +67,36 @@ export async function fetchFollowingSafeRedirects(
     redirectCount += 1;
 
     const method = (currentInit.method ?? "GET").toUpperCase();
+    const nextUrl = parsePublicHttpUrl(new URL(location, currentUrl));
+    const headers = new Headers(currentInit.headers);
+
+    if (nextUrl.origin !== currentUrl.origin) {
+      for (const name of [
+        "authorization",
+        "proxy-authorization",
+        "cookie",
+        "x-api-key",
+        "api-key",
+      ]) {
+        headers.delete(name);
+      }
+    }
 
     if (
-      response.status === 303 ||
+      (response.status === 303 && method !== "GET" && method !== "HEAD") ||
       ((response.status === 301 || response.status === 302) &&
         method !== "GET" &&
         method !== "HEAD")
     ) {
       Object.assign(currentInit, { method: "GET", body: undefined });
+      headers.delete("content-type");
+      headers.delete("content-length");
+      headers.delete("content-encoding");
     }
 
-    currentUrl = parsePublicHttpUrl(new URL(location, currentUrl));
+    currentInit.headers = headers;
+    await response.body?.cancel();
+    currentUrl = nextUrl;
   }
 }
 

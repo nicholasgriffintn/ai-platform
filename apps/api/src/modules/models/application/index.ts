@@ -54,6 +54,7 @@ export async function listModels(env: IEnv, user?: IUser): Promise<ModelConfig> 
   });
   const filteredModels = await filterModelsForUserAccess(allModels, env, user?.id, {
     shouldUseCache: false,
+    includePlatformModels: true,
   });
   const executableModelIds = new Set(
     Object.keys(getExecutableModelsForAccount(filteredModels, user)),

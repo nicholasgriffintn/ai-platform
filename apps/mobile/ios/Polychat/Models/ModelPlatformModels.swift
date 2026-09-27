@@ -65,13 +65,14 @@ struct ModelDeploymentItem: Decodable, Identifiable {
     let status: String
     let provider: String
     let hourlyUsd: Double?
+    var pauseSupported: Bool? = nil
 
     var canPause: Bool {
-        status == "running" || status == "scaled_to_zero"
+        pauseSupported != false && provider != "google-vertex" && (status == "running" || status == "scaled_to_zero")
     }
 
     var canResume: Bool {
-        status == "paused"
+        pauseSupported != false && provider != "google-vertex" && status == "paused"
     }
 }
 

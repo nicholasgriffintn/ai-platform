@@ -77,6 +77,7 @@ export async function resolveExecutableModelForRequest({
 }> {
   const visibleModels = await filterModelsForUserAccess(getModels(), env, user?.id, {
     shouldUseCache: false,
+    includePlatformModels: true,
   });
   const executableModels = getExecutableModelsForAccount(visibleModels, user);
   const resolved = resolveExecutableModelFromCatalogue(executableModels, model, provider);

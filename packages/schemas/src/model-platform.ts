@@ -142,6 +142,7 @@ export type TrainerManifest = z.infer<typeof trainerManifestSchema>;
 
 export const hostManifestSchema = z.object({
   id: z.string(),
+  pauseSupported: z.boolean().optional(),
   name: z.string(),
   description: z.string(),
   shapes: z.array(deploymentShapeSchema),
@@ -409,6 +410,8 @@ export const TRANSITIONAL_DEPLOYMENT_STATUSES: readonly DeploymentStatus[] = [
 
 export const modelDeploymentSchema = z.object({
   id: z.string(),
+  pauseSupported: z.boolean().optional(),
+  spendRequestId: z.string().optional(),
   workspaceId: z.string(),
   projectId: z.string().nullable(),
   name: z.string(),
@@ -453,6 +456,17 @@ export const scaleDeploymentRequestSchema = z.object({
   maxReplicas: z.number().int().positive().max(64),
 });
 export type ScaleDeploymentRequest = z.infer<typeof scaleDeploymentRequestSchema>;
+
+export const deploymentSpendActionSchema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("resume"), deploymentId: z.string().min(1), specHash: z.string() }),
+  z.object({
+    action: z.literal("scale"),
+    deploymentId: z.string().min(1),
+    specHash: z.string(),
+    scaling: scaleDeploymentRequestSchema,
+  }),
+]);
+export type DeploymentSpendAction = z.infer<typeof deploymentSpendActionSchema>;
 
 export const deploymentActionSchema = z.enum(["pause", "resume", "delete"]);
 export type DeploymentAction = z.infer<typeof deploymentActionSchema>;
@@ -994,6 +1008,7 @@ export const TRAINING_RUN_STATUSES = [
   "preparing",
   "submitted",
   "running",
+  "cancelling",
   "completed",
   "failed",
   "cancelled",
@@ -1005,6 +1020,7 @@ export const ACTIVE_TRAINING_RUN_STATUSES: readonly TrainingRunStatus[] = [
   "preparing",
   "submitted",
   "running",
+  "cancelling",
 ];
 
 export const trainingMetricPointSchema = z.object({
@@ -1339,6 +1355,14 @@ export function parsePlatformChatModelId(
   return match ? { kind: match[1] === "alias" ? "alias" : "deployment", id: match[2] } : null;
 }
 
+export const SPEND_REQUEST_STATES = [
+  "pending",
+  "executing",
+  "approved",
+  "rejected",
+  "failed",
+] as const;
+
 export const spendRequestSchema = z.object({
   id: z.string(),
   workspaceId: z.string(),
@@ -1347,7 +1371,7 @@ export const spendRequestSchema = z.object({
   summary: z.string(),
   estimateUsd: z.number().nonnegative().nullable(),
   reason: z.string().nullable(),
-  state: z.enum(["pending", "approved", "rejected"]),
+  state: z.enum(SPEND_REQUEST_STATES),
   subjectId: z.string().nullable(),
   requestedBy: z.number().int().nullable(),
   decidedBy: z.number().int().nullable(),

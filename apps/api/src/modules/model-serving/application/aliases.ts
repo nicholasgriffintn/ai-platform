@@ -1,4 +1,4 @@
-import { evaluateGate, pickCanaryRoute } from "@ngriffin_uk/polychat-library-model-registry";
+import { pickCanaryRoute } from "@ngriffin_uk/polychat-library-model-registry";
 import {
   type AliasDetail,
   type AliasesResponse,
@@ -20,10 +20,9 @@ import {
   requireWorkspaceProject,
 } from "~/modules/model-registry/application/access";
 import { toModelRoute } from "~/modules/model-registry/application/mappers";
-import { loadRegistryScope, routeStanding } from "~/modules/model-registry/application/scope";
-import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 
 import type { ModelAliasRecord } from "../infrastructure/ModelAliasRepository";
+import { evaluateAliasTarget, requireAliasGateSuite } from "./alias-governance";
 import { toAliasEvent, toModelAlias } from "./mappers";
 
 export async function createAliasForRoute(
@@ -79,20 +78,6 @@ async function requireAlias(context: ServiceContext, workspaceId: string, aliasI
   }
 
   return alias;
-}
-
-async function requireActiveRoute(
-  repositories: RepositoryManager,
-  workspaceId: string,
-  routeId: string,
-): Promise<ModelRouteRecord> {
-  const route = await repositories.modelRoutes.getRoute(workspaceId, routeId);
-
-  if (!route || route.status !== "active") {
-    throw notFound("Active route");
-  }
-
-  return route;
 }
 
 export async function listAliases(
@@ -161,19 +146,29 @@ export async function createAlias(
   workspaceId: string,
   input: CreateAliasRequest,
 ): Promise<ModelAlias> {
-  const { userId } = await requireModelAction(context, workspaceId, "promote");
+  const access = await requireModelAction(context, workspaceId, "promote");
+  const { userId } = access;
   const request = createAliasRequestSchema.parse(input);
   const projectId = await requireWorkspaceProject(context, workspaceId, request.projectId);
 
-  if (request.routeId) {
-    await requireActiveRoute(context.repositories, workspaceId, request.routeId);
-  }
+  await requireAliasGateSuite(context.repositories, workspaceId, request.gate);
 
-  if (
-    request.gate &&
-    !(await context.repositories.modelEvals.getSuite(workspaceId, request.gate.suiteId))
-  ) {
-    throw notFound("Gate suite");
+  if (request.routeId) {
+    if (access.separationOfDuties || (request.requiresApproval && !access.actions.has("approve"))) {
+      throw conflict("Create the alias without a target, then request an approved promotion");
+    }
+
+    const target = await evaluateAliasTarget(
+      context.repositories,
+      workspaceId,
+      projectId,
+      request.routeId,
+      request.gate,
+    );
+
+    if (target.gate && !target.gate.passed) {
+      throw conflict(`Gate failed: ${target.gate.failures.join("; ")}`);
+    }
   }
 
   const alias = await createAliasForRoute(context.repositories, {
@@ -207,6 +202,9 @@ export async function updateAlias(
 ): Promise<ModelAlias> {
   const { userId } = await requireModelAction(context, workspaceId, "manage_policy");
   const alias = await requireAlias(context, workspaceId, aliasId);
+
+  await requireAliasGateSuite(context.repositories, workspaceId, input.gate);
+
   const updated = await context.repositories.modelAliases.update(alias.id, {
     ...(input.description === undefined ? {} : { description: input.description }),
     ...(input.gate === undefined ? {} : { gate: input.gate }),
@@ -256,26 +254,18 @@ export async function promoteAlias(
   const access = await requireModelAction(context, workspaceId, "promote");
   const repositories = context.repositories;
   const alias = await requireAlias(context, workspaceId, aliasId);
-  const route = await requireActiveRoute(repositories, workspaceId, request.routeId);
 
-  if (route.id === alias.route_id && request.canaryPercent === undefined) {
+  if (request.routeId === alias.route_id && request.canaryPercent === undefined) {
     throw badRequest("The alias already points at this route");
   }
 
-  const scope = await loadRegistryScope(repositories, workspaceId, alias.project_id, {
-    versionIds: [route.version_id],
-  });
-
-  if (!routeStanding(scope, route)?.usable) {
-    throw conflict("This route is not approved for the alias's scope yet");
-  }
-
-  const gateRun = alias.gate
-    ? await repositories.modelEvals.latestCompletedRun(alias.gate.suiteId, route.id)
-    : null;
-  const gate = alias.gate
-    ? { ...evaluateGate(alias.gate, gateRun?.scores ?? null), runId: gateRun?.id ?? null }
-    : null;
+  const { route, gate } = await evaluateAliasTarget(
+    repositories,
+    workspaceId,
+    alias.project_id,
+    request.routeId,
+    alias.gate,
+  );
 
   if (gate && !gate.passed) {
     const event = await repositories.modelAliases.addEvent({
@@ -296,7 +286,17 @@ export async function promoteAlias(
     };
   }
 
-  if (alias.requires_approval && !access.actions.has("approve")) {
+  const needsApproval = alias.requires_approval || access.separationOfDuties;
+  const [latest] = needsApproval ? await repositories.modelAliases.listEvents(alias.id) : [];
+  const hasRequest =
+    latest?.kind === "requested" &&
+    latest.to_route_id === route.id &&
+    latest.from_route_id === alias.route_id;
+
+  if (
+    needsApproval &&
+    (!access.actions.has("approve") || (access.separationOfDuties && !hasRequest))
+  ) {
     const event = await repositories.modelAliases.addEvent({
       aliasId: alias.id,
       kind: "requested",
@@ -315,18 +315,10 @@ export async function promoteAlias(
     };
   }
 
-  if (alias.requires_approval && access.separationOfDuties) {
-    const [latest] = await repositories.modelAliases.listEvents(alias.id);
-
-    if (
-      latest?.kind === "requested" &&
-      latest.to_route_id === route.id &&
-      latest.actor_user_id === access.userId
-    ) {
-      throw conflict(
-        "Separation of duties: someone other than the requester must approve this promotion",
-      );
-    }
+  if (access.separationOfDuties && hasRequest && latest.actor_user_id === access.userId) {
+    throw conflict(
+      "Separation of duties: someone other than the requester must approve this promotion",
+    );
   }
 
   const canary = request.canaryPercent !== undefined && alias.route_id !== null;
@@ -377,11 +369,34 @@ export async function rollbackAlias(
   workspaceId: string,
   aliasId: string,
 ): Promise<ModelAlias> {
-  const { userId } = await requireModelAction(context, workspaceId, "promote");
+  const access = await requireModelAction(context, workspaceId, "promote");
+  const { userId } = access;
   const repositories = context.repositories;
   const alias = await requireAlias(context, workspaceId, aliasId);
 
+  if (access.separationOfDuties || (alias.requires_approval && !access.actions.has("approve"))) {
+    throw conflict(
+      "This rollback needs approval. Request a promotion to the previous route instead",
+    );
+  }
+
   if (alias.canary_route_id) {
+    if (!alias.route_id) {
+      throw conflict("There is no primary route to roll back to");
+    }
+
+    const target = await evaluateAliasTarget(
+      repositories,
+      workspaceId,
+      alias.project_id,
+      alias.route_id,
+      alias.gate,
+    );
+
+    if (target.gate && !target.gate.passed) {
+      throw conflict(`Gate failed: ${target.gate.failures.join("; ")}`);
+    }
+
     const updated = await repositories.modelAliases.update(alias.id, {
       canary_route_id: null,
       canary_percent: 0,
@@ -410,7 +425,17 @@ export async function rollbackAlias(
     throw conflict("There is no earlier route to roll back to");
   }
 
-  await requireActiveRoute(repositories, workspaceId, previous.from_route_id);
+  const target = await evaluateAliasTarget(
+    repositories,
+    workspaceId,
+    alias.project_id,
+    previous.from_route_id,
+    alias.gate,
+  );
+
+  if (target.gate && !target.gate.passed) {
+    throw conflict(`Gate failed: ${target.gate.failures.join("; ")}`);
+  }
 
   const updated = await repositories.modelAliases.update(alias.id, {
     route_id: previous.from_route_id,

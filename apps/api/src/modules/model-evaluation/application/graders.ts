@@ -9,23 +9,32 @@ import {
   createGraderRequestSchema,
   type Grader,
   type GraderConfig,
+  parsePlatformChatModelId,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import {
   conflict,
   notFound,
   requireModelAction,
   requireWorkspaceProject,
 } from "~/modules/model-registry/application/access";
+import { completeWorkspaceRoute } from "~/modules/model-serving/application/route-completion";
+import { resolveScopedModelRoute } from "~/modules/model-serving/application/scoped-model-route";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import type { IEnv } from "~/types";
 
 import { toGrader } from "./mappers";
 
 export async function scoreWithGrader(
-  env: IEnv,
+  scope: {
+    env: IEnv;
+    repositories: RepositoryManager;
+    workspaceId: string;
+    projectId: string | null;
+  },
   config: GraderConfig,
   item: { input: string; output: string; expected?: string },
   judge?: { model: string; provider: string },
@@ -34,6 +43,27 @@ export async function scoreWithGrader(
     return scoreDeterministic(config, item.output, item.expected);
   }
 
+  const prompt = buildJudgePrompt({
+    rubric: config.rubric,
+    input: item.input,
+    output: item.output,
+    expected: item.expected,
+  });
+
+  if (config.judgeModelId && parsePlatformChatModelId(config.judgeModelId)) {
+    const route = await resolveScopedModelRoute(
+      scope.repositories,
+      scope.workspaceId,
+      scope.projectId,
+      config.judgeModelId,
+    );
+
+    return parseJudgeScore(
+      await completeWorkspaceRoute(scope.env, scope.repositories, route, prompt, null),
+    );
+  }
+
+  const { env } = scope;
   const model = config.judgeModelId
     ? { model: config.judgeModelId, provider: undefined }
     : (judge ?? (await getAuxiliaryModel(env)));
@@ -41,12 +71,7 @@ export async function scoreWithGrader(
     env,
     model: model.model,
     provider: model.provider,
-    prompt: buildJudgePrompt({
-      rubric: config.rubric,
-      input: item.input,
-      output: item.output,
-      expected: item.expected,
-    }),
+    prompt,
   });
 
   return parseJudgeScore(verdict.text);
@@ -176,10 +201,19 @@ export async function previewGrader(
   }
 
   return {
-    score: await scoreWithGrader(context.env, grader.config, {
-      input: "",
-      output: input.output,
-      expected: input.expected,
-    }),
+    score: await scoreWithGrader(
+      {
+        env: context.env,
+        repositories: context.repositories,
+        workspaceId,
+        projectId: grader.project_id,
+      },
+      grader.config,
+      {
+        input: "",
+        output: input.output,
+        expected: input.expected,
+      },
+    ),
   };
 }

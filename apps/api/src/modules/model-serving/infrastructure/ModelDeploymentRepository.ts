@@ -1,5 +1,5 @@
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
-import { and, desc, eq, inArray, ne } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, ne } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { modelDeployment } from "~/infrastructure/database/schema";
@@ -18,6 +18,74 @@ const LIVE_STATUSES: Array<ModelDeploymentRecord["status"]> = [
 ];
 
 export class ModelDeploymentRepository extends BaseRepository<Pick<IEnv, "DB">> {
+  async recordProviderState(
+    id: string,
+    previousRef: string | null,
+    changes: Pick<
+      ModelDeploymentRecord,
+      "status" | "provider_ref" | "region" | "hourly_usd" | "failure_reason" | "last_checked_at"
+    >,
+  ): Promise<ModelDeploymentRecord | null> {
+    const [record] = await this.database
+      .update(modelDeployment)
+      .set({
+        ...changes,
+        ...(changes.provider_ref !== previousRef ? { provisioning_started_at: null } : {}),
+        updated_at: new Date().toISOString(),
+      })
+      .where(
+        and(
+          eq(modelDeployment.id, id),
+          previousRef === null
+            ? isNull(modelDeployment.provider_ref)
+            : eq(modelDeployment.provider_ref, previousRef),
+        ),
+      )
+      .returning();
+
+    return record ?? this.getById(id);
+  }
+
+  async claimProvisioningContinuation(id: string, providerRef: string): Promise<boolean> {
+    const [record] = await this.database
+      .update(modelDeployment)
+      .set({ provisioning_started_at: new Date().toISOString() })
+      .where(
+        and(
+          eq(modelDeployment.id, id),
+          eq(modelDeployment.provider_ref, providerRef),
+          isNull(modelDeployment.provisioning_started_at),
+        ),
+      )
+      .returning({ id: modelDeployment.id });
+
+    return record !== undefined;
+  }
+
+  async claimProvisioning(id: string): Promise<ModelDeploymentRecord | null> {
+    const now = new Date().toISOString();
+    const [record] = await this.database
+      .update(modelDeployment)
+      .set({
+        status: "provisioning",
+        provisioning_started_at: now,
+        last_checked_at: now,
+        updated_at: now,
+      })
+      .where(
+        and(
+          eq(modelDeployment.id, id),
+          eq(modelDeployment.status, "pending"),
+          eq(modelDeployment.desired_state, "running"),
+          isNull(modelDeployment.provider_ref),
+          isNull(modelDeployment.provisioning_started_at),
+        ),
+      )
+      .returning();
+
+    return record ?? null;
+  }
+
   async create(input: {
     workspaceId: string;
     projectId: string | null;

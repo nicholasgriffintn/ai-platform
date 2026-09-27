@@ -6,7 +6,9 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AlertTriangle, ArrowRight, CheckCircle2, ListChecks, Loader2 } from "lucide-react";
 
-const HIGHLIGHTED_STATUSES = new Set<ProjectTaskStatus>(["running", "blocked", "review"]);
+import { sortProjectTasks } from "./utils/project-tasks";
+
+const HIGHLIGHTED_STATUSES = new Set<ProjectTaskStatus>(["blocked", "review"]);
 const MAX_VISIBLE_TASKS = 4;
 
 function statusIcon(status: ProjectTaskStatus) {
@@ -44,10 +46,7 @@ export function ProjectTasksSummary({
 }: ProjectTasksSummaryProps) {
   const openTasks = tasks.filter((task) => task.status !== "done" && task.status !== "cancelled");
   const needsAttention = openTasks.filter((task) => HIGHLIGHTED_STATUSES.has(task.status));
-  const visible = (needsAttention.length > 0 ? needsAttention : openTasks).slice(
-    0,
-    MAX_VISIBLE_TASKS,
-  );
+  const visible = sortProjectTasks(openTasks).slice(0, MAX_VISIBLE_TASKS);
 
   return (
     <div>
@@ -67,7 +66,7 @@ export function ProjectTasksSummary({
       ) : openTasks.length === 0 ? (
         <EmptyState
           icon={<ListChecks className="text-muted-foreground" size={24} />}
-          title="No tasks yet"
+          title={tasks.length > 0 ? "No open tasks" : "No tasks yet"}
           message="Capture work this project needs done, then run one and the assistant works it in its own conversation."
           action={
             <Button variant="primary" onClick={onCreateTask}>

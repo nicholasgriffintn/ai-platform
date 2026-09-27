@@ -1,9 +1,15 @@
-# @ngriffin_uk/polychat-ai-model-sources
+# @ngriffin_uk/polychat-ai-model-providers
 
-Model and dataset source adapters. `HuggingFaceHubClient` resolves revisions to commits, lists files with LFS SHA-256 and per-file scanner results, reads byte ranges for static inspection, samples dataset rows through the dataset viewer and imports public eval results with their provenance.
+Use capability manifests to select model trainers and hosts before creating provider resources. This package also supplies connection checks, hosting lifecycle operations, training recipes and Hugging Face model and dataset source adapters.
+
+Read `pauseSupported` and `scaleToZero` independently. Vertex endpoints cannot pause; delete them to stop dedicated compute. Hosts that cannot pause cannot enforce Polychat hard-stop or idle-pause budgets.
+
+Keep polling dedicated deployments until the provider confirms deletion. A provisioning operation reference is not yet a deployable endpoint, and accepting a delete request does not confirm that compute has stopped.
+
+Use `HuggingFaceHubClient` to resolve revisions to commits, list files with LFS SHA-256 and scanner results, read byte ranges for static inspection, sample dataset rows and import public evaluation results with their provenance.
 
 ```ts
-import { HuggingFaceHubClient } from "@ngriffin_uk/polychat-ai-model-sources";
+import { HuggingFaceHubClient } from "@ngriffin_uk/polychat-ai-model-providers";
 
 const hub = new HuggingFaceHubClient({ token });
 const info = await hub.getRepoInfo({
@@ -14,4 +20,4 @@ const info = await hub.getRepoInfo({
 const files = await hub.listFiles({ kind: "model", repo: info.id, revision: info.sha });
 ```
 
-Repository and revision strings are validated before any request is built, so a crafted reference cannot reach other Hub API paths. Failures throw `ModelSourceError` with a code (`invalid_reference`, `not_found`, `unauthorised`, `rate_limited`, `upstream_error`) for the host to map.
+Repository and revision strings are validated before requests are built. Map `ModelProviderError` codes at the application boundary and preserve uncertain provider outcomes for reconciliation before retrying resource creation.

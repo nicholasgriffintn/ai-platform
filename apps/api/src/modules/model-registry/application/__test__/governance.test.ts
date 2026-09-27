@@ -97,6 +97,7 @@ beforeAll(async () => {
     "0052_model_registry",
     "0053_workspace_provider_connections",
     "0054_model_platform",
+    "0055_model_provider_claims",
   ]) {
     const migration = await readFile(
       new URL(`../../../../../migrations/${name}.sql`, import.meta.url),

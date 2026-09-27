@@ -25,6 +25,8 @@ export const TRAINING_SCRIPT = String.raw`
 import json
 import os
 import re
+import subprocess
+import sys
 import time
 import urllib.request
 
@@ -278,11 +280,13 @@ def train_embedding(train, validation):
     model = SentenceTransformer(SPEC["base"]["repo"], revision=SPEC["base"]["revision"])
     columns = ["query", "positive"] + (["negative"] if "negative" in train.column_names and all(train["negative"]) else [])
     train = train.select_columns(columns)
+    validation = validation.select_columns(columns) if validation is not None else None
     args = SentenceTransformerTrainingArguments(**{k: v for k, v in common_args().items() if k not in ("push_to_hub",)})
     trainer = SentenceTransformerTrainer(
         model=model,
         args=args,
         train_dataset=train,
+        eval_dataset=validation,
         loss=losses.MultipleNegativesRankingLoss(model),
         callbacks=callbacks(),
     )
@@ -325,13 +329,12 @@ def merge_models():
 def quantise_model():
     scheme = SPEC["quantisation"]
     if scheme == "gguf":
-        os.system("git clone --depth 1 https://github.com/ggml-org/llama.cpp /tmp/llama.cpp && pip install --quiet -r /tmp/llama.cpp/requirements/requirements-convert_hf_to_gguf.txt")
+        subprocess.run(["git", "clone", "--depth", "1", "https://github.com/ggml-org/llama.cpp", "/tmp/llama.cpp"], check=True)
+        subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "-r", "/tmp/llama.cpp/requirements/requirements-convert_hf_to_gguf.txt"], check=True)
         from huggingface_hub import snapshot_download
         source = snapshot_download(SPEC["base"]["repo"], revision=SPEC["base"]["revision"], token=os.environ.get("HF_TOKEN"))
         os.makedirs(OUTPUT_DIR, exist_ok=True)
-        code = os.system("python /tmp/llama.cpp/convert_hf_to_gguf.py %s --outtype q8_0 --outfile %s/model-q8_0.gguf" % (source, OUTPUT_DIR))
-        if code != 0:
-            raise RuntimeError("GGUF conversion failed")
+        subprocess.run([sys.executable, "/tmp/llama.cpp/convert_hf_to_gguf.py", source, "--outtype", "q8_0", "--outfile", os.path.join(OUTPUT_DIR, "model-q8_0.gguf")], check=True)
         finish_folder()
         return
     from transformers import AutoModelForCausalLM, AutoTokenizer

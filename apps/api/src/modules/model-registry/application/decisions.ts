@@ -108,7 +108,9 @@ export async function requestDecision(
   }
 
   const automatic =
-    !input.exception && !needsHumanDecision(current.verdict) && !isRevoked(scope, input.versionId);
+    !input.exception &&
+    !needsHumanDecision(current.verdict) &&
+    !isRevoked(scope, input.versionId, routeId);
   const record = await repositories.modelGovernance.createDecision({
     workspaceId,
     projectId,

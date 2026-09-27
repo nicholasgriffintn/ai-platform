@@ -294,7 +294,7 @@ export class SageMakerHost implements Host {
     } catch (error) {
       if (error instanceof Error && /Could not find endpoint/i.test(error.message)) {
         return {
-          status: "paused",
+          status: deployment.desired === "deleted" ? "deleted" : "paused",
           providerRef: deployment.providerRef,
           region: this.aws.settings.region,
           readyReplicas: 0,

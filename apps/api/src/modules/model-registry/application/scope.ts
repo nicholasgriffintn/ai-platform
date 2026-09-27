@@ -95,15 +95,27 @@ function latestDecision(
   );
 }
 
-export function isRevoked(scope: RegistryScope, versionId: string): boolean {
-  const resolved = scope.decisions.find(
-    (decision) =>
-      decision.version_id === versionId &&
-      decision.route_id === null &&
-      decision.state !== "pending",
-  );
+export function isRevoked(
+  scope: RegistryScope,
+  versionId: string,
+  routeId: string | null = null,
+): boolean {
+  const projects = scope.projectId ? [null, scope.projectId] : [null];
+  const routes = routeId ? [null, routeId] : [null];
 
-  return resolved?.state === "revoked";
+  return projects.some((projectId) =>
+    routes.some((targetRouteId) => {
+      const resolved = scope.decisions.find(
+        (decision) =>
+          decision.version_id === versionId &&
+          decision.project_id === projectId &&
+          decision.route_id === targetRouteId &&
+          (decision.state === "approved" || decision.state === "revoked"),
+      );
+
+      return resolved?.state === "revoked";
+    }),
+  );
 }
 
 function standing(
@@ -136,7 +148,7 @@ function standing(
     verdict,
     usable:
       version.status === "ready" &&
-      !isRevoked(scope, version.id) &&
+      !isRevoked(scope, version.id, route?.id ?? null) &&
       isVerdictCovered(verdict, approvals, now),
     decision: latestDecision(scope, version.id, route?.id ?? null),
   };

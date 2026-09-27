@@ -1,5 +1,3 @@
-import { createHash } from "node:crypto";
-
 import {
   HuggingFaceJobsClient,
   startHubPublishJob,
@@ -26,6 +24,7 @@ import {
   sha256Hex,
   slugify,
 } from "@ngriffin_uk/polychat-utility-core";
+import { sha256Stream } from "@ngriffin_uk/polychat-utility-server/crypto";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
@@ -49,6 +48,7 @@ import { syncVersionReviews } from "./decisions";
 import { hubLocation } from "./handles";
 import { enqueueInspection } from "./importing";
 import { getVersionDetail } from "./library";
+import { verifyPublishedUpload } from "./upload-integrity";
 
 const REFUSED_EXTENSIONS = [".bin", ".pt", ".pth", ".pkl", ".pickle", ".ckpt"];
 const WEIGHT_EXTENSIONS = [".safetensors", ".gguf", ".onnx"];
@@ -222,22 +222,16 @@ export async function uploadPart(
   const part = await new ArtefactStore(context.env)
     .resumeMultipartUpload(file.key, file.multipartId)
     .uploadPart(partNumber, body);
-  const latest = await context.repositories.modelUploads.get(workspaceId, uploadId);
+  const recorded = await context.repositories.modelUploads.recordPart({
+    workspaceId,
+    uploadId,
+    fileIndex,
+    partNumber,
+    etag: part.etag,
+  });
 
-  if (latest) {
-    await context.repositories.modelUploads.update(uploadId, {
-      files: latest.files.map((item) =>
-        item.index === fileIndex
-          ? {
-              ...item,
-              partsUploaded: [...new Set([...item.partsUploaded, partNumber])].sort(
-                (left, right) => left - right,
-              ),
-              etags: { ...item.etags, [String(partNumber)]: part.etag },
-            }
-          : item,
-      ),
-    });
+  if (!recorded) {
+    throw conflict("The upload is no longer accepting parts");
   }
 
   return { partNumber, etag: part.etag };
@@ -317,13 +311,7 @@ async function hashObject(store: ArtefactStore, key: string): Promise<string> {
     throw new Error(`${key} is missing`);
   }
 
-  const hash = createHash("sha256");
-
-  for await (const chunk of object.body) {
-    hash.update(chunk);
-  }
-
-  return hash.digest("hex");
+  return sha256Stream(object.body);
 }
 
 async function finishPublish(
@@ -336,7 +324,7 @@ async function finishPublish(
   const hub = await resolveHubAccess(repositories, upload.workspace_id);
 
   if (!hub) {
-    return { status: "error", message: "The Hugging Face connection was removed" };
+    throw new Error("The Hugging Face connection was removed");
   }
 
   const job = await new HuggingFaceJobsClient(hub.namespace, hub.token, fetch).inspect(
@@ -347,7 +335,7 @@ async function finishPublish(
     return PENDING;
   }
 
-  const version = await repositories.modelAssets.getVersionById(versionId);
+  const version = await repositories.modelAssets.getVersion(upload.workspace_id, versionId);
 
   if (!version) {
     return { status: "success", message: "Version is gone" };
@@ -365,16 +353,13 @@ async function finishPublish(
   const repo = readNonEmptyString(job.environment.POLYCHAT_REPOSITORY);
 
   if (!repo) {
-    return { status: "error", message: "The publish job did not record its repository" };
+    throw new Error("The publish job did not record its repository");
   }
 
   const client = await workspaceHubClient(repositories, upload.workspace_id);
   const info = await client.getRepoInfo({ kind: "model", repo, revision: "main" });
-  const published = await client.listFiles({ kind: "model", repo, revision: info.sha });
-  const expected = new Map(upload.files.map((file) => [file.path, file.sha256]));
-  const mismatched = published.filter(
-    (file) => file.sha256 && expected.has(file.path) && expected.get(file.path) !== file.sha256,
-  );
+  const { missing, mismatched } = await verifyPublishedUpload(client, repo, info.sha, upload.files);
+  const failed = missing.length > 0 || mismatched.length > 0;
 
   await repositories.modelAssets.updateVersion(versionId, {
     attributes: { ...version.attributes, location: hubLocation(repo, info.sha) },
@@ -384,14 +369,17 @@ async function finishPublish(
       versionId,
       kind: "upload_integrity",
       source: "upload",
-      status: mismatched.length > 0 ? "fail" : "pass",
-      summary:
-        mismatched.length > 0
-          ? `${mismatched.length} published files do not match the uploaded bytes`
-          : `Published to ${repo}@${info.sha.slice(0, 7)} with matching hashes`,
-      details: { repo, revision: info.sha, mismatched: mismatched.map((file) => file.path) },
+      status: failed ? "fail" : "pass",
+      summary: failed
+        ? `${missing.length} missing files and ${mismatched.length} files that do not match the uploaded bytes`
+        : `Published to ${repo}@${info.sha.slice(0, 7)} with matching hashes`,
+      details: { repo, revision: info.sha, missing, mismatched },
     },
   ]);
+  if (failed) {
+    throw new Error("Published files do not match the upload; inspection was not started");
+  }
+
   await enqueueInspection(env, repositories, versionId);
 
   return { status: "success", message: `Published to ${repo}` };
@@ -410,6 +398,10 @@ export async function finaliseUpload(
 
   try {
     if (data.publishJobId && data.versionId) {
+      if (upload.consumed_by !== data.versionId) {
+        return { status: "error", message: "The publish task does not belong to this upload" };
+      }
+
       return await finishPublish(env, repositories, upload, data.versionId, data.publishJobId);
     }
 
@@ -441,6 +433,20 @@ export async function finaliseUpload(
     const reason = getErrorMessage(error, "Finalising failed");
 
     await repositories.modelUploads.update(upload.id, { status: "failed", failure_reason: reason });
+
+    if (data.versionId && upload.consumed_by === data.versionId) {
+      const version = await repositories.modelAssets.getVersion(
+        upload.workspace_id,
+        data.versionId,
+      );
+
+      if (version) {
+        await repositories.modelAssets.updateVersion(version.id, {
+          status: "failed",
+          failure_reason: reason,
+        });
+      }
+    }
 
     return { status: "error", message: reason };
   }

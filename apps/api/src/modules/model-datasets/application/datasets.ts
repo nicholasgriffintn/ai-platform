@@ -1,4 +1,8 @@
-import { collectDescendants, suggestMapping } from "@ngriffin_uk/polychat-library-model-registry";
+import {
+  collectDescendants,
+  DatasetProfiler,
+  suggestMapping,
+} from "@ngriffin_uk/polychat-library-model-registry";
 import {
   type CreateDatasetRequest,
   DATASET_SPLITS,
@@ -9,6 +13,7 @@ import {
   type DatasetRow,
   type DatasetRowsQuery,
   type DatasetRowsResponse,
+  type DatasetSplit,
   type DatasetStats,
   type DatasetSummary,
   type ErasureRequest,
@@ -16,12 +21,19 @@ import {
   type ExcludeDatasetRowsRequest,
   MODEL_DATASET_PROCESS_TASK_TYPE,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord, readTextLines } from "@ngriffin_uk/polychat-utility-core";
+import {
+  canonicalJson,
+  getErrorMessage,
+  isRecord,
+  readTextLines,
+  sha256Hex,
+} from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { workspaceHubClient } from "~/modules/model-governance/application/connections";
 import { withProviderErrors } from "~/modules/model-governance/application/provider-errors";
+import { revokeVersionSet } from "~/modules/model-governance/application/revocation";
 import {
   badRequest,
   conflict,
@@ -32,7 +44,7 @@ import {
 import { syncVersionReviews } from "~/modules/model-registry/application/decisions";
 import {
   loadRegistryScope,
-  requireUsableVersion,
+  routeStanding,
   versionStanding,
 } from "~/modules/model-registry/application/scope";
 import { ArtefactStore, artefactKeys } from "~/modules/model-registry/infrastructure/ArtefactStore";
@@ -40,6 +52,7 @@ import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { IEnv } from "~/types";
 
 import type { ModelDatasetProfileRecord } from "../infrastructure/ModelDatasetRepository";
+import { copyDatasetSplit } from "./dataset-copy";
 import { formatFromPath, parquetRows, r2AsyncBuffer, streamRows } from "./sources";
 
 const PREVIEW_ROWS = 25;
@@ -144,13 +157,13 @@ async function sourceIdentity(
         throw notFound("Teacher route");
       }
 
-      await requireUsableVersion(
-        context.repositories,
-        workspaceId,
-        request.projectId,
-        route.version_id,
-        "Teacher model",
-      );
+      const scope = await loadRegistryScope(context.repositories, workspaceId, request.projectId, {
+        versionIds: [route.version_id],
+      });
+
+      if (!routeStanding(scope, route)?.usable) {
+        throw conflict("The teacher route is not approved for this scope");
+      }
 
       return {
         sourceRef: `polychat/synthetic/${route.provider}/${route.provider_model_id}/${userId}`,
@@ -394,13 +407,15 @@ export async function readDatasetRows(
 
   const rows: DatasetRow[] = [];
   let index = 0;
+  let matched = 0;
 
   for await (const line of readTextLines(object.body)) {
     if (!line.trim()) {
       continue;
     }
 
-    const include = query.flaggedOnly ? flagged.has(index) : index >= query.offset;
+    const matches = !query.flaggedOnly || flagged.has(index);
+    const include = matches && matched++ >= query.offset;
 
     if (include) {
       const parsed: unknown = JSON.parse(line);
@@ -423,38 +438,6 @@ export async function readDatasetRows(
   return { rows, total: query.flaggedOnly ? flagged.size : total };
 }
 
-async function copyWithout(
-  context: ServiceContext,
-  workspaceId: string,
-  source: ModelDatasetProfileRecord,
-  targetVersionId: string,
-  split: (typeof DATASET_SPLITS)[number],
-  excluded: ReadonlySet<number>,
-) {
-  const store = new ArtefactStore(context.env);
-  const object = await store.get(artefactKeys.datasetSplit(workspaceId, source.version_id, split));
-  const writer = store.writer(artefactKeys.datasetSplit(workspaceId, targetVersionId, split));
-  let index = 0;
-  let kept = 0;
-
-  if (object) {
-    for await (const line of readTextLines(object.body)) {
-      if (!line.trim()) {
-        continue;
-      }
-
-      if (!excluded.has(index)) {
-        await writer.writeLine(JSON.parse(line));
-        kept += 1;
-      }
-
-      index += 1;
-    }
-  }
-
-  return { bytes: await writer.close(), kept };
-}
-
 async function deriveWithout(
   context: ServiceContext,
   workspaceId: string,
@@ -470,104 +453,162 @@ async function deriveWithout(
     throw notFound("Processed dataset");
   }
 
-  const version = await repositories.modelAssets.createVersion({
-    assetId: sourceVersion.asset_id,
-    workspaceId,
-    revision: `pending:${crypto.randomUUID()}`,
-    status: "inspecting",
-    createdBy: userId,
-    attributes: sourceVersion.attributes,
-    files: [],
-  });
-  const stats: DatasetStats = source.stats;
-  const files = [];
-  const splits = [];
+  const excludedIndexes = new Set(request.indexes);
+  const sourceRows = source.stats.splits?.find((split) => split.name === request.split)?.rows ?? 0;
 
-  for (const split of DATASET_SPLITS) {
-    const excluded = split === request.split ? new Set(request.indexes) : new Set<number>();
-    const copied = await copyWithout(context, workspaceId, source, version.id, split, excluded);
-    const before = stats.splits?.find((item) => item.name === split);
-
-    if (copied.kept > 0) {
-      files.push({ path: `${split}.jsonl`, size: copied.bytes, sha256: null, format: null });
-    }
-
-    splits.push({
-      name: split,
-      rows: copied.kept,
-      tokens:
-        before && before.rows > 0 ? Math.round((before.tokens * copied.kept) / before.rows) : 0,
-    });
+  if (
+    [...excludedIndexes].some(
+      (index) => !Number.isInteger(index) || index < 0 || index >= sourceRows,
+    )
+  ) {
+    throw badRequest("Choose existing rows from this split");
   }
 
-  const profile = await repositories.modelDatasets.create({
-    versionId: version.id,
-    workspaceId,
-    shape: source.shape,
-    mapping: source.mapping,
-    governance: source.governance,
-    collectionMethod: source.collection_method,
-    sourceRef: source.source_ref,
-    request: source.request,
-  });
-  const rows = splits.reduce((sum, split) => sum + split.rows, 0);
-
-  await repositories.modelDatasets.update(profile.version_id, {
-    status: "ready",
-    processed_at: new Date().toISOString(),
-    stats: {
-      ...stats,
-      rows,
-      tokens: splits.reduce((sum, split) => sum + split.tokens, 0),
-      splits,
-      flaggedIndexes: { train: [], validation: [], test: [] },
-      flaggedRows: 0,
-    },
-  });
-  await repositories.modelAssets.finaliseRevision(version.id, {
-    revision: `${sourceVersion.revision.slice(0, 40)}-minus-${request.indexes.length}-${Date.now().toString(36)}`,
-    attributes: {
-      ...sourceVersion.attributes,
-      totalBytes: files.reduce((sum, file) => sum + file.size, 0),
-    },
-    files,
-  });
-  await repositories.modelAssets.updateVersion(version.id, { status: "ready" });
-  await repositories.modelAssets.addLineageEdge({
-    fromVersionId: versionId,
-    toVersionId: version.id,
-    relation: "derived_from",
-  });
-  await repositories.modelGovernance.addEvidence(
-    (await repositories.modelGovernance.listEvidence([versionId]))
-      .filter((item) => item.route_id === null)
-      .map((item) => ({
-        versionId: version.id,
-        kind: item.kind,
-        source: item.source,
-        status: item.status,
-        summary: item.summary,
-        details: { ...item.details, inheritedFrom: versionId },
-      })),
+  const revision = await sha256Hex(
+    canonicalJson({
+      source: sourceVersion.revision,
+      split: request.split,
+      excluded: [...excludedIndexes].sort((left, right) => left - right),
+    }),
   );
-  await repositories.modelGovernance.addEvidence([
-    {
-      versionId: version.id,
-      kind: "dataset_stats",
-      source: "dataset_pipeline",
-      status: "pass",
-      summary: `${request.indexes.length} ${request.split} rows removed: ${request.reason}`,
-      details: {
-        removed: request.indexes.length,
-        split: request.split,
-        reason: request.reason,
-        rows,
-      },
-    },
-  ]);
-  await syncVersionReviews(repositories, workspaceId, version.id);
+  const existing = await repositories.modelAssets.findVersion(sourceVersion.asset_id, revision);
 
-  return version.id;
+  if (existing?.status === "ready") {
+    return existing.id;
+  }
+
+  if (existing && existing.status !== "failed") {
+    throw conflict(
+      "This revision has already been requested. Check its status before trying again",
+    );
+  }
+
+  const version = existing
+    ? await repositories.modelAssets.retryFailedVersion(workspaceId, existing.id)
+    : await repositories.modelAssets.createVersion({
+        assetId: sourceVersion.asset_id,
+        workspaceId,
+        revision,
+        status: "inspecting",
+        createdBy: userId,
+        attributes: sourceVersion.attributes,
+        files: [],
+      });
+
+  if (!version) {
+    throw conflict("This revision is already being retried");
+  }
+
+  try {
+    const files = [];
+    const profiler = new DatasetProfiler();
+    const flaggedIndexes: Record<DatasetSplit, number[]> = { train: [], validation: [], test: [] };
+    const store = new ArtefactStore(context.env);
+
+    for (const split of DATASET_SPLITS) {
+      const excluded = split === request.split ? excludedIndexes : new Set<number>();
+      const copied = await copyDatasetSplit(
+        store,
+        workspaceId,
+        source,
+        version.id,
+        split,
+        excluded,
+        profiler,
+      );
+
+      flaggedIndexes[split] = copied.flaggedIndexes;
+
+      if (copied.kept > 0) {
+        files.push({ path: `${split}.jsonl`, size: copied.bytes, sha256: null, format: null });
+      }
+    }
+
+    const profile =
+      (await repositories.modelDatasets.get(version.id)) ??
+      (await repositories.modelDatasets.create({
+        versionId: version.id,
+        workspaceId,
+        shape: source.shape,
+        mapping: source.mapping,
+        governance: source.governance,
+        collectionMethod: source.collection_method,
+        sourceRef: source.source_ref,
+        request: source.request,
+      }));
+    const result = profiler.result();
+    const { rows } = result;
+
+    await repositories.modelDatasets.update(profile.version_id, {
+      status: "ready",
+      failure_reason: null,
+      processed_at: new Date().toISOString(),
+      stats: {
+        ...source.stats,
+        ...result,
+        flaggedIndexes,
+      },
+    });
+    await repositories.modelAssets.finaliseRevision(version.id, {
+      revision,
+      attributes: {
+        ...sourceVersion.attributes,
+        totalBytes: files.reduce((sum, file) => sum + file.size, 0),
+      },
+      files,
+    });
+    await repositories.modelAssets.addLineageEdge({
+      fromVersionId: versionId,
+      toVersionId: version.id,
+      relation: "derived_from",
+    });
+    await repositories.modelGovernance.addEvidence(
+      (await repositories.modelGovernance.listEvidence([versionId]))
+        .filter((item) => item.route_id === null && item.kind !== "dataset_stats")
+        .map((item) => ({
+          versionId: version.id,
+          kind: item.kind,
+          source: item.source,
+          status: item.status,
+          summary: item.summary,
+          details: { ...item.details, inheritedFrom: versionId },
+        })),
+    );
+    await repositories.modelGovernance.addEvidence([
+      {
+        versionId: version.id,
+        kind: "dataset_stats",
+        source: "dataset_pipeline",
+        status: result.flaggedRows > 0 ? "warn" : "pass",
+        summary: `${excludedIndexes.size} ${request.split} rows removed; ${result.flaggedRows} rows remain flagged: ${request.reason}`,
+        details: {
+          removed: excludedIndexes.size,
+          split: request.split,
+          reason: request.reason,
+          rows,
+        },
+      },
+    ]);
+    await repositories.modelAssets.updateVersion(version.id, {
+      status: "ready",
+      failure_reason: null,
+    });
+    await syncVersionReviews(repositories, workspaceId, version.id);
+
+    return version.id;
+  } catch (error) {
+    const failureReason = getErrorMessage(error, "Creating the dataset revision failed");
+
+    await repositories.modelAssets.updateVersion(version.id, {
+      status: "failed",
+      failure_reason: failureReason,
+    });
+    await repositories.modelDatasets.update(version.id, {
+      status: "failed",
+      failure_reason: failureReason,
+    });
+    throw error;
+  }
 }
 
 export async function excludeDatasetRows(
@@ -611,7 +652,11 @@ export async function requestErasure(
   const repositories = context.repositories;
   const cleanId = await deriveWithout(context, workspaceId, versionId, request, userId);
   const edges = await repositories.modelAssets.listLineage(workspaceId);
-  const affected = collectDescendants(edges, versionId).filter((id) => id !== cleanId);
+  const cleanVersions = new Set([cleanId, ...collectDescendants(edges, cleanId)]);
+  const affected = collectDescendants(
+    edges.filter((edge) => edge.relation !== "evaluated_on"),
+    versionId,
+  ).filter((id) => !cleanVersions.has(id));
   const dueAt = new Date(Date.now() + request.dueInDays * 86_400_000).toISOString();
   const routes = await repositories.modelRoutes.listRoutes(workspaceId, {
     versionIds: affected,
@@ -636,6 +681,17 @@ export async function requestErasure(
       },
     })),
   );
+
+  if (request.action === "withdraw") {
+    await revokeVersionSet(
+      context,
+      workspaceId,
+      versionId,
+      [versionId, ...affected],
+      request.reason,
+      userId,
+    );
+  }
 
   for (const id of [versionId, ...affected]) {
     await syncVersionReviews(repositories, workspaceId, id);
@@ -684,13 +740,22 @@ export async function previewUploadColumns(
   const format = formatFromPath(file.path);
   const sample: Array<Record<string, unknown>> = [];
   const store = new ArtefactStore(context.env);
-  const rows =
-    format === "parquet"
-      ? parquetRows(
-          r2AsyncBuffer(context.env.PRIVATE_ASSETS_BUCKET, file.key, file.size),
-          PREVIEW_ROWS,
-        )
-      : streamRows(format, (await store.get(file.key))?.body ?? new ReadableStream(), file.size);
+  let rows: AsyncGenerator<Record<string, unknown>>;
+
+  if (format === "parquet") {
+    rows = parquetRows(
+      r2AsyncBuffer(context.env.PRIVATE_ASSETS_BUCKET, file.key, file.size),
+      PREVIEW_ROWS,
+    );
+  } else {
+    const object = await store.get(file.key);
+
+    if (!object) {
+      throw notFound("Uploaded dataset file");
+    }
+
+    rows = streamRows(format, object.body, file.size);
+  }
 
   for await (const row of rows) {
     sample.push(row);

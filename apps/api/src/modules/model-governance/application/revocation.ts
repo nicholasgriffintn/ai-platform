@@ -7,6 +7,7 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { notFound, requireModelAction } from "~/modules/model-registry/application/access";
+import { loadRegistryScope, versionStanding } from "~/modules/model-registry/application/scope";
 import { applyDeploymentState } from "~/modules/model-serving/application/deployments";
 
 export async function revokeVersion(
@@ -28,6 +29,20 @@ export async function revokeVersion(
     (edge) => edge.relation !== "evaluated_on",
   );
   const versionIds = [...new Set([versionId, ...collectDescendants(edges, versionId)])];
+
+  return revokeVersionSet(context, workspaceId, versionId, versionIds, reason, userId);
+}
+
+export async function revokeVersionSet(
+  context: ServiceContext,
+  workspaceId: string,
+  versionId: string,
+  versionIds: string[],
+  reason: string,
+  userId: number,
+): Promise<RevocationResult> {
+  const repositories = context.repositories;
+  const scope = await loadRegistryScope(repositories, workspaceId, null, { versionIds });
   const [decisions, routes, deployments] = await Promise.all([
     repositories.modelGovernance.listDecisions(workspaceId, { versionIds }),
     repositories.modelRoutes.listRoutes(workspaceId, { versionIds, activeOnly: true }),
@@ -48,6 +63,28 @@ export async function revokeVersion(
       conditions: decision.conditions,
       expiresAt: null,
     });
+  }
+
+  for (const version of scope.versions) {
+    const current = versionStanding(scope, version);
+
+    if (current) {
+      await repositories.modelGovernance.createDecision({
+        workspaceId,
+        projectId: null,
+        versionId: version.id,
+        routeId: null,
+        state: "revoked",
+        verdict: current.verdict,
+        evidenceIds: scope.evidence
+          .filter((item) => item.versionId === version.id)
+          .map((item) => item.id),
+        isException: false,
+        note,
+        requestedBy: userId,
+        decidedBy: userId,
+      });
+    }
   }
 
   for (const alias of aliases) {

@@ -3,6 +3,7 @@ import { estimateMonthlyHostingCost } from "@ngriffin_uk/polychat-library-model-
 import {
   type CreateDeploymentRequest,
   createDeploymentRequestSchema,
+  deploymentSpendActionSchema,
   type DeploymentDetail,
   type DeploymentsResponse,
   type DeploymentStartResult,
@@ -19,7 +20,11 @@ import { canonicalJson, sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import { preflightWorkspaceSpend } from "~/modules/model-governance/application/spend";
+import { requireHostingBudgetCompatibility } from "~/modules/model-governance/application/hosting-budgets";
+import {
+  accrueDeploymentCost,
+  preflightWorkspaceSpend,
+} from "~/modules/model-governance/application/spend";
 import { recordSpendRequest } from "~/modules/model-governance/application/spend-requests";
 import {
   badRequest,
@@ -39,6 +44,8 @@ import type { IEnv } from "~/types";
 
 import type { ModelDeploymentRecord } from "../infrastructure/ModelDeploymentRepository";
 import { createAliasForRoute } from "./aliases";
+import { authoriseDeploymentSpend } from "./deployment-spend";
+import { isDeploymentBillable } from "./deployment-state";
 import { invokeDeployment, runHostAction } from "./invocation";
 import { toModelAlias, toModelDeployment } from "./mappers";
 import { normaliseTarget } from "./plan";
@@ -83,13 +90,24 @@ async function prepareDeployment(
   input: CreateDeploymentRequest,
 ): Promise<PreparedDeployment> {
   const request = createDeploymentRequestSchema.parse(input);
+
+  if (request.aliasName) {
+    await requireModelAction(context, workspaceId, "promote");
+  }
+
   const repositories = context.repositories;
   const projectId = await requireWorkspaceProject(context, workspaceId, request.projectId);
   const { spec } = request;
   const host = hostManifest(spec.target.provider, spec.target.target);
 
+  await requireHostingBudgetCompatibility(repositories, workspaceId, projectId, host);
+
   if (!host.shapes.includes(spec.shape)) {
     throw badRequest(`${host.name} does not offer ${spec.shape.replace(/_/g, " ")} hosting`);
+  }
+
+  if (spec.scaling.minReplicas === 0 && !host.scaleToZero && spec.shape === "dedicated") {
+    throw badRequest(`${host.name} requires at least one replica`);
   }
 
   if (spec.shape === "external" && !spec.external) {
@@ -197,6 +215,16 @@ export async function startPreparedDeployment(
     throw conflict(`A deployment called ${request.name} already exists`);
   }
 
+  if (request.aliasName) {
+    await createAliasForRoute(repositories, {
+      workspaceId,
+      projectId: prepared.projectId,
+      name: request.aliasName,
+      routeId: null,
+      userId,
+    });
+  }
+
   const deployment = await repositories.modelDeployments.create({
     workspaceId,
     projectId: prepared.projectId,
@@ -224,16 +252,6 @@ export async function startPreparedDeployment(
   });
 
   await repositories.modelDeployments.update(deployment.id, { route_id: route.id });
-
-  if (request.aliasName) {
-    await createAliasForRoute(repositories, {
-      workspaceId,
-      projectId: prepared.projectId,
-      name: request.aliasName,
-      routeId: route.id,
-      userId,
-    });
-  }
 
   await repositories.audit.createRecord({
     workspaceId,
@@ -271,7 +289,10 @@ export async function createDeployment(
     throw conflict(preflight.reason ?? "This deployment would break the budget");
   }
 
-  if (preflight.decision === "needs_approval" && !access.actions.has("approve")) {
+  if (
+    preflight.decision === "needs_approval" &&
+    (!access.actions.has("approve") || access.separationOfDuties)
+  ) {
     return {
       deployment: null,
       preflight,
@@ -306,11 +327,35 @@ export async function startApprovedDeployment(
   requestedBy: number,
   payload: Record<string, unknown>,
 ): Promise<ModelDeployment> {
+  const action = deploymentSpendActionSchema.safeParse(payload);
+
+  if (action.success) {
+    const deployment = await requireDeployment(context, workspaceId, action.data.deploymentId);
+
+    if (deployment.spec_hash !== action.data.specHash) {
+      throw conflict("The deployment changed after this spend request. Submit a new request.");
+    }
+
+    return action.data.action === "scale"
+      ? scaleDeployment(context, workspaceId, deployment.id, action.data.scaling, true)
+      : changeDeploymentState(context, workspaceId, deployment.id, "resume", true);
+  }
+
   const prepared = await prepareDeployment(
     context,
     workspaceId,
     createDeploymentRequestSchema.parse(payload),
   );
+  const preflight = await preflightWorkspaceSpend(
+    context.repositories,
+    workspaceId,
+    prepared.projectId,
+    prepared.estimateUsd,
+  );
+
+  if (preflight.decision === "blocked") {
+    throw conflict(preflight.reason ?? "This deployment would break the budget");
+  }
 
   return startPreparedDeployment(
     context.env,
@@ -417,20 +462,52 @@ export async function scaleDeployment(
   workspaceId: string,
   deploymentId: string,
   scaling: ScaleDeploymentRequest,
+  approvedSpend = false,
 ): Promise<ModelDeployment> {
   const { userId } = await requireModelAction(context, workspaceId, "deploy");
   const deployment = await requireDeployment(context, workspaceId, deploymentId);
+
+  if (deployment.status === "deleted" || deployment.desired_state === "deleted") {
+    throw conflict("A deleted deployment cannot be scaled");
+  }
 
   if (scaling.minReplicas > scaling.maxReplicas) {
     throw badRequest("The minimum cannot exceed the maximum");
   }
 
-  const spec = { ...deployment.spec, scaling: { ...deployment.spec.scaling, ...scaling } };
-  const updated = await runHostAction(
-    context.repositories,
-    { ...deployment, spec },
-    (host, hosted) => host.scale(hosted, scaling),
+  if (
+    scaling.minReplicas === 0 &&
+    deployment.spec.shape === "dedicated" &&
+    !hostManifest(deployment.provider, deployment.host).scaleToZero
+  ) {
+    throw badRequest("This host requires at least one replica");
+  }
+
+  const spendRequestId = await authoriseDeploymentSpend(
+    context,
+    deployment,
+    {
+      action: "scale",
+      deploymentId,
+      specHash: deployment.spec_hash,
+      scaling,
+    },
+    approvedSpend,
   );
+
+  if (spendRequestId) {
+    return { ...toModelDeployment(deployment), spendRequestId };
+  }
+
+  await accrueDeploymentCost(context.repositories, deployment, isDeploymentBillable(deployment));
+
+  const spec = { ...deployment.spec, scaling: { ...deployment.spec.scaling, ...scaling } };
+  const updated =
+    deployment.desired_state === "running"
+      ? await runHostAction(context.repositories, { ...deployment, spec }, (host, hosted) =>
+          host.scale(hosted, scaling),
+        )
+      : deployment;
 
   await context.repositories.modelDeployments.update(deployment.id, {
     spec,
@@ -463,6 +540,17 @@ export async function applyDeploymentState(
   action: DeploymentStateAction,
   actor: { userId: number | null; reason: string | null },
 ): Promise<ModelDeploymentRecord> {
+  if (
+    action === "pause" &&
+    hostManifest(deployment.provider, deployment.host).pauseSupported === false
+  ) {
+    throw conflict(
+      "This provider cannot pause deployments. Delete the deployment to stop its compute costs.",
+    );
+  }
+
+  await accrueDeploymentCost(repositories, deployment, isDeploymentBillable(deployment));
+
   const desired = action === "delete" ? "deleted" : action === "pause" ? "paused" : "running";
   let updated: ModelDeploymentRecord = { ...deployment, desired_state: desired };
 
@@ -479,8 +567,30 @@ export async function applyDeploymentState(
     );
     await repositories.modelDeployments.update(deployment.id, { desired_state: desired });
     await enqueueDeploymentSync(env, repositories, deployment.id, 30);
-  } else {
+  } else if (deployment.provisioning_started_at) {
+    if (action === "resume" && deployment.status === "failed") {
+      throw conflict(
+        "Provisioning has an unknown provider outcome. Reconcile the existing resource before resuming.",
+      );
+    }
+
     await repositories.modelDeployments.update(deployment.id, { desired_state: desired });
+    await enqueueDeploymentSync(env, repositories, deployment.id);
+  } else {
+    updated = {
+      ...updated,
+      status: action === "pause" ? "paused" : "pending",
+      failure_reason: null,
+    };
+    await repositories.modelDeployments.update(deployment.id, {
+      desired_state: desired,
+      status: updated.status,
+      failure_reason: null,
+    });
+
+    if (action === "resume") {
+      await enqueueDeploymentSync(env, repositories, deployment.id);
+    }
   }
 
   await repositories.audit.createRecord({
@@ -500,9 +610,44 @@ export async function changeDeploymentState(
   workspaceId: string,
   deploymentId: string,
   action: DeploymentStateAction,
+  approvedSpend = false,
 ): Promise<ModelDeployment> {
   const { userId } = await requireModelAction(context, workspaceId, "deploy");
   const deployment = await requireDeployment(context, workspaceId, deploymentId);
+
+  if (action === "resume") {
+    if (deployment.status === "deleted" || deployment.desired_state === "deleted") {
+      throw conflict("A deleted deployment cannot be resumed");
+    }
+
+    for (const versionId of new Set([
+      deployment.spec.versionId,
+      ...deployment.spec.adapterVersionIds,
+    ])) {
+      await requireUsableVersion(
+        context.repositories,
+        workspaceId,
+        deployment.project_id,
+        versionId,
+        "Deployment input",
+      );
+    }
+
+    const spendRequestId = await authoriseDeploymentSpend(
+      context,
+      deployment,
+      {
+        action: "resume",
+        deploymentId,
+        specHash: deployment.spec_hash,
+      },
+      approvedSpend,
+    );
+
+    if (spendRequestId) {
+      return { ...toModelDeployment(deployment), spendRequestId };
+    }
+  }
 
   return toModelDeployment(
     await applyDeploymentState(context.env, context.repositories, deployment, action, {

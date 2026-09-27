@@ -127,14 +127,26 @@ async function isIdle(
     return false;
   }
 
-  const lastUse = await repositories.usageEvents.lastModelUseAt({
-    workspaceId: deployment.workspace_id,
-    vendor: PLATFORM_DEPLOYMENT_CHAT_PROVIDER,
-    resource: deploymentChatModelId(deployment.id),
-  });
-  const since = lastUse ?? deployment.updated_at;
+  const [lastUse, lastResume] = await Promise.all([
+    repositories.usageEvents.lastModelUseAt({
+      workspaceId: deployment.workspace_id,
+      vendor: PLATFORM_DEPLOYMENT_CHAT_PROVIDER,
+      resource: deploymentChatModelId(deployment.id),
+    }),
+    repositories.audit.lastActionAt({
+      workspaceId: deployment.workspace_id,
+      targetType: "model_deployment",
+      targetId: deployment.id,
+      action: "model_deployment.resumed",
+    }),
+  ]);
+  const since = Math.max(
+    new Date(deployment.created_at).getTime(),
+    lastUse ? new Date(lastUse).getTime() : 0,
+    lastResume ? new Date(lastResume).getTime() : 0,
+  );
 
-  return now.getTime() - new Date(since).getTime() > minutes * 60_000;
+  return now.getTime() - since > minutes * 60_000;
 }
 
 async function pauseFor(
@@ -148,6 +160,9 @@ async function pauseFor(
 
     return true;
   } catch (error) {
+    await repositories.modelDeployments.update(deployment.id, {
+      failure_reason: `Automatic pause failed: ${getErrorMessage(error, "Pause failed")}. Provider costs may continue until the deployment is stopped.`,
+    });
     logger.warn("Automatic pause failed", {
       deploymentId: deployment.id,
       error: getErrorMessage(error, "Pause failed"),

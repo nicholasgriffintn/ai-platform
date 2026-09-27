@@ -21,15 +21,18 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { workspaceHubClient } from "~/modules/model-governance/application/connections";
+import { assertProviderCreationPending } from "~/modules/model-governance/application/provider-creation";
 import { toAssistantError } from "~/modules/model-governance/application/provider-errors";
 import { syncVersionReviews } from "~/modules/model-registry/application/decisions";
 import { buildModelHandle, providerLocation } from "~/modules/model-registry/application/handles";
 import { enqueueInspection } from "~/modules/model-registry/application/importing";
+import { requireUsableVersion } from "~/modules/model-registry/application/scope";
 import { ArtefactStore, artefactKeys } from "~/modules/model-registry/infrastructure/ArtefactStore";
 import type { IEnv } from "~/types";
 
 import type { ModelTrainingRunRecord } from "../infrastructure/ModelTrainingRepository";
-import { trainerFor } from "./trainer-context";
+import { preserveTrainingInputWithdrawals } from "./output-governance";
+import { cancelProviderJob, trainerFor } from "./trainer-context";
 
 const logger = getLogger({ prefix: "modules/model-training/sync" });
 
@@ -47,15 +50,23 @@ async function datasetHandle(
   const stats: DatasetStats = profile?.stats ?? {};
   const splitStats = stats.splits?.find((item) => item.name === split);
 
-  if (!profile || !splitStats || splitStats.rows === 0) {
+  if (
+    !profile ||
+    profile.workspace_id !== workspaceId ||
+    profile.status !== "ready" ||
+    !splitStats ||
+    splitStats.rows === 0
+  ) {
     return null;
   }
 
   const store = new ArtefactStore(env);
   const key = artefactKeys.datasetSplit(workspaceId, versionId, split);
   const head = await store.head(key);
-  const version = await repositories.modelAssets.getVersionById(versionId);
-  const asset = version ? await repositories.modelAssets.getAssetById(version.asset_id) : null;
+  const version = await repositories.modelAssets.getVersion(workspaceId, versionId);
+  const asset = version
+    ? await repositories.modelAssets.getAsset(workspaceId, version.asset_id)
+    : null;
 
   if (!head) {
     throw new Error(`Dataset split ${split} is missing from storage`);
@@ -151,7 +162,7 @@ async function registerOutput(
   output: TrainingOutput,
 ): Promise<string> {
   const workspaceId = run.workspace_id;
-  const base = await repositories.modelAssets.getVersionById(run.spec.baseVersionId);
+  const base = await repositories.modelAssets.getVersion(workspaceId, run.spec.baseVersionId);
 
   if (!base) {
     throw new Error("The base version is gone");
@@ -292,6 +303,7 @@ async function registerOutput(
         ]
       : []),
   ]);
+  await preserveTrainingInputWithdrawals(repositories, run, versionId);
   await syncVersionReviews(repositories, workspaceId, versionId);
 
   return versionId;
@@ -303,9 +315,7 @@ async function recordCost(
   state: TrainingJobState,
   status: TrainingRunStatus,
 ): Promise<number | null> {
-  const usd =
-    state.costUsd ??
-    (status === "completed" || status === "failed" ? (run.estimate.usd ?? null) : null);
+  const usd = state.costUsd ?? (TERMINAL.has(status) ? (run.estimate.usd ?? null) : null);
 
   if (usd !== null) {
     await repositories.modelSpend.replaceSubjectCost({
@@ -329,7 +339,7 @@ export async function syncTrainingRun(
   repositories: RepositoryManager,
   runId: string,
 ): Promise<PollOutcome> {
-  const run = await repositories.modelTraining.getById(runId);
+  let run = await repositories.modelTraining.getById(runId);
 
   if (!run || TERMINAL.has(run.status)) {
     return { status: "success", message: "Nothing to sync" };
@@ -340,29 +350,88 @@ export async function syncTrainingRun(
   try {
     const trainer = await trainerFor(repositories, run);
 
+    let submitted: TrainingJobState | null = null;
+
     if (!run.provider_job_id) {
-      await repositories.modelTraining.update(run.id, {
-        status: "preparing",
-        last_checked_at: now,
+      if (run.status === "queued") {
+        for (const versionId of new Set([
+          run.spec.baseVersionId,
+          ...run.spec.mergeVersionIds,
+          ...run.dataset_version_ids,
+        ])) {
+          await requireUsableVersion(
+            repositories,
+            run.workspace_id,
+            run.project_id,
+            versionId,
+            "Training input",
+          );
+        }
+      }
+
+      const claimed = await repositories.modelTraining.claimSubmission(run.id);
+
+      if (!claimed) {
+        assertProviderCreationPending(run.submission_started_at);
+
+        return PENDING;
+      }
+
+      run = claimed;
+
+      submitted = await trainer.submit(await buildSubmission(env, repositories, run));
+      const updated = await repositories.modelTraining.recordProviderState(run.id, {
+        status: "submitted",
+        provider_job_id: submitted.providerJobId,
+        started_at: submitted.startedAt ?? now,
+        failure_reason: submitted.failureReason,
       });
 
-      const state = await trainer.submit(await buildSubmission(env, repositories, run));
+      if (!updated) {
+        await trainer.cancel(submitted.providerJobId);
 
-      await repositories.modelTraining.update(run.id, {
-        status: state.status,
-        provider_job_id: state.providerJobId,
-        started_at: state.startedAt ?? now,
-        failure_reason: state.failureReason,
-      });
+        return {
+          status: "error",
+          message: "Run was removed during submission; the provider job was cancelled",
+        };
+      }
 
-      return TERMINAL.has(state.status) ? { status: "success", message: state.status } : PENDING;
+      run = updated;
+    }
+
+    if (!run.provider_job_id) {
+      throw new Error("The provider did not return a job identifier");
     }
 
     const store = new ArtefactStore(env);
+
     const [state, reported] = await Promise.all([
-      trainer.status(run.provider_job_id),
+      run.status === "cancelling"
+        ? cancelProviderJob(trainer, run.provider_job_id, submitted)
+        : submitted
+          ? Promise.resolve(submitted)
+          : trainer.status(run.provider_job_id),
       store.readJson(artefactKeys.runReport(run.workspace_id, run.id)).then(readReportedState),
     ]);
+
+    if (run.status === "cancelling") {
+      const cancelled = TERMINAL.has(state.status);
+      const cost = await recordCost(
+        repositories,
+        run,
+        state,
+        cancelled ? "cancelled" : "cancelling",
+      );
+
+      await repositories.modelTraining.recordProviderState(run.id, {
+        status: cancelled ? "cancelled" : "cancelling",
+        cost_usd: cost,
+        last_checked_at: now,
+        ...(cancelled ? { completed_at: state.completedAt ?? now } : {}),
+      });
+
+      return cancelled ? { status: "success", message: "Cancelled" } : PENDING;
+    }
 
     if (state.metrics.length > 0) {
       await store.putJson(artefactKeys.runReport(run.workspace_id, `${run.id}-provider`), {
@@ -385,6 +454,12 @@ export async function syncTrainingRun(
         : state.status;
     const cost = await recordCost(repositories, run, state, status);
 
+    const latest = await repositories.modelTraining.getById(run.id);
+
+    if (latest?.status === "cancelling") {
+      return PENDING;
+    }
+
     if (status === "completed") {
       const output: TrainingOutput | null =
         state.output ??
@@ -398,13 +473,18 @@ export async function syncTrainingRun(
 
       const outputVersionId = await registerOutput(repositories, env, run, output);
 
-      await repositories.modelTraining.update(run.id, {
+      const completed = await repositories.modelTraining.recordProviderState(run.id, {
         status: "completed",
         output_version_id: outputVersionId,
         completed_at: state.completedAt ?? now,
         cost_usd: cost,
         last_checked_at: now,
       });
+
+      if (completed?.status === "cancelling") {
+        return PENDING;
+      }
+
       await repositories.audit.createRecord({
         workspaceId: run.workspace_id,
         actorUserId: null,
@@ -417,7 +497,7 @@ export async function syncTrainingRun(
       return { status: "success", message: "Completed" };
     }
 
-    await repositories.modelTraining.update(run.id, {
+    const updated = await repositories.modelTraining.recordProviderState(run.id, {
       status,
       cost_usd: cost,
       failure_reason: state.failureReason ?? reported.error,
@@ -425,12 +505,14 @@ export async function syncTrainingRun(
       ...(TERMINAL.has(status) ? { completed_at: state.completedAt ?? now } : {}),
     });
 
-    return TERMINAL.has(status) ? { status: "success", message: status } : PENDING;
+    return updated && TERMINAL.has(updated.status)
+      ? { status: "success", message: updated.status }
+      : PENDING;
   } catch (error) {
     const reason = getErrorMessage(toAssistantError(error), "Sync failed");
 
     logger.warn("Training sync failed", { runId, error: reason });
-    await repositories.modelTraining.update(run.id, {
+    await repositories.modelTraining.recordProviderState(run.id, {
       last_checked_at: now,
       failure_reason: reason,
       ...(run.provider_job_id ? {} : { status: "failed" as const, completed_at: now }),

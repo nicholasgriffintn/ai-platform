@@ -4,6 +4,14 @@ import UIKit
 @testable import Polychat
 
 struct ModelTests {
+    @Test func deploymentActionsRespectProviderPauseSupport() throws {
+        let deployment = try JSONDecoder().decode(ModelDeploymentItem.self, from: Data("""
+        {"id":"deployment","name":"Model","displayName":"Model","status":"running","provider":"google-vertex","hourlyUsd":1,"pauseSupported":false}
+        """.utf8))
+        #expect(!deployment.canPause)
+        #expect(!deployment.canResume)
+    }
+
     @Test func taskInboxDecodesReadStateAndCurrentDeepLink() throws {
         let inbox = try JSONDecoder().decode(TaskInboxResponse.self, from: Data("""
         {

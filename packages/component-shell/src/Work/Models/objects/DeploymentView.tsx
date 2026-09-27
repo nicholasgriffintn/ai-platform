@@ -106,11 +106,13 @@ function ScaleControls({ detail }: { detail: DeploymentDetail }) {
           variant="secondary"
           disabled={min > max || mutations.scaleDeployment.isPending}
           onClick={() =>
-            void runWithToast("Scaling updated", () =>
-              mutations.scaleDeployment.mutateAsync({
-                deploymentId: detail.deployment.id,
-                input: { minReplicas: min, maxReplicas: max },
-              }),
+            void runWithToast(
+              (result) => (result.spendRequestId ? "Spend approval requested" : "Scaling updated"),
+              () =>
+                mutations.scaleDeployment.mutateAsync({
+                  deploymentId: detail.deployment.id,
+                  input: { minReplicas: min, maxReplicas: max },
+                }),
             )
           }
         >
@@ -128,7 +130,10 @@ function DeploymentBody({ detail }: { detail: DeploymentDetail }) {
   const { deployment } = detail;
   const change = (action: "pause" | "resume" | "delete") =>
     runWithToast(
-      `Deployment ${action === "delete" ? "deleting" : action === "pause" ? "paused" : "resuming"}`,
+      (result) =>
+        result.spendRequestId
+          ? "Spend approval requested"
+          : `Deployment ${action === "delete" ? "deleting" : action === "pause" ? "paused" : "resuming"}`,
       () => mutations.changeDeployment.mutateAsync({ deploymentId: deployment.id, action }),
     );
   const serving = deployment.status === "running" || deployment.status === "scaled_to_zero";
@@ -169,7 +174,11 @@ function DeploymentBody({ detail }: { detail: DeploymentDetail }) {
             <Button
               size="sm"
               variant="outline"
-              disabled={!serving}
+              disabled={
+                !serving ||
+                deployment.pauseSupported === false ||
+                mutations.changeDeployment.isPending
+              }
               onClick={() => void change("pause")}
             >
               Pause

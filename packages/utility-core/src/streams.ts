@@ -6,12 +6,14 @@ export async function* readTextLines(
   const reader = stream.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  let completed = false;
 
   try {
     while (true) {
       const { value, done } = await reader.read();
 
       if (done) {
+        completed = true;
         break;
       }
 
@@ -32,6 +34,10 @@ export async function* readTextLines(
       yield buffer.replace(/\r$/, "");
     }
   } finally {
+    if (!completed) {
+      await reader.cancel().catch(() => undefined);
+    }
+
     reader.releaseLock();
   }
 }

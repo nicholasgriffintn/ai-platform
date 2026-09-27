@@ -22,6 +22,7 @@ export interface ProviderCredentials {
 }
 
 export interface ProviderAdapterContext {
+  claimProvisioningContinuation?: () => Promise<void>;
   credentials: ProviderCredentials;
   fetcher: Fetcher;
   hub: HubAccess | null;
@@ -159,7 +160,7 @@ export interface HostedDeployment {
   spec: DeploymentSpec;
   model: ModelHandle;
   adapters: ModelHandle[];
-  desired: "running" | "paused";
+  desired: "running" | "paused" | "deleted";
 }
 
 export interface Host {

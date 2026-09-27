@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 
+import { getSearchStatusMessage } from "../utils/search-status";
+
 export type { SearchResult, SearchResultKind } from "@ngriffin_uk/polychat-utility-react";
 
 export type SearchSelectionMethod = "click" | "keyboard";
@@ -52,30 +54,6 @@ const RESULT_ICONS: Record<SearchResultKind, ReactNode> = {
   workspace: <Building2 size={18} />,
   capability: <Blocks size={18} />,
 };
-
-function getSearchStatusMessage({
-  resultCount,
-  isLoading,
-  hasError,
-}: {
-  resultCount: number;
-  isLoading: boolean;
-  hasError: boolean;
-}): string {
-  if (resultCount > 0) {
-    return `${resultCount} ${resultCount === 1 ? "result" : "results"} available`;
-  }
-
-  if (isLoading) {
-    return "Searching Polychat";
-  }
-
-  if (hasError) {
-    return "Search is temporarily unavailable";
-  }
-
-  return "No matches found";
-}
 
 export function SearchDialog({
   isOpen,
@@ -154,10 +132,7 @@ export function SearchDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()} width="min(840px, 100%)">
-      <DialogContent
-        className="gap-0 overflow-hidden border-border bg-surface-elevated p-0 shadow-[var(--polychat-elevated-shadow)] [&_[data-slot=dialog-close]]:top-6 [&_[data-slot=dialog-close]]:right-5"
-        onKeyDown={handleKeyDown}
-      >
+      <DialogContent className="gap-0 overflow-hidden border-border bg-surface-elevated p-0 shadow-[var(--polychat-elevated-shadow)] [&_[data-slot=dialog-close]]:top-6 [&_[data-slot=dialog-close]]:right-5">
         <DialogTitle className="sr-only">Search Polychat</DialogTitle>
         <DialogDescription className="sr-only">
           Search conversations, projects, workspaces, and capabilities.
@@ -177,6 +152,7 @@ export function SearchDialog({
             aria-autocomplete="list"
             placeholder="Search chats, projects, capabilities…"
             value={query}
+            onKeyDown={handleKeyDown}
             onChange={(event) => {
               onQueryChange(event.target.value);
               setFocusedIndex(0);
@@ -192,7 +168,7 @@ export function SearchDialog({
           </div>
         </div>
 
-        {availableFilters.length > 2 ? (
+        {availableFilters.length > 2 || filter !== "all" ? (
           <fieldset className="m-0 flex min-w-0 gap-1 overflow-x-auto border-0 border-b border-border px-5 py-2">
             <legend className="sr-only">Filter results</legend>
             {availableFilters.map((option) => {

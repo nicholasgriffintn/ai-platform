@@ -32,6 +32,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import {
   ALIAS_EVENT_KINDS,
+  SPEND_REQUEST_STATES,
   COST_SUBJECTS,
   DATASET_COLLECTION_METHODS,
   DATASET_SHAPES,
@@ -3359,6 +3360,7 @@ export const modelTrainingRun = sqliteTable(
     provider: text({ enum: MODEL_PROVIDER_IDS }).notNull(),
     trainer: text().notNull(),
     provider_job_id: text(),
+    submission_started_at: text(),
     output_repository: text(),
     output_version_id: text().references(() => modelAssetVersion.id, { onDelete: "set null" }),
     dataset_version_ids: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
@@ -3420,6 +3422,7 @@ export const modelDeployment = sqliteTable(
     provider: text({ enum: MODEL_PROVIDER_IDS }).notNull(),
     host: text().notNull(),
     provider_ref: text(),
+    provisioning_started_at: text(),
     region: text(),
     jurisdiction: text({ enum: JURISDICTIONS }),
     weights_verified: integer({ mode: "boolean" }).default(false).notNull(),
@@ -3576,9 +3579,7 @@ export const modelSpendRequest = sqliteTable(
     payload: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
     estimate_usd: real(),
     reason: text(),
-    state: text({ enum: ["pending", "approved", "rejected"] })
-      .default("pending")
-      .notNull(),
+    state: text({ enum: SPEND_REQUEST_STATES }).default("pending").notNull(),
     subject_id: text(),
     requested_by: integer().references(() => user.id, { onDelete: "set null" }),
     decided_by: integer().references(() => user.id, { onDelete: "set null" }),

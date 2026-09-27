@@ -251,8 +251,28 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
           updated_at: new Date().toISOString(),
         })
         .where(eq(modelAssetVersion.id, versionId)),
+      this.database.delete(modelAssetFile).where(eq(modelAssetFile.version_id, versionId)),
       ...this.fileInserts(versionId, input.files),
     ]);
+  }
+
+  async retryFailedVersion(
+    workspaceId: string,
+    versionId: string,
+  ): Promise<ModelVersionRecord | null> {
+    const [version] = await this.database
+      .update(modelAssetVersion)
+      .set({ status: "inspecting", failure_reason: null, updated_at: new Date().toISOString() })
+      .where(
+        and(
+          eq(modelAssetVersion.workspace_id, workspaceId),
+          eq(modelAssetVersion.id, versionId),
+          eq(modelAssetVersion.status, "failed"),
+        ),
+      )
+      .returning();
+
+    return version ?? null;
   }
 
   async listFiles(versionId: string): Promise<ModelFileRecord[]> {

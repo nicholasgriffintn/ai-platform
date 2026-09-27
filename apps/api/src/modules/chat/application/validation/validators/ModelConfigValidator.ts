@@ -14,7 +14,7 @@ import type {
   Validator,
   ValidatorResult,
 } from "~/modules/chat/application/validation/ValidationPipeline";
-import { findModelConfig } from "~/modules/models/application/resolve";
+import { resolveRequestModelConfig } from "~/modules/models/application/request-config";
 import type { CoreChatOptions } from "~/types";
 
 const logger = getLogger({
@@ -100,11 +100,10 @@ export class ModelConfigValidator implements Validator {
       }
 
       const primaryModelName = governed.models[0];
-      const primaryModelConfig = await findModelConfig(
+      const primaryModelConfig = await resolveRequestModelConfig(
+        options,
         primaryModelName,
-        env,
         governed.provider,
-        user?.id,
       );
 
       if (!primaryModelConfig) {

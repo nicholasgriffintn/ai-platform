@@ -1,5 +1,5 @@
 import type { ChangeEvent, InputHTMLAttributes } from "react";
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 
 import { Label } from "../label";
 import { cn } from "../utils";
@@ -32,17 +32,19 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
     },
     ref,
   ) => {
-    const descriptionId = description && id ? `${id}-description` : undefined;
+    const generatedId = useId();
+    const inputId = id ?? generatedId;
+    const descriptionId = description ? `${inputId}-description` : undefined;
     const describedBy = mergeDescribedBy(ariaDescribedBy, descriptionId);
 
     return (
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          {label && labelPosition === "left" && <Label htmlFor={id}>{label}</Label>}
+          {label && labelPosition === "left" && <Label htmlFor={inputId}>{label}</Label>}
           <label className={cn("relative inline-flex h-6 w-10 shrink-0", className)}>
             <input
               ref={ref}
-              id={id}
+              id={inputId}
               type="checkbox"
               role="switch"
               className="peer sr-only"
@@ -67,7 +69,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
               aria-hidden="true"
             />
           </label>
-          {label && labelPosition === "right" && <Label htmlFor={id}>{label}</Label>}
+          {label && labelPosition === "right" && <Label htmlFor={inputId}>{label}</Label>}
         </div>
         {description && (
           <p id={descriptionId} className="mt-1 text-xs text-muted-foreground">

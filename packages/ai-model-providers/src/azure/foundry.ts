@@ -307,7 +307,7 @@ export class AzureFoundryHost implements Host {
     );
 
     if (existing === null) {
-      if (deployment.desired === "paused") {
+      if (deployment.desired !== "running") {
         return this.state(name, "paused", hardware);
       }
 

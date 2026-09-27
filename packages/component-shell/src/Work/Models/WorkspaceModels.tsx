@@ -1,4 +1,5 @@
 import {
+  CardSkeleton,
   EmptyState,
   Tabs,
   TabsContent,
@@ -78,11 +79,15 @@ export function WorkspaceModels({
   const { workspaceQuery, projectQuery } = useWorkData();
   const scopeName = projectId ? projectQuery.data?.name : workspaceQuery.data?.name;
 
-  if (workspaceQuery.error) {
+  if (workspaceQuery.isLoading || (projectId && projectQuery.isLoading)) {
+    return <CardSkeleton />;
+  }
+
+  if (workspaceQuery.error || (projectId && projectQuery.error)) {
     return (
       <EmptyState
         title="Models unavailable"
-        message="You need to be a member of this workspace to see its models."
+        message="This workspace or project could not be loaded."
         className="min-h-[240px]"
       />
     );

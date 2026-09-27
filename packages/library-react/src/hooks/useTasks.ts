@@ -26,7 +26,11 @@ const ACTIVE_TASK_STATUSES = new Set(["pending", "queued", "running"]);
 export function useTasks({ shouldRefetch = true }) {
   const queryClient = useQueryClient();
 
-  const { data: tasksData, isLoading: isLoadingTasks } = useQuery<ListTasksResponse>({
+  const {
+    data: tasksData,
+    isLoading: isLoadingTasks,
+    error: tasksError,
+  } = useQuery<ListTasksResponse>({
     queryKey: TASK_QUERY_KEYS.tasks,
     queryFn: () => taskService.listTasks(),
     staleTime: 1000 * 10, // 10 seconds
@@ -80,6 +84,7 @@ export function useTasks({ shouldRefetch = true }) {
     tasks: tasksData?.tasks || [],
     totalTasks: tasksData?.total || 0,
     isLoadingTasks,
+    tasksError,
 
     triggerSynthesis: triggerSynthesisMutation.mutate,
     triggerSynthesisAsync: triggerSynthesisMutation.mutateAsync,

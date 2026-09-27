@@ -74,6 +74,22 @@ export class AuditRepository extends BaseRepository {
     );
   }
 
+  async lastActionAt(input: {
+    workspaceId: string;
+    targetType: string;
+    targetId: string;
+    action: string;
+  }): Promise<string | null> {
+    const [record] = await this.runQuery<{ created_at: string }>(
+      `SELECT created_at FROM workspace_audit_record
+       WHERE workspace_id = ? AND target_type = ? AND target_id = ? AND action = ?
+       ORDER BY created_at DESC LIMIT 1`,
+      [input.workspaceId, input.targetType, input.targetId, input.action],
+    );
+
+    return record?.created_at ?? null;
+  }
+
   async listModelRecords(
     workspaceId: string,
     filters: { targetType?: string; targetId?: string; limit: number },

@@ -5,6 +5,8 @@ import {
 } from "@ngriffin_uk/polychat-library-model-registry";
 import {
   JURISDICTIONS,
+  parsePlatformChatModelId,
+  PLATFORM_DEPLOYMENT_CHAT_PROVIDER,
   type CreateRouteRequest,
   type ModelRoute,
   type RouteSuggestion,
@@ -14,6 +16,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
+  badRequest,
   notFound,
   requireModelAction,
   requireWorkspaceProject,
@@ -71,6 +74,16 @@ export async function createRoute(
   input: CreateRouteRequest,
 ): Promise<ModelRoute> {
   const { userId } = await requireModelAction(context, workspaceId, "deploy");
+
+  if (
+    parsePlatformChatModelId(input.providerModelId) ||
+    input.provider === PLATFORM_DEPLOYMENT_CHAT_PROVIDER
+  ) {
+    throw badRequest(
+      "Register catalogue models here. Deployments create their own routes, and aliases select existing routes",
+    );
+  }
+
   const repositories = context.repositories;
   const version = await repositories.modelAssets.getVersion(workspaceId, input.versionId);
 

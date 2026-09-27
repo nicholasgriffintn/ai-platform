@@ -4,9 +4,11 @@ import {
   formatUnknownValue,
   getNumberInputValue,
   parseNumberInputValue,
-  splitNonEmptyLines,
 } from "@ngriffin_uk/polychat-utility-core";
-import { useId, useState } from "react";
+import { useId } from "react";
+
+import { splitInputLines } from "../utils/replicate-form";
+import { useReplicateForm } from "./useReplicateForm";
 
 interface ReplicateModelFormProps {
   model: ReplicateModel;
@@ -14,62 +16,23 @@ interface ReplicateModelFormProps {
   isSubmitting: boolean;
 }
 
-function buildInitialFormData(model: ReplicateModel): Record<string, any> {
-  const initialData: Record<string, any> = {};
-
-  model.inputSchema.fields.forEach((field) => {
-    if (field.default !== undefined) {
-      initialData[field.name] = field.default;
-    }
-  });
-
-  return initialData;
-}
-
 export function ReplicateModelForm({ model, onSubmit, isSubmitting }: ReplicateModelFormProps) {
-  const [formData, setFormData] = useState<Record<string, any>>(() => buildInitialFormData(model));
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [prevModel, setPrevModel] = useState(model);
-
-  if (model !== prevModel) {
-    setPrevModel(model);
-    setFormData(buildInitialFormData(model));
-    setErrors({});
-  }
-
-  const handleChange = (fieldName: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [fieldName]: value }));
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-
-      delete newErrors[fieldName];
-
-      return newErrors;
-    });
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    model.inputSchema.fields.forEach((field) => {
-      if (field.required && isReplicateRequiredValueMissing(formData[field.name])) {
-        newErrors[field.name] = `${field.name} is required`;
-      }
-    });
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
-  };
+  const { formData, errors, handleChange, validate } = useReplicateForm(model);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (isSubmitting) {
       return;
     }
 
-    onSubmit(formData);
+    const data = validate();
+
+    if (!data) {
+      return;
+    }
+
+    onSubmit(data);
   };
 
   return (
@@ -91,26 +54,6 @@ export function ReplicateModelForm({ model, onSubmit, isSubmitting }: ReplicateM
       </div>
     </form>
   );
-}
-
-function isReplicateRequiredValueMissing(value: unknown): boolean {
-  if (value === undefined || value === null) {
-    return true;
-  }
-
-  if (typeof value === "string") {
-    return value.trim().length === 0;
-  }
-
-  if (typeof value === "number") {
-    return !Number.isFinite(value);
-  }
-
-  if (Array.isArray(value)) {
-    return value.length === 0;
-  }
-
-  return !value;
 }
 
 interface FormFieldProps {
@@ -157,7 +100,7 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
             label: String(option),
           }))}
           onValueChange={(option) =>
-            onChange(typeof field.enum?.[0] === "number" ? Number(option) : option)
+            onChange(field.enum?.find((entry) => String(entry) === option) ?? option)
           }
         />
       ) : fieldTypes.includes("boolean") ? (
@@ -196,7 +139,7 @@ function FormField({ field, value, onChange, error }: FormFieldProps) {
         <Textarea
           id={fieldId}
           value={Array.isArray(value) ? value.join("\n") : ""}
-          onChange={(e) => onChange(splitNonEmptyLines(e.target.value))}
+          onChange={(e) => onChange(splitInputLines(e.target.value))}
           placeholder="One URL per line"
           rows={4}
           required={field.required}

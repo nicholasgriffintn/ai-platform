@@ -34,10 +34,17 @@ export class DeploymentChatProvider implements AIProvider {
     }
 
     const actor = userId ?? params.context?.user?.id;
+
+    if (!actor) {
+      throw new AssistantError(
+        "Sign in to use a workspace deployment",
+        ErrorType.AUTHENTICATION_ERROR,
+        401,
+      );
+    }
+
     const repositories = RepositoryManager.getInstance(params.env);
-    const deployment = actor
-      ? await canUserInvokeDeployment(params.env, actor, parsed.id)
-      : await repositories.modelDeployments.getById(parsed.id);
+    const deployment = await canUserInvokeDeployment(params.env, actor, parsed.id);
 
     if (!deployment) {
       throw new AssistantError("Deployment not found", ErrorType.NOT_FOUND, 404);

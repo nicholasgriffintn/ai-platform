@@ -1,5 +1,5 @@
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { modelUpload } from "~/infrastructure/database/schema";
@@ -63,5 +63,39 @@ export class ModelUploadRepository extends BaseRepository<Pick<IEnv, "DB">> {
       .update(modelUpload)
       .set({ ...changes, updated_at: new Date().toISOString() })
       .where(eq(modelUpload.id, id));
+  }
+
+  async recordPart(input: {
+    workspaceId: string;
+    uploadId: string;
+    fileIndex: number;
+    partNumber: number;
+    etag: string;
+  }): Promise<boolean> {
+    const filePath = `$[${input.fileIndex}]`;
+    const partsPath = `${filePath}.partsUploaded`;
+    const etagPath = `${filePath}.etags."${input.partNumber}"`;
+    const [record] = await this.database
+      .update(modelUpload)
+      .set({
+        files: sql`json_set(${modelUpload.files}, ${etagPath}, ${input.etag}, ${partsPath}, json(
+          CASE WHEN EXISTS (SELECT 1 FROM json_each(json_extract(${modelUpload.files}, ${partsPath})) WHERE value = ${input.partNumber})
+          THEN json_extract(${modelUpload.files}, ${partsPath})
+          ELSE json_insert(json_extract(${modelUpload.files}, ${partsPath}), '$[#]', ${input.partNumber}) END
+        ))`,
+        updated_at: new Date().toISOString(),
+      })
+      .where(
+        and(
+          eq(modelUpload.workspace_id, input.workspaceId),
+          eq(modelUpload.id, input.uploadId),
+          eq(modelUpload.status, "uploading"),
+          sql`json_extract(${modelUpload.files}, ${`${filePath}.index`}) = ${input.fileIndex}`,
+          sql`${input.partNumber} BETWEEN 1 AND json_extract(${modelUpload.files}, ${`${filePath}.partCount`})`,
+        ),
+      )
+      .returning({ id: modelUpload.id });
+
+    return record !== undefined;
   }
 }

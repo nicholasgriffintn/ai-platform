@@ -247,6 +247,7 @@ export function useTaskAttention() {
     total: query.data?.total ?? 0,
     unread: query.data?.unread ?? 0,
     isLoading: query.isLoading,
+    error: query.error,
     markRead: (itemIds: string[]) => updateReceipt.mutateAsync({ itemIds, action: "read" }),
     dismiss: (itemIds: string[]) => updateReceipt.mutateAsync({ itemIds, action: "dismiss" }),
     refresh: query.refetch,

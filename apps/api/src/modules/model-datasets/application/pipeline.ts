@@ -25,29 +25,33 @@ import {
   type DatasetStats,
 } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage, sha256Hex } from "@ngriffin_uk/polychat-utility-core";
+import {
+  fetchFollowingSafeRedirects,
+  parsePublicHttpUrl,
+} from "@ngriffin_uk/polychat-utility-server/http";
 import type { z } from "zod/v4";
 
-import { ai } from "~/infrastructure/ai";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import {
   resolveProviderContext,
   workspaceHubClient,
 } from "~/modules/model-governance/application/connections";
 import { syncVersionReviews } from "~/modules/model-registry/application/decisions";
+import { loadRegistryScope, routeStanding } from "~/modules/model-registry/application/scope";
 import { ArtefactStore, artefactKeys } from "~/modules/model-registry/infrastructure/ArtefactStore";
 import type { AddEvidenceInput } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
+import { completeWorkspaceRoute } from "~/modules/model-serving/application/route-completion";
 import type { IEnv } from "~/types";
 
 import type { ModelDatasetProfileRecord } from "../infrastructure/ModelDatasetRepository";
+import { MAX_FLAGGED_INDEXES, MAX_TRAINING_TOKENS } from "./limits";
 import { formatFromPath, httpAsyncBuffer, parquetRows, r2AsyncBuffer, streamRows } from "./sources";
 
 const logger = getLogger({ prefix: "modules/model-datasets/pipeline" });
 
 const HARD_ROW_LIMIT = 500_000;
-const MAX_FLAGGED_INDEXES = 1000;
 const SYNTHETIC_BATCH = 20;
 const DECONTAMINATION_GRAM = 13;
-const MAX_TRAINING_TOKENS = 32_768;
 
 export const RESTRICTED_TEACHER_PROVIDERS = new Set([
   "openai",
@@ -114,19 +118,28 @@ async function* hubRows(
     config: request.config,
     split: request.hubSplit,
   });
-  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
   let remaining = limit;
 
   for (const url of urls) {
-    const head = await fetch(url, { method: "HEAD", headers, redirect: "follow" });
+    const parsed = parsePublicHttpUrl(url);
+
+    if (parsed.protocol !== "https:") {
+      throw new Error("Dataset files must use HTTPS");
+    }
+
+    const headers: Record<string, string> =
+      token && parsed.origin === "https://huggingface.co"
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+    const head = await fetchFollowingSafeRedirects(url, { method: "HEAD", headers });
     const length = Number(head.headers.get("content-length"));
 
-    if (!head.ok || !Number.isFinite(length)) {
+    if (!head.ok || !Number.isSafeInteger(length) || length <= 0) {
       throw new Error(`Could not size ${url}`);
     }
 
     for await (const row of parquetRows(
-      httpAsyncBuffer(head.url || url, length, headers, fetch),
+      httpAsyncBuffer(url, length, headers, fetchFollowingSafeRedirects),
       remaining,
     )) {
       remaining -= 1;
@@ -283,6 +296,14 @@ async function generateSyntheticBatch(
     throw new Error("The teacher route is no longer active");
   }
 
+  const scope = await loadRegistryScope(repositories, profile.workspace_id, request.projectId, {
+    versionIds: [route.version_id],
+  });
+
+  if (!routeStanding(scope, route)?.usable) {
+    throw new Error("The teacher route is no longer approved for this scope");
+  }
+
   const generated = stats.generated ?? 0;
   const total = request.teacher.sampleCount;
   const batch = Math.min(SYNTHETIC_BATCH, total - generated);
@@ -299,18 +320,18 @@ async function generateSyntheticBatch(
     const seed = request.seedPrompts[(generated + index) % request.seedPrompts.length];
 
     try {
-      const completion = await ai.complete({
+      const completion = await completeWorkspaceRoute(
         env,
-        model: route.provider_model_id,
-        provider: route.provider,
-        system: request.instructions || undefined,
-        prompt: seed,
-      });
+        repositories,
+        route,
+        seed,
+        request.instructions,
+      );
 
       await writer.writeLine({
         system: request.instructions,
         prompt: seed,
-        response: completion.text,
+        response: completion,
       });
     } catch (error) {
       logger.warn("Synthetic generation failed for one prompt", {

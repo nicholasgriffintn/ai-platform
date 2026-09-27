@@ -102,15 +102,69 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
     periodStart: string;
     periodEnd: string;
   }): Promise<void> {
-    await this.database
+    const remove = this.database
       .delete(modelCostEntry)
       .where(
         and(
+          eq(modelCostEntry.workspace_id, input.workspaceId),
           eq(modelCostEntry.subject_type, input.subjectType),
           eq(modelCostEntry.subject_id, input.subjectId),
         ),
       );
-    await this.addCost(input);
+
+    if (input.usd <= 0) {
+      await remove;
+
+      return;
+    }
+
+    await this.database.batch([
+      remove,
+      this.database.insert(modelCostEntry).values({
+        id: generateId(),
+        workspace_id: input.workspaceId,
+        project_id: input.projectId,
+        subject_type: input.subjectType,
+        subject_id: input.subjectId,
+        provider: input.provider,
+        usd: input.usd,
+        basis: input.basis,
+        period_start: input.periodStart,
+        period_end: input.periodEnd,
+      }),
+    ]);
+  }
+
+  async accrueDeployment(input: {
+    workspaceId: string;
+    deploymentId: string;
+    expectedBilledUntil: string | null;
+    periodStart: string;
+    periodEnd: string;
+    usd: number;
+  }): Promise<void> {
+    await this.executeBatch([
+      this.env.DB.prepare(`INSERT INTO model_cost_entry
+        (id, workspace_id, project_id, subject_type, subject_id, provider, usd, basis, period_start, period_end)
+        SELECT ?, workspace_id, project_id, 'deployment', id, provider, ?, 'estimate', ?, ?
+        FROM model_deployment WHERE workspace_id = ? AND id = ? AND billed_until IS ? AND ? > 0`).bind(
+        generateId(),
+        input.usd,
+        input.periodStart,
+        input.periodEnd,
+        input.workspaceId,
+        input.deploymentId,
+        input.expectedBilledUntil,
+        input.usd,
+      ),
+      this.env.DB.prepare(`UPDATE model_deployment SET billed_until = ?
+        WHERE workspace_id = ? AND id = ? AND billed_until IS ?`).bind(
+        input.periodEnd,
+        input.workspaceId,
+        input.deploymentId,
+        input.expectedBilledUntil,
+      ),
+    ]);
   }
 
   async listCosts(workspaceId: string, since: string): Promise<ModelCostEntryRecord[]> {
@@ -189,20 +243,58 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
       .orderBy(desc(modelSpendRequest.created_at));
   }
 
-  async resolveSpendRequest(input: {
+  async claimSpendRequest(input: {
     id: string;
-    state: "approved" | "rejected";
+    workspaceId: string;
+    state: "executing" | "rejected";
     decidedBy: number;
-    subjectId: string | null;
-  }): Promise<void> {
-    await this.database
+  }): Promise<ModelSpendRequestRecord | null> {
+    const [record] = await this.database
       .update(modelSpendRequest)
       .set({
         state: input.state,
         decided_by: input.decidedBy,
         decided_at: new Date().toISOString(),
-        subject_id: input.subjectId,
       })
-      .where(and(eq(modelSpendRequest.id, input.id), eq(modelSpendRequest.state, "pending")));
+      .where(
+        and(
+          eq(modelSpendRequest.workspace_id, input.workspaceId),
+          eq(modelSpendRequest.id, input.id),
+          eq(modelSpendRequest.state, "pending"),
+        ),
+      )
+      .returning();
+
+    return record ?? null;
+  }
+
+  async finishSpendRequest(input: {
+    id: string;
+    workspaceId: string;
+    state: "approved" | "failed";
+    subjectId: string | null;
+  }): Promise<ModelSpendRequestRecord | null> {
+    const [record] = await this.database
+      .update(modelSpendRequest)
+      .set({
+        state: input.state,
+        subject_id: input.subjectId,
+        ...(input.state === "failed"
+          ? {
+              reason:
+                "Execution failed. Check the training runs or deployments before submitting a new request.",
+            }
+          : {}),
+      })
+      .where(
+        and(
+          eq(modelSpendRequest.workspace_id, input.workspaceId),
+          eq(modelSpendRequest.id, input.id),
+          eq(modelSpendRequest.state, "executing"),
+        ),
+      )
+      .returning();
+
+    return record ?? null;
   }
 }

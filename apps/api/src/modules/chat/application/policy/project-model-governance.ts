@@ -4,7 +4,7 @@ import {
   resolveProjectModelGovernance,
   type ApprovedRoute,
 } from "~/modules/model-registry/application/enforcement";
-import { findModelConfig } from "~/modules/models/application/resolve";
+import { resolveRequestModelConfig } from "~/modules/models/application/request-config";
 import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatProjectAccess";
 import type { CoreChatOptions } from "~/types";
 
@@ -37,7 +37,7 @@ export async function applyProjectModelGovernance(
   let primaryRoute: ApprovedRoute | undefined;
 
   for (const [index, modelId] of selection.models.entries()) {
-    const config = await findModelConfig(modelId, options.env, selection.provider);
+    const config = await resolveRequestModelConfig(options, modelId, selection.provider);
     const route = config
       ? governance.routeFor({ id: config.id ?? modelId, provider: config.provider })
       : undefined;

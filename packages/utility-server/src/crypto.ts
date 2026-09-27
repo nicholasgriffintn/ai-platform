@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 
 import { base64ToBuffer, bufferToBase64 } from "./base64.js";
@@ -20,6 +22,26 @@ export function isEncryptedJsonPayload(value: unknown): value is EncryptedJsonPa
 }
 
 export { sha256Hex };
+
+export async function sha256Stream(stream: ReadableStream<Uint8Array>): Promise<string> {
+  const hash = createHash("sha256");
+  const reader = stream.getReader();
+
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+
+      if (done) {
+        return hash.digest("hex");
+      }
+
+      hash.update(value);
+    }
+  } finally {
+    await reader.cancel().catch(() => undefined);
+    reader.releaseLock();
+  }
+}
 
 export function toHex(buffer: ArrayBuffer): string {
   return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, "0")).join("");

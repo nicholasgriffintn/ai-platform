@@ -318,7 +318,7 @@ export function SpendRequestList({
                 variant={
                   request.state === "approved"
                     ? "success"
-                    : request.state === "rejected"
+                    : request.state === "rejected" || request.state === "failed"
                       ? "destructive"
                       : "warning"
                 }

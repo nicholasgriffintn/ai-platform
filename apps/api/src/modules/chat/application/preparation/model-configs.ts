@@ -3,58 +3,16 @@ import type { ModelConfigInfo, ModelConfigItem } from "@ngriffin_uk/polychat-sch
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ValidationContext } from "~/modules/chat/application/validation/ValidationPipeline";
-import { findModelConfig } from "~/modules/models/application/resolve";
-import type { CoreChatOptions, IEnv } from "~/types";
+import { resolveRequestModelConfig } from "~/modules/models/application/request-config";
+import type { CoreChatOptions } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/preparation/model-configs" });
-
-const modelConfigCache = new Map<string, Promise<ModelConfigItem | null>>();
-
-export function clearModelConfigCache(): void {
-  modelConfigCache.clear();
-}
-
-export function getCachedModelConfig(
-  model: string,
-  env: IEnv,
-  provider?: string,
-  userId?: number,
-): Promise<ModelConfigItem | null> {
-  const cacheKey = [userId ?? "anonymous", provider ?? "any", model].join(":");
-  const cached = modelConfigCache.get(cacheKey);
-
-  if (cached !== undefined) {
-    return cached;
-  }
-
-  const fetchPromise = (async () => {
-    try {
-      const config = await findModelConfig(model, env, provider, userId);
-
-      if (!config) {
-        modelConfigCache.delete(cacheKey);
-
-        return null;
-      }
-
-      return config;
-    } catch (error) {
-      modelConfigCache.delete(cacheKey);
-      throw error;
-    }
-  })();
-
-  modelConfigCache.set(cacheKey, fetchPromise);
-
-  return fetchPromise;
-}
 
 export async function buildModelConfigs(
   options: CoreChatOptions,
   validationContext: ValidationContext,
 ): Promise<ModelConfigInfo[]> {
-  const { env, provider: requestedProvider } = options;
-  const user = options.context?.user;
+  const { provider: requestedProvider } = options;
   const { selectedModels, modelConfig: primaryModelConfig } = validationContext;
 
   if (!selectedModels || selectedModels.length === 0) {
@@ -94,7 +52,7 @@ export async function buildModelConfigs(
   const modelsToFetch = shouldSkipPrimaryFetch ? selectedModels.slice(1) : selectedModels.slice();
 
   const configResults = await Promise.allSettled(
-    modelsToFetch.map((model) => getCachedModelConfig(model, env, requestedProvider, user?.id)),
+    modelsToFetch.map((model) => resolveRequestModelConfig(options, model, requestedProvider)),
   );
 
   configResults.forEach((result, index) => {

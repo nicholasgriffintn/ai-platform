@@ -43,34 +43,66 @@ export async function resolveSpendRequest(
     );
   }
 
-  const requestedBy = request.requested_by ?? userId;
-  const subjectId =
-    state === "rejected"
-      ? null
-      : request.subject_type === "training_run"
-        ? (await startApprovedRun(context, workspaceId, requestedBy, request.payload)).id
-        : (await startApprovedDeployment(context, workspaceId, requestedBy, request.payload)).id;
-
-  await repositories.modelSpend.resolveSpendRequest({
+  let resolved = await repositories.modelSpend.claimSpendRequest({
     id: request.id,
-    state,
+    workspaceId,
+    state: state === "approved" ? "executing" : "rejected",
     decidedBy: userId,
-    subjectId,
   });
+
+  if (!resolved) {
+    throw conflict("Someone else has already handled this request");
+  }
+
+  if (state === "approved") {
+    try {
+      const requestedBy = request.requested_by ?? userId;
+      const subject =
+        request.subject_type === "training_run"
+          ? await startApprovedRun(context, workspaceId, requestedBy, request.payload)
+          : await startApprovedDeployment(context, workspaceId, requestedBy, request.payload);
+
+      resolved = await repositories.modelSpend.finishSpendRequest({
+        id: request.id,
+        workspaceId,
+        state: "approved",
+        subjectId: subject.id,
+      });
+    } catch (error) {
+      await repositories.modelSpend.finishSpendRequest({
+        id: request.id,
+        workspaceId,
+        state: "failed",
+        subjectId: null,
+      });
+      await repositories.audit.createRecord({
+        workspaceId,
+        actorUserId: userId,
+        action: "model_spend.failed",
+        targetType: "model_spend_request",
+        targetId: request.id,
+        metadata: { subjectType: request.subject_type },
+      });
+      throw error;
+    }
+  }
+
+  if (!resolved) {
+    throw conflict("The spend request changed while it was being executed");
+  }
+
   await repositories.audit.createRecord({
     workspaceId,
     actorUserId: userId,
     action: `model_spend.${state}`,
     targetType: "model_spend_request",
     targetId: request.id,
-    metadata: { subjectType: request.subject_type, subjectId, estimateUsd: request.estimate_usd },
+    metadata: {
+      subjectType: request.subject_type,
+      subjectId: resolved.subject_id,
+      estimateUsd: request.estimate_usd,
+    },
   });
-
-  const resolved = await repositories.modelSpend.getSpendRequest(workspaceId, requestId);
-
-  if (!resolved) {
-    throw notFound("Spend request");
-  }
 
   return toSpendRequest(resolved);
 }

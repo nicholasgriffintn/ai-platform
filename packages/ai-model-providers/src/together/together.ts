@@ -488,6 +488,14 @@ export class TogetherHost implements Host {
       const status = String(job.status).toLowerCase();
 
       if (status === "complete" || status === "completed") {
+        if (deployment.desired !== "running") {
+          return this.state(ref, deployment.desired === "deleted" ? "deleted" : "paused", null, 0);
+        }
+
+        if (deployment.spec.shape === "dedicated") {
+          await this.context.claimProvisioningContinuation?.();
+        }
+
         return this.startServing(deployment, ref.model);
       }
 

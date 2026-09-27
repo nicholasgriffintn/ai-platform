@@ -1,3 +1,4 @@
+import { hostManifest } from "@ngriffin_uk/polychat-ai-model-providers";
 import {
   aliasChatModelId,
   type AliasEvent,
@@ -14,6 +15,7 @@ import type { ModelDeploymentRecord } from "../infrastructure/ModelDeploymentRep
 export function toModelDeployment(record: ModelDeploymentRecord): ModelDeployment {
   return {
     id: record.id,
+    pauseSupported: hostManifest(record.provider, record.host).pauseSupported !== false,
     workspaceId: record.workspace_id,
     projectId: record.project_id,
     name: record.name,

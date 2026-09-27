@@ -113,6 +113,7 @@ export const VERTEX_TRAINER: TrainerManifest = {
 };
 
 export const VERTEX_HOST: HostManifest = {
+  pauseSupported: false,
   id: "vertex",
   name: "Vertex AI Model Garden",
   description:

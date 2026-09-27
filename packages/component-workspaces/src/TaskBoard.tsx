@@ -5,9 +5,8 @@ import {
   projectTaskBlockedReasonLabels,
   type ProjectFlow,
   type ProjectTask,
-  type ProjectTaskStatus,
 } from "@ngriffin_uk/polychat-schemas";
-import { formatRelativeTime, sortCopy } from "@ngriffin_uk/polychat-utility-core";
+import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
 import {
   ArrowRight,
   Bot,
@@ -29,6 +28,7 @@ import {
 } from "./task-board-filters";
 import { TaskBoardFilters } from "./TaskBoardFilters";
 import { TaskStatusBadge } from "./TaskStatusBadge";
+import { sortProjectTasks } from "./utils/project-tasks";
 
 const NO_PENDING_TASKS: string[] = [];
 
@@ -57,16 +57,6 @@ export interface TaskBoardProps {
   canCreateTask: boolean;
   canManageFlow: boolean;
 }
-
-const STATUS_ORDER: Record<ProjectTaskStatus, number> = {
-  blocked: 0,
-  review: 1,
-  running: 2,
-  queued: 3,
-  backlog: 4,
-  done: 5,
-  cancelled: 6,
-};
 
 function PipelineProgress({ task, flow }: { task: ProjectTask; flow: ProjectFlow | null }) {
   if (!flow) {
@@ -349,13 +339,7 @@ export function TaskBoard({
   canManageFlow,
 }: TaskBoardProps) {
   const [filters, setFilters] = useState<TaskQueueFilters>(DEFAULT_TASK_QUEUE_FILTERS);
-  const sortedTasks = sortCopy(
-    tasks,
-    (left, right) =>
-      STATUS_ORDER[left.status] - STATUS_ORDER[right.status] ||
-      new Date(right.updatedAt ?? right.createdAt).getTime() -
-        new Date(left.updatedAt ?? left.createdAt).getTime(),
-  );
+  const sortedTasks = sortProjectTasks(tasks);
   const running = tasks.filter((task) => task.status === "running" || task.status === "queued");
   const attention = tasks.filter((task) => task.status === "blocked" || task.status === "review");
   const completed = tasks.filter((task) => task.status === "done");

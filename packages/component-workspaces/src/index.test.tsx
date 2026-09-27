@@ -129,6 +129,31 @@ const emptyPlan: ProjectTaskPlanEvidence = {
 };
 
 describe("ProjectTasksSummary", () => {
+  it("prioritises blocked and review work and fills spare space with other open tasks", () => {
+    render(
+      <ProjectTasksSummary
+        tasks={[
+          { ...task, id: "running", objective: "Running task", status: "running" },
+          { ...task, id: "backlog", objective: "Backlog task", status: "backlog" },
+          { ...task, id: "review", objective: "Review task", status: "review" },
+          { ...task, id: "blocked", objective: "Blocked task", status: "blocked" },
+          { ...task, id: "done", objective: "Done task", status: "done" },
+        ]}
+        boardHref="/tasks"
+        taskHref={(item) => `/tasks/${item.id}`}
+        onCreateTask={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen
+        .getAllByRole("link")
+        .slice(1)
+        .map((link) => link.getAttribute("href")),
+    ).toEqual(["/tasks/blocked", "/tasks/review", "/tasks/running", "/tasks/backlog"]);
+    expect(screen.getByText("4 open · 2 needing a look")).toBeTruthy();
+  });
+
   it("reports a failed load instead of claiming the project has no tasks", () => {
     render(
       <ProjectTasksSummary
@@ -577,6 +602,72 @@ describe("FlowEditorDialog", () => {
 });
 
 describe("CreateTaskDialog", () => {
+  it("uses the loaded pipeline and prevents repeat submissions while saving", async () => {
+    let finish: () => void = () => undefined;
+    const onSubmit = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const props = {
+      open: true,
+      members: [],
+      teammates: [],
+      boardTasks: [],
+      onOpenChange: vi.fn(),
+      onSubmit,
+    };
+    const { rerender } = render(<CreateTaskDialog {...props} flow={null} />);
+
+    rerender(<CreateTaskDialog {...props} flow={flow} />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Objective" }), {
+      target: { value: "Wait for save" },
+    });
+    const button = screen.getByRole("button", { name: "Save to backlog" });
+
+    fireEvent.click(button);
+    fireEvent.submit(button.closest("form")!);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ stageId: "research" }), "save");
+    finish();
+    await waitFor(() =>
+      expect(screen.getByRole("textbox", { name: "Objective" }).getAttribute("value")).toBe(""),
+    );
+  });
+
+  it("retains the draft and reports a rejected submission so it can be retried", async () => {
+    const onSubmit = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("Task could not be saved"))
+      .mockResolvedValueOnce(undefined);
+
+    render(
+      <CreateTaskDialog
+        open
+        flow={flow}
+        members={[]}
+        teammates={[]}
+        boardTasks={[]}
+        onOpenChange={vi.fn()}
+        onSubmit={onSubmit}
+      />,
+    );
+    fireEvent.change(screen.getByRole("textbox", { name: "Objective" }), {
+      target: { value: "Keep my draft" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save to backlog" }));
+    await waitFor(() =>
+      expect(screen.getByRole("alert").textContent).toContain("Task could not be saved"),
+    );
+    expect(screen.getByRole("textbox", { name: "Objective" }).getAttribute("value")).toBe(
+      "Keep my draft",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Save to backlog" }));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+  });
+
   it("creates and starts work as one explicit action", async () => {
     const onSubmit = vi.fn(async () => undefined);
 

@@ -35,7 +35,6 @@ import type { IEnv } from "~/types";
 
 import type { ModelTrainingRunRecord } from "../infrastructure/ModelTrainingRepository";
 import { loadTrainingInputs, METHOD_SHAPES, modificationCompute } from "./plan";
-import { cancelProviderJob } from "./trainer-context";
 
 export function toTrainingRun(
   record: ModelTrainingRunRecord,
@@ -268,7 +267,10 @@ export async function startTrainingRun(
     throw conflict(preflight.reason ?? "This run would break the budget");
   }
 
-  if (preflight.decision === "needs_approval" && !access.actions.has("approve")) {
+  if (
+    preflight.decision === "needs_approval" &&
+    (!access.actions.has("approve") || access.separationOfDuties)
+  ) {
     return {
       run: null,
       preflight,
@@ -308,6 +310,16 @@ export async function startApprovedRun(
     workspaceId,
     startTrainingRunRequestSchema.parse(payload),
   );
+  const preflight = await preflightWorkspaceSpend(
+    context.repositories,
+    workspaceId,
+    prepared.projectId,
+    prepared.estimate.usd,
+  );
+
+  if (preflight.decision === "blocked") {
+    throw conflict(preflight.reason ?? "This run would break the budget");
+  }
 
   return startPreparedRun(context.env, context.repositories, workspaceId, requestedBy, prepared);
 }
@@ -422,15 +434,18 @@ export async function cancelTrainingRun(
     throw conflict(`The run is already ${run.status}`);
   }
 
-  if (run.provider_job_id) {
-    await cancelProviderJob(repositories, run);
+  const cancelled = await repositories.modelTraining.requestCancellation(workspaceId, run.id);
+
+  if (!cancelled) {
+    throw conflict("The run finished before cancellation could be requested");
   }
 
-  await repositories.modelTraining.update(run.id, {
-    status: "cancelled",
-    completed_at: new Date().toISOString(),
-    failure_reason: "Cancelled by a workspace member",
-  });
+  if (cancelled.status === "cancelling") {
+    await enqueueTrainingSync(context.env, repositories, run.id);
+  } else {
+    await repositories.modelTraining.update(run.id, { completed_at: new Date().toISOString() });
+  }
+
   await repositories.audit.createRecord({
     workspaceId,
     actorUserId: userId,

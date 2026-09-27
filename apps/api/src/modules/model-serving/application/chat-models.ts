@@ -4,6 +4,7 @@ import {
 } from "@ngriffin_uk/polychat-ai-models";
 import {
   aliasChatModelId,
+  deploymentChatModelId,
   type ModelConfig,
   type ModelConfigItem,
   parsePlatformChatModelId,
@@ -12,18 +13,19 @@ import {
 
 import { hasD1DatabaseBinding } from "~/infrastructure/database/bindings";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { loadRegistryScope, routeStanding } from "~/modules/model-registry/application/scope";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import type { IEnv } from "~/types";
 
 import type { ModelAliasRecord } from "../infrastructure/ModelAliasRepository";
 import type { ModelDeploymentRecord } from "../infrastructure/ModelDeploymentRepository";
 import { chooseAliasRoute } from "./aliases";
-
-const SERVING_STATUSES = new Set(["running", "scaled_to_zero", "updating", "provisioning"]);
+import { isDeploymentInvocable } from "./deployment-state";
 
 function deploymentConfig(deployment: ModelDeploymentRecord, name: string): ModelConfigItem {
   return {
-    matchingModel: `deployment:${deployment.id}`,
+    id: deploymentChatModelId(deployment.id),
+    matchingModel: deploymentChatModelId(deployment.id),
     name,
     description: `${deployment.name} on ${deployment.provider} (${deployment.status.replace(/_/g, " ")})`,
     provider: PLATFORM_DEPLOYMENT_CHAT_PROVIDER,
@@ -44,11 +46,12 @@ async function routeConfig(
   }
 
   if (route.deployment_id) {
-    const deployment = await repositories.modelDeployments.getById(route.deployment_id);
+    const deployment = await repositories.modelDeployments.get(
+      route.workspace_id,
+      route.deployment_id,
+    );
 
-    return deployment &&
-      SERVING_STATUSES.has(deployment.status) &&
-      deployment.desired_state === "running"
+    return deployment && isDeploymentInvocable(deployment)
       ? deploymentConfig(deployment, name)
       : null;
   }
@@ -57,7 +60,9 @@ async function routeConfig(
     getModelConfigById(route.provider_model_id) ??
     findModelConfigByMatchingModel(route.provider_model_id, route.provider);
 
-  return catalogue && catalogue.provider === route.provider ? { ...catalogue, name } : null;
+  return catalogue && catalogue.provider === route.provider
+    ? { ...catalogue, id: route.provider_model_id, name }
+    : null;
 }
 
 async function memberWorkspaceIds(
@@ -67,14 +72,55 @@ async function memberWorkspaceIds(
   return (await repositories.workspaces.listWorkspaces(userId)).map((workspace) => workspace.id);
 }
 
+async function deploymentHasApproval(
+  repositories: RepositoryManager,
+  deployment: ModelDeploymentRecord,
+): Promise<boolean> {
+  if (!isDeploymentInvocable(deployment) || !deployment.route_id) {
+    return false;
+  }
+
+  const route = await repositories.modelRoutes.getRoute(
+    deployment.workspace_id,
+    deployment.route_id,
+  );
+
+  if (
+    !route ||
+    route.deployment_id !== deployment.id ||
+    route.version_id !== deployment.version_id
+  ) {
+    return false;
+  }
+
+  const scope = await loadRegistryScope(
+    repositories,
+    deployment.workspace_id,
+    deployment.project_id,
+    { versionIds: [route.version_id] },
+  );
+
+  return routeStanding(scope, route)?.usable === true;
+}
+
 async function aliasConfig(
   repositories: RepositoryManager,
   alias: ModelAliasRecord,
 ): Promise<ModelConfigItem | null> {
   const routeId = chooseAliasRoute(alias);
-  const route = routeId ? await repositories.modelRoutes.getRouteById(routeId) : null;
+  const route = routeId
+    ? await repositories.modelRoutes.getRoute(alias.workspace_id, routeId)
+    : null;
 
-  return route ? routeConfig(repositories, route, alias.name) : null;
+  if (!route) {
+    return null;
+  }
+
+  const scope = await loadRegistryScope(repositories, alias.workspace_id, alias.project_id, {
+    versionIds: [route.version_id],
+  });
+
+  return routeStanding(scope, route)?.usable ? routeConfig(repositories, route, alias.name) : null;
 }
 
 export async function listPlatformChatModels(
@@ -130,7 +176,7 @@ export async function findPlatformChatModel(
 
   return deployment &&
     workspaces.has(deployment.workspace_id) &&
-    SERVING_STATUSES.has(deployment.status)
+    (await deploymentHasApproval(repositories, deployment))
     ? deploymentConfig(deployment, deployment.name)
     : null;
 }
@@ -147,7 +193,8 @@ export async function canUserInvokeDeployment(
     return null;
   }
 
-  return (await repositories.workspaces.getMembership(deployment.workspace_id, userId))
+  return (await repositories.workspaces.getMembership(deployment.workspace_id, userId)) &&
+    (await deploymentHasApproval(repositories, deployment))
     ? deployment
     : null;
 }

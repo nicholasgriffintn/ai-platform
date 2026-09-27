@@ -1,14 +1,10 @@
-import { SettingsSection, TaskList } from "@ngriffin_uk/polychat-component-account";
 import { ButtonLink, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
-  TaskAttentionList,
   WorkAttentionView,
   type WorkAttentionFilters,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
-  useTaskAttention,
-  useTasks,
   useWorkAttention,
   readWorkAttentionQuery,
   workAttentionItemHref,
@@ -21,6 +17,8 @@ import { useSearchParams } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
+import { AttentionBackgroundTasks } from "./AttentionBackgroundTasks.js";
+import { AttentionInbox } from "./AttentionInbox.js";
 
 export function AttentionPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,8 +27,6 @@ export function AttentionPage() {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const isPro = useChatStore((state) => state.isPro);
-  const { tasks, isLoadingTasks } = useTasks({ shouldRefetch: true });
-  const inbox = useTaskAttention();
   const filters: WorkAttentionFilters = {
     kind: query.kind,
     workspaceId: query.workspaceId,
@@ -74,31 +70,15 @@ export function AttentionPage() {
         />
       )}
 
-      {isAuthenticated && isPro ? (
+      {!isAuthenticationLoading && isAuthenticated && isPro ? (
         <div className="mt-10">
-          <SettingsSection
-            title={`Your inbox${inbox.unread > 0 ? ` · ${inbox.unread} unread` : ""}`}
-            description="Task notifications addressed to you. Opening one marks it read everywhere you are signed in."
-          >
-            <TaskAttentionList
-              items={inbox.items}
-              itemHref={(item) => item.deepLink}
-              emptyMessage="Nothing is waiting for you."
-              onRead={(item) => void inbox.markRead([item.id])}
-              onDismiss={(item) => void inbox.dismiss([item.id])}
-            />
-          </SettingsSection>
+          <AttentionInbox />
         </div>
       ) : null}
 
-      {isAuthenticated ? (
+      {!isAuthenticationLoading && isAuthenticated ? (
         <div className={isPro ? "mt-10" : undefined}>
-          <SettingsSection
-            title="Your background tasks"
-            description="Automations, media processing and other work running for your account."
-          >
-            <TaskList tasks={tasks} isLoading={isLoadingTasks} />
-          </SettingsSection>
+          <AttentionBackgroundTasks />
         </div>
       ) : null}
 

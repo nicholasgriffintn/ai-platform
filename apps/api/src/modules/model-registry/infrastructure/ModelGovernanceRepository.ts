@@ -9,7 +9,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { chunkArray } from "@ngriffin_uk/polychat-utility-core";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
-import { and, desc, eq, getTableColumns, inArray, isNull, lte, or } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, inArray, isNull, lte, or, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import {
@@ -217,7 +217,10 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
             ...(versionIds ? [inArray(modelDecision.version_id, versionIds)] : []),
           ),
         )
-        .orderBy(desc(modelDecision.created_at))
+        .orderBy(
+          desc(sql`coalesce(${modelDecision.decided_at}, ${modelDecision.created_at})`),
+          desc(sql`rowid`),
+        )
         .limit(DECISION_LIST_LIMIT);
 
     if (!filters.versionIds) {
@@ -227,7 +230,9 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
     const records = await this.selectInChunks(filters.versionIds, select);
 
     return records
-      .sort((left, right) => right.created_at.localeCompare(left.created_at))
+      .sort((left, right) =>
+        (right.decided_at ?? right.created_at).localeCompare(left.decided_at ?? left.created_at),
+      )
       .slice(0, DECISION_LIST_LIMIT);
   }
 

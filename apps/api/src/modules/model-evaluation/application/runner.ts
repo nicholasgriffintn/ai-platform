@@ -13,7 +13,6 @@ import {
   sampleDeterministic,
 } from "@ngriffin_uk/polychat-utility-core";
 
-import { ai } from "~/infrastructure/ai";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import {
   openRouteReview,
@@ -21,6 +20,7 @@ import {
 } from "~/modules/model-registry/application/decisions";
 import type { AddEvidenceInput } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { completeWorkspaceRoute } from "~/modules/model-serving/application/route-completion";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { IEnv } from "~/types";
@@ -63,6 +63,7 @@ export async function readEvalResults(
 
 async function runCase(
   env: IEnv,
+  repositories: RepositoryManager,
   suite: ModelEvalSuiteRecord,
   graders: readonly ModelGraderRecord[],
   route: ModelRouteRecord,
@@ -72,20 +73,20 @@ async function runCase(
   const started = Date.now();
 
   try {
-    const completion = await ai.complete({
+    const completion = await completeWorkspaceRoute(
       env,
-      model: route.provider_model_id,
-      provider: route.provider,
-      system: suite.system_prompt ?? undefined,
-      prompt: item.input,
-    });
-    const output = completion.text.slice(0, MAX_OUTPUT_CHARS);
+      repositories,
+      route,
+      item.input,
+      suite.system_prompt,
+    );
+    const output = completion.slice(0, MAX_OUTPUT_CHARS);
     const latencyMs = Date.now() - started;
     const scores: Record<string, number> = {};
 
     for (const grader of graders) {
       const score = await scoreWithGrader(
-        env,
+        { env, repositories, workspaceId: suite.workspace_id, projectId: suite.project_id },
         grader.config,
         { input: item.input, output, expected: item.expected },
         judge,
@@ -283,7 +284,7 @@ export async function executeEvalRun(
     const fresh: EvalCaseResult[] = [];
 
     for (const item of batch) {
-      fresh.push(await runCase(env, suite, graders, route, item, judge));
+      fresh.push(await runCase(env, repositories, suite, graders, route, item, judge));
     }
 
     const results = [...previous, ...fresh];

@@ -29,12 +29,12 @@ const results: SearchResult[] = [
   },
 ];
 
-function renderDialog(onSelect = vi.fn()) {
-  render(
+function renderDialog(onSelect = vi.fn(), searchResults = results) {
+  return render(
     <SearchDialog
       isOpen
       query="launch"
-      results={results}
+      results={searchResults}
       hasQuery
       hasError={false}
       isLoading={false}
@@ -44,13 +44,13 @@ function renderDialog(onSelect = vi.fn()) {
       onSelect={onSelect}
     />,
   );
-
-  return onSelect;
 }
 
 describe("SearchDialog filters", () => {
   it("narrows results to one kind and keeps keyboard selection on the filtered list", () => {
-    const onSelect = renderDialog();
+    const onSelect = vi.fn();
+
+    renderDialog(onSelect);
 
     fireEvent.click(screen.getByRole("button", { name: /Projects/ }));
 
@@ -69,5 +69,46 @@ describe("SearchDialog filters", () => {
     expect(screen.getByRole("button", { name: /Chats/ })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Workspaces/ })).toBeNull();
     expect(screen.queryByRole("button", { name: /Capabilities/ })).toBeNull();
+  });
+
+  it("keeps the active filter available when updated results are empty", () => {
+    const onSelect = vi.fn();
+    const { rerender } = renderDialog(onSelect);
+
+    fireEvent.click(screen.getByRole("button", { name: /Projects/ }));
+
+    rerender(
+      <SearchDialog
+        isOpen
+        query="missing"
+        results={[]}
+        hasQuery
+        hasError={false}
+        isLoading={false}
+        isUpdating={false}
+        onClose={vi.fn()}
+        onQueryChange={vi.fn()}
+        onSelect={onSelect}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: /Projects/ }).getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+    fireEvent.click(screen.getByRole("button", { name: /All/ }));
+    expect(screen.queryByRole("button", { name: /Projects/ })).toBeNull();
+  });
+
+  it("does not intercept Enter on filter controls or result buttons", () => {
+    const onSelect = vi.fn();
+
+    renderDialog(onSelect);
+
+    fireEvent.keyDown(screen.getByRole("button", { name: /Projects/ }), { key: "Enter" });
+    fireEvent.keyDown(screen.getAllByRole("option")[1], { key: "Enter" });
+
+    expect(onSelect).not.toHaveBeenCalled();
+    fireEvent.click(screen.getAllByRole("option")[1]);
+    expect(onSelect).toHaveBeenCalledWith(results[1], 1, "click");
   });
 });

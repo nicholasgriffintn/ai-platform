@@ -13,6 +13,7 @@ const RUN_STATUS: Record<TrainingRunStatus, { label: string; variant: BadgeVaria
   preparing: { label: "Preparing", variant: "info" },
   submitted: { label: "Submitted", variant: "info" },
   running: { label: "Training", variant: "info" },
+  cancelling: { label: "Cancelling", variant: "warning" },
   completed: { label: "Completed", variant: "success" },
   failed: { label: "Failed", variant: "destructive" },
   cancelled: { label: "Cancelled", variant: "outline" },

@@ -51,9 +51,11 @@ function RunBody({ runId }: { runId: string }) {
           <Button
             size="sm"
             variant="destructive"
-            disabled={mutations.cancelRun.isPending}
+            disabled={mutations.cancelRun.isPending || run.status === "cancelling"}
             onClick={() =>
-              void runWithToast("Run cancelled", () => mutations.cancelRun.mutateAsync(run.id))
+              void runWithToast("Cancellation requested", () =>
+                mutations.cancelRun.mutateAsync(run.id),
+              )
             }
           >
             Cancel

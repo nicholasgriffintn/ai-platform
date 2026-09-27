@@ -1,0 +1,2 @@
+export const MAX_FLAGGED_INDEXES = 1000;
+export const MAX_TRAINING_TOKENS = 32_768;

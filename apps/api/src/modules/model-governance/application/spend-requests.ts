@@ -1,4 +1,4 @@
-import type { SpendRequest } from "@ngriffin_uk/polychat-schemas";
+import { SPEND_REQUEST_STATES, type SpendRequest } from "@ngriffin_uk/polychat-schemas";
 import { readNonEmptyString, readRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -14,7 +14,14 @@ function summarise(record: ModelSpendRequestRecord): string {
       ? (readNonEmptyString(payload.name) ?? "deployment")
       : (readNonEmptyString(readRecord(payload.spec).outputName) ?? "training run");
 
-  return record.subject_type === "deployment" ? `Deploy ${name}` : `Train ${name}`;
+  if (record.subject_type === "deployment") {
+    const action =
+      payload.action === "resume" ? "Resume" : payload.action === "scale" ? "Scale" : "Deploy";
+
+    return `${action} ${name}`;
+  }
+
+  return `Train ${name}`;
 }
 
 export function toSpendRequest(record: ModelSpendRequestRecord): SpendRequest {
@@ -74,9 +81,7 @@ export async function listSpendRequests(
   return {
     requests: (
       await context.repositories.modelSpend.listSpendRequests(workspaceId, [
-        "pending",
-        "approved",
-        "rejected",
+        ...SPEND_REQUEST_STATES,
       ])
     ).map(toSpendRequest),
   };

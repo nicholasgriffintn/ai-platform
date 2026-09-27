@@ -1,3 +1,4 @@
+import { hostManifest } from "@ngriffin_uk/polychat-ai-model-providers";
 import { monthStart, preflightSpend } from "@ngriffin_uk/polychat-library-model-registry";
 import type {
   ModelBudget,
@@ -11,6 +12,7 @@ import { hoursBetween } from "@ngriffin_uk/polychat-utility-core";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import {
+  conflict,
   notFound,
   requireModelAction,
   requireWorkspaceProject,
@@ -212,6 +214,23 @@ export async function saveBudget(
 ): Promise<ModelBudget> {
   const { userId } = await requireModelAction(context, workspaceId, "manage_budgets");
   const projectId = await requireWorkspaceProject(context, workspaceId, request.projectId);
+
+  if ((request.hardStop ?? true) || request.idlePauseMinutes != null) {
+    const deployments = await context.repositories.modelDeployments.list(workspaceId, {
+      liveOnly: true,
+      projectId,
+    });
+    const unsupported = deployments.find(
+      (deployment) => hostManifest(deployment.provider, deployment.host).pauseSupported === false,
+    );
+
+    if (unsupported) {
+      throw conflict(
+        `${unsupported.name} uses a host that cannot pause. Remove that deployment before enabling a budget hard stop or idle pause.`,
+      );
+    }
+  }
+
   const saved = await context.repositories.modelSpend.saveBudget({
     workspaceId,
     projectId,
@@ -280,19 +299,17 @@ export async function accrueDeploymentCost(
   const from = deployment.billed_until ?? deployment.created_at;
   const to = now.toISOString();
 
-  if (billable && deployment.hourly_usd !== null) {
-    await repositories.modelSpend.addCost({
-      workspaceId: deployment.workspace_id,
-      projectId: deployment.project_id,
-      subjectType: "deployment",
-      subjectId: deployment.id,
-      provider: deployment.provider,
-      usd: Math.round(deployment.hourly_usd * hoursBetween(from, to) * 10_000) / 10_000,
-      basis: "estimate",
-      periodStart: from,
-      periodEnd: to,
-    });
-  }
+  await repositories.modelSpend.accrueDeployment({
+    workspaceId: deployment.workspace_id,
+    deploymentId: deployment.id,
+    expectedBilledUntil: deployment.billed_until,
+    periodStart: from,
+    periodEnd: to,
+    usd:
+      billable && deployment.hourly_usd !== null
+        ? Math.round(deployment.hourly_usd * hoursBetween(from, to) * 10_000) / 10_000
+        : 0,
+  });
 
   return to;
 }

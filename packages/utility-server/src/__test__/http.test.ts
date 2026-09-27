@@ -124,6 +124,55 @@ describe("readResponseBytesWithinLimit", () => {
 });
 
 describe("fetchFollowingSafeRedirects", () => {
+  it("retains credentials on the same origin and strips them before a cross-origin redirect", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 302, headers: { location: "/next" } }))
+      .mockResolvedValueOnce(
+        new Response(null, { status: 302, headers: { location: "https://cdn.example.com/final" } }),
+      )
+      .mockResolvedValueOnce(new Response("ok"));
+
+    vi.stubGlobal("fetch", fetchMock);
+    const originalHeaders = {
+      Authorization: "Bearer test-token",
+      Cookie: "session=test",
+      "X-API-Key": "test-key",
+      Accept: "application/json",
+    };
+
+    try {
+      await fetchFollowingSafeRedirects("https://example.com/start", { headers: originalHeaders });
+      const sameOrigin = new Headers(fetchMock.mock.calls[1][1].headers);
+      const crossOrigin = new Headers(fetchMock.mock.calls[2][1].headers);
+
+      expect(sameOrigin.get("authorization")).toBe("Bearer test-token");
+      expect(crossOrigin.get("authorization")).toBeNull();
+      expect(crossOrigin.get("cookie")).toBeNull();
+      expect(crossOrigin.get("x-api-key")).toBeNull();
+      expect(crossOrigin.get("accept")).toBe("application/json");
+      expect(originalHeaders.Authorization).toBe("Bearer test-token");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("preserves HEAD when following a 303 response", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 303, headers: { location: "/next" } }))
+      .mockResolvedValueOnce(new Response(null));
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    try {
+      await fetchFollowingSafeRedirects("https://example.com/start", { method: "HEAD" });
+      expect(fetchMock.mock.calls[1][1].method).toBe("HEAD");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("refuses a private initial URL without issuing a request", async () => {
     const fetchMock = vi.fn();
 

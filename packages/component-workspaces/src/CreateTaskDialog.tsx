@@ -18,15 +18,12 @@ import type {
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 import { ChevronDown, Plus, X } from "lucide-react";
-import { type FormEvent, type ReactNode, useRef, useState } from "react";
+import type { ReactNode } from "react";
+
+import { useCreateTaskForm } from "./useCreateTaskForm";
 
 export type CreateTaskInput = CreateProjectTaskInput;
 export type CreateTaskIntent = "save" | "run";
-
-interface CriterionDraft {
-  id: number;
-  text: string;
-}
 
 export interface CreateTaskDialogProps {
   open: boolean;
@@ -68,74 +65,38 @@ export function CreateTaskDialog({
   onOpenChange,
   onSubmit,
 }: CreateTaskDialogProps) {
-  const [objective, setObjective] = useState("");
-  const nextCriterionId = useRef(2);
-  const [criteria, setCriteria] = useState<CriterionDraft[]>([{ id: 1, text: "" }]);
-  const [expectedOutput, setExpectedOutput] = useState("");
-  const [contextNotes, setContextNotes] = useState("");
-  const [assignee, setAssignee] = useState("");
-  const [stageId, setStageId] = useState(flow?.stages[0]?.id ?? "");
-  const [teammateId, setTeammateId] = useState("");
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [constraintNotes, setConstraintNotes] = useState("");
-  const [dependsOn, setDependsOn] = useState<string[]>([]);
-  const [requireApprovalFor, setRequireApprovalFor] = useState<ToolPermission[]>([]);
-  const [tokenBudget, setTokenBudget] = useState("");
-
-  const reset = () => {
-    setObjective("");
-    setCriteria([{ id: nextCriterionId.current++, text: "" }]);
-    setExpectedOutput("");
-    setContextNotes("");
-    setAssignee("");
-    setStageId(flow?.stages[0]?.id ?? "");
-    setTeammateId("");
-    setShowAdvanced(false);
-    setConstraintNotes("");
-    setDependsOn([]);
-    setRequireApprovalFor([]);
-    setTokenBudget("");
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const submitter = event.nativeEvent instanceof SubmitEvent ? event.nativeEvent.submitter : null;
-    const intent =
-      submitter instanceof HTMLButtonElement && submitter.value === "run" ? "run" : "save";
-
-    await onSubmit(
-      {
-        objective: objective.trim(),
-        acceptanceCriteria: criteria
-          .map((criterion) => criterion.text.trim())
-          .filter(Boolean)
-          .map((text) => ({ text })),
-        expectedOutput: expectedOutput.trim() || null,
-        context: contextNotes.trim() ? { links: [], notes: contextNotes.trim() } : null,
-        constraints: constraintNotes.trim()
-          ? { forbiddenTools: [], notes: constraintNotes.trim() }
-          : null,
-        dependsOnTaskIds: dependsOn,
-        requireApprovalFor,
-        assigneeUserId: assignee ? Number(assignee) : null,
-        runner:
-          !stageId && teammateId
-            ? { kind: "conversation", teammateId, model: null, mode: null }
-            : null,
-        stageId: stageId || null,
-        tokenBudget: tokenBudget ? Number(tokenBudget) : null,
-      },
-      intent,
-    );
-    reset();
-  };
+  const {
+    draft,
+    updateDraft,
+    addCriterion,
+    updateCriterion,
+    removeCriterion,
+    handleSubmit,
+    submissionError,
+    isPending,
+  } = useCreateTaskForm({ flow, onSubmit, isSubmitting });
+  const {
+    objective,
+    criteria,
+    expectedOutput,
+    contextNotes,
+    assignee,
+    stageId,
+    teammateId,
+    showAdvanced,
+    constraintNotes,
+    dependsOn,
+    requireApprovalFor,
+    tokenBudget,
+  } = draft;
+  const displayedError = submissionError ?? errorMessage;
 
   const activeTasks = boardTasks.filter(
     (task) => task.status !== "done" && task.status !== "cancelled",
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(nextOpen) => !isPending && onOpenChange(nextOpen)}>
       <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-2xl">
         <form onSubmit={(event) => void handleSubmit(event)} className="space-y-5">
           <DialogHeader>
@@ -148,7 +109,7 @@ export function CreateTaskDialog({
           <FormInput
             label="Objective"
             value={objective}
-            onChange={(event) => setObjective(event.target.value)}
+            onChange={(event) => updateDraft({ objective: event.target.value })}
             placeholder="Draft and validate the launch note for the pricing change"
             required
           />
@@ -163,15 +124,7 @@ export function CreateTaskDialog({
                   <FormInput
                     aria-label={`Acceptance criterion ${index + 1}`}
                     value={criterion.text}
-                    onChange={(event) =>
-                      setCriteria((current) =>
-                        current.map((value) =>
-                          value.id === criterion.id
-                            ? { ...value, text: event.target.value }
-                            : value,
-                        ),
-                      )
-                    }
+                    onChange={(event) => updateCriterion(criterion.id, event.target.value)}
                     placeholder="The final copy states the effective date"
                     className="flex-1"
                   />
@@ -181,26 +134,14 @@ export function CreateTaskDialog({
                       variant="ghost"
                       size="icon"
                       aria-label={`Remove acceptance criterion ${index + 1}`}
-                      onClick={() =>
-                        setCriteria((current) => current.filter((item) => item.id !== criterion.id))
-                      }
+                      onClick={() => removeCriterion(criterion.id)}
                     >
                       <X size={16} />
                     </Button>
                   ) : null}
                 </div>
               ))}
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() =>
-                  setCriteria((current) => [
-                    ...current,
-                    { id: nextCriterionId.current++, text: "" },
-                  ])
-                }
-              >
+              <Button type="button" variant="ghost" size="sm" onClick={addCriterion}>
                 <Plus size={14} /> Add criterion
               </Button>
             </div>
@@ -212,7 +153,7 @@ export function CreateTaskDialog({
                 label="Start at stage"
                 value={stageId}
                 options={flow.stages.map((stage) => ({ value: stage.id, label: stage.name }))}
-                onValueChange={setStageId}
+                onValueChange={(value) => updateDraft({ stageId: value })}
               />
             ) : (
               <FormSelect
@@ -223,7 +164,7 @@ export function CreateTaskDialog({
                   value: teammate.id,
                   label: teammate.name,
                 }))}
-                onValueChange={setTeammateId}
+                onValueChange={(value) => updateDraft({ teammateId: value })}
               />
             )}
             <FormSelect
@@ -236,7 +177,7 @@ export function CreateTaskDialog({
                   label: member.name || `Member ${member.userId}`,
                 })),
               ]}
-              onValueChange={setAssignee}
+              onValueChange={(value) => updateDraft({ assignee: value })}
             />
           </div>
 
@@ -244,7 +185,7 @@ export function CreateTaskDialog({
             <Textarea
               aria-label="Expected output"
               value={expectedOutput}
-              onChange={(event) => setExpectedOutput(event.target.value)}
+              onChange={(event) => updateDraft({ expectedOutput: event.target.value })}
               placeholder="A reviewed launch note ready to publish"
               rows={2}
             />
@@ -254,7 +195,7 @@ export function CreateTaskDialog({
             <Textarea
               aria-label="Working context"
               value={contextNotes}
-              onChange={(event) => setContextNotes(event.target.value)}
+              onChange={(event) => updateDraft({ contextNotes: event.target.value })}
               placeholder="Relevant facts, decisions, source links, or boundaries"
               rows={3}
             />
@@ -263,7 +204,7 @@ export function CreateTaskDialog({
           <button
             type="button"
             className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
-            onClick={() => setShowAdvanced((current) => !current)}
+            onClick={() => updateDraft({ showAdvanced: !showAdvanced })}
             aria-expanded={showAdvanced}
           >
             <ChevronDown
@@ -287,11 +228,12 @@ export function CreateTaskDialog({
                         id={`task-approval-${permission}`}
                         checked={requireApprovalFor.includes(permission)}
                         onCheckedChange={(checked) =>
-                          setRequireApprovalFor((current) =>
-                            checked === true
-                              ? [...current, permission]
-                              : current.filter((value) => value !== permission),
-                          )
+                          updateDraft({
+                            requireApprovalFor:
+                              checked === true
+                                ? [...requireApprovalFor, permission]
+                                : requireApprovalFor.filter((value) => value !== permission),
+                          })
                         }
                       />
                       {label}
@@ -314,11 +256,12 @@ export function CreateTaskDialog({
                           className="mt-1"
                           checked={dependsOn.includes(task.id)}
                           onCheckedChange={(checked) =>
-                            setDependsOn((current) =>
-                              checked === true
-                                ? [...current, task.id]
-                                : current.filter((id) => id !== task.id),
-                            )
+                            updateDraft({
+                              dependsOn:
+                                checked === true
+                                  ? [...dependsOn, task.id]
+                                  : dependsOn.filter((id) => id !== task.id),
+                            })
                           }
                         />
                         <span className="line-clamp-2">{task.objective}</span>
@@ -332,7 +275,7 @@ export function CreateTaskDialog({
                 <Textarea
                   aria-label="Constraints"
                   value={constraintNotes}
-                  onChange={(event) => setConstraintNotes(event.target.value)}
+                  onChange={(event) => updateDraft({ constraintNotes: event.target.value })}
                   placeholder="Do not publish or contact anyone"
                   rows={2}
                 />
@@ -344,28 +287,38 @@ export function CreateTaskDialog({
                 min={1}
                 max={10_000_000}
                 value={tokenBudget}
-                onChange={(event) => setTokenBudget(event.target.value)}
+                onChange={(event) => updateDraft({ tokenBudget: event.target.value })}
                 placeholder="Use the project default"
               />
             </div>
           ) : null}
 
-          {errorMessage ? (
+          {displayedError ? (
             <p role="alert" className="text-sm text-failure">
-              {errorMessage}
+              {displayedError}
             </p>
           ) : null}
 
           <DialogFooter className="gap-2 sm:justify-between">
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+              disabled={isPending}
+            >
               Cancel
             </Button>
             <div className="flex gap-2">
-              <Button type="submit" value="save" variant="outline" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                value="save"
+                variant="outline"
+                disabled={isPending || !objective.trim()}
+              >
                 Save to backlog
               </Button>
-              <Button type="submit" value="run" disabled={isSubmitting}>
-                {isSubmitting ? "Adding…" : "Add and run"}
+              <Button type="submit" value="run" disabled={isPending || !objective.trim()}>
+                {isPending ? "Adding…" : "Add and run"}
               </Button>
             </div>
           </DialogFooter>

@@ -36,10 +36,7 @@ import {
   resolveRunMemoryScope,
 } from "~/modules/chat/application/preparation/memory-scope";
 import { storeUserTurn } from "~/modules/chat/application/preparation/message-store";
-import {
-  buildModelConfigs,
-  clearModelConfigCache,
-} from "~/modules/chat/application/preparation/model-configs";
+import { buildModelConfigs } from "~/modules/chat/application/preparation/model-configs";
 import { buildProviderContext } from "~/modules/chat/application/preparation/provider-context";
 import {
   resolveScopedSkillCatalog,
@@ -143,10 +140,6 @@ export class RequestPreparer {
 
   constructor(private env: any) {
     this.repositories = new RepositoryManager(env);
-  }
-
-  public static clearModelConfigCache() {
-    clearModelConfigCache();
   }
 
   private async resolveScope(options: CoreChatOptions): Promise<RequestScope> {
