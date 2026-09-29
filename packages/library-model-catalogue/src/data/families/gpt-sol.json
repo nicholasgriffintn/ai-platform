@@ -14,7 +14,6 @@
       ]
     },
     "knowledgeCutoffDate": "February 16, 2026",
-    "releaseDate": "July 9, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
@@ -33,10 +32,18 @@
   },
   "description": "Frontier GPT-5.6 model for complex professional work, coding, and agentic workflows",
   "models": {
+    "daybreak-blue": {
+      "defaults": {
+        "name": "Daybreak Blue",
+        "description": "Alias for flagship general-purpose models with safeguards for defensive cybersecurity work",
+        "releaseDate": "August 7, 2026"
+      }
+    },
     "gpt-5-6": {
       "defaults": {
         "name": "GPT-5.6",
         "description": "Frontier GPT-5.6 model for complex professional work, coding, and agentic workflows",
+        "releaseDate": "July 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -53,13 +60,15 @@
     "gpt-5-6-sol": {
       "defaults": {
         "name": "GPT-5.6 Sol",
-        "description": "Frontier GPT-5.6 model for complex professional work, coding, and agentic workflows"
+        "description": "Frontier GPT-5.6 model for complex professional work, coding, and agentic workflows",
+        "releaseDate": "July 9, 2026"
       }
     },
     "gpt-5-6-sol-eu": {
       "defaults": {
         "name": "GPT-5.6 Sol (EU)",
         "description": "Frontier GPT-5.6 model for complex professional work, coding, and agentic workflows",
+        "releaseDate": "July 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -76,6 +85,7 @@
       "defaults": {
         "name": "GPT 5.6 Sol (Fast)",
         "description": "Frontier GPT-5.6 model for complex professional work, coding, and agentic workflows",
+        "releaseDate": "July 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -94,19 +104,22 @@
       "defaults": {
         "name": "GPT-5.6 Sol (Global)",
         "description": "Frontier GPT-5.6 model for complex professional work, coding, and agentic workflows",
+        "releaseDate": "July 9, 2026",
         "supportsResponseFormat": false
       }
     },
     "gpt-5-6-sol-pro": {
       "defaults": {
         "name": "GPT-5.6 Sol Pro",
-        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work"
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "releaseDate": "July 9, 2026"
       }
     },
     "gpt-5-6-sol-us": {
       "defaults": {
         "name": "GPT-5.6 Sol (US)",
         "description": "Frontier GPT-5.6 model for complex professional work, coding, and agentic workflows",
+        "releaseDate": "July 9, 2026",
         "supportsResponseFormat": false
       }
     },

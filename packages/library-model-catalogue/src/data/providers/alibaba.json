@@ -536,7 +536,6 @@
       "model": "qwen/qwen3-5-35b-a3b",
       "matchingModel": "qwen3.5-35b-a3b",
       "overrides": {
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -728,16 +727,15 @@
         "strengths": [
           "vision",
           "video",
-          "tool_use"
+          "tool_use",
+          "document"
         ],
         "speed": 2,
         "lastUpdated": "June 4, 2026",
-        "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.003
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+        "costPer1kInputTokens": 0.0004,
+        "costPer1kOutputTokens": 0.0016,
+        "supportsAttachments": true
+      }
     },
     "qwen3.8-flash": {
       "model": "qwen/qwen3-8-flash",
@@ -809,6 +807,50 @@
         "costPer1kOutputTokens": 0.015,
         "supportsAttachments": true,
         "supportsTemperature": false
+      }
+    },
+    "qwen3.5-flash": {
+      "model": "qwen/qwen3-5-flash",
+      "matchingModel": "qwen3.5-flash",
+      "overrides": {
+        "name": "Qwen3.5 Flash",
+        "releaseDate": "February 23, 2026",
+        "lastUpdated": "February 23, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0004,
+        "supportsAttachments": true
+      }
+    },
+    "qwen3.7-flash": {
+      "model": "qwen/qwen3-7-flash",
+      "matchingModel": "qwen3.7-flash",
+      "overrides": {
+        "description": "Lightweight multimodal Qwen model for high-throughput text, image, and video tasks",
+        "maxTokens": 131072,
+        "lastUpdated": "July 15, 2026",
+        "costPer1kInputTokens": 0.00003,
+        "costPer1kOutputTokens": 0.00013,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
+      }
+    },
+    "qwen3.8-omni-flash": {
+      "model": "qwen/qwen3-8-omni-flash",
+      "matchingModel": "qwen3.8-omni-flash",
+      "overrides": {
+        "lastUpdated": "September 17, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00047,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

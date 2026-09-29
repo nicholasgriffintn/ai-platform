@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 25, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "low",
+        "medium",
+        "xhigh"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The vercel/stealth/pixel canary family includes models that produce text.",
+  "models": {
+    "pixel-canary": {
+      "defaults": {
+        "name": "Pixel Canary",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
+      }
+    }
+  }
+}

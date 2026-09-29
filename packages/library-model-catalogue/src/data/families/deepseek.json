@@ -415,11 +415,9 @@
         "name": "DeepSeek V3.1 Terminus",
         "openWeights": true,
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
-        "maxTokens": 32768,
         "strengths": [
           "tool_use"
         ],
-        "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "September 22, 2025",
         "artificialAnalysis": {

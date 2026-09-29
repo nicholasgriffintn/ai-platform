@@ -279,6 +279,7 @@
         "name": "MiniMax-M2.7",
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
         "contextWindow": 196608,
+        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,

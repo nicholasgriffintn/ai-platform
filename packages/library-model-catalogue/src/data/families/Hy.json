@@ -108,7 +108,7 @@
     "hy4-preview": {
       "defaults": {
         "name": "Hy4 preview",
-        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+        "description": "A next-generation productivity model with significantly enhanced Agent and complex task execution capabilities.",
         "maxTokens": 64000,
         "releaseDate": "August 28, 2026",
         "supportsToolCalls": true,

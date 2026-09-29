@@ -112,7 +112,6 @@
       "matchingModel": "kimi-k2.6",
       "overrides": {
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
-        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
