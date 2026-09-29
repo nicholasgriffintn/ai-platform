@@ -973,6 +973,8 @@
       "matchingModel": "deepseek/deepseek-v3.1-terminus",
       "overrides": {
         "contextWindow": 131072,
+        "maxTokens": 32768,
+        "contextComplexity": 3,
         "knowledgeCutoffDate": "July 2025",
         "lastUpdated": "September 22, 2025",
         "costPer1kInputTokens": 0.00027,
@@ -2751,7 +2753,7 @@
       "overrides": {
         "lastUpdated": "February 16, 2026",
         "costPer1kInputTokens": 0.0004,
-        "costPer1kOutputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.0024,
         "supportsAttachments": true
       }
     },
@@ -4950,8 +4952,8 @@
         "maxTokens": 128000,
         "releaseDate": "June 13, 2026",
         "lastUpdated": "June 13, 2026",
-        "costPer1kInputTokens": 0.0021,
-        "costPer1kOutputTokens": 0.0066,
+        "costPer1kInputTokens": 0.0028,
+        "costPer1kOutputTokens": 0.0088,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -5623,7 +5625,7 @@
           ]
         },
         "lastUpdated": "July 30, 2026",
-        "costPer1kInputTokens": 0.0005,
+        "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -6061,8 +6063,8 @@
         "supportsAttachments": true
       },
       "unset": [
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsTemperature"
       ]
     },
     "openai/gpt-5.2-fast": {
@@ -6683,8 +6685,8 @@
       "overrides": {
         "maxTokens": 1048576,
         "lastUpdated": "September 1, 2026",
-        "costPer1kInputTokens": 0.00022,
-        "costPer1kOutputTokens": 0.00066,
+        "costPer1kInputTokens": 0.0002156,
+        "costPer1kOutputTokens": 0.0006468,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -6849,8 +6851,8 @@
         "contextWindow": 256000,
         "maxTokens": 32000,
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00018
       },
       "unset": [
         "supportsTemperature"
@@ -7526,8 +7528,8 @@
           ]
         },
         "lastUpdated": "September 21, 2026",
-        "costPer1kInputTokens": 0.0012,
-        "costPer1kOutputTokens": 0.0036,
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006,
         "supportsAttachments": true
       }
     },
@@ -7694,12 +7696,11 @@
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
             "low",
             "medium",
-            "high"
+            "xhigh"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "low"
         }
       }
     },
@@ -7729,6 +7730,48 @@
       "overrides": {
         "lastUpdated": "September 23, 2026",
         "supportsToolCalls": false
+      }
+    },
+    "anthropic/claude-sonnet-5.5": {
+      "model": "claude-sonnet/claude-sonnet-5-5",
+      "matchingModel": "anthropic/claude-sonnet-5.5",
+      "overrides": {
+        "lastUpdated": "September 28, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "fireworks/ember-1": {
+      "model": "vercel/fireworks/ember-1/ember-1",
+      "matchingModel": "fireworks/ember-1",
+      "overrides": {
+        "lastUpdated": "September 23, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsAttachments": true
+      }
+    },
+    "meituan/longcat-2.5-preview": {
+      "model": "longcat/longcat-2-5-preview",
+      "matchingModel": "meituan/longcat-2.5-preview",
+      "overrides": {
+        "lastUpdated": "September 26, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsAttachments": true
+      }
+    },
+    "stealth/pixel-canary": {
+      "model": "vercel/stealth/pixel-canary/pixel-canary",
+      "matchingModel": "stealth/pixel-canary",
+      "overrides": {
+        "lastUpdated": "September 25, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false,
+        "supportsAttachments": true
       }
     }
   }

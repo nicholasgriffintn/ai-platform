@@ -56,37 +56,6 @@
         "supportsResponseFormat"
       ]
     },
-    "kimi-k2.6": {
-      "model": "kimi-k2/kimi-k2-6",
-      "matchingModel": "kimi-k2.6",
-      "overrides": {
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use"
-        ],
-        "speed": 3,
-        "knowledgeCutoffDate": "October 2024",
-        "lastUpdated": "April 21, 2026",
-        "costPer1kInputTokens": 0.00095,
-        "costPer1kOutputTokens": 0.004
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
     "mimo-v2.5": {
       "model": "mimo-v2.5/mimo-v2-5",
       "matchingModel": "mimo-v2.5",
@@ -121,34 +90,6 @@
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
-        "supportsAttachments": false
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
-    "qwen3.6-plus": {
-      "model": "qwen3.6/qwen3-6-plus",
-      "matchingModel": "qwen3.6-plus",
-      "overrides": {
-        "contextWindow": 1000000,
-        "speed": 3,
-        "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.003
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
-    "qwen3.7-max": {
-      "model": "qwen3.7-max/qwen3-7-max",
-      "matchingModel": "qwen3.7-max",
-      "overrides": {
-        "speed": 4,
-        "lastUpdated": "May 21, 2026",
-        "costPer1kInputTokens": 0.0025,
-        "costPer1kOutputTokens": 0.0075,
         "supportsAttachments": false
       },
       "unset": [
@@ -409,7 +350,6 @@
       "model": "Hy/hy4-preview",
       "matchingModel": "hy4-preview",
       "overrides": {
-        "description": "A next-generation productivity model with significantly enhanced Agent and complex task execution capabilities.",
         "contextWindow": 1024000,
         "lastUpdated": "August 28, 2026",
         "costPer1kInputTokens": 0.000834,
@@ -533,6 +473,15 @@
       "matchingModel": "space-bunny-free",
       "overrides": {
         "lastUpdated": "September 23, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "longcat-2.5-preview-free": {
+      "model": "longcat/longcat-2-5-preview-free",
+      "matchingModel": "longcat-2.5-preview-free",
+      "overrides": {
+        "lastUpdated": "September 25, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       }

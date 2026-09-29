@@ -1,6 +1,7 @@
 {
   "defaults": {
     "openWeights": false,
+    "contextWindow": 262144,
     "supportsToolCalls": true
   },
   "description": "The qwen3.6 family includes models that produce text.",
@@ -80,7 +81,6 @@
       "defaults": {
         "name": "thinkingcap-qwen3.6-27b",
         "description": "ThinkingCap-Qwen3.6-27B is a reasoning tuned model from BottlecapAI built on Qwen3.6 27B. It supports extended thinking with tool calling and a 256K context window. Served via Sference.",
-        "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
           "input": [
@@ -109,7 +109,6 @@
       "defaults": {
         "name": "thinkingcap-qwen3.6-27b@eu",
         "description": "ThinkingCap-Qwen3.6-27B is a reasoning tuned model from BottlecapAI built on Qwen3.6 27B. It supports extended thinking with tool calling and a 256K context window. Served via Sference.",
-        "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
           "input": [

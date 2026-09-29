@@ -776,6 +776,7 @@
       "overrides": {
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
         "contextWindow": 1000000,
+        "maxTokens": 384000,
         "releaseDate": "September 10, 2026",
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00022,

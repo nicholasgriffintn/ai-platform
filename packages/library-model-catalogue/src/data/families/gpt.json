@@ -8,6 +8,37 @@
   },
   "description": "The gpt family includes models that produce audio, image, text.",
   "models": {
+    "daybreak-red": {
+      "defaults": {
+        "name": "Daybreak Red",
+        "description": "Alias for advanced cybersecurity models for authorized vulnerability research and security testing",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "February 16, 2026",
+        "releaseDate": "August 7, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "gpt-3-5-turbo": {
       "defaults": {
         "name": "GPT-3.5 Turbo",

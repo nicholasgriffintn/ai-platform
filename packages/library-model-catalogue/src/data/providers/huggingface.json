@@ -391,6 +391,7 @@
       "matchingModel": "MiniMaxAI/MiniMax-M2.7",
       "overrides": {
         "name": "MiniMax-M2.7",
+        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -402,7 +403,6 @@
       "matchingModel": "moonshotai/Kimi-K2.6",
       "overrides": {
         "name": "Kimi-K2.6",
-        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -722,7 +722,6 @@
       "model": "qwen/qwen3-5-35b-a3b",
       "matchingModel": "Qwen/Qwen3.5-35B-A3B",
       "overrides": {
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -1314,6 +1313,7 @@
       "model": "Hy/hy4-preview",
       "matchingModel": "tencent/Hy4-preview",
       "overrides": {
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 1000000,
         "lastUpdated": "August 28, 2026",
         "costPer1kInputTokens": 0.000834,

@@ -760,7 +760,6 @@
       "model": "deepseek-flash/deepseek-v4-flash-0731",
       "matchingModel": "@cf/deepseek-ai/deepseek-v4-flash-0731",
       "overrides": {
-        "contextWindow": 1310720,
         "maxTokens": 1048576,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.00044,
@@ -816,7 +815,7 @@
       "overrides": {
         "name": "Glm 5.3",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 1310720,
+        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
@@ -829,7 +828,7 @@
       "overrides": {
         "name": "Glm 5.3 Flash",
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "contextWindow": 1310720,
+        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "modalities": {
           "input": [

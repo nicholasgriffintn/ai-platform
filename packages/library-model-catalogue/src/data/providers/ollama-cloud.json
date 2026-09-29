@@ -199,7 +199,6 @@
       "matchingModel": "kimi-k2.6",
       "overrides": {
         "name": "kimi-k2.6",
-        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",

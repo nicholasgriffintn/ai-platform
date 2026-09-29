@@ -2,6 +2,7 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 1000000,
+    "maxTokens": 128000,
     "modalities": {
       "input": [
         "text",
@@ -23,7 +24,6 @@
       "defaults": {
         "name": "AU Anthropic Claude Sonnet 4.6",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
-        "maxTokens": 128000,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "February 17, 2026",
         "reasoningConfig": {
@@ -239,7 +239,6 @@
       "defaults": {
         "name": "Claude Sonnet 4.6",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
-        "maxTokens": 128000,
         "strengths": [
           "coding",
           "vision",
@@ -283,7 +282,6 @@
       "defaults": {
         "name": "Claude Sonnet 4.6 (Global)",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
-        "maxTokens": 128000,
         "strengths": [
           "coding",
           "vision",
@@ -316,7 +314,6 @@
       "defaults": {
         "name": "Claude Sonnet 4.6 (JP)",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
-        "maxTokens": 128000,
         "strengths": [
           "coding",
           "vision",
@@ -349,7 +346,6 @@
       "defaults": {
         "name": "Claude Sonnet 4.6 (US)",
         "description": "Claude workhorse for coding agents, careful analysis, and production cost control",
-        "maxTokens": 128000,
         "strengths": [
           "coding",
           "vision",
@@ -408,18 +404,57 @@
       "defaults": {
         "name": "Claude Sonnet 5",
         "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
-        "maxTokens": 128000,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsTemperature": false,
         "supportsTopP": false
       }
     },
+    "claude-sonnet-5-5": {
+      "defaults": {
+        "name": "Claude Sonnet 5.5",
+        "description": "Fast Claude model for everyday coding, agents, and knowledge work",
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 28, 2026",
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "claude-sonnet-5-5-global": {
+      "defaults": {
+        "name": "Claude Sonnet 5.5 (Global)",
+        "description": "Fast Claude model for everyday coding, agents, and knowledge work",
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 28, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "claude-sonnet-5-au": {
       "defaults": {
         "name": "Claude Sonnet 5 (AU)",
         "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
-        "maxTokens": 128000,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsResponseFormat": false,
@@ -442,7 +477,6 @@
       "defaults": {
         "name": "Claude Sonnet 5 (EU)",
         "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
-        "maxTokens": 128000,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsTemperature": false,
@@ -453,7 +487,6 @@
       "defaults": {
         "name": "Claude Sonnet 5 (Global)",
         "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
-        "maxTokens": 128000,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsResponseFormat": false,
@@ -476,7 +509,6 @@
       "defaults": {
         "name": "Claude Sonnet 5 (JP)",
         "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
-        "maxTokens": 128000,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsResponseFormat": false,
@@ -499,7 +531,6 @@
       "defaults": {
         "name": "Claude Sonnet 5 (US)",
         "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
-        "maxTokens": 128000,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "June 30, 2026",
         "supportsResponseFormat": false,
@@ -522,7 +553,6 @@
       "defaults": {
         "name": "Anthropic Claude Sonnet Latest",
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "maxTokens": 128000,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 27, 2026",
         "supportsTemperature": false,

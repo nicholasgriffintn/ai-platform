@@ -507,6 +507,7 @@
           ]
         },
         "releaseDate": "September 17, 2026",
+        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1891,6 +1892,7 @@
         "openWeights": true,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
+        "maxTokens": 65536,
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 23, 2026",
@@ -2026,7 +2028,6 @@
     },
     "qwen3-5-flash": {
       "defaults": {
-        "name": "Qwen3.5-Flash",
         "openWeights": false,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 1000000,
@@ -2041,7 +2042,6 @@
             "text"
           ]
         },
-        "releaseDate": "February 25, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -2311,7 +2311,6 @@
         "openWeights": false,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 1000000,
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -2323,7 +2322,6 @@
           ]
         },
         "releaseDate": "July 15, 2026",
-        "supportsResponseFormat": false,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2671,14 +2669,7 @@
         },
         "releaseDate": "September 17, 2026",
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": true
       }
     },
     "qwen3-8b": {

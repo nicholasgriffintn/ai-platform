@@ -1294,8 +1294,19 @@
           ]
         },
         "lastUpdated": "September 22, 2026",
-        "costPer1kInputTokens": 0.000435,
+        "costPer1kInputTokens": 0.00043,
         "costPer1kOutputTokens": 0.00087
+      }
+    },
+    "tencent/Hy4-preview": {
+      "model": "Hy/hy4-preview",
+      "matchingModel": "tencent/Hy4-preview",
+      "overrides": {
+        "contextWindow": 1048576,
+        "lastUpdated": "August 28, 2026",
+        "costPer1kInputTokens": 0.000834,
+        "costPer1kOutputTokens": 0.002501,
+        "supportsAttachments": false
       }
     }
   }

@@ -27,6 +27,45 @@
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
       }
     },
+    "longcat-2-5-preview": {
+      "defaults": {
+        "name": "LongCat 2.5 Preview",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 26, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "longcat-2-5-preview-free": {
+      "defaults": {
+        "name": "LongCat 2.5 Preview Free",
+        "description": "Meituan's multimodal reasoning model for coding and agent tasks, with image understanding and a 1M-token context window",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 25, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
+      }
+    },
     "longcat-flash-chat": {
       "defaults": {
         "name": "LongCat Flash Chat",

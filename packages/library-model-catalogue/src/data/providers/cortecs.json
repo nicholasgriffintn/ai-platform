@@ -525,7 +525,6 @@
       "matchingModel": "kimi-k2.6",
       "overrides": {
         "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
-        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
