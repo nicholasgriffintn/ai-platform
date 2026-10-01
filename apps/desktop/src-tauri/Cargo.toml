@@ -11,7 +11,7 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 opener = { version = "0.8", default-features = false }
-keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
+keyring = { version = "4", features = ["apple-native", "windows-native", "sync-secret-service"] }
 getrandom = "0.4"
 bytes = "1"
 futures-util = { version = "0.3", default-features = false }
