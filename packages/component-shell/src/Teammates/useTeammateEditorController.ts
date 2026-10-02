@@ -74,7 +74,7 @@ export function useTeammateEditorController({
   const currentUserId = useChatStore((state) => state.user?.id);
   const teammateQuery = useTeammate(isCreate ? undefined : teammateId);
   const modelsQuery = useModels();
-  const toolsQuery = useTools();
+  const toolsQuery = useTools({ projectId, workspaceId });
   const catalogQuery = useCapabilityCatalog(projectId);
   const workspacesQuery = useWorkspaces();
   const publishMutation = usePublishTeammateToWorkspace();

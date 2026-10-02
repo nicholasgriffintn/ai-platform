@@ -393,6 +393,13 @@
       "when": 1790518520663,
       "tag": "0055_model_provider_claims",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "6",
+      "when": 1790982948251,
+      "tag": "0056_browser_sessions",
+      "breakpoints": true
     }
   ]
 }

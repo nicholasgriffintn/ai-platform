@@ -1,4 +1,5 @@
 import {
+  browserScopeQuerySchema,
   errorResponseSchema,
   savedToolConfigurationSchema,
   savedToolConfigurationsResponseSchema,
@@ -22,7 +23,7 @@ import {
   saveModelToolConfiguration,
 } from "~/modules/tools/application/modelToolConfigurations";
 import { getRunnableTool } from "~/modules/tools/application/runnable";
-import { getAvailableTools } from "~/modules/tools/application/toolsOperations";
+import { getScopedAvailableTools } from "~/modules/tools/application/toolsOperations";
 import { projectScopeQuerySchema } from "~/modules/workspaces/application/access";
 import type { IRequest } from "~/types";
 
@@ -40,6 +41,7 @@ addRoute(app, "get", "/", {
   tags: ["tools"],
   summary: "List Tools",
   description: "Lists the currently available tools.",
+  querySchema: browserScopeQuerySchema,
   responses: {
     200: {
       description: "List of available tools with their details",
@@ -47,12 +49,9 @@ addRoute(app, "get", "/", {
     },
     500: { description: "Server error", schema: errorResponseSchema },
   },
-  handler: async ({ user }) => {
-    const isPro = user?.plan_id === "pro";
-
-    return getAvailableTools(isPro, Boolean(user?.id));
-  },
-  cache: { maxAge: 300, staleWhileRevalidate: 600 },
+  handler: ({ serviceContext, query }) =>
+    getScopedAvailableTools(serviceContext, query.projectId, query.workspaceId),
+  cache: "no-store",
 });
 
 const toolParamsSchema = z.object({ id: z.string().min(1) });

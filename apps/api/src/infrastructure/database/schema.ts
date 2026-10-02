@@ -3605,3 +3605,42 @@ export const modelPermission = sqliteTable("model_permission", {
   updated_by: integer().references(() => user.id, { onDelete: "set null" }),
   updated_at: createdAtColumn(),
 });
+
+export const browserSession = sqliteTable(
+  "browser_session",
+  {
+    id: text().primaryKey().notNull(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    conversation_id: text()
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    workspace_id: text().references(() => workspace.id, { onDelete: "cascade" }),
+    provider: text({ enum: ["openai"] }).notNull(),
+    credential_source: text({ enum: ["user", "workspace"] }).notNull(),
+    provider_session_id: text(),
+    tool_call_id: text().notNull(),
+    input_hash: text().notNull(),
+    creation_claimed: integer().notNull().default(0),
+    creation_started_at: integer(),
+    last_error: text(),
+    model: text().notNull(),
+    destroyed_at: text(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    conversationIndex: index("browser_session_conversation").on(table.conversation_id),
+    credentialSource: check(
+      "browser_session_credential_source",
+      sql`${table.credential_source} IN ('user', 'workspace')`,
+    ),
+    taskIdentity: uniqueIndex("browser_session_task_identity").on(
+      table.user_id,
+      table.conversation_id,
+      table.tool_call_id,
+    ),
+  }),
+);

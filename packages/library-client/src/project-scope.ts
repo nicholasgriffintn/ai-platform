@@ -7,3 +7,13 @@ export function withProjectScope(path: string, projectId?: string): string {
 
   return `${path}${separator}projectId=${encodeURIComponent(projectId)}`;
 }
+
+export function withWorkspaceScope(path: string, workspaceId?: string): string {
+  if (!workspaceId) {
+    return path;
+  }
+
+  const separator = path.includes("?") ? "&" : "?";
+
+  return `${path}${separator}workspaceId=${encodeURIComponent(workspaceId)}`;
+}

@@ -62,6 +62,7 @@ import { search_documents } from "./search_documents";
 import { second_opinion } from "./second_opinion";
 import { create_speech } from "./speech";
 import { get_task_status } from "./tasks";
+import { use_browser } from "./use_browser";
 import { use_computer } from "./use_computer";
 import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
@@ -130,6 +131,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   run_sandbox_task,
   run_prediction,
   run_code,
+  use_browser,
   use_computer,
   hostedMcpApproval,
   ...metaTools,

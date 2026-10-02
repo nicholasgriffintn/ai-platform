@@ -48,6 +48,7 @@ import {
   ExternalHost,
   OPENAI_COMPATIBLE_MANIFEST,
 } from "./openai-compatible/external.js";
+import { OPENAI_MANIFEST, OpenAIConnectionChecker } from "./openai/connection.js";
 import { RUNPOD_MANIFEST, RunPodConnectionChecker, RunPodHost } from "./runpod/runpod.js";
 import {
   TOGETHER_MANIFEST,
@@ -64,6 +65,12 @@ import type {
 } from "./types.js";
 
 export const MODEL_PROVIDERS: Record<ModelProviderId, ModelProviderAdapters> = {
+  openai: {
+    manifest: OPENAI_MANIFEST,
+    checker: (context) => new OpenAIConnectionChecker(context),
+    trainers: {},
+    hosts: {},
+  },
   huggingface: {
     manifest: HUGGINGFACE_MANIFEST,
     checker: (context) => new HuggingFaceConnectionChecker(context),
