@@ -1,6 +1,8 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import {
+  CloudflareWebSearchProvider,
+  CloudflareAiSearchProvider,
   DuckDuckGoProvider,
   ExaSearchProvider,
   GreenPtSearchProvider,
@@ -15,6 +17,16 @@ import { ensureEnv, ensureUser } from "./utils.js";
 
 function searchProviders(runtime: ProviderRuntime): AiProviderRegistration<SearchProvider>[] {
   return [
+    {
+      name: "cloudflare",
+      create: (context) => new CloudflareWebSearchProvider(ensureEnv(context)),
+      metadata: { vendor: "Cloudflare", categories: ["search"], tags: ["websearch", "ai-gateway"] },
+    },
+    {
+      name: "cloudflare-ai-search",
+      create: (context) => new CloudflareAiSearchProvider(ensureEnv(context)),
+      metadata: { vendor: "Cloudflare", categories: ["search"], tags: ["retrieval", "knowledge"] },
+    },
     {
       name: "serper",
       create: (context) => {

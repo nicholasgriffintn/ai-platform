@@ -3,6 +3,7 @@ import * as z from "zod/v4";
 import { computeSiteSchema } from "../compute-sites.js";
 import { modelTierSchema } from "../model-lineup.js";
 import { petModelOverridesSchema } from "../pets.js";
+import { searchProviderSchema } from "../search.js";
 
 export const guardrailsProviderIds = [
   "llamaguard",
@@ -81,7 +82,7 @@ export const updateUserSettingsSchema = z
     transcription_model: z.string().optional(),
     speech_provider: z.string().optional(),
     speech_model: z.string().optional(),
-    search_provider: z.string().optional(),
+    search_provider: z.union([searchProviderSchema, z.literal("")]).optional(),
     sandbox_model: z.string().optional(),
     default_model_tier: modelTierSchema.nullable().optional(),
     default_model_id: z.string().trim().min(1).nullable().optional(),

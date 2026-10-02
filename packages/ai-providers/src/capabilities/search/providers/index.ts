@@ -1,4 +1,6 @@
 export * from "./DuckDuckGoProvider.js";
+export * from "./CloudflareWebSearchProvider.js";
+export * from "./CloudflareAiSearchProvider.js";
 export * from "./ExaSearchProvider.js";
 export * from "./GreenPtSearchProvider.js";
 export * from "./ParallelSearchProvider.js";

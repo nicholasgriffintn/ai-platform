@@ -118,6 +118,7 @@ export const PROVIDER_ICONS: Record<string, string> = {
   workers: "workers-ai",
   "workers-ai": "workers-ai",
   cloudflare: "cloudflare",
+  "cloudflare-ai-search": "cloudflare",
   melotts: "cloudflare",
   fireworks: "fireworks",
   hyperbolic: "hyperbolic",

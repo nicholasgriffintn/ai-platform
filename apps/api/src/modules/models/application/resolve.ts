@@ -18,6 +18,7 @@ import {
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   agentModelConfig,
+  searchProviderSchema,
   getSystemModelLineup,
   isMachineOnline,
   type ModelConfigItem,
@@ -542,7 +543,11 @@ export const getAuxiliarySearchProvider = async (
       return requestedProvider;
     }
 
-    if (user?.id) {
+    if (
+      user?.id &&
+      requestedProvider !== "cloudflare" &&
+      requestedProvider !== "cloudflare-ai-search"
+    ) {
       const repositories = new RepositoryManager(env);
       const providerKeyId =
         requestedProvider === "perplexity" ? "perplexity-ai" : requestedProvider;
@@ -568,25 +573,18 @@ export const getAuxiliarySearchProvider = async (
       repositories.userSettings.getUserSettings(user.id),
     );
 
-    const userPreferredProvider = userSettings?.search_provider as SearchProviderName | undefined;
+    const preferred = searchProviderSchema.safeParse(userSettings?.search_provider);
 
-    if (userPreferredProvider) {
-      if (user.plan_id === "pro") {
-        return userPreferredProvider;
+    if (preferred.success) {
+      try {
+        return await getAuxiliarySearchProvider(env, user, preferred.data);
+      } catch (error) {
+        if (error instanceof AssistantError && error.type === ErrorType.AUTHORISATION_ERROR) {
+          return "duckduckgo";
+        }
+
+        throw error;
       }
-
-      const providerKeyId =
-        userPreferredProvider === "perplexity" ? "perplexity-ai" : userPreferredProvider;
-      const hasProviderKey = await repositories.userSettings.hasProviderApiKey(
-        user.id,
-        providerKeyId,
-      );
-
-      if (!hasProviderKey) {
-        return "duckduckgo";
-      }
-
-      return userPreferredProvider;
     }
   }
 

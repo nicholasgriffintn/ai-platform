@@ -1,11 +1,19 @@
-export type SearchProviderName =
-  | "serper"
-  | "tavily"
-  | "parallel"
-  | "duckduckgo"
-  | "perplexity"
-  | "exa"
-  | "greenpt";
+import type { SearchOptions } from "@ngriffin_uk/polychat-schemas";
+
+export type { SearchOptions, SearchProviderName } from "@ngriffin_uk/polychat-schemas";
+
+export interface CloudflareSearchResult {
+  provider: "cloudflare" | "cloudflare-ai-search";
+  searchProvider?: "ceramic" | "exa" | "linkup";
+  requestId?: string;
+  results: Array<{
+    title: string;
+    url: string;
+    snippet: string;
+    score?: number;
+    chunkId?: string;
+  }>;
+}
 
 export interface SerperSearchResult {
   provider: "serper";
@@ -149,27 +157,9 @@ export type SearchResult =
   | ExaSearchResult
   | ExaAnswerResult
   | GreenPtSearchResult
+  | CloudflareSearchResult
   | SearchResultError;
 
 export interface SearchProvider {
   performWebSearch(query: string, options?: SearchOptions): Promise<SearchResult>;
-}
-
-export interface SearchOptions {
-  search_depth?: "basic" | "advanced";
-  include_answer?: boolean;
-  include_raw_content?: boolean;
-  include_images?: boolean;
-  max_results?: number;
-  country?: string;
-  location?: string;
-  language?: string;
-  timePeriod?: string;
-  autocorrect?: boolean;
-  num?: number;
-  page?: number;
-  system_prompt?: string;
-  parallel_search_queries?: string[];
-  parallel_processor?: string;
-  parallel_max_chars_per_result?: number;
 }

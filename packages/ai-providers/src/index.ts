@@ -109,6 +109,7 @@ export * from "./unterminated-thinking.js";
 export * from "./utils/awsS3.js";
 export { formatProviderError } from "./utils/errors.js";
 export * from "./utils/greenpt.js";
+export { normaliseSearchSources } from "./utils/search.js";
 export * from "./utils/helpers.js";
 export { resolvePrivateAssetUrls } from "./utils/privateAssets.js";
 export * from "./capabilities/audio/index.js";

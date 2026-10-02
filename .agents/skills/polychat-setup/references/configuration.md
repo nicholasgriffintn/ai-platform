@@ -26,6 +26,7 @@ Do not duplicate or inline real keys in docs.
 
 ## Optional integrations
 
+- **Cloudflare search:** configure Web Search and public AI Search using [the search integration guide](operations/cloudflare-search.md).
 - **Embeddings:** use `EMBEDDING_SCOPE_SECRET` and keep credentials stable when vectors are populated.
 - **Connectors:** configure Composio keying, webhook signature, and callback URLs in the Composio guide.
 - **Coding / training workers:** keep API authority, GitHub App tokens, and worker tokens separate.
