@@ -1,4 +1,5 @@
 import type { WeightFormat } from "@ngriffin_uk/polychat-schemas";
+import { compareNaturalText } from "@ngriffin_uk/polychat-utility-core";
 
 const FORMAT_BY_EXTENSION: Record<string, WeightFormat> = {
   safetensors: "safetensors",
@@ -35,5 +36,5 @@ export function collectWeightFormats(paths: readonly string[]): WeightFormat[] {
     }
   }
 
-  return [...formats].sort();
+  return [...formats].sort(compareNaturalText);
 }
