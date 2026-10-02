@@ -150,7 +150,6 @@ describe("Cloudflare public knowledge retrieval", () => {
         body: JSON.stringify({
           messages: [{ role: "user", content: "guide" }],
           ai_search_options: {
-            cache: { enabled: false },
             retrieval: {
               retrieval_type: "keyword",
               max_num_results: 3,

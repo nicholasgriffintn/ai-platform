@@ -44,7 +44,6 @@ export class CloudflareAiSearchProvider implements SearchProvider {
         {
           messages: [{ role: "user", content: query }],
           ai_search_options: {
-            cache: { enabled: false },
             retrieval: {
               retrieval_type: input.retrieval_type ?? "hybrid",
               max_num_results: limit,
