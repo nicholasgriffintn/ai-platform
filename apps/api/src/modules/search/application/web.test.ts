@@ -156,7 +156,7 @@ describe("deep search integration", () => {
     });
   });
 
-  it("returns no matches without generating an unsupported answer when a corpus has no approved passages", async () => {
+  it("returns no matches without generating an unsupported answer when a corpus has no matching passages", async () => {
     mocks.performWebSearch.mockResolvedValue({ provider: "cloudflare-ai-search", results: [] });
     const result = await performDeepWebSearch(env, user, {
       query: "guide",

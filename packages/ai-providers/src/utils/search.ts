@@ -18,11 +18,15 @@ export function normaliseSearchSources(result: SearchResult) {
           ? result.citations
           : [];
 
+  const isKnowledgeSearch = "provider" in result && result.provider === "cloudflare-ai-search";
+
   return entries.flatMap((entry) => {
     const data = readRecord(entry);
     const url = getStringProperty(entry, "url") ?? getStringProperty(entry, "link");
 
-    if (!url || !readPublicSearchUrl(url)) {
+    const citationUrl = url && readPublicSearchUrl(url) ? url : "";
+
+    if (!citationUrl && !isKnowledgeSearch) {
       return [];
     }
 
@@ -40,7 +44,7 @@ export function normaliseSearchSources(result: SearchResult) {
     return [
       {
         title,
-        url,
+        url: citationUrl,
         content,
         excerpts,
         score: readFiniteNumber(data.score),

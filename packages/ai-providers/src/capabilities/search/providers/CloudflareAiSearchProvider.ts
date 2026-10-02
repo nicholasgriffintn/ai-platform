@@ -4,10 +4,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ProviderEnv } from "../../../env.js";
 import type { SearchOptions, SearchProvider, SearchResult } from "../../../types/search.js";
 import {
-  getCloudflareAiSearchOrigins,
   parseCloudflareSearchOptions,
   postCloudflareSearch,
-  readPublicSearchUrl,
   requireCloudflareSearchConfig,
 } from "../../../utils/cloudflare-search.js";
 
@@ -33,7 +31,6 @@ export class CloudflareAiSearchProvider implements SearchProvider {
       );
     }
 
-    const origins = getCloudflareAiSearchOrigins(this.env.CLOUDFLARE_AI_SEARCH_ALLOWED_ORIGINS);
     const input = parseCloudflareSearchOptions(query, options);
     const limit = input.max_results ?? input.num ?? 10;
 
@@ -47,7 +44,6 @@ export class CloudflareAiSearchProvider implements SearchProvider {
             retrieval: {
               retrieval_type: input.retrieval_type ?? "hybrid",
               max_num_results: limit,
-              filters: { is_public: true },
             },
           },
         },
@@ -60,31 +56,14 @@ export class CloudflareAiSearchProvider implements SearchProvider {
 
       return {
         provider: "cloudflare-ai-search",
-        results: parsed.data.result.chunks
-          .flatMap((chunk) => {
-            const url = chunk.item && readPublicSearchUrl(chunk.item.key);
-
-            if (
-              !url ||
-              url.protocol !== "https:" ||
-              !origins.has(url.origin) ||
-              chunk.item?.metadata?.is_public !== true ||
-              chunk.type !== "text"
-            ) {
-              return [];
-            }
-
-            return [
-              {
-                title: chunk.item.key,
-                url: url.href,
-                snippet: chunk.text,
-                score: chunk.score,
-                chunkId: chunk.id,
-              },
-            ];
-          })
-          .slice(0, limit),
+        ...parsed.data.result,
+        results: parsed.data.result.chunks.map((chunk) => ({
+          ...chunk,
+          title: chunk.item?.key ?? chunk.id,
+          url: chunk.item?.key ?? "",
+          snippet: chunk.text,
+          chunkId: chunk.id,
+        })),
       };
     } catch {
       return { status: "error", error: "Cloudflare AI Search is unavailable" };

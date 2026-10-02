@@ -11,7 +11,6 @@ const env: ProviderEnv = {
   CLOUDFLARE_WEB_SEARCH_TOKEN: "web-token",
   CLOUDFLARE_AI_SEARCH_TOKEN: "knowledge-token",
   CLOUDFLARE_AI_SEARCH_INSTANCE: "public-docs",
-  CLOUDFLARE_AI_SEARCH_ALLOWED_ORIGINS: "https://docs.example.com",
 };
 const fetchMock = vi.fn<typeof fetch>();
 
@@ -108,36 +107,35 @@ describe("Cloudflare web search", () => {
   });
 });
 
-describe("Cloudflare public knowledge retrieval", () => {
-  it("uses the namespaced GA API, enforces public metadata and checks every returned source", async () => {
-    const chunk = {
-      id: "chunk-1",
-      type: "text",
-      score: 0.8,
-      text: "Grounded passage",
-      item: { key: "https://docs.example.com/guide", metadata: { is_public: true } },
-    };
+describe("Cloudflare knowledge retrieval", () => {
+  it("uses the namespaced GA API and preserves every returned chunk without cache or metadata overrides", async () => {
+    const chunks = [
+      {
+        id: "chunk-1",
+        type: "text",
+        score: 0.8,
+        text: "Grounded passage",
+        scoring_details: { vector_score: 0.8 },
+        item: { key: "https://docs.example.com/guide" },
+      },
+      {
+        id: "chunk-2",
+        type: "text",
+        score: 0.7,
+        text: "Document passage",
+        item: { key: "documents/guide.pdf" },
+      },
+      {
+        id: "chunk-3",
+        type: "image",
+        score: 0.6,
+        text: "Image description",
+        item: { key: "images/diagram.png" },
+      },
+      { id: "chunk-4", type: "text", score: 0.5, text: "Passage without an item" },
+    ];
 
-    fetchMock.mockResolvedValue(
-      Response.json({
-        success: true,
-        result: {
-          chunks: [
-            chunk,
-            { ...chunk, item: { ...chunk.item, metadata: { is_public: false } } },
-            {
-              ...chunk,
-              item: {
-                key: "https://docs.example.com.evil.net/guide",
-                metadata: { is_public: true },
-              },
-            },
-            { ...chunk, item: { key: "private/user-42.pdf", metadata: { is_public: true } } },
-            { ...chunk, item: { key: "https://docs.example.com/guide" } },
-          ],
-        },
-      }),
-    );
+    fetchMock.mockResolvedValue(Response.json({ success: true, result: { chunks } }));
     const result = await new CloudflareAiSearchProvider(env).performWebSearch("guide", {
       retrieval_type: "keyword",
       max_results: 3,
@@ -149,37 +147,38 @@ describe("Cloudflare public knowledge retrieval", () => {
         headers: { "Content-Type": "application/json", Authorization: "Bearer knowledge-token" },
         body: JSON.stringify({
           messages: [{ role: "user", content: "guide" }],
-          ai_search_options: {
-            retrieval: {
-              retrieval_type: "keyword",
-              max_num_results: 3,
-              filters: { is_public: true },
-            },
-          },
+          ai_search_options: { retrieval: { retrieval_type: "keyword", max_num_results: 3 } },
         }),
       }),
     );
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       provider: "cloudflare-ai-search",
+      chunks,
       results: [
         {
-          title: chunk.item.key,
-          url: chunk.item.key,
-          snippet: chunk.text,
-          score: 0.8,
+          title: "https://docs.example.com/guide",
+          url: "https://docs.example.com/guide",
+          snippet: "Grounded passage",
           chunkId: "chunk-1",
         },
+        {
+          title: "documents/guide.pdf",
+          url: "documents/guide.pdf",
+          snippet: "Document passage",
+          chunkId: "chunk-2",
+        },
+        {
+          title: "images/diagram.png",
+          url: "images/diagram.png",
+          snippet: "Image description",
+          chunkId: "chunk-3",
+        },
+        { title: "chunk-4", url: "", snippet: "Passage without an item", chunkId: "chunk-4" },
       ],
     });
   });
 
-  it("fails closed for missing origin allowlists and unsafe instance identifiers", async () => {
-    await expect(
-      new CloudflareAiSearchProvider({
-        ...env,
-        CLOUDFLARE_AI_SEARCH_ALLOWED_ORIGINS: "",
-      }).performWebSearch("query"),
-    ).rejects.toMatchObject({ type: "CONFIGURATION_ERROR" });
+  it("rejects unsafe instance identifiers before sending a request", async () => {
     await expect(
       new CloudflareAiSearchProvider({
         ...env,

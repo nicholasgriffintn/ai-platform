@@ -827,8 +827,8 @@ export function UserSettingsForm({
               Search Provider
             </label>
             <p className="mt-1 text-sm text-muted-foreground">
-              Choose the default search provider. Knowledge Search uses the configured public
-              knowledge base.
+              Choose the default search provider. Knowledge Search uses the configured knowledge
+              base.
             </p>
             <FormSelect
               id="search_provider"

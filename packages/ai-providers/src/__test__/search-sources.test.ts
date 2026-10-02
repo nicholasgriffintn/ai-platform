@@ -46,4 +46,23 @@ describe("search evidence normalisation", () => {
       }),
     ).toMatchObject([{ content: "Passage", score: 0.8, chunkId: "chunk-1" }]);
   });
+  it("retains knowledge passages with storage keys or missing URLs as answer evidence", () => {
+    expect(
+      normaliseSearchSources({
+        provider: "cloudflare-ai-search",
+        results: [
+          {
+            title: "guide.pdf",
+            url: "documents/guide.pdf",
+            snippet: "Document passage",
+            chunkId: "chunk-1",
+          },
+          { title: "chunk-2", url: "", snippet: "Passage without an item", chunkId: "chunk-2" },
+        ],
+      }),
+    ).toMatchObject([
+      { title: "guide.pdf", url: "", content: "Document passage", chunkId: "chunk-1" },
+      { title: "chunk-2", url: "", content: "Passage without an item", chunkId: "chunk-2" },
+    ]);
+  });
 });

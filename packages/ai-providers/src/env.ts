@@ -14,7 +14,6 @@ export interface ProviderEnv {
   CLOUDFLARE_AI_SEARCH_TOKEN?: string;
   CLOUDFLARE_AI_SEARCH_NAMESPACE?: string;
   CLOUDFLARE_AI_SEARCH_INSTANCE?: string;
-  CLOUDFLARE_AI_SEARCH_ALLOWED_ORIGINS?: string;
   AWS_REGION?: string;
   AZURE_API_VERSION?: string;
   AZURE_RESOURCE_NAME?: string;

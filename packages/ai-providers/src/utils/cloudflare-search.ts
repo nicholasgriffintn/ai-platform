@@ -74,37 +74,6 @@ export function readPublicSearchUrl(value: string): URL | undefined {
   }
 }
 
-export function getCloudflareAiSearchOrigins(value: string | undefined): Set<string> {
-  const entries =
-    value
-      ?.split(",")
-      .map((entry) => entry.trim())
-      .filter(Boolean) ?? [];
-  const origins = new Set<string>();
-
-  for (const entry of entries) {
-    const url = readPublicSearchUrl(entry);
-
-    if (!url || url.protocol !== "https:" || url.pathname !== "/" || url.search || url.hash) {
-      throw new AssistantError(
-        "AI Search requires public HTTPS origins",
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
-
-    origins.add(url.origin);
-  }
-
-  if (!origins.size) {
-    throw new AssistantError(
-      "CLOUDFLARE_AI_SEARCH_ALLOWED_ORIGINS is required",
-      ErrorType.CONFIGURATION_ERROR,
-    );
-  }
-
-  return origins;
-}
-
 export async function postCloudflareSearch(
   endpoint: string,
   token: string,

@@ -19,21 +19,28 @@ export const cloudflareWebSearchResponseSchema = z.object({
 
 export const cloudflareAiSearchResponseSchema = z.object({
   success: z.literal(true),
-  result: z.object({
-    chunks: z.array(
-      z.object({
-        id: z.string(),
-        score: z.number(),
-        text: z.string(),
-        type: z.string(),
-        item: z
+  result: z
+    .object({
+      chunks: z.array(
+        z
           .object({
-            key: z.string(),
-            metadata: z.record(z.string(), z.unknown()).optional(),
+            id: z.string(),
+            score: z.number(),
+            text: z.string(),
+            type: z.string(),
+            item: z
+              .object({
+                key: z.string(),
+                metadata: z.record(z.string(), z.unknown()).optional(),
+              })
+              .passthrough()
+              .optional(),
           })
-          .optional(),
-      }),
-    ),
-    search_query: z.string().optional(),
-  }),
+          .passthrough(),
+      ),
+      search_query: z.string().optional(),
+    })
+    .passthrough(),
 });
+
+export type CloudflareAiSearchResponse = z.infer<typeof cloudflareAiSearchResponseSchema>;

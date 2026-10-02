@@ -1,4 +1,4 @@
-import type { SearchOptions } from "@ngriffin_uk/polychat-schemas";
+import type { CloudflareAiSearchResponse, SearchOptions } from "@ngriffin_uk/polychat-schemas";
 
 export type { SearchOptions, SearchProviderName } from "@ngriffin_uk/polychat-schemas";
 
@@ -6,6 +6,7 @@ export interface CloudflareSearchResult {
   provider: "cloudflare" | "cloudflare-ai-search";
   searchProvider?: "ceramic" | "exa" | "linkup";
   requestId?: string;
+  chunks?: CloudflareAiSearchResponse["result"]["chunks"];
   results: Array<{
     title: string;
     url: string;
