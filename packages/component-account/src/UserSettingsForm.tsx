@@ -11,6 +11,7 @@ import { useAnalytics } from "@ngriffin_uk/polychat-library-react";
 import { computeSiteSchema, modelTierSchema } from "@ngriffin_uk/polychat-schemas";
 import { type FormEvent, type ReactNode, useState } from "react";
 
+import { DynamoDbVectorSettings } from "./DynamoDbVectorSettings";
 import { SettingsSection } from "./SettingsSection";
 import {
   getSpeechModelOptions,
@@ -53,6 +54,7 @@ const GUARDRAILS_PROVIDER_OPTIONS: FormSelectOption[] = [
 const EMBEDDING_PROVIDER_OPTIONS: FormSelectOption[] = [
   { value: "vectorize", label: "Vectorize" },
   { value: "s3vectors", label: "S3 Vectors" },
+  { value: "dynamodb-vectors", label: "DynamoDB Vectors" },
 ];
 
 const S3_VECTORS_REGION_OPTIONS: FormSelectOption[] = [
@@ -509,6 +511,9 @@ export function UserSettingsForm({
               }
             />
           </div>
+          {formData.embedding_provider === "dynamodb-vectors" && (
+            <DynamoDbVectorSettings settings={formData} onChange={updateFormData} />
+          )}
           {formData.embedding_provider === "s3vectors" && (
             <>
               <div>

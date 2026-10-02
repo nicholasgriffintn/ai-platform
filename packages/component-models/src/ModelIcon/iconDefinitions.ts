@@ -125,6 +125,7 @@ export const PROVIDER_ICONS: Record<string, string> = {
   exa: "exa",
   sagemaker: "aws",
   s3vectors: "aws",
+  "dynamodb-vectors": "aws",
   "aws-sms": "aws",
   opencode: "opencode",
   "opencode-go": "opencode",

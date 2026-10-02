@@ -12,7 +12,7 @@ import {
 export interface UserConfigurableProvider {
   id: string;
   name: string;
-  type: "chat" | "messaging" | "decision";
+  type: "chat" | "messaging" | "decision" | "embedding";
   description?: string;
   configurationFields?: Array<{
     key: string;
@@ -27,6 +27,7 @@ export interface UserConfigurableProvider {
 export function listConfigurableUserProviderIds(): string[] {
   return Array.from(
     new Set([
+      "dynamodb-vectors",
       ...listConfigurableChatProviders(),
       ...listConfigurableDecisionProviders(),
       ...listConfigurableMessagingProviders(),
@@ -35,6 +36,15 @@ export function listConfigurableUserProviderIds(): string[] {
 }
 
 export function getUserConfigurableProviderMetadata(providerId: string): UserConfigurableProvider {
+  if (providerId === "dynamodb-vectors") {
+    return {
+      id: providerId,
+      name: "DynamoDB Vectors",
+      type: "embedding",
+      description: "Store document and memory vectors in Amazon DynamoDB.",
+    };
+  }
+
   if (isMessagingProviderId(providerId)) {
     const metadata = getMessagingProviderMetadata(providerId);
 

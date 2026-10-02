@@ -1,10 +1,5 @@
 import { estimateTextTokens, parseAwsCredentials } from "@ngriffin_uk/polychat-ai-providers";
 import { withEmbeddingTelemetry } from "@ngriffin_uk/polychat-ai-telemetry";
-import {
-  awsRegionSchema,
-  s3VectorsBucketNameSchema,
-  s3VectorsIndexNameSchema,
-} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import {
@@ -32,51 +27,13 @@ import {
   toEmbeddingProviderTarget,
   toEmbeddingRuntimeTarget,
 } from "./target";
+import {
+  resolveDynamoDbVectorTarget,
+  getDynamoDbVectorProvider,
+  getDynamoDbVectorProviderForTarget,
+} from "./utils/dynamodb-target";
+import { parseS3VectorTarget } from "./utils/s3vectors-target";
 import { getEmbeddingCredentialFingerprint } from "./utils/scope";
-
-const S3_CREDENTIAL_FINGERPRINT_PATTERN = /^credential_v1_[a-f0-9]{32}$/;
-
-const parseS3VectorTarget = (
-  target: {
-    bucketName?: unknown;
-    indexName?: unknown;
-    region?: unknown;
-    credentialFingerprint?: unknown;
-  },
-  statusCode = 400,
-  requireCredentialFingerprint = true,
-) => {
-  const parsed = {
-    bucketName: s3VectorsBucketNameSchema.safeParse(target.bucketName),
-    indexName: s3VectorsIndexNameSchema.safeParse(target.indexName),
-    region: awsRegionSchema.safeParse(target.region),
-    credentialFingerprint:
-      typeof target.credentialFingerprint === "string" &&
-      S3_CREDENTIAL_FINGERPRINT_PATTERN.test(target.credentialFingerprint)
-        ? target.credentialFingerprint
-        : null,
-  };
-
-  if (
-    !parsed.bucketName.success ||
-    !parsed.indexName.success ||
-    !parsed.region.success ||
-    (requireCredentialFingerprint && !parsed.credentialFingerprint)
-  ) {
-    throw new AssistantError(
-      "S3 Vectors target is invalid",
-      ErrorType.CONFIGURATION_ERROR,
-      statusCode,
-    );
-  }
-
-  return {
-    bucketName: parsed.bucketName.data,
-    indexName: parsed.indexName.data,
-    region: parsed.region.data,
-    credentialFingerprint: parsed.credentialFingerprint,
-  };
-};
 
 export const isQuarantinedEmbeddingProviderTarget = (target: EmbeddingProviderTarget) =>
   target.provider === "quarantined" &&
@@ -91,6 +48,10 @@ export async function resolveEmbeddingProviderTarget(
   userSettings: IUserSettings,
 ): Promise<EmbeddingProviderTarget> {
   const provider = userSettings.embedding_provider || "vectorize";
+
+  if (provider === "dynamodb-vectors") {
+    return resolveDynamoDbVectorTarget(env, user, userSettings);
+  }
 
   if (provider === "bedrock") {
     throw new AssistantError(
@@ -169,6 +130,10 @@ export function getEmbeddingProviderForTarget(
       ErrorType.CONFIGURATION_ERROR,
       503,
     );
+  }
+
+  if (target.provider === "dynamodb-vectors") {
+    return getDynamoDbVectorProviderForTarget(env, user, userSettings, target);
   }
 
   if (target.provider === "s3vectors") {
@@ -292,6 +257,8 @@ export function getEmbeddingProvider(
   const providerName = userSettings?.embedding_provider || "vectorize";
 
   switch (providerName) {
+    case "dynamodb-vectors":
+      return getDynamoDbVectorProvider(env, user, userSettings);
     case "bedrock": {
       throw new AssistantError(
         "Bedrock embedding lifecycle is not available",

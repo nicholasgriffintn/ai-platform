@@ -50,6 +50,9 @@ export interface UserSettings {
   s3vectors_bucket_name?: string;
   s3vectors_index_name?: string;
   s3vectors_region?: string;
+  dynamodb_vectors_table_name?: string;
+  dynamodb_vectors_index_name?: string;
+  dynamodb_vectors_region?: string;
   memories_save_enabled?: boolean;
   memories_chat_history_enabled?: boolean;
   temporary_chats_default?: boolean;

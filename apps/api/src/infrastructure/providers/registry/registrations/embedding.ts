@@ -1,6 +1,8 @@
 import type { EmbeddingProvider } from "~/types";
 
 import {
+  DynamoDbVectorsEmbeddingProvider,
+  type DynamoDbVectorsEmbeddingProviderConfig,
   BedrockEmbeddingProvider,
   type BedrockEmbeddingProviderConfig,
   MarengoEmbeddingProvider,
@@ -16,6 +18,20 @@ import type { ProviderRegistration, ProviderRegistry } from "../types";
 import { ensureConfig, ensureEnv, ensureUser } from "./utils";
 
 const embeddingProviders: ProviderRegistration<EmbeddingProvider>[] = [
+  {
+    name: "dynamodb-vectors",
+    lifecycle: "transient",
+    create: (context) =>
+      new DynamoDbVectorsEmbeddingProvider(
+        ensureConfig<DynamoDbVectorsEmbeddingProviderConfig>(
+          context,
+          "DynamoDB Vectors requires a table and vector index configuration",
+        ),
+        ensureEnv(context),
+        ensureUser(context),
+      ),
+    metadata: { vendor: "AWS DynamoDB", categories: ["embedding"] },
+  },
   {
     name: "bedrock",
     lifecycle: "transient",
