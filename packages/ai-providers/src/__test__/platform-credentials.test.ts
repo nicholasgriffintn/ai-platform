@@ -3,6 +3,29 @@ import { describe, expect, it } from "vitest";
 import { getPlatformEnabledProviders, isProviderPlatformEnabled } from "../platform-credentials";
 
 describe("isProviderPlatformEnabled", () => {
+  it("requires explicit Auto Router opt-in and complete gateway credentials", () => {
+    const credentials = { ACCOUNT_ID: "account", AI_GATEWAY_TOKEN: "token" };
+
+    expect(isProviderPlatformEnabled("cloudflare", credentials)).toBe(false);
+    expect(
+      isProviderPlatformEnabled("cloudflare", {
+        ...credentials,
+        CLOUDFLARE_AUTO_ROUTER_ENABLED: "false",
+      }),
+    ).toBe(false);
+    expect(
+      isProviderPlatformEnabled("cloudflare", {
+        ...credentials,
+        CLOUDFLARE_AUTO_ROUTER_ENABLED: "true",
+      }),
+    ).toBe(true);
+    expect(
+      isProviderPlatformEnabled("cloudflare", {
+        AI_GATEWAY_TOKEN: "token",
+        CLOUDFLARE_AUTO_ROUTER_ENABLED: "true",
+      }),
+    ).toBe(false);
+  });
   it("enables a provider when its API key is set", () => {
     expect(isProviderPlatformEnabled("openai", { OPENAI_API_KEY: "sk-test" })).toBe(true);
   });

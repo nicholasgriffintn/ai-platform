@@ -1,3 +1,7 @@
+import {
+  modelConfig as catalogueModels,
+  resolveCloudflareAutoRouterModel,
+} from "@ngriffin_uk/polychat-ai-models";
 import { getLogger, type NormalisedTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   hostedToolRateEntries,
@@ -7,6 +11,7 @@ import {
   type RateEntry,
   type RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
+import { readStringField } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 import { offPlatformUsageMarker } from "../billable-units.js";
 import { extractProviderBillableUsage } from "../provider-billable-units.js";
@@ -150,7 +155,19 @@ export async function recordModelTurnUsage(
   const userId = creditActorUserId(actor);
 
   try {
-    const modelConfig = await runtime.resolveModelConfig?.(params.model, params.provider, userId);
+    const isCloudflareRouter =
+      params.provider === "cloudflare" && params.model === "cloudflare/auto";
+    const routedModel = isCloudflareRouter
+      ? readStringField(params.rawUsage, "cloudflare_routed_model")
+      : undefined;
+    const modelConfig = isCloudflareRouter
+      ? resolveCloudflareAutoRouterModel(catalogueModels, routedModel ?? "")
+      : await runtime.resolveModelConfig?.(params.model, params.provider, userId);
+
+    if (isCloudflareRouter && !modelConfig) {
+      throw new Error("Cloudflare Auto Router usage requires a recognised routed model");
+    }
+
     const resource = modelConfig ? modelRateResource(modelConfig) : params.model;
     const vendor = modelConfig?.provider ?? params.provider;
     const rates: RateEntry[] = modelConfig
@@ -180,7 +197,9 @@ export async function recordModelTurnUsage(
     }
 
     const [byok, attribution] = await Promise.all([
-      userId === undefined ? Promise.resolve(false) : isByokTurn(runtime.store, userId, vendor),
+      userId === undefined || isCloudflareRouter
+        ? Promise.resolve(false)
+        : isByokTurn(runtime.store, userId, vendor),
       resolveUsageAttribution(runtime.store, params.conversationId),
     ]);
 

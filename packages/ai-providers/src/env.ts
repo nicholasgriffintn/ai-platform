@@ -8,6 +8,7 @@ export interface ProviderEnv {
   ACCOUNT_ID?: string;
   API_BASE_URL?: string;
   AI_GATEWAY_TOKEN?: string;
+  CLOUDFLARE_AUTO_ROUTER_ENABLED?: string;
   AWS_REGION?: string;
   AZURE_API_VERSION?: string;
   AZURE_RESOURCE_NAME?: string;

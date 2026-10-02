@@ -15,6 +15,13 @@
   },
   "description": "The model router family includes models that produce text.",
   "models": {
+    "cloudflare-auto": {
+      "defaults": {
+        "name": "Cloudflare Auto Router",
+        "description": "Choose a model automatically for each task, balancing response quality and cost. Prices shown are conservative reservation rates; usage is billed at the selected model's catalogue rates.",
+        "releaseDate": "September 30, 2026"
+      }
+    },
     "brick-v1-beta": {
       "defaults": {
         "name": "Brick v1 Beta",

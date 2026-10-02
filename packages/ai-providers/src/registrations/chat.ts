@@ -7,6 +7,7 @@ import { BedrockProvider } from "../capabilities/chat/providers/bedrock.js";
 import { CerebrasProvider } from "../capabilities/chat/providers/cerebras.js";
 import { CertesiaProvider } from "../capabilities/chat/providers/certesia.js";
 import { ChutesProvider } from "../capabilities/chat/providers/chutes.js";
+import { CloudflareAutoRouterProvider } from "../capabilities/chat/providers/cloudflare.js";
 import { CohereProvider } from "../capabilities/chat/providers/cohere.js";
 import { CortecsProvider } from "../capabilities/chat/providers/cortecs.js";
 import { DeepInfraProvider } from "../capabilities/chat/providers/deepinfra.js";
@@ -245,6 +246,11 @@ function chatProviders(runtime: ProviderRuntime): AiProviderRegistration<AIProvi
       aliases: ["workers-ai"],
       create: () => new WorkersProvider(runtime),
       metadata: { vendor: "Cloudflare", categories: ["chat"] },
+    },
+    {
+      name: "cloudflare",
+      create: () => new CloudflareAutoRouterProvider(runtime),
+      metadata: { vendor: "Cloudflare", categories: ["chat"], tags: ["routing"] },
     },
     {
       name: "exa",

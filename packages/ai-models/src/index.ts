@@ -1,4 +1,5 @@
 export * from "./catalogue.js";
+export * from "./cloudflare-auto-router.js";
 export * from "./chat-surface.js";
 export * from "./modalities.js";
 export * from "./policy.js";

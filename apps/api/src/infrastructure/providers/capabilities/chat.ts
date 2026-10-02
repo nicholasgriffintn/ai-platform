@@ -4,6 +4,7 @@ import { providerLibrary } from "../library";
 import type { ProviderFactoryContext } from "../registry/types";
 
 const SYSTEM_CHAT_PROVIDERS = new Set([
+  "cloudflare",
   "ollama",
   "lmstudio",
   "workers",

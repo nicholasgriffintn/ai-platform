@@ -41,6 +41,18 @@ Infer a shared model from its family and normalised upstream display name. Retai
 
 Repeat a command with identical input and expect `changedFiles: 0`. Validate the catalogue package typecheck and its `scripts/sync-models-dev` tests after edits. Generated catalogue files remain excluded from lint and formatting; validate their schema, references and generated imports instead.
 
+## Enable Cloudflare Auto Router
+
+Enable **Cloudflare Auto Router** only when the platform AI Gateway has eligible stored provider keys or unified billing, an appropriate spend limit, and access policies for its candidate models. Set `CLOUDFLARE_AUTO_ROUTER_ENABLED=true` alongside `ACCOUNT_ID` and `AI_GATEWAY_TOKEN`; requests use the existing `llm-assistant` gateway. Keep the flag disabled until you have checked that configuration.
+
+Select `cloudflare/auto` explicitly from the model catalogue. The integration supports text, image inputs, streaming and tool calls, and scopes session affinity to the account and conversation. It skips response caching so user requests retain their own usage and tool execution.
+
+Pin the candidate pool through `CLOUDFLARE_AUTO_ROUTER_MODELS` in the AI models package. These are Cloudflare's initial seven default models, restricted to offerings with known prices and token limits; update the pool and its catalogue entries together. Reserve credits using the highest candidate token rates and the smallest shared context/output limits, then bill the actual model identified by `cf-aig-routed-model`. Personal provider keys do not exempt platform gateway requests from billing.
+
+Treat this as an optional beta: gateway billing and access policies determine which candidates are eligible, and Cloudflare's reported savings are workload-dependent. Missing or unrecognised routing headers fail the request rather than silently billing an unknown model. Disable the flag to remove access without changing existing model choices.
+
+See the [launch assessment](https://blog.cloudflare.com/auto-router/) and [Auto Router API contract](https://developers.cloudflare.com/ai-gateway/features/auto-router/). Check the pending release verification item before enabling it in production.
+
 ## Keep browser search lightweight
 
 Search the browser catalogue without importing the WebLLM inference engine. `packages/library-react/src/lib/web-llm-catalogue.json` contains model IDs and URLs from the installed WebLLM package; refresh it after upgrading that dependency and verify it before shipping:

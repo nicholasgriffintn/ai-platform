@@ -78,6 +78,7 @@ export class ResponseFormatter {
     const formatters: Record<string, (data: any, options: ResponseFormatOptions) => any> = {
       openai: openAI,
       compat: openAI,
+      cloudflare: openAI,
       anthropic: anthropic,
       cohere: cohere,
       "google-ai-studio": googleStudio,

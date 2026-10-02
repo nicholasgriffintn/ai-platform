@@ -1,0 +1,23 @@
+{
+  "defaults": {
+    "supportsStreaming": true,
+    "supportsToolCalls": true,
+    "supportsToolChoice": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "supportsTopP": false,
+    "supportsFrequencyPenalty": false,
+    "supportsPresencePenalty": false,
+    "supportsRepetitionPenalty": false
+  },
+  "models": {
+    "cloudflare/auto": {
+      "model": "model-router/cloudflare-auto",
+      "matchingModel": "cloudflare/auto",
+      "overrides": {
+        "status": "beta",
+        "supportsParallelToolCalls": false
+      }
+    }
+  }
+}

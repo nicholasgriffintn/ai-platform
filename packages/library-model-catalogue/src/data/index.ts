@@ -428,6 +428,7 @@ import provider55 from "./providers/the-grid-ai.json" with { type: "json" };
 import provider56 from "./providers/kimi-for-coding.json" with { type: "json" };
 import provider57 from "./providers/thinkingmachines.json" with { type: "json" };
 import provider58 from "./providers/typesafe.json" with { type: "json" };
+import provider59 from "./providers/cloudflare.json" with { type: "json" };
 
 const catalogue: UnparsedModelCatalogue = {
   families: {
@@ -861,6 +862,7 @@ const catalogue: UnparsedModelCatalogue = {
     "kimi-for-coding": provider56,
     "thinkingmachines": provider57,
     "typesafe": provider58,
+    "cloudflare": provider59,
   },
 };
 

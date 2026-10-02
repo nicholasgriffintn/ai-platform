@@ -41,6 +41,7 @@ export type IEnv = {
   SANDBOX_API_BASE_URL?: string;
   ANTHROPIC_API_KEY?: string;
   AI_GATEWAY_TOKEN?: string;
+  CLOUDFLARE_AUTO_ROUTER_ENABLED?: string;
   SANDBOX_WORKER?: Fetcher;
   COMPUTER_WORKER?: Fetcher;
   LOADER?: WorkerLoader;
