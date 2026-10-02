@@ -1,6 +1,10 @@
 export { ProviderError, isProviderError, type ProviderErrorCode } from "./errors.js";
 export { ProviderRegistry } from "./registry.js";
-export { isRerankingModelRuntimeAvailable, selectRerankingModel } from "./model-resolver.js";
+export {
+  isModelRuntimeAvailable,
+  isModelRuntimeAvailable as isRerankingModelRuntimeAvailable,
+} from "./utils/model-runtime.js";
+export { selectRerankingModel } from "./model-resolver.js";
 export {
   ProviderLibrary,
   type ProviderBootstrapper,

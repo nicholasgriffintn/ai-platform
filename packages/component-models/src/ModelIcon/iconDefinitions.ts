@@ -1,5 +1,6 @@
 export const MODEL_ICONS: Record<string, string> = {
   claude: "claude",
+  clef: "cloudflare",
   command: "command-a",
   "amazon-nova": "amazon-nova",
   llava: "llava",

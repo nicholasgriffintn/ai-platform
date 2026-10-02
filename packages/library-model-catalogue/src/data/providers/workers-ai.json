@@ -879,6 +879,26 @@
         "supportsAttachments": true,
         "supportsTemperature": false
       }
+    },
+    "@cf/cloudflare/clef": {
+      "model": "cloudflare/clef/clef",
+      "matchingModel": "@cf/cloudflare/clef",
+      "overrides": {
+        "isFree": true,
+        "costPer1kInputTokens": 0.00024,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
+    "@cf/cloudflare/clef-flash": {
+      "model": "cloudflare/clef/clef-flash",
+      "matchingModel": "@cf/cloudflare/clef-flash",
+      "overrides": {
+        "isFree": true,
+        "costPer1kInputTokens": 0.00009,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
     }
   }
 }
