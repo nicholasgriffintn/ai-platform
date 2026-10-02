@@ -24,6 +24,9 @@ const CREATE_USER_SETTINGS_TABLE = `CREATE TABLE user_settings (
   s3vectors_bucket_name text,
   s3vectors_index_name text,
   s3vectors_region text,
+  dynamodb_vectors_table_name text,
+  dynamodb_vectors_index_name text,
+  dynamodb_vectors_region text,
   memories_save_enabled integer DEFAULT false,
   memories_chat_history_enabled integer DEFAULT false,
   temporary_chats_default integer DEFAULT false,
@@ -185,6 +188,36 @@ describe("user settings provisioning", () => {
       };
 
       expect(providers.count).toBe(0);
+    } finally {
+      sqlite.close();
+    }
+  });
+  it("persists and returns DynamoDB settings without overwriting them on an unrelated update", async () => {
+    const sqlite = new Database(":memory:");
+
+    try {
+      sqlite.exec(CREATE_USER_SETTINGS_TABLE);
+      sqlite.exec(CREATE_PROVIDER_SETTINGS_TABLE);
+      const context = createTestContext(sqlite);
+
+      await updateUserSettings(
+        context,
+        {
+          embedding_provider: "dynamodb-vectors",
+          dynamodb_vectors_table_name: "polychat-vectors",
+          dynamodb_vectors_index_name: "embeddings",
+          dynamodb_vectors_region: "eu-west-2",
+        },
+        42,
+      );
+      await updateUserSettings(context, { nickname: "Alex" }, 42);
+      expect(await context.repositories.userSettings.getUserSettings(42)).toMatchObject({
+        embedding_provider: "dynamodb-vectors",
+        dynamodb_vectors_table_name: "polychat-vectors",
+        dynamodb_vectors_index_name: "embeddings",
+        dynamodb_vectors_region: "eu-west-2",
+        nickname: "Alex",
+      });
     } finally {
       sqlite.close();
     }

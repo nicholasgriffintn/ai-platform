@@ -22,7 +22,7 @@ export const updateUserSettingsResponseSchema = z.object({
   message: z.string(),
 });
 
-export const embeddingProviderSchema = z.enum(["vectorize", "s3vectors"]);
+export const embeddingProviderSchema = z.enum(["vectorize", "s3vectors", "dynamodb-vectors"]);
 export const s3VectorsBucketNameSchema = z
   .string()
   .trim()
@@ -36,6 +36,20 @@ export const awsRegionSchema = z
   .trim()
   .max(64)
   .regex(/^[a-z]{2}(?:-[a-z0-9]+)+-\d$/);
+
+export const dynamoDbVectorResourceNameSchema = z
+  .string()
+  .trim()
+  .min(3)
+  .max(255)
+  .regex(/^[a-zA-Z0-9_.-]+$/);
+export const dynamoDbVectorConfigurationSchema = z
+  .object({
+    tableName: dynamoDbVectorResourceNameSchema,
+    indexName: dynamoDbVectorResourceNameSchema,
+    region: awsRegionSchema,
+  })
+  .strict();
 
 export const onboardingSeenSchema = z.array(z.string());
 
@@ -73,6 +87,9 @@ export const updateUserSettingsSchema = z
     s3vectors_bucket_name: s3VectorsBucketNameSchema.optional(),
     s3vectors_index_name: s3VectorsIndexNameSchema.optional(),
     s3vectors_region: awsRegionSchema.optional(),
+    dynamodb_vectors_table_name: dynamoDbVectorResourceNameSchema.optional(),
+    dynamodb_vectors_index_name: dynamoDbVectorResourceNameSchema.optional(),
+    dynamodb_vectors_region: awsRegionSchema.optional(),
     memories_save_enabled: z.boolean().optional(),
     memories_chat_history_enabled: z.boolean().optional(),
     temporary_chats_default: z.boolean().optional(),
@@ -95,6 +112,22 @@ export const updateUserSettingsSchema = z
     onboarding_seen: onboardingSeenSchema.optional(),
   })
   .superRefine((settings, context) => {
+    if (settings.embedding_provider === "dynamodb-vectors") {
+      for (const field of [
+        "dynamodb_vectors_table_name",
+        "dynamodb_vectors_index_name",
+        "dynamodb_vectors_region",
+      ] as const) {
+        if (!settings[field]) {
+          context.addIssue({
+            code: "custom",
+            path: [field],
+            message: "DynamoDB Vectors configuration is required when selecting this provider",
+          });
+        }
+      }
+    }
+
     if (settings.embedding_provider !== "s3vectors") {
       return;
     }

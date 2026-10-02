@@ -22,6 +22,9 @@ export function prepareUserSettingsUpdates(
     s3vectors_bucket_name: settings.s3vectors_bucket_name ?? null,
     s3vectors_index_name: settings.s3vectors_index_name ?? null,
     s3vectors_region: settings.s3vectors_region ?? null,
+    dynamodb_vectors_table_name: settings.dynamodb_vectors_table_name ?? null,
+    dynamodb_vectors_index_name: settings.dynamodb_vectors_index_name ?? null,
+    dynamodb_vectors_region: settings.dynamodb_vectors_region ?? null,
     memories_save_enabled:
       settings.memories_save_enabled !== undefined
         ? settings.memories_save_enabled
