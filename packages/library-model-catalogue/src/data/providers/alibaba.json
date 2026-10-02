@@ -496,6 +496,7 @@
       "model": "qwen/qwen3-5-122b-a10b",
       "matchingModel": "qwen3.5-122b-a10b",
       "overrides": {
+        "name": "Qwen3.5 122B-A10B",
         "modalities": {
           "input": [
             "text",
@@ -536,6 +537,7 @@
       "model": "qwen/qwen3-5-35b-a3b",
       "matchingModel": "qwen3.5-35b-a3b",
       "overrides": {
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",

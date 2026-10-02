@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 1, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "high",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The opencode/fledge alpha free family includes models that produce text.",
+  "models": {
+    "fledge-alpha-free": {
+      "defaults": {
+        "name": "Fledge Alpha Free",
+        "description": "Free-tier preview reasoning model with text and image input and tool use"
+      }
+    }
+  }
+}

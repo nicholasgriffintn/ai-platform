@@ -58,6 +58,16 @@
           "defaultEffort": "none"
         }
       }
+    },
+    "north-small-translate": {
+      "defaults": {
+        "name": "North Small Translate",
+        "description": "Open-weight translation model for more than 50 languages and locale variants",
+        "contextWindow": 32768,
+        "maxTokens": 16000,
+        "releaseDate": "September 9, 2026",
+        "supportsToolCalls": false
+      }
     }
   }
 }
