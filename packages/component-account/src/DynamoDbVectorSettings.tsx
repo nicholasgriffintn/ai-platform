@@ -35,7 +35,7 @@ export function DynamoDbVectorSettings({
       ))}
       <p className="text-sm text-muted-foreground">
         Configure DynamoDB Vectors credentials in Providers. Use an on-demand table with a
-        1,024-dimensional cosine vector index, following the DynamoDB setup guide.
+        1,024-dimensional cosine vector index.
       </p>
     </>
   );
