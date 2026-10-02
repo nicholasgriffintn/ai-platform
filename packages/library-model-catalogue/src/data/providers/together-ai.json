@@ -252,16 +252,6 @@
         "reasoningConfig"
       ]
     },
-    "deepseek-ai/DeepSeek-V4-Pro": {
-      "model": "deepseek/deepseek-v4-pro",
-      "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
-      "overrides": {
-        "speed": 3,
-        "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.00174,
-        "costPer1kOutputTokens": 0.00348
-      }
-    },
     "google/gemma-4-31B-it": {
       "model": "gemma/gemma-4-31b-instruct",
       "matchingModel": "google/gemma-4-31B-it",
@@ -609,7 +599,6 @@
       "model": "glm/glm-5-3",
       "matchingModel": "zai-org/GLM-5.3",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 262144,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
@@ -646,6 +635,24 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": true
+      }
+    },
+    "deepseek-ai/DeepSeek-V4-Pro-0813": {
+      "model": "deepseek-thinking/deepseek-v4-pro-0813",
+      "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
+      "overrides": {
+        "maxTokens": 384000,
+        "lastUpdated": "August 22, 2026",
+        "costPer1kInputTokens": 0.00132,
+        "costPer1kOutputTokens": 0.00396,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

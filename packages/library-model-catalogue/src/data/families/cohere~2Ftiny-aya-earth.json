@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 8000,
+    "maxTokens": 8000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "February 17, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The cohere/tiny aya earth family includes models that produce text.",
+  "models": {
+    "tiny-aya-earth": {
+      "defaults": {
+        "name": "Tiny Aya Earth",
+        "description": "Compact multilingual model specialized for West Asian and African languages"
+      }
+    }
+  }
+}

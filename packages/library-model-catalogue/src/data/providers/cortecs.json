@@ -147,8 +147,8 @@
         "contextWindow": 200000,
         "maxTokens": 65000,
         "lastUpdated": "May 22, 2025",
-        "costPer1kInputTokens": 0.002898,
-        "costPer1kOutputTokens": 0.014493,
+        "costPer1kInputTokens": 0.002989,
+        "costPer1kOutputTokens": 0.014945,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2131,6 +2131,7 @@
       "model": "gemma/gemma-4-31b-it",
       "matchingModel": "gemma-4-31b-it",
       "overrides": {
+        "contextWindow": 262000,
         "maxTokens": 262000,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.000223,
@@ -2348,7 +2349,6 @@
       "model": "glm/glm-5-3",
       "matchingModel": "glm-5.3",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.000873,
@@ -2431,8 +2431,8 @@
       "overrides": {
         "maxTokens": 393216,
         "lastUpdated": "September 10, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
+        "costPer1kInputTokens": 0.000201,
+        "costPer1kOutputTokens": 0.0006,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2484,6 +2484,24 @@
       "matchingModel": "gpt-6-sol",
       "overrides": {
         "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.0024,
+        "costPer1kOutputTokens": 0.011999,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gpt-6.1-sol": {
+      "model": "gpt-sol/gpt-6-1-sol",
+      "matchingModel": "gpt-6.1-sol",
+      "overrides": {
+        "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0.0024,
         "costPer1kOutputTokens": 0.011999,
         "supportsTemperature": false,

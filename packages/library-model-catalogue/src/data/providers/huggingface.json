@@ -672,6 +672,7 @@
       "model": "qwen/qwen3-5-122b-a10b",
       "matchingModel": "Qwen/Qwen3.5-122B-A10B",
       "overrides": {
+        "name": "Qwen3.5 122B-A10B",
         "modalities": {
           "input": [
             "text",
@@ -722,6 +723,7 @@
       "model": "qwen/qwen3-5-35b-a3b",
       "matchingModel": "Qwen/Qwen3.5-35B-A3B",
       "overrides": {
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -877,6 +879,7 @@
       "model": "mimo/mimo-v2-5-pro",
       "matchingModel": "XiaomiMiMo/MiMo-V2.5-Pro",
       "overrides": {
+        "contextWindow": 1048576,
         "strengths": [
           "tool_use",
           "coding"
@@ -925,7 +928,6 @@
       "model": "mimo/mimo-v2-5",
       "matchingModel": "XiaomiMiMo/MiMo-V2.5",
       "overrides": {
-        "description": "MiMo model for long-context reasoning, perception, and agentic tasks",
         "contextWindow": 262144,
         "modalities": {
           "input": [
@@ -1211,7 +1213,6 @@
       "matchingModel": "zai-org/GLM-5.3",
       "overrides": {
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 1048576,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044

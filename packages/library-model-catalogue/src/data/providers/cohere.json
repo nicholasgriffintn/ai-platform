@@ -182,6 +182,46 @@
         "costPer1kOutputTokens": 0,
         "apiBaseUrl": "https://api.cohere.ai/compatibility/v1"
       }
+    },
+    "north-small-translate-09-2026": {
+      "model": "north/north-small-translate",
+      "matchingModel": "north-small-translate-09-2026",
+      "overrides": {
+        "lastUpdated": "September 9, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false
+      }
+    },
+    "tiny-aya-earth": {
+      "model": "cohere/tiny-aya-earth/tiny-aya-earth",
+      "matchingModel": "tiny-aya-earth",
+      "overrides": {
+        "lastUpdated": "February 17, 2026"
+      }
+    },
+    "tiny-aya-fire": {
+      "model": "cohere/tiny-aya-fire/tiny-aya-fire",
+      "matchingModel": "tiny-aya-fire",
+      "overrides": {
+        "lastUpdated": "February 17, 2026"
+      }
+    },
+    "tiny-aya-global": {
+      "model": "cohere/tiny-aya-global/tiny-aya-global",
+      "matchingModel": "tiny-aya-global",
+      "overrides": {
+        "lastUpdated": "February 17, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "tiny-aya-water": {
+      "model": "cohere/tiny-aya-water/tiny-aya-water",
+      "matchingModel": "tiny-aya-water",
+      "overrides": {
+        "lastUpdated": "February 17, 2026"
+      }
     }
   }
 }

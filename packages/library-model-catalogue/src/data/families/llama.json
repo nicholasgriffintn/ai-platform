@@ -550,27 +550,6 @@
         "supportsAttachments": true
       }
     },
-    "llama-4-maverick-17b-fp8": {
-      "defaults": {
-        "name": "Llama 4 Maverick 17B FP8",
-        "description": "Open multimodal Llama model for strong reasoning and fast responses",
-        "contextWindow": 1048576,
-        "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "April 5, 2025",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": true,
-        "supportsAttachments": true
-      }
-    },
     "llama-4-maverick-17b-instruct": {
       "defaults": {
         "name": "Llama 4 Maverick 17B Instruct",

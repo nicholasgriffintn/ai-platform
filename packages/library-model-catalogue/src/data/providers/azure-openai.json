@@ -1923,6 +1923,16 @@
         "supportsTemperature": false,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
       }
+    },
+    "gpt-6.1-sol": {
+      "model": "gpt-sol/gpt-6-1-sol",
+      "matchingModel": "gpt-6.1-sol",
+      "overrides": {
+        "lastUpdated": "September 29, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
     }
   }
 }

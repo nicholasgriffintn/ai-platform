@@ -430,6 +430,25 @@
         }
       }
     },
+    "claude-sonnet-5-5-eu": {
+      "defaults": {
+        "name": "Claude Sonnet 5.5 (EU)",
+        "description": "Fast Claude model for everyday coding, agents, and knowledge work",
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 28, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "claude-sonnet-5-5-global": {
       "defaults": {
         "name": "Claude Sonnet 5.5 (Global)",
