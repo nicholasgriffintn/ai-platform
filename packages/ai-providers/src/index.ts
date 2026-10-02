@@ -131,3 +131,6 @@ export * from "./capabilities/search/index.js";
 export * from "./capabilities/speech/index.js";
 export * from "./capabilities/transcription/index.js";
 export * from "./capabilities/video/index.js";
+
+export * from "./capabilities/managed-agents/bedrock.js";
+export * from "./utils/awsCredentials.js";

@@ -39,12 +39,16 @@ export function buildMetricsSettings(params: ChatCompletionParameters): Record<s
 export function parseDelimitedCredentials(
   credentialString: string,
   delimiter = "::@@::",
-  expectedParts: number,
+  expectedParts: number | readonly number[],
   errorMessage = "Invalid credentials format",
 ): string[] {
   const parts = credentialString.split(delimiter);
 
-  if (parts.length !== expectedParts) {
+  if (
+    typeof expectedParts === "number"
+      ? parts.length !== expectedParts
+      : !expectedParts.includes(parts.length)
+  ) {
     throw new AssistantError(errorMessage, ErrorType.CONFIGURATION_ERROR);
   }
 
