@@ -13,6 +13,7 @@ import {
 import {
   isProviderPlatformEnabled,
   selectRerankingModel,
+  isModelRuntimeAvailable,
   type RerankingModelSelection,
 } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
@@ -500,7 +501,9 @@ export const getAuxiliaryDecisionModel = async (
     user?.id,
   );
   const selected = resolvePolicyModel(
-    visibleModels,
+    Object.fromEntries(
+      Object.entries(visibleModels).filter(([, model]) => isModelRuntimeAvailable(model, env)),
+    ),
     getSystemModelLineup("decision").candidates,
     user,
   );

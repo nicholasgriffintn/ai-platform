@@ -28,7 +28,7 @@ export async function decide({
 
   if (!target) {
     throw new AssistantError(
-      "No decision model is available for this account. Add a TypeSafe API key in settings to use Jev.",
+      "No decision model is available for this account. Configure Workers AI or add a TypeSafe API key in settings.",
       ErrorType.CONFIGURATION_ERROR,
     );
   }

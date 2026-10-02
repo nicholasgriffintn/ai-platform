@@ -1,6 +1,6 @@
 # ADR 0045: Make decisions a provider category, starting with TypeSafe Jev
 
-Status: Implemented. `decision` is a category in `AiProviderMap`; TypeSafe Jev is its first provider; `ai.decide` and the `decision` system role expose it.
+Status: Implemented. `decision` is a category in `AiProviderMap`; TypeSafe Jev and Workers AI Clef implement it; `ai.decide` and the `decision` system role expose it.
 
 ## Problem
 
@@ -14,6 +14,7 @@ Decisions are a provider category of their own, vendor neutral, with the wire co
 
 - `packages/ai-providers` owns `DecisionProvider` and the `typesafe` implementation (aliases `typesafe-ai`, `jev`). It is a thin `fetchProviderJson` client rather than the vendor SDK, credentialled through `resolveProviderApiKey` with `TYPESAFE_API_KEY` or a user's stored key. `ProviderHost.models.getAuxiliaryDecisionModel` answers whether an account has a decision model and returns `null` rather than throwing. Each caller owns the unavailable/failure fallback; safety gates may deliberately fail closed.
 - The catalogue lists `jev-latest`, `jev-preview` and `jev-1.13.0` under a new `decision` output modality, priced on input tokens only. The modality keeps them out of chat surfaces and the tier lineups; the `decision` system role in `model-lineup.ts` selects them.
+- Workers AI exposes `@cf/cloudflare/clef` and `@cf/cloudflare/clef-flash` through the same decision contract (`workers-ai`, alias `workers`). Use the host's `AI` binding, validate Clef's 64-question and 100-character ID limits before inference, and retain input-token usage under the canonical catalogue model ID. Keep Jev first in the automatic lineup, then Flash and Clef, and skip Workers AI when its binding is absent. The integration supports text and structured state; embedded image and video input remain outside the shared contract. [Cloudflare's model documentation](https://developers.cloudflare.com/workers-ai/models/clef/) defines the provider request.
 - `packages/ai-functions` exposes `decide`, `tryDecide`, `canDecide` and the `choice`/`score`/`noul` builders. `classify`, `score` and `is` route through the decision model when one resolves and fall back to `generateObject` otherwise.
 - Repeated product gates use `defineDecisionPolicy` and `evaluateDecisionPolicy`. A policy has a stable key and version, typed questions, code-owned thresholds, an explicit `shadow`, `advisory` or `live` mode and a caller-owned fallback. Its compact receipt records the recommendation, confidence, metrics, provider and model without copying the judged state or provider error.
 - Billing meters `decide` on `input_tokens` through the capability meter table, so platform-key usage lands in the ledger like every other capability.

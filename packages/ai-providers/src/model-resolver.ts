@@ -7,29 +7,14 @@ import {
 } from "@ngriffin_uk/polychat-ai-models";
 import {
   getSystemModelLineup,
+  findModelByReference,
   modelHasOutputModality,
   type ModelConfig,
-  type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ProviderModelResolver, RerankingModelSelection } from "./host.js";
-import { isProviderPlatformEnabled } from "./platform-credentials.js";
-
-export function isRerankingModelRuntimeAvailable(
-  model: Pick<ModelConfigItem, "provider" | "isByokEnabled" | "isPlatformEnabled">,
-  env: Record<string, unknown>,
-): boolean {
-  if (["workers", "workers-ai"].includes(model.provider)) {
-    return Boolean(env.AI);
-  }
-
-  if (model.isPlatformEnabled !== undefined || model.isByokEnabled !== undefined) {
-    return model.isPlatformEnabled === true || model.isByokEnabled === true;
-  }
-
-  return isProviderPlatformEnabled(model.provider, env);
-}
+import { isModelRuntimeAvailable } from "./utils/model-runtime.js";
 
 export function selectRerankingModel(
   models: ModelConfig,
@@ -40,7 +25,7 @@ export function selectRerankingModel(
     ([, model]) =>
       (!selection.provider || model.provider === selection.provider) &&
       modelHasOutputModality(model, "reranking") &&
-      isRerankingModelRuntimeAvailable(model, env),
+      isModelRuntimeAvailable(model, env),
   );
 
   if (selection.model) {
@@ -129,13 +114,17 @@ export function createCatalogueModelResolver(): ProviderModelResolver {
       return { model: selected.config.matchingModel, provider: selected.config.provider };
     },
     getAuxiliaryDecisionModel: async (env) => {
-      const config = getModelConfigById("jev-latest");
+      const models = getModelsByOutputModality("decision");
 
-      if (!config || !isProviderPlatformEnabled(config.provider, env)) {
-        return null;
+      for (const candidate of getSystemModelLineup("decision").candidates) {
+        const config = findModelByReference(models, candidate)?.config;
+
+        if (config && isModelRuntimeAvailable(config, env)) {
+          return { model: config.matchingModel, provider: config.provider };
+        }
       }
 
-      return { model: config.matchingModel, provider: config.provider };
+      return null;
     },
     resolveRerankingModel: async (env, _user, selection) =>
       selectRerankingModel(getModelsByOutputModality("reranking"), env, selection),
