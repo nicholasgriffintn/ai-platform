@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { OpenAIAgentsClient } from "./openaiAgentsClient";
+import { OpenAIAgentsClient } from "./OpenAIAgentsClient";
 
 describe("OpenAIAgentsClient session cleanup", () => {
   afterEach(() => {
