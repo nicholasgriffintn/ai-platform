@@ -64,9 +64,9 @@
         "isFeatured": true,
         "releaseDate": "August 12, 2026",
         "lastUpdated": "August 22, 2026",
-        "costPer1kInputTokens": 0.000435,
-        "costPer1kOutputTokens": 0.00087,
-        "costPer1kReasoningTokens": 0.00087,
+        "costPer1kInputTokens": 0.00066,
+        "costPer1kOutputTokens": 0.00198,
+        "costPer1kReasoningTokens": 0.00198,
         "supportsToolChoice": false,
         "supportsAttachments": false,
         "reasoningConfig": {

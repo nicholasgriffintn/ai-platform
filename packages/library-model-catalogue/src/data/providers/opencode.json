@@ -1348,6 +1348,25 @@
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
       }
+    },
+    "ling-3.1-flash-free": {
+      "model": "ling/ling-3-1-flash-free",
+      "matchingModel": "ling-3.1-flash-free",
+      "overrides": {
+        "name": "Ling 3.1 Flash Free",
+        "lastUpdated": "September 29, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
     }
   }
 }

@@ -2429,7 +2429,7 @@
       "model": "deepseek-flash/deepseek-v4-1-flash",
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
-        "maxTokens": 393216,
+        "maxTokens": 1048576,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.000201,
         "costPer1kOutputTokens": 0.0006,

@@ -2919,6 +2919,7 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
+            "low",
             "high",
             "max"
           ],
@@ -7208,6 +7209,7 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
+            "low",
             "high",
             "max"
           ],
@@ -7762,18 +7764,38 @@
       "model": "ling/ling-3-1-flash",
       "matchingModel": "inclusionai/ling-3.1-flash",
       "overrides": {
+        "releaseDate": "September 29, 2026",
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "inclusionai/ling-3.1-flash-free": {
       "model": "ling/ling-3-1-flash-free",
       "matchingModel": "inclusionai/ling-3.1-flash-free",
       "overrides": {
+        "name": "Ling 3.1 Flash (Free)",
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "microsoft/mai-transcribe-1.5": {
@@ -7858,8 +7880,19 @@
       "model": "grok/grok-imagine-video-1-5-lite",
       "matchingModel": "spacexai/grok-imagine-video-1.5-lite",
       "overrides": {
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
         "lastUpdated": "October 1, 2026",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       }
     },
     "voyage/rerank-3": {

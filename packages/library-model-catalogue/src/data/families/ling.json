@@ -554,22 +554,11 @@
           "output": [
             "text"
           ]
-        },
-        "releaseDate": "September 29, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
         }
       }
     },
     "ling-3-1-flash-free": {
       "defaults": {
-        "name": "Ling 3.1 Flash (Free)",
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
         "contextWindow": 262144,
         "maxTokens": 32768,
@@ -581,16 +570,7 @@
             "text"
           ]
         },
-        "releaseDate": "September 29, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "releaseDate": "September 29, 2026"
       }
     }
   }

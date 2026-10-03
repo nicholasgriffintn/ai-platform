@@ -1279,20 +1279,11 @@
     "grok-imagine-video-1-5-lite": {
       "defaults": {
         "name": "Grok Imagine Video 1.5 Lite",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 0,
+        "description": "Cost-efficient video model for text-to-video and image-to-video generation",
         "maxTokens": 0,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "video"
-          ]
-        },
         "releaseDate": "October 1, 2026",
         "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsTemperature": false
       }
     },
     "grok-imagine-video-1-5-preview": {
