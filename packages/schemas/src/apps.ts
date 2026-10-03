@@ -5,6 +5,7 @@ import { documentMetadataSchema } from "./documents.js";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json" with { type: "json" };
 import { externalHttpUrlSchema } from "./navigation.js";
 import { outputSchema } from "./outputs.js";
+import { searchOptionsSchema, searchProviderSchema } from "./search.js";
 import { skillSummarySchema } from "./skills.js";
 import { teammateSummarySchema } from "./teammates.js";
 
@@ -185,16 +186,9 @@ export const speechGenerationSchema = z.object({
 });
 
 export const deepWebSearchSchema = z.object({
-  searchProvider: z.string().optional(),
-  query: z.string(),
-  options: z
-    .object({
-      search_depth: z.enum(["basic", "advanced"]).optional(),
-      include_answer: z.boolean().optional(),
-      include_raw_content: z.boolean().optional(),
-      include_images: z.boolean().optional(),
-    })
-    .optional(),
+  searchProvider: searchProviderSchema.optional(),
+  query: z.string().trim().min(1).max(4096),
+  options: searchOptionsSchema.optional(),
 });
 
 export const deepResearchSchema = z.object({

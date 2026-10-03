@@ -81,6 +81,8 @@ const SEARCH_PROVIDER_OPTIONS: FormSelectOption[] = [
   { value: "parallel", label: "Parallel" },
   { value: "exa", label: "Exa" },
   { value: "greenpt", label: "GreenPT" },
+  { value: "cloudflare", label: "Cloudflare Web Search" },
+  { value: "cloudflare-ai-search", label: "Cloudflare Knowledge Search" },
 ];
 
 export const USER_SETTINGS_FORM_ID = "user-settings-form";
@@ -830,7 +832,8 @@ export function UserSettingsForm({
               Search Provider
             </label>
             <p className="mt-1 text-sm text-muted-foreground">
-              Choose the default search provider for web search requests.
+              Choose the default search provider. Knowledge Search uses the configured knowledge
+              base.
             </p>
             <FormSelect
               id="search_provider"
@@ -852,7 +855,8 @@ export function UserSettingsForm({
               }}
             />
             <p className="mt-2 text-sm text-muted-foreground">
-              Configure provider keys in the providers section before selecting BYOK providers.
+              Cloudflare search requires Pro and platform setup. Configure personal provider keys in
+              the providers section for other BYOK providers.
             </p>
           </div>
         </div>
