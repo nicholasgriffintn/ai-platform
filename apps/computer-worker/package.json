@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cloudflare/sandbox": "0.12.9",
+    "@cloudflare/sandbox": "0.12.10",
     "@ngriffin_uk/polychat-library-sandbox": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^"

@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cloudflare/sandbox": "0.12.9",
+    "@cloudflare/sandbox": "0.12.10",
     "@ngriffin_uk/auth-jwt": "^2.0.0",
     "@ngriffin_uk/polychat-ai-agents": "workspace:^",
     "@ngriffin_uk/polychat-ai-prompts": "workspace:^",
