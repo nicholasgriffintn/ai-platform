@@ -83,7 +83,7 @@
     "@cloudflare/workers-types": "catalog:",
     "@types/node": "catalog:",
     "better-sqlite3": "13.0.3",
-    "drizzle-kit": "0.31.10",
+    "drizzle-kit": "0.31.11",
     "typescript": "catalog:",
     "vitest": "catalog:",
     "wrangler": "catalog:"
