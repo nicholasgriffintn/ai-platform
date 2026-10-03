@@ -2,8 +2,10 @@ import { openAIArtifactListSchema } from "@ngriffin_uk/polychat-schemas";
 import { sleep } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { readResponseTextWithinLimit } from "@ngriffin_uk/polychat-utility-server/http";
-
-import { throwExternalApiResponseError } from "~/lib/external-api-errors";
+import {
+  buildProviderResponseErrorDetails,
+  getProviderResponseErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/provider-errors";
 
 const OPENAI_API_BASE_URL = "https://api.openai.com/v1";
 const OPENAI_AGENTS_BETA = "agents=v1";
@@ -107,6 +109,21 @@ export class OpenAIAgentsClient {
     return JSON.parse(await readResponseTextWithinLimit(response, 16 * 1024 * 1024));
   }
 
+  private async throwResponseError(response: Response, operation: string): Promise<never> {
+    const details = buildProviderResponseErrorDetails({
+      provider: "openai",
+      endpoint: `Agents API ${operation}`,
+      status: response.status,
+      responseText: await readResponseTextWithinLimit(response, 64 * 1024),
+    });
+
+    throw new AssistantError(
+      getProviderResponseErrorMessage(details),
+      ErrorType.EXTERNAL_API_ERROR,
+      502,
+    );
+  }
+
   async downloadArtifacts(params: {
     sessionId: string;
     turnId: string;
@@ -117,7 +134,7 @@ export class OpenAIAgentsClient {
     );
 
     if (!response.ok) {
-      return throwExternalApiResponseError(response, "OpenAI artifact listing");
+      return this.throwResponseError(response, "artifact listing");
     }
 
     const artifacts = openAIArtifactListSchema
@@ -153,7 +170,7 @@ export class OpenAIAgentsClient {
     );
 
     if (!response.ok) {
-      return throwExternalApiResponseError(response, "OpenAI artifact download");
+      return this.throwResponseError(response, "artifact download");
     }
 
     return readResponseTextWithinLimit(response, maxBytes);
@@ -176,7 +193,7 @@ export class OpenAIAgentsClient {
       }
 
       if (response.status !== 409 || attempt === SESSION_DELETE_MAX_ATTEMPTS) {
-        return throwExternalApiResponseError(response, "OpenAI session deletion");
+        return this.throwResponseError(response, "session deletion");
       }
 
       await sleep(250 * 2 ** (attempt - 1));

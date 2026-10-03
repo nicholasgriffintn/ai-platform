@@ -32,6 +32,24 @@ describe("OpenAIAgentsClient session cleanup", () => {
 
     await expect(
       new OpenAIAgentsClient("user-openai-key").deleteSession("session-123"),
-    ).rejects.toThrow("OpenAI session deletion failed (500)");
+    ).rejects.toThrow("Agents API session deletion (500): provider failure");
+  });
+  it("redacts credentials echoed in a cleanup failure", async () => {
+    const token = "sk-live-abcdefghijklmnopqrstuvwxyz";
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () => new Response(JSON.stringify({ message: `Bearer ${token}` }), { status: 500 }),
+      ),
+    );
+
+    const deletion = new OpenAIAgentsClient(token).deleteSession("session-123");
+
+    await expect(deletion).rejects.toMatchObject({
+      type: "EXTERNAL_API_ERROR",
+      statusCode: 502,
+    });
+    await expect(deletion).rejects.not.toThrow(token);
   });
 });
