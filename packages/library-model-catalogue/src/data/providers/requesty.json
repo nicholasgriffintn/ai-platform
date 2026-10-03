@@ -4036,6 +4036,25 @@
         "costPer1kOutputTokens": 0.012,
         "supportsTemperature": false
       }
+    },
+    "grok-4.7": {
+      "model": "grok/grok-4-7",
+      "matchingModel": "grok-4.7",
+      "overrides": {
+        "lastUpdated": "September 21, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
     }
   }
 }

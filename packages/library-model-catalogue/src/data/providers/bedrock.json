@@ -2683,6 +2683,35 @@
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.0066
       }
+    },
+    "in.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "model": "claude-haiku/claude-haiku-4-5-india",
+      "matchingModel": "in.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "overrides": {
+        "lastUpdated": "October 15, 2025",
+        "costPer1kInputTokens": 0.0011,
+        "costPer1kOutputTokens": 0.0055
+      }
+    },
+    "in.anthropic.claude-opus-5": {
+      "model": "claude-opus/claude-opus-5-india",
+      "matchingModel": "in.anthropic.claude-opus-5",
+      "overrides": {
+        "lastUpdated": "July 24, 2026",
+        "costPer1kInputTokens": 0.0055,
+        "costPer1kOutputTokens": 0.0275,
+        "supportsTemperature": false
+      }
+    },
+    "in.anthropic.claude-sonnet-5": {
+      "model": "claude-sonnet/claude-sonnet-5-india",
+      "matchingModel": "in.anthropic.claude-sonnet-5",
+      "overrides": {
+        "lastUpdated": "June 30, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.011,
+        "supportsTemperature": false
+      }
     }
   }
 }

@@ -450,7 +450,7 @@
       "model": "kimi-thinking/kimi-k2-thinking",
       "matchingModel": "moonshotai/kimi-k2-thinking",
       "overrides": {
-        "maxTokens": 98304,
+        "maxTokens": 235929,
         "strengths": [
           "coding",
           "analysis",
@@ -1084,11 +1084,11 @@
       "matchingModel": "deepseek/deepseek-v3.1-terminus",
       "overrides": {
         "contextWindow": 163840,
-        "maxTokens": 65536,
+        "maxTokens": 147456,
         "contextComplexity": 4,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "September 22, 2025",
-        "costPer1kInputTokens": 0.0003,
+        "costPer1kInputTokens": 0.00027,
         "costPer1kOutputTokens": 0.001,
         "supportsAttachments": false,
         "reasoningConfig": {
@@ -2502,12 +2502,12 @@
       "matchingModel": "qwen/qwen3-30b-a3b-instruct-2507",
       "overrides": {
         "openWeights": true,
-        "maxTokens": 235929,
+        "maxTokens": 32000,
         "knowledgeCutoffDate": "June 30, 2025",
         "releaseDate": "July 29, 2025",
         "lastUpdated": "July 29, 2025",
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0003,
+        "costPer1kInputTokens": 0.00004815,
+        "costPer1kOutputTokens": 0.00019305,
         "supportsAttachments": false
       }
     },
@@ -2670,7 +2670,7 @@
       "matchingModel": "qwen/qwen3-next-80b-a3b-thinking",
       "overrides": {
         "description": "Efficient Qwen thinking model for local reasoning, math, and coding agents",
-        "maxTokens": 235929,
+        "maxTokens": 32768,
         "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "September 2025",
@@ -3148,7 +3148,7 @@
       "matchingModel": "~moonshotai/kimi-latest",
       "overrides": {
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.00139,
+        "costPer1kInputTokens": 0.000615,
         "costPer1kOutputTokens": 0.013
       }
     },
@@ -3845,8 +3845,8 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.000042,
-        "costPer1kOutputTokens": 0.000084,
+        "costPer1kInputTokens": 0.000028,
+        "costPer1kOutputTokens": 0.000056,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -4131,8 +4131,8 @@
         "speed": 2,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.0000765,
-        "costPer1kOutputTokens": 0.000255,
+        "costPer1kInputTokens": 0.0000675,
+        "costPer1kOutputTokens": 0.000225,
         "artificialAnalysis": {
           "intelligenceIndex": 20.1,
           "codingIndex": null,
@@ -4835,8 +4835,8 @@
         ],
         "speed": 3,
         "lastUpdated": "April 21, 2026",
-        "costPer1kInputTokens": 0.00043415,
-        "costPer1kOutputTokens": 0.001828
+        "costPer1kInputTokens": 0.00095,
+        "costPer1kOutputTokens": 0.004
       }
     },
     "morph/morph-v3-fast": {
@@ -6650,8 +6650,8 @@
         "contextWindow": 204800,
         "speed": 3,
         "lastUpdated": "April 7, 2026",
-        "costPer1kInputTokens": 0.0009646,
-        "costPer1kOutputTokens": 0.0030316,
+        "costPer1kInputTokens": 0.0014,
+        "costPer1kOutputTokens": 0.0044,
         "supportsAttachments": false
       }
     },
@@ -7600,7 +7600,7 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.0000077,
+        "costPer1kInputTokens": 0.0000171,
         "costPer1kOutputTokens": 0.00128,
         "supportsAttachments": false
       }
@@ -7730,10 +7730,10 @@
       "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
       "matchingModel": "nvidia/nemotron-3.5-lightning",
       "overrides": {
-        "maxTokens": 32768,
+        "maxTokens": 131072,
         "lastUpdated": "August 11, 2026",
-        "costPer1kInputTokens": 0.00006,
-        "costPer1kOutputTokens": 0.00016,
+        "costPer1kInputTokens": 0.0000595,
+        "costPer1kOutputTokens": 0.00017,
         "supportsAttachments": false
       }
     },
@@ -8158,7 +8158,7 @@
       "overrides": {
         "lastUpdated": "August 27, 2026",
         "costPer1kInputTokens": 0.00002625,
-        "costPer1kOutputTokens": 0.000625
+        "costPer1kOutputTokens": 0.000928749
       }
     },
     "anthropic/claude-fable-5.1": {
@@ -8201,10 +8201,10 @@
       "matchingModel": "inclusionai/ling-3.0-flash-fin",
       "overrides": {
         "contextWindow": 262144,
-        "maxTokens": 235929,
+        "maxTokens": 32768,
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.00006,
-        "costPer1kOutputTokens": 0.00018,
+        "costPer1kInputTokens": 0.000042,
+        "costPer1kOutputTokens": 0.0001232,
         "supportsAttachments": false
       }
     },
@@ -8391,8 +8391,8 @@
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "maxTokens": 943718,
         "lastUpdated": "September 10, 2026",
-        "costPer1kInputTokens": 0.00003,
-        "costPer1kOutputTokens": 0.00075
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "inclusionai/ling-3.0-flash-vl": {
@@ -8534,8 +8534,8 @@
         "maxTokens": 943718,
         "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.00003,
-        "costPer1kOutputTokens": 0.00075
+        "costPer1kInputTokens": 0.000015,
+        "costPer1kOutputTokens": 0.000676999
       }
     },
     "~deepseek/deepseek-pro-latest": {
@@ -8543,8 +8543,8 @@
       "matchingModel": "~deepseek/deepseek-pro-latest",
       "overrides": {
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.000132,
-        "costPer1kOutputTokens": 0.000396,
+        "costPer1kInputTokens": 0.00011,
+        "costPer1kOutputTokens": 0.0027,
         "supportsAttachments": false
       }
     },
@@ -8985,6 +8985,25 @@
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0032,
         "supportsResponseFormat": false
+      }
+    },
+    "inclusionai/ling-3.1-flash": {
+      "model": "ling/ling-3-1-flash",
+      "matchingModel": "inclusionai/ling-3.1-flash",
+      "overrides": {
+        "releaseDate": "October 2, 2026",
+        "lastUpdated": "October 2, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

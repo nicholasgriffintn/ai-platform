@@ -159,6 +159,20 @@
         }
       }
     },
+    "claude-haiku-4-5-india": {
+      "defaults": {
+        "name": "Claude Haiku 4.5 (India)",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "claude-haiku-4-5-jp": {
       "defaults": {
         "name": "Claude Haiku 4.5 (JP)",
