@@ -1,7 +1,4 @@
-import {
-  modelConfig as catalogueModels,
-  resolveCloudflareAutoRouterModel,
-} from "@ngriffin_uk/polychat-ai-models";
+import { parseGatewayModelReference } from "@ngriffin_uk/polychat-ai-models";
 import { getLogger, type NormalisedTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   hostedToolRateEntries,
@@ -155,21 +152,17 @@ export async function recordModelTurnUsage(
   const userId = creditActorUserId(actor);
 
   try {
-    const isCloudflareRouter =
-      params.provider === "cloudflare" && params.model === "cloudflare/auto";
+    const isCloudflareRouter = params.provider === "cloudflare";
     const routedModel = isCloudflareRouter
-      ? readStringField(params.rawUsage, "cloudflare_routed_model")
+      ? parseGatewayModelReference(
+          readStringField(params.rawUsage, "cloudflare_routed_model") ?? "",
+        )
       : undefined;
-    const modelConfig = isCloudflareRouter
-      ? resolveCloudflareAutoRouterModel(catalogueModels, routedModel ?? "")
-      : await runtime.resolveModelConfig?.(params.model, params.provider, userId);
-
-    if (isCloudflareRouter && !modelConfig) {
-      throw new Error("Cloudflare Auto Router usage requires a recognised routed model");
-    }
-
-    const resource = modelConfig ? modelRateResource(modelConfig) : params.model;
-    const vendor = modelConfig?.provider ?? params.provider;
+    const model = routedModel?.model ?? params.model;
+    const provider = routedModel?.provider ?? params.provider;
+    const modelConfig = await runtime.resolveModelConfig?.(model, provider, userId);
+    const resource = modelConfig ? modelRateResource(modelConfig) : model;
+    const vendor = modelConfig?.provider ?? provider;
     const rates: RateEntry[] = modelConfig
       ? [
           ...rateEntriesFromModelConfig(modelConfig, { resource }),

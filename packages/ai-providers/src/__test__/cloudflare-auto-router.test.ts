@@ -1,4 +1,3 @@
-import { CLOUDFLARE_AUTO_ROUTER_MODELS } from "@ngriffin_uk/polychat-ai-models";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CloudflareAutoRouterProvider } from "../capabilities/chat/providers/cloudflare.js";
@@ -10,7 +9,6 @@ const params: ChatCompletionParameters = {
   env: {
     ACCOUNT_ID: "account",
     AI_GATEWAY_TOKEN: "gateway-token",
-    CLOUDFLARE_AUTO_ROUTER_ENABLED: "true",
   },
   model: "cloudflare/auto",
   provider: "cloudflare",
@@ -29,7 +27,7 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("Cloudflare Auto Router", () => {
-  it("uses gateway auth, a priced candidate pool and account-scoped session affinity", async () => {
+  it("uses gateway auth and account-scoped session affinity without pinning the model pool", async () => {
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -50,11 +48,8 @@ describe("Cloudflare Auto Router", () => {
     );
     expect(headers.get("cf-aig-authorization")).toBe("Bearer gateway-token");
     expect(headers.has("Authorization")).toBe(false);
-    expect(headers.get("cf-aig-allowed-models")).toBe(
-      CLOUDFLARE_AUTO_ROUTER_MODELS.map(({ gatewayModel }) => gatewayModel).join(","),
-    );
+    expect(headers.has("cf-aig-allowed-models")).toBe(false);
     expect(headers.get("cf-aig-session-id")).toBe("42:conversation-1");
-    expect(headers.get("cf-aig-skip-cache")).toBe("true");
     expect(body.model).toBe("cloudflare/auto");
     expect(result.response).toBe("Hello back");
     expect(result.usage).toEqual({
@@ -111,28 +106,30 @@ describe("Cloudflare Auto Router", () => {
   });
 
   it.each([
-    { ...params, env: { ...params.env, CLOUDFLARE_AUTO_ROUTER_ENABLED: "false" } },
     { ...params, env: { ...params.env, AI_GATEWAY_TOKEN: "" } },
     { ...params, env: { ...params.env, ACCOUNT_ID: "" } },
     { ...params, model: "openai/gpt-5.6-luna" },
     { ...params, credentialAuthority: "byok" as const },
-  ])(
-    "rejects disabled, incomplete or unauthorised requests before network I/O",
-    async (request) => {
-      await expect(provider.getResponse(request)).rejects.toThrow();
-      expect(fetchMock).not.toHaveBeenCalled();
-    },
-  );
+  ])("rejects incomplete or unauthorised requests before network I/O", async (request) => {
+    await expect(provider.getResponse(request)).rejects.toThrow();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 
   it.each([undefined, "other/unpriced-model"])(
-    "rejects missing or unknown routed identity (%s)",
+    "accepts replies with missing or new routed identities (%s)",
     async (model) => {
       fetchMock.mockResolvedValue(
-        new Response('{"choices":[],"usage":{"prompt_tokens":5}}', {
+        new Response('{"choices":[{"message":{"content":"Hello"}}],"usage":{"prompt_tokens":5}}', {
           headers: model ? { "cf-aig-routed-model": model } : {},
         }),
       );
-      await expect(provider.getResponse(params)).rejects.toThrow("unrecognised routed model");
+      const result = await provider.getResponse(params);
+
+      expect(result.response).toBe("Hello");
+      expect(result.usage).toEqual({
+        prompt_tokens: 5,
+        ...(model ? { cloudflare_routed_model: model } : {}),
+      });
     },
   );
 
@@ -147,16 +144,5 @@ describe("Cloudflare Auto Router", () => {
       statusCode: 429,
       context: expect.objectContaining({ retryAfterMs: 2000 }),
     });
-  });
-
-  it("cancels an upstream stream when routing identity cannot be verified", async () => {
-    const cancel = vi.fn();
-
-    fetchMock.mockResolvedValue(new Response(new ReadableStream({ cancel })));
-
-    await expect(provider.getResponse({ ...params, stream: true })).rejects.toThrow(
-      "unrecognised routed model",
-    );
-    expect(cancel).toHaveBeenCalledOnce();
   });
 });

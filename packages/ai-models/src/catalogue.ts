@@ -11,7 +11,6 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { isChatSurfaceModel } from "./chat-surface.js";
-import { applyCloudflareAutoRouterLimits } from "./cloudflare-auto-router.js";
 import type { availableModalities } from "./modalities.js";
 import { modelSupportsModality } from "./modalities.js";
 
@@ -20,10 +19,10 @@ export interface ModelQueryOptions {
   chatSurfaceOnly?: boolean;
 }
 
-export const modelConfig: ModelConfig = applyCloudflareAutoRouterLimits({
+export const modelConfig: ModelConfig = {
   ...catalogueModelConfig,
   ...agentModelConfig,
-});
+};
 
 const cachedModelsByOptions = new Map<string, ModelConfig>();
 const cachedProviderModels = new Map<string, ModelConfig>();
@@ -47,7 +46,7 @@ export function getProviderModels(provider: string): ModelConfig {
 
   const models = Object.fromEntries(
     Object.entries(resolvedIds).map(([id, resolvedId]) => {
-      const model = modelConfig[resolvedId];
+      const model = catalogueModelConfig[resolvedId];
 
       if (!model) {
         throw new Error(`Unknown resolved catalogue model: ${resolvedId}`);

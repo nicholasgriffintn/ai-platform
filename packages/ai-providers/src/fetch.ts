@@ -24,10 +24,7 @@ import { appendUrlPath } from "@ngriffin_uk/polychat-utility-server/urls";
 
 import type { ProviderEnv } from "./env.js";
 import { resolveAiGatewayId } from "./gateway.js";
-import {
-  addCloudflareRoutingUsage,
-  getCloudflareRoutingUsage,
-} from "./utils/cloudflare-routing.js";
+import { addCloudflareRoutingUsage } from "./utils/cloudflare-routing.js";
 
 const logger = getLogger({ prefix: "lib/providers/fetch" });
 
@@ -221,13 +218,13 @@ export async function fetchAIResponse<
       );
     }
 
-    const routingUsage =
-      provider === "cloudflare" ? await getCloudflareRoutingUsage(response) : undefined;
+    const routedModel =
+      provider === "cloudflare" ? response.headers.get("cf-aig-routed-model") : null;
 
     if (isStreaming) {
       const stream =
-        routingUsage && response.body
-          ? addCloudflareRoutingUsage(response.body, routingUsage)
+        routedModel && response.body
+          ? addCloudflareRoutingUsage(response.body, routedModel)
           : response.body;
 
       return stream as unknown as T;
@@ -298,7 +295,7 @@ export async function fetchAIResponse<
 
     const result = {
       ...data,
-      ...(routingUsage ? { usage: { ...data.usage, ...routingUsage } } : {}),
+      ...(routedModel ? { usage: { ...data.usage, cloudflare_routed_model: routedModel } } : {}),
       eventId,
       log_id,
       cacheStatus,

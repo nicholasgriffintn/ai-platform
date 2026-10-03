@@ -18,7 +18,7 @@
     "cloudflare-auto": {
       "defaults": {
         "name": "Cloudflare Auto Router",
-        "description": "Choose a model automatically for each task, balancing response quality and cost. Prices shown are conservative reservation rates; usage is billed at the selected model's catalogue rates.",
+        "description": "Choose a model automatically for each task, balancing response quality and cost.",
         "releaseDate": "September 30, 2026"
       }
     },

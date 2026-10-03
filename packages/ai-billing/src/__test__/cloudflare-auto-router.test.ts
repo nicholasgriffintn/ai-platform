@@ -1,4 +1,4 @@
-import { modelConfig, resolveCloudflareAutoRouterModel } from "@ngriffin_uk/polychat-ai-models";
+import { findModelConfigByMatchingModel } from "@ngriffin_uk/polychat-ai-models";
 import { normaliseTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
 import { describe, expect, it, vi } from "vitest";
 
@@ -7,13 +7,24 @@ import { recordModelTurnUsage } from "../usage/model-usage.js";
 import { createFakeRuntime } from "./fake-usage-store.js";
 
 describe("Cloudflare Auto Router billing", () => {
-  it.each(["openai/gpt-5.6-luna", "anthropic/claude-sonnet-5", "xai/grok-4.5"])(
+  it.each([
+    ["openai/gpt-5.6-luna", "openai", "gpt-5.6-luna"],
+    ["anthropic/claude-sonnet-5", "anthropic", "claude-sonnet-5"],
+    ["xai/grok-4.5", "grok", "grok-4.5"],
+    ["openai/gpt-4.1", "openai", "gpt-4.1"],
+  ])(
     "charges the routed model's rates even when the user has an upstream BYOK key (%s)",
-    async (routedModel) => {
+    async (routedModel, provider, model) => {
       const { runtime, store } = createFakeRuntime();
 
       store.hasProviderApiKey.mockResolvedValue(true);
-      const candidate = resolveCloudflareAutoRouterModel(modelConfig, routedModel);
+      runtime.resolveModelConfig = vi.fn(
+        async (selectedModel, selectedProvider) =>
+          findModelConfigByMatchingModel(selectedModel, selectedProvider) ?? undefined,
+      );
+      const candidate = findModelConfigByMatchingModel(model, provider);
+
+      expect(candidate).not.toBeNull();
 
       const outcome = await recordModelTurnUsage(runtime, {
         actor: userCreditActor(7),
@@ -45,21 +56,32 @@ describe("Cloudflare Auto Router billing", () => {
     },
   );
 
-  it("refuses to price router usage using the conservative reservation rates", async () => {
-    const { runtime, store } = createFakeRuntime();
+  it.each([undefined, "other/new-model"])(
+    "records unpriced routing usage as estimated (%s)",
+    async (routedModel) => {
+      const { runtime, store } = createFakeRuntime();
 
-    runtime.resolveModelConfig = vi.fn(async () => modelConfig["cloudflare/auto"]);
+      runtime.resolveModelConfig = vi.fn(
+        async (model, provider) => findModelConfigByMatchingModel(model, provider) ?? undefined,
+      );
 
-    const outcome = await recordModelTurnUsage(runtime, {
-      actor: userCreditActor(7),
-      usage: normaliseTokenUsage({ prompt_tokens: 5, completion_tokens: 2 }),
-      model: "cloudflare/auto",
-      provider: "cloudflare",
-      completionId: "conversation-1",
-    });
+      const outcome = await recordModelTurnUsage(runtime, {
+        actor: userCreditActor(7),
+        usage: normaliseTokenUsage({ prompt_tokens: 5, completion_tokens: 2 }),
+        rawUsage: { prompt_tokens: 5, completion_tokens: 2, cloudflare_routed_model: routedModel },
+        model: "cloudflare/auto",
+        provider: "cloudflare",
+        completionId: "conversation-1",
+      });
 
-    expect(outcome).toBe("failed");
-    expect(store.insertEventAndApplyBalance).not.toHaveBeenCalled();
-    expect(runtime.resolveModelConfig).not.toHaveBeenCalled();
-  });
+      expect(outcome).toBe("written");
+      expect(store.insertEventAndApplyBalance.mock.calls[0]?.[0]).toMatchObject({
+        vendor: routedModel ? "other" : "cloudflare",
+        resource: routedModel ? "new-model" : "cloudflare/auto",
+        estimated: true,
+        cost_micros: 0,
+        byok: false,
+      });
+    },
+  );
 });
