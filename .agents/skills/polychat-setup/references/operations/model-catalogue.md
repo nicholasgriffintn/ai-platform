@@ -41,6 +41,12 @@ Infer a shared model from its family and normalised upstream display name. Retai
 
 Repeat a command with identical input and expect `changedFiles: 0`. Validate the catalogue package typecheck and its `scripts/sync-models-dev` tests after edits. Generated catalogue files remain excluded from lint and formatting; validate their schema, references and generated imports instead.
 
+## Use Cloudflare Auto Router
+
+Select `cloudflare/auto` using the existing `ACCOUNT_ID`, `AI_GATEWAY_TOKEN` and `llm-assistant` gateway. Cloudflare manages the candidate pool through its gateway billing and credentials.
+
+Bill the model identified by `cf-aig-routed-model` using its catalogue rates; unknown rates follow the existing estimated-usage path. Its price and token limits depend on the selected model. See the [Auto Router API contract](https://developers.cloudflare.com/ai-gateway/features/auto-router/).
+
 ## Keep browser search lightweight
 
 Search the browser catalogue without importing the WebLLM inference engine. `packages/library-react/src/lib/web-llm-catalogue.json` contains model IDs and URLs from the installed WebLLM package; refresh it after upgrading that dependency and verify it before shipping:

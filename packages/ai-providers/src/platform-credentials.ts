@@ -29,6 +29,7 @@ export const PROVIDER_PLATFORM_ENV_KEYS: Record<string, PlatformEnvKeyGroups> = 
   certesia: single("CARTESIA_API_KEY"),
   cerebras: single("CEREBRAS_API_KEY"),
   chutes: single("CHUTES_API_KEY"),
+  cloudflare: [["ACCOUNT_ID", "AI_GATEWAY_TOKEN"]],
   cohere: single("COHERE_API_KEY"),
   cortecs: single("CORTECS_API_KEY"),
   deepinfra: single("DEEPINFRA_API_KEY"),

@@ -145,6 +145,29 @@ describe("createStreamingTurnTransport", () => {
 });
 
 describe("consumeProviderStream", () => {
+  it("retains the router's billing identity when later usage frames update token counts", async () => {
+    const { sink } = createSink();
+
+    const turn = await consumeProviderStream(
+      providerStream([
+        'data: {"choices":[],"usage":{"prompt_tokens":0,"completion_tokens":0,"cloudflare_routed_model":"openai/gpt-5.6-luna"}}\n\n',
+        textDelta("Hello"),
+        'data: {"choices":[],"usage":{"prompt_tokens":5,"completion_tokens":2}}\n\n',
+        "data: [DONE]\n\n",
+      ]),
+      sink,
+      { ...context, provider: "cloudflare", model: "cloudflare/auto" },
+    );
+
+    expect(turn.content).toBe("Hello");
+    expect(turn.usage).toMatchObject({ input_tokens: 5, output_tokens: 2 });
+    expect(turn.rawUsage).toMatchObject({
+      prompt_tokens: 5,
+      completion_tokens: 2,
+      cloudflare_routed_model: "openai/gpt-5.6-luna",
+    });
+  });
+
   it("forwards each delta and returns the assembled text", async () => {
     const { sink, events } = createSink();
 

@@ -1,4 +1,5 @@
 export const MODEL_ICONS: Record<string, string> = {
+  "cloudflare/auto": "cloudflare",
   claude: "claude",
   clef: "cloudflare",
   command: "command-a",

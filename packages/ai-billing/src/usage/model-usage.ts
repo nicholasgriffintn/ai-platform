@@ -1,3 +1,4 @@
+import { parseGatewayModelReference } from "@ngriffin_uk/polychat-ai-models";
 import { getLogger, type NormalisedTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   hostedToolRateEntries,
@@ -7,6 +8,7 @@ import {
   type RateEntry,
   type RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
+import { readStringField } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 import { offPlatformUsageMarker } from "../billable-units.js";
 import { extractProviderBillableUsage } from "../provider-billable-units.js";
@@ -150,9 +152,17 @@ export async function recordModelTurnUsage(
   const userId = creditActorUserId(actor);
 
   try {
-    const modelConfig = await runtime.resolveModelConfig?.(params.model, params.provider, userId);
-    const resource = modelConfig ? modelRateResource(modelConfig) : params.model;
-    const vendor = modelConfig?.provider ?? params.provider;
+    const isCloudflareRouter = params.provider === "cloudflare";
+    const routedModel = isCloudflareRouter
+      ? parseGatewayModelReference(
+          readStringField(params.rawUsage, "cloudflare_routed_model") ?? "",
+        )
+      : undefined;
+    const model = routedModel?.model ?? params.model;
+    const provider = routedModel?.provider ?? params.provider;
+    const modelConfig = await runtime.resolveModelConfig?.(model, provider, userId);
+    const resource = modelConfig ? modelRateResource(modelConfig) : model;
+    const vendor = modelConfig?.provider ?? provider;
     const rates: RateEntry[] = modelConfig
       ? [
           ...rateEntriesFromModelConfig(modelConfig, { resource }),
@@ -180,7 +190,9 @@ export async function recordModelTurnUsage(
     }
 
     const [byok, attribution] = await Promise.all([
-      userId === undefined ? Promise.resolve(false) : isByokTurn(runtime.store, userId, vendor),
+      userId === undefined || isCloudflareRouter
+        ? Promise.resolve(false)
+        : isByokTurn(runtime.store, userId, vendor),
       resolveUsageAttribution(runtime.store, params.conversationId),
     ]);
 
