@@ -14,9 +14,9 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { OpenAIAgentsClient } from "~/infrastructure/providers/agents/OpenAIAgentsClient";
 
-import type { BrowserSessionProvider } from "./types";
+import type { ComputerSessionProvider } from "./types";
 
-export class OpenAIAgentsBrowserProvider implements BrowserSessionProvider {
+export class OpenAIAgentsBrowserProvider implements ComputerSessionProvider {
   readonly name = "openai";
 
   constructor(private readonly client: OpenAIAgentsClient) {}

@@ -2,23 +2,34 @@ import { readFile } from "node:fs/promises";
 
 import type { D1Database } from "@cloudflare/workers-types";
 import { getModelConfigById } from "@ngriffin_uk/polychat-ai-models";
+import { PermissionChecker, toToolDeclaration } from "@ngriffin_uk/polychat-library-tools";
+import { computerUseInputSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Miniflare } from "miniflare";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import z from "zod/v4";
 
-import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
+import {
+  createServiceContext,
+  withExecutionRunContext,
+  type ServiceContext,
+} from "~/infrastructure/context/serviceContext";
 import {
   hasUserProviderApiKey,
   resolveProviderApiKey,
 } from "~/infrastructure/providers/credentials";
+import { use_computer } from "~/modules/functions/application/use_computer";
+import * as teammateContexts from "~/modules/teammates/application/contexts";
 import {
   requireProjectAccess,
+  requireProjectCapabilityAccess,
   requireWorkspaceAccess,
 } from "~/modules/workspaces/application/access";
-import { browserTestUser, browserTestApproval } from "~/test-utils/browser-sessions";
+import { browserTestUser, browserTestApproval, computerTestRun } from "~/test-utils/computer-use";
 import { databaseTestEnvironment } from "~/test-utils/environment";
+import type { IEnv } from "~/types";
 
-import { getBrowserAvailability, resolveBrowserApiKey } from "./access";
+import { getBrowserAvailability, getComputerUseAvailability, resolveBrowserApiKey } from "./access";
 import {
   destroyBrowserSession,
   inspectBrowserSession,
@@ -122,6 +133,303 @@ beforeEach(async () => {
 });
 
 describe("browser session ownership and lifecycle", () => {
+  it("runs an OpenAI task through the common computer tool for a non-premium user", async () => {
+    const user = { ...browserTestUser, plan_id: "free" };
+    const serviceContext = createServiceContext({ env: context.env, user });
+    const fetch = vi.fn(async () => Response.json({ id: "native", status: "idle" }));
+
+    vi.spyOn(serviceContext.repositories.conversations, "getConversation").mockResolvedValue({
+      id: "conversation",
+      user_id: 1,
+      project_id: null,
+    });
+    vi.spyOn(
+      serviceContext.repositories.teammateContexts,
+      "getByHomeConversationId",
+    ).mockResolvedValue(null);
+    vi.stubGlobal("fetch", fetch);
+    expect(
+      new PermissionChecker().checkToolAccess({
+        toolName: use_computer.name,
+        toolType: use_computer.type,
+        toolPermissions: use_computer.permissions,
+        user,
+        mode: "build",
+      }).allowed,
+    ).toBe(true);
+    const result = await use_computer.execute(
+      { provider: "openai", operation: "start", task: "Read the public issues" },
+      {
+        completionId: "conversation",
+        toolCallId: "common-call",
+        env: context.env,
+        request: {
+          env: context.env,
+          user,
+          context: serviceContext,
+          request: { completion_id: "conversation", input: "Read the page", date: "2026-10-03" },
+        },
+      },
+    );
+
+    expect(result).toMatchObject({
+      name: "use_computer",
+      status: "pending",
+      data: { renderer: "browser_session" },
+    });
+    expect(fetch).toHaveBeenCalledOnce();
+  });
+
+  it("blocks built-in control for non-premium users through the common tool", async () => {
+    const user = { ...browserTestUser, plan_id: "free" };
+    const serviceContext = withExecutionRunContext(
+      createServiceContext({ env: context.env, user }),
+      "run",
+      1,
+    );
+    const fetch = vi.fn();
+
+    vi.stubGlobal("fetch", fetch);
+    await expect(
+      use_computer.execute(
+        { operation: "observe" },
+        {
+          completionId: "conversation",
+          env: context.env,
+          request: {
+            env: context.env,
+            user,
+            context: serviceContext,
+            request: {
+              teammate_context_id: "teammate-context",
+              completion_id: "conversation",
+              input: "Read the page",
+              date: "2026-10-03",
+            },
+          },
+        },
+      ),
+    ).rejects.toMatchObject({ statusCode: 403 });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("rejects unsupported provider operations before execution", () => {
+    expect(
+      computerUseInputSchema.safeParse({
+        provider: "openai",
+        operation: "input",
+        input: { type: "read" },
+      }).success,
+    ).toBe(false);
+    expect(
+      computerUseInputSchema.safeParse({
+        provider: "hosted",
+        operation: "destroy",
+        sessionId: "native",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("publishes a usable declaration for both provider modes", () => {
+    const declaration = toToolDeclaration(use_computer);
+    const schema = z.fromJSONSchema(declaration.function.parameters);
+
+    expect(
+      schema.safeParse({ provider: "openai", operation: "start", task: "Read the page" }).success,
+    ).toBe(true);
+    expect(schema.safeParse({ provider: "hosted", operation: "read" }).success).toBe(true);
+  });
+
+  it("makes the built-in provider available without an OpenAI connection", async () => {
+    context.env.COMPUTER_WORKER = Object.assign(async () => ({}), {
+      fetch: vi.fn<NonNullable<IEnv["COMPUTER_WORKER"]>["fetch"]>(),
+      connect: () => {
+        throw new Error("Unexpected connection");
+      },
+      queue: async () => {
+        throw new Error("Unexpected queue");
+      },
+      scheduled: async () => {
+        throw new Error("Unexpected schedule");
+      },
+    });
+    vi.mocked(hasUserProviderApiKey).mockResolvedValue(false);
+
+    await expect(getComputerUseAvailability(context)).resolves.toMatchObject({
+      available: true,
+      providers: [
+        { provider: "hosted", available: true, mode: "interactive" },
+        { provider: "openai", available: false, mode: "managed" },
+      ],
+    });
+  });
+
+  it("operates the built-in worker with the active fenced lease through the common tool", async () => {
+    const fetch = vi
+      .fn<NonNullable<IEnv["COMPUTER_WORKER"]>["fetch"]>()
+      .mockResolvedValue(Response.json({ text: "Visible page", width: 1440, height: 900 }));
+
+    context.env.COMPUTER_WORKER = Object.assign(async () => ({}), {
+      fetch,
+      connect: () => {
+        throw new Error("Unexpected connection");
+      },
+      queue: async () => {
+        throw new Error("Unexpected queue");
+      },
+      scheduled: async () => {
+        throw new Error("Unexpected schedule");
+      },
+    });
+    vi.spyOn(teammateContexts, "requireTeammateContext").mockResolvedValue({
+      id: "teammate-context",
+      teammateId: "teammate",
+      actorUserId: 1,
+      scope: { type: "personal", id: "1" },
+      homeConversationId: "conversation",
+      memoryDocumentId: "memory",
+      status: "active",
+      createdAt: "2026-10-03",
+      updatedAt: null,
+    });
+    vi.spyOn(context.repositories.conversationRuns, "getById").mockResolvedValue(computerTestRun);
+    const computer = {
+      id: "computer",
+      contextId: "teammate-context",
+      provider: "hosted",
+      providerHandle: "worker",
+      leaseFence: 1,
+      checkpointReference: null,
+      status: "ready" as const,
+      lease: {
+        kind: "agent" as const,
+        ownerId: "run:run",
+        fence: 1,
+        expiresAt: new Date(Date.now() + 60_000).toISOString(),
+      },
+      lastError: null,
+      createdAt: "2026-10-03",
+      updatedAt: null,
+    };
+
+    vi.spyOn(context.repositories.teammateComputers, "ensure").mockResolvedValue(computer);
+    vi.spyOn(context.repositories.teammateComputers, "acquireLease").mockResolvedValue(computer);
+    const serviceContext = withExecutionRunContext(context, "run", 1);
+    const result = await use_computer.execute(
+      { operation: "read" },
+      {
+        completionId: "conversation",
+        toolCallId: "computer-call",
+        env: context.env,
+        request: {
+          env: context.env,
+          user: browserTestUser,
+          context: serviceContext,
+          request: {
+            teammate_context_id: "teammate-context",
+            completion_id: "conversation",
+            input: "Read the page",
+            date: "2026-10-03",
+          },
+        },
+      },
+    );
+
+    expect(result).toMatchObject({
+      name: "use_computer",
+      status: "success",
+      data: { renderer: "computer_observation", text: "Visible page" },
+    });
+    expect(JSON.parse(String(fetch.mock.calls[0][1]?.body))).toMatchObject({
+      resourceId: "computer",
+      handle: "worker",
+      fence: 1,
+      input: { type: "read" },
+    });
+  });
+
+  it("rejects a revoked project grant before using the built-in worker", async () => {
+    vi.spyOn(teammateContexts, "requireTeammateContext").mockResolvedValue({
+      id: "teammate-context",
+      teammateId: "teammate",
+      actorUserId: 1,
+      scope: { type: "project", id: "project" },
+      homeConversationId: "conversation",
+      memoryDocumentId: "memory",
+      status: "active",
+      createdAt: "2026-10-03",
+      updatedAt: null,
+    });
+    vi.mocked(requireProjectCapabilityAccess).mockRejectedValueOnce(
+      new AssistantError("Grant revoked", ErrorType.FORBIDDEN, 403),
+    );
+    const serviceContext = withExecutionRunContext(context, "run", 1);
+
+    await expect(
+      use_computer.execute(
+        { provider: "hosted", operation: "start" },
+        {
+          completionId: "conversation",
+          env: context.env,
+          request: {
+            env: context.env,
+            user: browserTestUser,
+            context: serviceContext,
+            request: {
+              teammate_context_id: "teammate-context",
+              completion_id: "conversation",
+              input: "Read the page",
+              date: "2026-10-03",
+            },
+          },
+        },
+      ),
+    ).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("rejects supervised takeover from an obsolete run attempt before releasing its lease", async () => {
+    vi.spyOn(teammateContexts, "requireTeammateContext").mockResolvedValue({
+      id: "teammate-context",
+      teammateId: "teammate",
+      actorUserId: 1,
+      scope: { type: "personal", id: "1" },
+      homeConversationId: "conversation",
+      memoryDocumentId: "memory",
+      status: "active",
+      createdAt: "2026-10-03",
+      updatedAt: null,
+    });
+    vi.spyOn(context.repositories.conversationRuns, "getById").mockResolvedValue({
+      ...computerTestRun,
+      attempt: 2,
+    });
+    const ensure = vi.spyOn(context.repositories.teammateComputers, "ensure");
+    const serviceContext = withExecutionRunContext(context, "run", 1);
+
+    await expect(
+      use_computer.execute(
+        { provider: "hosted", operation: "request_takeover", reason: "Sign in" },
+        {
+          completionId: "conversation",
+          toolCallId: "computer-call",
+          env: context.env,
+          request: {
+            env: context.env,
+            user: browserTestUser,
+            context: serviceContext,
+            request: {
+              teammate_context_id: "teammate-context",
+              completion_id: "conversation",
+              input: "Read the page",
+              date: "2026-10-03",
+            },
+          },
+        },
+      ),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(ensure).not.toHaveBeenCalled();
+  });
+
   it("creates one remote task when the same tool call starts concurrently", async () => {
     const fetch = vi
       .fn<typeof globalThis.fetch>()

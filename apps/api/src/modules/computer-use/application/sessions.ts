@@ -1,6 +1,6 @@
 import type {
   BrowserSession,
-  BrowserToolInput,
+  ComputerTaskInput,
   SubmitBrowserApproval,
 } from "@ngriffin_uk/polychat-schemas";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
@@ -8,7 +8,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { generatePrefixedId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getBrowserSessionProvider } from "~/infrastructure/providers/capabilities/browser";
+import { getComputerUseProvider } from "~/infrastructure/providers/capabilities/computer";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
 import { getModelConfig } from "~/modules/models/application/resolve";
 import { requireProjectCapabilityAccess } from "~/modules/workspaces/application/access";
@@ -23,15 +23,17 @@ import {
 import { validateBrowserApprovalResponse } from "./approvals";
 
 async function browserProvider(context: ServiceContext, record: BrowserSessionRecord) {
-  return getBrowserSessionProvider(
-    record.provider,
-    await resolveBrowserApiKey(context, record.credential_source, record.workspace_id),
-  );
+  return getComputerUseProvider({
+    provider: record.provider,
+    apiKey: await resolveBrowserApiKey(context, record.credential_source, record.workspace_id),
+  }).sessions;
 }
 
 export async function startBrowserSession(
   context: ServiceContext,
-  input: Extract<BrowserToolInput, { operation: "start" }>,
+  input: Omit<Extract<ComputerTaskInput, { operation: "start" }>, "provider"> & {
+    provider?: "openai";
+  },
   conversationId: string,
   toolCallId: string,
 ): Promise<string> {
@@ -41,7 +43,7 @@ export async function startBrowserSession(
     typeof conversation.project_id === "string" ? conversation.project_id : undefined;
 
   if (projectId) {
-    await requireProjectCapabilityAccess(context, projectId, "tool", "use_browser");
+    await requireProjectCapabilityAccess(context, projectId, "tool", "use_computer");
   }
 
   const availability = await getBrowserAvailability(context, projectId);

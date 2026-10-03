@@ -9,7 +9,7 @@ import { fetchApi } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
 
 export async function fetchBrowserSession(id: string): Promise<BrowserSession> {
-  const response = await fetchApi(`/browser-sessions/${encodeURIComponent(id)}`, {
+  const response = await fetchApi(`/computer-use/sessions/${encodeURIComponent(id)}`, {
     headers: await apiService.getHeaders(),
     cache: "no-store",
   });
@@ -29,7 +29,7 @@ export async function submitBrowserApproval(
   id: string,
   input: SubmitBrowserApproval,
 ): Promise<void> {
-  const response = await fetchApi(`/browser-sessions/${encodeURIComponent(id)}/approvals`, {
+  const response = await fetchApi(`/computer-use/sessions/${encodeURIComponent(id)}/approvals`, {
     method: "POST",
     headers: { ...(await apiService.getHeaders()), "Content-Type": "application/json" },
     body: JSON.stringify(input),
@@ -43,7 +43,7 @@ export async function submitBrowserApproval(
 }
 
 export async function stopBrowserSession(id: string): Promise<void> {
-  const response = await fetchApi(`/browser-sessions/${encodeURIComponent(id)}/stop`, {
+  const response = await fetchApi(`/computer-use/sessions/${encodeURIComponent(id)}/stop`, {
     method: "POST",
     headers: await apiService.getHeaders(),
   });
@@ -54,7 +54,7 @@ export async function stopBrowserSession(id: string): Promise<void> {
 }
 
 export async function destroyBrowserSession(id: string): Promise<void> {
-  const response = await fetchApi(`/browser-sessions/${encodeURIComponent(id)}`, {
+  const response = await fetchApi(`/computer-use/sessions/${encodeURIComponent(id)}`, {
     method: "DELETE",
     headers: await apiService.getHeaders(),
   });

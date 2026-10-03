@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { OpenAIAgentsClient } from "~/infrastructure/providers/agents/OpenAIAgentsClient";
-import { browserTestApproval } from "~/test-utils/browser-sessions";
+import { browserTestApproval } from "~/test-utils/computer-use";
 
 import { OpenAIAgentsBrowserProvider } from "./OpenAIAgentsBrowserProvider";
 
@@ -9,7 +9,7 @@ const provider = new OpenAIAgentsBrowserProvider(new OpenAIAgentsClient("test-op
 
 afterEach(() => vi.unstubAllGlobals());
 
-describe("OpenAI browser session protocol", () => {
+describe("OpenAI managed computer session protocol", () => {
   it("creates a recoverable browser task with restricted networking", async () => {
     const fetch = vi
       .fn<typeof globalThis.fetch>()

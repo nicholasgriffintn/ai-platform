@@ -10,9 +10,9 @@ import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChall
 import { OAuthStateRepository } from "~/modules/auth/infrastructure/OAuthStateRepository";
 import { SessionRepository } from "~/modules/auth/infrastructure/SessionRepository";
 import { WebAuthnRepository } from "~/modules/auth/infrastructure/WebAuthnRepository";
-import { BrowserSessionRepository } from "~/modules/browser-sessions/infrastructure/BrowserSessionRepository";
 import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
+import { BrowserSessionRepository } from "~/modules/computer-use/infrastructure/BrowserSessionRepository";
 import { ConversationHandleRepository } from "~/modules/conversations/infrastructure/ConversationHandleRepository";
 import { ConversationOrganisationRepository } from "~/modules/conversations/infrastructure/ConversationOrganisationRepository";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";

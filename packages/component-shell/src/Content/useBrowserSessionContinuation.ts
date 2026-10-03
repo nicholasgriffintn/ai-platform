@@ -26,7 +26,7 @@ export function useBrowserSessionContinuation({
     setIsReturning(true);
     setReturnError(false);
     try {
-      await onToolInteraction("use_browser", "submitPrompt", {
+      await onToolInteraction("use_computer", "submitPrompt", {
         input: closed
           ? "The browser was closed. Continue without it."
           : `The browser task is ${status}. Inspect browser session ${request.sessionId} to retrieve its result and continue.`,

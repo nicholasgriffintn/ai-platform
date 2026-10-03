@@ -59,7 +59,7 @@ Use this as the ownership and responsibility map. Detailed rationale is in [deci
 - External credentials remain personal unless explicitly shared by design.
 - Teammate connector access is an exact account-and-operation grant, revalidated at every operation.
 - Hosted computer control uses expiring leases and monotonically increasing fences.
-- OpenAI-hosted browser tasks use a separate browser provider capability and the shared Agents API client. Bind sessions to their creator, conversation and credential source, and submit sign-in values through dedicated approval events outside model input.
+- Browser and computer use share the `use_computer` tool and computer capability. The built-in worker provides interactive control with fenced leases; OpenAI provides managed browser tasks through the shared Agents API client. Bind managed sessions to their creator, conversation and credential source, and submit sign-in values through dedicated approval events outside model input.
 - Vector retrieval uses scoped authority and immutable provenance.
 - Credits are reserved, used, and settled as separate accounting states.
 - Feature flags and experiments are defined in code (`services/experiments`), bucketed on the analytics distinct id, optionally overridden by the Flagship `FLAGS` binding, and exposed to telemetry as `feature_flag.evaluation` events plus `experiment.<key>` properties on outcomes and generations.

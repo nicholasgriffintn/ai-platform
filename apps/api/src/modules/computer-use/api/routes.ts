@@ -1,5 +1,5 @@
 import {
-  browserAvailabilitySchema,
+  computerUseAvailabilitySchema,
   browserScopeQuerySchema,
   browserSessionParamsSchema,
   browserSessionSchema,
@@ -8,13 +8,13 @@ import {
 import { Hono } from "hono";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
-import { getBrowserAvailability } from "~/modules/browser-sessions/application/access";
+import { getComputerUseAvailability } from "~/modules/computer-use/application/access";
 import {
   destroyBrowserSession,
   inspectBrowserSession,
   respondToBrowserApproval,
   stopBrowserSession,
-} from "~/modules/browser-sessions/application/sessions";
+} from "~/modules/computer-use/application/sessions";
 
 const app = new Hono();
 
@@ -26,14 +26,16 @@ app.use("*", async (context, next) => {
 addRoute(app, "get", "/availability", {
   auth: true,
   tags: ["tools"],
-  summary: "Check hosted browser availability",
+  summary: "Check browser and computer provider availability",
   querySchema: browserScopeQuerySchema,
-  responses: { 200: { description: "Browser availability", schema: browserAvailabilitySchema } },
+  responses: {
+    200: { description: "Computer use availability", schema: computerUseAvailabilitySchema },
+  },
   handler: ({ serviceContext, query }) =>
-    getBrowserAvailability(serviceContext, query.projectId, query.workspaceId),
+    getComputerUseAvailability(serviceContext, query.projectId, query.workspaceId),
 });
 
-addRoute(app, "get", "/:id", {
+addRoute(app, "get", "/sessions/:id", {
   auth: true,
   tags: ["tools"],
   summary: "Inspect an owned browser session",
@@ -44,7 +46,7 @@ addRoute(app, "get", "/:id", {
   handler: ({ serviceContext, params }) => inspectBrowserSession(serviceContext, params.id),
 });
 
-addRoute(app, "post", "/:id/approvals", {
+addRoute(app, "post", "/sessions/:id/approvals", {
   auth: true,
   tags: ["tools"],
   summary: "Answer a pending browser approval or sign-in request",
@@ -54,7 +56,7 @@ addRoute(app, "post", "/:id/approvals", {
     respondToBrowserApproval(serviceContext, params.id, body),
 });
 
-addRoute(app, "post", "/:id/stop", {
+addRoute(app, "post", "/sessions/:id/stop", {
   auth: true,
   tags: ["tools"],
   summary: "Cancel the browser's active task",
@@ -62,7 +64,7 @@ addRoute(app, "post", "/:id/stop", {
   handler: ({ serviceContext, params }) => stopBrowserSession(serviceContext, params.id),
 });
 
-addRoute(app, "delete", "/:id", {
+addRoute(app, "delete", "/sessions/:id", {
   auth: true,
   tags: ["tools"],
   summary: "Close an owned browser session",

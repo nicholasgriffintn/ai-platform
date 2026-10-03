@@ -38,7 +38,7 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "use_recipe_connector",
   ],
   Automation: [
-    "use_browser",
+    "use_computer",
     "call_api",
     "decide",
     "discover_capabilities",

@@ -12,8 +12,7 @@ export const formatFunctionName = (name: string): string => titleCaseSlug(name);
 const DEFAULT_ICON = "app";
 
 const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
-  use_browser: {
-    renderer: "browser_session",
+  use_computer: {
     icon: "monitor",
     responseType: ToolResponseType.CUSTOM,
   },

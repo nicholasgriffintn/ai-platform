@@ -1,4 +1,9 @@
-import type { BrowserAvailability, BrowserCredentialSource } from "@ngriffin_uk/polychat-schemas";
+import {
+  COMPUTER_USE_OPERATIONS,
+  type ComputerUseAvailability,
+  type BrowserAvailability,
+  type BrowserCredentialSource,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -77,10 +82,40 @@ export async function requireBrowserSessionAccess(
   }
 
   if (options.requireToolAccess && projectId) {
-    await requireProjectCapabilityAccess(context, projectId, "tool", "use_browser");
+    await requireProjectCapabilityAccess(context, projectId, "tool", "use_computer");
   }
 
   return record;
+}
+
+export async function getComputerUseAvailability(
+  context: ServiceContext,
+  projectId?: string,
+  workspaceId?: string,
+): Promise<ComputerUseAvailability> {
+  const browser = await getBrowserAvailability(context, projectId, workspaceId);
+  const hostedAvailable =
+    context.requireUser().plan_id === "pro" && Boolean(context.env.COMPUTER_WORKER);
+
+  return {
+    available: browser.available || hostedAvailable,
+    providers: [
+      {
+        provider: "hosted",
+        mode: "interactive",
+        available: hostedAvailable,
+        credentialSource: hostedAvailable ? "platform" : null,
+        operations: [...COMPUTER_USE_OPERATIONS.hosted],
+      },
+      {
+        provider: "openai",
+        mode: "managed",
+        available: browser.available,
+        credentialSource: browser.credentialSource,
+        operations: [...COMPUTER_USE_OPERATIONS.openai],
+      },
+    ],
+  };
 }
 
 export async function resolveBrowserApiKey(

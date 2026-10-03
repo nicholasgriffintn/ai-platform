@@ -1,6 +1,27 @@
-import type { BrowserApproval } from "@ngriffin_uk/polychat-schemas";
+import type { BrowserApproval, ChatRun } from "@ngriffin_uk/polychat-schemas";
 
 import type { IUser } from "~/types";
+
+export const computerTestRun: ChatRun = {
+  protocolVersion: 1,
+  id: "run",
+  conversationId: "conversation",
+  projectId: null,
+  projectTaskId: null,
+  initiatorUserId: 1,
+  trigger: "user",
+  status: "running",
+  attempt: 1,
+  teammateContextId: "teammate-context",
+  createdAt: "2026-10-03",
+  updatedAt: "2026-10-03",
+  startedAt: "2026-10-03",
+  completedAt: null,
+  terminalReason: null,
+  lastMessageId: null,
+  context: null,
+  retry: null,
+};
 
 export const browserTestUser: IUser = {
   id: 1,

@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
+import z from "zod/v4";
 
 import { finishToolDeclaration, UPDATE_PLAN_TOOL_NAME } from "../control-tools.js";
 import { declareTool, getToolDeclarationNames, isToolDeclaration } from "../declaration.js";
 import { flattenObjectRootSchema } from "../json-schema.js";
 import { PermissionChecker, resolveModeMaxSteps, resolveToolPermissions } from "../permissions.js";
 import { toProviderToolDeclarations } from "../provider-declarations.js";
+import { toToolDeclaration } from "../tool.js";
 
 describe("declareTool", () => {
   it("produces the provider-facing function shape", () => {
@@ -103,6 +105,30 @@ describe("toProviderToolDeclarations", () => {
 });
 
 describe("flattenObjectRootSchema", () => {
+  it("keeps all provider and operation choices in a generated tool declaration", () => {
+    const declaration = toToolDeclaration({
+      name: "computer",
+      description: "Operate either computer provider",
+      inputSchema: z.union([
+        z.object({ provider: z.literal("hosted"), operation: z.literal("observe") }).strict(),
+        z
+          .object({
+            provider: z.literal("openai"),
+            operation: z.literal("start"),
+            task: z.string(),
+          })
+          .strict(),
+      ]),
+    });
+    const schema = z.fromJSONSchema(declaration.function.parameters);
+
+    expect(schema.safeParse({ provider: "hosted", operation: "observe" }).success).toBe(true);
+    expect(
+      schema.safeParse({ provider: "openai", operation: "start", task: "Read the page" }).success,
+    ).toBe(true);
+    expect(schema.safeParse({ provider: "unknown", operation: "observe" }).success).toBe(false);
+  });
+
   it("merges object alternatives into a single root", () => {
     expect(
       flattenObjectRootSchema({

@@ -32,6 +32,7 @@ export class OpenAIAgentsClient {
         Accept: "text/event-stream",
       },
       body: JSON.stringify(body),
+      redirect: "error",
     });
   }
 
@@ -130,7 +131,7 @@ export class OpenAIAgentsClient {
   }): Promise<{ result?: string; diff?: string }> {
     const response = await fetch(
       `${OPENAI_API_BASE_URL}/agents/sessions/${encodeURIComponent(params.sessionId)}/artifacts?limit=100&order=desc`,
-      { headers: this.headers() },
+      { headers: this.headers(), redirect: "error", signal: AbortSignal.timeout(30_000) },
     );
 
     if (!response.ok) {
@@ -138,7 +139,7 @@ export class OpenAIAgentsClient {
     }
 
     const artifacts = openAIArtifactListSchema
-      .parse(await response.json())
+      .parse(JSON.parse(await readResponseTextWithinLimit(response, 16 * 1024 * 1024)))
       .data.filter((artifact) => artifact.turn_id === params.turnId);
     const resultArtifact = artifacts.find(
       (artifact) => artifact.path === "/workspace/outputs/result.json",
@@ -166,7 +167,7 @@ export class OpenAIAgentsClient {
   ): Promise<string> {
     const response = await fetch(
       `${OPENAI_API_BASE_URL}/agents/sessions/${encodeURIComponent(sessionId)}/artifacts/${encodeURIComponent(artifactId)}/content`,
-      { headers: this.headers() },
+      { headers: this.headers(), redirect: "error", signal: AbortSignal.timeout(30_000) },
     );
 
     if (!response.ok) {
@@ -196,6 +197,7 @@ export class OpenAIAgentsClient {
         return this.throwResponseError(response, "session deletion");
       }
 
+      await response.body?.cancel();
       await sleep(250 * 2 ** (attempt - 1));
     }
   }

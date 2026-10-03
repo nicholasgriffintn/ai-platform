@@ -125,24 +125,6 @@ export const browserScopeQuerySchema = z.object({
   workspaceId: identifier.optional(),
 });
 export const browserSessionParamsSchema = z.object({ id: identifier });
-export const browserToolInputSchema = z.discriminatedUnion("operation", [
-  z
-    .object({
-      operation: z.literal("start"),
-      task: z.string().trim().min(1).max(20_000),
-      model: z.string().min(1).max(200).optional(),
-      allowedDomains: z
-        .array(z.string().regex(/^(?:\*\.)?[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/i))
-        .min(1)
-        .max(100)
-        .optional(),
-    })
-    .strict(),
-  z.object({ operation: z.literal("inspect"), sessionId: identifier }).strict(),
-  z.object({ operation: z.literal("stop"), sessionId: identifier }).strict(),
-  z.object({ operation: z.literal("destroy"), sessionId: identifier }).strict(),
-]);
-
 export const browserSessionViewDataSchema = z.object({
   renderer: z.literal("browser_session"),
   sessionId: identifier,
@@ -157,6 +139,5 @@ export type SubmitBrowserApproval = z.infer<typeof submitBrowserApprovalSchema>;
 export type BrowserSessionSnapshot = z.infer<typeof browserSessionSnapshotSchema>;
 export type BrowserSession = z.infer<typeof browserSessionSchema>;
 export type BrowserAvailability = z.infer<typeof browserAvailabilitySchema>;
-export type BrowserToolInput = z.infer<typeof browserToolInputSchema>;
 
 export type BrowserSessionViewData = z.infer<typeof browserSessionViewDataSchema>;
