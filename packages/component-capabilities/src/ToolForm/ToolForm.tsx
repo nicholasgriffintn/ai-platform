@@ -1,5 +1,9 @@
 import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
-import { getToolFormStepErrors, type RunnableTool } from "@ngriffin_uk/polychat-schemas";
+import {
+  getToolFormStepErrors,
+  prepareToolFormData,
+  type RunnableTool,
+} from "@ngriffin_uk/polychat-schemas";
 import { Check } from "lucide-react";
 import { useState } from "react";
 
@@ -88,7 +92,7 @@ export const ToolForm = ({
 
     try {
       setInternalIsSubmitting(true);
-      const result = await onSubmit(formData);
+      const result = await onSubmit(prepareToolFormData(tool.formSchema, formData));
 
       onComplete(result);
     } catch (error) {

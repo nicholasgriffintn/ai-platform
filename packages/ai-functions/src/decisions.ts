@@ -5,7 +5,10 @@ import type {
   DecisionResponse,
   DecisionState,
 } from "@ngriffin_uk/polychat-schemas";
-import { decisionAnswersMatchQuestions } from "@ngriffin_uk/polychat-schemas";
+import {
+  decisionAnswersMatchQuestions,
+  modelHasOutputModality,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { AiRequestScope } from "./types.js";
@@ -39,13 +42,22 @@ export function createDecisionFunctions(runtime: ProviderRuntime) {
       return { provider: scope.provider, model: scope.model ?? "" };
     }
 
-    const target = await runtime.host.models.getAuxiliaryDecisionModel(scope.env, scope.user);
+    if (scope.model) {
+      const config = await runtime.host.models.findModelConfig(
+        scope.model,
+        scope.env,
+        undefined,
+        scope.user?.id,
+      );
 
-    if (!target) {
-      return null;
+      if (!config || !modelHasOutputModality(config, "decision")) {
+        throw new AssistantError("Select a valid decision model", ErrorType.PARAMS_ERROR, 400);
+      }
+
+      return { model: config.matchingModel, provider: config.provider };
     }
 
-    return scope.model ? { ...target, model: scope.model } : target;
+    return runtime.host.models.getAuxiliaryDecisionModel(scope.env, scope.user);
   };
 
   const run = async <TQuestions extends DecisionQuestions>(

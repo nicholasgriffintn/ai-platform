@@ -1,6 +1,4 @@
-import { FieldType, type ToolFormSchema, type RunnableTool } from "@ngriffin_uk/polychat-schemas";
-import { formatUnknownValue } from "@ngriffin_uk/polychat-utility-core";
-import z from "zod/v4";
+import type { RunnableTool } from "@ngriffin_uk/polychat-schemas";
 
 import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
 import { NON_RUNNABLE_FUNCTION_TOOLS } from "~/modules/functions/application/internal-tools";
@@ -10,98 +8,9 @@ import {
   getFunctionResponseType,
 } from "~/modules/tools/application/functions";
 import { getToolCategory } from "~/modules/tools/application/toolCategories";
+import { buildToolFormSchema } from "~/modules/tools/utils/form-schema";
 
 type FunctionTool = ReturnType<typeof listFunctionToolDefinitions>[number];
-type JsonSchemaProperty = {
-  type?: string;
-  title?: string;
-  description?: string;
-  enum?: unknown[];
-  minimum?: number;
-  maximum?: number;
-  minLength?: number;
-  maxLength?: number;
-  pattern?: string;
-};
-
-const mapJsonSchemaTypeToFieldType = (type?: string, hasEnum?: unknown[]): FieldType => {
-  if (hasEnum) {
-    return FieldType.SELECT;
-  }
-
-  switch (type) {
-    case "string":
-      return FieldType.TEXT;
-    case "number":
-    case "integer":
-      return FieldType.NUMBER;
-    case "boolean":
-      return FieldType.CHECKBOX;
-    default:
-      return FieldType.TEXTAREA;
-  }
-};
-
-const generateValidationFromSchema = (schema: JsonSchemaProperty) => {
-  const validation: Record<string, unknown> = {};
-
-  if (schema.enum) {
-    validation.options = schema.enum.map((value) => ({
-      label: formatUnknownValue(value),
-      value: formatUnknownValue(value),
-    }));
-  }
-
-  if (schema.minimum !== undefined) {
-    validation.min = schema.minimum;
-  }
-
-  if (schema.maximum !== undefined) {
-    validation.max = schema.maximum;
-  }
-
-  if (schema.minLength !== undefined) {
-    validation.minLength = schema.minLength;
-  }
-
-  if (schema.maxLength !== undefined) {
-    validation.maxLength = schema.maxLength;
-  }
-
-  if (schema.pattern) {
-    validation.pattern = schema.pattern;
-  }
-
-  return Object.keys(validation).length > 0 ? validation : undefined;
-};
-
-const buildFormSchema = (tool: FunctionTool): ToolFormSchema => {
-  const parameters = z.toJSONSchema(tool.inputSchema) as {
-    properties?: Record<string, JsonSchemaProperty>;
-    required?: string[];
-  };
-  const { properties = {}, required = [] } = parameters;
-  const label = formatFunctionName(tool.name);
-
-  return {
-    steps: [
-      {
-        id: "parameters",
-        title: "Parameters",
-        description: `Provide the parameters for ${label}`,
-        fields: Object.entries(properties).map(([key, value]) => ({
-          id: key,
-          type: mapJsonSchemaTypeToFieldType(value.type, value.enum),
-          label: value.title || key,
-          description: value.description,
-          placeholder: `Enter ${key}`,
-          required: required.includes(key),
-          validation: generateValidationFromSchema(value),
-        })),
-      },
-    ],
-  };
-};
 
 export const buildRunnableTool = (tool: FunctionTool): RunnableTool => ({
   id: tool.name,
@@ -110,7 +19,7 @@ export const buildRunnableTool = (tool: FunctionTool): RunnableTool => ({
   category: getToolCategory(tool.name),
   icon: getFunctionIcon(tool.name),
   type: tool.type,
-  formSchema: buildFormSchema(tool),
+  formSchema: buildToolFormSchema(tool.inputSchema, formatFunctionName(tool.name)),
   responseSchema: {
     type: getFunctionResponseType(tool.name),
   },

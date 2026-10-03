@@ -8,6 +8,7 @@ import { outputSchema } from "./outputs.js";
 import { searchOptionsSchema, searchProviderSchema } from "./search.js";
 import { skillSummarySchema } from "./skills.js";
 import { teammateSummarySchema } from "./teammates.js";
+import { parseToolFormValue } from "./utils/tool-form-values.js";
 
 export const weatherQuerySchema = z.object({
   longitude: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a valid number"),
@@ -490,6 +491,7 @@ export const toolFormFieldSchema = z.object({
   placeholder: z.string().optional(),
   required: z.boolean(),
   defaultValue: z.unknown().optional(),
+  valueFormat: z.enum(["json", "json-or-text"]).optional(),
   validation: z
     .object({
       pattern: z.string().optional(),
@@ -612,6 +614,18 @@ function getDynamicAppFieldError(field: ToolFormField, value: unknown): string |
 
   if (isMissingDynamicAppFieldValue(value)) {
     return undefined;
+  }
+
+  if (field.valueFormat) {
+    try {
+      parseToolFormValue(field, value);
+    } catch (error) {
+      return error instanceof Error ? error.message : `${field.label} has an invalid format`;
+    }
+
+    if (typeof value !== "string") {
+      return undefined;
+    }
   }
 
   const { validation } = field;

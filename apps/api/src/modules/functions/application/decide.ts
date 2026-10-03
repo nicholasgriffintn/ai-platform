@@ -1,32 +1,25 @@
-import { decisionConfidenceBand, type DecisionAnswer } from "@ngriffin_uk/polychat-schemas";
+import type z from "zod/v4";
 
 import { decide as runDecision } from "~/modules/decisions/application/decide";
-import type { ApiToolDefinition } from "~/types/functions";
+import { formatDecisionAnswer } from "~/modules/functions/utils/decision-answers";
+import type { IRequest } from "~/types";
+import type { ApiToolDefinition, ApiToolExecutionContext } from "~/types/functions";
 
 import { decide as decideDescriptor } from "./definitions/decide";
 
-function describeAnswer(id: string, answer: DecisionAnswer): string {
-  if (answer.type === "noul") {
-    return `${id}: ${answer.noul.toFixed(2)} probability of yes`;
-  }
+type DecisionToolContext = Pick<ApiToolExecutionContext, "completionId"> & {
+  request?: Pick<IRequest, "env" | "user">;
+};
 
-  const band = `confidence ${answer.confidence.toFixed(2)}, ${decisionConfidenceBand(answer.confidence)}`;
-
-  if (answer.type === "choice") {
-    return `${id}: ${answer.choice} (${band})`;
-  }
-
-  const topLevel = Object.keys(answer.legend).length - 1;
-
-  return `${id}: ${answer.score.toFixed(2)} of ${topLevel} (${band})`;
-}
-
-export const decide: ApiToolDefinition = {
+export const decide = {
   ...decideDescriptor,
-  execute: async (args, context) => {
+  execute: async (
+    args: z.infer<typeof decideDescriptor.inputSchema>,
+    context: DecisionToolContext,
+  ) => {
     const request = context.request;
 
-    if (!request.user) {
+    if (!request?.user) {
       return {
         status: "error",
         name: "decide",
@@ -38,11 +31,15 @@ export const decide: ApiToolDefinition = {
     const response = await runDecision({
       env: request.env,
       user: request.user,
-      request: { state: args.state, questions: args.questions },
+      request: {
+        state: args.state,
+        questions: args.questions,
+        model: args.model === "auto" ? undefined : args.model,
+      },
       completionId: context.completionId,
     });
     const lines = Object.entries(response.answers).map(([id, answer]) =>
-      describeAnswer(id, answer),
+      formatDecisionAnswer(id, answer),
     );
 
     return {
@@ -57,4 +54,4 @@ export const decide: ApiToolDefinition = {
       },
     };
   },
-};
+} satisfies ApiToolDefinition;
