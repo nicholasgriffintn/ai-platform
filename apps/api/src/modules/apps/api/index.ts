@@ -8,6 +8,7 @@ import canvas from "./canvas";
 import connectors from "./connectors";
 import drawing from "./drawing";
 import embeddings from "./embeddings";
+import managedAgents from "./managed-agents";
 import notes from "./notes";
 import ocrBatches from "./ocr-batches";
 import recipes from "./recipes";
@@ -54,5 +55,7 @@ app.route("/sandbox", sandbox);
 app.route("/recipes", recipes);
 
 app.route("/connectors", connectors);
+
+app.route("/managed-agents", managedAgents);
 
 export default app;

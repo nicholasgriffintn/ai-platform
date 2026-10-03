@@ -190,3 +190,5 @@ export * from "./codex-protocol.js";
 export * from "./agent-output.js";
 
 export * from "./ollama.js";
+
+export * from "./managed-agents.js";
