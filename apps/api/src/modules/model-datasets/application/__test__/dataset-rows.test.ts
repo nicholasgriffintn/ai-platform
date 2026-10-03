@@ -6,9 +6,9 @@ import { createServiceContext, type ServiceContext } from "~/infrastructure/cont
 import { requireModelAction } from "~/modules/model-registry/application/access";
 import { loadRegistryScope, isRevoked } from "~/modules/model-registry/application/scope";
 import { ArtefactStore, artefactKeys } from "~/modules/model-registry/infrastructure/ArtefactStore";
-import { databaseTestEnvironment } from "~/test-utils/environment";
-import { initialiseModelPlatformDatabase } from "~/test-utils/model-platform-database";
 
+import { databaseTestEnvironment } from "../../../../../test/environment";
+import { initialiseModelPlatformDatabase } from "../../../../../test/model-platform-database";
 import {
   excludeDatasetRows,
   previewUploadColumns,

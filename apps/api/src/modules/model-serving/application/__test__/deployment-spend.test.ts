@@ -11,10 +11,10 @@ import { requireHostingBudgetCompatibility } from "~/modules/model-governance/ap
 import { resolveSpendRequest } from "~/modules/model-governance/application/spend-execution";
 import { requireModelAction } from "~/modules/model-registry/application/access";
 import { TaskService } from "~/modules/tasks/application/TaskService";
-import { databaseTestEnvironment } from "~/test-utils/environment";
-import { testModelDeployment } from "~/test-utils/model-platform";
-import { initialiseModelPlatformDatabase } from "~/test-utils/model-platform-database";
 
+import { databaseTestEnvironment } from "../../../../../test/environment";
+import { testModelDeployment } from "../../../../../test/model-platform";
+import { initialiseModelPlatformDatabase } from "../../../../../test/model-platform-database";
 import { changeDeploymentState, scaleDeployment } from "../deployments";
 import { runHostAction } from "../invocation";
 

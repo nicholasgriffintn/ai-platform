@@ -6,9 +6,9 @@ import {
   applyDeploymentState,
   enqueueDeploymentSync,
 } from "~/modules/model-serving/application/deployments";
-import { databaseTestEnvironment } from "~/test-utils/environment";
-import { testModelDeployment } from "~/test-utils/model-platform";
 
+import { databaseTestEnvironment } from "../../../../../test/environment";
+import { testModelDeployment } from "../../../../../test/model-platform";
 import { reconcileModelPlatform } from "../maintenance";
 import { getWorkspaceSpendLines } from "../spend";
 

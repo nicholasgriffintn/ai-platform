@@ -10,8 +10,8 @@ import {
   type RegistryScope,
 } from "~/modules/model-registry/application/scope";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
-import { databaseTestEnvironment } from "~/test-utils/environment";
 
+import { databaseTestEnvironment } from "../../../../../test/environment";
 import type {
   ModelAliasEventRecord,
   ModelAliasRecord,

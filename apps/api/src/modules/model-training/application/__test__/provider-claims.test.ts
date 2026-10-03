@@ -19,10 +19,10 @@ import { isRevoked, loadRegistryScope } from "~/modules/model-registry/applicati
 import { ArtefactStore } from "~/modules/model-registry/infrastructure/ArtefactStore";
 import { applyHostState, hostFor } from "~/modules/model-serving/application/invocation";
 import { syncDeployment } from "~/modules/model-serving/application/sync";
-import { databaseTestEnvironment } from "~/test-utils/environment";
-import { testModelDeployment } from "~/test-utils/model-platform";
-import { initialiseModelPlatformDatabase } from "~/test-utils/model-platform-database";
 
+import { databaseTestEnvironment } from "../../../../../test/environment";
+import { testModelDeployment } from "../../../../../test/model-platform";
+import { initialiseModelPlatformDatabase } from "../../../../../test/model-platform-database";
 import { syncTrainingRun } from "../sync";
 import { trainerFor } from "../trainer-context";
 

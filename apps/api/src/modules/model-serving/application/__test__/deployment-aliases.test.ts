@@ -8,9 +8,13 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { requireModelAction, badRequest } from "~/modules/model-registry/application/access";
 import { TaskService } from "~/modules/tasks/application/TaskService";
-import { databaseTestEnvironment } from "~/test-utils/environment";
-import { testModelAlias, testModelDeployment, testModelRoute } from "~/test-utils/model-platform";
 
+import { databaseTestEnvironment } from "../../../../../test/environment";
+import {
+  testModelAlias,
+  testModelDeployment,
+  testModelRoute,
+} from "../../../../../test/model-platform";
 import { createAliasForRoute } from "../aliases";
 import { createDeployment, startPreparedDeployment } from "../deployments";
 import { createRoute } from "../routes";
