@@ -29,9 +29,20 @@ export const documentCaptureSchema = z.object({
   timestamp: z.string().optional(),
 });
 
+export const documentEditorialGradeSchema = z.object({
+  overall: z.number().min(0).max(1),
+  grade: z.enum(["A", "B", "C", "D", "E"]),
+  dimensions: z.record(z.string(), z.number().min(0).max(1)),
+  confidence: z.number().min(0).max(1),
+  provider: z.string(),
+  model: z.string(),
+});
+export type DocumentEditorialGrade = z.infer<typeof documentEditorialGradeSchema>;
+
 export const documentMetadataSchema = z
   .object({
     summary: z.string().optional(),
+    editorial: documentEditorialGradeSchema.optional(),
     tags: z.array(z.string()).optional(),
     keyTopics: z.array(z.string()).optional(),
     wordCount: z.number().int().nonnegative().optional(),

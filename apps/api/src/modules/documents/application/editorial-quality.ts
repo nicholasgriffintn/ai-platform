@@ -70,14 +70,16 @@ export type EditorialScores = Record<EditorialDimension, number>;
 
 export interface EditorialQualityResult {
   overall: number;
-  grade: string;
+  grade: EditorialGrade;
   dimensions: EditorialScores;
   confidence: number;
   provider: string;
   model: string;
 }
 
-export function editorialGrade(overall: number): string {
+export type EditorialGrade = "A" | "B" | "C" | "D" | "E";
+
+export function editorialGrade(overall: number): EditorialGrade {
   if (overall >= 0.85) {
     return "A";
   }
