@@ -31,7 +31,7 @@ function toEnableableApp(experience: ProjectExperienceDefinition) {
 export function useProjectCapabilityCatalog(projectId?: string) {
   const catalogQuery = useCapabilityCatalog(projectId);
   const recipesQuery = useAssistantRecipes();
-  const toolsQuery = useTools();
+  const toolsQuery = useTools({ projectId });
   const callableTools = useMemo(() => toolsQuery.data ?? [], [toolsQuery.data]);
   const experiences = useMemo(
     () => catalogQuery.data?.experiences ?? [],

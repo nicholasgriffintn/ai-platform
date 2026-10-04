@@ -393,8 +393,8 @@ class ApiService {
     return this.machineService.forget(machineId);
   };
 
-  fetchTools = (): Promise<Tool[]> => {
-    return this.userService.fetchTools();
+  fetchTools = (projectId?: string, workspaceId?: string): Promise<Tool[]> => {
+    return this.userService.fetchTools(projectId, workspaceId);
   };
 
   storeProviderApiKey = (

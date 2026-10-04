@@ -1,4 +1,7 @@
 import type {
+  BrowserProvider,
+  BrowserSessionSnapshot,
+  SubmitBrowserApproval,
   TeammateComputerInput,
   TeammateComputerTeachingRecording,
 } from "@ngriffin_uk/polychat-schemas";
@@ -9,6 +12,25 @@ export interface ComputerResource {
   handle: string;
   checkpointReference?: string | null;
 }
+
+export interface ComputerSessionProvider {
+  readonly name: BrowserProvider;
+  create(input: {
+    model: string;
+    allowedDomains?: string[];
+    referenceId: string;
+    task: string;
+  }): Promise<string>;
+  recover(referenceId: string): Promise<string | null>;
+  inspect(sessionId: string): Promise<BrowserSessionSnapshot>;
+  respond(sessionId: string, input: SubmitBrowserApproval): Promise<void>;
+  cancel(sessionId: string): Promise<void>;
+  destroy(sessionId: string): Promise<void>;
+}
+
+export type ComputerUseProvider =
+  | { id: "hosted"; mode: "interactive"; control: ComputerProvider }
+  | { id: "openai"; mode: "managed"; sessions: ComputerSessionProvider };
 
 export interface ComputerScreenConnection {
   screenUrl: string;

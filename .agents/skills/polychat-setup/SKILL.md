@@ -18,6 +18,7 @@ Use the repository as implementation authority. If a request includes deploy, mi
 - [Durable decisions](references/architecture/decisions.md)
 - [Model catalogue](references/operations/model-catalogue.md)
 - [Model governance](references/operations/model-governance.md)
+- [Browser and computer use](references/operations/computer-use.md)
 - [Billing and spend](references/operations/loop-cost-controls.md)
 - [Connector operations](references/operations/composio-connectors.md)
 

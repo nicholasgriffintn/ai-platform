@@ -19,6 +19,8 @@ import { ProjectTaskListView } from "./ProjectTaskListView.js";
 import { ResearchView } from "./ResearchView.js";
 import { SandboxView } from "./SandboxView.js";
 
+export { BrowserAuthenticationForm } from "./BrowserAuthenticationForm.js";
+
 export {
   ComputerTakeoverView,
   ComputerObservationView,

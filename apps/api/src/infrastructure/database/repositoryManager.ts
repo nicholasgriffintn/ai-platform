@@ -12,6 +12,7 @@ import { SessionRepository } from "~/modules/auth/infrastructure/SessionReposito
 import { WebAuthnRepository } from "~/modules/auth/infrastructure/WebAuthnRepository";
 import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
+import { BrowserSessionRepository } from "~/modules/computer-use/infrastructure/BrowserSessionRepository";
 import { ConversationHandleRepository } from "~/modules/conversations/infrastructure/ConversationHandleRepository";
 import { ConversationOrganisationRepository } from "~/modules/conversations/infrastructure/ConversationOrganisationRepository";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
@@ -358,6 +359,10 @@ export class RepositoryManager {
 
   public get teammateContexts(): TeammateContextRepository {
     return this.resolve("teammateContexts", (env) => new TeammateContextRepository(env));
+  }
+
+  public get browserSessions(): BrowserSessionRepository {
+    return this.resolve("browserSessions", (env) => new BrowserSessionRepository(env));
   }
 
   public get teammateComputers(): TeammateComputerRepository {

@@ -1,5 +1,7 @@
 import type { Tool } from "@ngriffin_uk/polychat-schemas";
 
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { getComputerUseAvailability } from "~/modules/computer-use/application/access";
 import { resolveManagedFunctionToolNames } from "~/modules/functions/application/availability";
 import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
 import { NON_RUNNABLE_FUNCTION_TOOLS } from "~/modules/functions/application/internal-tools";
@@ -9,6 +11,19 @@ import { getToolCategory } from "./toolCategories";
 
 function isUserFacingTool(toolName: string): boolean {
   return !NON_RUNNABLE_FUNCTION_TOOLS.has(toolName);
+}
+
+export async function getScopedAvailableTools(
+  context: ServiceContext,
+  projectId?: string,
+  workspaceId?: string,
+): Promise<Tool[]> {
+  const tools = getAvailableTools(context.user?.plan_id === "pro", Boolean(context.user?.id));
+  const computerAvailable = context.user?.id
+    ? (await getComputerUseAvailability(context, projectId, workspaceId)).available
+    : false;
+
+  return tools.filter((tool) => tool.id !== "use_computer" || computerAvailable);
 }
 
 export function listCatalogueTools(): Tool[] {

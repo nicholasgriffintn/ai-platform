@@ -253,3 +253,5 @@ export function AnalyticsProvider({ analytics, children }: AnalyticsProviderProp
 export function useAnalytics(): SurfaceAnalytics {
   return useContext(AnalyticsContext);
 }
+
+export * from "./hooks/useBrowserSession.js";
