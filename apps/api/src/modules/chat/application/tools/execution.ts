@@ -15,6 +15,7 @@ import {
   checkToolCallRepeat,
   type ToolCallLedger,
 } from "~/modules/chat/application/tools/call-ledger";
+import { recordToolIntentCorrection } from "~/modules/chat/application/tools/intent-corrections";
 import {
   evaluateToolIntentGate,
   requiresToolIntentVerification,
@@ -79,6 +80,12 @@ function isRecoverableToolCallError(params: {
 
 function isDeterministicToolCallError(errorType: string): boolean {
   return DETERMINISTIC_TOOL_CALL_ERROR_TYPES.has(errorType);
+}
+
+function approvedThisTurn(req: IRequest, toolName: string): boolean {
+  const approved = req.request?.approved_tools;
+
+  return Array.isArray(approved) && approved.includes(toolName);
 }
 
 export const handleToolCalls = async (
@@ -327,10 +334,22 @@ export const handleToolCalls = async (
               timestamp,
               model: req.request?.model || "unknown",
               platform: req.request?.platform || "api",
+              ...(intent.receipt?.policy
+                ? { decision: { ...intent.receipt.policy, recommended: "require_approval" } }
+                : {}),
             }),
           );
           continue;
         }
+      } else if (approvedThisTurn(req, functionName)) {
+        await recordToolIntentCorrection({
+          env: req.env,
+          user: req.user,
+          loadMessages: () => conversationManager.get(completion_id),
+          toolCallId: toolCall.id,
+          toolName: functionName,
+          chosen: "allow",
+        });
       }
 
       if (functionName === "memory") {

@@ -4,6 +4,12 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { formatToolErrorResponse } from "~/modules/chat/application/tools/tool-responses";
 import type { Message, Platform } from "~/types";
 
+export interface ToolApprovalDecisionTag {
+  key: string;
+  version: string;
+  recommended: string;
+}
+
 export function createPendingToolApprovalMessage(params: {
   toolName: string;
   toolCallId: string;
@@ -13,6 +19,7 @@ export function createPendingToolApprovalMessage(params: {
   timestamp: number;
   model: string;
   platform: Platform;
+  decision?: ToolApprovalDecisionTag;
 }): Message {
   const approvalError = formatToolErrorResponse(
     params.toolName,
@@ -36,6 +43,7 @@ export function createPendingToolApprovalMessage(params: {
         toolCallId: params.toolCallId,
         interactionId: params.toolCallId,
         reason: params.reason,
+        ...(params.decision ? { decision: params.decision } : {}),
       },
       humanInTheLoop: pendingApproval({
         interactionId: params.toolCallId,
