@@ -12,6 +12,7 @@ import { developerRecipes } from "./catalog/developer";
 import { healthConnectorRecipes } from "./catalog/health-connectors";
 import { mailCalendarRecipes } from "./catalog/mail-calendar";
 import { personalUtilityRecipes } from "./catalog/personal-utilities";
+import { platformKnowledgeRecipes } from "./catalog/platform-knowledge";
 import type { CatalogRecipe } from "./catalog/shared";
 import { wellbeingRecipes } from "./catalog/wellbeing";
 import { workspaceRecipes } from "./catalog/workspace";
@@ -29,6 +30,7 @@ export {
 } from "./catalog/shared";
 
 const catalogRecipes: CatalogRecipe[] = [
+  ...platformKnowledgeRecipes,
   ...mailCalendarRecipes,
   ...coreIntegrationRecipes,
   ...configuredComposioRecipes,
@@ -68,6 +70,10 @@ export function resolveRecipeId(recipeId: string): string {
   return recipeId;
 }
 
+export function getRecipeById(id: string): AssistantRecipe | undefined {
+  return assistantRecipes.find((recipe) => recipe.id === resolveRecipeId(id));
+}
+
 export function getRecipeIdAliases(recipeId: string): string[] {
   return [recipeId];
 }
@@ -76,9 +82,13 @@ export function getRecipeCatalogValidationIssues(
   recipes: readonly AssistantRecipe[] = assistantRecipes,
 ): string[] {
   const issues: string[] = [];
-  const exposedProviders = new Set(
-    recipes.flatMap((recipe) => recipe.integrations.map((integration) => integration.providerId)),
-  );
+  const exposedProviders = new Set<string>();
+
+  for (const recipe of recipes) {
+    for (const integration of recipe.integrations) {
+      exposedProviders.add(integration.providerId);
+    }
+  }
 
   for (const providerId of Object.keys(configuredComposioToolkits).sort()) {
     if (!exposedProviders.has(providerId)) {

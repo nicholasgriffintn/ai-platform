@@ -39,6 +39,25 @@ export function stringifyMessageContent(content: unknown): string {
   return MessageFormatter.stringifyMessageContent(content);
 }
 
+export function findMessageContent(
+  messages: readonly Message[],
+  type: MessageContent["type"],
+): MessageContent | undefined {
+  for (const message of messages) {
+    if (!Array.isArray(message.content)) {
+      continue;
+    }
+
+    for (const part of message.content) {
+      if (part.type === type) {
+        return part;
+      }
+    }
+  }
+
+  return undefined;
+}
+
 export interface ChatCompletionNotification {
   body: string;
   mediaUrls: string[];

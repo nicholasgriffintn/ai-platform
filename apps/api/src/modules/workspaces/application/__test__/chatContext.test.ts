@@ -301,6 +301,7 @@ describe("project chat context", () => {
     const scope = resolveProjectRecipeConnectorScope([
       { kind: "recipe", capability_id: "email-assistant" },
       { kind: "recipe", capability_id: "unknown-recipe" },
+      { kind: "recipe", capability_id: "service-incident-brief", excluded: 1 },
       { kind: "tool", capability_id: "web_search" },
     ]);
 

@@ -30,6 +30,8 @@ export const TASK_NOTIFICATION_DELIVERY_TASK_TYPE = "task_notification_delivery"
 export const TEAMMATE_RUN_RECONCILIATION_TASK_TYPE = "teammate_run_reconciliation";
 export const TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE = "teammate_context_cleanup";
 export const CONVERSATION_TITLE_TASK_TYPE = "conversation_title";
+export const SOURCE_KNOWLEDGE_INDEX_TASK_TYPE = "source_knowledge_index";
+export const SOURCE_KNOWLEDGE_SYNC_TASK_TYPE = "source_knowledge_sync";
 
 export const TASK_TYPES = [
   "memory_synthesis",
@@ -57,6 +59,8 @@ export const TASK_TYPES = [
   TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
   TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
   CONVERSATION_TITLE_TASK_TYPE,
+  SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
+  SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
   MODEL_REGISTRY_INSPECT_TASK_TYPE,
   MODEL_REGISTRY_EVAL_TASK_TYPE,
   MODEL_DATASET_PROCESS_TASK_TYPE,

@@ -85,7 +85,10 @@ export async function resolveProjectChatContext(
   const hasRecipe =
     recipeId &&
     capabilities.some(
-      (capability) => capability.kind === "recipe" && capability.capability_id === recipeId,
+      (capability) =>
+        capability.kind === "recipe" &&
+        capability.capability_id === recipeId &&
+        !capability.excluded,
     );
 
   if (hasRecipe) {

@@ -3,10 +3,10 @@ import { recipeChatRequestOptionsSchema } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
-  getRecipeById,
   parseRecipeInstallationRecord,
   requireEnabledProjectRecipe,
 } from "~/modules/apps/application/recipes";
+import { getRecipeById } from "~/modules/apps/application/recipes/catalog";
 import {
   buildRecipeConnections,
   buildRecipeInvocationRuntime,

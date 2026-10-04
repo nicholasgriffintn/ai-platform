@@ -39,6 +39,7 @@ export * from "./shared-conversation.js";
 export * from "./sites.js";
 export * from "./skills.js";
 export * from "./sources.js";
+export * from "./mcp-connections.js";
 export * from "./task-notifications.js";
 export * from "./task-service.js";
 export * from "./task-tools.js";

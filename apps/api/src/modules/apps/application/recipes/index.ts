@@ -2,14 +2,12 @@ import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   type AssistantRecipe,
   type AssistantRecipeConnection,
-  type RecipeConfigurationField,
   type RecipeConfiguration,
   type RecipeConnectionStatus,
   type RecipeInstallation,
   type RecipeInstallationTrigger,
   type RecipeInstallationUpdateRequest,
   type RecipeConnectorManifest,
-  recipeConfigurationSchema,
   isSupportedCronExpression,
   type RecipeCatalogueSummary,
 } from "@ngriffin_uk/polychat-schemas";
@@ -30,11 +28,17 @@ import {
   recipeCategories,
   recipeFilters,
   resolveRecipeId,
+  getRecipeById,
 } from "./catalog";
 import {
   deleteRecipeComposioTriggers,
   syncRecipeComposioTriggerStatus,
 } from "./composio-trigger-lifecycle";
+import {
+  normaliseRecipeConfigurationForRecipe,
+  validateRecipeConfiguration,
+  isRequiredRecipeConfigurationValueMissing,
+} from "./configuration";
 import {
   parseStoredRecipeInstallationData,
   type StoredRecipeInstallationData,
@@ -45,7 +49,6 @@ import {
   buildRecipeInvocationRuntime,
   buildRecipeSetupRuntime,
   getBlockingConnections,
-  isRequiredRecipeConfigurationValueMissing,
 } from "./runtime";
 import { buildRecipeScheduleState } from "./scheduleState";
 import { createRecipeExecutionTaskData } from "./task-data";
@@ -55,19 +58,31 @@ export const RECIPE_INSTALLATION_APP_ID = "assistant_recipe_installation";
 export const RECIPE_INSTALLATION_ITEM_TYPE = "recipe_installation";
 
 export function listRecipeCatalogueSummaries(): RecipeCatalogueSummary[] {
-  return assistantRecipes.map((recipe) => ({
-    id: recipe.id,
-    title: recipe.title,
-    summary: recipe.summary,
-    kind: recipe.kind,
-    category: recipe.category,
-    featured: recipe.featured,
-    integrations: recipe.integrations.map((integration) => ({
-      id: integration.id,
-      providerId: integration.providerId,
-      name: integration.name,
-    })),
-  }));
+  const summaries: RecipeCatalogueSummary[] = [];
+
+  for (const recipe of assistantRecipes) {
+    const integrations: RecipeCatalogueSummary["integrations"] = [];
+
+    for (const integration of recipe.integrations) {
+      integrations.push({
+        id: integration.id,
+        providerId: integration.providerId,
+        name: integration.name,
+      });
+    }
+
+    summaries.push({
+      id: recipe.id,
+      title: recipe.title,
+      summary: recipe.summary,
+      kind: recipe.kind,
+      category: recipe.category,
+      featured: recipe.featured,
+      integrations,
+    });
+  }
+
+  return summaries;
 }
 
 interface RecipeListOptions {
@@ -91,12 +106,6 @@ interface RecipeConnectionContext {
 
 type RecipeInstallationRecord = TemplateRecord;
 
-export function getRecipeById(id: string) {
-  const resolvedId = resolveRecipeId(id);
-
-  return assistantRecipes.find((recipe) => recipe.id === resolvedId);
-}
-
 export async function requireEnabledProjectRecipe(
   context: ServiceContext,
   projectId: string,
@@ -108,7 +117,9 @@ export async function requireEnabledProjectRecipe(
   if (
     !capabilities.some(
       (capability) =>
-        capability.kind === "recipe" && resolveRecipeId(capability.capability_id) === recipeId,
+        capability.kind === "recipe" &&
+        !capability.excluded &&
+        resolveRecipeId(capability.capability_id) === recipeId,
     )
   ) {
     throw new AssistantError(
@@ -274,6 +285,10 @@ function validateScheduledRecipeConfiguration(params: {
     return;
   }
 
+  if (params.recipe.connectorPolicy?.requireConfiguredIntegration) {
+    validateRecipeConfiguration(params.recipe, params.configuration, true);
+  }
+
   const missingFields = params.recipe.configurationFields.filter(
     (field) =>
       field.required &&
@@ -291,73 +306,6 @@ function validateScheduledRecipeConfiguration(params: {
     ErrorType.PARAMS_ERROR,
     400,
   );
-}
-
-function normaliseRecipeConfiguration(value: unknown): RecipeConfiguration {
-  const parsed = recipeConfigurationSchema.safeParse(value);
-
-  return parsed.success ? parsed.data : {};
-}
-
-function normaliseConfigurationValue(
-  field: RecipeConfigurationField,
-  value: RecipeConfiguration[string] | undefined,
-): RecipeConfiguration[string] | undefined {
-  if (value === undefined || value === null || value === "") {
-    return field.defaultValue;
-  }
-
-  if (field.type === "number") {
-    return typeof value === "number" && Number.isFinite(value) ? value : field.defaultValue;
-  }
-
-  if (field.type === "boolean") {
-    return typeof value === "boolean" ? value : field.defaultValue;
-  }
-
-  if (field.type === "string_list") {
-    const items = Array.isArray(value)
-      ? value
-      : typeof value === "string"
-        ? value.split(/[\n,;]+/)
-        : [];
-
-    return items.length > 0
-      ? items
-          .map((item) => item.trim())
-          .filter(Boolean)
-          .slice(0, 50)
-      : field.defaultValue;
-  }
-
-  if (typeof value === "string") {
-    return value.trim() || field.defaultValue;
-  }
-
-  return field.defaultValue;
-}
-
-function normaliseRecipeConfigurationForRecipe(
-  recipe: AssistantRecipe | undefined,
-  value: unknown,
-): RecipeConfiguration {
-  const parsed = normaliseRecipeConfiguration(value);
-
-  if (!recipe || recipe.configurationFields.length === 0) {
-    return parsed;
-  }
-
-  const configuration: RecipeConfiguration = {};
-
-  for (const field of recipe.configurationFields) {
-    const normalisedValue = normaliseConfigurationValue(field, parsed[field.key]);
-
-    if (normalisedValue !== undefined && normalisedValue !== null && normalisedValue !== "") {
-      configuration[field.key] = normalisedValue;
-    }
-  }
-
-  return configuration;
 }
 
 export function parseRecipeInstallationRecord(
@@ -477,6 +425,8 @@ async function upsertRecipeInstallation(params: {
     params.recipe,
     params.configuration ?? existingData?.configuration,
   );
+
+  validateRecipeConfiguration(params.recipe, configuration);
 
   validateScheduledRecipeConfiguration({
     recipe: params.recipe,
@@ -618,6 +568,11 @@ export async function updateRecipeInstallation(params: {
     recipe,
     params.update.configuration ?? existing.data.configuration,
   );
+
+  if (recipe) {
+    validateRecipeConfiguration(recipe, configuration);
+  }
+
   const data: StoredRecipeInstallationData = {
     recipeId: existing.data.recipeId,
     status: params.update.status ?? existing.data.status,
