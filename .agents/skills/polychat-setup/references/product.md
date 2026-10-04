@@ -26,7 +26,7 @@ Polychat has two primary modes:
 - Model readiness is checked at execution and revalidated if access changes.
 - Changing a model affects the next run only; existing attachments and history remain where compatible.
 - Project membership does not transfer another member’s external credentials.
-- Search current project Sources from Files → Given or `search_documents`. Confluence Project Knowledge keeps selected pages refreshed; Service Incident Brief reads mapped incident, error and deployment evidence and saves a document in Files.
+- Search current project Sources from Files → Given or `search_documents`. Project Knowledge refreshes selected resources using saved read operations and document mappings; Service Incident Brief reads mapped incident, error and deployment evidence and saves a document in Files.
 - Configure authenticated hosted MCP with an owner-bound saved connection, explicit OpenAI consent and approval for every operation.
 
 ## Reliability and authority

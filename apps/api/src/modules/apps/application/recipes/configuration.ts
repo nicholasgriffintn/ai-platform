@@ -91,11 +91,17 @@ function configuredKeys(
   keys: string[],
   configuration: RecipeConfiguration,
 ): string[] {
-  return keys.filter((key) => {
+  const configured: string[] = [];
+
+  for (const key of keys) {
     const field = recipe.configurationFields.find((candidate) => candidate.key === key);
 
-    return field && !isRequiredRecipeConfigurationValueMissing(field, configuration[key]);
-  });
+    if (field && !isRequiredRecipeConfigurationValueMissing(field, configuration[key])) {
+      configured.push(key);
+    }
+  }
+
+  return configured;
 }
 
 export function validateRecipeConfiguration(

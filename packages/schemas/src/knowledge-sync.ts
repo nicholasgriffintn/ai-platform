@@ -1,12 +1,47 @@
 import z from "zod/v4";
 
+const fieldPathSchema = z
+  .array(z.union([z.string().min(1).max(200), z.number().int().nonnegative()]))
+  .min(1)
+  .max(16);
+
+export const knowledgeDocumentMappingSchema = z
+  .object({
+    id: fieldPathSchema,
+    title: fieldPathSchema,
+    content: z
+      .object({
+        path: fieldPathSchema,
+        format: z.enum(["text", "html", "base64"]).default("text"),
+      })
+      .strict(),
+    revision: fieldPathSchema.optional(),
+    url: fieldPathSchema.optional(),
+    urlBase: fieldPathSchema.optional(),
+    state: z
+      .object({
+        path: fieldPathSchema,
+        archivedValues: z.array(z.union([z.string().max(100), z.boolean(), z.number()])).max(20),
+        availableValues: z
+          .array(z.union([z.string().max(100), z.boolean(), z.number()]))
+          .min(1)
+          .max(20)
+          .optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+
 export const knowledgeSyncResourceSchema = z
   .object({
     resourceId: z.string().trim().min(1).max(200),
+    operation: z.string().trim().min(1).max(200),
+    documentMapping: knowledgeDocumentMappingSchema,
     readParameters: z
       .record(z.string(), z.unknown())
       .refine((value) => JSON.stringify(value).length <= 10_000, {
-        error: "Page read parameters are too large",
+        error: "Resource read parameters are too large",
       }),
   })
   .strict();
@@ -55,6 +90,7 @@ export const updateKnowledgeSyncSchema = z
   })
   .strict();
 export type KnowledgeSyncResource = z.infer<typeof knowledgeSyncResourceSchema>;
+export type KnowledgeDocumentMapping = z.infer<typeof knowledgeDocumentMappingSchema>;
 export type CreateKnowledgeSync = z.infer<typeof createKnowledgeSyncSchema>;
 export type KnowledgeSync = z.infer<typeof knowledgeSyncSchema>;
 export type UpdateKnowledgeSync = z.infer<typeof updateKnowledgeSyncSchema>;

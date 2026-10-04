@@ -3,16 +3,18 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ProviderRequestContext } from "../env.js";
 import type { ProviderHost } from "../host.js";
-export function getHostedMcpAuthorizations(body: Record<string, unknown>): string[] {
-  return Array.isArray(body.tools)
-    ? body.tools
-        .flatMap((tool) =>
-          isRecord(tool) && tool.type === "mcp" && typeof tool.authorization === "string"
-            ? [tool.authorization]
-            : [],
-        )
-        .sort((first, second) => second.length - first.length)
-    : [];
+export function hasHostedMcpAuthorization(body: Record<string, unknown>): boolean {
+  if (!Array.isArray(body.tools)) {
+    return false;
+  }
+
+  for (const tool of body.tools) {
+    if (isRecord(tool) && tool.type === "mcp" && typeof tool.authorization === "string") {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export async function resolveHostedMcpCredentials(

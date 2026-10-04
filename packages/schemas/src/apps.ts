@@ -726,9 +726,14 @@ export function getToolFormErrors(
   app: Pick<RenderableTool, "formSchema">,
   formData: ToolFormData,
 ): ToolFormErrors {
-  const fieldIds = new Set(
-    app.formSchema.steps.flatMap((step) => step.fields.map((field) => field.id)),
-  );
+  const fieldIds = new Set<string>();
+
+  for (const step of app.formSchema.steps) {
+    for (const field of step.fields) {
+      fieldIds.add(field.id);
+    }
+  }
+
   const errors: ToolFormErrors = {};
 
   for (const step of app.formSchema.steps) {
@@ -1102,7 +1107,6 @@ export const recipeIntegrationSchema = z.object({
   connectionGroup: z.string().optional(),
   operationIds: z.array(z.string()).optional(),
   configurationKeys: z.array(z.string()).optional(),
-  knowledgeAdapterId: z.string().optional(),
   connectionStatus: recipeConnectionStatusSchema.optional(),
   setupUrl: z.string().optional(),
 });

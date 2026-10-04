@@ -1,6 +1,6 @@
 import {
   CONNECTOR_ACCOUNT_REFERENCE_KIND,
-  getConnectorKnowledgeAdapter,
+  connectorOperationRequiresApproval,
   getConnectorOperationConfig,
 } from "@ngriffin_uk/polychat-ai-integrations";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
@@ -8,7 +8,9 @@ import { ownsResource, operationIsGranted } from "@ngriffin_uk/polychat-library-
 import {
   SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
   createKnowledgeSyncSchema,
+  recipeConnectorProviderSchema,
   type CreateKnowledgeSync,
+  type KnowledgeSyncResource,
   type UpdateKnowledgeSync,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
@@ -26,7 +28,7 @@ import {
 import type { IEnv } from "~/types";
 
 import type { KnowledgeSyncRecord } from "../infrastructure/KnowledgeSyncRepository";
-import { formatKnowledgeSync } from "./knowledge-sync-record";
+import { formatKnowledgeSync, parseKnowledgeSyncResources } from "./knowledge-sync-record";
 
 export async function requireKnowledgeSyncAuthority(
   context: ServiceContext,
@@ -34,6 +36,7 @@ export async function requireKnowledgeSyncAuthority(
     KnowledgeSyncRecord,
     "user_id" | "project_id" | "recipe_id" | "integration_id" | "connection_id"
   >,
+  resources: readonly KnowledgeSyncResource[],
 ) {
   const userId = context.requireUser().id;
 
@@ -43,23 +46,29 @@ export async function requireKnowledgeSyncAuthority(
 
   const recipe = getRecipeById(sync.recipe_id);
   const integration = recipe?.integrations.find((entry) => entry.id === sync.integration_id);
-  const adapter = integration?.knowledgeAdapterId
-    ? getConnectorKnowledgeAdapter(integration.knowledgeAdapterId)
-    : undefined;
 
-  if (
-    !recipe ||
-    !integration ||
-    !adapter ||
-    adapter.provider !== integration.providerId ||
-    !operationIsGranted(integration.operationIds ?? [], adapter.operation) ||
-    getConnectorOperationConfig(adapter.provider, adapter.operation)?.access !== "read"
-  ) {
+  if (!recipe || !integration) {
     throw new AssistantError(
       "This recipe integration cannot sync knowledge",
       ErrorType.CONFIGURATION_ERROR,
       400,
     );
+  }
+
+  const provider = recipeConnectorProviderSchema.parse(integration.providerId);
+
+  for (const resource of resources) {
+    if (
+      !operationIsGranted(integration.operationIds ?? [], resource.operation) ||
+      getConnectorOperationConfig(provider, resource.operation)?.access !== "read" ||
+      connectorOperationRequiresApproval(provider, resource.operation)
+    ) {
+      throw new AssistantError(
+        "Knowledge sync requires an authorised read operation",
+        ErrorType.AUTHORISATION_ERROR,
+        403,
+      );
+    }
   }
 
   await requireProjectCapabilityAccess(context, sync.project_id, "recipe", recipe.id);
@@ -70,7 +79,7 @@ export async function requireKnowledgeSyncAuthority(
   if (
     !connection ||
     !ownsResource(userId, connection.user_id) ||
-    connection.provider !== adapter.provider ||
+    connection.provider !== provider ||
     connection.kind !== CONNECTOR_ACCOUNT_REFERENCE_KIND ||
     connection.status !== "connected"
   ) {
@@ -81,7 +90,7 @@ export async function requireKnowledgeSyncAuthority(
     );
   }
 
-  return { connection, adapter };
+  return { connection, provider };
 }
 
 export async function enqueueKnowledgeSync(
@@ -115,13 +124,17 @@ export async function createKnowledgeSync(context: ServiceContext, input: Create
   const parsed = createKnowledgeSyncSchema.parse(input);
   const userId = context.requireUser().id;
 
-  const { connection } = await requireKnowledgeSyncAuthority(context, {
-    user_id: userId,
-    project_id: parsed.projectId,
-    recipe_id: parsed.recipeId,
-    integration_id: parsed.integrationId,
-    connection_id: parsed.connectionId,
-  });
+  const { connection } = await requireKnowledgeSyncAuthority(
+    context,
+    {
+      user_id: userId,
+      project_id: parsed.projectId,
+      recipe_id: parsed.recipeId,
+      integration_id: parsed.integrationId,
+      connection_id: parsed.connectionId,
+    },
+    parsed.resources,
+  );
 
   for (const resource of parsed.resources) {
     if (
@@ -173,7 +186,7 @@ export async function controlKnowledgeSync(
 
   await requireProjectAccess(context, sync.project_id);
   if (input.action !== "pause") {
-    await requireKnowledgeSyncAuthority(context, sync);
+    await requireKnowledgeSyncAuthority(context, sync, parseKnowledgeSyncResources(sync));
   }
 
   await context.repositories.knowledgeSyncs.control(id, input.action);

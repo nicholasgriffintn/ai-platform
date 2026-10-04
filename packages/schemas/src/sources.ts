@@ -73,7 +73,9 @@ export const projectKnowledgeSearchResponseSchema = z.object({
         sourceRevision: z.number().int().positive(),
         externalUri: z.string().nullable(),
         updatedAt: z.string().nullable(),
-        upstreamRevision: z.number().int().positive().nullable(),
+        upstreamRevision: z
+          .union([z.number().int().positive(), z.string().min(1).max(200)])
+          .nullable(),
         lastSyncedAt: z.string().nullable(),
       }),
     }),

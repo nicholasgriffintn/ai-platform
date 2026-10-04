@@ -231,13 +231,16 @@ class OpenAIResponsesToolBuilder {
   private buildMcpTools(): Record<string, any>[] {
     const serverConfigs = Array.isArray(this.options.mcp_servers) ? this.options.mcp_servers : [];
 
-    return serverConfigs.flatMap((serverConfig): Record<string, any>[] => {
+    const tools: Record<string, any>[] = [];
+
+    for (const serverConfig of serverConfigs) {
       if (!isRecord(serverConfig)) {
-        return [];
+        continue;
       }
 
       if (serverConfig.type === "mcp") {
-        return [serverConfig];
+        tools.push(serverConfig);
+        continue;
       }
 
       const serverLabel = serverConfig.server_label;
@@ -245,33 +248,33 @@ class OpenAIResponsesToolBuilder {
       const connectorId = serverConfig.connector_id;
 
       if (typeof serverLabel !== "string" || (!serverUrl && !connectorId)) {
-        return [];
+        continue;
       }
 
-      return [
-        {
-          type: "mcp",
-          server_label: serverLabel,
-          ...(typeof serverConfig.credential_connection_id === "string"
-            ? { credential_connection_id: serverConfig.credential_connection_id }
-            : {}),
-          ...(typeof serverUrl === "string" ? { server_url: serverUrl } : {}),
-          ...(typeof connectorId === "string" ? { connector_id: connectorId } : {}),
-          ...(serverConfig.headers ? { headers: serverConfig.headers } : {}),
-          ...(serverConfig.authorization ? { authorization: serverConfig.authorization } : {}),
-          ...(serverConfig.allowed_tools ? { allowed_tools: serverConfig.allowed_tools } : {}),
-          ...(serverConfig.require_approval !== undefined
-            ? { require_approval: serverConfig.require_approval }
-            : {}),
-          ...(typeof serverConfig.server_description === "string"
-            ? { server_description: serverConfig.server_description }
-            : {}),
-          ...(typeof serverConfig.defer_loading === "boolean"
-            ? { defer_loading: serverConfig.defer_loading }
-            : {}),
-        },
-      ];
-    });
+      tools.push({
+        type: "mcp",
+        server_label: serverLabel,
+        ...(typeof serverConfig.credential_connection_id === "string"
+          ? { credential_connection_id: serverConfig.credential_connection_id }
+          : {}),
+        ...(typeof serverUrl === "string" ? { server_url: serverUrl } : {}),
+        ...(typeof connectorId === "string" ? { connector_id: connectorId } : {}),
+        ...(serverConfig.headers ? { headers: serverConfig.headers } : {}),
+        ...(serverConfig.authorization ? { authorization: serverConfig.authorization } : {}),
+        ...(serverConfig.allowed_tools ? { allowed_tools: serverConfig.allowed_tools } : {}),
+        ...(serverConfig.require_approval !== undefined
+          ? { require_approval: serverConfig.require_approval }
+          : {}),
+        ...(typeof serverConfig.server_description === "string"
+          ? { server_description: serverConfig.server_description }
+          : {}),
+        ...(typeof serverConfig.defer_loading === "boolean"
+          ? { defer_loading: serverConfig.defer_loading }
+          : {}),
+      });
+    }
+
+    return tools;
   }
 
   private buildConfiguredToolSearchNamespaces(): Record<string, any>[] {

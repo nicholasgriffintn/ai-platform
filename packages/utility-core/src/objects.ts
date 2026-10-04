@@ -2,6 +2,34 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+export function readPathValues(value: unknown, path: readonly (string | number)[]): unknown[] {
+  let values: unknown[] = [value];
+
+  for (const segment of path) {
+    const next: unknown[] = [];
+
+    for (const entry of values) {
+      if (segment === "*" && Array.isArray(entry)) {
+        for (const item of entry) {
+          next.push(item);
+        }
+      } else if (
+        Array.isArray(entry) &&
+        typeof segment === "number" &&
+        Object.hasOwn(entry, segment)
+      ) {
+        next.push(entry[segment]);
+      } else if (isRecord(entry) && Object.hasOwn(entry, segment)) {
+        next.push(entry[segment]);
+      }
+    }
+
+    values = next;
+  }
+
+  return values;
+}
+
 export function omitMatchingProperties<T extends object>(
   values: Partial<T>,
   baseline: T,

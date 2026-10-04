@@ -1,3 +1,4 @@
+import { normaliseConnectorKnowledge } from "@ngriffin_uk/polychat-ai-integrations";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -27,7 +28,7 @@ async function syncResources(context: ServiceContext, initial: KnowledgeSyncReco
       );
     }
 
-    const { connection, adapter } = await requireKnowledgeSyncAuthority(context, sync);
+    const { connection, provider } = await requireKnowledgeSyncAuthority(context, sync, [resource]);
     const sourceId = "source_sync_" + (await sha256Hex(sync.id + ":" + resource.resourceId));
     let result: unknown;
 
@@ -36,8 +37,8 @@ async function syncResources(context: ServiceContext, initial: KnowledgeSyncReco
         context,
         userId: sync.user_id,
         request: {
-          provider: adapter.provider,
-          operation: adapter.operation,
+          provider,
+          operation: resource.operation,
           connectedAccountId: connection.external_id,
           params: resource.readParameters,
         },
@@ -49,23 +50,23 @@ async function syncResources(context: ServiceContext, initial: KnowledgeSyncReco
       });
     } catch (error) {
       if (error instanceof AssistantError && [403, 404].includes(error.statusCode)) {
-        await requireKnowledgeSyncAuthority(context, sync);
+        await requireKnowledgeSyncAuthority(context, sync, [resource]);
         await context.repositories.knowledgeSyncs.markUnavailable(sync, token, sourceId);
       }
 
       throw error;
     }
 
-    const document = adapter.normalise(result, resource.resourceId);
+    const document = normaliseConnectorKnowledge(result, resource);
 
-    await requireKnowledgeSyncAuthority(context, sync);
+    await requireKnowledgeSyncAuthority(context, sync, [resource]);
     if (
       !(await context.repositories.knowledgeSyncs.commitResource(sync, token, {
         ...document,
         sourceId,
         resourceId: resource.resourceId,
         resourceCount: resources.length,
-        provider: adapter.provider,
+        provider,
       }))
     ) {
       return;

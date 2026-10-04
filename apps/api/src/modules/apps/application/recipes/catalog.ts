@@ -82,9 +82,13 @@ export function getRecipeCatalogValidationIssues(
   recipes: readonly AssistantRecipe[] = assistantRecipes,
 ): string[] {
   const issues: string[] = [];
-  const exposedProviders = new Set(
-    recipes.flatMap((recipe) => recipe.integrations.map((integration) => integration.providerId)),
-  );
+  const exposedProviders = new Set<string>();
+
+  for (const recipe of recipes) {
+    for (const integration of recipe.integrations) {
+      exposedProviders.add(integration.providerId);
+    }
+  }
 
   for (const providerId of Object.keys(configuredComposioToolkits).sort()) {
     if (!exposedProviders.has(providerId)) {

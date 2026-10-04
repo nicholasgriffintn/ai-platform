@@ -9,14 +9,74 @@ import { getProjectEmbeddingScopeTag } from "~/infrastructure/providers/capabili
 import { queryEmbeddingRuntime } from "~/modules/apps/application/embeddings/provider-query";
 import type { SourceSearchPassage } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import type { IUserSettings } from "~/types";
 
-async function semanticPassages(
+interface KnowledgeSearchInput {
+  projectId: string;
+  query: string;
+  type?: string;
+  top_k?: number;
+}
+
+async function semanticTargetPassages(
   context: ServiceContext,
-  projectId: string,
-  query: string,
-  type?: string,
-) {
-  const targets = await context.repositories.sourceSearch.getTargets(projectId);
+  input: KnowledgeSearchInput,
+  settings: IUserSettings,
+  scopeTag: string,
+  { target }: { target: string },
+): Promise<SourceSearchPassage[]> {
+  try {
+    const decodedTarget = decodeEmbeddingRuntimeTarget(target);
+    const runtime = getEmbeddingRuntimeForTarget(
+      context.env,
+      context.requireUser(),
+      settings,
+      decodedTarget,
+    );
+    const result = await queryEmbeddingRuntime({
+      ...runtime,
+      query: input.query,
+      type: input.type,
+      scopeTag,
+    });
+    const matches = [...result.matches].sort((a, b) => b.score - a.score);
+    const ids: string[] = [];
+
+    for (const match of matches) {
+      ids.push(match.id);
+    }
+
+    const hydrated = await context.repositories.sourceSearch.hydrate(
+      input.projectId,
+      ids,
+      input.type,
+    );
+    const byId = new Map<string, SourceSearchPassage>();
+
+    for (const passage of hydrated) {
+      if (passage.target === target) {
+        byId.set(passage.id, passage);
+      }
+    }
+
+    const passages: SourceSearchPassage[] = [];
+
+    for (const match of matches) {
+      const passage = byId.get(match.id);
+
+      if (passage) {
+        passages.push(passage);
+      }
+    }
+
+    return passages;
+  } catch {
+    return [];
+  }
+}
+
+async function semanticPassages(context: ServiceContext, input: KnowledgeSearchInput) {
+  const targets = await context.repositories.sourceSearch.getTargets(input.projectId);
 
   if (targets.length > 8) {
     throw new AssistantError(
@@ -39,54 +99,27 @@ async function semanticPassages(
   let scopeTag: string;
 
   try {
-    scopeTag = await getProjectEmbeddingScopeTag(context.env.EMBEDDING_SCOPE_SECRET, projectId);
+    scopeTag = await getProjectEmbeddingScopeTag(
+      context.env.EMBEDDING_SCOPE_SECRET,
+      input.projectId,
+    );
   } catch {
     return [];
   }
 
-  return mapWithConcurrency(targets, 4, async ({ target }) => {
-    try {
-      const runtime = getEmbeddingRuntimeForTarget(
-        context.env,
-        context.requireUser(),
-        settings,
-        decodeEmbeddingRuntimeTarget(target),
-      );
-      const result = await queryEmbeddingRuntime({ ...runtime, query, type, scopeTag });
-      const matches = [...result.matches].sort((a, b) => b.score - a.score);
-      const hydrated = await context.repositories.sourceSearch.hydrate(
-        projectId,
-        matches.map((match) => match.id),
-        type,
-      );
-      const byId = new Map(
-        hydrated
-          .filter((passage) => passage.target === target)
-          .map((passage) => [passage.id, passage]),
-      );
+  const searchTarget = semanticTargetPassages.bind(null, context, input, settings, scopeTag);
 
-      return matches.flatMap((match) => {
-        const passage = byId.get(match.id);
-
-        return passage ? [passage] : [];
-      });
-    } catch {
-      return [];
-    }
-  });
+  return mapWithConcurrency(targets, 4, searchTarget);
 }
 
-export async function searchProjectKnowledge(
-  context: ServiceContext,
-  input: { projectId: string; query: string; type?: string; top_k?: number },
-) {
+export async function searchProjectKnowledge(context: ServiceContext, input: KnowledgeSearchInput) {
   await requireProjectAccess(context, input.projectId);
   const fts = toFtsQuery(input.query);
   const [lexical, semantic] = await Promise.all([
     fts
       ? context.repositories.sourceSearch.lexical(input.projectId, fts, input.type)
       : Promise.resolve<SourceSearchPassage[]>([]),
-    semanticPassages(context, input.projectId, input.query, input.type),
+    semanticPassages(context, input),
   ]);
 
   await requireProjectAccess(context, input.projectId);

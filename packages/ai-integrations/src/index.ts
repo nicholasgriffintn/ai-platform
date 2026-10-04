@@ -96,8 +96,4 @@ export {
   listConfiguredComposioToolkits,
   type ConfiguredComposioToolkit,
 } from "@ngriffin_uk/polychat-library-composio";
-export {
-  getConnectorKnowledgeAdapter,
-  type ConnectorKnowledgeAdapter,
-  type ConnectorKnowledgeDocument,
-} from "./knowledge.js";
+export { normaliseConnectorKnowledge, type ConnectorKnowledgeDocument } from "./knowledge.js";

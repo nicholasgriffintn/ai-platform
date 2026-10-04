@@ -30,7 +30,7 @@ export interface SourceSearchPassage {
   type: string;
   externalUri: string | null;
   updatedAt: string | null;
-  upstreamRevision: number | null;
+  upstreamRevision: string | number | null;
   lastSyncedAt: string | null;
   target: string;
 }
@@ -38,7 +38,7 @@ export interface SourceSearchPassage {
 const PASSAGE_COLUMNS = `c.id, s.id AS sourceId, d.source_revision AS sourceRevision,
   c.chunk_index AS chunkIndex, s.title, c.content, s.kind AS type,
   s.external_uri AS externalUri, s.updated_at AS updatedAt, d.target,
-  CASE WHEN json_type(s.metadata, '$.upstreamRevision') = 'integer' THEN json_extract(s.metadata, '$.upstreamRevision') ELSE NULL END AS upstreamRevision,
+  CASE WHEN json_type(s.metadata, '$.upstreamRevision') IN ('integer', 'text') THEN json_extract(s.metadata, '$.upstreamRevision') ELSE NULL END AS upstreamRevision,
   CASE WHEN json_type(s.metadata, '$.lastSyncedAt') = 'text' THEN json_extract(s.metadata, '$.lastSyncedAt') ELSE NULL END AS lastSyncedAt`;
 const CURRENT_SOURCE = `s.id = d.source_id AND s.search_revision = d.source_revision
   AND s.status = 'available' AND s.kind != 'memory'`;

@@ -1,7 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 import { detectStreaming } from "@ngriffin_uk/polychat-utility-server/streaming";
 
 import type { AsyncInvocationMetadata } from "../../../async-invocation.js";
@@ -21,7 +20,6 @@ import {
   validateAiGatewayToken,
   buildAiGatewayHeaders,
   buildMetricsSettings,
-  SENSITIVE_REQUEST_GATEWAY_HEADERS,
 } from "../../../utils/helpers.js";
 import { resolvePrivateAssetUrls } from "../../../utils/privateAssets.js";
 
@@ -151,17 +149,14 @@ export abstract class BaseProvider implements AIProvider {
   }
 
   protected getFetchOptions(
-    params: ChatCompletionParameters,
+    _params: ChatCompletionParameters,
     modelConfig: ModelConfigItem,
+    _body: Record<string, unknown>,
   ): FetchAIResponseOptions {
     return {
       requestTimeout: modelConfig.timeout || 100000,
       maxAttempts: 1,
     };
-  }
-
-  protected getSensitiveValues(_body: Record<string, unknown>): string[] {
-    return [];
   }
 
   protected abstract getEndpoint(params: ChatCompletionParameters): Promise<string>;
@@ -235,49 +230,42 @@ export abstract class BaseProvider implements AIProvider {
       throw new AssistantError(`Model ${params.model} not found`, ErrorType.CONFIGURATION_ERROR);
     }
 
-    const storageService = this.runtime.host.storage.forEnv(params.env);
-    const assetsUrl = params.env.API_BASE_URL || "";
-
     return trackProviderMetrics(this.runtime.host, {
       provider: this.name,
       model,
-      operation: async () => {
-        const body = await this.getParameterMapping(params, storageService, assetsUrl);
-        const sensitiveValues = this.getSensitiveValues(body);
-        const endpoint = await this.getEndpoint(params);
-
-        const data = await fetchAIResponse(
-          this.isOpenAiCompatible,
-          this.name,
-          endpoint,
-          sensitiveValues.length ? { ...headers, ...SENSITIVE_REQUEST_GATEWAY_HEADERS } : headers,
-          body,
-          params.env,
-          {
-            ...this.getFetchOptions(params, modelConfig),
-            ...(sensitiveValues.length
-              ? { sensitiveRequest: true, includeErrorBodyInLogs: false }
-              : {}),
-          },
-        );
-
-        const isStreaming = detectStreaming(body, endpoint);
-
-        if (isStreaming) {
-          return data;
-        }
-
-        const safeData = sensitiveValues.reduce(
-          (value, secret) => redactSensitiveTokens(value, secret),
-          data,
-        );
-
-        return await this.formatResponse(safeData, params, userId);
-      },
+      operation: this.performRequest.bind(this, params, modelConfig, headers, userId),
       settings: this.buildMetricsSettings(params),
       userId,
       completion_id: params.completion_id,
       request: params,
     });
+  }
+
+  private async performRequest(
+    params: ChatCompletionParameters,
+    modelConfig: ModelConfigItem,
+    headers: Record<string, string>,
+    userId?: number,
+  ): Promise<any> {
+    const storageService = this.runtime.host.storage.forEnv(params.env);
+    const assetsUrl = params.env.API_BASE_URL || "";
+    const body = await this.getParameterMapping(params, storageService, assetsUrl);
+    const endpoint = await this.getEndpoint(params);
+    const options = this.getFetchOptions(params, modelConfig, body);
+    const data = await fetchAIResponse(
+      this.isOpenAiCompatible,
+      this.name,
+      endpoint,
+      headers,
+      body,
+      params.env,
+      options,
+    );
+
+    if (detectStreaming(body, endpoint)) {
+      return data;
+    }
+
+    return this.formatResponse(data, params, userId);
   }
 }

@@ -1,43 +1,74 @@
-import { configuredComposioToolkits } from "@ngriffin_uk/polychat-ai-integrations";
+import {
+  configuredComposioToolkits,
+  connectorProviders,
+  connectorOperationRequiresApproval,
+} from "@ngriffin_uk/polychat-ai-integrations";
+import type { AssistantRecipe } from "@ngriffin_uk/polychat-schemas";
 
 import { RECIPE_CONNECTOR_TOOL, type CatalogRecipe } from "./shared";
 
+function buildKnowledgeIntegrations(): AssistantRecipe["integrations"] {
+  const integrations: AssistantRecipe["integrations"] = [];
+
+  for (const provider of connectorProviders) {
+    if (provider.auth.authType !== "composio") {
+      continue;
+    }
+
+    const operationIds: string[] = [];
+
+    for (const operation of provider.operations) {
+      if (
+        operation.access === "read" &&
+        !connectorOperationRequiresApproval(provider.id, operation.id)
+      ) {
+        operationIds.push(operation.id);
+      }
+    }
+
+    if (operationIds.length > 0) {
+      integrations.push({
+        id: provider.id,
+        providerId: provider.id,
+        name: provider.name,
+        description: provider.description,
+        requiresConnection: true,
+        connectionGroup: "knowledge",
+        operationIds,
+      });
+    }
+  }
+
+  return integrations;
+}
+
 export const platformKnowledgeRecipes: CatalogRecipe[] = [
   {
-    id: "confluence-project-knowledge",
-    title: "Confluence Project Knowledge",
-    summary: "Keep selected Confluence pages searchable in a project.",
+    id: "project-knowledge",
+    title: "Project Knowledge",
+    summary: "Keep selected documents from connected services searchable in a project.",
     description:
-      "Sync selected published pages through the connected account, retain page versions and freshness, and archive pages explicitly marked deleted or archived.",
+      "Choose connected services, read operations and document mappings. Refresh selected resources into project Files with revisions, freshness and explicit archive states.",
     kind: "integrate",
     category: "Developer",
     featured: false,
     enabledTools: [RECIPE_CONNECTOR_TOOL, "configure_knowledge_sync", "search_documents"],
-    integrations: [
-      {
-        id: "confluence",
-        providerId: "confluence",
-        name: "Confluence",
-        description: "Selected project runbooks and documentation",
-        requiresConnection: true,
-        operationIds: ["CONFLUENCE_GET_PAGE_BY_ID"],
-        knowledgeAdapterId: "confluence-page",
-      },
-    ],
+    connectorPolicy: { access: "read", parameters: "explicit" },
+    integrations: buildKnowledgeIntegrations(),
     triggers: [
       {
         type: "message",
         label: "Set up knowledge sync",
-        description: "Choose a connected account, published pages, a project and refresh interval.",
+        description: "Choose a connected account, documents, a project and refresh interval.",
       },
     ],
     actions: [
-      "Discover the page read schema",
-      "Save an explicit selected-page sync",
+      "Discover the document read schema",
+      "Save an explicit selected-resource sync",
       "Search current project passages with citations",
     ],
     setupPrompt:
-      "Set up Confluence Project Knowledge. Ask which published page IDs to share with this project and how often to refresh (5 minutes to one day). Discover CONFLUENCE_GET_PAGE_BY_ID with use_recipe_connector and read the selected pages including storage body and version using its actual schema. Call configure_knowledge_sync with this recipe ID, the confluence integration ID, discovery.connectionReferenceId as connectionId, and the tested read parameters for each resourceId. Never guess vendor parameter names or include credentials in parameters. Explain that page text is copied into project Files and available to project members. Freshness and pause/refresh controls are in Files.",
+      "Set up Project Knowledge. Ask which connected service and documents to share with this project and how often to refresh (5 minutes to one day). Discover authorised read operations with use_recipe_connector, read the selected resources and inspect the returned fields before saving the document mappings with configure_knowledge_sync. Use the discovered connection reference and tested read parameters. Never guess vendor field or parameter names or include credentials. Explain that document text is copied into project Files and available to project members. Freshness and pause/refresh controls are in Files.",
   },
   {
     id: "service-incident-brief",

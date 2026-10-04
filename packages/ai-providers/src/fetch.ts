@@ -29,6 +29,12 @@ const logger = getLogger({ prefix: "lib/providers/fetch" });
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 100000;
 const MAX_PROVIDER_ERROR_BODY_BYTES = 64 * 1024;
+const SENSITIVE_REQUEST_GATEWAY_HEADERS = {
+  "cf-aig-collect-log": "false",
+  "cf-aig-collect-log-payload": "false",
+  "cf-aig-skip-cache": "true",
+  "cf-aig-cache-ttl": "0",
+};
 
 export interface FetchAIResponseOptions {
   requestTimeout?: number;
@@ -55,6 +61,7 @@ function getAiGatewayRequestHeaders(
 ): Record<string, string> {
   return compactStringRecord({
     ...headers,
+    ...(options.sensitiveRequest ? SENSITIVE_REQUEST_GATEWAY_HEADERS : {}),
     "cf-aig-request-timeout": options.requestTimeout?.toString(),
     "cf-aig-max-attempts": options.maxAttempts?.toString(),
     "cf-aig-retry-delay": options.retryDelay?.toString(),

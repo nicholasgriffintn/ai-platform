@@ -2,6 +2,7 @@ import {
   shouldSendProviderReasoningEffort,
   shouldSendProviderVerbosity,
 } from "@ngriffin_uk/polychat-ai-models";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { compactStringRecord } from "@ngriffin_uk/polychat-utility-server/objects";
@@ -11,9 +12,14 @@ import {
   createAsyncInvocationMetadata,
   type AsyncInvocationMetadata,
 } from "../../../async-invocation.js";
+import type { FetchAIResponseOptions } from "../../../fetch.js";
 import { resolveAiGatewayId } from "../../../gateway.js";
 import type { ProviderStorage } from "../../../host.js";
-import { extractTextFromMessageContent, requireMessages } from "../../../messages.js";
+import {
+  extractTextFromMessageContent,
+  findMessageContent,
+  requireMessages,
+} from "../../../messages.js";
 import {
   createCommonParameters,
   getToolsForProvider,
@@ -24,7 +30,7 @@ import type { ChatCompletionParameters, MessageContent } from "../../../types/in
 import { safeParseJSON } from "../../../utils/helpers.js";
 import {
   resolveHostedMcpCredentials,
-  getHostedMcpAuthorizations,
+  hasHostedMcpAuthorization,
 } from "../../../utils/mcpCredentials.js";
 import {
   buildOpenAIResponsesBody,
@@ -52,8 +58,16 @@ export class OpenAIProvider extends BaseProvider {
     return "OPENAI_API_KEY";
   }
 
-  protected getSensitiveValues(body: Record<string, unknown>): string[] {
-    return getHostedMcpAuthorizations(body);
+  protected getFetchOptions(
+    params: ChatCompletionParameters,
+    modelConfig: ModelConfigItem,
+    body: Record<string, unknown>,
+  ): FetchAIResponseOptions {
+    const options = super.getFetchOptions(params, modelConfig, body);
+
+    return hasHostedMcpAuthorization(body)
+      ? { ...options, sensitiveRequest: true, includeErrorBodyInLogs: false }
+      : options;
   }
 
   protected validateParams(params: ChatCompletionParameters): void {
@@ -67,10 +81,7 @@ export class OpenAIProvider extends BaseProvider {
 
   protected async getEndpoint(params: ChatCompletionParameters): Promise<string> {
     if (this.isImageGeneration(params)) {
-      const hasAttachments = params.messages?.some(
-        (message) =>
-          Array.isArray(message.content) && message.content.some((c) => c.type === "image_url"),
-      );
+      const hasAttachments = findMessageContent(params.messages ?? [], "image_url") !== undefined;
 
       return hasAttachments ? "https://api.openai.com/v1/images/edits" : "images/generations";
     }
@@ -139,16 +150,11 @@ export class OpenAIProvider extends BaseProvider {
     storageService: ProviderStorage,
     imageRequestInput: Partial<OpenAIImageParams>,
   ): Promise<FormData> {
-    const messageWithImage = params.messages?.find(
-      (message) =>
-        Array.isArray(message.content) && message.content.some((item) => item.type === "image_url"),
-    );
+    const imageItem = findMessageContent(params.messages ?? [], "image_url");
 
-    if (!messageWithImage || !Array.isArray(messageWithImage.content)) {
+    if (!imageItem) {
       throw new AssistantError("No valid image found for image editing", ErrorType.PARAMS_ERROR);
     }
-
-    const imageItem = messageWithImage.content.find((item) => item.type === "image_url");
 
     if (!imageItem?.image_url?.url) {
       throw new AssistantError("No image URL found for editing", ErrorType.PARAMS_ERROR);
@@ -373,11 +379,7 @@ export class OpenAIProvider extends BaseProvider {
       const prompt =
         imageRequestInput.prompt || extractTextFromMessageContent(promptMessage?.content);
 
-      const hasImages = messages.some(
-        (message) =>
-          Array.isArray(message.content) &&
-          message.content.some((item) => item.type === "image_url"),
-      );
+      const hasImages = findMessageContent(messages, "image_url") !== undefined;
 
       const endpoint = await this.getEndpoint(params);
 
@@ -459,15 +461,21 @@ export class OpenAIProvider extends BaseProvider {
     const user = providerParams.context?.user;
 
     if (shouldUseOpenAIResponsesApi(providerParams, modelConfig)) {
+      const responseStreamingParams = createStreamingParameters(
+        modelConfig,
+        this.supportsStreaming,
+        providerParams.stream,
+        { includeUsage: false },
+      );
+      const responseBody = buildOpenAIResponsesBody(
+        providerParams,
+        modelConfig,
+        toolsParams.tools || [],
+        responseStreamingParams,
+      );
+
       return resolveHostedMcpCredentials(
-        buildOpenAIResponsesBody(
-          providerParams,
-          modelConfig,
-          toolsParams.tools || [],
-          createStreamingParameters(modelConfig, this.supportsStreaming, providerParams.stream, {
-            includeUsage: false,
-          }),
-        ),
+        responseBody,
         this.runtime.host,
         this.name,
         params.context,

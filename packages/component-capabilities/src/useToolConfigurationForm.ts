@@ -45,17 +45,27 @@ export function useToolConfigurationForm(
       return;
     }
 
-    const candidate =
-      tool.configurationKind === "file_search"
-        ? { vectorStoreIds: splitNonEmptyLines(vectorStoreIds).flatMap(parseCommaSeparatedList) }
-        : {
-            servers: servers.map(({ label, url, credentialConnectionId, allowedTools }) => ({
-              label: label.trim(),
-              url: url.trim(),
-              ...(credentialConnectionId ? { credentialConnectionId } : {}),
-              ...(allowedTools ? { allowedTools } : {}),
-            })),
-          };
+    let candidate: unknown;
+
+    if (tool.configurationKind === "file_search") {
+      const lines = splitNonEmptyLines(vectorStoreIds);
+
+      candidate = { vectorStoreIds: lines.flatMap(parseCommaSeparatedList) };
+    } else {
+      const configuredServers = [];
+
+      for (const server of servers) {
+        configuredServers.push({
+          label: server.label,
+          url: server.url,
+          credentialConnectionId: server.credentialConnectionId,
+          allowedTools: server.allowedTools,
+        });
+      }
+
+      candidate = { servers: configuredServers };
+    }
+
     const configuration = parseModelToolConfiguration(tool, candidate);
 
     if (!configuration) {

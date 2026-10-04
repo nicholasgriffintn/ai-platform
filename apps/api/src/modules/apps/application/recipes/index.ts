@@ -58,19 +58,31 @@ export const RECIPE_INSTALLATION_APP_ID = "assistant_recipe_installation";
 export const RECIPE_INSTALLATION_ITEM_TYPE = "recipe_installation";
 
 export function listRecipeCatalogueSummaries(): RecipeCatalogueSummary[] {
-  return assistantRecipes.map((recipe) => ({
-    id: recipe.id,
-    title: recipe.title,
-    summary: recipe.summary,
-    kind: recipe.kind,
-    category: recipe.category,
-    featured: recipe.featured,
-    integrations: recipe.integrations.map((integration) => ({
-      id: integration.id,
-      providerId: integration.providerId,
-      name: integration.name,
-    })),
-  }));
+  const summaries: RecipeCatalogueSummary[] = [];
+
+  for (const recipe of assistantRecipes) {
+    const integrations: RecipeCatalogueSummary["integrations"] = [];
+
+    for (const integration of recipe.integrations) {
+      integrations.push({
+        id: integration.id,
+        providerId: integration.providerId,
+        name: integration.name,
+      });
+    }
+
+    summaries.push({
+      id: recipe.id,
+      title: recipe.title,
+      summary: recipe.summary,
+      kind: recipe.kind,
+      category: recipe.category,
+      featured: recipe.featured,
+      integrations,
+    });
+  }
+
+  return summaries;
 }
 
 interface RecipeListOptions {

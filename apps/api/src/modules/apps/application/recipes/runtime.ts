@@ -325,9 +325,13 @@ function buildConnectorSelectionGuidance(params: {
     }
   }
 
-  const unsatisfiedGroups = Array.from(groups.values()).filter(
-    (group) => !group.some((connection) => connection.status === "connected"),
-  );
+  const unsatisfiedGroups: AssistantRecipeConnection[][] = [];
+
+  for (const group of groups.values()) {
+    if (!group.some((connection) => connection.status === "connected")) {
+      unsatisfiedGroups.push(group);
+    }
+  }
 
   for (const group of unsatisfiedGroups) {
     lines.push(

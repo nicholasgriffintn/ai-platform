@@ -3,12 +3,6 @@ import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/reda
 
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "../gateway.js";
 import type { ChatCompletionParameters } from "../types/index.js";
-export const SENSITIVE_REQUEST_GATEWAY_HEADERS = {
-  "cf-aig-collect-log": "false",
-  "cf-aig-collect-log-payload": "false",
-  "cf-aig-skip-cache": "true",
-  "cf-aig-cache-ttl": "0",
-};
 
 export function validateAiGatewayToken(params: ChatCompletionParameters): void {
   if (!params.env.AI_GATEWAY_TOKEN) {
