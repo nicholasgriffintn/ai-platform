@@ -20,6 +20,20 @@ Managed personal embeddings support Vectorize, S3 Vectors and DynamoDB Vectors. 
 
 Reserve documents as `pending`, expose only `active` records, and mark `delete_pending` before provider deletion. Remove D1 state only after confirmed cleanup and retain uncertain writes for reconciliation against their original target. Apply the same discipline to built-in memory, and quarantine ambiguous legacy ownership rather than guessing. Enforce content, metadata, batch and concurrency bounds at the shared schema and provider boundaries. Keep project memory in its authorised built-in scope; the personal embeddings API grants no project retrieval.
 
+Index personal and project knowledge from the `source` domain through `source_index` and `source_chunk`. Combine D1 FTS5 keyword matches with scoped vectors using reciprocal-rank fusion, then hydrate current source revisions before reranking and again before returning passages. Transition note creation and document-search tools to sources; migrate existing active personal document content into sources without a legacy search fallback.
+
+Fence writes with task leases and source revisions. Keep obsolete index records and original provider targets until vector cleanup succeeds, including after the source row has been deleted. Reserve indexes before provider writes and reuse recorded chunk IDs during retries.
+
+Keep prepared keyword passages searchable when vector indexing fails. Query vector targets only after activation; every keyword and vector match still requires current source revision and permission evidence.
+
+Save extracted web content through `storeKnowledge` in the current conversation scope and report `storedKnowledge`. The scheduler indexes these native sources; callers cannot select a storage namespace. The previous vector-storage fields and note/document-search fallback are removed.
+
+Store completed repository runs as idempotent repository sources in the scope recorded by Activity. Backfill historical runs from trusted Activity records and quarantine ambiguous ownership instead of copying their former personal-vector scope.
+
+Retire the transferred personal embedding documents from retrieval immediately. Carry their original targets and vector IDs into cleanup receipts, then remove their old D1 records only after confirmed provider deletion. Keep quarantined or unavailable targets as evidence.
+
+Sync selected Drive folders through existing connected accounts. Persist a checkpoint after each successful page and prune absent documents only after a complete current scan. Refresh permission evidence independently of content changes; require every current project member's email to appear in individual grants, or require a public grant. Deny shared retrieval after a new member joins, the publishing admin loses authority, the connection is revoked, the sync is paused or the permission evidence expires.
+
 ## Consequences
 
 Historical targets increase retrieval and cleanup cost, and changing credentials can make old targets temporarily unavailable. D1 hydration and explicit lifecycle state cost more than trusting a vector match, but prevent stale or cross-scope results.

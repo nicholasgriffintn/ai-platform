@@ -15,12 +15,16 @@ import {
   useSourceCollections,
   useSourceMutations,
   useSources,
+  useKnowledgeIndexStatus,
+  useRetryKnowledgeIndex,
 } from "@ngriffin_uk/polychat-library-react";
 import type { SourceKind } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { KnowledgeSearchPanel } from "./KnowledgeSearchPanel.js";
 import { MemorySynthesisPanel } from "./MemorySynthesisPanel.js";
+import { SourceSyncPanel } from "./SourceSyncPanel.js";
 
 const sourceKinds: Array<{ value: "" | SourceKind; label: string }> = [
   { value: "", label: "All sources" },
@@ -59,6 +63,8 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
   const { data: sourceCollections } = useSourceCollections(projectId);
   const collections = sourceCollections?.filter((collection) => collection.kind !== "context");
   const mutations = useSourceMutations();
+  const indexStatus = useKnowledgeIndexStatus(projectId);
+  const retryIndex = useRetryKnowledgeIndex();
   const selectedCollection = collections?.find((collection) => collection.id === collectionId);
   const [prevCreateRequestKey, setPrevCreateRequestKey] = useState(createRequestKey);
 
@@ -72,6 +78,8 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
 
   return (
     <>
+      <KnowledgeSearchPanel projectId={projectId} />
+      <SourceSyncPanel projectId={projectId} />
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
         <aside className="min-w-0">
           <SourceCollectionList
@@ -102,6 +110,8 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
             }
           >
             <SourceList
+              indexStatuses={indexStatus.data}
+              onRetryIndex={(sourceId) => retryIndex.mutate(sourceId)}
               sources={sources}
               collections={collections}
               isLoading={isLoading}

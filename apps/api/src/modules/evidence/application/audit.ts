@@ -78,7 +78,7 @@ export async function auditEvidence(params: {
       urls,
       extract_depth: "advanced",
       include_images: false,
-      should_vectorize: false,
+      storeKnowledge: false,
       provider: "auto",
     },
     params.request,

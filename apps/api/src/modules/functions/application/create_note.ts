@@ -1,8 +1,10 @@
+import { createSourceSchema } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
-import { insertEmbedding } from "~/modules/apps/application/embeddings/insert";
+import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
+import { enqueueSourceIndex } from "~/modules/sources/application/knowledge-indexing";
+import { createSource } from "~/modules/sources/application/sources";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { create_note as create_noteDescriptor } from "./definitions/create_note";
@@ -10,55 +12,25 @@ import { resolveRequestProjectId } from "./request-context";
 
 export const create_note: ApiToolDefinition = {
   ...create_noteDescriptor,
-  execute: async (args, context) => {
-    const req = context.request;
-
-    if (resolveRequestProjectId(req)) {
-      throw new AssistantError(
-        "Project document storage is not available yet",
-        ErrorType.CONFIGURATION_ERROR,
-        501,
-      );
-    }
-
-    const sanitisedTitle = sanitiseInput(args.title);
-    const sanitisedContent = sanitiseInput(args.content);
-
-    if (!sanitisedTitle || !sanitisedContent) {
-      return {
-        status: "error",
-        name: "create_note",
-        content: "Missing title or content",
-        data: {},
-      };
-    }
-
-    const response = await insertEmbedding({
-      request: {
-        type: "note",
-        title: sanitisedTitle,
-        content: sanitisedContent,
-        ...(isRecord(args.metadata) && { metadata: args.metadata }),
-      },
-      context: req.context,
-      env: req.env,
-      user: req.user,
+  execute: async (args, toolContext) => {
+    const request = toolContext.request;
+    const context = resolveServiceContext(request);
+    const input = createSourceSchema.parse({
+      kind: "text",
+      title: sanitiseInput(args.title),
+      content: sanitiseInput(args.content),
+      projectId: resolveRequestProjectId(request),
+      metadata: isRecord(args.metadata) ? args.metadata : {},
     });
+    const source = await createSource(context, context.requireUser().id, input);
 
-    if (!response.data) {
-      return {
-        status: "error",
-        name: "create_note",
-        content: "Error creating note",
-        data: {},
-      };
-    }
+    await enqueueSourceIndex(context, source.id);
 
     return {
       status: "success",
       name: "create_note",
-      content: "Note created successfully",
-      data: response.data,
+      content: "Note saved to the current knowledge sources",
+      data: source,
     };
   },
 };

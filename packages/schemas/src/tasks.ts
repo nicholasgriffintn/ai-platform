@@ -7,6 +7,7 @@ import {
   DELEGATION_RUN_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
 } from "./delegations.js";
+import { SOURCE_INDEX_TASK_TYPE } from "./knowledge.js";
 import {
   MODEL_DATASET_PROCESS_TASK_TYPE,
   MODEL_DEPLOYMENT_SYNC_TASK_TYPE,
@@ -18,6 +19,7 @@ import {
   MODEL_REGISTRY_EVAL_TASK_TYPE,
   MODEL_REGISTRY_INSPECT_TASK_TYPE,
 } from "./model-registry.js";
+import { SOURCE_SYNC_TASK_TYPE } from "./source-sync.js";
 
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
@@ -32,6 +34,8 @@ export const TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE = "teammate_context_cleanup";
 export const CONVERSATION_TITLE_TASK_TYPE = "conversation_title";
 
 export const TASK_TYPES = [
+  SOURCE_INDEX_TASK_TYPE,
+  SOURCE_SYNC_TASK_TYPE,
   "memory_synthesis",
   "research_polling",
   "replicate_polling",

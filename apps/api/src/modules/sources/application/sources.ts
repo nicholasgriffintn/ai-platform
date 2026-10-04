@@ -19,6 +19,7 @@ import type {
   SourceRecord,
   SourceSummaryRecord,
 } from "~/modules/sources/infrastructure/SourceRepository";
+import { SourceSyncRepository } from "~/modules/sources/infrastructure/SourceSyncRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 function formatFile(record: SourceRecord): Source["file"] {
@@ -291,6 +292,17 @@ export async function updateSource(
   const existing = await requireSourceAccess(context, userId, sourceId, true);
 
   if (
+    existing.kind === "connector" &&
+    (await new SourceSyncRepository(context.env).isManagedSource(sourceId))
+  ) {
+    throw new AssistantError(
+      "Manage this document through its folder sync",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  if (
     existing.kind === "memory" &&
     (input.status !== undefined || input.content !== undefined || input.metadata !== undefined)
   ) {
@@ -326,6 +338,17 @@ export async function deleteSource(
   sourceId: string,
 ): Promise<void> {
   const source = await requireSourceAccess(context, userId, sourceId, true);
+
+  if (
+    source.kind === "connector" &&
+    (await new SourceSyncRepository(context.env).isManagedSource(sourceId))
+  ) {
+    throw new AssistantError(
+      "Remove the folder sync to remove its managed documents",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
 
   if (source.kind === "memory") {
     const metadata = safeParseJson<Record<string, unknown>>(source.metadata);

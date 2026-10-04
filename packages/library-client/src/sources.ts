@@ -1,5 +1,10 @@
 import type {
   CreateSourceCollectionInput,
+  CreateSourceSyncInput,
+  SourceSync,
+  KnowledgeSearchInput,
+  KnowledgeSearchResponse,
+  KnowledgeIndexStatus,
   CreateSourceInput,
   Source,
   SourceCollection,
@@ -52,6 +57,52 @@ export async function createSource(input: CreateSourceInput): Promise<Source> {
 
 export async function deleteSource(sourceId: string): Promise<void> {
   await request(`/sources/${encodeURIComponent(sourceId)}`, { method: "DELETE" });
+}
+
+export async function searchKnowledge(
+  input: KnowledgeSearchInput,
+): Promise<KnowledgeSearchResponse> {
+  return request("/sources/search", { method: "POST", body: input });
+}
+
+export async function listSourceSyncs(projectId?: string): Promise<SourceSync[]> {
+  const suffix = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+
+  return (await request<{ syncs: SourceSync[] }>(`/sources/syncs${suffix}`)).syncs;
+}
+
+export async function createSourceSync(input: CreateSourceSyncInput): Promise<SourceSync[]> {
+  return (await request<{ syncs: SourceSync[] }>("/sources/syncs", { method: "POST", body: input }))
+    .syncs;
+}
+
+export async function updateSourceSync(input: {
+  syncId: string;
+  enabled: boolean;
+}): Promise<SourceSync[]> {
+  return (
+    await request<{ syncs: SourceSync[] }>(`/sources/syncs/${encodeURIComponent(input.syncId)}`, {
+      method: "PUT",
+      body: { enabled: input.enabled },
+    })
+  ).syncs;
+}
+
+export async function deleteSourceSync(syncId: string): Promise<void> {
+  await request(`/sources/syncs/${encodeURIComponent(syncId)}`, { method: "DELETE" });
+}
+
+export async function listKnowledgeIndexStatus(
+  projectId?: string,
+): Promise<KnowledgeIndexStatus[]> {
+  const suffix = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+
+  return (await request<{ sources: KnowledgeIndexStatus[] }>(`/sources/index-status${suffix}`))
+    .sources;
+}
+
+export async function retryKnowledgeIndex(sourceId: string): Promise<void> {
+  await request(`/sources/${encodeURIComponent(sourceId)}/reindex`, { method: "POST" });
 }
 
 export async function listSourceCollections(projectId?: string): Promise<SourceCollection[]> {

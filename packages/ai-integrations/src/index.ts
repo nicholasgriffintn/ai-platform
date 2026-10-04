@@ -79,6 +79,13 @@ export {
   type ComposioToolSearchResult,
 } from "./composio/client.js";
 export { type ComposioEnvironment, type ComposioHttpMethod } from "./composio/request.js";
+export { createKnowledgeProxyReader, type KnowledgeProxyRead } from "./knowledge/proxy.js";
+export {
+  listDriveKnowledgePage,
+  getDriveKnowledgePermissions,
+  readDriveKnowledgeContent,
+  validateDriveKnowledgeVersion,
+} from "./knowledge/drive.js";
 export {
   deleteComposioTriggerInstance,
   getComposioTriggerType,

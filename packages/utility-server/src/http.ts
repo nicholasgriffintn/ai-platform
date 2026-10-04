@@ -1,3 +1,4 @@
+import { AssistantError, ErrorType } from "./errors.js";
 import { safeParseJson } from "./json.js";
 import { isPrivateHostname } from "./urls.js";
 
@@ -32,6 +33,34 @@ export function parsePublicHttpUrl(input: string | URL): URL {
   }
 
   return url;
+}
+
+export function requirePresignedStorageUrl(value: string): string {
+  let url: URL;
+
+  try {
+    url = new URL(value);
+  } catch {
+    throw new AssistantError(
+      "Storage provider returned an invalid file URL",
+      ErrorType.EXTERNAL_API_ERROR,
+      502,
+    );
+  }
+
+  const allowedHost =
+    /^(?:[a-z0-9][a-z0-9.-]*\.)?s3(?:[.-][a-z0-9-]+){0,2}\.amazonaws\.com$/i.test(url.hostname) ||
+    /^(?:[a-z0-9-]+\.)?r2\.cloudflarestorage\.com$/i.test(url.hostname);
+
+  if (url.protocol !== "https:" || url.username || url.password || url.port || !allowedHost) {
+    throw new AssistantError(
+      "Storage provider returned an unsafe file URL",
+      ErrorType.EXTERNAL_API_ERROR,
+      502,
+    );
+  }
+
+  return url.toString();
 }
 
 export async function fetchFollowingSafeRedirects(

@@ -4,6 +4,7 @@ export * from "./GeneratedAudioView";
 export * from "./GeneratedImageView";
 export * from "./GeneratedVideoView";
 export * from "./JsonView";
+export * from "./KnowledgePassagesView";
 export * from "./presentation";
 export * from "./registry";
 export * from "./response-data";

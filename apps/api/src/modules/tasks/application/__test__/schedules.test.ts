@@ -35,6 +35,14 @@ vi.mock("~/modules/chat-runs/application/reservation-maintenance", () => ({
   releaseExpiredChatRunReservations: mocks.releaseExpiredChatRunReservations,
 }));
 
+vi.mock("~/modules/sources/application/knowledge-maintenance", () => ({
+  maintainKnowledgeIndexes: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("~/modules/sources/application/source-sync-worker", () => ({
+  scheduleSourceSyncs: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("~/modules/model-governance/application/maintenance", () => ({
   runModelGovernanceMaintenance: vi.fn().mockResolvedValue({ expired: 0, replays: 0 }),
   scheduleModelPlatformReconciles: vi.fn().mockResolvedValue(0),

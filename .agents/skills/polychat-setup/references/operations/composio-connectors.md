@@ -58,3 +58,15 @@ Use authorised Source/Output references or the `$assistantFile` marker. The brid
 Correlate Activity's run, completion, installation, local session handle and Composio log IDs. Keep arguments, result bodies and credentials out of Activity logs.
 
 Before rollback, pause triggers and confirm upstream state. Disable affected auth configs/tools, synchronise and review the catalogue, then deploy the selected version. Do not restore deleted legacy credentials or remove cleanup rows to hide failures. Verify read execution, approval/rejection/expiry, duplicate handling, private files and trigger pause/resume with a non-production account before expanding use.
+
+## Persistent knowledge folders
+
+Add a connected Google Drive folder from **Sources → Synced knowledge**. Use the existing connected-account selector, name the folder and paste its Drive link. Personal folders stay personal; project folders require a project admin and verified upstream access for every current workspace member.
+
+Run migrations `0058_source_knowledge` and `0059_source_sync` through the documented migration process when deployment is authorised. Keep `TASK_QUEUE`, the existing embedding bindings and the stable `EMBEDDING_SCOPE_SECRET` configured. The normal scheduler discovers unindexed sources and due folder scans; no additional worker or search service is required.
+
+Check indexing status beside each source and scan status in the synced knowledge panel. Pause a sync to immediately exclude its documents, retry to start a fresh scan, and remove it to delete its managed source rows. Keep stored vector cleanup records until their original target confirms deletion.
+
+Expect scans every 15 minutes and permission evidence to expire after at most 20 minutes, or earlier when a grant expires. Google Docs and text files are supported; group-only sharing, spreadsheets, binary Drive documents and other providers are excluded. Validate a live folder containing an edit, deletion and permission-only revocation against the deployed account before enabling a production corpus.
+
+Index uploaded source files through the existing private-file authority and document conversion service. Limit uploads for extraction to 25 MiB and extracted text to 256 KiB; exclude images, audio and video from this text index. Use the source retry action after repairing an extraction or provider failure.

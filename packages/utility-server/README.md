@@ -10,3 +10,5 @@ import { withRetries } from "@ngriffin_uk/polychat-utility-server/retries";
 ```
 
 Logging lives in `@ngriffin_uk/polychat-ai-telemetry`, not here, so log records can reach telemetry sinks.
+
+Use `requirePresignedStorageUrl` from `/http` for temporary S3 or R2 file transfers. Reject other hosts, embedded credentials and non-HTTPS URLs, and keep redirects disabled when transferring private files.

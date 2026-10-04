@@ -1,5 +1,9 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import {
+  readResponseTextWithinLimit,
+  ResponseBodyTooLargeError,
+} from "@ngriffin_uk/polychat-utility-server/http";
 
 const COMPOSIO_API_BASE_URL = "https://backend.composio.dev/api/v3.1";
 const COMPOSIO_REQUEST_TIMEOUT_MS = 20_000;
@@ -46,6 +50,7 @@ export async function composioRequest<T>(params: {
   path: string;
   method?: ComposioHttpMethod;
   body?: Record<string, unknown>;
+  maxResponseBytes?: number;
 }): Promise<T> {
   let response: Response;
 
@@ -59,6 +64,7 @@ export async function composioRequest<T>(params: {
       },
       body: params.body ? JSON.stringify(params.body) : undefined,
       signal: AbortSignal.timeout(COMPOSIO_REQUEST_TIMEOUT_MS),
+      redirect: "error",
     });
   } catch (error) {
     throw new AssistantError(
@@ -73,8 +79,19 @@ export async function composioRequest<T>(params: {
   let payload: unknown;
 
   try {
-    payload = await response.json();
-  } catch {
+    payload =
+      params.maxResponseBytes === undefined
+        ? await response.json()
+        : safeParseJson(await readResponseTextWithinLimit(response, params.maxResponseBytes));
+  } catch (error) {
+    if (error instanceof ResponseBodyTooLargeError) {
+      throw new AssistantError(
+        "Composio response exceeds the configured size limit",
+        ErrorType.EXTERNAL_API_ERROR,
+        502,
+      );
+    }
+
     payload = undefined;
   }
 

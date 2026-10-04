@@ -1,4 +1,5 @@
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { requirePresignedStorageUrl } from "@ngriffin_uk/polychat-utility-server/http";
 import { describe, expect, it, vi } from "vitest";
 
 import { COMPOSIO_FILE_MAX_BYTES } from "~/config/limits";
@@ -12,11 +13,7 @@ import {
   stageComposioResourceFile,
   type ComposioMountFileClient,
 } from "../composio-files";
-import {
-  readBoundedResponseBody,
-  requireComposioMountPath,
-  requireComposioPresignedUrl,
-} from "../composio-files-security";
+import { readBoundedResponseBody, requireComposioMountPath } from "../composio-files-security";
 
 const sourceRecord = {
   id: "source-1",
@@ -298,10 +295,10 @@ describe("Composio file bridge", () => {
   it("rejects traversal paths and non-S3 presigned origins", () => {
     expect(() => requireComposioMountPath("../secrets.txt")).toThrowError(/invalid/i);
     expect(() => requireComposioMountPath("safe/../../secrets.txt")).toThrowError(/invalid/i);
-    expect(() => requireComposioPresignedUrl("http://bucket.s3.amazonaws.com/file")).toThrowError(
+    expect(() => requirePresignedStorageUrl("http://bucket.s3.amazonaws.com/file")).toThrowError(
       /unsafe/i,
     );
-    expect(() => requireComposioPresignedUrl("https://127.0.0.1/file")).toThrowError(/unsafe/i);
+    expect(() => requirePresignedStorageUrl("https://127.0.0.1/file")).toThrowError(/unsafe/i);
   });
 
   it("stops reading a response once it exceeds the file size limit", async () => {

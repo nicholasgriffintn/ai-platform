@@ -5,7 +5,7 @@ import type { FunctionToolDescriptor } from "./types";
 export const search_documents: FunctionToolDescriptor = {
   name: "search_documents",
   description:
-    "Search the user's own uploaded documents and saved content for passages relevant to a query. Returns the passages, not an answer; ground what you say in them and cite them by title. Use when the answer depends on the user's material rather than on general knowledge.",
+    "Search the current personal or project knowledge sources using exact terms and semantic meaning. Returns cited passages; ground the answer in them and cite their titles and source URLs. Use when the answer depends on uploaded documents, saved notes or synced knowledge.",
   type: "premium",
   permissions: ["read"],
   inputSchema: z.object({

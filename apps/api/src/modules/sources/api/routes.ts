@@ -1,5 +1,10 @@
 import {
   addCollectionSourcesSchema,
+  createSourceSyncSchema,
+  sourceSyncListSchema,
+  knowledgeSearchSchema,
+  knowledgeSearchResponseSchema,
+  knowledgeStatusResponseSchema,
   createSourceCollectionSchema,
   createSourceSchema,
   sourceCollectionListResponseSchema,
@@ -16,6 +21,17 @@ import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { getPrivateFileResponse, readPrivateFile } from "~/infrastructure/storage/read-resource";
+import { retrySourceIndex } from "~/modules/sources/application/knowledge-indexing";
+import {
+  listKnowledgeStatus,
+  searchKnowledge,
+} from "~/modules/sources/application/knowledge-search";
+import {
+  createSourceSync,
+  listSourceSyncs,
+  updateSourceSync,
+  deleteSourceSync,
+} from "~/modules/sources/application/source-sync";
 import {
   addCollectionSources,
   createSource,
@@ -38,6 +54,73 @@ const collectionParams = z.object({ collectionId: z.string().min(1) });
 const projectQuery = z.object({ projectId: z.string().min(1).optional() });
 const requiredProjectQuery = z.object({ projectId: z.string().min(1) });
 const createSourceRequestSchema = createSourceSchema.omit({ file: true });
+const syncParams = z.object({ syncId: z.string().min(1) });
+
+addRoute(app, "get", "/syncs", {
+  tags: ["sources"],
+  auth: true,
+  querySchema: projectQuery,
+  responses: { 200: { description: "Source syncs", schema: sourceSyncListSchema } },
+  handler: ({ query, serviceContext }) => listSourceSyncs(serviceContext, query.projectId),
+});
+
+addRoute(app, "post", "/syncs", {
+  tags: ["sources"],
+  auth: true,
+  bodySchema: createSourceSyncSchema,
+  responses: { 200: { description: "Created source sync", schema: sourceSyncListSchema } },
+  handler: ({ body, serviceContext }) => createSourceSync(serviceContext, body),
+});
+
+addRoute(app, "put", "/syncs/:syncId", {
+  tags: ["sources"],
+  auth: true,
+  paramSchema: syncParams,
+  bodySchema: z.object({ enabled: z.boolean() }).strict(),
+  responses: { 200: { description: "Updated source sync", schema: sourceSyncListSchema } },
+  handler: ({ params, body, serviceContext }) =>
+    updateSourceSync(serviceContext, params.syncId, body.enabled),
+});
+
+addRoute(app, "delete", "/syncs/:syncId", {
+  tags: ["sources"],
+  auth: true,
+  paramSchema: syncParams,
+  responses: {
+    200: { description: "Deleted source sync", schema: z.object({ deleted: z.literal(true) }) },
+  },
+  handler: ({ params, serviceContext }) => deleteSourceSync(serviceContext, params.syncId),
+});
+
+addRoute(app, "post", "/search", {
+  tags: ["sources"],
+  auth: true,
+  bodySchema: knowledgeSearchSchema,
+  responses: {
+    200: { description: "Authorised knowledge passages", schema: knowledgeSearchResponseSchema },
+  },
+  handler: ({ body, serviceContext }) => searchKnowledge(serviceContext, body),
+});
+
+addRoute(app, "get", "/index-status", {
+  tags: ["sources"],
+  auth: true,
+  querySchema: projectQuery,
+  responses: {
+    200: { description: "Knowledge indexing status", schema: knowledgeStatusResponseSchema },
+  },
+  handler: ({ query, serviceContext }) => listKnowledgeStatus(serviceContext, query.projectId),
+});
+
+addRoute(app, "post", "/:sourceId/reindex", {
+  tags: ["sources"],
+  auth: true,
+  paramSchema: sourceParams,
+  responses: {
+    200: { description: "Indexing queued", schema: z.object({ queued: z.literal(true) }) },
+  },
+  handler: ({ params, serviceContext }) => retrySourceIndex(serviceContext, params.sourceId),
+});
 
 addRoute(app, "get", "/:sourceId/content", {
   tags: ["sources"],
