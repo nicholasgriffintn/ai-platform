@@ -36,7 +36,7 @@
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "clsx": "2.1.1",
-    "lucide-react": "1.45.0",
+    "lucide-react": "1.48.0",
     "tailwind-merge": "3.7.0",
     "zod": "catalog:"
   },
