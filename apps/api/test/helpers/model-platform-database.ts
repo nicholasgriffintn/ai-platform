@@ -26,7 +26,10 @@ export async function initialiseModelPlatformDatabase(database: D1Database): Pro
     "0054_model_platform",
     "0055_model_provider_claims",
   ]) {
-    const migration = await readFile(new URL(`../migrations/${name}.sql`, import.meta.url), "utf8");
+    const migration = await readFile(
+      new URL(`../../migrations/${name}.sql`, import.meta.url),
+      "utf8",
+    );
 
     await applyTestMigration(database, migration);
   }

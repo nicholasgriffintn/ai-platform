@@ -5,8 +5,8 @@ import { createServiceContext, type ServiceContext } from "~/infrastructure/cont
 import { accrueDeploymentCost } from "~/modules/model-governance/application/spend";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 
-import { databaseTestEnvironment } from "../../../../../test/environment";
-import { testModelDeployment } from "../../../../../test/model-platform";
+import { testModelDeployment } from "../../../../../test/fixtures/model-platform";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 import { applyDeploymentState } from "../deployments";
 import { hostFor } from "../invocation";
 import { syncDeployment } from "../sync";

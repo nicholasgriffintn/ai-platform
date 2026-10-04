@@ -30,9 +30,9 @@ import {
   browserTestUser,
   browserTestApproval,
   computerTestRun,
-} from "../../../../test/computer-use";
-import { databaseTestEnvironment } from "../../../../test/environment";
-import { applyTestMigration } from "../../../../test/migrations";
+} from "../../../../test/fixtures/computer-use";
+import { databaseTestEnvironment } from "../../../../test/helpers/environment";
+import { applyTestMigration } from "../../../../test/helpers/migrations";
 import { getBrowserAvailability, getComputerUseAvailability, resolveBrowserApiKey } from "./access";
 import {
   destroyBrowserSession,

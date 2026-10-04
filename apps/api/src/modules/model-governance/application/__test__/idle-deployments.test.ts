@@ -7,8 +7,8 @@ import {
   enqueueDeploymentSync,
 } from "~/modules/model-serving/application/deployments";
 
-import { databaseTestEnvironment } from "../../../../../test/environment";
-import { testModelDeployment } from "../../../../../test/model-platform";
+import { testModelDeployment } from "../../../../../test/fixtures/model-platform";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 import { reconcileModelPlatform } from "../maintenance";
 import { getWorkspaceSpendLines } from "../spend";
 

@@ -5,12 +5,12 @@ import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { loadRegistryScope, routeStanding } from "~/modules/model-registry/application/scope";
 import type { IEnv } from "~/types";
 
-import { databaseTestEnvironment } from "../../../../../test/environment";
 import {
   testModelDeployment,
   testModelRoute,
   testRegistryScope,
-} from "../../../../../test/model-platform";
+} from "../../../../../test/fixtures/model-platform";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 import { canUserInvokeDeployment, findPlatformChatModel } from "../chat-models";
 
 vi.mock("~/modules/model-registry/application/scope", async (importOriginal) => ({

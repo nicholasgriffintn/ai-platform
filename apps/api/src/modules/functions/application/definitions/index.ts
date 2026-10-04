@@ -18,6 +18,7 @@ import { fill_in_middle_completion } from "./fill_in_middle";
 import { generate_pattern } from "./generate_pattern";
 import { get_note } from "./get_note";
 import { complete_goal, set_goal } from "./goal";
+import { grade_writing } from "./grade_writing";
 import { get_hacker_news_stories } from "./hacker_news";
 import { ask_user, request_approval } from "./human_in_the_loop";
 import { create_image } from "./image";
@@ -69,6 +70,7 @@ export interface FunctionToolCatalogueOptions {
 const descriptors: FunctionToolDescriptor[] = [
   configure_knowledge_sync,
   get_weather,
+  grade_writing,
   decide,
   audit_evidence,
   build_site,
