@@ -50,6 +50,9 @@ import { createProjectTaskCompletion, projectTaskStatusAfterCompletedGoal } from
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { recoverPendingProjectTaskInteraction } from "./interaction-recovery";
 import { getPendingProjectTaskQuestions } from "./questions";
+import { assertReviewDispatchAuthority } from "./review-authority";
+import { retainReviewOutput } from "./review-output";
+import { buildProjectTaskContext } from "./source-context";
 import { projectTaskStatusForGoal } from "./transitions";
 
 const logger = getLogger({ prefix: "services/project-tasks/runner" });
@@ -94,6 +97,7 @@ export async function queueProjectTaskRun(params: {
   stageId?: string | null;
   approvedTools?: string[];
   interaction?: { toolName: string; response: Record<string, unknown> };
+  automaticReviewPolicyRevision?: string;
 }): Promise<ProjectTask> {
   const { context, task, runnerIdentityUserId, stageId } = params;
 
@@ -123,6 +127,9 @@ export async function queueProjectTaskRun(params: {
     },
     tokenBudget: task.tokenBudget ?? PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
     stageId,
+    expectedStatus: task.status,
+    expectedDispatchTaskId: task.dispatchTaskId,
+    automaticReviewPolicyRevision: params.automaticReviewPolicyRevision,
   });
 
   if (!queued) {
@@ -172,26 +179,6 @@ function buildGoalObjective(task: ProjectTask): string {
   }
 
   return lines.join("\n");
-}
-
-function buildContextNotes(task: ProjectTask): string | null {
-  const context = task.context;
-
-  if (!context) {
-    return null;
-  }
-
-  const lines: string[] = [];
-
-  if (context.notes) {
-    lines.push(context.notes);
-  }
-
-  for (const link of context.links) {
-    lines.push(link.label ? `- ${link.label}: ${link.url}` : `- ${link.url}`);
-  }
-
-  return lines.length > 0 ? lines.join("\n") : null;
 }
 
 export async function ensureProjectTaskConversation(params: {
@@ -486,6 +473,7 @@ export async function runProjectTaskDispatch(params: {
   let runtime: Awaited<ReturnType<typeof resolveTaskRuntime>>;
 
   try {
+    await assertReviewDispatchAuthority(context, claimed);
     runtime = await resolveTaskRuntime({
       context,
       task: claimed,
@@ -658,7 +646,7 @@ export async function runProjectTaskDispatch(params: {
         buildTaskPrompt({
           task: claimed,
           stageInstructions: buildStageInstructions(runtime),
-          contextNotes: buildContextNotes(claimed),
+          contextNotes: await buildProjectTaskContext(context, claimed),
         }),
       ),
       ...(runtime.model ? { model: runtime.model } : {}),
@@ -666,6 +654,9 @@ export async function runProjectTaskDispatch(params: {
       stream: false,
       store: true,
       enabled_tools: runtime.enabledTools,
+      ...(claimed.executionProfile === "diff_review"
+        ? { tool_selection_mode: "explicit" as const }
+        : {}),
       approved_tools: params.approvedTools,
       options: params.interaction ? { toolInteraction: params.interaction } : undefined,
       require_approval_for: runtime.requireApprovalFor,
@@ -904,6 +895,35 @@ export async function runProjectTaskDispatch(params: {
     status: nextStatus === "blocked" ? "waiting" : "succeeded",
     summary: goal?.objective.slice(0, 200) ?? claimed.objective.slice(0, 200),
   });
+
+  if (completion && claimed.executionProfile === "diff_review") {
+    try {
+      await params.executionLease.assertOwned();
+      const review = await context.repositories.projectTaskIntegrations.getReviewForTask(taskId);
+
+      if (review) {
+        const outputId = await retainReviewOutput(context, review, completion);
+
+        completion.outputIds = [...new Set([...(completion.outputIds ?? []), outputId])];
+        await updateOwnedProjectTask({
+          context,
+          taskId,
+          dispatchTaskId: params.dispatchTaskId,
+          executionLease: params.executionLease,
+          updates: { completions: [...claimed.completions, completion] },
+        });
+      }
+    } catch (error) {
+      if (isTaskError(error, "ownership_lost")) {
+        throw error;
+      }
+
+      logger.warn("Review output will be retained when publication is prepared", {
+        taskId,
+        error: getErrorMessage(error),
+      });
+    }
+  }
 
   const notificationKind =
     projection.blockedReason === "awaiting_input" ||

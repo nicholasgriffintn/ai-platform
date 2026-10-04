@@ -86,6 +86,20 @@ export async function resolveTaskRuntime(params: {
 }): Promise<ResolvedTaskRuntime> {
   const { context, task, flow } = params;
   const stage = findFlowStage(flow, task.stageId);
+
+  if (task.executionProfile === "diff_review") {
+    return {
+      stage,
+      teammate: null,
+      model: task.runner?.model ?? null,
+      mode: "explore",
+      enabledTools: ["get_task", "list_tasks", "ask_user", "complete_goal"],
+      skillIds: [],
+      requireApprovalFor: ["write", "network", "sandbox", "orchestration"],
+      enforceModeToolPolicy: false,
+    };
+  }
+
   const capabilities = await context.repositories.workspaces.listProjectCapabilities(
     task.projectId,
   );
@@ -105,16 +119,19 @@ export async function resolveTaskRuntime(params: {
     teammate,
     model: task.runner?.model ?? teammate?.model ?? null,
     mode: stage?.mode ?? task.runner?.mode ?? teammate?.mode ?? DEFAULT_TASK_MODE,
-    enabledTools: withoutForbiddenTools(
-      [
-        ...new Set([
-          ...configuredTools,
-          ...PROJECT_TASK_TOOL_IDS,
-          ...PROJECT_TASK_INTERACTION_TOOL_IDS,
-          ...codingTools,
-        ]),
-      ],
-      task.constraints?.forbiddenTools,
+    enabledTools: intersectEnabledTools(
+      withoutForbiddenTools(
+        [
+          ...new Set([
+            ...configuredTools,
+            ...PROJECT_TASK_TOOL_IDS,
+            ...PROJECT_TASK_INTERACTION_TOOL_IDS,
+            ...codingTools,
+          ]),
+        ],
+        task.constraints?.forbiddenTools,
+      ),
+      task.constraints?.allowedTools,
     ),
     skillIds: intersectGrantedIds(grantedSkillIds, resolveRequestedSkillIds(stage, teammate)),
     requireApprovalFor: [

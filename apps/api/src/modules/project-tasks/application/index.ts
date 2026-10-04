@@ -2,6 +2,8 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { isTerminalGoalStatus } from "@ngriffin_uk/polychat-library-goals";
 import {
   isTerminalProjectTaskStatus,
+  createProjectTaskSchema,
+  updateProjectTaskSchema,
   nextFlowStageId,
   PROJECT_TASK_DEFAULT_CONCURRENCY,
   type CreateProjectTaskInput,
@@ -40,6 +42,7 @@ import { getProjectTaskInteraction } from "./interactions";
 import { getProjectTaskPlanEvidence, getProjectTaskResumeCapability } from "./plan-evidence";
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "./questions";
 import { queueProjectTaskRun } from "./runner";
+import { assertTaskSourcesAvailable } from "./source-context";
 import { assertProjectTaskTransition } from "./transitions";
 
 const POSITION_STEP = 1000;
@@ -325,11 +328,36 @@ export async function createProjectTask(
   context: ServiceContext,
   projectId: string,
   input: CreateProjectTaskInput,
-  options: { source?: ProjectTaskSource } = {},
+  options: {
+    source?: ProjectTaskSource;
+    id?: string;
+    flowSnapshot?: ProjectFlow;
+    executionProfile?: "diff_review";
+  } = {},
 ) {
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId);
-  const flow = parseProjectFlow(project.flow);
+  const flow = options.flowSnapshot ?? parseProjectFlow(project.flow);
+
+  input = createProjectTaskSchema.parse(input);
+
+  if (options.id) {
+    const existing = await context.repositories.projectTasks.getTaskById(options.id);
+
+    if (existing) {
+      if (existing.projectId !== projectId || existing.createdByUserId !== user.id) {
+        throw new AssistantError(
+          "Task identity belongs to another scope",
+          ErrorType.FORBIDDEN,
+          403,
+        );
+      }
+
+      return { task: existing };
+    }
+  }
+
+  await assertTaskSourcesAvailable(context, projectId, input.context?.sourceIds);
 
   await assertAssigneeIsMember(context, project.workspace_id, input.assigneeUserId);
   assertStageExists(flow, input.stageId);
@@ -337,6 +365,8 @@ export async function createProjectTask(
 
   const maxPosition = await context.repositories.projectTasks.getMaxPosition(projectId);
   const task = await context.repositories.projectTasks.createTask({
+    id: options.id,
+    executionProfile: options.executionProfile,
     projectId,
     workspaceId: project.workspace_id,
     objective: input.objective,
@@ -379,6 +409,8 @@ export async function updateProjectTask(
   options: { actor?: ProjectTaskActor } = {},
 ) {
   const user = context.requireUser();
+
+  input = updateProjectTaskSchema.parse(input);
   const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
   const flow = task.flowSnapshot ?? parseProjectFlow(project.flow);
@@ -396,6 +428,14 @@ export async function updateProjectTask(
     "stageId",
   ] as const;
   const changesPlan = planFields.some((field) => input[field] !== undefined);
+
+  if (changesPlan && task.executionProfile === "diff_review") {
+    throw new AssistantError(
+      "PR review plans retain their captured revision. Create a new review to change the target.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
 
   if (changesPlan && task.status !== "backlog") {
     throw new AssistantError(
@@ -424,6 +464,8 @@ export async function updateProjectTask(
   await assertAssigneeIsMember(context, project.workspace_id, input.assigneeUserId);
   assertStageExists(flow, input.stageId);
   await assertDependenciesExist(context, projectId, taskId, input.dependsOnTaskIds);
+
+  await assertTaskSourcesAvailable(context, projectId, input.context?.sourceIds);
 
   const nextStatus = input.status ?? task.status;
   const isFinishing = isTerminalProjectTaskStatus(nextStatus) && nextStatus !== task.status;
@@ -466,6 +508,7 @@ export async function startProjectTask(
   taskId: string,
   options: {
     approvalResolved?: boolean;
+    automaticReviewPolicyRevision?: string;
     approvedTools?: string[];
     interaction?: { toolName: string; response: Record<string, unknown> };
   } = {},
@@ -546,6 +589,7 @@ export async function startProjectTask(
   const queued = await queueProjectTaskRun({
     context,
     task,
+    automaticReviewPolicyRevision: options.automaticReviewPolicyRevision,
     runnerIdentityUserId: user.id,
     stageId: task.stageId ?? flow?.stages[0]?.id ?? null,
     approvedTools: options.approvedTools,

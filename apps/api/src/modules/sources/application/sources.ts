@@ -8,7 +8,7 @@ import type {
   UpdateSourceInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { safeParseJson, parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { isMemoryProviderId } from "~/infrastructure/providers/capabilities/memory/helpers";
@@ -201,6 +201,7 @@ export async function createSource(
   context: ServiceContext,
   userId: number,
   input: CreateSourceInput,
+  options: { id?: string } = {},
 ): Promise<Source> {
   if (input.projectId) {
     await requireProjectAccess(context, input.projectId);
@@ -231,6 +232,7 @@ export async function createSource(
   }
 
   const created = await context.repositories.sources.createSource({
+    id: options.id,
     createdByUserId: userId,
     projectId: input.projectId,
     conversationId: input.conversationId,
@@ -290,6 +292,14 @@ export async function updateSource(
 ): Promise<Source> {
   const existing = await requireSourceAccess(context, userId, sourceId, true);
 
+  if (parseJsonRecord(existing.metadata).immutableSnapshot === true) {
+    throw new AssistantError(
+      "Task snapshots are immutable. Import a new revision instead.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
   if (
     existing.kind === "memory" &&
     (input.status !== undefined || input.content !== undefined || input.metadata !== undefined)
@@ -326,6 +336,14 @@ export async function deleteSource(
   sourceId: string,
 ): Promise<void> {
   const source = await requireSourceAccess(context, userId, sourceId, true);
+
+  if (parseJsonRecord(source.metadata).immutableSnapshot === true) {
+    throw new AssistantError(
+      "This source is retained as task evidence",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
 
   if (source.kind === "memory") {
     const metadata = safeParseJson<Record<string, unknown>>(source.metadata);

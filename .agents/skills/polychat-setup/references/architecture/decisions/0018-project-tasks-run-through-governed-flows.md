@@ -24,6 +24,12 @@ The same task-detail read returns a newest-first protocol version 1 `activity` p
 
 Use project flows for durable multi-agent sequencing. Team-agent fields remain retired. Delegation is defined separately in ADR 0040 and uses an ordinary child conversation and run; it does not create a second execution runtime. Personal Chat retains bounded `run_council` and `second_opinion` within the caller's turn.
 
+Issue intake captures immutable project Sources, checks the preview revision again on import and uses the ordinary task service. Its durable identity includes project, provider, account and external issue ID. Preserve the original task on repeated imports rather than silently replacing its approved plan.
+
+PR review snapshots capture the exact repository, connection, PR number and base/head commits. Include the review policy revision in the durable identity. Signed, opted-in events enter the existing task queue; queue admission checks both the expected task state and current policy, and dispatch revalidates policy, membership and connection authority. Use a fixed diff-only execution profile with task-read, question and goal-completion controls. Preserve the explicit tool scope during chat preparation so memory and skill tools cannot widen it; project grants and model mode cannot widen the review profile. Retain omitted coverage and the Source provenance in governed review Outputs.
+
+Keep GitHub publication separate from task acceptance. Require the current completion, original connection and unchanged commit pair, then atomically claim the exact approved text before the provider write. Bind the GitHub review to the captured head commit. If the response is lost, mark publication uncertain and reconcile the exact body and commit through provider reads; never replay the write automatically. A PR moving between the last read and write may leave a review on the old commit, but cannot relabel it as a review of the new head.
+
 ## Consequences
 
 One flow per project is deliberately limited, and former team groupings cannot be migrated automatically into ordered stages. Concurrency caps, token budgets and usage admission must bound unattended work.

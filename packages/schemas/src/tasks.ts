@@ -18,6 +18,7 @@ import {
   MODEL_REGISTRY_EVAL_TASK_TYPE,
   MODEL_REGISTRY_INSPECT_TASK_TYPE,
 } from "./model-registry.js";
+import { GITHUB_PULL_REQUEST_INTAKE_TASK_TYPE } from "./project-task-integration-constants.js";
 
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
@@ -44,6 +45,7 @@ export const TASK_TYPES = [
   "artificial_analysis_scoring",
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
   PROJECT_TASK_RUN_TASK_TYPE,
+  GITHUB_PULL_REQUEST_INTAKE_TASK_TYPE,
   DELEGATION_RUN_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
   DELEGATION_MESSAGE_TASK_TYPE,

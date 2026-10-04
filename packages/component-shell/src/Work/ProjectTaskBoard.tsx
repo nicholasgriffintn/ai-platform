@@ -21,6 +21,7 @@ import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { useQueryDialog } from "../utils/useQueryDialog.js";
 import { ProjectHomeHeader } from "./ProjectHomeHeader.js";
+import { ProjectTaskIntegrationsControl } from "./ProjectTaskIntegrationsControl.js";
 import { useProjectTaskBoardActions } from "./useProjectTaskBoardActions.js";
 import { projectTaskSkills, useProjectTaskTeammates } from "./useProjectTaskTeammates.js";
 import { useWorkData } from "./WorkDataContext.js";
@@ -111,6 +112,11 @@ export function ProjectTaskBoard({
           stage needs review or approval.
         </p>
 
+        <ProjectTaskIntegrationsControl
+          projectId={projectId}
+          taskBasePath={`${basePath}/tasks`}
+          canManage={canManageFlow}
+        />
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Loading project tasks…</p>
         ) : error ? (

@@ -41,6 +41,12 @@ Polychat has two primary modes:
 - Delivery happens only after owner approval and explicit branch/target policy confirmation.
 - Workspace owners and admins control project-level delivery and environment settings.
 
+Use **Tasks → Import issue** to read a GitHub or Linear issue through your selected connection. Review the objective and acceptance criteria before importing. Work retains an immutable Source and the external identity; repeated imports open the original task, while changed issue content requires a fresh preview before the first import.
+
+Use **Tasks → PR reviews** for a GitHub review of the current base/head commits. Owners and admins can enable automatic intake for one repository per project, using their own connection and a per-review token budget. New ready revisions create tasks; duplicate deliveries reuse them, and disabling or changing the policy prevents pending automatic reviews from starting.
+
+PR reviews analyse captured GitHub patches without executing repository code. Missing patches and comparison limits remain visible in the Source and review. Completed reviews become governed Outputs. Open the review task, preview and edit the publication text, then approve publication separately; publishing checks the current commits and uses the original connection. An uncertain response requires **Check publication in GitHub**, which reads the provider without repeating the write.
+
 ## Visibility and controls
 
 - Pin, unread, and snooze are personal controls, even in shared project space.
