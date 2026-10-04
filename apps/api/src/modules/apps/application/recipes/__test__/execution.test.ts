@@ -12,7 +12,8 @@ vi.mock("~/modules/completions/application/createChatCompletions", () => ({
   handleCreateChatCompletions: mocks.handleCreateChatCompletions,
 }));
 
-vi.mock("@ngriffin_uk/polychat-utility-core", () => ({
+vi.mock("@ngriffin_uk/polychat-utility-core", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-utility-core")>()),
   generateId: mocks.generateId,
 }));
 

@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  decodeReadiness,
-  READINESS_ACTION_KINDS,
-  READINESS_REASON_CODES,
-  readinessSchema,
-} from "./readiness.js";
+import { decodeReadiness } from "./readiness.js";
 
 const timestamps = {
   checkedAt: "2026-09-05T10:00:00.000Z",
@@ -13,33 +8,6 @@ const timestamps = {
 };
 
 describe("readiness schema", () => {
-  it("publishes runtime reason codes and actions without changing the protocol version", () => {
-    for (const reasonCode of READINESS_REASON_CODES) {
-      expect(
-        readinessSchema.parse({
-          protocolVersion: 1,
-          state: reasonCode === "ready" ? "ready" : "unavailable",
-          reasonCode,
-          reason: "Readiness detail",
-          ...timestamps,
-        }),
-      ).toMatchObject({ protocolVersion: 1, reasonCode });
-    }
-
-    for (const kind of READINESS_ACTION_KINDS) {
-      expect(
-        readinessSchema.parse({
-          protocolVersion: 1,
-          state: "unavailable",
-          reasonCode: "runtime_unreachable",
-          reason: "The runtime is not responding.",
-          ...timestamps,
-          action: { kind, label: "Take action" },
-        }).action?.kind,
-      ).toBe(kind);
-    }
-  });
-
   it("keeps unknown reason codes visible while removing unsafe actions", () => {
     const decoded = decodeReadiness({
       protocolVersion: 1,

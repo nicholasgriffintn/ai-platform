@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import { createHash, generateKeyPairSync } from "node:crypto";
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -7,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { Miniflare } from "miniflare";
 
+import { buildWorkerBundle } from "../support/worker-bundle.mjs";
 import { resolveMetaModelTool } from "./meta-model.mjs";
 import { resolveProjectTaskModelResponse } from "./project-task-model.mjs";
 import {
@@ -1278,50 +1278,6 @@ async function mockExternalRequest(request) {
   return body.stream ? streamingResponse(content) : Response.json(openAiResponse(content));
 }
 
-function buildWorkerBundle(workspace, configPath, outputDirectory) {
-  execFileSync(
-    "pnpm",
-    [
-      "--filter",
-      workspace,
-      "exec",
-      "wrangler",
-      "deploy",
-      "--dry-run",
-      "--config",
-      configPath,
-      "--outdir",
-      outputDirectory,
-    ],
-    {
-      cwd: repositoryRoot,
-      stdio: "inherit",
-      env: {
-        ...process.env,
-        WRANGLER_LOG_PATH: path.join(temporaryDirectory, "wrangler.log"),
-      },
-    },
-  );
-
-  const outputNames = readdirSync(outputDirectory);
-  const bundleName = outputNames.find((name) => name.endsWith(".js"));
-
-  if (!bundleName) {
-    throw new Error(`Wrangler did not produce a bundle for ${workspace}`);
-  }
-
-  return {
-    script: readFileSync(path.join(outputDirectory, bundleName), "utf8"),
-    textModules: outputNames
-      .filter((name) => name.endsWith(".md") && name !== "README.md")
-      .map((name) => ({
-        type: "Text",
-        path: name,
-        contents: readFileSync(path.join(outputDirectory, name), "utf8"),
-      })),
-  };
-}
-
 function createRuntimeOptions(apiBundle, port, seedMaterial) {
   const readinessSessionHash = createHash("sha256")
     .update("polychat-e2e-pro-0")
@@ -1396,7 +1352,7 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
         modules: [
           { type: "ESModule", path: "e2e-entry.js", contents: apiEntryModule },
           { type: "ESModule", path: "api.js", contents: apiBundle.script },
-          ...apiBundle.textModules,
+          ...apiBundle.modules,
           {
             type: "ESModule",
             path: "effect",
@@ -2135,6 +2091,8 @@ async function start() {
     "@assistant/api",
     path.join(runtimeDirectory, "wrangler.jsonc"),
     buildDirectory,
+    repositoryRoot,
+    path.join(temporaryDirectory, "wrangler.log"),
   );
   const seedMaterial = await createPersonaSeedMaterial();
 

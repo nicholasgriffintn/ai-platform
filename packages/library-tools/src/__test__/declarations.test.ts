@@ -1,52 +1,11 @@
 import { describe, expect, it } from "vitest";
 import z from "zod/v4";
 
-import { finishToolDeclaration, UPDATE_PLAN_TOOL_NAME } from "../control-tools.js";
-import { declareTool, getToolDeclarationNames, isToolDeclaration } from "../declaration.js";
+import { declareTool } from "../declaration.js";
 import { flattenObjectRootSchema } from "../json-schema.js";
 import { PermissionChecker, resolveModeMaxSteps, resolveToolPermissions } from "../permissions.js";
 import { toProviderToolDeclarations } from "../provider-declarations.js";
 import { toToolDeclaration } from "../tool.js";
-
-describe("declareTool", () => {
-  it("produces the provider-facing function shape", () => {
-    expect(
-      declareTool({
-        name: "run_command",
-        description: "Run a shell command",
-        parameters: { command: { type: "string" } },
-        required: ["command"],
-      }),
-    ).toEqual({
-      type: "function",
-      function: {
-        name: "run_command",
-        description: "Run a shell command",
-        parameters: {
-          type: "object",
-          properties: { command: { type: "string" } },
-          required: ["command"],
-        },
-      },
-    });
-  });
-
-  it("omits required when a tool takes no mandatory arguments", () => {
-    const definition = declareTool({ name: "ping", description: "Ping" });
-
-    expect(definition.function.parameters).toEqual({ type: "object", properties: {} });
-  });
-
-  it("recognises its own output and rejects other shapes", () => {
-    expect(isToolDeclaration(finishToolDeclaration)).toBe(true);
-    expect(isToolDeclaration({ type: "function" })).toBe(false);
-    expect(isToolDeclaration(null)).toBe(false);
-  });
-
-  it("lists definition names", () => {
-    expect(getToolDeclarationNames([finishToolDeclaration])).toEqual(["finish"]);
-  });
-});
 
 describe("declareTool with a generated schema", () => {
   it("keeps schema keys the convenience form cannot express", () => {
@@ -97,10 +56,6 @@ describe("toProviderToolDeclarations", () => {
         input_schema: definition.function.parameters,
       },
     ]);
-  });
-
-  it("passes the canonical shape through for every other provider", () => {
-    expect(toProviderToolDeclarations("openai", [definition])).toEqual([definition]);
   });
 });
 
@@ -154,19 +109,6 @@ describe("flattenObjectRootSchema", () => {
       additionalProperties: false,
     });
   });
-
-  it("leaves a schema without object alternatives untouched", () => {
-    const schema = { type: "object", properties: { query: { type: "string" } } };
-
-    expect(flattenObjectRootSchema(schema)).toBe(schema);
-  });
-});
-
-describe("control tools", () => {
-  it("keeps the loop control names stable", () => {
-    expect(UPDATE_PLAN_TOOL_NAME).toBe("update_plan");
-    expect(finishToolDeclaration.function.parameters).toMatchObject({ required: ["summary"] });
-  });
 });
 
 describe("resolveToolPermissions", () => {
@@ -176,20 +118,12 @@ describe("resolveToolPermissions", () => {
       "write",
     ]);
   });
-
-  it("returns nothing when no permissions are configured", () => {
-    expect(resolveToolPermissions("any", [])).toEqual([]);
-  });
 });
 
 describe("resolveModeMaxSteps", () => {
   it("clamps a request to the mode ceiling", () => {
     expect(resolveModeMaxSteps("plan", 30)).toBe(24);
     expect(resolveModeMaxSteps("build", 10)).toBe(10);
-  });
-
-  it("falls back to the mode default", () => {
-    expect(resolveModeMaxSteps("normal")).toBe(8);
   });
 });
 

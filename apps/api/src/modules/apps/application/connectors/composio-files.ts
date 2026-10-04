@@ -2,8 +2,7 @@ import {
   createComposioSessionMountDownloadUrl,
   createComposioSessionMountUploadUrl,
 } from "@ngriffin_uk/polychat-ai-integrations";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { COMPOSIO_FILE_MAX_BYTES, COMPOSIO_FILE_TRANSFER_TIMEOUT_MS } from "~/config/limits";

@@ -32,6 +32,7 @@ import {
   computerTestRun,
 } from "../../../../test/computer-use";
 import { databaseTestEnvironment } from "../../../../test/environment";
+import { applyTestMigration } from "../../../../test/migrations";
 import { getBrowserAvailability, getComputerUseAvailability, resolveBrowserApiKey } from "./access";
 import {
   destroyBrowserSession,
@@ -80,11 +81,7 @@ beforeAll(async () => {
     "utf8",
   );
 
-  for (const statement of migration.split("--> statement-breakpoint")) {
-    if (statement.trim()) {
-      await database.prepare(statement).run();
-    }
-  }
+  await applyTestMigration(database, migration);
 });
 afterAll(() => runtime.dispose());
 beforeEach(async () => {
@@ -307,10 +304,23 @@ describe("browser session ownership and lifecycle", () => {
     });
   });
 
-  it("operates the built-in worker with the active fenced lease through the common tool", async () => {
+  it("withholds every provider when neither a worker nor an OpenAI connection is available", async () => {
+    context.env.COMPUTER_WORKER = undefined;
+    vi.mocked(hasUserProviderApiKey).mockResolvedValue(false);
+
+    await expect(getComputerUseAvailability(context)).resolves.toMatchObject({
+      available: false,
+      providers: [
+        { provider: "hosted", available: false, mode: "interactive" },
+        { provider: "openai", available: false, mode: "managed" },
+      ],
+    });
+  });
+
+  function leaseBuiltInWorker(observation: Record<string, unknown>) {
     const fetch = vi
       .fn<NonNullable<IEnv["COMPUTER_WORKER"]>["fetch"]>()
-      .mockResolvedValue(Response.json({ text: "Visible page", width: 1440, height: 900 }));
+      .mockResolvedValue(Response.json(observation));
 
     context.env.COMPUTER_WORKER = Object.assign(async () => ({}), {
       fetch,
@@ -357,26 +367,32 @@ describe("browser session ownership and lifecycle", () => {
 
     vi.spyOn(context.repositories.teammateComputers, "ensure").mockResolvedValue(computer);
     vi.spyOn(context.repositories.teammateComputers, "acquireLease").mockResolvedValue(computer);
-    const serviceContext = withExecutionRunContext(context, "run", 1);
-    const result = await use_computer.execute(
-      { operation: "read" },
-      {
-        completionId: "conversation",
-        toolCallId: "computer-call",
+
+    return { fetch };
+  }
+
+  function operateBuiltInWorker(args: Parameters<typeof use_computer.execute>[0], input: string) {
+    return use_computer.execute(args, {
+      completionId: "conversation",
+      toolCallId: "computer-call",
+      env: context.env,
+      request: {
         env: context.env,
+        user: browserTestUser,
+        context: withExecutionRunContext(context, "run", 1),
         request: {
-          env: context.env,
-          user: browserTestUser,
-          context: serviceContext,
-          request: {
-            teammate_context_id: "teammate-context",
-            completion_id: "conversation",
-            input: "Read the page",
-            date: "2026-10-03",
-          },
+          teammate_context_id: "teammate-context",
+          completion_id: "conversation",
+          input,
+          date: "2026-10-03",
         },
       },
-    );
+    });
+  }
+
+  it("operates the built-in worker with the active fenced lease through the common tool", async () => {
+    const { fetch } = leaseBuiltInWorker({ text: "Visible page", width: 1440, height: 900 });
+    const result = await operateBuiltInWorker({ operation: "read" }, "Read the page");
 
     expect(result).toMatchObject({
       name: "use_computer",
@@ -388,6 +404,31 @@ describe("browser session ownership and lifecycle", () => {
       handle: "worker",
       fence: 1,
       input: { type: "read" },
+    });
+  });
+
+  it("navigates the built-in worker unattended and keeps the same fenced lease", async () => {
+    const { fetch } = leaseBuiltInWorker({
+      text: "Issue list",
+      title: "Issues",
+      width: 1440,
+      height: 900,
+    });
+    const result = await operateBuiltInWorker(
+      { operation: "input", input: { type: "navigate", url: "https://example.test/issues" } },
+      "Open the issue list",
+    );
+
+    expect(result).toMatchObject({
+      name: "use_computer",
+      status: "success",
+      data: { renderer: "computer_observation", text: "Issue list" },
+    });
+    expect(JSON.parse(String(fetch.mock.calls[0][1]?.body))).toMatchObject({
+      resourceId: "computer",
+      handle: "worker",
+      fence: 1,
+      input: { type: "navigate", url: "https://example.test/issues" },
     });
   });
 
@@ -631,6 +672,63 @@ describe("browser session ownership and lifecycle", () => {
     await expect(inspectBrowserSession(context, "closing")).rejects.toMatchObject({
       statusCode: 404,
     });
+  });
+
+  it("cancels an unverified sign-in request without sending any credential value", async () => {
+    await context.repositories.browserSessions.reserve({
+      id: "cancelling",
+      user_id: 1,
+      conversation_id: "conversation",
+      workspace_id: null,
+      provider: "openai",
+      credential_source: "user",
+      tool_call_id: "cancelling-call",
+      model: "gpt-6-astra",
+      input_hash: "hash",
+    });
+    await context.repositories.browserSessions.bind("cancelling", "native");
+    const fetch = vi.fn<typeof globalThis.fetch>(async (request, options) => {
+      if (options?.method === "POST") {
+        return new Response(null, { status: 202 });
+      }
+
+      if (String(request).includes("/turns?")) {
+        return Response.json({ data: [{ id: "turn-root", status: "waiting", subagent_id: null }] });
+      }
+
+      if (String(request).includes("/items?")) {
+        return Response.json({ data: [], has_more: false, last_id: null });
+      }
+
+      return Response.json({
+        id: "native",
+        status: "requires_action",
+        required_actions: [
+          {
+            type: "computer_use_approval_request",
+            request_id: browserTestApproval.requestId,
+            turn_id: browserTestApproval.turnId,
+            request: browserTestApproval.request,
+          },
+        ],
+      });
+    });
+
+    vi.stubGlobal("fetch", fetch);
+    await expect(
+      respondToBrowserApproval(context, "cancelling", {
+        requestId: browserTestApproval.requestId,
+        response: { type: "browser_authentication", action: "cancel" },
+      }),
+    ).resolves.toEqual({ accepted: true });
+
+    const submissions = fetch.mock.calls.filter((call) => call[1]?.method === "POST");
+
+    expect(submissions).toHaveLength(1);
+    const body = String(submissions[0][1]?.body);
+
+    expect(body).not.toContain("password");
+    expect(body).not.toContain("tester@example.test");
   });
 
   it("rejects stale approvals and never replays a failed credential submission or exposes its values", async () => {

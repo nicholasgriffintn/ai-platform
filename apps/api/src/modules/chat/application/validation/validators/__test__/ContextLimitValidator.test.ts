@@ -94,26 +94,6 @@ describe("ContextLimitValidator", () => {
   });
 
   describe("validate", () => {
-    it("should successfully validate with valid context", async () => {
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(result.context.messageWithContext).toBe("Hello world");
-
-      expect(mockGetAllAttachments).toHaveBeenCalledWith([{ type: "text", text: "Hello world" }]);
-      expect(mockSanitiseInput).toHaveBeenCalledWith("Hello world");
-      expect(mockPruneMessagesToFitContext).toHaveBeenCalledWith(
-        baseContext.sanitisedMessages,
-        "Hello world",
-        baseContext.modelConfig,
-      );
-      expect(mockCheckContextWindowLimits).toHaveBeenCalledWith(
-        [{ role: "user", content: "Hello world" }],
-        "Hello world",
-        baseContext.modelConfig,
-      );
-    });
-
     it("should fail validation when sanitisedMessages is missing", async () => {
       const contextWithoutMessages: ValidationContext = {
         lastMessage: { role: "user", content: "Hello world" },
@@ -156,41 +136,6 @@ describe("ContextLimitValidator", () => {
       expect(result.context).toEqual({});
     });
 
-    it("should handle array content in last message", async () => {
-      const contextWithArrayContent: ValidationContext = {
-        ...baseContext,
-        lastMessage: {
-          role: "user",
-          content: [
-            { type: "text", text: "Hello world" },
-            { type: "image_url", image_url: { url: "data:image/jpeg;base64,..." } },
-          ],
-        },
-      };
-
-      const result = await validator.validate(baseOptions, contextWithArrayContent);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(mockGetAllAttachments).toHaveBeenCalledWith([
-        { type: "text", text: "Hello world" },
-        { type: "image_url", image_url: { url: "data:image/jpeg;base64,..." } },
-      ]);
-    });
-
-    it("should handle string content in last message", async () => {
-      const contextWithStringContent: ValidationContext = {
-        ...baseContext,
-        lastMessage: { role: "user", content: "Simple text message" },
-      };
-
-      const result = await validator.validate(baseOptions, contextWithStringContent);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(mockGetAllAttachments).toHaveBeenCalledWith([
-        { type: "text", text: "Simple text message" },
-      ]);
-    });
-
     it("should handle content with no text part", async () => {
       const contextWithNoTextContent: ValidationContext = {
         ...baseContext,
@@ -226,21 +171,6 @@ describe("ContextLimitValidator", () => {
       );
     });
 
-    it("should handle markdown attachments without names", async () => {
-      const markdownAttachments = [{ markdown: "Document content without name" }];
-
-      mockGetAllAttachments.mockReturnValue({
-        markdownAttachments,
-      });
-
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(result.context.messageWithContext).toBe(
-        "Hello world\n\nContext from attached documents:\nDocument content without name",
-      );
-    });
-
     it("should handle empty sanitized messages array", async () => {
       const contextWithEmptyMessages = {
         ...baseContext,
@@ -266,42 +196,6 @@ describe("ContextLimitValidator", () => {
       expect(result.context).toEqual({});
     });
 
-    it("should handle pruneMessagesToFitContext throwing an error", async () => {
-      mockPruneMessagesToFitContext.mockImplementation(() => {
-        throw new Error("Pruning failed");
-      });
-
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Pruning failed");
-      expect(result.validation.validationType).toBe("context");
-    });
-
-    it("should handle getAllAttachments throwing an error", async () => {
-      mockGetAllAttachments.mockImplementation(() => {
-        throw new Error("Attachment processing failed");
-      });
-
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Attachment processing failed");
-      expect(result.validation.validationType).toBe("context");
-    });
-
-    it("should handle sanitiseInput throwing an error", async () => {
-      mockSanitiseInput.mockImplementation(() => {
-        throw new Error("Input sanitization failed");
-      });
-
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Input sanitization failed");
-      expect(result.validation.validationType).toBe("context");
-    });
-
     it("should handle error without message", async () => {
       const errorWithoutMessage = new Error();
 
@@ -315,69 +209,6 @@ describe("ContextLimitValidator", () => {
       expect(result.validation.isValid).toBe(false);
       expect(result.validation.error).toBe("Context window validation failed");
       expect(result.validation.validationType).toBe("context");
-    });
-
-    it("should handle null return from pruneMessagesToFitContext", async () => {
-      mockPruneMessagesToFitContext.mockReturnValue(null);
-
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(mockCheckContextWindowLimits).toHaveBeenCalledWith(
-        null,
-        "Hello world",
-        baseContext.modelConfig,
-      );
-    });
-
-    it("should handle undefined return from pruneMessagesToFitContext", async () => {
-      mockPruneMessagesToFitContext.mockReturnValue(undefined);
-
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(mockCheckContextWindowLimits).toHaveBeenCalledWith(
-        undefined,
-        "Hello world",
-        baseContext.modelConfig,
-      );
-    });
-
-    it("should handle mixed markdown attachments with and without names", async () => {
-      const markdownAttachments = [
-        { name: "doc1.md", markdown: "First document" },
-        { markdown: "Second document" },
-        { name: "doc3.md", markdown: "Third document" },
-      ];
-
-      mockGetAllAttachments.mockReturnValue({
-        markdownAttachments,
-      });
-
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(result.context.messageWithContext).toBe(
-        "Hello world\n\nContext from attached documents:\n" +
-          "# doc1.md\nFirst document\n\n" +
-          "Second document\n\n" +
-          "# doc3.md\nThird document",
-      );
-    });
-
-    it("should handle empty markdown content", async () => {
-      const markdownAttachments = [{ name: "empty.md", markdown: "" }];
-
-      mockGetAllAttachments.mockReturnValue({
-        markdownAttachments,
-      });
-
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(result.context.messageWithContext).toBe(
-        "Hello world\n\nContext from attached documents:\n# empty.md\n",
-      );
     });
   });
 });

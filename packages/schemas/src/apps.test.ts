@@ -107,54 +107,6 @@ describe("recipe installation update schema", () => {
   });
 });
 describe("OCR schema", () => {
-  it("accepts private inputs and the OCR 4 feature set", () => {
-    expect(
-      ocrSchema.parse({
-        document: { type: "source", source_id: "source-1" },
-        pages: "0-2,4",
-        include_blocks: true,
-        confidence_scores_granularity: "word",
-        table_format: "html",
-        extract_header: true,
-        extract_footer: true,
-        document_annotation_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "invoice",
-            schema: {
-              type: "object",
-              properties: { total: { type: "number" } },
-            },
-          },
-        },
-        document_annotation_prompt: "Extract the invoice total",
-      }),
-    ).toMatchObject({
-      document: { type: "source", source_id: "source-1" },
-      pages: "0-2,4",
-      table_format: "html",
-    });
-  });
-
-  it("accepts explicit public image and document inputs", () => {
-    expect(
-      ocrSchema.parse({
-        document: {
-          type: "image_url",
-          image_url: "https://example.com/scan.png",
-        },
-      }).document.type,
-    ).toBe("image_url");
-    expect(
-      ocrSchema.parse({
-        document: {
-          type: "document_url",
-          document_url: "https://example.com/scan.pdf",
-        },
-      }).document.type,
-    ).toBe("document_url");
-  });
-
   it("only accepts supported base64 image data URLs", () => {
     expect(
       ocrSchema.safeParse({

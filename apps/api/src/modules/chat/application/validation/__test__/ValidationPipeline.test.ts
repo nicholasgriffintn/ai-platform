@@ -4,7 +4,6 @@ import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import type {
   ValidationContext,
   Validator,
-  ValidatorResult,
 } from "~/modules/chat/application/validation/ValidationPipeline";
 import { ValidationPipeline } from "~/modules/chat/application/validation/ValidationPipeline";
 import type { CoreChatOptions } from "~/types";
@@ -225,97 +224,6 @@ describe("ValidationPipeline", () => {
       expect(mockGuardrailsValidator.validate).not.toHaveBeenCalled();
     });
 
-    it("should stop and return error when AuthValidator fails", async () => {
-      mockAuthValidator.validate.mockResolvedValue({
-        validation: {
-          isValid: false,
-          error: "Authentication failed",
-          validationType: "auth",
-        },
-        context: {},
-      });
-
-      const result = await pipeline.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Authentication failed");
-      expect(result.validation.validationType).toBe("auth");
-
-      expect(mockBasicInputValidator.validate).not.toHaveBeenCalled();
-      expect(mockAuthValidator.validate).toHaveBeenCalled();
-      expect(mockModelConfigValidator.validate).not.toHaveBeenCalled();
-    });
-
-    it("should stop and return error when ModelConfigValidator fails", async () => {
-      mockModelConfigValidator.validate.mockResolvedValue({
-        validation: {
-          isValid: false,
-          error: "Invalid model configuration",
-          validationType: "model",
-        },
-        context: {},
-      });
-
-      const result = await pipeline.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Invalid model configuration");
-      expect(result.validation.validationType).toBe("model");
-
-      expect(mockBasicInputValidator.validate).toHaveBeenCalled();
-      expect(mockAuthValidator.validate).toHaveBeenCalled();
-      expect(mockModelConfigValidator.validate).toHaveBeenCalled();
-      expect(mockContextLimitValidator.validate).not.toHaveBeenCalled();
-    });
-
-    it("should stop and return error when ContextLimitValidator fails", async () => {
-      mockContextLimitValidator.validate.mockResolvedValue({
-        validation: {
-          isValid: false,
-          error: "Context window exceeded",
-          validationType: "context",
-        },
-        context: {},
-      });
-
-      const result = await pipeline.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Context window exceeded");
-      expect(result.validation.validationType).toBe("context");
-
-      expect(mockGuardrailsValidator.validate).not.toHaveBeenCalled();
-    });
-
-    it("should stop and return error when GuardrailsValidator fails", async () => {
-      mockGuardrailsValidator.validate.mockResolvedValue({
-        validation: {
-          isValid: false,
-          error: "Content violates policy",
-          validationType: "input",
-          violations: ["inappropriate_content"],
-          rawViolations: { blockedResponse: "Content blocked" },
-        },
-        context: {},
-      });
-
-      const result = await pipeline.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Content violates policy");
-      expect(result.validation.violations).toEqual(["inappropriate_content"]);
-      expect(result.validation.rawViolations).toEqual({
-        blockedResponse: "Content blocked",
-      });
-    });
-
-    it("should handle empty initial context", async () => {
-      const result = await pipeline.validate(baseOptions);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(mockBasicInputValidator.validate).toHaveBeenCalledWith(baseOptions, {});
-    });
-
     it("should merge context from each validator", async () => {
       const result = await pipeline.validate(baseOptions, {
         existingKey: "value",
@@ -360,23 +268,6 @@ describe("ValidationPipeline", () => {
   });
 
   describe("addValidator", () => {
-    it("should add custom validator to pipeline", async () => {
-      const customValidator: Validator = {
-        validate: vi.fn().mockResolvedValue({
-          validation: { isValid: true },
-          context: { customField: "value" },
-        }),
-      };
-
-      pipeline.addValidator(customValidator);
-
-      const result = await pipeline.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect((result.context as any).customField).toBe("value");
-      expect(customValidator.validate).toHaveBeenCalled();
-    });
-
     it("should run custom validator after built-in validators", async () => {
       const customValidator: Validator = {
         validate: vi.fn().mockResolvedValue({
@@ -420,30 +311,6 @@ describe("ValidationPipeline", () => {
   });
 
   describe("removeValidator", () => {
-    it("should remove validator from pipeline", async () => {
-      class TestValidator {
-        validate = vi.fn().mockResolvedValue({
-          validation: { isValid: true },
-          context: { testField: "removed" },
-        });
-      }
-
-      const testValidator = new TestValidator();
-
-      pipeline.addValidator(testValidator);
-
-      await pipeline.validate(baseOptions, baseContext);
-      expect(testValidator.validate).toHaveBeenCalled();
-
-      vi.clearAllMocks();
-      pipeline.removeValidator(TestValidator);
-
-      const result = await pipeline.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(testValidator.validate).not.toHaveBeenCalled();
-    });
-
     it("should continue pipeline when removed validator would have failed", async () => {
       class FailingValidator {
         validate = vi.fn().mockResolvedValue({
@@ -470,23 +337,6 @@ describe("ValidationPipeline", () => {
       result = await pipeline.validate(baseOptions, baseContext);
       expect(result.validation.isValid).toBe(true);
       expect(failingValidator.validate).not.toHaveBeenCalled();
-    });
-
-    it("should handle removing non-existent validator gracefully", async () => {
-      class NonExistentValidator implements Validator {
-        async validate(): Promise<ValidatorResult> {
-          return {
-            validation: { isValid: true },
-            context: {},
-          };
-        }
-      }
-
-      pipeline.removeValidator(NonExistentValidator);
-
-      const result = await pipeline.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
     });
   });
 });

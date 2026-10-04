@@ -21,7 +21,8 @@ vi.mock("~/modules/sandbox/application/worker", () => ({
   resolveSandboxModel: vi.fn(),
 }));
 
-vi.mock("@ngriffin_uk/polychat-utility-core", () => ({
+vi.mock("@ngriffin_uk/polychat-utility-core", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-utility-core")>()),
   generateId: vi.fn(() => "run-123"),
 }));
 
