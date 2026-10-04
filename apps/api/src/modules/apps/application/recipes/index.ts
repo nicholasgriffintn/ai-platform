@@ -94,8 +94,6 @@ interface RecipeConnectionContext {
 
 type RecipeInstallationRecord = TemplateRecord;
 
-export { getRecipeById } from "./catalog";
-
 export async function requireEnabledProjectRecipe(
   context: ServiceContext,
   projectId: string,

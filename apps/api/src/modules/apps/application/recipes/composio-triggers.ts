@@ -20,7 +20,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RecipeComposioTriggerRecord } from "~/modules/apps/infrastructure/RecipeComposioTriggerRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
-import { getRecipeById } from ".";
+import { getRecipeById } from "./catalog";
 
 const MAX_TRIGGER_CONFIGURATION_BYTES = 32_000;
 

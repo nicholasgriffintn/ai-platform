@@ -21,7 +21,7 @@ import {
   discoverRecipeConnectorTools,
   executeRecipeConnectorOperation,
 } from "~/modules/apps/application/connectors/operations";
-import { getRecipeById } from "~/modules/apps/application/recipes";
+import { getRecipeById } from "~/modules/apps/application/recipes/catalog";
 import {
   requireRecipeConnectorAccess,
   getRecipeConnectorParameters,
