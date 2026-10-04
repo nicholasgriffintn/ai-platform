@@ -1,6 +1,7 @@
 import type { DriveKnowledgeFile } from "@ngriffin_uk/polychat-schemas";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { googleDriveKnowledgeAdapter } from "./drive-adapter.js";
 import {
   getDriveKnowledgePermissions,
   listDriveKnowledgePage,
@@ -95,13 +96,19 @@ describe("Drive knowledge adapter", () => {
     });
   });
 
-  it("restricts proxy requests to Drive reads and rejects redirected or oversized responses", async () => {
+  it("isolates provider read scopes and rejects redirected or oversized responses", async () => {
     const fetch = vi
       .fn()
-      .mockResolvedValue(new Response(JSON.stringify({ status: 200, data: "content" })));
+      .mockImplementation(
+        async () => new Response(JSON.stringify({ status: 200, data: "content" })),
+      );
 
     vi.stubGlobal("fetch", fetch);
-    const read = createKnowledgeProxyReader({ COMPOSIO_API_KEY: "test-key" }, "account");
+    const read = googleDriveKnowledgeAdapter.createReader({
+      type: "composio",
+      env: { COMPOSIO_API_KEY: "test-key" },
+      accountId: "account",
+    });
 
     await expect(read("http://www.googleapis.com/drive/v3/files")).rejects.toThrow(
       "outside provider scope",
@@ -109,6 +116,9 @@ describe("Drive knowledge adapter", () => {
     await expect(read("https://evil.example/drive/v3/files")).rejects.toThrow(
       "outside provider scope",
     );
+    await expect(
+      read("https://www.googleapis.com/drive/v3/files", { method: "POST" }),
+    ).rejects.toThrow("outside provider scope");
     await expect(read("https://www.googleapis.com/drive/v3/files/document")).resolves.toBe(
       "content",
     );
@@ -124,6 +134,27 @@ describe("Drive knowledge adapter", () => {
       method: "GET",
     });
     expect(options.redirect).toBe("error");
+    const otherProvider = createKnowledgeProxyReader(
+      { COMPOSIO_API_KEY: "test-key" },
+      "other-account",
+      [
+        {
+          origin: "https://api.notion.com",
+          pathPrefix: "/v1/data_sources/collection/query",
+          methods: ["POST"],
+        },
+      ],
+    );
+
+    await expect(
+      otherProvider("https://www.googleapis.com/drive/v3/files/document"),
+    ).rejects.toThrow("outside provider scope");
+    await expect(
+      otherProvider("https://api.notion.com/v1/data_sources/collection/query", {
+        method: "POST",
+        body: { page_size: 20 },
+      }),
+    ).resolves.toBe("content");
     fetch.mockResolvedValue(new Response("{}", { headers: { "content-length": "3000000" } }));
     await expect(read("https://www.googleapis.com/drive/v3/files/document")).rejects.toThrow(
       "size limit",
@@ -153,7 +184,11 @@ describe("Drive knowledge adapter", () => {
       );
 
     vi.stubGlobal("fetch", fetch);
-    const read = createKnowledgeProxyReader({ COMPOSIO_API_KEY: "test-key" }, "account");
+    const read = googleDriveKnowledgeAdapter.createReader({
+      type: "composio",
+      env: { COMPOSIO_API_KEY: "test-key" },
+      accountId: "account",
+    });
 
     await expect(
       read("https://www.googleapis.com/drive/v3/files/document/export?mimeType=text%2Fplain"),

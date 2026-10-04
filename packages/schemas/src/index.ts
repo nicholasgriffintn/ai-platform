@@ -165,6 +165,8 @@ export * from "./sources.js";
 export * from "./knowledge.js";
 export * from "./source-sync.js";
 export * from "./knowledge-drive.js";
+export * from "./knowledge-connectors.js";
+export * from "./knowledge-proxy.js";
 export * from "./stripe.js";
 export * from "./tasks.js";
 export * from "./task-notifications.js";

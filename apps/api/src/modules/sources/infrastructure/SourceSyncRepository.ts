@@ -3,6 +3,7 @@ import type {
   KnowledgeDocumentPermissions,
   SourceSync,
   SourceSyncCheckpoint,
+  RecipeConnectorProvider,
 } from "@ngriffin_uk/polychat-schemas";
 import { generatePrefixedId } from "@ngriffin_uk/polychat-utility-core";
 
@@ -15,7 +16,7 @@ export interface SourceSyncRecord {
   created_by_user_id: number;
   project_id: string | null;
   connection_id: string;
-  provider: "googledrive";
+  provider: RecipeConnectorProvider;
   root_id: string;
   title: string;
   enabled: number;
@@ -184,11 +185,11 @@ export class SourceSyncRepository extends BaseRepository {
     runId: string;
     page: number;
     upstreamId: string;
-    version: string;
+    version: string | null;
     title: string;
     content: string;
     permissions: KnowledgeDocumentPermissions;
-    sourceUrl: string;
+    sourceUrl: string | null;
   }): Promise<void> {
     await this.executeRun(
       `INSERT INTO source (id, created_by_user_id, project_id, connection_id, kind, title, status, content,

@@ -3,6 +3,7 @@ import z from "zod/v4";
 import { isSupportedCronExpression } from "./cron.js";
 import { documentMetadataSchema } from "./documents.js";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json" with { type: "json" };
+import { knowledgeConnectorCapabilitySchema } from "./knowledge-connectors.js";
 import { externalHttpUrlSchema } from "./navigation.js";
 import { outputSchema } from "./outputs.js";
 import { searchOptionsSchema, searchProviderSchema } from "./search.js";
@@ -1236,6 +1237,7 @@ export const recipeConnectorManifestSchema = z.object({
   writeToolCount: z.number().int().nonnegative(),
   operationAccess: assistantCapabilityOperationAccessSchema.optional(),
   authConfigs: z.array(recipeConnectorAuthConfigSchema).optional(),
+  knowledge: knowledgeConnectorCapabilitySchema.optional(),
 });
 
 export const recipeConnectorsResponseSchema = z.object({

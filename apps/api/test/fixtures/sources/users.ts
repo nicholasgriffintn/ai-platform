@@ -17,3 +17,9 @@ export const knowledgeTestUser: IUser = {
   terms_accepted_at: null,
   plan_id: null,
 };
+
+export const knowledgeToolTestUser: IUser = {
+  ...knowledgeTestUser,
+  id: 42,
+  email: "test@example.com",
+};

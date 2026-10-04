@@ -1,14 +1,14 @@
 import z from "zod/v4";
 
-export const sourceSyncProviderSchema = z.enum(["googledrive"]);
+import { recipeConnectorProviderSchema } from "./apps.js";
 
 export const createSourceSyncSchema = z
   .object({
     projectId: z.string().min(1).optional(),
-    provider: sourceSyncProviderSchema,
-    accountId: z.string().min(1),
+    provider: recipeConnectorProviderSchema,
+    accountId: z.string().min(1).optional(),
     title: z.string().trim().min(1).max(200),
-    rootId: z.string().regex(/^[A-Za-z0-9_-]{1,200}$/),
+    rootId: z.string().trim().min(1).max(4096),
   })
   .strict();
 
@@ -16,7 +16,7 @@ export const sourceSyncSchema = z
   .object({
     id: z.string(),
     projectId: z.string().nullable(),
-    provider: sourceSyncProviderSchema,
+    provider: recipeConnectorProviderSchema,
     title: z.string(),
     rootId: z.string(),
     connectionId: z.string(),
@@ -38,16 +38,35 @@ export const sourceSyncTaskDataSchema = z
   .strict();
 export const SOURCE_SYNC_TASK_TYPE = "source_sync";
 export const sourceSyncCheckpointSchema = z
-  .object({
-    folders: z
-      .array(z.string().regex(/^[A-Za-z0-9_-]{1,200}$/))
-      .min(1)
-      .max(2000),
-    folderIndex: z.number().int().nonnegative(),
-    pageToken: z.string().max(4096).nullable(),
-  })
-  .strict();
+  .record(z.string().max(200), z.json())
+  .refine(
+    (value) => new TextEncoder().encode(JSON.stringify(value)).length <= 256 * 1024,
+    "Sync checkpoint is too large",
+  );
+
+export const knowledgeDocumentPermissionsSchema = z.object({
+  public: z.boolean(),
+  emails: z.array(z.email()).max(2000),
+  validUntil: z.iso.datetime({ offset: true }).nullable(),
+});
+
+export const knowledgeSyncDocumentSchema = z.object({
+  id: z.string().min(1).max(2048),
+  title: z.string().min(1).max(4096),
+  version: z.string().min(1).max(2048).nullable(),
+  sourceUrl: z.url().max(2048).nullable(),
+  data: z.unknown(),
+});
+
+export const knowledgeSyncPageSchema = z.object({
+  documents: z.array(knowledgeSyncDocumentSchema).max(20),
+  checkpoint: sourceSyncCheckpointSchema,
+  complete: z.boolean(),
+});
+
 export type SourceSyncCheckpoint = z.infer<typeof sourceSyncCheckpointSchema>;
-export type SourceSyncProvider = z.infer<typeof sourceSyncProviderSchema>;
+export type KnowledgeDocumentPermissions = z.infer<typeof knowledgeDocumentPermissionsSchema>;
+export type KnowledgeSyncDocument = z.infer<typeof knowledgeSyncDocumentSchema>;
+export type KnowledgeSyncPage = z.infer<typeof knowledgeSyncPageSchema>;
 export type CreateSourceSyncInput = z.infer<typeof createSourceSyncSchema>;
 export type SourceSync = z.infer<typeof sourceSyncSchema>;

@@ -3,22 +3,27 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { composioRequest, type ComposioEnvironment } from "../composio/request.js";
 import { readKnowledgeProxyFile } from "./proxy-file.js";
-
-export type KnowledgeProxyRead = (endpoint: string) => Promise<unknown>;
+import type { KnowledgeRead, KnowledgeReadScope } from "./types.js";
 
 export function createKnowledgeProxyReader(
   env: ComposioEnvironment,
   connectedAccountId: string,
-): KnowledgeProxyRead {
-  return async (endpoint) => {
+  scopes: readonly KnowledgeReadScope[],
+): KnowledgeRead {
+  return async (endpoint, request = {}) => {
     const url = new URL(endpoint);
+    const method = request.method ?? "GET";
     const allowed =
       url.protocol === "https:" &&
       !url.username &&
       !url.password &&
       !url.port &&
-      url.hostname === "www.googleapis.com" &&
-      url.pathname.startsWith("/drive/v3/");
+      scopes.some(
+        (scope) =>
+          url.origin === scope.origin &&
+          url.pathname.startsWith(scope.pathPrefix) &&
+          scope.methods.includes(method),
+      );
 
     if (!allowed) {
       throw new AssistantError(
@@ -33,7 +38,12 @@ export function createKnowledgeProxyReader(
       path: "/tools/execute/proxy",
       method: "POST",
       maxResponseBytes: 2 * 1024 * 1024,
-      body: { connected_account_id: connectedAccountId, endpoint, method: "GET" },
+      body: {
+        connected_account_id: connectedAccountId,
+        endpoint,
+        method,
+        ...(request.body ? { body: request.body } : {}),
+      },
     });
 
     if (

@@ -1798,7 +1798,7 @@ export const sourceSync = sqliteTable(
     connection_id: text()
       .notNull()
       .references(() => providerConnection.id, { onDelete: "cascade" }),
-    provider: text({ enum: ["googledrive"] }).notNull(),
+    provider: text().notNull(),
     root_id: text().notNull(),
     title: text().notNull(),
     enabled: integer().default(1).notNull(),

@@ -32,7 +32,9 @@ Store completed repository runs as idempotent repository sources in the scope re
 
 Retire the transferred personal embedding documents from retrieval immediately. Carry their original targets and vector IDs into cleanup receipts, then remove their old D1 records only after confirmed provider deletion. Keep quarantined or unavailable targets as evidence.
 
-Sync selected Drive folders through existing connected accounts. Persist a checkpoint after each successful page and prune absent documents only after a complete current scan. Refresh permission evidence independently of content changes; require every current project member's email to appear in individual grants, or require a public grant. Deny shared retrieval after a new member joins, the publishing admin loses authority, the connection is revoked, the sync is paused or the permission evidence expires.
+Attach knowledge adapters to the existing connector provider registry. Keep root parsing, request scopes, traversal, version validation and upstream permission interpretation in each adapter. Use normalised document records and bounded opaque checkpoints in the shared worker and persistence; discover provider capabilities through the existing connector catalogue and derive the Sources form from them.
+
+Bind each sync to its creator's owned connection through the existing connected-account or stored API-key paths. Keep personal sources private and bind project sources to their workspace membership and publishing authority. Persist a checkpoint after each successful page and prune absent documents only after a complete current scan. Refresh permission evidence independently of content changes; require every current workspace member's email to appear in verified individual grants, or require a public grant. Deny shared retrieval after a new member joins, the publishing admin loses authority, the connection is revoked, the sync is paused or the permission evidence expires.
 
 ## Consequences
 

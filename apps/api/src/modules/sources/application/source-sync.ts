@@ -1,20 +1,16 @@
-import {
-  createKnowledgeProxyReader,
-  CONNECTOR_ACCOUNT_REFERENCE_KIND,
-} from "@ngriffin_uk/polychat-ai-integrations";
-import {
-  driveKnowledgeFolderSchema,
-  type CreateSourceSyncInput,
-} from "@ngriffin_uk/polychat-schemas";
+import type { CreateSourceSyncInput } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { listRecipeConnectorAccounts } from "~/modules/apps/application/connectors/accounts";
+import {
+  requireKnowledgeConnectorSession,
+  selectKnowledgeConnectorConnection,
+} from "~/modules/apps/application/connectors/knowledge";
 import { recordProjectAudit } from "~/modules/audit/application";
 import { SourceSyncRepository } from "~/modules/sources/infrastructure/SourceSyncRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
-import { requireSourceSyncAccess, requireSourceSyncAccount } from "./source-sync-access";
+import { requireSourceSyncAccess } from "./source-sync-access";
 
 export async function createSourceSync(context: ServiceContext, input: CreateSourceSyncInput) {
   const user = context.requireUser();
@@ -23,36 +19,30 @@ export async function createSourceSync(context: ServiceContext, input: CreateSou
     await requireProjectAccess(context, input.projectId, ["owner", "admin"]);
   }
 
-  await listRecipeConnectorAccounts({ context, userId: user.id, providerId: "googledrive" });
-  const connection = await context.repositories.providerConnections.getConnection(
-    user.id,
-    "googledrive",
-    CONNECTOR_ACCOUNT_REFERENCE_KIND,
+  const connection = await selectKnowledgeConnectorConnection(
+    context,
+    input.provider,
     input.accountId,
   );
-
-  if (!connection) {
-    throw new AssistantError("Select a connected Drive account", ErrorType.PARAMS_ERROR, 400);
-  }
-
-  const account = await requireSourceSyncAccount(context, connection.id);
-  const read = createKnowledgeProxyReader(context.env, account.id);
-  const root = driveKnowledgeFolderSchema.parse(
-    await read(
-      `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(input.rootId)}?fields=id,mimeType,trashed&supportsAllDrives=true`,
-    ),
+  const { adapter, read } = await requireKnowledgeConnectorSession(
+    context,
+    connection.id,
+    input.provider,
   );
+  const rootId = adapter.normaliseRoot(input.rootId);
 
-  if (root.trashed || root.id !== input.rootId) {
-    throw new AssistantError("Select an accessible Drive folder", ErrorType.PARAMS_ERROR, 400);
-  }
+  await adapter.validateRoot(read, rootId);
 
   if (input.projectId) {
     await requireProjectAccess(context, input.projectId, ["owner", "admin"]);
   }
 
-  await requireSourceSyncAccount(context, connection.id);
-  const sync = await new SourceSyncRepository(context.env).create(user.id, input, connection.id);
+  await requireKnowledgeConnectorSession(context, connection.id, input.provider);
+  const sync = await new SourceSyncRepository(context.env).create(
+    user.id,
+    { ...input, rootId },
+    connection.id,
+  );
 
   if (sync.project_id) {
     await recordProjectAudit(context, sync.project_id, {

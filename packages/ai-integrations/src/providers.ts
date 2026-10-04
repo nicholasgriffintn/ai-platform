@@ -1,6 +1,9 @@
 import { configuredComposioToolkits } from "@ngriffin_uk/polychat-library-composio";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
+import { googleDriveKnowledgeAdapter } from "./knowledge/drive-adapter.js";
+import type { KnowledgeConnectorAdapter } from "./knowledge/types.js";
+
 export type ConnectorAuthType = "api_key" | "composio";
 export type ConnectorOperationAccess = "read" | "write";
 
@@ -35,6 +38,7 @@ export interface ConnectorProviderConfig {
   setupUrl: string;
   auth: ApiKeyConnectorConfig | ComposioConnectorConfig;
   operations: readonly ConnectorOperationConfig[];
+  knowledge?: KnowledgeConnectorAdapter;
 }
 
 export interface ConnectorOperationConfig {
@@ -244,6 +248,10 @@ const localConnectorProviders: ConnectorProviderConfig[] = [
   },
 ];
 
+const knowledgeAdapters: Partial<Record<RecipeConnectorProvider, KnowledgeConnectorAdapter>> = {
+  googledrive: googleDriveKnowledgeAdapter,
+};
+
 const composioConnectorProviders: ConnectorProviderConfig[] = Object.values(
   configuredComposioToolkits,
 ).map((toolkit) => ({
@@ -267,7 +275,10 @@ const composioConnectorProviders: ConnectorProviderConfig[] = Object.values(
 export const connectorProviders: readonly ConnectorProviderConfig[] = [
   ...composioConnectorProviders,
   ...localConnectorProviders,
-];
+].map((provider) => ({
+  ...provider,
+  knowledge: knowledgeAdapters[provider.id] ?? provider.knowledge,
+}));
 
 export function getConnectorProviderConfig(
   providerId: string,

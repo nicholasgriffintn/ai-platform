@@ -35,9 +35,15 @@ The API keeps what is Polychat's: connection authority, approvals and replay, th
 
 ## Knowledge ingestion
 
-Use `listDriveKnowledgePage`, `getDriveKnowledgePermissions` and `readDriveKnowledgeContent` to index selected Drive folders through an existing connected account. Resume folder traversal from the stored checkpoint, export Google Docs as text and include text files. Refuse incomplete scans, oversized content and versions that change during export.
+Attach a `KnowledgeConnectorAdapter` to the existing `ConnectorProviderConfig.knowledge` capability. The same registry exposes its input labels and supported content to the connector catalogue and Sources UI. Add provider behaviour in an adapter and register it beside the existing provider configuration; keep provider identifiers and pagination formats out of the shared source services, schemas and database constraints.
 
-Keep account ownership, project publication, checkpoints and deletion reconciliation in the API's sources module. The fixed Drive reader sends only authenticated GET requests through Composio's [proxy API](https://docs.composio.dev/reference/api-reference/tools/postToolsExecuteProxy), with bounded responses and redirects rejected. It exposes no general proxy tool to a model.
+Implement root normalisation and validation, an initial checkpoint, document listing, permission evidence and version-safe content reads. Return normalised document IDs, titles, optional versions and citation URLs, with bounded opaque JSON checkpoints. Use a null version when the upstream provider cannot establish one; the shared worker then fetches content every scan instead of reusing a cached version.
+
+Resolve owned connections through the API's existing connector account and stored API-key paths. Adapters receive the selected authentication mechanism when creating their reader. Composio adapters use `createKnowledgeProxyReader` with their own trusted origins, paths and read methods. The shared transport supports GET and explicitly scoped POST reads through the [proxy API](https://docs.composio.dev/reference/api-reference/tools/postToolsExecuteProxy), bounds responses and rejects redirects. Drive declares GET only. Keep POST scopes limited to read/query endpoints and keep write operations outside this capability. Never pass model-selected endpoints or credentials into this boundary.
+
+Keep credential ownership, personal/project scope, current workspace membership, publication authority, task leases, checkpoint commits and deletion reconciliation in the API. Normalise only verified upstream grants into public or individual-email evidence. Providers with group or organisation permissions must resolve their membership before those permissions can authorise a project audience.
+
+The Drive adapter implements folder traversal, Google Docs exports and text files. It refuses incomplete scans, oversized content and versions that change during export. Adding another supported provider requires its adapter and registry entry, without changes to the API worker, source persistence or Sources form.
 
 Read temporary text exports only from validated S3 or R2 URLs before they expire. Bound the download to 256 KiB, reject redirects and omit account credentials from the storage request.
 

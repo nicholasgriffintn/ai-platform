@@ -1,18 +1,17 @@
 import z from "zod/v4";
 
-export const knowledgeProxyFileSchema = z.object({
-  url: z.url().max(4096),
-  content_type: z
-    .string()
-    .regex(/^text\//i)
-    .max(255),
-  size: z
-    .number()
-    .int()
-    .min(0)
-    .max(256 * 1024),
-  expires_at: z.iso.datetime({ offset: true }),
-});
+export const driveKnowledgeCheckpointSchema = z
+  .object({
+    folders: z
+      .array(z.string().regex(/^[A-Za-z0-9_-]{1,200}$/))
+      .min(1)
+      .max(2000),
+    folderIndex: z.number().int().nonnegative(),
+    pageToken: z.string().max(4096).nullable(),
+  })
+  .strict();
+
+export type DriveKnowledgeCheckpoint = z.infer<typeof driveKnowledgeCheckpointSchema>;
 
 export const driveKnowledgeFileSchema = z
   .object({
@@ -62,8 +61,3 @@ export const driveKnowledgeFolderSchema = z
     trashed: z.boolean().optional(),
   })
   .passthrough();
-export interface KnowledgeDocumentPermissions {
-  public: boolean;
-  emails: string[];
-  validUntil: string | null;
-}

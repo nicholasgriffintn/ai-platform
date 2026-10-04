@@ -2,14 +2,14 @@ import {
   driveKnowledgeFileSchema,
   driveKnowledgePageSchema,
   driveKnowledgePermissionsSchema,
-  sourceSyncCheckpointSchema,
+  driveKnowledgeCheckpointSchema,
   type DriveKnowledgeFile,
   type KnowledgeDocumentPermissions,
-  type SourceSyncCheckpoint,
+  type DriveKnowledgeCheckpoint,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type { KnowledgeProxyRead } from "./proxy.js";
+import type { KnowledgeRead } from "./types.js";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const FOLDER_MIME = "application/vnd.google-apps.folder";
@@ -20,8 +20,8 @@ export function isSupportedKnowledgeFile(file: DriveKnowledgeFile): boolean {
 }
 
 export async function listDriveKnowledgePage(
-  read: KnowledgeProxyRead,
-  checkpoint: SourceSyncCheckpoint,
+  read: KnowledgeRead,
+  checkpoint: DriveKnowledgeCheckpoint,
 ) {
   const folder = checkpoint.folders[checkpoint.folderIndex];
 
@@ -58,7 +58,7 @@ export async function listDriveKnowledgePage(
       ...page.files.filter((file) => file.mimeType === FOLDER_MIME).map((file) => file.id),
     ]),
   ];
-  const next = sourceSyncCheckpointSchema.parse({
+  const next = driveKnowledgeCheckpointSchema.parse({
     folders,
     folderIndex: checkpoint.folderIndex + (page.nextPageToken ? 0 : 1),
     pageToken: page.nextPageToken ?? null,
@@ -72,7 +72,7 @@ export async function listDriveKnowledgePage(
 }
 
 export async function getDriveKnowledgePermissions(
-  read: KnowledgeProxyRead,
+  read: KnowledgeRead,
   fileId: string,
 ): Promise<KnowledgeDocumentPermissions> {
   const permissions: KnowledgeDocumentPermissions = { public: false, emails: [], validUntil: null };
@@ -140,7 +140,7 @@ export async function getDriveKnowledgePermissions(
 }
 
 export async function validateDriveKnowledgeVersion(
-  read: KnowledgeProxyRead,
+  read: KnowledgeRead,
   file: DriveKnowledgeFile,
 ): Promise<void> {
   const current = driveKnowledgeFileSchema.parse(
@@ -164,7 +164,7 @@ export async function validateDriveKnowledgeVersion(
 }
 
 export async function readDriveKnowledgeContent(
-  read: KnowledgeProxyRead,
+  read: KnowledgeRead,
   file: DriveKnowledgeFile,
 ): Promise<string> {
   if (file.size && (!Number.isFinite(Number(file.size)) || Number(file.size) > 256 * 1024)) {

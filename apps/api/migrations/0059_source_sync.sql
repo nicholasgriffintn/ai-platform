@@ -3,7 +3,7 @@ CREATE TABLE source_sync (
   created_by_user_id INTEGER NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   project_id TEXT REFERENCES project(id) ON DELETE CASCADE,
   connection_id TEXT NOT NULL REFERENCES provider_connection(id) ON DELETE CASCADE,
-  provider TEXT NOT NULL CHECK (provider = 'googledrive'),
+  provider TEXT NOT NULL,
   root_id TEXT NOT NULL,
   title TEXT NOT NULL,
   enabled INTEGER NOT NULL DEFAULT 1,

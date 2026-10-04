@@ -79,7 +79,16 @@ export {
   type ComposioToolSearchResult,
 } from "./composio/client.js";
 export { type ComposioEnvironment, type ComposioHttpMethod } from "./composio/request.js";
-export { createKnowledgeProxyReader, type KnowledgeProxyRead } from "./knowledge/proxy.js";
+export { createKnowledgeProxyReader } from "./knowledge/proxy.js";
+export type {
+  KnowledgeRead,
+  KnowledgeReadMethod,
+  KnowledgeReadRequest,
+  KnowledgeReadScope,
+  KnowledgeConnectorCredentials,
+  KnowledgeConnectorAdapter,
+  KnowledgeConnectorSession,
+} from "./knowledge/types.js";
 export {
   listDriveKnowledgePage,
   getDriveKnowledgePermissions,

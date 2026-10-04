@@ -1,19 +1,17 @@
-import {
-  createKnowledgeProxyReader,
-  getDriveKnowledgePermissions,
-  listDriveKnowledgePage,
-  readDriveKnowledgeContent,
-  validateDriveKnowledgeVersion,
-} from "@ngriffin_uk/polychat-ai-integrations";
+import type { KnowledgeConnectorSession } from "@ngriffin_uk/polychat-ai-integrations";
 import {
   SOURCE_SYNC_TASK_TYPE,
   sourceSyncCheckpointSchema,
-  type DriveKnowledgeFile,
+  knowledgeDocumentPermissionsSchema,
+  knowledgeSyncPageSchema,
+  type KnowledgeSyncDocument,
 } from "@ngriffin_uk/polychat-schemas";
 import { generatePrefixedId, safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
+import { getRecipeConnectorProviderConfig } from "~/modules/apps/application/connectors/connector-adapters";
+import { requireKnowledgeConnectorSession } from "~/modules/apps/application/connectors/knowledge";
 import {
   SourceSyncRepository,
   type SourceSyncRecord,
@@ -21,7 +19,7 @@ import {
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { IEnv } from "~/types";
 
-import { requireSourceSyncAccess, requireSourceSyncAccount } from "./source-sync-access";
+import { requireSourceSyncAccess } from "./source-sync-access";
 
 async function enqueueSyncPage(context: ServiceContext, sync: SourceSyncRecord): Promise<void> {
   if (!sync.run_id) {
@@ -42,12 +40,18 @@ export async function scheduleSourceSyncs(env: IEnv): Promise<void> {
   const repository = new SourceSyncRepository(env);
 
   for (const sync of await repository.listDue()) {
+    const adapter = getRecipeConnectorProviderConfig(sync.provider)?.knowledge;
+
+    if (!adapter) {
+      continue;
+    }
+
     if (!sync.run_id) {
-      await repository.begin(sync.id, generatePrefixedId("scan_"), {
-        folders: [sync.root_id],
-        folderIndex: 0,
-        pageToken: null,
-      });
+      await repository.begin(
+        sync.id,
+        generatePrefixedId("scan_"),
+        sourceSyncCheckpointSchema.parse(adapter.initialCheckpoint(sync.root_id)),
+      );
     }
 
     const current = await repository.get(sync.id);
@@ -63,29 +67,43 @@ async function refreshDocument(
   sync: SourceSyncRecord,
   runId: string,
   page: number,
-  file: DriveKnowledgeFile,
-  accountId: string,
+  document: KnowledgeSyncDocument,
+  session: KnowledgeConnectorSession,
   assertOwned: () => Promise<void>,
 ): Promise<void> {
   const repository = new SourceSyncRepository(context.env);
-  const read = createKnowledgeProxyReader(context.env, accountId);
+  const { adapter, read } = session;
 
   await assertOwned();
   await requireSourceSyncAccess(context, sync, true);
-  await repository.invalidatePermissions(sync.id, file.id, runId, page);
+  await repository.invalidatePermissions(sync.id, document.id, runId, page);
 
   try {
-    const permissions = await getDriveKnowledgePermissions(read, file.id);
-    const previous = await repository.getSyncedSource(sync.id, file.id);
+    const permissions = knowledgeDocumentPermissionsSchema.parse(
+      await adapter.getPermissions(read, document),
+    );
+    const previous = await repository.getSyncedSource(sync.id, document.id);
+    const cachedContent =
+      document.version && previous?.upstream_version === document.version
+        ? (previous.content ?? undefined)
+        : undefined;
+    const content = await adapter.readContent(read, document, cachedContent);
 
-    if (previous?.upstream_version === file.version && previous.content) {
-      await validateDriveKnowledgeVersion(read, file);
+    if (new TextEncoder().encode(content).length > 256 * 1024) {
+      throw new AssistantError(
+        "Knowledge document exceeds the indexing size limit",
+        ErrorType.PARAMS_ERROR,
+        413,
+      );
     }
 
-    const content =
-      previous?.upstream_version === file.version && previous.content
-        ? previous.content
-        : await readDriveKnowledgeContent(read, file);
+    if (!content.trim()) {
+      throw new AssistantError(
+        "Knowledge document has no supported text",
+        ErrorType.PARAMS_ERROR,
+        422,
+      );
+    }
 
     await assertOwned();
     await requireSourceSyncAccess(context, sync, true);
@@ -93,12 +111,12 @@ async function refreshDocument(
       sync,
       runId,
       page,
-      upstreamId: file.id,
-      version: file.version,
-      title: file.name,
+      upstreamId: document.id,
+      version: document.version,
+      title: document.title,
       content,
       permissions,
-      sourceUrl: `https://drive.google.com/file/d/${encodeURIComponent(file.id)}/view`,
+      sourceUrl: document.sourceUrl,
     });
   } catch (error) {
     if (
@@ -106,7 +124,7 @@ async function refreshDocument(
       [401, 403, 404, 413, 422].includes(error.statusCode ?? 0)
     ) {
       await assertOwned();
-      await repository.archiveDocument(sync.id, file.id, runId, page);
+      await repository.archiveDocument(sync.id, document.id, runId, page);
 
       return;
     }
@@ -134,15 +152,18 @@ export async function runSourceSyncPage(
   try {
     await assertOwned();
     await requireSourceSyncAccess(context, sync, true);
-    const account = await requireSourceSyncAccount(context, sync.connection_id);
+    const session = await requireKnowledgeConnectorSession(
+      context,
+      sync.connection_id,
+      sync.provider,
+    );
     const checkpoint = sourceSyncCheckpointSchema.parse(safeParseJson(sync.checkpoint));
-    const result = await listDriveKnowledgePage(
-      createKnowledgeProxyReader(context.env, account.id),
-      checkpoint,
+    const result = knowledgeSyncPageSchema.parse(
+      await session.adapter.listDocuments(session.read, checkpoint),
     );
 
-    for (const file of result.files) {
-      await refreshDocument(context, sync, input.runId, input.page, file, account.id, assertOwned);
+    for (const document of result.documents) {
+      await refreshDocument(context, sync, input.runId, input.page, document, session, assertOwned);
     }
 
     await assertOwned();
@@ -162,7 +183,7 @@ export async function runSourceSyncPage(
       sync.id,
       input.runId,
       input.page,
-      "Could not complete the scan. Check folder access and the connected account, then retry.",
+      "Could not complete the scan. Check source access and the connection, then retry.",
     );
     throw error;
   }
