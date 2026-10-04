@@ -4,10 +4,25 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 
-import { siteCollectionRecordSchema } from "@ngriffin_uk/polychat-schemas";
+import { siteCollectionRecordSchema, siteRuntimeStatusSchema } from "@ngriffin_uk/polychat-schemas";
 import { Miniflare, type ModuleDefinition } from "miniflare";
 import { expect, it } from "vitest";
 import z from "zod/v4";
+
+import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import { editSite } from "~/modules/sites/application/edit";
+import { deleteSite } from "~/modules/sites/application/records";
+import {
+  activateSiteRuntime,
+  disableSiteRuntime,
+  executeSiteDataAction,
+  readSiteData,
+} from "~/modules/sites/application/runtime";
+import { requestSiteRuntime } from "~/modules/sites/infrastructure/runtime-client";
+import type { IEnv } from "~/types";
+
+import { browserTestUser } from "./computer-use";
+import { createSitesTestContext, resetSitesTestData, saveTestSite } from "./sites/database";
 
 it("persists isolated records and enforces ownership, limits and revision fences", async () => {
   const directory = await mkdtemp(path.join(tmpdir(), "polychat-sites-runtime-"));
@@ -53,107 +68,196 @@ it("persists isolated records and enforces ownership, limits and revision fences
       modules,
       compatibilityDate: "2026-08-01",
       durableObjects: { SITES_RUNTIME: { className: "SiteRuntime", useSQLite: true } },
+      d1Databases: ["DB"],
+      kvNamespaces: ["CACHE"],
     });
-    expect((await runtime.dispatchFetch("http://localhost/activate")).ok).toBe(true);
-    const created = await runtime.dispatchFetch("http://localhost/action", {
-      method: "POST",
-      body: JSON.stringify({
-        action: "createRecord",
-        collectionId: "tasks",
-        values: { title: "Review" },
-      }),
-    });
-    const [record] = z.array(siteCollectionRecordSchema).parse(await created.json());
+    const context = await createSitesTestContext(runtime);
 
-    expect(record.values.title).toBe("Review");
-    expect(
-      z
-        .array(siteCollectionRecordSchema)
-        .parse(await (await runtime.dispatchFetch("http://localhost/read")).json()),
-    ).toHaveLength(1);
-    const remove = {
-      action: "deleteRecord",
-      collectionId: "tasks",
-      recordId: record.id,
-      expectedRecordRevision: 1,
+    const bindings = await runtime.getBindings<Pick<IEnv, "SITES_RUNTIME">>();
+
+    context.env.SITES_RUNTIME = bindings.SITES_RUNTIME;
+    await resetSitesTestData(context);
+    await saveTestSite(context, "project");
+    const collections = {
+      tasks: {
+        label: "Tasks",
+        maxRecords: 2,
+        fields: { title: { type: "string" as const, required: true } },
+      },
     };
+    const site = await editSite({
+      context,
+      user: browserTestUser,
+      siteId: "site",
+      request: {
+        projectId: "project",
+        expectedRevision: 1,
+        summary: "Add saved tasks",
+        patches: [
+          { op: "add", path: "/collections", value: collections },
+          {
+            op: "add",
+            path: "/dataBindings",
+            value: {
+              tasks: {
+                kind: "collection",
+                collectionId: "tasks",
+                pageId: "home",
+                statePath: "/tasks",
+              },
+            },
+          },
+        ],
+      },
+    });
+    const scope = { projectId: "project", expectedRevision: site.revision };
+
+    await activateSiteRuntime(context, site.id, scope);
+    const created = await executeSiteDataAction(context, site.id, {
+      ...scope,
+      operation: { action: "createRecord", collectionId: "tasks", values: { title: "Review" } },
+    });
+    const [record] = z
+      .array(z.object({ id: z.string(), revision: z.number(), title: z.string() }))
+      .parse(created.bindings.tasks);
 
     expect(
       (
-        await runtime.dispatchFetch("http://localhost/action?user=2", {
-          method: "POST",
-          body: JSON.stringify(remove),
-        })
-      ).status,
-    ).toBe(409);
-    const update = {
-      action: "updateRecord",
+        await readSiteData(
+          createServiceContext({ env: context.env, user: browserTestUser }),
+          site.id,
+          scope,
+        )
+      ).bindings.tasks,
+    ).toEqual(created.bindings.tasks);
+    const member = createServiceContext({ env: context.env, user: { ...browserTestUser, id: 2 } });
+
+    await context.env.DB.prepare(
+      "UPDATE workspace_member SET role = 'member' WHERE user_id = 2",
+    ).run();
+    const remove = {
+      action: "deleteRecord" as const,
       collectionId: "tasks",
       recordId: record.id,
-      expectedRecordRevision: 1,
+      expectedRecordRevision: record.revision,
+    };
+
+    await expect(
+      executeSiteDataAction(member, site.id, { ...scope, operation: remove }),
+    ).rejects.toMatchObject({ statusCode: 403 });
+    await context.env.DB.prepare(
+      "UPDATE workspace_member SET role = 'admin' WHERE user_id = 2",
+    ).run();
+    const update = {
+      action: "updateRecord" as const,
+      collectionId: "tasks",
+      recordId: record.id,
+      expectedRecordRevision: record.revision,
       values: { title: "Reviewed" },
     };
 
+    await executeSiteDataAction(member, site.id, { ...scope, operation: update });
+    await expect(
+      executeSiteDataAction(context, site.id, { ...scope, operation: update }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    await expect(
+      executeSiteDataAction(context, site.id, {
+        ...scope,
+        operation: { action: "createRecord", collectionId: "tasks", values: { title: "" } },
+      }),
+    ).rejects.toMatchObject({ statusCode: 400 });
     expect(
-      (
-        await runtime.dispatchFetch("http://localhost/action?user=2&role=admin", {
-          method: "POST",
-          body: JSON.stringify(update),
-        })
-      ).ok,
-    ).toBe(true);
+      await requestSiteRuntime(
+        context.env,
+        "isolated",
+        { operation: "activate", revision: 1, collections },
+        siteRuntimeStatusSchema,
+      ),
+    ).toMatchObject({ enabled: true });
     expect(
-      (
-        await runtime.dispatchFetch("http://localhost/action", {
-          method: "POST",
-          body: JSON.stringify(update),
-        })
-      ).status,
-    ).toBe(409);
-    await runtime.dispatchFetch("http://localhost/activate?site=second");
-    expect(await (await runtime.dispatchFetch("http://localhost/read?site=second")).json()).toEqual(
-      [],
-    );
-    await runtime.dispatchFetch("http://localhost/disable");
-    expect((await runtime.dispatchFetch("http://localhost/read")).status).toBe(409);
-    await runtime.dispatchFetch("http://localhost/activate?revision=2");
-    expect(
-      z
-        .array(siteCollectionRecordSchema)
-        .parse(await (await runtime.dispatchFetch("http://localhost/read?revision=2")).json())[0]
-        .values.title,
-    ).toBe("Reviewed");
-    expect(
-      (
-        await runtime.dispatchFetch("http://localhost/action", {
-          method: "POST",
-          body: JSON.stringify(update),
-        })
-      ).status,
-    ).toBe(409);
-    const create = { action: "createRecord", collectionId: "tasks", values: { title: "Next" } };
+      await requestSiteRuntime(
+        context.env,
+        "isolated",
+        { operation: "read", revision: 1, collectionId: "tasks" },
+        z.array(siteCollectionRecordSchema),
+      ),
+    ).toEqual([]);
 
-    expect(
-      (
-        await runtime.dispatchFetch("http://localhost/action?revision=2", {
-          method: "POST",
-          body: JSON.stringify(create),
-        })
-      ).ok,
-    ).toBe(true);
-    expect(
-      (
-        await runtime.dispatchFetch("http://localhost/action?revision=2", {
-          method: "POST",
-          body: JSON.stringify(create),
-        })
-      ).status,
-    ).toBe(409);
-    await runtime.dispatchFetch("http://localhost/delete");
-    await runtime.dispatchFetch("http://localhost/activate?revision=3");
-    expect(await (await runtime.dispatchFetch("http://localhost/read?revision=3")).json()).toEqual(
-      [],
+    await disableSiteRuntime(context, site.id, scope);
+    await expect(
+      requestSiteRuntime(
+        context.env,
+        site.id,
+        { operation: "activate", revision: 1, collections },
+        siteRuntimeStatusSchema,
+      ),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    const revised = await editSite({
+      context,
+      user: browserTestUser,
+      siteId: site.id,
+      request: {
+        ...scope,
+        summary: "Rename app",
+        patches: [{ op: "replace", path: "/title", value: "Reviewed tasks" }],
+      },
+    });
+    const latestScope = { ...scope, expectedRevision: revised.revision };
+
+    await expect(
+      requestSiteRuntime(
+        context.env,
+        site.id,
+        {
+          operation: "activate",
+          revision: revised.revision,
+          collections: {
+            tasks: { ...collections.tasks, fields: { count: { type: "number", required: true } } },
+          },
+        },
+        siteRuntimeStatusSchema,
+      ),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    await activateSiteRuntime(context, site.id, latestScope);
+    await expect(
+      requestSiteRuntime(
+        context.env,
+        site.id,
+        { operation: "disable", revision: site.revision },
+        siteRuntimeStatusSchema,
+      ),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect((await readSiteData(context, site.id, latestScope)).bindings.tasks).toMatchObject([
+      { title: "Reviewed", revision: 2 },
+    ]);
+    const create = {
+      action: "createRecord" as const,
+      collectionId: "tasks",
+      values: { title: "Next" },
+    };
+
+    await executeSiteDataAction(context, site.id, { ...latestScope, operation: create });
+    await expect(
+      executeSiteDataAction(context, site.id, { ...latestScope, operation: create }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    await deleteSite({ context, userId: 1, projectId: "project" }, site.id);
+    await expect(readSiteData(context, site.id, latestScope)).rejects.toMatchObject({
+      statusCode: 404,
+    });
+    await requestSiteRuntime(
+      context.env,
+      site.id,
+      { operation: "activate", revision: 1, collections },
+      siteRuntimeStatusSchema,
     );
+    expect(
+      await requestSiteRuntime(
+        context.env,
+        site.id,
+        { operation: "read", revision: 1, collectionId: "tasks" },
+        z.array(siteCollectionRecordSchema),
+      ),
+    ).toEqual([]);
   } finally {
     await runtime?.dispose();
     await rm(directory, { recursive: true, force: true });

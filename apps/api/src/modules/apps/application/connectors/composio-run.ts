@@ -484,13 +484,6 @@ export async function closeComposioConnectorRun(
   }
 }
 
-export async function closeComposioConnectorSession(
-  context: ServiceContext,
-  sessionHandle: string,
-): Promise<void> {
-  await closeComposioConnectorRun(context, [sessionHandle]);
-}
-
 export async function scheduleComposioConnectorRunCleanup(
   context: ServiceContext,
   runId: string,

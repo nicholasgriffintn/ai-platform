@@ -1,113 +1,116 @@
-import { Miniflare } from "miniflare";
+import { Miniflare, type Request as WorkerRequest, Response as WorkerResponse } from "miniflare";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import type { IEnv } from "~/types";
 
-import { browserTestUser } from "../../../../../test/computer-use";
-import { databaseTestEnvironment } from "../../../../../test/environment";
-import { testSite, testSiteOutput } from "../../../../../test/sites/fixtures";
+import {
+  createSitesTestContext,
+  resetSitesTestData,
+  saveTestSite,
+} from "../../../../../test/sites/database";
+import { testSite } from "../../../../../test/sites/fixtures";
 
-const mocks = vi.hoisted(() => ({ access: vi.fn(), data: vi.fn(), generate: vi.fn() }));
+const model = vi.hoisted(() => ({ generate: vi.fn() }));
 
-vi.mock("../integration-access", () => ({ requireSiteIntegrationAccess: mocks.access }));
-vi.mock("../runtime", () => ({ readSiteData: mocks.data }));
-vi.mock("../generate", () => ({ runSiteGeneration: mocks.generate }));
+vi.mock("../generate", () => ({ runSiteGeneration: model.generate }));
 
 import { verifyAndRepairSite } from "../browser-verification";
+import { updateSite } from "../records";
 
+const capture = vi.fn<(request: WorkerRequest) => Promise<WorkerResponse>>();
 const runtime = new Miniflare({
   modules: true,
   script: "export default { fetch() { return new Response('test'); } }",
   compatibilityDate: "2026-08-01",
   d1Databases: ["DB"],
   kvNamespaces: ["CACHE"],
+  serviceBindings: { COMPUTER_WORKER: (request) => capture(request) },
 });
 let context: ServiceContext;
-const capture = vi.fn<typeof fetch>();
 
 beforeAll(async () => {
-  const env = databaseTestEnvironment(await runtime.getD1Database("DB"));
+  context = await createSitesTestContext(runtime);
+  context.env.APP_BASE_URL = "https://app.example";
+  const bindings = await runtime.getBindings<Pick<IEnv, "COMPUTER_WORKER">>();
 
-  Object.defineProperty(env, "CACHE", { value: await runtime.getKVNamespace("CACHE") });
-  env.APP_BASE_URL = "https://app.example";
-  env.COMPUTER_WORKER = {
-    fetch: capture,
-  };
-  context = createServiceContext({
-    env,
-    user: browserTestUser,
-  });
-  vi.spyOn(context.repositories.outputs, "createOutput").mockResolvedValue(testSiteOutput);
+  context.env.COMPUTER_WORKER = bindings.COMPUTER_WORKER;
 });
-
 afterAll(() => runtime.dispose());
-beforeEach(() => {
+beforeEach(async () => {
   vi.clearAllMocks();
-  mocks.access.mockResolvedValue(testSite);
-  mocks.data.mockResolvedValue({
-    revision: 1,
-    bindings: {},
-    runtime: { enabled: false, revision: null },
-  });
-  mocks.generate.mockResolvedValue({ site: { ...testSite, revision: 2 } });
-  capture.mockImplementation(async () => Response.json({ status: "passed", diagnostics: [] }));
+  await resetSitesTestData(context);
+  await saveTestSite(context);
+  capture.mockImplementation(async () =>
+    WorkerResponse.json({ status: "passed", diagnostics: [] }),
+  );
+  model.generate.mockImplementation(async () => ({
+    site: await updateSite({ context, userId: 1 }, "site", {
+      expectedRevision: 1,
+      brief: testSite.brief,
+      plan: testSite.plan,
+      project: testSite.project,
+      issues: [],
+      turn: { id: "repair", role: "edit", prompt: "Repair", createdAt: testSite.createdAt },
+    }),
+  }));
 });
+
+async function storedEvidence() {
+  return context.repositories.outputs.listPersonalOutputs(1, "featured-sites", {
+    kind: "site_browser_evidence",
+  });
+}
 
 describe("browser verification", () => {
-  it("captures two viewports, stores sanitised evidence and does not repair a passing page", async () => {
+  it("stores passing desktop and mobile evidence without invoking repair", async () => {
     const result = await verifyAndRepairSite(context, "site", {
       expectedRevision: 1,
       repair: true,
       interactions: [],
     });
+    const records = await storedEvidence();
 
     expect(result.status).toBe("passed");
     expect(result.checks.map((check) => check.viewport)).toEqual(["desktop", "mobile"]);
-    expect(context.repositories.outputs.createOutput).toHaveBeenCalledTimes(1);
-    expect(mocks.generate).not.toHaveBeenCalled();
-    const body = JSON.parse(String(capture.mock.calls[0][1]?.body));
-
-    expect(body.resourceId).toMatch(/^site-probe-/);
-    expect(body.allowedOrigins).toEqual([
-      "https://app.example",
-      "https://fonts.googleapis.com",
-      "https://fonts.gstatic.com",
-    ]);
+    expect(records).toHaveLength(1);
+    expect(JSON.parse(records[0].content)).toEqual(result);
+    expect(records[0].sensitivity).toBe("confidential");
+    expect(model.generate).not.toHaveBeenCalled();
   });
 
-  it("permits exactly one repair and rechecks its revision", async () => {
+  it("rechecks the saved repair revision exactly once and sanitises persisted diagnostics", async () => {
     capture.mockImplementation(async () =>
-      Response.json({
+      WorkerResponse.json({
         status: "failed",
         diagnostics: [{ kind: "console", message: "token=secret-value" }],
       }),
     );
-    mocks.access
-      .mockResolvedValueOnce(testSite)
-      .mockResolvedValueOnce(testSite)
-      .mockResolvedValueOnce(testSite)
-      .mockResolvedValue({ ...testSite, revision: 2 });
     const result = await verifyAndRepairSite(context, "site", {
       expectedRevision: 1,
       repair: true,
       interactions: [],
     });
+    const records = await storedEvidence();
 
-    expect(result.status).toBe("failed");
-    expect(result.repairedFromRevision).toBe(1);
-    expect(result.revision).toBe(2);
-    expect(mocks.generate).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({ status: "failed", repairedFromRevision: 1, revision: 2 });
+    expect(model.generate).toHaveBeenCalledTimes(1);
     expect(capture).toHaveBeenCalledTimes(4);
-    expect(JSON.stringify(result)).not.toContain("secret-value");
+    expect(
+      records
+        .map((record) => JSON.parse(record.content).revision)
+        .sort((left, right) => left - right),
+    ).toEqual([1, 2]);
+    expect(JSON.stringify(records)).not.toContain("secret-value");
   });
 
-  it("stops cancelled checks before publishing or repairing", async () => {
+  it("stops cancelled checks before publishing evidence or repairing", async () => {
     const controller = new AbortController();
 
     capture.mockImplementation(async () => {
       controller.abort();
 
-      return Response.json({ status: "failed", diagnostics: [] });
+      return WorkerResponse.json({ status: "failed", diagnostics: [] });
     });
     await expect(
       verifyAndRepairSite(
@@ -118,27 +121,44 @@ describe("browser verification", () => {
       ),
     ).rejects.toThrow();
     expect(capture).toHaveBeenCalledTimes(1);
-    expect(context.repositories.outputs.createOutput).not.toHaveBeenCalled();
-    expect(mocks.generate).not.toHaveBeenCalled();
+    expect(await storedEvidence()).toEqual([]);
+    expect(model.generate).not.toHaveBeenCalled();
   });
 
-  it("does not repair unavailable infrastructure or publish stale evidence", async () => {
-    capture.mockResolvedValue(new Response(null, { status: 503 }));
-    const result = await verifyAndRepairSite(context, "site", {
-      expectedRevision: 1,
-      repair: true,
-      interactions: [],
-    });
+  it("does not repair unavailable infrastructure or publish evidence after a concurrent edit", async () => {
+    capture.mockImplementation(async () => new WorkerResponse(null, { status: 503 }));
+    expect(
+      (
+        await verifyAndRepairSite(context, "site", {
+          expectedRevision: 1,
+          repair: true,
+          interactions: [],
+        })
+      ).status,
+    ).toBe("unavailable");
+    expect(model.generate).not.toHaveBeenCalled();
+    await resetSitesTestData(context);
+    await saveTestSite(context);
+    capture.mockImplementationOnce(async () => {
+      await updateSite({ context, userId: 1 }, "site", {
+        expectedRevision: 1,
+        brief: testSite.brief,
+        plan: testSite.plan,
+        project: testSite.project,
+        issues: [],
+        turn: {
+          id: "edit",
+          role: "edit",
+          prompt: "Concurrent edit",
+          createdAt: testSite.createdAt,
+        },
+      });
 
-    expect(result.status).toBe("unavailable");
-    expect(mocks.generate).not.toHaveBeenCalled();
-    vi.clearAllMocks();
-    mocks.access
-      .mockResolvedValueOnce(testSite)
-      .mockRejectedValueOnce(new Error("The site changed"));
+      return WorkerResponse.json({ status: "passed", diagnostics: [] });
+    });
     await expect(
       verifyAndRepairSite(context, "site", { expectedRevision: 1, repair: true, interactions: [] }),
-    ).rejects.toThrow("changed");
-    expect(context.repositories.outputs.createOutput).not.toHaveBeenCalled();
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(await storedEvidence()).toEqual([]);
   });
 });

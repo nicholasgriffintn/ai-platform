@@ -27,7 +27,10 @@ export const dataProject: SiteProject = {
         page: { type: "Page", props: {}, children: ["form", "list"] },
         form: {
           type: "Form",
-          props: { fields: [{ name: "title", label: "Title", type: "text", required: true }] },
+          props: {
+            submitLabel: "Save",
+            fields: [{ name: "title", label: "Title", type: "text", required: true }],
+          },
           children: [],
           on: {
             submit: {
@@ -36,7 +39,14 @@ export const dataProject: SiteProject = {
             },
           },
         },
-        list: { type: "List", props: { items: { $state: "/tasks" } }, children: [] },
+        list: {
+          type: "Table",
+          props: {
+            columns: [{ key: "title", label: "Task" }],
+            rows: { $state: "/tasks" },
+          },
+          children: [],
+        },
       },
     },
   },

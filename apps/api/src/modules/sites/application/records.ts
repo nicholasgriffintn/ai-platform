@@ -116,8 +116,12 @@ async function findSiteOutput(
   return record;
 }
 
-export async function getSite(scope: SiteScope, siteId: string): Promise<SiteRecord> {
-  const record = await findSiteOutput(scope, siteId);
+export async function getSite(
+  scope: SiteScope,
+  siteId: string,
+  mutate = false,
+): Promise<SiteRecord> {
+  const record = await findSiteOutput(scope, siteId, mutate);
   const site = mapSiteRecord(record);
 
   if (!site) {

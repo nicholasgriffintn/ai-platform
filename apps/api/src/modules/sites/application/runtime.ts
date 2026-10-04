@@ -1,26 +1,21 @@
-import { normaliseSiteSourceRows } from "@ngriffin_uk/polychat-library-sites";
-import type {
-  SiteDataRequest,
-  SiteDataResponse,
-  SiteIntegrationScope,
-  SiteRecord,
+import {
+  siteCollectionRecordSchema,
+  siteRuntimeStatusSchema,
+  type SiteDataRequest,
+  type SiteDataResponse,
+  type SiteIntegrationScope,
+  type SiteRecord,
+  type SiteRuntimeActor,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
+import { requestSiteRuntime } from "../infrastructure/runtime-client";
 import { requireSiteIntegrationAccess } from "./integration-access";
-import { requireSiteSourceBinding } from "./source-bindings";
-
-function siteRuntime(context: ServiceContext, siteId: string) {
-  if (!context.env.SITES_RUNTIME) {
-    throw new AssistantError("App storage is not configured", ErrorType.CONFIGURATION_ERROR, 503);
-  }
-
-  return context.env.SITES_RUNTIME.getByName(siteId);
-}
+import { readSiteSourceRows } from "./source-bindings";
 
 export async function readSiteData(
   context: ServiceContext,
@@ -36,22 +31,31 @@ async function readAuthorisedSiteData(
   context: ServiceContext,
   site: SiteRecord,
 ): Promise<SiteDataResponse> {
-  const runtime = context.env.SITES_RUNTIME ? siteRuntime(context, site.id) : null;
-  const status = runtime ? await runtime.status() : { enabled: false, revision: null };
+  const status = context.env.SITES_RUNTIME
+    ? await requestSiteRuntime(
+        context.env,
+        site.id,
+        { operation: "status" },
+        siteRuntimeStatusSchema,
+      )
+    : { enabled: false, revision: null };
   const bindings: Record<string, unknown> = {};
 
   for (const [id, binding] of Object.entries(site.project.dataBindings ?? {})) {
     if (binding.kind === "source") {
-      const source = await requireSiteSourceBinding(
+      bindings[id] = await readSiteSourceRows(
         context,
         context.requireUser().id,
         binding.sourceId,
         site.projectId,
       );
-
-      bindings[id] = normaliseSiteSourceRows(safeParseJson<unknown>(source.content ?? ""));
-    } else if (runtime && status.enabled && status.revision === site.revision) {
-      const records = await runtime.read(site.revision, binding.collectionId);
+    } else if (status.enabled && status.revision === site.revision) {
+      const records = await requestSiteRuntime(
+        context.env,
+        site.id,
+        { operation: "read", revision: site.revision, collectionId: binding.collectionId },
+        z.array(siteCollectionRecordSchema),
+      );
 
       bindings[id] = records.map((record) => ({
         ...record.values,
@@ -84,7 +88,12 @@ export async function activateSiteRuntime(
     throw new AssistantError("The site has no persistent collections", ErrorType.PARAMS_ERROR, 400);
   }
 
-  return siteRuntime(context, siteId).activate(site.revision, site.project.collections);
+  return requestSiteRuntime(
+    context.env,
+    siteId,
+    { operation: "activate", revision: site.revision, collections: site.project.collections },
+    siteRuntimeStatusSchema,
+  );
 }
 
 export async function disableSiteRuntime(
@@ -92,10 +101,14 @@ export async function disableSiteRuntime(
   siteId: string,
   scope: SiteIntegrationScope,
 ) {
-  await requireSiteIntegrationAccess(context, siteId, scope, true);
-  await siteRuntime(context, siteId).disable();
+  const site = await requireSiteIntegrationAccess(context, siteId, scope, true);
 
-  return { enabled: false, revision: null };
+  return requestSiteRuntime(
+    context.env,
+    siteId,
+    { operation: "disable", revision: site.revision },
+    siteRuntimeStatusSchema,
+  );
 }
 
 export async function executeSiteDataAction(
@@ -112,21 +125,20 @@ export async function executeSiteDataAction(
 
     const userId = context.requireUser().id;
 
-    if (site.projectId) {
-      const { role } = await requireProjectAccess(context, site.projectId);
+    const actor: SiteRuntimeActor = site.projectId
+      ? {
+          userId,
+          scope: "project",
+          role: (await requireProjectAccess(context, site.projectId)).role,
+        }
+      : { userId, scope: "personal", role: "owner" };
 
-      await siteRuntime(context, siteId).operate(site.revision, request.operation, {
-        userId,
-        scope: "project",
-        role,
-      });
-    } else {
-      await siteRuntime(context, siteId).operate(site.revision, request.operation, {
-        userId,
-        scope: "personal",
-        role: "owner",
-      });
-    }
+    await requestSiteRuntime(
+      context.env,
+      siteId,
+      { operation: "operate", revision: site.revision, action: request.operation, actor },
+      siteRuntimeStatusSchema,
+    );
   }
 
   return readAuthorisedSiteData(context, site);

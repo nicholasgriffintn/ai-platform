@@ -1,7 +1,11 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import { sitesService } from "@ngriffin_uk/polychat-library-client";
 import { useSources } from "@ngriffin_uk/polychat-library-react";
-import { listSitePages, type SiteRecord } from "@ngriffin_uk/polychat-schemas";
+import {
+  listSitePages,
+  siteDataIdentifierSchema,
+  type SiteRecord,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -103,7 +107,7 @@ export function SiteDataSources({
       <Button
         size="xs"
         variant="outline"
-        disabled={!sourceId || !pageId || !/^[a-z][a-z0-9-]{0,63}$/.test(name)}
+        disabled={!sourceId || !pageId || !siteDataIdentifierSchema.safeParse(name).success}
         isLoading={attach.isPending}
         onClick={() => attach.mutate()}
       >

@@ -10,7 +10,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import { getStatePath, setStatePath } from "./state.js";
+import { getStatePath } from "./state.js";
 
 export function validateSiteCollectionValues(
   collection: SiteCollection,
@@ -81,28 +81,6 @@ export function normaliseSiteSourceRows(
   }
 
   return rows;
-}
-
-export function hydrateSiteData(
-  project: SiteProject,
-  values: Record<string, unknown>,
-): SiteProject {
-  const pages = { ...project.pages };
-
-  for (const [id, binding] of Object.entries(project.dataBindings ?? {})) {
-    const page = pages[binding.pageId];
-
-    if (!page) {
-      continue;
-    }
-
-    pages[binding.pageId] = {
-      ...page,
-      state: setStatePath(page.state ?? {}, binding.statePath, values[id] ?? []),
-    };
-  }
-
-  return { ...project, pages };
 }
 
 export function normaliseSiteIntegrations(raw: Record<string, unknown>, project: SiteProject) {

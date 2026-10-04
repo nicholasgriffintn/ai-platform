@@ -237,6 +237,35 @@ export const siteRuntimeActorSchema = z
   .strict();
 export type SiteRuntimeActor = z.infer<typeof siteRuntimeActorSchema>;
 
+export const siteRuntimeRequestSchema = z.discriminatedUnion("operation", [
+  z.object({ operation: z.literal("status") }).strict(),
+  z.object({ operation: z.literal("disable"), revision: z.number().int().positive() }).strict(),
+  z.object({ operation: z.literal("deleteData") }).strict(),
+  z
+    .object({
+      operation: z.literal("activate"),
+      revision: z.number().int().positive(),
+      collections: z.record(siteDataIdentifierSchema, siteCollectionSchema),
+    })
+    .strict(),
+  z
+    .object({
+      operation: z.literal("read"),
+      revision: z.number().int().positive(),
+      collectionId: siteDataIdentifierSchema,
+    })
+    .strict(),
+  z
+    .object({
+      operation: z.literal("operate"),
+      revision: z.number().int().positive(),
+      action: siteDataActionSchema,
+      actor: siteRuntimeActorSchema,
+    })
+    .strict(),
+]);
+export type SiteRuntimeRequest = z.infer<typeof siteRuntimeRequestSchema>;
+
 const sitePreviewActionEnvelope = {
   channel: z.literal("polychat-site-preview"),
   frameId: z.string().min(1).max(200),

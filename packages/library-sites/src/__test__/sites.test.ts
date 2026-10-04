@@ -705,7 +705,7 @@ describe("state", () => {
     const source = files.find((file) => file.path === "app/routes/home.tsx")?.content ?? "";
 
     expect(source.startsWith('"use client";')).toBe(true);
-    expect(source).toContain("useSiteData(INITIAL_STATE, DATA_BINDINGS)");
+    expect(source).toContain("const [state, setState] = useState<SiteState>(INITIAL_STATE);");
     expect(source).toContain(
       'value={getPath(state, "/tab")} onChange={(next: any) => set("/tab", next)}',
     );

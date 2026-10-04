@@ -21,7 +21,7 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/redaction";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { closeComposioConnectorSession } from "~/modules/apps/application/connectors/composio-run";
+import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
 import { getRecipeConnectorAdapter } from "~/modules/apps/application/connectors/connector-adapters";
 import {
   discoverRecipeConnectorTools,
@@ -197,7 +197,9 @@ export async function snapshotSiteConnector(
       },
     });
     const rows = projectSiteSourceRows(
-      redactSensitiveTokens(result),
+      redactSensitiveTokens(
+        isRecord(result) && Object.hasOwn(result, "data") ? result.data : result,
+      ),
       request.resultPath,
       request.fields,
     );
@@ -258,7 +260,7 @@ export async function snapshotSiteConnector(
     }
   } finally {
     if (sessionId) {
-      await closeComposioConnectorSession(context, sessionId);
+      await closeComposioConnectorRun(context, [sessionId]);
     }
   }
 }

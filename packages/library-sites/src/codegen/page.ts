@@ -23,6 +23,7 @@ export interface RenderedPage {
   components: SiteComponentType[];
   usesState: boolean;
   usesRouter: boolean;
+  usesData: boolean;
 }
 
 const EVENT_HANDLERS = {
@@ -120,7 +121,13 @@ export function renderPageJsx(page: SitePage): RenderedPage {
     jsx = `<>\n${indentLines(jsx, 1)}\n</>`;
   }
 
-  return { jsx, components: [...used].sort(), usesState, usesRouter: context.usesRouter };
+  return {
+    jsx,
+    components: [...used].sort(),
+    usesState,
+    usesRouter: context.usesRouter,
+    usesData: context.usesData === true,
+  };
 }
 
 function pageFilePath(path: string, target: SiteExportTarget): string {
@@ -192,19 +199,22 @@ export function renderPageFile(
   content: string;
   components: SiteComponentType[];
   usesState: boolean;
+  usesData: boolean;
 } {
   const rendered = renderPageJsx(page);
   const componentImports = rendered.components
     .map((component) => `import ${component} from "@/components/site/${component}";`)
     .join("\n");
+  const usesData = rendered.usesData || Object.keys(bindings).length > 0;
   const name = pageComponentName(page.path);
   const routeMetadata = renderRouteMetadata(page, target, name);
 
-  if (!rendered.usesState && Object.keys(bindings).length === 0) {
+  if (!rendered.usesState && !usesData) {
     return {
       path: pageFilePath(page.path, target),
       components: rendered.components,
       usesState: false,
+      usesData: false,
       content: `${routeMetadata.import}${componentImports}
 
 ${routeMetadata.declaration}
@@ -227,20 +237,21 @@ ${indentLines(rendered.jsx, 2)}
     path: pageFilePath(page.path, target),
     components: rendered.components,
     usesState: true,
+    usesData,
     content: `"use client";
 
-import { useSiteData } from "@/lib/site-data";
+${usesData ? 'import { useSiteData } from "@/lib/site-data";' : 'import { useState } from "react";'}
 ${routerImport}${routeMetadata.import}
 import { filterItems, getPath, pushPath, readItem, removePath, setPath, uid, type SiteState } from "@/lib/site-state";
 ${componentImports}
 
 const INITIAL_STATE: SiteState = ${JSON.stringify(page.state ?? {}, null, 2)};
-const DATA_BINDINGS = ${JSON.stringify(Object.fromEntries(Object.entries(bindings).map(([id, binding]) => [id, binding.statePath])))};
+${usesData ? `const DATA_BINDINGS = ${JSON.stringify(Object.fromEntries(Object.entries(bindings).map(([id, binding]) => [id, binding.statePath])))};` : ""}
 
 ${routeDeclaration}
 
 ${target === "tanstack-router" ? "function" : "export default function"} ${name}() {
-  const { state, setState, dataError, performDataAction } = useSiteData(INITIAL_STATE, DATA_BINDINGS);
+  ${usesData ? "const { state, setState, dataError, performDataAction } = useSiteData(INITIAL_STATE, DATA_BINDINGS);" : "const [state, setState] = useState<SiteState>(INITIAL_STATE);"}
 ${routerHook}  const set = (path: string, value: unknown) =>
     setState((current) => setPath(current, path, value));
   const toggle = (path: string) =>
@@ -255,10 +266,9 @@ ${routerHook}  const set = (path: string, value: unknown) =>
     setState((current) => removePath(current, path, index));
 
   return (
-    <>
-      {dataError && <p role="alert">{dataError}</p>}
+${usesData ? '    <>\n      {dataError && <p role="alert">{dataError}</p>}' : ""}
 ${indentLines(rendered.jsx, 2)}
-    </>
+${usesData ? "    </>" : ""}
   );
 }
 `,

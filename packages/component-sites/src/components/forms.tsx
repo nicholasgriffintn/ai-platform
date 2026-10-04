@@ -16,24 +16,24 @@ export function Form({
 }: SiteComponentProps<"Form"> & {
   onSubmit?: (values: Record<string, unknown>) => void | boolean | Promise<void | boolean>;
 }) {
+  async function submit(form: HTMLFormElement) {
+    if (!onSubmit) {
+      return;
+    }
+
+    const success = await onSubmit(readFormFieldValues(form, fields));
+
+    if (success !== false) {
+      form.reset();
+    }
+  }
+
   return (
     <form
       className="flex w-full max-w-xl flex-col gap-6"
-      onSubmit={async (event) => {
+      onSubmit={(event) => {
         event.preventDefault();
-
-        if (!onSubmit) {
-          return;
-        }
-
-        const form = event.currentTarget;
-        const values = readFormFieldValues(form, fields);
-
-        const success = await onSubmit(values);
-
-        if (success !== false) {
-          form.reset();
-        }
+        void submit(event.currentTarget);
       }}
     >
       {(title || description) && (

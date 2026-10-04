@@ -1,37 +1,37 @@
-import { siteConnectorSnapshotRequestSchema, sourceSchema } from "@ngriffin_uk/polychat-schemas";
+import { siteConnectorSnapshotRequestSchema } from "@ngriffin_uk/polychat-schemas";
 import { Miniflare } from "miniflare";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
+import {
+  discoverRecipeConnectorTools,
+  executeRecipeConnectorOperation,
+} from "~/modules/apps/application/connectors/operations";
 
-import { browserTestUser } from "../../../../../test/computer-use";
-import { databaseTestEnvironment } from "../../../../../test/environment";
+import {
+  createSitesTestContext,
+  resetSitesTestData,
+  saveTestSite,
+} from "../../../../../test/sites/database";
 import { testSite } from "../../../../../test/sites/fixtures";
+import { getSite, updateSite } from "../records";
 
-const mocks = vi.hoisted(() => ({
-  access: vi.fn(),
-  discover: vi.fn(),
-  execute: vi.fn(),
-  account: vi.fn(),
-  close: vi.fn(),
+const remote = vi.hoisted(() => ({
+  accounts: vi.fn(),
   create: vi.fn(),
+  search: vi.fn(),
+  execute: vi.fn(),
   remove: vi.fn(),
-  update: vi.fn(),
 }));
 
-vi.mock("../integration-access", () => ({ requireSiteIntegrationAccess: mocks.access }));
-vi.mock("../records", () => ({ updateSite: mocks.update }));
-vi.mock("~/modules/apps/application/connectors/operations", () => ({
-  discoverRecipeConnectorTools: mocks.discover,
-  executeRecipeConnectorOperation: mocks.execute,
-  getActiveComposioAccountForProvider: mocks.account,
-}));
-vi.mock("~/modules/apps/application/connectors/composio-run", () => ({
-  closeComposioConnectorSession: mocks.close,
-}));
-vi.mock("~/modules/sources/application/sources", () => ({
-  createSource: mocks.create,
-  deleteSource: mocks.remove,
+vi.mock("@ngriffin_uk/polychat-ai-integrations", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-integrations")>()),
+  listComposioConnectedAccounts: remote.accounts,
+  createComposioToolSession: remote.create,
+  searchComposioSessionTools: remote.search,
+  executeComposioSessionTool: remote.execute,
+  deleteComposioToolSession: remote.remove,
 }));
 
 import { snapshotSiteConnector } from "../connector-data";
@@ -41,6 +41,7 @@ const runtime = new Miniflare({
   script: "export default { fetch() { return new Response('test'); } }",
   compatibilityDate: "2026-08-01",
   d1Databases: ["DB"],
+  kvNamespaces: ["CACHE"],
 });
 let context: ServiceContext;
 const request = siteConnectorSnapshotRequestSchema.parse({
@@ -54,107 +55,180 @@ const request = siteConnectorSnapshotRequestSchema.parse({
   resultPath: "/messages",
   fields: { title: "/subject" },
 });
+const account = {
+  id: "chosen-account",
+  userId: "polychat:test:user:1",
+  toolkitSlug: "gmail",
+  authConfigId: "ac_uRCWNPtnTpEw",
+  status: "ACTIVE",
+  createdAt: "2026-10-04",
+  updatedAt: "2026-10-04",
+  isDisabled: false,
+};
 
 beforeAll(async () => {
-  context = createServiceContext({
-    env: databaseTestEnvironment(await runtime.getD1Database("DB")),
-    user: browserTestUser,
-  });
+  context = await createSitesTestContext(runtime);
+  context.env.COMPOSIO_API_KEY = "test-remote-api-key";
 });
 afterAll(() => runtime.dispose());
-beforeEach(() => {
+beforeEach(async () => {
+  vi.restoreAllMocks();
   vi.clearAllMocks();
-  mocks.access.mockResolvedValue(testSite);
-  mocks.discover.mockResolvedValue({ sessionId: "own-session" });
-  mocks.execute.mockResolvedValue({ messages: [{ subject: "Review", token: "never-store" }] });
-  mocks.account.mockResolvedValue({ id: "chosen-account" });
-  mocks.create.mockResolvedValue(
-    sourceSchema.parse({
-      id: "source",
-      createdByUserId: 1,
-      projectId: null,
-      conversationId: null,
-      connectionId: null,
-      kind: "connector",
-      title: "Mail",
-      status: "available",
-      content: "[]",
-      provider: "gmail",
-      externalUri: null,
-      vectorId: null,
-      metadata: {},
-      file: null,
-      createdAt: "2026-10-04",
-      updatedAt: null,
-    }),
-  );
-  mocks.update.mockResolvedValue(testSite);
+  await resetSitesTestData(context);
+  await saveTestSite(context);
+  remote.accounts.mockResolvedValue([{ ...account, id: "other-account" }, account]);
+  remote.create.mockResolvedValue("remote-session");
+  remote.search.mockResolvedValue({
+    sessionId: "remote-session",
+    tools: [{ slug: "GMAIL_FETCH_EMAILS" }],
+  });
+  remote.execute.mockResolvedValue({
+    data: { messages: [{ subject: "Review", token: "never-store" }] },
+    logId: "log",
+  });
+  remote.remove.mockResolvedValue(undefined);
 });
 
-describe("connector-backed site sources", () => {
-  it("reads from an exact account, projects rows, rechecks authority and closes its session", async () => {
-    const authority = vi.fn().mockResolvedValue(undefined);
+async function storedSources() {
+  return context.repositories.sources.listPersonalSourceSummaries(1);
+}
 
-    await snapshotSiteConnector(
-      context,
-      "site",
-      { ...request, params: { query: "a1b2c3d4-1234-5678-9012-aabbccddee99" } },
-      authority,
-    );
-    expect(mocks.discover).toHaveBeenCalledWith(
-      expect.objectContaining({
-        connectedAccountId: "chosen-account",
-        requireSelectedAccount: true,
-        allowedOperations: ["GMAIL_FETCH_EMAILS"],
-      }),
-    );
-    expect(mocks.create.mock.calls[0]?.[0]).toBe(context);
-    expect(mocks.create.mock.calls[0]?.[2]).toMatchObject({
-      kind: "connector",
-      content: '[{"title":"Review"}]',
+async function concurrentEdit(projectId?: string) {
+  return updateSite({ context, userId: 1, projectId }, "site", {
+    expectedRevision: 1,
+    brief: testSite.brief,
+    plan: testSite.plan,
+    project: testSite.project,
+    issues: [],
+    turn: {
+      id: "concurrent",
+      role: "edit",
+      prompt: "Concurrent edit",
+      createdAt: testSite.createdAt,
+    },
+  });
+}
+
+describe("connector-backed site sources", () => {
+  it("uses the chosen account and stores only projected provider data in a bound Source", async () => {
+    const site = await snapshotSiteConnector(context, "site", {
+      ...request,
+      params: { query: "a1b2c3d4-1234-5678-9012-aabbccddee99" },
     });
-    expect(authority).toHaveBeenCalledTimes(2);
-    expect(mocks.account).toHaveBeenCalledWith(
-      expect.objectContaining({
-        connectedAccountId: "chosen-account",
-        requireSelectedAccount: true,
-      }),
-    );
-    expect(mocks.close.mock.calls[0]?.[1]).toBe("own-session");
+    const binding = site.project.dataBindings?.messages;
+
+    expect(binding?.kind).toBe("source");
+    if (binding?.kind !== "source") {
+      throw new Error("Expected Source binding");
+    }
+
+    const source = await context.repositories.sources.getSource(binding.sourceId);
+
+    expect(source?.content).toBe('[{"title":"Review"}]');
+    expect(site.revision).toBe(2);
+    expect(JSON.stringify(site.project)).not.toContain("never-store");
+    expect(remote.execute.mock.calls[0][0].connectedAccountId).toBe("chosen-account");
+    expect(
+      (await context.env.DB.prepare("SELECT * FROM composio_connector_session").all()).results,
+    ).toEqual([]);
   });
 
-  it("blocks writes and credential parameters before contacting the provider", async () => {
+  it("blocks writes, credentials and excluded project recipes before contacting the provider", async () => {
     await expect(
       snapshotSiteConnector(context, "site", { ...request, operation: "GMAIL_SEND_EMAIL" }),
-    ).rejects.toThrow("read operations");
+    ).rejects.toMatchObject({ statusCode: 400 });
     await expect(
       snapshotSiteConnector(context, "site", { ...request, params: { password: "private" } }),
-    ).rejects.toThrow("credentials");
-    expect(mocks.discover).not.toHaveBeenCalled();
+    ).rejects.toMatchObject({ statusCode: 400 });
+    await resetSitesTestData(context);
+    await saveTestSite(context, "project");
+    await context.env.DB.prepare(
+      "INSERT INTO project_capability (id, project_id, kind, capability_id, created_by, excluded) VALUES ('mail', 'project', 'recipe', 'morning-briefing', 1, 1)",
+    ).run();
+    await expect(
+      snapshotSiteConnector(context, "site", { ...request, projectId: "project" }),
+    ).rejects.toMatchObject({ statusCode: 403 });
+    expect(remote.create).not.toHaveBeenCalled();
   });
 
-  it("discards results after a revoked account or grant", async () => {
-    mocks.account.mockRejectedValueOnce(new Error("Account revoked"));
-    await expect(snapshotSiteConnector(context, "site", request)).rejects.toThrow("revoked");
-    expect(mocks.create).not.toHaveBeenCalled();
-    expect(mocks.close.mock.calls[0]?.[1]).toBe("own-session");
-    const authority = vi
-      .fn()
-      .mockResolvedValueOnce(undefined)
-      .mockRejectedValueOnce(new Error("Grant revoked"));
+  it.each(["account", "recipe"])(
+    "discards provider results after %s authority is revoked",
+    async (revoked) => {
+      const scope = revoked === "recipe" ? { projectId: "project" } : {};
 
-    await expect(snapshotSiteConnector(context, "site", request, authority)).rejects.toThrow(
-      "Grant revoked",
-    );
-    expect(mocks.create).not.toHaveBeenCalled();
+      if (revoked === "recipe") {
+        await resetSitesTestData(context);
+        await saveTestSite(context, "project");
+        await context.env.DB.prepare(
+          "INSERT INTO project_capability (id, project_id, kind, capability_id, created_by) VALUES ('mail', 'project', 'recipe', 'morning-briefing', 1)",
+        ).run();
+      }
+
+      remote.execute.mockImplementationOnce(async () => {
+        if (revoked === "account") {
+          remote.accounts.mockResolvedValue([{ ...account, id: "other-account" }]);
+        } else {
+          await context.env.DB.prepare(
+            "UPDATE project_capability SET excluded = 1 WHERE id = 'mail'",
+          ).run();
+        }
+
+        return { data: { messages: [{ subject: "Private" }] } };
+      });
+      await expect(
+        snapshotSiteConnector(context, "site", { ...request, ...scope }),
+      ).rejects.toMatchObject({ statusCode: 403 });
+      expect((await context.env.DB.prepare("SELECT id FROM source").all()).results).toEqual([]);
+      expect((await getSite({ context, userId: 1, ...scope }, "site")).revision).toBe(1);
+      expect(
+        (await context.env.DB.prepare("SELECT * FROM composio_connector_session").all()).results,
+      ).toEqual([]);
+    },
+  );
+
+  it("removes an orphan Source when a concurrent site edit wins", async () => {
+    const create = context.repositories.sources.createSource.bind(context.repositories.sources);
+
+    vi.spyOn(context.repositories.sources, "createSource").mockImplementationOnce(async (input) => {
+      const source = await create(input);
+
+      await concurrentEdit();
+
+      return source;
+    });
+    await expect(snapshotSiteConnector(context, "site", request)).rejects.toMatchObject({
+      statusCode: 409,
+    });
+    expect(await storedSources()).toEqual([]);
+    expect((await getSite({ context, userId: 1 }, "site")).revision).toBe(2);
   });
 
-  it("deletes an orphan snapshot when a concurrent site edit wins", async () => {
-    mocks.update.mockRejectedValueOnce(new Error("Revision conflict"));
-    await expect(snapshotSiteConnector(context, "site", request)).rejects.toThrow(
-      "Revision conflict",
-    );
-    expect(mocks.remove.mock.calls[0]?.slice(1)).toEqual([1, "source"]);
-    expect(mocks.close.mock.calls[0]?.[1]).toBe("own-session");
+  it("leaves an unrelated session usable after snapshot cleanup", async () => {
+    remote.create.mockResolvedValueOnce("unrelated-session");
+    const unrelated = await discoverRecipeConnectorTools({
+      context,
+      userId: 1,
+      completionId: context.connectorRunId,
+      provider: "gmail",
+      useCase: "Read mail",
+      allowedOperations: ["GMAIL_FETCH_EMAILS"],
+      connectedAccountId: "chosen-account",
+      requireSelectedAccount: true,
+    });
+
+    await snapshotSiteConnector(context, "site", request);
+    const result = await executeRecipeConnectorOperation({
+      context,
+      userId: 1,
+      request: {
+        provider: "gmail",
+        operation: "GMAIL_FETCH_EMAILS",
+        sessionId: unrelated.sessionId,
+      },
+      scope: { completionId: context.connectorRunId },
+    });
+
+    expect(result).toMatchObject({ data: { messages: [{ subject: "Review" }] } });
+    await closeComposioConnectorRun(context);
   });
 });

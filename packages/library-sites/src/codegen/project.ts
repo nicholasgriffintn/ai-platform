@@ -457,6 +457,7 @@ export function generateSiteFiles(
   const used = new Set<SiteComponentType>();
   const pageFiles: SiteFile[] = [];
   let usesState = false;
+  let usesData = false;
 
   for (const { id, page } of pages) {
     const bindings = Object.fromEntries(
@@ -465,6 +466,7 @@ export function generateSiteFiles(
     const rendered = renderPageFile(page, target, bindings);
 
     usesState = usesState || rendered.usesState;
+    usesData = usesData || rendered.usesData;
     pageFiles.push({ path: rendered.path, content: rendered.content });
 
     for (const component of rendered.components) {
@@ -487,7 +489,7 @@ export function generateSiteFiles(
     ...(used.has("Form")
       ? [{ path: sourcePath(target, "lib/form-values.ts"), content: renderFormValuesModule() }]
       : []),
-    ...(usesState
+    ...(usesData
       ? [{ path: sourcePath(target, "lib/site-data.ts"), content: renderSiteDataModule() }]
       : []),
     ...(usesState

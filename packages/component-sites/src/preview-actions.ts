@@ -1,6 +1,7 @@
 import {
   sitePreviewDataResultMessageSchema,
   type SiteDataAction,
+  type SitePreviewDataActionMessage,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { SITE_PREVIEW_CHANNEL } from "./preview-protocol.js";
@@ -74,7 +75,7 @@ export function createSitePreviewActions(frameId: string) {
 
 export async function respondToSiteDataAction(
   frame: HTMLIFrameElement,
-  message: import("@ngriffin_uk/polychat-schemas").SitePreviewDataActionMessage,
+  message: SitePreviewDataActionMessage,
   handler?: (action: SiteDataAction) => Promise<void>,
 ): Promise<void> {
   const target = frame.contentWindow;

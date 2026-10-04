@@ -26,10 +26,13 @@ export async function handleSiteVerification(request: Request, env: Env): Promis
 
   try {
     await startComputer(sandbox);
-    const result = await sandbox.exec("python3 /usr/local/bin/verify-site", {
-      env: { SITE_CAPTURE: JSON.stringify(parsed.data) },
-      timeout: 60_000,
-    });
+    await sandbox.writeFile("/workspace/site-capture.json", JSON.stringify(parsed.data));
+    const result = await sandbox.exec(
+      "python3 /usr/local/bin/verify-site < /workspace/site-capture.json",
+      {
+        timeout: 60_000,
+      },
+    );
     const capture = result.success
       ? siteBrowserCaptureResultSchema.safeParse(safeParseJson<unknown>(result.stdout))
       : null;

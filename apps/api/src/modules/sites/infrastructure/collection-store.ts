@@ -19,6 +19,7 @@ import z from "zod/v4";
 const definitionSchema = z
   .object({
     revision: z.number().int().positive(),
+    enabled: z.boolean().default(true),
     collections: z.record(siteDataIdentifierSchema, siteCollectionSchema),
   })
   .strict();
@@ -36,7 +37,10 @@ export class SiteCollectionStore {
   status() {
     const definition = this.definition();
 
-    return { enabled: Boolean(definition), revision: definition?.revision ?? null };
+    return {
+      enabled: definition?.enabled ?? false,
+      revision: definition?.enabled ? definition.revision : null,
+    };
   }
 
   activate(revision: number, collections: Record<string, SiteCollection>) {
@@ -176,13 +180,22 @@ export class SiteCollectionStore {
     );
   }
 
-  disable(): void {
-    this.sql.exec("DELETE FROM site_runtime");
+  disable(revision: number): void {
+    const definition = this.definition();
+
+    if (definition && definition.revision > revision) {
+      throw new AssistantError("A newer app revision is active", ErrorType.CONFLICT_ERROR, 409);
+    }
+
+    this.sql.exec(
+      "INSERT INTO site_runtime (id, definition) VALUES (1, ?) ON CONFLICT (id) DO UPDATE SET definition = excluded.definition",
+      JSON.stringify({ revision, enabled: false, collections: definition?.collections ?? {} }),
+    );
   }
 
   deleteData(): void {
     this.sql.exec("DELETE FROM site_records");
-    this.disable();
+    this.sql.exec("DELETE FROM site_runtime");
   }
 
   private definition() {
@@ -197,7 +210,7 @@ export class SiteCollectionStore {
     const definition = this.definition();
     const collection = definition?.collections[collectionId];
 
-    if (!definition || definition.revision !== revision || !collection) {
+    if (!definition?.enabled || definition.revision !== revision || !collection) {
       throw new AssistantError(
         "App storage is unavailable for this revision",
         ErrorType.CONFLICT_ERROR,

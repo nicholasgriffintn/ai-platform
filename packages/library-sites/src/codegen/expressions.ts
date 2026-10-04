@@ -5,6 +5,7 @@ import { isDynamicValue } from "../state.js";
 
 export interface ExpressionContext {
   usesRouter: boolean;
+  usesData?: boolean;
 }
 
 export function serialiseExpression(value: unknown): string {
@@ -132,6 +133,8 @@ export function serialiseAction(binding: SiteActionBinding, context: ExpressionC
     case "createRecord":
     case "updateRecord":
     case "deleteRecord":
+      context.usesData = true;
+
       return `performDataAction(${serialiseExpression({ ...params, action: binding.action })})`;
     case "setState":
       return statePath ? `set(${statePath}, ${serialiseExpression(params.value)})` : "undefined";

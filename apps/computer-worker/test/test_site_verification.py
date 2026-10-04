@@ -1,73 +1,73 @@
-import importlib.util
 import json
 import pathlib
 import socket
 import threading
+import os
+import shutil
+import subprocess
+import tempfile
+import time
+from contextlib import contextmanager
 import sys
 import unittest
-from unittest.mock import patch
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from cdp import CdpConnection
+from cdp import CdpConnection, page_target
 
-spec = importlib.util.spec_from_file_location("verify_site", pathlib.Path(__file__).resolve().parents[1] / "verify-site.py")
-verification = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(verification)
-
-
-class Browser:
-    def __init__(self, events=None):
-        self.events = events or []
-        self.sent = []
-        self.on_event = None
-        self.closed = False
-
-    def command(self, method, params=None):
-        if method == "Page.getFrameTree":
-            return {"frameTree": {"frame": {"id": "frame"}}}
-        if method == "Runtime.evaluate":
-            expression = params["expression"]
-            if "filter(key" in expression:
-                return {"result": {"value": []}}
-            return {"result": {"value": "site-root" in expression}}
-        return {}
-
-    def notify(self, method, params):
-        self.sent.append((method, params))
-
-    def pump(self, timeout):
-        for event in self.events:
-            self.on_event(event)
-        self.events = []
-
-    def close(self):
-        self.closed = True
 
 
 class SiteVerificationTests(unittest.TestCase):
-    def capture(self, browser):
-        ticks = iter([0, 1, 2, 3, 4])
-        with patch.object(verification, "CdpConnection", return_value=browser), patch.object(verification, "page_target", return_value={"webSocketDebuggerUrl": "ws://localhost:9222/page"}), patch.object(verification.time, "monotonic", side_effect=lambda: next(ticks, 100)):
-            return verification.capture({"allowedOrigins": ["https://app.example"], "viewport": "mobile", "document": "<html/>", "elementKeys": ["page"], "interactions": []})
+    @contextmanager
+    def browser(self):
+        executable = os.environ.get("POLYCHAT_TEST_CHROME") or shutil.which("chromium") or shutil.which("google-chrome")
+        mac_chrome = pathlib.Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+        if not executable and mac_chrome.exists():
+            executable = str(mac_chrome)
+        if not executable:
+            self.skipTest("Chrome is required for browser capture integration")
+        with socket.socket() as debugger_probe:
+            if debugger_probe.connect_ex(("127.0.0.1", 9222)) == 0:
+                self.skipTest("The browser debugger port is already in use")
+        with tempfile.TemporaryDirectory(prefix="polychat-sites-chrome-") as profile:
+            process = subprocess.Popen([executable, "--headless", "--no-sandbox", "--disable-gpu", "--no-first-run", "--no-default-browser-check", "--remote-debugging-port=9222", "--remote-debugging-address=127.0.0.1", f"--user-data-dir={profile}", "about:blank"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            try:
+                deadline = time.monotonic() + 10
+                while True:
+                    try:
+                        page_target()
+                        break
+                    except Exception:
+                        if process.poll() is not None or time.monotonic() >= deadline:
+                            raise RuntimeError("Temporary Chrome debugger did not start")
+                        time.sleep(0.05)
+                yield
+            finally:
+                process.terminate()
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait()
 
-    def test_reports_console_and_failed_requests_and_closes_browser(self):
-        browser = Browser([
-            {"method": "Runtime.consoleAPICalled", "params": {"type": "error", "args": [{"value": "Broken"}]}},
-            {"method": "Network.responseReceived", "params": {"type": "Script", "response": {"status": 404, "url": "https://app.example/runtime.js?token=private"}}},
-        ])
-        result = self.capture(browser)
+    def capture(self, document, viewport="desktop", interactions=None):
+        with self.browser():
+            payload = {"allowedOrigins": [], "viewport": viewport, "document": document, "elementKeys": ["page"], "interactions": interactions or []}
+            result = subprocess.run([sys.executable, str(pathlib.Path(__file__).resolve().parents[1] / "verify-site.py")], input=json.dumps(payload), capture_output=True, text=True, timeout=30, check=True)
+            return json.loads(result.stdout)
+
+    def test_renders_and_checks_button_visibility_in_real_browser(self):
+        document = """<html><body><div id="site-root"><section data-site-key="page"><div data-site-key="show"><button onclick="document.getElementById('result').hidden=false">Show</button></div><div id="result" data-site-key="result" hidden>Saved</div></section></div></body></html>"""
+        for viewport in ["desktop", "mobile"]:
+            with self.subTest(viewport=viewport):
+                result = self.capture(document, viewport, [{"elementKey": "show", "expectVisible": "result"}])
+                self.assertEqual(result, {"status": "passed", "diagnostics": []})
+
+    def test_captures_real_errors_and_blocks_unapproved_requests(self):
+        document = """<html><body><div id="site-root"><section data-site-key="page">Test</section></div><script>console.error('Broken'); setTimeout(() => { throw new Error('Page failed'); }, 0); fetch('http://127.0.0.1:9222/json/list').catch(() => {}); fetch('https://foreign.example/private?token=secret-value').catch(() => {});</script></body></html>"""
+        result = self.capture(document)
         self.assertEqual(result["status"], "failed")
-        self.assertEqual({item["kind"] for item in result["diagnostics"]}, {"console", "request_failure"})
-        self.assertNotIn("private", json.dumps(result))
-        self.assertTrue(browser.closed)
-
-    def test_blocks_foreign_origins_and_url_credentials(self):
-        browser = Browser([
-            {"method": "Fetch.requestPaused", "params": {"requestId": str(index), "request": {"url": url}}}
-            for index, url in enumerate(["https://app.example/runtime.js", "http://127.0.0.1/secret", "https://foreign.example/", "https://user:password@app.example/"])
-        ])
-        self.capture(browser)
-        self.assertEqual([method for method, _ in browser.sent], ["Fetch.continueRequest", "Fetch.failRequest", "Fetch.failRequest", "Fetch.failRequest"])
+        self.assertTrue({"console", "page_error", "request_failure"}.issubset({item["kind"] for item in result["diagnostics"]}))
+        self.assertNotIn("secret-value", json.dumps(result))
 
     def test_cdp_waits_without_consuming_partial_messages(self):
         client, server = socket.socketpair()

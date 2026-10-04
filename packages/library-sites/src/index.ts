@@ -15,7 +15,6 @@ export {
 export { generateSiteFiles, type GeneratedSiteFiles } from "./codegen/project.js";
 export { buildSiteFrameDocument, type BuildSiteFrameDocumentOptions } from "./preview-document.js";
 export {
-  hydrateSiteData,
   normaliseSiteSourceRows,
   normaliseSiteIntegrations,
   projectSiteSourceRows,

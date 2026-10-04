@@ -1,5 +1,5 @@
 import json
-import os
+import sys
 import time
 import urllib.parse
 
@@ -100,6 +100,6 @@ def capture(payload):
 
 if __name__ == "__main__":
     try:
-        print(json.dumps(capture(json.loads(os.environ["SITE_CAPTURE"]))))
+        print(json.dumps(capture(json.load(sys.stdin))))
     except Exception:
         print(json.dumps({"status": "unavailable", "diagnostics": [{"kind": "assertion", "message": "Browser verification could not complete"}]}))

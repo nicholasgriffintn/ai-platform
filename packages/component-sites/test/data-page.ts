@@ -29,6 +29,13 @@ export const dataPage: SitePage = {
         },
       },
     },
-    list: { type: "List", props: { items: { $state: "/tasks" }, titleKey: "title" }, children: [] },
+    list: {
+      type: "Table",
+      props: {
+        columns: [{ key: "title", label: "Task" }],
+        rows: { $state: "/tasks" },
+      },
+      children: [],
+    },
   },
 };

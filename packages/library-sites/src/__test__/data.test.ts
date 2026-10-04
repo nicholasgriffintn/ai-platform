@@ -4,7 +4,6 @@ import { dataProject } from "../../test/fixtures/data-project.js";
 import { loadGeneratedDataModule } from "../../test/fixtures/generated-module.js";
 import { renderSiteDataModule } from "../codegen/data.js";
 import {
-  hydrateSiteData,
   normaliseSiteIntegrations,
   normaliseSiteSourceRows,
   projectSiteSourceRows,
@@ -116,13 +115,6 @@ describe("scoped site data", () => {
       normaliseSiteSourceRows(Array.from({ length: 501 }, () => ({ title: "task" }))),
     ).toThrow();
     expect(() => normaliseSiteSourceRows([{ data: { nested: true } }])).toThrow();
-  });
-
-  it("hydrates only bound state without changing the stored specification", () => {
-    const hydrated = hydrateSiteData(dataProject, { tasks: [{ title: "New" }] });
-
-    expect(hydrated.pages.home.state).toEqual({ query: "keep me", tasks: [{ title: "New" }] });
-    expect(dataProject.pages.home.state?.tasks).toEqual([]);
   });
 
   it("prevents data from escaping the preview document and rejects prototype paths", () => {

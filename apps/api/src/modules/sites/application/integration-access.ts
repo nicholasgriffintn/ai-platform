@@ -2,7 +2,6 @@ import { SITES_CAPABILITY_ID, type SiteIntegrationScope } from "@ngriffin_uk/pol
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { requireOutputAccess } from "~/modules/outputs/application/access";
 import { requireOptionalProjectCapabilityAccess } from "~/modules/workspaces/application/access";
 
 import { getSite } from "./records";
@@ -21,8 +20,11 @@ export async function requireSiteIntegrationAccess(
     "app",
     SITES_CAPABILITY_ID,
   );
-  await requireOutputAccess(context, user.id, siteId, mutate);
-  const site = await getSite({ context, userId: user.id, projectId: scope.projectId }, siteId);
+  const site = await getSite(
+    { context, userId: user.id, projectId: scope.projectId },
+    siteId,
+    mutate,
+  );
 
   if (site.revision !== scope.expectedRevision) {
     throw new AssistantError(

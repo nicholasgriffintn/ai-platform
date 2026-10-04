@@ -28,6 +28,25 @@ export async function requireSiteSourceBinding(
   return source;
 }
 
+export async function readSiteSourceRows(
+  context: ServiceContext,
+  userId: number,
+  sourceId: string,
+  projectId: string | null,
+) {
+  const source = await requireSiteSourceBinding(context, userId, sourceId, projectId);
+
+  try {
+    return normaliseSiteSourceRows(safeParseJson<unknown>(source.content ?? ""));
+  } catch (error) {
+    throw new AssistantError(
+      error instanceof Error ? error.message : "Invalid source data",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+}
+
 export async function validateSiteSourceBindings(
   context: ServiceContext,
   userId: number,
@@ -47,16 +66,6 @@ export async function validateSiteSourceBindings(
   );
 
   for (const id of ids) {
-    const source = await requireSiteSourceBinding(context, userId, id, projectId);
-
-    try {
-      normaliseSiteSourceRows(safeParseJson<unknown>(source.content ?? ""));
-    } catch (error) {
-      throw new AssistantError(
-        error instanceof Error ? error.message : "Invalid source data",
-        ErrorType.PARAMS_ERROR,
-        400,
-      );
-    }
+    await readSiteSourceRows(context, userId, id, projectId);
   }
 }

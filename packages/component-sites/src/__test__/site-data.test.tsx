@@ -54,6 +54,7 @@ describe("saved site data", () => {
       />,
     );
     expect(screen.getByDisplayValue("Review")).toBeTruthy();
+    await screen.findByText("Review");
     await act(async () => release?.());
   });
 
