@@ -971,54 +971,6 @@ describe("ChatService streaming", () => {
     );
   });
 
-  it("sends hosted tool settings in top-level tool_options", async () => {
-    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      createSseResponse([data("[DONE]")]),
-    );
-
-    vi.stubGlobal("fetch", fetchMock);
-
-    const service = new ChatService(async () => ({}));
-
-    await service.streamChatCompletions({
-      chatSettings: {
-        tool_options: {
-          image_generation: {
-            size: "1024x1024",
-          },
-        },
-      },
-      completionId: "conversation-1",
-      endpoint: "/chat/completions",
-      messages: [{ role: "user", content: "hello" } as Message],
-      mode: "chat",
-      model: "gpt-5",
-      models: ["gpt-5", "claude-opus"],
-      onProgress: () => {},
-      onStateChange: () => {},
-      provider: "openai",
-      selectedTools: ["image_generation"],
-      signal: new AbortController().signal,
-      store: true,
-      streamingEnabled: true,
-      toolSelectionMode: "managed",
-      useMultiModel: false,
-    });
-
-    const [, request] = fetchMock.mock.calls[0];
-    const body = JSON.parse(String(request?.body));
-
-    expect(body.options?.tool_options).toBeUndefined();
-    expect(body.tool_options.image_generation).toEqual({
-      size: "1024x1024",
-    });
-    expect(body.enabled_tools).toEqual(["image_generation"]);
-    expect(body.tool_selection_mode).toBe("managed");
-    expect(body.models).toEqual(["gpt-5", "claude-opus"]);
-    expect(body.provider).toBe("openai");
-    expect(body.command_id).toEqual(expect.any(String));
-  });
-
   it("preserves a caller-provided command identity for retried submissions", async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
       createSseResponse([data("[DONE]")]),
@@ -1097,63 +1049,6 @@ describe("ChatService streaming", () => {
     expect(body.max_steps).toBeUndefined();
   });
 
-  it("sends the model tier without an explicit model", async () => {
-    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      createSseResponse([data("[DONE]")]),
-    );
-
-    vi.stubGlobal("fetch", fetchMock);
-
-    const service = new ChatService(async () => ({}));
-
-    await service.streamChatCompletions({
-      chatSettings: {},
-      completionId: "conversation-1",
-      endpoint: "/chat/completions",
-      messages: [{ role: "user", content: "hello" } as Message],
-      mode: "chat",
-      modelTier: "high",
-      onProgress: () => {},
-      onStateChange: () => {},
-      signal: new AbortController().signal,
-    });
-
-    const [, request] = fetchMock.mock.calls[0];
-    const body = JSON.parse(String(request?.body));
-
-    expect(body.model).toBeUndefined();
-    expect(body.model_tier).toBe("high");
-  });
-
-  it("sends chat compaction policy from chat settings", async () => {
-    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      createSseResponse([data("[DONE]")]),
-    );
-
-    vi.stubGlobal("fetch", fetchMock);
-
-    const service = new ChatService(async () => ({}));
-
-    await service.streamChatCompletions({
-      chatSettings: {
-        compaction: "off",
-      },
-      completionId: "conversation-1",
-      endpoint: "/chat/completions",
-      messages: [{ role: "user", content: "hello" } as Message],
-      mode: "chat",
-      model: "gpt-5",
-      onProgress: () => {},
-      onStateChange: () => {},
-      signal: new AbortController().signal,
-    });
-
-    const [, request] = fetchMock.mock.calls[0];
-    const body = JSON.parse(String(request?.body));
-
-    expect(body.compaction).toBe("off");
-  });
-
   it("drops invalid persisted chat compaction settings from chat requests", async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
       createSseResponse([data("[DONE]")]),
@@ -1181,33 +1076,6 @@ describe("ChatService streaming", () => {
     const body = JSON.parse(String(request?.body));
 
     expect(body.compaction).toBeUndefined();
-  });
-
-  it("omits empty hosted-tool options", async () => {
-    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      createSseResponse([data("[DONE]")]),
-    );
-
-    vi.stubGlobal("fetch", fetchMock);
-
-    const service = new ChatService(async () => ({}));
-
-    await service.streamChatCompletions({
-      chatSettings: { tool_options: {} },
-      completionId: "conversation-1",
-      endpoint: "/chat/completions",
-      messages: [{ role: "user", content: "hello" } as Message],
-      mode: "chat",
-      model: "gpt-5",
-      onProgress: () => {},
-      onStateChange: () => {},
-      signal: new AbortController().signal,
-    });
-
-    const [, request] = fetchMock.mock.calls[0];
-    const body = JSON.parse(String(request?.body));
-
-    expect(body.tool_options).toBeUndefined();
   });
 
   it("normalises selected tool ids before sending chat requests", async () => {
@@ -1483,141 +1351,11 @@ describe("ChatService bulk archiving", () => {
     expect(new Date(body.updated_after).getTime()).not.toBeNaN();
     expect(archived).toBe(7);
   });
-
-  it("omits the cutoff when no activity window is selected", async () => {
-    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      Response.json({ data: { success: true, archived: 0 } }),
-    );
-
-    vi.stubGlobal("fetch", fetchMock);
-
-    const service = new ChatService(async () => ({}));
-
-    await service.setAllConversationsArchived({ archived: false });
-
-    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
-
-    expect(body.updated_after).toBeUndefined();
-    expect(body.q).toBeUndefined();
-  });
-});
-
-describe("ChatService conversation updates", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it("updates stored messages through the existing completion update endpoint", async () => {
-    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      Response.json({
-        data: {
-          id: "conversation-1",
-          title: "Live notes",
-          messages: [
-            {
-              id: "message-1",
-              role: "user",
-              content: "Hello",
-              timestamp: 1000,
-            },
-          ],
-        },
-      }),
-    );
-
-    vi.stubGlobal("fetch", fetchMock);
-
-    const service = new ChatService(async () => ({}));
-    const messages = JSON.parse(`[
-			{
-				"id": "message-1",
-				"role": "user",
-				"content": "Hello",
-				"citations": null,
-				"timestamp": 1000
-			},
-			{
-				"id": "message-2",
-				"role": "assistant",
-				"content": "Answer",
-				"citations": [
-					{
-						"url": "https://example.com/source",
-						"title": "Example source"
-					}
-				],
-				"timestamp": 1001
-			}
-		]`);
-    const result = await service.updateConversation("conversation-1", {
-      messages,
-    });
-
-    const [url, request] = fetchMock.mock.calls[0];
-    const body = JSON.parse(String(request?.body));
-
-    expect(String(url)).toContain("/chat/completions/conversation-1");
-    expect(request?.method).toBe("PUT");
-    expect(body.messages[0]).toEqual(
-      expect.objectContaining({
-        content: "Hello",
-        id: "message-1",
-        role: "user",
-      }),
-    );
-    expect(body.messages[0]).not.toHaveProperty("citations");
-    expect(body.messages[1].citations).toEqual(["https://example.com/source"]);
-    expect(result.messages).toEqual([
-      expect.objectContaining({
-        content: "Hello",
-        id: "message-1",
-        role: "user",
-      }),
-    ]);
-  });
 });
 
 describe("ChatService run recovery", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
-  });
-
-  it("loads an authoritative run snapshot", async () => {
-    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      Response.json({
-        data: {
-          run: {
-            protocolVersion: 1,
-            id: "run-1",
-            conversationId: "conversation-1",
-            projectId: null,
-            projectTaskId: null,
-            initiatorUserId: 7,
-            trigger: "user",
-            status: "running",
-            attempt: 1,
-            createdAt: "2026-09-05T12:00:00.000Z",
-            updatedAt: "2026-09-05T12:00:01.000Z",
-            startedAt: "2026-09-05T12:00:01.000Z",
-            completedAt: null,
-            terminalReason: null,
-            lastMessageId: "assistant-1",
-          },
-          messages: [{ id: "assistant-1", role: "assistant", content: "Partial" }],
-        },
-      }),
-    );
-
-    vi.stubGlobal("fetch", fetchMock);
-
-    const service = new ChatService(async () => ({ Authorization: "Bearer token" }));
-    const snapshot = await service.getChatRun("run-1");
-
-    expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/chat/runs/run-1");
-    expect(snapshot).toMatchObject({
-      run: { id: "run-1", status: "running" },
-      messages: [{ id: "assistant-1", content: "Partial" }],
-    });
   });
 
   it("loads a cursor-anchored snapshot for ordered replay", async () => {

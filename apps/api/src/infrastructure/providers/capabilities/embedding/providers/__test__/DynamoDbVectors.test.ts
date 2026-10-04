@@ -267,6 +267,32 @@ describe("DynamoDB vector provider protocol and lifecycle", () => {
     expect(requests).toHaveLength(0);
   });
 
+  it("restores historical reads and cleanup once the recorded credentials return", async () => {
+    const expectedCredentialFingerprint = await getEmbeddingCredentialFingerprint(
+      dynamoDbScopeSecret,
+      "ddb-access::@@::ddb-secret",
+    );
+    const store = new DynamoDbVectorStore(
+      new DynamoDbVectorClient(dynamoDbConfiguration, {
+        getCredentials,
+        expectedCredentialFingerprint,
+        scopeSecret: dynamoDbScopeSecret,
+      }),
+    );
+
+    getCredentials.mockResolvedValueOnce("rotated-access::@@::rotated-secret");
+    await expect(store.getMatches(dynamoDbVector, { scopeTag: dynamoDbScopeTag })).rejects.toThrow(
+      "credentials changed",
+    );
+    expect(requests).toHaveLength(0);
+
+    await expect(
+      store.getMatches(dynamoDbVector, { scopeTag: dynamoDbScopeTag }),
+    ).resolves.toMatchObject({ count: 1 });
+    expect(await store.delete(["vector-1"])).toEqual({ status: "success", error: null });
+    expect(requests.length).toBeGreaterThan(0);
+  });
+
   it("fails closed when user credentials are missing or invalid", async () => {
     const client = new DynamoDbVectorClient(dynamoDbConfiguration, { getCredentials });
 

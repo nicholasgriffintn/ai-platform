@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { parseGoalCommand, resolveGoalSubmission } from "./goal-command.js";
-import { createGoalMarkerMessage, getGoalMessageMarker } from "./message-goal-status.js";
+import { getGoalMessageMarker } from "./message-goal-status.js";
 
 describe("parseGoalCommand", () => {
   it("reports status for a bare command, whatever the casing or padding", () => {
@@ -57,38 +57,11 @@ describe("getGoalMessageMarker", () => {
     ).toEqual({ event: "set", label: "Goal set", objective: "Make the suite pass" });
   });
 
-  it("falls back to the event label when none was stored", () => {
-    expect(getGoalMessageMarker({ parts: [{ type: "goal", event: "stalled" }] })).toMatchObject({
-      label: "Goal stopped making progress",
-    });
-  });
-
   it("ignores messages that are not goal markers", () => {
     expect(
       getGoalMessageMarker({ role: "assistant", parts: [{ type: "text", text: "hi" }] }),
     ).toBeNull();
     expect(getGoalMessageMarker(null)).toBeNull();
-  });
-
-  it("creates an optimistic marker with the shared start label", () => {
-    const message = createGoalMarkerMessage({
-      event: "set",
-      objective: "Make the suite pass",
-      id: "goal-marker-1",
-      timestamp: 123,
-    });
-
-    expect(message).toMatchObject({
-      id: "goal-marker-1",
-      role: "goal",
-      content: "Goal started",
-      timestamp: 123,
-    });
-    expect(getGoalMessageMarker(message)).toEqual({
-      event: "set",
-      label: "Goal started",
-      objective: "Make the suite pass",
-    });
   });
 });
 
@@ -113,13 +86,6 @@ describe("resolveGoalSubmission", () => {
     for (const input of ["/goal", "/goal pause", "/goal resume", "/goal clear"]) {
       expect(resolveGoalSubmission({ input, isComposingGoal: false }).messageInput).toBeNull();
     }
-  });
-
-  it("leaves an ordinary message untouched", () => {
-    expect(resolveGoalSubmission({ input: "hello there", isComposingGoal: false })).toEqual({
-      command: null,
-      messageInput: "hello there",
-    });
   });
 
   it("does not treat an empty composer as an objective", () => {

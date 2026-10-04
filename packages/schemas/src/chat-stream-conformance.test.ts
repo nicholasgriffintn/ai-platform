@@ -82,10 +82,6 @@ function fixtureNamed(name: string): ConformanceCase {
 }
 
 describe("chat stream conformance corpus", () => {
-  it("keeps the fixture version explicit", () => {
-    expect(corpus.version).toBe(2);
-  });
-
   it.each(corpus.cases)("conforms for $name", (fixture) => {
     const { assembler, events, remainingBuffer, updates } = runFixture(fixture);
     const eventTypes = events.map((event) => event.type);

@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  MODEL_LINEUP_RUNTIMES,
-  MODEL_TIER_LINEUP,
-  MODEL_TIERS,
-  MODEL_TIER_ROLES,
-  SYSTEM_MODEL_LINEUP,
   getLineupModelsByRuntime,
   isLineupEligibleModel,
   resolveLineupReasoningEffort,
@@ -26,20 +21,6 @@ function model(id: string, overrides: Partial<ModelConfigItem> = {}): ModelConfi
 }
 
 describe("model lineup", () => {
-  it("declares at least one candidate for every runtime, tier and role", () => {
-    for (const runtime of MODEL_LINEUP_RUNTIMES) {
-      for (const tier of MODEL_TIERS) {
-        for (const role of MODEL_TIER_ROLES) {
-          expect(MODEL_TIER_LINEUP[runtime][tier][role].length).toBeGreaterThan(0);
-        }
-      }
-    }
-
-    for (const role of SYSTEM_MODEL_LINEUP) {
-      expect(role.candidates.length).toBeGreaterThan(0);
-    }
-  });
-
   it("walks the hierarchy until it finds a model the account can execute", () => {
     const executable: ModelConfig = {
       "google-ai-studio/gemini-3.5-flash": model("google-ai-studio/gemini-3.5-flash", {

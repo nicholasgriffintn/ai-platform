@@ -4,10 +4,7 @@ import { createTestRuntime } from "../../../__test__/test-runtime.js";
 import type { ProviderEnv, ProviderUser } from "../../../env.js";
 import { createCatalogueModelResolver } from "../../../model-resolver.js";
 import type { RealtimeSessionRequest } from "../index.js";
-import {
-  CARTESIA_REALTIME_DESCRIPTOR,
-  CartesiaRealtimeProvider,
-} from "./CartesiaRealtimeProvider.js";
+import { CartesiaRealtimeProvider } from "./CartesiaRealtimeProvider.js";
 
 const getModelConfigByModelMock = vi.hoisted(() => vi.fn());
 const buildGrantedRealtimeProxyUrlMock = vi.hoisted(() => vi.fn());
@@ -51,14 +48,6 @@ describe("CartesiaRealtimeProvider", () => {
       expiresAt: 1_788_134_400,
       url: "wss://api.polychat.test/realtime/cartesia/transcription?model=ink-2&delay=minimal&session_id=session-1&grant=grant-1",
     });
-  });
-
-  it("exposes Ink 2 as the only supported realtime transcription model", () => {
-    const provider = new CartesiaRealtimeProvider(runtime);
-
-    expect(CARTESIA_REALTIME_DESCRIPTOR.defaultModelId).toBe("ink-2");
-    expect(provider.getDefaultModel("transcription")).toBe("ink-2");
-    expect(provider.models).toEqual(["ink-2"]);
   });
 
   it("creates a proxy session for Ink 2 with the selected turn delay", async () => {

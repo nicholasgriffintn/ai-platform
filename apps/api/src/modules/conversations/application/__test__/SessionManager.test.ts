@@ -17,7 +17,8 @@ vi.mock("~/infrastructure/ai", () => ({
   ai: { generateText: (...args: unknown[]) => mockGenerateText(...args) },
 }));
 
-vi.mock("@ngriffin_uk/polychat-utility-core", () => ({
+vi.mock("@ngriffin_uk/polychat-utility-core", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-utility-core")>()),
   generateId: () => "snapshot-message-id",
 }));
 

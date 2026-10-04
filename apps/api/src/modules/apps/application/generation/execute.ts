@@ -1,7 +1,6 @@
 import { validateReplicatePayload } from "@ngriffin_uk/polychat-ai-models";
 import type { TaskType } from "@ngriffin_uk/polychat-schemas";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import {
