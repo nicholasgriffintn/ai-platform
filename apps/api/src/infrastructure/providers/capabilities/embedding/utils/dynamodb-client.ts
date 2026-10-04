@@ -130,9 +130,12 @@ export class DynamoDbVectorClient {
   }
 
   async ensureIndex(): Promise<void> {
-    this.indexValidation ??= this.request("DescribeTable", {}).then((data) =>
-      validateDynamoDbVectorIndex(data, this.configuration.indexName),
-    );
+    this.indexValidation ??= this.request("DescribeTable", {})
+      .then((data) => validateDynamoDbVectorIndex(data, this.configuration.indexName))
+      .catch((error) => {
+        this.indexValidation = undefined;
+        throw error;
+      });
     await this.indexValidation;
   }
 }

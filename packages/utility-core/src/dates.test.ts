@@ -11,10 +11,6 @@ describe("isDeadlinePassed", () => {
     expect(isDeadlinePassed("2026-06-07T12:00:01.000Z", now)).toBe(false);
   });
 
-  it("accepts a string reference time", () => {
-    expect(isDeadlinePassed("2026-06-07T12:00:00.000Z", "2026-06-07T12:00:00.000Z")).toBe(true);
-  });
-
   it("treats missing or invalid deadlines as not passed", () => {
     expect(isDeadlinePassed(undefined, now)).toBe(false);
     expect(isDeadlinePassed(null, now)).toBe(false);

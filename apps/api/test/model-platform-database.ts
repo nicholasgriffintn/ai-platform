@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 
 import type { D1Database } from "@cloudflare/workers-types";
 
+import { applyTestMigration } from "./migrations";
+
 export async function initialiseModelPlatformDatabase(database: D1Database): Promise<void> {
   await database.batch([
     database.prepare("CREATE TABLE user (id INTEGER PRIMARY KEY)"),
@@ -26,10 +28,6 @@ export async function initialiseModelPlatformDatabase(database: D1Database): Pro
   ]) {
     const migration = await readFile(new URL(`../migrations/${name}.sql`, import.meta.url), "utf8");
 
-    for (const statement of migration.split("--> statement-breakpoint")) {
-      if (statement.trim()) {
-        await database.prepare(statement).run();
-      }
-    }
+    await applyTestMigration(database, migration);
   }
 }

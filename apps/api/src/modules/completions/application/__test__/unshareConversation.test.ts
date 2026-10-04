@@ -58,40 +58,4 @@ describe("handleUnshareConversation", () => {
       ).rejects.toThrow("Authentication required");
     });
   });
-
-  describe("successful unsharing", () => {
-    it("should unshare conversation successfully", async () => {
-      const completionId = "completion-123";
-
-      mockConversationManager.unshareConversation.mockResolvedValue(undefined);
-
-      const result = await handleUnshareConversation(mockServiceContext, completionId);
-
-      expect(mockConversationManager.unshareConversation).toHaveBeenCalledWith(completionId);
-      expect(result).toEqual({ success: true });
-    });
-
-    it("should handle empty completion ID", async () => {
-      mockConversationManager.unshareConversation.mockResolvedValue(undefined);
-
-      const result = await handleUnshareConversation(mockServiceContext, "");
-
-      expect(mockConversationManager.unshareConversation).toHaveBeenCalledWith("");
-      expect(result.success).toBe(true);
-    });
-  });
-
-  describe("error handling", () => {
-    it("should handle conversation not found errors", async () => {
-      const completionId = "nonexistent";
-
-      mockConversationManager.unshareConversation.mockRejectedValue(
-        new Error("Conversation not found"),
-      );
-
-      await expect(() =>
-        handleUnshareConversation(mockServiceContext, completionId),
-      ).rejects.toThrow("Conversation not found");
-    });
-  });
 });

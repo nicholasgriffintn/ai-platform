@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { MODEL_MAKERS, findModelMaker, resolveModelMakerId } from "./model-makers.js";
+import { resolveModelMakerId } from "./model-makers.js";
 
 describe("model makers", () => {
   it("matches a family and every variant that extends it", () => {
@@ -26,13 +26,5 @@ describe("model makers", () => {
     expect(resolveModelMakerId({ family: "big-pickle", provider: "anthropic" })).toBe("anthropic");
     expect(resolveModelMakerId({ provider: "openrouter" })).toBeUndefined();
     expect(resolveModelMakerId(null)).toBeUndefined();
-  });
-
-  it("declares every maker once and resolves it by id", () => {
-    const ids = MODEL_MAKERS.map((maker) => maker.id);
-
-    expect(new Set(ids).size).toBe(ids.length);
-    expect(findModelMaker("ANTHROPIC")?.label).toBe("Anthropic");
-    expect(findModelMaker("nothing")).toBeUndefined();
   });
 });

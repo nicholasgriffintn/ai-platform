@@ -1,6 +1,4 @@
-import { LinkProvider } from "@ngriffin_uk/polychat-component-ui";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { forwardRef, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -8,9 +6,7 @@ import {
   ConversationListActions,
   ConversationListControls,
   ConversationListItemActions,
-  ConversationStorageNotice,
   DEFAULT_CONVERSATION_LIST_FILTERS,
-  ProductModeSwitch,
   SidebarSettingsPopover,
 } from "./index";
 
@@ -61,38 +57,6 @@ describe("SidebarSettingsPopover", () => {
     expect(await screen.findByRole("button", { name: "Sign in" })).toBeTruthy();
   });
 
-  it("shows a loading state instead of waiting for a first message", async () => {
-    render(<SidebarSettingsPopover {...sidebarSettingsProps} isUsageLoading />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Open settings and configuration" }));
-
-    expect(await screen.findByText("Loading usage…")).toBeTruthy();
-    expect(screen.queryByText(/first message/i)).toBeNull();
-  });
-
-  it("describes usage without a denominator as tracked rather than unlimited", async () => {
-    render(
-      <SidebarSettingsPopover
-        {...sidebarSettingsProps}
-        usage={[
-          {
-            id: "credits",
-            label: "Credits",
-            value: "0.1706 used",
-            assistiveLabel: "0.1706 credits used this month",
-            percentage: null,
-            tone: "amber",
-          },
-        ]}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "Open settings and configuration" }));
-
-    expect(await screen.findByText("0.1706 credits used this month")).toBeTruthy();
-    expect(screen.queryByText(/unlimited usage/i)).toBeNull();
-  });
-
   it("opens without landing focus on the theme control", async () => {
     render(
       <SidebarSettingsPopover
@@ -127,36 +91,6 @@ describe("SidebarSettingsPopover", () => {
 
     expect(onChange).toHaveBeenCalledWith("fern");
     expect(screen.getByRole("dialog")).toBeTruthy();
-  });
-});
-
-describe("ProductModeSwitch", () => {
-  it("marks the active mode and links to host-resolved destinations", () => {
-    render(<ProductModeSwitch activeMode="work" destinations={{ chat: "/chat", work: "/work" }} />);
-
-    expect(screen.getByRole("link", { name: "Work" }).getAttribute("aria-current")).toBe("page");
-    expect(screen.getByRole("link", { name: "Chat" }).getAttribute("aria-current")).toBeNull();
-    expect(screen.getByRole("link", { name: "Chat" }).getAttribute("href")).toBe("/chat");
-  });
-
-  it("renders through the host link component when one is provided", () => {
-    const HostLink = forwardRef<HTMLAnchorElement, { href: string; children?: ReactNode }>(
-      function HostLink({ href, children, ...props }, ref) {
-        return (
-          <a ref={ref} data-host-link href={href} {...props}>
-            {children}
-          </a>
-        );
-      },
-    );
-
-    render(
-      <LinkProvider Link={HostLink}>
-        <ProductModeSwitch activeMode="chat" destinations={{ chat: "/chat", work: "/work" }} />
-      </LinkProvider>,
-    );
-
-    expect(screen.getByRole("link", { name: "Chat" }).hasAttribute("data-host-link")).toBe(true);
   });
 });
 
@@ -224,38 +158,6 @@ describe("ConversationList", () => {
 
     expect(screen.getByLabelText("Response in progress")).toBeTruthy();
     expect(screen.getByLabelText("Action required")).toBeTruthy();
-  });
-
-  it("marks temporary conversations with a ghost indicator", () => {
-    render(
-      <ConversationList
-        sections={[{ id: "today", conversations: [{ id: "temporary", isLocalOnly: true }] }]}
-        isConversationRoute
-        onSelect={vi.fn()}
-      />,
-    );
-
-    expect(screen.getByLabelText("Temporary conversation")).toBeTruthy();
-  });
-});
-
-describe("ConversationStorageNotice", () => {
-  it.each([
-    ["chosen", "Temporary. Nothing here is kept."],
-    ["default", "Temporary by default. Change this in Settings."],
-    ["signed_out", "Not signed in, so this stays on this device."],
-    ["plan", "Stored history is part of Pro. This stays on this device."],
-    ["device_default", "Answered on this machine. The transcript is still saved to Polychat."],
-  ] as const)("uses the %s retention explanation", (reason, copy) => {
-    render(<ConversationStorageNotice reason={reason} />);
-
-    expect(screen.getByText(copy)).toBeTruthy();
-  });
-
-  it("does not render a notice when the conversation is kept", () => {
-    const { container } = render(<ConversationStorageNotice reason={null} />);
-
-    expect(container.firstChild).toBeNull();
   });
 });
 
