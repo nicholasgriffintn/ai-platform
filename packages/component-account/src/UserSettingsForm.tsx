@@ -11,6 +11,7 @@ import { useAnalytics } from "@ngriffin_uk/polychat-library-react";
 import { computeSiteSchema, modelTierSchema } from "@ngriffin_uk/polychat-schemas";
 import { type FormEvent, type ReactNode, useState } from "react";
 
+import { DynamoDbVectorSettings } from "./DynamoDbVectorSettings";
 import { SettingsSection } from "./SettingsSection";
 import {
   getSpeechModelOptions,
@@ -53,6 +54,7 @@ const GUARDRAILS_PROVIDER_OPTIONS: FormSelectOption[] = [
 const EMBEDDING_PROVIDER_OPTIONS: FormSelectOption[] = [
   { value: "vectorize", label: "Vectorize" },
   { value: "s3vectors", label: "S3 Vectors" },
+  { value: "dynamodb-vectors", label: "DynamoDB Vectors" },
 ];
 
 const S3_VECTORS_REGION_OPTIONS: FormSelectOption[] = [
@@ -79,6 +81,8 @@ const SEARCH_PROVIDER_OPTIONS: FormSelectOption[] = [
   { value: "parallel", label: "Parallel" },
   { value: "exa", label: "Exa" },
   { value: "greenpt", label: "GreenPT" },
+  { value: "cloudflare", label: "Cloudflare Web Search" },
+  { value: "cloudflare-ai-search", label: "Cloudflare Knowledge Search" },
 ];
 
 export const USER_SETTINGS_FORM_ID = "user-settings-form";
@@ -509,6 +513,9 @@ export function UserSettingsForm({
               }
             />
           </div>
+          {formData.embedding_provider === "dynamodb-vectors" && (
+            <DynamoDbVectorSettings settings={formData} onChange={updateFormData} />
+          )}
           {formData.embedding_provider === "s3vectors" && (
             <>
               <div>
@@ -825,7 +832,8 @@ export function UserSettingsForm({
               Search Provider
             </label>
             <p className="mt-1 text-sm text-muted-foreground">
-              Choose the default search provider for web search requests.
+              Choose the default search provider. Knowledge Search uses the configured knowledge
+              base.
             </p>
             <FormSelect
               id="search_provider"
@@ -847,7 +855,8 @@ export function UserSettingsForm({
               }}
             />
             <p className="mt-2 text-sm text-muted-foreground">
-              Configure provider keys in the providers section before selecting BYOK providers.
+              Cloudflare search requires Pro and platform setup. Configure personal provider keys in
+              the providers section for other BYOK providers.
             </p>
           </div>
         </div>

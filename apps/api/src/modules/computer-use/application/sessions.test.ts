@@ -24,10 +24,14 @@ import {
   requireProjectCapabilityAccess,
   requireWorkspaceAccess,
 } from "~/modules/workspaces/application/access";
-import { browserTestUser, browserTestApproval, computerTestRun } from "~/test-utils/computer-use";
-import { databaseTestEnvironment } from "~/test-utils/environment";
 import type { IEnv } from "~/types";
 
+import {
+  browserTestUser,
+  browserTestApproval,
+  computerTestRun,
+} from "../../../../test/computer-use";
+import { databaseTestEnvironment } from "../../../../test/environment";
 import { getBrowserAvailability, getComputerUseAvailability, resolveBrowserApiKey } from "./access";
 import {
   destroyBrowserSession,
@@ -72,7 +76,7 @@ beforeAll(async () => {
     database.prepare("INSERT INTO conversation VALUES ('conversation', 1, NULL)"),
   ]);
   const migration = await readFile(
-    new URL("../../../../migrations/0056_browser_sessions.sql", import.meta.url),
+    new URL("../../../../migrations/0057_browser_sessions.sql", import.meta.url),
     "utf8",
   );
 

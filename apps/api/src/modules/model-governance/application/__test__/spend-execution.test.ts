@@ -9,9 +9,9 @@ import { createServiceContext, type ServiceContext } from "~/infrastructure/cont
 import { requireModelAction } from "~/modules/model-registry/application/access";
 import { startApprovedDeployment } from "~/modules/model-serving/application/deployments";
 import { toModelDeployment } from "~/modules/model-serving/application/mappers";
-import { databaseTestEnvironment } from "~/test-utils/environment";
-import { testModelDeployment } from "~/test-utils/model-platform";
 
+import { databaseTestEnvironment } from "../../../../../test/environment";
+import { testModelDeployment } from "../../../../../test/model-platform";
 import { resolveSpendRequest } from "../spend-execution";
 
 vi.mock("~/modules/model-registry/application/access", async (importOriginal) => ({

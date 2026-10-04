@@ -4,9 +4,9 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { selectModels } from "~/modules/chat/application/policy/model-access";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
-import { databaseTestEnvironment } from "~/test-utils/environment";
 import type { IEnv, IUser } from "~/types";
 
+import { databaseTestEnvironment } from "../../../../../test/environment";
 import { listModels } from "../index";
 
 const models: ModelConfig = {

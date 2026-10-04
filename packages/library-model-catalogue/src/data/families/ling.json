@@ -540,6 +540,38 @@
           "defaultEffort": "none"
         }
       }
+    },
+    "ling-3-1-flash": {
+      "defaults": {
+        "name": "Ling 3.1 Flash",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        }
+      }
+    },
+    "ling-3-1-flash-free": {
+      "defaults": {
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 29, 2026"
+      }
     }
   }
 }

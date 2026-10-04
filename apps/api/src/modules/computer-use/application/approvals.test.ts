@@ -4,8 +4,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { browserTestApproval } from "~/test-utils/computer-use";
-
+import { browserTestApproval } from "../../../../test/computer-use";
 import { validateBrowserApprovalResponse } from "./approvals";
 
 const response: BrowserApprovalResponse = {

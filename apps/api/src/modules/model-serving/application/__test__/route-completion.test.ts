@@ -4,13 +4,13 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 import { ai } from "~/infrastructure/ai";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { invokeDeployment } from "~/modules/model-serving/application/invocation";
-import { databaseTestEnvironment } from "~/test-utils/environment";
+import type { IEnv } from "~/types";
+
+import { databaseTestEnvironment } from "../../../../../test/environment";
 import {
   testModelRoute as route,
   testModelDeployment as deployment,
-} from "~/test-utils/model-platform";
-import type { IEnv } from "~/types";
-
+} from "../../../../../test/model-platform";
 import { completeWorkspaceRoute } from "../route-completion";
 
 vi.mock("~/infrastructure/ai", () => ({ ai: { complete: vi.fn() } }));

@@ -7,9 +7,9 @@ import { afterAll, beforeAll, expect, it, vi } from "vitest";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { revokeVersion } from "~/modules/model-governance/application/revocation";
-import { databaseTestEnvironment } from "~/test-utils/environment";
-import { initialiseModelPlatformDatabase } from "~/test-utils/model-platform-database";
 
+import { databaseTestEnvironment } from "../../../../../test/environment";
+import { initialiseModelPlatformDatabase } from "../../../../../test/model-platform-database";
 import { requireModelAction } from "../access";
 import { requestDecision, resolveDecision } from "../decisions";
 import { loadRegistryScope, routeStanding, versionStanding } from "../scope";

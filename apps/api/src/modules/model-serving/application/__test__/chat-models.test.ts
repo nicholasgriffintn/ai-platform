@@ -3,14 +3,14 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { loadRegistryScope, routeStanding } from "~/modules/model-registry/application/scope";
-import { databaseTestEnvironment } from "~/test-utils/environment";
+import type { IEnv } from "~/types";
+
+import { databaseTestEnvironment } from "../../../../../test/environment";
 import {
   testModelDeployment,
   testModelRoute,
   testRegistryScope,
-} from "~/test-utils/model-platform";
-import type { IEnv } from "~/types";
-
+} from "../../../../../test/model-platform";
 import { canUserInvokeDeployment, findPlatformChatModel } from "../chat-models";
 
 vi.mock("~/modules/model-registry/application/scope", async (importOriginal) => ({

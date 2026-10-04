@@ -5,7 +5,6 @@
     "reliability": 2,
     "knowledgeCutoffDate": "December 2024",
     "supportsToolCalls": true,
-    "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
@@ -55,7 +54,7 @@
     "mimo-v2-5": {
       "defaults": {
         "name": "MiMo-V2.5",
-        "description": "Open MiMo model for multimodal coding agents and long-context automation",
+        "description": "MiMo model for long-context reasoning, perception, and agentic tasks",
         "strengths": [
           "vision",
           "audio",
@@ -63,7 +62,9 @@
           "document",
           "tool_use"
         ],
+        "contextComplexity": 5,
         "releaseDate": "April 22, 2026",
+        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 40.1,
           "codingIndex": null,
@@ -76,7 +77,6 @@
       "defaults": {
         "name": "MiMo-V2.5-Pro",
         "description": "Stronger MiMo Pro tier for multimodal reasoning and coding-agent execution",
-        "contextWindow": 1048576,
         "modalities": {
           "input": [
             "text"
@@ -119,7 +119,8 @@
         "description": "MiMo Flash model for multimodal coding agents and long-context automation",
         "contextWindow": 1048576,
         "knowledgeCutoffDate": "September 22, 2026",
-        "releaseDate": "September 22, 2026"
+        "releaseDate": "September 22, 2026",
+        "supportsResponseFormat": true
       }
     },
     "mimo-v2-6-flash-free": {
@@ -141,7 +142,8 @@
           ]
         },
         "knowledgeCutoffDate": "September 22, 2026",
-        "releaseDate": "September 22, 2026"
+        "releaseDate": "September 22, 2026",
+        "supportsResponseFormat": true
       }
     },
     "mimo-v2-6-pro": {
@@ -150,7 +152,8 @@
         "description": "Stronger MiMo Pro tier for multimodal reasoning and coding-agent execution",
         "contextWindow": 1048576,
         "knowledgeCutoffDate": "September 22, 2026",
-        "releaseDate": "September 22, 2026"
+        "releaseDate": "September 22, 2026",
+        "supportsResponseFormat": true
       }
     },
     "mimo-v2-6-pro-ultraspeed": {
@@ -202,6 +205,7 @@
         },
         "knowledgeCutoffDate": "December 1, 2024",
         "releaseDate": "December 16, 2025",
+        "supportsResponseFormat": true,
         "supportsAttachments": false
       }
     },

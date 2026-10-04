@@ -174,7 +174,7 @@
         "name": "GLM Flash Latest",
         "openWeights": false,
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "contextWindow": 1310720,
+        "contextWindow": 1048576,
         "maxTokens": 943718,
         "modalities": {
           "input": [

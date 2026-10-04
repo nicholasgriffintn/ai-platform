@@ -62,6 +62,7 @@ export type {
   AssistantRecipeActionContext,
 } from "./assistant-actions.js";
 export * from "./apps.js";
+export { prepareToolFormData } from "./utils/tool-form-values.js";
 export * from "./capability-catalogue.js";
 export * from "./activity.js";
 export * from "./audit.js";
@@ -154,6 +155,7 @@ export * from "./sandbox-services.js";
 export * from "./sandbox-variables.js";
 export * from "./sandbox-preview.js";
 export * from "./search.js";
+export * from "./cloudflare-search.js";
 export * from "./decisions.js";
 export * from "./evidence.js";
 export * from "./shared-teammates.js";

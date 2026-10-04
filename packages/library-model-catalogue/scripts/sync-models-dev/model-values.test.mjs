@@ -104,3 +104,36 @@ describe("buildUpdateValues model contract overrides", () => {
     });
   });
 });
+
+describe("Clef decision contracts", () => {
+  it.each(["@cf/cloudflare/clef", "@cf/cloudflare/clef-flash"])(
+    "keeps %s out of chat when upstream advertises text generation",
+    (id) => {
+      const values = buildUpdateValues(
+        {
+          id,
+          name: "Clef",
+          temperature: true,
+          tool_call: true,
+          attachment: true,
+          modalities: { input: ["text", "image"], output: ["text"] },
+          limit: { context: 65536, output: 4096 },
+        },
+        {
+          modelKey: id,
+          existingMatchingModel: id,
+          allowMatchingModelUpdate: false,
+          isNewEntry: false,
+          includeProvider: false,
+          provider: "workers-ai",
+        },
+      );
+
+      expect(values.modalities).toEqual({ input: ["text"], output: ["decision"] });
+      expect(values.supportsAttachments).toBe(false);
+      expect(values.supportsToolCalls).toBe(false);
+      expect(values.supportsTemperature).toBe(false);
+      expect(values.maxTokens).toBe(0);
+    },
+  );
+});

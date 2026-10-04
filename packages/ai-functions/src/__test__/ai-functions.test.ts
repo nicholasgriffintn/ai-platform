@@ -28,6 +28,16 @@ function lastParams(getResponse: ReturnType<typeof vi.fn<GetResponse>>): ChatCom
 
 function createRuntime(getResponse: GetResponse, options: { decisionTarget?: boolean } = {}) {
   const modelConfigs: Record<string, ModelConfigItem> = {
+    "@cf/cloudflare/clef": {
+      matchingModel: "@cf/cloudflare/clef",
+      provider: "workers-ai",
+      modalities: { input: ["text"], output: ["decision"] },
+    },
+    "@cf/cloudflare/clef-flash": {
+      matchingModel: "@cf/cloudflare/clef-flash",
+      provider: "workers-ai",
+      modalities: { input: ["text"], output: ["decision"] },
+    },
     "gpt-5": {
       matchingModel: "gpt-5",
       provider: "openai",
@@ -326,6 +336,42 @@ describe("createAiFunctions", () => {
     expect(result.answers.tone.choice).toBe("calm");
     expect(result.usage).toEqual({ input_tokens: 42, output_tokens: 3 });
     expect(decision.decide.mock.calls[0]?.[0]).toMatchObject({ model: "jev-1.13.0" });
+  });
+
+  it.each(["@cf/cloudflare/clef", "@cf/cloudflare/clef-flash"])(
+    "routes an explicit %s model to Workers AI even when Jev is the default",
+    async (model) => {
+      const { runtime, resolve, decision } = createRuntime(vi.fn<GetResponse>(), {
+        decisionTarget: true,
+      });
+      const ai = createAiFunctions(runtime);
+
+      await ai.decide({
+        env,
+        user,
+        model,
+        state: "Checkout is down",
+        questions: { urgent: { type: "noul", instructions: "Is this urgent?" } },
+      });
+
+      expect(resolve).toHaveBeenCalledWith("decision", "workers-ai", { env, user });
+      expect(decision.decide).toHaveBeenCalledWith(expect.objectContaining({ model }));
+    },
+  );
+
+  it("rejects a chat model selected for decisions before calling a provider", async () => {
+    const { runtime, decision } = createRuntime(vi.fn<GetResponse>(), { decisionTarget: true });
+    const ai = createAiFunctions(runtime);
+
+    await expect(
+      ai.decide({
+        env,
+        model: "gpt-5",
+        state: "x",
+        questions: { q: { type: "noul", instructions: "?" } },
+      }),
+    ).rejects.toMatchObject({ type: "PARAMS_ERROR" });
+    expect(decision.decide).not.toHaveBeenCalled();
   });
 
   it("renders template literals into a prompt", async () => {

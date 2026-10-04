@@ -1,5 +1,6 @@
 export const MODEL_ICONS: Record<string, string> = {
   claude: "claude",
+  clef: "cloudflare",
   command: "command-a",
   "amazon-nova": "amazon-nova",
   llava: "llava",
@@ -118,6 +119,7 @@ export const PROVIDER_ICONS: Record<string, string> = {
   workers: "workers-ai",
   "workers-ai": "workers-ai",
   cloudflare: "cloudflare",
+  "cloudflare-ai-search": "cloudflare",
   melotts: "cloudflare",
   fireworks: "fireworks",
   hyperbolic: "hyperbolic",
@@ -125,6 +127,7 @@ export const PROVIDER_ICONS: Record<string, string> = {
   exa: "exa",
   sagemaker: "aws",
   s3vectors: "aws",
+  "dynamodb-vectors": "aws",
   "aws-sms": "aws",
   opencode: "opencode",
   "opencode-go": "opencode",

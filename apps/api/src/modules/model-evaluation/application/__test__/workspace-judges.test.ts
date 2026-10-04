@@ -4,15 +4,15 @@ import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { loadRegistryScope, routeStanding } from "~/modules/model-registry/application/scope";
 import { invokeDeployment } from "~/modules/model-serving/application/invocation";
-import { databaseTestEnvironment } from "~/test-utils/environment";
+import type { IEnv } from "~/types";
+
+import { databaseTestEnvironment } from "../../../../../test/environment";
 import {
   testModelAlias,
   testModelDeployment,
   testModelRoute,
   testRegistryScope,
-} from "~/test-utils/model-platform";
-import type { IEnv } from "~/types";
-
+} from "../../../../../test/model-platform";
 import { scoreWithGrader } from "../graders";
 
 vi.mock("~/modules/model-registry/application/scope", async (importOriginal) => ({

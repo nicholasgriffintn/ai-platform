@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "contextWindow": 65536,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "decision"
+      ]
+    },
+    "strengths": [
+      "decision",
+      "analysis"
+    ],
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "Cloudflare Clef decision models return calibrated probabilities for typed questions about a state.",
+  "models": {
+    "clef": {
+      "defaults": {
+        "name": "Clef",
+        "description": "Cloudflare’s 27B decision model for choice, score and yes/no questions about text or structured state."
+      }
+    },
+    "clef-flash": {
+      "defaults": {
+        "name": "Clef Flash",
+        "description": "Cloudflare’s fast 9B decision model for choice, score and yes/no questions in latency-sensitive workflows."
+      }
+    }
+  }
+}

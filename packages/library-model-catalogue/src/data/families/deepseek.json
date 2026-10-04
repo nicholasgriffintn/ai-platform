@@ -65,7 +65,7 @@
         "openWeights": false,
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
         "contextWindow": 1048576,
-        "maxTokens": 943718,
+        "maxTokens": 393216,
         "releaseDate": "September 14, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -639,7 +639,7 @@
         "name": "DeepSeek V4 Flash Latest",
         "openWeights": false,
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
-        "contextWindow": 1310720,
+        "contextWindow": 1048576,
         "maxTokens": 943718,
         "releaseDate": "August 1, 2026",
         "supportsResponseFormat": true,
@@ -650,35 +650,6 @@
             "max"
           ],
           "defaultEffort": "low"
-        }
-      }
-    },
-    "deepseek-v4-pro": {
-      "defaults": {
-        "name": "DeepSeek V4 Pro",
-        "openWeights": true,
-        "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
-        "contextWindow": 512000,
-        "maxTokens": 384000,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "releaseDate": "April 24, 2026",
-        "supportsResponseFormat": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "max"
-          ],
-          "defaultEffort": "high"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 31.2,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
         }
       }
     },

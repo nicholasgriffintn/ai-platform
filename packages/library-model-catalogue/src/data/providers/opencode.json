@@ -1329,6 +1329,44 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       }
+    },
+    "fledge-alpha-free": {
+      "model": "opencode/fledge-alpha-free/fledge-alpha-free",
+      "matchingModel": "fledge-alpha-free",
+      "overrides": {
+        "lastUpdated": "October 1, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "gpt-6.1-sol": {
+      "model": "gpt-sol/gpt-6-1-sol",
+      "matchingModel": "gpt-6.1-sol",
+      "overrides": {
+        "lastUpdated": "September 29, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "ling-3.1-flash-free": {
+      "model": "ling/ling-3-1-flash-free",
+      "matchingModel": "ling-3.1-flash-free",
+      "overrides": {
+        "name": "Ling 3.1 Flash Free",
+        "lastUpdated": "September 29, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
     }
   }
 }

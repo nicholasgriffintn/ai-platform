@@ -45,6 +45,7 @@ export * from "./Account/AccountOverview";
 export * from "./Account/ConversationHandleSettings";
 export * from "./Sources/SourceList";
 export * from "./Providers/ProviderFilterBar";
+export { readProviderTypeFilter } from "./utils/provider-filters";
 export * from "./Sandbox/SandboxConnectionDialog";
 export * from "./Sandbox/repositories";
 export * from "./Sources/SourceCollectionList";

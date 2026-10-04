@@ -430,6 +430,25 @@
         }
       }
     },
+    "claude-sonnet-5-5-eu": {
+      "defaults": {
+        "name": "Claude Sonnet 5.5 (EU)",
+        "description": "Fast Claude model for everyday coding, agents, and knowledge work",
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 28, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "claude-sonnet-5-5-global": {
       "defaults": {
         "name": "Claude Sonnet 5.5 (Global)",
@@ -502,6 +521,27 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "claude-sonnet-5-india": {
+      "defaults": {
+        "name": "Claude Sonnet 5 (India)",
+        "description": "Everyday Claude agent model for coding, planning, browsing, and general work",
+        "knowledgeCutoffDate": "January 31, 2026",
+        "releaseDate": "June 30, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
         }
       }
     },

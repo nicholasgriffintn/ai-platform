@@ -440,7 +440,11 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     label: "Decisions",
     description:
       "Fast calibrated judgements: yes/no checks, classifications and ratings that gate other work.",
-    candidates: [{ model: "jev-latest", provider: "typesafe" }],
+    candidates: [
+      { model: "jev-latest", provider: "typesafe" },
+      { model: "@cf/cloudflare/clef-flash", provider: "workers-ai" },
+      { model: "@cf/cloudflare/clef", provider: "workers-ai" },
+    ],
   },
   {
     id: "reranking",

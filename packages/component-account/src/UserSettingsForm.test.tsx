@@ -158,4 +158,33 @@ describe("user settings form", () => {
       expect.objectContaining({ nickname: "Sam", search_provider: "parallel" }),
     );
   });
+  it("saves a DynamoDB configuration and removes inactive fields when switching away", async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+
+    render(<UserSettingsForm {...formProps} onSave={onSave} />);
+    fireEvent.click(screen.getByLabelText("Embedding Provider"));
+    fireEvent.click(screen.getByRole("menuitem", { name: "DynamoDB Vectors" }));
+    fireEvent.change(screen.getByLabelText("DynamoDB table name"), {
+      target: { value: "polychat-vectors" },
+    });
+    fireEvent.change(screen.getByLabelText("Vector index name"), {
+      target: { value: "embeddings" },
+    });
+    fireEvent.change(screen.getByLabelText("AWS region"), { target: { value: "eu-west-2" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save Settings" }));
+    await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
+    expect(onSave).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        embedding_provider: "dynamodb-vectors",
+        dynamodb_vectors_table_name: "polychat-vectors",
+        dynamodb_vectors_index_name: "embeddings",
+        dynamodb_vectors_region: "eu-west-2",
+      }),
+    );
+    fireEvent.click(screen.getByLabelText("Embedding Provider"));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Vectorize" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save Settings" }));
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(2));
+    expect(onSave.mock.calls[1]?.[0]).not.toHaveProperty("dynamodb_vectors_table_name");
+  });
 });

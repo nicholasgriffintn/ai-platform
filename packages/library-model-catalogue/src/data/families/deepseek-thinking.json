@@ -223,17 +223,7 @@
         "name": "DeepSeek V4 Pro 0813",
         "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
         "contextWindow": 1048576,
-        "maxTokens": 1048576,
-        "releaseDate": "August 12, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "high"
-        }
+        "releaseDate": "August 12, 2026"
       }
     },
     "deepseek-v4-pro-0813-eu": {

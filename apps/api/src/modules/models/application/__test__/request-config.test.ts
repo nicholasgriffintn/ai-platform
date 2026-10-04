@@ -2,9 +2,9 @@ import { Miniflare } from "miniflare";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import { databaseTestEnvironment } from "~/test-utils/environment";
 import type { IEnv } from "~/types";
 
+import { databaseTestEnvironment } from "../../../../../test/environment";
 import { resolveRequestModelConfig } from "../request-config";
 import { findModelConfig } from "../resolve";
 

@@ -2,7 +2,7 @@
 
 - **Change:** enable Use Computer for managed OpenAI browser tasks and the existing worker, show current activity and approvals, and keep sign-in values outside the conversation.
 - **Surfaces:** web, desktop and API.
-- **Prerequisites:** apply `0056_browser_sessions` before deploying. Configure a personal OpenAI key or workspace OpenAI connection with Agents API and computer-use access. No deployment or remote migration has been performed for this change.
+- **Prerequisites:** apply `0057_browser_sessions` before deploying. Configure a personal OpenAI key or workspace OpenAI connection with Agents API and computer-use access. No deployment or remote migration has been performed for this change.
 - **Risk if wrong:** a task cannot start or recover, an approval is sent to the wrong request, or a provider session remains active after local history is deleted.
 
 ## Verify

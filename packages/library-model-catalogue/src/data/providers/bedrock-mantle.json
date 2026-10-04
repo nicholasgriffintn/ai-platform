@@ -3,7 +3,6 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
     "apiBaseUrl": "https://bedrock-mantle.${AWS_REGION}.api.aws/openai/v1",
     "apiShape": "responses"
   },
@@ -27,8 +26,7 @@
         "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0055,
-        "costPer1kOutputTokens": 0.033,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.033
       }
     },
     "openai.gpt-oss-120b": {
@@ -108,8 +106,7 @@
       "overrides": {
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.00022,
-        "costPer1kOutputTokens": 0.00132,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.00132
       }
     },
     "openai.gpt-5.6-sol": {
@@ -118,8 +115,7 @@
       "overrides": {
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0044,
-        "costPer1kOutputTokens": 0.022,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.022
       }
     },
     "openai.gpt-5.6-terra": {
@@ -128,8 +124,7 @@
       "overrides": {
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0022,
-        "costPer1kOutputTokens": 0.0132,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0132
       }
     },
     "xai.grok-4.6": {
@@ -147,8 +142,7 @@
       "overrides": {
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0.011,
-        "costPer1kOutputTokens": 0.055,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.055
       }
     },
     "google.gemma-4-26b-a4b": {
@@ -239,8 +233,7 @@
       "overrides": {
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00011,
-        "costPer1kOutputTokens": 0.00055,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.00055
       }
     },
     "openai.gpt-6-sol": {
@@ -249,8 +242,16 @@
       "overrides": {
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0022,
-        "costPer1kOutputTokens": 0.011,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.011
+      }
+    },
+    "openai.gpt-6.1-sol": {
+      "model": "gpt-sol/gpt-6-1-sol",
+      "matchingModel": "openai.gpt-6.1-sol",
+      "overrides": {
+        "lastUpdated": "September 29, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.011
       }
     }
   }

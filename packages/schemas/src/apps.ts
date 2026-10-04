@@ -5,8 +5,10 @@ import { documentMetadataSchema } from "./documents.js";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json" with { type: "json" };
 import { externalHttpUrlSchema } from "./navigation.js";
 import { outputSchema } from "./outputs.js";
+import { searchOptionsSchema, searchProviderSchema } from "./search.js";
 import { skillSummarySchema } from "./skills.js";
 import { teammateSummarySchema } from "./teammates.js";
+import { parseToolFormValue } from "./utils/tool-form-values.js";
 
 export const weatherQuerySchema = z.object({
   longitude: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a valid number"),
@@ -185,16 +187,9 @@ export const speechGenerationSchema = z.object({
 });
 
 export const deepWebSearchSchema = z.object({
-  searchProvider: z.string().optional(),
-  query: z.string(),
-  options: z
-    .object({
-      search_depth: z.enum(["basic", "advanced"]).optional(),
-      include_answer: z.boolean().optional(),
-      include_raw_content: z.boolean().optional(),
-      include_images: z.boolean().optional(),
-    })
-    .optional(),
+  searchProvider: searchProviderSchema.optional(),
+  query: z.string().trim().min(1).max(4096),
+  options: searchOptionsSchema.optional(),
 });
 
 export const deepResearchSchema = z.object({
@@ -496,6 +491,7 @@ export const toolFormFieldSchema = z.object({
   placeholder: z.string().optional(),
   required: z.boolean(),
   defaultValue: z.unknown().optional(),
+  valueFormat: z.enum(["json", "json-or-text"]).optional(),
   validation: z
     .object({
       pattern: z.string().optional(),
@@ -618,6 +614,18 @@ function getDynamicAppFieldError(field: ToolFormField, value: unknown): string |
 
   if (isMissingDynamicAppFieldValue(value)) {
     return undefined;
+  }
+
+  if (field.valueFormat) {
+    try {
+      parseToolFormValue(field, value);
+    } catch (error) {
+      return error instanceof Error ? error.message : `${field.label} has an invalid format`;
+    }
+
+    if (typeof value !== "string") {
+      return undefined;
+    }
   }
 
   const { validation } = field;

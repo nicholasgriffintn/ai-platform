@@ -830,6 +830,68 @@
         }
       }
     },
+    "grok-4-7-global": {
+      "defaults": {
+        "name": "Grok 4.7 (Global)",
+        "description": "xAI's frontier model for long-running agents, coding, knowledge work, and visual projects",
+        "contextWindow": 500000,
+        "maxTokens": 500000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "September 21, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "grok-4-7-us": {
+      "defaults": {
+        "name": "Grok 4.7 (US)",
+        "description": "xAI's frontier model for long-running agents, coding, knowledge work, and visual projects",
+        "contextWindow": 500000,
+        "maxTokens": 500000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "September 21, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "grok-4-fast": {
       "defaults": {
         "name": "Grok 4 Fast",
@@ -1211,6 +1273,16 @@
         "releaseDate": "May 30, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "grok-imagine-video-1-5-lite": {
+      "defaults": {
+        "name": "Grok Imagine Video 1.5 Lite",
+        "description": "Cost-efficient video model for text-to-video and image-to-video generation",
+        "maxTokens": 0,
+        "releaseDate": "October 1, 2026",
+        "supportsToolCalls": false,
         "supportsTemperature": false
       }
     },

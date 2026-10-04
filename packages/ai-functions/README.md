@@ -27,7 +27,11 @@ const image = await ai.image({ prompt: "a parrot on a perch", env, user });
 
 ## Decisions
 
-`decide` sends a state and a map of typed questions to the account's decision model (TypeSafe Jev when `getAuxiliaryDecisionModel` resolves one) and returns answers typed by question id. `tryDecide` returns `null` instead of throwing when no decision model is available, which is how hot paths gate work without depending on the key. `choice`, `score` and `noul` build questions.
+`decide` sends a state and a map of typed questions to the account's decision model (Jev, then Workers AI Clef Flash or Clef when `getAuxiliaryDecisionModel` resolves one) and returns answers typed by question id. `tryDecide` returns `null` instead of throwing when no decision model is available, which is how hot paths gate work without depending on provider availability. `choice`, `score` and `noul` build questions.
+
+Pin Clef explicitly with `provider: "workers-ai"` and `model: "@cf/cloudflare/clef"`, or select `@cf/cloudflare/clef-flash` for latency-sensitive decisions. Workers AI needs the host's `AI` binding and uses the same text and structured-state questions as Jev. Embedded images and video are not exposed by this decision contract.
+
+Pass a catalogue decision model ID without `provider` to resolve its provider automatically. The Decide tool exposes these models in its **Decision model** selector; choose **Automatic** to retain the account's default selection. Enter **Questions** as a JSON object and **State** as plain text, a JSON object or a JSON array. The form parses structured inputs before submission and flags invalid JSON beside the field.
 
 `defineDecisionPolicy` gives repeated hot-path judgements a stable key, versioned questions and a deterministic evaluator. `evaluateDecisionPolicy` applies a valid recommendation and returns a receipt without copying the state, questions or provider errors into it. Missing, failed or invalid decisions retain the caller's fallback. A policy result is evidence for its caller and never grants tool or data authority.
 
@@ -48,7 +52,7 @@ result.answers.urgent.noul; // 0.97
 result.answers.team.choice; // "billing"
 ```
 
-`classify`, `score` and `is` use the decision model when one resolves and fall back to `generateObject` on the chat model otherwise, so callers get calibrated probabilities for free when a TypeSafe key is configured.
+`classify`, `score` and `is` use the decision model when one resolves and fall back to `generateObject` on the chat model otherwise, so callers get calibrated probabilities when a decision provider is configured.
 
 ## Reranking
 

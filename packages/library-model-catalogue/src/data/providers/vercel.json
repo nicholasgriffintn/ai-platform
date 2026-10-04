@@ -2202,8 +2202,8 @@
         "knowledgeCutoffDate": "February 2025",
         "releaseDate": "February 19, 2025",
         "lastUpdated": "February 19, 2025",
-        "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.001,
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": true
       }
     },
@@ -2560,10 +2560,7 @@
         "lastUpdated": "February 4, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0003
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "zai/glm-4.5": {
       "model": "glm/glm-4-5",
@@ -2922,6 +2919,7 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
+            "low",
             "high",
             "max"
           ],
@@ -3648,10 +3646,7 @@
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.003
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "xiaomi/mimo-v2.5": {
       "model": "mimo/mimo-m2-5",
@@ -3662,10 +3657,7 @@
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028,
         "supportsAttachments": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "xiaomi/mimo-v2.5-pro": {
       "model": "mimo/mimo-v2-5-pro",
@@ -3684,10 +3676,7 @@
         "costPer1kInputTokens": 0.000435,
         "costPer1kOutputTokens": 0.00087,
         "supportsAttachments": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "zai/glm-4.7-flash": {
       "model": "glm-flash/glm-4-7-flash",
@@ -6851,8 +6840,8 @@
         "contextWindow": 256000,
         "maxTokens": 32000,
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.00006,
-        "costPer1kOutputTokens": 0.00018
+        "costPer1kInputTokens": 0.000075,
+        "costPer1kOutputTokens": 0.00022
       },
       "unset": [
         "supportsTemperature"
@@ -6952,8 +6941,7 @@
         "costPer1kOutputTokens": 0.00261
       },
       "unset": [
-        "reliability",
-        "supportsResponseFormat"
+        "reliability"
       ]
     },
     "anthropic/claude-fable-5.1": {
@@ -7221,6 +7209,7 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
+            "low",
             "high",
             "max"
           ],
@@ -7548,8 +7537,8 @@
           ]
         },
         "lastUpdated": "September 22, 2026",
-        "costPer1kInputTokens": 0.00014,
-        "costPer1kOutputTokens": 0.00028,
+        "costPer1kInputTokens": 0.00004,
+        "costPer1kOutputTokens": 0.00128,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -7627,10 +7616,7 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "openai/gpt-6-luna": {
       "model": "gpt-luna/gpt-6-luna",
@@ -7772,6 +7758,157 @@
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
         "supportsAttachments": true
+      }
+    },
+    "inclusionai/ling-3.1-flash": {
+      "model": "ling/ling-3-1-flash",
+      "matchingModel": "inclusionai/ling-3.1-flash",
+      "overrides": {
+        "releaseDate": "September 29, 2026",
+        "lastUpdated": "September 29, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "inclusionai/ling-3.1-flash-free": {
+      "model": "ling/ling-3-1-flash-free",
+      "matchingModel": "inclusionai/ling-3.1-flash-free",
+      "overrides": {
+        "name": "Ling 3.1 Flash (Free)",
+        "lastUpdated": "September 29, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "microsoft/mai-transcribe-1.5": {
+      "model": "mai/mai-transcribe-1-5",
+      "matchingModel": "microsoft/mai-transcribe-1.5",
+      "overrides": {
+        "lastUpdated": "June 1, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "microsoft/mai-transcribe-2": {
+      "model": "mai/mai-transcribe-2",
+      "matchingModel": "microsoft/mai-transcribe-2",
+      "overrides": {
+        "lastUpdated": "September 3, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "microsoft/mai-transcribe-2-streaming": {
+      "model": "mai/mai-transcribe-2-streaming",
+      "matchingModel": "microsoft/mai-transcribe-2-streaming",
+      "overrides": {
+        "lastUpdated": "October 1, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "microsoft/mai-voice-2": {
+      "model": "mai/mai-voice-2",
+      "matchingModel": "microsoft/mai-voice-2",
+      "overrides": {
+        "lastUpdated": "June 2, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "microsoft/mai-voice-2-flash": {
+      "model": "mai/mai-voice-2-flash",
+      "matchingModel": "microsoft/mai-voice-2-flash",
+      "overrides": {
+        "lastUpdated": "July 23, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "microsoft/mai-voice-2.1": {
+      "model": "mai/mai-voice-2-1",
+      "matchingModel": "microsoft/mai-voice-2.1",
+      "overrides": {
+        "lastUpdated": "October 1, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "microsoft/mai-voice-2.1-flash": {
+      "model": "mai/mai-voice-2-1-flash",
+      "matchingModel": "microsoft/mai-voice-2.1-flash",
+      "overrides": {
+        "lastUpdated": "October 1, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "openai/gpt-6.1-sol": {
+      "model": "gpt-sol/gpt-6-1-sol",
+      "matchingModel": "openai/gpt-6.1-sol",
+      "overrides": {
+        "lastUpdated": "September 29, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "openai/gpt-6.1-sol-fast": {
+      "model": "gpt-sol/gpt-6-1-sol-fast",
+      "matchingModel": "openai/gpt-6.1-sol-fast",
+      "overrides": {
+        "lastUpdated": "September 29, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "spacexai/grok-imagine-video-1.5-lite": {
+      "model": "grok/grok-imagine-video-1-5-lite",
+      "matchingModel": "spacexai/grok-imagine-video-1.5-lite",
+      "overrides": {
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "lastUpdated": "October 1, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
+      }
+    },
+    "voyage/rerank-3": {
+      "model": "voyage/voyage-rerank-3",
+      "matchingModel": "voyage/rerank-3",
+      "overrides": {
+        "lastUpdated": "September 30, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "voyage/rerank-3-lite": {
+      "model": "voyage/voyage-rerank-3-lite",
+      "matchingModel": "voyage/rerank-3-lite",
+      "overrides": {
+        "lastUpdated": "September 30, 2026",
+        "supportsToolCalls": false
       }
     }
   }

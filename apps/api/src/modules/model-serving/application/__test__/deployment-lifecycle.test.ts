@@ -4,9 +4,9 @@ import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { accrueDeploymentCost } from "~/modules/model-governance/application/spend";
 import { TaskService } from "~/modules/tasks/application/TaskService";
-import { databaseTestEnvironment } from "~/test-utils/environment";
-import { testModelDeployment } from "~/test-utils/model-platform";
 
+import { databaseTestEnvironment } from "../../../../../test/environment";
+import { testModelDeployment } from "../../../../../test/model-platform";
 import { applyDeploymentState } from "../deployments";
 import { hostFor } from "../invocation";
 import { syncDeployment } from "../sync";

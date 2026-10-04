@@ -983,6 +983,24 @@
         }
       }
     },
+    "claude-opus-5-india": {
+      "defaults": {
+        "name": "Claude Opus 5 (India)",
+        "description": "Strongest Claude Opus model for coding, agents, and professional work",
+        "knowledgeCutoffDate": "May 2026",
+        "releaseDate": "July 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "claude-opus-5-jp": {
       "defaults": {
         "name": "Claude Opus 5 (JP)",

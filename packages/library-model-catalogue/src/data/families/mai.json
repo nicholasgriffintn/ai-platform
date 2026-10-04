@@ -1,10 +1,12 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 256000,
-    "maxTokens": 128000,
-    "supportsToolCalls": true,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "supportsToolCalls": false,
     "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [
         "low",
@@ -20,6 +22,8 @@
       "defaults": {
         "name": "MAI-Code-1.1-Flash",
         "description": "Microsoft coding model with native vision support, optimized for fast and efficient software development",
+        "contextWindow": 256000,
+        "maxTokens": 128000,
         "modalities": {
           "input": [
             "text",
@@ -31,6 +35,7 @@
           ]
         },
         "releaseDate": "August 11, 2026",
+        "supportsToolCalls": true,
         "supportsAttachments": true
       }
     },
@@ -38,6 +43,8 @@
       "defaults": {
         "name": "MAI-Code-1-Flash",
         "description": "Microsoft coding model built for fast, efficient assistance in everyday developer workflows",
+        "contextWindow": 256000,
+        "maxTokens": 128000,
         "modalities": {
           "input": [
             "text"
@@ -48,8 +55,134 @@
         },
         "knowledgeCutoffDate": "December 2025",
         "releaseDate": "June 2, 2026",
-        "supportsAttachments": false,
-        "supportsTemperature": true
+        "supportsToolCalls": true
+      }
+    },
+    "mai-transcribe-1-5": {
+      "defaults": {
+        "name": "MAI-Transcribe-1.5",
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "modalities": {
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "audio",
+          "transcription"
+        ],
+        "contextComplexity": 4,
+        "reliability": 5,
+        "releaseDate": "June 1, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "aaWerIndex",
+              "label": "Word Error Rate",
+              "value": 0,
+              "min": 0,
+              "max": 1,
+              "lowerIsBetter": true
+            }
+          ]
+        }
+      }
+    },
+    "mai-transcribe-2": {
+      "defaults": {
+        "name": "MAI-Transcribe 2",
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "modalities": {
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 3, 2026"
+      }
+    },
+    "mai-transcribe-2-streaming": {
+      "defaults": {
+        "name": "MAI-Transcribe-2-Streaming",
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "modalities": {
+          "input": [
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 1, 2026"
+      }
+    },
+    "mai-voice-2": {
+      "defaults": {
+        "name": "MAI-Voice-2",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "June 2, 2026"
+      }
+    },
+    "mai-voice-2-1": {
+      "defaults": {
+        "name": "MAI-Voice-2.1",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "October 1, 2026"
+      }
+    },
+    "mai-voice-2-1-flash": {
+      "defaults": {
+        "name": "MAI-Voice-2.1-Flash",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "October 1, 2026"
+      }
+    },
+    "mai-voice-2-flash": {
+      "defaults": {
+        "name": "MAI-Voice-2-Flash",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "July 23, 2026"
       }
     }
   }

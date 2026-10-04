@@ -779,9 +779,19 @@
       "model": "deepseek-thinking/deepseek-v4-pro-0813",
       "matchingModel": "@cf/deepseek-ai/deepseek-v4-pro-0813",
       "overrides": {
+        "maxTokens": 1048576,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00132,
-        "costPer1kOutputTokens": 0.00396
+        "costPer1kOutputTokens": 0.00396,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       },
       "unset": [
         "strengths",
@@ -815,7 +825,6 @@
       "overrides": {
         "name": "Glm 5.3",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
@@ -868,6 +877,26 @@
       "matchingModel": "minimax/music-2.6",
       "overrides": {
         "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
+    "@cf/cloudflare/clef": {
+      "model": "cloudflare/clef/clef",
+      "matchingModel": "@cf/cloudflare/clef",
+      "overrides": {
+        "isFree": true,
+        "costPer1kInputTokens": 0.00024,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
+    "@cf/cloudflare/clef-flash": {
+      "model": "cloudflare/clef/clef-flash",
+      "matchingModel": "@cf/cloudflare/clef-flash",
+      "overrides": {
+        "isFree": true,
+        "costPer1kInputTokens": 0.00009,
+        "costPer1kOutputTokens": 0,
         "supportsTemperature": false
       }
     }
