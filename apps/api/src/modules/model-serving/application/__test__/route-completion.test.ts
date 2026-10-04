@@ -6,11 +6,11 @@ import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { invokeDeployment } from "~/modules/model-serving/application/invocation";
 import type { IEnv } from "~/types";
 
-import { databaseTestEnvironment } from "../../../../../test/environment";
 import {
   testModelRoute as route,
   testModelDeployment as deployment,
-} from "../../../../../test/model-platform";
+} from "../../../../../test/fixtures/model-platform";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 import { completeWorkspaceRoute } from "../route-completion";
 
 vi.mock("~/infrastructure/ai", () => ({ ai: { complete: vi.fn() } }));

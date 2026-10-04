@@ -25,7 +25,7 @@ it("evaluates the official Cedar engine inside the Worker runtime", async () => 
         directory,
       ],
       {
-        cwd: path.resolve(import.meta.dirname, ".."),
+        cwd: path.resolve(import.meta.dirname, "../.."),
         env: { ...process.env, WRANGLER_SEND_METRICS: "false" },
       },
     );
