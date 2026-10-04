@@ -28,7 +28,7 @@ Do not duplicate or inline real keys in docs.
 
 - **Embeddings:** use `EMBEDDING_SCOPE_SECRET` and keep credentials stable when vectors are populated.
 - **Connectors:** configure Composio keying, webhook signature, and callback URLs in the Composio guide.
-- **Project knowledge:** apply the current migrations and configure the existing cron and task queue. Keep `AI`, `VECTOR_DB` and `EMBEDDING_SCOPE_SECRET` stable for semantic search. Follow the [API guide](../../../../apps/api/README.md) for selected Confluence syncs and incident briefs.
+- **Project knowledge:** apply the current migrations and configure the existing cron and task queue. Keep `AI`, `VECTOR_DB` and `EMBEDDING_SCOPE_SECRET` stable for semantic search.
 - **Authenticated hosted MCP:** keep `JWT_SECRET` stable and use a reachable HTTPS endpoint. Save explicit OpenAI consent and exact tool names with each encrypted bearer connection.
 - **Coding / training workers:** keep API authority, GitHub App tokens, and worker tokens separate.
 
