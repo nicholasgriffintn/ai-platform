@@ -997,11 +997,11 @@
       "overrides": {
         "name": "DeepSeek V3 0324",
         "contextWindow": 163840,
-        "maxTokens": 115200,
+        "maxTokens": 147456,
         "knowledgeCutoffDate": "July 31, 2024",
         "lastUpdated": "March 24, 2025",
-        "costPer1kInputTokens": 0.00029,
-        "costPer1kOutputTokens": 0.00114,
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.001,
         "supportsAttachments": false
       }
     },
@@ -3148,7 +3148,7 @@
       "matchingModel": "~moonshotai/kimi-latest",
       "overrides": {
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.000615,
+        "costPer1kInputTokens": 0.000576,
         "costPer1kOutputTokens": 0.013
       }
     },
@@ -3843,10 +3843,11 @@
       "model": "deepseek-flash/deepseek-v4-flash",
       "matchingModel": "deepseek/deepseek-v4-flash",
       "overrides": {
+        "maxTokens": 943718,
         "speed": 4,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.000028,
-        "costPer1kOutputTokens": 0.000056,
+        "costPer1kInputTokens": 0.0000224,
+        "costPer1kOutputTokens": 0.00128,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -4479,8 +4480,8 @@
         "contextWindow": 131072,
         "maxTokens": 16384,
         "lastUpdated": "December 6, 2024",
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.00032,
+        "costPer1kInputTokens": 0.00022,
+        "costPer1kOutputTokens": 0.0005,
         "supportsAttachments": false
       }
     },
@@ -7009,8 +7010,8 @@
         "maxTokens": 943718,
         "speed": 4,
         "lastUpdated": "June 13, 2026",
-        "costPer1kInputTokens": 0.00041,
-        "costPer1kOutputTokens": 0.00399,
+        "costPer1kInputTokens": 0.00038,
+        "costPer1kOutputTokens": 0.00349,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -7401,8 +7402,8 @@
         "maxTokens": 943718,
         "isFeatured": true,
         "lastUpdated": "July 16, 2026",
-        "costPer1kInputTokens": 0.0027,
-        "costPer1kOutputTokens": 0.0135
+        "costPer1kInputTokens": 0.00072,
+        "costPer1kOutputTokens": 0.013
       }
     },
     "thinkingmachines/inkling": {
@@ -7600,7 +7601,7 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.0000171,
+        "costPer1kInputTokens": 0.0000152,
         "costPer1kOutputTokens": 0.00128,
         "supportsAttachments": false
       }
@@ -7893,11 +7894,11 @@
       "overrides": {
         "openWeights": false,
         "contextWindow": 1048576,
-        "maxTokens": 131072,
+        "maxTokens": 943718,
         "releaseDate": "August 19, 2026",
         "lastUpdated": "August 19, 2026",
-        "costPer1kInputTokens": 0.00012,
-        "costPer1kOutputTokens": 0.004,
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.0044,
         "supportsAttachments": false
       }
     },
@@ -8157,8 +8158,8 @@
       "matchingModel": "~z-ai/glm-flash-latest",
       "overrides": {
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.00002625,
-        "costPer1kOutputTokens": 0.000928749
+        "costPer1kInputTokens": 0.000032,
+        "costPer1kOutputTokens": 0.0005
       }
     },
     "anthropic/claude-fable-5.1": {
@@ -8391,8 +8392,8 @@
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "maxTokens": 943718,
         "lastUpdated": "September 10, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012
+        "costPer1kInputTokens": 0.000003,
+        "costPer1kOutputTokens": 0.0024
       }
     },
     "inclusionai/ling-3.0-flash-vl": {
@@ -8534,8 +8535,8 @@
         "maxTokens": 943718,
         "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.000015,
-        "costPer1kOutputTokens": 0.000676999
+        "costPer1kInputTokens": 0.000003,
+        "costPer1kOutputTokens": 0.0024
       }
     },
     "~deepseek/deepseek-pro-latest": {
@@ -8543,8 +8544,8 @@
       "matchingModel": "~deepseek/deepseek-pro-latest",
       "overrides": {
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.00011,
-        "costPer1kOutputTokens": 0.0027,
+        "costPer1kInputTokens": 0.000136,
+        "costPer1kOutputTokens": 0.0042,
         "supportsAttachments": false
       }
     },

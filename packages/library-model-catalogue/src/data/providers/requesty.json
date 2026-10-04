@@ -4004,7 +4004,17 @@
         "lastUpdated": "September 28, 2026",
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "gpt-6.1-sol": {
