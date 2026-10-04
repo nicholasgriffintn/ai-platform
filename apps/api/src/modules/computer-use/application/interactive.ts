@@ -17,6 +17,42 @@ import { requireProjectCapabilityAccess } from "~/modules/workspaces/application
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolExecutionContext } from "~/types/functions";
 
+import { seekOnComputer, type SeekResult } from "./seek";
+
+const SEEK_CONCLUSION_SUMMARY: Record<SeekResult["conclusion"], string> = {
+  reached: "Found on the page",
+  blocked: "Reading further will not reveal it; the page needs an interaction or sign-in",
+  exhausted: "Not found within the step budget",
+  unavailable: "No decision model is available for this account, so nothing was read",
+};
+
+function formatSeekResponse(goal: string, contextId: string, seek: SeekResult): IFunctionResponse {
+  const title =
+    typeof seek.observation.title === "string" ? seek.observation.title : "Hosted computer";
+  const text = typeof seek.observation.text === "string" ? seek.observation.text : null;
+
+  return {
+    status: "success",
+    name: "use_computer",
+    content: [
+      {
+        type: "text",
+        text: `Looked for: ${goal}. ${SEEK_CONCLUSION_SUMMARY[seek.conclusion]} after ${seek.steps.length} step(s). Active window: ${title}.`,
+      },
+      ...(text ? [{ type: "text" as const, text }] : []),
+    ],
+    data: {
+      renderer: "computer_observation",
+      contextId,
+      goal,
+      conclusion: seek.conclusion,
+      steps: seek.steps,
+      title,
+      text,
+    },
+  };
+}
+
 export async function executeComputerControl(
   args: ComputerControlInput,
   toolContext: ApiToolExecutionContext,
@@ -75,6 +111,23 @@ export async function executeComputerControl(
         }),
       },
     };
+  }
+
+  if (args.operation === "seek") {
+    const seek = await seekOnComputer({
+      env: toolContext.request.env,
+      user: toolContext.request.user,
+      context,
+      contextId,
+      runId,
+      runAttempt,
+      completionId: toolContext.completionId,
+      conversationId: toolContext.request.request?.completion_id,
+      goal: args.goal,
+      maxSteps: args.maxSteps,
+    });
+
+    return formatSeekResponse(args.goal, contextId, seek);
   }
 
   const result = await operateTeammateComputerAsAgent({
