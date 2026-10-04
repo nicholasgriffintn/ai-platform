@@ -31,7 +31,7 @@
     "typecheck": "tsc -p tsconfig.typecheck.json"
   },
   "dependencies": {
-    "@babel/standalone": "8.0.4",
+    "@babel/standalone": "8.0.6",
     "@ngriffin_uk/auth-encoding": "^0.2.4",
     "@ngriffin_uk/auth-react": "^0.7.1",
     "@ngriffin_uk/polychat-library-chat": "workspace:^",
