@@ -31,8 +31,7 @@ export const TEAMMATE_RUN_RECONCILIATION_TASK_TYPE = "teammate_run_reconciliatio
 export const TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE = "teammate_context_cleanup";
 export const CONVERSATION_TITLE_TASK_TYPE = "conversation_title";
 export const SOURCE_KNOWLEDGE_INDEX_TASK_TYPE = "source_knowledge_index";
-export { SOURCE_KNOWLEDGE_SYNC_TASK_TYPE } from "./knowledge-sync.js";
-import { SOURCE_KNOWLEDGE_SYNC_TASK_TYPE } from "./knowledge-sync.js";
+export const SOURCE_KNOWLEDGE_SYNC_TASK_TYPE = "source_knowledge_sync";
 
 export const TASK_TYPES = [
   "memory_synthesis",

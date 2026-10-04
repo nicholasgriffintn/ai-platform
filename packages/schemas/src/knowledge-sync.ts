@@ -1,7 +1,5 @@
 import z from "zod/v4";
 
-export const SOURCE_KNOWLEDGE_SYNC_TASK_TYPE = "source_knowledge_sync";
-
 export const knowledgeSyncResourceSchema = z
   .object({
     resourceId: z.string().trim().min(1).max(200),
