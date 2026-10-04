@@ -2712,6 +2712,38 @@
         "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false
       }
+    },
+    "eu.anthropic.claude-sonnet-5-5": {
+      "model": "claude-sonnet/claude-sonnet-5-5-eu",
+      "matchingModel": "eu.anthropic.claude-sonnet-5-5",
+      "overrides": {
+        "lastUpdated": "September 28, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.011,
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "us.anthropic.claude-sonnet-5-5": {
+      "model": "claude-sonnet/claude-sonnet-5-5-us",
+      "matchingModel": "us.anthropic.claude-sonnet-5-5",
+      "overrides": {
+        "lastUpdated": "September 28, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.011,
+        "supportsTemperature": false
+      }
     }
   }
 }

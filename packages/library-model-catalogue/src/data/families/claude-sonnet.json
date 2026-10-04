@@ -436,22 +436,33 @@
         "description": "Fast Claude model for everyday coding, agents, and knowledge work",
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 28, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsTemperature": false
       }
     },
     "claude-sonnet-5-5-global": {
       "defaults": {
         "name": "Claude Sonnet 5.5 (Global)",
+        "description": "Fast Claude model for everyday coding, agents, and knowledge work",
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 28, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "claude-sonnet-5-5-us": {
+      "defaults": {
+        "name": "Claude Sonnet 5.5 (US)",
         "description": "Fast Claude model for everyday coding, agents, and knowledge work",
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 28, 2026",

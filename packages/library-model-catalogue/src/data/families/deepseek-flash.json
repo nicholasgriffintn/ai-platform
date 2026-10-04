@@ -2,18 +2,9 @@
   "defaults": {
     "openWeights": true,
     "contextWindow": 1048576,
-    "modalities": {
-      "input": [
-        "text"
-      ],
-      "output": [
-        "text"
-      ]
-    },
     "knowledgeCutoffDate": "May 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": false,
     "supportsTemperature": true
   },
   "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
@@ -96,17 +87,53 @@
         }
       }
     },
+    "deepseek-v4-1-flash-fast": {
+      "defaults": {
+        "name": "DeepSeek V4.1 Flash Fast",
+        "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
+        "maxTokens": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 10, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "deepseek-v4-flash": {
       "defaults": {
         "name": "DeepSeek V4 Flash",
         "description": "Fast DeepSeek V4 lane for economical reasoning, coding, and long-context work",
         "maxTokens": 384000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 5,
         "reliability": 1,
         "releaseDate": "April 24, 2026",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 28.7,
           "codingIndex": null,
@@ -120,7 +147,16 @@
         "name": "DeepSeek V4 Flash 0731",
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
         "maxTokens": 384000,
-        "releaseDate": "July 31, 2026"
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 31, 2026",
+        "supportsAttachments": false
       }
     },
     "deepseek-v4-flash-0731-eu": {
@@ -128,7 +164,16 @@
         "name": "DeepSeek V4 Flash 0731 (EU)",
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
         "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "releaseDate": "July 31, 2026",
+        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -146,7 +191,16 @@
         "name": "DeepSeek V4 Flash 0731 (free)",
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "maxTokens": 393216,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "releaseDate": "July 31, 2026",
+        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -162,7 +216,16 @@
         "name": "DeepSeek V4 Flash 0731 TEE",
         "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
         "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "releaseDate": "July 31, 2026",
+        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
