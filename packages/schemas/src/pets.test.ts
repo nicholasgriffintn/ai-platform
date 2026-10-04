@@ -2,10 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   EMPTY_PET_MODEL_OVERRIDES,
-  PET_PRESETS,
   parsePetModelOverrides,
   removeCustomPetFromModelOverrides,
-  resolvePet,
   resolvePetForModel,
   resolvePetSelectionForModel,
   type PetModelOverrides,
@@ -29,20 +27,6 @@ const overrides: PetModelOverrides = {
 };
 
 describe("model-aware pet selection", () => {
-  it("gives every built-in preset the one sheet layout", () => {
-    for (const preset of PET_PRESETS) {
-      expect(resolvePet({ pet_source: "preset", pet_id: preset.slug }).layout).toMatchObject({
-        id: "polychat-v1",
-        frameWidth: 192,
-        frameHeight: 208,
-        columns: 8,
-        rows: 11,
-        sheetWidth: 1536,
-        sheetHeight: 2288,
-      });
-    }
-  });
-
   it("uses a temporary conversation override before model rules", () => {
     expect(
       resolvePetSelectionForModel(

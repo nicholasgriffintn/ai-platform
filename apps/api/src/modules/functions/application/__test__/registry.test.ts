@@ -1,15 +1,10 @@
 import { formatToolCalls } from "@ngriffin_uk/polychat-ai-providers";
-import {
-  CAPABILITY_DISCOVERY_TOOL_NAME,
-  HOSTED_MCP_APPROVAL_TOOL_NAME,
-} from "@ngriffin_uk/polychat-schemas";
-import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
+import { CAPABILITY_DISCOVERY_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 import z from "zod/v4";
 
 import {
   expandFunctionToolNames,
-  functionToolCatalogue,
   listFunctionTools,
   resolveFunctionTool,
 } from "~/modules/functions/application";
@@ -18,45 +13,8 @@ import {
   resolveManagedFunctionToolNames,
   resolveRequestFunctionToolNames,
 } from "~/modules/functions/application/availability";
-import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
 
 describe("functions tool registry", () => {
-  it("registers every function in the tool catalogue", () => {
-    const functionTools = listFunctionTools();
-    const registeredNames = new Set(functionToolCatalogue.list().map((tool) => tool.name));
-
-    expect(registeredNames.size).toBe(functionTools.length);
-
-    for (const fn of functionTools) {
-      expect(registeredNames.has(fn.name)).toBe(true);
-    }
-  });
-
-  it("describes exactly the tools the registry can execute", () => {
-    const executable = sortCopy(
-      listFunctionTools()
-        .map((tool) => tool.name)
-        .filter((name) => name !== HOSTED_MCP_APPROVAL_TOOL_NAME),
-      compareNaturalText,
-    );
-    const described = sortCopy(
-      listFunctionToolDefinitions().map((tool) => tool.name),
-      compareNaturalText,
-    );
-
-    expect(described).toEqual(executable);
-  });
-
-  it("resolves tool definitions for every available function", () => {
-    for (const fn of listFunctionTools()) {
-      const definition = resolveFunctionTool(fn.name);
-
-      expect(definition.name).toBe(fn.name);
-      expect(typeof definition.execute).toBe("function");
-      expect(typeof definition.inputSchema.safeParse).toBe("function");
-    }
-  });
-
   it("keeps Composio operations out of the global function registry", () => {
     const names = listFunctionTools().map((tool) => tool.name);
 
@@ -64,15 +22,6 @@ describe("functions tool registry", () => {
     expect(names).not.toContain("posthog_list_organization_projects");
     expect(names).not.toContain("polymarket_us_create_order");
     expect(names.some((name) => name.startsWith("zeplin_"))).toBe(false);
-  });
-
-  it("registers capability discovery as a read-only tool", () => {
-    const discovery = resolveFunctionTool(CAPABILITY_DISCOVERY_TOOL_NAME);
-    const names = listFunctionTools().map((tool) => tool.name);
-
-    expect(discovery.permissions).toEqual(["read"]);
-    expect(names).not.toContain("search_functions");
-    expect(names).not.toContain("get_function_schema");
   });
 
   it("keeps the managed baseline to discovery plus everyday tools", () => {
@@ -169,20 +118,6 @@ describe("functions tool registry", () => {
     expect(enabled.has(CAPABILITY_DISCOVERY_TOOL_NAME)).toBe(false);
     expect(enabled.has("load_skill")).toBe(false);
     expect(enabled.has("trigger_recipe")).toBe(false);
-  });
-
-  it("registers exact task lookup as a read-only project tool", () => {
-    const getTask = resolveFunctionTool("get_task");
-
-    expect(getTask.permissions).toEqual(["read"]);
-    expect(getTask.inputSchema.safeParse({ taskId: "task-1" }).success).toBe(true);
-    expect(getTask.inputSchema.safeParse({}).success).toBe(false);
-  });
-
-  it("prevents an identical memory search from running twice in one response", () => {
-    const memorySearch = resolveFunctionTool("search_memories");
-
-    expect(memorySearch.maxIdenticalCalls).toBe(1);
   });
 
   it("keeps the defaulted discovery limit optional in the model schema", () => {

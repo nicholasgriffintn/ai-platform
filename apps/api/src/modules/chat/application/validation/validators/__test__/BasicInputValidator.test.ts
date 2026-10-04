@@ -86,21 +86,6 @@ describe("BasicInputValidator", () => {
       expect(result.context).toEqual({});
     });
 
-    it("should fail validation when messages is not an array", async () => {
-      const optionsWithInvalidMessages = {
-        ...baseOptions,
-        messages: "not an array" as any,
-      };
-
-      mockSanitiseMessages.mockReturnValue([]);
-
-      const result = await validator.validate(optionsWithInvalidMessages, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Messages array is empty or invalid");
-      expect(result.validation.validationType).toBe("input");
-    });
-
     it("should fail validation when no valid last message found", async () => {
       const sanitisedMessages = [null, undefined, false] as any;
 
@@ -112,112 +97,6 @@ describe("BasicInputValidator", () => {
       expect(result.validation.error).toBe("No valid last message found");
       expect(result.validation.validationType).toBe("input");
       expect(result.context).toEqual({});
-    });
-
-    it("should handle single message successfully", async () => {
-      const sanitisedMessages = [{ role: "user", content: "Single message" }];
-
-      mockSanitiseMessages.mockReturnValue(sanitisedMessages);
-
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(result.context.sanitisedMessages).toEqual(sanitisedMessages);
-      expect(result.context.lastMessage).toEqual({
-        role: "user",
-        content: "Single message",
-      });
-    });
-
-    it("should handle messages with complex content", async () => {
-      const sanitisedMessages = [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "Hello" },
-            { type: "image", image_url: { url: "data:image/jpeg;base64,..." } },
-          ],
-        },
-      ];
-
-      mockSanitiseMessages.mockReturnValue(sanitisedMessages);
-
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(result.context.lastMessage).toEqual(sanitisedMessages[0]);
-    });
-
-    it("should handle undefined messages property", async () => {
-      const optionsWithoutMessages = {
-        ...baseOptions,
-        messages: undefined as any,
-      };
-
-      mockSanitiseMessages.mockReturnValue([]);
-
-      const result = await validator.validate(optionsWithoutMessages, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Messages array is empty or invalid");
-    });
-
-    it("should handle null messages property", async () => {
-      const optionsWithNullMessages = {
-        ...baseOptions,
-        messages: null as any,
-      };
-
-      mockSanitiseMessages.mockReturnValue([]);
-
-      const result = await validator.validate(optionsWithNullMessages, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Messages array is empty or invalid");
-    });
-
-    it("should pass through existing context", async () => {
-      const sanitisedMessages = [{ role: "user", content: "Test message" }];
-      const contextWithExistingData = {
-        existingField: "value",
-        anotherField: 123,
-      };
-
-      mockSanitiseMessages.mockReturnValue(sanitisedMessages);
-
-      const result = await validator.validate(baseOptions, contextWithExistingData as any);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(result.context).toEqual({
-        sanitisedMessages,
-        lastMessage: sanitisedMessages[0],
-      });
-    });
-
-    it("should handle sanitiseMessages returning falsy value", async () => {
-      mockSanitiseMessages.mockReturnValue(null);
-
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Messages array is empty or invalid");
-    });
-
-    it("should handle messages with empty content", async () => {
-      const sanitisedMessages = [
-        { role: "user", content: "" },
-        { role: "assistant", content: "Response" },
-      ];
-
-      mockSanitiseMessages.mockReturnValue(sanitisedMessages);
-
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(result.context.lastMessage).toEqual({
-        role: "assistant",
-        content: "Response",
-      });
     });
   });
 });

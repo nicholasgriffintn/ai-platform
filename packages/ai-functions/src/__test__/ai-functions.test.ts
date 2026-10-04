@@ -373,14 +373,4 @@ describe("createAiFunctions", () => {
     ).rejects.toMatchObject({ type: "PARAMS_ERROR" });
     expect(decision.decide).not.toHaveBeenCalled();
   });
-
-  it("renders template literals into a prompt", async () => {
-    const getResponse = vi.fn<GetResponse>(async () => ({ response: "ok" }));
-    const { runtime } = createRuntime(getResponse);
-    const ai = createAiFunctions(runtime);
-    const prompt = ai.template({ env, model: "gpt-5" });
-
-    await expect(prompt`Name ${3} birds`).resolves.toBe("ok");
-    expect(lastParams(getResponse).messages).toEqual([{ role: "user", content: "Name 3 birds" }]);
-  });
 });

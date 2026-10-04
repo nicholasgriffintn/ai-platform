@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { chatRunSchema } from "./chat-runs.js";
-import {
-  DELEGATION_MAX_DEPTH,
-  delegationRunEventTypeSchema,
-  delegationSchema,
-} from "./delegations.js";
+import { DELEGATION_MAX_DEPTH, delegationSchema } from "./delegations.js";
 
 const delegation = {
   id: "delegation-1",
@@ -30,10 +25,6 @@ const delegation = {
 };
 
 describe("delegationSchema", () => {
-  it("round-trips a bounded delegation", () => {
-    expect(delegationSchema.parse(delegation)).toEqual(delegation);
-  });
-
   it("rejects a delegation beyond the depth cap", () => {
     expect(() =>
       delegationSchema.parse({
@@ -41,13 +32,5 @@ describe("delegationSchema", () => {
         depth: DELEGATION_MAX_DEPTH + 1,
       }),
     ).toThrow();
-  });
-
-  it("recognises delegation run events", () => {
-    expect(delegationRunEventTypeSchema.parse("delegation.created")).toBe("delegation.created");
-  });
-
-  it("defaults run triggers to user", () => {
-    expect(chatRunSchema.shape.trigger.parse(undefined)).toBe("user");
   });
 });

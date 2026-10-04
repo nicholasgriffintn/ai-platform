@@ -7,8 +7,7 @@ import type {
   ModelVersionStatus,
   WeightFormat,
 } from "@ngriffin_uk/polychat-schemas";
-import { chunkArray } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { chunkArray, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { and, desc, eq, getTableColumns, inArray } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";

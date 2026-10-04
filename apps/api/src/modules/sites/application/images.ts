@@ -18,8 +18,8 @@ import type {
 import {
   encodeServerSentEvent,
   encodeServerSentEventDone,
+  generateId,
 } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
