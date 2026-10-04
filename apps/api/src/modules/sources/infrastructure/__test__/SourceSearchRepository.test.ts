@@ -6,7 +6,7 @@ import type { PendingEmbeddingDocument } from "~/modules/apps/application/embedd
 import {
   initialiseSourceKnowledgeDatabase,
   sourceKnowledgeRuntimeOptions,
-} from "../../../../../test/source-knowledge-database";
+} from "../../../../../test/fixtures/sources/database";
 import { projectKnowledgeTarget } from "../../application/knowledge-index";
 import { SourceSearchRepository } from "../SourceSearchRepository";
 

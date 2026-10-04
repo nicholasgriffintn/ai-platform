@@ -4,7 +4,7 @@ import { afterAll, beforeAll, expect, it } from "vitest";
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 
 import { databaseTestEnvironment } from "../../../../../test/environment";
-import { testUser } from "../../../../../test/users";
+import { signedInUser } from "../../../../../test/fixtures/user";
 import {
   createMcpConnection,
   deleteMcpConnection,
@@ -32,8 +32,8 @@ beforeAll(async () => {
   const env = databaseTestEnvironment(DB);
 
   env.JWT_SECRET = "test-mcp-credential-key-with-at-least-32-characters";
-  owner = createServiceContext({ env, user: testUser(1) });
-  foreign = createServiceContext({ env, user: testUser(2) });
+  owner = createServiceContext({ env, user: signedInUser });
+  foreign = createServiceContext({ env, user: { ...signedInUser, id: 2 } });
 });
 afterAll(() => runtime.dispose());
 

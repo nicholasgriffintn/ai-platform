@@ -2,6 +2,8 @@ import type { BrowserApproval, ChatRun } from "@ngriffin_uk/polychat-schemas";
 
 import type { IUser } from "~/types";
 
+import { signedInUser } from "./fixtures/user";
+
 export const computerTestRun: ChatRun = {
   protocolVersion: 1,
   id: "run",
@@ -24,21 +26,9 @@ export const computerTestRun: ChatRun = {
 };
 
 export const browserTestUser: IUser = {
-  id: 1,
+  ...signedInUser,
   name: "Browser tester",
   email: "browser@example.test",
-  avatar_url: null,
-  github_username: null,
-  company: null,
-  site: null,
-  location: null,
-  bio: null,
-  twitter_username: null,
-  created_at: "2026-10-02T00:00:00Z",
-  updated_at: "2026-10-02T00:00:00Z",
-  setup_at: null,
-  terms_accepted_at: null,
-  plan_id: "pro",
 };
 
 export const browserTestApproval: BrowserApproval = {

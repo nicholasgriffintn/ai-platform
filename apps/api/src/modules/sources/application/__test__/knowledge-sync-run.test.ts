@@ -8,8 +8,8 @@ import { databaseTestEnvironment } from "../../../../../test/environment";
 import {
   initialiseSourceKnowledgeDatabase,
   sourceKnowledgeRuntimeOptions,
-} from "../../../../../test/source-knowledge-database";
-import { testUser } from "../../../../../test/users";
+} from "../../../../../test/fixtures/sources/database";
+import { signedInUser } from "../../../../../test/fixtures/user";
 import { KnowledgeSyncRepository } from "../../infrastructure/KnowledgeSyncRepository";
 import { runKnowledgeSync } from "../knowledge-sync-run";
 
@@ -49,7 +49,7 @@ it("rechecks authority after the upstream read and pauses without publishing a r
     resources: [{ resourceId: "3", readParameters: {} }],
     intervalMinutes: 60,
   });
-  const user = vi.spyOn(UserRepository.prototype, "getUserById").mockResolvedValue(testUser(1));
+  const user = vi.spyOn(UserRepository.prototype, "getUserById").mockResolvedValue(signedInUser);
 
   mocks.access
     .mockResolvedValueOnce(undefined)

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, expect, it } from "vitest";
 import {
   initialiseSourceKnowledgeDatabase,
   sourceKnowledgeRuntimeOptions,
-} from "../../../../../test/source-knowledge-database";
+} from "../../../../../test/fixtures/sources/database";
 import { KnowledgeSyncRepository } from "../KnowledgeSyncRepository";
 
 let runtime: Miniflare;

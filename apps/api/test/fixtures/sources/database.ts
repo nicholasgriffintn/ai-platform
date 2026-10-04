@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import type { D1Database } from "@cloudflare/workers-types";
 
-import { applyTestMigration } from "./migrations";
+import { applyTestMigration } from "../../migrations";
 
 export const sourceKnowledgeRuntimeOptions = {
   modules: true,
@@ -33,6 +33,9 @@ export async function initialiseSourceKnowledgeDatabase(database: D1Database): P
 
   await applyTestMigration(
     database,
-    await readFile(new URL("../migrations/0058_source_knowledge.sql", import.meta.url), "utf8"),
+    await readFile(
+      new URL("../../../migrations/0058_source_knowledge.sql", import.meta.url),
+      "utf8",
+    ),
   );
 }
