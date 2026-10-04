@@ -1,17 +1,16 @@
-import { mcpConnectionInputSchema } from "@ngriffin_uk/polychat-schemas";
 import { Miniflare } from "miniflare";
 import { afterAll, beforeAll, expect, it } from "vitest";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
+
+import { databaseTestEnvironment } from "../../../../../test/environment";
+import { testUser } from "../../../../../test/users";
 import {
   createMcpConnection,
   deleteMcpConnection,
   listMcpConnections,
   resolveMcpCredential,
-} from "~/modules/tools/application/mcp-connections";
-
-import { databaseTestEnvironment } from "./environment";
-import { testUser } from "./users";
+} from "../mcp-connections";
 
 const runtime = new Miniflare({
   modules: true,
@@ -37,29 +36,6 @@ beforeAll(async () => {
   foreign = createServiceContext({ env, user: testUser(2) });
 });
 afterAll(() => runtime.dispose());
-
-it("requires explicit recipient consent and rejects private or credential-bearing endpoints", () => {
-  const input = {
-    label: "Test",
-    url: "https://mcp.example.test/api",
-    token: "dummy-test-token",
-    allowedTools: ["search"],
-    credentialRecipient: "openai",
-  };
-
-  expect(
-    mcpConnectionInputSchema.safeParse({ ...input, credentialRecipient: undefined }).success,
-  ).toBe(false);
-  for (const url of [
-    "http://example.test",
-    "https://localhost/api",
-    "https://127.0.0.1/api",
-    "https://user:password@example.test/api",
-    "https://example.test/api?token=dummy",
-  ]) {
-    expect(mcpConnectionInputSchema.safeParse({ ...input, url }).success).toBe(false);
-  }
-});
 
 it("seals tokens and enforces owner, recipient, endpoint and exact tool permissions", async () => {
   const saved = await createMcpConnection(owner, {

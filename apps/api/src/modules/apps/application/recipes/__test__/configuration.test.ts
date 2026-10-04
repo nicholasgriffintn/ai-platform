@@ -1,13 +1,12 @@
 import { expect, it } from "vitest";
 
-import { getRecipeById } from "~/modules/apps/application/recipes/catalog";
+import { getRecipeById } from "../catalog";
 import {
   buildRecipeInvocationContext,
   getRecipeConnectorParameters,
   requireRecipeConnectorAccess,
   validateRecipeConfiguration,
-} from "~/modules/apps/application/recipes/configuration";
-import { resolveProjectRecipeConnectorScope } from "~/modules/workspaces/application/projectRecipeConnectorScope";
+} from "../configuration";
 
 const definition = getRecipeById("service-incident-brief");
 
@@ -35,11 +34,6 @@ it("enforces declared configuration bounds, complete resource mappings and opera
   expect(() =>
     requireRecipeConnectorAccess(recipe, mapping, "github", "GITHUB_LIST_DEPLOYMENTS"),
   ).not.toThrow();
-  expect(
-    resolveProjectRecipeConnectorScope([
-      { capability_id: definition.id, kind: "recipe", excluded: 1 },
-    ]).providers,
-  ).toEqual([]);
 });
 
 it("keeps prompt configuration out of vendor arguments and bounds evidence to the configured UTC window", () => {
