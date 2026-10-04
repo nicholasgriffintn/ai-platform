@@ -1,7 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { redactTextStream } from "@ngriffin_uk/polychat-utility-server/redact-stream";
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 import { detectStreaming } from "@ngriffin_uk/polychat-utility-server/streaming";
 
@@ -265,7 +264,7 @@ export abstract class BaseProvider implements AIProvider {
         const isStreaming = detectStreaming(body, endpoint);
 
         if (isStreaming) {
-          return data instanceof ReadableStream ? redactTextStream(data, sensitiveValues) : data;
+          return data;
         }
 
         const safeData = sensitiveValues.reduce(

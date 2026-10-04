@@ -142,11 +142,6 @@
       "types": "./dist/redaction.d.ts",
       "import": "./dist/redaction.js"
     },
-    "./redact-stream": {
-      "polychat-source": "./src/redact-stream.ts",
-      "types": "./dist/redact-stream.d.ts",
-      "import": "./dist/redact-stream.js"
-    },
     "./request-cache": {
       "polychat-source": "./src/request-cache.ts",
       "types": "./dist/request-cache.d.ts",

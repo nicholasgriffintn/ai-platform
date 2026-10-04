@@ -1,20 +1,13 @@
-const ENTITIES: Record<string, string> = {
-  amp: "&",
-  lt: "<",
-  gt: ">",
-  quot: '"',
-  apos: "'",
-  nbsp: " ",
-};
+import { decodeXmlEntities } from "@ngriffin_uk/polychat-utility-core";
 
 export function htmlToPlainText(html: string): string {
   return html
-    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "")
+    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, " ")
     .replace(/<(?:br|hr)\b[^>]*>|<\/(?:p|div|h[1-6]|li|tr|pre|blockquote)>/gi, "\n")
     .replace(/<[^>]*>/g, " ")
-    .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (entity, name: string) => {
+    .replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos|nbsp);/gi, (entity, name: string) => {
       if (!name.startsWith("#")) {
-        return ENTITIES[name.toLowerCase()] ?? entity;
+        return name.toLowerCase() === "nbsp" ? " " : decodeXmlEntities(entity.toLowerCase());
       }
 
       const code = name.toLowerCase().startsWith("#x")

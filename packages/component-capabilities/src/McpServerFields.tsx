@@ -99,12 +99,6 @@ export function McpServerFields({
       <p className="text-xs text-muted-foreground">
         Use an HTTPS endpoint and do not put credentials in the URL.
       </p>
-      {servers.some((server) => server.credentialConnectionId) ? (
-        <p className="text-xs text-muted-foreground">
-          Saved connections belong to you. Other project members must connect their own credentials.
-          Only the saved tool list is available.
-        </p>
-      ) : null}
     </div>
   );
 }
