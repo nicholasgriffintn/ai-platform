@@ -414,8 +414,8 @@ importers:
         specifier: 1.3.3
         version: 1.3.3(hono@4.13.9)(valibot@1.5.0(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.6.5))(zod@4.6.5)
       hyparquet:
-        specifier: 1.31.1
-        version: 1.31.1
+        specifier: 1.31.2
+        version: 1.31.2
       isbot:
         specifier: 5.2.2
         version: 5.2.2
@@ -8188,8 +8188,8 @@ packages:
   hydra-synth@1.4.0:
     resolution: {integrity: sha512-suKn8wjx5Kqvj5Ev0aTByNzpT+7PTX2Qu83h9mIp7CArFn14VVNxlm6hBS0T/O4GG2E9P9SHvhyN2Ue0f1jH5A==}
 
-  hyparquet@1.31.1:
-    resolution: {integrity: sha512-tF9580Xb+41+Eb+mH0av1k7m1PWl+PSKrX66Yd7UOZ760cwEXP9/enwHRMSCeVncaubRI8XPb3v580/ujYKK5w==}
+  hyparquet@1.31.2:
+    resolution: {integrity: sha512-dpVTCGkPPIdfDExa7YZGaJpuBTmLFDKGeZ6meHUj1mz/Q3qmaQHGLLqCyPBkQjfxrYNb08YTax682qeGO+zkVA==}
 
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
@@ -15133,7 +15133,7 @@ snapshots:
       - rollup
       - supports-color
 
-  hyparquet@1.31.1: {}
+  hyparquet@1.31.2: {}
 
   iconv-lite@0.6.3:
     dependencies:
