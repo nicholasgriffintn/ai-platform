@@ -270,7 +270,7 @@ export async function executeComposioRunTool(params: {
       client: createComposioMountFileClient(params.context.env),
       sessionId: session.remoteSessionId,
       value: params.arguments,
-      conversationId: params.scope.completionId,
+      conversationId: params.scope.conversationId,
       projectId: params.scope.projectId,
     });
 
@@ -294,7 +294,7 @@ export async function executeComposioRunTool(params: {
       client: createComposioMountFileClient(params.context.env),
       sessionId: session.remoteSessionId,
       value: result.data,
-      conversationId: params.scope.completionId,
+      conversationId: params.scope.conversationId,
       projectId: params.scope.projectId,
     });
 
@@ -341,7 +341,7 @@ async function recordConnectorActivity(params: {
     await params.context.repositories.activities.createActivity({
       createdByUserId: params.userId,
       projectId: params.scope.projectId ?? null,
-      conversationId: params.scope.completionId,
+      conversationId: params.scope.conversationId,
       capabilityId: `connector:${params.provider.id}`,
       groupId: params.context.connectorRunId,
       kind: "connector_operation",

@@ -27,14 +27,17 @@ export function useProjectTaskReview(projectId: string, taskId: string) {
   });
 }
 
-export function useProjectTaskIntegrations(projectId: string) {
-  const cache = useQueryClient();
-  const reviews = useQuery({
+export function useProjectReviews(projectId: string) {
+  return useQuery({
     queryKey: ["project-pr-reviews", projectId],
     queryFn: () => listProjectReviews(projectId),
     refetchInterval: 30000,
     refetchIntervalInBackground: false,
   });
+}
+
+export function useProjectTaskIntegrations(projectId: string) {
+  const cache = useQueryClient();
   const refresh = async () => {
     await Promise.all([
       cache.invalidateQueries({ queryKey: ["project-pr-reviews", projectId] }),
@@ -75,7 +78,6 @@ export function useProjectTaskIntegrations(projectId: string) {
   });
 
   return {
-    reviews,
     preview,
     importIssue,
     savePolicy,

@@ -2,20 +2,29 @@ import { createHmac } from "node:crypto";
 
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-import { getGitHubAppConnectionForInstallation } from "~/modules/github/application/connections";
+import {
+  getGitHubAppConnectionForInstallation,
+  getGitHubAppConnectionForUserInstallation,
+} from "~/modules/github/application/connections";
 import { enqueueGithubReviewIntake } from "~/modules/project-tasks/application/review-intake";
+import {
+  executeWebhookSandboxCommand,
+  postWebhookSandboxResultComment,
+} from "~/modules/webhooks/application/github-task-execution";
 import { handleGithubWebhook } from "~/modules/webhooks/application/github-webhook";
 
 import { createIntegrationTestContext } from "./helpers/project-task-integrations";
 
 vi.mock("~/modules/github/application/connections", () => ({
   getGitHubAppConnectionForInstallation: vi.fn(),
+  getGitHubAppConnectionForUserInstallation: vi.fn(),
 }));
 vi.mock("~/modules/project-tasks/application/review-intake", () => ({
   enqueueGithubReviewIntake: vi.fn(),
 }));
-vi.mock("~/modules/webhooks/application/github-comment-intake", () => ({
-  processGithubComment: vi.fn(),
+vi.mock("~/modules/webhooks/application/github-task-execution", () => ({
+  executeWebhookSandboxCommand: vi.fn(),
+  postWebhookSandboxResultComment: vi.fn(),
 }));
 
 let fixture: Awaited<ReturnType<typeof createIntegrationTestContext>>;
@@ -117,4 +126,61 @@ it("skips drafts and rejects malformed commit targets", async () => {
   }
 
   expect(enqueueGithubReviewIntake).not.toHaveBeenCalled();
+});
+
+it("uses the linked commenter's connection for execution and acknowledgement", async () => {
+  await fixture.database
+    .prepare(
+      "INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES ('github', '101', 7)",
+    )
+    .run();
+  const connection = {
+    appId: "actor-app",
+    privateKey: "actor-key",
+    installationId: 10,
+    webhookSecret: secret,
+  };
+
+  vi.mocked(getGitHubAppConnectionForUserInstallation).mockResolvedValue(connection);
+  vi.mocked(executeWebhookSandboxCommand).mockResolvedValue({
+    success: true,
+    responseId: "actor-result",
+  });
+  vi.mocked(postWebhookSandboxResultComment).mockResolvedValue(undefined);
+  const payload = JSON.stringify({
+    action: "created",
+    installation: { id: 10 },
+    repository: { full_name: "owner/repo" },
+    issue: { number: 42 },
+    comment: { body: "/fix Preserve filters", user: { id: 101 } },
+  });
+  const signature = `sha256=${createHmac("sha256", secret).update(payload).digest("hex")}`;
+  const result = await handleGithubWebhook({
+    context: fixture.context,
+    payload,
+    eventType: "issue_comment",
+    signature,
+  });
+
+  expect(result.body).toMatchObject({ response_id: "actor-result" });
+  expect(executeWebhookSandboxCommand).toHaveBeenCalledWith(
+    expect.objectContaining({
+      user: expect.objectContaining({ id: 7 }),
+      repo: "owner/repo",
+    }),
+  );
+  expect(postWebhookSandboxResultComment).toHaveBeenCalledWith(
+    expect.objectContaining({
+      connection,
+    }),
+  );
+  vi.mocked(getGitHubAppConnectionForUserInstallation).mockRejectedValueOnce(new Error("Revoked"));
+  await handleGithubWebhook({
+    context: fixture.context,
+    payload,
+    eventType: "issue_comment",
+    signature,
+  });
+  expect(executeWebhookSandboxCommand).toHaveBeenCalledTimes(1);
+  expect(postWebhookSandboxResultComment).toHaveBeenCalledTimes(1);
 });

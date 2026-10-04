@@ -118,8 +118,17 @@ async function completedReview() {
 
 describe("exact GitHub diff capture", () => {
   it("reuses a review for repeated delivery and creates new work for a changed commit", async () => {
-    queueCapture();
-    const first = await createPullRequestReview(fixture.context, "project-1", locator);
+    vi.mocked(githubApiRequest).mockImplementation(async ({ url }) =>
+      Response.json(url.includes("/compare/") ? comparison : pr),
+    );
+    const admitted = await Promise.all([
+      createPullRequestReview(fixture.context, "project-1", locator),
+      createPullRequestReview(fixture.context, "project-1", locator),
+    ]);
+    const first = admitted[0];
+
+    expect(admitted[1].review.taskId).toBe(first.review.taskId);
+    expect(admitted.filter((result) => result.reused)).toHaveLength(1);
 
     queueCapture();
     expect(await createPullRequestReview(fixture.context, "project-1", locator)).toMatchObject({
@@ -279,6 +288,39 @@ describe("human publication and uncertain outcomes", () => {
       vi.mocked(githubApiRequest).mock.calls.filter(([request]) => request.method === "POST"),
     ).toHaveLength(1);
   });
+
+  it.each(["cancelled", "replaced completion"] as const)(
+    "refuses publication when the task is %s before the atomic claim",
+    async (change) => {
+      const { review, completion } = await completedReview();
+      const repository = fixture.context.repositories.projectTaskIntegrations;
+      const claimPublication = repository.claimPublication.bind(repository);
+
+      vi.mocked(githubApiRequest).mockResolvedValueOnce(Response.json(pr));
+      vi.spyOn(repository, "claimPublication").mockImplementationOnce(async (...args) => {
+        await fixture.context.repositories.projectTasks.updateTask(
+          review.taskId,
+          change === "cancelled"
+            ? { status: "cancelled" }
+            : { completions: [completion, { ...completion, id: "completion-2" }] },
+        );
+
+        return claimPublication(...args);
+      });
+      await expect(
+        publishPullRequestReview(fixture.context, "project-1", review.id, {
+          completionId: completion.id,
+          body: "Approved",
+        }),
+      ).rejects.toMatchObject({ statusCode: 409 });
+      expect(
+        vi.mocked(githubApiRequest).mock.calls.filter(([request]) => request.method === "POST"),
+      ).toHaveLength(0);
+      expect(await repository.getReview(review.id)).toMatchObject({
+        publicationStatus: "unpublished",
+      });
+    },
+  );
 
   it("allows an admin to disable automation after the connection is revoked", async () => {
     await fixture.context.repositories.projectTaskIntegrations.setPolicy({

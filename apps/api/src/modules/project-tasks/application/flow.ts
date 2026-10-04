@@ -1,144 +1,50 @@
 import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
-import {
-  findFlowStage,
-  readToolIds,
-  PROJECT_TASK_INTERACTION_TOOL_IDS,
-  PROJECT_TASK_TOOL_IDS,
-  type ProjectFlow,
-  type ProjectFlowStage,
-  type ProjectTask,
-  type ToolPermission,
-} from "@ngriffin_uk/polychat-schemas";
-import { toStringArray } from "@ngriffin_uk/polychat-utility-server/arrays";
-import {
-  intersectEnabledTools,
-  intersectGrantedIds,
-} from "@ngriffin_uk/polychat-utility-server/enabled-tools";
+import { findFlowStage, type ProjectFlow, type ProjectTask } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { Teammate } from "~/infrastructure/database/schema";
 import { resolveProjectSkillGrants } from "~/modules/skills/application/scope";
-import { isPlatformTeammate, requireProjectTeammate } from "~/modules/teammates/application/access";
-import { readTeammateSkillIds } from "~/modules/teammates/application/teammateResponse";
+import { requireProjectTeammate } from "~/modules/teammates/application/access";
 import {
   PROJECT_CODING_TOOL_IDS,
   resolveProjectCodingEnvironment,
 } from "~/modules/workspaces/application/projectCodingEnvironment";
 import { resolveProjectTools } from "~/modules/workspaces/application/projectTools";
 
-const DEFAULT_TASK_MODE = "teammate";
-
-export interface ResolvedTaskRuntime {
-  stage: ProjectFlowStage | null;
-  teammate: Teammate | null;
-  model: string | null;
-  mode: string;
-  enabledTools: string[];
-  skillIds: string[];
-  requireApprovalFor: ToolPermission[];
-  enforceModeToolPolicy: false;
-}
-
-export function withoutForbiddenTools(
-  tools: string[],
-  forbidden: readonly string[] | undefined,
-): string[] {
-  if (!forbidden?.length) {
-    return tools;
-  }
-
-  const denied = new Set(forbidden);
-
-  return tools.filter((tool) => !denied.has(tool));
-}
-
-function resolveRequestedSkillIds(
-  stage: ProjectFlowStage | null,
-  teammate: Teammate | null,
-): string[] {
-  return [...new Set([...(stage?.skillIds ?? []), ...toStringArray(teammate?.skill_ids)])];
-}
-
-function resolveTeammateTools(projectTools: string[], teammate: Teammate | null): string[] {
-  if (!teammate) {
-    return projectTools;
-  }
-
-  if (isPlatformTeammate(teammate)) {
-    return [...new Set([...projectTools, ...(readToolIds(teammate.enabled_tools) ?? [])])];
-  }
-
-  return intersectEnabledTools(projectTools, teammate.enabled_tools);
-}
-
-function resolveTeammateSkillIds(projectSkillIds: string[], teammate: Teammate | null): string[] {
-  if (!teammate || !isPlatformTeammate(teammate)) {
-    return projectSkillIds;
-  }
-
-  return [...projectSkillIds, ...readTeammateSkillIds(teammate.skill_ids)];
-}
+import {
+  resolveDiffReviewRuntime,
+  resolveGrantedTaskRuntime,
+  type ResolvedTaskRuntime,
+} from "./runtime-policy";
 
 export async function resolveTaskRuntime(params: {
-  context: ServiceContext;
-  task: ProjectTask;
-  flow: ProjectFlow | null;
+  readonly context: ServiceContext;
+  readonly task: Readonly<ProjectTask>;
+  readonly flow: ProjectFlow | null;
 }): Promise<ResolvedTaskRuntime> {
   const { context, task, flow } = params;
   const stage = findFlowStage(flow, task.stageId);
 
   if (task.executionProfile === "diff_review") {
-    return {
-      stage,
-      teammate: null,
-      model: task.runner?.model ?? null,
-      mode: "explore",
-      enabledTools: ["get_task", "list_tasks", "ask_user", "complete_goal"],
-      skillIds: [],
-      requireApprovalFor: ["write", "network", "sandbox", "orchestration"],
-      enforceModeToolPolicy: false,
-    };
+    return resolveDiffReviewRuntime(task, stage);
   }
 
   const capabilities = await context.repositories.workspaces.listProjectCapabilities(
     task.projectId,
   );
-  const projectTools = resolveProjectTools(capabilities).enabledTools;
-  const projectSkillIds = resolveProjectSkillGrants(capabilities);
   const teammateId = stage?.teammateId ?? task.runner?.teammateId ?? null;
   const teammate = teammateId
     ? await requireProjectTeammate(context, task.projectId, teammateId)
     : null;
-  const configuredTools = resolveTeammateTools(projectTools, teammate);
   const project = await context.repositories.workspaces.getProject(task.projectId);
-  const codingTools = resolveProjectCodingEnvironment(project) ? PROJECT_CODING_TOOL_IDS : [];
-  const grantedSkillIds = resolveTeammateSkillIds(projectSkillIds, teammate);
 
-  return {
+  return resolveGrantedTaskRuntime({
+    task,
     stage,
     teammate,
-    model: task.runner?.model ?? teammate?.model ?? null,
-    mode: stage?.mode ?? task.runner?.mode ?? teammate?.mode ?? DEFAULT_TASK_MODE,
-    enabledTools: intersectEnabledTools(
-      withoutForbiddenTools(
-        [
-          ...new Set([
-            ...configuredTools,
-            ...PROJECT_TASK_TOOL_IDS,
-            ...PROJECT_TASK_INTERACTION_TOOL_IDS,
-            ...codingTools,
-          ]),
-        ],
-        task.constraints?.forbiddenTools,
-      ),
-      task.constraints?.allowedTools,
-    ),
-    skillIds: intersectGrantedIds(grantedSkillIds, resolveRequestedSkillIds(stage, teammate)),
-    requireApprovalFor: [
-      ...new Set([...(stage?.requiresApprovalFor ?? []), ...task.requireApprovalFor]),
-    ],
-    enforceModeToolPolicy: false,
-  };
+    projectTools: resolveProjectTools(capabilities).enabledTools,
+    projectSkillIds: resolveProjectSkillGrants(capabilities),
+    codingTools: resolveProjectCodingEnvironment(project) ? PROJECT_CODING_TOOL_IDS : [],
+  });
 }
 
 export function buildStageInstructions(

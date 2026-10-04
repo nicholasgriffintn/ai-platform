@@ -95,7 +95,7 @@ const source = (input: {
   }) as any;
 
 const repository = (sources: any[] = []) => ({
-  createSource: vi.fn().mockResolvedValue({ id: "memory-new" }),
+  createSource: vi.fn().mockResolvedValue({ source: { id: "memory-new" }, created: true }),
   deleteSource: vi.fn().mockResolvedValue(undefined),
   getSource: vi.fn(),
   getSourceByVectorId: vi.fn(async (vectorId: string) =>

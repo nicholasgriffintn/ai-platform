@@ -116,7 +116,9 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
 }
 
 export class ProjectTaskRepository extends BaseRepository {
-  async createTask(params: CreateProjectTaskParams): Promise<ProjectTask> {
+  async createTask(
+    params: CreateProjectTaskParams,
+  ): Promise<{ task: ProjectTask; created: boolean }> {
     const insert = this.buildInsertQuery(
       "project_task",
       {
@@ -178,13 +180,13 @@ export class ProjectTaskRepository extends BaseRepository {
         existing.projectId === params.projectId &&
         existing.createdByUserId === params.createdByUserId
       ) {
-        return existing;
+        return { task: existing, created: false };
       }
 
       throw new AssistantError("Failed to create the task", ErrorType.DATABASE_ERROR);
     }
 
-    return formatProjectTask(row);
+    return { task: formatProjectTask(row), created: true };
   }
 
   async getTaskById(taskId: string): Promise<ProjectTask | null> {

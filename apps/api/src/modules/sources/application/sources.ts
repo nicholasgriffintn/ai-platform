@@ -231,7 +231,7 @@ export async function createSource(
     }
   }
 
-  const created = await context.repositories.sources.createSource({
+  const { source, created } = await context.repositories.sources.createSource({
     id: options.id,
     createdByUserId: userId,
     projectId: input.projectId,
@@ -251,17 +251,17 @@ export async function createSource(
     byteSize: input.file?.byteSize,
   });
 
-  if (created.project_id) {
-    await recordProjectAudit(context, created.project_id, {
+  if (created && source.project_id) {
+    await recordProjectAudit(context, source.project_id, {
       actorUserId: userId,
       action: "source.created",
       targetType: "source",
-      targetId: created.id,
-      metadata: { kind: created.kind },
+      targetId: source.id,
+      metadata: { kind: source.kind },
     });
   }
 
-  return formatSource(created);
+  return formatSource(source);
 }
 
 export async function getSource(context: ServiceContext, userId: number, sourceId: string) {

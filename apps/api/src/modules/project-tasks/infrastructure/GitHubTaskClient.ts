@@ -34,6 +34,34 @@ const changedFile = z.object({
   patch: z.string().optional(),
 });
 
+function renderReviewPatches(files: readonly z.infer<typeof changedFile>[]) {
+  return files.reduce<{
+    readonly remaining: number;
+    readonly omitted: readonly string[];
+    readonly diffs: readonly string[];
+  }>(
+    (state, file) => {
+      if (!file.patch || file.patch.length > state.remaining) {
+        return {
+          remaining: state.remaining,
+          omitted: [...state.omitted, file.filename],
+          diffs: state.diffs,
+        };
+      }
+
+      return {
+        remaining: state.remaining - file.patch.length,
+        omitted: state.omitted,
+        diffs: [
+          ...state.diffs,
+          `File: ${file.filename}\nStatus: ${file.status}\n${file.previous_filename ? `Previous path: ${file.previous_filename}\n` : ""}${file.patch}`,
+        ],
+      };
+    },
+    { remaining: 100000, omitted: [], diffs: [] },
+  );
+}
+
 export class GitHubTaskClient {
   private constructor(
     private readonly token: string,
@@ -101,7 +129,14 @@ export class GitHubTaskClient {
     const before = await this.readPullRequest(locator.pullRequestNumber);
 
     if (before.state !== "open" || before.draft) {
-      throw new AssistantError("Review an open, ready pull request", ErrorType.CONFLICT_ERROR, 409);
+      throw new AssistantError(
+        "Review an open, ready pull request",
+        ErrorType.CONFLICT_ERROR,
+        409,
+        {
+          reason: "review_target_unavailable",
+        },
+      );
     }
 
     const target: PullRequestReviewTarget = {
@@ -123,6 +158,7 @@ export class GitHubTaskClient {
         "This PR revision has been superseded",
         ErrorType.CONFLICT_ERROR,
         409,
+        { reason: "review_superseded" },
       );
     }
 
@@ -133,6 +169,7 @@ export class GitHubTaskClient {
 
     if (
       after.base.sha !== target.baseSha ||
+      after.base.repo.id !== target.repositoryId ||
       after.head.sha !== target.headSha ||
       after.state !== "open" ||
       after.draft
@@ -141,24 +178,11 @@ export class GitHubTaskClient {
         "The PR changed while its diff was captured. Try again.",
         ErrorType.CONFLICT_ERROR,
         409,
+        { reason: "review_superseded" },
       );
     }
 
-    let remaining = 100000;
-    const omitted: string[] = [];
-    const diffs: string[] = [];
-
-    for (const file of comparison.files) {
-      if (!file.patch || file.patch.length > remaining) {
-        omitted.push(file.filename);
-        continue;
-      }
-
-      remaining -= file.patch.length;
-      diffs.push(
-        `File: ${file.filename}\nStatus: ${file.status}\n${file.previous_filename ? `Previous path: ${file.previous_filename}\n` : ""}${file.patch}`,
-      );
-    }
+    const { omitted, diffs } = renderReviewPatches(comparison.files);
 
     const unavailableCount = Math.max(0, before.changed_files - comparison.files.length);
     const content = [
@@ -209,7 +233,7 @@ export class GitHubTaskClient {
       }),
     );
 
-    for (let page = 1; page <= 10; page++) {
+    for (const page of Array.from({ length: 10 }, (_, index) => index + 1)) {
       const reviews = published.parse(
         await this.get(`pulls/${target.pullRequestNumber}/reviews?per_page=100&page=${page}`),
       );

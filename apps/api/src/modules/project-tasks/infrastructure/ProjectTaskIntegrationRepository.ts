@@ -53,8 +53,8 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
     );
   }
 
-  async recordImport(input: ExternalTaskImport): Promise<void> {
-    await this.executeRun(
+  async recordImport(input: ExternalTaskImport): Promise<boolean> {
+    const result = await this.executeRun(
       "INSERT INTO project_task_external_import (id, project_id, task_id, source_id, provider, account_id, external_id, revision) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING",
       [
         input.id,
@@ -67,6 +67,8 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
         input.revision,
       ],
     );
+
+    return result.meta.changes === 1;
   }
 
   async getPolicy(projectId: string): Promise<GithubReviewPolicy | null> {
@@ -166,8 +168,8 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
 
   async recordReview(
     review: Omit<PullRequestReview, "publicationStatus" | "publishedUrl" | "createdAt">,
-  ): Promise<void> {
-    await this.executeRun(
+  ): Promise<boolean> {
+    const result = await this.executeRun(
       "INSERT INTO project_pull_request_review (id, project_id, task_id, source_id, target, policy_revision) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING",
       [
         review.id,
@@ -178,12 +180,23 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
         review.policyRevision,
       ],
     );
+
+    return result.meta.changes === 1;
   }
 
   async claimPublication(id: string, completionId: string, body: string): Promise<boolean> {
     const result = await this.executeRun(
-      "UPDATE project_pull_request_review SET publication_status = 'publishing', publication_completion_id = ?, publication_body = ? WHERE id = ? AND publication_status = 'unpublished'",
-      [completionId, body, id],
+      `UPDATE project_pull_request_review
+       SET publication_status = 'publishing', publication_completion_id = ?, publication_body = ?
+       WHERE id = ? AND publication_status = 'unpublished'
+         AND EXISTS (
+           SELECT 1 FROM project_task
+           WHERE project_task.id = project_pull_request_review.task_id
+             AND project_task.project_id = project_pull_request_review.project_id
+             AND project_task.status IN ('review', 'done')
+             AND json_extract(project_task.completions, '$[#-1].id') = ?
+         )`,
+      [completionId, body, id, completionId],
     );
 
     return result.meta.changes === 1;

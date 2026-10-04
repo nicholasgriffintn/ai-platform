@@ -327,7 +327,7 @@ export async function respondToProjectTaskToolApproval(
 export async function createProjectTask(
   context: ServiceContext,
   projectId: string,
-  input: CreateProjectTaskInput,
+  unvalidatedInput: CreateProjectTaskInput,
   options: {
     source?: ProjectTaskSource;
     id?: string;
@@ -339,7 +339,7 @@ export async function createProjectTask(
   const { project } = await requireProjectAccess(context, projectId);
   const flow = options.flowSnapshot ?? parseProjectFlow(project.flow);
 
-  input = createProjectTaskSchema.parse(input);
+  const input = createProjectTaskSchema.parse(unvalidatedInput);
 
   if (options.id) {
     const existing = await context.repositories.projectTasks.getTaskById(options.id);
@@ -364,7 +364,7 @@ export async function createProjectTask(
   await assertDependenciesExist(context, projectId, null, input.dependsOnTaskIds);
 
   const maxPosition = await context.repositories.projectTasks.getMaxPosition(projectId);
-  const task = await context.repositories.projectTasks.createTask({
+  const { task, created } = await context.repositories.projectTasks.createTask({
     id: options.id,
     executionProfile: options.executionProfile,
     projectId,
@@ -387,6 +387,10 @@ export async function createProjectTask(
     position: maxPosition + POSITION_STEP,
   });
 
+  if (!created) {
+    return { task };
+  }
+
   await context.repositories.audit.createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
@@ -405,12 +409,12 @@ export async function updateProjectTask(
   context: ServiceContext,
   projectId: string,
   taskId: string,
-  input: UpdateProjectTaskInput,
+  unvalidatedInput: UpdateProjectTaskInput,
   options: { actor?: ProjectTaskActor } = {},
 ) {
   const user = context.requireUser();
 
-  input = updateProjectTaskSchema.parse(input);
+  const input = updateProjectTaskSchema.parse(unvalidatedInput);
   const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
   const flow = task.flowSnapshot ?? parseProjectFlow(project.flow);

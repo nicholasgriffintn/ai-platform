@@ -126,7 +126,6 @@ export const projectTaskContextSchema = z.object({
 export type ProjectTaskContext = z.infer<typeof projectTaskContextSchema>;
 
 export const projectTaskConstraintsSchema = z.object({
-  allowedTools: z.array(z.string().trim().min(1)).max(50).optional(),
   forbiddenTools: z.array(z.string().trim().min(1)).max(50).default([]),
   notes: z.string().trim().max(2000).nullable().default(null),
 });

@@ -1,4 +1,5 @@
 import type { ProjectTaskCompletion, PullRequestReview } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { createOutput } from "~/modules/outputs/application";
@@ -16,6 +17,10 @@ export async function retainReviewOutput(
   const existing = await context.repositories.outputs.getOutput(outputId);
 
   if (existing) {
+    if (existing.project_id !== review.projectId || existing.group_id !== review.id) {
+      throw new AssistantError("Review output belongs to another scope", ErrorType.FORBIDDEN, 403);
+    }
+
     return outputId;
   }
 

@@ -82,7 +82,9 @@ export interface SourceCollectionRecord {
 }
 
 export class SourceRepository extends BaseRepository {
-  async createSource(input: CreateSourceRecord): Promise<SourceRecord> {
+  async createSource(
+    input: CreateSourceRecord,
+  ): Promise<{ source: SourceRecord; created: boolean }> {
     const insert = this.buildInsertQuery(
       "source",
       {
@@ -127,13 +129,13 @@ export class SourceRepository extends BaseRepository {
         existing.project_id === (input.projectId ?? null) &&
         existing.created_by_user_id === input.createdByUserId
       ) {
-        return existing;
+        return { source: existing, created: false };
       }
 
       throw new AssistantError("Failed to create source", ErrorType.DATABASE_ERROR);
     }
 
-    return source;
+    return { source, created: true };
   }
 
   async getSource(sourceId: string): Promise<SourceRecord | null> {

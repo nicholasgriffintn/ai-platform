@@ -110,9 +110,9 @@ export class GithubReviewIntakeHandler implements TaskHandler {
       if (
         error instanceof AssistantError &&
         error.statusCode === 409 &&
-        error.message.includes("superseded")
+        ["review_superseded", "review_target_unavailable"].includes(String(error.context?.reason))
       ) {
-        return { status: "skipped", message: "A newer PR revision superseded this delivery" };
+        return { status: "skipped", message: "This PR revision is no longer available for review" };
       }
 
       throw error;

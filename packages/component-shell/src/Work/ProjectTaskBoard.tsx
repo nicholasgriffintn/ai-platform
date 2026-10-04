@@ -113,6 +113,7 @@ export function ProjectTaskBoard({
         </p>
 
         <ProjectTaskIntegrationsControl
+          key={projectId}
           projectId={projectId}
           taskBasePath={`${basePath}/tasks`}
           canManage={canManageFlow}

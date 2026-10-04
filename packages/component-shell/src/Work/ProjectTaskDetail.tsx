@@ -103,7 +103,9 @@ export function ProjectTaskDetail({
       <PageShell.Content className="max-w-6xl">
         <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
         <PageShell.Header title={task.objective} />
-        <ProjectReviewPublicationControl projectId={projectId} task={task} />
+        {task.executionProfile === "diff_review" ? (
+          <ProjectReviewPublicationControl key={task.id} projectId={projectId} task={task} />
+        ) : null}
         <TaskDetail
           task={task}
           goal={goal}

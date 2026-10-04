@@ -26,9 +26,9 @@ export function useReviewSettings(
   const [tokenBudget, setTokenBudget] = useState(String(policy?.tokenBudget ?? 20000));
   const [error, setError] = useState<string | null>(null);
   const { savePolicy, startReview } = useProjectTaskIntegrations(projectId);
-  const repository =
-    repositories.repoOptions.find((option) => option.key === repositoryKey) ??
-    repositories.repoOptions[0];
+  const repository = repositoryKey
+    ? repositories.repoOptions.find((option) => option.key === repositoryKey)
+    : repositories.repoOptions[0];
   const start = async () => {
     if (startReview.isPending) {
       return;

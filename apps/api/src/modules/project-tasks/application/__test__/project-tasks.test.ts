@@ -131,7 +131,7 @@ function createContext(
           listProjectTasks: vi.fn().mockResolvedValue(overrides.boardTasks ?? [task]),
           getMaxPosition: vi.fn().mockResolvedValue(0),
           countActiveTasks: vi.fn().mockResolvedValue(overrides.activeCount ?? 0),
-          createTask: vi.fn().mockResolvedValue(task),
+          createTask: vi.fn().mockResolvedValue({ task, created: true }),
           updateTask,
         },
         audit: { createRecord: vi.fn().mockResolvedValue(undefined) },

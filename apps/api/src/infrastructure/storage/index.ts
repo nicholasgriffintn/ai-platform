@@ -185,7 +185,7 @@ export class StorageService {
       httpMetadata: { contentType: mimeType },
     });
     const context = this.requireResourceContext();
-    const source = await context.repositories.sources.createSource({
+    const { source } = await context.repositories.sources.createSource({
       createdByUserId,
       projectId,
       conversationId,

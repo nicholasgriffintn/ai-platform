@@ -24,21 +24,22 @@ const linearIssueSchema = z.object({
   id: z.string().min(1),
   identifier: z.string().min(1),
   title: z.string().max(1000),
-  description: z.string().max(100000).nullable(),
+  description: z.string().max(100000).nullish(),
   url: z.url(),
   updatedAt: z.string(),
 });
-const linearResultSchema = z.object({ data: z.object({ issue: linearIssueSchema }) });
+const linearResultSchema = z.object({ data: z.object({ issue: linearIssueSchema.nullable() }) });
 
-export async function readProjectIssue(
+interface IssueCapture {
+  readonly fields: Omit<IssueSnapshot, "revision" | "capturedAt">;
+  readonly upstreamRevision: string;
+}
+
+async function captureIssue(
   context: ServiceContext,
   projectId: string,
   locator: IssueLocator,
-): Promise<IssueSnapshot> {
-  await requireProjectAccess(context, projectId);
-  let fields: Omit<IssueSnapshot, "revision" | "capturedAt">;
-  let upstreamRevision: string;
-
+): Promise<IssueCapture> {
   if (locator.provider === "github") {
     const client = await GitHubTaskClient.forUser(
       context,
@@ -47,32 +48,50 @@ export async function readProjectIssue(
     );
     const issue = await client.readIssue(locator.issueNumber);
 
-    fields = {
-      provider: "github",
-      accountId: client.connectionId,
-      externalId: String(issue.id),
-      identifier: `${locator.repository}#${issue.number}`,
-      title: issue.title,
-      description: issue.body ?? "",
-      url: issue.html_url,
+    return {
+      fields: {
+        provider: "github",
+        accountId: client.connectionId,
+        externalId: String(issue.id),
+        identifier: `${locator.repository}#${issue.number}`,
+        title: issue.title,
+        description: issue.body ?? "",
+        url: issue.html_url,
+      },
+      upstreamRevision: issue.updated_at,
     };
-    upstreamRevision = issue.updated_at;
-  } else {
-    try {
-      const result = await executeRecipeConnectorOperation({
-        context,
-        userId: context.requireUser().id,
-        request: {
-          provider: "linear",
-          operation: "LINEAR_GET_LINEAR_ISSUE",
-          connectedAccountId: locator.connectedAccountId,
-          params: { issue_id: locator.issueId },
-        },
-        scope: { completionId: context.connectorRunId, projectId },
-      });
-      const issue = linearResultSchema.parse(result).data.issue;
+  }
 
-      fields = {
+  try {
+    const result = await executeRecipeConnectorOperation({
+      context,
+      userId: context.requireUser().id,
+      request: {
+        provider: "linear",
+        operation: "LINEAR_GET_LINEAR_ISSUE",
+        connectedAccountId: locator.connectedAccountId,
+        params: { issue_id: locator.issueId },
+      },
+      scope: { completionId: context.connectorRunId, conversationId: null, projectId },
+    });
+    const parsed = linearResultSchema.safeParse(result);
+
+    if (!parsed.success) {
+      throw new AssistantError(
+        "Linear returned an invalid issue",
+        ErrorType.EXTERNAL_API_ERROR,
+        502,
+      );
+    }
+
+    const issue = parsed.data.data.issue;
+
+    if (!issue) {
+      throw new AssistantError("Linear issue is unavailable", ErrorType.NOT_FOUND, 404);
+    }
+
+    return {
+      fields: {
         provider: "linear",
         accountId: locator.connectedAccountId,
         externalId: issue.id,
@@ -80,12 +99,21 @@ export async function readProjectIssue(
         title: issue.title,
         description: issue.description ?? "",
         url: issue.url,
-      };
-      upstreamRevision = issue.updatedAt;
-    } finally {
-      await closeComposioConnectorRun(context);
-    }
+      },
+      upstreamRevision: issue.updatedAt,
+    };
+  } finally {
+    await closeComposioConnectorRun(context);
   }
+}
+
+export async function readProjectIssue(
+  context: ServiceContext,
+  projectId: string,
+  locator: IssueLocator,
+): Promise<IssueSnapshot> {
+  await requireProjectAccess(context, projectId);
+  const { fields, upstreamRevision } = await captureIssue(context, projectId, locator);
 
   return issueSnapshotSchema.parse({
     ...fields,
@@ -182,7 +210,7 @@ export async function importProjectIssue(
 
   const savedIssue = issueSnapshotSchema.parse(parseJsonRecord(captured.metadata).externalIssue);
 
-  await context.repositories.projectTaskIntegrations.recordImport({
+  const created = await context.repositories.projectTaskIntegrations.recordImport({
     id: identity,
     project_id: projectId,
     task_id: task.id,
@@ -193,5 +221,5 @@ export async function importProjectIssue(
     revision: savedIssue.revision,
   });
 
-  return { task, sourceId: capturedSourceId, reused: capturedSourceId !== sourceId };
+  return { task, sourceId: capturedSourceId, reused: !created || capturedSourceId !== sourceId };
 }

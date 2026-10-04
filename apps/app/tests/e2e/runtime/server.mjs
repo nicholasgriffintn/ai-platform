@@ -1,11 +1,12 @@
 import { createHash, generateKeyPairSync } from "node:crypto";
-import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { Miniflare } from "miniflare";
 
+import { applyMigrations } from "../support/migrations.mjs";
 import { buildWorkerBundle } from "../support/worker-bundle.mjs";
 import { resolveMetaModelTool } from "./meta-model.mjs";
 import { resolveProjectTaskModelResponse } from "./project-task-model.mjs";
@@ -1890,25 +1891,6 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
   };
 }
 
-async function applyMigrations(database) {
-  const migrationsDirectory = path.join(repositoryRoot, "apps/api/migrations");
-  const migrations = readdirSync(migrationsDirectory)
-    .filter((name) => /^\d{4}_.*\.sql$/.test(name) && !name.startsWith("9"))
-    .sort();
-
-  for (const migration of migrations) {
-    const statements = readFileSync(path.join(migrationsDirectory, migration), "utf8")
-      .replaceAll("--> statement-breakpoint", "")
-      .split(";")
-      .map((statement) => statement.trim())
-      .filter(Boolean);
-
-    for (const statement of statements) {
-      await database.prepare(statement).run();
-    }
-  }
-}
-
 async function createPersonaSeedMaterial() {
   const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 3072 });
   const publicJwk = JSON.stringify(publicKey.export({ format: "jwk" }));
@@ -2100,7 +2082,7 @@ async function start() {
   await runtime.ready;
   const database = await runtime.getD1Database("DB", "api");
 
-  await applyMigrations(database);
+  await applyMigrations(database, path.join(repositoryRoot, "apps/api/migrations"));
   await seedPersonas(database, seedMaterial);
   console.log(`Polychat E2E API ready at ${apiBaseUrl}`);
 }

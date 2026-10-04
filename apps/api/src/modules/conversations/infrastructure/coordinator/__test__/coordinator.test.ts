@@ -6,7 +6,8 @@ const OWNER_TOKEN = "owner-token";
 const INITIAL_EXPIRY = "2026-09-05T01:05:00.000Z";
 const RENEWED_EXPIRY = "2026-09-05T01:06:00.000Z";
 
-vi.mock("@ngriffin_uk/polychat-utility-core", () => ({
+vi.mock("@ngriffin_uk/polychat-utility-core", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-utility-core")>()),
   generateId: () => OWNER_TOKEN,
 }));
 

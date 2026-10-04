@@ -5,7 +5,6 @@ import z from "zod/v4";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { extractSandboxCommand } from "~/infrastructure/github";
-import type { GitHubAppConnection } from "~/modules/github/application/connection-parser";
 import { getGitHubAppConnectionForUserInstallation } from "~/modules/github/application/connections";
 import { startPullRequestReview } from "~/modules/project-tasks/application/pull-request-review";
 
@@ -24,11 +23,7 @@ const eventSchema = z.object({
   comment: z.object({ body: z.string(), user: z.object({ id: z.number().int().positive() }) }),
 });
 
-export async function processGithubComment(
-  context: ServiceContext,
-  raw: unknown,
-  connection: GitHubAppConnection,
-) {
+export async function processGithubComment(context: ServiceContext, raw: unknown) {
   const event = eventSchema.safeParse(raw);
 
   if (!event.success || event.data.action !== "created") {
@@ -48,65 +43,30 @@ export async function processGithubComment(
     return { success: true };
   }
 
-  try {
-    await getGitHubAppConnectionForUserInstallation(
-      context,
-      user.id,
-      data.installation.id,
-      data.repository.full_name,
-    );
-  } catch {
+  const connection = await getGitHubAppConnectionForUserInstallation(
+    context,
+    user.id,
+    data.installation.id,
+    data.repository.full_name,
+  ).catch(() => null);
+
+  if (!connection) {
     return { success: true };
   }
 
   const actorContext = createServiceContext({ env: context.env, user });
-  let result: SandboxExecutionResult;
-
-  if (parsed.command === "review" && data.issue.pull_request) {
-    const policies = (
-      await actorContext.repositories.projectTaskIntegrations.listPolicies(
-        data.installation.id,
-        data.repository.full_name.toLowerCase(),
-      )
-    ).filter((policy) => policy.ownerUserId === user.id);
-
-    if (policies.length !== 1) {
-      result = {
-        success: false,
-        error:
-          "Select the project in Work → Tasks → PR reviews to review this pull request. A comment command needs exactly one enabled review policy owned by your account for this repository.",
-      };
-    } else {
-      try {
-        const { review } = await startPullRequestReview(actorContext, policies[0].projectId, {
+  const result =
+    parsed.command === "review" && data.issue.pull_request
+      ? await startCommentReview(actorContext, data, user.id)
+      : await executeWebhookSandboxCommand({
+          command: parsed.command,
+          repo: data.repository.full_name,
+          task: parsed.task,
           installationId: data.installation.id,
-          repository: data.repository.full_name.toLowerCase(),
-          pullRequestNumber: data.issue.number,
+          env: context.env,
+          context: actorContext,
+          user,
         });
-
-        result = {
-          success: true,
-          summary: `Commit-bound review started in Work task ${review.taskId}. Approve publication from Work when the review finishes.`,
-          responseId: review.taskId,
-        };
-      } catch (error) {
-        result = {
-          success: false,
-          error: getErrorMessage(error, "Unable to start this PR review"),
-        };
-      }
-    }
-  } else {
-    result = await executeWebhookSandboxCommand({
-      command: parsed.command,
-      repo: data.repository.full_name,
-      task: parsed.task,
-      installationId: data.installation.id,
-      env: context.env,
-      context: actorContext,
-      user,
-    });
-  }
 
   try {
     await postWebhookSandboxResultComment({
@@ -128,4 +88,44 @@ export async function processGithubComment(
   }
 
   return { success: true, response_id: result.responseId };
+}
+
+async function startCommentReview(
+  context: ServiceContext,
+  data: z.infer<typeof eventSchema>,
+  userId: number,
+): Promise<SandboxExecutionResult> {
+  const policies = (
+    await context.repositories.projectTaskIntegrations.listPolicies(
+      data.installation.id,
+      data.repository.full_name.toLowerCase(),
+    )
+  ).filter((policy) => policy.ownerUserId === userId);
+
+  if (policies.length !== 1) {
+    return {
+      success: false,
+      error:
+        "Select the project in Work → Tasks → PR reviews to review this pull request. A comment command needs exactly one enabled review policy owned by your account for this repository.",
+    };
+  }
+
+  try {
+    const { review } = await startPullRequestReview(context, policies[0].projectId, {
+      installationId: data.installation.id,
+      repository: data.repository.full_name.toLowerCase(),
+      pullRequestNumber: data.issue.number,
+    });
+
+    return {
+      success: true,
+      summary: `Commit-bound review started in Work task ${review.taskId}. Approve publication from Work when the review finishes.`,
+      responseId: review.taskId,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: getErrorMessage(error, "Unable to start this PR review"),
+    };
+  }
 }

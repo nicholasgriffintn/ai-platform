@@ -23,6 +23,16 @@ const snapshotSchema = z.object({
           default: z.union([z.string(), z.number(), z.boolean()]).optional(),
         }),
       ),
+      foreignKeys: z.record(
+        z.string(),
+        z.object({
+          tableTo: z.string(),
+          columnsFrom: z.array(z.string()),
+          columnsTo: z.array(z.string()),
+          onDelete: z.string(),
+          onUpdate: z.string(),
+        }),
+      ),
     }),
   ),
 });
@@ -60,6 +70,7 @@ export async function createIntegrationTestContext() {
   );
   const tables = [
     "user",
+    "oauth_account",
     "workspace",
     "workspace_member",
     "project",
@@ -71,6 +82,8 @@ export async function createIntegrationTestContext() {
     "provider_connection",
     "workspace_audit_record",
     "output",
+    "composio_connector_session",
+    "activity_record",
   ];
 
   for (const name of tables) {
@@ -85,7 +98,16 @@ export async function createIntegrationTestContext() {
         `"${column.name}" ${column.type}${column.primaryKey ? " PRIMARY KEY" : ""}${column.notNull ? " NOT NULL" : ""}${column.default === undefined ? "" : ` DEFAULT ${column.default}`}`,
     );
 
-    await database.prepare(`CREATE TABLE "${name}" (${columns.join(", ")})`).run();
+    const foreignKeys = Object.values(table.foreignKeys)
+      .filter((key) => tables.includes(key.tableTo))
+      .map(
+        (key) =>
+          `FOREIGN KEY (${key.columnsFrom.map((column) => `"${column}"`).join(", ")}) REFERENCES "${key.tableTo}" (${key.columnsTo.map((column) => `"${column}"`).join(", ")}) ON DELETE ${key.onDelete} ON UPDATE ${key.onUpdate}`,
+      );
+
+    await database
+      .prepare(`CREATE TABLE "${name}" (${[...columns, ...foreignKeys].join(", ")})`)
+      .run();
   }
 
   const migration = await readFile(

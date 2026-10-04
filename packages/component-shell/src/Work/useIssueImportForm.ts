@@ -26,9 +26,9 @@ export function useIssueImportForm(projectId: string, onImported: (taskId: strin
     accounts.data?.accounts.filter(
       (account) => account.status === "ACTIVE" && !account.isDisabled,
     ) ?? [];
-  const repository =
-    repositories.repoOptions.find((option) => option.key === repositoryKey) ??
-    repositories.repoOptions[0];
+  const repository = repositoryKey
+    ? repositories.repoOptions.find((option) => option.key === repositoryKey)
+    : repositories.repoOptions[0];
   const selectedAccountId =
     accountId ||
     activeAccounts.find((account) => account.isSelected)?.id ||

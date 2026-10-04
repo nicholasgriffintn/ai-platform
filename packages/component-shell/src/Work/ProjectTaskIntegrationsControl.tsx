@@ -1,5 +1,5 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
-import { useProjectTaskIntegrations } from "@ngriffin_uk/polychat-library-react";
+import { useProjectReviews } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -16,7 +16,7 @@ export function ProjectTaskIntegrationsControl({
   canManage: boolean;
 }) {
   const [dialog, setDialog] = useState<"issue" | "review" | null>(null);
-  const { reviews } = useProjectTaskIntegrations(projectId);
+  const reviews = useProjectReviews(projectId);
   const navigate = useNavigate();
 
   return (
@@ -32,7 +32,12 @@ export function ProjectTaskIntegrationsControl({
           <Button size="sm" variant="outline" onClick={() => setDialog("issue")}>
             Import issue
           </Button>
-          <Button size="sm" variant="outline" onClick={() => setDialog("review")}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!reviews.data}
+            onClick={() => setDialog("review")}
+          >
             PR reviews
           </Button>
         </div>
@@ -53,7 +58,7 @@ export function ProjectTaskIntegrationsControl({
               ? "Published"
               : review.publicationStatus === "unknown" || review.publicationStatus === "publishing"
                 ? "Check publication in GitHub"
-                : "Awaiting publication"}
+                : "Not published"}
           </span>
         </div>
       ))}

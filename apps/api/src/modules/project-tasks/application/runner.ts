@@ -653,13 +653,13 @@ export async function runProjectTaskDispatch(params: {
       mode: runtime.mode,
       stream: false,
       store: true,
-      enabled_tools: runtime.enabledTools,
+      enabled_tools: [...runtime.enabledTools],
       ...(claimed.executionProfile === "diff_review"
         ? { tool_selection_mode: "explicit" as const }
         : {}),
       approved_tools: params.approvedTools,
       options: params.interaction ? { toolInteraction: params.interaction } : undefined,
-      require_approval_for: runtime.requireApprovalFor,
+      require_approval_for: [...runtime.requireApprovalFor],
       enforce_mode_tool_policy: runtime.enforceModeToolPolicy,
       durable_execution: {
         kind: "project_task" as const,
@@ -718,8 +718,8 @@ export async function runProjectTaskDispatch(params: {
           executionPolicy: {
             model: runtime.model,
             mode: runtime.mode,
-            skillIds: runtime.skillIds,
-            enabledTools: runtime.enabledTools,
+            skillIds: [...runtime.skillIds],
+            enabledTools: [...runtime.enabledTools],
           },
           ...(resumeConfiguration ? { resumeConfiguration } : {}),
           ...(remainingSteps !== undefined ? { maxStepsOverride: remainingSteps } : {}),
@@ -904,13 +904,20 @@ export async function runProjectTaskDispatch(params: {
       if (review) {
         const outputId = await retainReviewOutput(context, review, completion);
 
-        completion.outputIds = [...new Set([...(completion.outputIds ?? []), outputId])];
         await updateOwnedProjectTask({
           context,
           taskId,
           dispatchTaskId: params.dispatchTaskId,
           executionLease: params.executionLease,
-          updates: { completions: [...claimed.completions, completion] },
+          updates: {
+            completions: [
+              ...claimed.completions,
+              {
+                ...completion,
+                outputIds: [...new Set([...(completion.outputIds ?? []), outputId])],
+              },
+            ],
+          },
         });
       }
     } catch (error) {

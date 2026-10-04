@@ -1,8 +1,14 @@
+import {
+  createComposioToolSession,
+  deleteComposioToolSession,
+  executeComposioSessionTool,
+  listComposioConnectedAccounts,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import { createProjectTaskSchema, importProjectIssueSchema } from "@ngriffin_uk/polychat-schemas";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
-import { executeRecipeConnectorOperation } from "~/modules/apps/application/connectors/operations";
+import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import { getRecipeConnectorProviderConfig } from "~/modules/apps/application/connectors/connector-adapters";
 import { createProjectTask, updateProjectTask } from "~/modules/project-tasks/application";
 import { resolveTaskRuntime } from "~/modules/project-tasks/application/flow";
 import {
@@ -17,12 +23,12 @@ import { createIntegrationTestContext } from "./helpers/project-task-integration
 vi.mock("~/modules/project-tasks/application/attention", () => ({
   reconcileTaskNotifications: vi.fn(),
 }));
-vi.mock("~/modules/apps/application/connectors/operations", () => ({
-  executeRecipeConnectorOperation: vi.fn(),
-}));
-vi.mock("~/modules/apps/application/connectors/composio-run", () => ({
-  closeComposioConnectorRun: vi.fn(),
-  scheduleComposioConnectorRunCleanup: vi.fn(),
+vi.mock("@ngriffin_uk/polychat-ai-integrations", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-integrations")>()),
+  createComposioToolSession: vi.fn(),
+  deleteComposioToolSession: vi.fn(),
+  executeComposioSessionTool: vi.fn(),
+  listComposioConnectedAccounts: vi.fn(),
 }));
 
 let fixture: Awaited<ReturnType<typeof createIntegrationTestContext>>;
@@ -39,10 +45,31 @@ const upstream = {
 beforeEach(async () => {
   vi.clearAllMocks();
   fixture = await createIntegrationTestContext();
-  vi.mocked(executeRecipeConnectorOperation).mockResolvedValue({
+  const provider = getRecipeConnectorProviderConfig("linear");
+  const authConfigId = provider?.operations.find(
+    (operation) => operation.id === "LINEAR_GET_LINEAR_ISSUE",
+  )?.authConfigIds?.[0];
+
+  if (!authConfigId) {
+    throw new Error("Linear issue reading is not configured");
+  }
+
+  vi.mocked(listComposioConnectedAccounts).mockResolvedValue([
+    {
+      id: "account-1",
+      userId: "test-user-7",
+      toolkitSlug: "linear",
+      authConfigId,
+      status: "ACTIVE",
+      isDisabled: false,
+      createdAt: "2026-10-04T00:00:00Z",
+      updatedAt: "2026-10-04T00:00:00Z",
+    },
+  ]);
+  vi.mocked(createComposioToolSession).mockResolvedValue("remote-session-1");
+  vi.mocked(deleteComposioToolSession).mockResolvedValue(undefined);
+  vi.mocked(executeComposioSessionTool).mockResolvedValue({
     data: { issue: upstream },
-    runId: "read-1",
-    sessionHandle: "session-1",
   });
 });
 afterEach(async () => {
@@ -87,18 +114,38 @@ describe("issue intake through the existing task and source services", () => {
         .bind(imported.sourceId)
         .run(),
     ).rejects.toThrow("immutable");
-    expect(closeComposioConnectorRun).toHaveBeenCalled();
+    expect(executeComposioSessionTool).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 7,
+        connectedAccountId: locator.connectedAccountId,
+        toolSlug: "LINEAR_GET_LINEAR_ISSUE",
+        arguments: { issue_id: locator.issueId },
+      }),
+    );
+    expect(deleteComposioToolSession).toHaveBeenCalled();
+    expect(
+      (
+        await fixture.database
+          .prepare("SELECT project_id, conversation_id FROM activity_record")
+          .all()
+      ).results,
+    ).toEqual([
+      { project_id: "project-1", conversation_id: null },
+      { project_id: "project-1", conversation_id: null },
+      { project_id: "project-1", conversation_id: null },
+    ]);
+    expect(
+      (await fixture.database.prepare("SELECT id FROM composio_connector_session").all()).results,
+    ).toEqual([]);
   });
 
   it("rejects changed issue content before creating a task", async () => {
     const preview = await previewProjectIssue(fixture.context, "project-1", locator);
 
-    vi.mocked(executeRecipeConnectorOperation).mockResolvedValue({
+    vi.mocked(executeComposioSessionTool).mockResolvedValue({
       data: {
         issue: { ...upstream, description: "A new requirement", updatedAt: "2026-10-04T01:00:00Z" },
       },
-      runId: "read-2",
-      sessionHandle: "session-2",
     });
     await expect(
       importProjectIssue(
@@ -121,17 +168,16 @@ describe("issue intake through the existing task and source services", () => {
     await expect(previewProjectIssue(fixture.context, "project-1", locator)).rejects.toMatchObject({
       statusCode: 404,
     });
-    expect(executeRecipeConnectorOperation).not.toHaveBeenCalled();
+    expect(listComposioConnectedAccounts).not.toHaveBeenCalled();
+    expect(executeComposioSessionTool).not.toHaveBeenCalled();
   });
 
   it("cleans up a connector session when the provider response is invalid", async () => {
-    vi.mocked(executeRecipeConnectorOperation).mockResolvedValue({
+    vi.mocked(executeComposioSessionTool).mockResolvedValue({
       data: { issue: null },
-      runId: "read-1",
-      sessionHandle: "session-1",
     });
     await expect(previewProjectIssue(fixture.context, "project-1", locator)).rejects.toThrow();
-    expect(closeComposioConnectorRun).toHaveBeenCalled();
+    expect(deleteComposioToolSession).toHaveBeenCalled();
   });
 
   it("handles simultaneous imports without creating duplicate tasks", async () => {
@@ -141,26 +187,50 @@ describe("issue intake through the existing task and source services", () => {
       expectedRevision: preview.issue.revision,
       task: { objective: "Fix filters" },
     });
-    const results = await Promise.all([
-      importProjectIssue(fixture.context, "project-1", input),
-      importProjectIssue(fixture.context, "project-1", input),
-    ]);
+    const results = await Promise.all(
+      Array.from({ length: 2 }, () =>
+        importProjectIssue(
+          createServiceContext({
+            env: fixture.context.env,
+            user: fixture.context.requireUser(),
+          }),
+          "project-1",
+          input,
+        ),
+      ),
+    );
 
     expect(results[0].task.id).toBe(results[1].task.id);
     expect(
       await fixture.context.repositories.projectTasks.listProjectTasks("project-1"),
     ).toHaveLength(1);
+    expect(results.filter((result) => result.reused)).toHaveLength(1);
+    const audit = await fixture.database
+      .prepare(
+        "SELECT action, COUNT(*) AS total FROM workspace_audit_record WHERE action IN ('project.task.created', 'source.created') GROUP BY action ORDER BY action",
+      )
+      .all();
+
+    expect(audit.results).toEqual([
+      { action: "project.task.created", total: 1 },
+      { action: "source.created", total: 1 },
+    ]);
   });
 });
 
 describe("review execution isolation", () => {
-  it("keeps a review read-only even when task constraints request other tools", async () => {
+  it("keeps a review read-only even when its runner requests a writing teammate", async () => {
     const { task } = await createProjectTask(
       fixture.context,
       "project-1",
       createProjectTaskSchema.parse({
         objective: "Review the captured diff",
-        constraints: { allowedTools: ["execute_code", "use_recipe_connector"] },
+        runner: {
+          kind: "conversation",
+          teammateId: "writing-teammate",
+          mode: "build",
+          model: null,
+        },
       }),
       { executionProfile: "diff_review" },
     );

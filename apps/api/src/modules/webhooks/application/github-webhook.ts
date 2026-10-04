@@ -46,14 +46,12 @@ export async function handleGithubWebhook(params: {
     return { status: 400, body: { error: "Invalid payload or installation context" } };
   }
 
-  let connection;
+  const connection = await getGitHubAppConnectionForInstallation(
+    params.context,
+    parsed.data.installation.id,
+  ).catch(() => null);
 
-  try {
-    connection = await getGitHubAppConnectionForInstallation(
-      params.context,
-      parsed.data.installation.id,
-    );
-  } catch {
+  if (!connection) {
     return { status: 401, body: { error: "GitHub App connection not found" } };
   }
 
@@ -66,7 +64,7 @@ export async function handleGithubWebhook(params: {
   }
 
   if (params.eventType === "issue_comment") {
-    return { status: 200, body: await processGithubComment(params.context, raw, connection) };
+    return { status: 200, body: await processGithubComment(params.context, raw) };
   }
 
   if (params.eventType === "pull_request") {

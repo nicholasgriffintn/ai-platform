@@ -263,6 +263,7 @@ export const use_recipe_connector: ApiToolDefinition = {
       const params = mergeRecipeConfigurationIntoParams(args.params, savedConfiguration);
       const scope = {
         completionId: request.request?.completion_id ?? context.completionId,
+        conversationId: request.request?.completion_id ?? context.completionId,
         recipeId: activeRecipe?.id,
         installationId: activeRecipe?.installationId,
         projectId,
