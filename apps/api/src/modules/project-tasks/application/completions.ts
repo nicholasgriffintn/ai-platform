@@ -5,7 +5,7 @@ import type {
   ProjectTaskCompletion,
   ProjectTaskStatus,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 export function createProjectTaskCompletion(params: {
   stage: ProjectFlowStage | null;

@@ -1,3 +1,17 @@
+export function normaliseSameOriginRoute(route: string, origin: string): string | null {
+  try {
+    const parsed = new URL(route.trim() || "/", origin);
+
+    if (parsed.origin !== origin) {
+      return null;
+    }
+
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return null;
+  }
+}
+
 export function readUrlPath(value: string): string {
   const queryIndex = value.indexOf("?");
   const fragmentIndex = value.indexOf("#");

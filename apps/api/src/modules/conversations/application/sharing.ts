@@ -1,6 +1,6 @@
 import { authorise } from "@ngriffin_uk/polychat-library-policy";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { hasSnapshotPart } from "~/modules/chat/application/messages/parts";

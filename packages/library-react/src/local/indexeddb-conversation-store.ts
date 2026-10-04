@@ -13,6 +13,7 @@ import type {
 } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { filterConversationsByListOptions } from "@ngriffin_uk/polychat-library-chat/conversations";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import type { IDBPDatabase } from "idb";
 
 import { getDatabase, isIndexedDBSupported, storeName } from "./useIndexedDB.js";
@@ -137,7 +138,7 @@ class LocalChatService {
     };
 
     if (!chatWithFlag.id) {
-      chatWithFlag.id = crypto.randomUUID();
+      chatWithFlag.id = generateId();
     }
 
     if (!this.isDBSupported) {

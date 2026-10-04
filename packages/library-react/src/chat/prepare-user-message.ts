@@ -5,6 +5,7 @@ import type {
   ConversationModeMetadata,
   ToolInteractionResolution,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 export function prepareUserMessage(
   input: string,
@@ -25,7 +26,7 @@ export function prepareUserMessage(
     return normalizeMessage({
       role: "user",
       content: input.trim(),
-      id: crypto.randomUUID(),
+      id: generateId(),
       created: Date.now(),
       model,
       data,
@@ -84,7 +85,7 @@ export function prepareUserMessage(
   return normalizeMessage({
     role: "user",
     content: contentItems,
-    id: crypto.randomUUID(),
+    id: generateId(),
     created: Date.now(),
     model,
     data,

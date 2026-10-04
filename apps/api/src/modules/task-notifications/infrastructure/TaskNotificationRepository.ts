@@ -9,13 +9,13 @@ import {
   type TaskNotificationPreferences,
   type TaskNotificationRegistration,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import {
   decryptJsonPayload,
   encryptJsonPayload,
   isEncryptedJsonPayload,
   sha256Hex,
 } from "@ngriffin_uk/polychat-utility-server/crypto";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";

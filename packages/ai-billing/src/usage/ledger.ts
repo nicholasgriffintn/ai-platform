@@ -6,8 +6,8 @@ import type {
   UsageSource,
   UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { priceUsageDraft, type PricedUsageDraft } from "../usage-pricing.js";
 import { applyActorCreditDeltas, creditActorUserId, type CreditActor } from "./credit-actor.js";

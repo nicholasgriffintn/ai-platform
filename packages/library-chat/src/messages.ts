@@ -1,4 +1,4 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message, MessageContent } from "./conversation-types.js";
 import { normaliseMessageParts } from "./message-parts.js";
@@ -211,7 +211,7 @@ export function normalizeMessage(message: NormalizableMessage): Message {
     ...message,
     role: message.role,
     content: content ?? "",
-    id: message.id || crypto.randomUUID(),
+    id: message.id || generateId(),
     created: message.created || message.timestamp || now,
     timestamp: message.timestamp || message.created || now,
     model: message.model || "",

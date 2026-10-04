@@ -4,6 +4,7 @@ import {
   type MachineRunRequest,
   type MachineRunSnapshot,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { Agent } from "agents";
 
 import type { IEnv } from "~/types";
@@ -52,7 +53,7 @@ export class MachineRunCoordinator extends Agent<IEnv> {
 
         const [key, run] = entry;
 
-        run.token = crypto.randomUUID();
+        run.token = generateId();
         run.snapshot.state = "running";
         run.updatedAt = now;
         await this.ctx.storage.put(key, run);

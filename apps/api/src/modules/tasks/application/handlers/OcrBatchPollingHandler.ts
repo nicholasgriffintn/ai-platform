@@ -11,9 +11,9 @@ import {
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { pollingSchedule } from "@ngriffin_uk/polychat-library-tasks";
 import { OCR_BATCH_POLLING_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { ResponseBodyTooLargeError } from "@ngriffin_uk/polychat-utility-server/http";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";

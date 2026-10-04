@@ -1,8 +1,8 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { pendingApproval, pendingQuestion } from "@ngriffin_uk/polychat-library-interactions";
 import { userQuestionsSchema } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ApiToolDefinition } from "~/types/functions";
 

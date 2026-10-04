@@ -4,8 +4,8 @@ import type {
   SubmitBrowserApproval,
 } from "@ngriffin_uk/polychat-schemas";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
+import { generatePrefixedId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generatePrefixedId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getComputerUseProvider } from "~/infrastructure/providers/capabilities/computer";

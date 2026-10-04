@@ -8,13 +8,13 @@ import type {
 } from "@cloudflare/workers-types";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import {
   fetchFollowingSafeRedirects,
   UnsafeUrlError,
 } from "@ngriffin_uk/polychat-utility-server/http";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";

@@ -23,6 +23,7 @@ import {
   type ProjectFlowStage,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { ArrowDown, ArrowUp, Plus, Settings2, Trash2 } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
 
@@ -72,7 +73,7 @@ const WORKFLOW_OPTIONS: FormSelectOption[] = [
 
 function newStage(): ProjectFlowStage {
   return {
-    id: `stage-${crypto.randomUUID().slice(0, 8)}`,
+    id: `stage-${generateId().slice(0, 8)}`,
     name: "",
     instructions: null,
     teammateId: null,

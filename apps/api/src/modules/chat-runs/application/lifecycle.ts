@@ -11,13 +11,13 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { TEAMMATE_RUN_RECONCILIATION_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 import { canonicalJson } from "@ngriffin_uk/polychat-utility-core";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import {
   AssistantError,
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";

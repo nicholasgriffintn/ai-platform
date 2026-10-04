@@ -4,8 +4,8 @@ import type {
   OutputSensitivity,
   OutputStatus,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { KVCache } from "~/infrastructure/cache";
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";

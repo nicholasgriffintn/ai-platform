@@ -6,7 +6,7 @@ import {
   type ExecuteSandboxRunPayload as ExecuteSandboxRunStreamPayload,
   SANDBOX_RUNS_CAPABILITY_ID,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { SSE_HEADERS } from "~/infrastructure/http/streaming";

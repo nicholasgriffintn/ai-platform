@@ -1,4 +1,4 @@
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";

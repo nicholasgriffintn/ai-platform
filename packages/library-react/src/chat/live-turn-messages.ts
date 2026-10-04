@@ -5,6 +5,7 @@ import {
 } from "@ngriffin_uk/polychat-library-chat/messages";
 import type { RealtimeTranscriptResult } from "@ngriffin_uk/polychat-library-realtime/messages";
 import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 interface ActiveLiveMessage {
   message: Message;
@@ -38,7 +39,7 @@ export const DEFAULT_LIVE_CONVERSATION_TITLES = new Set(["New Conversation", "Ne
 
 export function createLiveTurn(now = Date.now()): LiveTurn {
   return {
-    id: crypto.randomUUID(),
+    id: generateId(),
     inputFinal: false,
     inputStarted: false,
     inputTextPresent: false,
@@ -191,7 +192,7 @@ export function buildLiveMessage({
         sequence: role === "user" ? 0 : 1,
       },
     },
-    id: activeMessage?.message.id ?? crypto.randomUUID(),
+    id: activeMessage?.message.id ?? generateId(),
     model: activeMessage?.message.model || model || undefined,
     role,
     status: isFinal ? undefined : "in_progress",

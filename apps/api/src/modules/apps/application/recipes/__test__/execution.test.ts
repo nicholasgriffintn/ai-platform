@@ -12,7 +12,7 @@ vi.mock("~/modules/completions/application/createChatCompletions", () => ({
   handleCreateChatCompletions: mocks.handleCreateChatCompletions,
 }));
 
-vi.mock("@ngriffin_uk/polychat-utility-server/id", () => ({
+vi.mock("@ngriffin_uk/polychat-utility-core", () => ({
   generateId: mocks.generateId,
 }));
 

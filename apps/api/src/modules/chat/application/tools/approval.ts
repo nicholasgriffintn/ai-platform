@@ -1,5 +1,5 @@
 import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { formatToolErrorResponse } from "~/modules/chat/application/tools/tool-responses";
 import type { Message, Platform } from "~/types";

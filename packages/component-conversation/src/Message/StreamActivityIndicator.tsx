@@ -1,8 +1,8 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { StreamActivity } from "@ngriffin_uk/polychat-library-chat/response-stats";
-import { getStreamActivityMetrics } from "@ngriffin_uk/polychat-library-chat/response-stats";
 import type { TurnActivityProjection } from "@ngriffin_uk/polychat-library-chat/turn-activity";
-import { useEffect, useState } from "react";
+
+import { useStreamActivityMetrics } from "./useStreamActivityMetrics";
 
 interface StreamActivityIndicatorProps {
   label: string;
@@ -17,20 +17,7 @@ export function StreamActivityIndicator({
   className,
   turnActivity,
 }: StreamActivityIndicatorProps) {
-  const startedAt = activity?.startedAt;
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    if (startedAt === undefined) {
-      return undefined;
-    }
-
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-
-    return () => clearInterval(interval);
-  }, [startedAt]);
-
-  const metrics = activity ? getStreamActivityMetrics(activity, now) : [];
+  const metrics = useStreamActivityMetrics(activity);
 
   return (
     <div
@@ -42,7 +29,7 @@ export function StreamActivityIndicator({
     >
       <div className="flex items-start gap-2">
         <span
-          className="polychat-motion-active-execution mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-active-work"
+          className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 animate-pulse rounded-full bg-active-work"
           aria-hidden="true"
         />
         <span className="min-w-0">{turnActivity?.label ?? label}</span>

@@ -13,7 +13,7 @@ import {
   realtimeSessionResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { Hono } from "hono";
 
 import { optionalRepositories } from "~/infrastructure/context/serviceContext";

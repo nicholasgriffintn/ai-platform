@@ -1,7 +1,7 @@
 import { putAwsS3Object, formatProviderError } from "@ngriffin_uk/polychat-ai-providers";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { getExtensionFromMimeType } from "@ngriffin_uk/polychat-utility-server/mime";
 import { getStringRecordValue } from "@ngriffin_uk/polychat-utility-server/objects";

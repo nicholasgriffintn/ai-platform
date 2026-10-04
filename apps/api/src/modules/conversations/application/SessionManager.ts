@@ -11,7 +11,7 @@ import {
   type CompactionCoverage,
   type CompactionSummaryStrategy,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { ai } from "~/infrastructure/ai";
 import { getCompactionModel } from "~/modules/models/application/resolve";

@@ -10,7 +10,7 @@ import {
   DEFAULT_TASK_MAX_ATTEMPTS,
   type TaskHandlerRegistry,
 } from "@ngriffin_uk/polychat-library-tasks";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { evaluateServerFlag, isTaskFlagType, taskFlags } from "~/modules/experiments/application";
 import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";

@@ -11,8 +11,8 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type { ConversationType, ModelTier, PermissionMode } from "@ngriffin_uk/polychat-schemas";
 import { permissionModeSchema } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { Database } from "~/infrastructure/database";

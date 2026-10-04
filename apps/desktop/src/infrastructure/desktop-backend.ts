@@ -26,7 +26,7 @@ import {
   type ModelRuntimeFailure,
   type AgentRuntimeFailure,
 } from "@ngriffin_uk/polychat-schemas";
-import { createAsyncEventQueue } from "@ngriffin_uk/polychat-utility-core";
+import { createAsyncEventQueue, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import z from "zod/v4";
 
@@ -235,7 +235,7 @@ function startRun(
   cancelCommand = "cancel_model_run",
   parseOutput?: (runId: string, line: string) => DesktopStreamEvent,
 ): Promise<DesktopRun> {
-  const runId = globalThis.crypto.randomUUID();
+  const runId = generateId();
   const queue = createAsyncEventQueue<DesktopStreamEvent>();
   const channel = new Channel();
 

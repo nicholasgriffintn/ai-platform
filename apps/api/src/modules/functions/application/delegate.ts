@@ -10,13 +10,13 @@ import {
   readToolIds,
   resolveDelegationCreditCeiling,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { intersectEnabledTools } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 import {
   AssistantError,
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { conversationHandleIdForDelegation } from "~/modules/conversations/application/conversation-handles";
 import { checkDelegationSpawn } from "~/modules/delegations/application/guards";

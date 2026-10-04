@@ -1,4 +1,4 @@
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { ChannelBindingRow } from "~/infrastructure/database/schema";

@@ -11,9 +11,9 @@ import type {
   SharedOutput,
   UpdateOutputInput,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId, randomHex } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId, randomHex } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { recordProjectAudit } from "~/modules/audit/application";

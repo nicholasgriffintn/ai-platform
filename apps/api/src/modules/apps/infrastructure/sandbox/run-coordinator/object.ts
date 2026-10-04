@@ -16,6 +16,7 @@ import {
   type SandboxPreviewSessionRecord,
   NO_STORE,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { Agent, type FiberContext, type FiberRecoveryContext } from "agents";
 
@@ -800,7 +801,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
             Math.max(1, timeoutSeconds - 1),
           );
           const instruction: SandboxRunInstruction = {
-            id: crypto.randomUUID(),
+            id: generateId(),
             idempotencyKey: idempotencyKey || undefined,
             runId: control?.runId ?? "unknown",
             kind,
@@ -865,7 +866,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
           await this.putInstructions(instructions);
 
           const instruction: SandboxRunInstruction = {
-            id: crypto.randomUUID(),
+            id: generateId(),
             idempotencyKey: idempotencyKey || undefined,
             runId: control?.runId ?? "unknown",
             kind,
@@ -900,7 +901,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
         }
 
         const instruction: SandboxRunInstruction = {
-          id: crypto.randomUUID(),
+          id: generateId(),
           idempotencyKey: idempotencyKey || undefined,
           runId: control?.runId ?? "unknown",
           kind,

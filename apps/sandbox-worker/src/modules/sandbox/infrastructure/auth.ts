@@ -10,6 +10,7 @@ import {
   type SandboxPreviewGrantPurpose,
   type InternalServiceScope,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 const ISSUER = "assistant";
 
@@ -92,7 +93,7 @@ export async function createInternalServiceToken(
       exp: now + INTERNAL_SERVICE_TOKEN_TTL_SECONDS,
       iat: now,
       iss: ISSUER,
-      jti: crypto.randomUUID(),
+      jti: generateId(),
       scopes: [scope],
       sub: "sandbox-worker",
     },

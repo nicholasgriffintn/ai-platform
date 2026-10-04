@@ -1,5 +1,5 @@
 import { normaliseTokenUsage, getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import type { AssistantMessageData } from "~/types";
 

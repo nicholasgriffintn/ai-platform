@@ -16,8 +16,8 @@ import {
   type UserPet,
   type UserPetsPage,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { readImageDimensions } from "@ngriffin_uk/polychat-utility-server/image-dimensions";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";

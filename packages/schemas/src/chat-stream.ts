@@ -1,4 +1,5 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 import { normaliseMessageParts, type MessagePart } from "./message-part-utils.js";
@@ -177,7 +178,7 @@ function readChatStreamToolCall(value: unknown): ChatStreamToolCall | null {
 
 function defaultCreateId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
+    return generateId();
   }
 
   return `msg_${Math.random().toString(36).slice(2)}`;

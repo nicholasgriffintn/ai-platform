@@ -17,7 +17,7 @@ vi.mock("~/infrastructure/ai", () => ({
   ai: { generateText: (...args: unknown[]) => mockGenerateText(...args) },
 }));
 
-vi.mock("@ngriffin_uk/polychat-utility-server/id", () => ({
+vi.mock("@ngriffin_uk/polychat-utility-core", () => ({
   generateId: () => "snapshot-message-id",
 }));
 

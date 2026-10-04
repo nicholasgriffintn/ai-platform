@@ -4,6 +4,7 @@ import {
   withRetry,
 } from "@ngriffin_uk/polychat-library-client/retry";
 import type { SandboxModelSettings } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { createPolychatRequest } from "./polychat-request";
 
@@ -86,7 +87,7 @@ export class PolychatClient {
   private async requestChatCompletion(
     params: PolychatChatCompletionParams,
   ): Promise<PolychatCompletionMessage> {
-    const chatId = crypto.randomUUID();
+    const chatId = generateId();
 
     const response = await this.fetchPolychat("/chat/completions", {
       method: "POST",

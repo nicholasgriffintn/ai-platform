@@ -1,5 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { hasToolCallNamed } from "@ngriffin_uk/polychat-utility-server/tool-calls";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";

@@ -1,10 +1,9 @@
 import { policyRulesSchema, type PolicyRule } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 
 export function usePolicyDraft(initial: PolicyRule[]) {
-  const [draft, setDraft] = useState(() =>
-    initial.map((rule) => ({ key: crypto.randomUUID(), rule })),
-  );
+  const [draft, setDraft] = useState(() => initial.map((rule) => ({ key: generateId(), rule })));
   const parsed = policyRulesSchema.safeParse(draft.map((entry) => entry.rule));
   const update = (key: string, rule: PolicyRule) =>
     setDraft((rules) => rules.map((entry) => (entry.key === key ? { ...entry, rule } : entry)));
@@ -22,7 +21,7 @@ export function usePolicyDraft(initial: PolicyRule[]) {
       return [
         ...rules,
         {
-          key: crypto.randomUUID(),
+          key: generateId(),
           rule: {
             id,
             effect: "review",

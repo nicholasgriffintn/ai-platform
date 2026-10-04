@@ -347,7 +347,7 @@ export function useConversationActions(
           normalizeMessage({
             role: "user",
             content: "Get a second opinion on that answer from other models.",
-            id: crypto.randomUUID(),
+            id: generateId(),
             created: Date.now(),
             model: model || "",
           }),

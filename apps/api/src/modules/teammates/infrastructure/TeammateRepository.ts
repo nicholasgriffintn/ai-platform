@@ -9,8 +9,8 @@ import {
   PLATFORM_TEAMMATE_AUTHOR_USER_ID,
   PLATFORM_TEAMMATE_SCOPE_ID,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { Teammate } from "~/infrastructure/database/schema";

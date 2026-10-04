@@ -2,8 +2,8 @@ import { hashSecret } from "@ngriffin_uk/auth-core";
 import { importHmacSecret, signJwt, verifyJwt, type JwtClaims } from "@ngriffin_uk/auth-jwt";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import {
   resolveServiceContext,

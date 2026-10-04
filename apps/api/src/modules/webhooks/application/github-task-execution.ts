@@ -1,5 +1,5 @@
 import type { SandboxWebhookCommand } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { isPlainObject } from "@ngriffin_uk/polychat-utility-server/objects";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";

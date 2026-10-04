@@ -1,7 +1,7 @@
 import { extractImpactPayload, extractUsagePayload } from "@ngriffin_uk/polychat-ai-telemetry";
 import { HOSTED_MCP_APPROVAL_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 import type { InferenceImpact } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { readGoogleThoughtSignature } from "../utils/googleThoughtSignatures.js";
 import { extractReasoningContentBlocks } from "./content-blocks.js";

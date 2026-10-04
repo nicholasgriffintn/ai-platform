@@ -1,3 +1,5 @@
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
+
 const DEVICE_KEY = "polychat-device-id";
 const LEGACY_NOTIFICATION_KEY = "polychat-notification-installation";
 
@@ -37,7 +39,7 @@ export function getDeviceId(): string {
     return existing;
   }
 
-  const deviceId = crypto.randomUUID();
+  const deviceId = generateId();
 
   cached = deviceId;
   writeStorage(DEVICE_KEY, deviceId);

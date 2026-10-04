@@ -1,7 +1,7 @@
 import type { ModelModalities } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { getExtensionFromMimeType } from "@ngriffin_uk/polychat-utility-server/mime";
 
 import type { ProviderStorage } from "./host.js";

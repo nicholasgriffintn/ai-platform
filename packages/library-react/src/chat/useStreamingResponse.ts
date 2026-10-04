@@ -34,7 +34,7 @@ import {
   type ChatRun,
   type ChatRunStatus,
 } from "@ngriffin_uk/polychat-schemas";
-import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
+import { getErrorMessage, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import { toast } from "sonner";
@@ -271,7 +271,7 @@ export function useStreamingResponse(
         ? { ...assistantMessageData, provenance: localRunProvenance }
         : assistantMessageData;
       let shouldRefreshStoredConversation = false;
-      const commandId = effectiveRequestOptions?.command_id ?? crypto.randomUUID();
+      const commandId = effectiveRequestOptions?.command_id ?? generateId();
 
       pendingCommandIdsRef.current[conversationId] = commandId;
 

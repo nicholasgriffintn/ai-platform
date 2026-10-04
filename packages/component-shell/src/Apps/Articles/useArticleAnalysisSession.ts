@@ -5,12 +5,12 @@ import {
   useSummariseArticle,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ArticleInput } from "@ngriffin_uk/polychat-schemas";
-import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
+import { getErrorMessage, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback, useMemo, useState } from "react";
 
 export function useArticleAnalysisSession(projectId?: string) {
-  const [itemId] = useState(() => crypto.randomUUID());
-  const [articles, setArticles] = useState<ArticleInput[]>([{ id: crypto.randomUUID(), text: "" }]);
+  const [itemId] = useState(() => generateId());
+  const [articles, setArticles] = useState<ArticleInput[]>([{ id: generateId(), text: "" }]);
   const [urlInputs, setUrlInputs] = useState<Record<string, string>>({});
   const [extractingContent, setExtractingContent] = useState<Record<string, boolean>>({});
   const [processingArticles, setProcessingArticles] = useState(false);
@@ -22,7 +22,7 @@ export function useArticleAnalysisSession(projectId?: string) {
   const extractContent = useExtractArticleContent(projectId);
 
   const addArticle = useCallback(() => {
-    setArticles((current) => [...current, { id: crypto.randomUUID(), text: "" }]);
+    setArticles((current) => [...current, { id: generateId(), text: "" }]);
   }, []);
 
   const removeArticle = useCallback((articleId: string) => {

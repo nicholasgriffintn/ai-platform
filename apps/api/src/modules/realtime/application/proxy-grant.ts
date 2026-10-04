@@ -1,6 +1,6 @@
 import { importHmacSecret, signJwt, verifyJwt } from "@ngriffin_uk/auth-jwt";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import { API_LOCAL_HOST, API_PROD_HOST, LOCAL_HOST, PROD_HOST } from "~/config/app";
 import { REALTIME_PROXY_GRANT_TTL_SECONDS } from "~/config/realtime";

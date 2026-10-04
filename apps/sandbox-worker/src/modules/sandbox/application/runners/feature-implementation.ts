@@ -12,6 +12,7 @@ import {
   type SandboxDeliveryPolicy,
 } from "@ngriffin_uk/polychat-schemas";
 import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { MAX_COMMANDS, MODEL_RETRY_OPTIONS } from "../../../../config/agent";
 import { MAX_LOG_CHARS } from "../../../../config/app";
@@ -117,7 +118,7 @@ export async function executeFeatureImplementation(
     throw new Error("POLYCHAT_API service binding is required");
   }
 
-  const runId = params.runId || crypto.randomUUID().slice(0, 8);
+  const runId = params.runId || generateId().slice(0, 8);
   const deliveryPolicy = resolveSandboxDeliveryPolicy(params.deliveryPolicy, params.shouldCommit);
   const shouldCommit = sandboxDeliveryPolicyCreatesCommit(deliveryPolicy);
   const sandbox = getSandbox(env.Sandbox, runId);

@@ -1,4 +1,4 @@
-import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
+import { compareNaturalText, generateId, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import type {
   ConversationActivityWindow,
@@ -195,7 +195,7 @@ export function preserveOptimisticMessages<T extends ConversationWithMessages>(
   };
 }
 
-export function createConversationId(createId: () => string = () => crypto.randomUUID()): string {
+export function createConversationId(createId: () => string = () => generateId()): string {
   return createId();
 }
 

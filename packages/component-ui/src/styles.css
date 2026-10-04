@@ -64,8 +64,6 @@
     --polychat-border-strong: oklch(0.65 0.022 255);
     --polychat-overlay: oklch(0.12 0.02 255 / 52%);
     --polychat-elevated-shadow: 0 12px 32px oklch(0.18 0.02 255 / 10%);
-    --polychat-active-execution-glow:
-      0 0 0 1px oklch(0.5 0.1 232 / 45%), 0 0 1.25rem oklch(0.5 0.1 232 / 16%);
   }
 
   [data-polychat-theme="dark"] {
@@ -90,8 +88,6 @@
     --polychat-border-strong: oklch(0.5 0.02 255);
     --polychat-overlay: oklch(0.05 0.015 255 / 74%);
     --polychat-elevated-shadow: 0 16px 40px oklch(0.02 0.01 255 / 55%);
-    --polychat-active-execution-glow:
-      0 0 0 1px oklch(0.76 0.13 232 / 55%), 0 0 1.5rem oklch(0.76 0.13 232 / 22%);
   }
 
   [data-polychat-theme="blue"] {
@@ -116,8 +112,6 @@
     --polychat-border-strong: oklch(0.52 0.022 255);
     --polychat-overlay: oklch(0.08 0.018 255 / 70%);
     --polychat-elevated-shadow: 0 16px 40px oklch(0.05 0.015 255 / 45%);
-    --polychat-active-execution-glow:
-      0 0 0 1px oklch(0.74 0.13 232 / 55%), 0 0 1.5rem oklch(0.74 0.13 232 / 22%);
   }
 
   [data-polychat-theme="paper"] {
@@ -142,8 +136,6 @@
     --polychat-border-strong: oklch(0.62 0.03 80);
     --polychat-overlay: oklch(0.25 0.03 60 / 50%);
     --polychat-elevated-shadow: 0 12px 32px oklch(0.25 0.03 60 / 12%);
-    --polychat-active-execution-glow:
-      0 0 0 1px oklch(0.5 0.08 200 / 45%), 0 0 1.25rem oklch(0.5 0.08 200 / 16%);
   }
 
   [data-polychat-theme="dawn"] {
@@ -168,8 +160,6 @@
     --polychat-border-strong: oklch(0.64 0.03 290);
     --polychat-overlay: oklch(0.15 0.03 290 / 52%);
     --polychat-elevated-shadow: 0 12px 32px oklch(0.2 0.03 290 / 12%);
-    --polychat-active-execution-glow:
-      0 0 0 1px oklch(0.52 0.14 300 / 45%), 0 0 1.25rem oklch(0.52 0.14 300 / 16%);
   }
 
   [data-polychat-theme="fern"] {
@@ -194,8 +184,6 @@
     --polychat-border-strong: oklch(0.5 0.02 185);
     --polychat-overlay: oklch(0.06 0.015 185 / 72%);
     --polychat-elevated-shadow: 0 16px 40px oklch(0.03 0.01 185 / 55%);
-    --polychat-active-execution-glow:
-      0 0 0 1px oklch(0.78 0.12 165 / 55%), 0 0 1.5rem oklch(0.78 0.12 165 / 22%);
   }
 
   [data-polychat-theme="plum"] {
@@ -220,8 +208,6 @@
     --polychat-border-strong: oklch(0.5 0.025 330);
     --polychat-overlay: oklch(0.06 0.02 330 / 72%);
     --polychat-elevated-shadow: 0 16px 40px oklch(0.03 0.015 330 / 55%);
-    --polychat-active-execution-glow:
-      0 0 0 1px oklch(0.78 0.12 350 / 55%), 0 0 1.5rem oklch(0.78 0.12 350 / 22%);
   }
 }
 
@@ -268,22 +254,6 @@
   animation-delay: calc(var(--polychat-motion-stagger) * 2);
 }
 
-@keyframes polychat-motion-active-execution {
-  0%,
-  100% {
-    box-shadow: none;
-    opacity: 0.72;
-  }
-  50% {
-    box-shadow: var(--polychat-active-execution-glow);
-    opacity: 1;
-  }
-}
-
-.polychat-motion-active-execution {
-  animation: polychat-motion-active-execution 1.8s var(--polychat-motion-ease-micro) infinite;
-}
-
 @keyframes polychat-motion-ambient {
   0%,
   100% {
@@ -310,7 +280,6 @@
  */
 @media (prefers-reduced-motion: reduce) {
   .polychat-motion-enter,
-  .polychat-motion-active-execution,
   .polychat-motion-ambient {
     animation: none !important;
     transform: none !important;

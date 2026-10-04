@@ -48,7 +48,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas/chat-stream";
 import { goalSchema } from "@ngriffin_uk/polychat-schemas/goals";
 import { normaliseToolIds } from "@ngriffin_uk/polychat-schemas/tool-ids";
-import { isRecord, sortCopy } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, isRecord, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import { projectChatRequestSettings } from "../chat-request-settings.js";
 import {
@@ -685,7 +685,7 @@ export class ChatService {
   async cancelChatRun(
     runId: string,
     expectedAttempt: number,
-    commandId: string = crypto.randomUUID(),
+    commandId: string = generateId(),
   ): Promise<ChatRunCommandReceipt> {
     const response = await fetchApiOrThrow(`/chat/runs/${runId}/cancel`, {
       method: "POST",
@@ -809,7 +809,7 @@ export class ChatService {
     const { options: featureOptions, ...requestOptionFields } = requestOptions ?? {};
     const requestBody: Record<string, any> = {
       ...requestOptionFields,
-      command_id: requestOptionFields.command_id ?? crypto.randomUUID(),
+      command_id: requestOptionFields.command_id ?? generateId(),
       completion_id: completionId,
       messages: formattedMessages,
       platform: "web",
@@ -1059,7 +1059,7 @@ export class ChatService {
         : toAppMessage({
             role: "assistant",
             content: "",
-            id: crypto.randomUUID(),
+            id: generateId(),
             model,
           }))
     );

@@ -123,7 +123,7 @@ vi.mock("~/infrastructure/providers/capabilities/guardrails", () => ({
   },
 }));
 
-vi.mock("@ngriffin_uk/polychat-utility-server/id", () => ({
+vi.mock("@ngriffin_uk/polychat-utility-core", () => ({
   generateId: () => "test-id",
 }));
 

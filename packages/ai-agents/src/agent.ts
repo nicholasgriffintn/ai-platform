@@ -30,7 +30,7 @@ import {
   type ToolResult,
 } from "@ngriffin_uk/polychat-library-tools";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { parseToolCallArguments } from "@ngriffin_uk/polychat-utility-server/tool-calls";
 
 export interface AgentDefinition<TContext extends AnyToolExecutionContext = ToolExecutionContext> {

@@ -3,6 +3,7 @@ import {
   modelVersionAttributesSchema,
   type ModelPlatformAction,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { Miniflare } from "miniflare";
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 
@@ -122,7 +123,7 @@ beforeEach(async () => {
   const deployment = await context.repositories.modelDeployments.create({
     workspaceId: "workspace",
     projectId: null,
-    name: crypto.randomUUID(),
+    name: generateId(),
     versionId,
     spec: {
       ...testModelDeployment.spec,

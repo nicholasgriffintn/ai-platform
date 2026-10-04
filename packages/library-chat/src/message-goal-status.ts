@@ -1,6 +1,6 @@
 import { goalStatusLabels } from "@ngriffin_uk/polychat-library-goals";
 import type { GoalMarkerEvent } from "@ngriffin_uk/polychat-schemas/goals";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "./conversation-types.js";
 
@@ -59,7 +59,7 @@ export function createGoalMarkerMessage(params: {
   const label = EVENT_LABELS[params.event];
 
   return {
-    id: params.id ?? crypto.randomUUID(),
+    id: params.id ?? generateId(),
     role: "goal",
     content: label,
     created: timestamp,

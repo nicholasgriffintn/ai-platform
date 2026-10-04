@@ -21,7 +21,7 @@ vi.mock("~/modules/sandbox/application/worker", () => ({
   resolveSandboxModel: vi.fn(),
 }));
 
-vi.mock("@ngriffin_uk/polychat-utility-server/id", () => ({
+vi.mock("@ngriffin_uk/polychat-utility-core", () => ({
   generateId: vi.fn(() => "run-123"),
 }));
 

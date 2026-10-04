@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import {
@@ -8,7 +9,6 @@ import {
   ResponseBodyTooLargeError,
   UnsafeUrlError,
 } from "@ngriffin_uk/polychat-utility-server/http";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import z from "zod/v4";
 
 import type { ProviderRuntime } from "../../../runtime.js";

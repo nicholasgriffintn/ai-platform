@@ -5,8 +5,8 @@ import type {
   TeammateComputerInput,
   TeammateContext,
 } from "@ngriffin_uk/polychat-schemas";
+import { generatePrefixedId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generatePrefixedId } from "@ngriffin_uk/polychat-utility-server/id";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getComputerUseProvider } from "~/infrastructure/providers/capabilities/computer";

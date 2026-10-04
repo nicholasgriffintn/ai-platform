@@ -247,7 +247,7 @@ function RunStatusSummary({
         className={cn(
           "size-2 shrink-0 rounded-full",
           presentation.tone,
-          presentation.animated && "polychat-motion-active-execution",
+          presentation.animated && "animate-pulse",
         )}
       />
       <span

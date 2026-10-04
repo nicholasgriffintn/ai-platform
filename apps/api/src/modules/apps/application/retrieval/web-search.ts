@@ -1,5 +1,5 @@
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 import z from "zod/v4";
 

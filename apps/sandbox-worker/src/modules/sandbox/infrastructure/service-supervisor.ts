@@ -13,6 +13,7 @@ import {
   type SandboxTrustLevel,
 } from "@ngriffin_uk/polychat-schemas";
 import { delay } from "@ngriffin_uk/polychat-utility-core";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { READ_LISTENING_SOCKETS_COMMAND } from "../../../config/app";
 import type { TaskEvent } from "../../../types";
@@ -477,7 +478,7 @@ export class ProjectServiceSupervisor {
         {
           cwd: service.absoluteWorkingDirectory,
           autoCleanup: false,
-          processId: `polychat-${definition.name}-${crypto.randomUUID().slice(0, 8)}`,
+          processId: `polychat-${definition.name}-${generateId().slice(0, 8)}`,
         },
       );
       service.process = process;

@@ -2,7 +2,7 @@ import type { UsageEmissionOutcome } from "@ngriffin_uk/polychat-ai-billing";
 import { recordModelTurnUsage } from "@ngriffin_uk/polychat-ai-billing";
 import type { NormalisedTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { InferenceImpact, RunProvenance } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { nonEmptyToolCallsOrNull } from "@ngriffin_uk/polychat-utility-server/tool-calls";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";

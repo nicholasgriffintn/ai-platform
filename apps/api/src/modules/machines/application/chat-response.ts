@@ -9,6 +9,7 @@ import {
   type ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
 import { abortableDelay } from "@ngriffin_uk/polychat-utility-core";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ChatCompletionParameters } from "~/types";
@@ -92,7 +93,7 @@ export async function executeMachineChatResponse(
     }
 
     request = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       kind: "agent",
       driver: agentRuntimeVendorSchema.parse(model.matchingModel),
       conversationId: params.completion_id,
@@ -105,7 +106,7 @@ export async function executeMachineChatResponse(
     };
   } else {
     request = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       vendor: modelRuntimeVendorSchema.parse(model.provider),
       nativeModelId: model.matchingModel,
       conversationId: params.completion_id,

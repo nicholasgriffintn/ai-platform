@@ -1,7 +1,7 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { EMBEDDING_VECTOR_SPACE_VERSION, WORKERS_EMBEDDING_MODEL } from "~/config/storage";

@@ -9,7 +9,7 @@ import type {
   SandboxRunInstructionKind,
   SandboxServiceAction,
 } from "@ngriffin_uk/polychat-schemas";
-import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import type { ProjectWorkbenchApprovalItem } from "@ngriffin_uk/polychat-utility-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -64,7 +64,7 @@ export function useProjectWorkbenchControls(params: {
     },
   });
   const submitInstruction = (input: Omit<InstructionInput, "idempotencyKey">) =>
-    instructionMutation.mutateAsync({ ...input, idempotencyKey: crypto.randomUUID() });
+    instructionMutation.mutateAsync({ ...input, idempotencyKey: generateId() });
   const approvals: ProjectWorkbenchApprovalItem[] = params.instructions.flatMap(
     ({ instruction }) =>
       instruction.kind === "approval_request" &&

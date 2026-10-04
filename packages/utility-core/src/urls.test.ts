@@ -1,8 +1,24 @@
 import { describe, expect, it } from "vitest";
 
-import { hasUrlExtension, readUrlExtension, readUrlPath } from "./urls";
+import { hasUrlExtension, normaliseSameOriginRoute, readUrlExtension, readUrlPath } from "./urls";
 
 const VIDEO = new Set(["mp4", "webm"]);
+
+describe("normaliseSameOriginRoute", () => {
+  it.each([
+    ["  ", "/"],
+    ["  /settings?tab=profile#name  ", "/settings?tab=profile#name"],
+    ["https://preview.test/settings", "/settings"],
+    ["https://other.test/settings", null],
+    ["//other.test/settings", null],
+    ["http://preview.test/settings", null],
+    ["https://preview.test:444/settings", null],
+    ["javascript:alert(1)", null],
+    ["https://[", null],
+  ])("keeps preview navigation on its origin for %s", (route, expected) => {
+    expect(normaliseSameOriginRoute(route, "https://preview.test")).toBe(expected);
+  });
+});
 
 describe("readUrlPath", () => {
   it("drops the query and fragment", () => {

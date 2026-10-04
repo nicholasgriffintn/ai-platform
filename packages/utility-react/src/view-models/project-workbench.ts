@@ -1,4 +1,8 @@
-import type { SandboxPreviewState, SandboxServiceStatus } from "@ngriffin_uk/polychat-schemas";
+import type {
+  SandboxPreviewAccess,
+  SandboxPreviewState,
+  SandboxServiceStatus,
+} from "@ngriffin_uk/polychat-schemas";
 
 export const PROJECT_WORKBENCH_PANES = [
   "context",
@@ -64,4 +68,20 @@ export interface ProjectWorkbenchPreviewFeedback {
   route: string;
   serviceName: string;
   viewport: ProjectWorkbenchPreviewViewport;
+}
+
+export function isProjectWorkbenchPreviewReady(
+  state: ProjectWorkbenchPreviewDisplayState,
+  preview?: SandboxPreviewAccess,
+): preview is SandboxPreviewAccess & { url: string } {
+  return state === "healthy" && Boolean(preview?.url);
+}
+
+export function getProjectWorkbenchPreviewRegionStyle(region: ProjectWorkbenchPreviewRegion) {
+  return {
+    left: `${region.x}%`,
+    top: `${region.y}%`,
+    width: `${region.width}%`,
+    height: `${region.height}%`,
+  };
 }

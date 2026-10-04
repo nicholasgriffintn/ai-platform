@@ -15,9 +15,9 @@ import {
   type OcrBatchRequestItem,
   type OcrBatchStartRequest,
 } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { getUtf8ByteLength } from "@ngriffin_uk/polychat-utility-server/strings";
 
 import { MAX_OCR_DOCUMENT_BYTES, MAX_OCR_IMAGE_BYTES } from "~/config/limits";

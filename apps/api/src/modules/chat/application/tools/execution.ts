@@ -1,7 +1,7 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { hasAnyEnabledTool } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { buildMessageParts } from "~/modules/chat/application/messages/parts";

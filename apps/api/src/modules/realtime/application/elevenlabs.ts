@@ -1,5 +1,5 @@
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import type { Context } from "hono";
 
 import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";

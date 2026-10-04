@@ -6,8 +6,8 @@ import {
   type MetaAssistantUiContext,
 } from "@ngriffin_uk/polychat-schemas";
 import { truncateText as truncate } from "@ngriffin_uk/polychat-utility-core";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { toStringValue } from "@ngriffin_uk/polychat-utility-server/strings";
 import type z from "zod/v4";

@@ -34,7 +34,7 @@ vi.mock("@ngriffin_uk/polychat-utility-server/crypto", () => ({
   sha256Hex: mocks.sha256Hex,
 }));
 
-vi.mock("@ngriffin_uk/polychat-utility-server/id", () => ({
+vi.mock("@ngriffin_uk/polychat-utility-core", () => ({
   generateId: mocks.generateId,
 }));
 

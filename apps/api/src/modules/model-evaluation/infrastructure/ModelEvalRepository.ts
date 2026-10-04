@@ -1,5 +1,5 @@
 import type { EvalCase, ScoreSummary } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { and, desc, eq, inArray, isNull, ne, or } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
