@@ -36,6 +36,7 @@ import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
+import { manage_site } from "./manage_site";
 import { search_memories, store_memory } from "./memory";
 import { messageParent } from "./message-parent";
 import { metaTools } from "./meta";
@@ -76,6 +77,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   decide,
   audit_evidence,
   build_site,
+  manage_site,
   create_video,
   create_music,
   create_image,

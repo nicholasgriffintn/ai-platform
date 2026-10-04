@@ -3,6 +3,7 @@ import {
   type SiteElement,
   type SiteExportTarget,
   type SitePage,
+  type SiteDataBinding,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { isSiteComponentType, SITE_CATALOG, type SiteComponentType } from "../catalog.js";
@@ -185,6 +186,7 @@ function renderRouterRuntime(target: SiteExportTarget): { import: string; hook: 
 export function renderPageFile(
   page: SitePage,
   target: SiteExportTarget = DEFAULT_SITE_EXPORT_TARGET,
+  bindings: Record<string, SiteDataBinding> = {},
 ): {
   path: string;
   content: string;
@@ -198,7 +200,7 @@ export function renderPageFile(
   const name = pageComponentName(page.path);
   const routeMetadata = renderRouteMetadata(page, target, name);
 
-  if (!rendered.usesState) {
+  if (!rendered.usesState && Object.keys(bindings).length === 0) {
     return {
       path: pageFilePath(page.path, target),
       components: rendered.components,
@@ -227,17 +229,18 @@ ${indentLines(rendered.jsx, 2)}
     usesState: true,
     content: `"use client";
 
-import { useState } from "react";
+import { useSiteData } from "@/lib/site-data";
 ${routerImport}${routeMetadata.import}
 import { filterItems, getPath, pushPath, readItem, removePath, setPath, uid, type SiteState } from "@/lib/site-state";
 ${componentImports}
 
 const INITIAL_STATE: SiteState = ${JSON.stringify(page.state ?? {}, null, 2)};
+const DATA_BINDINGS = ${JSON.stringify(Object.fromEntries(Object.entries(bindings).map(([id, binding]) => [id, binding.statePath])))};
 
 ${routeDeclaration}
 
 ${target === "tanstack-router" ? "function" : "export default function"} ${name}() {
-  const [state, setState] = useState<SiteState>(INITIAL_STATE);
+  const { state, setState, dataError, performDataAction } = useSiteData(INITIAL_STATE, DATA_BINDINGS);
 ${routerHook}  const set = (path: string, value: unknown) =>
     setState((current) => setPath(current, path, value));
   const toggle = (path: string) =>
@@ -252,7 +255,10 @@ ${routerHook}  const set = (path: string, value: unknown) =>
     setState((current) => removePath(current, path, index));
 
   return (
+    <>
+      {dataError && <p role="alert">{dataError}</p>}
 ${indentLines(rendered.jsx, 2)}
+    </>
   );
 }
 `,

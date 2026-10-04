@@ -9,7 +9,9 @@ import {
 import type { SiteComponentType } from "../catalog.js";
 import { siteThemeClasses, SITE_EXPRESSION_CSS } from "../element-style.js";
 import { buildSiteGoogleFontsUrl, renderSiteThemeCss } from "../theme.js";
+import { renderSiteDataModule } from "./data.js";
 import { renderSiteStateModule } from "./expressions.js";
+import { renderFormValuesModule } from "./form-values.js";
 import { renderPageFile } from "./page.js";
 import {
   renderIconModule,
@@ -356,6 +358,18 @@ ${pages}
 ${components.map((component) => `- \`${sourceRoot}components/site/${component}.tsx\``).join("\n")}
 
 Theme tokens and expressive design settings live in \`${sourceRoot}${target === "next" ? "app/" : ""}globals.css\`.
+${
+  Object.keys(project.dataBindings ?? {}).length
+    ? `
+
+## Saved data
+
+This app keeps bound records outside its generated files. Install an authenticated transport from \`${sourceRoot}lib/site-data.ts\` before mounting the client page. Use \`createSiteDataTransport({ baseUrl, siteId, projectId, getRevision, fetchAuthenticated })\` with the saved Polychat site ID, its current revision and your host's existing session or authenticated server proxy.
+
+Assign that transport to \`window.polychatSiteData\`. Keep credentials out of generated files. Without a transport, saved-data actions show an error and retain form input. Source snapshots refresh through Polychat; they are not embedded in this export.
+`
+    : ""
+}
 `;
 }
 
@@ -444,8 +458,11 @@ export function generateSiteFiles(
   const pageFiles: SiteFile[] = [];
   let usesState = false;
 
-  for (const { page } of pages) {
-    const rendered = renderPageFile(page, target);
+  for (const { id, page } of pages) {
+    const bindings = Object.fromEntries(
+      Object.entries(project.dataBindings ?? {}).filter(([, binding]) => binding.pageId === id),
+    );
+    const rendered = renderPageFile(page, target, bindings);
 
     usesState = usesState || rendered.usesState;
     pageFiles.push({ path: rendered.path, content: rendered.content });
@@ -467,6 +484,12 @@ export function generateSiteFiles(
     ...frameworkFiles(project, target),
     ...pageFiles,
     { path: sourcePath(target, "lib/utils.ts"), content: renderUtilsModule() },
+    ...(used.has("Form")
+      ? [{ path: sourcePath(target, "lib/form-values.ts"), content: renderFormValuesModule() }]
+      : []),
+    ...(usesState
+      ? [{ path: sourcePath(target, "lib/site-data.ts"), content: renderSiteDataModule() }]
+      : []),
     ...(usesState
       ? [
           {

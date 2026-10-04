@@ -29,6 +29,8 @@ Do not duplicate or inline real keys in docs.
 - **Embeddings:** use `EMBEDDING_SCOPE_SECRET` and keep credentials stable when vectors are populated.
 - **Connectors:** configure Composio keying, webhook signature, and callback URLs in the Composio guide.
 - **Coding / training workers:** keep API authority, GitHub App tokens, and worker tokens separate.
+- **Sites storage:** add the optional `SITES_RUNTIME` binding and its SQLite `SiteRuntime` migration from `apps/api/wrangler.jsonc.example` before enabling saved records. Keep migration tags append-only in the deployed manifest. This uses Durable Object storage and needs no D1 migration.
+- **Sites browser checks:** configure `COMPUTER_WORKER` and a public HTTPS `APP_BASE_URL`. Publish the app build's `/sites-runtime/preview-runtime.js` and `/sites-runtime/styles.css`, then deploy the computer image containing the Sites capture scripts before the API. Missing infrastructure returns an unavailable check and never starts model repair.
 
 ## Data writes and settings
 

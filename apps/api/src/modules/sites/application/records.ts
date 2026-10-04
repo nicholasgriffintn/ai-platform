@@ -20,8 +20,12 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { requireOutputRecordAccess } from "~/modules/outputs/application/access";
+import { deleteOutputResources } from "~/modules/outputs/application/delete-resources";
 import { createOutputProvenance } from "~/modules/outputs/application/provenance";
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
+
+import { validateSiteSourceBindings } from "./source-bindings";
 
 const storedSiteSchema = z.object({
   brief: z.string().default(""),
@@ -95,6 +99,7 @@ interface SiteScope {
 async function findSiteOutput(
   { context, userId, projectId }: SiteScope,
   siteId: string,
+  mutate = false,
 ): Promise<OutputRecord> {
   context.ensureDatabase();
 
@@ -105,6 +110,8 @@ async function findSiteOutput(
   if (!record || record.kind !== SITE_OUTPUT_KIND) {
     throw new AssistantError("Site not found", ErrorType.NOT_FOUND, 404);
   }
+
+  await requireOutputRecordAccess(context, userId, record, mutate);
 
   return record;
 }
@@ -143,12 +150,13 @@ export async function listSites(scope: SiteScope, limit = 50): Promise<SiteSumma
 }
 
 export async function deleteSite(scope: SiteScope, siteId: string): Promise<void> {
-  const record = await findSiteOutput(scope, siteId);
+  const record = await findSiteOutput(scope, siteId, true);
 
-  await scope.context.repositories.outputs.deleteOutput(record.id);
+  await deleteOutputResources(scope.context, scope.userId, record.id);
 }
 
 export interface SaveSiteInput {
+  expectedRevision?: number;
   brief: string;
   plan: SitePlan;
   project: SiteProject;
@@ -160,6 +168,12 @@ export interface SaveSiteInput {
 
 export async function createSite(scope: SiteScope, input: SaveSiteInput): Promise<SiteRecord> {
   scope.context.ensureDatabase();
+  await validateSiteSourceBindings(
+    scope.context,
+    scope.userId,
+    input.project,
+    scope.projectId ?? null,
+  );
 
   const stored: StoredSite = {
     brief: input.brief,
@@ -201,7 +215,14 @@ export async function updateSite(
   siteId: string,
   input: SaveSiteInput,
 ): Promise<SiteRecord> {
-  const record = await findSiteOutput(scope, siteId);
+  const record = await findSiteOutput(scope, siteId, true);
+
+  await validateSiteSourceBindings(
+    scope.context,
+    scope.userId,
+    input.project,
+    scope.projectId ?? null,
+  );
   const existing = parseStoredSite(record);
   const stored: StoredSite = {
     brief: existing?.brief ?? input.brief,
@@ -215,7 +236,7 @@ export async function updateSite(
     title: input.project.title,
     status: "ready",
     content: stored,
-    expectedRevision: record.revision,
+    expectedRevision: input.expectedRevision ?? record.revision,
     updatedByUserId: scope.userId,
   });
   const site = mapSiteRecord(updated);
@@ -233,7 +254,14 @@ export async function finaliseSiteGeneration(
   expectedRevision: number,
   input: SaveSiteInput,
 ): Promise<SiteRecord> {
-  const record = await findSiteOutput(scope, siteId);
+  const record = await findSiteOutput(scope, siteId, true);
+
+  await validateSiteSourceBindings(
+    scope.context,
+    scope.userId,
+    input.project,
+    scope.projectId ?? null,
+  );
   const existing = parseStoredSite(record);
 
   if (!existing) {

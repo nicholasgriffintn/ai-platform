@@ -3,6 +3,7 @@ import { errorResponse } from "@ngriffin_uk/polychat-library-sandbox";
 import { INTERNAL_COMPUTER_ORIGIN } from "./config/app";
 import { handleComputerRequest } from "./lifecycle";
 import { handleScreenRequest } from "./screen";
+import { handleSiteVerification } from "./site-verification";
 import type { Env } from "./types";
 
 export default {
@@ -21,7 +22,9 @@ export default {
       return errorResponse(405, "Method not allowed");
     }
 
-    return handleComputerRequest(request, env);
+    return url.pathname === "/computer/site-verify"
+      ? handleSiteVerification(request, env)
+      : handleComputerRequest(request, env);
   },
 };
 

@@ -445,14 +445,19 @@ export async function resolveComposioRunAccount(params: {
   return { connectedAccount, session };
 }
 
-export async function closeComposioConnectorRun(context: ServiceContext): Promise<void> {
+export async function closeComposioConnectorRun(
+  context: ServiceContext,
+  sessionHandles?: readonly string[],
+): Promise<void> {
   const trackedSessions = findTrackedSessions(context);
 
   if (!trackedSessions?.size) {
     return;
   }
 
-  const sessions = [...trackedSessions.values()];
+  const sessions = [...trackedSessions.values()].filter(
+    (session) => !sessionHandles || sessionHandles.includes(session.id),
+  );
 
   for (const session of sessions) {
     try {
@@ -477,6 +482,13 @@ export async function closeComposioConnectorRun(context: ServiceContext): Promis
       }
     }
   }
+}
+
+export async function closeComposioConnectorSession(
+  context: ServiceContext,
+  sessionHandle: string,
+): Promise<void> {
+  await closeComposioConnectorRun(context, [sessionHandle]);
 }
 
 export async function scheduleComposioConnectorRunCleanup(

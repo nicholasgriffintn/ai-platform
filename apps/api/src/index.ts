@@ -322,6 +322,8 @@ const handler = {
 
 export default withSentry<IEnv>(getSentryOptions, handler);
 
+export { SiteRuntime } from "~/modules/sites/infrastructure/runtime";
+
 export {
   MachineRunCoordinator,
   ConversationCoordinator,

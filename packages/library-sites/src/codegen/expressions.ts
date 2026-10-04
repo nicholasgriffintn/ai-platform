@@ -128,6 +128,11 @@ export function serialiseAction(binding: SiteActionBinding, context: ExpressionC
   const statePath = typeof params.statePath === "string" ? JSON.stringify(params.statePath) : null;
 
   switch (binding.action) {
+    case "refreshData":
+    case "createRecord":
+    case "updateRecord":
+    case "deleteRecord":
+      return `performDataAction(${serialiseExpression({ ...params, action: binding.action })})`;
     case "setState":
       return statePath ? `set(${statePath}, ${serialiseExpression(params.value)})` : "undefined";
     case "toggleState":
@@ -164,7 +169,9 @@ export function renderSiteStateModule(): string {
   return `export type SiteState = Record<string, any>;
 
 function segments(path: string): string[] {
-  return path.split("/").filter(Boolean);
+  const parts = path.split("/").filter(Boolean);
+  if (parts.some((part) => ["__proto__", "constructor", "prototype"].includes(part))) throw new Error("Unsafe state path");
+  return parts;
 }
 
 export function getPath(state: unknown, path: string): any {
@@ -175,7 +182,7 @@ export function getPath(state: unknown, path: string): any {
       return undefined;
     }
 
-    current = current[segment];
+    current = Object.hasOwn(Object(current), segment) ? current[segment] : undefined;
   }
 
   return current;

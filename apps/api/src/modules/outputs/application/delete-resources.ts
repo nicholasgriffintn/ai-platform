@@ -5,6 +5,7 @@ import {
   withOcrBatchProviderCleanup,
   withoutOcrBatchProviderCleanup,
 } from "@ngriffin_uk/polychat-ai-providers";
+import { SITE_OUTPUT_KIND } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -229,6 +230,13 @@ export async function deleteOutputResources(
 
   root = await tombstoneOutput(context, actorUserId, root);
   const records = [...tombstonedDescendants].reverse().concat(root);
+
+  for (const record of records) {
+    if (record.kind === SITE_OUTPUT_KIND && context.env.SITES_RUNTIME) {
+      await context.env.SITES_RUNTIME.getByName(record.id).deleteData();
+    }
+  }
+
   const storageKeys = records.flatMap((record) => (record.storage_key ? [record.storage_key] : []));
 
   if (storageKeys.length > 0) {

@@ -43,6 +43,7 @@ import { getConnectorProviderConfig } from "@ngriffin_uk/polychat-ai-integration
 
 import {
   closeComposioConnectorRun,
+  closeComposioConnectorSession,
   discoverComposioRunTools,
   executeComposioRunTool,
   resolveComposioRunAccount,
@@ -101,6 +102,31 @@ function context() {
 }
 
 describe("Composio connector run lifecycle", () => {
+  it("closes a site snapshot session without ending another session in the run", async () => {
+    const runContext = context();
+    const provider = getConnectorProviderConfig("gmail");
+
+    mocks.create
+      .mockResolvedValueOnce(session)
+      .mockResolvedValueOnce({ ...session, id: "ccs_other", remoteSessionId: "trs_other" });
+    for (let index = 0; index < 2; index += 1) {
+      await discoverComposioRunTools({
+        context: runContext,
+        userId: 42,
+        provider,
+        connectedAccount: account,
+        allowedOperationIds: ["GMAIL_FETCH_EMAILS"],
+        useCase: "Read tasks",
+        scope: { completionId: "completion-1" },
+      });
+    }
+
+    await closeComposioConnectorSession(runContext, "ccs_opaque");
+    expect(mocks.deleteRecord).toHaveBeenCalledTimes(1);
+    expect(mocks.deleteRecord).toHaveBeenCalledWith("ccs_opaque");
+    await closeComposioConnectorRun(runContext);
+    expect(mocks.deleteRecord).toHaveBeenCalledWith("ccs_other");
+  });
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.create.mockResolvedValue(session);

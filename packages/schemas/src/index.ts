@@ -181,6 +181,7 @@ export * from "./reranking.js";
 export * from "./recipe-trigger-configuration.js";
 export * from "./strudel.js";
 export * from "./sites.js";
+export * from "./site-integrations.js";
 export * from "./conversation-threads.js";
 export * from "./desktop-releases.js";
 export * from "./model-selection-ui.js";

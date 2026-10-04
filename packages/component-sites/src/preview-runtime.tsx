@@ -3,10 +3,12 @@ import {
   siteThemeClasses,
   SITE_EXPRESSION_CSS,
 } from "@ngriffin_uk/polychat-library-sites";
-import type { SiteTheme } from "@ngriffin_uk/polychat-schemas";
+import { siteProjectSchema, type SiteTheme } from "@ngriffin_uk/polychat-schemas";
+import { isRecord, safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import { useEffect, useMemo, type MouseEvent } from "react";
 import { createRoot } from "react-dom/client";
 
+import { createSitePreviewActions } from "./preview-actions.js";
 import {
   isSitePreviewRenderMessage,
   SITE_PREVIEW_CHANNEL,
@@ -37,11 +39,22 @@ function post(message: SitePreviewRuntimeMessage): void {
 function RuntimePreview({
   frameId,
   payload,
+  actions,
 }: {
   frameId: string;
   payload: SitePreviewRenderPayload;
+  actions: ReturnType<typeof createSitePreviewActions>;
 }) {
   const page = payload.pageId ? payload.project.pages[payload.pageId] : null;
+  const boundState = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(payload.project.dataBindings ?? {})
+          .filter(([, binding]) => binding.pageId === payload.pageId)
+          .map(([id, binding]) => [binding.statePath, payload.data?.[id] ?? []]),
+      ),
+    [payload.project.dataBindings, payload.pageId, payload.data],
+  );
   const navigation = useMemo(
     () => ({
       navigate: (path: string) =>
@@ -74,7 +87,14 @@ function RuntimePreview({
         className={payload.inspecting ? "cursor-crosshair [&_a]:pointer-events-auto" : undefined}
         onClickCapture={handleInspect}
       >
-        {page && payload.pageId ? <SiteRenderer key={payload.pageId} page={page} /> : null}
+        {page && payload.pageId ? (
+          <SiteRenderer
+            key={payload.pageId}
+            page={page}
+            boundState={boundState}
+            onDataAction={actions.invoke}
+          />
+        ) : null}
       </div>
       <SiteSelectionOverlay
         root={document.getElementById("site-root")}
@@ -100,8 +120,40 @@ function boot(): void {
   document.head.append(expressionStyles);
 
   const root = createRoot(mount);
+  const actions = createSitePreviewActions(frameId);
+
+  window.addEventListener("pagehide", () => actions.dispose(), { once: true });
+
+  const initial = safeParseJson<unknown>(
+    document.getElementById("site-initial-document")?.textContent ?? "",
+  );
+
+  if (isRecord(initial)) {
+    const project = siteProjectSchema.safeParse(initial.project);
+
+    if (
+      project.success &&
+      typeof initial.pageId === "string" &&
+      Object.hasOwn(project.data.pages, initial.pageId)
+    ) {
+      root.render(
+        <RuntimePreview
+          frameId={frameId}
+          actions={actions}
+          payload={{
+            project: project.data,
+            pageId: initial.pageId,
+            inspecting: false,
+            selectedKey: null,
+            data: isRecord(initial.data) ? initial.data : undefined,
+          }}
+        />,
+      );
+    }
+  }
 
   window.addEventListener("message", (event) => {
+    actions.handleMessage(event);
     if (event.source !== window.parent || !isSitePreviewRenderMessage(event.data)) {
       return;
     }
@@ -110,7 +162,9 @@ function boot(): void {
       return;
     }
 
-    root.render(<RuntimePreview frameId={frameId} payload={event.data.payload} />);
+    root.render(
+      <RuntimePreview frameId={frameId} payload={event.data.payload} actions={actions} />,
+    );
   });
 
   post({ channel: SITE_PREVIEW_CHANNEL, type: "ready", frameId });

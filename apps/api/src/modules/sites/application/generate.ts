@@ -120,6 +120,10 @@ async function prepareGeneration(
       throw new AssistantError("The selected element no longer exists", ErrorType.NOT_FOUND, 404);
     }
 
+    if (request.expectedRevision !== undefined && existing.revision !== request.expectedRevision) {
+      throw new AssistantError("The site changed before refinement", ErrorType.CONFLICT_ERROR, 409);
+    }
+
     const selectedRefinement = request.target
       ? await classifySelectedElementRefinement({
           env: context.env,
@@ -529,6 +533,7 @@ export async function runSiteGeneration(
       emit({ type: "phase", phase: "saving" });
       initialSite = prepared.existing
         ? await updateSite(scope, prepared.existing.id, {
+            expectedRevision: prepared.existing.revision,
             brief,
             plan,
             project: initial.project,

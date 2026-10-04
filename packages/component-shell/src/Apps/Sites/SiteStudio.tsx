@@ -20,6 +20,7 @@ import {
   useOpenSitePullRequest,
   useProject,
   useSiteGeneration,
+  useSiteIntegrations,
   useTrackEvent,
   SITES_QUERY_KEYS,
   type SiteGenerationState,
@@ -62,6 +63,7 @@ import { SiteBuildPlaceholder } from "./SiteBuildPlaceholder.js";
 import { SiteConversationTurn } from "./SiteConversationTurn.js";
 import { SiteHistory, type SiteRevisionPreview } from "./SiteHistory.js";
 import { SiteInspector } from "./SiteInspector.js";
+import { SiteIntegrations } from "./SiteIntegrations.js";
 import { SitePlanSummary } from "./SitePlanSummary.js";
 import { SitePromptComposer } from "./SitePromptComposer.js";
 import { SiteStarterPrompt } from "./SiteStarterPrompt.js";
@@ -128,6 +130,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
     [exportTarget, project, view],
   );
   const isBusy = !["idle", "done", "error"].includes(state.status);
+  const integrations = useSiteIntegrations(state.site, { enabled: !isBusy && !revisionPreview });
   const savedId = state.site?.id;
   const repairQuality = state.quality;
   const hasDecisionTrace =
@@ -334,6 +337,15 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
           </div>
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto px-4 py-4">
+          {state.site && (
+            <SiteIntegrations
+              site={state.site}
+              pageId={resolvedPageId ?? undefined}
+              integrations={integrations}
+              disabled={isBusy || Boolean(revisionPreview)}
+              onSaved={load}
+            />
+          )}
           {(state.site?.turns ?? []).map((turn) => (
             <SiteConversationTurn
               key={turn.id}
@@ -609,6 +621,8 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                   selectedKey={selectedKey}
                   onSelect={handleSelectElement}
                   className="flex-1"
+                  data={revisionPreview ? undefined : integrations.data.data?.bindings}
+                  onDataAction={!isBusy && !revisionPreview ? integrations.runAction : undefined}
                 />
                 {historyOpen && state.site && (
                   <SiteHistory

@@ -1,4 +1,11 @@
 import type {
+  SiteBrowserEvidence,
+  SiteBrowserVerificationRequest,
+  SiteConnectorSnapshotRequest,
+  SiteDataRequest,
+  SiteDataResponse,
+  SiteIntegrationScope,
+  SiteSourceRefreshRequest,
   SiteBuildRequest,
   SiteBuildResponse,
   SiteEditRequest,
@@ -24,6 +31,65 @@ import { withProjectScope } from "./project-scope.js";
 const SITES_BASE_PATH = "/sites";
 
 export const sitesService = {
+  async refreshDataSource(id: string, request: SiteSourceRefreshRequest): Promise<SiteRecord> {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/refresh`, {
+      method: "POST",
+      body: request,
+      timeoutMs: null,
+    });
+    const payload = await returnFetchedData<SiteResponse>(response);
+
+    return payload.site;
+  },
+  async data(id: string, request: SiteIntegrationScope): Promise<SiteDataResponse> {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/read`, {
+      method: "POST",
+      body: request,
+    });
+
+    return returnFetchedData<SiteDataResponse>(response);
+  },
+  async dataAction(id: string, request: SiteDataRequest): Promise<SiteDataResponse> {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/actions`, {
+      method: "POST",
+      body: request,
+    });
+
+    return returnFetchedData<SiteDataResponse>(response);
+  },
+  async activateStorage(id: string, request: SiteIntegrationScope): Promise<void> {
+    await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/runtime`, { method: "POST", body: request });
+  },
+  async disableStorage(id: string, request: SiteIntegrationScope): Promise<void> {
+    await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/runtime/disable`, {
+      method: "POST",
+      body: request,
+    });
+  },
+  async connectorData(id: string, request: SiteConnectorSnapshotRequest): Promise<SiteRecord> {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/connectors`, {
+      method: "POST",
+      body: request,
+      timeoutMs: null,
+    });
+    const payload = await returnFetchedData<SiteResponse>(response);
+
+    return payload.site;
+  },
+  async verify(
+    id: string,
+    request: SiteBrowserVerificationRequest,
+    signal?: AbortSignal,
+  ): Promise<SiteBrowserEvidence> {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/verify`, {
+      method: "POST",
+      body: request,
+      timeoutMs: null,
+      signal,
+    });
+
+    return returnFetchedData<SiteBrowserEvidence>(response);
+  },
   async list(projectId?: string): Promise<SiteSummary[]> {
     const response = await fetchApiOrThrow(withProjectScope(SITES_BASE_PATH, projectId), {
       method: "GET",

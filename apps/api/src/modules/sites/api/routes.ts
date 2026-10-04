@@ -35,6 +35,8 @@ import {
   requireOptionalProjectCapabilityAccess,
 } from "~/modules/workspaces/application/access";
 
+import { registerSiteIntegrationRoutes } from "./integrations";
+
 const app = new Hono();
 
 const siteParamsSchema = z.object({ id: z.string().min(1) });
@@ -293,5 +295,7 @@ addRoute(app, "post", "/evaluate", {
   handler: ({ body, serviceContext, user }) =>
     evaluateSitePrompts({ context: serviceContext, user, request: body }),
 });
+
+registerSiteIntegrationRoutes(app);
 
 export default app;

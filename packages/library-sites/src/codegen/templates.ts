@@ -1497,6 +1497,7 @@ export default function EmptyState({
 
   Form: layout(
     `import { Action, Field, FieldLabel, SelectField, TextField } from "@/components/site/ui";
+import { readFormFieldValues } from "@/lib/form-values";
 
 export default function Form({
   title,
@@ -1518,12 +1519,12 @@ export default function Form({
   }>;
   submitLabel: string;
   layout?: "stacked" | "inline";
-  onSubmit?: (values: Record<string, unknown>) => void;
+  onSubmit?: (values: Record<string, unknown>) => void | boolean | Promise<void | boolean>;
 }) {
   return (
     <form
       className="flex w-full max-w-xl flex-col gap-6"
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
 
         if (!onSubmit) {
@@ -1531,22 +1532,10 @@ export default function Form({
         }
 
         const form = event.currentTarget;
-        const values = Object.fromEntries(
-          fields.map((field) => {
-            const control = form.elements.namedItem(field.name);
-            const value =
-              control instanceof HTMLInputElement && field.type === "checkbox"
-                ? control.checked
-                : control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement || control instanceof HTMLSelectElement
-                  ? control.value
-                  : "";
+        const values = readFormFieldValues(form, fields);
 
-            return [field.name, value];
-          }),
-        );
-
-        onSubmit(values);
-        form.reset();
+        const success = await onSubmit(values);
+        if (success !== false) form.reset();
       }}
     >
       {(title || description) && (

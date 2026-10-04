@@ -72,6 +72,7 @@ export * from "./hooks/useSources.js";
 export * from "./hooks/useStartNewChat.js";
 export * from "./hooks/useStableRandomSeed.js";
 export * from "./hooks/useSites.js";
+export * from "./hooks/useSiteIntegrations.js";
 export * from "./hooks/useStrudel.js";
 export * from "./hooks/useTabAudioCapture.js";
 export * from "./hooks/useTaskNotifications.js";

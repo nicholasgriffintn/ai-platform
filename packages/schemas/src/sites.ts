@@ -2,6 +2,11 @@ import z from "zod/v4";
 
 import { decisionAnswerSchema, decisionQuestionSchema } from "./decisions.js";
 import { modelTierSchema } from "./model-lineup.js";
+import {
+  siteCollectionSchema,
+  siteDataBindingSchema,
+  siteDataIdentifierSchema,
+} from "./site-integrations.js";
 
 export const SITES_CAPABILITY_ID = "featured-sites";
 export const SITE_OUTPUT_KIND = "site";
@@ -169,6 +174,10 @@ export const SITE_ACTIONS = [
   "pushState",
   "removeState",
   "navigate",
+  "refreshData",
+  "createRecord",
+  "updateRecord",
+  "deleteRecord",
 ] as const;
 export const siteActionNameSchema = z.enum(SITE_ACTIONS);
 export type SiteActionName = z.infer<typeof siteActionNameSchema>;
@@ -278,6 +287,14 @@ export const siteProjectSchema = z
     theme: siteThemeSchema,
     capabilities: z.array(siteCapabilitySchema),
     pages: z.record(z.string().regex(SITE_PAGE_ID_PATTERN), sitePageSchema),
+    collections: z
+      .record(siteDataIdentifierSchema, siteCollectionSchema)
+      .refine((value) => Object.keys(value).length <= 20)
+      .optional(),
+    dataBindings: z
+      .record(siteDataIdentifierSchema, siteDataBindingSchema)
+      .refine((value) => Object.keys(value).length <= 40)
+      .optional(),
   })
   .strict();
 export type SiteProject = z.infer<typeof siteProjectSchema>;
@@ -450,6 +467,7 @@ export const siteGenerateRequestSchema = z
     prompt: z.string().trim().min(1).max(SITE_PROMPT_MAX_LENGTH),
     projectId: z.string().min(1).optional(),
     siteId: z.string().min(1).optional(),
+    expectedRevision: z.number().int().positive().optional(),
     target: siteElementTargetSchema.optional(),
     model: z.string().min(1).optional(),
     theme: siteThemeSchema.partial().optional(),
@@ -461,6 +479,7 @@ export const SITE_EDIT_MAX_PATCHES = 200;
 
 export const siteEditRequestSchema = z
   .object({
+    expectedRevision: z.number().int().positive().optional(),
     projectId: z.string().min(1).optional(),
     patches: z.array(sitePatchSchema).min(1).max(SITE_EDIT_MAX_PATCHES),
     summary: z.string().trim().min(1).max(200),
