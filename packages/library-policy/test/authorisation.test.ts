@@ -9,6 +9,20 @@ import {
 } from "../src/index.js";
 
 describe("Cedar authorisation", () => {
+  it("reserves project integration grants for admins, including grants created by other admins", () => {
+    for (const kind of ["connector", "integration"]) {
+      const facts = { kind, role: "member", existing: true, actorId: "7", creatorId: "7" };
+
+      expect(authorise("capability.manage", facts).allowed).toBe(false);
+      expect(authorise("capability.manage", { ...facts, existing: false }).allowed).toBe(false);
+      expect(
+        authorise("capability.manage", { ...facts, role: "admin", creatorId: "8" }).allowed,
+      ).toBe(true);
+      expect(
+        authorise("capability.manage", { ...facts, role: "owner", creatorId: "8" }).allowed,
+      ).toBe(true);
+    }
+  });
   it("keeps ownership, workspace membership and role authority separate", () => {
     expect(ownsResource(7, 7)).toBe(true);
     expect(ownsResource(7, "7")).toBe(false);

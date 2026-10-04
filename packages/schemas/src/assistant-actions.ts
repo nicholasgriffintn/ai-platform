@@ -13,6 +13,7 @@ import {
   type RecipeInstallation,
 } from "./apps.js";
 import { partialChatCompletionsJsonSchema } from "./chat.js";
+import { integrationIdSchema, type IntegrationDefinition } from "./integrations.js";
 import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation.js";
 import { SKILL_LOAD_TOOL_NAME, skillSourceSchema, type SkillSummary } from "./skills.js";
 import type { TeammateSummary } from "./teammates.js";
@@ -35,6 +36,7 @@ export const assistantActionItemKindSchema = z.enum([
   "teammate",
   "app",
   "connector",
+  "integration",
   "installed_recipe",
   "recipe",
   "skill",
@@ -56,6 +58,7 @@ export const assistantActionItemMetadataSchema = z.object({
   category: z.string().optional(),
   href: internalNavigationPathSchema.optional(),
   installationId: z.string().optional(),
+  integrationId: integrationIdSchema.optional(),
   provider: recipeConnectorProviderSchema.optional(),
   recipeId: z.string().optional(),
   skillSource: skillSourceSchema.optional(),
@@ -679,6 +682,53 @@ export function createConnectorAssistantActionItem(
       authType: connector.authType,
       category: connector.categories?.[0]?.name ?? "Integrations",
       provider: connector.id,
+    },
+  };
+}
+
+export function createNativeIntegrationAssistantActionItem(
+  definition: IntegrationDefinition,
+  managementPath: string,
+): AssistantActionItem {
+  const path = internalNavigationPathSchema.parse(managementPath);
+  const status = definition.connected ? "connected" : "disconnected";
+  const operations = definition.snapshot.tools.map((tool) => tool.name);
+
+  return {
+    id: `integration:${definition.id}`,
+    kind: "integration",
+    label: definition.name,
+    description: definition.description || `${operations.length} available actions`,
+    status,
+    searchText: [
+      definition.name,
+      definition.description,
+      definition.id,
+      "MCP",
+      "Custom integrations",
+      ...operations,
+    ],
+    launch: { kind: "navigation", path },
+    metadata: { integrationId: definition.id, category: "Custom services", href: path },
+    capability: {
+      id: definition.id,
+      kind: "integration",
+      name: definition.name,
+      description: definition.description,
+      availability: status,
+      launch: { method: "navigation", href: path },
+      executionMode: "connector_operation",
+      authRequirement: "pro",
+      authState: status,
+      operationAccess: "mixed",
+      approvalPolicy: "always",
+      requiredModelCapabilities: ["supportsToolCalls"],
+      requiredConnectors: [{ provider: definition.id, state: status }],
+      availabilityReason: definition.connected
+        ? "Your account is connected. Project access is granted separately."
+        : "Connect your own account to use these actions.",
+      savedState: { supported: true, kind: "connection" },
+      tags: ["mcp", "integration", ...operations],
     },
   };
 }

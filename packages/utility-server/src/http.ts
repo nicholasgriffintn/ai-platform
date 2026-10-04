@@ -107,6 +107,58 @@ export class ResponseBodyTooLargeError extends Error {
   }
 }
 
+export async function limitResponseBody(response: Response, maxBytes: number): Promise<Response> {
+  const declaredLength = Number(response.headers.get("content-length"));
+
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
+    await response.body?.cancel();
+    throw new ResponseBodyTooLargeError(maxBytes);
+  }
+
+  if (!response.body) {
+    return response;
+  }
+
+  const reader = response.body.getReader();
+  let byteLength = 0;
+  const body = new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      try {
+        const { done, value } = await reader.read();
+
+        if (done) {
+          reader.releaseLock();
+          controller.close();
+
+          return;
+        }
+
+        byteLength += value.byteLength;
+
+        if (byteLength > maxBytes) {
+          await reader.cancel();
+          throw new ResponseBodyTooLargeError(maxBytes);
+        }
+
+        controller.enqueue(value);
+      } catch (error) {
+        reader.releaseLock();
+        controller.error(error);
+      }
+    },
+    async cancel(reason) {
+      await reader.cancel(reason);
+      reader.releaseLock();
+    },
+  });
+
+  return new Response(body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
+}
+
 export async function readResponseBytesWithinLimit(
   response: Response,
   maxBytes: number,

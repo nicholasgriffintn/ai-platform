@@ -950,7 +950,7 @@ export const projectCapability = sqliteTable(
       .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
     kind: text({
-      enum: ["app", "recipe", "skill", "tool", "teammate"],
+      enum: ["app", "recipe", "skill", "tool", "teammate", "connector", "integration"],
     }).notNull(),
     capability_id: text().notNull(),
     excluded: integer({ mode: "boolean" }).default(false).notNull(),
@@ -972,6 +972,54 @@ export const projectCapability = sqliteTable(
 );
 
 export type ProjectCapability = typeof projectCapability.$inferSelect;
+
+export const integrationDefinition = sqliteTable(
+  "integration_definition",
+  {
+    id: text().primaryKey().notNull(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    workspace_id: text().references(() => workspace.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    description: text().notNull().default(""),
+    revision: integer().notNull().default(1),
+    revoked_at: text(),
+    created_at: text()
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    ownerIdx: index("integration_definition_owner_idx").on(table.user_id, table.workspace_id),
+    workspaceIdx: index("integration_definition_workspace_idx").on(table.workspace_id),
+    revisionCheck: check("integration_definition_revision_check", sql`${table.revision} >= 1`),
+  }),
+);
+
+export const integrationDefinitionRevision = sqliteTable(
+  "integration_definition_revision",
+  {
+    definition_id: text()
+      .notNull()
+      .references(() => integrationDefinition.id, { onDelete: "cascade" }),
+    revision: integer().notNull(),
+    snapshot: text().notNull(),
+    created_at: text()
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.definition_id, table.revision] }),
+    revisionCheck: check(
+      "integration_definition_revision_number_check",
+      sql`${table.revision} >= 1`,
+    ),
+    snapshotCheck: check(
+      "integration_definition_revision_snapshot_check",
+      sql`json_valid(${table.snapshot})`,
+    ),
+  }),
+);
 
 export const conversation = sqliteTable(
   "conversation",

@@ -39,3 +39,21 @@ Keep a claim through each paid provisioning step, including creating a Together 
 Do not clear a creation claim or resubmit after an interrupted request until you check the provider account. After thirty minutes without a resource identifier, the task reports an unknown outcome. Reconcile the existing provider job or resource identifier before polling again; a provider may have accepted a request whose response was lost.
 
 Display `cancelling` as an active training state. Cancellation remains pending until the provider reports a terminal state, including when the request arrives during submission. Retain reported cancellation costs, or the existing estimate when the provider supplies no final cost.
+
+## Project integration grants
+
+Use `connector` capabilities to grant exact built-in connector operations without installing a recipe. Use `integration` capabilities for workspace-curated custom MCP definitions, with an immutable reviewed revision and exact action names. These grants enable capabilities; each runner still needs their own connected account and the action's required approval.
+
+```ts
+const grant = integrationGrantSchema.parse({
+  revision: 2,
+  operations: ["search_orders"],
+});
+const capability = {
+  kind: "integration",
+  capabilityId: "mcp_order_service",
+  configuration: grant,
+};
+```
+
+Reject wildcards, unavailable actions and stale revision upgrades at the server boundary. Keep `integrationDefinitionSchema` free of credentials, and accept a personal token only through the authenticated creation or connection request. Teammate grants narrow the reviewed project operations and preserve the admitted grant revision.

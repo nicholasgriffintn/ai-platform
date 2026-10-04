@@ -9,6 +9,8 @@ import {
   useConnectorSetup,
   useAssistantRecipes,
   useRecipeInstallations,
+  getIntegrationManagementPath,
+  getSurfaceFromPathname,
 } from "@ngriffin_uk/polychat-library-react";
 import {
   CAPABILITY_DISCOVERY_DATA_KEY,
@@ -19,6 +21,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { Plug } from "lucide-react";
+import { useLocation } from "react-router";
 
 import { ConnectorSetupDialogs } from "../Connectors/ConnectorSetupDialogs.js";
 import { findOwnInstallation } from "../Recipes/installations.js";
@@ -57,6 +60,7 @@ function stateLabel(item: CapabilityDiscoveryItem) {
 }
 
 export function CapabilityDiscoveryView({ data }: { data: unknown }) {
+  const location = useLocation();
   const payload = isRecord(data) ? data[CAPABILITY_DISCOVERY_DATA_KEY] : undefined;
   const parsed = capabilityDiscoveryResultSchema.safeParse(payload);
   const projectId = parsed.success ? parsed.data.projectId : undefined;
@@ -78,6 +82,20 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
   const connectorById = new Map(connectors.map((connector) => [connector.id, connector]));
 
   const renderSetup = (item: CapabilityDiscoveryItem) => {
+    if (item.setup?.kind === "integration") {
+      return (
+        <a
+          className="text-sm text-active-work underline"
+          href={getIntegrationManagementPath(
+            getSurfaceFromPathname(location.pathname),
+            item.setup.integrationId,
+          )}
+        >
+          Connect {item.name} in Plugins
+        </a>
+      );
+    }
+
     if (item.setup?.kind === "connector") {
       const connector = connectorById.get(item.setup.provider);
 

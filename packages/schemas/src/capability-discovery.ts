@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { recipeConnectorProviderSchema } from "./apps.js";
+import { integrationIdSchema } from "./integrations.js";
 import { readinessSchema } from "./readiness.js";
 
 export const CAPABILITY_DISCOVERY_TOOL_NAME = "discover_capabilities";
@@ -10,7 +11,7 @@ export const RESPONSE_TOOL_ACTIVATION_DATA_KEY = "activatedTools";
 
 export const responseToolActivationSchema = z.array(z.string().min(1));
 
-export const capabilityDiscoveryKindSchema = z.enum(["tool", "recipe", "connector"]);
+export const capabilityDiscoveryKindSchema = z.enum(["tool", "recipe", "connector", "integration"]);
 export const capabilityDiscoveryStateSchema = z.enum([
   "ready",
   "setup_required",
@@ -33,6 +34,10 @@ export const capabilityDiscoverySetupSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("connector"),
     provider: recipeConnectorProviderSchema,
+  }),
+  z.object({
+    kind: z.literal("integration"),
+    integrationId: integrationIdSchema,
   }),
 ]);
 

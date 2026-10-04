@@ -6,6 +6,7 @@ import type {
   RecipeConnectorsResponse,
   RecipeConnectorStartResponse,
 } from "@ngriffin_uk/polychat-schemas";
+import { connectorOperationsResponseSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service.js";
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
@@ -19,6 +20,14 @@ async function getAuthHeaders() {
 
     return {};
   }
+}
+
+export async function listConnectorGrantOperations(provider: RecipeConnectorProvider) {
+  const response = await fetchApiOrThrow(`/apps/connectors/${provider}/operations`, {
+    headers: await apiService.getHeaders(),
+  });
+
+  return connectorOperationsResponseSchema.parse(await returnFetchedData<unknown>(response));
 }
 
 export async function listRecipeConnectors(): Promise<RecipeConnectorsResponse> {

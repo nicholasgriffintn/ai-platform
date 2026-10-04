@@ -195,3 +195,5 @@ export * from "./ollama.js";
 export * from "./browser-sessions.js";
 export * from "./computer-use.js";
 export * from "./openai-agent-sessions.js";
+export * from "./integrations.js";
+export * from "./integration-changes.js";

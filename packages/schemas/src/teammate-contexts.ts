@@ -2,6 +2,7 @@ import z from "zod/v4";
 
 import { recipeConnectorProviderSchema } from "./apps.js";
 import { delegationContinuationSchema, delegationMemoryBindingSchema } from "./delegations.js";
+import { integrationIdSchema } from "./integrations.js";
 
 export const teammateContextScopeSchema = z.object({
   type: z.enum(["personal", "project"]),
@@ -50,7 +51,7 @@ export const teammateConnectionGrantListResponseSchema = z.object({
   connections: z.array(
     z.object({
       id: z.string().min(1),
-      provider: recipeConnectorProviderSchema,
+      provider: z.union([recipeConnectorProviderSchema, integrationIdSchema]),
       providerName: z.string().min(1),
       accountId: z.string().nullable(),
       allowedOperations: z.array(z.string().min(1)),
@@ -60,7 +61,7 @@ export const teammateConnectionGrantListResponseSchema = z.object({
 
 export const upsertTeammateConnectionGrantSchema = z.object({
   connectionId: z.string().min(1),
-  allowedOperations: z.array(z.string().min(1)).max(200),
+  allowedOperations: z.array(z.string().min(1)).max(500),
   expectedRevision: z.number().int().positive().optional(),
 });
 

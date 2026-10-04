@@ -255,3 +255,4 @@ export function useAnalytics(): SurfaceAnalytics {
 }
 
 export * from "./hooks/useBrowserSession.js";
+export * from "./hooks/useNativeIntegrations.js";

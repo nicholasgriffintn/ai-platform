@@ -852,7 +852,7 @@ export class WorkspaceRepository extends BaseRepository {
 					 ON CONFLICT(project_id, kind, capability_id) DO UPDATE SET
 						created_by = project_capability.created_by,
 						excluded = excluded.excluded
-					 WHERE project_capability.kind = 'tool'
+					 WHERE project_capability.kind IN ('tool', 'connector', 'integration')
 						OR project_capability.created_by = excluded.created_by`,
         )
         .bind(

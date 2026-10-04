@@ -2,6 +2,7 @@ import {
   errorResponseSchema,
   connectorApprovalIdSchema,
   connectorOperationApprovalResponseSchema,
+  connectorOperationsResponseSchema,
   recipeConnectorApiKeyRequestSchema,
   recipeConnectorAccountSchema,
   recipeConnectorAccountsResponseSchema,
@@ -30,6 +31,7 @@ import {
   getConnectorOperationApproval,
   resolveConnectorOperationApproval,
 } from "~/modules/apps/application/connectors/operation-approvals";
+import { listConnectorGrantOperations } from "~/modules/integrations/application/connector-catalogue";
 
 const app = new Hono();
 
@@ -54,6 +56,18 @@ const composioVerificationQuerySchema = z.union([
       path: ["connected_account_id"],
     }),
 ]);
+
+addRoute(app, "get", "/:provider/operations", {
+  auth: true,
+  tags: ["apps"],
+  summary: "List exact integration operations for project grants",
+  paramSchema: providerParamSchema,
+  responses: {
+    200: { description: "Integration operations", schema: connectorOperationsResponseSchema },
+  },
+  handler: async ({ params, serviceContext }) =>
+    listConnectorGrantOperations(serviceContext, params.provider),
+});
 
 addRoute(app, "get", "/", {
   auth: true,

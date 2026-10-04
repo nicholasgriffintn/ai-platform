@@ -21,6 +21,7 @@ export interface EnabledCapability {
   kind: ProjectCapabilityKind;
   capabilityId: string;
   configuration: Record<string, unknown>;
+  excluded?: boolean;
   createdAt: string;
   createdBy?: number;
   projectId?: string;
@@ -63,6 +64,13 @@ export function getConversationPath(surface: CapabilitySurface): string {
 
 export function getPluginsPath(surface: CapabilitySurface): string {
   return surface.projectId ? `${surface.basePath}/plugins` : getPlacePaths("chat").plugins;
+}
+
+export function getIntegrationManagementPath(
+  surface: CapabilitySurface,
+  integrationId: string,
+): string {
+  return `${getPluginsPath(surface)}?integration=${encodeURIComponent(integrationId)}`;
 }
 
 export function getScheduledLibraryPath(surface: CapabilitySurface): string {
@@ -147,6 +155,10 @@ export function getCapabilityOpenPath(
 ): string | null {
   if (item.capability.availability === "unavailable") {
     return null;
+  }
+
+  if (item.kind === "integration" && item.metadata?.integrationId) {
+    return getIntegrationManagementPath(surface, item.metadata.integrationId);
   }
 
   if (item.kind === "teammate") {

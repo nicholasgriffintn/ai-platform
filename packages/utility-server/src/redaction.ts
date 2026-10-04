@@ -65,9 +65,18 @@ function redactString(value: string, sensitiveValue?: string): string {
     );
 }
 
-function redactValue(value: unknown, seen: WeakSet<object>, sensitiveValue?: string): unknown {
+function redactValue(
+  value: unknown,
+  seen: WeakSet<object>,
+  sensitiveValue?: string,
+  knownSecretOnly = false,
+): unknown {
   if (typeof value === "string") {
-    return redactString(value, sensitiveValue);
+    return knownSecretOnly
+      ? sensitiveValue
+        ? value.replaceAll(sensitiveValue, REDACTED)
+        : value
+      : redactString(value, sensitiveValue);
   }
 
   if (!value || typeof value !== "object") {
@@ -80,7 +89,7 @@ function redactValue(value: unknown, seen: WeakSet<object>, sensitiveValue?: str
 
   if (Array.isArray(value)) {
     seen.add(value);
-    const redacted = value.map((item) => redactValue(item, seen, sensitiveValue));
+    const redacted = value.map((item) => redactValue(item, seen, sensitiveValue, knownSecretOnly));
 
     seen.delete(value);
 
@@ -95,9 +104,13 @@ function redactValue(value: unknown, seen: WeakSet<object>, sensitiveValue?: str
   const redacted: Record<string, unknown> = {};
 
   for (const [key, item] of Object.entries(value)) {
-    redacted[key] = SENSITIVE_OBJECT_KEY_PATTERN.test(key)
-      ? REDACTED
-      : redactValue(item, seen, sensitiveValue);
+    const safeKey =
+      knownSecretOnly && sensitiveValue ? key.replaceAll(sensitiveValue, REDACTED) : key;
+
+    redacted[safeKey] =
+      !knownSecretOnly && SENSITIVE_OBJECT_KEY_PATTERN.test(key)
+        ? REDACTED
+        : redactValue(item, seen, sensitiveValue, knownSecretOnly);
   }
 
   seen.delete(value);
@@ -107,6 +120,10 @@ function redactValue(value: unknown, seen: WeakSet<object>, sensitiveValue?: str
 
 export function redactSensitiveTokens<T>(value: T, sensitiveValue?: string): T {
   return redactValue(value, new WeakSet(), sensitiveValue) as T;
+}
+
+export function redactKnownSecret(value: unknown, sensitiveValue?: string): unknown {
+  return redactValue(value, new WeakSet(), sensitiveValue, true);
 }
 
 export function redactSensitiveUrl(value: string): string {

@@ -96,3 +96,5 @@ export {
   listConfiguredComposioToolkits,
   type ConfiguredComposioToolkit,
 } from "@ngriffin_uk/polychat-library-composio";
+export * from "./mcp/snapshots.js";
+export * from "./mcp/client.js";

@@ -407,6 +407,13 @@
       "when": 1791117561949,
       "tag": "0057_browser_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "6",
+      "when": 1791143901495,
+      "tag": "0058_native_integrations",
+      "breakpoints": true
     }
   ]
 }

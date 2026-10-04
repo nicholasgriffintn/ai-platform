@@ -74,3 +74,4 @@ export * from "./machine-runs.js";
 export { machineRunClient } from "./machine-run-service.js";
 
 export * from "./browser-sessions.js";
+export * from "./integrations.js";

@@ -1,6 +1,6 @@
 import type { AssistantActionItem, ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
 
-export type CatalogueItemKind = ProjectCapabilityKind | "connector";
+export type CatalogueItemKind = ProjectCapabilityKind;
 
 export interface ProjectCapabilityCategoryGroup {
   category: string;
@@ -15,6 +15,7 @@ export interface ProjectCapabilityKindGroup {
 
 const KIND_LABELS: Record<CatalogueItemKind, string> = {
   connector: "Integrations",
+  integration: "Custom integrations",
   teammate: "Teammates",
   app: "Apps",
   recipe: "Automations",
@@ -22,9 +23,21 @@ const KIND_LABELS: Record<CatalogueItemKind, string> = {
   tool: "Tools",
 };
 
-const KIND_ORDER: CatalogueItemKind[] = ["connector", "teammate", "app", "recipe", "skill", "tool"];
+const KIND_ORDER: CatalogueItemKind[] = [
+  "connector",
+  "integration",
+  "teammate",
+  "app",
+  "recipe",
+  "skill",
+  "tool",
+];
 
 export function getProjectCapabilityKind(item: AssistantActionItem): ProjectCapabilityKind | null {
+  if (item.kind === "integration" || item.kind === "connector") {
+    return item.kind;
+  }
+
   if (item.kind === "app") {
     return "app";
   }

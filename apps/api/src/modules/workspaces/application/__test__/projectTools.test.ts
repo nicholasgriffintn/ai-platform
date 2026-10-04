@@ -1,8 +1,31 @@
 import { describe, expect, it } from "vitest";
 
+import type { ProjectCapabilityRow } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
+
 import { resolveProjectTools, validateProjectToolConfiguration } from "../projectTools";
 
 describe("project tool configuration", () => {
+  it("enables connector execution only for valid live integration grants", () => {
+    const capability: ProjectCapabilityRow = {
+      id: "connector-grant",
+      project_id: "project",
+      kind: "connector",
+      capability_id: "devin",
+      configuration: { operations: ["list_sessions"] },
+      excluded: 0,
+      created_by: 1,
+      created_at: "2026-10-04T00:00:00Z",
+    };
+
+    expect(resolveProjectTools([capability]).enabledTools).toContain("use_recipe_connector");
+    expect(resolveProjectTools([{ ...capability, excluded: 1 }]).enabledTools).not.toContain(
+      "use_recipe_connector",
+    );
+    expect(resolveProjectTools([{ ...capability, configuration: {} }]).enabledTools).not.toContain(
+      "use_recipe_connector",
+    );
+  });
+
   it("rejects incomplete configuration for tools marked as requiring it", () => {
     expect(() => validateProjectToolConfiguration("file_search", {})).toThrow(
       "File search configuration is incomplete",

@@ -232,6 +232,7 @@ export const assistantCapabilityKindSchema = z.enum([
   "dynamic_app",
   "frontend_app",
   "connector",
+  "integration",
   "teammate",
   "skill",
   "tool",

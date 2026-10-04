@@ -21,6 +21,7 @@ Use the repository as implementation authority. If a request includes deploy, mi
 - [Browser and computer use](references/operations/computer-use.md)
 - [Billing and spend](references/operations/loop-cost-controls.md)
 - [Connector operations](references/operations/composio-connectors.md)
+- [Custom integrations and project grants](references/operations/native-integrations.md)
 
 ## Operating rules
 

@@ -52,6 +52,7 @@ import { create_speech } from "./speech";
 import { get_task_status } from "./tasks";
 import type { FunctionToolDescriptor } from "./types";
 import { use_computer } from "./use_computer";
+import { use_mcp_integration } from "./use_mcp_integration";
 import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
@@ -96,6 +97,7 @@ const descriptors: FunctionToolDescriptor[] = [
   get_note,
   extract_text_from_document,
   use_recipe_connector,
+  use_mcp_integration,
   get_recipe,
   configure_recipe,
   trigger_recipe,

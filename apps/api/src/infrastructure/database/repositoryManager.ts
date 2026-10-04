@@ -22,6 +22,7 @@ import { DelegationRepository } from "~/modules/delegations/infrastructure/Deleg
 import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/OutboundDeliveryRepository";
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import { InfraCostDailyRepository } from "~/modules/infra/infrastructure/InfraCostDailyRepository";
+import { IntegrationDefinitionRepository } from "~/modules/integrations/infrastructure/IntegrationDefinitionRepository";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRepository";
@@ -340,6 +341,13 @@ export class RepositoryManager {
 
   public get providerConnections(): ProviderConnectionRepository {
     return this.resolve("providerConnections", (env) => new ProviderConnectionRepository(env));
+  }
+
+  public get integrationDefinitions(): IntegrationDefinitionRepository {
+    return this.resolve(
+      "integrationDefinitions",
+      (env) => new IntegrationDefinitionRepository(env),
+    );
   }
 
   public get recipeComposioTriggers(): RecipeComposioTriggerRepository {

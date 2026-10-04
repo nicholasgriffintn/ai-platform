@@ -20,6 +20,8 @@ An event trigger may carry a user-authored condition. Claim a durable trigger-an
 
 Bridge files through authorised private Sources and Outputs and bounded Session mounts. Persist governed Outputs, not upstream URLs. Keep arguments, results, credentials and upstream Session IDs out of Activity metadata.
 
+Grant built-in connector operations directly to projects without requiring a recipe. For native custom MCP services, keep personal encrypted credentials separate from shared definitions, pin exact project operations to immutable reviewed schemas and use the same approval journal for every action. Recheck live grants and service schemas before dispatch, require explicit reviewed upgrades and revoke definition credentials atomically.
+
 ## Consequences
 
 Exact approvals and durable cleanup add storage and a second request. A crash between execution and result persistence cannot be resolved safely by retry alone. See the [operator guide](../../operations/composio-connectors.md) for setup and recovery.

@@ -24,6 +24,8 @@ Load membership and scope from authoritative storage before constructing this co
 
 Use `ownsResource`, `hasProEntitlement` and `operationIsGranted` for their common boundaries. Ownership keeps strict identifier types: numeric `7` and string `"7"` do not grant each other access.
 
+Require an owner or admin for `capability.manage` on project tools, built-in connector grants and custom integration definitions or grants. A member may connect their own account and use explicitly granted actions, but cannot expand project access. Recheck membership, exclusions, the reviewed definition and live teammate grant before execution and approval replay; a shared definition never shares its creator's credentials.
+
 ## Add a policy
 
 Add a typed context shape in `src/authorisation.ts` and a Cedar statement in the owning `src/policies` module. Context types derive from the same shapes used to build the Cedar schema. Call the shared evaluator from the owning service and protect the relevant denial, revocation or approval behaviour with a test.

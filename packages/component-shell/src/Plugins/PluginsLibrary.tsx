@@ -10,6 +10,10 @@ import {
 } from "../Capabilities/useCapabilityLibraryController.js";
 import { ConnectorAccountsPanel } from "../Connectors/ConnectorAccountsPanel.js";
 import { ConnectorSetupDialogs } from "../Connectors/ConnectorSetupDialogs.js";
+import { NativeIntegrationGroup } from "../Integrations/NativeIntegrationGroup.js";
+import { NativeIntegrationsPanel } from "../Integrations/NativeIntegrationsPanel.js";
+import { ProjectConnectorGrantPanel } from "../Integrations/ProjectConnectorGrantPanel.js";
+import { useNativeIntegrationCatalogue } from "../Integrations/useNativeIntegrationCatalogue.js";
 import { PluginsConnectorGroup } from "./PluginsConnectorGroup.js";
 import { usePluginsController } from "./usePluginsController.js";
 
@@ -23,8 +27,21 @@ export function PluginsLibrary({
   navigation?: ReactNode;
 }) {
   const controller = usePluginsController();
+  const nativeIntegrations = useNativeIntegrationCatalogue(scope);
 
   const renderGroup = (group: ProjectCapabilityKindGroup): ReactNode => {
+    if (group.kind === "integration") {
+      return (
+        <NativeIntegrationGroup
+          group={group}
+          definitionsById={nativeIntegrations.definitionsById}
+          capabilities={scope.capabilities}
+          requiresProjectGrant={scope.requiresExplicitEnablement}
+          onSelect={nativeIntegrations.setSelectedId}
+        />
+      );
+    }
+
     if (group.kind !== "connector") {
       return null;
     }
@@ -43,7 +60,7 @@ export function PluginsLibrary({
     <CapabilityLibrary
       scope={scope}
       kinds={PLUGIN_LIBRARY_KINDS}
-      extraItems={controller.items}
+      extraItems={[...controller.items, ...nativeIntegrations.items]}
       renderGroup={renderGroup}
       navigation={navigation}
       title="Plugins"
@@ -53,6 +70,7 @@ export function PluginsLibrary({
           : "The apps, skills, tools and integrations Polychat can use on your behalf."
       }
     >
+      <NativeIntegrationsPanel scope={scope} controller={nativeIntegrations} />
       <ConnectorSetupDialogs controller={controller.connectorSetup} />
       <ConnectorDetailsModal
         connector={controller.selectedConnector}
@@ -69,10 +87,18 @@ export function PluginsLibrary({
         isDisconnecting={controller.isDisconnecting}
         accountsSlot={
           controller.selectedConnector ? (
-            <ConnectorAccountsPanel
-              provider={controller.selectedConnector.id}
-              providerName={controller.selectedConnector.name}
-            />
+            <div className="space-y-6">
+              <ConnectorAccountsPanel
+                provider={controller.selectedConnector.id}
+                providerName={controller.selectedConnector.name}
+              />
+              {scope.requiresExplicitEnablement && (
+                <ProjectConnectorGrantPanel
+                  provider={controller.selectedConnector.id}
+                  scope={scope}
+                />
+              )}
+            </div>
           ) : null
         }
       />
@@ -82,7 +108,7 @@ export function PluginsLibrary({
         title="Disconnect Connector"
         description={
           controller.connectorToDisconnect
-            ? `Disconnect ${controller.connectorToDisconnect.name}? Recipes using it will stop working until you reconnect.`
+            ? `Disconnect ${controller.connectorToDisconnect.name}? Projects and recipes using this account will stop working until you reconnect.`
             : ""
         }
         confirmText="Disconnect Connector"

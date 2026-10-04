@@ -1,4 +1,4 @@
-import type { ChatHostedToolSettings } from "@ngriffin_uk/polychat-schemas";
+import { NATIVE_MCP_TOOL_NAME, type ChatHostedToolSettings } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { MODEL_TOOL_DEFINITIONS } from "~/modules/experiences/application/config";
@@ -9,6 +9,8 @@ import {
   validateModelToolConfiguration,
 } from "~/modules/tools/application/modelToolConfiguration";
 import type { ProjectCapabilityRow } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
+
+import { resolveProjectRecipeConnectorScope } from "./projectRecipeConnectorScope";
 
 interface ResolvedProjectTools {
   enabledTools: string[];
@@ -42,6 +44,8 @@ export function validateProjectToolConfiguration(
 
 export function resolveProjectTools(capabilities: ProjectCapabilityRow[]): ResolvedProjectTools {
   const callableToolIds = getCallableToolIds();
+
+  capabilities = capabilities.filter((capability) => !capability.excluded);
   const enabledTools = capabilities
     .filter(
       (capability) => capability.kind === "tool" && callableToolIds.has(capability.capability_id),
@@ -63,6 +67,14 @@ export function resolveProjectTools(capabilities: ProjectCapabilityRow[]): Resol
   }
 
   enabledTools.push(...configuredModelTools.configuredToolIds);
+
+  if (resolveProjectRecipeConnectorScope(capabilities).providers.length > 0) {
+    enabledTools.push("use_recipe_connector");
+  }
+
+  if (capabilities.some((capability) => capability.kind === "integration")) {
+    enabledTools.push(NATIVE_MCP_TOOL_NAME);
+  }
 
   return {
     enabledTools: [...new Set(enabledTools)],
