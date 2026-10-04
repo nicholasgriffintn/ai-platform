@@ -28,7 +28,7 @@
     "@ngriffin_uk/polychat-library-react": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
-    "@tanstack/react-query": "5.102.8",
+    "@tanstack/react-query": "5.104.0",
     "@tauri-apps/api": "2.12.0",
     "react": "catalog:",
     "react-dom": "catalog:",
