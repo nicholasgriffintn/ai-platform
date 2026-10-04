@@ -1,8 +1,10 @@
-import type {
-  DecisionAnswers,
-  DecisionQuestions,
-  DecisionState,
-  DecisionUsage,
+import {
+  DECISION_CORRECTIONS_STATE_KEY,
+  type DecisionAnswers,
+  type DecisionCorrection,
+  type DecisionQuestions,
+  type DecisionState,
+  type DecisionUsage,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { DecideRequest, DecideResult, DecisionFunctions, DecisionScope } from "./decisions.js";
@@ -45,6 +47,25 @@ export interface EvaluateDecisionPolicyRequest<
   state: DecisionState;
   policy: DecisionPolicyDefinition<TQuestions, TOutcome>;
   fallback: TOutcome;
+  corrections?: readonly DecisionCorrection[];
+}
+
+export function withDecisionCorrections(
+  state: DecisionState,
+  corrections: readonly DecisionCorrection[] | undefined,
+): DecisionState {
+  if (!corrections?.length || typeof state === "string" || Array.isArray(state)) {
+    return state;
+  }
+
+  return {
+    ...state,
+    [DECISION_CORRECTIONS_STATE_KEY]: corrections.map((correction) => ({
+      recommended: correction.recommended,
+      corrected: correction.corrected,
+      summary: correction.summary,
+    })),
+  };
 }
 
 export interface DecisionPolicyResult<TOutcome extends string> {
@@ -147,7 +168,7 @@ export function createDecisionPolicyFunctions(decisions: Pick<DecisionFunctions,
           conversationId: request.conversationId,
           model: request.model,
           provider: request.provider,
-          state: request.state,
+          state: withDecisionCorrections(request.state, request.corrections),
           questions: request.policy.questions,
         };
 

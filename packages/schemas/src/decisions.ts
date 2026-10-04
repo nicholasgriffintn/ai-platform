@@ -382,3 +382,30 @@ export function formatDecisionEntry(value: DecisionEntry): string {
     .map(([key, entry]) => `${key}: ${formatDecisionEntry(entry)}`)
     .join(", ");
 }
+
+export const DECISION_CORRECTIONS_STATE_KEY = "priorCorrections";
+export const DECISION_CORRECTION_MAX_SUMMARY_LENGTH = 500;
+
+export const decisionCorrectionSchema = z.object({
+  recommended: z.string().min(1).max(64),
+  corrected: z.string().min(1).max(64),
+  summary: z.string().min(1).max(DECISION_CORRECTION_MAX_SUMMARY_LENGTH),
+});
+export type DecisionCorrection = z.infer<typeof decisionCorrectionSchema>;
+
+export const decisionFeedbackRequestSchema = z
+  .object({
+    policyKey: z.string().min(1).max(120),
+    policyVersion: z.string().min(1).max(32),
+    recommended: z.string().min(1).max(64),
+    corrected: z.string().min(1).max(64),
+    summary: z.string().trim().min(1).max(DECISION_CORRECTION_MAX_SUMMARY_LENGTH),
+  })
+  .strict();
+export type DecisionFeedbackRequest = z.infer<typeof decisionFeedbackRequestSchema>;
+
+export const decisionFeedbackResponseSchema = z.object({
+  recorded: z.boolean(),
+  policyKey: z.string(),
+  policyVersion: z.string(),
+});

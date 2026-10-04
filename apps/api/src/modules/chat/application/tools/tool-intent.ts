@@ -14,6 +14,7 @@ import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
 import { ai } from "~/infrastructure/ai";
+import { loadDecisionCorrections } from "~/modules/decisions/application/feedback";
 import type { IEnv, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/tools/tool-intent" });
@@ -187,11 +188,18 @@ export async function verifyToolCallIntent(params: {
   permissions: readonly ToolPermission[];
   evidence: unknown;
 }) {
+  const corrections = await loadDecisionCorrections({
+    env: params.env,
+    user: params.user,
+    policy: TOOL_INTENT_POLICY,
+  });
+
   return ai.evaluateDecisionPolicy({
     env: params.env,
     user: params.user,
     completion_id: params.completionId,
     conversationId: params.conversationId,
+    corrections,
     state: {
       user_request: requestText(params.request),
       proposed_tool_call: {

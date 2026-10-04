@@ -904,6 +904,38 @@ export const teammateFeedback = sqliteTable(
 
 export type TeammateFeedbackRow = typeof teammateFeedback.$inferSelect;
 
+export const decisionFeedback = sqliteTable(
+  "decision_feedback",
+  {
+    id: text().primaryKey(),
+    policy_key: text().notNull(),
+    policy_version: text().notNull(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    recommended_outcome: text().notNull(),
+    corrected_outcome: text().notNull(),
+    summary: text().notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    policyIdx: index("decision_feedback_policy_idx").on(
+      table.policy_key,
+      table.policy_version,
+      table.created_at,
+    ),
+    userIdx: index("decision_feedback_user_idx").on(
+      table.user_id,
+      table.policy_key,
+      table.created_at,
+    ),
+  }),
+);
+
+export type DecisionFeedbackRow = typeof decisionFeedback.$inferSelect;
+
 export const authoredSkillRevision = sqliteTable(
   "authored_skill_revision",
   {
