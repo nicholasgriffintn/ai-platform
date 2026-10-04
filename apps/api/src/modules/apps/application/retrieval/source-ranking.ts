@@ -26,6 +26,28 @@ export interface SourceRankingResult<TSource extends RankableSource> {
   droppedCount: number;
 }
 
+export function mergeSearchSources<TSource extends RankableSource>(
+  batches: ReadonlyArray<readonly TSource[]>,
+): TSource[] {
+  const seen = new Set<string>();
+  const merged: TSource[] = [];
+
+  for (const batch of batches) {
+    for (const source of batch) {
+      const key = (source.url ?? "").trim().toLocaleLowerCase() || sourceText(source).slice(0, 200);
+
+      if (!key || seen.has(key)) {
+        continue;
+      }
+
+      seen.add(key);
+      merged.push(source);
+    }
+  }
+
+  return merged;
+}
+
 export function sourceText(source: RankableSource): string {
   const body = source.content || source.snippet || "";
   const text = source.title ? `${source.title}\n\n${body}` : body;

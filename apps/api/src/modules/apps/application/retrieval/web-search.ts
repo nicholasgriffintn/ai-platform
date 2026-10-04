@@ -9,7 +9,8 @@ import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { handleWebSearch } from "~/modules/search/application/web";
 import type { IEnv, IUser, SearchOptions, SearchProviderName } from "~/types";
 
-import { rankSearchSources } from "./source-ranking";
+import { planExpansionQueries } from "./query-expansion";
+import { mergeSearchSources, rankSearchSources } from "./source-ranking";
 import {
   webSearchAnswerSystemPrompt,
   webSearchSimilarQuestionsSystemPrompt,
@@ -76,12 +77,29 @@ export async function performDeepWebSearch(
   const searchAnswer = "answer" in rawSearchResult ? rawSearchResult.answer : undefined;
   const providerUsed = searchData.provider;
   const providerWarning = searchData.warning;
+  const expansionQueries =
+    options.search_depth === "advanced"
+      ? await planExpansionQueries({
+          env,
+          user,
+          completionId: completion_id,
+          query,
+          candidates: similarQuestions,
+        })
+      : [];
+  const expandedResults = await Promise.all(
+    expansionQueries.map((expansionQuery) =>
+      handleWebSearch({ provider: searchProvider, query: expansionQuery, options, env, user })
+        .then((result) => result.data.sources)
+        .catch(() => []),
+    ),
+  );
   const ranking = await rankSearchSources({
     env,
     user,
     completionId: completion_id,
     query,
-    sources: searchData.sources,
+    sources: mergeSearchSources([searchData.sources, ...expandedResults]),
   });
   const sources = ranking.sources;
 

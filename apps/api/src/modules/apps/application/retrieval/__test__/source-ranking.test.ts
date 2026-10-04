@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { selectRelevantSources, sourceText } from "../source-ranking";
+import { mergeSearchSources, selectRelevantSources, sourceText } from "../source-ranking";
 
 function ranked(scores: number[]) {
   return scores.map((score, index) => ({ document: { url: `https://e/${index}` }, score }));
@@ -34,5 +34,30 @@ describe("selectRelevantSources", () => {
 
     expect(result.sources).toHaveLength(4);
     expect(result.droppedCount).toBe(0);
+  });
+});
+
+describe("mergeSearchSources", () => {
+  it("keeps the first result for a url and drops later duplicates across searches", () => {
+    const merged = mergeSearchSources([
+      [{ url: "https://a", content: "first" }],
+      [
+        { url: "https://A", content: "duplicate with different case" },
+        { url: "https://b", content: "second" },
+      ],
+    ]);
+
+    expect(merged).toEqual([
+      { url: "https://a", content: "first" },
+      { url: "https://b", content: "second" },
+    ]);
+  });
+
+  it("falls back to content when a source has no url", () => {
+    const merged = mergeSearchSources([
+      [{ content: "same body" }, { content: "same body" }, { content: "other" }],
+    ]);
+
+    expect(merged).toHaveLength(2);
   });
 });
