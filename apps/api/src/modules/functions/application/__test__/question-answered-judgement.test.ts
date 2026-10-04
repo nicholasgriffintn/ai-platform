@@ -1,6 +1,7 @@
+import type { UserQuestion } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { IEnv, Message, UserQuestion } from "~/types";
+import type { IEnv, Message } from "~/types";
 
 const { evaluateDecisionPolicy } = vi.hoisted(() => ({ evaluateDecisionPolicy: vi.fn() }));
 
