@@ -1,10 +1,9 @@
-import {
-  DECISION_CORRECTIONS_STATE_KEY,
-  type DecisionAnswers,
-  type DecisionCorrection,
-  type DecisionQuestions,
-  type DecisionState,
-  type DecisionUsage,
+import type {
+  DecisionAnswers,
+  DecisionCorrection,
+  DecisionQuestions,
+  DecisionState,
+  DecisionUsage,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { DecideRequest, DecideResult, DecisionFunctions, DecisionScope } from "./decisions.js";
@@ -27,6 +26,7 @@ export interface DecisionPolicyDefinition<
   version: string;
   questions: TQuestions;
   evaluate(answers: DecisionAnswers<TQuestions>): DecisionPolicyRecommendation<TOutcome>;
+  calibrate?(state: DecisionState, corrections: readonly DecisionCorrection[]): DecisionState;
 }
 
 export interface DecisionPolicyReceipt<TOutcome extends string> {
@@ -50,27 +50,21 @@ export interface EvaluateDecisionPolicyRequest<
   corrections?: readonly DecisionCorrection[];
 }
 
-export function withDecisionCorrections(
-  state: DecisionState,
-  corrections: readonly DecisionCorrection[] | undefined,
-): DecisionState {
-  if (!corrections?.length || typeof state === "string" || Array.isArray(state)) {
-    return state;
-  }
-
-  return {
-    ...state,
-    [DECISION_CORRECTIONS_STATE_KEY]: corrections.map((correction) => ({
-      recommended: correction.recommended,
-      corrected: correction.corrected,
-      summary: correction.summary,
-    })),
-  };
-}
-
 export interface DecisionPolicyResult<TOutcome extends string> {
   outcome: TOutcome;
   receipt: DecisionPolicyReceipt<TOutcome>;
+}
+
+function calibratedState<TQuestions extends DecisionQuestions, TOutcome extends string>(
+  request: EvaluateDecisionPolicyRequest<TQuestions, TOutcome>,
+): DecisionState {
+  const corrections = request.corrections ?? [];
+
+  if (corrections.length === 0 || !request.policy.calibrate) {
+    return request.state;
+  }
+
+  return request.policy.calibrate(request.state, corrections);
 }
 
 export function defineDecisionPolicy<
@@ -168,7 +162,7 @@ export function createDecisionPolicyFunctions(decisions: Pick<DecisionFunctions,
           conversationId: request.conversationId,
           model: request.model,
           provider: request.provider,
-          state: withDecisionCorrections(request.state, request.corrections),
+          state: calibratedState(request),
           questions: request.policy.questions,
         };
 

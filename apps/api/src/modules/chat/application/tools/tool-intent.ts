@@ -76,6 +76,14 @@ export const TOOL_INTENT_POLICY = defineDecisionPolicy({
   key: "tool-intent",
   version: "1",
   questions: TOOL_INTENT_QUESTIONS,
+  calibrate: (state, corrections) => ({
+    ...(state as unknown as ToolIntentState),
+    priorDecisions: corrections.map((correction) => ({
+      recommended: correction.recommended,
+      chosenByUser: correction.corrected,
+      case: correction.summary,
+    })),
+  }),
   evaluate: (answers) => {
     const confidence = lowestSignalConfidence(answers);
 
@@ -122,6 +130,15 @@ export function requiresToolIntentVerification(params: {
     !params.alreadyApproved &&
     params.permissions.some((permission) => SIDE_EFFECT_PERMISSIONS.has(permission))
   );
+}
+
+interface ToolIntentState {
+  user_request: string;
+  proposed_tool_call: {
+    name: string;
+    permissions: string[];
+    evidence: DecisionEntry;
+  };
 }
 
 function requestText(input: string | { prompt: string } | undefined): string {

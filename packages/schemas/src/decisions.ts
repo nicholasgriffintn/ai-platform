@@ -383,7 +383,6 @@ export function formatDecisionEntry(value: DecisionEntry): string {
     .join(", ");
 }
 
-export const DECISION_CORRECTIONS_STATE_KEY = "priorCorrections";
 export const DECISION_CORRECTION_MAX_SUMMARY_LENGTH = 500;
 
 export const decisionCorrectionSchema = z.object({
