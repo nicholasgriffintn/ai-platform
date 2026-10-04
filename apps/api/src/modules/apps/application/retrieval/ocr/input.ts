@@ -1,4 +1,5 @@
 import type { OcrDocument } from "@ngriffin_uk/polychat-ai-providers";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type { OcrInput } from "@ngriffin_uk/polychat-schemas";
 import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -56,7 +57,7 @@ export async function resolveOcrInput(params: {
     );
   }
 
-  if (!params.projectId && record.created_by_user_id !== params.userId) {
+  if (!params.projectId && !ownsResource(params.userId, record.created_by_user_id)) {
     throw new AssistantError(
       "OCR input must be owned by the current user",
       ErrorType.FORBIDDEN,

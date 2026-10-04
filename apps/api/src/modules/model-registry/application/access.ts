@@ -1,3 +1,4 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type { ModelPlatformAction } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -37,7 +38,14 @@ export async function requireModelAction(
   const permissions = await loadModelPermissions(context.repositories, workspaceId);
   const actions = new Set(permissions.grants[access.role]);
 
-  if (!actions.has(action)) {
+  const isAuthorised = authorise("model.action", {
+    member: true,
+    role: access.role,
+    grants: [...actions],
+    requestedAction: action,
+  }).allowed;
+
+  if (!isAuthorised) {
     throw new AssistantError(
       `Your role cannot ${ACTION_LABELS[action]} in this workspace`,
       ErrorType.FORBIDDEN,

@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type { DelegationMemoryBinding } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -83,7 +84,7 @@ export async function resolveRunMemoryScope(params: {
     contextId &&
     (!userId ||
       !teammateContext ||
-      teammateContext.actorUserId !== userId ||
+      !ownsResource(userId, teammateContext.actorUserId) ||
       teammateContext.status !== "active" ||
       teammateContext.scope.type !== scopeType ||
       teammateContext.scope.id !== scopeId)

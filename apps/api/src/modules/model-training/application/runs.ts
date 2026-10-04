@@ -4,6 +4,7 @@ import {
   trainingMemoryBytes,
   trainingTokens,
 } from "@ngriffin_uk/polychat-library-model-registry";
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import {
   ACTIVE_TRAINING_RUN_STATUSES,
   MODEL_TRAINING_SYNC_TASK_TYPE,
@@ -267,10 +268,14 @@ export async function startTrainingRun(
     throw conflict(preflight.reason ?? "This run would break the budget");
   }
 
-  if (
-    preflight.decision === "needs_approval" &&
-    (!access.actions.has("approve") || access.separationOfDuties)
-  ) {
+  const isAuthorised = authorise("spend.authorise", {
+    required: preflight.decision === "needs_approval",
+    approved: false,
+    canApprove: access.actions.has("approve"),
+    separationOfDuties: access.separationOfDuties,
+  }).allowed;
+
+  if (!isAuthorised) {
     return {
       run: null,
       preflight,

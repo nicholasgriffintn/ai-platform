@@ -1,3 +1,4 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type { ModelBudget, SpendPreflight } from "@ngriffin_uk/polychat-schemas";
 
 export interface BudgetSpend {
@@ -31,27 +32,40 @@ export function preflightSpend(
     const remaining = budget.monthlyLimitUsd - spentUsd - committedUsd;
     const projected = spentUsd + committedUsd + estimate;
     const scope = budget.projectId ? "project" : "workspace";
+    const context = {
+      valid: [
+        spentUsd,
+        committedUsd,
+        estimate,
+        budget.monthlyLimitUsd,
+        budget.softLimitPercent,
+        budget.approvalAboveUsd ?? 0,
+      ].every((amount) => Number.isFinite(amount) && amount >= 0),
+      hardStop: budget.hardStop,
+      overMonthly: projected > budget.monthlyLimitUsd,
+      aboveApproval: budget.approvalAboveUsd !== null && estimate > budget.approvalAboveUsd,
+      unknownEstimate: estimateUsd === null,
+      overSoft: projected > (budget.monthlyLimitUsd * budget.softLimitPercent) / 100,
+    };
     let result: SpendPreflight;
 
-    if (projected > budget.monthlyLimitUsd && budget.hardStop) {
+    if (!authorise("spend.execute", context).allowed) {
       result = {
         decision: "blocked",
         estimateUsd,
         remainingUsd: remaining,
-        reason: `This would take the ${scope} past its $${budget.monthlyLimitUsd} monthly limit`,
+        reason: context.valid
+          ? `This would take the ${scope} past its $${budget.monthlyLimitUsd} monthly limit`
+          : "Spend cannot be authorised with invalid budget amounts",
       };
-    } else if (budget.approvalAboveUsd !== null && estimate > budget.approvalAboveUsd) {
+    } else if (!authorise("spend.unattended", context).allowed) {
       result = {
         decision: "needs_approval",
         estimateUsd,
         remainingUsd: remaining,
         reason: `Spend above $${budget.approvalAboveUsd} needs an approver`,
       };
-    } else if (
-      estimateUsd === null ||
-      projected > budget.monthlyLimitUsd ||
-      projected > (budget.monthlyLimitUsd * budget.softLimitPercent) / 100
-    ) {
+    } else if (!authorise("spend.silent", context).allowed) {
       result = {
         decision: "warn",
         estimateUsd,

@@ -2,6 +2,7 @@ import {
   getConnectorProviderConfig,
   isConnectorConnectionKindForAuth,
 } from "@ngriffin_uk/polychat-ai-integrations";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   MemoryDocument,
   UpdateMemoryDocumentInput,
@@ -126,7 +127,7 @@ export async function requireOwnedTeammateContext(
   const user = context.requireUser();
   const teammateContext = await context.repositories.teammateContexts.getById(contextId);
 
-  if (!teammateContext || teammateContext.actorUserId !== user.id) {
+  if (!teammateContext || !ownsResource(user.id, teammateContext.actorUserId)) {
     throw new AssistantError("Teammate context not found", ErrorType.NOT_FOUND, 404);
   }
 
@@ -258,7 +259,11 @@ export async function upsertTeammateConnectionGrant(
     input.connectionId,
   );
 
-  if (!connection || connection.user_id !== user.id || connection.status !== "connected") {
+  if (
+    !connection ||
+    !ownsResource(user.id, connection.user_id) ||
+    connection.status !== "connected"
+  ) {
     throw new AssistantError("Connection not found", ErrorType.NOT_FOUND, 404);
   }
 

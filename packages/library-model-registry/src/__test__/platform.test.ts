@@ -185,9 +185,33 @@ describe("spend preflight", () => {
     expect(preflightSpend([{ budget, spentUsd: 700, committedUsd: 0 }], 150).decision).toBe("warn");
     expect(preflightSpend([{ budget, spentUsd: 0, committedUsd: 0 }], 50).decision).toBe("allow");
   });
+
+  it("preserves fractional approval thresholds and denies invalid budget facts", () => {
+    const lines = [{ budget, spentUsd: 0, committedUsd: 0 }];
+
+    expect(preflightSpend(lines, 200).decision).toBe("allow");
+    expect(preflightSpend(lines, 200.0001).decision).toBe("needs_approval");
+    expect(preflightSpend(lines, Number.NaN).decision).toBe("blocked");
+    expect(preflightSpend([{ ...lines[0], spentUsd: Number.POSITIVE_INFINITY }], 1).decision).toBe(
+      "blocked",
+    );
+  });
 });
 
 describe("promotion gates", () => {
+  it("denies promotion when scores or thresholds are not finite", () => {
+    const scores = { accuracy: { mean: 0.9, low: 0.9, high: 0.9, n: 1 } };
+
+    expect(
+      evaluateGate(
+        { suiteId: "s", thresholds: { accuracy: 0.8 } },
+        { accuracy: { ...scores.accuracy, mean: Number.NaN } },
+      ).passed,
+    ).toBe(false);
+    expect(
+      evaluateGate({ suiteId: "s", thresholds: { accuracy: Number.NaN } }, scores).passed,
+    ).toBe(false);
+  });
   it("passes only when every threshold is met by the latest run", () => {
     const gate = { suiteId: "s", thresholds: { accuracy: 0.8, format: 0.95 } };
 

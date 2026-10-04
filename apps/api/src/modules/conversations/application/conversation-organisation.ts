@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   ConversationGroup,
   ConversationOrganisation,
@@ -175,7 +176,7 @@ async function authoriseGroupManagement(
     return;
   }
 
-  if (group.owner_user_id !== user.id) {
+  if (!ownsResource(user.id, group.owner_user_id)) {
     throw new AssistantError("Conversation group not found", ErrorType.NOT_FOUND, 404);
   }
 }
@@ -208,7 +209,7 @@ export async function moveConversationToGroup(
     const groupMatchesScope = group
       ? projectId
         ? group.project_id === projectId
-        : group.owner_user_id === user.id && group.project_id === null
+        : ownsResource(user.id, group.owner_user_id) && group.project_id === null
       : false;
 
     if (!group || !groupMatchesScope) {

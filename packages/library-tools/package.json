@@ -28,6 +28,7 @@
     "typecheck": "tsc -p tsconfig.typecheck.json"
   },
   "dependencies": {
+    "@ngriffin_uk/polychat-library-policy": "workspace:^",
     "@ngriffin_uk/polychat-library-registry": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",

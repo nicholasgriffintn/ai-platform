@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   DEFAULT_MODEL_TIER,
   modelTierSchema,
@@ -41,7 +42,7 @@ export async function resolveConversationModelSelection(
   const user = context.user ?? context.requireUser();
   const isPersonalConversation = !conversation.project_id;
 
-  if (isPersonalConversation && conversation.user_id !== user.id) {
+  if (isPersonalConversation && !ownsResource(user.id, conversation.user_id)) {
     return { conversationExists: true };
   }
 

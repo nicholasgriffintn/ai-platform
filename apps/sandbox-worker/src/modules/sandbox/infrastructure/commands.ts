@@ -3,61 +3,11 @@ import {
   createSandboxOutputRedactor,
   redactSandboxResult,
 } from "@ngriffin_uk/polychat-library-sandbox";
-import {
-  hasBlockedShellChainingOperators,
-  hasBlockedShellEvaluationOperators,
-  type SandboxTaskType,
-  type SandboxTrustLevel,
-} from "@ngriffin_uk/polychat-schemas";
+import type { SandboxTaskType } from "@ngriffin_uk/polychat-schemas";
 
 const GITHUB_HTTPS_REPO_REGEX =
   /^https:\/\/github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?\/?$/i;
 const GITHUB_SLUG_REPO_REGEX = /^([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?$/;
-
-const FORBIDDEN_COMMAND_PATTERNS: RegExp[] = [
-  /\brm\s+-rf\s+\/(?:\s|$)/i,
-  /\b(sudo|shutdown|reboot|mkfs|dd)\b/i,
-  /\b(curl|wget)\b[^\n]*\|/i,
-  /\bgit\s+(add|branch|checkout|commit|push|switch)\b/i,
-];
-
-const READ_ONLY_MUTATING_PATTERNS: RegExp[] = [
-  /\bgit\s+(add|commit|merge|rebase|cherry-pick|reset|checkout|switch|restore|clean|stash|tag|branch|push|pull)\b/i,
-  /\bgit\s+(apply|am)\b/i,
-  /\b(rm|mv|cp|mkdir|rmdir|touch|truncate|chmod|chown)\b/i,
-  /\b(npm|pnpm|yarn|bun)\s+(install|add|remove|update)\b/i,
-  /\b(pip|pip3|poetry)\s+(install|add|remove)\b/i,
-  /\b(?:sed|perl)\s+-i\b/i,
-  /\btee\b/i,
-];
-
-const NETWORK_COMMAND_PATTERNS: RegExp[] = [
-  /\b(curl|wget|httpie)\b/i,
-  /\b(npm|pnpm|yarn|bun)\s+(install|add|update|upgrade)\b/i,
-  /\b(pip|pip3|poetry)\s+(install|add)\b/i,
-  /\b(cargo)\s+(add|install)\b/i,
-  /\b(go)\s+(get|install)\b/i,
-];
-
-const RISKY_COMMAND_PATTERNS: RegExp[] = [
-  /\bgit\s+reset\b/i,
-  /\bgit\s+clean\b/i,
-  /\brm\s+-rf\b/i,
-  /\bmv\b/i,
-  /\bchmod\b/i,
-  /\bchown\b/i,
-  /\bdocker\b/i,
-];
-
-const READ_ONLY_BLOCKED_OPERATOR_PATTERNS: RegExp[] = [/(^|[^<])>(>|&)?/i, /<</i, /\bexec\b/i];
-
-const READ_ONLY_ALLOWED_COMMAND_PATTERNS: RegExp[] = [
-  /^git\s+(status|diff|log|show|rev-parse|ls-files|branch(?:\s+--show-current)?)(?:\s|$)/i,
-  /^(ls|pwd|find|cat|head|tail|wc|sort|uniq|cut|grep|rg|awk)\b/i,
-  /^sed\s+-n\b/i,
-  /^(npm|pnpm|yarn|bun)\s+(test|lint|check|verify|build|run\s+(test|lint|typecheck|type-check|check|verify|build))\b/i,
-  /^(pytest|tox|go\s+test|cargo\s+(test|check|clippy|fmt\s+--check)|jest|vitest|npx\s+vitest|tsc(?:\s|$)|eslint(?:\s|$)|ruff(?:\s|$)|mypy(?:\s|$)|uv\s+run\s+pytest)\b/i,
-];
 
 export type SandboxCommandResult = {
   success: boolean;
@@ -271,105 +221,7 @@ export function normaliseCommandLine(rawLine: string): string | null {
   return line;
 }
 
-export function assertSafeCommand(
-  command: string,
-  options?: {
-    readOnly?: boolean;
-    trustLevel?: SandboxTrustLevel;
-    allowNetwork?: boolean;
-    allowRisky?: boolean;
-  },
-) {
-  if (command.length > 500) {
-    throw new Error("Command is too long");
-  }
-
-  if (command.includes("\n") || command.includes("\r")) {
-    throw new Error(`Command contains unexpected newlines: ${command}`);
-  }
-
-  if (hasBlockedShellChainingOperators(command)) {
-    throw new Error(`Command contains blocked shell operators: ${command}`);
-  }
-
-  if (hasBlockedShellEvaluationOperators(command)) {
-    throw new Error(`Command contains blocked shell evaluation: ${command}`);
-  }
-
-  if (options?.readOnly) {
-    for (const pattern of READ_ONLY_BLOCKED_OPERATOR_PATTERNS) {
-      if (pattern.test(command)) {
-        throw new Error(`Command is blocked in read-only mode: ${command}`);
-      }
-    }
-
-    for (const pattern of READ_ONLY_MUTATING_PATTERNS) {
-      if (pattern.test(command)) {
-        throw new Error(`Command is blocked in read-only mode: ${command}`);
-      }
-    }
-
-    if (!READ_ONLY_ALLOWED_COMMAND_PATTERNS.some((pattern) => pattern.test(command))) {
-      throw new Error(`Command is not allowed in read-only mode: ${command}`);
-    }
-  }
-
-  for (const pattern of FORBIDDEN_COMMAND_PATTERNS) {
-    if (pattern.test(command)) {
-      throw new Error(`Command is blocked by sandbox policy: ${command}`);
-    }
-  }
-
-  const trustLevel = options?.trustLevel ?? "balanced";
-  const allowNetwork = options?.allowNetwork === true;
-  const allowRisky = options?.allowRisky === true;
-
-  if (trustLevel === "strict") {
-    if (!allowNetwork) {
-      for (const pattern of NETWORK_COMMAND_PATTERNS) {
-        if (pattern.test(command)) {
-          throw new Error(
-            `Command requires network or dependency installation and is blocked in strict mode: ${command}`,
-          );
-        }
-      }
-    }
-
-    if (!allowRisky) {
-      for (const pattern of RISKY_COMMAND_PATTERNS) {
-        if (pattern.test(command)) {
-          throw new Error(`Risky command is blocked in strict mode: ${command}`);
-        }
-      }
-    }
-  }
-
-  if (trustLevel === "balanced" && !allowNetwork) {
-    for (const pattern of NETWORK_COMMAND_PATTERNS) {
-      if (pattern.test(command)) {
-        throw new Error(`Network/dependency command is blocked in balanced mode: ${command}`);
-      }
-    }
-  }
-}
-
-export type CommandRiskLevel = "low" | "network" | "risky";
-
-export function getCommandRiskLevel(command: string): CommandRiskLevel {
-  for (const pattern of NETWORK_COMMAND_PATTERNS) {
-    if (pattern.test(command)) {
-      return "network";
-    }
-  }
-
-  for (const pattern of RISKY_COMMAND_PATTERNS) {
-    if (pattern.test(command)) {
-      return "risky";
-    }
-  }
-
-  return "low";
-}
+export { assertSafeCommand, getCommandRiskLevel, type CommandRiskLevel } from "./command-authority";
 
 export function formatCommandResult(
   command: string,

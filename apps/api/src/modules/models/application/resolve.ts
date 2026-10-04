@@ -17,6 +17,7 @@ import {
   type RerankingModelSelection,
 } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
   agentModelConfig,
   searchProviderSchema,
@@ -542,7 +543,7 @@ export const getAuxiliarySearchProvider = async (
   }
 
   if (requestedProvider) {
-    if (user?.plan_id === "pro") {
+    if (hasProEntitlement(user)) {
       return requestedProvider;
     }
 
@@ -591,7 +592,7 @@ export const getAuxiliarySearchProvider = async (
     }
   }
 
-  return user?.plan_id === "pro" ? "tavily" : "duckduckgo";
+  return hasProEntitlement(user) ? "tavily" : "duckduckgo";
 };
 
 export const getAuxiliaryResearchProvider = async (
@@ -630,7 +631,7 @@ export const getAuxiliaryResearchProvider = async (
         const hasApiKey = Boolean(setting?.hasApiKey);
         const isProviderMatch = setting?.provider_id === providerToUse;
 
-        return isProviderMatch && isEnabled && (user.plan_id === "pro" || hasApiKey);
+        return isProviderMatch && isEnabled && (hasProEntitlement(user) || hasApiKey);
       })
     : false;
 

@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   TeammateComputer,
   TeammateComputerAction,
@@ -34,7 +35,7 @@ async function requireRunningComputerRun(params: {
     !run ||
     run.attempt !== params.runAttempt ||
     run.status !== "running" ||
-    run.initiatorUserId !== user.id ||
+    !ownsResource(user.id, run.initiatorUserId) ||
     run.teammateContextId !== params.contextId
   ) {
     throw new AssistantError(

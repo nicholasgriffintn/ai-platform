@@ -5,7 +5,7 @@ import {
   FormTextarea,
   Switch,
 } from "@ngriffin_uk/polychat-component-ui";
-import { parseEvalCaseLines } from "@ngriffin_uk/polychat-library-model-registry";
+import { parseEvalCaseLines } from "@ngriffin_uk/polychat-library-model-registry/scoring";
 import { useGraders, useModelPlatformMutations } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 

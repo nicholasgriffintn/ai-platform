@@ -1,9 +1,15 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type { Context } from "hono";
 
 export const requireAdmin = async (ctx: Context, next: () => Promise<void>) => {
   const user = ctx.get("user");
 
-  if (!user?.role || (user.role !== "admin" && user.role !== "moderator")) {
+  const isAuthorised = authorise("platform.admin", {
+    role: user?.role ?? "",
+    strict: false,
+  }).allowed;
+
+  if (!isAuthorised) {
     return ctx.json(
       {
         status: "error",
@@ -19,7 +25,12 @@ export const requireAdmin = async (ctx: Context, next: () => Promise<void>) => {
 export const requireStrictAdmin = async (ctx: Context, next: () => Promise<void>) => {
   const user = ctx.get("user");
 
-  if (!user?.role || user.role !== "admin") {
+  const isAuthorised = authorise("platform.admin", {
+    role: user?.role ?? "",
+    strict: true,
+  }).allowed;
+
+  if (!isAuthorised) {
     return ctx.json(
       {
         status: "error",

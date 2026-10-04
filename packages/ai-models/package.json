@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@ngriffin_uk/polychat-library-model-catalogue": "workspace:^",
+    "@ngriffin_uk/polychat-library-policy": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-server": "workspace:^"
   },

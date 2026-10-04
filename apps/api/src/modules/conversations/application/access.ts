@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -17,7 +18,7 @@ export async function requireConversationAccess(
   const teammateContext =
     await context.repositories.teammateContexts.getByHomeConversationId(conversationId);
 
-  if (teammateContext && teammateContext.actorUserId !== user.id) {
+  if (teammateContext && !ownsResource(user.id, teammateContext.actorUserId)) {
     throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
   }
 
@@ -29,7 +30,7 @@ export async function requireConversationAccess(
     return conversation;
   }
 
-  if (conversation.user_id !== user.id) {
+  if (!ownsResource(user.id, conversation.user_id)) {
     throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
   }
 

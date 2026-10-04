@@ -1,10 +1,17 @@
 import {
+  authorise,
+  operationIsGranted,
+  type ToolPolicyContext,
+} from "@ngriffin_uk/polychat-library-policy";
+import {
   AGENT_MODE_CONFIGS,
   TOOL_PERMISSIONS,
   resolveAgentModeFromChatMode,
   type AgentMode,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
+
+import { toolDenialReason } from "./permission-reason.js";
 
 export interface ToolAccessSubject {
   id?: number | string;
@@ -83,10 +90,11 @@ export class PermissionChecker {
   checkRequestToolAccess(input: RequestPermissionCheckInput): RequestPermissionCheckResult {
     const access = this.checkToolAccess(input);
     const targetName = input.toolName.trim().toLowerCase();
-    const approved = Boolean(
-      input.approvedTools?.some(
-        (tool) => typeof tool === "string" && tool.trim().toLowerCase() === targetName,
+    const approved = operationIsGranted(
+      (input.approvedTools ?? []).flatMap((tool) =>
+        typeof tool === "string" ? [tool.trim().toLowerCase()] : [],
       ),
+      targetName,
     );
 
     return {
@@ -96,120 +104,52 @@ export class PermissionChecker {
   }
 
   checkToolAccess(input: PermissionCheckInput): PermissionCheckResult {
-    const resolvedMode = resolveAgentModeFromChatMode(input.mode);
-    const config = AGENT_MODE_CONFIGS[resolvedMode];
-    const enforceModePolicy = input.enforceModePolicy !== false;
-    const toolName = input.toolName;
-    const configuredPermissions = resolveToolPermissions(toolName, input.toolPermissions || []);
-    const permissions =
-      configuredPermissions.length > 0 ? configuredPermissions : DEFAULT_TOOL_PERMISSIONS;
+    const mode = resolveAgentModeFromChatMode(input.mode);
+    const config = AGENT_MODE_CONFIGS[mode];
+    const configured = resolveToolPermissions(input.toolName, input.toolPermissions);
+    const permissions = configured.length > 0 ? configured : DEFAULT_TOOL_PERMISSIONS;
+    const context: ToolPolicyContext = {
+      toolName: input.toolName,
+      toolType: input.toolType ?? "normal",
+      plan: input.user?.plan_id ?? "",
+      signedIn: Boolean(input.user?.id),
+      enforceMode: input.enforceModePolicy !== false,
+      permissions,
+      deniedTools: [...(input.deniedTools ?? [])],
+      modeDeniedTools: config.deniedTools,
+      modeAllowedTools: config.allowedTools,
+      modeDeniedPermissions: config.deniedPermissions,
+      modeAllowedPermissions: config.allowedPermissions,
+      requiredApprovalPermissions: [...(input.requireApprovalFor ?? [])],
+      modeApprovalPermissions: config.requiresApprovalFor,
+    };
+    const decision = authorise("tool.use", context);
 
-    if (input.toolType === "premium" && input.user?.plan_id !== "pro") {
+    if (!decision.allowed) {
       return {
         allowed: false,
         requiresApproval: false,
-        reason: "This tool requires a premium subscription",
-        mode: resolvedMode,
+        reason: toolDenialReason(decision.policyIds, context, mode),
+        mode,
         permissions,
       };
     }
 
-    if (input.toolType === "byok" && !input.user?.id) {
-      return {
-        allowed: false,
-        requiresApproval: false,
-        reason: "This tool requires a signed-in user",
-        mode: resolvedMode,
-        permissions,
-      };
-    }
-
-    if (input.deniedTools?.includes(toolName)) {
-      return {
-        allowed: false,
-        requiresApproval: false,
-        reason: `Tool "${toolName}" is not available to this teammate`,
-        mode: resolvedMode,
-        permissions,
-      };
-    }
-
-    if (enforceModePolicy && config.deniedTools.includes(toolName)) {
-      return {
-        allowed: false,
-        requiresApproval: false,
-        reason: `Tool "${toolName}" is not allowed in ${resolvedMode} mode`,
-        mode: resolvedMode,
-        permissions,
-      };
-    }
-
-    if (
-      enforceModePolicy &&
-      config.allowedTools.length > 0 &&
-      !config.allowedTools.includes(toolName)
-    ) {
-      return {
-        allowed: false,
-        requiresApproval: false,
-        reason: `Tool "${toolName}" is not enabled in ${resolvedMode} mode`,
-        mode: resolvedMode,
-        permissions,
-      };
-    }
-
-    const deniedByPermissions = enforceModePolicy
-      ? this.intersectPermissions(permissions, config.deniedPermissions)
-      : [];
-
-    if (deniedByPermissions.length > 0) {
-      return {
-        allowed: false,
-        requiresApproval: false,
-        reason: `Tool "${toolName}" is blocked in ${resolvedMode} mode (${deniedByPermissions.join(", ")})`,
-        mode: resolvedMode,
-        permissions,
-      };
-    }
-
-    if (enforceModePolicy && config.allowedPermissions.length > 0) {
-      const allowedSet = new Set(config.allowedPermissions);
-      const disallowed = permissions.filter((permission) => !allowedSet.has(permission));
-
-      if (disallowed.length > 0) {
-        return {
-          allowed: false,
-          requiresApproval: false,
-          reason: `Tool "${toolName}" is not compatible with ${resolvedMode} mode (${disallowed.join(", ")})`,
-          mode: resolvedMode,
-          permissions,
-        };
-      }
-    }
-
-    const requiredApprovalFor = this.intersectPermissions(permissions, [
-      ...(enforceModePolicy ? config.requiresApprovalFor : []),
-      ...(input.requireApprovalFor ?? []),
-    ]);
-    const requiresApproval = requiredApprovalFor.length > 0 && toolName !== "request_approval";
+    const requiresApproval = !authorise("tool.unattended", context).allowed;
+    const approvalPermissions = permissions.filter(
+      (permission) =>
+        context.requiredApprovalPermissions.includes(permission) ||
+        (context.enforceMode && context.modeApprovalPermissions.includes(permission)),
+    );
 
     return {
       allowed: true,
       requiresApproval,
       reason: requiresApproval
-        ? `Tool "${toolName}" requires approval in ${resolvedMode} mode (${requiredApprovalFor.join(", ")})`
+        ? `Tool "${input.toolName}" requires approval in ${mode} mode (${approvalPermissions.join(", ")})`
         : undefined,
-      mode: resolvedMode,
+      mode,
       permissions,
     };
-  }
-
-  private intersectPermissions(
-    permissions: ToolPermission[],
-    candidates: readonly ToolPermission[],
-  ) {
-    const candidateSet = new Set(candidates);
-
-    return permissions.filter((permission) => candidateSet.has(permission));
   }
 }

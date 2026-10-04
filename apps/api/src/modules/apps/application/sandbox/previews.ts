@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   SANDBOX_PREVIEW_ACCESS_TTL_SECONDS,
   sandboxPreviewAuthorisationResponseSchema,
@@ -106,7 +107,7 @@ function assertSessionMatchesClaims(
   if (
     session.previewId !== claims.preview_id ||
     session.originId !== claims.origin_id ||
-    session.userId !== Number(claims.sub) ||
+    !ownsResource(Number(claims.sub), session.userId) ||
     session.projectId !== claims.project_id ||
     session.serviceName !== claims.service_name ||
     session.port !== claims.port
@@ -323,7 +324,11 @@ export async function getSandboxPreview(params: {
     runId: params.runId,
   });
 
-  if (!session || session.userId !== params.userId || session.projectId !== run.projectId) {
+  if (
+    !session ||
+    !ownsResource(params.userId, session.userId) ||
+    session.projectId !== run.projectId
+  ) {
     throw new AssistantError("Sandbox preview not found", ErrorType.NOT_FOUND, 404);
   }
 

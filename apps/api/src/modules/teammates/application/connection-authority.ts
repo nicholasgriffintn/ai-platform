@@ -3,6 +3,7 @@ import {
   getConnectorProviderConfig,
   isConnectorConnectionKindForAuth,
 } from "@ngriffin_uk/polychat-ai-integrations";
+import { ownsResource, operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
 import type {
   RecipeConnectorProvider,
   TeammateRunConfiguration,
@@ -40,7 +41,7 @@ export async function resolveTeammateConnectorAuthority(params: {
 
   if (
     !teammateContext ||
-    teammateContext.actorUserId !== params.userId ||
+    !ownsResource(params.userId, teammateContext.actorUserId) ||
     teammateContext.status !== "active"
   ) {
     throw new AssistantError("Teammate context is unavailable", ErrorType.FORBIDDEN, 403);
@@ -71,7 +72,7 @@ export async function resolveTeammateConnectorAuthority(params: {
               {
                 ...grant,
                 allowedOperations: grant.allowedOperations.filter((operation) =>
-                  admitted.allowedOperations.includes(operation),
+                  operationIsGranted(admitted.allowedOperations, operation),
                 ),
               },
             ]
@@ -93,7 +94,7 @@ export async function resolveTeammateConnectorAuthority(params: {
 
   for (const item of resolved) {
     if (
-      item.connection?.user_id === params.userId &&
+      ownsResource(params.userId, item.connection?.user_id) &&
       item.connection.provider === params.provider &&
       item.connection.status === "connected" &&
       isConnectorConnectionKindForAuth(item.connection.kind, provider.auth.authType) &&

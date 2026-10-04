@@ -1,3 +1,4 @@
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { Tool } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -18,7 +19,7 @@ export async function getScopedAvailableTools(
   projectId?: string,
   workspaceId?: string,
 ): Promise<Tool[]> {
-  const tools = getAvailableTools(context.user?.plan_id === "pro", Boolean(context.user?.id));
+  const tools = getAvailableTools(hasProEntitlement(context.user), Boolean(context.user?.id));
   const computerAvailable = context.user?.id
     ? (await getComputerUseAvailability(context, projectId, workspaceId)).available
     : false;

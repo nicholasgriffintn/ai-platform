@@ -1,3 +1,4 @@
+import { authorise, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -55,7 +56,7 @@ export async function requireConversationScope(
     return;
   }
 
-  if (conversation.project_id !== null || conversation.user_id !== userId) {
+  if (conversation.project_id !== null || !ownsResource(userId, conversation.user_id)) {
     throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
   }
 }
@@ -84,7 +85,7 @@ export async function requireOutputRecordAccess(
   mutate = false,
 ): Promise<void> {
   if (!output.project_id) {
-    if (output.created_by_user_id !== userId) {
+    if (!ownsResource(userId, output.created_by_user_id)) {
       throw new AssistantError("Output not found", ErrorType.NOT_FOUND, 404);
     }
 
@@ -93,7 +94,15 @@ export async function requireOutputRecordAccess(
 
   const { role } = await requireProjectAccess(context, output.project_id);
 
-  if (mutate && role === "member" && output.created_by_user_id !== userId) {
+  const isAuthorised = authorise(mutate ? "resource.write" : "resource.read", {
+    actorId: String(userId),
+    ownerId: String(output.created_by_user_id),
+    scope: "project",
+    member: true,
+    role,
+  }).allowed;
+
+  if (!isAuthorised) {
     throw new AssistantError(
       "Only the output creator or a project admin can change it",
       ErrorType.FORBIDDEN,

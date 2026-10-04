@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   createSandboxPreviewRequestSchema,
   listRunInstructionsQuerySchema,
@@ -250,7 +251,7 @@ export function registerSandboxRunLifecycleRoutes(app: Hono): void {
         throw new AssistantError("Usage report does not match the run", ErrorType.PARAMS_ERROR);
       }
 
-      if (body.userId !== user.id) {
+      if (!ownsResource(user.id, body.userId)) {
         throw new AssistantError("Usage report does not match the run", ErrorType.PARAMS_ERROR);
       }
 

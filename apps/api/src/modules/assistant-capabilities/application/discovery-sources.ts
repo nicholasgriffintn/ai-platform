@@ -1,3 +1,4 @@
+import { hasProEntitlement, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   AssistantRecipe,
   RecipeConnectorManifest,
@@ -124,8 +125,8 @@ export async function loadCapabilityDiscoverySources(
 
     recipes = recipeList.recipes;
     connectors = connectorList.connectors;
-    installations = installationList.installations.filter(
-      (installation) => installation.userId === user.id,
+    installations = installationList.installations.filter((installation) =>
+      ownsResource(user.id, installation.userId),
     );
 
     if (projectId) {
@@ -149,7 +150,7 @@ export async function loadCapabilityDiscoverySources(
     connectors,
     enabledToolIds: resolveEnabledFunctionToolNames(request.request?.enabled_tools, user),
     installations,
-    isPro: user?.plan_id === "pro",
+    isPro: hasProEntitlement(user),
     isSignedIn: Boolean(user?.id),
     ...(request.memoryScope?.type === "project"
       ? { projectId: request.memoryScope.projectId }

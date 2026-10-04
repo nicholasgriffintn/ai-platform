@@ -1,3 +1,4 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
 import {
@@ -42,11 +43,11 @@ export function connectorOperationRequiresApproval(
 ): boolean {
   const config = getConnectorOperationConfig(providerId, operation);
 
-  if (!config) {
-    return true;
-  }
-
-  return config.access === "write" || config.destructive === true;
+  return !authorise("connector.unattended", {
+    supported: Boolean(config),
+    access: config?.access ?? "",
+    destructive: config?.destructive === true,
+  }).allowed;
 }
 
 export function getConnectorProviderOperationAccess(

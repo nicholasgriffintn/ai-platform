@@ -9,6 +9,7 @@ import {
   withoutOcrBatchProviderCleanup,
   type OcrDocument,
 } from "@ngriffin_uk/polychat-ai-providers";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   OCR_BATCH_POLLING_TASK_TYPE,
   type OcrBatchRequestItem,
@@ -84,7 +85,7 @@ async function buildBatchRequest(
     );
   }
 
-  if (!projectId && file.record.created_by_user_id !== userId) {
+  if (!projectId && !ownsResource(userId, file.record.created_by_user_id)) {
     throw new AssistantError(
       "OCR input must be owned by the current user",
       ErrorType.FORBIDDEN,

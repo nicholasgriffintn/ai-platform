@@ -2,6 +2,7 @@ import {
   buildInboundMessageContent,
   extractChatCompletionNotification,
 } from "@ngriffin_uk/polychat-ai-providers";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   createChatCompletionsJsonSchema,
   INBOUND_CHANNEL_IDS,
@@ -395,7 +396,7 @@ async function resolveBindingDelivery(params: {
     !binding ||
     !binding.enabled ||
     binding.channel !== params.data.channel ||
-    binding.created_by !== params.user.id
+    !ownsResource(params.user.id, binding.created_by)
   ) {
     return { status: "channel_unavailable" };
   }

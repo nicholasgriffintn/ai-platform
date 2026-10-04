@@ -1,3 +1,4 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
@@ -48,7 +49,16 @@ export async function shareConversation(
 ): Promise<{ share_id: string }> {
   const conversation = await loadOwnedConversation(scope, conversationId, "share");
 
-  if (conversation.project_id) {
+  if (
+    !authorise("conversation.share", {
+      actorId: String(scope.user?.id),
+      ownerId:
+        typeof conversation.user_id === "number" || typeof conversation.user_id === "string"
+          ? String(conversation.user_id)
+          : "",
+      project: Boolean(conversation.project_id),
+    }).allowed
+  ) {
     throw new AssistantError(
       "Project conversations cannot be shared publicly",
       ErrorType.FORBIDDEN,
@@ -102,7 +112,12 @@ export async function getPublicConversation(
     throw new AssistantError("Shared conversation not found", ErrorType.NOT_FOUND);
   }
 
-  if (!conversation.is_public) {
+  if (
+    !authorise("conversation.public", {
+      project: Boolean(conversation.project_id),
+      isPublic: Boolean(conversation.is_public),
+    }).allowed
+  ) {
     throw new AssistantError("This conversation is not publicly shared", ErrorType.FORBIDDEN);
   }
 

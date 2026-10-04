@@ -1,4 +1,5 @@
 import type { AudioResponseFormat } from "@ngriffin_uk/polychat-ai-providers";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
@@ -95,7 +96,7 @@ export const handleTextToSpeech = async (
     );
   }
 
-  if (user?.id && user.plan_id !== "pro") {
+  if (user?.id && !hasProEntitlement(user)) {
     if (!(await hasUserProviderApiKey({ env, user, providerName: speechSettings.provider }))) {
       throw new AssistantError(
         `Speech generation requires a configured ${speechSettings.provider} provider key`,

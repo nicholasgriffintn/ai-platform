@@ -362,6 +362,9 @@ importers:
       '@ngriffin_uk/polychat-library-model-registry':
         specifier: workspace:^
         version: link:../../packages/library-model-registry
+      '@ngriffin_uk/polychat-library-policy':
+        specifier: workspace:^
+        version: link:../../packages/library-policy
       '@ngriffin_uk/polychat-library-registry':
         specifier: workspace:^
         version: link:../../packages/library-registry
@@ -893,6 +896,9 @@ importers:
       '@ngriffin_uk/polychat-library-interactions':
         specifier: workspace:^
         version: link:../../packages/library-interactions
+      '@ngriffin_uk/polychat-library-policy':
+        specifier: workspace:^
+        version: link:../../packages/library-policy
       '@ngriffin_uk/polychat-library-sandbox':
         specifier: workspace:^
         version: link:../../packages/library-sandbox
@@ -1069,6 +1075,9 @@ importers:
       '@ngriffin_uk/polychat-library-composio':
         specifier: workspace:^
         version: link:../library-composio
+      '@ngriffin_uk/polychat-library-policy':
+        specifier: workspace:^
+        version: link:../library-policy
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../schemas
@@ -1131,6 +1140,9 @@ importers:
       '@ngriffin_uk/polychat-library-model-catalogue':
         specifier: workspace:^
         version: link:../library-model-catalogue
+      '@ngriffin_uk/polychat-library-policy':
+        specifier: workspace:^
+        version: link:../library-policy
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../schemas
@@ -2381,12 +2393,34 @@ importers:
 
   packages/library-model-registry:
     dependencies:
+      '@ngriffin_uk/polychat-library-policy':
+        specifier: workspace:^
+        version: link:../library-policy
       '@ngriffin_uk/polychat-schemas':
         specifier: workspace:^
         version: link:../schemas
       '@ngriffin_uk/polychat-utility-core':
         specifier: workspace:^
         version: link:../utility-core
+    devDependencies:
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.3
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.3)(@vitest/browser-playwright@4.1.11)(@vitest/browser-preview@4.1.11)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.1)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
+
+  packages/library-policy:
+    dependencies:
+      '@cedar-policy/cedar-wasm':
+        specifier: 4.13.0
+        version: 4.13.0
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -2661,6 +2695,9 @@ importers:
 
   packages/library-sandbox:
     dependencies:
+      '@ngriffin_uk/polychat-library-policy':
+        specifier: workspace:^
+        version: link:../library-policy
       '@ngriffin_uk/polychat-utility-core':
         specifier: workspace:^
         version: link:../utility-core
@@ -2767,6 +2804,9 @@ importers:
 
   packages/library-tools:
     dependencies:
+      '@ngriffin_uk/polychat-library-policy':
+        specifier: workspace:^
+        version: link:../library-policy
       '@ngriffin_uk/polychat-library-registry':
         specifier: workspace:^
         version: link:../library-registry
@@ -3128,6 +3168,9 @@ packages:
 
   '@cacheable/utils@2.5.0':
     resolution: {integrity: sha512-buipgOVDkkPXNR5+xBpDw7Zk2n1EvU7qBJCNUcL7rhQ//kfpOXPAvQ511Os0vpLYJ1pZnvudNytkQt2hst3wqA==}
+
+  '@cedar-policy/cedar-wasm@4.13.0':
+    resolution: {integrity: sha512-1omEd/J0c7RjcfSUWiXZc6zk6XUs1IuY7Yk9TVysoKV/LpFWIk45RpjvRFVioPUR3RQmgA/DaqKhK3pucbBx1A==}
 
   '@cfworker/json-schema@4.1.1':
     resolution: {integrity: sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==}
@@ -10827,6 +10870,8 @@ snapshots:
     dependencies:
       hashery: 1.5.1
       keyv: 5.6.0
+
+  '@cedar-policy/cedar-wasm@4.13.0': {}
 
   '@cfworker/json-schema@4.1.1': {}
 

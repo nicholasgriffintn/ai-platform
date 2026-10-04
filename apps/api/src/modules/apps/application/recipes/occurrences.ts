@@ -1,4 +1,5 @@
 import { extractChatCompletionText } from "@ngriffin_uk/polychat-ai-providers";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type { ChatRun, TeammateContext } from "@ngriffin_uk/polychat-schemas";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -32,7 +33,7 @@ export async function ensureRecipeOccurrenceConversation(params: {
       },
     );
   } else if (
-    existing.user_id !== params.user.id ||
+    !ownsResource(params.user.id, existing.user_id) ||
     (typeof existing.project_id === "string" ? existing.project_id : undefined) !== params.projectId
   ) {
     throw new Error("Recipe occurrence conversation identity is already in use");
@@ -60,7 +61,7 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
 
   if (
     !currentContext ||
-    currentContext.actorUserId !== params.user.id ||
+    !ownsResource(params.user.id, currentContext.actorUserId) ||
     currentContext.status !== "active" ||
     currentContext.homeConversationId !== params.teammateContext.homeConversationId ||
     currentContext.teammateId !== params.teammateContext.teammateId
@@ -77,7 +78,7 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
 
   if (
     !installation ||
-    installation.userId !== params.user.id ||
+    !ownsResource(params.user.id, installation.userId) ||
     installation.status !== "active" ||
     installation.teammateContextId !== currentContext.id
   ) {

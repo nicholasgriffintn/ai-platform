@@ -1,4 +1,4 @@
-import type { WorkspaceRole } from "@ngriffin_uk/polychat-schemas";
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import { isPlatformTeammateId, listPlatformTeammateIds } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -59,9 +59,6 @@ export function resolveProjectTeammateIds(params: {
   return [...new Set([...granted, ...inherited])];
 }
 
-const TEAMMATE_READ_ROLES: readonly WorkspaceRole[] = ["owner", "admin", "member"];
-const TEAMMATE_WRITE_ROLES: readonly WorkspaceRole[] = ["owner", "admin"];
-
 export function isWorkspaceTeammate(teammate: Pick<Teammate, "owner_scope_type">): boolean {
   return teammate.owner_scope_type === "workspace";
 }
@@ -83,30 +80,25 @@ export async function assertTeammateAccess(
   action: TeammateAccessAction,
   userId: number,
 ): Promise<void> {
-  if (isPlatformTeammate(teammate)) {
-    if (action === "write") {
-      throw new AssistantError(
-        "Platform teammates are maintained by Polychat and cannot be changed here",
-        ErrorType.FORBIDDEN,
-        403,
-      );
-    }
+  const access = isWorkspaceTeammate(teammate)
+    ? await requireWorkspaceAccess(context, teammate.owner_scope_id)
+    : null;
+  const decision = authorise(action === "write" ? "teammate.write" : "teammate.read", {
+    actorId: String(userId),
+    ownerId: teammate.owner_scope_id,
+    scope: teammate.owner_scope_type,
+    member: Boolean(access),
+    role: access?.role ?? "",
+  });
 
-    return;
-  }
-
-  if (isWorkspaceTeammate(teammate)) {
-    await requireWorkspaceAccess(
-      context,
-      teammate.owner_scope_id,
-      action === "write" ? TEAMMATE_WRITE_ROLES : TEAMMATE_READ_ROLES,
+  if (!decision.allowed) {
+    throw new AssistantError(
+      isPlatformTeammate(teammate)
+        ? "Platform teammates are maintained by Polychat and cannot be changed here"
+        : "Forbidden",
+      ErrorType.FORBIDDEN,
+      403,
     );
-
-    return;
-  }
-
-  if (teammate.owner_scope_id !== String(userId)) {
-    throw new AssistantError("Forbidden", ErrorType.FORBIDDEN, 403);
   }
 }
 

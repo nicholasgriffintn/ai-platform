@@ -1,6 +1,7 @@
 import { hashSecret } from "@ngriffin_uk/auth-core";
 import { importHmacSecret, signJwt, verifyJwt, type JwtClaims } from "@ngriffin_uk/auth-jwt";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { generateId } from "@ngriffin_uk/polychat-utility-server/id";
 
@@ -233,7 +234,7 @@ export async function exchangeNativeAuthCode({
   const sessionTokenHash = await hashSecret(sessionId);
   const session = await serviceContext.repositories.sessions.getSessionWithJwt(sessionTokenHash);
 
-  if (!session || session.user_id !== userId) {
+  if (!session || !ownsResource(userId, session.user_id)) {
     logger.warn("native sign-in code rejected", {
       reason: session ? "session-owner" : "session-missing",
     });

@@ -1,3 +1,4 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type {
   ConversationType,
   ModelTier,
@@ -979,30 +980,36 @@ export class WorkspaceRepository extends BaseRepository {
   }
 
   async canAccessConversation(conversationId: string, userId: number): Promise<boolean> {
-    const row = await this.runQuery<{ allowed: number }>(
-      `SELECT EXISTS(
-				SELECT 1 FROM conversation c
-				JOIN user access_user ON access_user.id = ?
-				LEFT JOIN project p ON p.id = c.project_id
-				LEFT JOIN workspace_member wm
-					ON wm.workspace_id = p.workspace_id AND wm.user_id = access_user.id
-				WHERE c.id = ? AND (
-					(c.project_id IS NULL AND c.user_id = access_user.id)
-					OR (
-						c.project_id IS NOT NULL
-						AND access_user.plan_id = 'pro'
-						AND wm.user_id IS NOT NULL
-					)
-				)
-				AND NOT EXISTS (
-					SELECT 1 FROM teammate_context tc
-					WHERE tc.home_conversation_id = c.id AND tc.actor_user_id != access_user.id
-				)
-			) AS allowed`,
+    const row = await this.runQuery<{
+      user_id: number;
+      project_id: string | null;
+      plan_id: string | null;
+      member_user_id: number | null;
+      teammate_actor_id: number | null;
+    }>(
+      `SELECT c.user_id, c.project_id, access_user.plan_id,
+        wm.user_id AS member_user_id, tc.actor_user_id AS teammate_actor_id
+       FROM conversation c
+       JOIN user access_user ON access_user.id = ?
+       LEFT JOIN project p ON p.id = c.project_id
+       LEFT JOIN workspace_member wm ON wm.workspace_id = p.workspace_id AND wm.user_id = access_user.id
+       LEFT JOIN teammate_context tc ON tc.home_conversation_id = c.id
+       WHERE c.id = ?`,
       [userId, conversationId],
       true,
     );
 
-    return row?.allowed === 1;
+    if (!row) {
+      return false;
+    }
+
+    return authorise("conversation.access", {
+      actorId: String(userId),
+      ownerId: String(row.user_id),
+      project: row.project_id !== null,
+      plan: row.plan_id ?? "",
+      member: row.member_user_id !== null,
+      teammateActorId: row.teammate_actor_id === null ? "" : String(row.teammate_actor_id),
+    }).allowed;
   }
 }

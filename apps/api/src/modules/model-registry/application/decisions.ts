@@ -1,4 +1,5 @@
 import { needsHumanDecision, uncoveredMatches } from "@ngriffin_uk/polychat-library-model-registry";
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type {
   DecisionsResponse,
   ModelDecision,
@@ -159,7 +160,16 @@ export async function resolveDecision(
   if (separationOfDuties && input.state === "approved") {
     const version = await repositories.modelAssets.getVersion(workspaceId, decision.version_id);
 
-    if (decision.requested_by === userId || version?.created_by === userId) {
+    const isAuthorised = [decision.requested_by, version?.created_by].every(
+      (requestedBy) =>
+        authorise("model.approve", {
+          separationOfDuties,
+          actorId: String(userId),
+          requestedBy: requestedBy === null || requestedBy === undefined ? "" : String(requestedBy),
+        }).allowed,
+    );
+
+    if (!isAuthorised) {
       throw new AssistantError(
         "Separation of duties: someone other than the requester or author must approve",
         ErrorType.FORBIDDEN,

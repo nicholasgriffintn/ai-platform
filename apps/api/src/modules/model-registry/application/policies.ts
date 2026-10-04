@@ -2,11 +2,13 @@ import {
   DEFAULT_WORKSPACE_POLICY_RULES,
   evaluatePolicies,
   hashPolicyRules,
+  validateGovernanceRules,
   type PolicySubject,
   type PolicySubjectDataset,
   type PolicySubjectRoute,
   type ScopedPolicy,
 } from "@ngriffin_uk/polychat-library-model-registry";
+import { InvalidPolicyError } from "@ngriffin_uk/polychat-library-policy";
 import type {
   DatasetGovernance,
   ModelEvidence,
@@ -24,13 +26,25 @@ import type { RepositoryManager } from "~/infrastructure/database/repositoryMana
 import type { ModelAssetRecord, ModelVersionRecord } from "../infrastructure/ModelAssetRepository";
 import { WORKSPACE_POLICY_SCOPE_KEY } from "../infrastructure/ModelGovernanceRepository";
 import type { ModelRouteRecord } from "../infrastructure/ModelRouteRepository";
-import { requireModelAction, requireWorkspaceProject } from "./access";
+import { badRequest, requireModelAction, requireWorkspaceProject } from "./access";
 import { toModelEvidence, toModelPolicy } from "./mappers";
 
 export interface PolicyStack {
   workspace: ModelPolicy;
   project: ModelPolicy | null;
   scoped: ScopedPolicy[];
+}
+
+function requireValidGovernanceRules(rules: UpsertPolicyRequest["rules"]) {
+  try {
+    return validateGovernanceRules(rules);
+  } catch (error) {
+    if (error instanceof InvalidPolicyError || error instanceof RangeError) {
+      throw badRequest(error.message);
+    }
+
+    throw error;
+  }
 }
 
 async function defaultWorkspacePolicy(workspaceId: string): Promise<ModelPolicy> {
@@ -192,11 +206,12 @@ export async function upsertPolicy(
   const enforcement = projectId
     ? "advisory"
     : (request.enforcement ?? existing?.enforcement ?? "advisory");
-  const hash = await hashPolicyRules(request.rules);
+  const rules = requireValidGovernanceRules(request.rules);
+  const hash = await hashPolicyRules(rules);
   const saved = await context.repositories.modelGovernance.savePolicy({
     workspaceId,
     projectId,
-    rules: request.rules,
+    rules,
     hash,
     enforcement,
     updatedBy: userId,
@@ -214,7 +229,7 @@ export async function upsertPolicy(
         revision: saved.revision,
         hash,
         enforcement,
-        ruleIds: request.rules.map((rule) => rule.id),
+        ruleIds: rules.map((rule) => rule.id),
       },
     });
   }
@@ -232,12 +247,13 @@ export async function dryRunPolicy(
   const projectId = await requireWorkspaceProject(context, workspaceId, request.projectId);
   const repositories = context.repositories;
   const current = await loadPolicyStack(repositories, workspaceId, projectId);
-  const candidateHash = await hashPolicyRules(request.rules);
+  const rules = requireValidGovernanceRules(request.rules);
+  const candidateHash = await hashPolicyRules(rules);
   const candidate: ScopedPolicy = {
     id: "dry-run",
     hash: candidateHash,
     scope: projectId ? "project" : "workspace",
-    rules: request.rules,
+    rules,
   };
   const proposed: ScopedPolicy[] = projectId
     ? [current.scoped[0], candidate]

@@ -1,9 +1,9 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import {
   DEFAULT_MODEL_TIER,
   getModelDisplayName,
   isActiveModel,
   isLineupEligibleModel,
-  isModelSelectableForAccount,
   isTextInputChatModel,
   resolveLineupCandidate,
   resolveModelTierAlternate,
@@ -23,14 +23,17 @@ export function getExecutableModelsForAccount(
   models: ModelConfig,
   user?: AccountPlan,
 ): ModelConfig {
-  const isPro = user?.plan_id === "pro";
-
   return Object.fromEntries(
     Object.entries(models).filter(
       ([, model]) =>
-        isActiveModel(model) &&
-        isModelSelectableForAccount(model, isPro) &&
-        (model.isPlatformEnabled !== false || model.isByokEnabled === true),
+        authorise("model.execute", {
+          plan: user?.plan_id ?? "",
+          active: isActiveModel(model),
+          free: model.isFree === true,
+          byok: model.isByokEnabled === true,
+          onDevice: model.runsOn === "device",
+          platformEnabled: model.isPlatformEnabled !== false,
+        }).allowed,
     ),
   );
 }
@@ -39,13 +42,16 @@ export function getModelCredentialAuthority(
   model: Pick<ModelConfigItem, "isByokEnabled" | "isFree" | "isPlatformEnabled">,
   user?: AccountPlan,
 ): CredentialAuthority {
-  if (model.isPlatformEnabled === false && model.isByokEnabled) {
-    return "byok";
-  }
-
-  const requiresByok = user?.plan_id !== "pro" && !model.isFree && model.isByokEnabled;
-
-  return requiresByok ? "byok" : "platform";
+  return authorise("model.platform", {
+    plan: user?.plan_id ?? "",
+    active: true,
+    free: model.isFree === true,
+    byok: model.isByokEnabled === true,
+    onDevice: false,
+    platformEnabled: model.isPlatformEnabled !== false,
+  }).allowed
+    ? "platform"
+    : "byok";
 }
 
 export interface TierModelOptions {

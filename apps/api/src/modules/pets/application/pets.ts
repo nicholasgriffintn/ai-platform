@@ -1,5 +1,6 @@
 import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
   DEFAULT_PET_PRESET_SLUG,
   PET_DESCRIPTION_MAX_LENGTH,
@@ -28,7 +29,7 @@ import type { IUser } from "~/types";
 const logger = getLogger({ prefix: "services/pets" });
 
 function assertPetAuthoring(user: IUser): void {
-  if (user.plan_id !== "pro") {
+  if (!hasProEntitlement(user)) {
     throw new AssistantError(
       "Uploading and generating pets requires a Pro plan",
       ErrorType.AUTHORISATION_ERROR,

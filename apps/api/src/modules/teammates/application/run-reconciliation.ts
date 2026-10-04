@@ -1,4 +1,5 @@
 import { extractMessageNotification } from "@ngriffin_uk/polychat-ai-providers";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   isTerminalChatRunStatus,
   recipeExecutionTaskDataSchema,
@@ -270,7 +271,11 @@ async function reconcileRoutineRun(params: {
     params.installationId,
   );
 
-  if (!teammateContext || !installation || teammateContext.actorUserId !== params.user.id) {
+  if (
+    !teammateContext ||
+    !installation ||
+    !ownsResource(params.user.id, teammateContext.actorUserId)
+  ) {
     return;
   }
 

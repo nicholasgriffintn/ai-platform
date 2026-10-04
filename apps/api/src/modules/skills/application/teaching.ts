@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { buildSkillDocument } from "@ngriffin_uk/polychat-library-skills-catalogue";
 import type {
   AuthoredSkillVersionedDocument,
@@ -55,7 +56,7 @@ export async function createTeachingSkillDraft(
     input.teammateContextId,
   );
 
-  if (!teammateContext || teammateContext.actorUserId !== userId) {
+  if (!teammateContext || !ownsResource(userId, teammateContext.actorUserId)) {
     throw new AssistantError("Teammate context not found", ErrorType.NOT_FOUND, 404);
   }
 

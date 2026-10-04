@@ -1,3 +1,4 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type {
   InternalServiceScope,
   InternalServiceTokenClaims,
@@ -45,7 +46,21 @@ export function requireAuthenticatedService(
 ): InternalServiceTokenClaims {
   const service = ctx.get("servicePrincipal") as InternalServiceTokenClaims | undefined;
 
-  if (!service || !service.scopes.includes(scope)) {
+  if (!service) {
+    throw new AssistantError(
+      "This endpoint requires an authorised internal service.",
+      ErrorType.AUTHORISATION_ERROR,
+      403,
+    );
+  }
+
+  const isAuthorised = authorise("service.call", {
+    authenticated: true,
+    scopes: service.scopes,
+    requiredScope: scope,
+  }).allowed;
+
+  if (!isAuthorised) {
     throw new AssistantError(
       "This endpoint requires an authorised internal service.",
       ErrorType.AUTHORISATION_ERROR,

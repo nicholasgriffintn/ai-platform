@@ -1,5 +1,6 @@
 import { hostManifest } from "@ngriffin_uk/polychat-ai-model-providers";
 import { estimateMonthlyHostingCost } from "@ngriffin_uk/polychat-library-model-registry";
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type { DeploymentSpendAction } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -57,11 +58,14 @@ export async function authoriseDeploymentSpend(
     throw conflict(preflight.reason ?? "This change would exceed the budget");
   }
 
-  if (
-    preflight.decision === "needs_approval" &&
-    !approved &&
-    (!access.actions.has("approve") || access.separationOfDuties)
-  ) {
+  const isAuthorised = authorise("spend.authorise", {
+    required: preflight.decision === "needs_approval",
+    approved,
+    canApprove: access.actions.has("approve"),
+    separationOfDuties: access.separationOfDuties,
+  }).allowed;
+
+  if (!isAuthorised) {
     const request = await recordSpendRequest(context.repositories, {
       workspaceId: deployment.workspace_id,
       projectId: deployment.project_id,

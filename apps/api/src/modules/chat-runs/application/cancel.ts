@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   ChatRunCommandReceiptResponse,
   CancelChatRunRequest,
@@ -24,7 +25,7 @@ export async function handleCancelChatRun(
   const user = context.requireUser();
   const run = await requireChatRunAccess(context, runId);
 
-  if (run.initiatorUserId !== user.id) {
+  if (!ownsResource(user.id, run.initiatorUserId)) {
     throw new AssistantError(
       "Only the run initiator can cancel this run",
       ErrorType.FORBIDDEN,

@@ -8,6 +8,7 @@ import {
   withOcrBatchProviderCleanup as withProviderCleanup,
   withoutOcrBatchProviderCleanup as withoutProviderCleanup,
 } from "@ngriffin_uk/polychat-ai-providers";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { pollingSchedule } from "@ngriffin_uk/polychat-library-tasks";
 import { OCR_BATCH_POLLING_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -60,7 +61,7 @@ function readPollingData(message: TaskMessage): OcrBatchPollingData | null {
     typeof data.pollAttempt !== "number" ||
     !Number.isInteger(data.pollAttempt) ||
     data.pollAttempt < 0 ||
-    message.user_id !== data.userId ||
+    !ownsResource(data.userId, message.user_id) ||
     (message.project_id ?? undefined) !== data.projectId
   ) {
     return null;
@@ -437,7 +438,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
       !output ||
       output.capability_id !== "ocr" ||
       output.kind !== "ocr_batch" ||
-      output.created_by_user_id !== data.userId ||
+      !ownsResource(data.userId, output.created_by_user_id) ||
       (output.project_id ?? undefined) !== data.projectId ||
       (output.status !== "pending" && !existingCleanup)
     ) {
@@ -600,7 +601,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
       record.capability_id === "ocr" &&
       record.kind === "ocr_batch_result" &&
       record.parent_output_id === output.id &&
-      record.created_by_user_id === user.id &&
+      ownsResource(user.id, record.created_by_user_id) &&
       record.project_id === (output.projectId ?? null) &&
       record.storage_key === key;
     const existingResult =

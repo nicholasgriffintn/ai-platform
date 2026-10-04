@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { Goal, RunProvenance } from "@ngriffin_uk/polychat-schemas";
 import { isAgentExecutionMode } from "@ngriffin_uk/polychat-schemas";
 import { sleep } from "@ngriffin_uk/polychat-utility-core";
@@ -109,7 +110,7 @@ export class ChatOrchestrator {
   ) {
     const user = chatOptions.context?.user;
 
-    if (!user?.id || user.plan_id !== "pro" || !chatOptions.completion_id) {
+    if (!user?.id || !hasProEntitlement(user) || !chatOptions.completion_id) {
       return undefined;
     }
 

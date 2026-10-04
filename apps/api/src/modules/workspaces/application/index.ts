@@ -1,3 +1,4 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type {
   AddProjectCapabilityInput,
   CreateProjectInput,
@@ -98,9 +99,9 @@ export async function getWorkspace(
   const [projects, members, invitations] = await Promise.all([
     context.repositories.workspaces.listProjects(workspaceId),
     context.repositories.workspaces.listMembers(workspaceId),
-    role === "member"
-      ? Promise.resolve([])
-      : context.repositories.workspaces.listInvitations(workspaceId),
+    authorise("workspace.membership", { actorRole: role, targetRole: "", newRole: "" }).allowed
+      ? context.repositories.workspaces.listInvitations(workspaceId)
+      : Promise.resolve([]),
   ]);
 
   return {
@@ -133,7 +134,13 @@ export async function updateWorkspaceMember(
     throw new AssistantError("Workspace member not found", ErrorType.NOT_FOUND, 404);
   }
 
-  if (access.role === "admin" && (target.role === "admin" || role === "admin")) {
+  if (
+    !authorise("workspace.membership", {
+      actorRole: access.role,
+      targetRole: target.role,
+      newRole: role,
+    }).allowed
+  ) {
     throw new AssistantError(
       "Only the workspace owner can manage administrators",
       ErrorType.FORBIDDEN,
@@ -179,7 +186,13 @@ export async function removeWorkspaceMember(
     throw new AssistantError("Use the leave workspace action", ErrorType.PARAMS_ERROR, 400);
   }
 
-  if (access.role === "admin" && target.role === "admin") {
+  if (
+    !authorise("workspace.membership", {
+      actorRole: access.role,
+      targetRole: target.role,
+      newRole: "",
+    }).allowed
+  ) {
     throw new AssistantError(
       "Only the workspace owner can remove administrators",
       ErrorType.FORBIDDEN,
@@ -334,7 +347,10 @@ export async function inviteWorkspaceMember(
     "admin",
   ]);
 
-  if (input.role === "admin" && role !== "owner") {
+  if (
+    !authorise("workspace.membership", { actorRole: role, targetRole: "", newRole: input.role })
+      .allowed
+  ) {
     throw new AssistantError(
       "Only workspace owners can invite administrators",
       ErrorType.FORBIDDEN,
@@ -601,7 +617,16 @@ export async function addProjectCapability(
   const user = context.requireUser();
   const { project, role } = await requireProjectAccess(context, projectId);
 
-  if (input.kind === "tool" && role === "member") {
+  if (
+    input.kind === "tool" &&
+    !authorise("capability.manage", {
+      kind: input.kind,
+      role,
+      existing: false,
+      actorId: String(user.id),
+      creatorId: "",
+    }).allowed
+  ) {
     throw new AssistantError(
       "Only project admins can manage project tools",
       ErrorType.FORBIDDEN,
@@ -614,7 +639,16 @@ export async function addProjectCapability(
       capability.kind === input.kind && capability.capability_id === input.capabilityId,
   );
 
-  if (existing && input.kind !== "tool" && existing.created_by !== user.id) {
+  if (
+    existing &&
+    !authorise("capability.manage", {
+      kind: input.kind,
+      role,
+      existing: true,
+      actorId: String(user.id),
+      creatorId: String(existing.created_by),
+    }).allowed
+  ) {
     throw new AssistantError(
       "Only the member who attached this capability can manage it",
       ErrorType.FORBIDDEN,
@@ -664,17 +698,19 @@ export async function removeProjectCapability(
     throw new AssistantError("Project capability not found", ErrorType.NOT_FOUND, 404);
   }
 
-  if (capability.kind === "tool") {
-    if (role === "member") {
-      throw new AssistantError(
-        "Only project admins can manage project tools",
-        ErrorType.FORBIDDEN,
-        403,
-      );
-    }
-  } else if (capability.created_by !== user.id) {
+  if (
+    !authorise("capability.manage", {
+      kind: capability.kind,
+      role,
+      existing: true,
+      actorId: String(user.id),
+      creatorId: String(capability.created_by),
+    }).allowed
+  ) {
     throw new AssistantError(
-      "Only the member who attached this capability can manage it",
+      capability.kind === "tool"
+        ? "Only project admins can manage project tools"
+        : "Only the member who attached this capability can manage it",
       ErrorType.FORBIDDEN,
       403,
     );

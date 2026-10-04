@@ -11,6 +11,8 @@ Use [`polychat-setup`](.agents/skills/polychat-setup/SKILL.md) as setup/ops refe
 - Keep wire contracts in `packages/schemas` and validate against all consumers.
 - Keep API/package boundaries in place. Avoid coupling `component-*` packages to routers, stores, or API clients except `component-shell`.
 - Keep authority checks at I/O boundaries. Verify personal vs project scope, reversibility, and owner permissions on every boundary.
+- Use `packages/library-policy` for Cedar authorisation decisions. Load current trusted facts in the owning module and keep signatures, tenant filters, lease fences and atomic grant consumption at their existing boundaries. Follow [the policy package README](packages/library-policy/README.md) when adding actions or governance rules.
+- Keep documentation in application/package READMEs and the `polychat-setup` skill references. Do not add standalone documentation under `docs`.
 - Keep hosted browser sessions bound to their creator and credential source. Send sign-in values only through dedicated approval events outside model input and stored tool output.
 - Use `pnpm` for dependency updates and lockfile updates only when necessary.
 

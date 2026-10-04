@@ -8,6 +8,7 @@ import {
   type AsyncInvocationMetadata,
 } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type { ConversationType, ModelTier, PermissionMode } from "@ngriffin_uk/polychat-schemas";
 import { permissionModeSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -389,7 +390,7 @@ export class ConversationManager {
     }
 
     if (!conversation.project_id) {
-      return conversation.user_id === this.user.id;
+      return ownsResource(this.user.id, conversation.user_id);
     }
 
     if (!hasPlanEntitlement(this.user.plan_id, "pro")) {

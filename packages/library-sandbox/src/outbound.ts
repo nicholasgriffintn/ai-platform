@@ -1,3 +1,5 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
+
 export const TOOLS_ORIGIN = "https://tools.polychat.invalid";
 
 export type OutboundAllowlist = "all" | "none" | readonly string[];
@@ -14,31 +16,30 @@ export type OutboundDecision =
   | { kind: "block"; reason: string };
 
 export function isHostAllowed(host: string, allowlist: OutboundAllowlist): boolean {
-  if (allowlist === "all") {
-    return true;
-  }
-
-  if (allowlist === "none") {
-    return false;
-  }
-
   const candidate = host.toLowerCase();
+  const hostMatched =
+    typeof allowlist !== "string" &&
+    allowlist.some((pattern) => {
+      const normalised = pattern.trim().toLowerCase();
 
-  return allowlist.some((pattern) => {
-    const normalised = pattern.trim().toLowerCase();
+      if (!normalised) {
+        return false;
+      }
 
-    if (!normalised) {
-      return false;
-    }
+      if (normalised.startsWith("*.")) {
+        const suffix = normalised.slice(1);
 
-    if (normalised.startsWith("*.")) {
-      const suffix = normalised.slice(1);
+        return candidate.endsWith(suffix) && candidate.length > suffix.length;
+      }
 
-      return candidate.endsWith(suffix) && candidate.length > suffix.length;
-    }
+      return candidate === normalised;
+    });
 
-    return candidate === normalised;
-  });
+  return authorise("sandbox.network", {
+    protocolAllowed: true,
+    mode: typeof allowlist === "string" ? allowlist : "list",
+    hostMatched,
+  }).allowed;
 }
 
 export function parseToolRequest(url: URL, toolsOrigin = TOOLS_ORIGIN): string | null {
@@ -63,12 +64,18 @@ export function decideOutbound(props: OutboundGatewayProps, url: URL): OutboundD
   const tool = parseToolRequest(url, props.toolsOrigin ?? TOOLS_ORIGIN);
 
   if (tool !== null) {
-    return props.invocationId
+    return authorise("sandbox.tool", { attached: Boolean(props.invocationId) }).allowed
       ? { kind: "tool", tool }
       : { kind: "block", reason: "This sandbox has no tools attached" };
   }
 
-  if (url.protocol !== "https:" && url.protocol !== "http:") {
+  if (
+    !authorise("sandbox.network", {
+      protocolAllowed: url.protocol === "https:" || url.protocol === "http:",
+      mode: "all",
+      hostMatched: false,
+    }).allowed
+  ) {
     return { kind: "block", reason: `Protocol ${url.protocol} is not allowed` };
   }
 

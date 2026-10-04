@@ -5,6 +5,7 @@ import {
   DEFAULT_WORKSPACE_POLICY_RULES,
   evaluatePolicies,
   isVerdictCovered,
+  validateGovernanceRules,
   type PolicySubject,
 } from "../index.js";
 
@@ -37,6 +38,61 @@ const workspace = (rules: PolicyRule[] = DEFAULT_WORKSPACE_POLICY_RULES) => ({
 });
 
 describe("evaluatePolicies", () => {
+  it("validates native Cedar before accepting policies and blocks malformed subject facts", () => {
+    const rules: PolicyRule[] = [
+      {
+        id: "remote",
+        effect: "review",
+        when: {
+          type: "cedar",
+          metadataOnly: true,
+          source:
+            'permit(principal, action == Polychat::Action::"governance.match", resource) when { context.remoteCode };',
+        },
+      },
+    ];
+
+    expect(validateGovernanceRules(rules)).toEqual(rules);
+    expect(() =>
+      validateGovernanceRules([
+        {
+          ...rules[0],
+          when: {
+            type: "cedar",
+            metadataOnly: false,
+            source: "permit(principal, action, resource) when { context.missing };",
+          },
+        },
+      ]),
+    ).toThrow("Invalid Cedar policy");
+    const clean = {
+      kind: "model" as const,
+      source: "huggingface" as const,
+      attributes,
+      evidence: inspected,
+    };
+
+    expect(evaluatePolicies(clean, [workspace(rules)]).effect).toBe("allow");
+    expect(
+      evaluatePolicies({ ...clean, attributes: { ...attributes, remoteCode: true } }, [
+        workspace(rules),
+      ]).effect,
+    ).toBe("review");
+    const invalid = evaluatePolicies(
+      { ...clean, attributes: { ...attributes, parameterCount: Number.NaN } },
+      [workspace(rules)],
+    );
+
+    expect(invalid.effect).toBe("block");
+    expect(invalid.matches[0].evaluationFailed).toBe(true);
+    expect(
+      isVerdictCovered(
+        invalid,
+        [{ verdict: invalid, isException: true, expiresAt: null }],
+        new Date(),
+      ),
+    ).toBe(false);
+  });
   it("allows a clean, permissive, inspected model under the defaults", () => {
     const verdict = evaluatePolicies(
       { kind: "model", source: "huggingface", attributes, evidence: inspected },
@@ -249,5 +305,17 @@ describe("isVerdictCovered", () => {
         now,
       ),
     ).toBe(false);
+  });
+
+  it("reopens review when a policy revision changes or an expiry is malformed", () => {
+    const old = verdict(match("remote-code", "review"));
+    const current = {
+      ...old,
+      matches: old.matches.map((item) => ({ ...item, policyHash: "new-hash" })),
+    };
+    const approval = { verdict: old, isException: true, expiresAt: null };
+
+    expect(isVerdictCovered(current, [approval], now)).toBe(false);
+    expect(isVerdictCovered(old, [{ ...approval, expiresAt: "invalid" }], now)).toBe(false);
   });
 });

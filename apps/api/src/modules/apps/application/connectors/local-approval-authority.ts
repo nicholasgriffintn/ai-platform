@@ -2,6 +2,7 @@ import {
   getConnectorProviderConfig,
   RECIPE_CONNECTOR_CONNECTION_KIND,
 } from "@ngriffin_uk/polychat-ai-integrations";
+import { authorise, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTeammateConnectorAuthority } from "~/modules/teammates/application/connection-authority";
@@ -25,7 +26,7 @@ async function requireLocalConnection(params: {
 
   if (
     !connection ||
-    connection.user_id !== params.userId ||
+    !ownsResource(params.userId, connection.user_id) ||
     connection.provider !== params.provider ||
     connection.kind !== RECIPE_CONNECTOR_CONNECTION_KIND ||
     connection.status !== "connected"
@@ -65,11 +66,16 @@ export const resolveLocalApprovalAuthority: ResolveConnectorApprovalAuthority = 
       provider: provider.id,
     });
 
-    if (
-      authority.connection.id !== connection.id ||
-      authority.grantRevision !== params.approval.authorityRevision ||
-      !authority.allowedOperations.includes(params.approval.operation)
-    ) {
+    const isAuthorised = authorise("grant.revision", {
+      connectionId: authority.connection.id,
+      approvedConnectionId: connection.id,
+      revision: authority.grantRevision,
+      approvedRevision: params.approval.authorityRevision,
+      operations: authority.allowedOperations,
+      operation: params.approval.operation,
+    }).allowed;
+
+    if (!isAuthorised) {
       rejectConnectorApprovalAuthority();
     }
   } else if (params.approval.authorityRevision !== 0) {

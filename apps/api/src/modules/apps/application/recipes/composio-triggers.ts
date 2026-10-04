@@ -8,6 +8,7 @@ import {
   setComposioTriggerEnabled,
   upsertComposioTriggerInstance,
 } from "@ngriffin_uk/polychat-ai-integrations";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   RecipeComposioTrigger,
   RecipeComposioTriggerCreateRequest,
@@ -86,7 +87,7 @@ async function requireOwnedRecipeInstallation(params: {
   if (
     !record ||
     record.kind !== "recipe" ||
-    record.created_by_user_id !== params.userId ||
+    !ownsResource(params.userId, record.created_by_user_id) ||
     record.status === "archived"
   ) {
     throw new AssistantError("Recipe installation not found", ErrorType.NOT_FOUND, 404);
@@ -212,7 +213,10 @@ export async function createRecipeComposioTrigger(params: {
         remote.triggerId,
       );
 
-    if (existing?.created_by_user_id === params.userId && existing.installation_id === record.id) {
+    if (
+      ownsResource(params.userId, existing?.created_by_user_id) &&
+      existing.installation_id === record.id
+    ) {
       return toTrigger(existing);
     }
 

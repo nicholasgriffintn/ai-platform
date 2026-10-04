@@ -1,3 +1,4 @@
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { GlobalSearchQuery, GlobalSearchResponse } from "@ngriffin_uk/polychat-schemas";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
@@ -22,7 +23,7 @@ export async function searchPolychat(
   input: GlobalSearchQuery,
 ): Promise<GlobalSearchResponse> {
   const user = context.requireUser();
-  const canSearchWork = user.plan_id === "pro";
+  const canSearchWork = hasProEntitlement(user);
   const [conversations, workspaces, projects] = await Promise.all([
     context.repositories.conversations.searchAccessibleConversations(
       user.id,

@@ -1,3 +1,4 @@
+import { authorise, ownsResource, hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
   COMPUTER_USE_OPERATIONS,
   type ComputerUseAvailability,
@@ -68,7 +69,7 @@ export async function requireBrowserSessionAccess(
   const user = context.requireUser();
   const record = await context.repositories.browserSessions.get(id);
 
-  if (!record || record.user_id !== user.id || record.destroyed_at) {
+  if (!record || !ownsResource(user.id, record.user_id) || record.destroyed_at) {
     throw new AssistantError("Browser session not found", ErrorType.NOT_FOUND, 404);
   }
 
@@ -77,7 +78,15 @@ export async function requireBrowserSessionAccess(
     typeof conversation.project_id === "string" ? conversation.project_id : undefined;
   const workspaceId = await browserWorkspaceForProject(context, projectId);
 
-  if (workspaceId !== record.workspace_id) {
+  const isAuthorised = authorise("browser.use", {
+    actorId: String(user.id),
+    ownerId: String(record.user_id),
+    destroyed: Boolean(record.destroyed_at),
+    workspaceId: workspaceId ?? "",
+    sessionWorkspaceId: record.workspace_id ?? "",
+  }).allowed;
+
+  if (!isAuthorised) {
     throw new AssistantError("Browser session scope changed", ErrorType.FORBIDDEN, 403);
   }
 
@@ -95,7 +104,7 @@ export async function getComputerUseAvailability(
 ): Promise<ComputerUseAvailability> {
   const browser = await getBrowserAvailability(context, projectId, workspaceId);
   const hostedAvailable =
-    context.requireUser().plan_id === "pro" && Boolean(context.env.COMPUTER_WORKER);
+    hasProEntitlement(context.requireUser()) && Boolean(context.env.COMPUTER_WORKER);
 
   return {
     available: browser.available || hostedAvailable,

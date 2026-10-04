@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
   INTERNAL_SERVICE_AUTHORIZATION_HEADER,
   SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX,
@@ -192,7 +193,7 @@ export async function authMiddleware(context: Context, next: Next) {
     user = fulfilledResult?.status === "fulfilled" ? fulfilledResult.value : null;
   }
 
-  const isProUser = user?.plan_id === "pro";
+  const isProUser = hasProEntitlement(user);
 
   if (userAgent === "unknown") {
     throw new AssistantError("Bot access is not allowed.", ErrorType.AUTHENTICATION_ERROR);
@@ -275,7 +276,7 @@ export async function requireAuth(context: Context, next: Next) {
  */
 export async function allowRestrictedPaths(context: Context, next: Next) {
   const user = context.get("user");
-  const isProUser = user?.plan_id === "pro";
+  const isProUser = hasProEntitlement(user);
 
   if (!isProUser) {
     const anonymousUser = context.get("anonymousUser");

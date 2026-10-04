@@ -266,6 +266,59 @@ describe("registries larger than a D1 statement allows", () => {
 });
 
 describe("model governance", () => {
+  it("rejects invalid Cedar without persisting a policy revision or audit event", async () => {
+    await expect(
+      upsertPolicy(contextFor(ADMIN), WORKSPACE, {
+        rules: [
+          {
+            id: "invalid",
+            effect: "block",
+            when: {
+              type: "cedar",
+              metadataOnly: false,
+              source: "forbid(principal, action, resource) when { context.missing };",
+            },
+          },
+        ],
+      }),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    expect(await repositories.modelGovernance.listPolicies(WORKSPACE)).toEqual([]);
+    expect(
+      await database.prepare("SELECT COUNT(*) AS count FROM model_policy_revision").first("count"),
+    ).toBe(0);
+    expect(audit).toEqual([]);
+  });
+
+  it("stores native Cedar and reopens an approval after its rule source changes", async () => {
+    const versionId = await importedVersion({ remoteCode: true }, []);
+    const source =
+      'permit(principal, action == Polychat::Action::"governance.match", resource) when { context.remoteCode };';
+    const saved = await upsertPolicy(contextFor(ADMIN), WORKSPACE, {
+      rules: [
+        { id: "remote", effect: "review", when: { type: "cedar", metadataOnly: true, source } },
+      ],
+    });
+
+    expect(saved.rules[0].when).toEqual({ type: "cedar", metadataOnly: true, source });
+    const [pending] = await syncVersionReviews(repositories, WORKSPACE, versionId);
+
+    await resolveDecision(contextFor(ADMIN), WORKSPACE, pending.id, { state: "approved" });
+    expect(await isUsable(versionId)).toBe(true);
+    await upsertPolicy(contextFor(ADMIN), WORKSPACE, {
+      rules: [
+        {
+          ...saved.rules[0],
+          when: {
+            type: "cedar",
+            metadataOnly: true,
+            source: source.replace("context.remoteCode", "context.remoteCode || context.gated"),
+          },
+        },
+      ],
+    });
+    expect(await isUsable(versionId)).toBe(false);
+  });
+
   it("approves clean models automatically and records the system as approver", async () => {
     const versionId = await importedVersion({}, []);
 

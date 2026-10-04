@@ -1,3 +1,4 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import {
   MODEL_REGISTRY_EVAL_TASK_TYPE,
   type CreateEvalSuiteRequest,
@@ -84,7 +85,13 @@ export async function deleteEvalSuite(
     throw notFound("Eval suite");
   }
 
-  if (suite.created_by !== access.userId && !access.actions.has("manage_policy")) {
+  const isAuthorised = authorise("model.suite.delete", {
+    actorId: String(access.userId),
+    ownerId: String(suite.created_by),
+    managesPolicy: access.actions.has("manage_policy"),
+  }).allowed;
+
+  if (!isAuthorised) {
     throw new AssistantError(
       "Only the author or an admin can delete this suite",
       ErrorType.FORBIDDEN,

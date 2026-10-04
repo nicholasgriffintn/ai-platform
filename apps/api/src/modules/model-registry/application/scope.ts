@@ -1,4 +1,5 @@
 import { isVerdictCovered } from "@ngriffin_uk/polychat-library-model-registry";
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type {
   DatasetGovernance,
   ModelEvidence,
@@ -146,10 +147,12 @@ function standing(
 
   return {
     verdict,
-    usable:
-      version.status === "ready" &&
-      !isRevoked(scope, version.id, route?.id ?? null) &&
-      isVerdictCovered(verdict, approvals, now),
+    usable: authorise("model.use", {
+      ready: version.status === "ready",
+      revoked: isRevoked(scope, version.id, route?.id ?? null),
+      covered: isVerdictCovered(verdict, approvals, now),
+      active: route === null || route.status === "active",
+    }).allowed,
     decision: latestDecision(scope, version.id, route?.id ?? null),
   };
 }
@@ -175,7 +178,7 @@ export function routeStanding(
 
   const result = standing(scope, version, route, now);
 
-  return result ? { ...result, usable: result.usable && route.status === "active" } : null;
+  return result;
 }
 
 export function usableRoutes(scope: RegistryScope, now = new Date()): ModelRouteRecord[] {

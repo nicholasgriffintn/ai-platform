@@ -1,3 +1,4 @@
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -34,7 +35,7 @@ export const executeReplicateModel = async (req: ExecuteReplicateModelRequest) =
   }
 
   if (
-    req.user.plan_id !== "pro" &&
+    !hasProEntitlement(req.user) &&
     !(await hasUserProviderApiKey({ env, user: req.user, providerName: "replicate" }))
   ) {
     throw new AssistantError(

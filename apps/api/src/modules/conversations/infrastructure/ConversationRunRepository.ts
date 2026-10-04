@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   CHAT_RUN_PROTOCOL_VERSION,
   LIVE_DELEGATION_STATES,
@@ -474,7 +475,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       current.conversationId !== params.conversationId ||
       current.projectId !== (params.projectId ?? null) ||
       current.projectTaskId !== (params.projectTaskId ?? null) ||
-      current.initiatorUserId !== params.userId ||
+      !ownsResource(params.userId, current.initiatorUserId) ||
       !params.interactionId ||
       (current.status !== "awaiting_input" &&
         current.status !== "awaiting_approval" &&

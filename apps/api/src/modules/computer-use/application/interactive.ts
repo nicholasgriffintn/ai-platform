@@ -1,4 +1,5 @@
 import { pendingTakeover } from "@ngriffin_uk/polychat-library-interactions";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { ComputerControlInput } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -33,7 +34,7 @@ export async function executeComputerControl(
     };
   }
 
-  if (context.requireUser().plan_id !== "pro") {
+  if (!hasProEntitlement(context.requireUser())) {
     throw new AssistantError(
       "The built-in computer requires a premium subscription",
       ErrorType.FORBIDDEN,

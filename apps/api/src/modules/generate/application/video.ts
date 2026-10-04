@@ -1,3 +1,4 @@
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
@@ -79,7 +80,7 @@ export async function generateVideo({
     );
 
     if (
-      runtimeUser.plan_id !== "pro" &&
+      !hasProEntitlement(runtimeUser) &&
       !(await hasUserProviderApiKey({
         env: runtimeEnv,
         user: runtimeUser,
@@ -112,7 +113,7 @@ export async function generateVideo({
     const videoData = await ai.video(request, {
       provider: providerName,
       defaultProvider: DEFAULT_PROVIDER,
-      allowFallback: runtimeUser.plan_id === "pro",
+      allowFallback: hasProEntitlement(runtimeUser),
     });
 
     const isAsync = videoData?.status === "in_progress";

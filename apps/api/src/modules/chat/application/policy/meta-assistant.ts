@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   type ConversationType,
   isMetaToolName,
@@ -55,7 +56,7 @@ export async function resolveMetaAssistantScope(
     );
   }
 
-  if (stored && stored.user_id !== user.id) {
+  if (stored && !ownsResource(user.id, stored.user_id)) {
     throw new AssistantError("Conversation not found", ErrorType.NOT_FOUND, 404);
   }
 

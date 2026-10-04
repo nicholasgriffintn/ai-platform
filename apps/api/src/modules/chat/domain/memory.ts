@@ -1,4 +1,5 @@
 import { buildMemorySummaryContext } from "@ngriffin_uk/polychat-ai-prompts";
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 
 import type { IUser, IUserSettings } from "~/types";
 
@@ -28,12 +29,15 @@ export function resolveMemoryPolicy(params: {
   store?: boolean;
 }): MemoryPolicy {
   const { user, userSettings, store } = params;
-  const canUseMemory = store === true && Boolean(user?.id) && user?.plan_id === "pro";
-  const canRetrieve =
-    canUseMemory &&
-    (userSettings?.memories_save_enabled === true ||
-      userSettings?.memories_chat_history_enabled === true);
-  const canStore = canUseMemory && userSettings?.memories_save_enabled === true;
+  const context = {
+    plan: user?.plan_id ?? "",
+    signedIn: Boolean(user?.id),
+    store: store === true,
+    saveEnabled: userSettings?.memories_save_enabled === true,
+    historyEnabled: userSettings?.memories_chat_history_enabled === true,
+  };
+  const canRetrieve = authorise("memory.retrieve", context).allowed;
+  const canStore = authorise("memory.store", context).allowed;
   const toolNames = [
     ...(canRetrieve ? [MEMORY_SEARCH_TOOL_NAME] : []),
     ...(canStore ? [MEMORY_STORE_TOOL_NAME] : []),

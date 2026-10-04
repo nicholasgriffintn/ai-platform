@@ -1,3 +1,5 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
+
 import { MAX_TASK_LIMIT } from "~/config/limits";
 import { presentPublicTask } from "~/modules/tasks/application/task-presentation";
 import type { ApiToolDefinition } from "~/types/functions";
@@ -35,7 +37,7 @@ export const get_task_status: ApiToolDefinition = {
     if (taskId) {
       const task = await request.context.repositories.tasks.getTaskById(taskId);
 
-      if (!task || task.user_id !== userId) {
+      if (!task || !ownsResource(userId, task.user_id)) {
         return {
           status: "error",
           name: "get_task_status",

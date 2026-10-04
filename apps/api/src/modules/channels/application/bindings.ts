@@ -52,15 +52,7 @@ export async function createChannelBinding(
   }
 
   if (input.projectId) {
-    const { role } = await requireProjectAccess(context, input.projectId);
-
-    if (role === "member") {
-      throw new AssistantError(
-        "Only project admins can connect a channel to a project",
-        ErrorType.FORBIDDEN,
-        403,
-      );
-    }
+    await requireProjectAccess(context, input.projectId, ["owner", "admin"]);
   }
 
   if (input.teammateId) {

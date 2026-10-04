@@ -1,5 +1,6 @@
 import { userCreditActor, readCreditPosition } from "@ngriffin_uk/polychat-ai-billing";
 import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   DELEGATION_DEFAULT_MAX_CREDIT_MICROS,
   DELEGATION_RUN_TASK_TYPE,
@@ -187,7 +188,7 @@ export const delegate: ApiToolDefinition = {
 
       if (
         !selectedChild ||
-        selectedChild.user_id !== user.id ||
+        !ownsResource(user.id, selectedChild.user_id) ||
         !predecessor ||
         isLiveDelegationState(predecessor.state) ||
         predecessor.teammateId !== teammate.id ||

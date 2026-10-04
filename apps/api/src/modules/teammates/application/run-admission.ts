@@ -1,5 +1,6 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import { formatToolCalls } from "@ngriffin_uk/polychat-ai-providers";
+import { operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
 import {
   PROJECT_TASK_INTERACTION_TOOL_IDS,
   teammateRunConfigurationSchema,
@@ -142,7 +143,7 @@ export async function enqueueTeammateRun({
           {
             ...current,
             allowedOperations: current.allowedOperations.filter((operation) =>
-              admitted.allowedOperations.includes(operation),
+              operationIsGranted(admitted.allowedOperations, operation),
             ),
           },
         ];

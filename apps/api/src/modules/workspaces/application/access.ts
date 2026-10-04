@@ -1,3 +1,4 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type { ProjectCapabilityKind, WorkspaceRole } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { z } from "zod/v4";
@@ -20,7 +21,7 @@ export const projectScopeQuerySchema = z.object({
 export function requireWorkAccess(context: ServiceContext) {
   const user = context.requireUser();
 
-  if (user.plan_id !== "pro") {
+  if (!authorise("work.access", { plan: user.plan_id ?? "" }).allowed) {
     throw new AssistantError("Workspaces require a Pro plan", ErrorType.AUTHORISATION_ERROR, 403);
   }
 
@@ -42,7 +43,14 @@ export async function requireWorkspaceAccess(
     throw new AssistantError("Workspace not found", ErrorType.NOT_FOUND, 404);
   }
 
-  if (!allowedRoles.includes(membership.role)) {
+  if (
+    !authorise("workspace.access", {
+      plan: user.plan_id ?? "",
+      member: true,
+      role: membership.role,
+      allowedRoles: [...allowedRoles],
+    }).allowed
+  ) {
     throw new AssistantError("You do not have access to this workspace", ErrorType.FORBIDDEN, 403);
   }
 
@@ -74,9 +82,13 @@ export async function requireProjectCapabilityAccess(
 ): Promise<void> {
   await requireProjectAccess(context, projectId);
   const capabilities = await context.repositories.workspaces.listProjectCapabilities(projectId);
-  const isEnabled = capabilities.some(
-    (capability) => capability.kind === kind && capability.capability_id === capabilityId,
+  const capability = capabilities.find(
+    (item) => item.kind === kind && item.capability_id === capabilityId,
   );
+  const isEnabled = authorise("capability.use", {
+    granted: Boolean(capability),
+    excluded: Boolean(capability?.excluded),
+  }).allowed;
 
   if (!isEnabled) {
     throw new AssistantError(

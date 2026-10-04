@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   CHAT_RUN_EVENT_PROTOCOL_VERSION,
   storedChatMessageResponseSchema,
@@ -29,7 +30,7 @@ export async function requireChatRunAccess(
 
   if (run.projectId) {
     await requireProjectAccess(context, run.projectId);
-  } else if (run.initiatorUserId !== user.id) {
+  } else if (!ownsResource(user.id, run.initiatorUserId)) {
     throw new AssistantError("Run not found", ErrorType.NOT_FOUND, 404);
   }
 

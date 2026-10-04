@@ -1,3 +1,4 @@
+import { authorise, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   CreateTemplateInput,
   Template,
@@ -64,7 +65,7 @@ async function requireTemplateAccess(
   }
 
   if (!template.workspace_id) {
-    if (template.created_by_user_id !== userId) {
+    if (!ownsResource(userId, template.created_by_user_id)) {
       throw new AssistantError("Template not found", ErrorType.NOT_FOUND, 404);
     }
 
@@ -73,7 +74,15 @@ async function requireTemplateAccess(
 
   const { role } = await requireWorkspaceAccess(context, template.workspace_id);
 
-  if (mutate && role === "member" && template.created_by_user_id !== userId) {
+  if (
+    !authorise(mutate ? "resource.write" : "resource.read", {
+      actorId: String(userId),
+      ownerId: String(template.created_by_user_id),
+      scope: "workspace",
+      member: true,
+      role,
+    }).allowed
+  ) {
     throw new AssistantError(
       "Only the template creator or a workspace admin can change it",
       ErrorType.FORBIDDEN,

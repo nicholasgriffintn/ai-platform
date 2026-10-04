@@ -5,6 +5,7 @@ import {
   planGoalIteration,
   type GoalActor,
 } from "@ngriffin_uk/polychat-library-goals";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type {
   Goal,
   GoalEvidenceEntry,
@@ -65,7 +66,7 @@ export class GoalService {
       throw new AssistantError("User not authenticated", ErrorType.AUTHENTICATION_ERROR);
     }
 
-    if (user.plan_id !== "pro") {
+    if (!hasProEntitlement(user)) {
       throw new AssistantError(
         `Goals require a pro plan. Your current plan is ${user.plan_id || "free"}.`,
         ErrorType.AUTHORISATION_ERROR,

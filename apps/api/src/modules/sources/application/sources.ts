@@ -1,3 +1,4 @@
+import { authorise, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   CreateSourceCollectionInput,
   CreateSourceInput,
@@ -93,7 +94,7 @@ export async function requireSourceAccess(
   }
 
   if (!source.project_id) {
-    if (source.created_by_user_id !== userId) {
+    if (!ownsResource(userId, source.created_by_user_id)) {
       throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
     }
 
@@ -102,7 +103,15 @@ export async function requireSourceAccess(
 
   const { role } = await requireProjectAccess(context, source.project_id);
 
-  if (mutate && role === "member" && source.created_by_user_id !== userId) {
+  const isAuthorised = authorise(mutate ? "resource.write" : "resource.read", {
+    actorId: String(userId),
+    ownerId: String(source.created_by_user_id),
+    scope: "project",
+    member: true,
+    role,
+  }).allowed;
+
+  if (!isAuthorised) {
     throw new AssistantError(
       "Only the source creator or a project admin can change it",
       ErrorType.FORBIDDEN,
@@ -132,7 +141,7 @@ async function requireSourcesAccess(
     }
 
     if (!source.project_id) {
-      if (source.created_by_user_id !== userId) {
+      if (!ownsResource(userId, source.created_by_user_id)) {
         throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
       }
     } else if (!verifiedProjects.has(source.project_id)) {
@@ -160,7 +169,7 @@ async function requireCollectionAccess(
   }
 
   if (!collection.project_id) {
-    if (collection.created_by_user_id !== userId) {
+    if (!ownsResource(userId, collection.created_by_user_id)) {
       throw new AssistantError("Source collection not found", ErrorType.NOT_FOUND, 404);
     }
 
@@ -169,7 +178,15 @@ async function requireCollectionAccess(
 
   const { role } = await requireProjectAccess(context, collection.project_id);
 
-  if (mutate && role === "member" && collection.created_by_user_id !== userId) {
+  const isAuthorised = authorise(mutate ? "resource.write" : "resource.read", {
+    actorId: String(userId),
+    ownerId: String(collection.created_by_user_id),
+    scope: "project",
+    member: true,
+    role,
+  }).allowed;
+
+  if (!isAuthorised) {
     throw new AssistantError(
       "Only the collection creator or a project admin can change it",
       ErrorType.FORBIDDEN,
@@ -197,7 +214,7 @@ export async function createSource(
     if (
       !conversation ||
       conversation.project_id !== (input.projectId ?? null) ||
-      (!input.projectId && conversation.user_id !== userId)
+      (!input.projectId && !ownsResource(userId, conversation.user_id))
     ) {
       throw new AssistantError("Conversation not found in source scope", ErrorType.NOT_FOUND, 404);
     }
@@ -208,7 +225,7 @@ export async function createSource(
       input.connectionId,
     );
 
-    if (!connection || connection.user_id !== userId) {
+    if (!connection || !ownsResource(userId, connection.user_id)) {
       throw new AssistantError("Connection not found", ErrorType.NOT_FOUND, 404);
     }
   }

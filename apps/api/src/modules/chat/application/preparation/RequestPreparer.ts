@@ -1,5 +1,6 @@
 import { chatRunReservationExpiresAt } from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
   getPermissionModeUnavailableReason,
   resolveEffectivePermissionMode,
@@ -180,7 +181,7 @@ export class RequestPreparer {
         repositories,
         projectContext,
       }),
-      isProUser: user?.plan_id === "pro",
+      isProUser: hasProEntitlement(user),
       platform,
       mode,
     };

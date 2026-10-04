@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   type AssistantRecipe,
   type AssistantRecipeConnection,
@@ -392,7 +393,11 @@ async function getRecipeInstallationRecord(params: {
 }): Promise<{ record: RecipeInstallationRecord; data: StoredRecipeInstallationData } | null> {
   const record = await params.context.repositories.templates.getTemplateById(params.installationId);
 
-  if (!record || record.created_by_user_id !== params.userId || record.kind !== "recipe") {
+  if (
+    !record ||
+    !ownsResource(params.userId, record.created_by_user_id) ||
+    record.kind !== "recipe"
+  ) {
     return null;
   }
 

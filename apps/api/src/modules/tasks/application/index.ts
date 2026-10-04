@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   CreatePublicTaskRequest,
   TriggerMemorySynthesisRequest,
@@ -21,7 +22,7 @@ export async function listUserTasks(context: ServiceContext, userId: number) {
 export async function getUserTask(context: ServiceContext, userId: number, taskId: string) {
   const task = await context.repositories.tasks.getTaskById(taskId);
 
-  if (!task || task.user_id !== userId) {
+  if (!task || !ownsResource(userId, task.user_id)) {
     throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
   }
 
@@ -76,7 +77,7 @@ export async function createUserTask(
 export async function cancelUserTask(context: ServiceContext, userId: number, taskId: string) {
   const task = await context.repositories.tasks.getTaskById(taskId);
 
-  if (!task || task.user_id !== userId) {
+  if (!task || !ownsResource(userId, task.user_id)) {
     throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
   }
 

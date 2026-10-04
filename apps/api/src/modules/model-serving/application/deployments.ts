@@ -1,5 +1,6 @@
 import { hostManifest } from "@ngriffin_uk/polychat-ai-model-providers";
 import { estimateMonthlyHostingCost } from "@ngriffin_uk/polychat-library-model-registry";
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import {
   type CreateDeploymentRequest,
   createDeploymentRequestSchema,
@@ -289,10 +290,14 @@ export async function createDeployment(
     throw conflict(preflight.reason ?? "This deployment would break the budget");
   }
 
-  if (
-    preflight.decision === "needs_approval" &&
-    (!access.actions.has("approve") || access.separationOfDuties)
-  ) {
+  const isAuthorised = authorise("spend.authorise", {
+    required: preflight.decision === "needs_approval",
+    approved: false,
+    canApprove: access.actions.has("approve"),
+    separationOfDuties: access.separationOfDuties,
+  }).allowed;
+
+  if (!isAuthorised) {
     return {
       deployment: null,
       preflight,

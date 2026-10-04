@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { ownershipLostError } from "@ngriffin_uk/polychat-library-tasks";
 import type {
   ChatContextSnapshot,
@@ -110,7 +111,7 @@ async function authoriseRunScope(options: CoreChatOptions) {
   const conversation = await context.repositories.conversations.getConversation(conversationId);
   const projectAccess = await resolveChatProjectAccess(context, options);
 
-  if (conversation && !conversation.project_id && conversation.user_id !== user.id) {
+  if (conversation && !conversation.project_id && !ownsResource(user.id, conversation.user_id)) {
     throw new AssistantError(
       "You don't have permission to run this conversation",
       ErrorType.FORBIDDEN,

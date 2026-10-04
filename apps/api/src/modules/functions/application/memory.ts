@@ -1,3 +1,4 @@
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import {
@@ -18,7 +19,7 @@ async function getMemoryToolSettings(
   context: Parameters<ApiToolDefinition["execute"]>[1],
   toolName: string,
 ): Promise<{ userSettings?: IUserSettings | null; error?: string }> {
-  if (!context.user?.id || context.user.plan_id !== "pro") {
+  if (!context.user?.id || !hasProEntitlement(context.user)) {
     return { error: "Memory tools require a signed-in pro user." };
   }
 

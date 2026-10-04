@@ -3,6 +3,7 @@ import {
   RECIPE_CONNECTOR_CONNECTION_KIND,
 } from "@ngriffin_uk/polychat-ai-integrations";
 import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
+import { operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
 import {
   recipeConnectorProviderSchema,
   teammateRunConfigurationSchema,
@@ -190,7 +191,7 @@ export const use_recipe_connector: ApiToolDefinition = {
       [];
     const effectiveAllowedOperations = teammateAuthority
       ? configuredAllowedOperations.filter((candidate) =>
-          teammateAuthority.allowedOperations.includes(candidate),
+          operationIsGranted(teammateAuthority.allowedOperations, candidate),
         )
       : configuredAllowedOperations;
     const operation = typeof args.operation === "string" ? args.operation.trim() : "";
@@ -206,7 +207,7 @@ export const use_recipe_connector: ApiToolDefinition = {
       };
     }
 
-    if (operation && !effectiveAllowedOperations.includes(operation)) {
+    if (operation && !operationIsGranted(effectiveAllowedOperations, operation)) {
       return {
         status: "error",
         name: "use_recipe_connector",

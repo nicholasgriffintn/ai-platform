@@ -1,3 +1,4 @@
+import { toCedarPolicyRule } from "@ngriffin_uk/polychat-library-model-registry";
 import type {
   ModelAsset,
   ModelDecision,
@@ -81,7 +82,7 @@ export function toModelPolicy(record: ModelPolicyRecord): ModelPolicy {
     id: record.id,
     workspaceId: record.workspace_id,
     projectId: record.project_id,
-    rules: record.rules,
+    rules: record.rules.map(toCedarPolicyRule),
     revision: record.revision,
     hash: record.hash,
     enforcement: record.enforcement,
