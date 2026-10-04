@@ -1,5 +1,4 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { ModelProviderError, modelProviderErrorFromStatus } from "./errors.js";
 

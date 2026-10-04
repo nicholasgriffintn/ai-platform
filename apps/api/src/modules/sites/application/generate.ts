@@ -36,8 +36,8 @@ import { decisionConfidenceBand } from "@ngriffin_uk/polychat-schemas";
 import {
   encodeServerSentEvent,
   encodeServerSentEventDone,
+  generateId,
 } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
   ErrorType,

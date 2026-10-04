@@ -19,7 +19,7 @@ it("evaluates the official Cedar engine inside the Worker runtime", async () => 
         "wrangler",
         "deploy",
         "--config",
-        "test/fixtures/cedar/wrangler.json",
+        "test/fixtures/cedar/wrangler.jsonc",
         "--dry-run",
         "--outdir",
         directory,

@@ -10,8 +10,7 @@ import type {
   RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
 import { TEAMMATE_RUN_RECONCILIATION_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
-import { canonicalJson } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { canonicalJson, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import {
   AssistantError,

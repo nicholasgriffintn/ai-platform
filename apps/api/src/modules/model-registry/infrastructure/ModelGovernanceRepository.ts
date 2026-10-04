@@ -7,8 +7,7 @@ import type {
   PolicyRule,
   PolicyVerdict,
 } from "@ngriffin_uk/polychat-schemas";
-import { chunkArray } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { chunkArray, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { and, desc, eq, getTableColumns, inArray, isNull, lte, or, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";

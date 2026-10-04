@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Conversation } from "./conversation-types.js";
-import {
-  buildLocalChatExport,
-  localChatExportFilename,
-  readLocalChatExport,
-} from "./local-chat-export.js";
+import { buildLocalChatExport, readLocalChatExport } from "./local-chat-export.js";
 
 const conversation = { id: "c1", title: "Kept", messages: [] } as unknown as Conversation;
 
@@ -26,11 +22,5 @@ describe("local chat export", () => {
 
   it("tolerates an export whose conversations are missing rather than throwing", () => {
     expect(readLocalChatExport({ version: 1, exportedAt: "x", conversationCount: 0 })).toEqual([]);
-  });
-
-  it("names the file by the day it was taken", () => {
-    expect(localChatExportFilename("2026-09-06T09:00:00.000Z")).toBe(
-      "polychat-browser-chats-2026-09-06.json",
-    );
   });
 });

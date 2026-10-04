@@ -1,5 +1,4 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 import { normaliseMessageParts, type MessagePart } from "./message-part-utils.js";

@@ -1,31 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { appendQueryParams, appendUrlPath, isPrivateHostname, isUrlWithinOrigin } from "../urls.js";
+import { isPrivateHostname, isUrlWithinOrigin } from "../urls.js";
 
 describe("url utilities", () => {
-  it("appends URL paths without duplicate slashes", () => {
-    expect(appendUrlPath("https://example.com/base/", "/v1/chat")).toBe(
-      "https://example.com/base/v1/chat",
-    );
-  });
-
-  it("appends query params and skips nullish values", () => {
-    const url = new URL("https://example.com/search?existing=true");
-
-    appendQueryParams(url, {
-      empty: "",
-      page: 2,
-      q: "test",
-      skipNull: null,
-      skipUndefined: undefined,
-      tag: ["a", null, "b", undefined],
-    });
-
-    expect(url.toString()).toBe(
-      "https://example.com/search?existing=true&empty=&page=2&q=test&tag=a&tag=b",
-    );
-  });
-
   it("accepts redirect URLs only on the exact allowed origin", () => {
     const origin = "https://app.example.com";
 

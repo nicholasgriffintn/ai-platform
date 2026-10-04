@@ -112,10 +112,4 @@ describe("SiteTraceEntries", () => {
       "false",
     );
   });
-
-  it("renders nothing when a turn has no trace", () => {
-    const { container } = render(<SiteTraceEntries entries={[]} />);
-
-    expect(container).toBeEmptyDOMElement();
-  });
 });

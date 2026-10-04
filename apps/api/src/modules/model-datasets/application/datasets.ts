@@ -27,8 +27,8 @@ import {
   isRecord,
   readTextLines,
   sha256Hex,
+  generateId,
 } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
