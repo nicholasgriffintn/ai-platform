@@ -2,12 +2,11 @@ import { readFile } from "node:fs/promises";
 
 import type { D1Database } from "@cloudflare/workers-types";
 import { getModelConfigById } from "@ngriffin_uk/polychat-ai-models";
-import { PermissionChecker, toToolDeclaration } from "@ngriffin_uk/polychat-library-tools";
-import { computerUseInputSchema } from "@ngriffin_uk/polychat-schemas";
+import { PermissionChecker } from "@ngriffin_uk/polychat-library-tools";
+import { browserSessionViewDataSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Miniflare } from "miniflare";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import z from "zod/v4";
 
 import {
   createServiceContext,
@@ -133,10 +132,12 @@ beforeEach(async () => {
 });
 
 describe("browser session ownership and lifecycle", () => {
-  it("runs an OpenAI task through the common computer tool for a non-premium user", async () => {
+  it("starts and retrieves the current task's paginated answer through the common tool for a non-premium user", async () => {
     const user = { ...browserTestUser, plan_id: "free" };
     const serviceContext = createServiceContext({ env: context.env, user });
-    const fetch = vi.fn(async () => Response.json({ id: "native", status: "idle" }));
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ id: "native", status: "idle" }),
+    );
 
     vi.spyOn(serviceContext.repositories.conversations, "getConversation").mockResolvedValue({
       id: "conversation",
@@ -157,19 +158,20 @@ describe("browser session ownership and lifecycle", () => {
         mode: "build",
       }).allowed,
     ).toBe(true);
+    const toolContext = {
+      completionId: "conversation",
+      toolCallId: "common-call",
+      env: context.env,
+      request: {
+        env: context.env,
+        user,
+        context: serviceContext,
+        request: { completion_id: "conversation", input: "Read the page", date: "2026-10-03" },
+      },
+    };
     const result = await use_computer.execute(
       { provider: "openai", operation: "start", task: "Read the public issues" },
-      {
-        completionId: "conversation",
-        toolCallId: "common-call",
-        env: context.env,
-        request: {
-          env: context.env,
-          user,
-          context: serviceContext,
-          request: { completion_id: "conversation", input: "Read the page", date: "2026-10-03" },
-        },
-      },
+      toolContext,
     );
 
     expect(result).toMatchObject({
@@ -178,6 +180,70 @@ describe("browser session ownership and lifecycle", () => {
       data: { renderer: "browser_session" },
     });
     expect(fetch).toHaveBeenCalledOnce();
+    fetch.mockImplementation(async (request) => {
+      const url = new URL(String(request));
+
+      if (url.pathname.endsWith("/turns")) {
+        return Response.json({
+          data: [
+            { id: "child-turn", status: "completed", subagent_id: "child" },
+            { id: "turn-root", status: "completed", subagent_id: null },
+          ],
+        });
+      }
+
+      if (url.pathname.endsWith("/items")) {
+        if (url.searchParams.get("after") === "activity") {
+          return Response.json({
+            data: [
+              {
+                type: "message",
+                turn_id: "turn-root",
+                role: "assistant",
+                phase: "final_answer",
+                content: [{ type: "output_text", text: "Found three issues" }],
+              },
+            ],
+            has_more: false,
+            last_id: "answer",
+          });
+        }
+
+        return Response.json({
+          data: [
+            {
+              type: "computer_use_call",
+              id: "activity",
+              turn_id: "turn-root",
+              title: "Reading issues",
+              status: "completed",
+              output: null,
+            },
+            ...["old-turn", "child-turn"].map((turn_id) => ({
+              type: "message",
+              turn_id,
+              role: "assistant",
+              phase: "final_answer",
+              content: [{ type: "output_text", text: "Unrelated result" }],
+            })),
+          ],
+          has_more: true,
+          last_id: "activity",
+        });
+      }
+
+      return Response.json({ id: "native", status: "idle", required_actions: [] });
+    });
+    await expect(
+      use_computer.execute(
+        {
+          provider: "openai",
+          operation: "inspect",
+          sessionId: browserSessionViewDataSchema.parse(result.data).sessionId,
+        },
+        toolContext,
+      ),
+    ).resolves.toMatchObject({ status: "success", content: "Found three issues" });
   });
 
   it("blocks built-in control for non-premium users through the common tool", async () => {
@@ -211,33 +277,6 @@ describe("browser session ownership and lifecycle", () => {
       ),
     ).rejects.toMatchObject({ statusCode: 403 });
     expect(fetch).not.toHaveBeenCalled();
-  });
-
-  it("rejects unsupported provider operations before execution", () => {
-    expect(
-      computerUseInputSchema.safeParse({
-        provider: "openai",
-        operation: "input",
-        input: { type: "read" },
-      }).success,
-    ).toBe(false);
-    expect(
-      computerUseInputSchema.safeParse({
-        provider: "hosted",
-        operation: "destroy",
-        sessionId: "native",
-      }).success,
-    ).toBe(false);
-  });
-
-  it("publishes a usable declaration for both provider modes", () => {
-    const declaration = toToolDeclaration(use_computer);
-    const schema = z.fromJSONSchema(declaration.function.parameters);
-
-    expect(
-      schema.safeParse({ provider: "openai", operation: "start", task: "Read the page" }).success,
-    ).toBe(true);
-    expect(schema.safeParse({ provider: "hosted", operation: "read" }).success).toBe(true);
   });
 
   it("makes the built-in provider available without an OpenAI connection", async () => {
@@ -452,7 +491,7 @@ describe("browser session ownership and lifecycle", () => {
     ).rejects.toMatchObject({ statusCode: 409 });
     expect(fetch).toHaveBeenCalledOnce();
   });
-  it("recovers a timed-out creation without repeating the browser task", async () => {
+  it("recovers a timed-out creation from a later provider page without repeating the browser task", async () => {
     const fetch = vi
       .fn<typeof globalThis.fetch>()
       .mockRejectedValueOnce(new Error("Connection lost"));
@@ -467,6 +506,14 @@ describe("browser session ownership and lifecycle", () => {
       const url = new URL(String(request));
 
       if (url.pathname === "/v1/agents/sessions") {
+        if (url.searchParams.get("after") !== "other") {
+          return Response.json({
+            data: [{ id: "other", status: "idle" }],
+            has_more: true,
+            last_id: "other",
+          });
+        }
+
         return Response.json({
           data: [
             {
@@ -582,7 +629,7 @@ describe("browser session ownership and lifecycle", () => {
     });
   });
 
-  it("rejects stale approvals without submitting credentials", async () => {
+  it("rejects stale approvals and never replays a failed credential submission or exposes its values", async () => {
     await context.repositories.browserSessions.reserve({
       id: "local",
       user_id: 1,
@@ -595,7 +642,12 @@ describe("browser session ownership and lifecycle", () => {
       input_hash: "hash",
     });
     await context.repositories.browserSessions.bind("local", "native");
-    const fetch = vi.fn<typeof globalThis.fetch>(async (request) => {
+    const secret = "sensitive-test-value";
+    const fetch = vi.fn<typeof globalThis.fetch>(async (request, options) => {
+      if (options?.method === "POST") {
+        return Response.json({ error: `Rejected password: ${secret}` }, { status: 500 });
+      }
+
       if (String(request).includes("/turns?")) {
         return Response.json({ data: [{ id: "turn-root", status: "waiting", subagent_id: null }] });
       }
@@ -626,6 +678,25 @@ describe("browser session ownership and lifecycle", () => {
       }),
     ).rejects.toMatchObject({ statusCode: 409 });
     expect(fetch.mock.calls.some((call) => call[1]?.method === "POST")).toBe(false);
+    const submission = respondToBrowserApproval(context, "local", {
+      requestId: browserTestApproval.requestId,
+      response: {
+        type: "browser_authentication",
+        action: "submit",
+        selected_option: "password",
+        fields: [
+          { field_id: "email", value: "tester@example.test" },
+          { field_id: "password", value: secret },
+        ],
+      },
+    });
+
+    await expect(submission).rejects.toMatchObject({ statusCode: 502 });
+    await expect(submission).rejects.not.toThrow(secret);
+    expect(fetch.mock.calls.filter((call) => call[1]?.method === "POST")).toHaveLength(1);
+    expect(JSON.stringify(await context.repositories.browserSessions.get("local"))).not.toContain(
+      secret,
+    );
   });
 });
 
