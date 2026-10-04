@@ -17,19 +17,24 @@ import { requireProjectCapabilityAccess } from "~/modules/workspaces/application
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolExecutionContext } from "~/types/functions";
 
-import { seekOnComputer, type SeekResult } from "./seek";
+import { actOnComputer, type ActResult } from "./act";
 
-const SEEK_CONCLUSION_SUMMARY: Record<SeekResult["conclusion"], string> = {
-  reached: "Found on the page",
-  blocked: "Reading further will not reveal it; the page needs an interaction or sign-in",
-  exhausted: "Not found within the step budget",
-  unavailable: "No decision model is available for this account, so nothing was read",
+const ACT_CONCLUSION_SUMMARY: Record<ActResult["conclusion"], string> = {
+  reached: "Goal reached",
+  blocked: "No available control reaches the goal; the page needs a sign-in or a different route",
+  needs_input: "Reaching the goal needs typing, which requires supervised takeover",
+  exhausted: "Not reached within the step budget",
+  unavailable: "No decision model is available for this account, so nothing was done",
+  undecided: "No next step was clearly worth taking, so nothing further was done",
 };
 
-function formatSeekResponse(goal: string, contextId: string, seek: SeekResult): IFunctionResponse {
+function formatActResponse(goal: string, contextId: string, act: ActResult): IFunctionResponse {
   const title =
-    typeof seek.observation.title === "string" ? seek.observation.title : "Hosted computer";
-  const text = typeof seek.observation.text === "string" ? seek.observation.text : null;
+    typeof act.observation.title === "string" ? act.observation.title : "Hosted computer";
+  const text = typeof act.observation.text === "string" ? act.observation.text : null;
+  const trail = act.steps
+    .map((step) => (step.target ? `${step.action} ${step.target}` : step.action))
+    .join(" -> ");
 
   return {
     status: "success",
@@ -37,7 +42,7 @@ function formatSeekResponse(goal: string, contextId: string, seek: SeekResult): 
     content: [
       {
         type: "text",
-        text: `Looked for: ${goal}. ${SEEK_CONCLUSION_SUMMARY[seek.conclusion]} after ${seek.steps.length} step(s). Active window: ${title}.`,
+        text: `Pursued: ${goal}. ${ACT_CONCLUSION_SUMMARY[act.conclusion]} after ${act.steps.length} step(s)${trail ? ` (${trail})` : ""}. Active window: ${title}.`,
       },
       ...(text ? [{ type: "text" as const, text }] : []),
     ],
@@ -45,8 +50,8 @@ function formatSeekResponse(goal: string, contextId: string, seek: SeekResult): 
       renderer: "computer_observation",
       contextId,
       goal,
-      conclusion: seek.conclusion,
-      steps: seek.steps,
+      conclusion: act.conclusion,
+      steps: act.steps,
       title,
       text,
     },
@@ -113,8 +118,8 @@ export async function executeComputerControl(
     };
   }
 
-  if (args.operation === "seek") {
-    const seek = await seekOnComputer({
+  if (args.operation === "act") {
+    const act = await actOnComputer({
       env: toolContext.request.env,
       user: toolContext.request.user,
       context,
@@ -127,7 +132,7 @@ export async function executeComputerControl(
       maxSteps: args.maxSteps,
     });
 
-    return formatSeekResponse(args.goal, contextId, seek);
+    return formatActResponse(args.goal, contextId, act);
   }
 
   const result = await operateTeammateComputerAsAgent({

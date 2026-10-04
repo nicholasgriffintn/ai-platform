@@ -59,7 +59,7 @@ export const computerControlInputSchema = z.discriminatedUnion("operation", [
     .strict(),
   z
     .object({
-      operation: z.literal("seek"),
+      operation: z.literal("act"),
       provider: z.literal("hosted").default("hosted"),
       goal: z.string().trim().min(1).max(2_000),
       maxSteps: z.number().int().min(1).max(12).default(6),
