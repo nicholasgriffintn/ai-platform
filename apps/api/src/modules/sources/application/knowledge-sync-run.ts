@@ -1,7 +1,3 @@
-import {
-  CONFLUENCE_KNOWLEDGE_RECIPE_ID,
-  CONFLUENCE_PAGE_READ_OPERATION,
-} from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -13,19 +9,17 @@ import { executeRecipeConnectorOperation } from "~/modules/apps/application/conn
 import type { IEnv } from "~/types";
 
 import type { KnowledgeSyncRecord } from "../infrastructure/KnowledgeSyncRepository";
-import { normaliseConfluencePage } from "./confluence-page";
-import { requireKnowledgeSyncAuthority } from "./knowledge-sync-access";
-import { parseKnowledgeSyncPages } from "./knowledge-sync-record";
-import { enqueueKnowledgeSync } from "./knowledge-sync-tasks";
+import { requireKnowledgeSyncAuthority, enqueueKnowledgeSync } from "./knowledge-sync";
+import { parseKnowledgeSyncResources } from "./knowledge-sync-record";
 
-async function syncPages(context: ServiceContext, initial: KnowledgeSyncRecord, token: string) {
-  const pages = parseKnowledgeSyncPages(initial);
+async function syncResources(context: ServiceContext, initial: KnowledgeSyncRecord, token: string) {
+  const resources = parseKnowledgeSyncResources(initial);
   let sync = initial;
 
   for (let count = 0; count < 10; count++) {
-    const page = pages[sync.cursor];
+    const resource = resources[sync.cursor];
 
-    if (!page) {
+    if (!resource) {
       throw new AssistantError(
         "Knowledge sync checkpoint is invalid",
         ErrorType.CONFIGURATION_ERROR,
@@ -33,8 +27,8 @@ async function syncPages(context: ServiceContext, initial: KnowledgeSyncRecord, 
       );
     }
 
-    const connection = await requireKnowledgeSyncAuthority(context, sync);
-    const sourceId = "confluence_" + (await sha256Hex(sync.id + ":" + page.pageId));
+    const { connection, adapter } = await requireKnowledgeSyncAuthority(context, sync);
+    const sourceId = "source_sync_" + (await sha256Hex(sync.id + ":" + resource.resourceId));
     let result: unknown;
 
     try {
@@ -42,15 +36,15 @@ async function syncPages(context: ServiceContext, initial: KnowledgeSyncRecord, 
         context,
         userId: sync.user_id,
         request: {
-          provider: "confluence",
-          operation: CONFLUENCE_PAGE_READ_OPERATION,
+          provider: adapter.provider,
+          operation: adapter.operation,
           connectedAccountId: connection.external_id,
-          params: page.readParameters,
+          params: resource.readParameters,
         },
         scope: {
           completionId: context.connectorRunId,
           projectId: sync.project_id,
-          recipeId: CONFLUENCE_KNOWLEDGE_RECIPE_ID,
+          recipeId: sync.recipe_id,
         },
       });
     } catch (error) {
@@ -62,18 +56,17 @@ async function syncPages(context: ServiceContext, initial: KnowledgeSyncRecord, 
       throw error;
     }
 
-    const document = normaliseConfluencePage(result, page.pageId);
+    const document = adapter.normalise(result, resource.resourceId);
 
     await requireKnowledgeSyncAuthority(context, sync);
     if (
-      !(await context.repositories.knowledgeSyncs.commitPage(
-        sync,
-        token,
+      !(await context.repositories.knowledgeSyncs.commitResource(sync, token, {
+        ...document,
         sourceId,
-        page.pageId,
-        document,
-        pages.length,
-      ))
+        resourceId: resource.resourceId,
+        resourceCount: resources.length,
+        provider: adapter.provider,
+      }))
     ) {
       return;
     }
@@ -118,11 +111,11 @@ export async function runKnowledgeSync(env: IEnv, id: string, userId: number, ge
   const context = createServiceContext({ env, user });
 
   try {
-    await syncPages(context, sync, token);
+    await syncResources(context, sync, token);
   } catch (error) {
     pause = error instanceof AssistantError && [401, 403, 404].includes(error.statusCode);
     errorMessage = pause
-      ? "Sync paused. Check project access and reconnect Confluence. The checkpoint was retained."
+      ? "Sync paused. Check project access and reconnect the source account. The checkpoint was retained."
       : "Sync failed. The checkpoint was retained for retry.";
     throw new AssistantError(errorMessage, ErrorType.PROVIDER_ERROR, 502);
   } finally {

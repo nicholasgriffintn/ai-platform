@@ -1,5 +1,8 @@
 import { expect, it, vi } from "vitest";
 
+import { createTestRuntime } from "../__test__/test-runtime";
+import { OpenAIProvider } from "../capabilities/chat/providers/openai";
+import type { ChatCompletionParameters } from "../types/index.js";
 import { resolveHostedMcpCredentials } from "./mcpCredentials";
 
 it("resolves only opaque saved references, strips overrides and preserves approvals without mutating stored input", async () => {
@@ -21,9 +24,16 @@ it("resolves only opaque saved references, strips overrides and preserves approv
       },
     ],
   };
-  const result = await resolveHostedMcpCredentials(body, { mcp: { resolveCredential } }, "openai", {
-    user: { id: 1 },
-  });
+  const params: ChatCompletionParameters = {
+    env: {},
+    model: "gpt-4.1",
+    enabled_tools: ["mcp"],
+    messages: [{ role: "user", content: "Search project knowledge" }],
+    context: { user: { id: 1 } },
+    tool_options: { mcp_servers: body.tools },
+  };
+  const provider = new OpenAIProvider(createTestRuntime({ mcp: { resolveCredential } }));
+  const result = await provider.mapParameters(params);
 
   expect(resolveCredential).toHaveBeenCalledWith(
     { user: { id: 1 } },

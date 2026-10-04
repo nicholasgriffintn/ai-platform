@@ -23,6 +23,10 @@ import { resolveRequestUser } from "../../../request-user.js";
 import type { ChatCompletionParameters, MessageContent } from "../../../types/index.js";
 import { safeParseJSON } from "../../../utils/helpers.js";
 import {
+  resolveHostedMcpCredentials,
+  getHostedMcpAuthorizations,
+} from "../../../utils/mcpCredentials.js";
+import {
   buildOpenAIResponsesBody,
   shouldUseOpenAIResponsesApi,
 } from "../../../utils/openaiResponses.js";
@@ -46,6 +50,10 @@ export class OpenAIProvider extends BaseProvider {
 
   protected getProviderKeyName(): string {
     return "OPENAI_API_KEY";
+  }
+
+  protected getSensitiveValues(body: Record<string, unknown>): string[] {
+    return getHostedMcpAuthorizations(body);
   }
 
   protected validateParams(params: ChatCompletionParameters): void {
@@ -451,13 +459,18 @@ export class OpenAIProvider extends BaseProvider {
     const user = providerParams.context?.user;
 
     if (shouldUseOpenAIResponsesApi(providerParams, modelConfig)) {
-      return buildOpenAIResponsesBody(
-        providerParams,
-        modelConfig,
-        toolsParams.tools || [],
-        createStreamingParameters(modelConfig, this.supportsStreaming, providerParams.stream, {
-          includeUsage: false,
-        }),
+      return resolveHostedMcpCredentials(
+        buildOpenAIResponsesBody(
+          providerParams,
+          modelConfig,
+          toolsParams.tools || [],
+          createStreamingParameters(modelConfig, this.supportsStreaming, providerParams.stream, {
+            includeUsage: false,
+          }),
+        ),
+        this.runtime.host,
+        this.name,
+        params.context,
       );
     }
 

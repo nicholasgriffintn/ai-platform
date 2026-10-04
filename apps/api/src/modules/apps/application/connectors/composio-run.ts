@@ -160,10 +160,6 @@ export async function discoverComposioRunTools(params: {
       allowedOperationIds: params.allowedOperationIds,
     });
 
-    if (params.provider.id !== "confluence") {
-      return { ...discovery, sessionId: session.id };
-    }
-
     const connection = await ensureRecipeConnectorAccountReference({
       context: params.context,
       userId: params.userId,

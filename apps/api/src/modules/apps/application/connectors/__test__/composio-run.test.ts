@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   listComposioConnectedAccounts: vi.fn(),
   createActivity: vi.fn(),
   getSelectedRecipeConnectorAccountId: vi.fn(),
+  ensureRecipeConnectorAccountReference: vi.fn(),
   assertComposioFileBridgeAvailable: vi.fn(),
   createComposioMountFileClient: vi.fn(() => ({ name: "mount-client" })),
   resolveComposioFileReferences: vi.fn(),
@@ -21,6 +22,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("../accounts", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../accounts")>()),
   getSelectedRecipeConnectorAccountId: mocks.getSelectedRecipeConnectorAccountId,
+  ensureRecipeConnectorAccountReference: mocks.ensureRecipeConnectorAccountReference,
 }));
 
 vi.mock("@ngriffin_uk/polychat-ai-integrations", async (importOriginal) => ({
@@ -118,6 +120,7 @@ describe("Composio connector run lifecycle", () => {
     });
     mocks.createActivity.mockResolvedValue({});
     mocks.getSelectedRecipeConnectorAccountId.mockResolvedValue(undefined);
+    mocks.ensureRecipeConnectorAccountReference.mockResolvedValue({ id: "connection-ref" });
     mocks.resolveComposioFileReferences.mockImplementation(({ value }) => Promise.resolve(value));
     mocks.importComposioOperationFileResults.mockImplementation(({ value }) =>
       Promise.resolve(value),

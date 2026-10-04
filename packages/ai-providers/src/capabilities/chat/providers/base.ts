@@ -22,13 +22,8 @@ import {
   validateAiGatewayToken,
   buildAiGatewayHeaders,
   buildMetricsSettings,
+  SENSITIVE_REQUEST_GATEWAY_HEADERS,
 } from "../../../utils/helpers.js";
-import {
-  hasMcpCredentialReferences,
-  resolveHostedMcpCredentials,
-  getHostedMcpAuthorizations,
-  MCP_CREDENTIAL_GATEWAY_HEADERS,
-} from "../../../utils/mcpCredentials.js";
 import { resolvePrivateAssetUrls } from "../../../utils/privateAssets.js";
 
 const logger = getLogger({ prefix: "lib/providers/base" });
@@ -163,10 +158,11 @@ export abstract class BaseProvider implements AIProvider {
     return {
       requestTimeout: modelConfig.timeout || 100000,
       maxAttempts: 1,
-      ...(hasMcpCredentialReferences(params)
-        ? { sensitiveRequest: true, includeErrorBodyInLogs: false }
-        : {}),
     };
+  }
+
+  protected getSensitiveValues(_body: Record<string, unknown>): string[] {
+    return [];
   }
 
   protected abstract getEndpoint(params: ChatCompletionParameters): Promise<string>;
@@ -247,26 +243,20 @@ export abstract class BaseProvider implements AIProvider {
       provider: this.name,
       model,
       operation: async () => {
-        const mappedBody = await this.getParameterMapping(params, storageService, assetsUrl);
-        const body = await resolveHostedMcpCredentials(
-          mappedBody,
-          this.runtime.host,
-          this.name,
-          params.context,
-        );
-        const authorizations = getHostedMcpAuthorizations(body);
+        const body = await this.getParameterMapping(params, storageService, assetsUrl);
+        const sensitiveValues = this.getSensitiveValues(body);
         const endpoint = await this.getEndpoint(params);
 
         const data = await fetchAIResponse(
           this.isOpenAiCompatible,
           this.name,
           endpoint,
-          authorizations.length ? { ...headers, ...MCP_CREDENTIAL_GATEWAY_HEADERS } : headers,
+          sensitiveValues.length ? { ...headers, ...SENSITIVE_REQUEST_GATEWAY_HEADERS } : headers,
           body,
           params.env,
           {
             ...this.getFetchOptions(params, modelConfig),
-            ...(authorizations.length
+            ...(sensitiveValues.length
               ? { sensitiveRequest: true, includeErrorBodyInLogs: false }
               : {}),
           },
@@ -275,10 +265,10 @@ export abstract class BaseProvider implements AIProvider {
         const isStreaming = detectStreaming(body, endpoint);
 
         if (isStreaming) {
-          return data instanceof ReadableStream ? redactTextStream(data, authorizations) : data;
+          return data instanceof ReadableStream ? redactTextStream(data, sensitiveValues) : data;
         }
 
-        const safeData = authorizations.reduce(
+        const safeData = sensitiveValues.reduce(
           (value, secret) => redactSensitiveTokens(value, secret),
           data,
         );

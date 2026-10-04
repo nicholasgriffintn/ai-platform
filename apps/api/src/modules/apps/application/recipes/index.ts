@@ -2,14 +2,12 @@ import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   type AssistantRecipe,
   type AssistantRecipeConnection,
-  type RecipeConfigurationField,
   type RecipeConfiguration,
   type RecipeConnectionStatus,
   type RecipeInstallation,
   type RecipeInstallationTrigger,
   type RecipeInstallationUpdateRequest,
   type RecipeConnectorManifest,
-  recipeConfigurationSchema,
   isSupportedCronExpression,
   type RecipeCatalogueSummary,
 } from "@ngriffin_uk/polychat-schemas";
@@ -30,12 +28,17 @@ import {
   recipeCategories,
   recipeFilters,
   resolveRecipeId,
+  getRecipeById,
 } from "./catalog";
 import {
   deleteRecipeComposioTriggers,
   syncRecipeComposioTriggerStatus,
 } from "./composio-trigger-lifecycle";
-import { validateIncidentBriefConfiguration } from "./incident-brief";
+import {
+  normaliseRecipeConfigurationForRecipe,
+  validateRecipeConfiguration,
+  isRequiredRecipeConfigurationValueMissing,
+} from "./configuration";
 import {
   parseStoredRecipeInstallationData,
   type StoredRecipeInstallationData,
@@ -46,7 +49,6 @@ import {
   buildRecipeInvocationRuntime,
   buildRecipeSetupRuntime,
   getBlockingConnections,
-  isRequiredRecipeConfigurationValueMissing,
 } from "./runtime";
 import { buildRecipeScheduleState } from "./scheduleState";
 import { createRecipeExecutionTaskData } from "./task-data";
@@ -92,11 +94,7 @@ interface RecipeConnectionContext {
 
 type RecipeInstallationRecord = TemplateRecord;
 
-export function getRecipeById(id: string) {
-  const resolvedId = resolveRecipeId(id);
-
-  return assistantRecipes.find((recipe) => recipe.id === resolvedId);
-}
+export { getRecipeById } from "./catalog";
 
 export async function requireEnabledProjectRecipe(
   context: ServiceContext,
@@ -109,7 +107,9 @@ export async function requireEnabledProjectRecipe(
   if (
     !capabilities.some(
       (capability) =>
-        capability.kind === "recipe" && resolveRecipeId(capability.capability_id) === recipeId,
+        capability.kind === "recipe" &&
+        !capability.excluded &&
+        resolveRecipeId(capability.capability_id) === recipeId,
     )
   ) {
     throw new AssistantError(
@@ -275,6 +275,10 @@ function validateScheduledRecipeConfiguration(params: {
     return;
   }
 
+  if (params.recipe.connectorPolicy?.requireConfiguredIntegration) {
+    validateRecipeConfiguration(params.recipe, params.configuration, true);
+  }
+
   const missingFields = params.recipe.configurationFields.filter(
     (field) =>
       field.required &&
@@ -292,73 +296,6 @@ function validateScheduledRecipeConfiguration(params: {
     ErrorType.PARAMS_ERROR,
     400,
   );
-}
-
-function normaliseRecipeConfiguration(value: unknown): RecipeConfiguration {
-  const parsed = recipeConfigurationSchema.safeParse(value);
-
-  return parsed.success ? parsed.data : {};
-}
-
-function normaliseConfigurationValue(
-  field: RecipeConfigurationField,
-  value: RecipeConfiguration[string] | undefined,
-): RecipeConfiguration[string] | undefined {
-  if (value === undefined || value === null || value === "") {
-    return field.defaultValue;
-  }
-
-  if (field.type === "number") {
-    return typeof value === "number" && Number.isFinite(value) ? value : field.defaultValue;
-  }
-
-  if (field.type === "boolean") {
-    return typeof value === "boolean" ? value : field.defaultValue;
-  }
-
-  if (field.type === "string_list") {
-    const items = Array.isArray(value)
-      ? value
-      : typeof value === "string"
-        ? value.split(/[\n,;]+/)
-        : [];
-
-    return items.length > 0
-      ? items
-          .map((item) => item.trim())
-          .filter(Boolean)
-          .slice(0, 50)
-      : field.defaultValue;
-  }
-
-  if (typeof value === "string") {
-    return value.trim() || field.defaultValue;
-  }
-
-  return field.defaultValue;
-}
-
-function normaliseRecipeConfigurationForRecipe(
-  recipe: AssistantRecipe | undefined,
-  value: unknown,
-): RecipeConfiguration {
-  const parsed = normaliseRecipeConfiguration(value);
-
-  if (!recipe || recipe.configurationFields.length === 0) {
-    return parsed;
-  }
-
-  const configuration: RecipeConfiguration = {};
-
-  for (const field of recipe.configurationFields) {
-    const normalisedValue = normaliseConfigurationValue(field, parsed[field.key]);
-
-    if (normalisedValue !== undefined && normalisedValue !== null && normalisedValue !== "") {
-      configuration[field.key] = normalisedValue;
-    }
-  }
-
-  return configuration;
 }
 
 export function parseRecipeInstallationRecord(
@@ -479,7 +416,7 @@ async function upsertRecipeInstallation(params: {
     params.configuration ?? existingData?.configuration,
   );
 
-  validateIncidentBriefConfiguration(params.recipe.id, configuration);
+  validateRecipeConfiguration(params.recipe, configuration);
 
   validateScheduledRecipeConfiguration({
     recipe: params.recipe,
@@ -622,7 +559,10 @@ export async function updateRecipeInstallation(params: {
     params.update.configuration ?? existing.data.configuration,
   );
 
-  validateIncidentBriefConfiguration(recipe.id, configuration);
+  if (recipe) {
+    validateRecipeConfiguration(recipe, configuration);
+  }
+
   const data: StoredRecipeInstallationData = {
     recipeId: existing.data.recipeId,
     status: params.update.status ?? existing.data.status,

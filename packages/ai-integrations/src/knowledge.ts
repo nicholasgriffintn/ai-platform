@@ -1,7 +1,22 @@
+import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { isHttpUrl, isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { htmlToPlainText } from "@ngriffin_uk/polychat-utility-server/html-text";
 import z from "zod/v4";
+
+export interface ConnectorKnowledgeDocument {
+  title: string;
+  content: string;
+  status: "available" | "archived";
+  externalUri: string | null;
+  upstreamRevision: number | null;
+}
+
+export interface ConnectorKnowledgeAdapter {
+  provider: RecipeConnectorProvider;
+  operation: string;
+  normalise(result: unknown, resourceId: string): ConnectorKnowledgeDocument;
+}
 
 const pageSchema = z.object({
   id: z.union([z.string(), z.number()]).transform(String),
@@ -12,7 +27,7 @@ const pageSchema = z.object({
   _links: z.object({ webui: z.string().optional(), base: z.string().optional() }).optional(),
 });
 
-export function normaliseConfluencePage(result: unknown, pageId: string) {
+function normaliseConfluencePage(result: unknown, pageId: string): ConnectorKnowledgeDocument {
   const data = isRecord(result) && "data" in result ? result.data : result;
   const page = pageSchema.parse(data);
 
@@ -44,9 +59,21 @@ export function normaliseConfluencePage(result: unknown, pageId: string) {
 
   return {
     title: page.title,
-    status: archived ? ("archived" as const) : ("available" as const),
+    status: archived ? "archived" : "available",
     content: archived ? "" : htmlToPlainText(page.body?.storage?.value ?? ""),
     externalUri,
     upstreamRevision: page.version?.number ?? null,
   };
+}
+
+const knowledgeAdapters: Record<string, ConnectorKnowledgeAdapter> = {
+  "confluence-page": {
+    provider: "confluence",
+    operation: "CONFLUENCE_GET_PAGE_BY_ID",
+    normalise: normaliseConfluencePage,
+  },
+};
+
+export function getConnectorKnowledgeAdapter(id: string): ConnectorKnowledgeAdapter | undefined {
+  return Object.hasOwn(knowledgeAdapters, id) ? knowledgeAdapters[id] : undefined;
 }

@@ -1,7 +1,12 @@
-import { CONNECTOR_ACCOUNT_REFERENCE_KIND } from "@ngriffin_uk/polychat-ai-integrations";
-import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
-  CONFLUENCE_KNOWLEDGE_RECIPE_ID,
+  CONNECTOR_ACCOUNT_REFERENCE_KIND,
+  getConnectorKnowledgeAdapter,
+  getConnectorOperationConfig,
+} from "@ngriffin_uk/polychat-ai-integrations";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { ownsResource, operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
+import {
+  SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
   createKnowledgeSyncSchema,
   type CreateKnowledgeSync,
   type UpdateKnowledgeSync,
@@ -11,14 +16,93 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import { getRecipeById } from "~/modules/apps/application/recipes/catalog";
+import { TaskService } from "~/modules/tasks/application/TaskService";
 import {
   requireProjectAccess,
   requireProjectCapabilityAccess,
 } from "~/modules/workspaces/application/access";
+import type { IEnv } from "~/types";
 
-import { requireKnowledgeSyncAuthority } from "./knowledge-sync-access";
+import type { KnowledgeSyncRecord } from "../infrastructure/KnowledgeSyncRepository";
 import { formatKnowledgeSync } from "./knowledge-sync-record";
-import { enqueueKnowledgeSync } from "./knowledge-sync-tasks";
+
+export async function requireKnowledgeSyncAuthority(
+  context: ServiceContext,
+  sync: Pick<
+    KnowledgeSyncRecord,
+    "user_id" | "project_id" | "recipe_id" | "integration_id" | "connection_id"
+  >,
+) {
+  const userId = context.requireUser().id;
+
+  if (!ownsResource(userId, sync.user_id)) {
+    throw new AssistantError("Knowledge sync not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  const recipe = getRecipeById(sync.recipe_id);
+  const integration = recipe?.integrations.find((entry) => entry.id === sync.integration_id);
+  const adapter = integration?.knowledgeAdapterId
+    ? getConnectorKnowledgeAdapter(integration.knowledgeAdapterId)
+    : undefined;
+
+  if (
+    !recipe ||
+    !integration ||
+    !adapter ||
+    adapter.provider !== integration.providerId ||
+    !operationIsGranted(integration.operationIds ?? [], adapter.operation) ||
+    getConnectorOperationConfig(adapter.provider, adapter.operation)?.access !== "read"
+  ) {
+    throw new AssistantError(
+      "This recipe integration cannot sync knowledge",
+      ErrorType.CONFIGURATION_ERROR,
+      400,
+    );
+  }
+
+  await requireProjectCapabilityAccess(context, sync.project_id, "recipe", recipe.id);
+  const connection = await context.repositories.providerConnections.getConnectionById(
+    sync.connection_id,
+  );
+
+  if (
+    !connection ||
+    !ownsResource(userId, connection.user_id) ||
+    connection.provider !== adapter.provider ||
+    connection.kind !== CONNECTOR_ACCOUNT_REFERENCE_KIND ||
+    connection.status !== "connected"
+  ) {
+    throw new AssistantError(
+      "Reconnect the account used by this sync",
+      ErrorType.AUTHORISATION_ERROR,
+      403,
+    );
+  }
+
+  return { connection, adapter };
+}
+
+export async function enqueueKnowledgeSync(
+  env: IEnv,
+  repositories: RepositoryManager,
+  sync: KnowledgeSyncRecord,
+): Promise<void> {
+  try {
+    await new TaskService(env, repositories.tasks).enqueueTask({
+      id: `knowledge_sync_${sync.id}_${sync.generation}_${sync.cursor}`,
+      task_type: SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
+      user_id: sync.user_id,
+      project_id: sync.project_id,
+      task_data: { syncId: sync.id, generation: sync.generation },
+    });
+  } catch {
+    getLogger({ prefix: "knowledge-sync" }).warn("Knowledge sync saved for queue recovery", {
+      syncId: sync.id,
+    });
+  }
+}
 
 export async function listKnowledgeSyncs(context: ServiceContext, projectId: string) {
   await requireProjectAccess(context, projectId);
@@ -31,33 +115,21 @@ export async function createKnowledgeSync(context: ServiceContext, input: Create
   const parsed = createKnowledgeSyncSchema.parse(input);
   const userId = context.requireUser().id;
 
-  await requireProjectCapabilityAccess(
-    context,
-    parsed.projectId,
-    "recipe",
-    CONFLUENCE_KNOWLEDGE_RECIPE_ID,
-  );
-  const connection = await context.repositories.providerConnections.getConnectionById(
-    parsed.connectionId,
-  );
+  const { connection } = await requireKnowledgeSyncAuthority(context, {
+    user_id: userId,
+    project_id: parsed.projectId,
+    recipe_id: parsed.recipeId,
+    integration_id: parsed.integrationId,
+    connection_id: parsed.connectionId,
+  });
 
-  if (
-    !connection ||
-    connection.status !== "connected" ||
-    !ownsResource(userId, connection.user_id) ||
-    connection.provider !== "confluence" ||
-    connection.kind !== CONNECTOR_ACCOUNT_REFERENCE_KIND
-  ) {
-    throw new AssistantError("Select a connected Confluence account", ErrorType.PARAMS_ERROR, 400);
-  }
-
-  for (const page of parsed.pages) {
+  for (const resource of parsed.resources) {
     if (
-      JSON.stringify(redactSensitiveTokens(page.readParameters)) !==
-      JSON.stringify(page.readParameters)
+      JSON.stringify(redactSensitiveTokens(resource.readParameters)) !==
+      JSON.stringify(resource.readParameters)
     ) {
       throw new AssistantError(
-        "Page parameters must not contain credentials",
+        "Read parameters must not contain credentials",
         ErrorType.PARAMS_ERROR,
         400,
       );
@@ -71,8 +143,10 @@ export async function createKnowledgeSync(context: ServiceContext, input: Create
     userId,
     projectId: parsed.projectId,
     connectionId: connection.id,
+    recipeId: parsed.recipeId,
+    integrationId: parsed.integrationId,
     title: parsed.title,
-    pages: parsed.pages,
+    resources: parsed.resources,
     intervalMinutes: parsed.intervalMinutes,
   });
   const saved = await context.repositories.knowledgeSyncs.get(id);

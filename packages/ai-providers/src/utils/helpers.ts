@@ -3,7 +3,12 @@ import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/reda
 
 import { getAiGatewayMetadataHeaders, resolveAiGatewayCacheTtl } from "../gateway.js";
 import type { ChatCompletionParameters } from "../types/index.js";
-import { hasMcpCredentialReferences, MCP_CREDENTIAL_GATEWAY_HEADERS } from "./mcpCredentials.js";
+export const SENSITIVE_REQUEST_GATEWAY_HEADERS = {
+  "cf-aig-collect-log": "false",
+  "cf-aig-collect-log-payload": "false",
+  "cf-aig-skip-cache": "true",
+  "cf-aig-cache-ttl": "0",
+};
 
 export function validateAiGatewayToken(params: ChatCompletionParameters): void {
   if (!params.env.AI_GATEWAY_TOKEN) {
@@ -21,7 +26,6 @@ export function buildAiGatewayHeaders(
     "Content-Type": "application/json",
     "cf-aig-metadata": JSON.stringify(getAiGatewayMetadataHeaders(params)),
     "cf-aig-cache-ttl": resolveAiGatewayCacheTtl(params).toString(),
-    ...(hasMcpCredentialReferences(params) ? MCP_CREDENTIAL_GATEWAY_HEADERS : {}),
   };
 }
 

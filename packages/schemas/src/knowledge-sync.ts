@@ -1,12 +1,10 @@
 import z from "zod/v4";
 
-export const CONFLUENCE_KNOWLEDGE_RECIPE_ID = "confluence-project-knowledge";
-export const CONFLUENCE_PAGE_READ_OPERATION = "CONFLUENCE_GET_PAGE_BY_ID";
 export const SOURCE_KNOWLEDGE_SYNC_TASK_TYPE = "source_knowledge_sync";
 
-export const knowledgeSyncPageSchema = z
+export const knowledgeSyncResourceSchema = z
   .object({
-    pageId: z.string().regex(/^\d+$/).max(100),
+    resourceId: z.string().trim().min(1).max(200),
     readParameters: z
       .record(z.string(), z.unknown())
       .refine((value) => JSON.stringify(value).length <= 10_000, {
@@ -18,15 +16,21 @@ export const knowledgeSyncPageSchema = z
 export const createKnowledgeSyncSchema = z
   .object({
     projectId: z.string().min(1),
+    recipeId: z.string().min(1).max(200),
+    integrationId: z.string().min(1).max(200),
     title: z.string().trim().min(1).max(200),
     connectionId: z.string().min(1).max(200),
-    pages: z
-      .array(knowledgeSyncPageSchema)
+    resources: z
+      .array(knowledgeSyncResourceSchema)
       .min(1)
       .max(100)
-      .refine((pages) => new Set(pages.map((page) => page.pageId)).size === pages.length, {
-        error: "Select each page once",
-      }),
+      .refine(
+        (resources) =>
+          new Set(resources.map((resource) => resource.resourceId)).size === resources.length,
+        {
+          error: "Select each resource once",
+        },
+      ),
     intervalMinutes: z.number().int().min(5).max(1440).default(60),
   })
   .strict();
@@ -37,7 +41,7 @@ export const knowledgeSyncSchema = z
     projectId: z.string(),
     title: z.string(),
     status: z.enum(["active", "paused"]),
-    pageCount: z.number().int().nonnegative(),
+    resourceCount: z.number().int().nonnegative(),
     cursor: z.number().int().nonnegative(),
     lastSuccessfulAt: z.string().nullable(),
     lastError: z.string().nullable(),
@@ -52,7 +56,7 @@ export const updateKnowledgeSyncSchema = z
     action: z.enum(["pause", "resume", "refresh"]),
   })
   .strict();
-export type KnowledgeSyncPage = z.infer<typeof knowledgeSyncPageSchema>;
+export type KnowledgeSyncResource = z.infer<typeof knowledgeSyncResourceSchema>;
 export type CreateKnowledgeSync = z.infer<typeof createKnowledgeSyncSchema>;
 export type KnowledgeSync = z.infer<typeof knowledgeSyncSchema>;
 export type UpdateKnowledgeSync = z.infer<typeof updateKnowledgeSyncSchema>;

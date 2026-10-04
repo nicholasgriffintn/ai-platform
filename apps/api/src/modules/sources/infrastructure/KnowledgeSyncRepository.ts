@@ -1,4 +1,5 @@
-import type { KnowledgeSyncPage } from "@ngriffin_uk/polychat-schemas";
+import type { ConnectorKnowledgeDocument } from "@ngriffin_uk/polychat-ai-integrations";
+import type { KnowledgeSyncResource } from "@ngriffin_uk/polychat-schemas";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { IEnv } from "~/types";
@@ -8,8 +9,10 @@ export interface KnowledgeSyncRecord {
   user_id: number;
   project_id: string;
   connection_id: string;
+  recipe_id: string;
+  integration_id: string;
   title: string;
-  pages: string;
+  resources: string;
   status: "active" | "paused";
   interval_minutes: number;
   cursor: number;
@@ -21,12 +24,11 @@ export interface KnowledgeSyncRecord {
   lease_expires_at: string | null;
 }
 
-type SyncedPage = {
-  title: string;
-  content: string;
-  status: "available" | "archived";
-  externalUri: string | null;
-  upstreamRevision: number | null;
+type SyncedResource = ConnectorKnowledgeDocument & {
+  sourceId: string;
+  resourceId: string;
+  provider: string;
+  resourceCount: number;
 };
 
 export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
@@ -46,20 +48,24 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
     userId: number;
     projectId: string;
     connectionId: string;
+    recipeId: string;
+    integrationId: string;
     title: string;
-    pages: KnowledgeSyncPage[];
+    resources: KnowledgeSyncResource[];
     intervalMinutes: number;
   }): Promise<void> {
     await this.executeRun(
-      `INSERT INTO source_knowledge_sync (id, user_id, project_id, connection_id, title, pages, interval_minutes)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO source_knowledge_sync (id, user_id, project_id, connection_id, recipe_id, integration_id, title, resources, interval_minutes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         input.id,
         input.userId,
         input.projectId,
         input.connectionId,
+        input.recipeId,
+        input.integrationId,
         input.title,
-        JSON.stringify(input.pages),
+        JSON.stringify(input.resources),
         input.intervalMinutes,
       ],
     );
@@ -102,41 +108,39 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
     );
   }
 
-  async commitPage(
+  async commitResource(
     sync: KnowledgeSyncRecord,
     token: string,
-    sourceId: string,
-    pageId: string,
-    page: SyncedPage,
-    pageCount: number,
+    resource: SyncedResource,
   ): Promise<boolean> {
     const fence = `EXISTS (SELECT 1 FROM source_knowledge_sync WHERE id = ? AND generation = ?
       AND cursor = ? AND status = 'active' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP)`;
     const fenceValues = [sync.id, sync.generation, sync.cursor, token];
-    const last = sync.cursor + 1 === pageCount;
+    const last = sync.cursor + 1 === resource.resourceCount;
     const results = await this.env.DB.batch([
       this.env.DB.prepare(
         `INSERT INTO source (id, created_by_user_id, project_id, connection_id, kind, title, status,
           content, provider, external_uri, metadata)
-         SELECT ?, ?, ?, ?, 'connector', ?, ?, ?, 'confluence', ?, ? WHERE ${fence}
+         SELECT ?, ?, ?, ?, 'connector', ?, ?, ?, ?, ?, ? WHERE ${fence}
          ON CONFLICT(id) DO UPDATE SET title = excluded.title, content = excluded.content,
            status = excluded.status, external_uri = excluded.external_uri, metadata = excluded.metadata,
            updated_at = CURRENT_TIMESTAMP
          WHERE source.created_by_user_id = excluded.created_by_user_id
            AND source.project_id = excluded.project_id AND source.connection_id = excluded.connection_id`,
       ).bind(
-        sourceId,
+        resource.sourceId,
         sync.user_id,
         sync.project_id,
         sync.connection_id,
-        page.title,
-        page.status,
-        page.content,
-        page.externalUri,
+        resource.title,
+        resource.status,
+        resource.content,
+        resource.provider,
+        resource.externalUri,
         JSON.stringify({
           syncId: sync.id,
-          pageId,
-          upstreamRevision: page.upstreamRevision,
+          resourceId: resource.resourceId,
+          upstreamRevision: resource.upstreamRevision,
           lastSyncedAt: new Date().toISOString(),
         }),
         ...fenceValues,
@@ -156,7 +160,7 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
         last ? 1 : 0,
         last ? 1 : 0,
         ...fenceValues,
-        sourceId,
+        resource.sourceId,
         sync.project_id,
         sync.user_id,
         sync.connection_id,

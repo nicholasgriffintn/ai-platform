@@ -70,6 +70,10 @@ export function resolveRecipeId(recipeId: string): string {
   return recipeId;
 }
 
+export function getRecipeById(id: string): AssistantRecipe | undefined {
+  return assistantRecipes.find((recipe) => recipe.id === resolveRecipeId(id));
+}
+
 export function getRecipeIdAliases(recipeId: string): string[] {
   return [recipeId];
 }

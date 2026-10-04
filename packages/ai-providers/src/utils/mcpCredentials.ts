@@ -3,25 +3,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ProviderRequestContext } from "../env.js";
 import type { ProviderHost } from "../host.js";
-import type { ChatCompletionParameters } from "../types/index.js";
-
-export const MCP_CREDENTIAL_GATEWAY_HEADERS = {
-  "cf-aig-collect-log": "false",
-  "cf-aig-collect-log-payload": "false",
-  "cf-aig-skip-cache": "true",
-  "cf-aig-cache-ttl": "0",
-};
-
-export function hasMcpCredentialReferences(params: ChatCompletionParameters): boolean {
-  const options = params.tool_options;
-
-  return [params.tools, options?.mcp_servers, options?.responses_tools].some(
-    (items) =>
-      Array.isArray(items) &&
-      items.some((item) => isRecord(item) && typeof item.credential_connection_id === "string"),
-  );
-}
-
 export function getHostedMcpAuthorizations(body: Record<string, unknown>): string[] {
   return Array.isArray(body.tools)
     ? body.tools

@@ -1,6 +1,7 @@
 import { createKnowledgeSyncSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { getActiveRecipeSetup } from "~/modules/apps/application/recipes/toolContext";
 import { createKnowledgeSync } from "~/modules/sources/application/knowledge-sync";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -21,7 +22,11 @@ export const configure_knowledge_sync: ApiToolDefinition = {
     const input = createKnowledgeSyncSchema.parse(args);
     const projectId = resolveRequestProjectId(request);
 
-    if (!projectId || projectId !== input.projectId) {
+    if (
+      !projectId ||
+      projectId !== input.projectId ||
+      getActiveRecipeSetup(request.request?.options)?.id !== input.recipeId
+    ) {
       throw new AssistantError(
         "Configure knowledge sync within the destination project",
         ErrorType.AUTHORISATION_ERROR,

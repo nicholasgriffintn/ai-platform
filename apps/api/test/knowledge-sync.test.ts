@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 
+import { getConnectorKnowledgeAdapter } from "@ngriffin_uk/polychat-ai-integrations";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Miniflare } from "miniflare";
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
@@ -20,7 +21,6 @@ vi.mock("~/modules/apps/application/connectors/operations", () => ({
   executeRecipeConnectorOperation: mocks.read,
 }));
 
-import { normaliseConfluencePage } from "~/modules/sources/application/confluence-page";
 import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
 import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 
@@ -50,7 +50,7 @@ beforeAll(async () => {
     DB.prepare("INSERT INTO project VALUES('project')"),
     DB.prepare("INSERT INTO provider_connection(id) VALUES('connection')"),
   ]);
-  for (const file of ["0058_source_knowledge.sql", "0059_confluence_knowledge_sync.sql"]) {
+  for (const file of ["0058_source_knowledge.sql"]) {
     await applyTestMigration(
       DB,
       await readFile(new URL("../migrations/" + file, import.meta.url), "utf8"),
@@ -69,8 +69,10 @@ it("rechecks authority after the upstream read and pauses without publishing a r
     userId: 1,
     projectId: "project",
     connectionId: "connection",
+    recipeId: "confluence-project-knowledge",
+    integrationId: "confluence",
     title: "Worker runbooks",
-    pages: [{ pageId: "3", readParameters: {} }],
+    resources: [{ resourceId: "3", readParameters: {} }],
     intervalMinutes: 60,
   });
   const user = vi.spyOn(UserRepository.prototype, "getUserById").mockResolvedValue(testUser(1));
@@ -117,10 +119,12 @@ it("commits sources and checkpoints atomically, rejects old leases and records f
     userId: 1,
     projectId: "project",
     connectionId: "connection",
+    recipeId: "confluence-project-knowledge",
+    integrationId: "confluence",
     title: "Runbooks",
-    pages: [
-      { pageId: "1", readParameters: {} },
-      { pageId: "2", readParameters: {} },
+    resources: [
+      { resourceId: "1", readParameters: {} },
+      { resourceId: "2", readParameters: {} },
     ],
     intervalMinutes: 60,
   });
@@ -133,6 +137,10 @@ it("commits sources and checkpoints atomically, rejects old leases and records f
   expect(await repository.claim("sync", 1, "first")).toBe(true);
   expect(await repository.claim("sync", 1, "other")).toBe(false);
   const page = {
+    sourceId: "source1",
+    resourceId: "1",
+    resourceCount: 2,
+    provider: "confluence",
     title: "Runbook",
     content: "Rollback instructions",
     status: "available" as const,
@@ -140,21 +148,14 @@ it("commits sources and checkpoints atomically, rejects old leases and records f
     upstreamRevision: 3,
   };
 
-  expect(await repository.commitPage(initial, "first", "source1", "1", page, 2)).toBe(true);
+  expect(await repository.commitResource(initial, "first", page)).toBe(true);
   expect(await repository.get("sync")).toMatchObject({
     cursor: 1,
     generation: 1,
     last_successful_at: null,
   });
   expect(
-    await repository.commitPage(
-      initial,
-      "first",
-      "source1",
-      "1",
-      { ...page, content: "Old replay" },
-      2,
-    ),
+    await repository.commitResource(initial, "first", { ...page, content: "Old replay" }),
   ).toBe(false);
   await repository.release("sync", "first", "Temporary failure");
   expect(await repository.claim("sync", 1, "retry")).toBe(true);
@@ -164,7 +165,13 @@ it("commits sources and checkpoints atomically, rejects old leases and records f
     throw new Error("Missing resumed fixture");
   }
 
-  expect(await repository.commitPage(resumed, "retry", "source2", "2", page, 2)).toBe(true);
+  expect(
+    await repository.commitResource(resumed, "retry", {
+      ...page,
+      sourceId: "source2",
+      resourceId: "2",
+    }),
+  ).toBe(true);
   expect(await repository.get("sync")).toMatchObject({
     cursor: 0,
     generation: 2,
@@ -182,14 +189,7 @@ it("commits sources and checkpoints atomically, rejects old leases and records f
 
   await repository.control("sync", "pause");
   expect(
-    await repository.commitPage(
-      current,
-      "current",
-      "source1",
-      "1",
-      { ...page, content: "After pause" },
-      2,
-    ),
+    await repository.commitResource(current, "current", { ...page, content: "After pause" }),
   ).toBe(false);
   const DB = await runtime.getD1Database("DB");
 
@@ -214,6 +214,12 @@ it("commits sources and checkpoints atomically, rejects old leases and records f
 });
 
 it("normalises published storage pages, validates identity and preserves explicit removal states", () => {
+  const adapter = getConnectorKnowledgeAdapter("confluence-page");
+
+  if (!adapter) {
+    throw new Error("Missing adapter");
+  }
+
   const data = {
     id: "1",
     title: "Runbook",
@@ -227,12 +233,12 @@ it("normalises published storage pages, validates identity and preserves explici
     _links: { base: "https://example.test/wiki", webui: "/wiki/pages/1" },
   };
 
-  expect(normaliseConfluencePage({ data }, "1")).toMatchObject({
+  expect(adapter.normalise({ data }, "1")).toMatchObject({
     content: "Restart & verify\nservice restart",
     upstreamRevision: 4,
     externalUri: "https://example.test/wiki/pages/1",
   });
-  expect(() => normaliseConfluencePage({ data }, "2")).toThrow("different page");
-  expect(() => normaliseConfluencePage({ ...data, body: undefined }, "1")).toThrow("storage body");
-  expect(normaliseConfluencePage({ ...data, status: "trashed" }, "1").status).toBe("archived");
+  expect(() => adapter.normalise({ data }, "2")).toThrow("different page");
+  expect(() => adapter.normalise({ ...data, body: undefined }, "1")).toThrow("storage body");
+  expect(adapter.normalise({ ...data, status: "trashed" }, "1").status).toBe("archived");
 });

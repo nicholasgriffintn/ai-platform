@@ -9,8 +9,8 @@ export function KnowledgeSyncPanel({ projectId }: { projectId: string }) {
     <div className="mb-6 space-y-3 rounded-lg border p-4">
       <h3 className="font-medium">Connected knowledge</h3>
       <p className="text-sm text-muted-foreground">
-        Use Confluence Project Knowledge in Recipes to choose published pages to share with this
-        project. Synced text is available to project members. Search updates after indexing.
+        Use a knowledge recipe to choose resources to share with this project. Synced text is
+        available to project members. Search updates after indexing.
       </p>
       {query.error || control.error ? (
         <p role="alert" className="text-sm text-failure">
@@ -23,8 +23,8 @@ export function KnowledgeSyncPanel({ projectId }: { projectId: string }) {
             {sync.title} · {sync.status}
           </p>
           <p className="text-xs text-muted-foreground">
-            {sync.pageCount} pages · every {sync.intervalMinutes} minutes · last complete sync:{" "}
-            {sync.lastSuccessfulAt ?? "pending"}
+            {sync.resourceCount} resources · every {sync.intervalMinutes} minutes · last complete
+            sync: {sync.lastSuccessfulAt ?? "pending"}
           </p>
           {sync.lastError ? (
             <output className="block text-xs text-failure">{sync.lastError}</output>

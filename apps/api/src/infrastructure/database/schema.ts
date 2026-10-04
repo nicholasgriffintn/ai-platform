@@ -1845,8 +1845,10 @@ export const sourceKnowledgeSync = sqliteTable(
     connection_id: text()
       .notNull()
       .references(() => providerConnection.id, { onDelete: "cascade" }),
+    recipe_id: text().notNull(),
+    integration_id: text().notNull(),
     title: text().notNull(),
-    pages: text().notNull(),
+    resources: text().notNull(),
     status: text({ enum: ["active", "paused"] })
       .notNull()
       .default("active"),
