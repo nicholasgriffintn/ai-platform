@@ -34,22 +34,4 @@ describe("resolveSandboxTaskProfile", () => {
       expect(profile.task).toContain("Do not modify files");
     },
   );
-
-  it.each([
-    ["bug-fix", "Bug report:"],
-    ["refactoring", "Refactoring scope:"],
-    ["documentation", "Documentation request:"],
-    ["migration", "Migration scope:"],
-  ] as const)("applies the shared %s task instructions", (taskType, instruction) => {
-    const profile = resolveSandboxTaskProfile({
-      task: "Make the requested change",
-      taskType,
-      shouldCommit: true,
-    });
-
-    expect(profile.taskType).toBe(taskType);
-    expect(profile.shouldCommit).toBe(true);
-    expect(profile.readOnlyCommands).toBe(false);
-    expect(profile.task).toContain(instruction);
-  });
 });

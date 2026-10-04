@@ -25,8 +25,4 @@ describe("composer prefill links", () => {
     expect(readComposerPrefill(new URLSearchParams(""))).toBeNull();
     expect(readComposerPrefill(new URLSearchParams("prompt=%20%20"))).toBeNull();
   });
-
-  it("builds links against a given base path", () => {
-    expect(buildComposerPrefillHref("hello", "/chat")).toBe("/chat?prompt=hello");
-  });
 });

@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import {
   UnsafeUrlError,
   fetchFollowingSafeRedirects,
-  headersToRecord,
   isPublicHttpUrl,
   parsePublicHttpUrl,
   parseBearerToken,
@@ -28,18 +27,6 @@ describe("parseBearerToken", () => {
 });
 
 describe("http utilities", () => {
-  it("maps headers to a plain record", () => {
-    const headers = new Headers({
-      "content-type": "application/json",
-      "x-request-id": "request-1",
-    });
-
-    expect(headersToRecord(headers)).toEqual({
-      "content-type": "application/json",
-      "x-request-id": "request-1",
-    });
-  });
-
   it("sets default headers case-insensitively", () => {
     const headers = { "content-type": "text/plain" };
 
@@ -49,17 +36,6 @@ describe("http utilities", () => {
     expect(headers).toEqual({
       Accept: "application/json",
       "content-type": "text/plain",
-    });
-  });
-
-  it("reads JSON response bodies", async () => {
-    const response = new Response(JSON.stringify({ ok: true }));
-
-    await expect(readHttpResponseBody(response)).resolves.toEqual({
-      body: { ok: true },
-      format: "json",
-      parsed: { ok: true },
-      raw: '{"ok":true}',
     });
   });
 

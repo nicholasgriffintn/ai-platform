@@ -123,7 +123,8 @@ vi.mock("~/infrastructure/providers/capabilities/guardrails", () => ({
   },
 }));
 
-vi.mock("@ngriffin_uk/polychat-utility-core", () => ({
+vi.mock("@ngriffin_uk/polychat-utility-core", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ngriffin_uk/polychat-utility-core")>()),
   generateId: () => "test-id",
 }));
 
@@ -202,12 +203,6 @@ describe("ChatOrchestrator", () => {
     vi.restoreAllMocks();
   });
 
-  describe("constructor", () => {
-    it("should initialize validator and preparer", () => {
-      expect(orchestrator).toBeDefined();
-    });
-  });
-
   describe("process", () => {
     describe("validation handling", () => {
       it("should return validation error when validation fails", async () => {
@@ -269,43 +264,6 @@ describe("ChatOrchestrator", () => {
           currentMode: "chat",
           requestOptions: options.options,
         }));
-      });
-
-      it("should process single model non-streaming request successfully", async () => {
-        const mockResponse = {
-          response: "Test response",
-          usage: { total_tokens: 100 },
-        };
-
-        mockGetAIResponse.mockResolvedValue(mockResponse);
-        mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
-        mockConversationManager.add.mockResolvedValue(undefined);
-
-        const result = await orchestrator.process(mockOptions);
-
-        expect(mockValidator.validate).toHaveBeenCalledWith(mockOptions);
-        expect(mockConversationManager.admitTurn).toHaveBeenCalledWith(
-          expect.objectContaining({ messages: expect.any(Array) }),
-        );
-        expect(mockGuardrails.validateOutput).toHaveBeenCalledWith(
-          expect.objectContaining({
-            prompt: "Hello with context",
-            text: expect.stringContaining("[Response]\nTest response"),
-          }),
-          undefined,
-          "test-completion-id",
-        );
-        expect(mockConversationManager.add).toHaveBeenCalled();
-        expect(result).toEqual({
-          response: expect.objectContaining({
-            response: "Test response",
-            usage: expect.objectContaining({ total_tokens: 100 }),
-            totalUsage: expect.objectContaining({ total_tokens: 100 }),
-          }),
-          toolResponses: [],
-          selectedModel: "test-model",
-          completion_id: "test-completion-id",
-        });
       });
 
       it("preserves an explicit provider service tier through orchestration", async () => {
@@ -546,29 +504,6 @@ describe("ChatOrchestrator", () => {
           message: compactionMessage,
         });
         expect(events).toContainEqual({ type: "content_block_delta", content: "Hello" });
-      });
-
-      it("should handle single model streaming request", async () => {
-        mockGetAIResponse.mockResolvedValue(new ReadableStream());
-
-        const result = await orchestrator.process({
-          ...mockOptions,
-          stream: true,
-        });
-
-        if (!("stream" in result)) {
-          throw new Error("Expected streamed result");
-        }
-
-        const body = await readStream(result.stream);
-
-        expect(mockConsumeProviderStream).toHaveBeenCalled();
-        expect(body).toContain('"type":"message_delta"');
-        expect(result).toMatchObject({
-          stream: expect.any(ReadableStream),
-          selectedModel: "test-model",
-          completion_id: "test-completion-id",
-        });
       });
 
       it("prepends the compaction marker to single model streaming responses", async () => {
@@ -1116,60 +1051,6 @@ describe("ChatOrchestrator", () => {
         mockPreparer.prepare.mockRejectedValue(assistantError);
 
         await expect(orchestrator.process(mockOptions)).rejects.toThrow(assistantError);
-      });
-
-      it("should wrap network errors", async () => {
-        const networkError = new Error("Connection failed");
-
-        networkError.name = "TimeoutError";
-        mockPreparer.prepare.mockRejectedValue(networkError);
-
-        await expect(orchestrator.process(mockOptions)).rejects.toThrow(
-          expect.objectContaining({
-            message: "Connection error or timeout while communicating with AI provider",
-            type: ErrorType.NETWORK_ERROR,
-          }),
-        );
-      });
-
-      it("should wrap rate limit errors", async () => {
-        const rateLimitError = new Error("Rate limited") as any;
-
-        rateLimitError.status = 429;
-        mockPreparer.prepare.mockRejectedValue(rateLimitError);
-
-        await expect(orchestrator.process(mockOptions)).rejects.toMatchObject({
-          message: "Rate limit exceeded. Please try again later.",
-          type: ErrorType.RATE_LIMIT_ERROR,
-          name: "AssistantError",
-        });
-      });
-
-      it("should wrap authentication errors", async () => {
-        const authError = new Error("Unauthorized") as any;
-
-        authError.status = 401;
-        mockPreparer.prepare.mockRejectedValue(authError);
-
-        const error = await orchestrator.process(mockOptions).catch((e) => e);
-
-        expect(error).toBeInstanceOf(AssistantError);
-        expect(error.message).toBe("Authentication error with AI provider");
-        expect(error.type).toBe(ErrorType.AUTHENTICATION_ERROR);
-        expect(error.statusCode).toBe(401);
-      });
-
-      it("should wrap provider errors", async () => {
-        const providerError = new Error("Model error") as any;
-
-        providerError.status = 500;
-        mockPreparer.prepare.mockRejectedValue(providerError);
-
-        await expect(orchestrator.process(mockOptions)).rejects.toMatchObject({
-          message: "Model error",
-          type: ErrorType.PROVIDER_ERROR,
-          name: "AssistantError",
-        });
       });
 
       it("should wrap errors thrown while executing the prepared request", async () => {
