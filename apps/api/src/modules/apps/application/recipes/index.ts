@@ -35,6 +35,7 @@ import {
   deleteRecipeComposioTriggers,
   syncRecipeComposioTriggerStatus,
 } from "./composio-trigger-lifecycle";
+import { validateIncidentBriefConfiguration } from "./incident-brief";
 import {
   parseStoredRecipeInstallationData,
   type StoredRecipeInstallationData,
@@ -478,6 +479,8 @@ async function upsertRecipeInstallation(params: {
     params.configuration ?? existingData?.configuration,
   );
 
+  validateIncidentBriefConfiguration(params.recipe.id, configuration);
+
   validateScheduledRecipeConfiguration({
     recipe: params.recipe,
     triggers,
@@ -618,6 +621,8 @@ export async function updateRecipeInstallation(params: {
     recipe,
     params.update.configuration ?? existing.data.configuration,
   );
+
+  validateIncidentBriefConfiguration(recipe.id, configuration);
   const data: StoredRecipeInstallationData = {
     recipeId: existing.data.recipeId,
     status: params.update.status ?? existing.data.status,

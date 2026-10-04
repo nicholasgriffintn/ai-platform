@@ -1,6 +1,8 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { redactTextStream } from "@ngriffin_uk/polychat-utility-server/redact-stream";
+import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 import { detectStreaming } from "@ngriffin_uk/polychat-utility-server/streaming";
 
 import type { AsyncInvocationMetadata } from "../../../async-invocation.js";
@@ -21,6 +23,12 @@ import {
   buildAiGatewayHeaders,
   buildMetricsSettings,
 } from "../../../utils/helpers.js";
+import {
+  hasMcpCredentialReferences,
+  resolveHostedMcpCredentials,
+  getHostedMcpAuthorizations,
+  MCP_CREDENTIAL_GATEWAY_HEADERS,
+} from "../../../utils/mcpCredentials.js";
 import { resolvePrivateAssetUrls } from "../../../utils/privateAssets.js";
 
 const logger = getLogger({ prefix: "lib/providers/base" });
@@ -149,12 +157,15 @@ export abstract class BaseProvider implements AIProvider {
   }
 
   protected getFetchOptions(
-    _params: ChatCompletionParameters,
+    params: ChatCompletionParameters,
     modelConfig: ModelConfigItem,
   ): FetchAIResponseOptions {
     return {
       requestTimeout: modelConfig.timeout || 100000,
       maxAttempts: 1,
+      ...(hasMcpCredentialReferences(params)
+        ? { sensitiveRequest: true, includeErrorBodyInLogs: false }
+        : {}),
     };
   }
 
@@ -236,26 +247,43 @@ export abstract class BaseProvider implements AIProvider {
       provider: this.name,
       model,
       operation: async () => {
-        const body = await this.getParameterMapping(params, storageService, assetsUrl);
+        const mappedBody = await this.getParameterMapping(params, storageService, assetsUrl);
+        const body = await resolveHostedMcpCredentials(
+          mappedBody,
+          this.runtime.host,
+          this.name,
+          params.context,
+        );
+        const authorizations = getHostedMcpAuthorizations(body);
         const endpoint = await this.getEndpoint(params);
 
         const data = await fetchAIResponse(
           this.isOpenAiCompatible,
           this.name,
           endpoint,
-          headers,
+          authorizations.length ? { ...headers, ...MCP_CREDENTIAL_GATEWAY_HEADERS } : headers,
           body,
           params.env,
-          this.getFetchOptions(params, modelConfig),
+          {
+            ...this.getFetchOptions(params, modelConfig),
+            ...(authorizations.length
+              ? { sensitiveRequest: true, includeErrorBodyInLogs: false }
+              : {}),
+          },
         );
 
         const isStreaming = detectStreaming(body, endpoint);
 
         if (isStreaming) {
-          return data;
+          return data instanceof ReadableStream ? redactTextStream(data, authorizations) : data;
         }
 
-        return await this.formatResponse(data, params, userId);
+        const safeData = authorizations.reduce(
+          (value, secret) => redactSensitiveTokens(value, secret),
+          data,
+        );
+
+        return await this.formatResponse(safeData, params, userId);
       },
       settings: this.buildMetricsSettings(params),
       userId,

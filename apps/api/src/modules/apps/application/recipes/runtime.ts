@@ -8,9 +8,13 @@ import type {
   RecipeConnectorProvider,
   RecipeInstallation,
 } from "@ngriffin_uk/polychat-schemas";
-import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  recipeConnectorProviderSchema,
+  INCIDENT_BRIEF_RECIPE_ID,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { RECIPE_LOOKUP_TOOL, RECIPE_SETUP_TOOL } from "./catalog/shared";
+import { buildIncidentBriefContext } from "./incident-brief";
 
 export interface RecipeRuntimeContext {
   allowedConnectorOperations: Record<string, string[]>;
@@ -122,7 +126,10 @@ export function buildRecipeInvocationRuntime(params: {
     enabledTools,
     configuration: params.configuration,
     input: params.input,
-    prompt,
+    prompt:
+      params.recipe.id === INCIDENT_BRIEF_RECIPE_ID && params.installation
+        ? prompt + "\n" + buildIncidentBriefContext(params.configuration)
+        : prompt,
   });
 
   return {

@@ -20,7 +20,11 @@ library.listNames("chat", { includeAliases: true });
 
 ## Host
 
-`ProviderHost` is the inversion point. `models` resolves model configuration, `storage` creates output stores, `keyStore(env)` reads user credentials, `metrics` records provider operations, and `realtime.createProxyGrant` mints realtime proxy grants. The API implements it once in `apps/api/src/lib/providers/host.ts`.
+`ProviderHost` is the inversion point. `models` resolves model configuration, `storage` creates output stores, `keyStore(env)` reads user credentials, `metrics` records provider operations, and `realtime.createProxyGrant` mints realtime proxy grants. The API implements it once in `apps/api/src/infrastructure/providers/host.ts`.
+
+The optional `mcp.resolveCredential` port resolves saved credential references at the outbound hosted MCP boundary. Authorise the actual model provider, owner, endpoint and requested tool subset in the host. Pass configurations as references; never place tokens in model prompts or stored tool configuration. Resolved calls force approval, disable gateway payload logging and caching, omit provider error bodies and redact known credentials from buffered or streaming responses.
+
+Follow the [official hosted MCP contract](https://developers.openai.com/api/docs/guides/tools-connectors-mcp) for `authorization`, `allowed_tools` and `require_approval`. Resolve and send the credential again on each approved continuation; OpenAI does not retain the `authorization` value in a Response.
 
 ## Library
 

@@ -407,6 +407,20 @@
       "when": 1791117561949,
       "tag": "0057_browser_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "6",
+      "when": 1791140966422,
+      "tag": "0058_source_knowledge",
+      "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "6",
+      "when": 1791143583888,
+      "tag": "0059_confluence_knowledge_sync",
+      "breakpoints": true
     }
   ]
 }

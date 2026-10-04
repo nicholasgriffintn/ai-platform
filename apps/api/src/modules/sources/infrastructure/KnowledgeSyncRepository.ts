@@ -1,0 +1,187 @@
+import type { KnowledgeSyncPage } from "@ngriffin_uk/polychat-schemas";
+
+import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import type { IEnv } from "~/types";
+
+export interface KnowledgeSyncRecord {
+  id: string;
+  user_id: number;
+  project_id: string;
+  connection_id: string;
+  title: string;
+  pages: string;
+  status: "active" | "paused";
+  interval_minutes: number;
+  cursor: number;
+  generation: number;
+  next_sync_at: string;
+  last_successful_at: string | null;
+  last_error: string | null;
+  lease_token: string | null;
+  lease_expires_at: string | null;
+}
+
+type SyncedPage = {
+  title: string;
+  content: string;
+  status: "available" | "archived";
+  externalUri: string | null;
+  upstreamRevision: number | null;
+};
+
+export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
+  get(id: string): Promise<KnowledgeSyncRecord | null> {
+    return this.runQuery("SELECT * FROM source_knowledge_sync WHERE id = ?", [id], true);
+  }
+
+  list(projectId: string): Promise<KnowledgeSyncRecord[]> {
+    return this.runQuery(
+      "SELECT * FROM source_knowledge_sync WHERE project_id = ? ORDER BY title",
+      [projectId],
+    );
+  }
+
+  async create(input: {
+    id: string;
+    userId: number;
+    projectId: string;
+    connectionId: string;
+    title: string;
+    pages: KnowledgeSyncPage[];
+    intervalMinutes: number;
+  }): Promise<void> {
+    await this.executeRun(
+      `INSERT INTO source_knowledge_sync (id, user_id, project_id, connection_id, title, pages, interval_minutes)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        input.id,
+        input.userId,
+        input.projectId,
+        input.connectionId,
+        input.title,
+        JSON.stringify(input.pages),
+        input.intervalMinutes,
+      ],
+    );
+  }
+
+  due(): Promise<KnowledgeSyncRecord[]> {
+    return this.runQuery(
+      `SELECT * FROM source_knowledge_sync WHERE status = 'active' AND next_sync_at <= CURRENT_TIMESTAMP
+       AND (lease_token IS NULL OR lease_expires_at < CURRENT_TIMESTAMP) ORDER BY next_sync_at LIMIT 50`,
+    );
+  }
+
+  async claim(id: string, generation: number, token: string): Promise<boolean> {
+    const result = await this.executeRun(
+      `UPDATE source_knowledge_sync SET lease_token = ?, lease_expires_at = datetime('now', '+10 minutes')
+       WHERE id = ? AND generation = ? AND status = 'active'
+         AND (lease_token IS NULL OR lease_expires_at < CURRENT_TIMESTAMP)`,
+      [token, id, generation],
+    );
+
+    return result.meta.changes === 1;
+  }
+
+  async release(id: string, token: string, error: string | null, pause = false): Promise<void> {
+    await this.executeRun(
+      `UPDATE source_knowledge_sync SET lease_token = NULL, lease_expires_at = NULL, last_error = ?,
+         status = CASE WHEN ? THEN 'paused' ELSE status END,
+         generation = generation + ?
+       WHERE id = ? AND lease_token = ?`,
+      [error, pause ? 1 : 0, pause ? 1 : 0, id, token],
+    );
+  }
+
+  async control(id: string, action: "pause" | "resume" | "refresh"): Promise<void> {
+    await this.executeRun(
+      `UPDATE source_knowledge_sync SET status = ?, generation = generation + 1,
+       cursor = 0, next_sync_at = CURRENT_TIMESTAMP, lease_token = NULL, lease_expires_at = NULL
+       WHERE id = ?`,
+      [action === "pause" ? "paused" : "active", id],
+    );
+  }
+
+  async commitPage(
+    sync: KnowledgeSyncRecord,
+    token: string,
+    sourceId: string,
+    pageId: string,
+    page: SyncedPage,
+    pageCount: number,
+  ): Promise<boolean> {
+    const fence = `EXISTS (SELECT 1 FROM source_knowledge_sync WHERE id = ? AND generation = ?
+      AND cursor = ? AND status = 'active' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP)`;
+    const fenceValues = [sync.id, sync.generation, sync.cursor, token];
+    const last = sync.cursor + 1 === pageCount;
+    const results = await this.env.DB.batch([
+      this.env.DB.prepare(
+        `INSERT INTO source (id, created_by_user_id, project_id, connection_id, kind, title, status,
+          content, provider, external_uri, metadata)
+         SELECT ?, ?, ?, ?, 'connector', ?, ?, ?, 'confluence', ?, ? WHERE ${fence}
+         ON CONFLICT(id) DO UPDATE SET title = excluded.title, content = excluded.content,
+           status = excluded.status, external_uri = excluded.external_uri, metadata = excluded.metadata,
+           updated_at = CURRENT_TIMESTAMP
+         WHERE source.created_by_user_id = excluded.created_by_user_id
+           AND source.project_id = excluded.project_id AND source.connection_id = excluded.connection_id`,
+      ).bind(
+        sourceId,
+        sync.user_id,
+        sync.project_id,
+        sync.connection_id,
+        page.title,
+        page.status,
+        page.content,
+        page.externalUri,
+        JSON.stringify({
+          syncId: sync.id,
+          pageId,
+          upstreamRevision: page.upstreamRevision,
+          lastSyncedAt: new Date().toISOString(),
+        }),
+        ...fenceValues,
+      ),
+      this.env.DB.prepare(
+        `UPDATE source_knowledge_sync SET cursor = ?, generation = generation + ?,
+           next_sync_at = CASE WHEN ? THEN datetime('now', '+' || interval_minutes || ' minutes') ELSE CURRENT_TIMESTAMP END,
+           last_successful_at = CASE WHEN ? THEN CURRENT_TIMESTAMP ELSE last_successful_at END,
+           last_error = NULL, lease_expires_at = datetime('now', '+10 minutes')
+         WHERE id = ? AND generation = ? AND cursor = ? AND lease_token = ?
+           AND status = 'active' AND lease_expires_at >= CURRENT_TIMESTAMP
+           AND EXISTS (SELECT 1 FROM source WHERE id = ? AND project_id = ? AND created_by_user_id = ?
+             AND connection_id = ?)`,
+      ).bind(
+        last ? 0 : sync.cursor + 1,
+        last ? 1 : 0,
+        last ? 1 : 0,
+        last ? 1 : 0,
+        ...fenceValues,
+        sourceId,
+        sync.project_id,
+        sync.user_id,
+        sync.connection_id,
+      ),
+    ]);
+
+    return results[1]?.meta.changes === 1;
+  }
+
+  async markUnavailable(sync: KnowledgeSyncRecord, token: string, sourceId: string): Promise<void> {
+    await this.executeRun(
+      `UPDATE source SET status = 'archived', updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND project_id = ? AND created_by_user_id = ? AND connection_id = ?
+         AND EXISTS (SELECT 1 FROM source_knowledge_sync WHERE id = ? AND generation = ?
+           AND cursor = ? AND status = 'active' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP)`,
+      [
+        sourceId,
+        sync.project_id,
+        sync.user_id,
+        sync.connection_id,
+        sync.id,
+        sync.generation,
+        sync.cursor,
+        token,
+      ],
+    );
+  }
+}

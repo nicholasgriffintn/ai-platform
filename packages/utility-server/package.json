@@ -52,6 +52,16 @@
       "types": "./dist/embeddings.d.ts",
       "import": "./dist/embeddings.js"
     },
+    "./search-ranking": {
+      "polychat-source": "./src/search-ranking.ts",
+      "types": "./dist/search-ranking.d.ts",
+      "import": "./dist/search-ranking.js"
+    },
+    "./html-text": {
+      "polychat-source": "./src/html-text.ts",
+      "types": "./dist/html-text.d.ts",
+      "import": "./dist/html-text.js"
+    },
     "./enabled-tools": {
       "polychat-source": "./src/enabled-tools.ts",
       "types": "./dist/enabled-tools.d.ts",
@@ -131,6 +141,11 @@
       "polychat-source": "./src/redaction.ts",
       "types": "./dist/redaction.d.ts",
       "import": "./dist/redaction.js"
+    },
+    "./redact-stream": {
+      "polychat-source": "./src/redact-stream.ts",
+      "types": "./dist/redact-stream.d.ts",
+      "import": "./dist/redact-stream.js"
     },
     "./request-cache": {
       "polychat-source": "./src/request-cache.ts",

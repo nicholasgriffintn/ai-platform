@@ -12,6 +12,7 @@ import { developerRecipes } from "./catalog/developer";
 import { healthConnectorRecipes } from "./catalog/health-connectors";
 import { mailCalendarRecipes } from "./catalog/mail-calendar";
 import { personalUtilityRecipes } from "./catalog/personal-utilities";
+import { platformKnowledgeRecipes } from "./catalog/platform-knowledge";
 import type { CatalogRecipe } from "./catalog/shared";
 import { wellbeingRecipes } from "./catalog/wellbeing";
 import { workspaceRecipes } from "./catalog/workspace";
@@ -29,6 +30,7 @@ export {
 } from "./catalog/shared";
 
 const catalogRecipes: CatalogRecipe[] = [
+  ...platformKnowledgeRecipes,
   ...mailCalendarRecipes,
   ...coreIntegrationRecipes,
   ...configuredComposioRecipes,

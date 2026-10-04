@@ -46,6 +46,43 @@ export const sourceSchema = z
 
 export const sourceSummarySchema = sourceSchema.omit({ content: true });
 
+export const projectKnowledgeSearchQuerySchema = z
+  .object({
+    projectId: z.string().min(1),
+    query: z.string().trim().min(1).max(1000),
+    type: creatableSourceKindSchema.optional(),
+    top_k: z.coerce.number().int().min(1).max(30).optional(),
+  })
+  .strict();
+
+export const projectKnowledgeSearchResponseSchema = z.object({
+  status: z.literal("success"),
+  data: z.array(
+    z.object({
+      id: z.string(),
+      sourceId: z.string(),
+      chunkId: z.string(),
+      chunkIndex: z.number().int().nonnegative(),
+      title: z.string(),
+      content: z.string(),
+      type: z.string(),
+      score: z.number(),
+      rankingMethod: z.string(),
+      provenance: z.object({
+        projectId: z.string(),
+        sourceRevision: z.number().int().positive(),
+        externalUri: z.string().nullable(),
+        updatedAt: z.string().nullable(),
+        upstreamRevision: z.number().int().positive().nullable(),
+        lastSyncedAt: z.string().nullable(),
+      }),
+    }),
+  ),
+});
+
+export type ProjectKnowledgeSearchQuery = z.infer<typeof projectKnowledgeSearchQuerySchema>;
+export type ProjectKnowledgeSearchResponse = z.infer<typeof projectKnowledgeSearchResponseSchema>;
+
 export const createSourceSchema = z
   .object({
     projectId: z.string().min(1).nullable().optional(),

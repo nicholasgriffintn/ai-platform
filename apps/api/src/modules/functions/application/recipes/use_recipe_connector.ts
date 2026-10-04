@@ -7,6 +7,7 @@ import { operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
 import {
   recipeConnectorProviderSchema,
   teammateRunConfigurationSchema,
+  INCIDENT_BRIEF_RECIPE_ID,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -21,6 +22,7 @@ import {
   discoverRecipeConnectorTools,
   executeRecipeConnectorOperation,
 } from "~/modules/apps/application/connectors/operations";
+import { requireIncidentBriefOperation } from "~/modules/apps/application/recipes/incident-brief";
 import {
   getRecipeConfiguration,
   getActiveRecipeSetup,
@@ -195,6 +197,13 @@ export const use_recipe_connector: ApiToolDefinition = {
         )
       : configuredAllowedOperations;
     const operation = typeof args.operation === "string" ? args.operation.trim() : "";
+
+    requireIncidentBriefOperation(
+      activeRecipe?.id,
+      savedConfiguration,
+      provider,
+      operation || undefined,
+    );
     const useCase = typeof args.useCase === "string" ? args.useCase.trim() : "";
     const channel = getRecipeExecutionChannel(request.request?.options) ?? "web";
 
@@ -260,7 +269,12 @@ export const use_recipe_connector: ApiToolDefinition = {
     let data: unknown;
 
     try {
-      const params = mergeRecipeConfigurationIntoParams(args.params, savedConfiguration);
+      const params =
+        activeRecipe?.id === INCIDENT_BRIEF_RECIPE_ID
+          ? isRecord(args.params)
+            ? args.params
+            : undefined
+          : mergeRecipeConfigurationIntoParams(args.params, savedConfiguration);
       const scope = {
         completionId: request.request?.completion_id ?? context.completionId,
         recipeId: activeRecipe?.id,

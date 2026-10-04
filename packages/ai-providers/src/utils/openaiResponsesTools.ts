@@ -252,6 +252,9 @@ class OpenAIResponsesToolBuilder {
         {
           type: "mcp",
           server_label: serverLabel,
+          ...(typeof serverConfig.credential_connection_id === "string"
+            ? { credential_connection_id: serverConfig.credential_connection_id }
+            : {}),
           ...(typeof serverUrl === "string" ? { server_url: serverUrl } : {}),
           ...(typeof connectorId === "string" ? { connector_id: connectorId } : {}),
           ...(serverConfig.headers ? { headers: serverConfig.headers } : {}),

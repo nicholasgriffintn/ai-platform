@@ -1,4 +1,5 @@
-import { Button, FormInput } from "@ngriffin_uk/polychat-component-ui";
+import { Button, FormInput, FormSelect } from "@ngriffin_uk/polychat-component-ui";
+import type { McpConnection } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -6,6 +7,8 @@ export interface McpServerFieldValue {
   id: string;
   label: string;
   url: string;
+  credentialConnectionId?: string;
+  allowedTools?: string[];
 }
 
 export interface McpServerFieldsProps {
@@ -13,6 +16,7 @@ export interface McpServerFieldsProps {
   disabled?: boolean;
   minimumRows?: number;
   onChange: (servers: McpServerFieldValue[]) => void;
+  connections?: McpConnection[];
 }
 
 export function McpServerFields({
@@ -20,6 +24,7 @@ export function McpServerFields({
   disabled = false,
   minimumRows = 0,
   onChange,
+  connections,
 }: McpServerFieldsProps) {
   const update = (id: string, patch: Partial<McpServerFieldValue>) => {
     onChange(servers.map((server) => (server.id === id ? { ...server, ...patch } : server)));
@@ -43,8 +48,34 @@ export function McpServerFields({
             type="url"
             value={server.url}
             disabled={disabled}
-            onChange={(event) => update(server.id, { url: event.target.value })}
+            onChange={(event) =>
+              update(server.id, { url: event.target.value, credentialConnectionId: undefined })
+            }
           />
+          {connections ? (
+            <FormSelect
+              label="Saved connection"
+              value={server.credentialConnectionId ?? ""}
+              disabled={disabled}
+              options={[
+                { value: "", label: "No authentication" },
+                ...connections.map((connection) => ({
+                  value: connection.id,
+                  label: connection.label,
+                })),
+              ]}
+              onValueChange={(id) => {
+                const connection = connections.find((item) => item.id === id);
+
+                update(server.id, {
+                  credentialConnectionId: connection?.id,
+                  ...(connection
+                    ? { url: connection.url, allowedTools: connection.allowedTools }
+                    : {}),
+                });
+              }}
+            />
+          ) : null}
           <Button
             type="button"
             aria-label={`Remove ${server.label || "MCP server"}`}
@@ -68,6 +99,12 @@ export function McpServerFields({
       <p className="text-xs text-muted-foreground">
         Use an HTTPS endpoint and do not put credentials in the URL.
       </p>
+      {servers.some((server) => server.credentialConnectionId) ? (
+        <p className="text-xs text-muted-foreground">
+          Saved connections belong to you. Other project members must connect their own credentials.
+          Only the saved tool list is available.
+        </p>
+      ) : null}
     </div>
   );
 }

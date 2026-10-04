@@ -38,6 +38,7 @@ export interface FetchAIResponseOptions {
   responseType?: "json" | "raw";
   maxResponseBytes?: number;
   includeErrorBodyInLogs?: boolean;
+  sensitiveRequest?: boolean;
   timeoutIncludesBody?: boolean;
 }
 
@@ -183,6 +184,17 @@ export async function fetchAIResponse<
         responseText,
       });
 
+      if (options.sensitiveRequest) {
+        const rateLimited = isProviderRateLimit(response.status, errorDetails.responseJson);
+
+        throw new AssistantError(
+          rateLimited ? "Provider rate limit exceeded" : "Authenticated provider request failed",
+          rateLimited ? ErrorType.RATE_LIMIT_ERROR : ErrorType.PROVIDER_ERROR,
+          response.status,
+          { requestId, ...(retryAfterMs === undefined ? {} : { retryAfterMs }) },
+        );
+      }
+
       logger.error(
         `Failed to get response for ${provider} from ${endpointOrUrl}`,
         options.includeErrorBodyInLogs === false
@@ -273,7 +285,9 @@ export async function fetchAIResponse<
             },
       );
       throw new AssistantError(
-        `${provider} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
+        options.sensitiveRequest
+          ? `${provider} returned an invalid response`
+          : `${provider} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
         ErrorType.PROVIDER_ERROR,
         502,
         { requestId },
