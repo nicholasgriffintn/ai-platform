@@ -24,37 +24,6 @@ function callProvider() {
 }
 
 describe("fetchAIResponse", () => {
-  it("omits echoed credentials from authenticated provider errors", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(
-        async () =>
-          new Response(
-            '{"error":{"message":"echo dummy-mcp-token","authorization":"dummy-mcp-token"}}',
-            { status: 403, headers: { "Content-Type": "application/json" } },
-          ),
-      ),
-    );
-    try {
-      await fetchAIResponse(
-        true,
-        "openai",
-        "https://provider.example.test/v1/responses",
-        {},
-        { messages: [] },
-        undefined,
-        { ...OPTIONS, sensitiveRequest: true, includeErrorBodyInLogs: false },
-      );
-      throw new Error("Expected provider rejection");
-    } catch (error) {
-      expect(error).toMatchObject({
-        message: "Authenticated provider request failed",
-        statusCode: 403,
-      });
-      expect(JSON.stringify(error)).not.toContain("dummy-mcp-token");
-    }
-  });
-
   afterEach(() => {
     vi.useRealTimers();
     vi.unstubAllGlobals();

@@ -49,7 +49,11 @@ export function McpServerFields({
             value={server.url}
             disabled={disabled}
             onChange={(event) =>
-              update(server.id, { url: event.target.value, credentialConnectionId: undefined })
+              update(server.id, {
+                url: event.target.value,
+                credentialConnectionId: undefined,
+                allowedTools: undefined,
+              })
             }
           />
           {connections ? (
@@ -69,9 +73,8 @@ export function McpServerFields({
 
                 update(server.id, {
                   credentialConnectionId: connection?.id,
-                  ...(connection
-                    ? { url: connection.url, allowedTools: connection.allowedTools }
-                    : {}),
+                  allowedTools: connection?.allowedTools,
+                  ...(connection ? { url: connection.url } : {}),
                 });
               }}
             />

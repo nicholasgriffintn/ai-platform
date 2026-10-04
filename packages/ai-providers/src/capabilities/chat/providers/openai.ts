@@ -2,7 +2,6 @@ import {
   shouldSendProviderReasoningEffort,
   shouldSendProviderVerbosity,
 } from "@ngriffin_uk/polychat-ai-models";
-import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { compactStringRecord } from "@ngriffin_uk/polychat-utility-server/objects";
@@ -12,7 +11,6 @@ import {
   createAsyncInvocationMetadata,
   type AsyncInvocationMetadata,
 } from "../../../async-invocation.js";
-import type { FetchAIResponseOptions } from "../../../fetch.js";
 import { resolveAiGatewayId } from "../../../gateway.js";
 import type { ProviderStorage } from "../../../host.js";
 import {
@@ -28,10 +26,7 @@ import {
 import { resolveRequestUser } from "../../../request-user.js";
 import type { ChatCompletionParameters, MessageContent } from "../../../types/index.js";
 import { safeParseJSON } from "../../../utils/helpers.js";
-import {
-  resolveHostedMcpCredentials,
-  hasHostedMcpAuthorization,
-} from "../../../utils/mcpCredentials.js";
+import { resolveHostedMcpCredentials } from "../../../utils/mcpCredentials.js";
 import {
   buildOpenAIResponsesBody,
   shouldUseOpenAIResponsesApi,
@@ -56,18 +51,6 @@ export class OpenAIProvider extends BaseProvider {
 
   protected getProviderKeyName(): string {
     return "OPENAI_API_KEY";
-  }
-
-  protected getFetchOptions(
-    params: ChatCompletionParameters,
-    modelConfig: ModelConfigItem,
-    body: Record<string, unknown>,
-  ): FetchAIResponseOptions {
-    const options = super.getFetchOptions(params, modelConfig, body);
-
-    return hasHostedMcpAuthorization(body)
-      ? { ...options, sensitiveRequest: true, includeErrorBodyInLogs: false }
-      : options;
   }
 
   protected validateParams(params: ChatCompletionParameters): void {

@@ -29,12 +29,6 @@ const logger = getLogger({ prefix: "lib/providers/fetch" });
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 100000;
 const MAX_PROVIDER_ERROR_BODY_BYTES = 64 * 1024;
-const SENSITIVE_REQUEST_GATEWAY_HEADERS = {
-  "cf-aig-collect-log": "false",
-  "cf-aig-collect-log-payload": "false",
-  "cf-aig-skip-cache": "true",
-  "cf-aig-cache-ttl": "0",
-};
 
 export interface FetchAIResponseOptions {
   requestTimeout?: number;
@@ -44,7 +38,6 @@ export interface FetchAIResponseOptions {
   responseType?: "json" | "raw";
   maxResponseBytes?: number;
   includeErrorBodyInLogs?: boolean;
-  sensitiveRequest?: boolean;
   timeoutIncludesBody?: boolean;
 }
 
@@ -61,7 +54,6 @@ function getAiGatewayRequestHeaders(
 ): Record<string, string> {
   return compactStringRecord({
     ...headers,
-    ...(options.sensitiveRequest ? SENSITIVE_REQUEST_GATEWAY_HEADERS : {}),
     "cf-aig-request-timeout": options.requestTimeout?.toString(),
     "cf-aig-max-attempts": options.maxAttempts?.toString(),
     "cf-aig-retry-delay": options.retryDelay?.toString(),
@@ -191,17 +183,6 @@ export async function fetchAIResponse<
         responseText,
       });
 
-      if (options.sensitiveRequest) {
-        const rateLimited = isProviderRateLimit(response.status, errorDetails.responseJson);
-
-        throw new AssistantError(
-          rateLimited ? "Provider rate limit exceeded" : "Authenticated provider request failed",
-          rateLimited ? ErrorType.RATE_LIMIT_ERROR : ErrorType.PROVIDER_ERROR,
-          response.status,
-          { requestId, ...(retryAfterMs === undefined ? {} : { retryAfterMs }) },
-        );
-      }
-
       logger.error(
         `Failed to get response for ${provider} from ${endpointOrUrl}`,
         options.includeErrorBodyInLogs === false
@@ -292,9 +273,7 @@ export async function fetchAIResponse<
             },
       );
       throw new AssistantError(
-        options.sensitiveRequest
-          ? `${provider} returned an invalid response`
-          : `${provider} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
+        `${provider} returned invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown JSON parse error"}`,
         ErrorType.PROVIDER_ERROR,
         502,
         { requestId },

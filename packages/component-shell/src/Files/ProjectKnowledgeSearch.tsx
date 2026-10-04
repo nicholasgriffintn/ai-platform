@@ -14,8 +14,14 @@ export function ProjectKnowledgeSearch({ projectId }: { projectId: string }) {
         className="flex items-end gap-3"
         onSubmit={(event) => {
           event.preventDefault();
-          setQuery(draft.trim());
-          if (draft.trim() === query) {
+          const nextQuery = draft.trim();
+
+          if (!nextQuery) {
+            return;
+          }
+
+          setQuery(nextQuery);
+          if (nextQuery === query) {
             void search.refetch();
           }
         }}
@@ -49,8 +55,12 @@ export function ProjectKnowledgeSearch({ projectId }: { projectId: string }) {
           </p>
           {passage.provenance.upstreamRevision ? (
             <p className="text-xs text-muted-foreground">
-              Confluence version {passage.provenance.upstreamRevision} · synced{" "}
-              {passage.provenance.lastSyncedAt ?? "unknown"}
+              Upstream revision {passage.provenance.upstreamRevision}
+            </p>
+          ) : null}
+          {passage.provenance.lastSyncedAt ? (
+            <p className="text-xs text-muted-foreground">
+              Synced {passage.provenance.lastSyncedAt}
             </p>
           ) : null}
           <p className="mt-2 text-sm whitespace-pre-wrap">{passage.content}</p>

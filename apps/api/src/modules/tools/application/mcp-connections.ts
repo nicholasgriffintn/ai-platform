@@ -1,6 +1,7 @@
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   mcpConnectionInputSchema,
+  mcpConnectionSchema,
   mcpCredentialEndpointSchema,
   type McpConnectionInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -14,10 +15,16 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-
-import { publicMcpConnection } from "./mcp-connection-record";
+import type { ProviderConnectionRecord } from "~/modules/apps/infrastructure/ProviderConnectionRepository";
 
 const CONNECTION_KIND = "mcp_bearer";
+const connectionMetadataSchema = mcpConnectionSchema.omit({ id: true, createdAt: true });
+
+function publicMcpConnection(record: ProviderConnectionRecord) {
+  const metadata = connectionMetadataSchema.parse(safeParseJson(record.metadata));
+
+  return { ...metadata, id: record.id, createdAt: record.created_at };
+}
 
 function connectionKey(context: ServiceContext): string {
   const secret = context.env.JWT_SECRET;

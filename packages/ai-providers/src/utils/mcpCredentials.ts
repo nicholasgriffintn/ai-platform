@@ -3,20 +3,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ProviderRequestContext } from "../env.js";
 import type { ProviderHost } from "../host.js";
-export function hasHostedMcpAuthorization(body: Record<string, unknown>): boolean {
-  if (!Array.isArray(body.tools)) {
-    return false;
-  }
-
-  for (const tool of body.tools) {
-    if (isRecord(tool) && tool.type === "mcp" && typeof tool.authorization === "string") {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 export async function resolveHostedMcpCredentials(
   body: Record<string, unknown>,
   host: Pick<ProviderHost, "mcp">,

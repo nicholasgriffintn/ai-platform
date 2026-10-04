@@ -151,7 +151,6 @@ export abstract class BaseProvider implements AIProvider {
   protected getFetchOptions(
     _params: ChatCompletionParameters,
     modelConfig: ModelConfigItem,
-    _body: Record<string, unknown>,
   ): FetchAIResponseOptions {
     return {
       requestTimeout: modelConfig.timeout || 100000,
@@ -251,7 +250,7 @@ export abstract class BaseProvider implements AIProvider {
     const assetsUrl = params.env.API_BASE_URL || "";
     const body = await this.getParameterMapping(params, storageService, assetsUrl);
     const endpoint = await this.getEndpoint(params);
-    const options = this.getFetchOptions(params, modelConfig, body);
+    const options = this.getFetchOptions(params, modelConfig);
     const data = await fetchAIResponse(
       this.isOpenAiCompatible,
       this.name,

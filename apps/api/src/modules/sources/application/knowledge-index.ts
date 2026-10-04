@@ -1,5 +1,7 @@
 import { SOURCE_KNOWLEDGE_INDEX_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, sha256Hex } from "@ngriffin_uk/polychat-utility-core";
+import { chunkText } from "@ngriffin_uk/polychat-utility-server/embeddings";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { EMBEDDING_VECTOR_SPACE_VERSION, WORKERS_EMBEDDING_MODEL } from "~/config/storage";
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -8,21 +10,42 @@ import {
   decodeEmbeddingRuntimeTarget,
   toEmbeddingRuntimeTarget,
 } from "~/infrastructure/providers/capabilities/embedding/target";
+import type { PendingEmbeddingDocument } from "~/modules/apps/application/embeddings/document";
+import type { SearchableSource } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { IEnv } from "~/types";
 
-import { prepareSourceSearchDocument } from "./knowledge-document";
 import { cleanupStaleIndexes, insertSourceVectors } from "./knowledge-vectors";
 import { requireSourceAccess } from "./sources";
 
-export const projectKnowledgeTarget = () =>
-  toEmbeddingRuntimeTarget({
-    provider: "vectorize",
-    target: "vectorize-binding",
-    model: WORKERS_EMBEDDING_MODEL,
-    vectorSpace: "default",
-    vectorSpaceVersion: EMBEDDING_VECTOR_SPACE_VERSION,
-  });
+async function prepareSourceSearchDocument(
+  source: SearchableSource,
+): Promise<PendingEmbeddingDocument> {
+  const digest = await sha256Hex(`${source.id}:${source.search_revision}`);
+  const content = source.content ?? "";
+  const chunks = chunkText(content, 2048);
+
+  if (chunks.length > 256) {
+    throw new AssistantError(
+      "Source exceeds the knowledge index size limit",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  return {
+    documentId: `srcidx_${digest.slice(0, 56)}`,
+    logicalId: source.id,
+    content,
+    title: source.title,
+    chunks: chunks.map((content, index) => ({
+      id: `srcv_${digest.slice(0, 50)}_${index}`,
+      vectorId: `srcv_${digest.slice(0, 50)}_${index}`,
+      index,
+      content,
+    })),
+  };
+}
 
 export async function indexProjectSource(context: ServiceContext, sourceId: string): Promise<void> {
   await cleanupStaleIndexes(context, sourceId);
@@ -50,7 +73,13 @@ export async function indexProjectSource(context: ServiceContext, sourceId: stri
   const document = await prepareSourceSearchDocument(source);
   const target = existing
     ? decodeEmbeddingRuntimeTarget(existing.target)
-    : projectKnowledgeTarget();
+    : toEmbeddingRuntimeTarget({
+        provider: "vectorize",
+        target: "vectorize-binding",
+        model: WORKERS_EMBEDDING_MODEL,
+        vectorSpace: "default",
+        vectorSpaceVersion: EMBEDDING_VECTOR_SPACE_VERSION,
+      });
 
   await context.repositories.sourceSearch.prepare(source, document, target);
   if (!context.env.AI || !context.env.VECTOR_DB) {

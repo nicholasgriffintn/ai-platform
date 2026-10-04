@@ -81,10 +81,6 @@ export function McpConnectionManager({
               Approve each operation before it runs.
             </span>
           </label>
-          <p className="text-xs text-muted-foreground">
-            Private services need a reachable HTTPS gateway. This connection does not create network
-            access.
-          </p>
           {form.error ? (
             <p role="alert" className="text-sm text-failure">
               {form.error}
