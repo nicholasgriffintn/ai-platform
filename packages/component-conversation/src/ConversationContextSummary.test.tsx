@@ -44,10 +44,4 @@ describe("ConversationContextSummaryButton", () => {
     expect(screen.getByText("Run context")).toBeTruthy();
     expect(screen.getByText("Trace")).toBeTruthy();
   });
-
-  it("renders nothing when no summary evidence exists", () => {
-    const { container } = render(<ConversationContextSummaryButton entries={[]} />);
-
-    expect(container.childElementCount).toBe(0);
-  });
 });

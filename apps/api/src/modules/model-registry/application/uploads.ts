@@ -23,8 +23,8 @@ import {
   readNonEmptyString,
   sha256Hex,
   slugify,
+  generateId,
 } from "@ngriffin_uk/polychat-utility-core";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Stream } from "@ngriffin_uk/polychat-utility-server/crypto";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";

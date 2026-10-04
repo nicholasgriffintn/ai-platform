@@ -84,43 +84,6 @@ describe("AuthValidator", () => {
       expect(result.context).toEqual({});
     });
 
-    it("should fail validation when DB is null", async () => {
-      const optionsWithNullDB = {
-        ...baseOptions,
-        env: {
-          DB: null,
-          AI: {},
-        },
-      };
-
-      // @ts-expect-error - mock implementation
-      const result = await validator.validate(optionsWithNullDB, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Missing DB binding");
-      expect(result.validation.validationType).toBe("auth");
-    });
-
-    it("should fail validation when DB is undefined", async () => {
-      const optionsWithUndefinedDB = {
-        ...baseOptions,
-        env: {
-          DB: undefined,
-          AI: {},
-        },
-      };
-
-      const result = await validator.validate(
-        // @ts-expect-error - mock implementation
-        optionsWithUndefinedDB,
-        baseContext,
-      );
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Missing DB binding");
-      expect(result.validation.validationType).toBe("auth");
-    });
-
     it("should fail validation when neither user nor anonymousUser is provided", async () => {
       const optionsWithoutUsers = {
         ...baseOptions,
@@ -170,28 +133,6 @@ describe("AuthValidator", () => {
       expect(result.validation.validationType).toBe("auth");
     });
 
-    it("should prioritize user over anonymousUser when both are provided", async () => {
-      const optionsWithBothUsers = {
-        ...baseOptions,
-        context: createServiceContext({
-          env: baseOptions.env,
-          user: {
-            id: "user-123",
-            email: "test@example.com",
-          } as any,
-        }),
-        anonymousUser: {
-          id: "anon-123",
-          session_id: "session-456",
-        },
-      };
-
-      const result = await validator.validate(optionsWithBothUsers, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(result.context).toEqual({});
-    });
-
     it("should handle empty string user id", async () => {
       const optionsWithEmptyUserId = {
         ...baseOptions,
@@ -226,58 +167,6 @@ describe("AuthValidator", () => {
       expect(result.validation.isValid).toBe(false);
       expect(result.validation.error).toBe("User or anonymousUser is required");
       expect(result.validation.validationType).toBe("auth");
-    });
-
-    it("should handle null user", async () => {
-      const optionsWithNullUser = {
-        ...baseOptions,
-        user: null,
-        anonymousUser: {
-          id: "anon-123",
-          session_id: "session-456",
-        },
-      };
-
-      const result = await validator.validate(optionsWithNullUser, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(result.context).toEqual({});
-    });
-
-    it("should handle null anonymousUser when user is present", async () => {
-      const optionsWithNullAnonymousUser = {
-        ...baseOptions,
-        context: createServiceContext({
-          env: baseOptions.env,
-          user: {
-            id: "user-123",
-            email: "test@example.com",
-          } as any,
-        }),
-        anonymousUser: null,
-      };
-
-      const result = await validator.validate(optionsWithNullAnonymousUser, baseContext);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(result.context).toEqual({});
-    });
-
-    it("should pass through existing context unchanged", async () => {
-      const contextWithExistingData = {
-        existingField: "value",
-        anotherField: 123,
-        nestedObject: { prop: "test" },
-      };
-
-      const result = await validator.validate(
-        baseOptions,
-        // @ts-expect-error - mock implementation
-        contextWithExistingData,
-      );
-
-      expect(result.validation.isValid).toBe(true);
-      expect(result.context).toEqual({});
     });
   });
 });

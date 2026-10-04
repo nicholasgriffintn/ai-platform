@@ -7,7 +7,7 @@ test.describe("Release smoke", { tag: "@release" }, () => {
   test.describe("signed out", () => {
     test.use({ persona: "logged-out" });
 
-    test("answers in Chat and requires sign-in for Work", async ({ homePage, page, workPage }) => {
+    test("answers in Chat", async ({ homePage, page }) => {
       await homePage.navigate("/chat");
       await homePage.selectModel(TEXT_MODEL);
       await homePage.sendMessageAndRequireCompletion("Check the signed-out release path");
@@ -17,7 +17,9 @@ test.describe("Release smoke", { tag: "@release" }, () => {
         "smoke-logged-out-chat-boundary",
         DEFAULT_VISUAL_CHECKPOINTS,
       );
+    });
 
+    test("requires sign-in for Work", async ({ page, workPage }) => {
       await workPage.open();
       await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
       await captureVisualSnapshots(

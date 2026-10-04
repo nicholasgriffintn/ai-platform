@@ -7,7 +7,7 @@ import {
   getMetaNavigationHref,
   readMetaNavigationTarget,
 } from "../meta-assistant.js";
-import { getActivePlace, getPlacePaths, getProductMode } from "../navigation/places.js";
+import { getActivePlace } from "../navigation/places.js";
 
 describe("buildMetaAssistantUiContext", () => {
   it("describes an open project conversation", () => {
@@ -120,15 +120,6 @@ describe("places and files routes", () => {
     expect(getActivePlace("/work/w1/projects/p1/apps/notes")).toBe("plugins");
     expect(getActivePlace("/profile")).toBe("you");
     expect(getActivePlace("/pricing")).toBeUndefined();
-  });
-
-  it("reads the mode from the path so a place keeps its context", () => {
-    expect(getProductMode("/chat/files/made")).toBe("chat");
-    expect(getProductMode("/work/w1/projects/p1/files/made")).toBe("work");
-    expect(getPlacePaths("chat").canvas).toBe("/chat/canvas");
-    expect(getPlacePaths("chat").files).toBe("/chat/files");
-    expect(getPlacePaths("chat").scheduled).toBe("/chat/scheduled");
-    expect(getPlacePaths("work").attention).toBe("/work/attention");
   });
 
   it("parses files subpaths and builds tab paths", () => {

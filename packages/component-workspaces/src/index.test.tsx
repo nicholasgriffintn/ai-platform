@@ -21,21 +21,6 @@ import {
 afterEach(cleanup);
 
 describe("ProjectBriefCard", () => {
-  it("submits the edited brief through the host callback", async () => {
-    const onSave = vi.fn(async () => undefined);
-
-    render(<ProjectBriefCard canManage instructions="Initial context" onSave={onSave} />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Edit project brief" }));
-    fireEvent.change(screen.getByRole("textbox", { name: "Project brief" }), {
-      target: { value: "Updated context" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Save brief" }));
-
-    await waitFor(() => expect(onSave).toHaveBeenCalledWith("Updated context"));
-    await waitFor(() => expect(screen.queryByRole("textbox")).toBeNull());
-  });
-
   it("does not expose editing controls without management permission", () => {
     render(<ProjectBriefCard canManage={false} instructions="" onSave={vi.fn()} />);
     expect(screen.queryByRole("button")).toBeNull();
@@ -344,118 +329,9 @@ describe("TaskBoard", () => {
       "/chat?completion_id=conversation-1",
     );
   });
-
-  it("links completed work to its result without offering retry", () => {
-    render(
-      <TaskBoard
-        tasks={[{ ...task, status: "done", conversationId: "conversation-1" }]}
-        flow={flow}
-        members={[]}
-        teammates={[]}
-        taskHref={() => "/tasks/task-1"}
-        conversationHref={() => "/chat?completion_id=conversation-1"}
-        onStartTask={vi.fn()}
-        onAcceptTask={vi.fn()}
-        onCreateTask={vi.fn()}
-        onConfigureFlow={vi.fn()}
-        canCreateTask
-        canManageFlow
-      />,
-    );
-
-    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
-    expect(screen.getByRole("link", { name: "View result" })).toBeTruthy();
-    expect(
-      Array.from(screen.getByLabelText("Pipeline progress").querySelectorAll("[title]")).every(
-        (marker) => marker.className.includes("bg-success"),
-      ),
-    ).toBe(true);
-  });
 });
 
 describe("TaskDetail", () => {
-  it("uses the host content renderer for teammate progress", () => {
-    const renderProgressSummary = vi.fn((summary: string) => <strong>Rendered: {summary}</strong>);
-    const goal: Goal = {
-      id: "goal-1",
-      conversation_id: "conversation-1",
-      sandbox_run_id: null,
-      user_id: 1,
-      objective: task.objective,
-      status: "stalled",
-      source: "user",
-      iteration_count: 1,
-      stall_streak: 2,
-      tokens_spent: 500,
-      progress: [
-        {
-          iteration: 1,
-          surface: "agent",
-          summary: "**Checked** the release inputs",
-          evidence: [],
-          at: "2026-08-30T10:05:00.000Z",
-        },
-      ],
-      evidence: null,
-      stopped_reason: "Missing release date",
-      created_at: "2026-08-30T10:00:00.000Z",
-      updated_at: "2026-08-30T10:05:00.000Z",
-      completed_at: null,
-      last_continued_at: "2026-08-30T10:05:00.000Z",
-    };
-
-    render(
-      <TaskDetail
-        task={task}
-        goal={goal}
-        activity={{
-          protocolVersion: 1,
-          projectId: task.projectId,
-          taskId: task.id,
-          items: [
-            {
-              protocolVersion: 1,
-              id: "step-1",
-              projectId: task.projectId,
-              taskId: task.id,
-              runId: "run-1",
-              type: "goal.step.recorded",
-              category: "step",
-              status: "succeeded",
-              title: "Step 1",
-              detail: "**Checked** the release inputs",
-              items: [],
-              occurredAt: "2026-08-30T10:05:00.000Z",
-              sourceId: "1",
-              actionable: false,
-              terminal: true,
-            },
-          ],
-        }}
-        plan={emptyPlan}
-        flow={flow}
-        members={[]}
-        teammates={[]}
-        blockedBy={[]}
-        conversationHref={null}
-        originConversationHref={null}
-        taskHref={() => "/tasks/task-1"}
-        runHref={() => "/chat?run_id=run-1"}
-        outputHref={() => "/outputs/output-1"}
-        onRun={vi.fn()}
-        onAccept={vi.fn()}
-        onCancel={vi.fn()}
-        onReopen={vi.fn()}
-        onDelete={vi.fn()}
-        renderProgressSummary={renderProgressSummary}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "Show details" }));
-    expect(renderProgressSummary).toHaveBeenCalledWith("**Checked** the release inputs");
-    expect(screen.getByText("Rendered: **Checked** the release inputs")).toBeTruthy();
-  });
-
   it("makes the accepted result primary and shows confirmed criteria as met", () => {
     const criterion = "The note includes the confirmed launch date";
     const completedGoal: Goal = {

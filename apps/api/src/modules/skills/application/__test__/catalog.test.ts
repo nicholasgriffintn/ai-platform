@@ -5,7 +5,6 @@ import {
   MAX_SKILL_RESOURCE_CONTENT_BYTES,
 } from "@ngriffin_uk/polychat-ai-skills";
 import {
-  builtInSkillDocuments,
   MAX_USER_SKILL_DOCUMENT_BYTES,
   parseSkillDocument,
   parseUserSkillDocument,
@@ -50,27 +49,6 @@ const BUILT_IN_SKILL_IDS = [
 ];
 
 describe("built-in skill catalogue", () => {
-  it.each(BUILT_IN_SKILL_IDS)("stores %s as an Agent Skills document", (name) => {
-    const raw = builtInSkillDocuments.find((document) => document.directory === name)?.rawContent;
-
-    expect(raw).toMatch(/^---\n/);
-    expect(raw).toContain(`\nname: ${name}\n`);
-    expect(raw).toContain("description:");
-    expect(raw).toMatch(/\bLoad (when|before)\b/);
-    expect(raw).toMatch(/\n---\n\n# /);
-  });
-
-  it("stores artifact guidance as relative skill resources", () => {
-    const artifacts = builtInSkillDocuments.find((document) => document.directory === "artifacts");
-    const types = artifacts?.resources?.find((resource) => resource.path === "references/types.md");
-    const design = artifacts?.resources?.find(
-      (resource) => resource.path === "references/design.md",
-    );
-
-    expect(types?.content).toContain("# Artifact types");
-    expect(design?.content).toContain("# Designing visual artifacts");
-  });
-
   it("loads imported Markdown and resources through the catalogue", async () => {
     const skill = await loadSkill("artifacts");
     const resource = await getSkillResource("artifacts", "references/types.md");

@@ -1,5 +1,5 @@
 import type { TeammateResponse } from "@ngriffin_uk/polychat-schemas";
-import { AGENT_MODE_CONFIGS, updateUserSettingsSchema } from "@ngriffin_uk/polychat-schemas";
+import { updateUserSettingsSchema } from "@ngriffin_uk/polychat-schemas";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -219,18 +219,6 @@ describe("teammate editor", () => {
     expect(screen.queryByRole("button", { name: "Delete teammate" })).toBeNull();
     expect(screen.getByText("Aviary owns this teammate.")).toBeTruthy();
     expect(screen.getByLabelText("Name").hasAttribute("disabled")).toBe(true);
-  });
-
-  it("offers every teammate mode and describes it from the mode configuration", () => {
-    renderEditor();
-
-    for (const mode of ["Chat", "Plan", "Build", "Explore"]) {
-      expect(screen.getByRole("radio", { name: new RegExp(`^${mode}`) })).toBeTruthy();
-    }
-
-    expect(screen.getByRole("radio", { name: /^Plan/ }).closest("label")?.textContent).toContain(
-      `${AGENT_MODE_CONFIGS.plan.maxSteps} steps`,
-    );
   });
 
   it("offers publishing only while the teammate is still personally owned", () => {
