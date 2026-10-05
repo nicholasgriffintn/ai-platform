@@ -26,7 +26,9 @@ import { Puzzle } from "lucide-react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { ResponseRenderer } from "../Content/ResponseRenderer.js";
+import { CreateRecordTable } from "./CreateRecordTable.js";
 import { DocumentOutputWorkbench } from "./DocumentOutputWorkbench.js";
+import { RecordOutputWorkbench } from "./RecordOutputWorkbench.js";
 import { useOutputSharing } from "./useOutputSharing.js";
 
 export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryProps) {
@@ -88,7 +90,9 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
           errorMessage={sharing.error?.outputId === output.id ? sharing.error.message : undefined}
           onShare={() => void sharing.copy(output.id)}
         />
-        {documentBody === null ? (
+        {output.kind === "records" ? (
+          <RecordOutputWorkbench tableId={output.id} />
+        ) : documentBody === null ? (
           <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
         ) : (
           <DocumentOutputWorkbench key={output.id} output={output} body={documentBody} />
@@ -159,25 +163,31 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
 
   if (!outputs?.length) {
     return (
-      <EmptyState
-        icon={<Puzzle size={24} className="text-muted-foreground" />}
-        title="Nothing made yet"
-        message="Ask a teammate or run an app and the result lands here."
-      />
+      <div className="space-y-4">
+        <CreateRecordTable projectId={projectId} basePath={basePath} />
+        <EmptyState
+          icon={<Puzzle size={24} className="text-muted-foreground" />}
+          title="Nothing made yet"
+          message="Ask a teammate or run an app and the result lands here."
+        />
+      </div>
     );
   }
 
   return (
-    <OutputCardGrid
-      outputs={outputs.map((item) => ({
-        id: item.id,
-        title: item.title,
-        capabilityId: item.capabilityId,
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt,
-        href: `${basePath}/${item.id}`,
-      }))}
-    />
+    <div className="space-y-4">
+      <CreateRecordTable projectId={projectId} basePath={basePath} />
+      <OutputCardGrid
+        outputs={outputs.map((item) => ({
+          id: item.id,
+          title: item.title,
+          capabilityId: item.capabilityId,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+          href: `${basePath}/${item.id}`,
+        }))}
+      />
+    </div>
   );
 }
 

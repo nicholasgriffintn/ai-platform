@@ -76,3 +76,5 @@ export { machineRunClient } from "./machine-run-service.js";
 
 export * from "./browser-sessions.js";
 export * from "./document-collaboration.js";
+
+export * from "./native-records.js";

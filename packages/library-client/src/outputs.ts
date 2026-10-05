@@ -21,6 +21,8 @@ export async function listOutputs(
     projectId?: string;
     capabilityId?: string;
     kind?: string;
+    limit?: number;
+    offset?: number;
   } = {},
 ): Promise<OutputSummary[]> {
   const query = new URLSearchParams();
@@ -35,6 +37,14 @@ export async function listOutputs(
 
   if (filters.kind) {
     query.set("kind", filters.kind);
+  }
+
+  if (filters.limit !== undefined) {
+    query.set("limit", String(filters.limit));
+  }
+
+  if (filters.offset !== undefined) {
+    query.set("offset", String(filters.offset));
   }
 
   const suffix = query.size ? `?${query.toString()}` : "";
