@@ -1,7 +1,6 @@
 import {
   Button,
   ButtonLink,
-  Checkbox,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -10,444 +9,220 @@ import {
   DialogTitle,
   FormInput,
   FormSelect,
-  type FormSelectOption,
-  Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
-  agentModeSchema,
-  createProjectFlowFromWorkflow,
-  createSuggestedProjectFlow,
-  platformTeammateCategoryLabels,
+  PROJECT_FLOW_MAX_NODES,
   PROJECT_WORKFLOWS,
+  platformTeammateCategoryLabels,
   type ProjectFlow,
-  type ProjectFlowStage,
-  type ToolPermission,
+  type ProjectFlowNode,
+  type ProjectFlowResponse,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
-import { ArrowDown, ArrowUp, Plus, Settings2, Trash2 } from "lucide-react";
-import { type FormEvent, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
-export interface FlowEditorDialogProps {
+import { FlowNextStep } from "./flow-editor/FlowNextStep";
+import { FlowNodeEditor } from "./flow-editor/FlowNodeEditor";
+import { FlowRecordTriggers } from "./flow-editor/FlowRecordTriggers";
+import type { FlowEditorResources } from "./flow-editor/types";
+import { useFlowEditor } from "./flow-editor/useFlowEditor";
+import { FLOW_NODE_LABELS, flowNodeConnections } from "./flow-node-presentation";
+
+export type { FlowRecordTableOption, FlowRecordTableDefinition } from "./flow-editor/types";
+
+export interface FlowEditorDialogProps extends FlowEditorResources {
   open: boolean;
   flow: ProjectFlow | null;
-  teammates: { id: string; name: string }[];
-  skills: { id: string; name: string }[];
+  triggerStates: ProjectFlowResponse["triggerStates"];
   capabilitiesHref: string;
   createTeammateHref: string;
+  hasMoreTables?: boolean;
+  isLoadingTables?: boolean;
+  onLoadMoreTables?: () => void;
+  resourcesError?: string;
   isSaving?: boolean;
   errorMessage?: string;
   onOpenChange: (open: boolean) => void;
   onSave: (flow: ProjectFlow) => Promise<void>;
 }
 
-const STAGE_MODE_OPTIONS: FormSelectOption[] = [
-  { value: "", label: "Teammate default" },
-  { value: "explore", label: "Explore" },
-  { value: "plan", label: "Plan" },
-  { value: "build", label: "Build" },
-  { value: "chat", label: "Chat" },
+const NODE_TYPES: { value: ProjectFlowNode["type"]; label: string }[] = [
+  { value: "agent", label: FLOW_NODE_LABELS.agent },
+  { value: "function", label: FLOW_NODE_LABELS.function },
+  { value: "decision", label: FLOW_NODE_LABELS.decision },
+  { value: "loop", label: FLOW_NODE_LABELS.loop },
+  { value: "human_wait", label: FLOW_NODE_LABELS.human_wait },
+  { value: "timer", label: FLOW_NODE_LABELS.timer },
+  { value: "end", label: FLOW_NODE_LABELS.end },
 ];
 
-const STAGE_ADVANCE_OPTIONS: FormSelectOption[] = [
-  { value: "on_goal_complete", label: "Hand off automatically" },
-  { value: "on_human_accept", label: "Stop for human review" },
-];
-
-const APPROVAL_OPTIONS: { permission: ToolPermission; label: string }[] = [
-  { permission: "network", label: "Network" },
-  { permission: "write", label: "Write" },
-  { permission: "sandbox", label: "Sandbox" },
-  { permission: "orchestration", label: "Orchestration" },
-];
-
-const SUGGESTED_PIPELINE = "__suggested";
-
-const WORKFLOW_OPTIONS: FormSelectOption[] = [
-  { value: "", label: "From scratch" },
-  { value: SUGGESTED_PIPELINE, label: "Suggested: research → plan → build → review" },
+const WORKFLOWS = [
+  { value: "", label: "Choose a starting point…" },
+  { value: "__suggested", label: "Research → plan → build → review" },
   ...PROJECT_WORKFLOWS.map((workflow) => ({
     value: workflow.slug,
     label: `${platformTeammateCategoryLabels[workflow.category]} · ${workflow.name}`,
   })),
 ];
 
-function newStage(): ProjectFlowStage {
-  return {
-    id: `stage-${generateId().slice(0, 8)}`,
-    name: "",
-    instructions: null,
-    teammateId: null,
-    skillIds: [],
-    mode: "build",
-    requiresApprovalFor: [],
-    advance: "on_goal_complete",
-  };
-}
-
-export function FlowEditorDialog({
-  open,
-  flow,
-  teammates,
-  skills,
-  capabilitiesHref,
-  createTeammateHref,
-  isSaving = false,
-  errorMessage,
-  onOpenChange,
-  onSave,
-}: FlowEditorDialogProps) {
-  const [stages, setStages] = useState<ProjectFlowStage[]>([]);
-  const [workflowSlug, setWorkflowSlug] = useState("");
-  const [prevFlow, setPrevFlow] = useState<ProjectFlow | null>(null);
-  const [prevOpen, setPrevOpen] = useState(false);
+export function FlowEditorDialog(props: FlowEditorDialogProps) {
+  const editor = useFlowEditor(props);
+  const [newType, setNewType] = useState<ProjectFlowNode["type"]>("agent");
   const titleRef = useRef<HTMLHeadingElement>(null);
-
-  if (prevOpen !== open || prevFlow !== flow) {
-    setPrevOpen(open);
-    setPrevFlow(flow);
-
-    if (open) {
-      setStages(flow?.stages.map((stage) => ({ ...stage })) ?? [newStage()]);
-      setWorkflowSlug("");
-    }
-  }
-
-  const applyWorkflow = (slug: string) => {
-    setWorkflowSlug(slug);
-
-    if (slug === SUGGESTED_PIPELINE) {
-      setStages(createSuggestedProjectFlow().stages);
-
-      return;
-    }
-
-    const template = slug ? createProjectFlowFromWorkflow(slug) : null;
-
-    if (template) {
-      setStages(template.stages);
-    }
-  };
-
-  const updateStage = (index: number, update: Partial<ProjectFlowStage>) => {
-    setStages((current) =>
-      current.map((stage, stageIndex) => (stageIndex === index ? { ...stage, ...update } : stage)),
-    );
-  };
-
-  const moveStage = (index: number, direction: -1 | 1) => {
-    setStages((current) => {
-      const destination = index + direction;
-
-      if (destination < 0 || destination >= current.length) {
-        return current;
-      }
-
-      const reordered = [...current];
-
-      [reordered[index], reordered[destination]] = [reordered[destination], reordered[index]];
-
-      return reordered;
-    });
-  };
-
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    await onSave({
-      stages: stages.map((stage) => ({
-        ...stage,
-        name: stage.name.trim(),
-        instructions: stage.instructions?.trim() || null,
-      })),
-    });
-  };
+  const saving = Boolean(props.isSaving || editor.saving);
+  const { draft } = editor;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={props.open}
+      onOpenChange={(open) => {
+        if (!saving) {
+          props.onOpenChange(open);
+        }
+      }}
+    >
       <DialogContent
-        className="max-h-[90vh] overflow-y-auto sm:max-w-5xl"
+        className="max-h-[90vh] overflow-y-auto sm:max-w-4xl"
         onOpenAutoFocus={(event) => {
           event.preventDefault();
           titleRef.current?.focus();
         }}
       >
-        <form onSubmit={(event) => void submit(event)} className="space-y-5">
+        <form className="space-y-5" onSubmit={(event) => void editor.submit(event)}>
           <DialogHeader>
             <DialogTitle ref={titleRef} tabIndex={-1} className="outline-none">
-              Configure the teammate pipeline
+              Configure the project flow
             </DialogTitle>
             <DialogDescription>
-              Route each stage through an attached teammate, the skills it needs, and a clear
-              hand-off policy.
+              Connect teammates, decisions, record actions and reviews. Each task keeps the flow it
+              starts with.
             </DialogDescription>
           </DialogHeader>
-
-          <div className="grid gap-5 rounded-xl border border-border bg-surface-elevated p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)] lg:items-start lg:gap-6">
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-foreground">
-                {teammates.length} teammate{teammates.length === 1 ? "" : "s"} available ·{" "}
-                {skills.length} attached skill{skills.length === 1 ? "" : "s"}
-              </p>
-              <div className="mt-2 space-y-1">
-                <p className="text-xs text-muted-foreground">
-                  Platform teammates are included by default. Add more through project Capabilities,
-                  where you can also build a new teammate for this project.
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Start from a workflow or set each phase up yourself. You can edit every stage
-                  after applying a workflow.
-                </p>
-              </div>
-            </div>
-            <div className="min-w-0 space-y-3 lg:border-l lg:border-border lg:pl-5">
-              <div className="space-y-2">
-                <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  Start with
-                </p>
-                <FormSelect
-                  label="Start from a workflow"
-                  description="Sequence platform teammates across phases, with approval gates for human review."
-                  value={workflowSlug}
-                  options={WORKFLOW_OPTIONS}
-                  onValueChange={applyWorkflow}
-                />
-              </div>
-
-              <div className="grid gap-2 border-t border-border pt-3 sm:grid-cols-2">
-                <ButtonLink
-                  href={createTeammateHref}
-                  variant="outline"
-                  size="md"
-                  fullWidth
-                  icon={<Plus size={14} />}
-                  className="no-underline hover:!no-underline"
-                >
+          <fieldset disabled={saving} className="space-y-5">
+            <div className="space-y-3 rounded-lg border border-border bg-surface-elevated p-4">
+              <FormSelect
+                label="Start from a workflow"
+                description="Applying a starting point replaces this draft."
+                value={editor.workflow}
+                options={WORKFLOWS}
+                onValueChange={editor.applyWorkflow}
+              />
+              <div className="flex flex-wrap gap-2">
+                <ButtonLink href={props.createTeammateHref} variant="outline" size="sm">
                   New teammate
                 </ButtonLink>
-                <ButtonLink
-                  href={capabilitiesHref}
-                  variant="outline"
-                  size="md"
-                  fullWidth
-                  icon={<Settings2 size={14} />}
-                  className="no-underline hover:!no-underline"
-                >
+                <ButtonLink href={props.capabilitiesHref} variant="outline" size="sm">
                   Manage capabilities
                 </ButtonLink>
               </div>
             </div>
-          </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <FlowNextStep
+                label="Start tasks at"
+                nodes={draft.nodes}
+                value={draft.entryNodeId}
+                onChange={(entryNodeId) =>
+                  editor.setDraft((current) => ({ ...current, entryNodeId }))
+                }
+              />
+              <FormInput
+                label="Maximum steps per task"
+                description="Includes branches, repeats, reviews and actions."
+                type="number"
+                min={1}
+                max={1000}
+                required
+                value={draft.maxSteps}
+                onChange={(event) => {
+                  const maxSteps = event.currentTarget.valueAsNumber;
 
-          <div className="space-y-3">
-            {stages.map((stage, index) => (
-              <section key={stage.id} className="overflow-hidden rounded-xl border border-border">
-                <div className="flex items-center justify-between gap-3 border-b border-border bg-surface-elevated/70 px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background">
-                      {index + 1}
-                    </span>
-                    <p className="text-sm font-semibold">{stage.name || "New stage"}</p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      type="button"
-                      variant="icon"
-                      size="icon"
-                      aria-label={`Move stage ${index + 1} up`}
-                      disabled={index === 0}
-                      onClick={() => moveStage(index, -1)}
-                    >
-                      <ArrowUp size={15} />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="icon"
-                      size="icon"
-                      aria-label={`Move stage ${index + 1} down`}
-                      disabled={index === stages.length - 1}
-                      onClick={() => moveStage(index, 1)}
-                    >
-                      <ArrowDown size={15} />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="icon"
-                      size="icon"
-                      aria-label={`Remove stage ${index + 1}`}
-                      disabled={stages.length === 1}
-                      onClick={() =>
-                        setStages((current) =>
-                          current.filter((_, stageIndex) => stageIndex !== index),
-                        )
-                      }
-                    >
-                      <Trash2 size={15} />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="grid gap-5 p-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-                  <div className="space-y-5">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <FormInput
-                        label="Stage name"
-                        value={stage.name}
-                        onChange={(event) => updateStage(index, { name: event.target.value })}
-                        placeholder="Research"
-                        required
-                      />
-                      <FormSelect
-                        label="Teammate"
-                        value={stage.teammateId ?? ""}
-                        options={[
-                          { value: "", label: "Project default" },
-                          ...teammates.map((teammate) => ({
-                            value: teammate.id,
-                            label: teammate.name,
-                          })),
-                        ]}
-                        onValueChange={(teammateId) =>
-                          updateStage(index, { teammateId: teammateId || null })
-                        }
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <span className="text-sm font-medium text-foreground">
-                        Stage instructions
-                      </span>
-                      <Textarea
-                        aria-label={`Stage ${index + 1} instructions`}
-                        value={stage.instructions ?? ""}
-                        onChange={(event) =>
-                          updateStage(index, { instructions: event.target.value || null })
-                        }
-                        placeholder="What this specialist owns and what it must hand off"
-                        rows={3}
-                      />
-                    </div>
-
-                    <fieldset>
-                      <legend className="text-sm font-medium text-foreground">Skills</legend>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        Load any combination of attached skills for this stage.
-                      </p>
-                      {skills.length > 0 ? (
-                        <div className="mt-2 grid max-h-44 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
-                          {skills.map((skill) => {
-                            const checked = stage.skillIds.includes(skill.id);
-
-                            return (
-                              <label
-                                key={skill.id}
-                                htmlFor={`stage-${index}-skill-${skill.id}`}
-                                className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm hover:bg-surface-elevated"
-                              >
-                                <Checkbox
-                                  id={`stage-${index}-skill-${skill.id}`}
-                                  checked={checked}
-                                  onCheckedChange={(isChecked) =>
-                                    updateStage(index, {
-                                      skillIds:
-                                        isChecked === true
-                                          ? [...stage.skillIds, skill.id]
-                                          : stage.skillIds.filter((value) => value !== skill.id),
-                                    })
-                                  }
-                                />
-                                {skill.name}
-                              </label>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <p className="mt-2 rounded-lg border border-dashed border-border-strong px-3 py-2 text-xs text-muted-foreground">
-                          No skills are attached to this project yet.
-                        </p>
-                      )}
-                    </fieldset>
-                  </div>
-
-                  <div className="space-y-4 rounded-lg bg-surface-elevated p-3">
-                    <FormSelect
-                      label="Operating mode"
-                      value={stage.mode ?? ""}
-                      options={STAGE_MODE_OPTIONS}
-                      onValueChange={(value) => {
-                        const mode = agentModeSchema.safeParse(value);
-
-                        updateStage(index, { mode: mode.success ? mode.data : null });
-                      }}
-                    />
-                    <FormSelect
-                      label="When the goal completes"
-                      value={stage.advance}
-                      options={STAGE_ADVANCE_OPTIONS}
-                      onValueChange={(advance) =>
-                        updateStage(index, {
-                          advance:
-                            advance === "on_human_accept" ? "on_human_accept" : "on_goal_complete",
-                        })
-                      }
-                    />
-
-                    <fieldset>
-                      <legend className="text-xs font-medium text-muted-foreground">
-                        Require approval before
-                      </legend>
-                      <div className="mt-2 space-y-1.5">
-                        {APPROVAL_OPTIONS.map(({ permission, label }) => (
-                          <label
-                            key={permission}
-                            htmlFor={`stage-${index}-approval-${permission}`}
-                            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-surface"
-                          >
-                            <Checkbox
-                              id={`stage-${index}-approval-${permission}`}
-                              checked={stage.requiresApprovalFor.includes(permission)}
-                              onCheckedChange={(isChecked) =>
-                                updateStage(index, {
-                                  requiresApprovalFor:
-                                    isChecked === true
-                                      ? [...stage.requiresApprovalFor, permission]
-                                      : stage.requiresApprovalFor.filter(
-                                          (value) => value !== permission,
-                                        ),
-                                })
-                              }
-                            />
-                            {label}
-                          </label>
-                        ))}
-                      </div>
-                    </fieldset>
-                  </div>
-                </div>
-              </section>
+                  editor.setDraft((current) => ({ ...current, maxSteps }));
+                }}
+              />
+            </div>
+            {draft.nodes.map((node) => (
+              <FlowNodeEditor
+                key={node.id}
+                node={node}
+                nodes={draft.nodes}
+                resources={props}
+                canRemove={
+                  draft.nodes.length > 1 &&
+                  node.id !== draft.entryNodeId &&
+                  !draft.nodes.some(
+                    (other) =>
+                      other.id !== node.id &&
+                      flowNodeConnections(other).some((edge) => edge.target === node.id),
+                  ) &&
+                  !draft.recordTriggers.some((trigger) => trigger.entryNodeId === node.id)
+                }
+                onChange={editor.replaceNode}
+                onRemove={() => editor.removeNode(node.id)}
+              />
             ))}
-          </div>
-
-          <Button
-            type="button"
-            variant="secondary"
-            icon={<Plus size={14} />}
-            disabled={stages.length >= 8}
-            onClick={() => setStages((current) => [...current, newStage()])}
-          >
-            Add stage
-          </Button>
-
-          {errorMessage ? (
+            <div className="flex items-end gap-3">
+              <FormSelect
+                label="Add a step"
+                value={newType}
+                options={NODE_TYPES}
+                onValueChange={setNewType}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={draft.nodes.length >= PROJECT_FLOW_MAX_NODES}
+                onClick={() => editor.addNode(newType)}
+              >
+                Add step
+              </Button>
+            </div>
+            <FlowRecordTriggers
+              triggers={draft.recordTriggers}
+              states={props.triggerStates}
+              nodes={draft.nodes}
+              entryNodeId={draft.entryNodeId}
+              resources={props}
+              onChange={(recordTriggers) =>
+                editor.setDraft((current) => ({ ...current, recordTriggers }))
+              }
+            />
+            {props.hasMoreTables && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                isLoading={props.isLoadingTables}
+                onClick={props.onLoadMoreTables}
+              >
+                Load more project tables
+              </Button>
+            )}
+          </fieldset>
+          {props.resourcesError && (
             <p role="alert" className="text-sm text-failure">
-              {errorMessage}
+              {props.resourcesError}
             </p>
-          ) : null}
-
+          )}
+          {!editor.validation.success && (
+            <p role="alert" className="text-sm text-failure">
+              {editor.validation.error.issues[0]?.message}
+            </p>
+          )}
+          {(editor.error || props.errorMessage) && (
+            <p role="alert" className="text-sm text-failure">
+              {editor.error ?? props.errorMessage}
+            </p>
+          )}
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={saving}
+              onClick={() => props.onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSaving || stages.some((stage) => !stage.name.trim())}>
-              {isSaving ? "Saving…" : "Save pipeline"}
+            <Button type="submit" isLoading={saving} disabled={!editor.validation.success}>
+              Save flow
             </Button>
           </DialogFooter>
         </form>

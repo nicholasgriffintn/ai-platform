@@ -165,3 +165,21 @@ export function readFiniteNumber(value: unknown): number | undefined {
 export function readStringArray(value: unknown): string[] {
   return toStringArray(value);
 }
+
+export function renameRecordProperty<T>(
+  values: Record<string, T>,
+  key: string,
+  replacement: string,
+): Record<string, T> {
+  if (replacement !== key && Object.hasOwn(values, replacement)) {
+    return values;
+  }
+
+  return Object.fromEntries(
+    Object.entries(values).map(([name, value]) => [name === key ? replacement : name, value]),
+  );
+}
+
+export function omitRecordProperty<T>(values: Record<string, T>, key: string): Record<string, T> {
+  return Object.fromEntries(Object.entries(values).filter(([name]) => name !== key));
+}
