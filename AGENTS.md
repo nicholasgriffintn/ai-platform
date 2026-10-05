@@ -32,6 +32,12 @@ Use [`polychat-setup`](.agents/skills/polychat-setup/SKILL.md) as setup/ops refe
 
 Add tests only when they protect observable behaviour, a meaningful invariant, or a real regression. Do not add catalogue field snapshots or trivial rendering assertions that merely restate the implementation.
 
+Prefer unit tests for logic tests, do not over use them for cases where they are not useful such as the items listed above but also for ui, often unit tests are not really testing anything in these cases and just slow down development and CI.
+
+Do not add integration tests unless the user explicitly requests integration tests. Requests to build, fix, review or validate functionality do not authorise them. Do not add database runtimes, migration suites, service harnesses or fixtures solely to support integration tests, or move or rename integration tests to bypass this rule.
+
+Prefer using E2E tests to validate user journeys with direct api integrations vs integration tests or sloppy component unit tests but don't over do them, be cautious that adding new tests always slows down development and ci.
+
 Run these before committing code changes. For deletion-only or documentation-only changes, verify references or formatting as appropriate; do not run the full checks solely to make a commit:
 
 ```sh
