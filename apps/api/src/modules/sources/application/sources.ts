@@ -291,6 +291,17 @@ export async function updateSource(
   const existing = await requireSourceAccess(context, userId, sourceId, true);
 
   if (
+    existing.kind === "connector" &&
+    safeParseJson<Record<string, unknown>>(existing.metadata)?.syncId
+  ) {
+    throw new AssistantError(
+      "Manage this document through its knowledge sync",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  if (
     existing.kind === "memory" &&
     (input.status !== undefined || input.content !== undefined || input.metadata !== undefined)
   ) {
@@ -326,6 +337,17 @@ export async function deleteSource(
   sourceId: string,
 ): Promise<void> {
   const source = await requireSourceAccess(context, userId, sourceId, true);
+
+  if (
+    source.kind === "connector" &&
+    safeParseJson<Record<string, unknown>>(source.metadata)?.syncId
+  ) {
+    throw new AssistantError(
+      "Pause its knowledge sync to exclude managed documents",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
 
   if (source.kind === "memory") {
     const metadata = safeParseJson<Record<string, unknown>>(source.metadata);

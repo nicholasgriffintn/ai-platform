@@ -276,6 +276,11 @@ export async function listRecipeConnectors(params: {
         provider.auth.authType === "api_key" ? provider.auth.credentialLabel : undefined,
       scopes: [...provider.auth.scopes],
       toolCount: provider.operations.length,
+      operations: provider.operations.map((operation) => ({
+        id: operation.id,
+        access: operation.access,
+        destructive: operation.destructive === true,
+      })),
       readToolCount: provider.operations.filter((operation) => operation.access === "read").length,
       writeToolCount: provider.operations.filter((operation) => operation.access === "write")
         .length,

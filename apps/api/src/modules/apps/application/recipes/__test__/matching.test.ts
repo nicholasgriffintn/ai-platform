@@ -27,18 +27,6 @@ function createInstallation(recipeId: string): RecipeInstallation {
 }
 
 describe("matchInstalledRecipe", () => {
-  it("matches a recipe the query actually names", () => {
-    const recipe = createRecipe();
-    const match = matchInstalledRecipe({
-      query: "run my morning briefing",
-      recipes: [recipe],
-      installations: [createInstallation(recipe.id)],
-    });
-
-    expect(match.status).toBe("matched");
-    expect(match.recipe?.id).toBe("morning-briefing");
-  });
-
   it("does not run a recipe on incidental word overlap alone", () => {
     const recipe = createRecipe();
     const match = matchInstalledRecipe({

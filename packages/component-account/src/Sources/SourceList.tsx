@@ -15,6 +15,7 @@ export interface SourceSummary {
   createdAt: string;
   updatedAt?: string | null;
   file?: unknown;
+  metadata?: Record<string, unknown>;
 }
 
 export interface SourceCollectionSummary {
@@ -101,13 +102,15 @@ export function SourceList({
               className="max-w-40"
             />
           ) : null}
-          <Button
-            variant="icon"
-            size="icon"
-            icon={<Trash2 size={15} />}
-            aria-label={`Delete ${source.title}`}
-            onClick={() => onDelete(source.id)}
-          />
+          {!(source.kind === "connector" && typeof source.metadata?.syncId === "string") ? (
+            <Button
+              variant="icon"
+              size="icon"
+              icon={<Trash2 size={15} />}
+              aria-label={`Delete ${source.title}`}
+              onClick={() => onDelete(source.id)}
+            />
+          ) : null}
         </div>
       ))}
     </div>

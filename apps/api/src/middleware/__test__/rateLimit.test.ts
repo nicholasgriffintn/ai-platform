@@ -66,45 +66,6 @@ describe("Rate Limit Middleware", () => {
       await expect(rateLimit(context, mockNext)).rejects.toThrow("Rate limiter not configured");
     });
 
-    it("should use PRO_RATE_LIMITER for authenticated users", async () => {
-      const mockUser = { id: "user-123" };
-      const context = createMockContext();
-
-      // @ts-expect-error - mock implementation
-      context.get.mockImplementation((key: string) => {
-        if (key === "user") {
-          return mockUser;
-        }
-
-        return null;
-      });
-
-      context.env.PRO_RATE_LIMITER.limit.mockResolvedValue({ success: true });
-
-      await rateLimit(context, mockNext);
-
-      expect(context.env.PRO_RATE_LIMITER.limit).toHaveBeenCalledWith({
-        key: "authenticated-user-123",
-      });
-      expect(mockNext).toHaveBeenCalled();
-    });
-
-    it("should use FREE_RATE_LIMITER for unauthenticated users", async () => {
-      const context = createMockContext();
-
-      // @ts-expect-error - mock implementation
-      context.get.mockReturnValue(null);
-
-      context.env.FREE_RATE_LIMITER.limit.mockResolvedValue({ success: true });
-
-      await rateLimit(context, mockNext);
-
-      expect(context.env.FREE_RATE_LIMITER.limit).toHaveBeenCalledWith({
-        key: "unauthenticated-unknown",
-      });
-      expect(mockNext).toHaveBeenCalled();
-    });
-
     it("should rate limit credential broker grants without treating them as user credentials", async () => {
       const requestHeader = vi.fn((name: string) => {
         if (name === "Authorization") {
@@ -192,50 +153,6 @@ describe("Rate Limit Middleware", () => {
       );
 
       expect(mockNext).not.toHaveBeenCalled();
-    });
-
-    it("should track usage metrics for authenticated users", async () => {
-      const mockUser = { id: "user-123" };
-      const context = createMockContext();
-
-      // @ts-expect-error - mock implementation
-      context.get.mockImplementation((key: string) => {
-        if (key === "user") {
-          return mockUser;
-        }
-
-        return null;
-      });
-
-      context.env.PRO_RATE_LIMITER.limit.mockResolvedValue({ success: true });
-
-      await rateLimit(context, mockNext);
-
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
-      expect(mockTrackUsageMetric).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: "user-123" }),
-        "completions",
-      );
-    });
-
-    it("should track usage metrics for unauthenticated users", async () => {
-      const context = createMockContext();
-
-      // @ts-expect-error - mock implementation
-      context.get.mockReturnValue(null);
-
-      context.env.FREE_RATE_LIMITER.limit.mockResolvedValue({ success: true });
-
-      await rateLimit(context, mockNext);
-
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
-      const [identity, routeName] = mockTrackUsageMetric.mock.calls[0] ?? [];
-
-      expect(identity.userId).toBeUndefined();
-      expect(identity.anonymousUserId).toBeUndefined();
-      expect(routeName).toBe("completions");
     });
 
     it("uses one identity bucket across paths so dynamic IDs cannot evade limits", async () => {

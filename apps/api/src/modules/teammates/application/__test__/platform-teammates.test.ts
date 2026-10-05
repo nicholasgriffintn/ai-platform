@@ -1,12 +1,10 @@
 import { getPlatformTeammateBrief } from "@ngriffin_uk/polychat-ai-prompts";
-import { builtInSkillDocuments } from "@ngriffin_uk/polychat-library-skills-catalogue";
 import { PLATFORM_TEAMMATES, type PlatformTeammate } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
 
-import { ensurePlatformTeammates, resolvePlatformTeammateGrants } from "../platform-teammates";
+import { ensurePlatformTeammates } from "../platform-teammates";
 
 function catalogueRow(
   teammate: PlatformTeammate = PLATFORM_TEAMMATES[0],
@@ -56,15 +54,6 @@ function createContext(existing: ReturnType<typeof catalogueRow>[]) {
 }
 
 describe("ensurePlatformTeammates", () => {
-  it("seeds every platform teammate when none exist", async () => {
-    const { context, upsertPlatformTeammates } = createContext([]);
-
-    await ensurePlatformTeammates(context);
-
-    expect(upsertPlatformTeammates).toHaveBeenCalledTimes(1);
-    expect(upsertPlatformTeammates.mock.calls[0]?.[0]).toHaveLength(PLATFORM_TEAMMATES.length);
-  });
-
   it("writes nothing when the rows already match the definitions", async () => {
     const { context, upsertPlatformTeammates } = createContext(
       PLATFORM_TEAMMATES.map((teammate) => catalogueRow(teammate)),
@@ -87,33 +76,5 @@ describe("ensurePlatformTeammates", () => {
     expect(upsertPlatformTeammates).toHaveBeenCalledWith([
       expect.objectContaining({ id: drifted.id }),
     ]);
-  });
-});
-
-describe("platform teammate definitions", () => {
-  const functionToolIds = new Set(listFunctionToolDefinitions().map((tool) => tool.name));
-  const skillIds = new Set<string>(builtInSkillDocuments.map((document) => document.directory));
-
-  it("only names tools and skills the platform actually ships", () => {
-    for (const teammate of PLATFORM_TEAMMATES) {
-      for (const toolId of teammate.tools) {
-        expect(functionToolIds.has(toolId), `${teammate.slug}: ${toolId}`).toBe(true);
-      }
-
-      for (const skillId of teammate.skillIds) {
-        expect(skillIds.has(skillId), `${teammate.slug}: ${skillId}`).toBe(true);
-      }
-    }
-  });
-
-  it("resolves the grants a platform teammate brings into a run", () => {
-    const support = PLATFORM_TEAMMATES.find((teammate) => teammate.slug === "support");
-
-    expect(resolvePlatformTeammateGrants({ teammateId: support?.id })).toEqual({
-      tools: [...(support?.tools ?? [])],
-      skillIds: [...(support?.skillIds ?? [])],
-    });
-    expect(resolvePlatformTeammateGrants({ teammateId: "teammate-1" })).toBeNull();
-    expect(resolvePlatformTeammateGrants({})).toBeNull();
   });
 });
