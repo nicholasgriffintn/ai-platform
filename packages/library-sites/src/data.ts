@@ -1,0 +1,119 @@
+import {
+  siteDataBindingSchema,
+  siteDataFieldNameSchema,
+  siteDataIdentifierSchema,
+  type SiteIssue,
+  type SiteProject,
+} from "@ngriffin_uk/polychat-schemas";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
+export function normaliseSiteSourceRows(
+  value: unknown,
+): Record<string, string | number | boolean>[] {
+  if (!Array.isArray(value) || value.length > 500) {
+    throw new Error("Site data must contain at most 500 rows");
+  }
+
+  const rows = value.map((row) => {
+    if (!isRecord(row) || Object.keys(row).length > 40) {
+      throw new Error("Site data rows must be objects with at most 40 fields");
+    }
+
+    const result: Record<string, string | number | boolean> = {};
+
+    for (const [key, field] of Object.entries(row)) {
+      if (!siteDataFieldNameSchema.safeParse(key).success) {
+        throw new Error("Invalid site data field name");
+      }
+
+      if (typeof field === "string" && field.length <= 4000) {
+        result[key] = field;
+      } else if (
+        typeof field === "boolean" ||
+        (typeof field === "number" && Number.isFinite(field))
+      ) {
+        result[key] = field;
+      } else if (field !== null) {
+        throw new Error("Site data fields must contain text, numbers or booleans");
+      }
+    }
+
+    return result;
+  });
+
+  if (JSON.stringify(rows).length > 250_000) {
+    throw new Error("Site data is too large");
+  }
+
+  return rows;
+}
+
+export function normaliseSiteIntegrations(raw: Record<string, unknown>, project: SiteProject) {
+  const issues: SiteIssue[] = [];
+  const dataBindings: NonNullable<SiteProject["dataBindings"]> = {};
+
+  if (raw.dataBindings !== undefined && !isRecord(raw.dataBindings)) {
+    issues.push({ severity: "error", message: "Data bindings must be an object" });
+  }
+
+  for (const [id, definition] of Object.entries(
+    isRecord(raw.dataBindings) ? raw.dataBindings : {},
+  )) {
+    const parsed = siteDataBindingSchema.safeParse(definition);
+
+    if (
+      !siteDataIdentifierSchema.safeParse(id).success ||
+      !parsed.success ||
+      Object.keys(dataBindings).length >= 40
+    ) {
+      issues.push({ severity: "error", message: `Invalid data binding: ${id}` });
+      continue;
+    }
+
+    const binding = parsed.data;
+
+    if (!Object.hasOwn(project.pages, binding.pageId)) {
+      issues.push({
+        severity: "error",
+        message: `Data binding ${id} references a missing page`,
+      });
+      continue;
+    }
+
+    const duplicate = Object.values(dataBindings).some(
+      (existing) =>
+        existing.pageId === binding.pageId &&
+        (existing.statePath === binding.statePath ||
+          existing.statePath.startsWith(`${binding.statePath}/`) ||
+          binding.statePath.startsWith(`${existing.statePath}/`)),
+    );
+
+    if (duplicate) {
+      issues.push({ severity: "error", message: `Data binding ${id} overlaps another binding` });
+      continue;
+    }
+
+    dataBindings[id] = binding;
+  }
+
+  return {
+    dataBindings: raw.dataBindings === undefined ? undefined : dataBindings,
+    issues,
+  };
+}
+
+export function getSitePageBoundState(
+  project: SiteProject,
+  pageId: string | null,
+  data: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!pageId || !data) {
+    return undefined;
+  }
+
+  return Object.fromEntries(
+    Object.entries(project.dataBindings ?? {})
+      .filter(([, binding]) => binding.pageId === pageId)
+      .map(([id, binding]) => [binding.statePath, data[id] ?? []]),
+  );
+}

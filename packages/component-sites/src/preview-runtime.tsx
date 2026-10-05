@@ -1,5 +1,6 @@
 import {
   buildSiteThemeVariables,
+  getSitePageBoundState,
   siteThemeClasses,
   SITE_EXPRESSION_CSS,
 } from "@ngriffin_uk/polychat-library-sites";
@@ -42,6 +43,10 @@ function RuntimePreview({
   payload: SitePreviewRenderPayload;
 }) {
   const page = payload.pageId ? payload.project.pages[payload.pageId] : null;
+  const boundState = useMemo(
+    () => getSitePageBoundState(payload.project, payload.pageId, payload.data),
+    [payload.project, payload.pageId, payload.data],
+  );
   const navigation = useMemo(
     () => ({
       navigate: (path: string) =>
@@ -74,7 +79,9 @@ function RuntimePreview({
         className={payload.inspecting ? "cursor-crosshair [&_a]:pointer-events-auto" : undefined}
         onClickCapture={handleInspect}
       >
-        {page && payload.pageId ? <SiteRenderer key={payload.pageId} page={page} /> : null}
+        {page && payload.pageId ? (
+          <SiteRenderer key={payload.pageId} page={page} boundState={boundState} />
+        ) : null}
       </div>
       <SiteSelectionOverlay
         root={document.getElementById("site-root")}

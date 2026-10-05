@@ -19,6 +19,7 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import type { z } from "zod";
 
 import { getSiteComponentDefinition } from "./catalog.js";
+import { normaliseSiteIntegrations } from "./data.js";
 import { collectDynamicPropPaths } from "./state.js";
 
 export interface SiteValidationResult {
@@ -423,17 +424,23 @@ export function validateSiteProject(raw: unknown): SiteValidationResult {
     issues.push({ severity: "error", message: "The site has no pages" });
   }
 
+  const project: SiteProject = {
+    title: readString(source.title, "Untitled"),
+    ...(typeof source.description === "string" && source.description.trim()
+      ? { description: source.description.trim().slice(0, 400) }
+      : {}),
+    theme,
+    capabilities: [...new Set(capabilities)],
+    pages,
+  };
+  const integrations = normaliseSiteIntegrations(source, project);
+
   return {
     project: {
-      title: readString(source.title, "Untitled"),
-      ...(typeof source.description === "string" && source.description.trim()
-        ? { description: source.description.trim().slice(0, 400) }
-        : {}),
-      theme,
-      capabilities: [...new Set(capabilities)],
-      pages,
+      ...project,
+      ...(integrations.dataBindings ? { dataBindings: integrations.dataBindings } : {}),
     },
-    issues,
+    issues: [...issues, ...integrations.issues],
   };
 }
 

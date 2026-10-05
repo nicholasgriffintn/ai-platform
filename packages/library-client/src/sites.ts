@@ -1,4 +1,6 @@
 import type {
+  SiteDataResponse,
+  SiteIntegrationScope,
   SiteBuildRequest,
   SiteBuildResponse,
   SiteEditRequest,
@@ -24,6 +26,15 @@ import { withProjectScope } from "./project-scope.js";
 const SITES_BASE_PATH = "/sites";
 
 export const sitesService = {
+  async data(id: string, request: SiteIntegrationScope): Promise<SiteDataResponse> {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/read`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: request,
+    });
+
+    return returnFetchedData<SiteDataResponse>(response);
+  },
   async list(projectId?: string): Promise<SiteSummary[]> {
     const response = await fetchApiOrThrow(withProjectScope(SITES_BASE_PATH, projectId), {
       method: "GET",
