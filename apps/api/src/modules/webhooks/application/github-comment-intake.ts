@@ -97,7 +97,8 @@ async function startCommentReview(
 ): Promise<SandboxExecutionResult> {
   const policies = (
     await context.repositories.projectTaskIntegrations.listPolicies(
-      data.installation.id,
+      "github",
+      String(data.installation.id),
       data.repository.full_name.toLowerCase(),
     )
   ).filter((policy) => policy.ownerUserId === userId);
@@ -112,7 +113,8 @@ async function startCommentReview(
 
   try {
     const { review } = await startPullRequestReview(context, policies[0].projectId, {
-      installationId: data.installation.id,
+      provider: "github",
+      accountId: String(data.installation.id),
       repository: data.repository.full_name.toLowerCase(),
       pullRequestNumber: data.issue.number,
     });

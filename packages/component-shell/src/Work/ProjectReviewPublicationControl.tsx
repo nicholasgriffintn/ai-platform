@@ -39,7 +39,7 @@ export function ProjectReviewPublicationControl({
     <div className="mb-4 space-y-3 rounded-lg border border-border p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-medium">GitHub PR review</p>
+          <p className="text-sm font-medium">Pull request review</p>
           <p className="text-xs text-muted-foreground">
             {target.repository}#{target.pullRequestNumber} · Reviewed head{" "}
             {target.headSha.slice(0, 7)}
@@ -69,7 +69,7 @@ export function ProjectReviewPublicationControl({
       state.review.publicationStatus === "publishing" ? (
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">
-            Publication may have reached GitHub. Check the PR before taking further action.
+            Publication may have succeeded. Check the PR before taking further action.
           </p>
           <Button
             size="sm"
@@ -77,7 +77,7 @@ export function ProjectReviewPublicationControl({
             disabled={state.pending}
             onClick={() => void state.check()}
           >
-            Check publication in GitHub
+            Check publication
           </Button>
         </div>
       ) : null}
@@ -96,11 +96,11 @@ export function ProjectReviewPublicationControl({
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Publish review to GitHub</DialogTitle>
+            <DialogTitle>Publish PR review</DialogTitle>
             <DialogDescription>
-              Approve this text for {target.repository}#{target.pullRequestNumber}. GitHub will
-              receive a comment review tied to commit {target.headSha.slice(0, 7)}. Publication is
-              refused if the PR revision has changed.
+              Approve this text for {target.repository}#{target.pullRequestNumber}. The review will
+              be tied to commit {target.headSha.slice(0, 7)}. Publication is refused if the PR
+              revision has changed.
             </DialogDescription>
           </DialogHeader>
           <FormTextarea

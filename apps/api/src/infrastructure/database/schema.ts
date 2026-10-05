@@ -2740,6 +2740,9 @@ export const projectTaskExternalImport = sqliteTable(
   "project_task_external_import",
   {
     id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
     project_id: text()
       .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
@@ -2750,7 +2753,10 @@ export const projectTaskExternalImport = sqliteTable(
     source_id: text()
       .notNull()
       .references(() => source.id),
-    provider: text({ enum: ["github", "linear"] }).notNull(),
+    owner_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    provider: text().notNull(),
     account_id: text().notNull(),
     external_id: text().notNull(),
     revision: text().notNull(),
@@ -2760,23 +2766,25 @@ export const projectTaskExternalImport = sqliteTable(
   },
   (table) => ({
     identity: uniqueIndex("project_task_external_import_identity").on(
+      table.workspace_id,
       table.project_id,
+      table.owner_user_id,
       table.provider,
       table.account_id,
       table.external_id,
     ),
-    provider: check(
-      "project_task_external_import_provider",
-      sql`${table.provider} IN ('github', 'linear')`,
-    ),
   }),
 );
 
-export const projectGithubReviewPolicy = sqliteTable(
-  "project_github_review_policy",
+export const projectReviewPolicy = sqliteTable(
+  "project_review_policy",
   {
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    id: text().primaryKey(),
     project_id: text()
-      .primaryKey()
+      .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
     owner_user_id: integer()
       .notNull()
@@ -2784,25 +2792,37 @@ export const projectGithubReviewPolicy = sqliteTable(
     connection_id: text()
       .notNull()
       .references(() => providerConnection.id, { onDelete: "cascade" }),
-    installation_id: integer().notNull(),
+    provider: text().notNull(),
+    account_id: text().notNull(),
     repository: text().notNull(),
     enabled: integer().notNull().default(0),
     token_budget: integer().notNull(),
     revision: text().notNull(),
   },
   (table) => ({
-    repository: index("project_github_review_policy_repository").on(
-      table.installation_id,
+    identity: uniqueIndex("project_review_policy_identity").on(
+      table.workspace_id,
+      table.project_id,
+      table.provider,
+      table.connection_id,
+      table.repository,
+    ),
+    repository: index("project_review_policy_repository").on(
+      table.provider,
+      table.account_id,
       table.repository,
       table.enabled,
     ),
   }),
 );
 
-export const projectPullRequestReview = sqliteTable(
-  "project_pull_request_review",
+export const projectTaskReview = sqliteTable(
+  "project_task_review",
   {
     id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
     project_id: text()
       .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
@@ -2813,8 +2833,12 @@ export const projectPullRequestReview = sqliteTable(
     source_id: text()
       .notNull()
       .references(() => source.id),
+    owner_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
     target: text().notNull(),
-    policy_revision: text().notNull(),
+    policy_id: text(),
+    policy_revision: text(),
     publication_status: text({ enum: ["unpublished", "publishing", "published", "unknown"] })
       .notNull()
       .default("unpublished"),
@@ -2826,9 +2850,9 @@ export const projectPullRequestReview = sqliteTable(
       .default(sql`(CURRENT_TIMESTAMP)`),
   },
   (table) => ({
-    project: index("project_pull_request_review_project").on(table.project_id, table.created_at),
+    project: index("project_task_review_project").on(table.project_id, table.created_at),
     publicationStatus: check(
-      "project_pull_request_review_publication_status",
+      "project_task_review_publication_status",
       sql`${table.publication_status} IN ('unpublished', 'publishing', 'published', 'unknown')`,
     ),
   }),

@@ -899,7 +899,10 @@ export async function runProjectTaskDispatch(params: {
   if (completion && claimed.executionProfile === "diff_review") {
     try {
       await params.executionLease.assertOwned();
-      const review = await context.repositories.projectTaskIntegrations.getReviewForTask(taskId);
+      const review = await context.repositories.projectTaskIntegrations.getReviewForTask(
+        taskId,
+        claimed.projectId,
+      );
 
       if (review) {
         const outputId = await retainReviewOutput(context, review, completion);

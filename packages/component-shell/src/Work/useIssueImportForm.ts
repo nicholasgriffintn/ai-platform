@@ -38,11 +38,11 @@ export function useIssueImportForm(projectId: string, onImported: (taskId: strin
     provider === "github"
       ? {
           provider,
-          installationId: repository?.installationId,
+          accountId: repository ? String(repository.installationId) : undefined,
           repository: repository?.repo,
-          issueNumber: Number(issueId),
+          issueId,
         }
-      : { provider, connectedAccountId: selectedAccountId, issueId };
+      : { provider, accountId: selectedAccountId, issueId };
   const connectionError =
     provider === "github" ? (connections.error ?? repositories.error) : accounts.error;
 

@@ -1,6 +1,6 @@
 import {
-  GITHUB_PULL_REQUEST_INTAKE_TASK_TYPE,
-  githubPullRequestIntakeSchema,
+  PROJECT_REVIEW_INTAKE_TASK_TYPE,
+  projectReviewIntakeSchema,
   type PullRequestReviewTarget,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -15,12 +15,13 @@ import { startProjectTask } from "./index";
 import { reviewIdentity } from "./integration-identity";
 import { createPullRequestReview } from "./pull-request-review";
 
-export async function enqueueGithubReviewIntake(
+export async function enqueueProjectReviewIntake(
   context: ServiceContext,
   target: Omit<PullRequestReviewTarget, "connectionId">,
 ): Promise<void> {
   const policies = await context.repositories.projectTaskIntegrations.listPolicies(
-    target.installationId,
+    target.provider,
+    target.accountId,
     target.repository,
   );
   const tasks = new TaskService(context.env, context.repositories.tasks);
@@ -31,11 +32,13 @@ export async function enqueueGithubReviewIntake(
 
     await tasks.enqueueTask({
       id: `pr_intake_${id}`,
-      task_type: GITHUB_PULL_REQUEST_INTAKE_TASK_TYPE,
+      task_type: PROJECT_REVIEW_INTAKE_TASK_TYPE,
       user_id: policy.ownerUserId,
       project_id: policy.projectId,
       priority: 5,
       task_data: {
+        workspaceId: policy.workspaceId,
+        policyId: policy.id,
         projectId: policy.projectId,
         policyRevision: policy.revision,
         target: boundTarget,
@@ -44,9 +47,9 @@ export async function enqueueGithubReviewIntake(
   }
 }
 
-export class GithubReviewIntakeHandler implements TaskHandler {
+export class ProjectReviewIntakeHandler implements TaskHandler {
   async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
-    const data = githubPullRequestIntakeSchema.parse(message.task_data);
+    const data = projectReviewIntakeSchema.parse(message.task_data);
     const base = createServiceContext({ env });
     const user = message.user_id
       ? await base.repositories.users.getUserById(message.user_id)
@@ -57,23 +60,33 @@ export class GithubReviewIntakeHandler implements TaskHandler {
     }
 
     const context = createServiceContext({ env, user });
-    const policy = await context.repositories.projectTaskIntegrations.getPolicy(data.projectId);
+    const policy = await context.repositories.projectTaskIntegrations.getPolicy(
+      data.policyId,
+      data.projectId,
+    );
 
     if (
       !policy?.enabled ||
       policy.revision !== data.policyRevision ||
       policy.ownerUserId !== user.id ||
       policy.connectionId !== data.target.connectionId ||
-      policy.repository !== data.target.repository ||
-      policy.installationId !== data.target.installationId
+      policy.workspaceId !== data.workspaceId ||
+      policy.provider !== data.target.provider ||
+      policy.accountId !== data.target.accountId ||
+      policy.repository !== data.target.repository
     ) {
       return { status: "skipped", message: "Automatic review policy changed" };
     }
 
     try {
-      await requireProjectAccess(context, data.projectId, ["owner", "admin"]);
+      const { project } = await requireProjectAccess(context, data.projectId, ["owner", "admin"]);
+
+      if (project.workspace_id !== data.workspaceId) {
+        return { status: "skipped", message: "Review workspace changed" };
+      }
+
       const { review } = await createPullRequestReview(context, data.projectId, data.target, {
-        policyRevision: policy.revision,
+        policy,
         expectedTarget: data.target,
         tokenBudget: policy.tokenBudget,
       });
@@ -85,6 +98,7 @@ export class GithubReviewIntakeHandler implements TaskHandler {
           (task.status === "blocked" && task.blockedReason === "dispatch_failed"))
       ) {
         const currentPolicy = await context.repositories.projectTaskIntegrations.getPolicy(
+          data.policyId,
           data.projectId,
         );
 

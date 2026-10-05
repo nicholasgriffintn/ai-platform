@@ -6,7 +6,7 @@ import {
   getGitHubAppConnectionForInstallation,
   getGitHubAppConnectionForUserInstallation,
 } from "~/modules/github/application/connections";
-import { enqueueGithubReviewIntake } from "~/modules/project-tasks/application/review-intake";
+import { enqueueProjectReviewIntake } from "~/modules/project-tasks/application/review-intake";
 import {
   executeWebhookSandboxCommand,
   postWebhookSandboxResultComment,
@@ -20,7 +20,7 @@ vi.mock("~/modules/github/application/connections", () => ({
   getGitHubAppConnectionForUserInstallation: vi.fn(),
 }));
 vi.mock("~/modules/project-tasks/application/review-intake", () => ({
-  enqueueGithubReviewIntake: vi.fn(),
+  enqueueProjectReviewIntake: vi.fn(),
 }));
 vi.mock("~/modules/webhooks/application/github-task-execution", () => ({
   executeWebhookSandboxCommand: vi.fn(),
@@ -65,7 +65,7 @@ it("rejects invalid signatures before admitting a PR revision", async () => {
   });
 
   expect(result.status).toBe(401);
-  expect(enqueueGithubReviewIntake).not.toHaveBeenCalled();
+  expect(enqueueProjectReviewIntake).not.toHaveBeenCalled();
 });
 
 it("requires a configured webhook secret", async () => {
@@ -81,7 +81,7 @@ it("requires a configured webhook secret", async () => {
   });
 
   expect(result.status).toBe(503);
-  expect(enqueueGithubReviewIntake).not.toHaveBeenCalled();
+  expect(enqueueProjectReviewIntake).not.toHaveBeenCalled();
 });
 
 it("admits a signed ready PR using the repository ID and exact commit pair", async () => {
@@ -95,10 +95,11 @@ it("admits a signed ready PR using the repository ID and exact commit pair", asy
   });
 
   expect(result.status).toBe(200);
-  expect(vi.mocked(enqueueGithubReviewIntake).mock.calls[0]?.[1]).toEqual({
-    installationId: 10,
+  expect(vi.mocked(enqueueProjectReviewIntake).mock.calls[0]?.[1]).toEqual({
+    provider: "github",
+    accountId: "10",
     repository: "owner/repo",
-    repositoryId: 20,
+    repositoryId: "20",
     pullRequestNumber: 42,
     baseSha: "a".repeat(40),
     headSha: "b".repeat(40),
@@ -125,7 +126,7 @@ it("skips drafts and rejects malformed commit targets", async () => {
     ).toBe(status);
   }
 
-  expect(enqueueGithubReviewIntake).not.toHaveBeenCalled();
+  expect(enqueueProjectReviewIntake).not.toHaveBeenCalled();
 });
 
 it("uses the linked commenter's connection for execution and acknowledgement", async () => {

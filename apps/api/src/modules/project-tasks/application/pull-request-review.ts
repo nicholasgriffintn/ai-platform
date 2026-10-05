@@ -1,32 +1,29 @@
-import {
-  githubReviewPolicyInputSchema,
-  githubReviewPolicySchema,
-  type GithubReviewPolicyInput,
-  type PullRequestLocator,
-  type PullRequestReviewTarget,
-  type PublishPullRequestReviewInput,
+import type {
+  ReviewPolicy,
+  PullRequestLocator,
+  PullRequestReviewTarget,
+  PublishPullRequestReviewInput,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getGitHubTaskConnection } from "~/modules/github/application/connections";
 import { createSource } from "~/modules/sources/application/sources";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
-import { GitHubTaskClient } from "../infrastructure/GitHubTaskClient";
+import { connectTaskReview } from "../infrastructure/integrations";
 import { createProjectTask, startProjectTask } from "./index";
 import { reviewIdentity } from "./integration-identity";
+import { connectOwnedReview } from "./review-authority";
 import { retainReviewOutput } from "./review-output";
 
 export async function listProjectReviews(context: ServiceContext, projectId: string) {
   await requireProjectAccess(context, projectId);
-  const [policy, reviews] = await Promise.all([
-    context.repositories.projectTaskIntegrations.getPolicy(projectId),
+  const [policies, reviews] = await Promise.all([
+    context.repositories.projectTaskIntegrations.listProjectPolicies(projectId),
     context.repositories.projectTaskIntegrations.listReviews(projectId),
   ]);
 
-  return { policy, reviews };
+  return { policies, reviews };
 }
 
 export async function getProjectTaskReview(
@@ -35,75 +32,12 @@ export async function getProjectTaskReview(
   taskId: string,
 ) {
   await requireProjectAccess(context, projectId);
-  const review = await context.repositories.projectTaskIntegrations.getReviewForTask(taskId);
-
-  return { review: review?.projectId === projectId ? review : null };
-}
-
-export async function setGithubReviewPolicy(
-  context: ServiceContext,
-  projectId: string,
-  input: GithubReviewPolicyInput,
-) {
-  const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
-  const parsed = githubReviewPolicyInputSchema.parse(input);
-
-  if (!parsed.enabled) {
-    const existing = await context.repositories.projectTaskIntegrations.getPolicy(projectId);
-
-    if (!existing) {
-      return { policy: null };
-    }
-
-    const policy = { ...existing, enabled: false, revision: generateId() };
-
-    await context.repositories.projectTaskIntegrations.setPolicy(policy);
-    await context.repositories.audit.createRecord({
-      workspaceId: project.workspace_id,
-      actorUserId: context.requireUser().id,
-      action: "project.github_review.policy_changed",
-      targetType: "project",
-      targetId: projectId,
-      metadata: { enabled: false, revision: policy.revision },
-    });
-
-    return { policy };
-  }
-
-  const bound = await getGitHubTaskConnection(
-    context,
-    context.requireUser().id,
-    parsed.installationId,
-    parsed.repository,
+  const review = await context.repositories.projectTaskIntegrations.getReviewForTask(
+    taskId,
+    projectId,
   );
 
-  if (parsed.enabled && !bound.connection.webhookSecret) {
-    throw new AssistantError(
-      "Configure a GitHub webhook secret before enabling automatic review",
-      ErrorType.CONFIGURATION_ERROR,
-      400,
-    );
-  }
-
-  const policy = githubReviewPolicySchema.parse({
-    ...parsed,
-    projectId,
-    ownerUserId: context.requireUser().id,
-    connectionId: bound.connectionId,
-    revision: generateId(),
-  });
-
-  await context.repositories.projectTaskIntegrations.setPolicy(policy);
-  await context.repositories.audit.createRecord({
-    workspaceId: project.workspace_id,
-    actorUserId: policy.ownerUserId,
-    action: "project.github_review.policy_changed",
-    targetType: "project",
-    targetId: projectId,
-    metadata: { enabled: policy.enabled, repository: policy.repository, revision: policy.revision },
-  });
-
-  return { policy };
+  return { review: review?.projectId === projectId ? review : null };
 }
 
 export async function createPullRequestReview(
@@ -111,21 +45,39 @@ export async function createPullRequestReview(
   projectId: string,
   locator: PullRequestLocator,
   options: {
-    policyRevision?: string;
+    policy?: ReviewPolicy;
     expectedTarget?: PullRequestReviewTarget;
     tokenBudget?: number;
   } = {},
 ) {
-  await requireProjectAccess(context, projectId);
-  const client = await GitHubTaskClient.forUser(
-    context,
-    locator.installationId,
-    locator.repository,
+  const { project } = await requireProjectAccess(context, projectId);
+  const client = await connectTaskReview(context, locator);
+  const captured = await client.captureReview(
+    { ...locator, repository: client.repository },
+    options.expectedTarget,
   );
-  const captured = await client.captureReview(locator, options.expectedTarget);
-  const policyRevision = options.policyRevision ?? "manual-v1";
+
+  if (
+    options.policy &&
+    (!options.policy.enabled ||
+      options.policy.projectId !== projectId ||
+      options.policy.workspaceId !== project.workspace_id ||
+      options.policy.ownerUserId !== context.requireUser().id ||
+      options.policy.connectionId !== captured.target.connectionId ||
+      options.policy.provider !== captured.target.provider ||
+      options.policy.accountId !== captured.target.accountId ||
+      options.policy.repository !== captured.target.repository)
+  ) {
+    throw new AssistantError(
+      "Review policy does not authorise this target",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  const policyRevision = options.policy?.revision ?? null;
   const id = await reviewIdentity(projectId, captured.target, policyRevision);
-  const existing = await context.repositories.projectTaskIntegrations.getReview(id);
+  const existing = await context.repositories.projectTaskIntegrations.getReview(id, projectId);
 
   if (existing) {
     return { review: existing, reused: true };
@@ -142,7 +94,7 @@ export async function createPullRequestReview(
       status: "available",
       title: `PR #${locator.pullRequestNumber}: ${captured.title}`.slice(0, 200),
       connectionId: captured.target.connectionId,
-      provider: "github",
+      provider: captured.target.provider,
       externalUri: captured.url,
       content: captured.content,
       metadata: {
@@ -207,13 +159,16 @@ export async function createPullRequestReview(
 
   const created = await context.repositories.projectTaskIntegrations.recordReview({
     id,
+    workspaceId: project.workspace_id,
     projectId,
+    ownerUserId: context.requireUser().id,
     taskId: task.id,
     sourceId,
     target: captured.target,
+    policyId: options.policy?.id ?? null,
     policyRevision,
   });
-  const review = await context.repositories.projectTaskIntegrations.getReview(id);
+  const review = await context.repositories.projectTaskIntegrations.getReview(id, projectId);
 
   if (!review) {
     throw new AssistantError("Review could not be recorded", ErrorType.DATABASE_ERROR);
@@ -247,10 +202,10 @@ export async function requireProjectReview(
   projectId: string,
   reviewId: string,
 ) {
-  await requireProjectAccess(context, projectId);
-  const review = await context.repositories.projectTaskIntegrations.getReview(reviewId);
+  const { project } = await requireProjectAccess(context, projectId);
+  const review = await context.repositories.projectTaskIntegrations.getReview(reviewId, projectId);
 
-  if (!review || review.projectId !== projectId) {
+  if (!review || review.workspaceId !== project.workspace_id || review.projectId !== projectId) {
     throw new AssistantError("Review not found", ErrorType.NOT_FOUND, 404);
   }
 
@@ -305,44 +260,19 @@ export async function publishPullRequestReview(
     );
   }
 
-  const client = await GitHubTaskClient.forUser(
-    context,
-    review.target.installationId,
-    review.target.repository,
-  );
-
-  if (client.connectionId !== review.target.connectionId) {
-    throw new AssistantError(
-      "Publish with the connection that owns this review",
-      ErrorType.FORBIDDEN,
-      403,
-    );
-  }
+  const client = await connectOwnedReview(context, review);
 
   if (review.publicationStatus === "published") {
     return { review };
   }
 
-  const current = await client.readPullRequest(review.target.pullRequestNumber);
-
-  if (
-    current.base.repo.id !== review.target.repositoryId ||
-    current.head.sha !== review.target.headSha ||
-    current.base.sha !== review.target.baseSha ||
-    current.state !== "open" ||
-    current.draft
-  ) {
-    throw new AssistantError(
-      "The PR changed since this review. Review the new revision before publishing.",
-      ErrorType.CONFLICT_ERROR,
-      409,
-    );
-  }
+  await client.assertCurrentTarget(review.target);
 
   await prepareReviewPublication(context, projectId, reviewId);
   const body = `${input.body}\n\nReviewed base ${review.target.baseSha}, head ${review.target.headSha}. Diff-only review from Polychat.\n<!-- polychat-review:${review.id} -->`;
   const claimed = await context.repositories.projectTaskIntegrations.claimPublication(
     review.id,
+    projectId,
     completion.id,
     body,
   );
@@ -358,9 +288,13 @@ export async function publishPullRequestReview(
   try {
     const url = await client.publishReview(review.target, body);
 
-    await context.repositories.projectTaskIntegrations.settlePublication(review.id, url);
+    await context.repositories.projectTaskIntegrations.settlePublication(review.id, projectId, url);
   } catch (error) {
-    await context.repositories.projectTaskIntegrations.settlePublication(review.id, null);
+    await context.repositories.projectTaskIntegrations.settlePublication(
+      review.id,
+      projectId,
+      null,
+    );
     throw error;
   }
 
@@ -369,13 +303,15 @@ export async function publishPullRequestReview(
   await context.repositories.audit.createRecord({
     workspaceId: project.workspace_id,
     actorUserId: context.requireUser().id,
-    action: "project.github_review.published",
+    action: "project.review.published",
     targetType: "project_task",
     targetId: task.id,
     metadata: { reviewId, completionId: completion.id, headSha: review.target.headSha },
   });
 
-  return { review: await context.repositories.projectTaskIntegrations.getReview(review.id) };
+  return {
+    review: await context.repositories.projectTaskIntegrations.getReview(review.id, projectId),
+  };
 }
 
 export async function reconcileReviewPublication(
@@ -384,24 +320,25 @@ export async function reconcileReviewPublication(
   reviewId: string,
 ) {
   const { review } = await requireProjectReview(context, projectId, reviewId);
-  const client = await GitHubTaskClient.forUser(
-    context,
-    review.target.installationId,
-    review.target.repository,
-  );
-
-  if (client.connectionId !== review.target.connectionId) {
-    throw new AssistantError("Use the connection that owns this review", ErrorType.FORBIDDEN, 403);
-  }
+  const client = await connectOwnedReview(context, review);
 
   if (["unknown", "publishing"].includes(review.publicationStatus)) {
-    const body = await context.repositories.projectTaskIntegrations.getPublicationBody(review.id);
+    const body = await context.repositories.projectTaskIntegrations.getPublicationBody(
+      review.id,
+      projectId,
+    );
     const url = body ? await client.findPublication(review.target, body) : null;
 
     if (url) {
-      await context.repositories.projectTaskIntegrations.settlePublication(review.id, url);
+      await context.repositories.projectTaskIntegrations.settlePublication(
+        review.id,
+        projectId,
+        url,
+      );
     }
   }
 
-  return { review: await context.repositories.projectTaskIntegrations.getReview(review.id) };
+  return {
+    review: await context.repositories.projectTaskIntegrations.getReview(review.id, projectId),
+  };
 }

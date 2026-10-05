@@ -27,7 +27,7 @@ vi.mock("@ngriffin_uk/polychat-ai-integrations", async (importOriginal) => ({
 }));
 
 let fixture: Awaited<ReturnType<typeof createIntegrationTestContext>>;
-const locator = { provider: "linear", connectedAccountId: "account-1", issueId: "ENG-42" } as const;
+const locator = { provider: "linear", accountId: "account-1", issueId: "ENG-42" } as const;
 const upstream = {
   id: "issue-42",
   identifier: "ENG-42",
@@ -112,7 +112,7 @@ describe("issue intake through the existing task and source services", () => {
     expect(executeComposioSessionTool).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: 7,
-        connectedAccountId: locator.connectedAccountId,
+        connectedAccountId: locator.accountId,
         toolSlug: "LINEAR_GET_LINEAR_ISSUE",
         arguments: { issue_id: locator.issueId },
       }),

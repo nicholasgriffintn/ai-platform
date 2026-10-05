@@ -6,11 +6,11 @@ import {
   previewProjectIssue,
   publishPullRequestReview,
   reconcileReviewPublication,
-  setGithubReviewPolicy,
+  setProjectReviewPolicy,
   startPullRequestReview,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
-  GithubReviewPolicyInput,
+  ReviewPolicyInput,
   ImportProjectIssueInput,
   IssueLocator,
   PullRequestLocator,
@@ -56,7 +56,7 @@ export function useProjectTaskIntegrations(projectId: string) {
     onSettled: refresh,
   });
   const savePolicy = useMutation({
-    mutationFn: (input: GithubReviewPolicyInput) => setGithubReviewPolicy(projectId, input),
+    mutationFn: (input: ReviewPolicyInput) => setProjectReviewPolicy(projectId, input),
     onSettled: refresh,
   });
   const startReview = useMutation({

@@ -10,22 +10,24 @@ import {
   FormInput,
   FormSelect,
 } from "@ngriffin_uk/polychat-component-ui";
-import type { GithubReviewPolicy } from "@ngriffin_uk/polychat-schemas";
+import type { ReviewPolicy } from "@ngriffin_uk/polychat-schemas";
 
 import { useReviewSettings } from "./useReviewSettings";
 
 export function ProjectReviewSettingsDialog({
   projectId,
-  policy,
+  policies,
   canManage,
   onClose,
 }: {
   projectId: string;
-  policy: GithubReviewPolicy | null;
+  policies: ReviewPolicy[];
   canManage: boolean;
   onClose: () => void;
 }) {
   const {
+    currentUserId,
+    disablePolicy,
     repository,
     repositories,
     setRepositoryKey,
@@ -39,7 +41,7 @@ export function ProjectReviewSettingsDialog({
     pending,
     start,
     save,
-  } = useReviewSettings(projectId, policy, onClose);
+  } = useReviewSettings(projectId, policies, onClose);
 
   return (
     <Dialog
@@ -116,6 +118,34 @@ export function ProjectReviewSettingsDialog({
               </Button>
             </div>
           ) : null}
+          {canManage
+            ? policies
+                .filter((policy) => policy.enabled)
+                .map((policy) => (
+                  <div
+                    key={policy.id}
+                    className="flex items-center justify-between gap-3 border-t border-border pt-3 text-sm"
+                  >
+                    <div>
+                      <p>
+                        {policy.repository} · {policy.provider}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {policy.ownerUserId === currentUserId
+                          ? "Your connection"
+                          : "Another member's connection"}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      disabled={pending}
+                      onClick={() => void disablePolicy(policy.id)}
+                    >
+                      Disable
+                    </Button>
+                  </div>
+                ))
+            : null}
           {error ? (
             <p role="alert" className="text-sm text-failure">
               {error}

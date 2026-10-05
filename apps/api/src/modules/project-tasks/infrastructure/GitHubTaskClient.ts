@@ -11,6 +11,8 @@ import { getGitHubAppInstallationToken } from "~/infrastructure/github";
 import { githubApiRequest } from "~/infrastructure/github/api-client";
 import { getGitHubTaskConnection } from "~/modules/github/application/connections";
 
+import type { TaskReviewClient } from "./integrations/types";
+
 const sha = gitCommitShaSchema;
 const repositorySchema = z.object({ id: z.number().int().positive(), full_name: z.string() });
 const pullRequest = z.object({
@@ -62,11 +64,12 @@ function renderReviewPatches(files: readonly z.infer<typeof changedFile>[]) {
   );
 }
 
-export class GitHubTaskClient {
+export class GitHubTaskClient implements TaskReviewClient {
   private constructor(
     private readonly token: string,
     readonly connectionId: string,
     readonly repository: string,
+    readonly canAutomate: boolean,
   ) {}
 
   static async forUser(
@@ -82,7 +85,12 @@ export class GitHubTaskClient {
     );
     const token = await getGitHubAppInstallationToken(bound.connection);
 
-    return new GitHubTaskClient(token, bound.connectionId, repositoryName);
+    return new GitHubTaskClient(
+      token,
+      bound.connectionId,
+      repositoryName,
+      Boolean(bound.connection.webhookSecret),
+    );
   }
 
   private async get(path: string): Promise<unknown> {
@@ -142,7 +150,7 @@ export class GitHubTaskClient {
     const target: PullRequestReviewTarget = {
       ...locator,
       connectionId: this.connectionId,
-      repositoryId: before.base.repo.id,
+      repositoryId: String(before.base.repo.id),
       baseSha: before.base.sha,
       headSha: before.head.sha,
     };
@@ -169,7 +177,7 @@ export class GitHubTaskClient {
 
     if (
       after.base.sha !== target.baseSha ||
-      after.base.repo.id !== target.repositoryId ||
+      String(after.base.repo.id) !== target.repositoryId ||
       after.head.sha !== target.headSha ||
       after.state !== "open" ||
       after.draft
@@ -207,6 +215,24 @@ export class GitHubTaskClient {
       omitted,
       unavailableCount,
     };
+  }
+
+  async assertCurrentTarget(target: PullRequestReviewTarget): Promise<void> {
+    const current = await this.readPullRequest(target.pullRequestNumber);
+
+    if (
+      String(current.base.repo.id) !== target.repositoryId ||
+      current.head.sha !== target.headSha ||
+      current.base.sha !== target.baseSha ||
+      current.state !== "open" ||
+      current.draft
+    ) {
+      throw new AssistantError(
+        "The PR changed since this review. Review the new revision before publishing.",
+        ErrorType.CONFLICT_ERROR,
+        409,
+      );
+    }
   }
 
   async publishReview(target: PullRequestReviewTarget, body: string): Promise<string> {

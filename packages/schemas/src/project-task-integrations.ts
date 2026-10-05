@@ -2,7 +2,6 @@ import { isHttpUrl } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 import { createProjectTaskSchema, projectTaskSchema } from "./project-tasks.js";
-import { sandboxRepoSchema } from "./sandbox.js";
 
 const externalUrl = z.url().refine(isHttpUrl, "Use an HTTP or HTTPS URL");
 
@@ -11,28 +10,21 @@ export const gitCommitShaSchema = z
   .regex(/^[a-fA-F0-9]{40}$/)
   .transform((value) => value.toLowerCase());
 
-export const issueLocatorSchema = z.discriminatedUnion("provider", [
-  z
-    .object({
-      provider: z.literal("github"),
-      installationId: z.number().int().positive(),
-      repository: sandboxRepoSchema.transform((value) => value.toLowerCase()),
-      issueNumber: z.number().int().positive(),
-    })
-    .strict(),
-  z
-    .object({
-      provider: z.literal("linear"),
-      connectedAccountId: z.string().trim().min(1).max(200),
-      issueId: z.string().trim().min(1).max(100),
-    })
-    .strict(),
-]);
+export const taskIntegrationProviderSchema = z.string().regex(/^[a-z][a-z0-9_-]{0,63}$/);
+export const issueLocatorSchema = z
+  .object({
+    provider: taskIntegrationProviderSchema,
+    accountId: z.string().trim().min(1).max(200),
+    repository: z.string().trim().min(1).max(300).optional(),
+    issueId: z.string().trim().min(1).max(100),
+  })
+  .strict();
 
 export const issueSnapshotSchema = z
   .object({
-    provider: z.enum(["github", "linear"]),
+    provider: taskIntegrationProviderSchema,
     accountId: z.string().min(1).max(200),
+    connectionId: z.string().nullable(),
     externalId: z.string().min(1).max(200),
     identifier: z.string().min(1).max(300),
     title: z.string().min(1).max(1000),
@@ -68,8 +60,9 @@ export const projectIssueImportResponseSchema = z
 
 export const pullRequestLocatorSchema = z
   .object({
-    installationId: z.number().int().positive(),
-    repository: sandboxRepoSchema.transform((value) => value.toLowerCase()),
+    provider: taskIntegrationProviderSchema,
+    accountId: z.string().trim().min(1).max(200),
+    repository: z.string().trim().min(1).max(300),
     pullRequestNumber: z.number().int().positive(),
   })
   .strict();
@@ -77,29 +70,33 @@ export const pullRequestLocatorSchema = z
 export const pullRequestReviewTargetSchema = pullRequestLocatorSchema
   .extend({
     connectionId: z.string().min(1),
-    repositoryId: z.number().int().positive(),
+    repositoryId: z.string().min(1).max(300),
     baseSha: gitCommitShaSchema,
     headSha: gitCommitShaSchema,
   })
   .strict();
 
-export const githubReviewPolicyInputSchema = z.discriminatedUnion("enabled", [
-  z.object({ enabled: z.literal(false) }).strict(),
+export const reviewPolicyInputSchema = z.discriminatedUnion("enabled", [
+  z.object({ enabled: z.literal(false), id: z.string().min(1) }).strict(),
   z
     .object({
       enabled: z.literal(true),
-      installationId: z.number().int().positive(),
-      repository: sandboxRepoSchema.transform((value) => value.toLowerCase()),
+      provider: taskIntegrationProviderSchema,
+      accountId: z.string().trim().min(1).max(200),
+      repository: z.string().trim().min(1).max(300),
       tokenBudget: z.number().int().min(1000).max(100000).default(20000),
     })
     .strict(),
 ]);
 
-export const githubReviewPolicySchema = z
+export const reviewPolicySchema = z
   .object({
+    id: z.string().min(1),
+    workspaceId: z.string().min(1),
     enabled: z.boolean(),
-    installationId: z.number().int().positive(),
-    repository: sandboxRepoSchema,
+    provider: taskIntegrationProviderSchema,
+    accountId: z.string().trim().min(1).max(200),
+    repository: z.string().min(1).max(300),
     tokenBudget: z.number().int().min(1000).max(100000),
     projectId: z.string(),
     ownerUserId: z.number().int().positive(),
@@ -111,11 +108,14 @@ export const githubReviewPolicySchema = z
 export const pullRequestReviewSchema = z
   .object({
     id: z.string(),
+    workspaceId: z.string(),
+    ownerUserId: z.number().int().positive(),
     projectId: z.string(),
     taskId: z.string(),
     sourceId: z.string(),
     target: pullRequestReviewTargetSchema,
-    policyRevision: z.string(),
+    policyId: z.string().nullable(),
+    policyRevision: z.string().nullable(),
     publicationStatus: z.enum(["unpublished", "publishing", "published", "unknown"]),
     publishedUrl: externalUrl.nullable(),
     createdAt: z.string(),
@@ -124,7 +124,7 @@ export const pullRequestReviewSchema = z
 
 export const projectReviewListResponseSchema = z
   .object({
-    policy: githubReviewPolicySchema.nullable(),
+    policies: z.array(reviewPolicySchema),
     reviews: z.array(pullRequestReviewSchema),
   })
   .strict();
@@ -136,9 +136,11 @@ export const publishPullRequestReviewSchema = z
   })
   .strict();
 
-export { GITHUB_PULL_REQUEST_INTAKE_TASK_TYPE } from "./project-task-integration-constants.js";
-export const githubPullRequestIntakeSchema = z
+export { PROJECT_REVIEW_INTAKE_TASK_TYPE } from "./project-task-integration-constants.js";
+export const projectReviewIntakeSchema = z
   .object({
+    workspaceId: z.string(),
+    policyId: z.string(),
     projectId: z.string(),
     policyRevision: z.string(),
     target: pullRequestReviewTargetSchema,
@@ -151,8 +153,8 @@ export type ImportProjectIssueInput = z.infer<typeof importProjectIssueSchema>;
 export type PullRequestLocator = z.infer<typeof pullRequestLocatorSchema>;
 export type PullRequestReviewTarget = z.infer<typeof pullRequestReviewTargetSchema>;
 export type PullRequestReview = z.infer<typeof pullRequestReviewSchema>;
-export type GithubReviewPolicy = z.infer<typeof githubReviewPolicySchema>;
-export type GithubReviewPolicyInput = z.input<typeof githubReviewPolicyInputSchema>;
+export type ReviewPolicy = z.infer<typeof reviewPolicySchema>;
+export type ReviewPolicyInput = z.input<typeof reviewPolicyInputSchema>;
 export type PublishPullRequestReviewInput = z.infer<typeof publishPullRequestReviewSchema>;
 
 export const createPullRequestReviewResponseSchema = z
@@ -170,9 +172,7 @@ export const publishedReviewResponseSchema = z.object({ review: pullRequestRevie
 export const projectTaskReviewResponseSchema = z
   .object({ review: pullRequestReviewSchema.nullable() })
   .strict();
-export const githubReviewPolicyResponseSchema = z
-  .object({ policy: githubReviewPolicySchema.nullable() })
-  .strict();
+export const reviewPolicyResponseSchema = z.object({ policy: reviewPolicySchema }).strict();
 
 export type IssuePreview = z.infer<typeof issuePreviewResponseSchema>;
 export type ProjectIssueImportResult = z.infer<typeof projectIssueImportResponseSchema>;

@@ -3,14 +3,14 @@ import {
   projectIssueImportResponseSchema,
   projectReviewListResponseSchema,
   projectTaskReviewResponseSchema,
-  githubReviewPolicyResponseSchema,
+  reviewPolicyResponseSchema,
   createPullRequestReviewResponseSchema,
   preparedReviewPublicationSchema,
   publishedReviewResponseSchema,
   type IssueLocator,
   type ImportProjectIssueInput,
   type PullRequestLocator,
-  type GithubReviewPolicyInput,
+  type ReviewPolicyInput,
   type PublishPullRequestReviewInput,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -56,14 +56,14 @@ export async function getProjectTaskReview(projectId: string, taskId: string) {
   return projectTaskReviewResponseSchema.parse(await returnFetchedData(response));
 }
 
-export async function setGithubReviewPolicy(projectId: string, input: GithubReviewPolicyInput) {
+export async function setProjectReviewPolicy(projectId: string, input: ReviewPolicyInput) {
   const response = await fetchApiOrThrow(`/projects/${projectId}/pr-reviews/policy`, {
     method: "PUT",
     headers: await apiService.getHeaders(),
     body: input,
   });
 
-  return githubReviewPolicyResponseSchema.parse(await returnFetchedData(response));
+  return reviewPolicyResponseSchema.parse(await returnFetchedData(response));
 }
 
 export async function startPullRequestReview(projectId: string, locator: PullRequestLocator) {

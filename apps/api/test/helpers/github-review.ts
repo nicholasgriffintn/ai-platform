@@ -8,11 +8,16 @@ import { createPullRequestReview } from "~/modules/project-tasks/application/pul
 
 import { createIntegrationTestContext } from "./project-task-integrations";
 
-export const locator = { installationId: 10, repository: "owner/repo", pullRequestNumber: 42 };
+export const locator = {
+  provider: "github",
+  accountId: "10",
+  repository: "owner/repo",
+  pullRequestNumber: 42,
+};
 export const target: PullRequestReviewTarget = {
   ...locator,
   connectionId: "connection-1",
-  repositoryId: 20,
+  repositoryId: "20",
   baseSha: "a".repeat(40),
   headSha: "b".repeat(40),
 };

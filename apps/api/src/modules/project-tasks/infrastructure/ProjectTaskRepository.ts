@@ -502,9 +502,13 @@ export class ProjectTaskRepository extends BaseRepository {
          ${
            params.automaticReviewPolicyRevision
              ? `AND EXISTS (
-           SELECT 1 FROM project_github_review_policy p JOIN project_pull_request_review r ON r.project_id = p.project_id
+           SELECT 1 FROM project_review_policy p JOIN project_task_review r ON r.policy_id = p.id AND r.project_id = p.project_id AND r.workspace_id = p.workspace_id
            WHERE r.task_id = project_task.id AND p.enabled = 1 AND p.revision = ? AND r.policy_revision = p.revision
-             AND p.owner_user_id = ? AND p.connection_id = json_extract(r.target, '$.connectionId')
+             AND p.owner_user_id = ? AND r.owner_user_id = p.owner_user_id AND r.workspace_id = project_task.workspace_id
+             AND p.connection_id = json_extract(r.target, '$.connectionId')
+             AND p.provider = json_extract(r.target, '$.provider')
+             AND p.account_id = json_extract(r.target, '$.accountId')
+             AND p.repository = json_extract(r.target, '$.repository')
          )`
              : ""
          }

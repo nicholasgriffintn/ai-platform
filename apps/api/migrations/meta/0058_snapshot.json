@@ -8787,13 +8787,13 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "project_github_review_policy": {
-      "name": "project_github_review_policy",
+    "project_review_policy": {
+      "name": "project_review_policy",
       "columns": {
         "project_id": {
           "name": "project_id",
           "type": "text",
-          "primaryKey": true,
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -8807,13 +8807,6 @@
         "connection_id": {
           "name": "connection_id",
           "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "installation_id": {
-          "name": "installation_id",
-          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -8846,39 +8839,81 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         }
       },
       "indexes": {
-        "project_github_review_policy_repository": {
-          "name": "project_github_review_policy_repository",
-          "columns": ["installation_id", "repository", "enabled"],
+        "project_review_policy_repository": {
+          "name": "project_review_policy_repository",
+          "columns": ["provider", "account_id", "repository", "enabled"],
           "isUnique": false
+        },
+        "project_review_policy_identity": {
+          "name": "project_review_policy_identity",
+          "columns": ["workspace_id", "project_id", "provider", "connection_id", "repository"],
+          "isUnique": true
         }
       },
       "foreignKeys": {
-        "project_github_review_policy_project_id_project_id_fk": {
-          "name": "project_github_review_policy_project_id_project_id_fk",
-          "tableFrom": "project_github_review_policy",
+        "project_review_policy_project_id_project_id_fk": {
+          "name": "project_review_policy_project_id_project_id_fk",
+          "tableFrom": "project_review_policy",
           "tableTo": "project",
           "columnsFrom": ["project_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "project_github_review_policy_owner_user_id_user_id_fk": {
-          "name": "project_github_review_policy_owner_user_id_user_id_fk",
-          "tableFrom": "project_github_review_policy",
+        "project_review_policy_owner_user_id_user_id_fk": {
+          "name": "project_review_policy_owner_user_id_user_id_fk",
+          "tableFrom": "project_review_policy",
           "tableTo": "user",
           "columnsFrom": ["owner_user_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "project_github_review_policy_connection_id_provider_connection_id_fk": {
-          "name": "project_github_review_policy_connection_id_provider_connection_id_fk",
-          "tableFrom": "project_github_review_policy",
+        "project_review_policy_connection_id_provider_connection_id_fk": {
+          "name": "project_review_policy_connection_id_provider_connection_id_fk",
+          "tableFrom": "project_review_policy",
           "tableTo": "provider_connection",
           "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "project_review_policy_workspace_id_workspace_id_fk": {
+          "name": "project_review_policy_workspace_id_workspace_id_fk",
+          "tableFrom": "project_review_policy",
+          "tableTo": "workspace",
+          "columnsFrom": ["workspace_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -8888,8 +8923,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "project_pull_request_review": {
-      "name": "project_pull_request_review",
+    "project_task_review": {
+      "name": "project_task_review",
       "columns": {
         "id": {
           "name": "id",
@@ -8930,7 +8965,7 @@
           "name": "policy_revision",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "publication_status": {
@@ -8969,55 +9004,94 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(CURRENT_TIMESTAMP)"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "owner_user_id": {
+          "name": "owner_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "policy_id": {
+          "name": "policy_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
-        "project_pull_request_review_task_id_unique": {
-          "name": "project_pull_request_review_task_id_unique",
+        "project_task_review_task_id_unique": {
+          "name": "project_task_review_task_id_unique",
           "columns": ["task_id"],
           "isUnique": true
         },
-        "project_pull_request_review_project": {
-          "name": "project_pull_request_review_project",
+        "project_task_review_project": {
+          "name": "project_task_review_project",
           "columns": ["project_id", "created_at"],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "project_pull_request_review_project_id_project_id_fk": {
-          "name": "project_pull_request_review_project_id_project_id_fk",
-          "tableFrom": "project_pull_request_review",
+        "project_task_review_project_id_project_id_fk": {
+          "name": "project_task_review_project_id_project_id_fk",
+          "tableFrom": "project_task_review",
           "tableTo": "project",
           "columnsFrom": ["project_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "project_pull_request_review_task_id_project_task_id_fk": {
-          "name": "project_pull_request_review_task_id_project_task_id_fk",
-          "tableFrom": "project_pull_request_review",
+        "project_task_review_task_id_project_task_id_fk": {
+          "name": "project_task_review_task_id_project_task_id_fk",
+          "tableFrom": "project_task_review",
           "tableTo": "project_task",
           "columnsFrom": ["task_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "project_pull_request_review_source_id_source_id_fk": {
-          "name": "project_pull_request_review_source_id_source_id_fk",
-          "tableFrom": "project_pull_request_review",
+        "project_task_review_source_id_source_id_fk": {
+          "name": "project_task_review_source_id_source_id_fk",
+          "tableFrom": "project_task_review",
           "tableTo": "source",
           "columnsFrom": ["source_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "project_task_review_workspace_id_workspace_id_fk": {
+          "name": "project_task_review_workspace_id_workspace_id_fk",
+          "tableFrom": "project_task_review",
+          "tableTo": "workspace",
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "project_task_review_owner_user_id_user_id_fk": {
+          "name": "project_task_review_owner_user_id_user_id_fk",
+          "tableFrom": "project_task_review",
+          "tableTo": "user",
+          "columnsFrom": ["owner_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {
-        "project_pull_request_review_publication_status": {
-          "name": "project_pull_request_review_publication_status",
-          "value": "\"project_pull_request_review\".\"publication_status\" IN ('unpublished', 'publishing', 'published', 'unknown')"
+        "project_task_review_publication_status": {
+          "name": "project_task_review_publication_status",
+          "value": "\"project_task_review\".\"publication_status\" IN ('unpublished', 'publishing', 'published', 'unknown')"
         }
       }
     },
@@ -9454,6 +9528,20 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(CURRENT_TIMESTAMP)"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "owner_user_id": {
+          "name": "owner_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -9464,7 +9552,14 @@
         },
         "project_task_external_import_identity": {
           "name": "project_task_external_import_identity",
-          "columns": ["project_id", "provider", "account_id", "external_id"],
+          "columns": [
+            "workspace_id",
+            "project_id",
+            "owner_user_id",
+            "provider",
+            "account_id",
+            "external_id"
+          ],
           "isUnique": true
         }
       },
@@ -9495,16 +9590,29 @@
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "project_task_external_import_workspace_id_workspace_id_fk": {
+          "name": "project_task_external_import_workspace_id_workspace_id_fk",
+          "tableFrom": "project_task_external_import",
+          "tableTo": "workspace",
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "project_task_external_import_owner_user_id_user_id_fk": {
+          "name": "project_task_external_import_owner_user_id_user_id_fk",
+          "tableFrom": "project_task_external_import",
+          "tableTo": "user",
+          "columnsFrom": ["owner_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "project_task_external_import_provider": {
-          "name": "project_task_external_import_provider",
-          "value": "\"project_task_external_import\".\"provider\" IN ('github', 'linear')"
-        }
-      }
+      "checkConstraints": {}
     },
     "provider_connection": {
       "name": "provider_connection",

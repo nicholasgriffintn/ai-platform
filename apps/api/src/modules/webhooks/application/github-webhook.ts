@@ -5,7 +5,7 @@ import z from "zod/v4";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { validateSignature } from "~/infrastructure/github";
 import { getGitHubAppConnectionForInstallation } from "~/modules/github/application/connections";
-import { enqueueGithubReviewIntake } from "~/modules/project-tasks/application/review-intake";
+import { enqueueProjectReviewIntake } from "~/modules/project-tasks/application/review-intake";
 
 import { processGithubComment } from "./github-comment-intake";
 
@@ -81,10 +81,11 @@ export async function handleGithubWebhook(params: {
       !data.pull_request.draft &&
       data.pull_request.state === "open"
     ) {
-      await enqueueGithubReviewIntake(params.context, {
-        installationId: data.installation.id,
+      await enqueueProjectReviewIntake(params.context, {
+        provider: "github",
+        accountId: String(data.installation.id),
         repository: data.repository.full_name,
-        repositoryId: data.repository.id,
+        repositoryId: String(data.repository.id),
         pullRequestNumber: data.pull_request.number,
         baseSha: data.pull_request.base.sha,
         headSha: data.pull_request.head.sha,

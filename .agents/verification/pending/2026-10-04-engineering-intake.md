@@ -11,8 +11,9 @@
 - [ ] Import an issue, edit its objective and criteria, and observe the retained snapshot and backlog task. Re-import it and open the same task. Change an unimported issue after preview and observe a conflict requiring another preview.
 - [ ] Start a PR review and observe a governed Output identifying the commit pair and omitted patches. Confirm that repository code is not executed.
 - [ ] Enable automatic intake, deliver a ready PR revision twice and observe one task. Push another commit and observe new work. Disable the policy before dispatch and observe the pending automatic task blocked.
+- [ ] Enable policies for two credential owners in one project and another workspace. Disable one policy and confirm the others stay enabled. Use a different project's policy ID in the API and observe a not-found response.
 - [ ] Preview and edit publication text, approve it, and observe one GitHub comment review on the captured commit. Advance the PR before approving another review and observe publication refused.
-- [ ] With a non-production account, simulate a lost publication response and use Check publication in GitHub. Confirm that reconciliation reads the existing review and does not post again.
+- [ ] With a non-production account, simulate a lost publication response and use Check publication. Confirm that reconciliation reads the existing review and does not post again.
 - [ ] Revoke the selected connection or project access and observe intake/publication denied. Disable automation after revocation without needing the revoked connection.
 
 **Stop and report if:** another account's connection is accepted, a duplicate write occurs, or the published review claims a commit that was not captured.

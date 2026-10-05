@@ -42,11 +42,13 @@ export function ProjectTaskIntegrationsControl({
           </Button>
         </div>
       </div>
-      {reviews.data?.policy?.enabled ? (
-        <p className="text-xs text-muted-foreground">
-          Automatic reviews enabled for {reviews.data.policy.repository}.
-        </p>
-      ) : null}
+      {reviews.data?.policies
+        .filter((policy) => policy.enabled)
+        .map((policy) => (
+          <p key={policy.id} className="text-xs text-muted-foreground">
+            Automatic reviews enabled for {policy.repository} ({policy.provider}).
+          </p>
+        ))}
       {reviews.data?.reviews.slice(0, 5).map((review) => (
         <div key={review.id} className="flex flex-wrap justify-between gap-2 text-sm">
           <a className="text-link" href={`${taskBasePath}/${review.taskId}`}>
@@ -57,7 +59,7 @@ export function ProjectTaskIntegrationsControl({
             {review.publicationStatus === "published"
               ? "Published"
               : review.publicationStatus === "unknown" || review.publicationStatus === "publishing"
-                ? "Check publication in GitHub"
+                ? "Check publication"
                 : "Not published"}
           </span>
         </div>
@@ -81,7 +83,7 @@ export function ProjectTaskIntegrationsControl({
       {dialog === "review" ? (
         <ProjectReviewSettingsDialog
           projectId={projectId}
-          policy={reviews.data?.policy ?? null}
+          policies={reviews.data?.policies ?? []}
           canManage={canManage}
           onClose={() => setDialog(null)}
         />

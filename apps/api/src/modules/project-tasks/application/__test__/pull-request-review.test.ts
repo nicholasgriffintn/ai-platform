@@ -154,7 +154,7 @@ describe("human publication and uncertain outcomes", () => {
       }),
     ).rejects.toThrow("Response lost");
     expect(
-      await fixture.context.repositories.projectTaskIntegrations.getReview(review.id),
+      await fixture.context.repositories.projectTaskIntegrations.getReview(review.id, "project-1"),
     ).toMatchObject({ publicationStatus: "unknown" });
     vi.mocked(githubApiRequest).mockResolvedValueOnce(Response.json(pr));
     await expect(
@@ -165,6 +165,7 @@ describe("human publication and uncertain outcomes", () => {
     ).rejects.toMatchObject({ statusCode: 409 });
     const body = await fixture.context.repositories.projectTaskIntegrations.getPublicationBody(
       review.id,
+      "project-1",
     );
 
     vi.mocked(githubApiRequest).mockResolvedValueOnce(
@@ -212,7 +213,7 @@ describe("human publication and uncertain outcomes", () => {
       expect(
         vi.mocked(githubApiRequest).mock.calls.filter(([request]) => request.method === "POST"),
       ).toHaveLength(0);
-      expect(await repository.getReview(review.id)).toMatchObject({
+      expect(await repository.getReview(review.id, "project-1")).toMatchObject({
         publicationStatus: "unpublished",
       });
     },

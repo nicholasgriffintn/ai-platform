@@ -1,6 +1,6 @@
 import {
-  githubReviewPolicyInputSchema,
-  githubReviewPolicyResponseSchema,
+  reviewPolicyInputSchema,
+  reviewPolicyResponseSchema,
   createPullRequestReviewResponseSchema,
   preparedReviewPublicationSchema,
   publishedReviewResponseSchema,
@@ -27,9 +27,9 @@ import {
   prepareReviewPublication,
   publishPullRequestReview,
   reconcileReviewPublication,
-  setGithubReviewPolicy,
   startPullRequestReview,
 } from "~/modules/project-tasks/application/pull-request-review";
+import { setProjectReviewPolicy } from "~/modules/project-tasks/application/review-policy";
 import type { IEnv } from "~/types";
 
 const app = new Hono<{ Bindings: IEnv }>();
@@ -73,7 +73,7 @@ addRoute(app, "post", "/:projectId/issue-imports", {
 addRoute(app, "get", "/:projectId/pr-reviews", {
   auth: true,
   tags: ["projects", "tasks"],
-  summary: "List project PR reviews and automatic review policy",
+  summary: "List project PR reviews and automatic review policies",
   paramSchema: projectParams,
   responses: { 200: { description: "Project reviews", schema: projectReviewListResponseSchema } },
   handler: ({ serviceContext, params }) => listProjectReviews(serviceContext, params.projectId),
@@ -81,19 +81,19 @@ addRoute(app, "get", "/:projectId/pr-reviews", {
 addRoute(app, "put", "/:projectId/pr-reviews/policy", {
   auth: true,
   tags: ["projects", "tasks"],
-  summary: "Set automatic GitHub PR review policy",
+  summary: "Set automatic pull request review policy",
   paramSchema: projectParams,
-  bodySchema: githubReviewPolicyInputSchema,
+  bodySchema: reviewPolicyInputSchema,
   responses: {
-    200: { description: "Saved automatic review policy", schema: githubReviewPolicyResponseSchema },
+    200: { description: "Saved automatic review policy", schema: reviewPolicyResponseSchema },
   },
   handler: ({ serviceContext, params, body }) =>
-    setGithubReviewPolicy(serviceContext, params.projectId, body),
+    setProjectReviewPolicy(serviceContext, params.projectId, body),
 });
 addRoute(app, "post", "/:projectId/pr-reviews", {
   auth: true,
   tags: ["projects", "tasks"],
-  summary: "Start a review of the current GitHub PR revision",
+  summary: "Start a review of the current pull request revision",
   paramSchema: projectParams,
   bodySchema: pullRequestLocatorSchema,
   responses: {
@@ -116,7 +116,7 @@ addRoute(app, "post", "/:projectId/pr-reviews/:reviewId/prepare-publication", {
 addRoute(app, "post", "/:projectId/pr-reviews/:reviewId/publish", {
   auth: true,
   tags: ["projects", "tasks"],
-  summary: "Publish the explicitly approved review to its exact GitHub commit",
+  summary: "Publish the explicitly approved review to its exact commit",
   paramSchema: reviewParams,
   bodySchema: publishPullRequestReviewSchema,
   responses: { 200: { description: "Published review", schema: publishedReviewResponseSchema } },
@@ -127,7 +127,7 @@ addRoute(app, "post", "/:projectId/pr-reviews/:reviewId/publish", {
 addRoute(app, "post", "/:projectId/pr-reviews/:reviewId/check-publication", {
   auth: true,
   tags: ["projects", "tasks"],
-  summary: "Reconcile an uncertain publication without writing to GitHub",
+  summary: "Reconcile an uncertain publication without external writes",
   paramSchema: reviewParams,
   responses: {
     200: { description: "Current publication state", schema: publishedReviewResponseSchema },

@@ -39,7 +39,7 @@ export async function retainReviewOutput(
       {
         projectId: review.projectId,
         conversationId: completion.conversationId,
-        capabilityId: "github-pr-review",
+        capabilityId: "pull-request-review",
         groupId: review.id,
         kind: "code-review",
         title: `Review ${review.target.repository}#${review.target.pullRequestNumber}`.slice(
