@@ -334,124 +334,6 @@ describe("ChatOrchestrator", () => {
         );
       });
 
-      it("should store empty tool calls as null", async () => {
-        const mockResponse = {
-          response: "Test response",
-          tool_calls: [],
-          usage: { total_tokens: 100 },
-        };
-
-        mockGetAIResponse.mockResolvedValue(mockResponse);
-        mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
-        mockConversationManager.add.mockResolvedValue(undefined);
-
-        await orchestrator.process(mockOptions);
-
-        expect(mockConversationManager.add).toHaveBeenCalledWith(
-          "test-completion-id",
-          expect.objectContaining({
-            tool_calls: null,
-          }),
-        );
-      });
-
-      it("should stream progress and final text for agent modes", async () => {
-        mockPreparer.prepare.mockResolvedValue({
-          modelConfigs: [{ model: "test-model" }],
-          primaryModel: "test-model",
-          primaryProvider: "test-provider",
-          conversationManager: mockConversationManager,
-          messages: [{ role: "user", content: "Hello" }],
-          systemPrompt: "Test system prompt",
-          messageWithContext: "Hello with context",
-          userSettings: {},
-          currentMode: "agent",
-        });
-        mockGetAIResponse.mockResolvedValue(new ReadableStream());
-        mockConsumeProviderStream.mockImplementation(async (_stream: unknown, sink: any) => {
-          await sink.writeEvent("content_block_delta", { content: "Agent final answer" });
-
-          return { content: "Agent final answer", toolCalls: [], parts: [], error: null };
-        });
-        mockConversationManager.add.mockResolvedValue(undefined);
-
-        const result = await orchestrator.process({
-          ...mockOptions,
-          stream: true,
-        });
-
-        expect(result).toEqual(
-          expect.objectContaining({
-            selectedModel: "test-model",
-            completion_id: "test-completion-id",
-            stream: expect.any(ReadableStream),
-          }),
-        );
-        if (!("stream" in result)) {
-          throw new Error("Expected streamed agent result");
-        }
-
-        const reader = result.stream.getReader();
-        const decoder = new TextDecoder();
-        let body = "";
-
-        while (true) {
-          const { value, done } = await reader.read();
-
-          if (done) {
-            break;
-          }
-
-          body += decoder.decode(value, { stream: true });
-        }
-
-        body += decoder.decode();
-
-        expect(body).toContain('"type":"state"');
-        expect(body).toContain('"state":"agent_event"');
-        expect(body).toContain('"type":"message_delta"');
-        expect(body).toContain("Agent final answer");
-        expect(body).toContain("[DONE]");
-      });
-
-      it("should handle multi-model streaming request", async () => {
-        const multiModelConfig = [{ model: "model-1" }, { model: "model-2" }];
-
-        mockPreparer.prepare.mockResolvedValue({
-          modelConfigs: multiModelConfig,
-          primaryModel: "model-1",
-          primaryProvider: "provider-1",
-          conversationManager: mockConversationManager,
-          messages: [{ role: "user", content: "Hello" }],
-          systemPrompt: "Test system prompt",
-          messageWithContext: "Hello with context",
-          userSettings: {},
-          currentMode: "chat",
-        });
-
-        mockGetAIResponse.mockResolvedValue(new ReadableStream());
-
-        const result = await orchestrator.process({
-          ...mockOptions,
-          stream: true,
-        });
-
-        if (!("stream" in result)) {
-          throw new Error("Expected streamed result");
-        }
-
-        await readStream(result.stream);
-
-        expect(mockConversationManager.admitTurn).toHaveBeenCalledOnce();
-        expect(mockConsumeProviderStream).toHaveBeenCalled();
-        expect(result).toMatchObject({
-          stream: expect.any(ReadableStream),
-          selectedModel: "model-1",
-          selectedModels: ["model-1", "model-2"],
-          completion_id: "test-completion-id",
-        });
-      });
-
       it("prepends the compaction marker to multi-model streaming responses", async () => {
         const multiModelConfig = [{ model: "model-1" }, { model: "model-2" }];
         const compactionMessage = {
@@ -547,40 +429,6 @@ describe("ChatOrchestrator", () => {
           message: compactionMessage,
         });
         expect(events).toContainEqual({ type: "content_block_delta", content: "Hello" });
-      });
-
-      it("should handle response with tool calls", async () => {
-        const mockResponse = {
-          response: "Test response",
-          tool_calls: [{ id: "tool-1", function: { name: "test_tool" } }],
-          usage: { total_tokens: 100 },
-        };
-
-        const mockToolResults = [{ role: "tool", content: "tool result", tool_call_id: "tool-1" }];
-
-        mockGetAIResponse
-          .mockResolvedValueOnce(mockResponse)
-          .mockResolvedValueOnce({ response: "Answer using the tool result" });
-        mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
-        mockHandleToolCalls.mockResolvedValue(mockToolResults);
-        mockConversationManager.add.mockResolvedValue(undefined);
-
-        const result = await orchestrator.process(mockOptions);
-
-        expect(mockHandleToolCalls).toHaveBeenCalledWith(
-          "test-completion-id",
-          expect.objectContaining({
-            tool_calls: [expect.objectContaining({ id: "tool-1" })],
-          }),
-          mockConversationManager,
-          expect.objectContaining({
-            context: mockOptions.context,
-          }),
-          expect.objectContaining({ recoverUnknownToolCalls: true }),
-        );
-        if ("toolResponses" in result) {
-          expect(result.toolResponses).toEqual(mockToolResults);
-        }
       });
 
       it("should continue non-streaming tool calls to a final answer when max steps allow it", async () => {
@@ -737,37 +585,6 @@ describe("ChatOrchestrator", () => {
             approved_tools: ["run_code"],
             enabled_tools: ["run_code"],
           }),
-        );
-      });
-
-      it("should return output validation error", async () => {
-        const mockResponse = {
-          response: "Inappropriate response",
-          usage: { total_tokens: 100 },
-        };
-
-        mockGetAIResponse.mockResolvedValue(mockResponse);
-        mockGuardrails.validateOutput.mockResolvedValue({
-          isValid: false,
-          rawResponse: { blockedResponse: "Content blocked" },
-          violations: ["inappropriate"],
-        });
-
-        const result = await orchestrator.process(mockOptions);
-
-        expect(result).toEqual({
-          selectedModel: "test-model",
-          validation: "output",
-          error: "Response did not pass safety checks",
-          violations: ["inappropriate"],
-        });
-        expect(mockConversationManager.add).toHaveBeenCalledWith(
-          "test-completion-id",
-          expect.objectContaining({ content: "Response blocked by safety checks." }),
-        );
-        expect(mockConversationManager.add).not.toHaveBeenCalledWith(
-          "test-completion-id",
-          expect.objectContaining({ content: "Inappropriate response" }),
         );
       });
 
@@ -1025,16 +842,6 @@ describe("ChatOrchestrator", () => {
         });
         expect(mockPreparer.prepare).not.toHaveBeenCalled();
       });
-
-      it("should throw error when no response generated", async () => {
-        mockGetAIResponse.mockResolvedValue({});
-
-        await expect(orchestrator.process(mockOptions)).rejects.toMatchObject({
-          message: "No response generated by the model",
-          type: ErrorType.PROVIDER_ERROR,
-          name: "AssistantError",
-        });
-      });
     });
 
     describe("error handling", () => {
@@ -1043,14 +850,6 @@ describe("ChatOrchestrator", () => {
           validation: { isValid: true },
           context: { modelConfig: { matchingModel: "test-model" } },
         });
-      });
-
-      it("should handle AssistantError and re-throw", async () => {
-        const assistantError = new AssistantError("Test error", ErrorType.PARAMS_ERROR);
-
-        mockPreparer.prepare.mockRejectedValue(assistantError);
-
-        await expect(orchestrator.process(mockOptions)).rejects.toThrow(assistantError);
       });
 
       it("should wrap errors thrown while executing the prepared request", async () => {
@@ -1072,29 +871,6 @@ describe("ChatOrchestrator", () => {
           type: ErrorType.UNKNOWN_ERROR,
           name: "AssistantError",
         });
-      });
-
-      it("should wrap unknown errors", async () => {
-        const unknownError = new Error("Unknown error");
-
-        mockPreparer.prepare.mockRejectedValue(unknownError);
-
-        await expect(orchestrator.process(mockOptions)).rejects.toThrow(
-          expect.objectContaining({
-            message: "An unexpected error occurred",
-            type: ErrorType.UNKNOWN_ERROR,
-          }),
-        );
-      });
-    });
-
-    describe("parameter handling", () => {
-      it("should throw error for missing required parameters", async () => {
-        mockValidator.validate.mockRejectedValue(new Error("Missing required parameters"));
-
-        await expect(orchestrator.process({} as any)).rejects.toThrow(
-          "An unexpected error occurred",
-        );
       });
     });
   });

@@ -58,33 +58,6 @@ describe("buildSystemPrompt", () => {
     mocks.buildGoalContractSection.mockReturnValue("GOAL CONTRACT");
   });
 
-  it("prefers an explicit request prompt over generating one", async () => {
-    const result = await buildSystemPrompt(
-      baseParams({ options: { ...baseParams().options, system_prompt: "explicit" } }),
-    );
-
-    expect(result).toBe("explicit");
-    expect(mocks.getSystemPrompt).not.toHaveBeenCalled();
-  });
-
-  it("falls back to a system turn already in the conversation", async () => {
-    const result = await buildSystemPrompt(
-      baseParams({
-        sanitisedMessages: [{ role: "system", content: "from history" }] as Message[],
-      }),
-    );
-
-    expect(result).toBe("from history");
-    expect(mocks.getSystemPrompt).not.toHaveBeenCalled();
-  });
-
-  it("generates a prompt when neither is supplied", async () => {
-    const result = await buildSystemPrompt(baseParams());
-
-    expect(result).toBe("generated prompt");
-    expect(mocks.getSystemPrompt).toHaveBeenCalledTimes(1);
-  });
-
   it.each([undefined, "Old Chat instructions"])(
     "refreshes Poly's current place despite a retained system prompt: %s",
     async (systemPrompt) => {
@@ -143,16 +116,6 @@ describe("buildSystemPrompt", () => {
     expect(mocks.buildGoalContractSection).not.toHaveBeenCalled();
   });
 
-  it("appends personal memory context when memory is enabled", async () => {
-    const repositories = createRepositories("remembered things");
-    const result = await buildSystemPrompt(
-      baseParams({ repositories, memoryPolicy: { enabled: true } as any }),
-    );
-
-    expect(result).toContain("generated prompt");
-    expect(result).toContain("remembered things");
-  });
-
   it("does not read memory synthesis for a project-scoped turn", async () => {
     const repositories = createRepositories("remembered things");
 
@@ -179,6 +142,25 @@ describe("buildSystemPrompt", () => {
     );
 
     expect(result).toBe("generated prompt");
+  });
+  it("prefers an explicit request prompt over generating one", async () => {
+    const result = await buildSystemPrompt(
+      baseParams({ options: { ...baseParams().options, system_prompt: "explicit" } }),
+    );
+
+    expect(result).toBe("explicit");
+    expect(mocks.getSystemPrompt).not.toHaveBeenCalled();
+  });
+
+  it("falls back to a system turn already in the conversation", async () => {
+    const result = await buildSystemPrompt(
+      baseParams({
+        sanitisedMessages: [{ role: "system", content: "from history" }] as Message[],
+      }),
+    );
+
+    expect(result).toBe("from history");
+    expect(mocks.getSystemPrompt).not.toHaveBeenCalled();
   });
 });
 

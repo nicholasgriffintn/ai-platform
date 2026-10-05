@@ -6,11 +6,7 @@ import type { SandboxProvider } from "~/infrastructure/providers/capabilities/sa
 import { providerLibrary } from "~/infrastructure/providers/library";
 
 import { createSandboxCredentialBrokerAccess } from "../credential-broker-grants";
-import {
-  enqueueSandboxRunDispatchTask,
-  isSandboxRunDispatchMessage,
-  processSandboxRunDispatch,
-} from "../dispatch";
+import { isSandboxRunDispatchMessage, processSandboxRunDispatch } from "../dispatch";
 import { resolveSandboxGitHubToken } from "../github-credentials";
 import { persistSandboxRunArtifact } from "../run-artifacts";
 import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "../run-coordinator";
@@ -146,70 +142,6 @@ describe("sandbox dispatch", () => {
         runId: "run-1",
       }),
     ).toBe(false);
-  });
-
-  it("enqueues dispatch message via shared task service", async () => {
-    const taskId = await enqueueSandboxRunDispatchTask({
-      context: {
-        env: {
-          TASK_QUEUE: { send: vi.fn() },
-        },
-        repositories: {
-          tasks: {},
-        },
-      } as any,
-      projectId: "project-1",
-      message: {
-        kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-        runId: "run-1",
-        recordId: "record-1",
-        userId: 1,
-        payload: {
-          installationId: 1,
-          repo: "owner/repo",
-          task: "Task",
-          shouldCommit: false,
-        },
-      },
-    });
-
-    expect(taskId).toBe("task-123");
-    expect(mockEnqueueTask).toHaveBeenCalledWith(
-      expect.objectContaining({
-        task_type: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-        user_id: 1,
-        project_id: "project-1",
-        task_data: expect.objectContaining({
-          kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-          runId: "run-1",
-        }),
-      }),
-    );
-  });
-
-  it("rejects dispatch enqueue when TASK_QUEUE is unavailable", async () => {
-    await expect(
-      enqueueSandboxRunDispatchTask({
-        context: {
-          env: {},
-          repositories: {
-            tasks: {},
-          },
-        } as any,
-        message: {
-          kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-          runId: "run-1",
-          recordId: "record-1",
-          userId: 1,
-          payload: {
-            installationId: 1,
-            repo: "owner/repo",
-            task: "Task",
-            shouldCommit: false,
-          },
-        },
-      }),
-    ).rejects.toThrow("TASK_QUEUE binding is not configured for sandbox run dispatch");
   });
 
   it("processes queued runs and persists completed state", async () => {

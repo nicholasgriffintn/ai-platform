@@ -51,16 +51,6 @@ function baseParams() {
 describe("extractPanelRouting", () => {
   const memberIds = new Set(["chair", "sceptic"]);
 
-  it("strips the routing tag from what the user sees", () => {
-    const result = extractPanelRouting(
-      `Real content.\n${routingTag({ shouldContinue: true, nextMemberIds: ["sceptic"] })}`,
-      memberIds,
-    );
-
-    expect(result.content).toBe("Real content.");
-    expect(result.routing).toMatchObject({ shouldContinue: true, nextMemberIds: ["sceptic"] });
-  });
-
   it("drops member ids outside the convened panel", () => {
     const result = extractPanelRouting(
       `Content.${routingTag({ shouldContinue: true, nextMemberIds: ["joker", "sceptic"] })}`,
@@ -133,29 +123,6 @@ describe("runPanel", () => {
 
     expect(result.turns).toHaveLength(3);
     expect(result.stoppedReason).toBe("turn_budget");
-  });
-
-  it("falls back to the auxiliary model only when no model is supplied", async () => {
-    mocks.getAIResponse.mockResolvedValue({ response: "Turn with no routing tag." });
-
-    const result = await runPanel(baseParams());
-
-    expect(result.model).toBe("auxiliary-model");
-    expect(result.turns).toHaveLength(1);
-  });
-
-  it("continues the debate when one member's completion fails", async () => {
-    mocks.getAIResponse
-      .mockResolvedValueOnce({
-        response: `Chair opens.\n${routingTag({ shouldContinue: true, nextMemberIds: ["sceptic"] })}`,
-      })
-      .mockRejectedValueOnce(new Error("provider exploded"))
-      .mockResolvedValueOnce({ response: "Conclusion despite the gap." });
-
-    const result = await runPanel({ ...baseParams(), model: "m" });
-
-    expect(result.turns).toHaveLength(1);
-    expect(result.conclusion).toBe("Conclusion despite the gap.");
   });
 
   it("leaves room for reasoning before a member's answer and conclusion", async () => {

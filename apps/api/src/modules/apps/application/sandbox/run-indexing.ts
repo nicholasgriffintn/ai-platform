@@ -2,8 +2,9 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { SandboxRunData } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { insertEmbedding } from "~/modules/apps/application/embeddings/insert";
+import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
+
+import { getSandboxRunRecordForUser } from "./runs";
 
 const logger = getLogger({ prefix: "services/apps/sandbox/run-indexing" });
 
@@ -39,17 +40,7 @@ export async function indexSandboxRunResult(params: {
 }): Promise<void> {
   const { serviceContext, userId, run } = params;
 
-  if (!serviceContext.env.AI || !serviceContext.env.VECTOR_DB) {
-    return;
-  }
-
   if (run.status !== "completed" && run.status !== "failed") {
-    return;
-  }
-
-  const content = toIndexableContent(run);
-
-  if (!content.trim()) {
     return;
   }
 
@@ -60,21 +51,28 @@ export async function indexSandboxRunResult(params: {
       return;
     }
 
-    await insertEmbedding({
-      env: serviceContext.env,
-      user,
-      request: {
-        id: `sandbox-run-${run.runId}`,
-        type: "sandbox_run",
-        title: `Sandbox run ${run.runId}`,
-        content,
-        metadata: {
-          runId: run.runId,
-          repo: run.repo,
-          status: run.status,
-          startedAt: run.startedAt,
-          completedAt: run.completedAt ?? "",
-        },
+    const context = createServiceContext({ env: serviceContext.env, user });
+    const record = await getSandboxRunRecordForUser({ context, userId, runId: run.runId });
+
+    if (
+      record.createdByUserId !== userId ||
+      (record.run.status !== "completed" && record.run.status !== "failed")
+    ) {
+      return;
+    }
+
+    await context.repositories.sources.upsertRepositorySource({
+      id: `sandbox-run-${run.runId}`,
+      userId,
+      projectId: record.projectId ?? undefined,
+      title: `Sandbox run ${run.runId}`.slice(0, 200),
+      content: toIndexableContent(record.run),
+      metadata: {
+        runId: run.runId,
+        repo: record.run.repo,
+        status: record.run.status,
+        startedAt: record.run.startedAt,
+        completedAt: record.run.completedAt ?? "",
       },
     });
   } catch (error) {

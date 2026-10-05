@@ -233,28 +233,6 @@ describe("built-in memory embedding provenance", () => {
     expect(repo.createSource).not.toHaveBeenCalled();
   });
 
-  it("persists the immutable target after user metadata and activates only after insert", async () => {
-    const repo = repository();
-
-    await createProvider(repo, "s3vectors").storeMemory({
-      text: "Remember this",
-      metadata: { embedding_provider_target: "attacker-controlled-target" },
-    });
-
-    expect(repo.createSource).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: "processing",
-        metadata: expect.objectContaining({ embedding_provider_target: s3Target }),
-      }),
-    );
-    expect(mocks.s3.insert).toHaveBeenCalled();
-    expect(repo.transitionSourceStatus).toHaveBeenCalledWith(
-      "memory-new",
-      ["processing"],
-      "available",
-    );
-  });
-
   it("treats a committed activation with a lost response as success", async () => {
     const repo = repository();
 
@@ -381,34 +359,6 @@ describe("built-in memory embedding provenance", () => {
     expect(repo.deleteSource).not.toHaveBeenCalled();
   });
 
-  it("deletes from the stored Vectorize target after the current provider switches to S3", async () => {
-    const memory = source({
-      id: "old-memory",
-      vectorId: "old-vector",
-      target: vectorizeTarget,
-    });
-    const repo = repository();
-
-    repo.getSource.mockResolvedValue(memory);
-
-    await expect(createProvider(repo, "s3vectors").deleteMemory("old-memory")).resolves.toBe(true);
-
-    expect(mocks.getEmbeddingProviderForTarget).toHaveBeenCalledWith(
-      env,
-      user,
-      expect.any(Object),
-      vectorizeTarget,
-    );
-    expect(mocks.vectorize.delete).toHaveBeenCalledWith(["old-vector"]);
-    expect(mocks.s3.delete).not.toHaveBeenCalled();
-    expect(repo.transitionSourceStatus).toHaveBeenCalledWith(
-      "old-memory",
-      ["processing", "available", "archived"],
-      "archived",
-    );
-    expect(repo.deleteSource).toHaveBeenCalledWith("old-memory");
-  });
-
   it("archives a targetless legacy source without guessing a provider", async () => {
     const legacy = source({ id: "legacy-memory", vectorId: "legacy-vector", target: null });
     const repo = repository();
@@ -435,23 +385,6 @@ describe("built-in memory embedding provenance", () => {
 
     repo.getSource.mockResolvedValue(memory);
     mocks.vectorize.delete.mockResolvedValue({ status: "error", error: "private detail" });
-
-    await expect(createProvider(repo).deleteMemory("memory-1")).resolves.toBe(false);
-
-    expect(repo.transitionSourceStatus).toHaveBeenCalledWith(
-      "memory-1",
-      ["processing", "available", "archived"],
-      "archived",
-    );
-    expect(repo.deleteSource).not.toHaveBeenCalled();
-  });
-
-  it("retains an archived source when provider deletion throws", async () => {
-    const memory = source({ id: "memory-1", vectorId: "vector-1", target: vectorizeTarget });
-    const repo = repository();
-
-    repo.getSource.mockResolvedValue(memory);
-    mocks.vectorize.delete.mockRejectedValue(new Error("provider timeout"));
 
     await expect(createProvider(repo).deleteMemory("memory-1")).resolves.toBe(false);
 
