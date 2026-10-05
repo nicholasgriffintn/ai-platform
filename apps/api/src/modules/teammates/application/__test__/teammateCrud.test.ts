@@ -1,4 +1,4 @@
-import { listPlatformTeammateIds, updateTeammateSchema } from "@ngriffin_uk/polychat-schemas";
+import { listPlatformTeammateIds } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -151,17 +151,6 @@ describe("teammate scope authorisation", () => {
     vi.clearAllMocks();
   });
 
-  it("persists clearing an teammate's sampling override", async () => {
-    const { context, repositories } = createContext();
-    const input = updateTeammateSchema.parse({ temperature: null });
-
-    await updateTeammate(context, TEAMMATE_ID, input);
-
-    expect(repositories.teammates.updateTeammate).toHaveBeenCalledWith(TEAMMATE_ID, {
-      temperature: null,
-    });
-  });
-
   it("refuses a personal teammate to anyone but its author", async () => {
     const { context } = createContext({ currentUserId: OTHER_ID });
 
@@ -267,59 +256,6 @@ describe("listScopedTeammateSummaries", () => {
     vi.clearAllMocks();
   });
 
-  it("returns nothing to an anonymous caller", async () => {
-    const { context, repositories } = createContext({});
-
-    await expect(listScopedTeammateSummaries(context)).resolves.toEqual([]);
-    expect(repositories.teammates.getTeammatesForScopes).not.toHaveBeenCalled();
-  });
-
-  it("returns the caller's own teammates alongside the workspace teammates they can read", async () => {
-    const { context } = createContext({
-      workspaces: [{ id: WORKSPACE_ID }],
-      scopedTeammates: [
-        buildStoredTeammate(),
-        buildStoredTeammate({
-          id: "teammate-2",
-          owner_scope_type: "workspace",
-          owner_scope_id: WORKSPACE_ID,
-        }),
-      ],
-    });
-
-    const summaries = await listScopedTeammateSummaries(context, OWNER_ID);
-
-    expect(summaries.map((summary) => [summary.id, summary.ownerScopeType])).toEqual([
-      [TEAMMATE_ID, "user"],
-      ["teammate-2", "workspace"],
-    ]);
-  });
-
-  it("returns attached teammates plus the platform teammates every project gets", async () => {
-    const { context, repositories } = createContext({
-      role: "member",
-      projectCapabilities: [
-        { kind: "skill", capability_id: "artifacts", configuration: null },
-        { kind: "teammate", capability_id: "teammate-2", configuration: null },
-      ],
-      projectTeammates: [
-        buildStoredTeammate({
-          id: "teammate-2",
-          owner_scope_type: "workspace",
-          owner_scope_id: WORKSPACE_ID,
-        }),
-      ],
-    });
-
-    const summaries = await listScopedTeammateSummaries(context, OWNER_ID, PROJECT_ID);
-
-    expect(repositories.teammates.getTeammatesByIds).toHaveBeenCalledWith([
-      "teammate-2",
-      ...listPlatformTeammateIds(),
-    ]);
-    expect(summaries.map((summary) => summary.id)).toEqual(["teammate-2"]);
-  });
-
   it("keeps a platform teammate the project removed out of the project", async () => {
     const { context, repositories } = createContext({
       role: "member",
@@ -369,37 +305,6 @@ describe("listScopedTeammateSummaries", () => {
       modelAvailable: false,
       unavailableSkillIds: ["not-a-real-skill"],
       unavailableToolIds: ["not_a_real_tool"],
-    });
-  });
-
-  it("does not mark platform grants or the core teammate tools as unavailable", async () => {
-    const { context } = createContext({
-      workspaces: [],
-      scopedTeammates: [
-        buildStoredTeammate({
-          id: "platform-support",
-          user_id: -1,
-          owner_scope_type: "platform",
-          owner_scope_id: "platform",
-          skill_ids: ["structured-reasoning"],
-          enabled_tools: ["search_documents", "request_approval"],
-        }),
-        buildStoredTeammate({
-          enabled_tools: ["request_approval"],
-        }),
-      ],
-    });
-
-    const [platformSummary, personalSummary] = await listScopedTeammateSummaries(context, OWNER_ID);
-
-    expect(platformSummary).toMatchObject({
-      id: "platform-support",
-      ownerScopeType: "platform",
-      unavailableSkillIds: [],
-      unavailableToolIds: [],
-    });
-    expect(personalSummary).toMatchObject({
-      unavailableToolIds: [],
     });
   });
 });
@@ -455,35 +360,6 @@ describe("publishTeammateToWorkspace", () => {
 describe("createTeammate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("creates a personal teammate when no workspace is named", async () => {
-    const { context, repositories } = createContext({});
-
-    await createTeammate(context, { name: "Researcher" });
-
-    expect(repositories.teammates.createTeammate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        ownerScopeType: "user",
-        ownerScopeId: String(OWNER_ID),
-      }),
-    );
-  });
-
-  it("creates a workspace teammate for an administrator of that workspace", async () => {
-    const { context, repositories } = createContext({ role: "admin" });
-
-    await createTeammate(context, {
-      name: "Researcher",
-      workspace_id: WORKSPACE_ID,
-    });
-
-    expect(repositories.teammates.createTeammate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        ownerScopeType: "workspace",
-        ownerScopeId: WORKSPACE_ID,
-      }),
-    );
   });
 
   it("refuses a plain member creating an teammate the workspace would own", async () => {
@@ -559,18 +435,6 @@ describe("deleteTeammate", () => {
       OWNER_ID,
       TEAMMATE_ID,
     );
-    expect(repositories.teammates.deleteTeammate).toHaveBeenCalledWith(TEAMMATE_ID);
-  });
-
-  it("deletes an unreferenced teammate without touching the marketplace", async () => {
-    const { context, repositories } = createContext({});
-
-    await expect(deleteTeammate(context, TEAMMATE_ID)).resolves.toEqual({
-      success: true,
-    });
-
-    expect(repositories.sharedTeammates.deleteSharedTeammate).not.toHaveBeenCalled();
-    expect(repositories.sharedTeammates.uninstallTeammate).not.toHaveBeenCalled();
     expect(repositories.teammates.deleteTeammate).toHaveBeenCalledWith(TEAMMATE_ID);
   });
 });

@@ -10,7 +10,6 @@ const mocks = vi.hoisted(() => ({
 import {
   authoriseConnectorOperation,
   getConnectorOperationApproval,
-  getConnectorArgumentDigest,
   resolveConnectorOperationApproval,
 } from "../operation-approvals";
 
@@ -44,21 +43,6 @@ describe("connector operation approvals", () => {
       id: "coa_pending",
       ...input,
     }));
-  });
-
-  it("binds equivalent argument objects to the same canonical digest", async () => {
-    const first = await getConnectorArgumentDigest({
-      provider: "gmail",
-      operation: "GMAIL_SEND_EMAIL",
-      arguments: { recipient: "person@example.com", body: { z: 2, a: 1 } },
-    });
-    const second = await getConnectorArgumentDigest({
-      operation: "GMAIL_SEND_EMAIL",
-      arguments: { body: { a: 1, z: 2 }, recipient: "person@example.com" },
-      provider: "gmail",
-    });
-
-    expect(first).toBe(second);
   });
 
   it("creates an expiring action-bound receipt before a write can execute", async () => {

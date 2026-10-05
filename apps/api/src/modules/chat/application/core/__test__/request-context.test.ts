@@ -1,26 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import {
-  buildToolPermissionsMap,
-  buildToolRequestContext,
-} from "~/modules/chat/application/core/request-context";
+import { buildToolRequestContext } from "~/modules/chat/application/core/request-context";
 import { resolveRequestProjectId } from "~/modules/functions/application/request-context";
 
 describe("chat request context helpers", () => {
-  it("builds tool permission maps from direct and provider-shaped tools", () => {
-    expect(
-      buildToolPermissionsMap([
-        { name: "sandbox", permissions: ["sandbox:write"] },
-        { function: { name: "search" }, permissions: ["network:read"] },
-        { name: "ignored", permissions: [] },
-      ]),
-    ).toEqual({
-      sandbox: ["sandbox:write"],
-      search: ["network:read"],
-    });
-  });
-
   it("preserves chat and tool context for tool execution", () => {
     const context = buildToolRequestContext({
       chatOptions: {

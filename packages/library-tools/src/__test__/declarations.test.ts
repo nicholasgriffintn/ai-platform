@@ -117,6 +117,7 @@ describe("resolveToolPermissions", () => {
       "read",
       "write",
     ]);
+    expect(resolveToolPermissions("any")).toEqual([]);
   });
 });
 
@@ -124,13 +125,14 @@ describe("resolveModeMaxSteps", () => {
   it("clamps a request to the mode ceiling", () => {
     expect(resolveModeMaxSteps("plan", 30)).toBe(24);
     expect(resolveModeMaxSteps("build", 10)).toBe(10);
+    expect(resolveModeMaxSteps("normal")).toBe(8);
   });
 });
 
 describe("PermissionChecker", () => {
   const checker = new PermissionChecker();
 
-  it("gates premium tools on the pro plan", () => {
+  it("gates premium and BYOK tools by plan and sign-in", () => {
     expect(
       checker.checkToolAccess({
         toolName: "create_note",
@@ -146,6 +148,19 @@ describe("PermissionChecker", () => {
         user: { id: 1, plan_id: "pro" },
       }),
     ).toMatchObject({ allowed: true });
+
+    expect(
+      checker.checkToolAccess({
+        toolName: "research",
+        toolType: "byok",
+        user: { id: 1, plan_id: "free" },
+      }),
+    ).toMatchObject({ allowed: true });
+
+    expect(checker.checkToolAccess({ toolName: "research", toolType: "byok" })).toMatchObject({
+      allowed: false,
+      reason: "This tool requires a signed-in user",
+    });
   });
 
   it("requires approval for a permission the caller adds beyond the mode's", () => {
@@ -179,16 +194,27 @@ describe("PermissionChecker", () => {
   });
 
   it("blocks a tool whose permission the mode denies", () => {
-    expect(
-      checker.checkToolAccess({
-        toolName: "run_command",
-        mode: "plan",
-        toolPermissions: ["sandbox"],
-      }),
-    ).toMatchObject({ allowed: false, mode: "plan" });
+    for (const [mode, toolName, permission] of [
+      ["plan", "run_command", "sandbox"],
+      ["plan", "call_api", "network"],
+      ["explore", "create_note", "write"],
+    ]) {
+      expect(
+        checker.checkToolAccess({ toolName, mode, toolPermissions: [permission] }),
+      ).toMatchObject({ allowed: false, mode });
+    }
   });
 
   it("allows questions but not side-effect approval requests in plan mode", () => {
+    for (const [toolName, permission] of [
+      ["web_search", "read"],
+      ["complete_goal", "reasoning"],
+    ]) {
+      expect(
+        checker.checkToolAccess({ toolName, mode: "plan", toolPermissions: [permission] }),
+      ).toMatchObject({ allowed: true, requiresApproval: false, mode: "plan" });
+    }
+
     expect(
       checker.checkToolAccess({
         toolName: "ask_user",
@@ -214,6 +240,14 @@ describe("PermissionChecker", () => {
         toolPermissions: ["sandbox"],
       }),
     ).toMatchObject({ allowed: true, requiresApproval: true });
+
+    expect(
+      checker.checkToolAccess({
+        toolName: "run_command",
+        mode: "normal",
+        toolPermissions: ["sandbox", "write"],
+      }),
+    ).toMatchObject({ allowed: true, requiresApproval: false });
   });
 
   it("uses the caller's approval policy without hidden mode restrictions when requested", () => {
@@ -243,8 +277,16 @@ describe("PermissionChecker", () => {
         toolName: "run_command",
         mode: "build",
         toolPermissions: ["sandbox"],
-        approvedTools: ["RUN_COMMAND"],
+        approvedTools: [" RUN_COMMAND "],
       }),
     ).toMatchObject({ approved: true });
+
+    expect(
+      checker.checkRequestToolAccess({
+        toolName: "run_command",
+        mode: "build",
+        toolPermissions: ["sandbox"],
+      }),
+    ).toMatchObject({ allowed: true, requiresApproval: true, approved: false });
   });
 });
