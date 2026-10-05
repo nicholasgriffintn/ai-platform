@@ -100,6 +100,7 @@
   ],
   "durable_objects": {
     "bindings": [
+      { "name": "SITES_RUNTIME", "class_name": "SiteRuntime" },
       { "name": "MACHINE_RUN_COORDINATOR", "class_name": "MachineRunCoordinator" },
       {
         "name": "SANDBOX_RUN_COORDINATOR",
@@ -129,7 +130,8 @@
       ]
     },
     { "tag": "v4-machine-runs", "new_sqlite_classes": ["MachineRunCoordinator"] },
-    { "tag": "v5-user-sync", "new_sqlite_classes": ["UserSyncCoordinator"] }
+    { "tag": "v5-user-sync", "new_sqlite_classes": ["UserSyncCoordinator"] },
+    { "tag": "v6-sites-runtime", "new_sqlite_classes": ["SiteRuntime"] }
   ],
   "analytics_engine_datasets": [
     {

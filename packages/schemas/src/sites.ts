@@ -2,7 +2,11 @@ import z from "zod/v4";
 
 import { decisionAnswerSchema, decisionQuestionSchema } from "./decisions.js";
 import { modelTierSchema } from "./model-lineup.js";
-import { siteDataBindingSchema, siteDataIdentifierSchema } from "./site-data.js";
+import {
+  siteCollectionSchema,
+  siteDataBindingSchema,
+  siteDataIdentifierSchema,
+} from "./site-data.js";
 
 export const SITES_CAPABILITY_ID = "featured-sites";
 export const SITE_OUTPUT_KIND = "site";
@@ -279,6 +283,10 @@ export const siteProjectSchema = z
     theme: siteThemeSchema,
     capabilities: z.array(siteCapabilitySchema),
     pages: z.record(z.string().regex(SITE_PAGE_ID_PATTERN), sitePageSchema),
+    collections: z
+      .record(siteDataIdentifierSchema, siteCollectionSchema)
+      .refine((value) => Object.keys(value).length <= 20)
+      .optional(),
     dataBindings: z
       .record(siteDataIdentifierSchema, siteDataBindingSchema)
       .refine((value) => Object.keys(value).length <= 40)

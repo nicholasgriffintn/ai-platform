@@ -2,7 +2,7 @@ import {
   normaliseSiteIntegrations,
   normaliseSiteSourceRows,
 } from "@ngriffin_uk/polychat-library-sites";
-import type { SiteProject } from "@ngriffin_uk/polychat-schemas";
+import type { SiteProject, SiteRecord } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
@@ -68,4 +68,21 @@ export async function validateSiteSourceBindings(
   for (const id of ids) {
     await readSiteSourceRows(context, userId, id, projectId);
   }
+}
+
+export async function readSiteSourceBindings(context: ServiceContext, site: SiteRecord) {
+  const bindings: Record<string, unknown> = {};
+
+  for (const [id, binding] of Object.entries(site.project.dataBindings ?? {})) {
+    if (binding.kind === "source") {
+      bindings[id] = await readSiteSourceRows(
+        context,
+        context.requireUser().id,
+        binding.sourceId,
+        site.projectId,
+      );
+    }
+  }
+
+  return bindings;
 }
