@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { assistantRecipes } from "~/modules/apps/application/recipes/catalog";
+import { getAssistantRecipes } from "~/modules/apps/application/recipes/catalog";
 import { validateCapabilityReference } from "~/modules/capabilities/application/reference";
 
 function createTeammateContext(overrides: {
@@ -74,7 +74,7 @@ describe("project capability references", () => {
       validateCapabilityReference("app", "featured-article-processor"),
     ).resolves.toBeUndefined();
     await expect(
-      validateCapabilityReference("recipe", assistantRecipes[0].id),
+      validateCapabilityReference("recipe", getAssistantRecipes()[0].id),
     ).resolves.toBeUndefined();
   });
 

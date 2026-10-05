@@ -12,7 +12,7 @@ import { developerRecipes } from "./catalog/developer";
 import { healthConnectorRecipes } from "./catalog/health-connectors";
 import { mailCalendarRecipes } from "./catalog/mail-calendar";
 import { personalUtilityRecipes } from "./catalog/personal-utilities";
-import { platformKnowledgeRecipes } from "./catalog/platform-knowledge";
+import { getPlatformKnowledgeRecipes } from "./catalog/platform-knowledge";
 import type { CatalogRecipe } from "./catalog/shared";
 import { wellbeingRecipes } from "./catalog/wellbeing";
 import { workspaceRecipes } from "./catalog/workspace";
@@ -29,49 +29,63 @@ export {
   WEB_SEARCH_TOOL,
 } from "./catalog/shared";
 
-const catalogRecipes: CatalogRecipe[] = [
-  ...platformKnowledgeRecipes,
-  ...mailCalendarRecipes,
-  ...coreIntegrationRecipes,
-  ...configuredComposioRecipes,
-  ...composioWorkflowRecipes,
-  ...developerRecipes,
-  ...healthConnectorRecipes,
-  ...workspaceRecipes,
-  ...wellbeingRecipes,
-  ...personalUtilityRecipes,
-];
+let assistantRecipes: AssistantRecipe[] | undefined;
 
-export const assistantRecipes: AssistantRecipe[] = catalogRecipes.map((recipe) => ({
-  ...recipe,
-  triggers:
-    recipe.integrations.some((integration) => integration.requiresConnection) &&
-    !recipe.triggers.some((trigger) => trigger.type === "event")
-      ? [
-          ...recipe.triggers,
-          {
-            type: "event" as const,
-            label: "Connected app event",
-            description: "Run when a selected connected app emits a configured event.",
-          },
-        ]
-      : recipe.triggers,
-  configurationFields: (recipe.configurationFields ?? []).map((field) => ({
-    required: false,
-    ...field,
-  })),
-}));
-
-export function resolveRecipeId(recipeId: string): string {
-  if (assistantRecipes.some((recipe) => recipe.id === recipeId)) {
-    return recipeId;
+export function getAssistantRecipes(): AssistantRecipe[] {
+  if (assistantRecipes) {
+    return assistantRecipes;
   }
 
+  const catalogRecipes: CatalogRecipe[] = [
+    ...getPlatformKnowledgeRecipes(),
+    ...mailCalendarRecipes,
+    ...coreIntegrationRecipes,
+    ...configuredComposioRecipes,
+    ...composioWorkflowRecipes,
+    ...developerRecipes,
+    ...healthConnectorRecipes,
+    ...workspaceRecipes,
+    ...wellbeingRecipes,
+    ...personalUtilityRecipes,
+  ];
+
+  const recipes: AssistantRecipe[] = catalogRecipes.map((recipe) => ({
+    ...recipe,
+    triggers:
+      recipe.integrations.some((integration) => integration.requiresConnection) &&
+      !recipe.triggers.some((trigger) => trigger.type === "event")
+        ? [
+            ...recipe.triggers,
+            {
+              type: "event" as const,
+              label: "Connected app event",
+              description: "Run when a selected connected app emits a configured event.",
+            },
+          ]
+        : recipe.triggers,
+    configurationFields: (recipe.configurationFields ?? []).map((field) => ({
+      required: false,
+      ...field,
+    })),
+  }));
+
+  const issues = getRecipeCatalogValidationIssues(recipes);
+
+  if (issues.length > 0) {
+    throw new Error(`Invalid recipe catalog:\n${issues.join("\n")}`);
+  }
+
+  assistantRecipes = recipes;
+
+  return assistantRecipes;
+}
+
+export function resolveRecipeId(recipeId: string): string {
   return recipeId;
 }
 
 export function getRecipeById(id: string): AssistantRecipe | undefined {
-  return assistantRecipes.find((recipe) => recipe.id === resolveRecipeId(id));
+  return getAssistantRecipes().find((recipe) => recipe.id === resolveRecipeId(id));
 }
 
 export function getRecipeIdAliases(recipeId: string): string[] {
@@ -79,7 +93,7 @@ export function getRecipeIdAliases(recipeId: string): string[] {
 }
 
 export function getRecipeCatalogValidationIssues(
-  recipes: readonly AssistantRecipe[] = assistantRecipes,
+  recipes: readonly AssistantRecipe[] = getAssistantRecipes(),
 ): string[] {
   const issues: string[] = [];
   const exposedProviders = new Set<string>();
@@ -117,14 +131,10 @@ export function getRecipeCatalogValidationIssues(
   return issues;
 }
 
-const catalogIssues = getRecipeCatalogValidationIssues();
-
-if (catalogIssues.length > 0) {
-  throw new Error(`Invalid recipe catalog:\n${catalogIssues.join("\n")}`);
-}
-
 export const recipeFilters: RecipeKind[] = ["automate", "integrate"];
 
-export const recipeCategories: RecipeCategory[] = Array.from(
-  new Set(assistantRecipes.map((recipe) => recipe.category)),
-).sort((a, b) => a.localeCompare(b));
+export function getRecipeCategories(): RecipeCategory[] {
+  return Array.from(new Set(getAssistantRecipes().map((recipe) => recipe.category))).sort((a, b) =>
+    a.localeCompare(b),
+  );
+}

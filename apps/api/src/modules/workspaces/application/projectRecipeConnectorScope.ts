@@ -2,7 +2,7 @@ import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { parseProjectConnectorGrant } from "~/modules/apps/application/connectors/project-grants";
-import { assistantRecipes, resolveRecipeId } from "~/modules/apps/application/recipes/catalog";
+import { getAssistantRecipes, resolveRecipeId } from "~/modules/apps/application/recipes/catalog";
 import {
   buildAllowedConnectorOperations,
   buildAllowedConnectorProviders,
@@ -63,7 +63,7 @@ export function resolveProjectRecipeConnectorScope(
     }
   }
 
-  for (const recipe of assistantRecipes) {
+  for (const recipe of getAssistantRecipes()) {
     if (!recipeIds.has(recipe.id)) {
       continue;
     }

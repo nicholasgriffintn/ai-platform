@@ -9,7 +9,7 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { assistantRecipes } from "~/modules/apps/application/recipes/catalog";
+import { getAssistantRecipes } from "~/modules/apps/application/recipes/catalog";
 import { sendEmail } from "~/modules/email/application";
 import type {
   ProjectCapabilityRow,
@@ -435,7 +435,7 @@ describe("project capability ownership", () => {
     id: "capability-1",
     project_id: PROJECT_ID,
     kind: "recipe",
-    capability_id: assistantRecipes[0].id,
+    capability_id: getAssistantRecipes()[0].id,
     configuration: {},
     excluded: 0,
     created_by: 2,
@@ -450,7 +450,7 @@ describe("project capability ownership", () => {
 
     await addProjectCapability(context, PROJECT_ID, {
       kind: "recipe",
-      capabilityId: assistantRecipes[0].id,
+      capabilityId: getAssistantRecipes()[0].id,
       configuration: {},
     });
 
@@ -458,7 +458,7 @@ describe("project capability ownership", () => {
       expect.objectContaining({
         projectId: PROJECT_ID,
         kind: "recipe",
-        capabilityId: assistantRecipes[0].id,
+        capabilityId: getAssistantRecipes()[0].id,
         configuration: {},
         createdBy: 3,
       }),

@@ -23,9 +23,9 @@ import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import { listRecipeConnectors } from "../connectors";
 import { createRecipeCapabilityDescriptor } from "./capabilities";
 import {
-  assistantRecipes,
+  getAssistantRecipes,
   getRecipeIdAliases,
-  recipeCategories,
+  getRecipeCategories,
   recipeFilters,
   resolveRecipeId,
   getRecipeById,
@@ -60,7 +60,7 @@ export const RECIPE_INSTALLATION_ITEM_TYPE = "recipe_installation";
 export function listRecipeCatalogueSummaries(): RecipeCatalogueSummary[] {
   const summaries: RecipeCatalogueSummary[] = [];
 
-  for (const recipe of assistantRecipes) {
+  for (const recipe of getAssistantRecipes()) {
     const integrations: RecipeCatalogueSummary["integrations"] = [];
 
     for (const integration of recipe.integrations) {
@@ -678,8 +678,8 @@ export async function listAssistantRecipes(options: RecipeListOptions = {}) {
   const connectionContext = await getRecipeConnectionContext(options);
 
   return {
-    recipes: assistantRecipes.map((recipe) => enrichRecipe(recipe, connectionContext)),
-    categories: recipeCategories,
+    recipes: getAssistantRecipes().map((recipe) => enrichRecipe(recipe, connectionContext)),
+    categories: getRecipeCategories(),
     filters: recipeFilters,
   };
 }

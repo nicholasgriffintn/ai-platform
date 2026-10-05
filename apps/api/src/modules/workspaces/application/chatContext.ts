@@ -9,7 +9,7 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
-  assistantRecipes,
+  getRecipeById,
   RECIPE_LOOKUP_TOOL,
   RECIPE_SETUP_TOOL,
 } from "~/modules/apps/application/recipes/catalog";
@@ -92,7 +92,7 @@ export async function resolveProjectChatContext(
     );
 
   if (hasRecipe) {
-    const recipe = assistantRecipes.find((candidate) => candidate.id === recipeId);
+    const recipe = getRecipeById(recipeId);
     const recipeTools = new Set([
       ...(recipe?.enabledTools ?? []),
       RECIPE_LOOKUP_TOOL,
