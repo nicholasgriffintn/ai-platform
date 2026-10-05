@@ -10,6 +10,7 @@ import {
   request_approval as request_approvalDescriptor,
   ask_user as ask_userDescriptor,
 } from "./definitions/human_in_the_loop";
+import { findQuestionAnsweredByConversation } from "./question-answered-judgement";
 import { findAnsweredQuestion } from "./userQuestionHistory";
 import { normaliseAskUserInput } from "./userQuestionInput";
 
@@ -126,6 +127,22 @@ export const ask_user: ApiToolDefinition = {
             409,
           );
         }
+      }
+
+      const settled = await findQuestionAnsweredByConversation({
+        env: req.env,
+        user: req.user,
+        completionId: completion_id,
+        history,
+        questions: parsed.data,
+      });
+
+      if (settled) {
+        throw new AssistantError(
+          `The conversation already answers "${settled.question.prompt}". Re-read what the user has already said and continue with that answer instead of asking again.`,
+          ErrorType.CONFLICT_ERROR,
+          409,
+        );
       }
     }
 

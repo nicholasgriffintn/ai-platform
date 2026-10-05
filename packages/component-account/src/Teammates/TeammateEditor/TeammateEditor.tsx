@@ -30,6 +30,7 @@ export function TeammateEditor({
   onSubmit,
   onCancel,
   onDelete,
+  mcpConnections,
 }: TeammateEditorProps) {
   const [value, setValue] = useState(() => createTeammateEditorValue(teammate, models));
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -84,7 +85,12 @@ export function TeammateEditor({
         disabled={disabled}
         onChange={change}
       />
-      <ConnectionsSection value={value} disabled={disabled} onChange={change} />
+      <ConnectionsSection
+        value={value}
+        disabled={disabled}
+        onChange={change}
+        connections={mcpConnections}
+      />
       <AccessSection
         ownerScopeType={teammate?.owner_scope_type ?? "user"}
         ownerLabel={ownerLabel}

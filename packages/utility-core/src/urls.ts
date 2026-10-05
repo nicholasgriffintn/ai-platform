@@ -58,6 +58,20 @@ export function isHttpUrl(value: string): boolean {
   return /^https?:\/\//iu.test(value);
 }
 
+export function resolveHttpUrl(value: unknown, base?: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  try {
+    const url = new URL(value, typeof base === "string" ? base : undefined);
+
+    return isHttpUrl(url.href) && !url.username && !url.password ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
 export function encodePathSegments(path: string): string {
   return path.split("/").map(encodeURIComponent).join("/");
 }

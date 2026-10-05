@@ -13,9 +13,9 @@ import { resolveSpendRequest } from "~/modules/model-governance/application/spen
 import { requireModelAction } from "~/modules/model-registry/application/access";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 
-import { databaseTestEnvironment } from "../../../../../test/environment";
-import { testModelDeployment } from "../../../../../test/model-platform";
-import { initialiseModelPlatformDatabase } from "../../../../../test/model-platform-database";
+import { testModelDeployment } from "../../../../../test/fixtures/model-platform";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
+import { initialiseModelPlatformDatabase } from "../../../../../test/helpers/model-platform-database";
 import { changeDeploymentState, scaleDeployment } from "../deployments";
 import { runHostAction } from "../invocation";
 

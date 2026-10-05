@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
-import { databaseTestEnvironment } from "./environment";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 
 const runtime = new Miniflare({
   modules: true,

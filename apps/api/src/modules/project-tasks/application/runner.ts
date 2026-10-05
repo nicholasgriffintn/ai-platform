@@ -51,7 +51,7 @@ import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { recoverPendingProjectTaskInteraction } from "./interaction-recovery";
 import { getPendingProjectTaskQuestions } from "./questions";
 import { assertReviewDispatchAuthority } from "./review-authority";
-import { retainReviewOutput } from "./review-output";
+import { retainTaskReviewCompletion } from "./review-output";
 import { buildProjectTaskContext } from "./source-context";
 import { projectTaskStatusForGoal } from "./transitions";
 
@@ -899,27 +899,16 @@ export async function runProjectTaskDispatch(params: {
   if (completion && claimed.executionProfile === "diff_review") {
     try {
       await params.executionLease.assertOwned();
-      const review = await context.repositories.projectTaskIntegrations.getReviewForTask(
-        taskId,
-        claimed.projectId,
-      );
+      const retainedCompletion = await retainTaskReviewCompletion(context, claimed, completion);
 
-      if (review) {
-        const outputId = await retainReviewOutput(context, review, completion);
-
+      if (retainedCompletion) {
         await updateOwnedProjectTask({
           context,
           taskId,
           dispatchTaskId: params.dispatchTaskId,
           executionLease: params.executionLease,
           updates: {
-            completions: [
-              ...claimed.completions,
-              {
-                ...completion,
-                outputIds: [...new Set([...(completion.outputIds ?? []), outputId])],
-              },
-            ],
+            completions: [...claimed.completions, retainedCompletion],
           },
         });
       }

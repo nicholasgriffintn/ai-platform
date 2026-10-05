@@ -3,10 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const insertEmbedding = vi.hoisted(() => vi.fn());
 const deleteEmbedding = vi.hoisted(() => vi.fn());
 const queryEmbeddings = vi.hoisted(() => vi.fn());
+const searchProjectKnowledge = vi.hoisted(() => vi.fn());
 
 vi.mock("~/modules/apps/application/embeddings/delete", () => ({ deleteEmbedding }));
 vi.mock("~/modules/apps/application/embeddings/insert", () => ({ insertEmbedding }));
 vi.mock("~/modules/apps/application/embeddings/query", () => ({ queryEmbeddings }));
+vi.mock("~/modules/sources/application/knowledge-search", () => ({ searchProjectKnowledge }));
 
 import type { ContentExtractResult } from "~/modules/apps/application/ports/content-extract";
 import { maybeVectorizeExtractedContent } from "~/modules/apps/infrastructure/retrieval/content-extract/vectorize";
@@ -28,11 +30,15 @@ describe("unsupported project embedding paths", () => {
     vi.clearAllMocks();
   });
 
-  it("rejects project document search before querying the personal index", async () => {
-    await expect(
-      search_documents.execute({ query: "project roadmap" }, { request: projectRequest } as any),
-    ).rejects.toMatchObject({ type: "CONFIGURATION_ERROR", statusCode: 501 });
-
+  it("routes project document search to project knowledge without querying the personal index", async () => {
+    searchProjectKnowledge.mockResolvedValue({ status: "success", data: [] });
+    await search_documents.execute({ query: "project roadmap" }, {
+      request: projectRequest,
+    } as any);
+    expect(searchProjectKnowledge).toHaveBeenCalledWith(projectRequest.context, {
+      query: "project roadmap",
+      projectId: "project-1",
+    });
     expect(queryEmbeddings).not.toHaveBeenCalled();
   });
 

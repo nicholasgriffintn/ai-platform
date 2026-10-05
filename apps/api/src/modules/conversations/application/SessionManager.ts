@@ -1,8 +1,10 @@
 import {
   buildCompactionPlan,
   buildFallbackSummary,
+  pruneToolHistory,
   selectMessagesForSummary,
   type CompactionMode,
+  type PruneResult,
 } from "@ngriffin_uk/polychat-ai-agents";
 import { buildConversationSummarisePrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
@@ -51,6 +53,10 @@ export interface CompactSessionResult {
   compactionMessage?: Message;
 }
 
+interface PrunedSession extends PruneResult<Message> {
+  applied: boolean;
+}
+
 interface SessionSummaryResult {
   summary: string;
   strategy: CompactionSummaryStrategy;
@@ -68,14 +74,32 @@ export class SessionManager {
   }
 
   public async compact(input: CompactSessionInput): Promise<CompactSessionResult> {
-    const plan = buildCompactionPlan(input.messages, {
+    const windowConfig = {
       mode: input.compaction,
       contextWindow: input.modelConfig?.contextWindow,
-    });
+    };
+    const initialPlan = buildCompactionPlan(input.messages, windowConfig);
 
-    if (!plan.shouldCompact) {
+    if (!initialPlan.shouldCompact) {
       return {
         messages: input.messages,
+        compacted: false,
+      };
+    }
+
+    const pruned = await this.pruneToolHistory(input);
+    const plan = pruned.applied ? buildCompactionPlan(pruned.messages, windowConfig) : initialPlan;
+
+    if (!plan.shouldCompact) {
+      logger.info("Pruning spent tool output removed the need to summarise", {
+        completion_id: input.completionId,
+        tokensBefore: pruned.tokensBefore,
+        tokensAfter: pruned.tokensAfter,
+        prunedMessages: pruned.ledger.length,
+      });
+
+      return {
+        messages: pruned.messages,
         compacted: false,
       };
     }
@@ -120,6 +144,36 @@ export class SessionManager {
       snapshotMessage,
       compactionMessage,
     };
+  }
+
+  private async pruneToolHistory(input: CompactSessionInput): Promise<PrunedSession> {
+    try {
+      const result = await pruneToolHistory({
+        messages: input.messages,
+        decide: ai,
+        scope: {
+          env: this.env,
+          user: this.user,
+          completion_id: input.completionId,
+        },
+      });
+
+      return { ...result, applied: result.ledger.length > 0 };
+    } catch (error) {
+      logger.warn("Failed to prune spent tool output before compaction", {
+        error,
+        completion_id: input.completionId,
+      });
+
+      return {
+        messages: input.messages,
+        ledger: [],
+        judgedCount: 0,
+        tokensBefore: 0,
+        tokensAfter: 0,
+        applied: false,
+      };
+    }
   }
 
   public async summarise(messages: Message[], mode?: ChatMode): Promise<string> {

@@ -49,7 +49,9 @@ import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infras
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { SavedMessageRepository } from "~/modules/saved-messages/infrastructure/SavedMessageRepository";
 import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
+import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
 import { SharedTeammateRepository } from "~/modules/teammates/infrastructure/SharedTeammateRepository";
@@ -70,6 +72,7 @@ import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/Workspa
 import type { IEnv } from "~/types";
 
 export {
+  KnowledgeSyncRepository,
   TeammateRepository,
   TeammateContextRepository,
   TeammateComputerRepository,
@@ -383,6 +386,14 @@ export class RepositoryManager {
 
   public get sources(): SourceRepository {
     return this.resolve("sources", (env) => new SourceRepository(env));
+  }
+
+  public get sourceSearch(): SourceSearchRepository {
+    return this.resolve("sourceSearch", (env) => new SourceSearchRepository(env));
+  }
+
+  public get knowledgeSyncs(): KnowledgeSyncRepository {
+    return this.resolve("knowledgeSyncs", (env) => new KnowledgeSyncRepository(env));
   }
 
   public get tasks(): TaskRepository {

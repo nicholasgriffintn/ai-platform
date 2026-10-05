@@ -98,6 +98,10 @@ export function resolveModelToolConfigurations(
         require_approval: "always",
         server_label: server.label,
         server_url: new URL(server.url).toString(),
+        ...(server.credentialConnectionId
+          ? { credential_connection_id: server.credentialConnectionId }
+          : {}),
+        ...(server.allowedTools ? { allowed_tools: server.allowedTools } : {}),
       }));
     }
   }

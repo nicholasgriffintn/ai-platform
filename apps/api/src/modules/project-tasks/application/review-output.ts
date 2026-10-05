@@ -1,4 +1,8 @@
-import type { ProjectTaskCompletion, PullRequestReview } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ProjectTask,
+  ProjectTaskCompletion,
+  PullRequestReview,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -7,6 +11,28 @@ import {
   addOutputProvenanceSources,
   createExecutionOutputProvenance,
 } from "~/modules/outputs/application/provenance";
+
+export async function retainTaskReviewCompletion(
+  context: ServiceContext,
+  task: Readonly<ProjectTask>,
+  completion: Readonly<ProjectTaskCompletion>,
+): Promise<ProjectTaskCompletion | null> {
+  const review = await context.repositories.projectTaskIntegrations.getReviewForTask(
+    task.id,
+    task.projectId,
+  );
+
+  if (!review) {
+    return null;
+  }
+
+  const outputId = await retainReviewOutput(context, review, completion);
+
+  return {
+    ...completion,
+    outputIds: [...new Set([...(completion.outputIds ?? []), outputId])],
+  };
+}
 
 export async function retainReviewOutput(
   context: ServiceContext,

@@ -7,7 +7,7 @@ Use [`polychat-setup`](.agents/skills/polychat-setup/SKILL.md) as setup/ops refe
 
 - Keep routes and page files orchestration-only. Move parsing, state machines, timers, retries, and durable logic into services, hooks, or shared libs.
 - Reuse shared helpers from `packages/utility-core` and `packages/utility-server`. Keep domain logic in its owning module; do not introduce API `lib` or `utils` catch-all directories.
-- Keep shared test helpers and fixtures outside `src`, in the app or package’s existing test directory.
+- Place API tests beside their owning code, following that module's existing layout. Keep only shared helpers in `apps/api/test/helpers` and fixtures in `apps/api/test/fixtures`; do not put test or spec files under `apps/api/test`.
 - Keep wire contracts in `packages/schemas` and validate against all consumers.
 - Keep API/package boundaries in place. Avoid coupling `component-*` packages to routers, stores, or API clients except `component-shell`.
 - Keep authority checks at I/O boundaries. Verify personal vs project scope, reversibility, and owner permissions on every boundary.

@@ -1,10 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
-import { createRequire } from "node:module";
 import path from "node:path";
 
-const { unstable_splitSqlQuery } = createRequire(new URL("../../package.json", import.meta.url))(
-  "wrangler",
-);
+import { splitMigrationStatements } from "@ngriffin_uk/polychat-utility-server/sql";
 
 export async function applyMigrations(database, migrationsDirectory) {
   const migrations = readdirSync(migrationsDirectory)
@@ -12,7 +9,7 @@ export async function applyMigrations(database, migrationsDirectory) {
     .sort();
 
   for (const migration of migrations) {
-    const statements = unstable_splitSqlQuery(
+    const statements = splitMigrationStatements(
       readFileSync(path.join(migrationsDirectory, migration), "utf8"),
     );
 

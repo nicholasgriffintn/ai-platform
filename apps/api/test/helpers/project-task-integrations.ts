@@ -6,7 +6,7 @@ import { Miniflare } from "miniflare";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import type { IUser } from "~/types";
 
-import { databaseTestEnvironment } from "../environment";
+import { databaseTestEnvironment } from "./environment";
 import { applyMigrations } from "./migrations.mjs";
 
 export const integrationTestUser: IUser = {

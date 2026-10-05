@@ -22,6 +22,7 @@ import {
   resolveRerankingModel,
 } from "~/modules/models/application/resolve";
 import { createRealtimeProxyGrant } from "~/modules/realtime/application/proxy-grant";
+import { resolveMcpCredential } from "~/modules/tools/application/mcp-connections";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IUser } from "~/types";
 
@@ -51,6 +52,13 @@ function storageForContext(context: ProviderRequestContext): StorageService | nu
 }
 
 export const providerHost: ProviderHost = {
+  mcp: {
+    resolveCredential: (context, input) =>
+      resolveMcpCredential(
+        resolveServiceContext({ env: asEnv(context.env ?? {}), user: asUser(context.user) }),
+        input,
+      ),
+  },
   models: {
     getModelConfig: (model, env, provider, userId) =>
       getModelConfig(model, env ? asEnv(env) : undefined, provider, userId),

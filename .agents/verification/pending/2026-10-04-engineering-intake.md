@@ -2,7 +2,7 @@
 
 - **Change:** bring GitHub or Linear issues into Work tasks and review GitHub PR revisions through the existing task runner.
 - **Surfaces:** Work Tasks on web and desktop; project APIs and GitHub webhook.
-- **Prerequisites:** apply migration `0058_project_task_integrations`; configure the task queue and model access. Connect a GitHub App with contents/issues/pull-request read permissions and pull-request write permission for publication. Configure a webhook secret and pull-request events for automatic intake. Connect Linear through Composio for Linear imports.
+- **Prerequisites:** apply migration `0059_project_task_integrations`; configure the task queue and model access. Connect a GitHub App with contents/issues/pull-request read permissions and pull-request write permission for publication. Configure a webhook secret and pull-request events for automatic intake. Connect Linear through Composio for Linear imports.
 - **Risk if wrong:** intake fails, pending reviews spend budget after policy changes, or publication targets the wrong revision.
 - **Commits:** see the engineering integrations PR.
 

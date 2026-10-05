@@ -52,6 +52,16 @@
       "types": "./dist/embeddings.d.ts",
       "import": "./dist/embeddings.js"
     },
+    "./search-ranking": {
+      "polychat-source": "./src/search-ranking.ts",
+      "types": "./dist/search-ranking.d.ts",
+      "import": "./dist/search-ranking.js"
+    },
+    "./html-text": {
+      "polychat-source": "./src/html-text.ts",
+      "types": "./dist/html-text.d.ts",
+      "import": "./dist/html-text.js"
+    },
     "./enabled-tools": {
       "polychat-source": "./src/enabled-tools.ts",
       "types": "./dist/enabled-tools.d.ts",

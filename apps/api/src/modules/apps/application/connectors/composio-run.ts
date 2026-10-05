@@ -22,6 +22,7 @@ import type { ComposioConnectorSessionRecord } from "~/modules/apps/infrastructu
 import {
   getSelectedRecipeConnectorAccountId,
   selectActiveRecipeConnectorAccount,
+  ensureRecipeConnectorAccountReference,
 } from "./accounts";
 import {
   assertComposioFileBridgeAvailable,
@@ -159,7 +160,14 @@ export async function discoverComposioRunTools(params: {
       allowedOperationIds: params.allowedOperationIds,
     });
 
-    return { ...discovery, sessionId: session.id };
+    const connection = await ensureRecipeConnectorAccountReference({
+      context: params.context,
+      userId: params.userId,
+      providerId: params.provider.id,
+      account: params.connectedAccount,
+    });
+
+    return { ...discovery, sessionId: session.id, connectionReferenceId: connection.id };
   } catch (error) {
     await deleteUnpersistedSession(params.context, remoteSessionId);
     throw error;

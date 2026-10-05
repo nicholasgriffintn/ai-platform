@@ -1,6 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
+  "id": "12656603-aa37-49ac-91fa-f47d0d2b2400",
+  "prevId": "a0045ea7-d3dd-4384-925b-2dca1db14b73",
   "tables": {
     "activity_record": {
       "name": "activity_record",
@@ -8787,314 +8789,6 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "project_review_policy": {
-      "name": "project_review_policy",
-      "columns": {
-        "project_id": {
-          "name": "project_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "owner_user_id": {
-          "name": "owner_user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "connection_id": {
-          "name": "connection_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "repository": {
-          "name": "repository",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "enabled": {
-          "name": "enabled",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "token_budget": {
-          "name": "token_budget",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "revision": {
-          "name": "revision",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "workspace_id": {
-          "name": "workspace_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "provider": {
-          "name": "provider",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "account_id": {
-          "name": "account_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "project_review_policy_repository": {
-          "name": "project_review_policy_repository",
-          "columns": ["provider", "account_id", "repository", "enabled"],
-          "isUnique": false
-        },
-        "project_review_policy_identity": {
-          "name": "project_review_policy_identity",
-          "columns": ["workspace_id", "project_id", "provider", "connection_id", "repository"],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {
-        "project_review_policy_project_id_project_id_fk": {
-          "name": "project_review_policy_project_id_project_id_fk",
-          "tableFrom": "project_review_policy",
-          "tableTo": "project",
-          "columnsFrom": ["project_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "project_review_policy_owner_user_id_user_id_fk": {
-          "name": "project_review_policy_owner_user_id_user_id_fk",
-          "tableFrom": "project_review_policy",
-          "tableTo": "user",
-          "columnsFrom": ["owner_user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "project_review_policy_connection_id_provider_connection_id_fk": {
-          "name": "project_review_policy_connection_id_provider_connection_id_fk",
-          "tableFrom": "project_review_policy",
-          "tableTo": "provider_connection",
-          "columnsFrom": ["connection_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "project_review_policy_workspace_id_workspace_id_fk": {
-          "name": "project_review_policy_workspace_id_workspace_id_fk",
-          "tableFrom": "project_review_policy",
-          "tableTo": "workspace",
-          "columnsFrom": ["workspace_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "project_task_review": {
-      "name": "project_task_review",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "task_id": {
-          "name": "task_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "source_id": {
-          "name": "source_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "target": {
-          "name": "target",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "policy_revision": {
-          "name": "policy_revision",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "publication_status": {
-          "name": "publication_status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'unpublished'"
-        },
-        "publication_body": {
-          "name": "publication_body",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "publication_completion_id": {
-          "name": "publication_completion_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "published_url": {
-          "name": "published_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        },
-        "workspace_id": {
-          "name": "workspace_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "owner_user_id": {
-          "name": "owner_user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "policy_id": {
-          "name": "policy_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "project_task_review_task_id_unique": {
-          "name": "project_task_review_task_id_unique",
-          "columns": ["task_id"],
-          "isUnique": true
-        },
-        "project_task_review_project": {
-          "name": "project_task_review_project",
-          "columns": ["project_id", "created_at"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "project_task_review_project_id_project_id_fk": {
-          "name": "project_task_review_project_id_project_id_fk",
-          "tableFrom": "project_task_review",
-          "tableTo": "project",
-          "columnsFrom": ["project_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "project_task_review_task_id_project_task_id_fk": {
-          "name": "project_task_review_task_id_project_task_id_fk",
-          "tableFrom": "project_task_review",
-          "tableTo": "project_task",
-          "columnsFrom": ["task_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "project_task_review_source_id_source_id_fk": {
-          "name": "project_task_review_source_id_source_id_fk",
-          "tableFrom": "project_task_review",
-          "tableTo": "source",
-          "columnsFrom": ["source_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "project_task_review_workspace_id_workspace_id_fk": {
-          "name": "project_task_review_workspace_id_workspace_id_fk",
-          "tableFrom": "project_task_review",
-          "tableTo": "workspace",
-          "columnsFrom": ["workspace_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "project_task_review_owner_user_id_user_id_fk": {
-          "name": "project_task_review_owner_user_id_user_id_fk",
-          "tableFrom": "project_task_review",
-          "tableTo": "user",
-          "columnsFrom": ["owner_user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {
-        "project_task_review_publication_status": {
-          "name": "project_task_review_publication_status",
-          "value": "\"project_task_review\".\"publication_status\" IN ('unpublished', 'publishing', 'published', 'unknown')"
-        }
-      }
-    },
     "project_task": {
       "name": "project_task",
       "columns": {
@@ -9124,13 +8818,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "execution_profile": {
-          "name": "execution_profile",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "acceptance_criteria": {
@@ -9455,158 +9142,6 @@
           "columnsFrom": ["run_id"],
           "columnsTo": ["id"],
           "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "project_task_external_import": {
-      "name": "project_task_external_import",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "task_id": {
-          "name": "task_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "source_id": {
-          "name": "source_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "provider": {
-          "name": "provider",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "account_id": {
-          "name": "account_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "external_id": {
-          "name": "external_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "revision": {
-          "name": "revision",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        },
-        "workspace_id": {
-          "name": "workspace_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "owner_user_id": {
-          "name": "owner_user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "project_task_external_import_task_id_unique": {
-          "name": "project_task_external_import_task_id_unique",
-          "columns": ["task_id"],
-          "isUnique": true
-        },
-        "project_task_external_import_identity": {
-          "name": "project_task_external_import_identity",
-          "columns": [
-            "workspace_id",
-            "project_id",
-            "owner_user_id",
-            "provider",
-            "account_id",
-            "external_id"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {
-        "project_task_external_import_project_id_project_id_fk": {
-          "name": "project_task_external_import_project_id_project_id_fk",
-          "tableFrom": "project_task_external_import",
-          "tableTo": "project",
-          "columnsFrom": ["project_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "project_task_external_import_task_id_project_task_id_fk": {
-          "name": "project_task_external_import_task_id_project_task_id_fk",
-          "tableFrom": "project_task_external_import",
-          "tableTo": "project_task",
-          "columnsFrom": ["task_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "project_task_external_import_source_id_source_id_fk": {
-          "name": "project_task_external_import_source_id_source_id_fk",
-          "tableFrom": "project_task_external_import",
-          "tableTo": "source",
-          "columnsFrom": ["source_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "project_task_external_import_workspace_id_workspace_id_fk": {
-          "name": "project_task_external_import_workspace_id_workspace_id_fk",
-          "tableFrom": "project_task_external_import",
-          "tableTo": "workspace",
-          "columnsFrom": ["workspace_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "project_task_external_import_owner_user_id_user_id_fk": {
-          "name": "project_task_external_import_owner_user_id_user_id_fk",
-          "tableFrom": "project_task_external_import",
-          "tableTo": "user",
-          "columnsFrom": ["owner_user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -10403,6 +9938,14 @@
           "notNull": false,
           "autoincrement": false
         },
+        "search_revision": {
+          "name": "search_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
         "metadata": {
           "name": "metadata",
           "type": "text",
@@ -10695,6 +10238,347 @@
       },
       "uniqueConstraints": {},
       "checkConstraints": {}
+    },
+    "source_knowledge_sync": {
+      "name": "source_knowledge_sync",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "recipe_id": {
+          "name": "recipe_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "integration_id": {
+          "name": "integration_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resources": {
+          "name": "resources",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'active'"
+        },
+        "interval_minutes": {
+          "name": "interval_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 60
+        },
+        "cursor": {
+          "name": "cursor",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "generation": {
+          "name": "generation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "next_sync_at": {
+          "name": "next_sync_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "last_successful_at": {
+          "name": "last_successful_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "lease_token": {
+          "name": "lease_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "lease_expires_at": {
+          "name": "lease_expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "source_knowledge_sync_due_idx": {
+          "name": "source_knowledge_sync_due_idx",
+          "columns": ["status", "next_sync_at"],
+          "isUnique": false
+        },
+        "source_knowledge_sync_project_idx": {
+          "name": "source_knowledge_sync_project_idx",
+          "columns": ["project_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "source_knowledge_sync_user_id_user_id_fk": {
+          "name": "source_knowledge_sync_user_id_user_id_fk",
+          "tableFrom": "source_knowledge_sync",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "source_knowledge_sync_project_id_project_id_fk": {
+          "name": "source_knowledge_sync_project_id_project_id_fk",
+          "tableFrom": "source_knowledge_sync",
+          "tableTo": "project",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "source_knowledge_sync_connection_id_provider_connection_id_fk": {
+          "name": "source_knowledge_sync_connection_id_provider_connection_id_fk",
+          "tableFrom": "source_knowledge_sync",
+          "tableTo": "provider_connection",
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "source_search_chunk": {
+      "name": "source_search_chunk",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chunk_index": {
+          "name": "chunk_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "source_search_chunk_document_idx": {
+          "name": "source_search_chunk_document_idx",
+          "columns": ["document_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "source_search_chunk_document_id_source_search_document_id_fk": {
+          "name": "source_search_chunk_document_id_source_search_document_id_fk",
+          "tableFrom": "source_search_chunk",
+          "tableTo": "source_search_document",
+          "columnsFrom": ["document_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "source_search_document": {
+      "name": "source_search_document",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_revision": {
+          "name": "source_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'lexical'"
+        },
+        "target": {
+          "name": "target",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lease_token": {
+          "name": "lease_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "lease_expires_at": {
+          "name": "lease_expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "source_search_document_revision_idx": {
+          "name": "source_search_document_revision_idx",
+          "columns": ["source_id", "source_revision"],
+          "isUnique": true
+        },
+        "source_search_document_scope_idx": {
+          "name": "source_search_document_scope_idx",
+          "columns": ["project_id", "status"],
+          "isUnique": false
+        },
+        "source_search_document_status_idx": {
+          "name": "source_search_document_status_idx",
+          "columns": ["status"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "source_search_document_lifecycle_check": {
+          "name": "source_search_document_lifecycle_check",
+          "value": "\"source_search_document\".\"status\" IN ('lexical', 'active', 'stale')"
+        },
+        "source_search_document_revision_check": {
+          "name": "source_search_document_revision_check",
+          "value": "\"source_search_document\".\"source_revision\" > 0"
+        }
+      }
     },
     "task_executions": {
       "name": "task_executions",
@@ -14401,12 +14285,11 @@
   "views": {},
   "enums": {},
   "_meta": {
+    "schemas": {},
     "tables": {},
     "columns": {}
   },
   "internal": {
     "indexes": {}
-  },
-  "id": "1ec2b84c-76a4-48cd-ba20-dd75f681c206",
-  "prevId": "a0045ea7-d3dd-4384-925b-2dca1db14b73"
+  }
 }
