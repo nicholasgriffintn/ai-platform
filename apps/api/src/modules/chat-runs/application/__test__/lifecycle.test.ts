@@ -178,7 +178,7 @@ describe("ChatRunLifecycle", () => {
       ...runningRun,
       projectId: "project-1",
       projectTaskId: "task-1",
-      stageId: "build",
+      nodeId: "build",
       status: "accepted" as const,
       startedAt: null,
     };
@@ -206,7 +206,7 @@ describe("ChatRunLifecycle", () => {
         projectTasks: {
           getTaskByConversation: vi.fn().mockResolvedValue({
             id: "task-1",
-            stageId: "plan",
+            nodeId: "plan",
             runId: null,
           }),
           updateTask: vi.fn().mockResolvedValue({ id: "task-1" }),
@@ -228,7 +228,7 @@ describe("ChatRunLifecycle", () => {
       command_payload: {
         projectId: "project-1",
         taskId: "task-1",
-        stageId: "build",
+        nodeId: "build",
       },
       context,
       env: context.env,
@@ -237,7 +237,7 @@ describe("ChatRunLifecycle", () => {
       store: true,
     });
 
-    expect(acceptCommand).toHaveBeenCalledWith(expect.objectContaining({ stageId: "build" }));
+    expect(acceptCommand).toHaveBeenCalledWith(expect.objectContaining({ nodeId: "build" }));
   });
 
   it("distinguishes ownership interruption from an ordinary failure", async () => {

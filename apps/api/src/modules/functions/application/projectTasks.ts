@@ -26,7 +26,7 @@ import { resolveRequestProjectId } from "./request-context";
 const MAX_LISTED_TASKS = 25;
 
 function formatTask(task: ProjectTask): string {
-  const stage = task.stageId ? ` [${task.stageId}]` : "";
+  const stage = task.nodeId ? ` [${task.nodeId}]` : "";
   const criteria = task.acceptanceCriteria.length
     ? ` (${task.acceptanceCriteria.length} criteria)`
     : "";
@@ -103,7 +103,7 @@ export const create_task: ApiToolDefinition = {
               .map((text) => ({ text: text.trim() }))
           : undefined,
         expectedOutput: typeof args.expectedOutput === "string" ? args.expectedOutput.trim() : null,
-        stageId: typeof args.stageId === "string" ? args.stageId : null,
+        nodeId: typeof args.nodeId === "string" ? args.nodeId : null,
       },
       { source: "model" },
     );

@@ -4,8 +4,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
 import { notifyMobileProjectTask } from ".";
+import { projectTaskFixture } from "../../../../test/project-task-fixtures";
 
-const task: ProjectTask = {
+const task: ProjectTask = projectTaskFixture({
   id: "task-1",
   projectId: "project-1",
   workspaceId: "workspace-1",
@@ -20,7 +21,7 @@ const task: ProjectTask = {
   source: "user",
   blockedReason: null,
   blockedDetail: null,
-  stageId: null,
+  nodeId: null,
   runner: null,
   createdByUserId: 7,
   assigneeUserId: 8,
@@ -38,7 +39,7 @@ const task: ProjectTask = {
   startedAt: "2026-09-05T11:01:00.000Z",
   completedAt: null,
   attentionVersion: 4,
-};
+});
 
 function context(decisions: boolean): ServiceContext {
   const serviceContext: ServiceContext = Object.assign(Object.create(null), {

@@ -44,8 +44,8 @@ import { recordChatRunOperationalMetric } from "./operational-metrics";
 const logger = getLogger({ prefix: "services/chat-runs/lifecycle" });
 
 function readStageId(options: CoreChatOptions): string | null {
-  return typeof options.command_payload?.stageId === "string"
-    ? options.command_payload.stageId
+  return typeof options.command_payload?.nodeId === "string"
+    ? options.command_payload.nodeId
     : null;
 }
 
@@ -167,7 +167,7 @@ async function buildRunCommand(
     userId: scope.userId,
     projectId: scope.projectId,
     projectTaskId: scope.projectTask?.id ?? null,
-    stageId: readStageId(options) ?? scope.projectTask?.stageId ?? null,
+    nodeId: readStageId(options) ?? scope.projectTask?.nodeId ?? null,
     ...(options.trigger ? { trigger: options.trigger } : {}),
     ...(options.teammate_context_id ? { teammateContextId: options.teammate_context_id } : {}),
     ...(options.computer_id ? { computerId: options.computer_id } : {}),

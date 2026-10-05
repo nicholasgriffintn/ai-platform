@@ -2,6 +2,9 @@ import type {
   AnswerUserQuestionsInput,
   CreateProjectTaskInput,
   ProjectFlow,
+  ProjectFlowResponse,
+  ProjectFlowHistory,
+  ResolveProjectFlowWaitInput,
   ProjectTask,
   ProjectTaskDetailResponse,
   ProjectTaskListResponse,
@@ -77,14 +80,36 @@ export async function startProjectTask(
   return returnFetchedData(response);
 }
 
-export async function acceptProjectTask(
+export async function resolveProjectFlowWait(
   projectId: string,
   taskId: string,
+  waitId: string,
+  input: ResolveProjectFlowWaitInput,
 ): Promise<{ task: ProjectTask }> {
-  const response = await fetchApiOrThrow(`/projects/${projectId}/tasks/${taskId}/accept`, {
-    method: "POST",
-    headers: await authHeaders(),
-  });
+  const response = await fetchApiOrThrow(
+    `/projects/${projectId}/tasks/${taskId}/waits/${waitId}/response`,
+    {
+      method: "POST",
+      headers: await authHeaders(),
+      body: input,
+    },
+  );
+
+  return returnFetchedData(response);
+}
+
+export async function getProjectFlowHistory(
+  projectId: string,
+  taskId: string,
+  after = 0,
+): Promise<ProjectFlowHistory> {
+  const response = await fetchApiOrThrow(
+    `/projects/${projectId}/tasks/${taskId}/flow-history?after=${after}`,
+    {
+      method: "GET",
+      headers: await authHeaders(),
+    },
+  );
 
   return returnFetchedData(response);
 }
@@ -127,11 +152,20 @@ export async function deleteProjectTask(projectId: string, taskId: string): Prom
 export async function setProjectFlow(
   projectId: string,
   flow: ProjectFlow | null,
-): Promise<{ flow: ProjectFlow | null }> {
+): Promise<ProjectFlowResponse> {
   const response = await fetchApiOrThrow(`/projects/${projectId}/flow`, {
     method: "PUT",
     headers: await authHeaders(),
     body: { flow },
+  });
+
+  return returnFetchedData(response);
+}
+
+export async function getProjectFlow(projectId: string): Promise<ProjectFlowResponse> {
+  const response = await fetchApiOrThrow(`/projects/${projectId}/flow`, {
+    method: "GET",
+    headers: await authHeaders(),
   });
 
   return returnFetchedData(response);

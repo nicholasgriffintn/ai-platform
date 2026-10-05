@@ -8,8 +8,8 @@ import {
   runModelGovernanceMaintenance,
   scheduleModelPlatformReconciles,
 } from "~/modules/model-governance/application/maintenance";
-import { scheduleKnowledgeIndexes } from "~/modules/sources/application/knowledge-index";
-import { scheduleKnowledgeSyncs } from "~/modules/sources/application/knowledge-sync-run";
+import { recoverProjectFlows } from "~/modules/project-tasks/application/flow-recovery";
+import { scheduleRecordTriggeredTasks } from "~/modules/project-tasks/application/record-triggers";
 import { schedulePendingTaskNotificationDeliveries } from "~/modules/task-notifications/application/delivery";
 
 import {
@@ -26,28 +26,12 @@ import { defineSchedule, workflows } from "./workflows";
 
 workflows.always(
   defineSchedule({
-    name: "source-knowledge-sync",
-    run: async ({ env }) => {
-      await scheduleKnowledgeSyncs(env);
-    },
-  }),
-);
-
-workflows.always(
-  defineSchedule({
-    name: "source-knowledge-index",
-    run: async ({ env }) => {
-      await scheduleKnowledgeIndexes(env);
-    },
-  }),
-);
-
-workflows.always(
-  defineSchedule({
     name: "task-recovery",
     run: async ({ env }) => {
       await recoverFailedDurableTasks(env);
       await redispatchPendingTasks(env);
+      await scheduleRecordTriggeredTasks(env);
+      await recoverProjectFlows(env);
     },
   }),
 );

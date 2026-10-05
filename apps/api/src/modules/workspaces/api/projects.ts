@@ -19,6 +19,8 @@ import {
   projectTaskDetailResponseSchema,
   projectTaskResponseSchema,
   resolveProjectTaskToolApprovalSchema,
+  resolveProjectFlowWaitSchema,
+  projectFlowHistorySchema,
   sandboxEnvironmentVariableInputSchema,
   sandboxEnvironmentVariableNameSchema,
   sandboxEnvironmentVariablesResponseSchema,
@@ -34,7 +36,8 @@ import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import {
-  acceptProjectTask,
+  resolveHumanFlowWait,
+  getProjectTaskFlowHistory,
   createProjectTask,
   deleteProjectTask,
   getProjectFlow,
@@ -463,18 +466,31 @@ addRoute(app, "post", "/:projectId/tasks/:taskId/tool-approval", {
     respondToProjectTaskToolApproval(serviceContext, params.projectId, params.taskId, body),
 });
 
-addRoute(app, "post", "/:projectId/tasks/:taskId/accept", {
+addRoute(app, "post", "/:projectId/tasks/:taskId/waits/:waitId/response", {
   auth: true,
   tags: ["projects", "tasks"],
-  summary: "Accept a reviewed task",
-  description: "Moves the task to done, or to the next flow stage when the project has one.",
-  paramSchema: projectTaskParams,
+  summary: "Respond to a named flow review",
+  description:
+    "Accepts or rejects this wait using its current revision and continues as the original runner.",
+  paramSchema: projectTaskParams.extend({ waitId: z.string().min(1) }),
+  bodySchema: resolveProjectFlowWaitSchema,
   responses: {
     200: { description: "The accepted task", schema: projectTaskResponseSchema },
     400: { description: "The task is not in review", schema: errorResponseSchema },
   },
-  handler: ({ serviceContext, params }) =>
-    acceptProjectTask(serviceContext, params.projectId, params.taskId),
+  handler: ({ serviceContext, params, body }) =>
+    resolveHumanFlowWait(serviceContext, params.projectId, params.taskId, params.waitId, body),
+});
+
+addRoute(app, "get", "/:projectId/tasks/:taskId/flow-history", {
+  auth: true,
+  tags: ["projects", "tasks"],
+  summary: "Read the task's durable flow history",
+  paramSchema: projectTaskParams,
+  querySchema: z.object({ after: z.coerce.number().int().nonnegative().default(0) }),
+  responses: { 200: { description: "Flow events", schema: projectFlowHistorySchema } },
+  handler: ({ serviceContext, params, query }) =>
+    getProjectTaskFlowHistory(serviceContext, params.projectId, params.taskId, query.after),
 });
 
 addRoute(app, "delete", "/:projectId/tasks/:taskId", {

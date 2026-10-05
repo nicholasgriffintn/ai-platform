@@ -1,3 +1,5 @@
+import { createSequentialProjectFlow } from "@ngriffin_uk/polychat-schemas";
+
 import { COLLEAGUES, OWNER } from "./identity.mjs";
 import {
   ahead,
@@ -24,8 +26,8 @@ const USAGE = {
   cost_usd: 0.004,
 };
 
-const FLOW = {
-  stages: [
+const FLOW = createSequentialProjectFlow(
+  [
     {
       id: "plan",
       name: "Plan",
@@ -34,30 +36,19 @@ const FLOW = {
       skillIds: [],
       mode: "plan",
       requiresApprovalFor: [],
-      advance: "on_goal_complete",
     },
     {
       id: "build",
       name: "Build",
-      instructions: "Implement with tests.",
+      instructions: "Implement with meaningful validation.",
       teammateId: seedId("teammate", "release-bot"),
       skillIds: [],
       mode: "build",
       requiresApprovalFor: ["write", "sandbox"],
-      advance: "on_goal_complete",
-    },
-    {
-      id: "review",
-      name: "Review",
-      instructions: "A human accepts the result.",
-      teammateId: null,
-      skillIds: [],
-      mode: null,
-      requiresApprovalFor: [],
-      advance: "on_human_accept",
     },
   ],
-};
+  ["build"],
+);
 
 const DELIVERY_POLICY = { mode: "review_branch", destination: "pull_request" };
 
@@ -575,7 +566,7 @@ export async function workStatements({ serverKey, teammates }) {
       run: {
         status: "running",
         projectTaskId: runningTaskId,
-        stageId: "build",
+        nodeId: "build",
       },
     },
     [
@@ -655,7 +646,7 @@ export async function workStatements({ serverKey, teammates }) {
       type: "task",
       projectId: LAUNCH_PROJECT_ID,
       createdAt: at({ days: 2, hours: 6 }),
-      run: { status: "succeeded", projectTaskId: doneTaskId, stageId: "build" },
+      run: { status: "succeeded", projectTaskId: doneTaskId, nodeId: "build" },
     },
     [
       {
@@ -710,7 +701,7 @@ export async function workStatements({ serverKey, teammates }) {
         status: "failed",
         terminalReason: "Polychat API returned an empty completion response",
         projectTaskId: seedId("task", "flaky-e2e"),
-        stageId: "build",
+        nodeId: "build",
       },
     },
     [
@@ -982,11 +973,23 @@ export async function workStatements({ serverKey, teammates }) {
   for (const task of tasks) {
     const projectId = task.project ?? LAUNCH_PROJECT_ID;
     const createdAt = at({ days: 3, hours: task.position });
+    const nodeId =
+      task.status === "done"
+        ? "complete"
+        : task.status === "cancelled"
+          ? "cancelled"
+          : task.stage === "review"
+            ? "build-review"
+            : task.stage;
+    const waiting =
+      ["review", "queued", "running"].includes(task.status) ||
+      (task.status === "blocked" && Boolean(task.dispatch));
+    const waitId = waiting ? seedId("flow-wait", task.id) : null;
     const completions = task.completion
       ? [
           {
             id: seedId("completion", task.id),
-            stageId: task.stage,
+            nodeId: "build",
             conversationId: task.conversation?.conversationId ?? seedId("work", "pricing-copy"),
             goalId: seedId("goal", task.id),
             runId: task.conversation?.runId ?? undefined,
@@ -1007,6 +1010,7 @@ export async function workStatements({ serverKey, teammates }) {
               status: task.completion,
               reviewedByUserId: task.completion === "approved" ? OWNER.id : null,
               reviewedAt: task.completion === "approved" ? at({ days: 2, hours: 5 }) : null,
+              reviewWaitId: task.status === "review" ? waitId : null,
             },
             createdAt: at({ days: 2, hours: 5, minutes: 30 }),
           },
@@ -1035,8 +1039,18 @@ export async function workStatements({ serverKey, teammates }) {
         source: "user",
         blocked_reason: task.blockedReason ?? null,
         blocked_detail: task.blockedDetail ?? null,
-        stage_id: task.stage,
-        flow_snapshot: projectId === LAUNCH_PROJECT_ID ? FLOW : null,
+        node_id: nodeId,
+        flow_snapshot: FLOW,
+        flow_execution: {
+          epoch: 1,
+          nodeId,
+          steps: task.status === "backlog" ? 0 : 1,
+          iterations: {},
+          values: {},
+          waitId,
+        },
+        flow_revision: 1,
+        runner_identity_user_id: task.status === "backlog" ? null : task.createdBy,
         runner: {
           kind: "conversation",
           teammateId: task.stage === "build" ? teammates.releaseBot : null,
@@ -1061,6 +1075,26 @@ export async function workStatements({ serverKey, teammates }) {
         attention_version: task.attention ?? 1,
       }),
     );
+    if (waiting) {
+      taskStatements.push(
+        insert("project_flow_wait", {
+          id: waitId,
+          task_id: task.id,
+          node_id: nodeId,
+          epoch: 1,
+          step: 1,
+          attempt: 1,
+          name: task.status === "review" ? "Review Build" : nodeId,
+          kind: task.status === "review" ? "human" : "agent",
+          status: task.dispatch && task.status !== "review" ? "dispatched" : "pending",
+          assigned_user_id: task.status === "review" ? (task.assignee ?? task.createdBy) : null,
+          execution_id: task.dispatch ?? null,
+          payload:
+            task.status === "review" ? { assignedUserId: task.assignee ?? task.createdBy } : {},
+        }),
+      );
+    }
+
     audit(statements, "project.task.created", "project_task", task.id, task.createdBy, createdAt, {
       objective: task.objective,
     });
@@ -1126,7 +1160,7 @@ export async function workStatements({ serverKey, teammates }) {
       run: {
         status: "succeeded",
         projectTaskId: seedId("task", "pricing-copy"),
-        stageId: "review",
+        nodeId: "review",
       },
     },
     [

@@ -3,7 +3,7 @@ import type { ProjectTaskStatus } from "@ngriffin_uk/polychat-schemas";
 
 import type { FunctionToolDescriptor } from "./types";
 
-export const MODEL_SETTABLE_STATUSES: ProjectTaskStatus[] = ["backlog", "review", "cancelled"];
+export const MODEL_SETTABLE_STATUSES: ProjectTaskStatus[] = ["backlog", "cancelled"];
 
 export const create_task: FunctionToolDescriptor = {
   name: "create_task",
@@ -16,7 +16,7 @@ export const create_task: FunctionToolDescriptor = {
     objective: input.objective,
     acceptanceCriteria: input.acceptanceCriteria,
     expectedOutput: input.expectedOutput,
-    stageId: input.stageId,
+    nodeId: input.nodeId,
   }),
   inputSchema: jsonSchemaToZod({
     type: "object",
@@ -35,9 +35,9 @@ export const create_task: FunctionToolDescriptor = {
         type: "string",
         description: "A concrete description of the result the task should leave behind.",
       },
-      stageId: {
+      nodeId: {
         type: "string",
-        description: "Optional flow stage id to start the task in.",
+        description: "Optional flow node ID to start the task in.",
       },
     },
     required: ["objective"],
@@ -83,7 +83,7 @@ export const get_task: FunctionToolDescriptor = {
 export const update_task: FunctionToolDescriptor = {
   name: "update_task",
   description:
-    "Update work in this project's task system. You may reword it, sharpen its acceptance criteria, or move it to backlog, review, or cancelled. You cannot queue or finish a task — dispatch does the first and a person accepts the second.",
+    "Update a pending plan in this project's task system, or cancel work. You may reword its objective or sharpen its acceptance criteria before execution starts. The flow controls dispatch, review and completion. Finished tasks retain their history.",
   type: "normal",
   permissions: ["write"],
   intentEvidence: (input) => ({ operation: "update_task", ...input }),

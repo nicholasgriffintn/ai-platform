@@ -7,7 +7,7 @@ const runRow = {
   conversation_id: "conversation-1",
   project_id: null,
   project_task_id: null,
-  stage_id: null,
+  node_id: null,
   initiator_user_id: 42,
   status: "running",
   attempt: 1,
@@ -87,7 +87,7 @@ describe("ConversationRunRepository", () => {
     const { batch, bind, prepare, repository } = createRepository();
 
     batch.mockResolvedValueOnce([
-      { results: [{ ...runRow, stage_id: "build", status: "accepted" }] },
+      { results: [{ ...runRow, node_id: "build", status: "accepted" }] },
       { results: [{ id: "receipt-1" }] },
     ]);
 
@@ -99,7 +99,7 @@ describe("ConversationRunRepository", () => {
       userId: 42,
       projectId: "project-1",
       projectTaskId: "task-1",
-      stageId: "build",
+      nodeId: "build",
     });
 
     expect(receipt.duplicate).toBe(false);
@@ -109,7 +109,7 @@ describe("ConversationRunRepository", () => {
     expect(prepare.mock.calls[2]?.[0]).toContain("INSERT INTO conversation_run_command");
     expect(prepare.mock.calls[3]?.[0]).toContain("INSERT INTO conversation_run_event");
     expect(bind.mock.calls[1]).toContain("build");
-    expect(receipt.run.stageId).toBe("build");
+    expect(receipt.run.nodeId).toBe("build");
   });
 
   it("only records a resume command while the expected waiting attempt still owns the run", async () => {

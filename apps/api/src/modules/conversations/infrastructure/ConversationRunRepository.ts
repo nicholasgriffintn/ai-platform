@@ -55,7 +55,7 @@ export interface AcceptRunCommandParams {
   userId: number;
   projectId?: string | null;
   projectTaskId?: string | null;
-  stageId?: string | null;
+  nodeId?: string | null;
   runId?: string;
   interactionId?: string;
   trigger?: ChatRunTrigger;
@@ -115,7 +115,7 @@ function formatRun(row: ConversationRunRow): ChatRun {
     conversationId: row.conversation_id,
     projectId: row.project_id,
     projectTaskId: row.project_task_id,
-    stageId: row.stage_id,
+    nodeId: row.node_id,
     initiatorUserId: row.initiator_user_id,
     status: row.status,
     interactionKind: row.interaction_kind,
@@ -391,7 +391,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     const runId = `run_${generateId()}`;
     const runStatement = this.env.DB.prepare(
       `INSERT INTO conversation_run (
-         id, conversation_id, project_id, project_task_id, stage_id, initiator_user_id,
+         id, conversation_id, project_id, project_task_id, node_id, initiator_user_id,
          teammate_context_id, computer_id, resolved_configuration_json,
          status, attempt, event_sequence, trigger, created_at, updated_at
        ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', 1, 1, ?, ?, ?
@@ -404,7 +404,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       params.conversationId,
       params.projectId ?? null,
       params.projectTaskId ?? null,
-      params.stageId ?? null,
+      params.nodeId ?? null,
       params.userId,
       params.teammateContextId ?? null,
       params.computerId ?? null,

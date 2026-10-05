@@ -1,4 +1,4 @@
-import type { DocumentComment } from "@ngriffin_uk/polychat-schemas";
+import { createSequentialProjectFlow, type DocumentComment } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -53,9 +53,9 @@ export async function prepareCommentMention(
         model: null,
         mode: null,
       },
-      stageId: "document-comment",
-      flowSnapshot: {
-        stages: [
+      nodeId: "document-comment",
+      flowSnapshot: createSequentialProjectFlow(
+        [
           {
             id: "document-comment",
             name: "Document comment",
@@ -64,10 +64,10 @@ export async function prepareCommentMention(
             skillIds: [],
             mode: null,
             requiresApprovalFor: [],
-            advance: "on_human_accept",
           },
         ],
-      },
+        ["document-comment"],
+      ),
       position: position + 1000,
     }),
     context.env.DB.prepare(

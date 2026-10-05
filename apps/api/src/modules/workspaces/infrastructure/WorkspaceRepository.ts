@@ -805,7 +805,7 @@ export class WorkspaceRepository extends BaseRepository {
     );
   }
 
-  async listProjectsWithFlowStageTeammate(teammateId: string): Promise<ProjectReferenceRow[]> {
+  async listProjectsWithFlowNodeTeammate(teammateId: string): Promise<ProjectReferenceRow[]> {
     return this.runQuery<ProjectReferenceRow>(
       `SELECT p.id, p.name
 			 FROM project p
@@ -813,8 +813,8 @@ export class WorkspaceRepository extends BaseRepository {
 				AND p.flow IS NOT NULL
 				AND json_valid(p.flow)
 				AND EXISTS (
-					SELECT 1 FROM json_each(p.flow, '$.stages') stage
-					WHERE json_extract(stage.value, '$.teammateId') = ?
+					SELECT 1 FROM json_each(p.flow, '$.nodes') node
+					WHERE json_extract(node.value, '$.teammateId') = ?
 				)
 			 ORDER BY p.name`,
       [teammateId],

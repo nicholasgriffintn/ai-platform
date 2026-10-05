@@ -1,5 +1,7 @@
 import {
-  acceptProjectTask,
+  resolveProjectFlowWait,
+  getProjectFlowHistory,
+  getProjectFlow,
   answerProjectTaskQuestions,
   createProjectTask,
   deleteProjectTask,
@@ -19,9 +21,10 @@ import type {
   ProjectFlow,
   ProjectTask,
   ResolveProjectTaskToolApprovalInput,
+  ResolveProjectFlowWaitInput,
   UpdateProjectTaskInput,
 } from "@ngriffin_uk/polychat-schemas";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { liveOrPoll } from "../sync/live-or-poll.js";
 
@@ -81,6 +84,13 @@ export function useProjectTasks(projectId: string) {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isPro = useChatStore((state) => state.isPro);
 
+  const flowQuery = useQuery({
+    queryKey: ["project-flow", projectId],
+    queryFn: () => getProjectFlow(projectId),
+    enabled: Boolean(projectId) && isAuthenticated && isPro,
+    staleTime: 15_000,
+  });
+
   const query = useQuery({
     queryKey: projectTasksQueryKey(projectId),
     queryFn: () => listProjectTasks(projectId),
@@ -127,6 +137,8 @@ export function useProjectTasks(projectId: string) {
     });
     void queryClient.invalidateQueries({ queryKey: TASK_ATTENTION_QUERY_KEY });
     void queryClient.invalidateQueries({ queryKey: ["project-task", projectId] });
+    void queryClient.invalidateQueries({ queryKey: ["project-flow", projectId] });
+    void queryClient.invalidateQueries({ queryKey: ["project-flow-history", projectId] });
   };
 
   const create = useMutation({
@@ -154,8 +166,16 @@ export function useProjectTasks(projectId: string) {
     },
   });
 
-  const accept = useMutation({
-    mutationFn: (taskId: string) => acceptProjectTask(projectId, taskId),
+  const respondToWait = useMutation({
+    mutationFn: ({
+      taskId,
+      waitId,
+      input,
+    }: {
+      taskId: string;
+      waitId: string;
+      input: ResolveProjectFlowWaitInput;
+    }) => resolveProjectFlowWait(projectId, taskId, waitId, input),
     onSuccess: ({ task }) => {
       writeTask(task);
       invalidate();
@@ -203,24 +223,39 @@ export function useProjectTasks(projectId: string) {
   });
 
   const saveFlow = useMutation({
-    mutationFn: (flow: ProjectFlow) => setProjectFlow(projectId, flow),
+    mutationFn: (flow: ProjectFlow | null) => setProjectFlow(projectId, flow),
     onSuccess: invalidate,
   });
 
   return {
     tasks: query.data?.tasks ?? [],
-    flow: query.data?.flow ?? null,
+    flow: flowQuery.data ? flowQuery.data.flow : (query.data?.flow ?? null),
+    triggerStates: flowQuery.data?.triggerStates ?? [],
     isLoading: query.isLoading,
     error: query.error,
     create,
     update,
     start,
-    accept,
+    respondToWait,
     answer,
     approval,
     remove,
     saveFlow,
   };
+}
+
+export function useProjectFlowHistory(projectId: string, taskId: string) {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const isPro = useChatStore((state) => state.isPro);
+
+  return useInfiniteQuery({
+    queryKey: ["project-flow-history", projectId, taskId],
+    queryFn: ({ pageParam }) => getProjectFlowHistory(projectId, taskId, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: (page) => (page.hasMore ? page.nextCursor : undefined),
+    enabled: Boolean(projectId && taskId) && isAuthenticated && isPro,
+    refetchInterval: 5000,
+  });
 }
 
 export function useTaskAttention() {

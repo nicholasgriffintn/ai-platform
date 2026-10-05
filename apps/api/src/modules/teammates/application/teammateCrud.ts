@@ -104,7 +104,7 @@ export async function updateTeammate(
 async function findProjectsUsingTeammate(context: ServiceContext, teammateId: string) {
   const [attached, inFlows] = await Promise.all([
     context.repositories.workspaces.listProjectsWithCapability("teammate", teammateId),
-    context.repositories.workspaces.listProjectsWithFlowStageTeammate(teammateId),
+    context.repositories.workspaces.listProjectsWithFlowNodeTeammate(teammateId),
   ]);
 
   return [...new Map([...attached, ...inFlows].map((project) => [project.id, project])).values()];

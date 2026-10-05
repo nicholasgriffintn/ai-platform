@@ -163,7 +163,7 @@ export function buildThread(options, messages) {
         conversation_id: id,
         project_id: run.projectId ?? projectId,
         project_task_id: run.projectTaskId ?? null,
-        stage_id: run.stageId ?? null,
+        node_id: run.nodeId ?? null,
         initiator_user_id: run.initiatorUserId ?? userId,
         status: runStatus,
         attempt: run.attempt ?? 1,
