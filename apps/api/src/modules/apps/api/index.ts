@@ -2,6 +2,7 @@ import { Hono } from "hono";
 
 import { requireAuth } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import mcp from "~/modules/mcp/api/routes";
 
 import articles from "./articles";
 import canvas from "./canvas";
@@ -54,5 +55,6 @@ app.route("/sandbox", sandbox);
 app.route("/recipes", recipes);
 
 app.route("/connectors", connectors);
+app.route("/mcp", mcp);
 
 export default app;

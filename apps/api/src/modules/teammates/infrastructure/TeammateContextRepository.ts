@@ -268,31 +268,6 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
     ]);
   }
 
-  async archiveForWorkspaceActor(workspaceId: string, actorUserId: number): Promise<void> {
-    const contextIds = `SELECT tc.id FROM teammate_context tc
-      JOIN project p ON tc.scope_type = 'project' AND tc.scope_id = p.id
-      WHERE p.workspace_id = ? AND tc.actor_user_id = ?`;
-
-    await this.executeBatch([
-      this.env.DB.prepare(
-        `UPDATE template
-         SET status = 'paused',
-             configuration = json_set(configuration, '$.status', 'paused'),
-             updated_at = CURRENT_TIMESTAMP
-         WHERE status = 'active'
-           AND json_extract(configuration, '$.teammateContextId') IN (${contextIds})`,
-      ).bind(workspaceId, actorUserId),
-      this.env.DB.prepare(
-        `DELETE FROM teammate_connection_grant WHERE context_id IN (${contextIds})`,
-      ).bind(workspaceId, actorUserId),
-      this.env.DB.prepare(
-        `UPDATE teammate_context
-         SET status = 'archived', updated_at = CURRENT_TIMESTAMP
-         WHERE id IN (${contextIds})`,
-      ).bind(workspaceId, actorUserId),
-    ]);
-  }
-
   async listConnectionGrants(contextId: string): Promise<TeammateConnectionGrant[]> {
     const rows = await this.runQuery<TeammateConnectionGrantRow>(
       `SELECT * FROM teammate_connection_grant

@@ -94,15 +94,7 @@ export function resolveModelToolConfigurations(
       }
 
       configuredToolIds.push(definition.id);
-      toolOptions.mcp_servers = parsed.data.servers.map((server) => ({
-        require_approval: "always",
-        server_label: server.label,
-        server_url: new URL(server.url).toString(),
-        ...(server.credentialConnectionId
-          ? { credential_connection_id: server.credentialConnectionId }
-          : {}),
-        ...(server.allowedTools ? { allowed_tools: server.allowedTools } : {}),
-      }));
+      toolOptions.native_mcp_server_ids = parsed.data.servers.map((server) => server.id);
     }
   }
 
@@ -125,8 +117,8 @@ export function mergePersonalModelToolOptions(params: {
     toolOptions.file_search = configuredOptions.file_search;
   }
 
-  if (enabledToolIds.has("mcp") && configuredOptions?.mcp_servers) {
-    toolOptions.mcp_servers = configuredOptions.mcp_servers;
+  if (enabledToolIds.has("mcp") && configuredOptions?.native_mcp_server_ids) {
+    toolOptions.native_mcp_server_ids = configuredOptions.native_mcp_server_ids;
   }
 
   return Object.keys(toolOptions).length > 0 ? toolOptions : undefined;

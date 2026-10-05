@@ -156,12 +156,6 @@ export interface ProviderHost {
   storage: ProviderStorageFactory;
   metrics?: ProviderMetrics;
   keyStore(env: ProviderEnv): ProviderKeyStore | undefined;
-  mcp?: {
-    resolveCredential(
-      context: ProviderRequestContext,
-      input: { connectionId: string; url: string; provider: string; allowedTools?: string[] },
-    ): Promise<{ authorization: string; allowedTools: string[] }>;
-  };
   realtime?: {
     createProxyGrant(env: ProviderEnv, scope: RealtimeProxyGrantScope): Promise<RealtimeProxyGrant>;
   };

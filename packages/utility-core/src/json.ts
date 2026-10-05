@@ -35,3 +35,72 @@ export function canonicalJson(value: unknown): string {
     .map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`)
     .join(",")}}`;
 }
+
+export function assertJsonComplexity(
+  value: unknown,
+  maxDepth = 32,
+  maxNodes = 4096,
+  maxTextLength = 512 * 1024,
+): void {
+  const pending = [{ value, depth: 0, ancestors: new Set<object>() }];
+  let count = 0;
+  let textLength = 0;
+
+  while (pending.length) {
+    const item = pending.pop();
+
+    if (!item || ++count > maxNodes || item.depth > maxDepth) {
+      throw new Error("JSON structure exceeds its complexity limit");
+    }
+
+    if (typeof item.value === "string") {
+      textLength += item.value.length;
+
+      if (textLength > maxTextLength) {
+        throw new Error("JSON text exceeds its complexity limit");
+      }
+
+      continue;
+    }
+
+    if (item.value === null || typeof item.value === "boolean") {
+      continue;
+    }
+
+    if (typeof item.value === "number" && Number.isFinite(item.value)) {
+      continue;
+    }
+
+    if (!Array.isArray(item.value) && !isRecord(item.value)) {
+      throw new Error("Expected a JSON value");
+    }
+
+    if (
+      !Array.isArray(item.value) &&
+      Object.getPrototypeOf(item.value) !== Object.prototype &&
+      Object.getPrototypeOf(item.value) !== null
+    ) {
+      throw new Error("Expected a plain JSON object");
+    }
+
+    if (item.ancestors.has(item.value)) {
+      throw new Error("JSON structure contains a cycle");
+    }
+
+    const ancestors = new Set([...item.ancestors, item.value]);
+
+    for (const [key, child] of Object.entries(item.value)) {
+      textLength += key.length;
+
+      if (textLength > maxTextLength) {
+        throw new Error("JSON text exceeds its complexity limit");
+      }
+
+      if (pending.length + count >= maxNodes) {
+        throw new Error("JSON structure exceeds its complexity limit");
+      }
+
+      pending.push({ value: child, depth: item.depth + 1, ancestors });
+    }
+  }
+}

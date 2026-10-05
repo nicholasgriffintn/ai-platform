@@ -127,7 +127,8 @@ class TeammateCompletionRequestPreparer {
   private resolveToolOptions(
     enabledTools: string[] | undefined,
   ): ChatHostedToolSettings | undefined {
-    const { mcp_servers: _requestedMcpServers, ...requested } = this.input.body.tool_options ?? {};
+    const { native_mcp_server_ids: _requestedMcpServers, ...requested } =
+      this.input.body.tool_options ?? {};
     const mcpEnabled =
       enabledTools?.includes("mcp") === true &&
       !this.input.body.denied_tools?.includes("mcp") &&
@@ -136,15 +137,7 @@ class TeammateCompletionRequestPreparer {
       ...requested,
       ...(mcpEnabled
         ? {
-            mcp_servers: this.input.mcpServers?.map((server) => ({
-              require_approval: "always",
-              server_label: server.label,
-              server_url: new URL(server.url).toString(),
-              ...(server.credentialConnectionId
-                ? { credential_connection_id: server.credentialConnectionId }
-                : {}),
-              ...(server.allowedTools ? { allowed_tools: server.allowedTools } : {}),
-            })),
+            native_mcp_server_ids: this.input.mcpServers?.map((server) => server.id),
           }
         : {}),
     };

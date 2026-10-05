@@ -7,7 +7,7 @@ import type {
   SkillSummary,
   TeammateKind,
   Tool,
-  McpConnection,
+  NativeMcpServer,
 } from "@ngriffin_uk/polychat-schemas";
 import type { ParsedNumberInput } from "@ngriffin_uk/polychat-utility-core";
 
@@ -51,7 +51,7 @@ export interface TeammatePublishState {
 }
 
 export interface TeammateEditorProps {
-  mcpConnections?: McpConnection[];
+  availableMcpServers?: NativeMcpServer[];
   teammate: TeammateResponse | null;
   models: ModelConfig;
   tools: Tool[];

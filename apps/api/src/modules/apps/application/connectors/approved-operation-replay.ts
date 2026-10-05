@@ -1,7 +1,11 @@
 import { isComposioConnectorSessionHandle } from "@ngriffin_uk/polychat-ai-integrations";
 import { mergeHumanInTheLoop } from "@ngriffin_uk/polychat-library-interactions";
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
-import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  nativeMcpCallSchema,
+  recipeConnectorProviderSchema,
+  type NativeMcpCall,
+} from "@ngriffin_uk/polychat-schemas";
 import {
   abortableDelay,
   canonicalJson,
@@ -15,6 +19,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ConnectorOperationApprovalRecord } from "~/modules/apps/infrastructure/ConnectorOperationApprovalRepository";
 import { handleToolCalls } from "~/modules/chat/application/tools/execution";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
+import { resolveMcpApprovalAuthority } from "~/modules/mcp/application/approved-action";
 import type { IUser, Message } from "~/types";
 
 import { getRecipeConnectorAdapter } from "./connector-adapters";
@@ -22,6 +27,9 @@ import type { StoredConnectorOperationCall } from "./connector-approval-authorit
 import { getConnectorArgumentDigest } from "./operation-approvals";
 
 const TOOL_NAME = "use_recipe_connector";
+
+type ReplayToolName = typeof TOOL_NAME | "mcp";
+type ReplayCallArguments = StoredConnectorOperationCall | (NativeMcpCall & { provider: "mcp" });
 const REPLAY_ERROR = "The stored connector action does not match the approved connector action";
 const CONCURRENT_RESULT_POLL_INTERVAL_MS = 50;
 const CONCURRENT_RESULT_TIMEOUT_MS = 1_000;
@@ -30,14 +38,14 @@ interface StoredToolCall {
   id: string;
   type: "function";
   function: {
-    name: typeof TOOL_NAME;
+    name: ReplayToolName;
     arguments: string;
   };
 }
 
 interface ReplayBoundary {
   call: StoredToolCall;
-  callArguments: StoredConnectorOperationCall;
+  callArguments: ReplayCallArguments;
   pendingIndex: number;
   pendingMessageId: string;
   toolCallId: string;
@@ -68,7 +76,7 @@ function parseExecutionResult(
   if (
     !value ||
     value.role !== "tool" ||
-    value.name !== TOOL_NAME ||
+    value.name !== boundary.call.function.name ||
     typeof value.id !== "string" ||
     typeof value.content !== "string" ||
     typeof value.status !== "string" ||
@@ -79,7 +87,7 @@ function parseExecutionResult(
 
   return {
     role: "tool",
-    name: TOOL_NAME,
+    name: boundary.call.function.name,
     id: value.id,
     content: value.content,
     status: value.status,
@@ -98,7 +106,7 @@ function serialiseExecutionResult(message: Message): Record<string, unknown> {
 function buildIndeterminateResult(boundary: ReplayBoundary, approvalId: string): Message {
   return {
     role: "tool",
-    name: TOOL_NAME,
+    name: boundary.call.function.name,
     id: `connector_result_${approvalId}`,
     content:
       "The connector action may have completed, but its outcome could not be confirmed. It was not retried. Check the connected service before taking another action.",
@@ -154,11 +162,20 @@ function parseStoredArguments(value: unknown): Record<string, unknown> | null {
   return isRecord(parsed) ? parsed : null;
 }
 
-function parseConnectorCallArguments(value: unknown): StoredConnectorOperationCall | null {
+function parseConnectorCallArguments(
+  value: unknown,
+  toolName: ReplayToolName = TOOL_NAME,
+): ReplayCallArguments | null {
   const parsed = parseStoredArguments(value);
 
   if (!parsed) {
     return null;
+  }
+
+  if (toolName === "mcp") {
+    const call = nativeMcpCallSchema.safeParse(parsed);
+
+    return call.success ? { ...call.data, provider: "mcp" } : null;
   }
 
   const provider = recipeConnectorProviderSchema.safeParse(parsed.provider);
@@ -195,9 +212,9 @@ function parseStoredToolCall(value: unknown, expectedId: string): StoredToolCall
 
   if (
     !isRecord(fn) ||
-    fn.name !== TOOL_NAME ||
+    (fn.name !== TOOL_NAME && fn.name !== "mcp") ||
     typeof fn.arguments !== "string" ||
-    !parseConnectorCallArguments(fn.arguments)
+    !parseConnectorCallArguments(fn.arguments, fn.name === "mcp" ? "mcp" : TOOL_NAME)
   ) {
     return null;
   }
@@ -205,7 +222,7 @@ function parseStoredToolCall(value: unknown, expectedId: string): StoredToolCall
   return {
     id: expectedId,
     type: "function",
-    function: { name: TOOL_NAME, arguments: fn.arguments },
+    function: { name: fn.name, arguments: fn.arguments },
   };
 }
 
@@ -217,7 +234,7 @@ function findReplayBoundary(messages: Message[], approvalId: string): ReplayBoun
 
     if (
       message.role === "tool" &&
-      message.name === TOOL_NAME &&
+      (message.name === TOOL_NAME || message.name === "mcp") &&
       message.status === "pending" &&
       message.data?.approvalRequired === true &&
       message.data?.approvalId === approvalId
@@ -258,17 +275,20 @@ function findReplayBoundary(messages: Message[], approvalId: string): ReplayBoun
     }
   }
 
-  if (!call) {
+  if (!call || call.function.name !== pending.name) {
     failReplay();
   }
 
-  const callArguments = parseConnectorCallArguments(call.function.arguments);
+  const callArguments = parseConnectorCallArguments(call.function.arguments, call.function.name);
 
   if (!callArguments) {
     failReplay();
   }
 
-  const pendingArguments = parseStoredArguments(pending.tool_call_arguments);
+  const pendingArguments =
+    pending.tool_call_arguments === undefined
+      ? null
+      : parseConnectorCallArguments(pending.tool_call_arguments, call.function.name);
 
   if (pending.tool_call_arguments !== undefined && !pendingArguments) {
     failReplay();
@@ -293,7 +313,7 @@ function findTerminalResult(messages: Message[], boundary: ReplayBoundary): Mess
     .find(
       (message) =>
         message.role === "tool" &&
-        message.name === TOOL_NAME &&
+        message.name === boundary.call.function.name &&
         message.tool_call_id === boundary.toolCallId &&
         message.status !== "pending",
     );
@@ -381,8 +401,8 @@ export async function replayApprovedConnectorOperation(params: {
   if (
     context.user?.id !== user.id ||
     !ownsResource(user.id, approval.userId) ||
-    !parsedProvider.success ||
-    adapter?.approval?.mode !== "stored-action" ||
+    (approval.provider !== "mcp" &&
+      (!parsedProvider.success || adapter?.approval?.mode !== "stored-action")) ||
     !approval.operation ||
     !approval.runId ||
     !approval.completionId ||
@@ -420,7 +440,7 @@ export async function replayApprovedConnectorOperation(params: {
       storedResult ??
       (await conversationManager.add(approval.completionId, {
         role: "tool",
-        name: TOOL_NAME,
+        name: boundary.call.function.name,
         content: "The user rejected this connector action.",
         status: "resolved",
         data: {
@@ -431,7 +451,7 @@ export async function replayApprovedConnectorOperation(params: {
             type: "approval",
             status: "resolved",
             interactionId: boundary.toolCallId,
-            toolName: TOOL_NAME,
+            toolName: boundary.call.function.name,
             resolution: "rejected",
             requires_user_action: false,
           }),
@@ -449,18 +469,38 @@ export async function replayApprovedConnectorOperation(params: {
   let authority;
 
   try {
-    authority = await adapter.approval.resolveAuthority({
-      approval,
-      call: boundary.callArguments,
-      context,
-      userId: user.id,
-    });
+    if (
+      boundary.callArguments.provider === "mcp" &&
+      "serverId" in boundary.callArguments &&
+      boundary.call.function.name === "mcp"
+    ) {
+      const { serverId, operation, schemaDigest, params: argumentsValue } = boundary.callArguments;
+
+      authority = await resolveMcpApprovalAuthority({
+        approval,
+        call: { serverId, operation, schemaDigest, params: argumentsValue },
+        context,
+        userId: user.id,
+      });
+    } else if (
+      boundary.callArguments.provider !== "mcp" &&
+      adapter?.approval?.mode === "stored-action"
+    ) {
+      authority = await adapter.approval.resolveAuthority({
+        approval,
+        call: boundary.callArguments,
+        context,
+        userId: user.id,
+      });
+    } else {
+      failReplay();
+    }
   } catch {
     failReplay();
   }
 
   const argumentDigest = await getConnectorArgumentDigest({
-    provider: parsedProvider.data,
+    provider: boundary.callArguments.provider,
     operation: approval.operation,
     arguments: authority.arguments,
   });
@@ -549,9 +589,12 @@ export async function replayApprovedConnectorOperation(params: {
         model: params.model,
         mode,
         date: new Date().toISOString().slice(0, 10),
-        approved_tools: [TOOL_NAME],
+        approved_tools: [boundary.call.function.name],
         connector_approval_id: approval.id,
-        tool_permissions_map: { [TOOL_NAME]: ["network", "read"] },
+        tool_permissions_map: { [boundary.call.function.name]: ["network", "read"] },
+        ...("serverId" in boundary.callArguments
+          ? { tool_options: { native_mcp_server_ids: [boundary.callArguments.serverId] } }
+          : {}),
         options: authority.requestOptions,
         ...(authority.teammateContextId
           ? { teammate_context_id: authority.teammateContextId }

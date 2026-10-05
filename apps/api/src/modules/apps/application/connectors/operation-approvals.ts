@@ -86,7 +86,7 @@ function toConnectorOperationApprovalView(
 }
 
 export async function getConnectorArgumentDigest(params: {
-  provider: RecipeConnectorProvider;
+  provider: RecipeConnectorProvider | "mcp";
   operation: string;
   arguments: Record<string, unknown>;
 }): Promise<string> {
@@ -96,7 +96,7 @@ export async function getConnectorArgumentDigest(params: {
 export async function authoriseConnectorOperation(params: {
   context: ServiceContext;
   userId: number;
-  provider: RecipeConnectorProvider;
+  provider: RecipeConnectorProvider | "mcp";
   operation: string;
   arguments: Record<string, unknown>;
   connectedAccountId?: string;
@@ -105,7 +105,10 @@ export async function authoriseConnectorOperation(params: {
   scope: ConnectorRunScope;
   approvalId?: string;
 }): Promise<ConnectorOperationApprovalDecision> {
-  if (!connectorOperationRequiresApproval(params.provider, params.operation)) {
+  if (
+    params.provider !== "mcp" &&
+    !connectorOperationRequiresApproval(params.provider, params.operation)
+  ) {
     return { required: false, approved: true };
   }
 

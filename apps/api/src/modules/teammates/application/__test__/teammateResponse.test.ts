@@ -1,16 +1,17 @@
 import { describe, expect, it } from "vitest";
 
-import type { Teammate } from "~/infrastructure/database/schema";
+import { normaliseTeammateResponse, type StoredTeammateRow } from "../teammateResponse";
 
-import { normaliseTeammateResponse } from "../teammateResponse";
-
-function buildStoredTeammate(overrides: Partial<Record<keyof Teammate, unknown>> = {}): Teammate {
+function buildStoredTeammate(overrides: Partial<StoredTeammateRow> = {}): StoredTeammateRow {
   return {
     id: "teammate-1",
     user_id: 7,
     owner_scope_type: "user",
     owner_scope_id: "7",
     derived_from_teammate_id: null,
+    kind: "colleague",
+    workspace_default: false,
+    retired_mcp_servers: null,
     name: "Researcher",
     description: "",
     avatar_url: null,
@@ -26,20 +27,20 @@ function buildStoredTeammate(overrides: Partial<Record<keyof Teammate, unknown>>
     created_at: "2026-01-01T00:00:00.000Z",
     updated_at: null,
     ...overrides,
-  } as unknown as Teammate;
+  };
 }
 
 describe("normaliseTeammateResponse", () => {
   it("turns the stored JSON string columns into arrays", () => {
     const response = normaliseTeammateResponse(
       buildStoredTeammate({
-        servers: '[{"url":"https://mcp.example.com","type":"sse"}]',
+        servers: '[{"id":"registered-docs"}]',
         few_shot_examples: '[{"input":"hello","output":"hi"}]',
         enabled_tools: '["web_search","code_execution"]',
       }),
     );
 
-    expect(response.servers).toEqual([{ url: "https://mcp.example.com", type: "sse" }]);
+    expect(response.servers).toEqual([{ id: "registered-docs" }]);
     expect(response.few_shot_examples).toEqual([{ input: "hello", output: "hi" }]);
     expect(response.enabled_tools).toEqual(["web_search", "code_execution"]);
   });
@@ -47,13 +48,13 @@ describe("normaliseTeammateResponse", () => {
   it("keeps columns a driver already decoded", () => {
     const response = normaliseTeammateResponse(
       buildStoredTeammate({
-        servers: [{ url: "https://mcp.example.com" }],
+        servers: [{ id: "registered-docs" }],
         few_shot_examples: [{ input: "hello", output: "hi" }],
         enabled_tools: ["web_search"],
       }),
     );
 
-    expect(response.servers).toEqual([{ url: "https://mcp.example.com", type: "sse" }]);
+    expect(response.servers).toEqual([{ id: "registered-docs" }]);
     expect(response.few_shot_examples).toEqual([{ input: "hello", output: "hi" }]);
     expect(response.enabled_tools).toEqual(["web_search"]);
   });
@@ -75,12 +76,12 @@ describe("normaliseTeammateResponse", () => {
   it("drops entries that do not match the element shape", () => {
     const response = normaliseTeammateResponse(
       buildStoredTeammate({
-        servers: '[{"url":"not-a-url"},{"url":"https://mcp.example.com"}]',
+        servers: '[{"url":"https://retired.example.test"},{"id":"registered-docs"}]',
         few_shot_examples: '[{"input":"hello"},{"input":"hello","output":"hi"}]',
       }),
     );
 
-    expect(response.servers).toEqual([{ url: "https://mcp.example.com", type: "sse" }]);
+    expect(response.servers).toEqual([{ id: "registered-docs" }]);
     expect(response.few_shot_examples).toEqual([{ input: "hello", output: "hi" }]);
   });
 
