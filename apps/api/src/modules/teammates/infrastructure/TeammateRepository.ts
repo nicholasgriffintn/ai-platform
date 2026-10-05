@@ -8,6 +8,7 @@ import type {
 import {
   PLATFORM_TEAMMATE_AUTHOR_USER_ID,
   PLATFORM_TEAMMATE_SCOPE_ID,
+  POLY_TEAMMATE_ID,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -112,9 +113,9 @@ export class TeammateRepository extends BaseRepository {
     return this.runQuery<Teammate>(
       `SELECT * FROM teammates
 			 WHERE (owner_scope_type = 'user' AND owner_scope_id = ?)${workspaceClause}
-				OR owner_scope_type = 'platform'
+				OR (owner_scope_type = 'platform' AND id != ?)
 			 ORDER BY created_at DESC`,
-      [String(userId), ...uniqueWorkspaceIds],
+      [String(userId), ...uniqueWorkspaceIds, POLY_TEAMMATE_ID],
     );
   }
 

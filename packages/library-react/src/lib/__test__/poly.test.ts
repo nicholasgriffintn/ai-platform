@@ -1,17 +1,13 @@
-import { META_NAVIGATION_DATA_KEY } from "@ngriffin_uk/polychat-schemas";
+import { POLY_NAVIGATION_DATA_KEY } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import { getFilesTabPath, getProjectFilesPath, parseFilesSubpath } from "../files-route.js";
-import {
-  buildMetaAssistantUiContext,
-  getMetaNavigationHref,
-  readMetaNavigationTarget,
-} from "../meta-assistant.js";
 import { getActivePlace } from "../navigation/places.js";
+import { buildPolyUiContext, getPolyNavigationHref, readPolyNavigationTarget } from "../poly.js";
 
-describe("buildMetaAssistantUiContext", () => {
+describe("buildPolyUiContext", () => {
   it("describes an open project conversation", () => {
-    expect(buildMetaAssistantUiContext("/work/w1/projects/p1/chat/c1")).toEqual({
+    expect(buildPolyUiContext("/work/w1/projects/p1/chat/c1")).toEqual({
       route: "/work/w1/projects/p1/chat/c1",
       mode: "work",
       place: "conversations",
@@ -22,12 +18,12 @@ describe("buildMetaAssistantUiContext", () => {
   });
 
   it("describes a project task and a bare workspace", () => {
-    expect(buildMetaAssistantUiContext("/work/w1/projects/p1/tasks/t1")).toMatchObject({
+    expect(buildPolyUiContext("/work/w1/projects/p1/tasks/t1")).toMatchObject({
       workspaceId: "w1",
       projectId: "p1",
       taskId: "t1",
     });
-    expect(buildMetaAssistantUiContext("/work/w1/members")).toEqual({
+    expect(buildPolyUiContext("/work/w1/members")).toEqual({
       route: "/work/w1/members",
       mode: "work",
       place: "conversations",
@@ -36,16 +32,16 @@ describe("buildMetaAssistantUiContext", () => {
   });
 
   it("uses the store conversation for the personal chat root and ignores reserved chat segments", () => {
-    expect(buildMetaAssistantUiContext("/chat", "c9")).toMatchObject({
+    expect(buildPolyUiContext("/chat", "c9")).toMatchObject({
       mode: "chat",
       place: "conversations",
       conversationId: "c9",
     });
-    expect(buildMetaAssistantUiContext("/chat/c2")).toMatchObject({ conversationId: "c2" });
-    expect(buildMetaAssistantUiContext("/chat/teammates").conversationId).toBeUndefined();
-    expect(buildMetaAssistantUiContext("/chat/teammates").place).toBe("teammates");
-    expect(buildMetaAssistantUiContext("/chat/scheduled").conversationId).toBeUndefined();
-    expect(buildMetaAssistantUiContext("/chat/scheduled").place).toBe("scheduled");
+    expect(buildPolyUiContext("/chat/c2")).toMatchObject({ conversationId: "c2" });
+    expect(buildPolyUiContext("/chat/teammates").conversationId).toBeUndefined();
+    expect(buildPolyUiContext("/chat/teammates").place).toBe("teammates");
+    expect(buildPolyUiContext("/chat/scheduled").conversationId).toBeUndefined();
+    expect(buildPolyUiContext("/chat/scheduled").place).toBe("scheduled");
   });
 });
 
@@ -53,7 +49,7 @@ describe("meta navigation", () => {
   it("opens Work Canvas, Files, Teammates, Plugins and Scheduled under their authorised project", () => {
     for (const place of ["canvas", "files", "teammates", "plugins", "scheduled"] as const) {
       expect(
-        getMetaNavigationHref({
+        getPolyNavigationHref({
           kind: "place",
           mode: "work",
           place,
@@ -61,37 +57,37 @@ describe("meta navigation", () => {
           projectId: "p1",
         }),
       ).toBe(`/work/w1/projects/p1/${place}`);
-      expect(getMetaNavigationHref({ kind: "place", mode: "work", place })).toBe("/work");
+      expect(getPolyNavigationHref({ kind: "place", mode: "work", place })).toBe("/work");
     }
   });
   it("resolves every target kind to a host path", () => {
     expect(
-      getMetaNavigationHref({
+      getPolyNavigationHref({
         kind: "conversation",
         conversationId: "c1",
         workspaceId: "w1",
         projectId: "p1",
       }),
     ).toBe("/work/w1/projects/p1/chat/c1");
-    expect(getMetaNavigationHref({ kind: "conversation", conversationId: "c1" })).toBe("/chat/c1");
-    expect(getMetaNavigationHref({ kind: "project", workspaceId: "w1", projectId: "p1" })).toBe(
+    expect(getPolyNavigationHref({ kind: "conversation", conversationId: "c1" })).toBe("/chat/c1");
+    expect(getPolyNavigationHref({ kind: "project", workspaceId: "w1", projectId: "p1" })).toBe(
       "/work/w1/projects/p1",
     );
-    expect(getMetaNavigationHref({ kind: "place", place: "attention", mode: "chat" })).toBe(
+    expect(getPolyNavigationHref({ kind: "place", place: "attention", mode: "chat" })).toBe(
       "/chat/attention",
     );
-    expect(getMetaNavigationHref({ kind: "place", place: "attention", mode: "work" })).toBe(
+    expect(getPolyNavigationHref({ kind: "place", place: "attention", mode: "work" })).toBe(
       "/work/attention",
     );
-    expect(getMetaNavigationHref({ kind: "place", place: "you", mode: "chat" })).toBe("/profile");
+    expect(getPolyNavigationHref({ kind: "place", place: "you", mode: "chat" })).toBe("/profile");
   });
 
   it("only reads well-formed navigation data", () => {
     expect(
-      readMetaNavigationTarget({ [META_NAVIGATION_DATA_KEY]: { kind: "place", place: "files" } }),
+      readPolyNavigationTarget({ [POLY_NAVIGATION_DATA_KEY]: { kind: "place", place: "files" } }),
     ).toEqual({ kind: "place", place: "files", mode: "chat" });
-    expect(readMetaNavigationTarget({ [META_NAVIGATION_DATA_KEY]: { kind: "nope" } })).toBeNull();
-    expect(readMetaNavigationTarget(undefined)).toBeNull();
+    expect(readPolyNavigationTarget({ [POLY_NAVIGATION_DATA_KEY]: { kind: "nope" } })).toBeNull();
+    expect(readPolyNavigationTarget(undefined)).toBeNull();
   });
 });
 

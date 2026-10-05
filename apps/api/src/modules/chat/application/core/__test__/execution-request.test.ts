@@ -45,7 +45,7 @@ describe("createChatExecutionRequest", () => {
   it("sends only the current Poly instructions after changing product mode", () => {
     const input = createInput();
 
-    input.chatOptions.meta_assistant = { ui_context: { mode: "work" } };
+    input.chatOptions.poly = { ui_context: { mode: "work" } };
     input.prepared.systemPrompt = "<mode>Work</mode>";
     input.messages.unshift({ role: "system", content: "<mode>Chat</mode>" });
     const request = createChatExecutionRequest(input).providerRequest();

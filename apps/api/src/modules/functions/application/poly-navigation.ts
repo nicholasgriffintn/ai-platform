@@ -1,9 +1,9 @@
 import {
-  META_NAVIGATION_DATA_KEY,
+  POLY_NAVIGATION_DATA_KEY,
   TEAMMATE_PERMISSIONS_SENTENCE,
-  type MetaFoundConversation,
-  type MetaNavigationTarget,
-  type MetaAssistantUiContext,
+  type PolyFoundConversation,
+  type PolyNavigationTarget,
+  type PolyUiContext,
 } from "@ngriffin_uk/polychat-schemas";
 import { truncateText as truncate, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -11,10 +11,10 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { toStringValue } from "@ngriffin_uk/polychat-utility-server/strings";
 import type z from "zod/v4";
 
-import { MAX_META_ATTENTION_LIMIT, MAX_META_READ_MESSAGES } from "~/config/limits";
+import { MAX_POLY_ATTENTION_LIMIT, MAX_POLY_READ_MESSAGES } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { listWorkAttention } from "~/modules/attention/application";
-import { isMetaConversationType } from "~/modules/chat/application/policy/meta-assistant";
+import { isPolyNavigationTurn } from "~/modules/chat/application/policy/poly";
 import { handleUpdateChatCompletion } from "~/modules/completions/application/updateChatCompletion";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
 import {
@@ -50,7 +50,7 @@ import {
   type readConversationInputSchema,
   start_conversation as startConversationDescriptor,
   type startConversationInputSchema,
-} from "./definitions/meta";
+} from "./definitions/poly-navigation";
 
 const DEFAULT_ATTENTION_LIMIT = 10;
 const DEFAULT_FIND_LIMIT = 8;
@@ -58,34 +58,34 @@ const DEFAULT_READ_MESSAGES = 30;
 const MAX_TRANSCRIPT_CHARACTERS = 12_000;
 const MAX_MESSAGE_CHARACTERS = 1_200;
 
-interface MetaToolScope {
+interface PolyNavigationToolScope {
   context: ServiceContext;
   user: IUser;
 }
 
-function requireMetaScope(toolContext: ApiToolExecutionContext, toolName: string): MetaToolScope {
+function requirePolyNavigationScope(
+  toolContext: ApiToolExecutionContext,
+  toolName: string,
+): PolyNavigationToolScope {
   const request = toolContext.request;
 
-  if (!isMetaConversationType(request.request?.conversation_type)) {
-    throw new AssistantError(
-      `${toolName} is only available to the meta assistant`,
-      ErrorType.FORBIDDEN,
-      403,
-    );
+  if (
+    !isPolyNavigationTurn({
+      conversationType: request.request?.conversation_type,
+      trigger: request.request?.trigger,
+    })
+  ) {
+    throw new AssistantError(`${toolName} is only available to Poly`, ErrorType.FORBIDDEN, 403);
   }
 
   if (!request.context || !request.user?.id) {
-    throw new AssistantError(
-      "The meta assistant needs a signed-in user",
-      ErrorType.AUTHENTICATION_ERROR,
-      401,
-    );
+    throw new AssistantError("Poly needs a signed-in user", ErrorType.AUTHENTICATION_ERROR, 401);
   }
 
   return { context: request.context, user: request.user };
 }
 
-function describeConversation(conversation: MetaFoundConversation): string {
+function describeConversation(conversation: PolyFoundConversation): string {
   const title = conversation.title?.trim() || "Untitled conversation";
   const place = conversation.project
     ? `${conversation.project.name} · ${conversation.project.workspaceName}`
@@ -99,7 +99,7 @@ function describeConversation(conversation: MetaFoundConversation): string {
   return `- ${title} (${conversation.id}) · ${place}${flags.length ? ` · ${flags.join(", ")}` : ""}`;
 }
 
-function toFoundConversation(row: Record<string, unknown>): MetaFoundConversation {
+function toFoundConversation(row: Record<string, unknown>): PolyFoundConversation {
   return {
     id: toStringValue(row.id, ""),
     title: typeof row.title === "string" ? row.title : null,
@@ -114,9 +114,9 @@ function toFoundConversation(row: Record<string, unknown>): MetaFoundConversatio
 }
 
 async function listRecentConversations(
-  scope: MetaToolScope,
+  scope: PolyNavigationToolScope,
   limit: number,
-): Promise<MetaFoundConversation[]> {
+): Promise<PolyFoundConversation[]> {
   const result = await scope.context.repositories.conversations.getUserConversations(
     scope.user.id,
     {
@@ -153,10 +153,10 @@ function extractMessageText(row: Record<string, unknown>): string {
 }
 
 async function resolveNavigationTarget(
-  scope: MetaToolScope,
-  target: MetaNavigationTarget,
-  uiContext?: MetaAssistantUiContext,
-): Promise<{ target: MetaNavigationTarget; label: string }> {
+  scope: PolyNavigationToolScope,
+  target: PolyNavigationTarget,
+  uiContext?: PolyUiContext,
+): Promise<{ target: PolyNavigationTarget; label: string }> {
   if (target.kind === "conversation") {
     const conversation = await requireConversationAccess(scope.context, target.conversationId);
     const projectId =
@@ -233,7 +233,7 @@ async function resolveNavigationTarget(
 export const find_places: ApiToolDefinition = {
   ...findPlacesDescriptor,
   execute: async (args: z.infer<typeof findPlacesInputSchema>, toolContext) => {
-    const scope = requireMetaScope(toolContext, findPlacesDescriptor.name);
+    const scope = requirePolyNavigationScope(toolContext, findPlacesDescriptor.name);
     const limit = args.limit ?? DEFAULT_FIND_LIMIT;
     const query = args.query?.trim();
 
@@ -251,7 +251,7 @@ export const find_places: ApiToolDefinition = {
     }
 
     const results = await searchPolychat(scope.context, { query, limit });
-    const conversations: MetaFoundConversation[] = results.conversations.map((conversation) => ({
+    const conversations: PolyFoundConversation[] = results.conversations.map((conversation) => ({
       id: conversation.id,
       title: conversation.title,
       updatedAt: conversation.updatedAt,
@@ -288,18 +288,18 @@ export const find_places: ApiToolDefinition = {
 export const open_place: ApiToolDefinition = {
   ...openPlaceDescriptor,
   execute: async (args: z.infer<typeof openPlaceInputSchema>, toolContext) => {
-    const scope = requireMetaScope(toolContext, openPlaceDescriptor.name);
+    const scope = requirePolyNavigationScope(toolContext, openPlaceDescriptor.name);
     const resolved = await resolveNavigationTarget(
       scope,
       args.target,
-      toolContext.request.request?.meta_assistant?.ui_context,
+      toolContext.request.request?.poly?.ui_context,
     );
 
     return {
       status: "success",
       name: openPlaceDescriptor.name,
       content: `Opening ${resolved.label}.`,
-      data: { [META_NAVIGATION_DATA_KEY]: resolved.target, label: resolved.label },
+      data: { [POLY_NAVIGATION_DATA_KEY]: resolved.target, label: resolved.label },
     } satisfies IFunctionResponse;
   },
 };
@@ -307,7 +307,7 @@ export const open_place: ApiToolDefinition = {
 export const organise_conversation: ApiToolDefinition = {
   ...organiseConversationDescriptor,
   execute: async (args: z.infer<typeof organiseConversationInputSchema>, toolContext) => {
-    const scope = requireMetaScope(toolContext, organiseConversationDescriptor.name);
+    const scope = requirePolyNavigationScope(toolContext, organiseConversationDescriptor.name);
     const conversation = await requireConversationAccess(scope.context, args.conversationId);
     const title =
       typeof conversation.title === "string" && conversation.title.trim()
@@ -365,9 +365,9 @@ export const organise_conversation: ApiToolDefinition = {
 export const read_conversation: ApiToolDefinition = {
   ...readConversationDescriptor,
   execute: async (args: z.infer<typeof readConversationInputSchema>, toolContext) => {
-    const scope = requireMetaScope(toolContext, readConversationDescriptor.name);
+    const scope = requirePolyNavigationScope(toolContext, readConversationDescriptor.name);
     const conversation = await requireConversationAccess(scope.context, args.conversationId);
-    const limit = Math.min(args.maxMessages ?? DEFAULT_READ_MESSAGES, MAX_META_READ_MESSAGES);
+    const limit = Math.min(args.maxMessages ?? DEFAULT_READ_MESSAGES, MAX_POLY_READ_MESSAGES);
     const rows = await scope.context.repositories.messages.getConversationMessages(
       args.conversationId,
       limit,
@@ -418,7 +418,7 @@ export const read_conversation: ApiToolDefinition = {
 export const start_conversation: ApiToolDefinition = {
   ...startConversationDescriptor,
   execute: async (args: z.infer<typeof startConversationInputSchema>, toolContext) => {
-    const scope = requireMetaScope(toolContext, startConversationDescriptor.name);
+    const scope = requirePolyNavigationScope(toolContext, startConversationDescriptor.name);
     const projectId = args.scope === "project" ? args.projectId : undefined;
     const project = projectId
       ? (await requireProjectAccess(scope.context, projectId)).project
@@ -441,7 +441,7 @@ export const start_conversation: ApiToolDefinition = {
       project ? { project_id: project.id } : {},
     );
 
-    const target: MetaNavigationTarget = {
+    const target: PolyNavigationTarget = {
       kind: "conversation",
       conversationId,
       ...(project ? { projectId: project.id, workspaceId: project.workspace_id } : {}),
@@ -456,7 +456,7 @@ export const start_conversation: ApiToolDefinition = {
       content: `Started a conversation in ${place}.${
         args.openingMessage ? " The first message is waiting in the composer." : ""
       }`,
-      data: { [META_NAVIGATION_DATA_KEY]: target, conversationId },
+      data: { [POLY_NAVIGATION_DATA_KEY]: target, conversationId },
     } satisfies IFunctionResponse;
   },
 };
@@ -464,7 +464,7 @@ export const start_conversation: ApiToolDefinition = {
 export const hire_teammate: ApiToolDefinition = {
   ...hireTeammateDescriptor,
   execute: async (args: z.infer<typeof hireTeammateInputSchema>, toolContext) => {
-    const scope = requireMetaScope(toolContext, hireTeammateDescriptor.name);
+    const scope = requirePolyNavigationScope(toolContext, hireTeammateDescriptor.name);
     const hired = await hireTeammateService(
       scope.context,
       {
@@ -488,8 +488,8 @@ export const hire_teammate: ApiToolDefinition = {
 export const list_attention: ApiToolDefinition = {
   ...listAttentionDescriptor,
   execute: async (args: z.infer<typeof listAttentionInputSchema>, toolContext) => {
-    const scope = requireMetaScope(toolContext, listAttentionDescriptor.name);
-    const limit = Math.min(args.limit ?? DEFAULT_ATTENTION_LIMIT, MAX_META_ATTENTION_LIMIT);
+    const scope = requirePolyNavigationScope(toolContext, listAttentionDescriptor.name);
+    const limit = Math.min(args.limit ?? DEFAULT_ATTENTION_LIMIT, MAX_POLY_ATTENTION_LIMIT);
     const { items, total } = await listWorkAttention(scope.context, {
       ...(args.kind ? { kind: args.kind } : {}),
       ...(args.projectId ? { projectId: args.projectId } : {}),
@@ -522,7 +522,7 @@ export const list_attention: ApiToolDefinition = {
   },
 };
 
-export const metaTools: ApiToolDefinition[] = [
+export const polyNavigationTools: ApiToolDefinition[] = [
   find_places,
   open_place,
   organise_conversation,

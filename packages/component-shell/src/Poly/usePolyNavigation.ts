@@ -1,13 +1,13 @@
 import { CHATS_QUERY_KEY } from "@ngriffin_uk/polychat-library-client";
 import {
-  getMetaNavigationHref,
-  readMetaNavigationTarget,
+  getPolyNavigationHref,
+  readPolyNavigationTarget,
   type useChat,
 } from "@ngriffin_uk/polychat-library-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
-export function useMetaAssistantNavigation(
+export function usePolyNavigation(
   conversation: ReturnType<typeof useChat>["data"],
   conversationId: string | undefined,
   onNavigate: (href: string) => void,
@@ -46,10 +46,10 @@ export function useMetaAssistantNavigation(
         void queryClient.invalidateQueries({ queryKey: [CHATS_QUERY_KEY] });
       }
 
-      const target = readMetaNavigationTarget(message.data);
+      const target = readPolyNavigationTarget(message.data);
 
       if (target) {
-        onNavigate(getMetaNavigationHref(target));
+        onNavigate(getPolyNavigationHref(target));
       }
     }
   }, [conversation, conversationId, onNavigate, queryClient]);

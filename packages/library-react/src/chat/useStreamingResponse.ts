@@ -30,6 +30,7 @@ import {
   getModelProvider,
   isBrowserModel,
   isTerminalChatRunStatus,
+  POLY_TEAMMATE_ID,
   runsOnDevice,
   type ChatRun,
   type ChatRunStatus,
@@ -651,8 +652,11 @@ export function useStreamingResponse(
             assistantMessage = await apiService.streamChatCompletions({
               chatSettings,
               completionId: conversationId,
-              endpoint:
-                chatMode === "agent" ? `/teammates/${selectedTeammateId}/completions` : undefined,
+              endpoint: effectiveRequestOptions?.poly
+                ? `/teammates/${POLY_TEAMMATE_ID}/completions`
+                : chatMode === "agent"
+                  ? `/teammates/${selectedTeammateId}/completions`
+                  : undefined,
               messages: normalizedMessages,
               mode: chatMode,
               computeSite: effectiveComputeSite,

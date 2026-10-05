@@ -1,5 +1,5 @@
 import { getPlatformTeammateBrief } from "@ngriffin_uk/polychat-ai-prompts";
-import { PLATFORM_TEAMMATES, type PlatformTeammate } from "@ngriffin_uk/polychat-schemas";
+import { SYNCED_PLATFORM_TEAMMATES, type PlatformTeammate } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -7,7 +7,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ensurePlatformTeammates } from "../platform-teammates";
 
 function catalogueRow(
-  teammate: PlatformTeammate = PLATFORM_TEAMMATES[0],
+  teammate: PlatformTeammate = SYNCED_PLATFORM_TEAMMATES[0],
   overrides: Record<string, unknown> = {},
 ) {
   return {
@@ -56,7 +56,7 @@ function createContext(existing: ReturnType<typeof catalogueRow>[]) {
 describe("ensurePlatformTeammates", () => {
   it("writes nothing when the rows already match the definitions", async () => {
     const { context, upsertPlatformTeammates } = createContext(
-      PLATFORM_TEAMMATES.map((teammate) => catalogueRow(teammate)),
+      SYNCED_PLATFORM_TEAMMATES.map((teammate) => catalogueRow(teammate)),
     );
 
     await ensurePlatformTeammates(context);
@@ -65,10 +65,10 @@ describe("ensurePlatformTeammates", () => {
   });
 
   it("updates only the teammate whose definition drifted", async () => {
-    const drifted = PLATFORM_TEAMMATES[0];
+    const drifted = SYNCED_PLATFORM_TEAMMATES[0];
     const { context, upsertPlatformTeammates } = createContext([
       catalogueRow(drifted, { name: "Old name" }),
-      ...PLATFORM_TEAMMATES.slice(1).map((teammate) => catalogueRow(teammate)),
+      ...SYNCED_PLATFORM_TEAMMATES.slice(1).map((teammate) => catalogueRow(teammate)),
     ]);
 
     await ensurePlatformTeammates(context);

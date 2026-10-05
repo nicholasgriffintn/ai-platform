@@ -17,9 +17,9 @@ export const MAX_QUEUE_DELAY_SECONDS = 60 * 60 * 12;
 export const PROJECT_TASK_INTERACTION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 // Tool call budgets
-export const MAX_META_FIND_LIMIT = 20;
-export const MAX_META_READ_MESSAGES = 60;
-export const MAX_META_ATTENTION_LIMIT = 25;
+export const MAX_POLY_FIND_LIMIT = 20;
+export const MAX_POLY_READ_MESSAGES = 60;
+export const MAX_POLY_ATTENTION_LIMIT = 25;
 export const MAX_REVIEWERS = 4;
 export const MAX_SOURCE_LENGTH = 12_000;
 export const MAX_COUNCIL_MEMBERS = 6;

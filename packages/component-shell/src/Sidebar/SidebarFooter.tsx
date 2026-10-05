@@ -9,20 +9,20 @@ import { SidebarSettingsPopover } from "./SidebarSettingsPopover.js";
 export function SidebarFooter() {
   const { trackEvent } = useTrackEvent();
   const { openAssistant } = useShellHost();
-  const showMetaAssistant = useUIStore((state) => state.showMetaAssistant);
+  const showPoly = useUIStore((state) => state.showPoly);
 
   return (
     <ControlledSidebarFooter>
       <button
         type="button"
-        aria-pressed={showMetaAssistant}
+        aria-pressed={showPoly}
         className={cn(
           "flex w-full min-w-0 items-center justify-between gap-3 rounded-none border-b border-sidebar-border px-3 py-3 text-left text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus:ring-2 focus:ring-sidebar-ring focus:outline-none focus:ring-inset",
-          showMetaAssistant ? "bg-sidebar-accent text-sidebar-accent-foreground" : "bg-sidebar",
+          showPoly ? "bg-sidebar-accent text-sidebar-accent-foreground" : "bg-sidebar",
         )}
         onClick={() => {
           trackEvent({
-            name: "open_meta_assistant",
+            name: "open_poly",
             category: "navigation",
             label: "sidebar_footer",
             value: 1,

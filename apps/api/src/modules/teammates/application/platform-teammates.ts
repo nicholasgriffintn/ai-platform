@@ -2,8 +2,8 @@ import { getPlatformTeammateBrief } from "@ngriffin_uk/polychat-ai-prompts";
 import {
   findPlatformTeammate,
   isPlatformTeammateId,
-  PLATFORM_TEAMMATES,
   readToolIds,
+  SYNCED_PLATFORM_TEAMMATES,
   type PlatformTeammate,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -40,7 +40,7 @@ export async function ensurePlatformTeammates(context: ServiceContext): Promise<
   context.ensureDatabase();
   const existing = await context.repositories.teammates.listPlatformTeammates();
   const existingById = new Map(existing.map((row) => [row.id, row]));
-  const drifted = PLATFORM_TEAMMATES.map(toPlatformTeammateRecord).filter((record) => {
+  const drifted = SYNCED_PLATFORM_TEAMMATES.map(toPlatformTeammateRecord).filter((record) => {
     const row = existingById.get(record.id);
 
     return !row || hasDrifted(row, record);

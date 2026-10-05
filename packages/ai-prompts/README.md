@@ -23,6 +23,6 @@ const prompt = buildStandardChatPrompt({
 
 - `getPrompt` / `getPromptForTask` throw `PromptNotFoundError`; `tryGetPrompt` returns `undefined`.
 - `renderPrompt` throws `PromptRenderError` when a required value is missing and `PromptTemplateError` for malformed templates.
-- Builders cover the composed chat system prompt, meta-assistant, sandbox controller, memory and document prompts, agent system prompts, sandbox-worker prompts and provider prompts. `PromptBuilder` is exported for custom compositions.
+- Builders cover the composed chat system prompt, Poly, sandbox controller, memory and document prompts, agent system prompts, sandbox-worker prompts and provider prompts. `PromptBuilder` is exported for custom compositions.
 
 All prompt text lives in [`@ngriffin_uk/polychat-library-prompts-catalogue`](../library-prompts-catalogue); this package never stores prompt copy.

@@ -143,14 +143,14 @@ export async function buildSystemPrompt({
       activeGoal,
     );
 
-  if (system_prompt && !options.meta_assistant) {
+  if (system_prompt && !options.poly) {
     return withMemory(system_prompt);
   }
 
   const systemPromptFromMessages = sanitisedMessages.find((message) => message.role === "system");
 
   if (
-    !options.meta_assistant &&
+    !options.poly &&
     typeof systemPromptFromMessages?.content === "string" &&
     systemPromptFromMessages.content
   ) {
@@ -170,7 +170,7 @@ export async function buildSystemPrompt({
       reasoning_effort,
       max_tokens,
       options: options.options,
-      meta_assistant: options.meta_assistant,
+      poly: options.poly,
     },
     model: primaryModel,
     user: user || undefined,

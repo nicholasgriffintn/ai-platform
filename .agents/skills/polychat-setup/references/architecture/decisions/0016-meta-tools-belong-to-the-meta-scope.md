@@ -1,6 +1,6 @@
 # ADR 0016: Keep meta tools in the meta scope
 
-Status: Implemented.
+Status: Superseded by [0072](0072-poly-is-a-platform-teammate-with-one-thread.md).
 
 ## Problem
 
@@ -8,11 +8,11 @@ Polychat needed a home base that finds, opens, tidies and reads a person's conve
 
 ## Decision
 
-Poly is an ordinary conversation of type `meta` owned by the signed-in user. A request becomes meta when the client sends `meta_assistant` or when the stored conversation already has that type; the two must agree, and anonymous callers are refused. The client's `ui_context` — route, place, open conversation, workspace, project, task, run — is a hint the prompt may use to resolve phrases such as "this conversation"; every tool re-authorises the referenced record.
+Poly is an ordinary conversation of type `poly` owned by the signed-in user. A request becomes a Poly request when the client sends `poly` or when the stored conversation already has that type; the two must agree, and anonymous callers are refused. The client's `ui_context` — route, place, open conversation, workspace, project, task, run — is a hint the prompt may use to resolve phrases such as "this conversation"; every tool re-authorises the referenced record.
 
 The meta scope receives only the meta tool group and no world-facing tools, skills, memory or project context; other scopes never receive meta tools. Each meta tool refuses execution unless the request's conversation type is meta, and acts through the same services the web UI calls as that user. Navigation is a tool result the client follows; the server never redirects.
 
-Meta conversations are excluded from personal conversation lists, global search and bulk archive. The web renders Poly through the shared `ConversationThread` inside a conversation scope, so the open page keeps its own conversation while the overlay runs another.
+Poly conversations are excluded from personal conversation lists, global search and bulk archive. The web renders Poly through the shared `ConversationThread` inside a conversation scope, so the open page keeps its own conversation while the overlay runs another.
 
 Delegate conversations are also excluded from user-facing conversation lists, project lists and branch families. The listed conversation set is explicitly `chat` and `task`; global search may still surface delegate conversations when their parent context is useful.
 

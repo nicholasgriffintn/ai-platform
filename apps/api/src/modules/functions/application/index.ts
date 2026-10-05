@@ -8,7 +8,7 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { fromToolError } from "~/infrastructure/errors";
-import { filterToolsForConversationType } from "~/modules/chat/application/policy/meta-assistant";
+import { filterToolsForPolyTurn } from "~/modules/chat/application/policy/poly";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { PermissionChecker } from "~/modules/functions/application/permissions";
 import type { IFunctionResponse, IRequest } from "~/types";
@@ -42,11 +42,11 @@ import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
 import { search_memories, store_memory, read_memory_document } from "./memory";
 import { messageParent } from "./message-parent";
-import { metaTools } from "./meta";
 import { create_music } from "./music";
 import { next_edit_completion } from "./next_edit";
 import { extract_text_from_document } from "./ocr";
 import { run_pashi_tools, search_pashi_tools } from "./pashi";
+import { polyNavigationTools } from "./poly-navigation";
 import { process_recording } from "./process_recording";
 import { create_task, get_task, list_tasks, update_task } from "./projectTasks";
 import { propose_skill_revision } from "./propose_skill_revision";
@@ -140,7 +140,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   run_code,
   use_computer,
   hostedMcpApproval,
-  ...metaTools,
+  ...polyNavigationTools,
 ];
 
 export type RegisteredFunctionTool = ApiToolDefinition;
@@ -197,8 +197,10 @@ export const handleFunctions = async ({
   emitToolResult?: (response: IFunctionResponse) => Promise<void> | void;
 }): Promise<IFunctionResponse> => {
   if (
-    filterToolsForConversationType([{ name: functionName }], request.request?.conversation_type)
-      .length === 0
+    filterToolsForPolyTurn([{ name: functionName }], {
+      conversationType: request.request?.conversation_type,
+      trigger: request.request?.trigger,
+    }).length === 0
   ) {
     throw new AssistantError(
       `Tool "${functionName}" is not allowed in this conversation`,
