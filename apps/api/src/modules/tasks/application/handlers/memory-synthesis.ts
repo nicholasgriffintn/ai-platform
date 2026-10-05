@@ -1,10 +1,13 @@
 import { buildMemorySynthesisPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { memoryReflectionTaskDataSchema } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { z } from "zod/v4";
 
 import { ai } from "~/infrastructure/ai";
+import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import { reflectTeammateMemory } from "~/modules/memory-documents/application/reflection";
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import {
@@ -168,3 +171,33 @@ ${mems.map((m) => `- ${m.text}`).join("\n")}
       .join("\n\n");
   }
 }
+
+export const memoryReflection = defineTask({
+  payload: memoryReflectionTaskDataSchema,
+  handle: async (input, { env, message, execution }) => {
+    if (!message.user_id) {
+      return { status: "error", message: "Memory maintenance requires an owner" };
+    }
+
+    const user = await createServiceContext({ env }).repositories.users.getUserById(
+      message.user_id,
+    );
+
+    if (!user) {
+      return { status: "skipped", message: "Memory owner no longer exists" };
+    }
+
+    const outcome = await reflectTeammateMemory(
+      createServiceContext({ env, user }),
+      input,
+      message.taskId,
+      execution,
+    );
+
+    return {
+      status: "success",
+      message: outcome === "applied" ? "Teammate memory corrected" : "Memory is current",
+      data: { outcome },
+    };
+  },
+});

@@ -673,6 +673,48 @@ export const memoryDocumentRevision = sqliteTable(
 
 export type MemoryDocumentRevisionRow = typeof memoryDocumentRevision.$inferSelect;
 
+export const memoryReflectionCheckpoint = sqliteTable(
+  "memory_reflection_checkpoint",
+  {
+    id: text().primaryKey(),
+    context_id: text()
+      .notNull()
+      .references(() => teammateContext.id, { onDelete: "cascade" }),
+    conversation_id: text()
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    message_id: text().notNull(),
+    updated_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    contextConversationIdx: uniqueIndex("memory_reflection_checkpoint_context_conversation_idx").on(
+      table.context_id,
+      table.conversation_id,
+    ),
+  }),
+);
+
+export const memoryReflectionResult = sqliteTable("memory_reflection_result", {
+  id: text().primaryKey(),
+  context_id: text()
+    .notNull()
+    .references(() => teammateContext.id, { onDelete: "cascade" }),
+  conversation_id: text()
+    .notNull()
+    .references(() => conversation.id, { onDelete: "cascade" }),
+  through_message_id: text().notNull(),
+  revision: integer().notNull(),
+  status: text({ enum: ["applied", "no_change"] }).notNull(),
+  evidence_json: text().notNull(),
+  created_at: text()
+    .notNull()
+    .default(sql`(CURRENT_TIMESTAMP)`),
+});
+
+export type MemoryReflectionResultRow = typeof memoryReflectionResult.$inferSelect;
+
 export const messageUserState = sqliteTable(
   "message_user_state",
   {
@@ -2571,6 +2613,7 @@ export const tasks = sqliteTable(
     task_type: text({
       enum: [
         "memory_synthesis",
+        "memory_reflection",
         "research_polling",
         "replicate_polling",
         "async_message_polling",
@@ -2786,6 +2829,7 @@ export const projectTask = sqliteTable(
       .notNull()
       .references(() => workspace.id, { onDelete: "cascade" }),
     objective: text().notNull(),
+    execution_profile: text({ enum: ["diff_review"] }),
     acceptance_criteria: text({ mode: "json" }).$type<ProjectTaskCriterion[]>(),
     expected_output: text(),
     context: text({ mode: "json" }).$type<ProjectTaskContext>(),
@@ -2869,6 +2913,126 @@ export const projectTask = sqliteTable(
 );
 
 export type ProjectTaskRow = typeof projectTask.$inferSelect;
+
+export const projectTaskExternalImport = sqliteTable(
+  "project_task_external_import",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text()
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    task_id: text()
+      .notNull()
+      .unique()
+      .references(() => projectTask.id, { onDelete: "cascade" }),
+    source_id: text()
+      .notNull()
+      .references(() => source.id),
+    owner_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    provider: text().notNull(),
+    account_id: text().notNull(),
+    external_id: text().notNull(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    identity: uniqueIndex("project_task_external_import_identity").on(
+      table.workspace_id,
+      table.project_id,
+      table.owner_user_id,
+      table.provider,
+      table.account_id,
+      table.external_id,
+    ),
+  }),
+);
+
+export const projectReviewPolicy = sqliteTable(
+  "project_review_policy",
+  {
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    id: text().primaryKey(),
+    project_id: text()
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    owner_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    connection_id: text()
+      .notNull()
+      .references(() => providerConnection.id, { onDelete: "cascade" }),
+    provider: text().notNull(),
+    account_id: text().notNull(),
+    repository: text().notNull(),
+    enabled: integer().notNull().default(0),
+    token_budget: integer().notNull(),
+    revision: text().notNull(),
+  },
+  (table) => ({
+    identity: uniqueIndex("project_review_policy_identity").on(
+      table.workspace_id,
+      table.project_id,
+      table.provider,
+      table.connection_id,
+      table.repository,
+    ),
+    repository: index("project_review_policy_repository").on(
+      table.provider,
+      table.account_id,
+      table.repository,
+      table.enabled,
+    ),
+  }),
+);
+
+export const projectTaskReview = sqliteTable(
+  "project_task_review",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text()
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    task_id: text()
+      .notNull()
+      .unique()
+      .references(() => projectTask.id, { onDelete: "cascade" }),
+    source_id: text()
+      .notNull()
+      .references(() => source.id),
+    owner_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    target: text().notNull(),
+    policy_id: text(),
+    policy_revision: text(),
+    publication_status: text({ enum: ["unpublished", "publishing", "published", "unknown"] })
+      .notNull()
+      .default("unpublished"),
+    publication_body: text(),
+    published_url: text(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    project: index("project_task_review_project").on(table.project_id, table.created_at),
+    publicationStatus: check(
+      "project_task_review_publication_status",
+      sql`${table.publication_status} IN ('unpublished', 'publishing', 'published', 'unknown')`,
+    ),
+  }),
+);
 
 export const taskNotificationPreference = sqliteTable("task_notification_preference", {
   user_id: integer()

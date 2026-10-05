@@ -116,6 +116,7 @@ export const PROJECT_TASK_MAX_CRITERIA = 20;
 export const PROJECT_TASK_MAX_CONTEXT_ITEMS = 20;
 
 export const projectTaskContextSchema = z.object({
+  sourceIds: z.array(z.string().min(1)).max(PROJECT_TASK_MAX_CONTEXT_ITEMS).optional(),
   links: z
     .array(z.object({ url: z.url(), label: z.string().trim().max(120).nullable().default(null) }))
     .max(PROJECT_TASK_MAX_CONTEXT_ITEMS)
@@ -182,6 +183,7 @@ export const projectTaskSchema = z.object({
     .nullable()
     .optional(),
   runner: projectTaskRunnerSchema.nullable(),
+  executionProfile: z.literal("diff_review").nullable().optional(),
   createdByUserId: z.number().int().positive(),
   assigneeUserId: z.number().int().positive().nullable(),
   runnerIdentityUserId: z.number().int().positive().nullable(),

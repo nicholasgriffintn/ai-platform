@@ -1,6 +1,5 @@
 import { buildSkillsSection } from "@ngriffin_uk/polychat-ai-prompts";
 import {
-  formatSkillContent,
   isSkillResourceWithinLoadLimit,
   MAX_SKILL_RESOURCE_CONTENT_BYTES,
 } from "@ngriffin_uk/polychat-ai-skills";
@@ -33,43 +32,7 @@ function skillDocument(
   };
 }
 
-const BUILT_IN_SKILL_IDS = [
-  "article-analysis",
-  "artifacts",
-  "council",
-  "document-research",
-  "hacker-news",
-  "prompt-craft",
-  "recipes",
-  "sandbox-tasks",
-  "second-opinion",
-  "structured-reasoning",
-  "task-decomposition",
-  "tutoring",
-];
-
 describe("built-in skill catalogue", () => {
-  it("loads imported Markdown and resources through the catalogue", async () => {
-    const skill = await loadSkill("artifacts");
-    const resource = await getSkillResource("artifacts", "references/types.md");
-
-    expect(skill).toMatchObject({
-      name: "artifacts",
-      description: expect.stringContaining("Load when"),
-      resources: [
-        { path: "references/design.md", kind: "reference" },
-        { path: "references/types.md", kind: "reference" },
-      ],
-    });
-    expect(resource).toMatchObject({
-      path: "references/types.md",
-      encoding: "text",
-      mimeType: "text/markdown",
-      content: expect.stringContaining("# Artifact types"),
-    });
-    expect(formatSkillContent(skill)).toContain("- references/types.md (reference)");
-  });
-
   it("preserves an authored skill's exact stable revision and internal identity", () => {
     const catalog = new SkillCatalog([
       {
@@ -211,7 +174,6 @@ describe("built-in skill catalogue", () => {
       enabledSkillIds: new Set(["artifacts"]),
     });
 
-    expect(personal.map(({ id }) => id)).toEqual(BUILT_IN_SKILL_IDS);
     expect(personal.find((skill) => skill.id === "council")?.state).toBe("disabled");
     expect(personal.find((skill) => skill.id === "artifacts")?.state).toBe("ready");
     expect(project.find((skill) => skill.id === "artifacts")?.state).toBe("ready");

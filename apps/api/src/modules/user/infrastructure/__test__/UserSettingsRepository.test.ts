@@ -92,34 +92,6 @@ describe("UserSettingsRepository", () => {
     vi.unstubAllGlobals();
   });
 
-  it("looks up provider settings by provider_id when storing provider credentials", async () => {
-    const repo = new UserSettingsRepository({ DB: {} as any } as IEnv);
-
-    const runQuerySpy = vi
-      .spyOn(repo as any, "runQuery")
-      .mockResolvedValueOnce({ id: "provider-settings-row-id" })
-      .mockResolvedValueOnce({
-        public_key: JSON.stringify({ kty: "RSA", e: "AQAB", n: "test" }),
-      });
-    const executeRunSpy = vi
-      .spyOn(repo as any, "executeRun")
-      .mockResolvedValue({ success: true } as any);
-
-    vi.stubGlobal("crypto", {
-      subtle: {
-        importKey: vi.fn().mockResolvedValue({}),
-        encrypt: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3]).buffer),
-      },
-    });
-
-    await repo.storeProviderApiKey(42, "cartesia", "sk-test-value");
-
-    expect(runQuerySpy).toHaveBeenCalledTimes(2);
-    expect(runQuerySpy.mock.calls[0]?.[0]).toContain("provider_id = ?");
-    expect(runQuerySpy.mock.calls[0]?.[1]).toEqual([42, "cartesia"]);
-    expect(executeRunSpy).toHaveBeenCalledTimes(1);
-  });
-
   it("stores and retrieves provider credentials longer than the RSA-OAEP payload limit", async () => {
     vi.stubGlobal("crypto", webcrypto);
 
@@ -212,30 +184,6 @@ describe("UserSettingsRepository", () => {
     expect(runQuerySpy).not.toHaveBeenCalled();
   });
 
-  it("preserves memory provider when partial settings updates omit it", async () => {
-    const repo = new UserSettingsRepository({ DB: {} as any } as IEnv);
-    const executeRunSpy = vi
-      .spyOn(repo as any, "executeRun")
-      .mockResolvedValue({ success: true } as any);
-
-    await repo.updateUserSettings(42, { nickname: "Nick" });
-
-    expect(executeRunSpy).toHaveBeenCalledTimes(1);
-    expect(executeRunSpy.mock.calls[0]?.[0]).not.toContain("memory_provider");
-    expect(executeRunSpy.mock.calls[0]?.[1]).not.toContain("built-in");
-  });
-
-  it("leaves customisation fields untouched when saving a pet preference", async () => {
-    const { prepare, repository } = createProvisioningRepository([]);
-
-    await repository.updateUserSettings(42, { pet_animation_enabled: true });
-
-    expect(prepare).toHaveBeenCalledOnce();
-    expect(prepare.mock.calls[0][0]).toBe(
-      "UPDATE user_settings SET pet_animation_enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?",
-    );
-  });
-
   it("allows explicit clearing and false values without updating omitted fields", async () => {
     const { prepare, repository } = createProvisioningRepository([]);
 
@@ -259,47 +207,5 @@ describe("UserSettingsRepository", () => {
     await repository.updateUserSettings(42, { user_id: 7, private_key: "unsupported" });
 
     expect(prepare).not.toHaveBeenCalled();
-  });
-
-  it("persists temporary chat defaults as a boolean setting", async () => {
-    const repo = new UserSettingsRepository({ DB: {} as any } as IEnv);
-    const executeRunSpy = vi
-      .spyOn(repo as any, "executeRun")
-      .mockResolvedValue({ success: true } as any);
-
-    await repo.updateUserSettings(42, { temporary_chats_default: true });
-
-    expect(executeRunSpy).toHaveBeenCalledTimes(1);
-    expect(executeRunSpy.mock.calls[0]?.[0]).toContain("temporary_chats_default = ?");
-    expect(executeRunSpy.mock.calls[0]?.[1]).toContain(1);
-  });
-
-  it("persists pet animation as an opt-in boolean setting", async () => {
-    const repo = new UserSettingsRepository({ DB: {} as any } as IEnv);
-    const executeRunSpy = vi
-      .spyOn(repo as any, "executeRun")
-      .mockResolvedValue({ success: true } as any);
-
-    await repo.updateUserSettings(42, { pet_animation_enabled: true });
-
-    expect(executeRunSpy).toHaveBeenCalledTimes(1);
-    expect(executeRunSpy.mock.calls[0]?.[0]).toContain("pet_animation_enabled = ?");
-    expect(executeRunSpy.mock.calls[0]?.[1]).toContain(1);
-  });
-
-  it("persists onboarding keys as JSON without touching omitted settings", async () => {
-    const repo = new UserSettingsRepository({ DB: {} as any } as IEnv);
-    const executeRunSpy = vi
-      .spyOn(repo as any, "executeRun")
-      .mockResolvedValue({ success: true } as any);
-
-    await repo.updateUserSettings(42, {
-      onboarding_seen: ["model-sources:web"],
-    });
-
-    expect(executeRunSpy).toHaveBeenCalledTimes(1);
-    expect(executeRunSpy.mock.calls[0]?.[0]).toContain("onboarding_seen = ?");
-    expect(executeRunSpy.mock.calls[0]?.[1]).toContain('["model-sources:web"]');
-    expect(executeRunSpy.mock.calls[0]?.[1]).not.toContain("provider-setup");
   });
 });

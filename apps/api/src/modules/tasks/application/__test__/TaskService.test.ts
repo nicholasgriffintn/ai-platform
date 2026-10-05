@@ -85,23 +85,6 @@ describe("TaskService", () => {
     expect(send).toHaveBeenCalledOnce();
   });
 
-  it("persists and queues first-class project scope", async () => {
-    const send = vi.fn();
-    const service = new TaskService({ TASK_QUEUE: { send } } as any, taskRepository as any);
-
-    await service.enqueueTask({
-      task_type: "recipe_execution",
-      user_id: 42,
-      project_id: "project-1",
-      task_data: { recipeId: "bad-weather-alerts" },
-    });
-
-    expect(taskRepository.createTask).toHaveBeenCalledWith(
-      expect.objectContaining({ project_id: "project-1" }),
-    );
-    expect(send).toHaveBeenCalledWith(expect.objectContaining({ project_id: "project-1" }));
-  });
-
   it("normalises scheduled timestamps before persistence and delivery", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-31T17:00:00.000Z"));

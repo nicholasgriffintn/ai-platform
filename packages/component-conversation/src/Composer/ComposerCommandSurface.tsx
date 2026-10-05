@@ -78,6 +78,36 @@ export interface ComposerGoalChipState {
   onClear?: () => void;
 }
 
+export function ComposerAttachmentChips({
+  attachments,
+}: {
+  attachments: ComposerAttachmentChipState[];
+}) {
+  return (
+    <>
+      {attachments.map((attachment) => (
+        <ContextChip
+          key={attachment.id}
+          className="border-attention/45 bg-attention/12 text-attention"
+          kind="attachment"
+        >
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center text-attention">
+            {attachment.preview}
+          </span>
+          <span className="truncate">{attachment.label}</span>
+          {attachment.onClear ? (
+            <ChipRemoveButton
+              onClick={attachment.onClear}
+              className="rounded-sm text-attention hover:text-attention"
+              label="Remove attachment"
+            />
+          ) : null}
+        </ContextChip>
+      ))}
+    </>
+  );
+}
+
 export function ComposerCommandChips(
   props: ComposerCommandsState & {
     attachments?: ComposerAttachmentChipState[];
@@ -99,25 +129,7 @@ export function ComposerCommandChips(
 
   return (
     <div className="flex flex-wrap items-center gap-2 px-3 pt-3">
-      {props.attachments?.map((attachment) => (
-        <ContextChip
-          key={attachment.id}
-          className="border-attention/45 bg-attention/12 text-attention"
-          kind="attachment"
-        >
-          <span className="flex h-4 w-4 shrink-0 items-center justify-center text-attention">
-            {attachment.preview}
-          </span>
-          <span className="truncate">{attachment.label}</span>
-          {attachment.onClear ? (
-            <ChipRemoveButton
-              onClick={attachment.onClear}
-              className="rounded-sm text-attention hover:text-attention"
-              label="Remove attachment"
-            />
-          ) : null}
-        </ContextChip>
-      ))}
+      <ComposerAttachmentChips attachments={props.attachments ?? []} />
       {activeMode && (
         <ContextChip kind="mode" className="border-success/45 bg-success/12 text-success">
           <span
