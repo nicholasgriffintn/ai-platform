@@ -6,7 +6,7 @@ export const siteDataFieldNameSchema = z
   .regex(/^[a-z][a-zA-Z0-9_]{0,63}$/)
   .refine((value) => !["constructor", "prototype"].includes(value));
 
-export const siteDataBindingSchema = z
+export const siteSourceBindingSchema = z
   .object({
     kind: z.literal("source"),
     sourceId: z.string().min(1).max(200),
@@ -23,6 +23,8 @@ export const siteDataBindingSchema = z
       ),
   })
   .strict();
+
+export const siteDataBindingSchema = siteSourceBindingSchema;
 
 export const siteIntegrationScopeSchema = z
   .object({
