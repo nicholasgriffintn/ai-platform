@@ -30,8 +30,6 @@ Users label and select accounts in Profile. Sessions pin the selected active acc
 
 Expose only opaque local Session handles. The run's finaliser closes its Sessions; browser disconnection does not close a running turn. Maintenance retries expired or cleanup-pending rows. Do not delete journal evidence before confirming upstream cleanup.
 
-Work issue intake uses the selected active Linear account and the catalogue's `LINEAR_GET_LINEAR_ISSUE` read operation. Read the issue, approve the task objective and criteria, then import; the service reads it again and rejects a changed revision. The captured Source stays in the project, while the external account ID records provenance without transferring credentials. Keep request correlation separate from conversation identity: issue reads have project activity and no conversation. Close the temporary connector session after each read, including invalid provider responses. GitHub issue intake uses the native GitHub App connection rather than Composio.
-
 ## Approvals and events
 
 Interactive writes create an expiring receipt for the exact persisted tool call. Approve or reject through the normal conversation control; API resolution uses `PUT /apps/connectors/approvals/<approval-id>`. Continue the same completion with `connector_approval_id`, never replacement action arguments.

@@ -122,12 +122,16 @@ export async function requireSourceAccess(
   return source;
 }
 
-async function requireSourcesAccess(
+export async function requireSourcesAccess(
   context: ServiceContext,
   userId: number,
-  sourceIds: string[],
+  sourceIds: readonly string[],
   validate?: (source: SourceRecord) => void,
 ): Promise<SourceRecord[]> {
+  if (sourceIds.length === 0) {
+    return [];
+  }
+
   const records = await context.repositories.sources.getSourcesByIds(sourceIds);
   const recordsById = new Map(records.map((record) => [record.id, record]));
   const verifiedProjects = new Set<string>();
@@ -231,7 +235,7 @@ export async function createSource(
     }
   }
 
-  const { source, created } = await context.repositories.sources.createSource({
+  const { source, created } = await context.repositories.sources.createSourceWithOutcome({
     id: options.id,
     createdByUserId: userId,
     projectId: input.projectId,

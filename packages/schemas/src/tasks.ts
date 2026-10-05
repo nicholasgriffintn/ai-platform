@@ -18,10 +18,10 @@ import {
   MODEL_REGISTRY_EVAL_TASK_TYPE,
   MODEL_REGISTRY_INSPECT_TASK_TYPE,
 } from "./model-registry.js";
-import { PROJECT_REVIEW_INTAKE_TASK_TYPE } from "./project-task-integration-constants.js";
 
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
+export const PROJECT_REVIEW_INTAKE_TASK_TYPE = "project_review_intake";
 export const OCR_BATCH_POLLING_TASK_TYPE = "ocr_batch_polling";
 export const USAGE_ROLLUP_TASK_TYPE = "usage_rollup";
 export const REALTIME_RECONCILIATION_TASK_TYPE = "realtime_reconciliation";

@@ -5,6 +5,7 @@ import {
   listComposioConnectedAccounts,
 } from "@ngriffin_uk/polychat-ai-integrations";
 import { importProjectIssueSchema } from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
@@ -61,7 +62,7 @@ beforeEach(async () => {
       updatedAt: "2026-10-04T00:00:00Z",
     },
   ]);
-  vi.mocked(createComposioToolSession).mockResolvedValue("remote-session-1");
+  vi.mocked(createComposioToolSession).mockImplementation(async () => generateId());
   vi.mocked(deleteComposioToolSession).mockResolvedValue(undefined);
   vi.mocked(executeComposioSessionTool).mockResolvedValue({
     data: { issue: upstream },

@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { Miniflare } from "miniflare";
 
-import { applyMigrations } from "../support/migrations.mjs";
+import { applyMigrations } from "../../../../api/test/helpers/migrations.mjs";
 import { buildWorkerBundle } from "../support/worker-bundle.mjs";
 import { resolveMetaModelTool } from "./meta-model.mjs";
 import { resolveProjectTaskModelResponse } from "./project-task-model.mjs";

@@ -82,7 +82,17 @@ export interface SourceCollectionRecord {
 }
 
 export class SourceRepository extends BaseRepository {
-  async createSource(
+  async createSource(input: CreateSourceRecord): Promise<SourceRecord> {
+    const { source, created } = await this.createSourceWithOutcome(input);
+
+    if (!created) {
+      throw new AssistantError("Source already exists", ErrorType.DATABASE_ERROR);
+    }
+
+    return source;
+  }
+
+  async createSourceWithOutcome(
     input: CreateSourceRecord,
   ): Promise<{ source: SourceRecord; created: boolean }> {
     const insert = this.buildInsertQuery(
@@ -142,7 +152,7 @@ export class SourceRepository extends BaseRepository {
     return this.selectOne({ id: sourceId });
   }
 
-  async getSourcesByIds(sourceIds: string[]): Promise<SourceRecord[]> {
+  async getSourcesByIds(sourceIds: readonly string[]): Promise<SourceRecord[]> {
     return this.selectInChunks(sourceIds, (page) =>
       this.runQuery<SourceRecord>(
         `SELECT * FROM source WHERE id IN (${page.map(() => "?").join(", ")})`,

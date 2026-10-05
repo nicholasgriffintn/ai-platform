@@ -2,9 +2,9 @@ import { readFileSync, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 
-const { unstable_splitSqlQuery } = createRequire(
-  new URL("../../../../api/package.json", import.meta.url),
-)("wrangler");
+const { unstable_splitSqlQuery } = createRequire(new URL("../../package.json", import.meta.url))(
+  "wrangler",
+);
 
 export async function applyMigrations(database, migrationsDirectory) {
   const migrations = readdirSync(migrationsDirectory)
@@ -16,8 +16,8 @@ export async function applyMigrations(database, migrationsDirectory) {
       readFileSync(path.join(migrationsDirectory, migration), "utf8"),
     );
 
-    for (const statement of statements) {
-      await database.prepare(statement).run();
+    if (statements.length > 0) {
+      await database.batch(statements.map((statement) => database.prepare(statement)));
     }
   }
 }

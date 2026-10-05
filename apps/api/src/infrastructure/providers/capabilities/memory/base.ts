@@ -118,7 +118,7 @@ export abstract class BaseMemoryProvider implements MemoryProvider {
     }
 
     const repository = this.getSourceRepository();
-    const { source: memory } = await repository.createSource({
+    const memory = await repository.createSource({
       createdByUserId: this.config.user.id,
       projectId: this.memoryScope.type === "project" ? this.memoryScope.projectId : undefined,
       conversationId: input.conversationId,

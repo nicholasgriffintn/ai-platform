@@ -2,46 +2,47 @@ import type { ProjectTask, Source } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getSource } from "~/modules/sources/application/sources";
+import { formatSource, requireSourcesAccess } from "~/modules/sources/application/sources";
 
 export async function assertTaskSourcesAvailable(
   context: ServiceContext,
   projectId: string,
   sourceIds: readonly string[] = [],
 ): Promise<void> {
-  for (const sourceId of sourceIds) {
-    const source = await getSource(context, context.requireUser().id, sourceId);
-
-    if (source.projectId !== projectId || source.status !== "available") {
+  await requireSourcesAccess(context, context.requireUser().id, sourceIds, (source) => {
+    if (source.project_id !== projectId || source.status !== "available") {
       throw new AssistantError(
         "Task source is not available in this project",
         ErrorType.PARAMS_ERROR,
         400,
       );
     }
-  }
+  });
 }
 
 export async function buildProjectTaskContext(
   context: ServiceContext,
   task: ProjectTask,
 ): Promise<string | null> {
-  const sources = await Promise.all(
-    (task.context?.sourceIds ?? []).map(async (sourceId) => {
-      const source = await getSource(context, context.requireUser().id, sourceId);
-
-      if (source.projectId !== task.projectId || source.status !== "available" || !source.content) {
+  const sources = await requireSourcesAccess(
+    context,
+    context.requireUser().id,
+    task.context?.sourceIds ?? [],
+    (source) => {
+      if (
+        source.project_id !== task.projectId ||
+        source.status !== "available" ||
+        !source.content
+      ) {
         throw new AssistantError(
           "A task snapshot is unavailable in this project",
           ErrorType.NOT_FOUND,
           404,
         );
       }
-
-      return source;
-    }),
+    },
   );
-  const snapshotContext = renderTaskSources(sources);
+  const snapshotContext = renderTaskSources(sources.map(formatSource));
   const lines = [
     task.context?.notes ?? "",
     ...(task.context?.links ?? []).map((link) =>
