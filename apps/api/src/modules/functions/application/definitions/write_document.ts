@@ -8,6 +8,7 @@ export const write_document: FunctionToolDescriptor = {
     "Write a durable document in Files: a brief, report, plan or note. When revising an existing document, read it with get_document first, then pass its outputId and expectedRevision. A stale revision is rejected; reread before proposing another edit.",
   type: "normal",
   permissions: ["write"],
+  effects: { effectClass: "draft" },
   inputSchema: writeDocumentInputSchema,
   intentEvidence: (input) => ({
     operation: input.outputId ? "revise_document" : "create_document",

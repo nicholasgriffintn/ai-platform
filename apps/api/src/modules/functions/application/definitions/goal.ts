@@ -19,6 +19,7 @@ export const set_goal: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["write"],
+  effects: { effectClass: "draft" },
   intentEvidence: (input) => ({ operation: "set_goal", objective: input.objective }),
 };
 
@@ -67,4 +68,5 @@ export const complete_goal: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["reasoning"],
+  effects: { effectClass: "draft" },
 };

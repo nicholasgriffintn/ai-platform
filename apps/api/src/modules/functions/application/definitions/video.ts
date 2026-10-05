@@ -93,4 +93,5 @@ export const create_video: FunctionToolDescriptor = {
     required: ["prompt"],
   }),
   permissions: ["network"],
+  effects: { effectClass: "draft" },
 };

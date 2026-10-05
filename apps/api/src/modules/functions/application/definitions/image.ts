@@ -61,4 +61,5 @@ export const create_image: FunctionToolDescriptor = {
   }),
   type: "byok",
   permissions: ["network"],
+  effects: { effectClass: "draft" },
 };

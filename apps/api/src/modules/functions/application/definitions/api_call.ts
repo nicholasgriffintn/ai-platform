@@ -1,6 +1,22 @@
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
+import type { ToolEffectClass } from "@ngriffin_uk/polychat-schemas";
+import { normaliseHttpOrigin } from "@ngriffin_uk/polychat-utility-server/urls";
 
 import type { FunctionToolDescriptor } from "./types";
+
+function callApiEffectClass(input: { request_type?: string; method?: string }): ToolEffectClass {
+  if (input.request_type === "graphql") {
+    return "write";
+  }
+
+  const method = input.method?.toUpperCase() ?? "GET";
+
+  if (method === "GET") {
+    return "read";
+  }
+
+  return method === "DELETE" ? "destructive" : "write";
+}
 
 export const call_api: FunctionToolDescriptor = {
   name: "call_api",
@@ -8,14 +24,12 @@ export const call_api: FunctionToolDescriptor = {
     "Calls a REST or GraphQL API and returns a structured response. Use this when you need to fetch data from external APIs.",
   type: "normal",
   permissions: ["network", "write"],
+  effects: {
+    effectClass: callApiEffectClass,
+    destination: (input) => normaliseHttpOrigin(input.url) ?? undefined,
+  },
   intentEvidence: (input) => {
-    let destination: string | undefined;
-
-    try {
-      destination = new URL(input.url).origin;
-    } catch {
-      destination = undefined;
-    }
+    const destination = normaliseHttpOrigin(input.url);
 
     return {
       operation: "call_api",

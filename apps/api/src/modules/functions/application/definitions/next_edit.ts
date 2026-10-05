@@ -8,6 +8,7 @@ export const next_edit_completion: FunctionToolDescriptor = {
     "Request the next code edit suggestion from Mercury Coder using contextual project snippets.",
   type: "premium",
   permissions: ["network"],
+  effects: { effectClass: "read" },
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {

@@ -13,6 +13,12 @@ export {
   UPDATE_PLAN_TOOL_NAME,
   updatePlanToolDeclaration,
 } from "./control-tools.js";
+export {
+  requireToolEffects,
+  resolveToolDestination,
+  resolveToolEffectClass,
+  type ToolEffects,
+} from "./effects.js";
 export { ToolError, isToolError, type ToolErrorCode, type ToolValidationIssue } from "./errors.js";
 export { flattenObjectRootSchema } from "./json-schema.js";
 export { jsonSchemaToZod } from "./json-schema-to-zod.js";

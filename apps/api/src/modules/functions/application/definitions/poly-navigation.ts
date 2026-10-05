@@ -72,6 +72,7 @@ export const find_places: FunctionToolDescriptor = {
     "Find the user's conversations, projects and workspaces by title or name, or list their recent conversations when no query is given. Use it before opening, organising or reading anything you were not given an id for.",
   type: "normal",
   permissions: ["read"],
+  effects: { effectClass: "read" },
   inputSchema: findPlacesInputSchema,
 };
 
@@ -81,6 +82,7 @@ export const open_place: FunctionToolDescriptor = {
     "Take the user to a conversation, project, workspace or fixed place in Polychat. Only opens things the user can already access. Prefer this over describing where something is.",
   type: "normal",
   permissions: ["read"],
+  effects: { effectClass: "read" },
   inputSchema: openPlaceInputSchema,
 };
 
@@ -90,6 +92,7 @@ export const organise_conversation: FunctionToolDescriptor = {
     "Archive, restore, pin, unpin, mark read or unread, snooze, clear a snooze or rename one conversation the user can access. Confirm before acting on a conversation the user did not name explicitly.",
   type: "normal",
   permissions: ["write"],
+  effects: { effectClass: "draft" },
   intentEvidence: (input) => ({ operation: input.action, conversationId: input.conversationId }),
   inputSchema: organiseConversationInputSchema,
 };
@@ -100,6 +103,7 @@ export const read_conversation: FunctionToolDescriptor = {
     "Read a bounded transcript of a conversation the user can access so you can summarise it or answer questions about it. Returns the most recent messages first-to-last.",
   type: "normal",
   permissions: ["read"],
+  effects: { effectClass: "read" },
   inputSchema: readConversationInputSchema,
 };
 
@@ -169,6 +173,7 @@ export const start_conversation: FunctionToolDescriptor = {
     "Start a new conversation for the user, personally or in a project they belong to, and take them to it. Put the first message in the composer rather than sending it, so the user stays in control of what gets asked.",
   type: "normal",
   permissions: ["write"],
+  effects: { effectClass: "draft" },
   intentEvidence: (input) => ({
     operation: "start_conversation",
     scope: input.scope,
@@ -186,6 +191,7 @@ export const hire_teammate: FunctionToolDescriptor = {
     "Hire a teammate from a built-in role, from a description of the job, or both. Confirm the role and the name with the user before calling this; it creates a real teammate they will see in their library.",
   type: "normal",
   permissions: ["write"],
+  effects: { effectClass: "write" },
   intentEvidence: (input) => ({
     operation: "hire_teammate",
     roleSlug: input.roleSlug,
@@ -202,6 +208,7 @@ export const list_attention: FunctionToolDescriptor = {
     "List the project work waiting on the user across every workspace they belong to: approvals, questions, reviews and failures. Use it to answer what needs them now.",
   type: "normal",
   permissions: ["read"],
+  effects: { effectClass: "read" },
   inputSchema: listAttentionInputSchema,
 };
 

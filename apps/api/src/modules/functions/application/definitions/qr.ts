@@ -8,6 +8,7 @@ export const create_qr_code: FunctionToolDescriptor = {
     "Creates a QR code image URL for exact user-supplied text, URLs, phone numbers, email addresses, or Wi-Fi payloads. Do not alter the payload before encoding.",
   type: "normal",
   permissions: ["read"],
+  effects: { effectClass: "read" },
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {

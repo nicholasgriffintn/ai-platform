@@ -8,5 +8,6 @@ export const get_document: FunctionToolDescriptor = {
     "Read a saved document, including its current revision. Use it before revising an existing document. Pass commentId to retrieve the exact discussion request attached to a project task.",
   type: "normal",
   permissions: ["read"],
+  effects: { effectClass: "read" },
   inputSchema: readDocumentInputSchema,
 };
