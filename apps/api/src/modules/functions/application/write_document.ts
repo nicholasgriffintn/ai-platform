@@ -27,13 +27,20 @@ export const write_document: ApiToolDefinition = {
       );
     }
 
-    const projectId = args.projectId ?? resolveRequestProjectId(request) ?? undefined;
+    const requestProjectId = resolveRequestProjectId(request);
+
+    if (requestProjectId && args.projectId && requestProjectId !== args.projectId) {
+      throw new AssistantError("Document is outside this project", ErrorType.FORBIDDEN, 403);
+    }
+
+    const projectId = requestProjectId ?? args.projectId ?? undefined;
     const saved = await writeDocument(context, user, {
       title: args.title,
       body: args.body,
       capabilityId: DOCUMENT_CAPABILITY_ID,
       sourceType: "assistant",
       ...(args.outputId ? { outputId: args.outputId } : {}),
+      ...(args.expectedRevision ? { expectedRevision: args.expectedRevision } : {}),
       ...(projectId ? { projectId } : {}),
       ...(request.request?.completion_id ? { conversationId: request.request.completion_id } : {}),
     });

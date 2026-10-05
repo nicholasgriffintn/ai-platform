@@ -116,9 +116,7 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
 }
 
 export class ProjectTaskRepository extends BaseRepository {
-  async createTask(
-    params: CreateProjectTaskParams,
-  ): Promise<{ task: ProjectTask; created: boolean }> {
+  private buildTaskInsert(params: CreateProjectTaskParams) {
     const insert = this.buildInsertQuery(
       "project_task",
       {
@@ -164,6 +162,19 @@ export class ProjectTaskRepository extends BaseRepository {
       throw new AssistantError("Failed to build the task insert", ErrorType.INTERNAL_ERROR);
     }
 
+    return insert;
+  }
+
+  prepareTaskCreation(params: CreateProjectTaskParams): D1PreparedStatement {
+    const insert = this.buildTaskInsert(params);
+
+    return this.env.DB.prepare(insert.query).bind(...insert.values);
+  }
+
+  async createTask(
+    params: CreateProjectTaskParams,
+  ): Promise<{ task: ProjectTask; created: boolean }> {
+    const insert = this.buildTaskInsert(params);
     const row = await this.runQuery<ProjectTaskRow>(
       params.id
         ? insert.query.replace(" RETURNING ", " ON CONFLICT(id) DO NOTHING RETURNING ")

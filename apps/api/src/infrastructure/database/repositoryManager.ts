@@ -21,6 +21,7 @@ import { ConversationRunRepository } from "~/modules/conversations/infrastructur
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/OutboundDeliveryRepository";
+import { DocumentCommentRepository } from "~/modules/documents/infrastructure/DocumentCommentRepository";
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import { InfraCostDailyRepository } from "~/modules/infra/infrastructure/InfraCostDailyRepository";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
@@ -348,6 +349,10 @@ export class RepositoryManager {
 
   public get artificialAnalysis(): ArtificialAnalysisRepository {
     return this.resolve("artificialAnalysis", (env) => new ArtificialAnalysisRepository(env));
+  }
+
+  public get documentComments(): DocumentCommentRepository {
+    return this.resolve("documentComments", (env) => new DocumentCommentRepository(env));
   }
 
   public get outputs(): OutputRepository {
