@@ -34,6 +34,7 @@ Read the relevant record before changing any durable boundary.
 - [0039: Set permission mode on the conversation](decisions/0039-set-permission-mode-on-the-conversation.md)
 - [0043: Keep platform teammates in the teammate system and route task phases through them](decisions/0043-platform-teammates-and-task-workflows.md)
 - [0045: Make decisions a provider category, starting with TypeSafe Jev](decisions/0045-make-decisions-a-provider-category.md)
+- [0071: Tools declare what they change](decisions/0071-tools-declare-what-they-change.md)
 
 ## Model governance
 

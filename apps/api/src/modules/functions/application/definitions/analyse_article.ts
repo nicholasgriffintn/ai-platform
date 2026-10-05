@@ -21,6 +21,7 @@ export const analyse_article: FunctionToolDescriptor = {
     "Analyse one article for its claims, framing and reliability, and keep the analysis as a durable result the user can find again in Files. Use it when someone asks what an article actually says or how far to trust it.",
   type: "premium",
   permissions: ["reasoning", "write"],
+  effects: { effectClass: "draft" },
   intentEvidence: (input) => ({ operation: "analyse_article", itemId: input.itemId }),
   inputSchema: analyseArticleInputSchema,
 };

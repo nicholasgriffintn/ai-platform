@@ -32,6 +32,7 @@ export const search_memories: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["read"],
+  effects: { effectClass: "read" },
 };
 
 export const store_memory: FunctionToolDescriptor = {
@@ -59,6 +60,7 @@ export const store_memory: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["write"],
+  effects: { effectClass: "draft" },
   intentEvidence: (input) => ({
     operation: "store_memory",
     text: input.text,
@@ -74,4 +76,5 @@ export const read_memory_document: FunctionToolDescriptor = {
   inputSchema: readMemoryDocumentSchema,
   type: "normal",
   permissions: ["read"],
+  effects: { effectClass: "read" },
 };

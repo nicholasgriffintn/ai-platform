@@ -48,4 +48,5 @@ export const create_music: FunctionToolDescriptor = {
   }),
   type: "byok",
   permissions: ["network"],
+  effects: { effectClass: "draft" },
 };

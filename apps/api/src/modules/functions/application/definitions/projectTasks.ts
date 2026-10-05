@@ -11,6 +11,7 @@ export const create_task: FunctionToolDescriptor = {
     "Add work to this project's task system so it is captured outside this conversation. Use it when the person describes work to do later, or when you split an objective into separate pieces. Tasks start in the backlog and nobody runs them until a person says so.",
   type: "normal",
   permissions: ["write"],
+  effects: { effectClass: "write" },
   intentEvidence: (input) => ({
     operation: "create_task",
     objective: input.objective,
@@ -51,6 +52,7 @@ export const list_tasks: FunctionToolDescriptor = {
     "List this project's work queue so you can see what is already captured, running, or waiting on a person. Check this before creating a task that may already exist.",
   type: "normal",
   permissions: ["read"],
+  effects: { effectClass: "read" },
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {
@@ -70,6 +72,7 @@ export const get_task: FunctionToolDescriptor = {
     "Get one task from this project, including its acceptance criteria, execution state, and goal evidence. Use it before changing a task or when the person asks about one exact task.",
   type: "normal",
   permissions: ["read"],
+  effects: { effectClass: "read" },
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {
@@ -86,6 +89,7 @@ export const update_task: FunctionToolDescriptor = {
     "Update work in this project's task system. You may reword it, sharpen its acceptance criteria, or move it to backlog, review, or cancelled. You cannot queue or finish a task — dispatch does the first and a person accepts the second.",
   type: "normal",
   permissions: ["write"],
+  effects: { effectClass: "write" },
   intentEvidence: (input) => ({ operation: "update_task", ...input }),
   inputSchema: jsonSchemaToZod({
     type: "object",

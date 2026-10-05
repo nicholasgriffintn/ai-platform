@@ -12,6 +12,7 @@ export const decide = {
     "Ask a fast decision model (Jev, Clef or Clef Flash) typed questions about some text or structured state and get calibrated probabilities back in a single call. Use it to classify, rate, rank, verify or gate before acting: routing a request, checking whether a message is urgent, scoring several candidates on the same rubric, or confirming a statement is supported by evidence. It never writes text. Put every question you might need in one call; questions are independent and evaluated in parallel. Question types: choice (pick one of named options), score (position along ordered levels), noul (probability a statement is true). Reference parts of a structured state with backticked paths in the instructions, such as `ticket.message`.",
   type: "normal",
   permissions: ["read"],
+  effects: { effectClass: "read" },
   inputSchema: z.object({
     model: z
       .enum(["auto", ...decisionModels.map(([id]) => id)])

@@ -62,6 +62,7 @@ export const extract_content: FunctionToolDescriptor = {
   }),
   type: "premium",
   permissions: ["read", "write"],
+  effects: { effectClass: "draft" },
   intentEvidence: (input) => ({
     operation: "extract_content",
     urls: input.urls,

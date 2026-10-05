@@ -11,6 +11,7 @@ export const select_council_members: FunctionToolDescriptor = {
     "Ask the user which council members should debate their question. Renders a picker in the conversation, pre-ticked with the members you recommend. Call this before run_council whenever the user has not already named the members they want, then convene the council with what they choose.",
   type: "normal",
   permissions: ["human"],
+  effects: { effectClass: "read" },
   inputSchema: z.object({
     question: z
       .string()
@@ -43,6 +44,7 @@ export const run_council: FunctionToolDescriptor = {
     "Convene a council of named perspectives to debate one question. Each member answers in its own completion using the conversation's model, reading what came before, and each turn chooses who speaks next until the chamber converges. Turns appear in the conversation as they happen. Use for genuinely contested decisions and designs, not for questions with a retrievable answer.",
   type: "normal",
   permissions: ["orchestration"],
+  effects: { effectClass: "read" },
   intentEvidence: (input) => ({
     operation: "run_council",
     question: input.question,

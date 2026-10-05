@@ -13,6 +13,7 @@ export const request_approval: FunctionToolDescriptor = {
   type: "normal",
   maxIdenticalCalls: 1,
   permissions: ["human"],
+  effects: { effectClass: "read" },
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {
@@ -44,6 +45,7 @@ export const ask_user: FunctionToolDescriptor = {
   type: "normal",
   maxIdenticalCalls: 1,
   permissions: ["human"],
+  effects: { effectClass: "read" },
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {
