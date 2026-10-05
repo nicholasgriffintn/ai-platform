@@ -5,6 +5,7 @@ import { requireDocument } from "~/modules/documents/application/access";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { get_document as descriptor } from "./definitions/get_document";
+import { resolveRequestProjectId } from "./request-context";
 
 export const get_document: ApiToolDefinition = {
   ...descriptor,
@@ -19,7 +20,13 @@ export const get_document: ApiToolDefinition = {
       );
     }
 
-    const { output, body } = await requireDocument(context, user.id, input.outputId);
+    const { output, body } = await requireDocument(
+      context,
+      user.id,
+      input.outputId,
+      false,
+      resolveRequestProjectId(toolContext.request),
+    );
     const comment = input.commentId
       ? await context.repositories.documentComments.get(output.id, input.commentId, user.id)
       : null;

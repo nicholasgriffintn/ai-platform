@@ -9,6 +9,7 @@ import { Miniflare } from "miniflare";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { requireDocument } from "~/modules/documents/application/access";
 import {
   createDocumentComment,
   listDocumentComments,
@@ -73,6 +74,15 @@ afterAll(async () => {
 
 describe("document collaboration against persisted authority and revisions", () => {
   it("lets members discuss a readable document without granting them edit authority", async () => {
+    await expect(requireDocument(owner, 1, document.id, false, null)).rejects.toMatchObject({
+      statusCode: 403,
+    });
+    await expect(
+      requireDocument(owner, 1, document.id, false, "other-project"),
+    ).rejects.toMatchObject({ statusCode: 403 });
+    expect((await requireDocument(owner, 1, document.id, false, "project")).output.id).toBe(
+      document.id,
+    );
     const comment = await createDocumentComment(member, 2, document.id, {
       requestId: generateId(),
       expectedRevision: 1,

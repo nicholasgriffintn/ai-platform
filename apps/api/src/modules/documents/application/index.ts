@@ -46,7 +46,7 @@ export async function writeDocument(
   }
 
   const existing = input.outputId
-    ? await requireDocument(context, user.id, input.outputId, true)
+    ? await requireDocument(context, user.id, input.outputId, true, input.projectId ?? null)
     : null;
 
   if (existing && input.expectedRevision === undefined) {

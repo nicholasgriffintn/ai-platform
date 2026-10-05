@@ -10,10 +10,16 @@ export async function requireDocument(
   userId: number,
   outputId: string,
   mutate = false,
+  projectId?: string | null,
 ) {
   const output = mutate
     ? formatOutput(await requireOutputAccess(context, userId, outputId, true))
     : await getOutput(context, userId, outputId);
+
+  if (projectId !== undefined && output.projectId !== projectId) {
+    throw new AssistantError("Document is outside this scope", ErrorType.FORBIDDEN, 403);
+  }
+
   const body = readDocumentBody(output.content);
 
   if (output.kind !== DOCUMENT_OUTPUT_KIND || body === null) {

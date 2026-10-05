@@ -53,6 +53,7 @@ function documentOutput(body: string, metadata?: Record<string, unknown>) {
     title: "Brief",
     revision: 3,
     kind: DOCUMENT_OUTPUT_KIND,
+    projectId: null,
     content: { format: "markdown", body, ...(metadata ? { metadata } : {}) },
   };
 }
