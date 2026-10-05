@@ -20,6 +20,7 @@ import type { ProjectTaskRow } from "~/infrastructure/database/schema";
 import { publishProjectEvent } from "~/modules/sync/application/conversation-events";
 
 export interface CreateProjectTaskParams {
+  id?: string;
   projectId: string;
   workspaceId: string;
   objective: string;
@@ -121,11 +122,11 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
 }
 
 export class ProjectTaskRepository extends BaseRepository {
-  async createTask(params: CreateProjectTaskParams): Promise<ProjectTask> {
+  private buildTaskInsert(params: CreateProjectTaskParams) {
     const insert = this.buildInsertQuery(
       "project_task",
       {
-        id: generateId(),
+        id: params.id ?? generateId(),
         project_id: params.projectId,
         workspace_id: params.workspaceId,
         objective: params.objective,
@@ -166,6 +167,17 @@ export class ProjectTaskRepository extends BaseRepository {
       throw new AssistantError("Failed to build the task insert", ErrorType.INTERNAL_ERROR);
     }
 
+    return insert;
+  }
+
+  prepareTaskCreation(params: CreateProjectTaskParams): D1PreparedStatement {
+    const insert = this.buildTaskInsert(params);
+
+    return this.env.DB.prepare(insert.query).bind(...insert.values);
+  }
+
+  async createTask(params: CreateProjectTaskParams): Promise<ProjectTask> {
+    const insert = this.buildTaskInsert(params);
     const row = await this.runQuery<ProjectTaskRow>(insert.query, insert.values, true);
 
     if (!row) {

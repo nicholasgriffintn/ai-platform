@@ -29,6 +29,7 @@ import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
 import { fill_in_middle_completion } from "./fill_in_middle";
 import { generate_pattern } from "./generate_pattern";
+import { get_document } from "./get_document";
 import { get_note } from "./get_note";
 import { complete_goal, set_goal } from "./goal";
 import { grade_writing } from "./grade_writing";
@@ -88,6 +89,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   apply_edit_completion,
   web_search,
   write_document,
+  get_document,
   create_qr_code,
   search_pashi_tools,
   run_pashi_tools,

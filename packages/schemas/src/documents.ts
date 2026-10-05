@@ -3,9 +3,18 @@ import z from "zod/v4";
 
 export const DOCUMENT_OUTPUT_KIND = "document";
 export const DOCUMENT_WRITE_TOOL_NAME = "write_document";
+export const DOCUMENT_READ_TOOL_NAME = "get_document";
 export const DOCUMENT_CAPABILITY_ID = "document-writer";
 
 export const DOCUMENT_MAX_BODY = 200 * 1024;
+
+export const readDocumentInputSchema = z
+  .object({
+    outputId: z.string().min(1),
+    commentId: z.string().min(1).optional(),
+  })
+  .strict();
+export type ReadDocumentInput = z.infer<typeof readDocumentInputSchema>;
 
 export const WORDS_READ_PER_MINUTE = 200;
 
@@ -63,29 +72,47 @@ export const documentOutputContentSchema = z.object({
   metadata: documentMetadataSchema.optional(),
 });
 
-export const writeDocumentInputSchema = z.object({
-  title: z
-    .string()
-    .trim()
-    .min(1)
-    .max(200)
-    .describe("What the document is called, as the reader would name it."),
-  body: z
-    .string()
-    .min(1)
-    .max(DOCUMENT_MAX_BODY)
-    .describe("The document itself, in Markdown. Write the whole thing, not a summary of it."),
-  outputId: z
-    .string()
-    .min(1)
-    .optional()
-    .describe("Revise this document instead of writing a new one. Omit to write a new one."),
-  projectId: z
-    .string()
-    .min(1)
-    .optional()
-    .describe("Project the document belongs to. Omit for a personal document."),
-});
+export const writeDocumentInputSchema = z
+  .object({
+    title: z
+      .string()
+      .trim()
+      .min(1)
+      .max(200)
+      .describe("What the document is called, as the reader would name it."),
+    body: z
+      .string()
+      .min(1)
+      .max(DOCUMENT_MAX_BODY)
+      .describe("The document itself, in Markdown. Write the whole thing, not a summary of it."),
+    outputId: z
+      .string()
+      .min(1)
+      .optional()
+      .describe("Revise this document instead of writing a new one. Omit to write a new one."),
+    expectedRevision: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .describe(
+        "The revision you read before editing. Required when revising an existing document.",
+      ),
+    projectId: z
+      .string()
+      .min(1)
+      .optional()
+      .describe("Project the document belongs to. Omit for a personal document."),
+  })
+  .superRefine((input, context) => {
+    if (input.outputId && input.expectedRevision === undefined) {
+      context.addIssue({
+        code: "custom",
+        path: ["expectedRevision"],
+        message: "Pass the revision you read before editing this document",
+      });
+    }
+  });
 
 export const formatDocumentInputSchema = z.object({
   prompt: z
@@ -98,6 +125,7 @@ export const formatDocumentInputSchema = z.object({
 
 export const formatDocumentResponseSchema = z.object({
   body: z.string().describe("The rewritten document, in Markdown."),
+  sourceRevision: z.number().int().positive(),
 });
 
 export const describeDocumentResponseSchema = z.object({

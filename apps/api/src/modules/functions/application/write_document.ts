@@ -34,6 +34,7 @@ export const write_document: ApiToolDefinition = {
       capabilityId: DOCUMENT_CAPABILITY_ID,
       sourceType: "assistant",
       ...(args.outputId ? { outputId: args.outputId } : {}),
+      ...(args.expectedRevision ? { expectedRevision: args.expectedRevision } : {}),
       ...(projectId ? { projectId } : {}),
       ...(request.request?.completion_id ? { conversationId: request.request.completion_id } : {}),
     });
