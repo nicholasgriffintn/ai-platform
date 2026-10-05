@@ -9,6 +9,8 @@ import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { handleWebSearch } from "~/modules/search/application/web";
 import type { IEnv, IUser, SearchOptions, SearchProviderName } from "~/types";
 
+import { planExpansionQueries } from "./query-expansion";
+import { mergeSearchSources, rankSearchSources } from "./source-ranking";
 import {
   webSearchAnswerSystemPrompt,
   webSearchSimilarQuestionsSystemPrompt,
@@ -75,7 +77,31 @@ export async function performDeepWebSearch(
   const searchAnswer = "answer" in rawSearchResult ? rawSearchResult.answer : undefined;
   const providerUsed = searchData.provider;
   const providerWarning = searchData.warning;
-  const sources = searchData.sources;
+  const expansionQueries =
+    options.search_depth === "advanced"
+      ? await planExpansionQueries({
+          env,
+          user,
+          completionId: completion_id,
+          query,
+          candidates: similarQuestions,
+        })
+      : [];
+  const expandedResults = await Promise.all(
+    expansionQueries.map((expansionQuery) =>
+      handleWebSearch({ provider: searchProvider, query: expansionQuery, options, env, user })
+        .then((result) => result.data.sources)
+        .catch(() => []),
+    ),
+  );
+  const ranking = await rankSearchSources({
+    env,
+    user,
+    completionId: completion_id,
+    query,
+    sources: mergeSearchSources([searchData.sources, ...expandedResults]),
+  });
+  const sources = ranking.sources;
 
   const completion_id_with_fallback = completion_id || generateId();
   const new_completion_id = `${completion_id_with_fallback}-answer`;

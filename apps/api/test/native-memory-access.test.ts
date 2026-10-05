@@ -5,8 +5,8 @@ import { createServiceContext, type ServiceContext } from "~/infrastructure/cont
 import { readRunMemoryDocument } from "~/modules/memory-documents/application/pages";
 import type { MemoryScope } from "~/types";
 
-import { databaseTestEnvironment } from "./environment";
-import { memoryDocumentFixture, nativeMemoryUser } from "./native-memory";
+import { memoryDocumentFixture, nativeMemoryUser } from "./fixtures/native-memory";
+import { databaseTestEnvironment } from "./helpers/environment";
 
 const guards = vi.hoisted(() => ({ project: vi.fn(), teammate: vi.fn() }));
 

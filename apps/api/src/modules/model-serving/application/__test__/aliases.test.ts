@@ -11,7 +11,7 @@ import {
 } from "~/modules/model-registry/application/scope";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 
-import { databaseTestEnvironment } from "../../../../../test/environment";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 import type {
   ModelAliasEventRecord,
   ModelAliasRecord,

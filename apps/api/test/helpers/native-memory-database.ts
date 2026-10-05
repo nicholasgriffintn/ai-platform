@@ -20,7 +20,7 @@ export async function initialiseNativeMemoryDatabase(database: D1Database) {
   `);
   await applyTestMigration(
     database,
-    await readFile(new URL("../migrations/0031_memory_documents.sql", import.meta.url), "utf8"),
+    await readFile(new URL("../../migrations/0031_memory_documents.sql", import.meta.url), "utf8"),
   );
   await database.batch([
     database.prepare("ALTER TABLE memory_document ADD kind TEXT NOT NULL DEFAULT 'memory'"),
@@ -31,7 +31,7 @@ export async function initialiseNativeMemoryDatabase(database: D1Database) {
   ]);
   await applyTestMigration(
     database,
-    await readFile(new URL("../migrations/0058_native_memory.sql", import.meta.url), "utf8"),
+    await readFile(new URL("../../migrations/0059_native_memory.sql", import.meta.url), "utf8"),
   );
   await database.batch([
     database.prepare(

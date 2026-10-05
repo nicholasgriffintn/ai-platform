@@ -15,9 +15,9 @@ import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskExecutionContext } from "~/modules/tasks/application/types";
 import type { MemoryScope } from "~/types";
 
-import { databaseTestEnvironment } from "./environment";
-import { nativeMemoryUser, nativeMemorySettings } from "./native-memory";
-import { initialiseNativeMemoryDatabase } from "./native-memory-database";
+import { nativeMemoryUser, nativeMemorySettings } from "./fixtures/native-memory";
+import { databaseTestEnvironment } from "./helpers/environment";
+import { initialiseNativeMemoryDatabase } from "./helpers/native-memory-database";
 
 const model = vi.hoisted(() => vi.fn());
 const prepareModel = vi.hoisted(() => vi.fn());

@@ -11,8 +11,8 @@ import {
 import { applyMemoryReflectionProposal } from "~/modules/memory-documents/application/reflection-proposal";
 import { selectMemoryReflectionSources } from "~/modules/memory-documents/application/reflection-sources";
 
-import { databaseTestEnvironment } from "./environment";
-import { initialiseNativeMemoryDatabase } from "./native-memory-database";
+import { databaseTestEnvironment } from "./helpers/environment";
+import { initialiseNativeMemoryDatabase } from "./helpers/native-memory-database";
 
 const runtime = new Miniflare({
   modules: true,

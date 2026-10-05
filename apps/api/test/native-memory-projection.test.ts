@@ -8,7 +8,7 @@ import {
 import { projectRunMemory } from "~/modules/memory-documents/application/projection";
 import { applyMemoryReflectionProposal } from "~/modules/memory-documents/application/reflection-proposal";
 
-import { memoryDocumentFixture } from "./native-memory";
+import { memoryDocumentFixture } from "./fixtures/native-memory";
 
 describe("native memory projection and bounded retrieval", () => {
   it("keeps essential memory and makes references discoverable without loading their body", () => {

@@ -6,7 +6,7 @@ import { selectModels } from "~/modules/chat/application/policy/model-access";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IUser } from "~/types";
 
-import { databaseTestEnvironment } from "../../../../../test/environment";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 import { listModels } from "../index";
 
 const models: ModelConfig = {

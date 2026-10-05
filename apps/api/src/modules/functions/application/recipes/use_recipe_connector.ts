@@ -21,6 +21,11 @@ import {
   discoverRecipeConnectorTools,
   executeRecipeConnectorOperation,
 } from "~/modules/apps/application/connectors/operations";
+import { getRecipeById } from "~/modules/apps/application/recipes/catalog";
+import {
+  requireRecipeConnectorAccess,
+  getRecipeConnectorParameters,
+} from "~/modules/apps/application/recipes/configuration";
 import {
   getRecipeConfiguration,
   getActiveRecipeSetup,
@@ -76,32 +81,6 @@ function buildConnectorToolError(params: {
   };
 }
 
-const PROMPT_ONLY_CONFIGURATION_KEYS = new Set(["preferredConnectors"]);
-
-function mergeRecipeConfigurationIntoParams(
-  params: unknown,
-  configuration: Record<string, unknown> | undefined,
-): Record<string, unknown> | undefined {
-  const parameterConfiguration = configuration
-    ? Object.fromEntries(
-        Object.entries(configuration).filter(([key]) => !PROMPT_ONLY_CONFIGURATION_KEYS.has(key)),
-      )
-    : undefined;
-
-  if (!parameterConfiguration) {
-    return isRecord(params) ? params : undefined;
-  }
-
-  if (!isRecord(params)) {
-    return { ...parameterConfiguration };
-  }
-
-  return {
-    ...parameterConfiguration,
-    ...params,
-  };
-}
-
 export const use_recipe_connector: ApiToolDefinition = {
   ...use_recipe_connectorDescriptor,
   execute: async (args, context) => {
@@ -125,6 +104,7 @@ export const use_recipe_connector: ApiToolDefinition = {
     const provider = parsedProvider.data;
     const savedConfiguration = getRecipeConfiguration(request.request?.options);
     const activeRecipe = getActiveRecipeSetup(request.request?.options);
+    const recipe = activeRecipe ? getRecipeById(activeRecipe.id) : undefined;
     const projectId =
       request.memoryScope?.type === "project"
         ? request.memoryScope.projectId
@@ -195,6 +175,8 @@ export const use_recipe_connector: ApiToolDefinition = {
         )
       : configuredAllowedOperations;
     const operation = typeof args.operation === "string" ? args.operation.trim() : "";
+
+    requireRecipeConnectorAccess(recipe, savedConfiguration, provider, operation || undefined);
     const useCase = typeof args.useCase === "string" ? args.useCase.trim() : "";
     const channel = getRecipeExecutionChannel(request.request?.options) ?? "web";
 
@@ -260,7 +242,7 @@ export const use_recipe_connector: ApiToolDefinition = {
     let data: unknown;
 
     try {
-      const params = mergeRecipeConfigurationIntoParams(args.params, savedConfiguration);
+      const params = getRecipeConnectorParameters(recipe, args.params, savedConfiguration);
       const scope = {
         completionId: request.request?.completion_id ?? context.completionId,
         recipeId: activeRecipe?.id,

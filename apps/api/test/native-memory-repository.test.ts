@@ -8,8 +8,8 @@ import {
   type CommitMemoryReflection,
 } from "~/modules/memory-documents/infrastructure/MemoryReflectionRepository";
 
-import { databaseTestEnvironment } from "./environment";
-import { initialiseNativeMemoryDatabase } from "./native-memory-database";
+import { databaseTestEnvironment } from "./helpers/environment";
+import { initialiseNativeMemoryDatabase } from "./helpers/native-memory-database";
 
 const runtime = new Miniflare({
   modules: true,

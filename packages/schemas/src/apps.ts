@@ -726,9 +726,14 @@ export function getToolFormErrors(
   app: Pick<RenderableTool, "formSchema">,
   formData: ToolFormData,
 ): ToolFormErrors {
-  const fieldIds = new Set(
-    app.formSchema.steps.flatMap((step) => step.fields.map((field) => field.id)),
-  );
+  const fieldIds = new Set<string>();
+
+  for (const step of app.formSchema.steps) {
+    for (const field of step.fields) {
+      fieldIds.add(field.id);
+    }
+  }
+
   const errors: ToolFormErrors = {};
 
   for (const step of app.formSchema.steps) {
@@ -1101,6 +1106,7 @@ export const recipeIntegrationSchema = z.object({
   requiresConnection: z.boolean().default(true),
   connectionGroup: z.string().optional(),
   operationIds: z.array(z.string()).optional(),
+  configurationKeys: z.array(z.string()).optional(),
   connectionStatus: recipeConnectionStatusSchema.optional(),
   setupUrl: z.string().optional(),
 });
@@ -1128,6 +1134,10 @@ export const recipeConfigurationFieldSchema = z.object({
   required: z.boolean().optional(),
   placeholder: z.string().optional(),
   defaultValue: recipeConfigurationValueSchema.optional(),
+  minimum: z.number().optional(),
+  maximum: z.number().optional(),
+  integer: z.boolean().optional(),
+  pattern: z.string().optional(),
 });
 
 export const recipeChatRequestOptionsSchema = z.object({
@@ -1155,6 +1165,16 @@ export const assistantRecipeSchema = z.object({
   setupPrompt: z.string(),
   enabledTools: z.array(z.string()).default([]),
   configurationFields: z.array(recipeConfigurationFieldSchema).default([]),
+  connectorPolicy: z
+    .object({
+      access: z.enum(["read", "write"]).optional(),
+      requireConfiguredIntegration: z.boolean().optional(),
+      parameters: z.enum(["explicit", "configuration"]).optional(),
+    })
+    .optional(),
+  invocationContext: z
+    .object({ instructions: z.string(), windowHoursKey: z.string().optional() })
+    .optional(),
   capability: assistantCapabilityDescriptorSchema.optional(),
 });
 

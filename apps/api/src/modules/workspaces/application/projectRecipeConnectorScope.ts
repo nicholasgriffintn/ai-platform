@@ -9,6 +9,7 @@ import {
 interface ProjectCapabilityReference {
   capability_id: string;
   kind: string;
+  excluded?: number;
 }
 
 export interface ProjectRecipeConnectorScope {
@@ -37,7 +38,7 @@ export function resolveProjectRecipeConnectorScope(
 ): ProjectRecipeConnectorScope {
   const recipeIds = new Set(
     capabilities
-      .filter((capability) => capability.kind === "recipe")
+      .filter((capability) => capability.kind === "recipe" && !capability.excluded)
       .map((capability) => resolveRecipeId(capability.capability_id)),
   );
   const providers = new Set<RecipeConnectorProvider>();

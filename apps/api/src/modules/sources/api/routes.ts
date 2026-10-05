@@ -8,14 +8,26 @@ import {
   sourceListQuerySchema,
   sourceListResponseSchema,
   sourceSchema,
+  projectKnowledgeSearchQuerySchema,
+  projectKnowledgeSearchResponseSchema,
   setProjectContextSourcesSchema,
   updateSourceSchema,
+  createKnowledgeSyncSchema,
+  knowledgeSyncListSchema,
+  knowledgeSyncSchema,
+  updateKnowledgeSyncSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { getPrivateFileResponse, readPrivateFile } from "~/infrastructure/storage/read-resource";
+import { searchProjectKnowledge } from "~/modules/sources/application/knowledge-search";
+import {
+  listKnowledgeSyncs,
+  createKnowledgeSync,
+  controlKnowledgeSync,
+} from "~/modules/sources/application/knowledge-sync";
 import {
   addCollectionSources,
   createSource,
@@ -38,6 +50,46 @@ const collectionParams = z.object({ collectionId: z.string().min(1) });
 const projectQuery = z.object({ projectId: z.string().min(1).optional() });
 const requiredProjectQuery = z.object({ projectId: z.string().min(1) });
 const createSourceRequestSchema = createSourceSchema.omit({ file: true });
+const syncParams = z.object({ syncId: z.string().min(1) });
+
+addRoute(app, "get", "/knowledge-syncs", {
+  tags: ["sources"],
+  auth: true,
+  querySchema: requiredProjectQuery,
+  responses: { 200: { description: "Knowledge sync freshness", schema: knowledgeSyncListSchema } },
+  handler: ({ query, serviceContext }) => listKnowledgeSyncs(serviceContext, query.projectId),
+});
+
+addRoute(app, "post", "/knowledge-syncs", {
+  tags: ["sources"],
+  auth: true,
+  bodySchema: createKnowledgeSyncSchema,
+  responses: { 200: { description: "Saved knowledge sync", schema: knowledgeSyncSchema } },
+  handler: ({ body, serviceContext }) => createKnowledgeSync(serviceContext, body),
+});
+
+addRoute(app, "patch", "/knowledge-syncs/:syncId", {
+  tags: ["sources"],
+  auth: true,
+  paramSchema: syncParams,
+  bodySchema: updateKnowledgeSyncSchema,
+  responses: { 200: { description: "Updated knowledge sync", schema: knowledgeSyncSchema } },
+  handler: ({ params, body, serviceContext }) =>
+    controlKnowledgeSync(serviceContext, params.syncId, body),
+});
+
+addRoute(app, "get", "/search", {
+  tags: ["sources"],
+  auth: true,
+  querySchema: projectKnowledgeSearchQuerySchema,
+  responses: {
+    200: {
+      description: "Project knowledge passages",
+      schema: projectKnowledgeSearchResponseSchema,
+    },
+  },
+  handler: ({ query, serviceContext }) => searchProjectKnowledge(serviceContext, query),
+});
 
 addRoute(app, "get", "/:sourceId/content", {
   tags: ["sources"],

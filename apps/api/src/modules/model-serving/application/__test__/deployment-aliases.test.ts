@@ -9,12 +9,12 @@ import { createServiceContext, type ServiceContext } from "~/infrastructure/cont
 import { requireModelAction, badRequest } from "~/modules/model-registry/application/access";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 
-import { databaseTestEnvironment } from "../../../../../test/environment";
 import {
   testModelAlias,
   testModelDeployment,
   testModelRoute,
-} from "../../../../../test/model-platform";
+} from "../../../../../test/fixtures/model-platform";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 import { createAliasForRoute } from "../aliases";
 import { createDeployment, startPreparedDeployment } from "../deployments";
 import { createRoute } from "../routes";

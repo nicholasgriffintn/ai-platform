@@ -17,6 +17,47 @@ import { requireProjectCapabilityAccess } from "~/modules/workspaces/application
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolExecutionContext } from "~/types/functions";
 
+import { actOnComputer, type ActResult } from "./act";
+
+const ACT_CONCLUSION_SUMMARY: Record<ActResult["conclusion"], string> = {
+  reached: "Goal reached",
+  blocked: "No available control reaches the goal; the page needs a sign-in or a different route",
+  needs_input: "Reaching the goal needs typing, which requires supervised takeover",
+  exhausted: "Not reached within the step budget",
+  unavailable: "No decision model is available for this account, so nothing was done",
+  undecided: "No next step was clearly worth taking, so nothing further was done",
+};
+
+function formatActResponse(goal: string, contextId: string, act: ActResult): IFunctionResponse {
+  const title =
+    typeof act.observation.title === "string" ? act.observation.title : "Hosted computer";
+  const text = typeof act.observation.text === "string" ? act.observation.text : null;
+  const trail = act.steps
+    .map((step) => (step.target ? `${step.action} ${step.target}` : step.action))
+    .join(" -> ");
+
+  return {
+    status: "success",
+    name: "use_computer",
+    content: [
+      {
+        type: "text",
+        text: `Pursued: ${goal}. ${ACT_CONCLUSION_SUMMARY[act.conclusion]} after ${act.steps.length} step(s)${trail ? ` (${trail})` : ""}. Active window: ${title}.`,
+      },
+      ...(text ? [{ type: "text" as const, text }] : []),
+    ],
+    data: {
+      renderer: "computer_observation",
+      contextId,
+      goal,
+      conclusion: act.conclusion,
+      steps: act.steps,
+      title,
+      text,
+    },
+  };
+}
+
 export async function executeComputerControl(
   args: ComputerControlInput,
   toolContext: ApiToolExecutionContext,
@@ -75,6 +116,23 @@ export async function executeComputerControl(
         }),
       },
     };
+  }
+
+  if (args.operation === "act") {
+    const act = await actOnComputer({
+      env: toolContext.request.env,
+      user: toolContext.request.user,
+      context,
+      contextId,
+      runId,
+      runAttempt,
+      completionId: toolContext.completionId,
+      conversationId: toolContext.request.request?.completion_id,
+      goal: args.goal,
+      maxSteps: args.maxSteps,
+    });
+
+    return formatActResponse(args.goal, contextId, act);
   }
 
   const result = await operateTeammateComputerAsAgent({

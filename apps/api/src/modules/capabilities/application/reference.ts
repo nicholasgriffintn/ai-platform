@@ -2,7 +2,7 @@ import type { ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getRecipeById } from "~/modules/apps/application/recipes";
+import { getRecipeById } from "~/modules/apps/application/recipes/catalog";
 import { getExperienceCatalog } from "~/modules/experiences/application/config";
 import { getSkillDefinition } from "~/modules/skills/application";
 import { canAccessTeammate } from "~/modules/teammates/application/access";

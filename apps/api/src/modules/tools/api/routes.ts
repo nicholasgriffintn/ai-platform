@@ -9,6 +9,9 @@ import {
   runnableToolSchema,
   toolsResponseSchema,
   saveToolConfigurationSchema,
+  mcpConnectionInputSchema,
+  mcpConnectionSchema,
+  mcpConnectionListSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -19,6 +22,11 @@ import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { runFunctionWithOutput } from "~/modules/functions/application/run-with-output";
 import {
+  createMcpConnection,
+  deleteMcpConnection,
+  listMcpConnections,
+} from "~/modules/tools/application/mcp-connections";
+import {
   listModelToolConfigurations,
   saveModelToolConfiguration,
 } from "~/modules/tools/application/modelToolConfigurations";
@@ -28,6 +36,34 @@ import { projectScopeQuerySchema } from "~/modules/workspaces/application/access
 import type { IRequest } from "~/types";
 
 const app = new Hono();
+
+addRoute(app, "get", "/mcp/connections", {
+  auth: true,
+  tags: ["tools"],
+  cache: "no-store",
+  responses: { 200: { description: "Saved MCP connections", schema: mcpConnectionListSchema } },
+  handler: ({ serviceContext }) => listMcpConnections(serviceContext),
+});
+
+addRoute(app, "post", "/mcp/connections", {
+  auth: true,
+  tags: ["tools"],
+  cache: "no-store",
+  bodySchema: mcpConnectionInputSchema,
+  responses: { 200: { description: "Saved MCP connection", schema: mcpConnectionSchema } },
+  handler: ({ serviceContext, body }) => createMcpConnection(serviceContext, body),
+});
+
+addRoute(app, "delete", "/mcp/connections/:connectionId", {
+  auth: true,
+  tags: ["tools"],
+  cache: "no-store",
+  paramSchema: z.object({ connectionId: z.string().min(1) }),
+  responses: {
+    200: { description: "Removed MCP connection", schema: z.object({ success: z.boolean() }) },
+  },
+  handler: ({ serviceContext, params }) => deleteMcpConnection(serviceContext, params.connectionId),
+});
 
 const routeLogger = createRouteLogger("tools");
 

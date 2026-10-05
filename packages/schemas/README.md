@@ -22,7 +22,7 @@ type Message = z.infer<typeof messageSchema>;
 
 ## Memory documents
 
-Apply migration `0058_native_memory` before deploying the new memory contracts. Send `tier` (`core` or `reference`) and a `summary` of at most 500 characters on every document creation and revision. Keep the content, placement and description in the same expected-revision write; history records all three.
+Apply migration `0059_native_memory` before deploying the new memory contracts. Send `tier` (`core` or `reference`) and a `summary` of at most 500 characters on every document creation and revision. Keep the content, placement and description in the same expected-revision write; history records all three.
 
 Keep core documents in context when they fit the memory budget. Expose references and oversized core documents through the bounded index and `read_memory_document`, using the document ID, revision and returned `nextOffset`. Restart at offset zero when a revision changes; never combine pages from different revisions.
 
