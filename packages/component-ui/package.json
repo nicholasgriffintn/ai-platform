@@ -37,6 +37,11 @@
       "polychat-source": "./src/fonts.css",
       "style": "./src/fonts.css",
       "default": "./src/fonts.css"
+    },
+    "./records": {
+      "polychat-source": "./src/Records/index.ts",
+      "types": "./dist/records.d.ts",
+      "import": "./dist/records.js"
     }
   },
   "publishConfig": {
