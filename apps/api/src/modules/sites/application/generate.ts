@@ -61,7 +61,6 @@ import {
   type ClassifiedSelectedElementRefinement,
 } from "./plan";
 import { createSite, finaliseSiteGeneration, getSite, updateSite } from "./records";
-import { readSiteGenerationSources } from "./source-bindings";
 
 const logger = getLogger({ prefix: "services/sites/generate" });
 
@@ -125,23 +124,16 @@ async function prepareGeneration(
       throw new AssistantError("The site changed before refinement", ErrorType.CONFLICT_ERROR, 409);
     }
 
-    const sources = await readSiteGenerationSources(
-      context,
-      user.id,
-      request.sourceIds ?? [],
-      request.projectId ?? null,
-    );
-    const selectedRefinement =
-      request.target && sources.length === 0
-        ? await classifySelectedElementRefinement({
-            env: context.env,
-            user,
-            prompt: request.prompt,
-            project: existing.project,
-            target: request.target,
-            completionId,
-          })
-        : null;
+    const selectedRefinement = request.target
+      ? await classifySelectedElementRefinement({
+          env: context.env,
+          user,
+          prompt: request.prompt,
+          project: existing.project,
+          target: request.target,
+          completionId,
+        })
+      : null;
     const classification = request.target
       ? null
       : await classifySiteRefinement({
@@ -169,7 +161,7 @@ async function prepareGeneration(
         (entry): entry is SiteDecisionTraceEntry => Boolean(entry),
       ),
       system:
-        target && targetPage && sources.length === 0
+        target && targetPage
           ? renderPrompt("apps/sites/refine-element", {
               components,
               pageId: target.pageId,
@@ -183,18 +175,12 @@ async function prepareGeneration(
               components,
               document: serialiseSiteProjectForPrompt(existing.project),
             }),
-      prompt: buildSiteRefineUserPrompt(request.prompt, { sources, target }),
+      prompt: buildSiteRefineUserPrompt(request.prompt),
       document: structuredClone(existing.project) as unknown as Record<string, unknown>,
       cacheKey: `sites-refine-${target ? "element" : "site"}-${catalogueSubsetId(subset)}`,
     };
   }
 
-  const sources = await readSiteGenerationSources(
-    context,
-    user.id,
-    request.sourceIds ?? [],
-    request.projectId ?? null,
-  );
   const planned = await planSite({
     env: context.env,
     user,
@@ -221,7 +207,7 @@ async function prepareGeneration(
       components: describeSiteCatalog(subset),
       guidance: overrides.guidance === false ? "" : buildSitePlanGuidance(plan),
     }),
-    prompt: buildSiteGenerateUserPrompt(request.prompt, sources),
+    prompt: buildSiteGenerateUserPrompt(request.prompt),
     document: buildInitialDocument(request, plan),
     cacheKey: `sites-generate-${catalogueSubsetId(subset)}`,
   };

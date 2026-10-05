@@ -1,21 +1,15 @@
 import { useRef, useState } from "react";
 
 import { SITE_PROMPT_EXAMPLES } from "./site-examples.js";
-import { SitePromptComposer, type SitePromptComposerProps } from "./SitePromptComposer.js";
+import { SitePromptComposer } from "./SitePromptComposer.js";
 
-export function SiteStarterPrompt({
-  onSubmit,
-  ...composerContext
-}: Pick<SitePromptComposerProps, "attachments" | "controls" | "error"> & {
-  onSubmit: (prompt: string) => void;
-}) {
+export function SiteStarterPrompt({ onSubmit }: { onSubmit: (prompt: string) => void }) {
   const [prompt, setPrompt] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   return (
     <>
       <SitePromptComposer
-        {...composerContext}
         size="hero"
         autoFocus
         placeholder="Describe a website, app or interface…"

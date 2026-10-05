@@ -42,13 +42,13 @@ interface ComposerActionMenuMobileProps {
   isLoadingSources: boolean;
   isUploading: boolean;
   onAttachSource: (sourceId: string) => void;
-  onSelectActionItem?: (item: AssistantActionItem) => void;
-  onUploadClick?: () => void;
+  onSelectActionItem: (item: AssistantActionItem) => void;
+  onUploadClick: () => void;
   selectedTeammateId?: string;
   sourceScopeLabel: string;
   sources: SourceSummary[];
   tools?: ReactNode;
-  uploadIcon?: ReactNode;
+  uploadIcon: ReactNode;
   uploadLabel: string;
 }
 
@@ -125,7 +125,7 @@ export function ComposerActionMenuMobile({
               <OptionsMenuAction
                 key={source.id}
                 className={composerActionMenuRowClassName}
-                disabled={isDisabled || Boolean(attachingSourceId)}
+                disabled={Boolean(attachingSourceId)}
                 onSelect={() => onAttachSource(source.id)}
               >
                 <ComposerActionMenuRow
@@ -150,7 +150,7 @@ export function ComposerActionMenuMobile({
               <OptionsMenuAction
                 key={item.id}
                 className={composerActionMenuRowClassName}
-                onSelect={() => onSelectActionItem?.(item)}
+                onSelect={() => onSelectActionItem(item)}
               >
                 <ComposerActionMenuRow
                   icon={<AssistantActionItemIcon item={item} />}
@@ -167,7 +167,7 @@ export function ComposerActionMenuMobile({
             <OptionsMenuAction
               key={item.id}
               className={composerActionMenuRowClassName}
-              onSelect={() => onSelectActionItem?.(item)}
+              onSelect={() => onSelectActionItem(item)}
             >
               <ComposerActionMenuRow
                 icon={<AssistantActionItemIcon item={item} />}
@@ -184,7 +184,7 @@ export function ComposerActionMenuMobile({
 
   return (
     <>
-      {canUploadFiles && onUploadClick ? (
+      {canUploadFiles ? (
         <OptionsMenuAction
           className={composerActionMenuRowClassName}
           disabled={isDisabled || isUploading}

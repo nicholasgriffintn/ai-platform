@@ -10,7 +10,6 @@ const mocks = vi.hoisted(() => ({
   finaliseSiteGeneration: vi.fn(),
   updateSite: vi.fn(),
   getSite: vi.fn(),
-  getSource: vi.fn(),
 }));
 
 vi.mock("~/infrastructure/ai", () => ({
@@ -26,8 +25,6 @@ vi.mock("~/modules/sites/application/records", () => ({
   updateSite: mocks.updateSite,
   getSite: mocks.getSite,
 }));
-
-vi.mock("~/modules/sources/application/sources", () => ({ getSource: mocks.getSource }));
 
 import { streamSiteGeneration } from "~/modules/sites/application/generate";
 
@@ -152,74 +149,6 @@ describe("streamSiteGeneration", () => {
       createdAt: "2026-09-19T00:00:00.000Z",
       updatedAt: "2026-09-19T00:01:00.000Z",
     }));
-  });
-
-  it("builds from an attached Source without copying its private rows into the model prompt", async () => {
-    mocks.getSource.mockResolvedValue({
-      id: "source-1",
-      projectId: null,
-      status: "available",
-      content: JSON.stringify([{ name: "Private customer", count: 2 }]),
-    });
-    mocks.stream.mockResolvedValue(
-      sseStreamOf([
-        ...modelOutput,
-        '\n{"op":"add","path":"/dataBindings","value":{"records":{"kind":"source","sourceId":"source-1","pageId":"home","statePath":"/records"}}}\n',
-      ]),
-    );
-
-    const events = await readEvents(
-      await streamSiteGeneration({
-        context,
-        user,
-        request: { prompt: "A customer dashboard", sourceIds: ["source-1"] },
-      }),
-    );
-    const prompt = mocks.stream.mock.calls[0][0].prompt;
-    const saved = events.find((event) => event.type === "saved");
-
-    expect(prompt).toContain('"sourceId":"source-1"');
-    expect(prompt).toContain('"fields":{"name":"string","count":"number"}');
-    expect(prompt).not.toContain("Private customer");
-    expect(saved).toMatchObject({
-      site: {
-        project: {
-          dataBindings: {
-            records: {
-              kind: "source",
-              sourceId: "source-1",
-              pageId: "home",
-              statePath: "/records",
-            },
-          },
-        },
-      },
-    });
-  });
-
-  it("rejects an attached Source from another scope before sending a generation prompt", async () => {
-    mocks.getSource.mockResolvedValue({
-      projectId: "other-project",
-      status: "available",
-      content: "[]",
-    });
-
-    const events = await readEvents(
-      await streamSiteGeneration({
-        context,
-        user,
-        request: { prompt: "A customer dashboard", sourceIds: ["private-source"] },
-      }),
-    );
-
-    expect(events).toContainEqual(
-      expect.objectContaining({
-        type: "error",
-        error: "The source is unavailable in this site's scope",
-      }),
-    );
-    expect(mocks.stream).not.toHaveBeenCalled();
-    expect(mocks.createSite).not.toHaveBeenCalled();
   });
 
   it("classifies with Jev, streams patches as they arrive, repairs the document and saves it", async () => {

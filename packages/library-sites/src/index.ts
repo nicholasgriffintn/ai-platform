@@ -71,7 +71,6 @@ export {
   buildSitePlanGuidance,
   buildSiteRefineUserPrompt,
   serialiseSiteProjectForPrompt,
-  type SitePromptSource,
 } from "./prompt.js";
 export {
   buildSiteSandboxTask,
