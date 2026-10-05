@@ -32,3 +32,24 @@ const pashi = getPashiClient(env);
 The Composio clients read `COMPOSIO_API_KEY` and `COMPOSIO_USER_NAMESPACE` from a structural environment, the Pashi client reads `PASHI_API_KEY`, and GitHub App helpers read the matching `GITHUB_APP_*` and `APP_BASE_URL` fields, so the API passes its own `IEnv` without importing host types.
 
 The API keeps what is Polychat's: connection authority, approvals and replay, the private file bridge, run lifecycle, persistence and routes.
+
+## Native MCP protocol
+
+Use `McpProtocolClient` for the [2026-07-28 MCP protocol](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http). Supply a host-owned `McpRequestSender` and cancellation signal. The sender must check the current endpoint consent, connection revision and user/project authority before sending each request; this package owns no endpoint, credentials, background connections or HTTP fetches.
+
+```ts
+import { McpProtocolClient } from "@ngriffin_uk/polychat-ai-integrations";
+
+const client = new McpProtocolClient(sendAuthorisedRequest, runAbortSignal);
+const catalogue = await client.discoverTools();
+```
+
+Discover tools through `server/discover` and bounded `tools/list` pagination. Newly discovered tools remain disabled for curator review. Hash the tool name, description and input/output schemas with `getNativeMcpToolSchemaDigest`; classify access in Polychat's catalogue, independently of server annotations or instructions.
+
+Validate arguments without inserting schema defaults or changing approved values. Validate successful structured results against the output schema. Support JSON and request-scoped SSE, with a 64 KiB request limit, 512 KiB response limit and 30-second whole-request deadline. Send each tool call once and cancel its response stream on interruption; an uncertain write requires the host's existing approval/replay machinery.
+
+Require modern per-request metadata, matching routing headers and `resultType: "complete"`. Encode mirrored Unicode or control-character header values using the protocol's Base64 sentinel. Exclude tools with invalid header annotations or unsupported schemas rather than weakening validation.
+
+Accept bounded JSON Schema 2020-12 with finite local references, primitive enums/constants and simple anchored patterns. Require explicit types for validation rules and defined, non-optional schemas for required properties. Reject recursive/external/dynamic references, conditional schemas, pattern properties and other features unsupported by the installed validator. Do not request sampling, elicitation, roots, subscriptions or legacy sessions.
+
+The API integrates this client with its private catalogue, endpoint-bound personal credentials, explicit project sharing and existing stored-action approval. Select registered server IDs in account capabilities and teammates. Provider-hosted MCP definitions are rejected. Tool results remain untrusted service output and never trigger automatic resource downloads or repeated writes.

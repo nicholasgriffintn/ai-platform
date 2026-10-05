@@ -25,6 +25,7 @@ import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/Ou
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import { InfraCostDailyRepository } from "~/modules/infra/infrastructure/InfraCostDailyRepository";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
+import { McpRegistryRepository } from "~/modules/mcp/infrastructure/McpRegistryRepository";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRepository";
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
@@ -472,5 +473,9 @@ export class RepositoryManager {
 
   public get workspaces(): WorkspaceRepository {
     return this.resolve("workspaces", (env) => new WorkspaceRepository(env));
+  }
+
+  public get mcpRegistry(): McpRegistryRepository {
+    return this.resolve("mcpRegistry", (env) => new McpRegistryRepository(env));
   }
 }
