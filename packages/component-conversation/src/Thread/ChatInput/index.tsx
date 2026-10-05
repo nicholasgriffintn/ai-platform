@@ -850,6 +850,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
               <>
                 {showComposerActionMenu && (
                   <ComposerActionMenu
+                    commandActions={commandActions}
                     autoPlayResponses={canUseProComposerActions ? autoPlayResponses : undefined}
                     attachingSourceId={composerSources.attachingSourceId}
                     canAttachSources={canUseProComposerActions}
