@@ -1,6 +1,8 @@
 import { generateSiteFiles } from "@ngriffin_uk/polychat-library-sites";
 import {
   errorResponseSchema,
+  siteBrowserEvidenceSchema,
+  siteBrowserVerificationRequestSchema,
   siteConnectorSnapshotRequestSchema,
   siteSourceRefreshRequestSchema,
   siteDataResponseSchema,
@@ -28,6 +30,7 @@ import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { requireAdmin } from "~/middleware/adminMiddleware";
+import { verifyAndRepairSite } from "~/modules/sites/application/browser-verification";
 import { buildSiteInSandbox } from "~/modules/sites/application/build";
 import {
   snapshotSiteConnector,
@@ -373,5 +376,15 @@ addRoute(app, "post", "/:id/runtime/disable", {
   responses: { 200: { description: "Storage status", schema: siteRuntimeStatusSchema } },
   handler: ({ params, body, serviceContext }) =>
     disableSiteRuntime(serviceContext, params.id, body),
+});
+addRoute(app, "post", "/:id/verify", {
+  tags: ["sites"],
+  summary: "Verify a site revision in desktop and mobile browsers",
+  auth: true,
+  paramSchema: siteParamsSchema,
+  bodySchema: siteBrowserVerificationRequestSchema,
+  responses: { 200: { description: "Browser evidence", schema: siteBrowserEvidenceSchema } },
+  handler: ({ params, body, serviceContext, raw }) =>
+    verifyAndRepairSite(serviceContext, params.id, body, raw.req.raw.signal),
 });
 export default app;

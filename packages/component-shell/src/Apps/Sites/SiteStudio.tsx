@@ -23,6 +23,7 @@ import {
   useSiteData,
   useSiteDataAction,
   useSiteStorage,
+  useVerifySite,
   useTrackEvent,
   SITES_QUERY_KEYS,
   type SiteGenerationState,
@@ -61,6 +62,7 @@ import { toast } from "sonner";
 
 import { useAppChrome } from "../AppChrome.js";
 import { RecentSites } from "./RecentSites.js";
+import { SiteBrowserChecks } from "./SiteBrowserChecks.js";
 import { SiteBuildPlaceholder } from "./SiteBuildPlaceholder.js";
 import { SiteConversationTurn } from "./SiteConversationTurn.js";
 import { SiteDataSources } from "./SiteDataSources.js";
@@ -136,6 +138,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   const siteData = useSiteData(state.site, !isBusy && !revisionPreview);
   const dataAction = useSiteDataAction(state.site);
   const storage = useSiteStorage(state.site);
+  const verification = useVerifySite(state.site);
   const savedId = state.site?.id;
   const repairQuality = state.quality;
   const hasDecisionTrace =
@@ -344,6 +347,12 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto px-4 py-4">
           {state.site && !isBusy && !revisionPreview && (
             <>
+              <SiteBrowserChecks
+                site={state.site}
+                pageId={resolvedPageId ?? undefined}
+                verification={verification}
+                disabled={isBusy}
+              />
               <SiteDataSources site={state.site} onSaved={load} />
               <SiteSavedRecords
                 site={state.site}

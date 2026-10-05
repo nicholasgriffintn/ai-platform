@@ -4,7 +4,8 @@ import {
   siteThemeClasses,
   SITE_EXPRESSION_CSS,
 } from "@ngriffin_uk/polychat-library-sites";
-import type { SiteTheme } from "@ngriffin_uk/polychat-schemas";
+import { siteProjectSchema, type SiteTheme } from "@ngriffin_uk/polychat-schemas";
+import { isRecord, safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import { useEffect, useMemo, type MouseEvent } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -118,6 +119,34 @@ function boot(): void {
   const actions = createSitePreviewActions(frameId);
 
   window.addEventListener("pagehide", () => actions.dispose(), { once: true });
+
+  const initial = safeParseJson<unknown>(
+    document.getElementById("site-initial-document")?.textContent ?? "",
+  );
+
+  if (isRecord(initial)) {
+    const project = siteProjectSchema.safeParse(initial.project);
+
+    if (
+      project.success &&
+      typeof initial.pageId === "string" &&
+      Object.hasOwn(project.data.pages, initial.pageId)
+    ) {
+      root.render(
+        <RuntimePreview
+          frameId={frameId}
+          actions={actions}
+          payload={{
+            project: project.data,
+            pageId: initial.pageId,
+            inspecting: false,
+            selectedKey: null,
+            data: isRecord(initial.data) ? initial.data : undefined,
+          }}
+        />,
+      );
+    }
+  }
 
   window.addEventListener("message", (event) => {
     actions.handleMessage(event);
