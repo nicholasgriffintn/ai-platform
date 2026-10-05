@@ -1,16 +1,19 @@
-import type { ExecutionContext } from "@cloudflare/workers-types";
-
 import { getBeaconAnalyticsConfig } from "../config.js";
 import { BACKEND_ANALYTICS_APP_NAME, BACKEND_ANALYTICS_APP_TYPE } from "../constants.js";
 import { getLogger } from "../logger.js";
-import type { BeaconFetcher, TelemetryEnv, TelemetrySink } from "../types.js";
+import type {
+  BeaconFetcher,
+  TelemetryEnv,
+  TelemetryExecutionContext,
+  TelemetrySink,
+} from "../types.js";
 
 const logger = getLogger({ prefix: "lib/analytics/beacon" });
 
 export function createBeaconSink(
   env: TelemetryEnv,
   fetcher: BeaconFetcher,
-  executionCtx: ExecutionContext | undefined,
+  executionCtx: TelemetryExecutionContext | undefined,
   now: () => number,
 ): TelemetrySink | null {
   const config = getBeaconAnalyticsConfig(env);

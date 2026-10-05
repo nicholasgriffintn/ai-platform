@@ -45,7 +45,7 @@ export class GuardrailsValidator implements Validator {
         );
       }
 
-      const guardrails = new Guardrails(env, user, userSettings);
+      const guardrails = new Guardrails(env, user, userSettings, options.context);
       const lastMessageContent = Array.isArray(context.lastMessage?.content)
         ? context.lastMessage.content
         : [];

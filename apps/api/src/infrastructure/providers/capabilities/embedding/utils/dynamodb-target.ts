@@ -1,5 +1,8 @@
 import { estimateTextTokens, parseAwsCredentials } from "@ngriffin_uk/polychat-ai-providers";
-import { withEmbeddingTelemetry } from "@ngriffin_uk/polychat-ai-telemetry";
+import {
+  type TelemetryExecutionContext,
+  withEmbeddingTelemetry,
+} from "@ngriffin_uk/polychat-ai-telemetry";
 import { dynamoDbVectorConfigurationSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import z from "zod/v4";
@@ -80,11 +83,13 @@ function createDynamoDbVectorProvider(
   user: IUser,
   settings: IUserSettings | undefined,
   config: DynamoDbVectorsEmbeddingProviderConfig,
+  executionCtx?: TelemetryExecutionContext,
 ) {
   return withEmbeddingTelemetry(
     providerLibrary.resolve("embedding", "dynamodb-vectors", { env, user, config }),
     {
       env,
+      executionCtx,
       identity: { user, userTrackingEnabled: settings?.tracking_enabled },
       provider: WORKERS_EMBEDDING_PROVIDER,
       model: WORKERS_EMBEDDING_MODEL,
@@ -129,17 +134,25 @@ export function getDynamoDbVectorProviderForTarget(
   user: IUser,
   settings: IUserSettings,
   target: EmbeddingProviderTarget,
+  executionCtx?: TelemetryExecutionContext,
 ) {
   const { credentialFingerprint, ...config } = parseRecordedDynamoDbVectorTarget(target);
 
-  return createDynamoDbVectorProvider(env, user, settings, {
-    ...config,
-    ai: env.AI,
-    expectedCredentialFingerprint: credentialFingerprint,
-  });
+  return createDynamoDbVectorProvider(
+    env,
+    user,
+    settings,
+    { ...config, ai: env.AI, expectedCredentialFingerprint: credentialFingerprint },
+    executionCtx,
+  );
 }
 
-export function getDynamoDbVectorProvider(env: IEnv, user?: IUser, settings?: IUserSettings) {
+export function getDynamoDbVectorProvider(
+  env: IEnv,
+  user?: IUser,
+  settings?: IUserSettings,
+  executionCtx?: TelemetryExecutionContext,
+) {
   if (!user) {
     throw new AssistantError(
       "DynamoDB Vectors requires an authenticated user",
@@ -148,8 +161,11 @@ export function getDynamoDbVectorProvider(env: IEnv, user?: IUser, settings?: IU
     );
   }
 
-  return createDynamoDbVectorProvider(env, user, settings, {
-    ...parseDynamoDbVectorSettings(env, settings),
-    ai: env.AI,
-  });
+  return createDynamoDbVectorProvider(
+    env,
+    user,
+    settings,
+    { ...parseDynamoDbVectorSettings(env, settings), ai: env.AI },
+    executionCtx,
+  );
 }

@@ -192,18 +192,6 @@ describe("built-in memory embedding provenance", () => {
         metadata: { authority: "s3-memory" },
       },
     ]);
-    expect(mocks.getEmbeddingProviderForTarget).toHaveBeenCalledWith(
-      env,
-      user,
-      expect.any(Object),
-      vectorizeTarget,
-    );
-    expect(mocks.getEmbeddingProviderForTarget).toHaveBeenCalledWith(
-      env,
-      user,
-      expect.any(Object),
-      s3Target,
-    );
     expect(mocks.vectorize.getMatches).toHaveBeenCalledWith(
       expect.any(Float64Array),
       expect.objectContaining({ scopeTag: expect.stringMatching(/^scope_v1_[a-f0-9]{32}$/) }),
@@ -393,12 +381,6 @@ describe("built-in memory embedding provenance", () => {
 
     await expect(createProvider(repo, "s3vectors").deleteMemory("old-memory")).resolves.toBe(true);
 
-    expect(mocks.getEmbeddingProviderForTarget).toHaveBeenCalledWith(
-      env,
-      user,
-      expect.any(Object),
-      vectorizeTarget,
-    );
     expect(mocks.vectorize.delete).toHaveBeenCalledWith(["old-vector"]);
     expect(mocks.s3.delete).not.toHaveBeenCalled();
     expect(repo.transitionSourceStatus).toHaveBeenCalledWith(

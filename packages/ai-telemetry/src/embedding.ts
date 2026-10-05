@@ -4,7 +4,12 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { getLogger } from "./logger.js";
 import { createWorkerTelemetry } from "./telemetry.js";
 import type { Telemetry } from "./telemetry.js";
-import type { AiErrorInfo, TelemetryEnv, TelemetryIdentity } from "./types.js";
+import type {
+  AiErrorInfo,
+  TelemetryEnv,
+  TelemetryExecutionContext,
+  TelemetryIdentity,
+} from "./types.js";
 
 const logger = getLogger({ prefix: "ai-telemetry/embedding" });
 
@@ -23,6 +28,7 @@ export interface EmbeddingProviderLike {
 
 export type EmbeddingTelemetryOptions = {
   env?: TelemetryEnv;
+  executionCtx?: TelemetryExecutionContext;
   telemetry?: Telemetry;
   identity?: TelemetryIdentity;
   provider: string;
@@ -43,7 +49,9 @@ export function withEmbeddingTelemetry<T extends EmbeddingProviderLike>(
   provider: T,
   options: EmbeddingTelemetryOptions,
 ): T {
-  const telemetry = options.telemetry ?? createWorkerTelemetry({ env: options.env ?? {} });
+  const telemetry =
+    options.telemetry ??
+    createWorkerTelemetry({ env: options.env ?? {}, executionCtx: options.executionCtx });
 
   const emit = (outcome: EmbeddingOutcome): void => {
     try {

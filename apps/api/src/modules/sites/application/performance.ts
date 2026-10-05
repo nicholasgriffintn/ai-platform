@@ -67,7 +67,7 @@ export function createSiteGenerationPerformance({
       };
 
       try {
-        createMetrics(context.env, context.executionCtx).recordMetric({
+        createMetrics(context.env, context.executionCtx ?? context).recordMetric({
           traceId: completionId,
           type: "performance",
           name: "site_generation_finished",

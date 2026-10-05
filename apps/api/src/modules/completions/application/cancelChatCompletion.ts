@@ -9,7 +9,8 @@ import { ConversationManager } from "~/modules/conversations/application/manager
 export type CancelChatCompletionContext = Pick<
   ServiceContext,
   "database" | "ensureDatabase" | "env" | "requestCache" | "requireUser"
->;
+> &
+  Partial<Pick<ServiceContext, "waitUntil">>;
 
 export async function handleCancelChatCompletion(
   context: CancelChatCompletionContext,
@@ -44,6 +45,7 @@ export async function handleCancelChatCompletion(
     {
       env: context.env,
       executionCtx: options.executionCtx,
+      waitUntil: context.waitUntil,
       traceId: completion_id,
     },
     options.platform,

@@ -6,6 +6,7 @@ import { createSpanId, createTraceId } from "./ids.js";
 import { createAiGatewaySink } from "./sinks/ai-gateway.js";
 import { createAnalyticsEngineSink } from "./sinks/analytics-engine.js";
 import { createBeaconSink } from "./sinks/beacon.js";
+import { createOtlpSink } from "./sinks/otlp.js";
 import { createPostHogSink } from "./sinks/posthog.js";
 import type {
   AiEmbeddingSignal,
@@ -173,7 +174,7 @@ export function createTelemetry(options: CreateTelemetryOptions): Telemetry {
 
           const error = status.error;
 
-          ended = {
+          const span: TelemetrySpan = {
             traceId,
             spanId,
             parentSpanId: spanOptions.parentSpanId,
@@ -184,7 +185,9 @@ export function createTelemetry(options: CreateTelemetryOptions): Telemetry {
             statusMessage: error instanceof Error ? error.message : undefined,
             attributes,
           };
-          eachSink(sinks, onSinkError, (sink) => sink.exportSpan?.(ended as TelemetrySpan));
+
+          ended = span;
+          eachSink(sinks, onSinkError, (sink) => sink.exportSpan?.(span));
 
           return ended;
         },
@@ -214,6 +217,7 @@ export function createWorkerTelemetrySinks({
     createAnalyticsEngineSink(env, now),
     createPostHogSink(env, createPostHogClient, executionCtx),
     createBeaconSink(env, fetcher, executionCtx, now),
+    createOtlpSink(env, fetcher, executionCtx, now),
     resolveAiGatewayId ? createAiGatewaySink(env, resolveAiGatewayId) : null,
   ].filter((sink): sink is TelemetrySink => sink !== null);
 }

@@ -1,5 +1,8 @@
 import { estimateTextTokens, parseAwsCredentials } from "@ngriffin_uk/polychat-ai-providers";
-import { withEmbeddingTelemetry } from "@ngriffin_uk/polychat-ai-telemetry";
+import {
+  type TelemetryExecutionContext,
+  withEmbeddingTelemetry,
+} from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import {
@@ -123,6 +126,7 @@ export function getEmbeddingProviderForTarget(
   user: IUser,
   userSettings: IUserSettings,
   target: EmbeddingProviderTarget,
+  executionCtx?: TelemetryExecutionContext,
 ): EmbeddingProvider {
   if (target.vectorSpaceVersion !== EMBEDDING_VECTOR_SPACE_VERSION) {
     throw new AssistantError(
@@ -133,7 +137,7 @@ export function getEmbeddingProviderForTarget(
   }
 
   if (target.provider === "dynamodb-vectors") {
-    return getDynamoDbVectorProviderForTarget(env, user, userSettings, target);
+    return getDynamoDbVectorProviderForTarget(env, user, userSettings, target, executionCtx);
   }
 
   if (target.provider === "s3vectors") {
@@ -180,6 +184,7 @@ export function getEmbeddingProviderForTarget(
       }),
       {
         env,
+        executionCtx,
         identity: { user, userTrackingEnabled: userSettings.tracking_enabled },
         provider: WORKERS_EMBEDDING_PROVIDER,
         model: target.model,
@@ -201,10 +206,12 @@ export function getEmbeddingProviderForTarget(
     );
   }
 
-  return getEmbeddingProvider(env, user, {
-    ...userSettings,
-    embedding_provider: "vectorize",
-  });
+  return getEmbeddingProvider(
+    env,
+    user,
+    { ...userSettings, embedding_provider: "vectorize" },
+    executionCtx,
+  );
 }
 
 export const resolveEmbeddingRuntimeTarget = async (
@@ -219,6 +226,7 @@ export const getEmbeddingRuntimeForTarget = (
   user: IUser,
   userSettings: IUserSettings,
   target: EmbeddingProviderTarget | EmbeddingRuntimeTarget,
+  executionCtx?: TelemetryExecutionContext,
 ): VectorEmbeddingRuntime => {
   const runtimeTarget = "embeddingProvider" in target ? target : toEmbeddingRuntimeTarget(target);
   const providerTarget = toEmbeddingProviderTarget(runtimeTarget);
@@ -231,7 +239,13 @@ export const getEmbeddingRuntimeForTarget = (
     );
   }
 
-  const provider = getEmbeddingProviderForTarget(env, user, userSettings, providerTarget);
+  const provider = getEmbeddingProviderForTarget(
+    env,
+    user,
+    userSettings,
+    providerTarget,
+    executionCtx,
+  );
 
   return adaptVectorEmbeddingProvider(provider);
 };
@@ -240,12 +254,13 @@ export const resolveEmbeddingRuntime = async (
   env: IEnv,
   user: IUser,
   userSettings: IUserSettings,
+  executionCtx?: TelemetryExecutionContext,
 ): Promise<ResolvedEmbeddingRuntime> => {
   const target = await resolveEmbeddingRuntimeTarget(env, user, userSettings);
 
   return {
     target,
-    runtime: getEmbeddingRuntimeForTarget(env, user, userSettings, target),
+    runtime: getEmbeddingRuntimeForTarget(env, user, userSettings, target, executionCtx),
   };
 };
 
@@ -253,12 +268,13 @@ export function getEmbeddingProvider(
   env: IEnv,
   user?: IUser,
   userSettings?: IUserSettings,
+  executionCtx?: TelemetryExecutionContext,
 ): EmbeddingProvider {
   const providerName = userSettings?.embedding_provider || "vectorize";
 
   switch (providerName) {
     case "dynamodb-vectors":
-      return getDynamoDbVectorProvider(env, user, userSettings);
+      return getDynamoDbVectorProvider(env, user, userSettings, executionCtx);
     case "bedrock": {
       throw new AssistantError(
         "Bedrock embedding lifecycle is not available",
@@ -293,6 +309,7 @@ export function getEmbeddingProvider(
         providerLibrary.resolve("embedding", "s3vectors", { env, user, config }),
         {
           env,
+          executionCtx,
           identity: { user, userTrackingEnabled: userSettings?.tracking_enabled },
           provider: WORKERS_EMBEDDING_PROVIDER,
           model: WORKERS_EMBEDDING_MODEL,
@@ -317,6 +334,7 @@ export function getEmbeddingProvider(
         providerLibrary.resolve("embedding", "vectorize", { env, user, config }),
         {
           env,
+          executionCtx,
           identity: { user, userTrackingEnabled: userSettings?.tracking_enabled },
           provider: WORKERS_EMBEDDING_PROVIDER,
           model: WORKERS_EMBEDDING_MODEL,

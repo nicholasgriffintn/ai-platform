@@ -237,7 +237,12 @@ async function validateOutput(params: FinaliseAssistantTurnParams): Promise<{
     return { passed: true, error: "", violations: [] };
   }
 
-  const guardrails = new Guardrails(params.env, params.context?.user, params.userSettings);
+  const guardrails = new Guardrails(
+    params.env,
+    params.context?.user,
+    params.userSettings,
+    params.context,
+  );
   const validation = await guardrails.validateOutput(
     {
       text,

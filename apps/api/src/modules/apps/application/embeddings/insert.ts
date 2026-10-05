@@ -36,6 +36,7 @@ export const insertEmbedding = async ({ request, context, env, user }: InsertEmb
     serviceContext.env,
     authenticatedUser,
     userSettings,
+    serviceContext,
   );
   const scopeTag = await getPersonalEmbeddingScopeTag(
     serviceContext.env.EMBEDDING_SCOPE_SECRET,

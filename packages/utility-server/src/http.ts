@@ -256,3 +256,61 @@ export async function readHttpResponseBody(
     format: parsed === null ? "text" : "json",
   };
 }
+
+export function parseEncodedHeaderPairs(value: string): Record<string, string> {
+  if (value.length > 8192) {
+    throw new Error("Encoded headers exceed the size limit");
+  }
+
+  const pairs = value.split(",").filter((pair) => pair.trim());
+
+  if (pairs.length > 32) {
+    throw new Error("Encoded headers exceed the count limit");
+  }
+
+  const headers = new Headers();
+
+  for (const pair of pairs) {
+    const separator = pair.indexOf("=");
+
+    if (separator < 1) {
+      throw new Error("Invalid encoded header pair");
+    }
+
+    try {
+      const name = decodeURIComponent(pair.slice(0, separator).trim());
+      const content = decodeURIComponent(pair.slice(separator + 1).trim());
+
+      if (/[\r\n]/.test(content) || headers.has(name)) {
+        throw new Error("Duplicate header");
+      }
+
+      headers.set(name, content);
+    } catch {
+      throw new Error("Invalid encoded header pair");
+    }
+  }
+
+  return headersToRecord(headers);
+}
+
+export function readCookieValue(header: string, name: string): string | undefined {
+  let value: string | undefined;
+
+  for (const entry of header.split(";")) {
+    const cookie = entry.trim();
+    const separator = cookie.indexOf("=");
+
+    if (separator < 1 || cookie.slice(0, separator) !== name) {
+      continue;
+    }
+
+    if (value !== undefined) {
+      return undefined;
+    }
+
+    value = cookie.slice(separator + 1);
+  }
+
+  return value;
+}
