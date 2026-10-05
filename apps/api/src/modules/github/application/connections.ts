@@ -17,6 +17,7 @@ import {
   type GitHubAppConnection,
   type GitHubConnectionRecordData,
 } from "./connection-parser";
+import { requireDefaultGitHubInstallationOwner } from "./installation-ownership";
 
 export const GITHUB_CONNECTION_APP_ID = "github_app_connection";
 export const GITHUB_CONNECTION_KIND = "github_app";
@@ -29,6 +30,10 @@ async function decodeConnectionRecord(
   context: ServiceContext,
   record: ProviderConnectionRecord,
 ): Promise<ReturnType<typeof parseGitHubConnectionData> | null> {
+  if (record.status !== "connected") {
+    return null;
+  }
+
   const parsedRecord = safeParseJson(record.encrypted_data) as {
     encrypted?: EncryptedGitHubConnectionPayload;
   } | null;
@@ -47,10 +52,16 @@ async function decodeConnectionRecord(
     encrypted: parsedRecord.encrypted,
   });
 
-  return parseGitHubConnectionData({
+  const parsed = parseGitHubConnectionData({
     data: decryptedData,
     recordItemId: record.external_id,
   });
+
+  if (parsed?.connection.credentialSource === "deployment") {
+    await requireDefaultGitHubInstallationOwner(context, record.user_id, parsed.connection);
+  }
+
+  return parsed;
 }
 
 async function decodeConnectionRecordOrThrow(

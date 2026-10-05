@@ -390,12 +390,14 @@ export class SourceRepository extends BaseRepository {
   private async selectSummaries(
     conditions: Record<string, unknown>,
   ): Promise<SourceSummaryRecord[]> {
-    const { query, values } = this.buildSelectQuery("source", conditions, {
-      columns: [...SOURCE_SUMMARY_COLUMNS],
-      orderBy: "updated_at DESC, created_at DESC",
-    });
+    const { clause, values } = this.buildWhereFromConditions(conditions);
 
-    return this.runQuery<SourceSummaryRecord>(query, values);
+    return this.runQuery<SourceSummaryRecord>(
+      `SELECT ${SOURCE_SUMMARY_COLUMNS.join(", ")} FROM source
+       WHERE ${clause || "1 = 1"} AND (provider IS NULL OR provider != 'github-knowledge')
+       ORDER BY updated_at DESC, created_at DESC`,
+      values,
+    );
   }
 
   private async listCollections(

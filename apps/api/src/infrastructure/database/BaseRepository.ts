@@ -265,7 +265,7 @@ export abstract class BaseRepository<Environment extends Pick<IEnv, "DB"> = IEnv
     return result;
   }
 
-  private buildWhereFromConditions(conditions: Record<string, unknown>): {
+  protected buildWhereFromConditions(conditions: Record<string, unknown>): {
     clause: string;
     values: unknown[];
   } {

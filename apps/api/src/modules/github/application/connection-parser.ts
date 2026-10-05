@@ -1,6 +1,9 @@
+import { isRecord, normaliseLowercaseList } from "@ngriffin_uk/polychat-utility-core";
+
 import { normalizeGitHubPrivateKey } from "~/infrastructure/github/app-jwt";
 
 export interface GitHubAppConnection {
+  credentialSource: "user" | "deployment";
   appId: string;
   privateKey: string;
   installationId: number;
@@ -8,6 +11,7 @@ export interface GitHubAppConnection {
 }
 
 export interface GitHubConnectionRecordData {
+  credential_source: "user" | "deployment";
   app_id: string;
   private_key: string;
   installation_id: number;
@@ -21,11 +25,11 @@ export function parseGitHubConnectionData(params: { data: unknown; recordItemId?
 } | null {
   const { data: rawData, recordItemId } = params;
 
-  if (!rawData || typeof rawData !== "object" || Array.isArray(rawData)) {
+  if (!isRecord(rawData)) {
     return null;
   }
 
-  const root = rawData as Record<string, unknown>;
+  const root = rawData;
 
   if (typeof root.app_id !== "string" || !root.app_id.trim()) {
     return null;
@@ -43,6 +47,17 @@ export function parseGitHubConnectionData(params: { data: unknown; recordItemId?
     return null;
   }
 
+  const credentialSource =
+    root.credential_source === "user"
+      ? "user"
+      : root.credential_source === "deployment"
+        ? "deployment"
+        : undefined;
+
+  if (credentialSource === undefined) {
+    return null;
+  }
+
   if (root.repositories !== undefined && !Array.isArray(root.repositories)) {
     return null;
   }
@@ -54,10 +69,9 @@ export function parseGitHubConnectionData(params: { data: unknown; recordItemId?
       ? root.webhook_secret.trim()
       : undefined;
   const normalizedRepositories = Array.isArray(root.repositories)
-    ? root.repositories
-        .filter((item): item is string => typeof item === "string")
-        .map((item) => item.trim().toLowerCase())
-        .filter(Boolean)
+    ? normaliseLowercaseList(
+        root.repositories.filter((item): item is string => typeof item === "string"),
+      )
     : undefined;
 
   const installationId = root.installation_id;
@@ -71,6 +85,7 @@ export function parseGitHubConnectionData(params: { data: unknown; recordItemId?
   }
 
   const recordData: GitHubConnectionRecordData = {
+    credential_source: credentialSource,
     app_id: normalizedAppId,
     private_key: normalizedPrivateKey,
     installation_id: installationId,
@@ -81,6 +96,7 @@ export function parseGitHubConnectionData(params: { data: unknown; recordItemId?
   return {
     data: recordData,
     connection: {
+      credentialSource: recordData.credential_source,
       appId: recordData.app_id,
       privateKey: recordData.private_key,
       installationId,

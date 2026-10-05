@@ -77,3 +77,4 @@ export { machineRunClient } from "./machine-run-service.js";
 export * from "./browser-sessions.js";
 export * from "./enterprise-identity.js";
 export * from "./channels.js";
+export * from "./knowledge-sync.js";

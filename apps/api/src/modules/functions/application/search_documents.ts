@@ -3,6 +3,7 @@ import { queryEmbeddings } from "~/modules/apps/application/embeddings/query";
 import { searchProjectKnowledge } from "~/modules/sources/application/knowledge-search";
 import type { ApiToolDefinition } from "~/types/functions";
 
+import { queryConnectedDocuments } from "./connected-documents";
 import {
   search_documents as search_documentsDescriptor,
   searchDocumentsInputSchema,
@@ -16,28 +17,31 @@ export const search_documents: ApiToolDefinition = {
     const request = context.request;
     const input = searchDocumentsInputSchema.parse(args);
     const projectId = resolveRequestProjectId(request);
-    const response = projectId
-      ? await searchProjectKnowledge(
-          resolveServiceContext({
+    const [response, connected] = await Promise.all([
+      projectId
+        ? searchProjectKnowledge(
+            resolveServiceContext({
+              context: request.context,
+              env: request.env,
+              user: request.user,
+            }),
+            { ...input, projectId },
+          )
+        : queryEmbeddings({
             context: request.context,
             env: request.env,
             user: request.user,
+            request: input,
           }),
-          { ...input, projectId },
-        )
-      : await queryEmbeddings({
-          context: request.context,
-          env: request.env,
-          user: request.user,
-          request: input,
-        });
+      queryConnectedDocuments(request, input.query, input.top_k ?? 3),
+    ]);
     const reranked = await rerankAuthorisedDocuments<RerankableDocument>({
       env: request.env,
       user: request.user,
       completionId: context.completionId,
       conversationId: request.request?.completion_id,
       query: input.query,
-      documents: response.data,
+      documents: [...connected, ...response.data],
     });
     const documents = reranked.slice(0, input.top_k ?? 3);
 

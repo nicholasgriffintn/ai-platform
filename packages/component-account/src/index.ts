@@ -51,6 +51,8 @@ export * from "./Sandbox/repositories";
 export * from "./Sources/SourceCollectionList";
 export * from "./SignInDialog";
 export * from "./Channels/ChannelBindingsPanel";
+export { KnowledgeConnectionForm } from "./Sources/KnowledgeConnectionForm.js";
+export { KnowledgeConnectionList } from "./Sources/KnowledgeConnectionList.js";
 export * from "./EnterpriseIdentity/EnterpriseSignInForm.js";
 export * from "./EnterpriseIdentity/LinkedEnterpriseIdentities.js";
 export * from "./Sources/SourceListHeader";

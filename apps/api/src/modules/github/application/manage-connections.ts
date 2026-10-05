@@ -1,10 +1,12 @@
+import { normaliseLowercaseList } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { validateGitHubPrivateKey } from "~/infrastructure/github/app-jwt";
 
 import { encryptGitHubConnectionPayload } from "./connection-crypto";
-import { GITHUB_CONNECTION_KIND } from "./connections";
+import { GITHUB_CONNECTION_KIND, getGitHubAppConnectionForUserInstallation } from "./connections";
+import { requireDefaultGitHubInstallationOwner } from "./installation-ownership";
 
 export interface UpsertGitHubConnectionInput {
   installationId: number;
@@ -18,16 +20,6 @@ interface DefaultGitHubAppCredentials {
   appId: string;
   privateKey: string;
   webhookSecret?: string;
-}
-
-function normaliseRepositories(repositories?: string[]): string[] | undefined {
-  if (repositories === undefined) {
-    return undefined;
-  }
-
-  const normalized = repositories.map((repo) => repo.trim().toLowerCase()).filter(Boolean);
-
-  return Array.from(new Set(normalized));
 }
 
 function resolveDefaultGitHubAppCredentials(context: ServiceContext): DefaultGitHubAppCredentials {
@@ -53,6 +45,15 @@ export async function upsertGitHubConnectionForUser(
   userId: number,
   input: UpsertGitHubConnectionInput,
 ): Promise<{ installationId: number }> {
+  return saveGitHubConnection(context, userId, input, "user");
+}
+
+async function saveGitHubConnection(
+  context: ServiceContext,
+  userId: number,
+  input: UpsertGitHubConnectionInput,
+  credentialSource: "user" | "deployment",
+): Promise<{ installationId: number }> {
   if (!context.env.JWT_SECRET) {
     throw new AssistantError("JWT secret not configured", ErrorType.CONFIGURATION_ERROR);
   }
@@ -63,11 +64,12 @@ export async function upsertGitHubConnectionForUser(
     jwtSecret: context.env.JWT_SECRET,
     userId,
     payload: {
+      credential_source: credentialSource,
       app_id: input.appId.trim(),
       private_key: normalizedPrivateKey,
       installation_id: input.installationId,
       webhook_secret: input.webhookSecret?.trim() || undefined,
-      repositories: normaliseRepositories(input.repositories),
+      repositories: input.repositories ? normaliseLowercaseList(input.repositories) : undefined,
     },
   });
 
@@ -92,13 +94,49 @@ export async function upsertGitHubConnectionFromDefaultAppForUser(
 ): Promise<{ installationId: number }> {
   const credentials = resolveDefaultGitHubAppCredentials(context);
 
-  return upsertGitHubConnectionForUser(context, userId, {
+  await requireDefaultGitHubInstallationOwner(context, userId, {
+    ...credentials,
     installationId: input.installationId,
-    appId: credentials.appId,
-    privateKey: credentials.privateKey,
-    webhookSecret: credentials.webhookSecret,
-    repositories: input.repositories,
   });
+
+  return saveGitHubConnection(
+    context,
+    userId,
+    {
+      installationId: input.installationId,
+      appId: credentials.appId,
+      privateKey: credentials.privateKey,
+      webhookSecret: credentials.webhookSecret,
+      repositories: input.repositories,
+    },
+    "deployment",
+  );
+}
+
+export async function replaceGitHubConnectionRepositories(
+  context: ServiceContext,
+  userId: number,
+  installationId: number,
+  repositories: string[],
+) {
+  const connection = await getGitHubAppConnectionForUserInstallation(
+    context,
+    userId,
+    installationId,
+  );
+
+  return saveGitHubConnection(
+    context,
+    userId,
+    {
+      installationId,
+      appId: connection.appId,
+      privateKey: connection.privateKey,
+      webhookSecret: connection.webhookSecret,
+      repositories,
+    },
+    connection.credentialSource,
+  );
 }
 
 export async function deleteGitHubConnectionForUser(

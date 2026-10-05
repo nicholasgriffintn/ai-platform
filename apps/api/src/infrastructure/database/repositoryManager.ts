@@ -51,6 +51,7 @@ import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/Pr
 import { SavedMessageRepository } from "~/modules/saved-messages/infrastructure/SavedMessageRepository";
 import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
 import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
+import { RepositoryKnowledgeSyncRepository } from "~/modules/sources/infrastructure/RepositoryKnowledgeSyncRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
@@ -388,6 +389,13 @@ export class RepositoryManager {
 
   public get sources(): SourceRepository {
     return this.resolve("sources", (env) => new SourceRepository(env));
+  }
+
+  public get repositoryKnowledgeSyncs(): RepositoryKnowledgeSyncRepository {
+    return this.resolve(
+      "repositoryKnowledgeSyncs",
+      (env) => new RepositoryKnowledgeSyncRepository(env),
+    );
   }
 
   public get sourceSearch(): SourceSearchRepository {
