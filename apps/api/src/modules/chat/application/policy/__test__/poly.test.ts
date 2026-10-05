@@ -2,7 +2,7 @@ import { POLY_NAVIGATION_TOOL_NAMES, POLY_TEAMMATE_ID } from "@ngriffin_uk/polyc
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it } from "vitest";
 
-import { filterToolsForPolyTurn, resolvePolyScope } from "~/modules/chat/application/policy/poly";
+import { filterToolsForPolyTurn, isAdmittedPolyRun } from "~/modules/chat/application/policy/poly";
 
 const tools = [
   { name: "web_search" },
@@ -47,49 +47,40 @@ describe("filterToolsForPolyTurn", () => {
   });
 });
 
-describe("resolvePolyScope", () => {
-  it("is null for ordinary conversations", async () => {
+describe("isAdmittedPolyRun", () => {
+  it("is false for ordinary conversations", async () => {
     await expect(
-      resolvePolyScope(options({}), repositories({ type: "chat", user_id: 7 })),
-    ).resolves.toBeNull();
+      isAdmittedPolyRun(options({}), repositories({ type: "chat", user_id: 7 })),
+    ).resolves.toBe(false);
   });
 
-  it("resumes the person's Poly thread and carries their ui context", async () => {
+  it("admits the person's Poly thread run as Poly", async () => {
     await expect(
-      resolvePolyScope(
+      isAdmittedPolyRun(
         options({ poly: { ui_context: { place: "attention" } } }),
         repositories({ type: "poly", user_id: 7 }),
       ),
-    ).resolves.toEqual({ uiContext: { place: "attention" }, navigation: true });
-  });
-
-  it("withholds navigation from turns the person did not start", async () => {
-    await expect(
-      resolvePolyScope(
-        options({ trigger: "delegation" }),
-        repositories({ type: "poly", user_id: 7 }),
-      ),
-    ).resolves.toEqual({ uiContext: undefined, navigation: false });
+    ).resolves.toBe(true);
   });
 
   it("refuses to start a Poly thread from a chat request", async () => {
     await expect(
-      resolvePolyScope(options({ poly: {} }), repositories(null)),
+      isAdmittedPolyRun(options({ poly: {} }), repositories(null)),
     ).rejects.toBeInstanceOf(AssistantError);
     await expect(
-      resolvePolyScope(options({ poly: {} }), repositories({ type: "chat", user_id: 7 })),
+      isAdmittedPolyRun(options({ poly: {} }), repositories({ type: "chat", user_id: 7 })),
     ).rejects.toBeInstanceOf(AssistantError);
   });
 
   it("refuses a Poly thread run as anything other than Poly", async () => {
     await expect(
-      resolvePolyScope(
+      isAdmittedPolyRun(
         options({ resolved_configuration: { teammateId: "platform-research" } }),
         repositories({ type: "poly", user_id: 7 }),
       ),
     ).rejects.toBeInstanceOf(AssistantError);
     await expect(
-      resolvePolyScope(
+      isAdmittedPolyRun(
         options({ resolved_configuration: undefined }),
         repositories({ type: "poly", user_id: 7 }),
       ),
@@ -98,10 +89,10 @@ describe("resolvePolyScope", () => {
 
   it("refuses another person's Poly thread and anonymous callers", async () => {
     await expect(
-      resolvePolyScope(options({}), repositories({ type: "poly", user_id: 9 })),
+      isAdmittedPolyRun(options({}), repositories({ type: "poly", user_id: 9 })),
     ).rejects.toBeInstanceOf(AssistantError);
     await expect(
-      resolvePolyScope(
+      isAdmittedPolyRun(
         options({ context: { user: undefined } }),
         repositories({ type: "poly", user_id: 7 }),
       ),
