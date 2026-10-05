@@ -342,131 +342,151 @@ export const delivery = sqliteTable(
   }),
 );
 
-export const embedding = sqliteTable(
-  "embedding",
+export const searchDocument = sqliteTable(
+  "search_document",
   {
-    id: text().primaryKey(),
+    id: text().notNull(),
     metadata: text(),
     title: text(),
     content: text(),
     type: text(),
     namespace: text(),
-    user_id: integer().references(() => user.id),
+    user_id: integer(),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
     updated_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-  },
-  (table) => ({
-    namespaceIdx: index("embedding_namespace_idx").on(table.namespace),
-    userIdIdx: index("embedding_user_id_idx").on(table.user_id),
-    scopeLookupIdx: index("embedding_scope_lookup_idx").on(
-      table.id,
-      table.type,
-      table.namespace,
-      table.user_id,
-    ),
-  }),
-);
-
-export type Embedding = typeof embedding.$inferSelect;
-
-export const embeddingDocument = sqliteTable(
-  "embedding_document",
-  {
-    id: text().primaryKey(),
-    scope_type: text().default("personal").notNull(),
-    user_id: integer()
-      .notNull()
+    scope_type: text().default("personal"),
+    logical_id: text(),
+    lifecycle_status: text().default("pending"),
+    provider: text(),
+    provider_target: text().default("quarantined-legacy"),
+    embedding_model: text().default("unknown-legacy"),
+    vector_space: text(),
+    vector_space_version: text().default("legacy"),
+    embedding_dimensions: integer().default(1),
+    distance_metric: text().default("unknown"),
+    task_mode: text().default("unknown"),
+    source_id: text(),
+    source_revision: integer(),
+    project_id: text(),
+    status: text({ enum: ["lexical", "active", "stale"] }).default("lexical"),
+    target: text(),
+    lease_token: text(),
+    lease_expires_at: text(),
+    document_type: text({ enum: ["legacy", "embedding", "source"] }).notNull(),
+    legacy_user_id: integer()
+      .generatedAlwaysAs(sql`CASE WHEN document_type = 'legacy' THEN user_id END`)
+      .references(() => user.id),
+    embedding_user_id: integer()
+      .generatedAlwaysAs(sql`CASE WHEN document_type = 'embedding' THEN user_id END`)
       .references(() => user.id, { onDelete: "cascade" }),
-    logical_id: text().notNull(),
-    type: text().notNull(),
-    title: text().default("").notNull(),
-    metadata: text({ mode: "json" }).$type<Readonly<Record<string, unknown>>>().notNull(),
-    lifecycle_status: text().default("pending").notNull(),
-    provider: text().notNull(),
-    provider_target: text().default("quarantined-legacy").notNull(),
-    embedding_model: text().default("unknown-legacy").notNull(),
-    embedding_dimensions: integer().default(1).notNull(),
-    distance_metric: text().default("unknown").notNull(),
-    task_mode: text().default("unknown").notNull(),
-    vector_space: text().notNull(),
-    vector_space_version: text().default("legacy").notNull(),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-    updated_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   },
   (table) => ({
-    lifecycleCheck: check(
-      "embedding_document_lifecycle_check",
-      sql`${table.lifecycle_status} IN ('pending', 'active', 'delete_pending')`,
+    primaryKey: primaryKey({ columns: [table.document_type, table.id] }),
+    legacyNamespaceIdx: index("search_document_legacy_namespace_idx")
+      .on(table.namespace)
+      .where(sql`document_type = 'legacy'`),
+    legacyUserIdx: index("search_document_legacy_user_idx")
+      .on(table.user_id)
+      .where(sql`document_type = 'legacy'`),
+    legacyScopeIdx: index("search_document_legacy_scope_idx")
+      .on(table.id, table.type, table.namespace, table.user_id)
+      .where(sql`document_type = 'legacy'`),
+    embeddingLogicalIdx: uniqueIndex("search_document_embedding_logical_idx")
+      .on(table.user_id, table.logical_id)
+      .where(sql`document_type = 'embedding'`),
+    embeddingLifecycleIdx: index("search_document_embedding_lifecycle_idx")
+      .on(table.user_id, table.lifecycle_status)
+      .where(sql`document_type = 'embedding'`),
+    sourceRevisionIdx: uniqueIndex("search_document_source_revision_idx")
+      .on(table.source_id, table.source_revision)
+      .where(sql`document_type = 'source'`),
+    sourceScopeIdx: index("search_document_source_scope_idx")
+      .on(table.project_id, table.status)
+      .where(sql`document_type = 'source'`),
+    sourceStatusIdx: index("search_document_source_status_idx")
+      .on(table.status)
+      .where(sql`document_type = 'source'`),
+    legacyOwnerIdx: index("search_document_legacy_owner_idx")
+      .on(table.legacy_user_id)
+      .where(sql`legacy_user_id IS NOT NULL`),
+    embeddingOwnerIdx: index("search_document_embedding_owner_idx")
+      .on(table.embedding_user_id)
+      .where(sql`embedding_user_id IS NOT NULL`),
+    shape0: check(
+      "search_document_shape_0",
+      sql`document_type IN ('legacy', 'embedding', 'source')`,
     ),
-    personalScopeCheck: check(
-      "embedding_document_personal_scope_check",
-      sql`${table.scope_type} = 'personal'`,
+    shape1: check(
+      "search_document_shape_1",
+      sql`document_type != 'embedding' OR (scope_type = 'personal' AND lifecycle_status IN ('pending','active','delete_pending'))`,
     ),
-    userLogicalIdIdx: uniqueIndex("embedding_document_user_logical_id_idx").on(
-      table.user_id,
-      table.logical_id,
+    shape2: check(
+      "search_document_shape_2",
+      sql`document_type != 'source' OR (status IN ('lexical','active','stale') AND source_revision > 0)`,
     ),
-    userLifecycleIdx: index("embedding_document_user_lifecycle_idx").on(
-      table.user_id,
-      table.lifecycle_status,
+    shape3: check(
+      "search_document_shape_3",
+      sql`(document_type = 'legacy' AND id IS NOT NULL AND created_at IS NOT NULL) OR (document_type = 'embedding' AND id IS NOT NULL AND scope_type IS NOT NULL AND user_id IS NOT NULL AND logical_id IS NOT NULL AND type IS NOT NULL AND title IS NOT NULL AND metadata IS NOT NULL AND lifecycle_status IS NOT NULL AND provider IS NOT NULL AND provider_target IS NOT NULL AND embedding_model IS NOT NULL AND vector_space IS NOT NULL AND vector_space_version IS NOT NULL AND created_at IS NOT NULL AND embedding_dimensions IS NOT NULL AND distance_metric IS NOT NULL AND task_mode IS NOT NULL) OR (document_type = 'source' AND id IS NOT NULL AND source_id IS NOT NULL AND source_revision IS NOT NULL AND user_id IS NOT NULL AND status IS NOT NULL AND target IS NOT NULL AND created_at IS NOT NULL)`,
     ),
   }),
 );
 
-export const embeddingChunk = sqliteTable(
-  "embedding_chunk",
+export const searchChunk = sqliteTable(
+  "search_chunk",
   {
-    id: text().primaryKey(),
-    document_id: text()
-      .notNull()
-      .references(() => embeddingDocument.id, { onDelete: "cascade" }),
-    vector_id: text().notNull(),
+    id: text().notNull(),
+    document_id: text().notNull(),
+    vector_id: text(),
     chunk_index: integer().notNull(),
     content: text().notNull(),
-    metadata: text({ mode: "json" }).$type<Readonly<Record<string, unknown>>>().notNull(),
-    lifecycle_status: text().default("pending").notNull(),
-    provider: text().notNull(),
-    provider_target: text().default("quarantined-legacy").notNull(),
-    embedding_model: text().default("unknown-legacy").notNull(),
-    embedding_dimensions: integer().default(1).notNull(),
-    distance_metric: text().default("unknown").notNull(),
-    task_mode: text().default("unknown").notNull(),
-    vector_space: text().notNull(),
-    vector_space_version: text().default("legacy").notNull(),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
+    metadata: text({ mode: "json" }).$type<Readonly<Record<string, unknown>>>(),
+    lifecycle_status: text().default("pending"),
+    provider: text(),
+    provider_target: text().default("quarantined-legacy"),
+    embedding_model: text().default("unknown-legacy"),
+    vector_space: text(),
+    vector_space_version: text().default("legacy"),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`),
     updated_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+    embedding_dimensions: integer().default(1),
+    distance_metric: text().default("unknown"),
+    task_mode: text().default("unknown"),
+    title: text(),
+    document_type: text({ enum: ["embedding", "source"] }).notNull(),
   },
   (table) => ({
-    lifecycleCheck: check(
-      "embedding_chunk_lifecycle_check",
-      sql`${table.lifecycle_status} IN ('pending', 'active', 'delete_pending')`,
+    primaryKey: primaryKey({ columns: [table.document_type, table.id] }),
+    documentReference: foreignKey({
+      columns: [table.document_type, table.document_id],
+      foreignColumns: [searchDocument.document_type, searchDocument.id],
+    }).onDelete("cascade"),
+    embeddingOrdinalIdx: uniqueIndex("search_chunk_embedding_ordinal_idx")
+      .on(table.document_id, table.chunk_index)
+      .where(sql`document_type = 'embedding'`),
+    embeddingVectorIdx: uniqueIndex("search_chunk_embedding_vector_idx")
+      .on(table.vector_id)
+      .where(sql`document_type = 'embedding'`),
+    documentIdx: index("search_chunk_document_idx").on(table.document_type, table.document_id),
+    embeddingLifecycleIdx: index("search_chunk_embedding_lifecycle_idx")
+      .on(table.document_id, table.lifecycle_status)
+      .where(sql`document_type = 'embedding'`),
+    shape0: check("search_chunk_shape_0", sql`document_type IN ('embedding', 'source')`),
+    shape1: check(
+      "search_chunk_shape_1",
+      sql`document_type != 'embedding' OR lifecycle_status IN ('pending','active','delete_pending')`,
     ),
-    documentChunkIdx: uniqueIndex("embedding_chunk_document_index_idx").on(
-      table.document_id,
-      table.chunk_index,
-    ),
-    vectorIdIdx: uniqueIndex("embedding_chunk_vector_id_idx").on(table.vector_id),
-    documentLifecycleIdx: index("embedding_chunk_document_lifecycle_idx").on(
-      table.document_id,
-      table.lifecycle_status,
+    shape2: check(
+      "search_chunk_shape_2",
+      sql`(document_type = 'embedding' AND id IS NOT NULL AND document_id IS NOT NULL AND vector_id IS NOT NULL AND chunk_index IS NOT NULL AND content IS NOT NULL AND metadata IS NOT NULL AND lifecycle_status IS NOT NULL AND provider IS NOT NULL AND provider_target IS NOT NULL AND embedding_model IS NOT NULL AND vector_space IS NOT NULL AND vector_space_version IS NOT NULL AND created_at IS NOT NULL AND embedding_dimensions IS NOT NULL AND distance_metric IS NOT NULL AND task_mode IS NOT NULL) OR (document_type = 'source' AND id IS NOT NULL AND document_id IS NOT NULL AND chunk_index IS NOT NULL AND title IS NOT NULL AND content IS NOT NULL)`,
     ),
   }),
 );
-
-export type EmbeddingDocument = typeof embeddingDocument.$inferSelect;
-export type EmbeddingChunk = typeof embeddingChunk.$inferSelect;
 
 export const workspace = sqliteTable(
   "workspace",
@@ -765,47 +785,52 @@ export type MemoryDocumentRevisionRow = {
   created_at: string;
 };
 
-export const memoryReflectionCheckpoint = sqliteTable(
-  "memory_reflection_checkpoint",
+export const memoryReflection = sqliteTable(
+  "memory_reflection",
   {
-    id: text().primaryKey(),
+    record_kind: text({ enum: ["checkpoint", "result"] }).notNull(),
+    id: text().notNull(),
     context_id: text()
       .notNull()
       .references(() => teammateContext.id, { onDelete: "cascade" }),
     conversation_id: text()
       .notNull()
       .references(() => conversation.id, { onDelete: "cascade" }),
-    message_id: text().notNull(),
+    through_message_id: text().notNull(),
+    revision: integer(),
+    status: text({ enum: ["applied", "no_change"] }),
+    evidence_json: text(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
     updated_at: text()
       .notNull()
       .default(sql`(CURRENT_TIMESTAMP)`),
   },
   (table) => ({
-    contextConversationIdx: uniqueIndex("memory_reflection_checkpoint_context_conversation_idx").on(
-      table.context_id,
-      table.conversation_id,
+    primaryKey: primaryKey({ columns: [table.record_kind, table.id] }),
+    checkpointIdx: uniqueIndex("memory_reflection_checkpoint_idx")
+      .on(table.context_id, table.conversation_id)
+      .where(sql`record_kind = 'checkpoint'`),
+    contextIdx: index("memory_reflection_context_idx").on(table.context_id),
+    conversationIdx: index("memory_reflection_conversation_idx").on(table.conversation_id),
+    shape: check(
+      "memory_reflection_shape",
+      sql`record_kind = 'checkpoint' OR (record_kind = 'result' AND revision IS NOT NULL AND status IS NOT NULL AND status IN ('applied', 'no_change') AND evidence_json IS NOT NULL)`,
     ),
   }),
 );
 
-export const memoryReflectionResult = sqliteTable("memory_reflection_result", {
-  id: text().primaryKey(),
-  context_id: text()
-    .notNull()
-    .references(() => teammateContext.id, { onDelete: "cascade" }),
-  conversation_id: text()
-    .notNull()
-    .references(() => conversation.id, { onDelete: "cascade" }),
-  through_message_id: text().notNull(),
-  revision: integer().notNull(),
-  status: text({ enum: ["applied", "no_change"] }).notNull(),
-  evidence_json: text().notNull(),
-  created_at: text()
-    .notNull()
-    .default(sql`(CURRENT_TIMESTAMP)`),
-});
-
-export type MemoryReflectionResultRow = typeof memoryReflectionResult.$inferSelect;
+export interface MemoryReflectionResultRow {
+  id: string;
+  context_id: string;
+  conversation_id: string;
+  through_message_id: string;
+  revision: number;
+  status: "applied" | "no_change";
+  evidence_json: string;
+  created_at: string;
+}
 
 export const userResourceState = sqliteTable(
   "user_resource_state",
@@ -831,7 +856,33 @@ export const userResourceState = sqliteTable(
     task_version: integer(),
     read_at: text(),
     dismissed_at: text(),
-    resource_type: text({ enum: ["conversation", "message", "task"] }).notNull(),
+    teammate_id: text(),
+    publication_id: text().references((): AnySQLiteColumn => template.publication_id),
+    feedback_conversation_id: text(),
+    rating: integer(),
+    verdict: text({ enum: ["good", "bad"] }),
+    created_at: text().default(sql`(CURRENT_TIMESTAMP)`),
+    feedback_teammate_id: text()
+      .generatedAlwaysAs(sql`CASE WHEN resource_type = 'teammate_feedback' THEN teammate_id END`)
+      .references(() => teammates.id, { onDelete: "cascade" }),
+    installed_teammate_id: text()
+      .generatedAlwaysAs(sql`CASE WHEN resource_type = 'teammate_install' THEN teammate_id END`)
+      .references(() => teammates.id),
+    teammate_user_id: integer()
+      .generatedAlwaysAs(
+        sql`CASE WHEN resource_type IN ('teammate_install', 'teammate_rating', 'teammate_feedback') THEN user_id END`,
+      )
+      .references(() => user.id),
+    resource_type: text({
+      enum: [
+        "conversation",
+        "message",
+        "task",
+        "teammate_install",
+        "teammate_rating",
+        "teammate_feedback",
+      ],
+    }).notNull(),
     state_user_id: integer()
       .generatedAlwaysAs(sql`CASE WHEN resource_type IN ('conversation', 'task') THEN user_id END`)
       .references(() => user.id, { onDelete: "cascade" }),
@@ -871,13 +922,41 @@ export const userResourceState = sqliteTable(
     savedOwnerIdx: index("user_resource_state_saved_owner_idx")
       .on(table.saved_user_id)
       .where(sql`saved_user_id IS NOT NULL`),
+    publicationUserIdx: index("user_resource_state_publication_user_idx").on(
+      table.resource_type,
+      table.publication_id,
+      table.user_id,
+    ),
+    publicationRecentIdx: index("user_resource_state_publication_recent_idx").on(
+      table.resource_type,
+      table.publication_id,
+      table.created_at,
+    ),
+    teammateIdx: index("user_resource_state_teammate_idx").on(
+      table.resource_type,
+      table.teammate_id,
+      table.user_id,
+    ),
+    feedbackConversationIdx: uniqueIndex("user_resource_state_feedback_conversation_idx")
+      .on(table.user_id, table.teammate_id, table.feedback_conversation_id)
+      .where(sql`resource_type = 'teammate_feedback'`),
+    feedbackOwnerIdx: index("user_resource_state_feedback_owner_idx").on(
+      table.feedback_teammate_id,
+    ),
+    installedOwnerIdx: index("user_resource_state_installed_owner_idx").on(
+      table.installed_teammate_id,
+    ),
+    teammateUserIdx: index("user_resource_state_teammate_user_idx").on(table.teammate_user_id),
+    publicationOwnerIdx: index("user_resource_state_publication_owner_idx").on(
+      table.publication_id,
+    ),
     requiredFields: check(
       "user_resource_state_required_fields",
-      sql`(resource_type = 'message' AND id IS NOT NULL AND user_id IS NOT NULL AND saved_conversation_id IS NOT NULL AND message_id IS NOT NULL AND saved_at IS NOT NULL) OR (resource_type = 'conversation' AND conversation_id IS NOT NULL AND user_id IS NOT NULL AND is_pinned IS NOT NULL AND is_unread IS NOT NULL AND revision IS NOT NULL) OR (resource_type = 'task' AND user_id IS NOT NULL AND task_id IS NOT NULL AND task_version IS NOT NULL)`,
+      sql`(resource_type = 'message' AND id IS NOT NULL AND user_id IS NOT NULL AND saved_conversation_id IS NOT NULL AND message_id IS NOT NULL AND saved_at IS NOT NULL) OR (resource_type = 'conversation' AND conversation_id IS NOT NULL AND user_id IS NOT NULL AND is_pinned IS NOT NULL AND is_unread IS NOT NULL AND revision IS NOT NULL) OR (resource_type = 'task' AND user_id IS NOT NULL AND task_id IS NOT NULL AND task_version IS NOT NULL) OR (resource_type = 'teammate_install' AND teammate_id IS NOT NULL AND publication_id IS NOT NULL AND created_at IS NOT NULL AND rating IS NULL AND verdict IS NULL AND feedback_conversation_id IS NULL) OR (resource_type = 'teammate_rating' AND publication_id IS NOT NULL AND rating IS NOT NULL AND created_at IS NOT NULL AND teammate_id IS NULL AND verdict IS NULL AND feedback_conversation_id IS NULL) OR (resource_type = 'teammate_feedback' AND teammate_id IS NOT NULL AND verdict IS NOT NULL AND created_at IS NOT NULL AND publication_id IS NULL AND rating IS NULL)`,
     ),
     check0: check(
       "user_resource_state_shape_0",
-      sql`(resource_type = 'conversation' AND conversation_id IS NOT NULL AND message_id IS NULL AND task_id IS NULL) OR (resource_type = 'message' AND message_id IS NOT NULL AND saved_conversation_id IS NOT NULL AND conversation_id IS NULL AND task_id IS NULL) OR (resource_type = 'task' AND task_id IS NOT NULL AND task_version IS NOT NULL AND conversation_id IS NULL AND message_id IS NULL)`,
+      sql`(((resource_type = 'conversation' AND conversation_id IS NOT NULL AND message_id IS NULL AND task_id IS NULL) OR (resource_type = 'message' AND message_id IS NOT NULL AND saved_conversation_id IS NOT NULL AND conversation_id IS NULL AND task_id IS NULL) OR (resource_type = 'task' AND task_id IS NOT NULL AND task_version IS NOT NULL AND conversation_id IS NULL AND message_id IS NULL)) AND teammate_id IS NULL AND publication_id IS NULL AND rating IS NULL AND verdict IS NULL AND feedback_conversation_id IS NULL) OR (((resource_type = 'teammate_install' AND teammate_id IS NOT NULL AND publication_id IS NOT NULL AND created_at IS NOT NULL AND rating IS NULL AND verdict IS NULL AND feedback_conversation_id IS NULL) OR (resource_type = 'teammate_rating' AND publication_id IS NOT NULL AND rating IS NOT NULL AND created_at IS NOT NULL AND teammate_id IS NULL AND verdict IS NULL AND feedback_conversation_id IS NULL) OR (resource_type = 'teammate_feedback' AND teammate_id IS NOT NULL AND verdict IS NOT NULL AND created_at IS NOT NULL AND publication_id IS NULL AND rating IS NULL)) AND conversation_id IS NULL AND message_id IS NULL AND saved_conversation_id IS NULL AND task_id IS NULL)`,
     ),
   }),
 );
@@ -1005,34 +1084,15 @@ export const teammateContext = sqliteTable(
 
 export type TeammateContextRow = typeof teammateContext.$inferSelect;
 
-export const teammateConnectionGrant = sqliteTable(
-  "teammate_connection_grant",
-  {
-    id: text().primaryKey(),
-    context_id: text()
-      .notNull()
-      .references(() => teammateContext.id, { onDelete: "cascade" }),
-    connection_id: text()
-      .notNull()
-      .references(() => providerConnection.id, { onDelete: "cascade" }),
-    allowed_operations: text({ mode: "json" }).$type<string[]>().notNull(),
-    revision: integer().notNull().default(1),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-    updated_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-  },
-  (table) => ({
-    contextConnectionIdx: uniqueIndex("teammate_connection_grant_context_connection_idx").on(
-      table.context_id,
-      table.connection_id,
-    ),
-  }),
-);
-
-export type TeammateConnectionGrantRow = typeof teammateConnectionGrant.$inferSelect;
+export interface TeammateConnectionGrantRow {
+  id: string;
+  context_id: string;
+  connection_id: string;
+  allowed_operations: string[];
+  revision: number;
+  created_at: string;
+  updated_at: string | null;
+}
 
 export const teammateComputer = sqliteTable(
   "teammate_computer",
@@ -1069,34 +1129,15 @@ export const teammateComputer = sqliteTable(
 
 export type TeammateComputerRow = typeof teammateComputer.$inferSelect;
 
-export const teammateFeedback = sqliteTable(
-  "teammate_feedback",
-  {
-    id: text().primaryKey(),
-    teammate_id: text()
-      .notNull()
-      .references(() => teammates.id, { onDelete: "cascade" }),
-    user_id: integer()
-      .notNull()
-      .references(() => user.id),
-    conversation_id: text(),
-    verdict: text({ enum: ["good", "bad"] }).notNull(),
-    note: text(),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-  },
-  (table) => ({
-    teammateIdx: index("teammate_feedback_teammate_idx").on(table.teammate_id),
-    userConversationIdx: uniqueIndex("teammate_feedback_user_conversation_idx").on(
-      table.user_id,
-      table.teammate_id,
-      table.conversation_id,
-    ),
-  }),
-);
-
-export type TeammateFeedbackRow = typeof teammateFeedback.$inferSelect;
+export interface TeammateFeedbackRow {
+  id: string;
+  teammate_id: string;
+  user_id: number;
+  conversation_id: string | null;
+  verdict: "good" | "bad";
+  note: string | null;
+  created_at: string;
+}
 
 export type AuthoredSkillRevision = typeof resourceRevision.$inferSelect;
 
@@ -1327,28 +1368,15 @@ export const delegation = sqliteTable(
 
 export type DelegationRow = typeof delegation.$inferSelect;
 
-export const conversationHandle = sqliteTable(
-  "conversation_handle",
-  {
-    id: text().primaryKey(),
-    conversation_id: text()
-      .notNull()
-      .references(() => conversation.id, { onDelete: "cascade" }),
-    delegation_id: text()
-      .notNull()
-      .references(() => delegation.id, { onDelete: "cascade" }),
-    granted_by: text({ enum: ["spawn", "user"] }).notNull(),
-    granted_at: text().notNull(),
-    expires_at: text(),
-    revoked_at: text(),
-  },
-  (table) => ({
-    delegationIdx: uniqueIndex("conversation_handle_delegation_idx").on(table.delegation_id),
-    conversationIdx: index("conversation_handle_conversation_idx").on(table.conversation_id),
-  }),
-);
-
-export type ConversationHandleRow = typeof conversationHandle.$inferSelect;
+export interface ConversationHandleRow {
+  id: string;
+  conversation_id: string;
+  delegation_id: string;
+  granted_by: "spawn" | "user";
+  granted_at: string;
+  expires_at: string | null;
+  revoked_at: string | null;
+}
 
 export const conversationRunCommand = sqliteTable(
   "conversation_run_command",
@@ -1738,58 +1766,6 @@ export const source = sqliteTable(
 
 export type Source = typeof source.$inferSelect;
 
-export const sourceSearchDocument = sqliteTable(
-  "source_search_document",
-  {
-    id: text().primaryKey(),
-    source_id: text().notNull(),
-    source_revision: integer().notNull(),
-    user_id: integer().notNull(),
-    project_id: text(),
-    status: text({ enum: ["lexical", "active", "stale"] })
-      .notNull()
-      .default("lexical"),
-    target: text().notNull(),
-    lease_token: text(),
-    lease_expires_at: text(),
-    created_at: text()
-      .notNull()
-      .default(sql`(CURRENT_TIMESTAMP)`),
-  },
-  (table) => ({
-    revisionIdx: uniqueIndex("source_search_document_revision_idx").on(
-      table.source_id,
-      table.source_revision,
-    ),
-    scopeIdx: index("source_search_document_scope_idx").on(table.project_id, table.status),
-    statusIdx: index("source_search_document_status_idx").on(table.status),
-    lifecycleCheck: check(
-      "source_search_document_lifecycle_check",
-      sql`${table.status} IN ('lexical', 'active', 'stale')`,
-    ),
-    revisionCheck: check(
-      "source_search_document_revision_check",
-      sql`${table.source_revision} > 0`,
-    ),
-  }),
-);
-
-export const sourceSearchChunk = sqliteTable(
-  "source_search_chunk",
-  {
-    id: text().primaryKey(),
-    document_id: text()
-      .notNull()
-      .references(() => sourceSearchDocument.id, { onDelete: "cascade" }),
-    chunk_index: integer().notNull(),
-    title: text().notNull(),
-    content: text().notNull(),
-  },
-  (table) => ({
-    documentIdx: index("source_search_chunk_document_idx").on(table.document_id),
-  }),
-);
-
 export const sourceKnowledgeSync = sqliteTable(
   "source_knowledge_sync",
   {
@@ -1874,25 +1850,6 @@ export const resourceCollection = sqliteTable(
   }),
 );
 
-export const sourceCollectionMember = sqliteTable(
-  "source_collection_member",
-  {
-    collection_id: text()
-      .notNull()
-      .references(() => resourceCollection.id, { onDelete: "cascade" }),
-    source_id: text()
-      .notNull()
-      .references(() => source.id, { onDelete: "cascade" }),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.collection_id, table.source_id] }),
-    sourceIdx: index("source_collection_member_source_id_idx").on(table.source_id),
-  }),
-);
-
 export const output = sqliteTable(
   "output",
   {
@@ -1953,51 +1910,61 @@ export type Output = typeof output.$inferSelect;
 
 export type OutputRevision = typeof resourceRevision.$inferSelect;
 
-export const outputSource = sqliteTable(
-  "output_source",
+export const resourceGrant = sqliteTable(
+  "resource_grant",
   {
-    output_id: text()
-      .notNull()
-      .references(() => output.id, { onDelete: "cascade" }),
-    source_id: text()
-      .notNull()
-      .references(() => source.id, { onDelete: "cascade" }),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.output_id, table.source_id] }),
-    sourceIdx: index("output_source_source_id_idx").on(table.source_id),
-  }),
-);
-
-export const outputShare = sqliteTable(
-  "output_share",
-  {
-    id: text().primaryKey(),
-    output_id: text()
-      .notNull()
-      .references(() => output.id, { onDelete: "cascade" }),
-    token_hash: text().notNull().unique(),
-    permission: text({ enum: ["view"] })
-      .default("view")
-      .notNull(),
-    created_by_user_id: integer()
-      .notNull()
-      .references(() => user.id),
+    kind: text({ enum: ["conversation", "output", "connection"] }).notNull(),
+    id: text().notNull(),
+    conversation_id: text().references(() => conversation.id, { onDelete: "cascade" }),
+    delegation_id: text().references(() => delegation.id, { onDelete: "cascade" }),
+    granted_by: text({ enum: ["spawn", "user"] }),
+    output_id: text().references(() => output.id, { onDelete: "cascade" }),
+    token_hash: text(),
+    permission: text({ enum: ["view"] }).default("view"),
+    created_by_user_id: integer().references(() => user.id),
+    context_id: text().references(() => teammateContext.id, { onDelete: "cascade" }),
+    connection_id: text().references(() => providerConnection.id, { onDelete: "cascade" }),
+    allowed_operations: text({ mode: "json" }).$type<string[]>(),
+    revision: integer().notNull().default(1),
     expires_at: text(),
     revoked_at: text(),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   },
   (table) => ({
-    outputIdx: index("output_share_output_id_idx").on(table.output_id),
+    pk: primaryKey({ columns: [table.kind, table.id] }),
+    delegationIdx: uniqueIndex("resource_grant_delegation_idx")
+      .on(table.delegation_id)
+      .where(sql`${table.delegation_id} IS NOT NULL`),
+    conversationIdx: index("resource_grant_conversation_idx")
+      .on(table.conversation_id)
+      .where(sql`${table.conversation_id} IS NOT NULL`),
+    tokenIdx: uniqueIndex("resource_grant_token_idx")
+      .on(table.token_hash)
+      .where(sql`${table.token_hash} IS NOT NULL`),
+    outputIdx: index("resource_grant_output_idx")
+      .on(table.output_id)
+      .where(sql`${table.output_id} IS NOT NULL`),
+    contextConnectionIdx: uniqueIndex("resource_grant_context_connection_idx")
+      .on(table.context_id, table.connection_id)
+      .where(sql`${table.context_id} IS NOT NULL`),
+    connectionIdx: index("resource_grant_connection_idx")
+      .on(table.connection_id)
+      .where(sql`${table.connection_id} IS NOT NULL`),
+    shapeCheck: check(
+      "resource_grant_shape_check",
+      sql`
+      (${table.kind} = 'conversation' AND ${table.conversation_id} IS NOT NULL AND ${table.delegation_id} IS NOT NULL AND ${table.granted_by} IS NOT NULL AND ${table.granted_by} IN ('spawn', 'user') AND ${table.output_id} IS NULL AND ${table.context_id} IS NULL AND ${table.connection_id} IS NULL AND ${table.token_hash} IS NULL AND ${table.created_by_user_id} IS NULL AND ${table.allowed_operations} IS NULL)
+      OR (${table.kind} = 'output' AND ${table.output_id} IS NOT NULL AND ${table.token_hash} IS NOT NULL AND ${table.permission} IS NOT NULL AND ${table.created_by_user_id} IS NOT NULL AND ${table.conversation_id} IS NULL AND ${table.delegation_id} IS NULL AND ${table.context_id} IS NULL AND ${table.connection_id} IS NULL AND ${table.granted_by} IS NULL AND ${table.allowed_operations} IS NULL)
+      OR (${table.kind} = 'connection' AND ${table.context_id} IS NOT NULL AND ${table.connection_id} IS NOT NULL AND ${table.allowed_operations} IS NOT NULL AND ${table.conversation_id} IS NULL AND ${table.delegation_id} IS NULL AND ${table.output_id} IS NULL AND ${table.token_hash} IS NULL AND ${table.created_by_user_id} IS NULL AND ${table.granted_by} IS NULL AND ${table.expires_at} IS NULL AND ${table.revoked_at} IS NULL)
+    `,
+    ),
   }),
 );
-
-export type OutputShare = typeof outputShare.$inferSelect;
 
 export const template = sqliteTable(
   "template",
@@ -2010,8 +1977,18 @@ export const template = sqliteTable(
       onDelete: "cascade",
     }),
     project_id: text().references(() => project.id, { onDelete: "cascade" }),
-    kind: text({ enum: ["project", "recipe", "capability"] }).notNull(),
+    kind: text({ enum: ["project", "recipe", "capability", "teammate_publication"] }).notNull(),
     capability_id: text(),
+    publication_id: text(),
+    source_teammate_id: text().references(() => teammates.id),
+    avatar_url: text(),
+    category: text(),
+    tags: text({ mode: "json" }),
+    is_featured: integer({ mode: "boolean" }).default(false),
+    is_public: integer({ mode: "boolean" }).default(true),
+    usage_count: integer().default(0),
+    rating_count: integer().default(0),
+    rating_average: text().default("0"),
     name: text().notNull(),
     description: text().default("").notNull(),
     configuration: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
@@ -2026,6 +2003,37 @@ export const template = sqliteTable(
       .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   },
   (table) => ({
+    publicationIdIdx: uniqueIndex("template_publication_id_idx").on(table.publication_id),
+    publicationSourceIdx: index("template_publication_source_idx").on(table.source_teammate_id),
+    publicationCategoryIdx: index("template_publication_category_idx").on(
+      table.kind,
+      table.is_public,
+      table.category,
+    ),
+    publicationFeaturedIdx: index("template_publication_featured_idx").on(
+      table.kind,
+      table.is_public,
+      table.is_featured,
+      table.usage_count,
+    ),
+    publicationUsageIdx: index("template_publication_usage_idx").on(
+      table.kind,
+      table.is_public,
+      table.usage_count,
+      table.created_at,
+    ),
+    publicationRatingIdx: index("template_publication_rating_idx").on(
+      table.kind,
+      table.is_public,
+      sql`CAST(rating_average AS REAL)`,
+      table.rating_count,
+      table.created_at,
+    ),
+    publicationRecentIdx: index("template_publication_recent_idx").on(
+      table.kind,
+      table.is_public,
+      table.created_at,
+    ),
     creatorIdx: index("template_created_by_user_id_idx").on(table.created_by_user_id),
     workspaceIdx: index("template_workspace_id_idx").on(table.workspace_id),
     projectIdx: index("template_project_id_idx").on(table.project_id),
@@ -2319,109 +2327,42 @@ export const teammates = sqliteTable(
 
 export type Teammate = typeof teammates.$inferSelect;
 
-export const sharedTeammates = sqliteTable(
-  "shared_teammates",
-  {
-    id: text().primaryKey(),
-    teammate_id: text()
-      .notNull()
-      .references(() => teammates.id),
-    user_id: integer()
-      .notNull()
-      .references(() => user.id),
-    name: text().notNull(),
-    description: text().default("").notNull(),
-    avatar_url: text(),
-    category: text(),
-    tags: text({ mode: "json" }),
-    is_featured: integer({ mode: "boolean" }).default(false),
-    is_public: integer({ mode: "boolean" }).default(true),
-    usage_count: integer().default(0),
-    rating_count: integer().default(0),
-    rating_average: text().default("0"),
-    template_data: text({ mode: "json" }).notNull(),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-    updated_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-  },
-  (table) => ({
-    teammateIdIdx: index("shared_teammates_teammate_id_idx").on(table.teammate_id),
-    userIdIdx: index("shared_teammates_user_id_idx").on(table.user_id),
-    categoryIdx: index("shared_teammates_category_idx").on(table.category),
-    featuredIdx: index("shared_teammates_featured_idx").on(table.is_featured),
-    publicIdx: index("shared_teammates_public_idx").on(table.is_public),
-    usageIdx: index("shared_teammates_usage_idx").on(table.usage_count),
-    ratingIdx: index("shared_teammates_rating_idx").on(table.rating_average),
-  }),
-);
+export interface SharedTeammate {
+  id: string;
+  teammate_id: string;
+  user_id: number;
+  name: string;
+  description: string;
+  avatar_url: string | null;
+  category: string | null;
+  tags: unknown;
+  is_featured: boolean | null;
+  is_public: boolean | null;
+  usage_count: number | null;
+  rating_count: number | null;
+  rating_average: string | null;
+  template_data: unknown;
+  created_at: string;
+  updated_at: string | null;
+}
 
-export type SharedTeammate = typeof sharedTeammates.$inferSelect;
+export interface TeammateInstall {
+  id: string;
+  shared_teammate_id: string;
+  user_id: number;
+  teammate_id: string;
+  created_at: string;
+}
 
-export const teammateInstalls = sqliteTable(
-  "teammate_installs",
-  {
-    id: text().primaryKey(),
-    shared_teammate_id: text()
-      .notNull()
-      .references(() => sharedTeammates.id),
-    user_id: integer()
-      .notNull()
-      .references(() => user.id),
-    teammate_id: text()
-      .notNull()
-      .references(() => teammates.id),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-  },
-  (table) => ({
-    sharedTeammateIdIdx: index("teammate_installs_shared_teammate_id_idx").on(
-      table.shared_teammate_id,
-    ),
-    userIdIdx: index("teammate_installs_user_id_idx").on(table.user_id),
-    teammateIdIdx: index("teammate_installs_teammate_id_idx").on(table.teammate_id),
-    uniqueInstall: index("teammate_installs_unique_idx").on(
-      table.shared_teammate_id,
-      table.user_id,
-    ),
-  }),
-);
-
-export type TeammateInstall = typeof teammateInstalls.$inferSelect;
-
-export const teammateRatings = sqliteTable(
-  "teammate_ratings",
-  {
-    id: text().primaryKey(),
-    shared_teammate_id: text()
-      .notNull()
-      .references(() => sharedTeammates.id),
-    user_id: integer()
-      .notNull()
-      .references(() => user.id),
-    rating: integer().notNull(),
-    review: text(),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-    updated_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-  },
-  (table) => ({
-    sharedTeammateIdIdx: index("teammate_ratings_shared_teammate_id_idx").on(
-      table.shared_teammate_id,
-    ),
-    userIdIdx: index("teammate_ratings_user_id_idx").on(table.user_id),
-    ratingIdx: index("teammate_ratings_rating_idx").on(table.rating),
-    uniqueRating: index("teammate_ratings_unique_idx").on(table.shared_teammate_id, table.user_id),
-  }),
-);
-
-export type TeammateRating = typeof teammateRatings.$inferSelect;
+export interface TeammateRating {
+  id: string;
+  shared_teammate_id: string;
+  user_id: number;
+  rating: number;
+  review: string | null;
+  created_at: string;
+  updated_at: string | null;
+}
 
 export const artificialAnalysisModels = sqliteTable(
   "artificial_analysis_models",
@@ -2813,6 +2754,7 @@ export const projectTaskIntegration = sqliteTable(
   (table) => ({
     pk: primaryKey({ columns: [table.kind, table.id] }),
     taskIdx: uniqueIndex("project_task_integration_task_idx").on(table.task_id, table.kind),
+    sourceIdx: index("project_task_integration_source_idx").on(table.source_id),
     externalIdentityIdx: uniqueIndex("project_task_integration_external_identity_idx")
       .on(
         table.workspace_id,
@@ -3061,6 +3003,19 @@ export const modelConfiguration = sqliteTable(
     name: text(),
     revision: integer().default(1).notNull(),
     encrypted_secret: text(),
+    asset_type: text({ enum: MODEL_ASSET_KINDS }),
+    source: text({ enum: MODEL_ASSET_SOURCES }),
+    source_ref: text(),
+    version_id: text().references((): AnySQLiteColumn => modelAssetVersion.id, {
+      onDelete: "cascade",
+    }),
+    provider: text(),
+    provider_model_id: text(),
+    status: text(),
+    route_id: text(),
+    route_kind: text(),
+    canary_route_id: text(),
+    canary_route_kind: text(),
     data: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
     created_by: integer().references(() => user.id, { onDelete: "set null" }),
     updated_by: integer().references(() => user.id, { onDelete: "set null" }),
@@ -3069,10 +3024,46 @@ export const modelConfiguration = sqliteTable(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.kind, table.id] }),
-    scopeIdx: uniqueIndex("model_configuration_scope_idx").on(
-      table.workspace_id,
+    scopeIdx: uniqueIndex("model_configuration_scope_idx")
+      .on(table.workspace_id, table.kind, table.scope_key)
+      .where(sql`${table.kind} IN ('policy', 'budget', 'connection')`),
+    routeFk: foreignKey({
+      columns: [table.route_kind, table.route_id],
+      foreignColumns: [table.kind, table.id],
+    }).onDelete("set null"),
+    canaryRouteFk: foreignKey({
+      columns: [table.canary_route_kind, table.canary_route_id],
+      foreignColumns: [table.kind, table.id],
+    }).onDelete("set null"),
+    aliasRouteCheck: check(
+      "model_configuration_alias_route_check",
+      sql`((${table.route_id} IS NULL AND ${table.route_kind} IS NULL) OR (${table.route_id} IS NOT NULL AND ${table.route_kind} IS NOT NULL AND ${table.route_kind} = 'route')) AND ((${table.canary_route_id} IS NULL AND ${table.canary_route_kind} IS NULL) OR (${table.canary_route_id} IS NOT NULL AND ${table.canary_route_kind} IS NOT NULL AND ${table.canary_route_kind} = 'route'))`,
+    ),
+    assetSourceIdx: uniqueIndex("model_configuration_asset_source_idx")
+      .on(table.workspace_id, table.asset_type, table.source, table.source_ref)
+      .where(sql`${table.kind} = 'asset'`),
+    routeTargetIdx: uniqueIndex("model_configuration_route_target_idx")
+      .on(table.workspace_id, table.version_id, table.provider, table.provider_model_id)
+      .where(sql`${table.kind} = 'route'`),
+    routeProviderIdx: index("model_configuration_route_provider_idx").on(
       table.kind,
-      table.scope_key,
+      table.provider,
+      table.provider_model_id,
+      table.status,
+    ),
+    routeVersionIdx: index("model_configuration_route_version_idx").on(
+      table.kind,
+      table.workspace_id,
+      table.version_id,
+      table.status,
+    ),
+    aliasNameIdx: uniqueIndex("model_configuration_alias_name_idx")
+      .on(table.workspace_id, table.scope_key, table.name)
+      .where(sql`${table.kind} = 'alias'`),
+    aliasRouteIdx: index("model_configuration_alias_route_idx").on(table.kind, table.route_id),
+    aliasCanaryIdx: index("model_configuration_alias_canary_idx").on(
+      table.kind,
+      table.canary_route_id,
     ),
     workspaceIdx: index("model_configuration_workspace_idx").on(
       table.workspace_id,
@@ -3081,7 +3072,7 @@ export const modelConfiguration = sqliteTable(
     ),
     shapeCheck: check(
       "model_configuration_shape_check",
-      sql`(${table.kind} IN ('policy', 'budget')) OR (${table.kind} IN ('suite', 'grader') AND ${table.name} IS NOT NULL) OR (${table.kind} = 'connection' AND ${table.project_id} IS NULL AND ${table.encrypted_secret} IS NOT NULL)`,
+      sql`(${table.kind} IN ('policy', 'budget')) OR (${table.kind} IN ('suite', 'grader') AND ${table.name} IS NOT NULL) OR (${table.kind} = 'connection' AND ${table.project_id} IS NULL AND ${table.encrypted_secret} IS NOT NULL) OR (${table.kind} = 'asset' AND ${table.asset_type} IS NOT NULL AND ${table.source} IS NOT NULL AND ${table.source_ref} IS NOT NULL AND ${table.name} IS NOT NULL AND ${table.version_id} IS NULL) OR (${table.kind} = 'route' AND ${table.version_id} IS NOT NULL AND ${table.provider} IS NOT NULL AND ${table.provider_model_id} IS NOT NULL AND ${table.status} IS NOT NULL) OR (${table.kind} = 'alias' AND ${table.name} IS NOT NULL AND ${table.version_id} IS NULL)`,
     ),
   }),
 );
@@ -3107,7 +3098,8 @@ export const modelOperation = sqliteTable(
     suite_id: text(),
     suite_kind: text().default("suite").notNull(),
     route_id: text(),
-    evaluation_route_id: text().references(() => modelRoute.id, { onDelete: "cascade" }),
+    evaluation_route_id: text(),
+    evaluation_route_kind: text().default("route").notNull(),
     trigger: text(),
     billed_until: text(),
     data: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
@@ -3120,6 +3112,14 @@ export const modelOperation = sqliteTable(
     last_checked_at: text(),
   },
   (table) => ({
+    evaluationRouteFk: foreignKey({
+      columns: [table.evaluation_route_kind, table.evaluation_route_id],
+      foreignColumns: [modelConfiguration.kind, modelConfiguration.id],
+    }).onDelete("cascade"),
+    evaluationRouteKindCheck: check(
+      "model_operation_evaluation_route_kind_check",
+      sql`${table.evaluation_route_kind} = 'route'`,
+    ),
     pk: primaryKey({ columns: [table.kind, table.id] }),
     workspaceIdx: index("model_operation_workspace_idx").on(
       table.kind,
@@ -3174,7 +3174,8 @@ export const modelRecord = sqliteTable(
     route_id: text(),
     configuration_id: text(),
     configuration_kind: text().default("policy").notNull(),
-    alias_id: text().references(() => modelAlias.id, { onDelete: "cascade" }),
+    alias_id: text(),
+    alias_kind: text().default("alias").notNull(),
     operation_id: text(),
     operation_kind: text().default("training").notNull(),
     output_version_id: text().references(() => modelAssetVersion.id, { onDelete: "set null" }),
@@ -3182,12 +3183,39 @@ export const modelRecord = sqliteTable(
     ordinal: integer(),
     status: text(),
     source: text(),
+    path: text(),
+    workspace_id: text().references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "set null" }),
+    subject_type: text({ enum: COST_SUBJECTS }),
+    subject_id: text(),
+    provider: text({ enum: MODEL_PROVIDER_IDS }),
+    usd: real(),
+    period_start: text(),
+    period_end: text(),
     data: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
     actor_user_id: integer().references(() => user.id, { onDelete: "set null" }),
     created_by: integer(),
     created_at: createdAtColumn(),
   },
   (table) => ({
+    aliasFk: foreignKey({
+      columns: [table.alias_kind, table.alias_id],
+      foreignColumns: [modelConfiguration.kind, modelConfiguration.id],
+    }).onDelete("cascade"),
+    aliasKindCheck: check("model_record_alias_kind_check", sql`${table.alias_kind} = 'alias'`),
+    filePathIdx: uniqueIndex("model_record_file_path_idx")
+      .on(table.version_id, table.path)
+      .where(sql`${table.kind} = 'file'`),
+    costPeriodIdx: index("model_record_cost_period_idx").on(
+      table.kind,
+      table.workspace_id,
+      table.period_start,
+    ),
+    costSubjectIdx: index("model_record_cost_subject_idx").on(
+      table.kind,
+      table.subject_type,
+      table.subject_id,
+    ),
     pk: primaryKey({ columns: [table.kind, table.id] }),
     configurationFk: foreignKey({
       columns: [table.configuration_kind, table.configuration_id],
@@ -3212,7 +3240,7 @@ export const modelRecord = sqliteTable(
     checkpointIdx: uniqueIndex("model_record_checkpoint_idx").on(table.operation_id, table.ordinal),
     shapeCheck: check(
       "model_record_shape_check",
-      sql`(${table.kind} = 'evidence' AND ${table.version_id} IS NOT NULL AND ${table.event_kind} IS NOT NULL AND ${table.status} IS NOT NULL AND ${table.source} IS NOT NULL AND ${table.configuration_id} IS NULL AND ${table.alias_id} IS NULL AND ${table.operation_id} IS NULL) OR (${table.kind} = 'policy_revision' AND ${table.configuration_id} IS NOT NULL AND ${table.ordinal} IS NOT NULL AND ${table.version_id} IS NULL AND ${table.alias_id} IS NULL AND ${table.operation_id} IS NULL) OR (${table.kind} = 'alias_event' AND ${table.alias_id} IS NOT NULL AND ${table.event_kind} IS NOT NULL AND ${table.version_id} IS NULL AND ${table.configuration_id} IS NULL AND ${table.operation_id} IS NULL) OR (${table.kind} = 'checkpoint' AND ${table.operation_id} IS NOT NULL AND ${table.ordinal} IS NOT NULL AND ${table.version_id} IS NULL AND ${table.configuration_id} IS NULL AND ${table.alias_id} IS NULL)`,
+      sql`(${table.kind} = 'evidence' AND ${table.version_id} IS NOT NULL AND ${table.event_kind} IS NOT NULL AND ${table.status} IS NOT NULL AND ${table.source} IS NOT NULL AND ${table.configuration_id} IS NULL AND ${table.alias_id} IS NULL AND ${table.operation_id} IS NULL) OR (${table.kind} = 'policy_revision' AND ${table.configuration_id} IS NOT NULL AND ${table.ordinal} IS NOT NULL AND ${table.version_id} IS NULL AND ${table.alias_id} IS NULL AND ${table.operation_id} IS NULL) OR (${table.kind} = 'alias_event' AND ${table.alias_id} IS NOT NULL AND ${table.event_kind} IS NOT NULL AND ${table.version_id} IS NULL AND ${table.configuration_id} IS NULL AND ${table.operation_id} IS NULL) OR (${table.kind} = 'checkpoint' AND ${table.operation_id} IS NOT NULL AND ${table.ordinal} IS NOT NULL AND ${table.version_id} IS NULL AND ${table.configuration_id} IS NULL AND ${table.alias_id} IS NULL) OR (${table.kind} = 'file' AND ${table.version_id} IS NOT NULL AND ${table.path} IS NOT NULL AND ${table.configuration_id} IS NULL AND ${table.alias_id} IS NULL AND ${table.operation_id} IS NULL) OR (${table.kind} = 'cost' AND ${table.workspace_id} IS NOT NULL AND ${table.subject_type} IS NOT NULL AND ${table.subject_id} IS NOT NULL AND ${table.provider} IS NOT NULL AND ${table.usd} IS NOT NULL AND ${table.period_start} IS NOT NULL AND ${table.period_end} IS NOT NULL AND ${table.version_id} IS NULL AND ${table.configuration_id} IS NULL AND ${table.alias_id} IS NULL AND ${table.operation_id} IS NULL)`,
     ),
   }),
 );
@@ -3227,7 +3255,8 @@ export const modelApproval = sqliteTable(
       .references(() => workspace.id, { onDelete: "cascade" }),
     project_id: text().references(() => project.id, { onDelete: "cascade" }),
     version_id: text().references(() => modelAssetVersion.id, { onDelete: "cascade" }),
-    route_id: text().references(() => modelRoute.id, { onDelete: "cascade" }),
+    route_id: text(),
+    route_kind: text().default("route").notNull(),
     state: text().notNull(),
     subject_type: text(),
     subject_id: text(),
@@ -3239,6 +3268,11 @@ export const modelApproval = sqliteTable(
     created_at: createdAtColumn(),
   },
   (table) => ({
+    routeFk: foreignKey({
+      columns: [table.route_kind, table.route_id],
+      foreignColumns: [modelConfiguration.kind, modelConfiguration.id],
+    }).onDelete("cascade"),
+    routeKindCheck: check("model_approval_route_kind_check", sql`${table.route_kind} = 'route'`),
     pk: primaryKey({ columns: [table.kind, table.id] }),
     workspaceIdx: index("model_approval_workspace_idx").on(
       table.kind,
@@ -3263,39 +3297,12 @@ export const modelApproval = sqliteTable(
   }),
 );
 
-export const modelAsset = sqliteTable(
-  "model_asset",
-  {
-    id: text().primaryKey(),
-    workspace_id: text()
-      .notNull()
-      .references(() => workspace.id, { onDelete: "cascade" }),
-    kind: text({ enum: MODEL_ASSET_KINDS }).notNull(),
-    source: text({ enum: MODEL_ASSET_SOURCES }).notNull(),
-    source_ref: text().notNull(),
-    display_name: text().notNull(),
-    created_by: integer().references(() => user.id, { onDelete: "set null" }),
-    created_at: createdAtColumn(),
-  },
-  (table) => ({
-    sourceIdx: uniqueIndex("model_asset_source_idx").on(
-      table.workspace_id,
-      table.kind,
-      table.source,
-      table.source_ref,
-    ),
-  }),
-);
-
-export type ModelAssetRow = typeof modelAsset.$inferSelect;
-
 export const modelAssetVersion = sqliteTable(
   "model_asset_version",
   {
     id: text().primaryKey(),
-    asset_id: text()
-      .notNull()
-      .references(() => modelAsset.id, { onDelete: "cascade" }),
+    asset_id: text().notNull(),
+    asset_kind: text().default("asset").notNull(),
     workspace_id: text().notNull(),
     revision: text().notNull(),
     status: text({ enum: ["importing", "inspecting", "ready", "failed"] })
@@ -3309,78 +3316,19 @@ export const modelAssetVersion = sqliteTable(
     updated_at: createdAtColumn(),
   },
   (table) => ({
+    assetFk: foreignKey({
+      columns: [table.asset_kind, table.asset_id],
+      foreignColumns: [modelConfiguration.kind, modelConfiguration.id],
+    }).onDelete("cascade"),
+    assetKindCheck: check(
+      "model_asset_version_asset_kind_check",
+      sql`${table.asset_kind} = 'asset'`,
+    ),
     revisionIdx: uniqueIndex("model_asset_version_revision_idx").on(table.asset_id, table.revision),
     workspaceIdx: index("model_asset_version_workspace_idx").on(
       table.workspace_id,
       table.created_at,
     ),
-  }),
-);
-
-export const modelAssetFile = sqliteTable(
-  "model_asset_file",
-  {
-    version_id: text()
-      .notNull()
-      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
-    path: text().notNull(),
-    size: integer().notNull(),
-    sha256: text(),
-    format: text(),
-  },
-  (table) => ({ pk: primaryKey({ columns: [table.version_id, table.path] }) }),
-);
-
-export const modelRoute = sqliteTable(
-  "model_route",
-  {
-    id: text().primaryKey(),
-    workspace_id: text().notNull(),
-    version_id: text()
-      .notNull()
-      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
-    provider: text().notNull(),
-    provider_model_id: text().notNull(),
-    region: text().notNull(),
-    weights_verified: integer({ mode: "boolean" }).default(false).notNull(),
-    status: text({ enum: ["active", "retired"] })
-      .default("active")
-      .notNull(),
-    deployment_id: text(),
-    jurisdiction: text({ enum: JURISDICTIONS }),
-    retention: text({ enum: ["zero", "provider", "self"] }),
-    created_by: integer().references(() => user.id, { onDelete: "set null" }),
-    created_at: createdAtColumn(),
-  },
-  (table) => ({
-    targetIdx: uniqueIndex("model_route_target_idx").on(
-      table.workspace_id,
-      table.version_id,
-      table.provider,
-      table.provider_model_id,
-    ),
-    providerModelIdx: index("model_route_provider_model_idx").on(
-      table.provider,
-      table.provider_model_id,
-    ),
-  }),
-);
-
-export const modelLineageEdge = sqliteTable(
-  "model_lineage_edge",
-  {
-    from_version_id: text()
-      .notNull()
-      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
-    to_version_id: text()
-      .notNull()
-      .references(() => modelAssetVersion.id, { onDelete: "cascade" }),
-    relation: text({ enum: LINEAGE_RELATIONS }).notNull(),
-    created_at: createdAtColumn(),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.from_version_id, table.to_version_id, table.relation] }),
-    toIdx: index("model_lineage_edge_to_idx").on(table.to_version_id),
   }),
 );
 
@@ -3398,58 +3346,36 @@ export interface ModelDatasetProfileData {
   created_at: string;
 }
 
-export const modelAlias = sqliteTable(
-  "model_alias",
+export const resourceLink = sqliteTable(
+  "resource_link",
   {
-    id: text().primaryKey(),
-    workspace_id: text()
-      .notNull()
-      .references(() => workspace.id, { onDelete: "cascade" }),
-    project_id: text().references(() => project.id, { onDelete: "cascade" }),
-    scope_key: text().notNull(),
-    name: text().notNull(),
-    description: text(),
-    route_id: text().references(() => modelRoute.id, { onDelete: "set null" }),
-    canary_route_id: text().references(() => modelRoute.id, { onDelete: "set null" }),
-    canary_percent: integer().default(0).notNull(),
-    gate: text({ mode: "json" }).$type<AliasGate | null>(),
-    requires_approval: integer({ mode: "boolean" }).default(false).notNull(),
-    updated_by: integer().references(() => user.id, { onDelete: "set null" }),
-    updated_at: createdAtColumn(),
-    created_at: createdAtColumn(),
+    kind: text({ enum: ["output_source", "source_collection", "model_lineage"] }).notNull(),
+    output_id: text().references(() => output.id, { onDelete: "cascade" }),
+    collection_id: text().references(() => resourceCollection.id, { onDelete: "cascade" }),
+    source_id: text().references(() => source.id, { onDelete: "cascade" }),
+    from_version_id: text().references(() => modelAssetVersion.id, { onDelete: "cascade" }),
+    to_version_id: text().references(() => modelAssetVersion.id, { onDelete: "cascade" }),
+    relation: text({ enum: LINEAGE_RELATIONS }),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
   },
   (table) => ({
-    nameIdx: uniqueIndex("model_alias_name_idx").on(
-      table.workspace_id,
-      table.scope_key,
-      table.name,
+    outputSourceIdx: uniqueIndex("resource_link_output_source_idx")
+      .on(table.output_id, table.source_id)
+      .where(sql`${table.kind} = 'output_source'`),
+    collectionSourceIdx: uniqueIndex("resource_link_collection_source_idx")
+      .on(table.collection_id, table.source_id)
+      .where(sql`${table.kind} = 'source_collection'`),
+    lineageIdx: uniqueIndex("resource_link_lineage_idx")
+      .on(table.from_version_id, table.to_version_id, table.relation)
+      .where(sql`${table.kind} = 'model_lineage'`),
+    sourceIdx: index("resource_link_source_idx").on(table.kind, table.source_id),
+    lineageTargetIdx: index("resource_link_lineage_target_idx").on(table.kind, table.to_version_id),
+    shapeCheck: check(
+      "resource_link_shape_check",
+      sql`(${table.kind} = 'output_source' AND ${table.output_id} IS NOT NULL AND ${table.source_id} IS NOT NULL AND ${table.collection_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL AND ${table.relation} IS NULL) OR (${table.kind} = 'source_collection' AND ${table.collection_id} IS NOT NULL AND ${table.source_id} IS NOT NULL AND ${table.output_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL AND ${table.relation} IS NULL) OR (${table.kind} = 'model_lineage' AND ${table.from_version_id} IS NOT NULL AND ${table.to_version_id} IS NOT NULL AND ${table.relation} IS NOT NULL AND ${table.output_id} IS NULL AND ${table.collection_id} IS NULL AND ${table.source_id} IS NULL)`,
     ),
-  }),
-);
-
-export const modelCostEntry = sqliteTable(
-  "model_cost_entry",
-  {
-    id: text().primaryKey(),
-    workspace_id: text()
-      .notNull()
-      .references(() => workspace.id, { onDelete: "cascade" }),
-    project_id: text().references(() => project.id, { onDelete: "set null" }),
-    subject_type: text({ enum: COST_SUBJECTS }).notNull(),
-    subject_id: text().notNull(),
-    provider: text({ enum: MODEL_PROVIDER_IDS }).notNull(),
-    usd: real().notNull(),
-    basis: text({ enum: ["estimate", "reported", "metered"] }).notNull(),
-    period_start: text().notNull(),
-    period_end: text().notNull(),
-    created_at: createdAtColumn(),
-  },
-  (table) => ({
-    workspacePeriodIdx: index("model_cost_entry_workspace_period_idx").on(
-      table.workspace_id,
-      table.period_start,
-    ),
-    subjectIdx: index("model_cost_entry_subject_idx").on(table.subject_type, table.subject_id),
   }),
 );
 

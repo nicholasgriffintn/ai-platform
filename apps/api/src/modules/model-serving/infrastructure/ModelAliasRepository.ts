@@ -3,14 +3,18 @@ import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import {
+  type ModelAliasRecord,
+  modelAlias,
+  modelAliasChanges,
+  modelAliasValues,
   type ModelAliasEventRecord,
   modelAliasEvent,
   modelAliasEventValues,
 } from "~/infrastructure/database/model-storage";
-import { modelAlias, modelRecord } from "~/infrastructure/database/schema";
+import { modelRecord, modelConfiguration } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
-export type ModelAliasRecord = typeof modelAlias.$inferSelect;
+export type { ModelAliasRecord } from "~/infrastructure/database/model-storage";
 export type { ModelAliasEventRecord } from "~/infrastructure/database/model-storage";
 
 export const WORKSPACE_ALIAS_SCOPE_KEY = "workspace";
@@ -27,29 +31,36 @@ export class ModelAliasRepository extends BaseRepository<Pick<IEnv, "DB">> {
     updatedBy: number;
   }): Promise<ModelAliasRecord> {
     const [record] = await this.database
-      .insert(modelAlias)
-      .values({
-        id: generateId(),
-        workspace_id: input.workspaceId,
-        project_id: input.projectId,
-        scope_key: input.projectId ?? WORKSPACE_ALIAS_SCOPE_KEY,
-        name: input.name,
-        description: input.description,
-        route_id: input.routeId,
-        gate: input.gate,
-        requires_approval: input.requiresApproval,
-        updated_by: input.updatedBy,
-      })
-      .returning();
+      .insert(modelConfiguration)
+      .values(
+        modelAliasValues({
+          id: generateId(),
+          workspace_id: input.workspaceId,
+          project_id: input.projectId,
+          scope_key: input.projectId ?? WORKSPACE_ALIAS_SCOPE_KEY,
+          name: input.name,
+          description: input.description,
+          route_id: input.routeId,
+          gate: input.gate,
+          requires_approval: input.requiresApproval,
+          updated_by: input.updatedBy,
+        }),
+      )
+      .returning(modelAlias);
 
     return record;
   }
 
   async get(workspaceId: string, id: string): Promise<ModelAliasRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelAlias)
-      .where(and(eq(modelAlias.workspace_id, workspaceId), eq(modelAlias.id, id)))
+      .select(modelAlias)
+      .from(modelConfiguration)
+      .where(
+        and(
+          eq(modelConfiguration.kind, "alias"),
+          and(eq(modelAlias.workspace_id, workspaceId), eq(modelAlias.id, id)),
+        ),
+      )
       .limit(1);
 
     return record ?? null;
@@ -57,9 +68,9 @@ export class ModelAliasRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async getById(id: string): Promise<ModelAliasRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelAlias)
-      .where(eq(modelAlias.id, id))
+      .select(modelAlias)
+      .from(modelConfiguration)
+      .where(and(eq(modelConfiguration.kind, "alias"), eq(modelAlias.id, id)))
       .limit(1);
 
     return record ?? null;
@@ -80,9 +91,9 @@ export class ModelAliasRepository extends BaseRepository<Pick<IEnv, "DB">> {
     }
 
     return this.database
-      .select()
-      .from(modelAlias)
-      .where(and(...conditions))
+      .select(modelAlias)
+      .from(modelConfiguration)
+      .where(and(eq(modelConfiguration.kind, "alias"), and(...conditions)))
       .orderBy(modelAlias.name);
   }
 
@@ -92,10 +103,13 @@ export class ModelAliasRepository extends BaseRepository<Pick<IEnv, "DB">> {
     }
 
     return this.database
-      .select()
-      .from(modelAlias)
+      .select(modelAlias)
+      .from(modelConfiguration)
       .where(
-        or(inArray(modelAlias.route_id, routeIds), inArray(modelAlias.canary_route_id, routeIds)),
+        and(
+          eq(modelConfiguration.kind, "alias"),
+          or(inArray(modelAlias.route_id, routeIds), inArray(modelAlias.canary_route_id, routeIds)),
+        ),
       );
   }
 
@@ -105,9 +119,11 @@ export class ModelAliasRepository extends BaseRepository<Pick<IEnv, "DB">> {
     }
 
     return this.database
-      .select()
-      .from(modelAlias)
-      .where(inArray(modelAlias.workspace_id, workspaceIds));
+      .select(modelAlias)
+      .from(modelConfiguration)
+      .where(
+        and(eq(modelConfiguration.kind, "alias"), inArray(modelAlias.workspace_id, workspaceIds)),
+      );
   }
 
   async update(
@@ -126,16 +142,18 @@ export class ModelAliasRepository extends BaseRepository<Pick<IEnv, "DB">> {
     >,
   ): Promise<ModelAliasRecord> {
     const [record] = await this.database
-      .update(modelAlias)
-      .set({ ...changes, updated_at: new Date().toISOString() })
-      .where(eq(modelAlias.id, id))
-      .returning();
+      .update(modelConfiguration)
+      .set(modelAliasChanges({ ...changes, updated_at: new Date().toISOString() }))
+      .where(and(eq(modelConfiguration.kind, "alias"), eq(modelAlias.id, id)))
+      .returning(modelAlias);
 
     return record;
   }
 
   async delete(id: string): Promise<void> {
-    await this.database.delete(modelAlias).where(eq(modelAlias.id, id));
+    await this.database
+      .delete(modelConfiguration)
+      .where(and(eq(modelConfiguration.kind, "alias"), eq(modelAlias.id, id)));
   }
 
   async addEvent(input: {

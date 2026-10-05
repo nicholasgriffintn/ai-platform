@@ -222,7 +222,9 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
 
     if (status === "archived") {
       statements.push(
-        this.env.DB.prepare("DELETE FROM teammate_connection_grant WHERE context_id = ?").bind(id),
+        this.env.DB.prepare(
+          "DELETE FROM resource_grant WHERE kind = 'connection' AND context_id = ?",
+        ).bind(id),
       );
     }
 
@@ -258,7 +260,7 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
            AND json_extract(configuration, '$.teammateContextId') IN (${placeholders})`,
       ).bind(...contextIds),
       this.env.DB.prepare(
-        `DELETE FROM teammate_connection_grant WHERE context_id IN (${placeholders})`,
+        `DELETE FROM resource_grant WHERE kind = 'connection' AND context_id IN (${placeholders})`,
       ).bind(...contextIds),
       this.env.DB.prepare(
         `UPDATE teammate_context
@@ -283,7 +285,7 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
            AND json_extract(configuration, '$.teammateContextId') IN (${contextIds})`,
       ).bind(workspaceId, actorUserId),
       this.env.DB.prepare(
-        `DELETE FROM teammate_connection_grant WHERE context_id IN (${contextIds})`,
+        `DELETE FROM resource_grant WHERE kind = 'connection' AND context_id IN (${contextIds})`,
       ).bind(workspaceId, actorUserId),
       this.env.DB.prepare(
         `UPDATE teammate_context
@@ -295,8 +297,8 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
 
   async listConnectionGrants(contextId: string): Promise<TeammateConnectionGrant[]> {
     const rows = await this.runQuery<TeammateConnectionGrantRow>(
-      `SELECT * FROM teammate_connection_grant
-       WHERE context_id = ? ORDER BY created_at ASC`,
+      `SELECT * FROM resource_grant
+       WHERE kind = 'connection' AND context_id = ? ORDER BY created_at ASC`,
       [contextId],
     );
 
@@ -311,14 +313,14 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
   }): Promise<TeammateConnectionGrant | null> {
     const id = `teammate_grant_${generateId()}`;
     const row = await this.runQuery<TeammateConnectionGrantRow>(
-      `INSERT INTO teammate_connection_grant (
-         id, context_id, connection_id, allowed_operations, revision
-       ) VALUES (?, ?, ?, ?, 1)
-       ON CONFLICT(context_id, connection_id) DO UPDATE SET
+      `INSERT INTO resource_grant (
+         kind, id, context_id, connection_id, allowed_operations, revision
+       ) VALUES ('connection', ?, ?, ?, ?, 1)
+       ON CONFLICT(context_id, connection_id) WHERE context_id IS NOT NULL DO UPDATE SET
          allowed_operations = excluded.allowed_operations,
-         revision = teammate_connection_grant.revision + 1,
+         revision = resource_grant.revision + 1,
          updated_at = CURRENT_TIMESTAMP
-       WHERE ? IS NULL OR teammate_connection_grant.revision = ?
+       WHERE ? IS NULL OR resource_grant.revision = ?
        RETURNING *`,
       [
         id,

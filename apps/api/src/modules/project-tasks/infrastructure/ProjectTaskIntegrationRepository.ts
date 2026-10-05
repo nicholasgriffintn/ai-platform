@@ -87,7 +87,7 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
 
   async getPolicy(id: string, projectId: string): Promise<ReviewPolicy | null> {
     const row = await this.runQuery<PolicyRow>(
-      "SELECT r.* FROM project_review_policy r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.kind = 'review' AND r.id = ? AND r.project_id = ?",
+      "SELECT r.* FROM project_review_policy r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.id = ? AND r.project_id = ?",
       [id, projectId],
       true,
     );

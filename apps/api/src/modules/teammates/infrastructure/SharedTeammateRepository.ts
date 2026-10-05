@@ -11,6 +11,11 @@ import type {
   TeammateRating,
   SharedTeammate,
 } from "~/infrastructure/database/schema";
+import {
+  SHARED_TEAMMATE_COLUMNS,
+  TEAMMATE_INSTALL_COLUMNS,
+  TEAMMATE_RATING_COLUMNS,
+} from "~/infrastructure/database/teammateStorage";
 
 const logger = getLogger({ prefix: "repositories/SharedTeammateRepository" });
 
@@ -53,15 +58,7 @@ export class SharedTeammateRepository extends BaseRepository {
       throw new AssistantError("Teammate not found or unauthorized", ErrorType.NOT_FOUND);
     }
 
-    const { query: existingSharedQuery, values: existingSharedValues } = this.buildSelectQuery(
-      "shared_teammates",
-      { teammate_id: params.teammateId },
-    );
-    const existingShared = await this.runQuery<SharedTeammate>(
-      existingSharedQuery,
-      existingSharedValues,
-      true,
-    );
+    const existingShared = await this.getSharedTeammateByTeammateId(params.teammateId);
 
     if (existingShared) {
       throw new AssistantError("Teammate is already shared", ErrorType.CONFLICT_ERROR);
@@ -86,10 +83,11 @@ export class SharedTeammateRepository extends BaseRepository {
     };
 
     await this.executeRun(
-      `INSERT INTO shared_teammates 
-       (id, teammate_id, user_id, name, description, avatar_url, category, tags, template_data) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO template 
+       (id, publication_id, kind, source_teammate_id, created_by_user_id, name, description, avatar_url, category, tags, configuration) 
+       VALUES (?, ?, 'teammate_publication', ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
+        generateId(),
         id,
         params.teammateId,
         userId,
@@ -129,13 +127,11 @@ export class SharedTeammateRepository extends BaseRepository {
   ): Promise<SharedTeammateWithAuthor[]> {
     let query = `
       SELECT
-        sa.id, sa.teammate_id, sa.user_id, sa.name, sa.description, sa.avatar_url,
-        sa.category, sa.tags, sa.is_featured, sa.is_public, sa.usage_count,
-        sa.rating_count, sa.rating_average, sa.template_data, sa.created_at, sa.updated_at,
+        ${SHARED_TEAMMATE_COLUMNS},
         u.name as author_name, u.avatar_url as author_avatar_url
-      FROM shared_teammates sa
-      JOIN user u ON sa.user_id = u.id
-      WHERE sa.is_public = 1
+      FROM template sa
+      JOIN user u ON sa.created_by_user_id = u.id
+      WHERE sa.kind = 'teammate_publication' AND sa.is_public = 1
     `;
     const params: any[] = [];
 
@@ -195,13 +191,11 @@ export class SharedTeammateRepository extends BaseRepository {
   public async getSharedTeammateById(id: string): Promise<SharedTeammateWithAuthor | null> {
     return this.runQuery<SharedTeammateWithAuthor>(
       `SELECT
-         sa.id, sa.teammate_id, sa.user_id, sa.name, sa.description, sa.avatar_url,
-         sa.category, sa.tags, sa.is_featured, sa.is_public, sa.usage_count,
-         sa.rating_count, sa.rating_average, sa.template_data, sa.created_at, sa.updated_at,
+         ${SHARED_TEAMMATE_COLUMNS},
          u.name as author_name, u.avatar_url as author_avatar_url
-       FROM shared_teammates sa
-       JOIN user u ON sa.user_id = u.id
-       WHERE sa.id = ?`,
+       FROM template sa
+       JOIN user u ON sa.created_by_user_id = u.id
+       WHERE sa.kind = 'teammate_publication' AND sa.publication_id = ?`,
       [id],
       true,
     );
@@ -209,11 +203,7 @@ export class SharedTeammateRepository extends BaseRepository {
 
   public async getSharedTeammateByTeammateId(teammateId: string): Promise<SharedTeammate | null> {
     return this.runQuery<SharedTeammate>(
-      `SELECT
-         id, teammate_id, user_id, name, description, avatar_url,
-         category, tags, is_featured, is_public, usage_count,
-         rating_count, rating_average, template_data, created_at, updated_at
-       FROM shared_teammates WHERE teammate_id = ?`,
+      `SELECT ${SHARED_TEAMMATE_COLUMNS} FROM template sa WHERE sa.kind = 'teammate_publication' AND sa.source_teammate_id = ?`,
       [teammateId],
       true,
     );
@@ -224,37 +214,32 @@ export class SharedTeammateRepository extends BaseRepository {
   ): Promise<SharedTeammateWithAuthor[]> {
     let query = `
       SELECT
-        sa.id, sa.teammate_id, sa.user_id, sa.name, sa.description, sa.avatar_url,
-        sa.category, sa.tags, sa.is_featured, sa.is_public, sa.usage_count,
-        sa.rating_count, sa.rating_average, sa.template_data, sa.created_at, sa.updated_at,
+        ${SHARED_TEAMMATE_COLUMNS},
         u.name as author_name, u.avatar_url as author_avatar_url
-      FROM shared_teammates sa
-      JOIN user u ON sa.user_id = u.id
+      FROM template sa
+      JOIN user u ON sa.created_by_user_id = u.id
+      WHERE sa.kind = 'teammate_publication'
     `;
     const params: any[] = [];
 
     if (filters.category) {
-      query += " WHERE sa.category = ?";
+      query += " AND sa.category = ?";
       params.push(filters.category);
     }
 
     if (filters.featured) {
-      query += filters.category ? " AND" : " WHERE";
+      query += " AND";
       query += " sa.is_featured = 1";
     }
 
     if (filters.search) {
-      const hasWhere = filters.category || filters.featured;
-
-      query += hasWhere ? " AND" : " WHERE";
+      query += " AND";
       query += " (sa.name LIKE ? OR sa.description LIKE ?)";
       params.push(`%${filters.search}%`, `%${filters.search}%`);
     }
 
     if (filters.tags && filters.tags.length > 0) {
-      const hasWhere = filters.category || filters.featured || filters.search;
-
-      query += hasWhere ? " AND" : " WHERE";
+      query += " AND";
       const tagConditions = filters.tags.map(() => "sa.tags LIKE ?").join(" OR ");
 
       query += ` (${tagConditions})`;
@@ -300,7 +285,7 @@ export class SharedTeammateRepository extends BaseRepository {
     }
 
     const existingInstall = await this.runQuery<TeammateInstall>(
-      "SELECT * FROM teammate_installs WHERE shared_teammate_id = ? AND user_id = ?",
+      `SELECT ${TEAMMATE_INSTALL_COLUMNS} FROM user_resource_state WHERE resource_type = 'teammate_install' AND publication_id = ? AND user_id = ?`,
       [sharedTeammateId, userId],
       true,
     );
@@ -325,11 +310,12 @@ export class SharedTeammateRepository extends BaseRepository {
     const installedSkillIds = parseJsonArrayColumn(templateData.skill_ids, skillIdSchema) ?? [];
     const installedMode = agentModeSchema.safeParse(templateData.mode).data ?? null;
 
-    await this.executeRun(
-      `INSERT INTO teammates
+    await this.executeBatch([
+      this.env.DB.prepare(
+        `INSERT INTO teammates
        (id, user_id, owner_scope_type, owner_scope_id, name, description, avatar_url, servers, model, temperature, max_steps, system_prompt, few_shot_examples, enabled_tools, skill_ids, mode)
        VALUES (?, ?, 'user', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
+      ).bind(
         teammateId,
         userId,
         String(userId),
@@ -345,18 +331,16 @@ export class SharedTeammateRepository extends BaseRepository {
         JSON.stringify(templateData.enabled_tools ?? []),
         JSON.stringify(installedSkillIds),
         installedMode,
-      ],
-    );
+      ),
 
-    await this.executeRun(
-      "INSERT INTO teammate_installs (id, shared_teammate_id, user_id, teammate_id) VALUES (?, ?, ?, ?)",
-      [installId, sharedTeammateId, userId, teammateId],
-    );
+      this.env.DB.prepare(
+        "INSERT INTO user_resource_state (resource_type, id, publication_id, user_id, teammate_id) VALUES ('teammate_install', ?, ?, ?, ?)",
+      ).bind(installId, sharedTeammateId, userId, teammateId),
 
-    await this.executeRun(
-      "UPDATE shared_teammates SET usage_count = usage_count + 1 WHERE id = ?",
-      [sharedTeammateId],
-    );
+      this.env.DB.prepare(
+        "UPDATE template SET usage_count = usage_count + 1 WHERE kind = 'teammate_publication' AND publication_id = ?",
+      ).bind(sharedTeammateId),
+    ]);
 
     const now = new Date().toISOString();
     const teammate: Teammate = {
@@ -399,7 +383,7 @@ export class SharedTeammateRepository extends BaseRepository {
     teammateId: string,
   ): Promise<TeammateInstall | null> {
     return this.runQuery<TeammateInstall>(
-      "SELECT * FROM teammate_installs WHERE teammate_id = ? AND user_id = ?",
+      `SELECT ${TEAMMATE_INSTALL_COLUMNS} FROM user_resource_state WHERE resource_type = 'teammate_install' AND teammate_id = ? AND user_id = ?`,
       [teammateId, userId],
       true,
     );
@@ -407,7 +391,7 @@ export class SharedTeammateRepository extends BaseRepository {
 
   public async uninstallTeammate(userId: number, teammateId: string): Promise<void> {
     const install = await this.runQuery<TeammateInstall>(
-      "SELECT * FROM teammate_installs WHERE teammate_id = ? AND user_id = ?",
+      `SELECT ${TEAMMATE_INSTALL_COLUMNS} FROM user_resource_state WHERE resource_type = 'teammate_install' AND teammate_id = ? AND user_id = ?`,
       [teammateId, userId],
       true,
     );
@@ -417,7 +401,7 @@ export class SharedTeammateRepository extends BaseRepository {
     }
 
     const sharedTeammate = await this.runQuery<SharedTeammate>(
-      "SELECT * FROM shared_teammates WHERE id = ?",
+      `SELECT ${SHARED_TEAMMATE_COLUMNS} FROM template sa WHERE sa.kind = 'teammate_publication' AND sa.publication_id = ?`,
       [install.shared_teammate_id],
       true,
     );
@@ -426,12 +410,14 @@ export class SharedTeammateRepository extends BaseRepository {
       throw new AssistantError("Shared teammate not found", ErrorType.NOT_FOUND);
     }
 
-    await this.executeRun("DELETE FROM teammate_installs WHERE id = ?", [install.id]);
-
-    await this.executeRun(
-      "UPDATE shared_teammates SET usage_count = usage_count - 1 WHERE id = ?",
-      [sharedTeammate.id],
-    );
+    await this.executeBatch([
+      this.env.DB.prepare(
+        "DELETE FROM user_resource_state WHERE resource_type = 'teammate_install' AND id = ?",
+      ).bind(install.id),
+      this.env.DB.prepare(
+        "UPDATE template SET usage_count = usage_count - changes() WHERE kind = 'teammate_publication' AND publication_id = ?",
+      ).bind(sharedTeammate.id),
+    ]);
   }
 
   public async rateTeammate(
@@ -451,7 +437,7 @@ export class SharedTeammateRepository extends BaseRepository {
     }
 
     const existingRating = await this.runQuery<TeammateRating>(
-      "SELECT * FROM teammate_ratings WHERE shared_teammate_id = ? AND user_id = ?",
+      `SELECT ${TEAMMATE_RATING_COLUMNS} FROM user_resource_state ar WHERE ar.resource_type = 'teammate_rating' AND ar.publication_id = ? AND ar.user_id = ?`,
       [sharedTeammateId, userId],
       true,
     );
@@ -459,28 +445,25 @@ export class SharedTeammateRepository extends BaseRepository {
     const id = existingRating?.id || generateId();
     const now = new Date().toISOString();
 
-    if (existingRating) {
-      await this.executeRun(
-        "UPDATE teammate_ratings SET rating = ?, review = ?, updated_at = ? WHERE id = ?",
-        [rating, review || null, now, id],
-      );
-    } else {
-      await this.executeRun(
-        "INSERT INTO teammate_ratings (id, shared_teammate_id, user_id, rating, review) VALUES (?, ?, ?, ?, ?)",
-        [id, sharedTeammateId, userId, rating, review || null],
-      );
-    }
+    const saveRating = existingRating
+      ? this.env.DB.prepare(
+          "UPDATE user_resource_state SET rating = ?, note = ?, updated_at = ? WHERE resource_type = 'teammate_rating' AND id = ?",
+        ).bind(rating, review || null, now, id)
+      : this.env.DB.prepare(
+          "INSERT INTO user_resource_state (resource_type, id, publication_id, user_id, rating, note) VALUES ('teammate_rating', ?, ?, ?, ?, ?)",
+        ).bind(id, sharedTeammateId, userId, rating, review || null);
 
-    const ratingStats = await this.runQuery<{ count: number; average: number }>(
-      "SELECT COUNT(*) as count, AVG(rating) as average FROM teammate_ratings WHERE shared_teammate_id = ?",
-      [sharedTeammateId],
-      true,
-    );
-
-    await this.executeRun(
-      "UPDATE shared_teammates SET rating_count = ?, rating_average = ? WHERE id = ?",
-      [ratingStats?.count || 0, (ratingStats?.average || 0).toFixed(1), sharedTeammateId],
-    );
+    await this.executeBatch([
+      saveRating,
+      this.env.DB.prepare(`UPDATE template SET
+        rating_count = (SELECT COUNT(*) FROM user_resource_state WHERE resource_type = 'teammate_rating' AND publication_id = ?),
+        rating_average = (SELECT printf('%.1f', COALESCE(AVG(rating), 0)) FROM user_resource_state WHERE resource_type = 'teammate_rating' AND publication_id = ?)
+        WHERE kind = 'teammate_publication' AND publication_id = ?`).bind(
+        sharedTeammateId,
+        sharedTeammateId,
+        sharedTeammateId,
+      ),
+    ]);
 
     return {
       id,
@@ -498,10 +481,10 @@ export class SharedTeammateRepository extends BaseRepository {
     limit = 10,
   ): Promise<(TeammateRating & { author_name: string })[]> {
     return this.runQuery<TeammateRating & { author_name: string }>(
-      `SELECT ar.*, u.name as author_name
-       FROM teammate_ratings ar
+      `SELECT ${TEAMMATE_RATING_COLUMNS}, u.name as author_name
+       FROM user_resource_state ar
        JOIN user u ON ar.user_id = u.id
-       WHERE ar.shared_teammate_id = ?
+       WHERE ar.resource_type = 'teammate_rating' AND ar.publication_id = ?
        ORDER BY ar.created_at DESC
        LIMIT ?`,
       [sharedTeammateId, limit],
@@ -515,11 +498,16 @@ export class SharedTeammateRepository extends BaseRepository {
       Pick<SharedTeammate, "name" | "description" | "avatar_url" | "category" | "tags">
     >,
   ): Promise<void> {
-    const { query, values } = this.buildSelectQuery("shared_teammates", {
-      id: sharedTeammateId,
-      user_id: userId,
-    });
-    const sharedTeammate = await this.runQuery<SharedTeammate>(query, values, true);
+    const { query, values } = this.buildSelectQuery(
+      "template",
+      {
+        kind: "teammate_publication",
+        publication_id: sharedTeammateId,
+        created_by_user_id: userId,
+      },
+      { columns: ["id"] },
+    );
+    const sharedTeammate = await this.runQuery<{ id: string }>(query, values, true);
 
     if (!sharedTeammate) {
       throw new AssistantError("Shared teammate not found or unauthorized", ErrorType.NOT_FOUND);
@@ -528,11 +516,11 @@ export class SharedTeammateRepository extends BaseRepository {
     const allowedFields = ["name", "description", "avatar_url", "category", "tags"] as const;
 
     const result = this.buildUpdateQuery(
-      "shared_teammates",
+      "template",
       updates,
       [...allowedFields],
-      "id = ?",
-      [sharedTeammateId],
+      "kind = 'teammate_publication' AND publication_id = ? AND created_by_user_id = ?",
+      [sharedTeammateId, userId],
       {
         jsonFields: ["tags"],
       },
@@ -551,58 +539,48 @@ export class SharedTeammateRepository extends BaseRepository {
   }
 
   public async deleteSharedTeammate(userId: number, sharedTeammateId: string): Promise<void> {
-    const { query, values } = this.buildSelectQuery("shared_teammates", {
-      id: sharedTeammateId,
-      user_id: userId,
-    });
-    const sharedTeammate = await this.runQuery<SharedTeammate>(query, values, true);
+    const { query, values } = this.buildSelectQuery(
+      "template",
+      {
+        kind: "teammate_publication",
+        publication_id: sharedTeammateId,
+        created_by_user_id: userId,
+      },
+      { columns: ["id"] },
+    );
+    const sharedTeammate = await this.runQuery<{ id: string }>(query, values, true);
 
     if (!sharedTeammate) {
       throw new AssistantError("Shared teammate not found or unauthorized", ErrorType.NOT_FOUND);
     }
 
-    const deleteRatings = this.buildDeleteQuery("teammate_ratings", {
-      shared_teammate_id: sharedTeammateId,
-    });
-
-    if (deleteRatings.query) {
-      await this.executeRun(deleteRatings.query, deleteRatings.values);
-    }
-
-    const deleteInstalls = this.buildDeleteQuery("teammate_installs", {
-      shared_teammate_id: sharedTeammateId,
-    });
-
-    if (deleteInstalls.query) {
-      await this.executeRun(deleteInstalls.query, deleteInstalls.values);
-    }
-
-    const deleteSharedTeammate = this.buildDeleteQuery("shared_teammates", {
-      id: sharedTeammateId,
-    });
-
-    if (deleteSharedTeammate.query) {
-      await this.executeRun(deleteSharedTeammate.query, deleteSharedTeammate.values);
-    }
+    await this.executeBatch([
+      this.env.DB.prepare(
+        "DELETE FROM user_resource_state WHERE resource_type IN ('teammate_rating', 'teammate_install') AND publication_id = ?",
+      ).bind(sharedTeammateId),
+      this.env.DB.prepare(
+        "DELETE FROM template WHERE kind = 'teammate_publication' AND publication_id = ? AND created_by_user_id = ?",
+      ).bind(sharedTeammateId, userId),
+    ]);
   }
 
   public async setFeatured(sharedTeammateId: string, featured: boolean): Promise<void> {
     await this.executeRun(
-      "UPDATE shared_teammates SET is_featured = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      "UPDATE template SET is_featured = ?, updated_at = CURRENT_TIMESTAMP WHERE kind = 'teammate_publication' AND publication_id = ?",
       [featured ? 1 : 0, sharedTeammateId],
     );
   }
 
   public async moderateTeammate(sharedTeammateId: string, isPublic: boolean): Promise<void> {
     await this.executeRun(
-      "UPDATE shared_teammates SET is_public = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      "UPDATE template SET is_public = ?, updated_at = CURRENT_TIMESTAMP WHERE kind = 'teammate_publication' AND publication_id = ?",
       [isPublic ? 1 : 0, sharedTeammateId],
     );
   }
 
   public async getCategories(): Promise<string[]> {
     const results = await this.runQuery<{ category: string }>(
-      "SELECT DISTINCT category FROM shared_teammates WHERE category IS NOT NULL AND is_public = 1 ORDER BY category",
+      "SELECT DISTINCT category FROM template WHERE kind = 'teammate_publication' AND category IS NOT NULL AND is_public = 1 ORDER BY category",
       [],
     );
 
@@ -611,7 +589,7 @@ export class SharedTeammateRepository extends BaseRepository {
 
   public async getPopularTags(limit = 20): Promise<string[]> {
     const results = await this.runQuery<{ tags: string }>(
-      "SELECT tags FROM shared_teammates WHERE tags IS NOT NULL AND is_public = 1",
+      "SELECT tags FROM template WHERE kind = 'teammate_publication' AND tags IS NOT NULL AND is_public = 1",
       [],
     );
 

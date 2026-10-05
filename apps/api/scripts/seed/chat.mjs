@@ -1377,12 +1377,13 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
         created_at: at({ hours: 1, minutes: 59 }),
         updated_at: at({ minutes: 30 }),
       }),
-      insert("conversation_handle", {
+      insert("resource_grant", {
+        kind: "conversation",
         id: `handle_${seedId("delegation", kind)}`,
         conversation_id: parent.conversationId,
         delegation_id: seedId("delegation", kind),
         granted_by: "spawn",
-        granted_at: at({ hours: 1, minutes: 59 }),
+        created_at: at({ hours: 1, minutes: 59 }),
         expires_at: ahead({ hours: 22 }),
         revoked_at: state === "done" ? at({ minutes: 30 }) : null,
       }),
@@ -1993,7 +1994,8 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 1 }),
       operation: "updated",
     }),
-    insert("output_share", {
+    insert("resource_grant", {
+      kind: "output",
       id: seedId("share", "release-notes"),
       output_id: noteId,
       token_hash: sha256Hex("polychat-seed-share-release-notes"),
@@ -2096,12 +2098,14 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 3 }),
       updated_at: at({ days: 1 }),
     }),
-    insert("source_collection_member", {
+    insert("resource_link", {
+      kind: "source_collection",
       collection_id: collectionId,
       source_id: seedId("source", "d1-limits"),
       created_at: at({ days: 1 }),
     }),
-    insert("source_collection_member", {
+    insert("resource_link", {
+      kind: "source_collection",
       collection_id: collectionId,
       source_id: seedId("source", "style-guide"),
       created_at: at({ days: 3 }),

@@ -18,9 +18,9 @@ export class TeammateFeedbackRepository extends BaseRepository {
     note?: string | null;
   }): Promise<void> {
     await this.executeRun(
-      `INSERT INTO teammate_feedback (id, teammate_id, user_id, conversation_id, verdict, note)
-       VALUES (?, ?, ?, ?, ?, ?)
-       ON CONFLICT (user_id, teammate_id, conversation_id)
+      `INSERT INTO user_resource_state (resource_type, id, teammate_id, user_id, feedback_conversation_id, verdict, note)
+       VALUES ('teammate_feedback', ?, ?, ?, ?, ?, ?)
+       ON CONFLICT (user_id, teammate_id, feedback_conversation_id) WHERE resource_type = 'teammate_feedback'
        DO UPDATE SET verdict = excluded.verdict, note = excluded.note`,
       [
         generateId(),
@@ -42,8 +42,8 @@ export class TeammateFeedbackRepository extends BaseRepository {
 
     const rows = await this.runQuery<{ teammate_id: string; verdict: string; total: number }>(
       `SELECT teammate_id, verdict, COUNT(*) AS total
-       FROM teammate_feedback
-       WHERE teammate_id IN (${unique.map(() => "?").join(", ")})
+       FROM user_resource_state
+       WHERE resource_type = 'teammate_feedback' AND teammate_id IN (${unique.map(() => "?").join(", ")})
        GROUP BY teammate_id, verdict`,
       unique,
     );
@@ -70,7 +70,7 @@ export class TeammateFeedbackRepository extends BaseRepository {
 
   public async listForTeammate(teammateId: string): Promise<TeammateFeedbackRow[]> {
     return this.runQuery<TeammateFeedbackRow>(
-      "SELECT * FROM teammate_feedback WHERE teammate_id = ? ORDER BY created_at DESC LIMIT 50",
+      "SELECT id, teammate_id, user_id, feedback_conversation_id AS conversation_id, verdict, note, created_at FROM user_resource_state WHERE resource_type = 'teammate_feedback' AND teammate_id = ? ORDER BY created_at DESC LIMIT 50",
       [teammateId],
     );
   }

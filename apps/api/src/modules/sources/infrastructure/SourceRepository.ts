@@ -399,7 +399,7 @@ export class SourceRepository extends BaseRepository {
   async listCollectionSources(collectionId: string): Promise<SourceRecord[]> {
     return this.runQuery<SourceRecord>(
       `SELECT s.* FROM source s
-			 JOIN source_collection_member scm ON scm.source_id = s.id
+			 JOIN resource_link scm ON scm.kind = 'source_collection' AND scm.source_id = s.id
 			 WHERE scm.collection_id = ? AND ${sourceVisibilitySql("s")}
 			 ORDER BY s.updated_at DESC, s.created_at DESC`,
       [collectionId],
@@ -414,7 +414,7 @@ export class SourceRepository extends BaseRepository {
     const results = await this.env.DB.batch(
       sourceIds.map((sourceId) =>
         this.env.DB.prepare(
-          "INSERT OR IGNORE INTO source_collection_member (collection_id, source_id) VALUES (?, ?)",
+          "INSERT OR IGNORE INTO resource_link (kind, collection_id, source_id) VALUES ('source_collection', ?, ?)",
         ).bind(collectionId, sourceId),
       ),
     );
@@ -428,19 +428,20 @@ export class SourceRepository extends BaseRepository {
     }
 
     await this.env.DB.batch([
-      this.env.DB.prepare("DELETE FROM source_collection_member WHERE collection_id = ?").bind(
-        collectionId,
-      ),
+      this.env.DB.prepare(
+        "DELETE FROM resource_link WHERE kind = 'source_collection' AND collection_id = ?",
+      ).bind(collectionId),
       ...sourceIds.map((sourceId) =>
         this.env.DB.prepare(
-          "INSERT INTO source_collection_member (collection_id, source_id) VALUES (?, ?)",
+          "INSERT INTO resource_link (kind, collection_id, source_id) VALUES ('source_collection', ?, ?)",
         ).bind(collectionId, sourceId),
       ),
     ]);
   }
 
   async removeSourceFromCollections(sourceId: string): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("source_collection_member", {
+    const { query, values } = this.buildDeleteQuery("resource_link", {
+      kind: "source_collection",
       source_id: sourceId,
     });
 
@@ -498,7 +499,7 @@ export class SourceRepository extends BaseRepository {
     return this.runQuery<SourceCollectionRecord>(
       `SELECT sc.*, COUNT(s.id) AS source_count
 			 FROM resource_collection sc
-			 LEFT JOIN source_collection_member scm ON scm.collection_id = sc.id
+			 LEFT JOIN resource_link scm ON scm.kind = 'source_collection' AND scm.collection_id = sc.id
          LEFT JOIN source s ON s.id = scm.source_id AND ${sourceVisibilitySql("s")}
 			 WHERE sc.collection_type = 'source' AND ${where}
 			 GROUP BY sc.id

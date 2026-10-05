@@ -2072,7 +2072,7 @@ async function seedPersonas(database, seedMaterial) {
             .run();
           await database
             .prepare(
-              "INSERT INTO output_share (id, output_id, token_hash, created_by_user_id) VALUES ('e2e-output-share-0', 'e2e-public-output', ?, ?)",
+              "INSERT INTO resource_grant (kind, id, output_id, token_hash, created_by_user_id) VALUES ('output', 'e2e-output-share-0', 'e2e-public-output', ?, ?)",
             )
             .bind(createHash("sha256").update(token).digest("hex"), userId)
             .run();

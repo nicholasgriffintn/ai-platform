@@ -2,6 +2,7 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import { TEMPLATE_COLUMNS } from "~/infrastructure/database/templateStorage";
 
 export interface TemplateRecord {
   id: string;
@@ -44,7 +45,7 @@ export class TemplateRepository extends BaseRepository {
         configuration: input.configuration ?? {},
         status: input.status ?? "active",
       },
-      { jsonFields: ["configuration"], returning: "*" },
+      { jsonFields: ["configuration"], returning: TEMPLATE_COLUMNS },
     );
 
     if (!insert) {
@@ -61,7 +62,11 @@ export class TemplateRepository extends BaseRepository {
   }
 
   async getTemplateById(templateId: string): Promise<TemplateRecord | null> {
-    const { query, values } = this.buildSelectQuery("template", { id: templateId });
+    const { query, values } = this.buildSelectQuery(
+      "template",
+      { id: templateId, kind: ["project", "recipe", "capability"] },
+      { columns: TEMPLATE_COLUMNS.split(/,\s*/) },
+    );
 
     return this.runQuery<TemplateRecord>(query, values, true);
   }
@@ -71,13 +76,17 @@ export class TemplateRepository extends BaseRepository {
     kind: TemplateRecord["kind"],
     capabilityId: string,
   ): Promise<TemplateRecord | null> {
-    const { query, values } = this.buildSelectQuery("template", {
-      created_by_user_id: userId,
-      workspace_id: null,
-      project_id: null,
-      kind,
-      capability_id: capabilityId,
-    });
+    const { query, values } = this.buildSelectQuery(
+      "template",
+      {
+        created_by_user_id: userId,
+        workspace_id: null,
+        project_id: null,
+        kind,
+        capability_id: capabilityId,
+      },
+      { columns: TEMPLATE_COLUMNS.split(/,\s*/) },
+    );
 
     return this.runQuery<TemplateRecord>(query, values, true);
   }
@@ -88,13 +97,17 @@ export class TemplateRepository extends BaseRepository {
     kind: TemplateRecord["kind"],
     capabilityId: string,
   ): Promise<TemplateRecord | null> {
-    const { query, values } = this.buildSelectQuery("template", {
-      created_by_user_id: userId,
-      workspace_id: null,
-      project_id: projectId,
-      kind,
-      capability_id: capabilityId,
-    });
+    const { query, values } = this.buildSelectQuery(
+      "template",
+      {
+        created_by_user_id: userId,
+        workspace_id: null,
+        project_id: projectId,
+        kind,
+        capability_id: capabilityId,
+      },
+      { columns: TEMPLATE_COLUMNS.split(/,\s*/) },
+    );
 
     return this.runQuery<TemplateRecord>(query, values, true);
   }
@@ -105,8 +118,13 @@ export class TemplateRepository extends BaseRepository {
   ): Promise<TemplateRecord[]> {
     const { query, values } = this.buildSelectQuery(
       "template",
-      { created_by_user_id: userId, workspace_id: null, project_id: null, kind },
-      { orderBy: "updated_at DESC, created_at DESC" },
+      {
+        created_by_user_id: userId,
+        workspace_id: null,
+        project_id: null,
+        kind: kind ?? ["project", "recipe", "capability"],
+      },
+      { columns: TEMPLATE_COLUMNS.split(/,\s*/), orderBy: "updated_at DESC, created_at DESC" },
     );
 
     return this.runQuery<TemplateRecord>(query, values);
@@ -118,8 +136,8 @@ export class TemplateRepository extends BaseRepository {
   ): Promise<TemplateRecord[]> {
     const { query, values } = this.buildSelectQuery(
       "template",
-      { project_id: projectId, kind },
-      { orderBy: "updated_at DESC, created_at DESC" },
+      { project_id: projectId, kind: kind ?? ["project", "recipe", "capability"] },
+      { columns: TEMPLATE_COLUMNS.split(/,\s*/), orderBy: "updated_at DESC, created_at DESC" },
     );
 
     return this.runQuery<TemplateRecord>(query, values);
@@ -129,7 +147,7 @@ export class TemplateRepository extends BaseRepository {
     const { query, values } = this.buildSelectQuery(
       "template",
       { kind },
-      { orderBy: "updated_at DESC, created_at DESC" },
+      { columns: TEMPLATE_COLUMNS.split(/,\s*/), orderBy: "updated_at DESC, created_at DESC" },
     );
 
     return this.runQuery<TemplateRecord>(query, values);
@@ -141,8 +159,8 @@ export class TemplateRepository extends BaseRepository {
   ): Promise<TemplateRecord[]> {
     const { query, values } = this.buildSelectQuery(
       "template",
-      { workspace_id: workspaceId, kind },
-      { orderBy: "updated_at DESC, created_at DESC" },
+      { workspace_id: workspaceId, kind: kind ?? ["project", "recipe", "capability"] },
+      { columns: TEMPLATE_COLUMNS.split(/,\s*/), orderBy: "updated_at DESC, created_at DESC" },
     );
 
     return this.runQuery<TemplateRecord>(query, values);
@@ -163,7 +181,7 @@ export class TemplateRepository extends BaseRepository {
       "template",
       { ...rest, ...(capabilityId !== undefined ? { capability_id: capabilityId } : {}) },
       ["name", "description", "capability_id", "configuration", "status"],
-      "id = ?",
+      "id = ? AND kind IN ('project', 'recipe', 'capability')",
       [templateId],
       { jsonFields: ["configuration"] },
     );
@@ -176,7 +194,10 @@ export class TemplateRepository extends BaseRepository {
   }
 
   async deleteTemplate(templateId: string): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("template", { id: templateId });
+    const { query, values } = this.buildDeleteQuery("template", {
+      id: templateId,
+      kind: ["project", "recipe", "capability"],
+    });
 
     await this.executeRun(query, values);
   }

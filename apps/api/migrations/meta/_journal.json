@@ -477,6 +477,34 @@
       "when": 1791230574631,
       "tag": "0067_consolidate_resource_storage",
       "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "6",
+      "when": 1791231766550,
+      "tag": "0068_consolidate_search_storage",
+      "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "6",
+      "when": 1791231766551,
+      "tag": "0069_consolidate_teammate_storage",
+      "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "6",
+      "when": 1791231766552,
+      "tag": "0070_consolidate_model_resources",
+      "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "6",
+      "when": 1791231766553,
+      "tag": "0071_consolidate_resource_grants",
+      "breakpoints": true
     }
   ]
 }

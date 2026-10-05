@@ -133,7 +133,7 @@ export class MemoryDocumentRepository extends BaseRepository {
   public async listRevisions(documentId: string): Promise<MemoryDocumentRevisionRow[]> {
     return this.runQuery<MemoryDocumentRevisionRow>(
       `SELECT *, text_content AS content FROM resource_revision
-       WHERE document_id = ?
+       WHERE resource_type = 'memory' AND document_id = ?
        ORDER BY revision DESC`,
       [documentId],
     );
@@ -156,7 +156,7 @@ export class MemoryDocumentRepository extends BaseRepository {
 
   async reflectionCheckpoint(contextId: string, conversationId: string): Promise<string | null> {
     const row = await this.runQuery<{ message_id: string }>(
-      "SELECT message_id FROM memory_reflection_checkpoint WHERE context_id = ? AND conversation_id = ?",
+      "SELECT through_message_id AS message_id FROM memory_reflection WHERE record_kind = 'checkpoint' AND context_id = ? AND conversation_id = ?",
       [contextId, conversationId],
       true,
     );
@@ -166,7 +166,7 @@ export class MemoryDocumentRepository extends BaseRepository {
 
   async reflectionOutcome(operationId: string): Promise<MemoryReflectionResultRow | null> {
     return this.runQuery<MemoryReflectionResultRow>(
-      "SELECT * FROM memory_reflection_result WHERE id = ?",
+      "SELECT * FROM memory_reflection WHERE record_kind = 'result' AND id = ?",
       [operationId],
       true,
     );
@@ -177,11 +177,11 @@ export class MemoryDocumentRepository extends BaseRepository {
     const revision = input.base.revision + Number(changed);
 
     await this.executeBatch([
-      this.env.DB.prepare(`INSERT OR IGNORE INTO memory_reflection_result
-        (id, context_id, conversation_id, through_message_id, revision, status, evidence_json)
-        SELECT ?, ?, ?, ?, ?, ?, ? FROM memory_document d
+      this.env.DB.prepare(`INSERT OR IGNORE INTO memory_reflection
+        (record_kind, id, context_id, conversation_id, through_message_id, revision, status, evidence_json)
+        SELECT 'result', ?, ?, ?, ?, ?, ?, ? FROM memory_document d
         WHERE d.id = ? AND d.revision = ? AND d.deleted_at IS NULL
-          AND (SELECT message_id FROM memory_reflection_checkpoint WHERE context_id = ? AND conversation_id = ?) IS ?
+          AND (SELECT through_message_id AS message_id FROM memory_reflection WHERE record_kind = 'checkpoint' AND context_id = ? AND conversation_id = ?) IS ?
           AND EXISTS (SELECT 1 FROM teammate_context c WHERE c.id = ? AND c.status = 'active' AND c.actor_user_id = ? AND c.memory_document_id = d.id)
           AND EXISTS (SELECT 1 FROM tasks t WHERE t.id = ? AND t.status = 'running' AND t.execution_owner_token = ? AND julianday(t.execution_lease_expires_at) > julianday('now'))`).bind(
         input.operationId,
@@ -214,10 +214,10 @@ export class MemoryDocumentRepository extends BaseRepository {
             input.operationId,
           )
         : []),
-      this.env.DB.prepare(`INSERT INTO memory_reflection_checkpoint (id, context_id, conversation_id, message_id)
-        SELECT ?, context_id, conversation_id, through_message_id FROM memory_reflection_result WHERE id = ?
-          AND (SELECT message_id FROM memory_reflection_checkpoint WHERE context_id = ? AND conversation_id = ?) IS ?
-        ON CONFLICT(context_id, conversation_id) DO UPDATE SET message_id = excluded.message_id, updated_at = CURRENT_TIMESTAMP`).bind(
+      this.env.DB.prepare(`INSERT INTO memory_reflection (record_kind, id, context_id, conversation_id, through_message_id)
+        SELECT 'checkpoint', ?, context_id, conversation_id, through_message_id FROM memory_reflection WHERE record_kind = 'result' AND id = ?
+          AND (SELECT through_message_id AS message_id FROM memory_reflection WHERE record_kind = 'checkpoint' AND context_id = ? AND conversation_id = ?) IS ?
+        ON CONFLICT(context_id, conversation_id) WHERE record_kind = 'checkpoint' DO UPDATE SET through_message_id = excluded.through_message_id, updated_at = CURRENT_TIMESTAMP`).bind(
         generateId(),
         input.operationId,
         input.contextId,
@@ -240,8 +240,8 @@ export class MemoryDocumentRepository extends BaseRepository {
          WHERE id = ? AND revision = ? AND deleted_at IS NULL
            AND (? IS NULL OR NOT EXISTS (
              SELECT 1 FROM resource_revision
-             WHERE document_id = ? AND operation_id = ?
-           ))${reflectionOperationId ? " AND EXISTS (SELECT 1 FROM memory_reflection_result WHERE id = ? AND revision = ? AND status = 'applied')" : ""}`,
+             WHERE resource_type = 'memory' AND document_id = ? AND operation_id = ?
+           ))${reflectionOperationId ? " AND EXISTS (SELECT 1 FROM memory_reflection WHERE record_kind = 'result' AND id = ? AND revision = ? AND status = 'applied')" : ""}`,
       ).bind(
         input.content,
         nextRevision,
@@ -272,7 +272,7 @@ export class MemoryDocumentRepository extends BaseRepository {
   private async hasOperation(documentId: string, operationId: string): Promise<boolean> {
     const row = await this.runQuery<{ present: number }>(
       `SELECT 1 AS present FROM resource_revision
-       WHERE document_id = ? AND operation_id = ?`,
+       WHERE resource_type = 'memory' AND document_id = ? AND operation_id = ?`,
       [documentId, operationId],
       true,
     );

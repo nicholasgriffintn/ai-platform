@@ -47,7 +47,7 @@ const PASSAGE_COLUMNS = `c.id, s.id AS sourceId, d.source_revision AS sourceRevi
   s.external_uri AS externalUri, s.updated_at AS updatedAt, d.target, d.user_id AS userId,
   CASE WHEN json_type(s.metadata, '$.upstreamRevision') IN ('integer', 'text') THEN json_extract(s.metadata, '$.upstreamRevision') ELSE NULL END AS upstreamRevision,
   CASE WHEN json_type(s.metadata, '$.lastSyncedAt') = 'text' THEN json_extract(s.metadata, '$.lastSyncedAt') ELSE NULL END AS lastSyncedAt`;
-const CURRENT_SOURCE = `s.id = d.source_id AND s.search_revision = d.source_revision
+const CURRENT_SOURCE = `d.document_type = 'source' AND s.id = d.source_id AND s.search_revision = d.source_revision
   AND s.status = 'available' AND s.kind != 'memory' AND ${sourceVisibilitySql("s")}`;
 
 export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
@@ -57,7 +57,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   getDocument(sourceId: string, revision: number): Promise<SourceSearchDocument | null> {
     return this.runQuery<SourceSearchDocument>(
-      "SELECT * FROM source_search_document WHERE source_id = ? AND source_revision = ?",
+      "SELECT * FROM search_document WHERE document_type = 'source' AND source_id = ? AND source_revision = ?",
       [sourceId, revision],
       true,
     );
@@ -74,10 +74,10 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
     await this.env.DB.batch([
       this.env.DB.prepare(
-        `INSERT INTO source_search_document
-           (id, source_id, source_revision, user_id, project_id, target)
-         SELECT ?, ?, ?, ?, ?, ? WHERE ${guard}
-         ON CONFLICT(source_id, source_revision) DO NOTHING`,
+        `INSERT INTO search_document
+           (document_type, id, source_id, source_revision, user_id, project_id, target)
+         SELECT 'source', ?, ?, ?, ?, ?, ? WHERE ${guard}
+         ON CONFLICT(source_id, source_revision) WHERE document_type = 'source' DO NOTHING`,
       ).bind(
         document.documentId,
         source.id,
@@ -89,13 +89,13 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
         source.search_revision,
       ),
       this.env.DB.prepare(
-        `INSERT INTO source_search_chunk (id, document_id, chunk_index, title, content)
-         SELECT json_extract(value, '$.vectorId'), ?, json_extract(value, '$.index'), ?,
+        `INSERT INTO search_chunk (document_type, id, document_id, chunk_index, title, content)
+         SELECT 'source', json_extract(value, '$.vectorId'), ?, json_extract(value, '$.index'), ?,
                 json_extract(value, '$.content')
          FROM json_each(?)
          WHERE ${guard}
-           AND EXISTS (SELECT 1 FROM source_search_document WHERE id = ? AND status != 'stale')
-         ON CONFLICT(id) DO NOTHING`,
+           AND EXISTS (SELECT 1 FROM search_document WHERE document_type = 'source' AND id = ? AND status != 'stale')
+         ON CONFLICT(document_type, id) DO NOTHING`,
       ).bind(
         document.documentId,
         source.title,
@@ -109,8 +109,8 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async claim(documentId: string, token: string, status: "lexical" | "stale"): Promise<boolean> {
     const result = await this.executeRun(
-      `UPDATE source_search_document SET lease_token = ?, lease_expires_at = datetime('now', '+10 minutes')
-       WHERE id = ? AND status = ? AND (lease_token IS NULL OR lease_expires_at < CURRENT_TIMESTAMP)`,
+      `UPDATE search_document SET lease_token = ?, lease_expires_at = datetime('now', '+10 minutes')
+       WHERE document_type = 'source' AND id = ? AND status = ? AND (lease_token IS NULL OR lease_expires_at < CURRENT_TIMESTAMP)`,
       [token, documentId, status],
     );
 
@@ -119,15 +119,15 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async release(documentId: string, token: string): Promise<void> {
     await this.executeRun(
-      "UPDATE source_search_document SET lease_token = NULL, lease_expires_at = NULL WHERE id = ? AND lease_token = ?",
+      "UPDATE search_document SET lease_token = NULL, lease_expires_at = NULL WHERE document_type = 'source' AND id = ? AND lease_token = ?",
       [documentId, token],
     );
   }
 
   async renew(documentId: string, token: string): Promise<boolean> {
     const result = await this.executeRun(
-      `UPDATE source_search_document AS d SET lease_expires_at = datetime('now', '+10 minutes')
-       WHERE id = ? AND status = 'lexical' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP
+      `UPDATE search_document AS d SET lease_expires_at = datetime('now', '+10 minutes')
+       WHERE document_type = 'source' AND id = ? AND status = 'lexical' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP
          AND EXISTS (SELECT 1 FROM source s WHERE ${CURRENT_SOURCE})`,
       [documentId, token],
     );
@@ -137,8 +137,8 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async activate(documentId: string, token: string): Promise<boolean> {
     const result = await this.executeRun(
-      `UPDATE source_search_document AS d SET status = 'active'
-       WHERE id = ? AND status = 'lexical' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP
+      `UPDATE search_document AS d SET status = 'active'
+       WHERE document_type = 'source' AND id = ? AND status = 'lexical' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP
          AND EXISTS (SELECT 1 FROM source s WHERE ${CURRENT_SOURCE})`,
       [documentId, token],
     );
@@ -149,13 +149,13 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
   lexical(scope: KnowledgeScope, query: string, type?: string): Promise<SourceSearchPassage[]> {
     return this.runQuery<SourceSearchPassage>(
       `SELECT ${PASSAGE_COLUMNS}
-       FROM source_search_fts
-       JOIN source_search_chunk c ON c.rowid = source_search_fts.rowid
-       JOIN source_search_document d ON d.id = c.document_id
+       FROM search_fts
+       JOIN search_chunk c ON c.rowid = search_fts.rowid
+       JOIN search_document d ON d.document_type = c.document_type AND d.id = c.document_id
        JOIN source s ON ${CURRENT_SOURCE}
-       WHERE source_search_fts MATCH ? AND ${scope.projectId ? "s.project_id = ?" : "s.project_id IS NULL AND s.created_by_user_id = ?"}
+       WHERE search_fts MATCH ? AND ${scope.projectId ? "s.project_id = ?" : "s.project_id IS NULL AND s.created_by_user_id = ?"}
          AND d.status IN ('lexical', 'active') AND (? IS NULL OR s.kind = ?)
-       ORDER BY bm25(source_search_fts, 3.0, 1.0), c.id LIMIT 30`,
+       ORDER BY bm25(search_fts, 3.0, 1.0), c.id LIMIT 30`,
       [query, scope.projectId ?? scope.userId, type ?? null, type ?? null],
     );
   }
@@ -168,8 +168,8 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
   ): Promise<SourceSearchPassage[]> {
     return this.runQuery<SourceSearchPassage>(
       `SELECT ${PASSAGE_COLUMNS}
-       FROM source_search_chunk c
-       JOIN source_search_document d ON d.id = c.document_id AND ${activeOnly ? "d.status = 'active'" : "d.status IN ('lexical', 'active')"}
+       FROM search_chunk c
+       JOIN search_document d ON d.document_type = c.document_type AND d.id = c.document_id AND ${activeOnly ? "d.status = 'active'" : "d.status IN ('lexical', 'active')"}
        JOIN source s ON ${CURRENT_SOURCE}
        WHERE ${scope.projectId ? "s.project_id = ?" : "s.project_id IS NULL AND s.created_by_user_id = ?"} AND c.id IN (SELECT value FROM json_each(?))
          AND (? IS NULL OR s.kind = ?)`,
@@ -179,7 +179,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   getTargets(scope: KnowledgeScope): Promise<{ target: string; userId: number }[]> {
     return this.runQuery<{ target: string; userId: number }>(
-      `SELECT DISTINCT d.target, d.user_id AS userId FROM source_search_document d
+      `SELECT DISTINCT d.target, d.user_id AS userId FROM search_document d
        JOIN source s ON ${CURRENT_SOURCE}
        WHERE ${scope.projectId ? "s.project_id = ?" : "s.project_id IS NULL AND s.created_by_user_id = ?"} AND d.status = 'active' LIMIT 9`,
       [scope.projectId ?? scope.userId],
@@ -188,21 +188,21 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   stale(sourceId: string): Promise<SourceSearchDocument[]> {
     return this.runQuery<SourceSearchDocument>(
-      "SELECT * FROM source_search_document WHERE source_id = ? AND status = 'stale'",
+      "SELECT * FROM search_document WHERE document_type = 'source' AND source_id = ? AND status = 'stale'",
       [sourceId],
     );
   }
 
   chunks(documentId: string): Promise<{ id: string; content: string; chunk_index: number }[]> {
     return this.runQuery(
-      "SELECT id, content, chunk_index FROM source_search_chunk WHERE document_id = ? ORDER BY chunk_index",
+      "SELECT id, content, chunk_index FROM search_chunk WHERE document_type = 'source' AND document_id = ? ORDER BY chunk_index",
       [documentId],
     );
   }
 
   async removeStale(documentId: string, token: string): Promise<void> {
     await this.executeRun(
-      "DELETE FROM source_search_document WHERE id = ? AND status = 'stale' AND lease_token = ?",
+      "DELETE FROM search_document WHERE document_type = 'source' AND id = ? AND status = 'stale' AND lease_token = ?",
       [documentId, token],
     );
   }
@@ -213,10 +213,10 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
   ): Promise<{ id: string; user_id: number | null; project_id: string | null }[]> {
     return this.runQuery(
       `WITH candidates AS (SELECT s.id, s.created_by_user_id AS user_id, s.project_id FROM source s
-       LEFT JOIN source_search_document d ON d.source_id = s.id AND d.source_revision = s.search_revision
+       LEFT JOIN search_document d ON d.document_type = 'source' AND d.source_id = s.id AND d.source_revision = s.search_revision
        WHERE s.kind != 'memory' AND s.status = 'available' AND ${sourceVisibilitySql("s")}
          AND length(trim(s.content)) > 0 AND (d.id IS NULL OR (? = 1 AND d.status = 'lexical'))
-       UNION SELECT source_id AS id, user_id, project_id FROM source_search_document WHERE status = 'stale' AND ? = 1)
+       UNION SELECT source_id AS id, user_id, project_id FROM search_document WHERE document_type = 'source' AND status = 'stale' AND ? = 1)
        SELECT c.id, (SELECT id FROM project WHERE id = c.project_id) AS project_id,
          COALESCE(
            (SELECT wm.user_id FROM workspace_member wm JOIN project p ON p.workspace_id = wm.workspace_id
@@ -227,7 +227,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
            (SELECT id FROM user WHERE id = c.user_id)
          ) AS user_id
        FROM candidates c
-       WHERE NOT EXISTS (SELECT 1 FROM source_search_document leased WHERE leased.source_id = c.id AND leased.lease_expires_at >= CURRENT_TIMESTAMP)
+       WHERE NOT EXISTS (SELECT 1 FROM search_document leased WHERE leased.document_type = 'source' AND leased.source_id = c.id AND leased.lease_expires_at >= CURRENT_TIMESTAMP)
        AND NOT EXISTS (SELECT 1 FROM tasks t WHERE t.task_type = 'source_knowledge_index'
          AND (t.status IN ('pending', 'queued', 'running') OR t.execution_lease_expires_at >= datetime('now', '-1 minute'))
          AND json_extract(t.task_data, '$.sourceId') = c.id)

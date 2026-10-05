@@ -421,10 +421,12 @@ export function teammateStatements() {
       created_at: at({ days: 30 }),
       updated_at: at({ days: 1 }),
     }),
-    insert("shared_teammates", {
-      id: seedId("shared-teammate", "editor"),
-      teammate_id: editor,
-      user_id: OWNER.id,
+    insert("template", {
+      id: seedId("teammate-publication", "editor"),
+      publication_id: seedId("shared-teammate", "editor"),
+      kind: "teammate_publication",
+      source_teammate_id: editor,
+      created_by_user_id: OWNER.id,
       name: "Editor",
       description: "Tightens prose, keeps your voice, flags weak claims.",
       category: "writing",
@@ -434,7 +436,7 @@ export function teammateStatements() {
       usage_count: 37,
       rating_count: 9,
       rating_average: "4.6",
-      template_data: {
+      configuration: {
         name: "Editor",
         description: "Tightens prose, keeps your voice, flags weak claims.",
         system_prompt:

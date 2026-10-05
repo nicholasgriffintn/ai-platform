@@ -252,7 +252,7 @@ describe("EmbeddingRepository", () => {
     expect(prepare).toHaveBeenCalledOnce();
     expect(prepare.mock.calls[0][0]).toContain("namespace = ?");
     expect(prepare.mock.calls[0][0]).toContain("user_id = ?");
-    expect(bind.mock.calls[0]).toEqual(["embedding-1", "note", "user_kb_42", 42]);
+    expect(bind.mock.calls[0]).toEqual(["legacy", "embedding-1", "note", "user_kb_42", 42]);
   });
 
   it("splits a large insert into multiple batches so no single batch exceeds the statement cap", async () => {

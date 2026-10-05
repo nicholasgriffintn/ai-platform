@@ -671,7 +671,7 @@ export class OutputRepository extends BaseRepository {
     const statements = [
       ...sourceIds.map((sourceId) =>
         this.env.DB.prepare(
-          "INSERT OR IGNORE INTO output_source (output_id, source_id) VALUES (?, ?)",
+          "INSERT OR IGNORE INTO resource_link (kind, output_id, source_id) VALUES ('output_source', ?, ?)",
         ).bind(outputId, sourceId),
       ),
       this.env.DB.prepare("UPDATE output SET provenance_json = ? WHERE id = ?").bind(
@@ -696,8 +696,9 @@ export class OutputRepository extends BaseRepository {
     expiresAt?: string | null;
   }): Promise<OutputShareRecord> {
     const insert = this.buildInsertQuery(
-      "output_share",
+      "resource_grant",
       {
+        kind: "output",
         id: input.id,
         output_id: input.outputId,
         token_hash: input.tokenHash,
@@ -722,15 +723,18 @@ export class OutputRepository extends BaseRepository {
   }
 
   async getShareByTokenHash(tokenHash: string): Promise<OutputShareRecord | null> {
-    const { query, values } = this.buildSelectQuery("output_share", { token_hash: tokenHash });
+    const { query, values } = this.buildSelectQuery("resource_grant", {
+      kind: "output",
+      token_hash: tokenHash,
+    });
 
     return this.runQuery<OutputShareRecord>(query, values, true);
   }
 
   async listShares(outputId: string): Promise<OutputShareRecord[]> {
     const { query, values } = this.buildSelectQuery(
-      "output_share",
-      { output_id: outputId },
+      "resource_grant",
+      { kind: "output", output_id: outputId },
       { orderBy: "created_at DESC" },
     );
 
@@ -739,7 +743,7 @@ export class OutputRepository extends BaseRepository {
 
   async revokeShare(outputId: string, shareId: string): Promise<void> {
     await this.executeRun(
-      "UPDATE output_share SET revoked_at = ? WHERE id = ? AND output_id = ? AND revoked_at IS NULL",
+      "UPDATE resource_grant SET revoked_at = ? WHERE kind = 'output' AND id = ? AND output_id = ? AND revoked_at IS NULL",
       [new Date().toISOString(), shareId, outputId],
     );
   }
@@ -747,7 +751,7 @@ export class OutputRepository extends BaseRepository {
   async listRevisions(outputId: string): Promise<OutputRevisionRecord[]> {
     const { query, values } = this.buildSelectQuery(
       "resource_revision",
-      { output_id: outputId },
+      { resource_type: "output", output_id: outputId },
       { orderBy: "revision DESC" },
     );
 
@@ -756,6 +760,7 @@ export class OutputRepository extends BaseRepository {
 
   async getRevision(outputId: string, revision: number): Promise<OutputRevisionRecord | null> {
     const { query, values } = this.buildSelectQuery("resource_revision", {
+      resource_type: "output",
       output_id: outputId,
       revision,
     });

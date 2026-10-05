@@ -4,6 +4,7 @@ import { and, desc, eq, inArray, isNull, ne, or } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import {
+  modelRoute,
   type ModelEvalSuiteRecord,
   modelEvalSuite,
   type ModelEvalRunRecord,
@@ -12,7 +13,7 @@ import {
   modelEvalRunValues,
   modelEvalSuiteValues,
 } from "~/infrastructure/database/model-storage";
-import { modelRoute, modelConfiguration, modelOperation } from "~/infrastructure/database/schema";
+import { modelConfiguration, modelOperation } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
 export type { ModelEvalSuiteRecord } from "~/infrastructure/database/model-storage";
@@ -181,7 +182,10 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return this.database
       .selectDistinct({ suiteId: modelEvalRun.suite_id, routeId: modelEvalRun.route_id })
       .from(modelOperation)
-      .innerJoin(modelRoute, eq(modelRoute.id, modelEvalRun.route_id))
+      .innerJoin(
+        modelConfiguration,
+        and(eq(modelConfiguration.kind, "route"), eq(modelRoute.id, modelEvalRun.route_id)),
+      )
       .where(
         and(
           eq(modelOperation.kind, "evaluation"),

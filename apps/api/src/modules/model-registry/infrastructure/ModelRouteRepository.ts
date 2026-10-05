@@ -1,11 +1,17 @@
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { modelRoute } from "~/infrastructure/database/schema";
+import {
+  type ModelRouteRecord,
+  modelRoute,
+  modelRouteChanges,
+  modelRouteValues,
+} from "~/infrastructure/database/model-storage";
+import { modelConfiguration } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
-export type ModelRouteRecord = typeof modelRoute.$inferSelect;
+export type { ModelRouteRecord } from "~/infrastructure/database/model-storage";
 
 export class ModelRouteRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async createRoute(input: {
@@ -28,35 +34,43 @@ export class ModelRouteRepository extends BaseRepository<Pick<IEnv, "DB">> {
       retention: input.retention ?? null,
     };
     const [record] = await this.database
-      .insert(modelRoute)
-      .values({
-        id: generateId(),
-        workspace_id: input.workspaceId,
-        version_id: input.versionId,
-        provider: input.provider,
-        provider_model_id: input.providerModelId,
-        created_by: input.createdBy,
-        ...values,
-      })
+      .insert(modelConfiguration)
+      .values(
+        modelRouteValues({
+          id: generateId(),
+          workspace_id: input.workspaceId,
+          version_id: input.versionId,
+          provider: input.provider,
+          provider_model_id: input.providerModelId,
+          created_by: input.createdBy,
+          ...values,
+        }),
+      )
       .onConflictDoUpdate({
         target: [
-          modelRoute.workspace_id,
-          modelRoute.version_id,
-          modelRoute.provider,
-          modelRoute.provider_model_id,
+          modelConfiguration.workspace_id,
+          modelConfiguration.version_id,
+          modelConfiguration.provider,
+          modelConfiguration.provider_model_id,
         ],
-        set: { status: "active", ...values },
+        targetWhere: sql`${modelConfiguration.kind} = 'route'`,
+        set: modelRouteChanges({ status: "active", ...values }),
       })
-      .returning();
+      .returning(modelRoute);
 
     return record;
   }
 
   async getRoute(workspaceId: string, routeId: string): Promise<ModelRouteRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelRoute)
-      .where(and(eq(modelRoute.workspace_id, workspaceId), eq(modelRoute.id, routeId)))
+      .select(modelRoute)
+      .from(modelConfiguration)
+      .where(
+        and(
+          eq(modelConfiguration.kind, "route"),
+          and(eq(modelRoute.workspace_id, workspaceId), eq(modelRoute.id, routeId)),
+        ),
+      )
       .limit(1);
 
     return record ?? null;
@@ -64,9 +78,9 @@ export class ModelRouteRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async getRouteById(routeId: string): Promise<ModelRouteRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelRoute)
-      .where(eq(modelRoute.id, routeId))
+      .select(modelRoute)
+      .from(modelConfiguration)
+      .where(and(eq(modelConfiguration.kind, "route"), eq(modelRoute.id, routeId)))
       .limit(1);
 
     return record ?? null;
@@ -84,10 +98,13 @@ export class ModelRouteRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
     const select = (versionIds?: string[]) =>
       this.database
-        .select()
-        .from(modelRoute)
+        .select(modelRoute)
+        .from(modelConfiguration)
         .where(
-          and(...conditions, ...(versionIds ? [inArray(modelRoute.version_id, versionIds)] : [])),
+          and(
+            eq(modelConfiguration.kind, "route"),
+            and(...conditions, ...(versionIds ? [inArray(modelRoute.version_id, versionIds)] : [])),
+          ),
         );
 
     const records = filters.versionIds
@@ -99,31 +116,43 @@ export class ModelRouteRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async listActiveRoutesForModel(provider: string, providerModelId: string) {
     return this.database
-      .select()
-      .from(modelRoute)
+      .select(modelRoute)
+      .from(modelConfiguration)
       .where(
         and(
-          eq(modelRoute.provider, provider),
-          eq(modelRoute.provider_model_id, providerModelId),
-          eq(modelRoute.status, "active"),
+          eq(modelConfiguration.kind, "route"),
+          and(
+            eq(modelRoute.provider, provider),
+            eq(modelRoute.provider_model_id, providerModelId),
+            eq(modelRoute.status, "active"),
+          ),
         ),
       );
   }
 
   async listByIds(routeIds: string[]): Promise<ModelRouteRecord[]> {
     return this.selectInChunks(routeIds, (chunk) =>
-      this.database.select().from(modelRoute).where(inArray(modelRoute.id, chunk)),
+      this.database
+        .select(modelRoute)
+        .from(modelConfiguration)
+        .where(and(eq(modelConfiguration.kind, "route"), inArray(modelRoute.id, chunk))),
     );
   }
 
   async setStatus(routeId: string, status: "active" | "retired"): Promise<void> {
-    await this.database.update(modelRoute).set({ status }).where(eq(modelRoute.id, routeId));
+    await this.database
+      .update(modelConfiguration)
+      .set(modelRouteChanges({ status }))
+      .where(and(eq(modelConfiguration.kind, "route"), eq(modelRoute.id, routeId)));
   }
 
   async updateLocation(
     routeId: string,
     changes: Pick<ModelRouteRecord, "region" | "jurisdiction">,
   ): Promise<void> {
-    await this.database.update(modelRoute).set(changes).where(eq(modelRoute.id, routeId));
+    await this.database
+      .update(modelConfiguration)
+      .set(modelRouteChanges(changes))
+      .where(and(eq(modelConfiguration.kind, "route"), eq(modelRoute.id, routeId)));
   }
 }

@@ -185,7 +185,8 @@ export function continuityStatements({ teammates, chat, work }) {
   };
 
   statements.push(
-    insert("teammate_connection_grant", {
+    insert("resource_grant", {
+      kind: "connection",
       id: releaseGrant.id,
       context_id: teammates.contexts.releaseBot,
       connection_id: releaseGrant.connectionId,

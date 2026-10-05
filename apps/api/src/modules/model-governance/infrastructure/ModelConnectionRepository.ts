@@ -1,6 +1,6 @@
 import type { ConnectionCapabilities, ModelProviderId } from "@ngriffin_uk/polychat-schemas";
 import { parseRecordValue } from "@ngriffin_uk/polychat-utility-core";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import {
@@ -114,6 +114,7 @@ export class ModelConnectionRepository extends BaseRepository<Pick<IEnv, "DB" | 
           modelConfiguration.kind,
           modelConfiguration.scope_key,
         ],
+        targetWhere: sql`${modelConfiguration.kind} IN ('policy', 'budget', 'connection')`,
         set: workspaceProviderConnectionChanges(values),
       });
   }
