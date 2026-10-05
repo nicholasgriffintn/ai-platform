@@ -48,7 +48,7 @@ export const sourceSummarySchema = sourceSchema.omit({ content: true });
 
 export const projectKnowledgeSearchQuerySchema = z
   .object({
-    projectId: z.string().min(1),
+    projectId: z.string().min(1).optional(),
     query: z.string().trim().min(1).max(1000),
     type: creatableSourceKindSchema.optional(),
     top_k: z.coerce.number().int().min(1).max(30).optional(),
@@ -69,7 +69,7 @@ export const projectKnowledgeSearchResponseSchema = z.object({
       score: z.number(),
       rankingMethod: z.string(),
       provenance: z.object({
-        projectId: z.string(),
+        projectId: z.string().nullable(),
         sourceRevision: z.number().int().positive(),
         externalUri: z.string().nullable(),
         updatedAt: z.string().nullable(),

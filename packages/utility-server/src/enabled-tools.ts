@@ -26,3 +26,12 @@ export function intersectEnabledTools(
 ): string[] {
   return intersectGrantedIds(allowedTools, requestedTools);
 }
+
+export function excludeEnabledTools(
+  enabledTools: readonly string[],
+  forbiddenTools: readonly string[] = [],
+): string[] {
+  const forbidden = new Set(forbiddenTools);
+
+  return enabledTools.filter((tool) => !forbidden.has(tool));
+}

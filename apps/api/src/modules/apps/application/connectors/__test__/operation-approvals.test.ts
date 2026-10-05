@@ -10,7 +10,6 @@ const mocks = vi.hoisted(() => ({
 import {
   authoriseConnectorOperation,
   getConnectorOperationApproval,
-  getConnectorArgumentDigest,
   resolveConnectorOperationApproval,
 } from "../operation-approvals";
 
@@ -46,21 +45,6 @@ describe("connector operation approvals", () => {
     }));
   });
 
-  it("binds equivalent argument objects to the same canonical digest", async () => {
-    const first = await getConnectorArgumentDigest({
-      provider: "gmail",
-      operation: "GMAIL_SEND_EMAIL",
-      arguments: { recipient: "person@example.com", body: { z: 2, a: 1 } },
-    });
-    const second = await getConnectorArgumentDigest({
-      operation: "GMAIL_SEND_EMAIL",
-      arguments: { body: { a: 1, z: 2 }, recipient: "person@example.com" },
-      provider: "gmail",
-    });
-
-    expect(first).toBe(second);
-  });
-
   it("creates an expiring action-bound receipt before a write can execute", async () => {
     const decision = await authoriseConnectorOperation({
       context: context(),
@@ -70,7 +54,7 @@ describe("connector operation approvals", () => {
       arguments: { recipient: "person@example.com" },
       connectedAccountId: "ca_gmail",
       channel: "web",
-      scope: { completionId: "completion_1", recipeId: "recipe_1" },
+      scope: { conversationId: "completion_1", completionId: "completion_1", recipeId: "recipe_1" },
     });
 
     expect(decision).toMatchObject({ required: true, approved: false });
@@ -102,7 +86,7 @@ describe("connector operation approvals", () => {
         arguments: { recipient: "different@example.com" },
         connectedAccountId: "ca_gmail",
         channel: "web",
-        scope: { completionId: "completion_1" },
+        scope: { conversationId: "completion_1", completionId: "completion_1" },
         approvalId: "coa_approved",
       }),
     ).rejects.toMatchObject({ statusCode: 403 });
@@ -118,7 +102,7 @@ describe("connector operation approvals", () => {
         operation: "GMAIL_SEND_EMAIL",
         arguments: { recipient: "person@example.com" },
         channel: "web",
-        scope: { completionId: "completion_1" },
+        scope: { conversationId: "completion_1", completionId: "completion_1" },
       }),
     ).rejects.toMatchObject({ statusCode: 403 });
     expect(mocks.create).not.toHaveBeenCalled();

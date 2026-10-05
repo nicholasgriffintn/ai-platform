@@ -12,19 +12,7 @@ import type {
   UpdateKnowledgeSync,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service.js";
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
-
-async function request<T>(path: string, init: { method?: string; body?: object } = {}): Promise<T> {
-  const response = await fetchApiOrThrow(path, {
-    method: init.method ?? "GET",
-    headers: await apiService.getHeaders(),
-    body: init.body,
-  });
-
-  return returnFetchedData<T>(response);
-}
+import { fetchApiData as request } from "./fetch-wrapper.js";
 
 export async function listSources(
   filters: {
@@ -76,7 +64,11 @@ export async function controlKnowledgeSync(
 export async function searchProjectKnowledge(
   input: ProjectKnowledgeSearchQuery,
 ): Promise<ProjectKnowledgeSearchResponse> {
-  const query = new URLSearchParams({ projectId: input.projectId, query: input.query });
+  const query = new URLSearchParams({ query: input.query });
+
+  if (input.projectId) {
+    query.set("projectId", input.projectId);
+  }
 
   if (input.type) {
     query.set("type", input.type);

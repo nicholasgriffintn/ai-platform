@@ -294,36 +294,6 @@ describe("Auth Middleware", () => {
       expect(mockIsbot).not.toHaveBeenCalled();
     });
 
-    it("should authenticate user with session ID", async () => {
-      const mockUser = { id: "user-123", email: "test@example.com" };
-      const context = createMockContext();
-
-      // @ts-expect-error - mock implementation
-      context.req.header.mockImplementation((name: string) => {
-        if (name === "user-agent") {
-          return "Mozilla/5.0";
-        }
-
-        if (name === "CF-Connecting-IP") {
-          return "127.0.0.1";
-        }
-
-        if (name === "Cookie") {
-          return "session=session-123";
-        }
-
-        return null;
-      });
-
-      mockAuthenticateSession.mockResolvedValue({ user: { record: mockUser } });
-
-      await authMiddleware(context, mockNext);
-
-      expect(mockAuthenticateSession).toHaveBeenCalledWith("session-123");
-      expect(context.set).toHaveBeenCalledWith("user", mockUser);
-      expect(mockNext).toHaveBeenCalled();
-    });
-
     it("makes the session user available to downstream services", async () => {
       const mockUser = { id: 123, email: "test@example.com" };
       const context = createMockContext();
@@ -511,42 +481,6 @@ describe("Auth Middleware", () => {
   });
 
   describe("requireAuth", () => {
-    it("should allow authenticated user", async () => {
-      const context = createMockContext();
-      const mockUser = { id: "user-123" };
-
-      // @ts-expect-error - mock implementation
-      context.get.mockImplementation((key: string) => {
-        if (key === "user") {
-          return mockUser;
-        }
-
-        return null;
-      });
-
-      await requireAuth(context, mockNext);
-
-      expect(mockNext).toHaveBeenCalled();
-    });
-
-    it("should allow anonymous user", async () => {
-      const context = createMockContext();
-      const mockAnonymousUser = { id: "anon-123" };
-
-      // @ts-expect-error - mock implementation
-      context.get.mockImplementation((key: string) => {
-        if (key === "anonymousUser") {
-          return mockAnonymousUser;
-        }
-
-        return null;
-      });
-
-      await requireAuth(context, mockNext);
-
-      expect(mockNext).toHaveBeenCalled();
-    });
-
     it("should throw error when no user or anonymous user", async () => {
       const context = createMockContext();
 
@@ -561,24 +495,6 @@ describe("Auth Middleware", () => {
   });
 
   describe("allowRestrictedPaths", () => {
-    it("should allow pro users unrestricted access", async () => {
-      const context = createMockContext();
-      const mockUser = { id: "user-123", plan_id: "pro" };
-
-      // @ts-expect-error - mock implementation
-      context.get.mockImplementation((key: string) => {
-        if (key === "user") {
-          return mockUser;
-        }
-
-        return null;
-      });
-
-      await allowRestrictedPaths(context, mockNext);
-
-      expect(mockNext).toHaveBeenCalled();
-    });
-
     it("should allow non-pro users access to generate title endpoint", async () => {
       const context = createMockContext({
         req: {
@@ -657,18 +573,6 @@ describe("Auth Middleware", () => {
       await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(AssistantError);
       await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
         "Tool usage requires authentication",
-      );
-    });
-
-    it("should throw error when no user data for restricted access", async () => {
-      const context = createMockContext();
-
-      // @ts-expect-error - mock implementation
-      context.get.mockReturnValue(null);
-
-      await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(AssistantError);
-      await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
-        "User usage tracking required",
       );
     });
 

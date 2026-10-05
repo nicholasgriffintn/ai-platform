@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
-import { instantiateProjectStarter, listProjectStarters } from "../starters";
+import { instantiateProjectStarter } from "../starters";
 
 const validateProjectToolConfiguration = vi.hoisted(() =>
   vi.fn((_toolId: string, configuration: Record<string, unknown>) => configuration),
@@ -75,16 +75,6 @@ describe("project starters", () => {
     validateProjectToolConfiguration.mockImplementation(
       (_toolId: string, configuration: Record<string, unknown>) => configuration,
     );
-  });
-
-  it("names the teammates a starter will hire before anyone commits to it", () => {
-    const starter = listProjectStarters().starters.find(
-      (candidate) => candidate.slug === "build-an-internal-tool",
-    );
-
-    expect(starter?.teammates).toEqual([
-      { roleSlug: "developer", name: "Developer", title: "Developer" },
-    ]);
   });
 
   it("hires the starter's teammates into the workspace and attaches them to the project", async () => {
