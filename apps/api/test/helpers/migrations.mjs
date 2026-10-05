@@ -8,13 +8,11 @@ export async function applyMigrations(database, migrationsDirectory) {
     .filter((name) => /^\d{4}_.*\.sql$/.test(name) && !name.startsWith("9"))
     .sort();
 
-  for (const migration of migrations) {
-    const statements = splitMigrationStatements(
-      readFileSync(path.join(migrationsDirectory, migration), "utf8"),
-    );
+  const statements = migrations.flatMap((migration) =>
+    splitMigrationStatements(readFileSync(path.join(migrationsDirectory, migration), "utf8")),
+  );
 
-    if (statements.length > 0) {
-      await database.batch(statements.map((statement) => database.prepare(statement)));
-    }
+  if (statements.length > 0) {
+    await database.batch(statements.map((statement) => database.prepare(statement)));
   }
 }
