@@ -130,6 +130,18 @@ export class SourceRepository extends BaseRepository {
   }
 
   async createSource(input: CreateSourceRecord): Promise<SourceRecord> {
+    const { source, created } = await this.createSourceWithOutcome(input);
+
+    if (!created) {
+      throw new AssistantError("Source already exists", ErrorType.DATABASE_ERROR);
+    }
+
+    return source;
+  }
+
+  async createSourceWithOutcome(
+    input: CreateSourceRecord,
+  ): Promise<{ source: SourceRecord; created: boolean }> {
     const insert = this.buildInsertQuery(
       "source",
       {
@@ -158,20 +170,36 @@ export class SourceRepository extends BaseRepository {
       throw new AssistantError("Failed to build source insert", ErrorType.INTERNAL_ERROR);
     }
 
-    const source = await this.runQuery<SourceRecord>(insert.query, insert.values, true);
+    const source = await this.runQuery<SourceRecord>(
+      input.id
+        ? insert.query.replace(" RETURNING ", " ON CONFLICT(id) DO NOTHING RETURNING ")
+        : insert.query,
+      insert.values,
+      true,
+    );
 
     if (!source) {
+      const existing = input.id ? await this.getSource(input.id) : null;
+
+      if (
+        existing &&
+        existing.project_id === (input.projectId ?? null) &&
+        existing.created_by_user_id === input.createdByUserId
+      ) {
+        return { source: existing, created: false };
+      }
+
       throw new AssistantError("Failed to create source", ErrorType.DATABASE_ERROR);
     }
 
-    return source;
+    return { source, created: true };
   }
 
   async getSource(sourceId: string): Promise<SourceRecord | null> {
     return this.selectOne({ id: sourceId });
   }
 
-  async getSourcesByIds(sourceIds: string[]): Promise<SourceRecord[]> {
+  async getSourcesByIds(sourceIds: readonly string[]): Promise<SourceRecord[]> {
     return this.selectInChunks(sourceIds, (page) =>
       this.runQuery<SourceRecord>(
         `SELECT * FROM source WHERE id IN (${page.map(() => "?").join(", ")}) AND ${sourceVisibilitySql("source")}`,

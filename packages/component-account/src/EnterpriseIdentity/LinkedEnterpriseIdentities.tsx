@@ -18,8 +18,8 @@ export function LinkedEnterpriseIdentities({
     <section className="space-y-3">
       <h2 className="text-sm font-semibold">Company access</h2>
       <p className="text-sm text-muted-foreground">
-        Refresh your identity groups to regain workspace access. A verified sign-in grants up to 15
-        minutes of managed access.
+        Sign in through a linked company identity provider. Your workspace roles stay managed in
+        Polychat.
       </p>
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading linked identities…</p>
@@ -42,12 +42,7 @@ export function LinkedEnterpriseIdentities({
               <div className="min-w-0 space-y-1">
                 <p className="truncate text-sm font-medium">{identity.workspaceName}</p>
                 <p className="text-xs text-muted-foreground">
-                  {identity.label} ·{" "}
-                  {identity.enabled
-                    ? identity.accessExpiresAt
-                      ? "Access verified; sign in to refresh"
-                      : "Fresh sign-in required"
-                    : "Connection disabled"}
+                  {identity.label} · {identity.enabled ? "Connected" : "Connection disabled"}
                 </p>
               </div>
               <Button
@@ -55,7 +50,7 @@ export function LinkedEnterpriseIdentities({
                 disabled={!identity.enabled}
                 onClick={() => onRefresh(identity.connectionId)}
               >
-                Refresh access
+                Sign in
               </Button>
             </div>
           ))}

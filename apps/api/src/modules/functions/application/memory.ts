@@ -1,16 +1,26 @@
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
+import { readMemoryDocumentSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  AssistantError,
+  ErrorType,
+  toolErrorResponse,
+} from "@ngriffin_uk/polychat-utility-server/errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import {
+  MEMORY_READ_TOOL_NAME,
   MEMORY_SEARCH_TOOL_NAME,
   MEMORY_STORE_TOOL_NAME,
   resolveMemoryPolicy,
 } from "~/modules/chat/domain/memory";
+import { readRunMemoryDocument } from "~/modules/memory-documents/application/pages";
+import { queueTeammateMemoryCorrection } from "~/modules/memory-documents/application/reflection";
 import { MemoryManager } from "~/modules/memory/application/manager";
 import type { IUserSettings } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import {
+  read_memory_document as read_memory_documentDescriptor,
   search_memories as search_memoriesDescriptor,
   store_memory as store_memoryDescriptor,
 } from "./definitions/memory";
@@ -42,28 +52,19 @@ async function getMemoryToolSettings(
   return { userSettings };
 }
 
-function errorResponse(name: string, content: string) {
-  return {
-    status: "error",
-    name,
-    content,
-    data: {},
-  };
-}
-
 export const search_memories: ApiToolDefinition = {
   ...search_memoriesDescriptor,
   execute: async (args, context) => {
     const { userSettings, error } = await getMemoryToolSettings(context, MEMORY_SEARCH_TOOL_NAME);
 
     if (error) {
-      return errorResponse(MEMORY_SEARCH_TOOL_NAME, error);
+      return toolErrorResponse(MEMORY_SEARCH_TOOL_NAME, error);
     }
 
     const query = sanitiseInput(args.query);
 
     if (!query) {
-      return errorResponse(MEMORY_SEARCH_TOOL_NAME, "Missing memory search query.");
+      return toolErrorResponse(MEMORY_SEARCH_TOOL_NAME, "Missing memory search query.");
     }
 
     const topK =
@@ -101,22 +102,55 @@ export const store_memory: ApiToolDefinition = {
     const { userSettings, error } = await getMemoryToolSettings(context, MEMORY_STORE_TOOL_NAME);
 
     if (error) {
-      return errorResponse(MEMORY_STORE_TOOL_NAME, error);
+      return toolErrorResponse(MEMORY_STORE_TOOL_NAME, error);
     }
 
     const text = sanitiseInput(args.text);
 
     if (!text) {
-      return errorResponse(MEMORY_STORE_TOOL_NAME, "Missing memory text.");
+      return toolErrorResponse(MEMORY_STORE_TOOL_NAME, "Missing memory text.");
+    }
+
+    const scope = context.request.memoryScope;
+    const completionId =
+      context.request.request?.completion_id || context.completionId || undefined;
+
+    if (
+      scope?.type === "bound" &&
+      scope.teammateContext &&
+      (args.document_id === undefined ||
+        args.document_id === scope.teammateContext.memoryDocumentId)
+    ) {
+      const serviceContext = context.request.context;
+      const runId = context.request.request?.run_id;
+
+      if (!serviceContext || !completionId || !runId) {
+        return toolErrorResponse(MEMORY_STORE_TOOL_NAME, "Memory requires an authorised user run.");
+      }
+
+      const taskId = await queueTeammateMemoryCorrection({
+        context: serviceContext,
+        scope,
+        conversationId: completionId,
+        runId,
+        classify: false,
+      });
+
+      return taskId
+        ? {
+            status: "success",
+            name: MEMORY_STORE_TOOL_NAME,
+            content:
+              "Memory maintenance queued from your message. The correction is not saved yet.",
+            data: { taskId },
+          }
+        : toolErrorResponse(MEMORY_STORE_TOOL_NAME, "No new authorised user evidence to remember.");
     }
 
     const category =
       typeof args.category === "string" && args.category.trim()
         ? sanitiseInput(args.category).slice(0, 64)
         : "general";
-    const completionId =
-      context.request.request?.completion_id || context.completionId || undefined;
-
     const memoryManager = MemoryManager.getInstance(
       context.env,
       context.user,
@@ -140,7 +174,7 @@ export const store_memory: ApiToolDefinition = {
     );
 
     if (!id) {
-      return errorResponse(MEMORY_STORE_TOOL_NAME, "Memory could not be stored.");
+      return toolErrorResponse(MEMORY_STORE_TOOL_NAME, "Memory could not be stored.");
     }
 
     return {
@@ -149,5 +183,37 @@ export const store_memory: ApiToolDefinition = {
       content: "Memory stored.",
       data: { id },
     };
+  },
+};
+
+export const read_memory_document: ApiToolDefinition = {
+  ...read_memory_documentDescriptor,
+  execute: async (args, { request }) => {
+    if (!request.context || !request.memoryScope) {
+      throw new AssistantError(
+        "Memory document reads require a scoped run",
+        ErrorType.FORBIDDEN,
+        403,
+      );
+    }
+
+    if (
+      request.memoryScope.type !== "bound" &&
+      !resolveMemoryPolicy({
+        user: request.context.user,
+        userSettings: await request.context.getUserSettings(),
+        store: request.request?.store === true,
+      }).canRetrieve
+    ) {
+      throw new AssistantError("Memory retrieval is disabled", ErrorType.FORBIDDEN, 403);
+    }
+
+    const page = await readRunMemoryDocument(
+      request.context,
+      request.memoryScope,
+      readMemoryDocumentSchema.parse(args),
+    );
+
+    return { status: "success", name: MEMORY_READ_TOOL_NAME, content: page.content, data: page };
   },
 };

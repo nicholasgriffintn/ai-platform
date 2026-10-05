@@ -1,47 +1,69 @@
-import {
-  channelBindingSchema,
-  createChannelBindingSchema,
-  listChannelBindingsResponseSchema,
-  updateChannelBindingSchema,
-  type CreateChannelBindingInput,
-  type UpdateChannelBindingInput,
+import type {
+  ChannelBinding,
+  ChannelPairingChallenge,
+  ChannelSender,
+  CreateChannelBindingInput,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service.js";
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
 
-export async function listChannelBindings() {
-  const response = await fetchApiOrThrow("/channels/bindings", {
-    headers: await apiService.getHeaders(),
-  });
-
-  return listChannelBindingsResponseSchema.parse(await returnFetchedData<unknown>(response));
+export async function listChannelBindings(): Promise<{ bindings: ChannelBinding[] }> {
+  return returnFetchedData(
+    await fetchApiOrThrow("/channels/bindings", { headers: await apiService.getHeaders() }),
+  );
 }
 
-export async function createChannelBinding(input: CreateChannelBindingInput) {
-  const response = await fetchApiOrThrow("/channels/bindings", {
-    method: "POST",
-    headers: await apiService.getHeaders(),
-    body: createChannelBindingSchema.parse(input),
-  });
-
-  return channelBindingSchema.parse(await returnFetchedData<unknown>(response));
+export async function createChannelBinding(
+  input: CreateChannelBindingInput,
+): Promise<ChannelBinding> {
+  return returnFetchedData(
+    await fetchApiOrThrow("/channels/bindings", {
+      method: "POST",
+      headers: await apiService.getHeaders(),
+      body: input,
+    }),
+  );
 }
 
-export async function updateChannelBinding(id: string, input: UpdateChannelBindingInput) {
-  const response = await fetchApiOrThrow(`/channels/bindings/${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: await apiService.getHeaders(),
-    body: updateChannelBindingSchema.parse(input),
-  });
-
-  return channelBindingSchema.parse(await returnFetchedData<unknown>(response));
-}
-
-export async function deleteChannelBinding(id: string): Promise<void> {
-  await fetchApiOrThrow(`/channels/bindings/${encodeURIComponent(id)}`, {
+export async function deleteChannelBinding(bindingId: string): Promise<void> {
+  await fetchApiOrThrow(`/channels/bindings/${encodeURIComponent(bindingId)}`, {
     method: "DELETE",
     headers: await apiService.getHeaders(),
   });
+}
+
+export async function listChannelSenders(bindingId: string): Promise<{ senders: ChannelSender[] }> {
+  return returnFetchedData(
+    await fetchApiOrThrow(`/channels/bindings/${encodeURIComponent(bindingId)}/senders`, {
+      headers: await apiService.getHeaders(),
+    }),
+  );
+}
+
+export async function issueChannelPairingChallenge(
+  bindingId: string,
+): Promise<ChannelPairingChallenge> {
+  return returnFetchedData(
+    await fetchApiOrThrow(
+      `/channels/bindings/${encodeURIComponent(bindingId)}/pairing-challenges`,
+      { method: "POST", headers: await apiService.getHeaders() },
+    ),
+  );
+}
+
+export async function revokeChannelSender(
+  bindingId: string,
+  senderId: string,
+  expectedRevision: number,
+): Promise<void> {
+  await fetchApiOrThrow(
+    `/channels/bindings/${encodeURIComponent(bindingId)}/senders/${encodeURIComponent(senderId)}/revoke`,
+    {
+      method: "POST",
+      headers: await apiService.getHeaders(),
+      body: { expectedRevision },
+    },
+  );
 }

@@ -49,14 +49,6 @@ const actionShapes = {
   "platform.admin": { role: string, strict: boolean },
   "service.call": { authenticated: boolean, scopes: strings, requiredScope: string },
   "workspace.membership": { actorRole: string, targetRole: string, newRole: string },
-  "workspace.identity.provision": {
-    verified: boolean,
-    enabled: boolean,
-    revisionCurrent: boolean,
-    groupsMapped: boolean,
-    leaseCurrent: boolean,
-    role: string,
-  },
   "capability.manage": {
     kind: string,
     role: string,

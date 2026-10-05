@@ -4,18 +4,13 @@ import {
   type CreateOidcConnection,
   type UpdateOidcConnection,
   type OidcConnection,
-  type OidcRoleMapping,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId, splitNonEmptyLines } from "@ngriffin_uk/polychat-utility-core";
+import { splitNonEmptyLines } from "@ngriffin_uk/polychat-utility-core";
 import { useState, type FormEvent } from "react";
 
 export type IdentityConnectionChange =
   | { kind: "create"; input: CreateOidcConnection }
   | { kind: "update"; input: UpdateOidcConnection };
-export interface IdentityGroupDraft extends OidcRoleMapping {
-  id: string;
-}
-
 export function useIdentityConnectionForm(
   connection: OidcConnection | null,
   onSave: (change: IdentityConnectionChange) => Promise<void>,
@@ -24,27 +19,18 @@ export function useIdentityConnectionForm(
   const [issuer, setIssuer] = useState(connection?.issuer ?? "");
   const [clientId, setClientId] = useState(connection?.clientId ?? "");
   const [clientSecret, setClientSecret] = useState("");
-  const [groupsClaim, setGroupsClaim] = useState(connection?.groupsClaim ?? "groups");
   const [allowedOrigins, setAllowedOrigins] = useState(connection?.allowedOrigins.join("\n") ?? "");
   const [signingAlgorithm, setSigningAlgorithm] = useState<"RS256" | "ES256">(
     connection?.signingAlgorithm ?? "RS256",
   );
   const [enabled, setEnabled] = useState(connection?.enabled ?? true);
-  const [roleMappings, setRoleMappings] = useState<IdentityGroupDraft[]>(() =>
-    (connection?.roleMappings ?? [{ group: "", role: "member" }]).map((mapping) => ({
-      ...mapping,
-      id: generateId(),
-    })),
-  );
   const [error, setError] = useState<string>();
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     const fields = {
       label,
-      groupsClaim,
       signingAlgorithm,
       enabled,
-      roleMappings: roleMappings.map((mapping) => ({ group: mapping.group, role: mapping.role })),
       allowedOrigins: splitNonEmptyLines(allowedOrigins),
     };
     const change = connection
@@ -84,16 +70,12 @@ export function useIdentityConnectionForm(
     setClientId,
     clientSecret,
     setClientSecret,
-    groupsClaim,
-    setGroupsClaim,
     allowedOrigins,
     setAllowedOrigins,
     signingAlgorithm,
     setSigningAlgorithm,
     enabled,
     setEnabled,
-    roleMappings,
-    setRoleMappings,
     error,
     submit,
   };

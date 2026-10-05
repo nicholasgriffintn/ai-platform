@@ -278,15 +278,6 @@ export async function enqueueTeammateRun({
         ? { delegation_id: resolvedInvocation.delegationId }
         : {}),
       resolved_configuration: {
-        ...(resolvedInvocation?.source === "channel"
-          ? {
-              channelDelivery: {
-                bindingId: resolvedInvocation.bindingId,
-                thread: resolvedInvocation.thread,
-                from: resolvedInvocation.from,
-              },
-            }
-          : {}),
         teammateId: teammate.id,
         behaviour: preparedInvocation?.resolution.behaviour ?? "colleague",
         ...(resolvedInvocation ? { invocation: resolvedInvocation } : {}),

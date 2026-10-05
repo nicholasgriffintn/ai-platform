@@ -44,6 +44,7 @@ async function syncResources(context: ServiceContext, initial: KnowledgeSyncReco
         },
         scope: {
           completionId: context.connectorRunId,
+          conversationId: null,
           projectId: sync.project_id,
           recipeId: sync.recipe_id,
         },

@@ -12,16 +12,14 @@ export class EnterpriseIdentityRepository extends BaseRepository {
       workspace_name: string;
       label: string;
       enabled: number;
-      identity_lease_expires_at: string | null;
     }[]
   > {
     return this.runQuery(
       `SELECT connection.id AS connection_id, connection.workspace_id, workspace.name AS workspace_name,
-         connection.label, connection.enabled, member.identity_lease_expires_at
+         connection.label, connection.enabled
        FROM enterprise_identity_connection connection
        JOIN workspace ON workspace.id = connection.workspace_id
        JOIN oauth_account identity ON identity.provider_id = 'enterprise-' || connection.id AND identity.user_id = ?
-       LEFT JOIN active_workspace_member member ON member.workspace_id = connection.workspace_id AND member.user_id = identity.user_id
        ORDER BY workspace.name, connection.label`,
       [userId],
     );
@@ -52,7 +50,7 @@ export class EnterpriseIdentityRepository extends BaseRepository {
       `INSERT INTO enterprise_identity_connection
        (id, workspace_id, label, issuer, client_id, encrypted_secret, configuration, created_by, enabled)
        SELECT ?, w.id, ?, ?, ?, ?, ?, ?, ? FROM workspace w
-       JOIN active_workspace_member member ON member.workspace_id = w.id
+       JOIN workspace_member member ON member.workspace_id = w.id
        WHERE w.id = ? AND member.user_id = ? AND member.role = 'owner'`,
       [
         connection.id,
@@ -78,7 +76,7 @@ export class EnterpriseIdentityRepository extends BaseRepository {
       `UPDATE enterprise_identity_connection SET label = ?, configuration = ?, encrypted_secret = ?,
          enabled = ?, revision = revision + 1, updated_at = CURRENT_TIMESTAMP
        WHERE id = ? AND workspace_id = ? AND revision = ?
-       AND EXISTS (SELECT 1 FROM active_workspace_member member
+       AND EXISTS (SELECT 1 FROM workspace_member member
          WHERE member.workspace_id = enterprise_identity_connection.workspace_id
          AND member.user_id = ? AND member.role = 'owner')
        RETURNING *`,
@@ -99,7 +97,7 @@ export class EnterpriseIdentityRepository extends BaseRepository {
   async delete(id: string, workspaceId: string, actorId: number): Promise<boolean> {
     const deleted = await this.runQuery<{ id: string }>(
       `DELETE FROM enterprise_identity_connection WHERE id = ? AND workspace_id = ?
-       AND EXISTS (SELECT 1 FROM active_workspace_member member
+       AND EXISTS (SELECT 1 FROM workspace_member member
          WHERE member.workspace_id = ? AND member.user_id = ? AND member.role = 'owner')
        RETURNING id`,
       [id, workspaceId, workspaceId, actorId],
@@ -139,64 +137,6 @@ export class EnterpriseIdentityRepository extends BaseRepository {
     await this.executeRun(
       "INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES (?, ?, ?) ON CONFLICT DO NOTHING",
       [`enterprise-${connection.id}`, subject, userId],
-    );
-  }
-
-  async grantMembership(params: {
-    connection: OidcConnection;
-    userId: number;
-    role: "admin" | "member";
-    expiresAt: string;
-  }): Promise<boolean> {
-    const { connection, userId, role, expiresAt } = params;
-    const row = await this.runQuery<{ user_id: number }>(
-      `INSERT INTO workspace_member (workspace_id, user_id, role, managed_connection_id,
-         managed_connection_revision, identity_lease_expires_at)
-       SELECT workspace_id, ?, ?, id, revision, ? FROM enterprise_identity_connection
-       WHERE id = ? AND workspace_id = ? AND revision = ? AND enabled = 1
-         AND julianday(?) > julianday('now')
-       ON CONFLICT(workspace_id, user_id) DO UPDATE SET
-         role = excluded.role, managed_connection_id = excluded.managed_connection_id,
-         managed_connection_revision = excluded.managed_connection_revision,
-         identity_lease_expires_at = excluded.identity_lease_expires_at
-       WHERE (workspace_member.managed_connection_id = excluded.managed_connection_id
-         OR (workspace_member.managed_connection_id IS NOT NULL AND NOT EXISTS (
-           SELECT 1 FROM enterprise_identity_connection previous
-           WHERE previous.id = workspace_member.managed_connection_id)))
-         AND workspace_member.role <> 'owner'
-       RETURNING user_id`,
-      [
-        userId,
-        role,
-        expiresAt,
-        connection.id,
-        connection.workspaceId,
-        connection.revision,
-        expiresAt,
-      ],
-      true,
-    );
-
-    if (row) {
-      return true;
-    }
-
-    const manual = await this.runQuery<{ user_id: number }>(
-      `SELECT user_id FROM active_workspace_member WHERE workspace_id = ? AND user_id = ?
-       AND managed_connection_id IS NULL
-       AND EXISTS (SELECT 1 FROM enterprise_identity_connection WHERE id = ? AND enabled = 1 AND revision = ?)`,
-      [connection.workspaceId, userId, connection.id, connection.revision],
-      true,
-    );
-
-    return Boolean(manual);
-  }
-
-  async revokeSubjectMembership(connection: OidcConnection, subject: string): Promise<void> {
-    await this.executeRun(
-      `DELETE FROM workspace_member WHERE workspace_id = ? AND managed_connection_id = ?
-       AND user_id IN (SELECT user_id FROM oauth_account WHERE provider_id = ? AND provider_user_id = ?)`,
-      [connection.workspaceId, connection.id, `enterprise-${connection.id}`, subject],
     );
   }
 }

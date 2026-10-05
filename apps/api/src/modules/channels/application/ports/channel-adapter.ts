@@ -1,6 +1,14 @@
-import type { ChannelIncomingMessage, InboundChannelId } from "@ngriffin_uk/polychat-schemas";
+import type { ChannelMessageContext, InboundChannelId } from "@ngriffin_uk/polychat-schemas";
 
-export type { ChannelIncomingMessage } from "@ngriffin_uk/polychat-schemas";
+export interface ChannelIncomingMessage {
+  kind: "message";
+  messageId: string;
+  externalId: string;
+  from: string;
+  body: string;
+  context: ChannelMessageContext;
+  media?: { url: string; mimeType?: string }[];
+}
 
 export interface ChannelControlResponse {
   kind: "control";
@@ -25,6 +33,6 @@ export interface ChannelAdapter {
   readonly label: string;
   readonly scopes: readonly ("personal" | "project")[];
   verify(request: Request, secret: string, rawBody: string): Promise<ChannelVerification>;
-  parse(rawBody: string, options?: { botUserId?: string }): ChannelIncoming;
+  parse(rawBody: string): ChannelIncoming;
   sendReply(reply: ChannelReply, secret: string): Promise<void>;
 }

@@ -1,4 +1,6 @@
+import { slackChannelAddressSchema } from "@ngriffin_uk/polychat-schemas";
 import { timingSafeEqual, toHex } from "@ngriffin_uk/polychat-utility-server/crypto";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type {
   ChannelAdapter,
@@ -7,8 +9,8 @@ import type {
   ChannelVerification,
 } from "~/modules/channels/application/ports/channel-adapter";
 
+import { parseSlackMessage } from "./channel-payloads";
 import { requireSuccessfulChannelSend } from "./send-response";
-import { parseSlackEvent } from "./slack-events";
 
 const SLACK_SIGNATURE_VERSION = "v0";
 const SIGNATURE_TOLERANCE_SECONDS = 5 * 60;
@@ -62,24 +64,25 @@ export class SlackChannelAdapter implements ChannelAdapter {
       : { ok: false, reason: "Slack signature did not match" };
   }
 
-  parse(rawBody: string, options?: { botUserId?: string }): ChannelIncoming {
-    return parseSlackEvent(rawBody, options?.botUserId);
+  parse(rawBody: string): ChannelIncoming {
+    return parseSlackMessage(rawBody);
   }
 
   async sendReply(reply: ChannelReply, secret: string): Promise<void> {
+    const parsed = slackChannelAddressSchema.safeParse(reply.externalId);
+    const channelId = parsed.success ? parsed.data.split(":")[1] : null;
+
+    if (!channelId) {
+      throw new AssistantError("Invalid Slack destination", ErrorType.PARAMS_ERROR, 400);
+    }
+
     const response = await fetch(SLACK_POST_MESSAGE_URL, {
       method: "POST",
-      redirect: "error",
-      signal: AbortSignal.timeout(10_000),
       headers: {
         authorization: `Bearer ${secret}`,
         "content-type": "application/json; charset=utf-8",
       },
-      body: JSON.stringify({
-        channel: reply.externalId,
-        text: reply.body,
-        thread_ts: reply.threadId,
-      }),
+      body: JSON.stringify({ channel: channelId, text: reply.body, thread_ts: reply.threadId }),
     });
 
     await requireSuccessfulChannelSend(response, "Slack");

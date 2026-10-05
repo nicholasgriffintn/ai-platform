@@ -1,5 +1,4 @@
-import { Miniflare } from "miniflare";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   resolveStoredMessagingProvider: vi.fn(),
@@ -8,16 +7,7 @@ const mocks = vi.hoisted(() => ({
   conversationGet: vi.fn(),
   conversationArchiveMessages: vi.fn(),
   providerSend: vi.fn(),
-  adapterSendReply: vi.fn(),
-  getChannelAdapter: vi.fn(),
 }));
-
-vi.mock("~/modules/channels/infrastructure/adapters", async (importOriginal) => {
-  const original =
-    await importOriginal<typeof import("~/modules/channels/infrastructure/adapters")>();
-
-  return { ...original, getChannelAdapter: mocks.getChannelAdapter };
-});
 
 vi.mock("~/modules/conversations/application/manager", () => ({
   ConversationManager: {
@@ -41,92 +31,46 @@ vi.mock("~/modules/completions/application/createChatCompletions", () => ({
   handleCreateChatCompletions: mocks.handleCreateChatCompletions,
 }));
 
-import type {
-  InboundChannelTaskData,
-  InboundProviderTaskData,
-} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import type { ChannelBindingRow } from "~/infrastructure/database/schema";
-import type { IEnv } from "~/types";
+import { handleInboundChannelMessage, type InboundChannelTaskData } from "../inbound";
 
-import {
-  channelTestBinding,
-  channelTestEnvironment,
-  channelTestThread,
-  channelTestUser,
-} from "../../../../../test/fixtures/channels";
-import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
-import { handleInboundChannelMessage } from "../inbound";
-
-const runtime = new Miniflare({
-  modules: true,
-  script: "export default { fetch() { return new Response('test'); } }",
-  compatibilityDate: "2026-08-01",
-  d1Databases: ["DB"],
-});
-let env: IEnv;
-const user = channelTestUser;
-const slackBinding = channelTestBinding;
-
-beforeAll(async () => {
-  env = databaseTestEnvironment(await runtime.getD1Database("DB"));
-  env.API_BASE_URL = "https://api.polychat.test";
-});
-afterAll(() => runtime.dispose());
+const env = { DB: {}, API_BASE_URL: "https://api.polychat.test" } as any;
+const user = { id: 42, email: "user@example.com", plan_id: "pro" } as any;
 
 function createContext(
   providerSettings: Record<string, unknown>[] = [],
-  binding: ChannelBindingRow | null = null,
+  binding: Record<string, unknown> | null = null,
 ) {
-  const context = createServiceContext({ env, user });
-
-  vi.spyOn(context.repositories.userSettings, "getProviderApiKeyForSettings").mockResolvedValue(
-    "encrypted-config",
-  );
-  vi.spyOn(context.repositories.userSettings, "getUserProviderSettings").mockResolvedValue(
-    providerSettings,
-  );
-  vi.spyOn(context.repositories.channelBindings, "getById").mockResolvedValue(binding);
-  vi.spyOn(context.repositories.channelThreads, "get").mockResolvedValue(channelTestThread);
-  vi.spyOn(context.repositories.conversationRuns, "getCommandReceipt").mockResolvedValue(null);
-  vi.spyOn(context.repositories.outboundDeliveries, "prepare").mockImplementation(
-    async (input) => ({
-      ...input,
-      state: "prepared",
-      executionToken: null,
-      executionLeaseExpiresAt: null,
-      sentAt: null,
-    }),
-  );
-  vi.spyOn(context.repositories.outboundDeliveries, "begin").mockResolvedValue("execute");
-  vi.spyOn(context.repositories.outboundDeliveries, "complete").mockResolvedValue(true);
-  vi.spyOn(context.repositories.outboundDeliveries, "markIndeterminate").mockResolvedValue(
-    undefined,
-  );
-
-  return context;
-}
-
-function createBindingTaskData(
-  message: Partial<InboundChannelTaskData["message"]> = {},
-  threadId = "171.1",
-): InboundChannelTaskData {
   return {
-    channel: "slack",
-    bindingId: "binding-1",
-    thread: { workspaceId: "T123", externalId: "C123", threadId, revision: 1, bindingRevision: 1 },
-    message: {
-      messageId: "171.1",
-      from: "U9",
-      body: "what is the weather",
-      ...message,
+    env,
+    database: {},
+    repositories: {
+      userSettings: {
+        getProviderApiKeyForSettings: vi.fn(async () => "encrypted-config"),
+        getUserProviderSettings: vi.fn(async () => providerSettings),
+      },
+      channelBindings: {
+        getById: vi.fn(async () => binding),
+      },
+      conversationRuns: {
+        getCommandReceipt: vi.fn(async () => null),
+      },
+      messages: {
+        getRunMessages: vi.fn(async () => []),
+      },
+      outboundDeliveries: {
+        prepare: vi.fn(async () => ({})),
+        begin: vi.fn(async () => "execute"),
+        complete: vi.fn(async () => true),
+        markIndeterminate: vi.fn(async () => undefined),
+      },
     },
-  };
+    requestCache: new Map(),
+  } as any;
 }
 
-function createTaskData(overrides: Partial<InboundProviderTaskData> = {}): InboundChannelTaskData {
+function createTaskData(overrides: Partial<InboundChannelTaskData> = {}): InboundChannelTaskData {
   return {
     channel: "sms",
     providerId: "twilio-sms",
@@ -143,7 +87,6 @@ function createTaskData(overrides: Partial<InboundProviderTaskData> = {}): Inbou
 
 describe("inbound channel messages", () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
     vi.clearAllMocks();
     mocks.resolveStoredMessagingProvider.mockReturnValue({
       provider: { send: mocks.providerSend },
@@ -157,11 +100,6 @@ describe("inbound channel messages", () => {
     mocks.conversationGetInstance.mockReturnValue({
       get: mocks.conversationGet,
       archiveMessages: mocks.conversationArchiveMessages,
-    });
-    mocks.getChannelAdapter.mockReturnValue({
-      id: "slack",
-      label: "Slack",
-      sendReply: mocks.adapterSendReply,
     });
   });
 
@@ -407,158 +345,5 @@ describe("inbound channel messages", () => {
       body: "Nutrition summary attached.",
       mediaUrls: ["s3://polychat-mms/generated/nutrition-image.png"],
     });
-  });
-  it("answers a bound channel through its adapter rather than a messaging provider", async () => {
-    const result = await handleInboundChannelMessage({
-      env: channelTestEnvironment(env.DB, {
-        SLACK_BOT_TOKEN: "xoxb-slack-bot-token",
-        API_BASE_URL: env.API_BASE_URL,
-      }),
-      context: createContext([], slackBinding),
-      user,
-      data: createBindingTaskData(),
-    });
-
-    expect(result).toEqual({
-      status: "delivered",
-      conversationId: expect.stringMatching(/^slack_[0-9a-f]{40}$/),
-      body: "chat reply",
-    });
-    expect(mocks.adapterSendReply).toHaveBeenCalledWith(
-      { externalId: "C123", threadId: "171.1", body: "chat reply" },
-      "xoxb-slack-bot-token",
-    );
-    expect(mocks.providerSend).not.toHaveBeenCalled();
-  });
-
-  it("keeps participants in the same thread in the same conversation", async () => {
-    const bindingEnv = channelTestEnvironment(env.DB, {
-      SLACK_BOT_TOKEN: "xoxb-slack-bot-token",
-      API_BASE_URL: env.API_BASE_URL,
-    });
-
-    await handleInboundChannelMessage({
-      env: bindingEnv,
-      context: createContext([], slackBinding),
-      user,
-      data: createBindingTaskData(),
-    });
-    await handleInboundChannelMessage({
-      env: bindingEnv,
-      context: createContext([], slackBinding),
-      user,
-      data: createBindingTaskData({ messageId: "171.2", from: "U42" }),
-    });
-
-    const [first] = mocks.handleCreateChatCompletions.mock.calls[0];
-    const [second] = mocks.handleCreateChatCompletions.mock.calls[1];
-
-    expect(second.request.completion_id).toBe(first.request.completion_id);
-  });
-
-  it("separates thread histories inside the same channel", async () => {
-    const bindingEnv = channelTestEnvironment(env.DB, {
-      SLACK_BOT_TOKEN: "xoxb-slack-bot-token",
-      API_BASE_URL: env.API_BASE_URL,
-    });
-
-    await handleInboundChannelMessage({
-      env: bindingEnv,
-      context: createContext([], slackBinding),
-      user,
-      data: createBindingTaskData(),
-    });
-    await handleInboundChannelMessage({
-      env: bindingEnv,
-      context: createContext([], slackBinding),
-      user,
-      data: createBindingTaskData({ messageId: "172.1" }, "172.1"),
-    });
-
-    expect(mocks.handleCreateChatCompletions.mock.calls[1][0].request.completion_id).not.toBe(
-      mocks.handleCreateChatCompletions.mock.calls[0][0].request.completion_id,
-    );
-  });
-
-  it("suppresses a reply when the thread is stopped while the model is running", async () => {
-    const context = createContext([], slackBinding);
-
-    mocks.handleCreateChatCompletions.mockImplementationOnce(async () => {
-      vi.mocked(context.repositories.channelThreads.get).mockResolvedValue({
-        ...channelTestThread,
-        revision: 2,
-        muted: true,
-      });
-
-      return { choices: [{ message: { content: "late reply" } }] };
-    });
-
-    await expect(
-      handleInboundChannelMessage({
-        env: channelTestEnvironment(env.DB, { SLACK_BOT_TOKEN: "token" }),
-        context,
-        user,
-        data: createBindingTaskData(),
-      }),
-    ).resolves.toEqual({ status: "channel_unavailable" });
-    expect(mocks.adapterSendReply).not.toHaveBeenCalled();
-  });
-
-  it("refuses a queued message when sender access has been revoked", async () => {
-    const context = createContext([], { ...slackBinding, allowed_sender_ids: '["U42"]' });
-
-    await expect(
-      handleInboundChannelMessage({
-        env: channelTestEnvironment(env.DB, { SLACK_BOT_TOKEN: "token" }),
-        context,
-        user,
-        data: createBindingTaskData(),
-      }),
-    ).resolves.toEqual({ status: "channel_unavailable" });
-    expect(mocks.handleCreateChatCompletions).not.toHaveBeenCalled();
-  });
-
-  it("does not run a turn for a binding that has since been disconnected", async () => {
-    const result = await handleInboundChannelMessage({
-      env: channelTestEnvironment(env.DB, {
-        SLACK_BOT_TOKEN: "xoxb-slack-bot-token",
-        API_BASE_URL: env.API_BASE_URL,
-      }),
-      context: createContext([], { ...slackBinding, enabled: false }),
-      user,
-      data: createBindingTaskData(),
-    });
-
-    expect(result).toEqual({ status: "channel_unavailable" });
-    expect(mocks.handleCreateChatCompletions).not.toHaveBeenCalled();
-    expect(mocks.adapterSendReply).not.toHaveBeenCalled();
-  });
-
-  it("does not run a turn for a binding owned by someone else", async () => {
-    const result = await handleInboundChannelMessage({
-      env: channelTestEnvironment(env.DB, {
-        SLACK_BOT_TOKEN: "xoxb-slack-bot-token",
-        API_BASE_URL: env.API_BASE_URL,
-      }),
-      context: createContext([], { ...slackBinding, created_by: 99 }),
-      user,
-      data: createBindingTaskData(),
-    });
-
-    expect(result).toEqual({ status: "channel_unavailable" });
-    expect(mocks.handleCreateChatCompletions).not.toHaveBeenCalled();
-    expect(mocks.adapterSendReply).not.toHaveBeenCalled();
-  });
-
-  it("refuses to run a turn it could never reply to", async () => {
-    await expect(
-      handleInboundChannelMessage({
-        env,
-        context: createContext([], slackBinding),
-        user,
-        data: createBindingTaskData(),
-      }),
-    ).rejects.toMatchObject({ type: ErrorType.CONFIGURATION_ERROR });
-    expect(mocks.handleCreateChatCompletions).not.toHaveBeenCalled();
   });
 });

@@ -60,8 +60,8 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
     component: ProfileProvidersTab,
   },
   { id: "api-keys", label: "API keys", group: MODELS_GROUP, component: ProfileApiKeysTab },
-  { id: "sandbox", label: "Sandbox", group: ADVANCED_GROUP, component: ProfileSandboxTab },
   { id: "channels", label: "Channels", group: ADVANCED_GROUP, component: ProfileChannelsTab },
+  { id: "sandbox", label: "Sandbox", group: ADVANCED_GROUP, component: ProfileSandboxTab },
 ];
 
 export function extendProfileSidebarItems(

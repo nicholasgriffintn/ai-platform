@@ -178,7 +178,7 @@ export async function createOutput(
   context: ServiceContext,
   userId: number,
   input: CreateOutputInput,
-  options: { id?: string } = {},
+  options: { id?: string; provenance?: OutputProvenance } = {},
 ): Promise<Output> {
   let workspaceId: string | undefined;
 
@@ -222,7 +222,8 @@ export async function createOutput(
       mimeType: input.file?.mimeType,
       filename: input.file?.filename,
       byteSize: input.file?.byteSize,
-      provenance: createOutputProvenance({ origin: "user", completeness: "partial" }),
+      provenance:
+        options.provenance ?? createOutputProvenance({ origin: "user", completeness: "partial" }),
     },
     workspaceId
       ? {

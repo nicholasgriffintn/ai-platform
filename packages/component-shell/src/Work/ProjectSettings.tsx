@@ -7,7 +7,7 @@ import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import { getProjectBasePath } from "@ngriffin_uk/polychat-library-react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
-import { ChannelSettings } from "../Channels/ChannelSettings.js";
+import { ChannelConnections } from "../Channels/ChannelConnections.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { ProjectBriefCard } from "./ProjectBriefCard.js";
 import { ProjectCodingEnvironmentCard } from "./ProjectCodingEnvironmentCard.js";
@@ -15,7 +15,6 @@ import { ProjectHomeTabs } from "./ProjectHomeTabs.js";
 import { ProjectKnowledgeCard } from "./ProjectKnowledgeCard.js";
 import { ProjectRoutingCard } from "./ProjectRoutingCard.js";
 import { ProjectSchedulesCard } from "./ProjectSchedulesCard.js";
-import { useProjectTaskTeammates } from "./useProjectTaskTeammates.js";
 import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectSettings({
@@ -28,7 +27,6 @@ export function ProjectSettings({
   const { projectQuery, workspaceQuery } = useWorkData();
   const { data: project, isLoading, error } = projectQuery;
   const { data: workspace } = workspaceQuery;
-  const channelTeammates = useProjectTaskTeammates(project?.capabilities);
 
   if (isLoading) {
     return <ProjectOverviewSkeleton />;
@@ -85,17 +83,13 @@ export function ProjectSettings({
           members={workspace?.members ?? []}
         />
         <ProjectCodingEnvironmentCard embedded canManage={canManage} project={project} />
+        <ChannelConnections projectId={projectId} workspaceId={workspaceId} canManage={canManage} />
         <ProjectTeammatesCard
           embedded
           capabilityCount={project.capabilityCount}
           teammatesHref={`${getProjectBasePath(workspaceId, projectId)}/teammates`}
         />
       </Card>
-      {canManage ? (
-        <div className="mt-6">
-          <ChannelSettings projectId={projectId} teammates={channelTeammates} />
-        </div>
-      ) : null}
     </PageShell.Content>
   );
 }

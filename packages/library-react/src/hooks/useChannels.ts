@@ -1,51 +1,87 @@
 import {
   createChannelBinding,
   deleteChannelBinding,
+  issueChannelPairingChallenge,
   listChannelBindings,
-  updateChannelBinding,
+  listChannelSenders,
+  revokeChannelSender,
 } from "@ngriffin_uk/polychat-library-client";
-import type { UpdateChannelBindingInput } from "@ngriffin_uk/polychat-schemas";
+import type { ChannelPairingChallenge } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 import { useAuthStatus } from "./useAuth.js";
 
-export const CHANNEL_BINDINGS_QUERY_KEY = ["channel-bindings"] as const;
-
-export function useChannelBindings() {
-  const { isAuthenticated } = useAuthStatus();
-
-  return useQuery({
-    queryKey: CHANNEL_BINDINGS_QUERY_KEY,
+export function useChannelBindings(projectId?: string) {
+  const { user, isAuthenticated } = useAuthStatus();
+  const client = useQueryClient();
+  const key = ["channel-bindings", user?.id];
+  const bindings = useQuery({
+    queryKey: key,
     queryFn: listChannelBindings,
     enabled: isAuthenticated,
-    staleTime: 30_000,
   });
-}
-
-export function useCreateChannelBinding() {
-  const client = useQueryClient();
-
-  return useMutation({
+  const create = useMutation({
     mutationFn: createChannelBinding,
-    onSuccess: () => client.invalidateQueries({ queryKey: CHANNEL_BINDINGS_QUERY_KEY }),
+    onSuccess: () => client.invalidateQueries({ queryKey: key }),
   });
-}
-
-export function useUpdateChannelBinding() {
-  const client = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: UpdateChannelBindingInput }) =>
-      updateChannelBinding(id, input),
-    onSuccess: () => client.invalidateQueries({ queryKey: CHANNEL_BINDINGS_QUERY_KEY }),
-  });
-}
-
-export function useDeleteChannelBinding() {
-  const client = useQueryClient();
-
-  return useMutation({
+  const disconnect = useMutation({
     mutationFn: deleteChannelBinding,
-    onSuccess: () => client.invalidateQueries({ queryKey: CHANNEL_BINDINGS_QUERY_KEY }),
+    onSuccess: () => client.invalidateQueries({ queryKey: key }),
   });
+
+  return {
+    bindings,
+    create,
+    disconnect,
+    visibleBindings:
+      bindings.data?.bindings.filter((binding) =>
+        projectId
+          ? binding.scopeType === "project" && binding.scopeId === projectId
+          : binding.scopeType === "personal",
+      ) ?? [],
+  };
+}
+
+export function useChannelSenders(bindingId: string, linking = false) {
+  const { user, isAuthenticated } = useAuthStatus();
+  const client = useQueryClient();
+  const key = ["channel-senders", user?.id, bindingId];
+  const senders = useQuery({
+    queryKey: key,
+    queryFn: () => listChannelSenders(bindingId),
+    enabled: isAuthenticated,
+    refetchInterval: linking ? 5000 : false,
+  });
+  const revoke = useMutation({
+    mutationFn: (input: { id: string; revision: number }) =>
+      revokeChannelSender(bindingId, input.id, input.revision),
+    onSuccess: () => client.invalidateQueries({ queryKey: key }),
+  });
+
+  return { senders, revoke };
+}
+
+export function useChannelPairing(bindingId: string) {
+  const [challenge, setChallenge] = useState<ChannelPairingChallenge | null>(null);
+  const issue = useMutation({
+    mutationFn: () => issueChannelPairingChallenge(bindingId),
+    gcTime: 0,
+    onSuccess: setChallenge,
+  });
+
+  useEffect(() => {
+    if (!challenge) {
+      return undefined;
+    }
+
+    const timer = setTimeout(
+      () => setChallenge(null),
+      Math.max(0, new Date(challenge.expiresAt).getTime() - Date.now()),
+    );
+
+    return () => clearTimeout(timer);
+  }, [challenge]);
+
+  return { challenge, issue };
 }

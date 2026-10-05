@@ -484,8 +484,18 @@ export class OutputRepository extends BaseRepository {
         "revision_operation",
         "restored_from_revision",
       ],
-      "id = ? AND revision = ?",
-      [outputId, input.expectedRevision],
+      `id = ? AND revision = ? AND
+       ((project_id IS NULL AND created_by_user_id = ?) OR EXISTS
+         (SELECT 1 FROM project JOIN workspace_member ON workspace_member.workspace_id = project.workspace_id
+          WHERE project.id = output.project_id AND workspace_member.user_id = ?
+            AND (output.created_by_user_id = ? OR workspace_member.role IN ('owner', 'admin'))))`,
+      [
+        outputId,
+        input.expectedRevision,
+        input.updatedByUserId,
+        input.updatedByUserId,
+        input.updatedByUserId,
+      ],
       { jsonFields: ["content"] },
     );
 
@@ -519,25 +529,20 @@ export class OutputRepository extends BaseRepository {
     const statements = [revisionInsert, updateStatement];
 
     if (audit) {
-      const auditInsert = this.buildInsertQuery(
-        "workspace_audit_record",
-        {
-          id: generateId(),
-          workspace_id: audit.workspaceId,
-          actor_user_id: audit.actorUserId,
-          action: audit.action,
-          target_type: "output",
-          target_id: audit.outputId,
-          metadata: audit.metadata,
-        },
-        { jsonFields: ["metadata"] },
+      statements.push(
+        this.env.DB.prepare(
+          `INSERT INTO workspace_audit_record
+         (id, workspace_id, actor_user_id, action, target_type, target_id, metadata)
+         SELECT ?, ?, ?, ?, 'output', ?, ? WHERE changes() = 1`,
+        ).bind(
+          generateId(),
+          audit.workspaceId,
+          audit.actorUserId,
+          audit.action,
+          audit.outputId,
+          JSON.stringify(audit.metadata),
+        ),
       );
-
-      if (!auditInsert) {
-        throw new AssistantError("Failed to build output audit query", ErrorType.INTERNAL_ERROR);
-      }
-
-      statements.push(this.env.DB.prepare(auditInsert.query).bind(...auditInsert.values));
     }
 
     const results = await this.env.DB.batch(statements);

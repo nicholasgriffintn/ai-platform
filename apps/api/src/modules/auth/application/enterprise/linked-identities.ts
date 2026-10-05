@@ -14,7 +14,6 @@ export async function listLinkedEnterpriseIdentities(context: ServiceContext) {
       workspaceName: row.workspace_name,
       label: row.label,
       enabled: row.enabled === 1,
-      accessExpiresAt: row.identity_lease_expires_at,
     })),
   });
 }

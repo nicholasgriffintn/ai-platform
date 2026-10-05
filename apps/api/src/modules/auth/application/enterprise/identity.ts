@@ -1,5 +1,4 @@
 import { hashSecret, type ExternalIdentity, type IdentityStore } from "@ngriffin_uk/auth-core";
-import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type { OidcConnection } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import z from "zod/v4";
@@ -16,8 +15,6 @@ import { extractSessionIdFromCookies } from "~/modules/auth/application/sessions
 const storedProfileSchema = z.object({
   email: z.email(),
   name: z.string().max(200).optional(),
-  role: z.enum(["admin", "member"]),
-  expiresAt: z.iso.datetime(),
   linkUserId: z.number().int().positive().optional(),
   continuation: z
     .object({
@@ -155,28 +152,12 @@ export function createOidcIdentityStore(
       }
 
       const current = await context.repositories.enterpriseIdentities.getById(connection.id);
-      const allowed = authorise("workspace.identity.provision", {
-        verified: true,
-        enabled: Number(current?.enabled) === 1,
-        revisionCurrent: current?.revision === connection.revision,
-        groupsMapped: true,
-        leaseCurrent: new Date(profile.expiresAt).getTime() > Date.now(),
-        role: profile.role,
-      }).allowed;
 
-      if (
-        !allowed ||
-        !(await context.repositories.enterpriseIdentities.grantMembership({
-          connection,
-          userId: user.id,
-          role: profile.role,
-          expiresAt: profile.expiresAt,
-        }))
-      ) {
+      if (!current || Number(current.enabled) !== 1 || current.revision !== connection.revision) {
         throw new AssistantError(
-          "Enterprise access changed before sign-in completed",
-          ErrorType.AUTHORISATION_ERROR,
-          403,
+          "Enterprise identity changed before sign-in completed",
+          ErrorType.AUTHENTICATION_ERROR,
+          401,
         );
       }
 

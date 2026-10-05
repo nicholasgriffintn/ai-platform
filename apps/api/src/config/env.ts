@@ -49,6 +49,7 @@ export type IEnv = {
   CLOUDFLARE_AI_SEARCH_INSTANCE?: string;
   SANDBOX_WORKER?: Fetcher;
   COMPUTER_WORKER?: Fetcher;
+  SITES_RUNTIME?: DurableObjectNamespace;
   LOADER?: WorkerLoader;
   FLAGS?: FlagshipBinding;
   SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;
@@ -146,7 +147,6 @@ export type IEnv = {
   COMPOSIO_WEBHOOK_SECRET?: string;
   SLACK_SIGNING_SECRET?: string;
   SLACK_BOT_TOKEN?: string;
-  SLACK_BOT_USER_ID?: string;
   TELEGRAM_WEBHOOK_SECRET?: string;
   TELEGRAM_BOT_TOKEN?: string;
   SANDBOX_DEFAULT_TIMEOUT_SECONDS?: string;

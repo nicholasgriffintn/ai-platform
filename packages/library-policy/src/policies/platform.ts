@@ -1,8 +1,4 @@
 export const platformPolicies = {
-  "platform.identity-provision": `permit(principal, action == Polychat::Action::"workspace.identity.provision", resource)
-    when { context.verified && context.enabled && context.revisionCurrent
-      && context.groupsMapped && context.leaseCurrent && ["admin", "member"].contains(context.role) };`,
-
   "platform.pro": `permit(principal, action == Polychat::Action::"entitlement.pro", resource)
     when { context.plan == "pro" };`,
   "platform.admin": `permit(principal, action == Polychat::Action::"platform.admin", resource)

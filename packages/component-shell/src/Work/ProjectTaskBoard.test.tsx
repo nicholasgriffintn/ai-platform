@@ -5,6 +5,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ProjectTaskBoard } from "./ProjectTaskBoard.js";
 
+vi.mock("./ProjectTaskIntegrationsControl.js", () => ({
+  ProjectTaskIntegrationsControl: () => null,
+}));
+
 const { createTask, startTask } = vi.hoisted(() => ({
   createTask: vi.fn(),
   startTask: vi.fn(),

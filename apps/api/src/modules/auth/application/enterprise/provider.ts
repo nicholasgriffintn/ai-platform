@@ -106,27 +106,7 @@ export async function createEnterpriseOidcProvider(
           linkUserId = session.userId;
         }
 
-        let profile: ReturnType<typeof resolveOidcProfile>;
-
-        try {
-          profile = resolveOidcProfile(connection, claims);
-          if (!profile.role || profile.expiresAt.getTime() <= Date.now()) {
-            throw new Error("Group access is unavailable");
-          }
-        } catch {
-          if (typeof claims?.sub === "string" && claims.sub.length <= 500) {
-            await context.repositories.enterpriseIdentities.revokeSubjectMembership(
-              connection,
-              claims.sub,
-            );
-          }
-
-          throw new AssistantError(
-            "Your identity groups do not currently grant access to this workspace",
-            ErrorType.AUTHORISATION_ERROR,
-            403,
-          );
-        }
+        const profile = resolveOidcProfile(connection, claims);
 
         return {
           provider: providerName,
@@ -136,8 +116,6 @@ export async function createEnterpriseOidcProvider(
           claims: {
             email: profile.email,
             name: profile.name,
-            role: profile.role,
-            expiresAt: profile.expiresAt.toISOString(),
             ...(linkUserId ? { linkUserId } : {}),
             ...(stateContext.nativeRedirectUri
               ? {

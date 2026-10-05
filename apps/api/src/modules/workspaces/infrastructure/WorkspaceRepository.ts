@@ -17,8 +17,6 @@ import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { buildCapabilityConfigurationUpsert } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { buildOwnedProjectCapabilityConfigurationUpsert } from "~/modules/capabilities/infrastructure/projectCapabilityConfigurationStatements";
 
-import { buildMembershipRemovalStatements } from "./membership-removal";
-
 const listedConversationTypesSql = LISTED_CONVERSATION_TYPES.map((type) => `'${type}'`).join(", ");
 
 export interface WorkspaceRow {
@@ -56,8 +54,6 @@ export interface WorkspaceMemberRow {
   avatar_url: string | null;
   role: WorkspaceRole;
   joined_at: string;
-  managed_connection_id: string | null;
-  identity_lease_expires_at: string | null;
 }
 
 export interface WorkspaceInvitationRow {
@@ -175,8 +171,8 @@ export class WorkspaceRepository extends BaseRepository {
 				COUNT(DISTINCT members.user_id) AS member_count,
 				COUNT(DISTINCT p.id) AS project_count
 			 FROM workspace w
-			 JOIN active_workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
-			 LEFT JOIN active_workspace_member members ON members.workspace_id = w.id
+			 JOIN workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
+			 LEFT JOIN workspace_member members ON members.workspace_id = w.id
 			 LEFT JOIN project p ON p.workspace_id = w.id AND p.archived_at IS NULL
 			 GROUP BY w.id, wm.role
 			 ORDER BY w.updated_at DESC, w.created_at DESC`,
@@ -195,7 +191,7 @@ export class WorkspaceRepository extends BaseRepository {
     return this.runQuery<GlobalWorkspaceSearchRow>(
       `SELECT w.id, w.name, w.description, w.updated_at
 			 FROM workspace w
-			 JOIN active_workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
+			 JOIN workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
 			 WHERE (? = '' OR w.name LIKE ? ESCAPE '\\' OR w.description LIKE ? ESCAPE '\\')
 			 ORDER BY COALESCE(w.updated_at, w.created_at) DESC, w.id DESC
 			 LIMIT ?`,
@@ -216,7 +212,7 @@ export class WorkspaceRepository extends BaseRepository {
 			        p.name, p.description, p.updated_at
 			 FROM project p
 			 JOIN workspace w ON w.id = p.workspace_id
-			 JOIN active_workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
+			 JOIN workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
 			 WHERE p.archived_at IS NULL
 			   AND (? = '' OR p.name LIKE ? ESCAPE '\\' OR p.description LIKE ? ESCAPE '\\')
 			 ORDER BY COALESCE(p.updated_at, p.created_at) DESC, p.id DESC
@@ -234,7 +230,7 @@ export class WorkspaceRepository extends BaseRepository {
     userId: number,
   ): Promise<{ role: WorkspaceRole } | null> {
     return this.runQuery<{ role: WorkspaceRole }>(
-      "SELECT role FROM active_workspace_member WHERE workspace_id = ? AND user_id = ?",
+      "SELECT role FROM workspace_member WHERE workspace_id = ? AND user_id = ?",
       [workspaceId, userId],
       true,
     );
@@ -242,9 +238,8 @@ export class WorkspaceRepository extends BaseRepository {
 
   async listMembers(workspaceId: string): Promise<WorkspaceMemberRow[]> {
     return this.runQuery<WorkspaceMemberRow>(
-      `SELECT u.id AS user_id, u.name, u.email, u.avatar_url, wm.role, wm.joined_at,
-         wm.managed_connection_id, wm.identity_lease_expires_at
-			 FROM active_workspace_member wm
+      `SELECT u.id AS user_id, u.name, u.email, u.avatar_url, wm.role, wm.joined_at
+			 FROM workspace_member wm
 			 JOIN user u ON u.id = wm.user_id
 			 WHERE wm.workspace_id = ?
 			 ORDER BY CASE wm.role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, u.name, u.email`,
@@ -256,42 +251,18 @@ export class WorkspaceRepository extends BaseRepository {
     workspaceId: string,
     userId: number,
     role: Exclude<WorkspaceRole, "owner">,
-    actorId: number,
   ): Promise<void> {
-    const result = await this.executeRun(
-      `UPDATE workspace_member SET role = ?, managed_connection_id = NULL,
-         managed_connection_revision = NULL, identity_lease_expires_at = NULL
-       WHERE workspace_id = ? AND user_id = ? AND role IN ('admin', 'member')
-         AND EXISTS (SELECT 1 FROM active_workspace_member actor
-           WHERE actor.workspace_id = workspace_member.workspace_id AND actor.user_id = ?
-           AND (actor.role = 'owner' OR
-             (actor.role = 'admin' AND workspace_member.role = 'member' AND ? = 'member')))
-         AND EXISTS (SELECT 1 FROM active_workspace_member target
-           WHERE target.workspace_id = workspace_member.workspace_id AND target.user_id = workspace_member.user_id)`,
-      [role, workspaceId, userId, actorId, role],
+    await this.executeRun(
+      "UPDATE workspace_member SET role = ? WHERE workspace_id = ? AND user_id = ?",
+      [role, workspaceId, userId],
     );
-
-    if (result.meta.changes !== 1) {
-      throw new AssistantError(
-        "Workspace membership changed; reload and try again",
-        ErrorType.CONFLICT_ERROR,
-        409,
-      );
-    }
   }
 
-  async removeMember(workspaceId: string, userId: number, actorId: number): Promise<void> {
-    const results = await this.executeBatch<{ user_id: number }>(
-      buildMembershipRemovalStatements(this.env.DB, workspaceId, userId, actorId),
-    );
-
-    if (results[3]?.results[0]?.user_id !== userId) {
-      throw new AssistantError(
-        "Workspace membership changed; reload and try again",
-        ErrorType.CONFLICT_ERROR,
-        409,
-      );
-    }
+  async removeMember(workspaceId: string, userId: number): Promise<void> {
+    await this.executeRun("DELETE FROM workspace_member WHERE workspace_id = ? AND user_id = ?", [
+      workspaceId,
+      userId,
+    ]);
   }
 
   async transferOwnership(
@@ -301,11 +272,10 @@ export class WorkspaceRepository extends BaseRepository {
   ): Promise<void> {
     const result = await this.executeRun(
       `UPDATE workspace_member
-			 SET role = CASE WHEN user_id = ? THEN 'admin' ELSE 'owner' END,
- managed_connection_id = NULL, managed_connection_revision = NULL, identity_lease_expires_at = NULL
+			 SET role = CASE WHEN user_id = ? THEN 'admin' ELSE 'owner' END
 			 WHERE workspace_id = ? AND user_id IN (?, ?)
-			 AND (SELECT role FROM active_workspace_member WHERE workspace_id = ? AND user_id = ?) = 'owner'
-			 AND (SELECT role FROM active_workspace_member WHERE workspace_id = ? AND user_id = ?) IN ('admin', 'member')`,
+			 AND (SELECT role FROM workspace_member WHERE workspace_id = ? AND user_id = ?) = 'owner'
+			 AND (SELECT role FROM workspace_member WHERE workspace_id = ? AND user_id = ?) IN ('admin', 'member')`,
       [
         currentOwnerUserId,
         workspaceId,
@@ -485,10 +455,7 @@ export class WorkspaceRepository extends BaseRepository {
 					 SELECT workspace_id, ?, role
 					 FROM workspace_invitation
 					 WHERE id = ? AND status = 'accepted' AND accepted_by = ?
-					 ON CONFLICT(workspace_id, user_id) DO UPDATE SET
-           role = excluded.role, managed_connection_id = NULL,
-           managed_connection_revision = NULL, identity_lease_expires_at = NULL
-         WHERE workspace_member.managed_connection_id IS NOT NULL AND workspace_member.role <> 'owner'`,
+					 ON CONFLICT(workspace_id, user_id) DO NOTHING`,
         )
         .bind(userId, invitation.id, userId),
     ]);
@@ -1025,7 +992,7 @@ export class WorkspaceRepository extends BaseRepository {
        FROM conversation c
        JOIN user access_user ON access_user.id = ?
        LEFT JOIN project p ON p.id = c.project_id
-       LEFT JOIN active_workspace_member wm ON wm.workspace_id = p.workspace_id AND wm.user_id = access_user.id
+       LEFT JOIN workspace_member wm ON wm.workspace_id = p.workspace_id AND wm.user_id = access_user.id
        LEFT JOIN teammate_context tc ON tc.home_conversation_id = c.id
        WHERE c.id = ?`,
       [userId, conversationId],

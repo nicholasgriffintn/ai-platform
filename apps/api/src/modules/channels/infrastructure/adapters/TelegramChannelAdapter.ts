@@ -1,6 +1,4 @@
 import { timingSafeEqual } from "@ngriffin_uk/polychat-utility-server/crypto";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
-import z from "zod/v4";
 
 import type {
   ChannelAdapter,
@@ -9,6 +7,7 @@ import type {
   ChannelVerification,
 } from "~/modules/channels/application/ports/channel-adapter";
 
+import { parseTelegramMessage } from "./channel-payloads";
 import { requireSuccessfulChannelSend } from "./send-response";
 
 const TELEGRAM_SECRET_HEADER = "x-telegram-bot-api-secret-token";
@@ -39,43 +38,18 @@ export class TelegramChannelAdapter implements ChannelAdapter {
   }
 
   parse(rawBody: string): ChannelIncoming {
-    const payload = z
-      .object({
-        message: z.object({
-          message_id: z.number().int().nonnegative(),
-          text: z.string().trim().min(1).max(40_000),
-          chat: z.object({ id: z.number().int() }),
-          from: z.object({ id: z.number().int(), is_bot: z.literal(false).optional() }),
-        }),
-      })
-      .safeParse(safeParseJson<unknown>(rawBody));
-
-    if (!payload.success) {
-      return { kind: "control", response: { ok: true, ignored: "not_a_user_message" } };
-    }
-
-    const { message } = payload.data;
-
-    return {
-      kind: "message",
-      messageId: String(message.message_id),
-      externalId: String(message.chat.id),
-      threadId: String(message.chat.id),
-      workspaceId: "",
-      mentioned: false,
-      directMessage: true,
-      from: String(message.from.id),
-      body: message.text,
-    };
+    return parseTelegramMessage(rawBody);
   }
 
   async sendReply(reply: ChannelReply, secret: string): Promise<void> {
     const response = await fetch(`https://api.telegram.org/bot${secret}/sendMessage`, {
       method: "POST",
-      redirect: "error",
-      signal: AbortSignal.timeout(10_000),
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ chat_id: reply.externalId, text: reply.body }),
+      body: JSON.stringify({
+        chat_id: reply.externalId,
+        text: reply.body,
+        ...(reply.threadId !== "direct" ? { message_thread_id: Number(reply.threadId) } : {}),
+      }),
     });
 
     await requireSuccessfulChannelSend(response, "Telegram");

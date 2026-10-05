@@ -1,7 +1,6 @@
 import z from "zod/v4";
 
 import { recipeConnectorProviderSchema } from "./apps.js";
-import { channelRunAuthoritySchema, channelThreadReferenceSchema } from "./channels.js";
 import { delegationContinuationSchema, delegationMemoryBindingSchema } from "./delegations.js";
 
 export const teammateContextScopeSchema = z.object({
@@ -82,9 +81,9 @@ export const teammateInvocationSchema = z.discriminatedUnion("source", [
   z.object({
     source: z.literal("channel"),
     bindingId: z.string().min(1),
-    thread: channelThreadReferenceSchema,
-    from: z.string().min(1),
     messageId: z.string().min(1),
+    senderMappingId: z.string().min(1),
+    senderRevision: z.number().int().positive(),
   }),
   z.object({
     source: z.literal("project_task"),
@@ -96,7 +95,6 @@ export const teammateInvocationSchema = z.discriminatedUnion("source", [
 export const teammateRunConfigurationSchema = z
   .object({
     teammateId: z.string().min(1),
-    channelDelivery: channelRunAuthoritySchema.optional(),
     behaviour: z.enum(["colleague", "bot"]),
     invocation: teammateInvocationSchema.optional(),
     persona: z

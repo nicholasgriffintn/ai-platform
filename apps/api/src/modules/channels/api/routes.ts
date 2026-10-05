@@ -2,8 +2,10 @@ import {
   apiResponseSchema,
   channelBindingSchema,
   createChannelBindingSchema,
-  updateChannelBindingSchema,
   listChannelBindingsResponseSchema,
+  listChannelSendersResponseSchema,
+  channelPairingChallengeSchema,
+  revokeChannelSenderSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
@@ -14,8 +16,12 @@ import {
   createChannelBinding,
   deleteChannelBinding,
   listChannelBindings,
-  updateChannelBinding,
 } from "~/modules/channels/application/bindings";
+import {
+  issueChannelPairingChallenge,
+  listChannelSenders,
+  revokeChannelSender,
+} from "~/modules/channels/application/senders";
 
 const app = new Hono();
 const routeLogger = createRouteLogger("channels");
@@ -45,17 +51,6 @@ addRoute(app, "post", "/bindings", {
   handler: async ({ serviceContext, body }) => createChannelBinding(serviceContext, body),
 });
 
-addRoute(app, "patch", "/bindings/:bindingId", {
-  tags: ["channels"],
-  summary: "Update channel sender permissions and reply settings",
-  auth: true,
-  paramSchema: z.object({ bindingId: z.string().min(1) }),
-  bodySchema: updateChannelBindingSchema,
-  responses: { 200: { description: "Binding", schema: channelBindingSchema } },
-  handler: async ({ serviceContext, params, body }) =>
-    updateChannelBinding(serviceContext, params.bindingId, body),
-});
-
 addRoute(app, "delete", "/bindings/:bindingId", {
   tags: ["channels"],
   summary: "Disconnect a channel",
@@ -64,6 +59,47 @@ addRoute(app, "delete", "/bindings/:bindingId", {
   responses: { 200: { description: "Success", schema: apiResponseSchema } },
   handler: async ({ serviceContext, params }) => {
     await deleteChannelBinding(serviceContext, params.bindingId);
+
+    return { success: true };
+  },
+});
+
+addRoute(app, "post", "/bindings/:bindingId/pairing-challenges", {
+  tags: ["channels"],
+  summary: "Link your own channel identity",
+  auth: true,
+  paramSchema: z.object({ bindingId: z.string().min(1) }),
+  responses: {
+    200: { description: "One-time linking command", schema: channelPairingChallengeSchema },
+  },
+  handler: async ({ serviceContext, params }) =>
+    issueChannelPairingChallenge(serviceContext, params.bindingId),
+});
+
+addRoute(app, "get", "/bindings/:bindingId/senders", {
+  tags: ["channels"],
+  summary: "List verified channel senders",
+  auth: true,
+  paramSchema: z.object({ bindingId: z.string().min(1) }),
+  responses: { 200: { description: "Senders", schema: listChannelSendersResponseSchema } },
+  handler: async ({ serviceContext, params }) =>
+    listChannelSenders(serviceContext, params.bindingId),
+});
+
+addRoute(app, "post", "/bindings/:bindingId/senders/:senderId/revoke", {
+  tags: ["channels"],
+  summary: "Revoke a linked sender",
+  auth: true,
+  paramSchema: z.object({ bindingId: z.string().min(1), senderId: z.string().min(1) }),
+  bodySchema: revokeChannelSenderSchema,
+  responses: { 200: { description: "Success", schema: apiResponseSchema } },
+  handler: async ({ serviceContext, params, body }) => {
+    await revokeChannelSender(
+      serviceContext,
+      params.bindingId,
+      params.senderId,
+      body.expectedRevision,
+    );
 
     return { success: true };
   },

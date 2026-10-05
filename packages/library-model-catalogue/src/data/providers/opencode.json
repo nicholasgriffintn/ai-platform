@@ -776,7 +776,6 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
-        "contextWindow": 1000000,
         "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
