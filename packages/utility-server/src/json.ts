@@ -5,6 +5,10 @@ import { getErrorMessage } from "./errors.js";
 
 export { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 
+export function parseJsonColumn<T>(value: unknown, schema: ZodType<T>): T {
+  return schema.parse(typeof value === "string" ? JSON.parse(value) : value);
+}
+
 export function parseJsonRecord(value: unknown): Record<string, unknown> {
   const parsed = typeof value === "string" ? safeParseJson<unknown>(value) : value;
 

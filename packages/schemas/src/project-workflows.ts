@@ -1,16 +1,18 @@
 import { platformTeammateId, type PlatformTeammateCategory } from "./platform-teammates.js";
 import {
-  PROJECT_FLOW_MAX_STAGES,
+  createSequentialProjectFlow,
   type ProjectFlow,
-  type ProjectFlowStage,
-} from "./project-tasks.js";
+  type ProjectFlowAgentConfig,
+} from "./project-flow.js";
+
+type ProjectWorkflowStep = ProjectFlowAgentConfig & { reviewAfter: boolean };
 
 export interface ProjectWorkflow {
   slug: string;
   name: string;
   summary: string;
   category: PlatformTeammateCategory;
-  stages: readonly ProjectFlowStage[];
+  steps: readonly ProjectWorkflowStep[];
 }
 
 export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
@@ -20,7 +22,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
     summary:
       "Map a capability across systems, ownership and decisions, then pressure-test the map.",
     category: "engineering",
-    stages: [
+    steps: [
       {
         id: "scope",
         name: "Scope the capability",
@@ -30,7 +32,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "discover",
@@ -41,7 +43,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "challenge",
@@ -52,7 +54,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
     ],
   },
@@ -61,7 +63,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
     name: "Change impact",
     summary: "Assess a proposed change across services, teams and delivery work before committing.",
     category: "engineering",
-    stages: [
+    steps: [
       {
         id: "brief",
         name: "Gather the change brief",
@@ -71,7 +73,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "assess",
@@ -82,7 +84,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
       {
         id: "coordinate",
@@ -93,7 +95,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "plan",
         requiresApprovalFor: [],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
     ],
   },
@@ -103,7 +105,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
     summary:
       "Triage an incident, establish the blast radius, coordinate the response and capture it.",
     category: "engineering",
-    stages: [
+    steps: [
       {
         id: "triage",
         name: "Triage",
@@ -113,7 +115,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "chat",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "impact",
@@ -124,7 +126,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "coordinate",
@@ -135,7 +137,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "chat",
         requiresApprovalFor: ["network", "write"],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
       {
         id: "capture",
@@ -146,7 +148,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
     ],
   },
@@ -155,7 +157,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
     name: "Engineering plan",
     summary: "Turn delivery work, dependencies and constraints into a checkable plan.",
     category: "engineering",
-    stages: [
+    steps: [
       {
         id: "constraints",
         name: "Gather constraints",
@@ -165,7 +167,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "plan",
@@ -176,7 +178,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "plan",
         requiresApprovalFor: [],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
       {
         id: "validate",
@@ -187,7 +189,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
     ],
   },
@@ -196,7 +198,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
     name: "Market research",
     summary: "Gather market evidence, compare it with priorities and keep the sources.",
     category: "product",
-    stages: [
+    steps: [
       {
         id: "frame",
         name: "Frame the question",
@@ -206,7 +208,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "gather",
@@ -217,7 +219,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "compare",
@@ -228,7 +230,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
     ],
   },
@@ -237,7 +239,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
     name: "Feature opportunity",
     summary: "Combine market evidence, audience needs and constraints into testable options.",
     category: "product",
-    stages: [
+    steps: [
       {
         id: "evidence",
         name: "Collect the evidence",
@@ -247,7 +249,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "opportunity",
@@ -258,7 +260,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "validate",
@@ -269,7 +271,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
     ],
   },
@@ -278,7 +280,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
     name: "Prototype support",
     summary: "Build or assess an early prototype against the design system and real constraints.",
     category: "product",
-    stages: [
+    steps: [
       {
         id: "constraints",
         name: "Gather constraints",
@@ -288,7 +290,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "build",
@@ -299,7 +301,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "build",
         requiresApprovalFor: ["sandbox"],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "assess",
@@ -310,7 +312,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
     ],
   },
@@ -319,7 +321,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
     name: "Product evidence trail",
     summary: "Connect a proposal to the research, analytics and assumptions behind it.",
     category: "product",
-    stages: [
+    steps: [
       {
         id: "gather",
         name: "Gather supporting material",
@@ -329,7 +331,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "trace",
@@ -340,7 +342,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "challenge",
@@ -351,7 +353,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
     ],
   },
@@ -360,7 +362,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
     name: "Delivery planning",
     summary: "Produce a sourced view of delivery risk, unresolved decisions and dependencies.",
     category: "organisation",
-    stages: [
+    steps: [
       {
         id: "discover",
         name: "Map current work",
@@ -370,7 +372,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "dependencies",
@@ -381,7 +383,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "plan",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "plan",
@@ -392,7 +394,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "plan",
         requiresApprovalFor: [],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
     ],
   },
@@ -401,7 +403,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
     name: "Research",
     summary: "Gather and compare evidence from a defined set of sources, with a sourced brief.",
     category: "organisation",
-    stages: [
+    steps: [
       {
         id: "frame",
         name: "Frame the question and sources",
@@ -411,7 +413,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "gather",
@@ -422,7 +424,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "brief",
@@ -433,7 +435,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
     ],
   },
@@ -442,7 +444,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
     name: "Knowledge navigation",
     summary: "Answer questions across connected knowledge, with links back to the source material.",
     category: "organisation",
-    stages: [
+    steps: [
       {
         id: "locate",
         name: "Locate the sources",
@@ -452,7 +454,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "answer",
@@ -463,7 +465,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
     ],
   },
@@ -472,7 +474,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
     name: "Support case",
     summary: "Gather customer and service context, diagnose, then respond with approval.",
     category: "organisation",
-    stages: [
+    steps: [
       {
         id: "context",
         name: "Gather the context",
@@ -482,7 +484,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "chat",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "diagnose",
@@ -493,7 +495,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "explore",
         requiresApprovalFor: [],
-        advance: "on_goal_complete",
+        reviewAfter: false,
       },
       {
         id: "respond",
@@ -504,7 +506,7 @@ export const PROJECT_WORKFLOWS: readonly ProjectWorkflow[] = [
         skillIds: [],
         mode: "chat",
         requiresApprovalFor: ["network", "write"],
-        advance: "on_human_accept",
+        reviewAfter: true,
       },
     ],
   },
@@ -521,9 +523,15 @@ export function findProjectWorkflow(slug: string | null | undefined): ProjectWor
 export function createProjectFlowFromWorkflow(slug: string): ProjectFlow | null {
   const workflow = findProjectWorkflow(slug);
 
-  if (!workflow || workflow.stages.length > PROJECT_FLOW_MAX_STAGES) {
+  if (!workflow) {
     return null;
   }
 
-  return { stages: workflow.stages.map((entry) => ({ ...entry, skillIds: [...entry.skillIds] })) };
+  return createSequentialProjectFlow(
+    workflow.steps.map(({ reviewAfter: _reviewAfter, ...agent }) => ({
+      ...agent,
+      skillIds: [...agent.skillIds],
+    })),
+    workflow.steps.filter((step) => step.reviewAfter).map((step) => step.id),
+  );
 }

@@ -82,7 +82,7 @@ export const chatRunSchema = z.object({
   conversationId: z.string().min(1),
   projectId: z.string().min(1).nullable(),
   projectTaskId: z.string().min(1).nullable(),
-  stageId: z.string().min(1).nullable().optional(),
+  nodeId: z.string().min(1).nullable().optional(),
   initiatorUserId: z.number().int().positive(),
   trigger: chatRunTriggerSchema.default("user"),
   status: chatRunStatusSchema,

@@ -21,12 +21,19 @@ export function projectWorkTestEnvironment(database: D1Database): IEnv {
   return env;
 }
 
-export async function initialiseProjectWorkDatabase(database: D1Database): Promise<void> {
+export async function initialiseProjectWorkDatabase(
+  database: D1Database,
+  beforeMigration?: string,
+): Promise<void> {
   const names = (await readdir(new URL("../../migrations", import.meta.url)))
     .filter((name) => name.endsWith(".sql"))
     .sort();
 
   for (const name of names) {
+    if (beforeMigration && name >= beforeMigration) {
+      break;
+    }
+
     await applyTestMigration(
       database,
       await readFile(new URL(`../../migrations/${name}`, import.meta.url), "utf8"),

@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { findPlatformTeammate } from "./platform-teammates.js";
-import type { ProjectFlow } from "./project-tasks.js";
 import { createProjectFlowFromWorkflow, PROJECT_WORKFLOWS } from "./project-workflows.js";
 
 describe("project workflows", () => {
   it("only routes stages through platform teammates that exist", () => {
     for (const workflow of PROJECT_WORKFLOWS) {
-      for (const stage of workflow.stages) {
+      for (const stage of workflow.steps) {
         if (stage.teammateId) {
           expect(
             findPlatformTeammate(stage.teammateId),
@@ -19,14 +18,24 @@ describe("project workflows", () => {
   });
 
   it("hands the edited flow a copy rather than the catalogue entry", () => {
-    const first = createProjectFlowFromWorkflow(PROJECT_WORKFLOWS[0].slug) as ProjectFlow;
+    const first = createProjectFlowFromWorkflow(PROJECT_WORKFLOWS[0].slug);
+    const agent = first?.nodes.find((node) => node.type === "agent");
 
-    first.stages[0].name = "Changed";
-    first.stages[0].skillIds.push("injected");
+    if (!first || !agent || agent.type !== "agent") {
+      throw new Error("The workflow has no teammate");
+    }
 
-    const second = createProjectFlowFromWorkflow(PROJECT_WORKFLOWS[0].slug) as ProjectFlow;
+    agent.name = "Changed";
+    agent.skillIds.push("injected");
 
-    expect(second.stages[0].name).not.toBe("Changed");
-    expect(second.stages[0].skillIds).not.toContain("injected");
+    const second = createProjectFlowFromWorkflow(PROJECT_WORKFLOWS[0].slug);
+    const unchanged = second?.nodes.find((node) => node.id === agent.id);
+
+    if (!unchanged || unchanged.type !== "agent") {
+      throw new Error("The workflow has no teammate");
+    }
+
+    expect(unchanged.name).not.toBe("Changed");
+    expect(unchanged.skillIds).not.toContain("injected");
   });
 });

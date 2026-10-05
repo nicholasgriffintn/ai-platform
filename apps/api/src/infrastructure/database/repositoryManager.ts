@@ -46,6 +46,8 @@ import { ModelTrainingRepository } from "~/modules/model-training/infrastructure
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetRepository";
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
+import { ProjectFlowRepository } from "~/modules/project-tasks/infrastructure/ProjectFlowRepository";
+import { ProjectRecordTriggerRepository } from "~/modules/project-tasks/infrastructure/ProjectRecordTriggerRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { NativeRecordRepository } from "~/modules/records/infrastructure/NativeRecordRepository";
 import { SavedMessageRepository } from "~/modules/saved-messages/infrastructure/SavedMessageRepository";
@@ -174,6 +176,14 @@ export class RepositoryManager {
 
   public get attention(): AttentionRepository {
     return this.resolve("attention", (env) => new AttentionRepository(env));
+  }
+
+  public get projectFlows(): ProjectFlowRepository {
+    return this.resolve("projectFlows", (env) => new ProjectFlowRepository(env));
+  }
+
+  public get projectRecordTriggers(): ProjectRecordTriggerRepository {
+    return this.resolve("projectRecordTriggers", (env) => new ProjectRecordTriggerRepository(env));
   }
 
   public get projectTasks(): ProjectTaskRepository {

@@ -8,6 +8,8 @@ import type {
   ProjectTaskContext,
   ProjectTaskCriterion,
   ProjectFlow,
+  ProjectFlowExecution,
+  ProjectRecordTrigger,
   ProjectTaskRunner,
   OutputProvenance,
   StoredPetModelOverrides,
@@ -1090,7 +1092,7 @@ export const conversationRun = sqliteTable(
     conversation_id: text().notNull(),
     project_id: text().references(() => project.id, { onDelete: "cascade" }),
     project_task_id: text(),
-    stage_id: text(),
+    node_id: text(),
     initiator_user_id: integer()
       .notNull()
       .references(() => user.id),
@@ -2801,11 +2803,12 @@ export const projectTask = sqliteTable(
     })
       .default("backlog")
       .notNull(),
-    source: text({ enum: ["user", "model"] })
+    source: text({ enum: ["user", "model", "record_trigger"] })
       .default("user")
       .notNull(),
     blocked_reason: text({
       enum: [
+        "awaiting_timer",
         "awaiting_input",
         "awaiting_approval",
         "stalled",
@@ -2818,8 +2821,10 @@ export const projectTask = sqliteTable(
       ],
     }),
     blocked_detail: text(),
-    stage_id: text(),
+    node_id: text(),
     flow_snapshot: text({ mode: "json" }).$type<ProjectFlow>(),
+    flow_execution: text({ mode: "json" }).$type<ProjectFlowExecution>(),
+    flow_revision: integer().default(0).notNull(),
     runner: text({ mode: "json" }).$type<ProjectTaskRunner>(),
     created_by_user_id: integer()
       .notNull()
@@ -2873,6 +2878,134 @@ export const projectTask = sqliteTable(
 );
 
 export type ProjectTaskRow = typeof projectTask.$inferSelect;
+
+export const projectFlowWait = sqliteTable(
+  "project_flow_wait",
+  {
+    id: text().primaryKey().notNull(),
+    task_id: text()
+      .notNull()
+      .references(() => projectTask.id, { onDelete: "cascade" }),
+    node_id: text().notNull(),
+    epoch: integer().notNull(),
+    step: integer().notNull(),
+    attempt: integer().notNull(),
+    name: text().notNull(),
+    kind: text({ enum: ["agent", "function", "human", "timer"] }).notNull(),
+    status: text({ enum: ["pending", "dispatched", "completed", "failed", "cancelled"] })
+      .default("pending")
+      .notNull(),
+    revision: integer().default(1).notNull(),
+    assigned_user_id: integer().references(() => user.id, { onDelete: "set null" }),
+    due_at: text(),
+    execution_id: text(),
+    payload: text({ mode: "json" }).$type<Record<string, unknown>>().notNull(),
+    response: text({ mode: "json" }).$type<NativeRecordValues>(),
+    response_digest: text(),
+    error: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    resolved_at: text(),
+  },
+  (table) => ({
+    identityIdx: uniqueIndex("project_flow_wait_identity_idx").on(
+      table.task_id,
+      table.epoch,
+      table.node_id,
+      table.step,
+      table.attempt,
+      table.name,
+    ),
+    dueIdx: index("project_flow_wait_due_idx").on(table.status, table.kind, table.due_at),
+    taskIdx: index("project_flow_wait_task_idx").on(table.task_id, table.status),
+    revisionCheck: check(
+      "project_flow_wait_revision_check",
+      sql`${table.revision} > 0 AND ${table.epoch} > 0 AND ${table.step} > 0 AND ${table.attempt} > 0`,
+    ),
+    payloadCheck: check(
+      "project_flow_wait_payload_check",
+      sql`json_valid(${table.payload}) AND length(CAST(${table.payload} AS BLOB)) <= 262144`,
+    ),
+  }),
+);
+export type ProjectFlowWaitRow = typeof projectFlowWait.$inferSelect;
+
+export const projectFlowEvent = sqliteTable(
+  "project_flow_event",
+  {
+    sequence: integer().primaryKey({ autoIncrement: true }),
+    task_id: text()
+      .notNull()
+      .references(() => projectTask.id, { onDelete: "cascade" }),
+    node_id: text().notNull(),
+    epoch: integer().notNull(),
+    step: integer().notNull(),
+    kind: text({
+      enum: [
+        "entered",
+        "waiting",
+        "dispatched",
+        "resumed",
+        "branch",
+        "iteration",
+        "completed",
+        "failed",
+        "cancelled",
+      ],
+    }).notNull(),
+    wait_id: text().references(() => projectFlowWait.id),
+    detail: text(),
+    actor_user_id: integer().references(() => user.id, { onDelete: "set null" }),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    taskIdx: index("project_flow_event_task_sequence_idx").on(table.task_id, table.sequence),
+  }),
+);
+export type ProjectFlowEventRow = typeof projectFlowEvent.$inferSelect;
+
+export const projectRecordTrigger = sqliteTable(
+  "project_record_trigger",
+  {
+    id: text().primaryKey().notNull(),
+    project_id: text()
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    table_id: text()
+      .notNull()
+      .references(() => output.id, { onDelete: "cascade" }),
+    trigger_key: text().notNull(),
+    runner_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    configuration: text({ mode: "json" }).$type<ProjectRecordTrigger>().notNull(),
+    flow_snapshot: text({ mode: "json" }).$type<ProjectFlow>().notNull(),
+    cursor: integer().default(0).notNull(),
+    revision: integer().default(1).notNull(),
+    enabled: integer({ mode: "boolean" }).default(true).notNull(),
+    error: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    projectKeyIdx: uniqueIndex("project_record_trigger_project_key_idx").on(
+      table.project_id,
+      table.trigger_key,
+    ),
+    activeIdx: index("project_record_trigger_active_idx").on(table.enabled, table.updated_at),
+  }),
+);
+export type ProjectRecordTriggerRow = typeof projectRecordTrigger.$inferSelect;
 
 export const taskNotificationPreference = sqliteTable("task_notification_preference", {
   user_id: integer()

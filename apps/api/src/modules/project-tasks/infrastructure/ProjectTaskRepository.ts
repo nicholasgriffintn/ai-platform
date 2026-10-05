@@ -1,3 +1,8 @@
+import {
+  projectTaskSchema,
+  createAdhocProjectFlow,
+  PROJECT_TASK_DEFAULT_CONCURRENCY,
+} from "@ngriffin_uk/polychat-schemas";
 import type {
   ProjectTask,
   ProjectTaskBlockedReason,
@@ -6,6 +11,7 @@ import type {
   ProjectTaskContext,
   ProjectTaskCriterion,
   ProjectFlow,
+  ProjectFlowExecution,
   ProjectTaskRunner,
   ProjectTaskSource,
   ProjectTaskStatus,
@@ -13,11 +19,13 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { parseJsonColumn } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { ProjectTaskRow } from "~/infrastructure/database/schema";
 import { publishProjectEvent } from "~/modules/sync/application/conversation-events";
+
+import { initialProjectFlowExecution } from "../domain/flow-machine";
 
 export interface CreateProjectTaskParams {
   id?: string;
@@ -34,8 +42,9 @@ export interface CreateProjectTaskParams {
   createdByUserId: number;
   assigneeUserId?: number | null;
   runner?: ProjectTaskRunner | null;
-  stageId?: string | null;
+  nodeId?: string | null;
   flowSnapshot?: ProjectFlow | null;
+  flowExecution?: ProjectFlowExecution;
   tokenBudget?: number | null;
   originConversationId?: string | null;
   position: number;
@@ -52,7 +61,7 @@ export interface UpdateProjectTaskParams {
   status?: ProjectTaskStatus;
   blockedReason?: ProjectTaskBlockedReason | null;
   blockedDetail?: string | null;
-  stageId?: string | null;
+  nodeId?: string | null;
   runner?: ProjectTaskRunner | null;
   assigneeUserId?: number | null;
   runnerIdentityUserId?: number | null;
@@ -66,6 +75,7 @@ export interface UpdateProjectTaskParams {
   tokensSpent?: number;
   startedAt?: string | null;
   completedAt?: string | null;
+  flowExecution?: ProjectFlowExecution;
 }
 
 export interface ListProjectTaskFilters {
@@ -74,15 +84,7 @@ export interface ListProjectTaskFilters {
   includeDone?: boolean;
 }
 
-function parseJsonColumn<T>(value: unknown, fallback: T): T {
-  if (value === null || value === undefined) {
-    return fallback;
-  }
-
-  return typeof value === "string" ? safeParseJson<T>(value) : (value as T);
-}
-
-function formatProjectTask(row: ProjectTaskRow): ProjectTask {
+export function formatProjectTask(row: ProjectTaskRow): ProjectTask {
   return {
     id: row.id,
     projectId: row.project_id,
@@ -92,15 +94,26 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     source: row.source,
     blockedReason: row.blocked_reason,
     blockedDetail: row.blocked_detail,
-    stageId: row.stage_id,
-    flowSnapshot: parseJsonColumn<ProjectFlow | null>(row.flow_snapshot, null),
-    runner: parseJsonColumn<ProjectTaskRunner | null>(row.runner, null),
-    acceptanceCriteria: parseJsonColumn<ProjectTaskCriterion[]>(row.acceptance_criteria, []),
+    nodeId: row.node_id,
+    flowSnapshot: parseJsonColumn(row.flow_snapshot, projectTaskSchema.shape.flowSnapshot),
+    flowExecution: parseJsonColumn(row.flow_execution, projectTaskSchema.shape.flowExecution),
+    flowRevision: row.flow_revision,
+    runner: parseJsonColumn(row.runner ?? null, projectTaskSchema.shape.runner),
+    acceptanceCriteria: parseJsonColumn(
+      row.acceptance_criteria ?? undefined,
+      projectTaskSchema.shape.acceptanceCriteria,
+    ),
     expectedOutput: row.expected_output,
-    context: parseJsonColumn<ProjectTaskContext | null>(row.context, null),
-    constraints: parseJsonColumn<ProjectTaskConstraints | null>(row.constraints, null),
-    dependsOnTaskIds: parseJsonColumn<string[]>(row.depends_on_task_ids, []),
-    requireApprovalFor: parseJsonColumn<ToolPermission[]>(row.require_approval_for, []),
+    context: parseJsonColumn(row.context ?? null, projectTaskSchema.shape.context),
+    constraints: parseJsonColumn(row.constraints ?? null, projectTaskSchema.shape.constraints),
+    dependsOnTaskIds: parseJsonColumn(
+      row.depends_on_task_ids ?? undefined,
+      projectTaskSchema.shape.dependsOnTaskIds,
+    ),
+    requireApprovalFor: parseJsonColumn(
+      row.require_approval_for ?? undefined,
+      projectTaskSchema.shape.requireApprovalFor,
+    ),
     createdByUserId: row.created_by_user_id,
     assigneeUserId: row.assignee_user_id,
     runnerIdentityUserId: row.runner_identity_user_id,
@@ -109,7 +122,7 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     goalId: row.goal_id,
     dispatchTaskId: row.dispatch_task_id,
     runId: row.run_id,
-    completions: parseJsonColumn<ProjectTaskCompletion[]>(row.completions, []),
+    completions: parseJsonColumn(row.completions ?? undefined, projectTaskSchema.shape.completions),
     position: row.position,
     tokenBudget: row.token_budget,
     tokensSpent: row.tokens_spent,
@@ -123,6 +136,8 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
 
 export class ProjectTaskRepository extends BaseRepository {
   private buildTaskInsert(params: CreateProjectTaskParams) {
+    const flow = params.flowSnapshot ?? createAdhocProjectFlow();
+    const nodeId = params.nodeId ?? flow.entryNodeId;
     const insert = this.buildInsertQuery(
       "project_task",
       {
@@ -142,8 +157,10 @@ export class ProjectTaskRepository extends BaseRepository {
         created_by_user_id: params.createdByUserId,
         assignee_user_id: params.assigneeUserId ?? null,
         runner: params.runner ?? null,
-        stage_id: params.stageId ?? null,
-        flow_snapshot: params.flowSnapshot ?? null,
+        node_id: nodeId,
+        flow_snapshot: flow,
+        flow_execution: params.flowExecution ?? initialProjectFlowExecution(flow, nodeId),
+        flow_revision: 0,
         token_budget: params.tokenBudget ?? null,
         origin_conversation_id: params.originConversationId ?? null,
         position: params.position,
@@ -158,6 +175,7 @@ export class ProjectTaskRepository extends BaseRepository {
           "completions",
           "runner",
           "flow_snapshot",
+          "flow_execution",
         ],
         returning: "*",
       },
@@ -176,8 +194,37 @@ export class ProjectTaskRepository extends BaseRepository {
     return this.env.DB.prepare(insert.query).bind(...insert.values);
   }
 
+  prepareTriggeredTask(params: {
+    id: string;
+    projectId: string;
+    workspaceId: string;
+    objective: string;
+    createdByUserId: number;
+    flowSnapshot: ProjectFlow;
+    flowExecution: ProjectFlowExecution;
+  }): D1PreparedStatement {
+    return this.env.DB.prepare(`INSERT INTO project_task
+      (id, project_id, workspace_id, objective, status, source, created_by_user_id,
+       node_id, flow_snapshot, flow_execution, flow_revision, runner_identity_user_id, position)
+      SELECT ?, ?, ?, ?, 'backlog', 'record_trigger', ?, ?, ?, ?, 0, ?,
+        (SELECT COALESCE(MAX(position), 0) + 1000 FROM project_task WHERE project_id = ?)
+      WHERE changes() = 1`).bind(
+      params.id,
+      params.projectId,
+      params.workspaceId,
+      params.objective,
+      params.createdByUserId,
+      params.flowExecution.nodeId,
+      JSON.stringify(params.flowSnapshot),
+      JSON.stringify(params.flowExecution),
+      params.createdByUserId,
+      params.projectId,
+    );
+  }
+
   async createTask(params: CreateProjectTaskParams): Promise<ProjectTask> {
     const insert = this.buildTaskInsert(params);
+
     const row = await this.runQuery<ProjectTaskRow>(insert.query, insert.values, true);
 
     if (!row) {
@@ -286,6 +333,7 @@ export class ProjectTaskRepository extends BaseRepository {
     taskId: string,
     updates: UpdateProjectTaskParams,
     executionOwner?: { dispatchTaskId: string; ownerToken: string; now?: string },
+    expectedPlanRevision?: number,
   ): Promise<ProjectTask | null> {
     const columns: string[] = [];
     const values: unknown[] = [];
@@ -335,8 +383,13 @@ export class ProjectTaskRepository extends BaseRepository {
       set("blocked_detail", updates.blockedDetail);
     }
 
-    if (updates.stageId !== undefined) {
-      set("stage_id", updates.stageId);
+    if (updates.nodeId !== undefined) {
+      set("node_id", updates.nodeId);
+    }
+
+    if (updates.flowExecution !== undefined) {
+      set("flow_execution", JSON.stringify(updates.flowExecution));
+      columns.push("flow_revision = flow_revision + 1");
     }
 
     if (updates.runner !== undefined) {
@@ -431,8 +484,14 @@ export class ProjectTaskRepository extends BaseRepository {
 
     let ownershipClause = "";
 
+    if (expectedPlanRevision !== undefined) {
+      ownershipClause +=
+        " AND flow_revision = ? AND status = 'backlog' AND runner_identity_user_id IS NULL AND json_extract(flow_execution, '$.steps') = 0";
+      values.push(expectedPlanRevision);
+    }
+
     if (executionOwner) {
-      ownershipClause = `
+      ownershipClause += `
         AND dispatch_task_id = ?
         AND EXISTS (
           SELECT 1 FROM tasks
@@ -476,37 +535,69 @@ export class ProjectTaskRepository extends BaseRepository {
     dispatchTaskId: string;
     runner: ProjectTaskRunner;
     tokenBudget: number;
-    stageId?: string | null;
+    nodeId?: string | null;
+    flowRevision: number;
+    waitId: string;
+    waitRevision: number;
+    newNode: boolean;
   }): Promise<ProjectTask | null> {
-    const row = await this.runQuery<ProjectTaskRow>(
-      `UPDATE project_task
+    const statements = [
+      this.env.DB.prepare(
+        `UPDATE project_task
        SET status = 'queued',
            runner_identity_user_id = ?,
            dispatch_task_id = ?,
            runner = ?,
            token_budget = ?,
-           stage_id = COALESCE(?, stage_id),
+           node_id = COALESCE(?, node_id),
            goal_id = NULL,
+           run_id = CASE WHEN ? = 1 THEN NULL ELSE run_id END,
+           conversation_id = CASE WHEN ? = 1 THEN NULL ELSE conversation_id END,
            blocked_reason = NULL,
            blocked_detail = NULL,
            updated_at = CURRENT_TIMESTAMP
        WHERE id = ?
          AND project_id = ?
          AND status IN ('backlog', 'queued', 'blocked', 'review', 'running')
-       RETURNING *`,
-      [
+         AND (SELECT COUNT(*) FROM project_task AS active WHERE active.project_id = project_task.project_id
+           AND active.id != project_task.id AND active.status IN ('queued', 'running')) < ?
+         AND flow_revision = ? AND json_extract(flow_execution, '$.waitId') = ?
+         AND (runner_identity_user_id IS NULL OR runner_identity_user_id = ?)
+         AND EXISTS (SELECT 1 FROM workspace_member WHERE workspace_id = project_task.workspace_id AND user_id = ? AND role IN ('owner', 'admin', 'member'))
+         AND EXISTS (SELECT 1 FROM project_flow_wait WHERE id = ? AND task_id = project_task.id
+           AND kind IN ('agent', 'function') AND revision = ? AND status IN ('pending', 'dispatched'))`,
+      ).bind(
         params.runnerIdentityUserId,
         params.dispatchTaskId,
         JSON.stringify(params.runner),
         params.tokenBudget,
-        params.stageId ?? null,
+        params.nodeId ?? null,
+        params.newNode ? 1 : 0,
+        params.newNode ? 1 : 0,
         params.taskId,
         params.projectId,
-      ],
-      true,
-    );
+        PROJECT_TASK_DEFAULT_CONCURRENCY,
+        params.flowRevision,
+        params.waitId,
+        params.runnerIdentityUserId,
+        params.runnerIdentityUserId,
+        params.waitId,
+        params.waitRevision,
+      ),
+      this.env.DB.prepare(`UPDATE project_flow_wait SET status = 'dispatched', execution_id = ?,
+        attempt = CASE WHEN status = 'dispatched' THEN attempt + 1 ELSE attempt END,
+        error = NULL, revision = revision + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND changes() = 1`).bind(
+        params.dispatchTaskId,
+        params.waitId,
+      ),
+      this.env.DB.prepare(`INSERT INTO project_flow_event
+        (task_id, node_id, epoch, step, kind, wait_id, actor_user_id)
+        SELECT task_id, node_id, epoch, step, 'dispatched', id, ? FROM project_flow_wait
+        WHERE id = ? AND changes() = 1`).bind(params.runnerIdentityUserId, params.waitId),
+    ];
+    const result = await this.env.DB.batch(statements);
 
-    return row ? formatProjectTask(row) : null;
+    return result[0]?.meta.changes === 1 ? this.getTaskById(params.taskId) : null;
   }
 
   async claimQueuedTask(params: {

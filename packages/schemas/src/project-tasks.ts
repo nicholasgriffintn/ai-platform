@@ -1,6 +1,12 @@
 import z from "zod/v4";
 
 import { agentModeSchema, toolPermissionSchema } from "./agent-modes.js";
+import {
+  projectFlowSchema,
+  projectFlowExecutionSchema,
+  projectFlowWaitSchema,
+} from "./project-flow.js";
+export * from "./project-flow.js";
 import { chatRunStatusSchema } from "./chat-runs.js";
 import { goalEvidenceEntrySchema, goalSchema } from "./goals.js";
 import { outputProvenanceSchema } from "./provenance.js";
@@ -39,13 +45,14 @@ export function isTerminalProjectTaskStatus(status: ProjectTaskStatus): boolean 
   return TERMINAL_PROJECT_TASK_STATUSES.includes(status);
 }
 
-export const projectTaskSourceSchema = z.enum(["user", "model"]);
+export const projectTaskSourceSchema = z.enum(["user", "model", "record_trigger"]);
 export type ProjectTaskSource = z.infer<typeof projectTaskSourceSchema>;
 
 export const projectTaskRunnerKindSchema = z.enum(["conversation"]);
 export type ProjectTaskRunnerKind = z.infer<typeof projectTaskRunnerKindSchema>;
 
 export const projectTaskBlockedReasonSchema = z.enum([
+  "awaiting_timer",
   "awaiting_input",
   "awaiting_approval",
   "awaiting_takeover",
@@ -66,6 +73,7 @@ export const RETRYABLE_PROJECT_TASK_BLOCKED_REASONS: readonly ProjectTaskBlocked
 ];
 
 export const projectTaskBlockedReasonLabels: Record<ProjectTaskBlockedReason, string> = {
+  awaiting_timer: "Waiting for the scheduled continuation",
   awaiting_input: "Waiting for your answers",
   awaiting_approval: "Waiting for an approval",
   awaiting_takeover: "Waiting for computer takeover",
@@ -94,9 +102,9 @@ export const PROJECT_TASK_ACTOR_TRANSITIONS: Record<
   ProjectTaskActor,
   readonly ProjectTaskStatus[]
 > = {
-  user: ["backlog", "queued", "running", "blocked", "review", "done", "cancelled"],
-  model: ["backlog", "review", "cancelled"],
-  system: ["queued", "running", "blocked", "review"],
+  user: ["backlog", "cancelled"],
+  model: ["backlog", "cancelled"],
+  system: ["backlog", "queued", "running", "blocked", "review", "done", "cancelled"],
 };
 
 export function canActorSetProjectTaskStatus(
@@ -141,7 +149,7 @@ export type ProjectTaskRunner = z.infer<typeof projectTaskRunnerSchema>;
 
 export const projectTaskCompletionSchema = z.object({
   id: z.string().min(1),
-  stageId: z.string().min(1).nullable(),
+  nodeId: z.string().min(1).nullable(),
   conversationId: z.string().min(1),
   goalId: z.string().min(1),
   runId: z.string().min(1).nullable().optional(),
@@ -155,6 +163,7 @@ export const projectTaskCompletionSchema = z.object({
     status: z.enum(["pending", "approved", "rejected"]),
     reviewedByUserId: z.number().int().positive().nullable(),
     reviewedAt: z.string().nullable(),
+    reviewWaitId: z.string().nullable(),
   }),
   createdAt: z.string(),
 });
@@ -176,11 +185,10 @@ export const projectTaskSchema = z.object({
   source: projectTaskSourceSchema,
   blockedReason: projectTaskBlockedReasonSchema.nullable(),
   blockedDetail: z.string().nullable(),
-  stageId: z.string().nullable(),
-  flowSnapshot: z
-    .lazy(() => projectFlowSchema)
-    .nullable()
-    .optional(),
+  nodeId: z.string().nullable(),
+  flowSnapshot: projectFlowSchema,
+  flowExecution: projectFlowExecutionSchema,
+  flowRevision: z.number().int().nonnegative(),
   runner: projectTaskRunnerSchema.nullable(),
   createdByUserId: z.number().int().positive(),
   assigneeUserId: z.number().int().positive().nullable(),
@@ -203,6 +211,15 @@ export const projectTaskSchema = z.object({
 
 export type ProjectTask = z.infer<typeof projectTaskSchema>;
 
+export function projectTaskNeedsAttention(
+  task: Pick<ProjectTask, "status" | "blockedReason">,
+): boolean {
+  return (
+    task.status === "review" ||
+    (task.status === "blocked" && task.blockedReason !== "awaiting_timer")
+  );
+}
+
 export function isProjectTaskRetryable(
   task: Pick<ProjectTask, "status" | "blockedReason" | "dispatchTaskId">,
 ): boolean {
@@ -221,118 +238,6 @@ export function isProjectTaskAwaitingInput(
   task: Pick<ProjectTask, "status" | "blockedReason">,
 ): boolean {
   return task.status === "blocked" && task.blockedReason === "awaiting_input";
-}
-
-export const projectFlowStageSchema = z
-  .object({
-    id: z
-      .string()
-      .trim()
-      .min(1)
-      .max(40)
-      .regex(/^[a-z0-9][a-z0-9_-]*$/, "Stage ids are lowercase, and use - or _ as separators"),
-    name: z.string().trim().min(1).max(60),
-    instructions: z.string().trim().max(2000).nullable().default(null),
-    teammateId: z.string().trim().min(1).nullable().default(null),
-    skillIds: z.array(z.string().trim().min(1)).default([]),
-    mode: agentModeSchema.nullable().default(null),
-    requiresApprovalFor: z.array(toolPermissionSchema).default([]),
-    advance: z.enum(["on_goal_complete", "on_human_accept"]),
-  })
-  .refine((stage) => new Set(stage.skillIds).size === stage.skillIds.length, {
-    error: "Stage skills must be unique",
-    path: ["skillIds"],
-  });
-
-export type ProjectFlowStage = z.infer<typeof projectFlowStageSchema>;
-
-export const PROJECT_FLOW_MAX_STAGES = 8;
-
-export const projectFlowSchema = z
-  .object({
-    stages: z.array(projectFlowStageSchema).min(1).max(PROJECT_FLOW_MAX_STAGES),
-  })
-  .refine((flow) => new Set(flow.stages.map((stage) => stage.id)).size === flow.stages.length, {
-    error: "Stage ids must be unique",
-  });
-
-export type ProjectFlow = z.infer<typeof projectFlowSchema>;
-
-export function createSuggestedProjectFlow(): ProjectFlow {
-  return {
-    stages: [
-      {
-        id: "research",
-        name: "Research",
-        instructions:
-          "Gather the context, constraints and prior art this outcome depends on. Hand off a short brief with sources and any open questions.",
-        teammateId: null,
-        skillIds: [],
-        mode: "explore",
-        requiresApprovalFor: [],
-        advance: "on_goal_complete",
-      },
-      {
-        id: "plan",
-        name: "Plan",
-        instructions:
-          "Turn the brief into a concrete plan with scope, steps and acceptance criteria. Call out risks and anything that needs a decision before work starts.",
-        teammateId: null,
-        skillIds: [],
-        mode: "plan",
-        requiresApprovalFor: [],
-        advance: "on_human_accept",
-      },
-      {
-        id: "build",
-        name: "Build",
-        instructions:
-          "Carry out the approved plan. Keep changes within its scope and record what was done and how it was checked.",
-        teammateId: null,
-        skillIds: [],
-        mode: "build",
-        requiresApprovalFor: [],
-        advance: "on_goal_complete",
-      },
-      {
-        id: "review",
-        name: "Review",
-        instructions:
-          "Check the work against the plan and acceptance criteria. Flag gaps, risks and anything that needs a human decision before it is accepted.",
-        teammateId: null,
-        skillIds: [],
-        mode: "explore",
-        requiresApprovalFor: [],
-        advance: "on_human_accept",
-      },
-    ],
-  };
-}
-
-export function findFlowStage(flow: ProjectFlow | null, stageId: string | null) {
-  if (!flow || !stageId) {
-    return null;
-  }
-
-  return flow.stages.find((stage) => stage.id === stageId) ?? null;
-}
-
-export function nextFlowStageId(flow: ProjectFlow | null, stageId: string | null): string | null {
-  if (!flow) {
-    return null;
-  }
-
-  if (!stageId) {
-    return flow.stages[0]?.id ?? null;
-  }
-
-  const index = flow.stages.findIndex((stage) => stage.id === stageId);
-
-  if (index < 0 || index === flow.stages.length - 1) {
-    return null;
-  }
-
-  return flow.stages[index + 1].id;
 }
 
 export const PROJECT_TASK_ATTENTION_KINDS = [
@@ -386,19 +291,15 @@ const taskWorkItemFields = {
   requireApprovalFor: z.array(toolPermissionSchema).max(8),
   assigneeUserId: z.number().int().positive().nullable(),
   runner: projectTaskRunnerSchema.nullable(),
-  stageId: z.string().trim().min(1).max(40).nullable(),
+  nodeId: z.string().trim().min(1).max(80).nullable(),
   tokenBudget: z.number().int().positive().max(10_000_000).nullable(),
   originConversationId: z.string().min(1).nullable(),
 };
 
 export const createProjectTaskSchema = z
-  .object({ objective: objectiveField, ...taskWorkItemFields })
-  .partial(
-    Object.fromEntries(Object.keys(taskWorkItemFields).map((key) => [key, true])) as Record<
-      keyof typeof taskWorkItemFields,
-      true
-    >,
-  );
+  .object(taskWorkItemFields)
+  .partial()
+  .extend({ objective: objectiveField });
 
 export type CreateProjectTaskInput = z.infer<typeof createProjectTaskSchema>;
 
@@ -542,7 +443,7 @@ export const PROJECT_TASK_PLAN_EVIDENCE_PROTOCOL_VERSION = 1;
 
 export const projectTaskPlanStatusSchema = z.enum(["active", "completed", "abandoned"]);
 
-export const projectTaskStageEvidenceStatusSchema = z.enum([
+export const projectTaskNodeEvidenceStatusSchema = z.enum([
   "proposed",
   "executing",
   "completed",
@@ -551,14 +452,14 @@ export const projectTaskStageEvidenceStatusSchema = z.enum([
   "abandoned",
 ]);
 
-export const projectTaskStageOutputSchema = z.object({
+export const projectTaskNodeOutputSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   kind: z.string().min(1),
   status: z.enum(["pending", "ready", "failed", "archived"]),
 });
 
-export const projectTaskStageAttemptSchema = z.object({
+export const projectTaskNodeAttemptSchema = z.object({
   id: z.string().min(1),
   runId: z.string().min(1),
   conversationId: z.string().min(1),
@@ -569,22 +470,22 @@ export const projectTaskStageAttemptSchema = z.object({
   terminalReason: z.string().nullable(),
   provenance: outputProvenanceSchema,
   completionIds: z.array(z.string().min(1)),
-  outputs: z.array(projectTaskStageOutputSchema),
+  outputs: z.array(projectTaskNodeOutputSchema),
   usage: chatRunUsageSchema.optional(),
 });
 
-export const projectTaskStageEvidenceSchema = z.object({
+export const projectTaskNodeEvidenceSchema = z.object({
   id: z.string().min(1),
-  flowStageId: z.string().min(1).nullable(),
+  flowNodeId: z.string().min(1).nullable(),
   name: z.string().min(1),
-  status: projectTaskStageEvidenceStatusSchema,
+  status: projectTaskNodeEvidenceStatusSchema,
   input: z.object({
     objective: z.string().min(1),
     acceptanceCriterionIds: z.array(z.string().min(1)),
   }),
-  attempts: z.array(projectTaskStageAttemptSchema),
+  attempts: z.array(projectTaskNodeAttemptSchema),
   completionIds: z.array(z.string().min(1)),
-  outputs: z.array(projectTaskStageOutputSchema),
+  outputs: z.array(projectTaskNodeOutputSchema),
 });
 
 export const projectTaskResumeCapabilitySchema = z.object({
@@ -596,16 +497,18 @@ export const projectTaskPlanEvidenceSchema = z.object({
   protocolVersion: z.literal(PROJECT_TASK_PLAN_EVIDENCE_PROTOCOL_VERSION),
   id: z.string().min(1),
   status: projectTaskPlanStatusSchema,
-  stages: z.array(projectTaskStageEvidenceSchema),
+  nodes: z.array(projectTaskNodeEvidenceSchema),
   resume: projectTaskResumeCapabilitySchema,
 });
 
 export type ProjectTaskPlanEvidence = z.infer<typeof projectTaskPlanEvidenceSchema>;
-export type ProjectTaskStageEvidence = z.infer<typeof projectTaskStageEvidenceSchema>;
-export type ProjectTaskStageAttempt = z.infer<typeof projectTaskStageAttemptSchema>;
+export type ProjectTaskNodeEvidence = z.infer<typeof projectTaskNodeEvidenceSchema>;
+export type ProjectTaskNodeAttempt = z.infer<typeof projectTaskNodeAttemptSchema>;
 export type ProjectTaskResumeCapability = z.infer<typeof projectTaskResumeCapabilitySchema>;
 
 export const projectTaskDetailResponseSchema = z.object({
+  flowWait: projectFlowWaitSchema.nullable(),
+  canRespondToFlowWait: z.boolean(),
   task: projectTaskSchema,
   goal: goalSchema.nullable(),
   pendingQuestions: userQuestionSetSchema.nullable(),
@@ -630,7 +533,20 @@ export const setProjectFlowSchema = z.object({
 
 export const projectFlowResponseSchema = z.object({
   flow: projectFlowSchema.nullable(),
+  triggerStates: z.array(
+    z.object({
+      id: z.string(),
+      tableId: z.string(),
+      name: z.string(),
+      cursor: z.number().int().nonnegative(),
+      revision: z.number().int().positive(),
+      enabled: z.boolean(),
+      error: z.string().nullable(),
+      updatedAt: z.string(),
+    }),
+  ),
 });
+export type ProjectFlowResponse = z.infer<typeof projectFlowResponseSchema>;
 
 export const projectTaskRunDispatchPayloadSchema = z.object({
   dispatchTaskId: z.string().min(1),
