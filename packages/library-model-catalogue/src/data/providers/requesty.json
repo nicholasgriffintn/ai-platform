@@ -1708,7 +1708,6 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
-        "contextWindow": 1000000,
         "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
@@ -2511,6 +2510,7 @@
       "matchingModel": "kimi-k2.6",
       "overrides": {
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",

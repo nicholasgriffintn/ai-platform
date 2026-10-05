@@ -173,7 +173,6 @@
       "defaults": {
         "name": "Kimi K2.6",
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
-        "maxTokens": 262144,
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "April 21, 2026",
