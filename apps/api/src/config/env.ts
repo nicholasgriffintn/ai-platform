@@ -146,6 +146,7 @@ export type IEnv = {
   COMPOSIO_WEBHOOK_SECRET?: string;
   SLACK_SIGNING_SECRET?: string;
   SLACK_BOT_TOKEN?: string;
+  SLACK_BOT_USER_ID?: string;
   TELEGRAM_WEBHOOK_SECRET?: string;
   TELEGRAM_BOT_TOKEN?: string;
   SANDBOX_DEFAULT_TIMEOUT_SECONDS?: string;

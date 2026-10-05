@@ -7,6 +7,7 @@ import { useSidebarPeekPanel } from "../Sidebar/SidebarPeekContext.js";
 import { ProfileAccountTab } from "./Tabs/ProfileAccountTab.js";
 import { ProfileApiKeysTab } from "./Tabs/ProfileApiKeysTab.js";
 import { ProfileBillingTab } from "./Tabs/ProfileBillingTab.js";
+import { ProfileChannelsTab } from "./Tabs/ProfileChannelsTab.js";
 import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab.js";
 import { ProfileHistoryTab } from "./Tabs/ProfileHistoryTab.js";
 import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab.js";
@@ -60,6 +61,7 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
   },
   { id: "api-keys", label: "API keys", group: MODELS_GROUP, component: ProfileApiKeysTab },
   { id: "sandbox", label: "Sandbox", group: ADVANCED_GROUP, component: ProfileSandboxTab },
+  { id: "channels", label: "Channels", group: ADVANCED_GROUP, component: ProfileChannelsTab },
 ];
 
 export function extendProfileSidebarItems(

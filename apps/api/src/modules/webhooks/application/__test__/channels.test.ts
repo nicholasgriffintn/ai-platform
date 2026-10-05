@@ -1,4 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Hono } from "hono";
+import { Miniflare } from "miniflare";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   createServiceContext: vi.fn(),
@@ -9,6 +11,10 @@ vi.mock("~/infrastructure/context/serviceContext", () => ({
   createServiceContext: mocks.createServiceContext,
 }));
 
+vi.mock("~/modules/workspaces/application/access", () => ({
+  requireProjectAccess: vi.fn(async () => ({ role: "admin" })),
+}));
+
 vi.mock("~/modules/tasks/application/TaskService", () => ({
   TaskService: class {
     enqueueTask = mocks.enqueueTask;
@@ -17,67 +23,85 @@ vi.mock("~/modules/tasks/application/TaskService", () => ({
 
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { signSlackRequest } from "~/modules/channels/infrastructure/adapters/__test__/slackSignature";
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import type { ChannelBindingRow } from "~/infrastructure/database/schema";
+import type { IEnv } from "~/types";
 
+import {
+  channelTestBinding,
+  channelTestEnvironment,
+  channelTestThread,
+  channelTestUser,
+} from "../../../../../test/fixtures/channels";
+import { signSlackRequest } from "../../../../../test/helpers/slack-signature";
 import { handleChannelWebhook } from "../channels";
 
-const env = {
-  DB: {},
-  SLACK_SIGNING_SECRET: "slack-signing-secret",
-  SLACK_BOT_TOKEN: "xoxb-slack-bot-token",
-  TELEGRAM_WEBHOOK_SECRET: "telegram-webhook-secret",
-  TELEGRAM_BOT_TOKEN: "telegram-bot-token",
-};
-
-const slackBinding = {
-  id: "binding-1",
-  channel: "slack",
+const runtime = new Miniflare({
+  modules: true,
+  script: "export default { fetch() { return new Response('test'); } }",
+  compatibilityDate: "2026-08-01",
+  d1Databases: ["DB"],
+});
+let env: IEnv;
+let createActualServiceContext: typeof import("~/infrastructure/context/serviceContext").createServiceContext;
+const slackBinding: ChannelBindingRow = {
+  ...channelTestBinding,
   scope_type: "project",
   scope_id: "project-1",
-  external_id: "C123",
-  enabled: true,
-  created_by: 42,
 };
+const owner = channelTestUser;
+const app = new Hono<{ Bindings: IEnv }>();
 
-const owner = { id: 42, email: "owner@example.com", plan_id: "pro" };
+app.post("/webhooks/channels/:channel", handleChannelWebhook);
+app.onError((error) => {
+  throw error;
+});
+
+beforeAll(async () => {
+  env = channelTestEnvironment(await runtime.getD1Database("DB"), {
+    SLACK_SIGNING_SECRET: "slack-signing-secret",
+    SLACK_BOT_USER_ID: "UBOT",
+    SLACK_BOT_TOKEN: "xoxb-slack-bot-token",
+    TELEGRAM_WEBHOOK_SECRET: "telegram-webhook-secret",
+    TELEGRAM_BOT_TOKEN: "telegram-bot-token",
+  });
+  createActualServiceContext = (
+    await vi.importActual<typeof import("~/infrastructure/context/serviceContext")>(
+      "~/infrastructure/context/serviceContext",
+    )
+  ).createServiceContext;
+});
+afterAll(() => runtime.dispose());
+afterEach(() => vi.unstubAllGlobals());
 
 function createChannelContext(options: {
   channel: string;
   body: string;
   headers?: Record<string, string>;
 }) {
-  const request = new Request("https://api.polychat.test/webhooks/channels", {
+  return new Request(`https://api.polychat.test/webhooks/channels/${options.channel}`, {
     method: "POST",
     headers: options.headers ?? {},
     body: options.body,
   });
-
-  return {
-    env,
-    req: {
-      param: vi.fn((key: string) => (key === "channel" ? options.channel : "")),
-      text: vi.fn(async () => options.body),
-      raw: request,
-    },
-    get: vi.fn((key: string) => (key === "requestId" ? "request-1" : undefined)),
-    json: vi.fn((body: unknown) => new Response(JSON.stringify(body))),
-  } as any;
 }
 
-function prepareServiceContext(binding: Record<string, unknown> | null = slackBinding) {
-  const repositories = {
-    channelBindings: {
-      getByExternalId: vi.fn(async () => binding),
-    },
-    users: {
-      getUserById: vi.fn(async () => owner),
-    },
-    tasks: {},
-  };
+function dispatch(request: Request) {
+  return app.fetch(request, env);
+}
 
-  mocks.createServiceContext.mockReturnValue({ env, database: {}, repositories });
+function prepareServiceContext(
+  binding: ChannelBindingRow | null = slackBinding,
+): ServiceContext["repositories"] {
+  const context = createActualServiceContext({ env, user: owner });
 
-  return repositories;
+  vi.spyOn(context.repositories.channelBindings, "findByExternalId").mockResolvedValue(binding);
+  vi.spyOn(context.repositories.channelBindings, "getById").mockResolvedValue(binding);
+  vi.spyOn(context.repositories.users, "getUserById").mockResolvedValue(owner);
+  vi.spyOn(context.repositories.channelThreads, "admit").mockResolvedValue(channelTestThread);
+  mocks.createServiceContext.mockReturnValue(context);
+
+  return context.repositories;
 }
 
 async function signedSlackContext(payload: unknown, secret = "slack-signing-secret") {
@@ -95,11 +119,13 @@ async function signedSlackContext(payload: unknown, secret = "slack-signing-secr
 }
 
 const slackMessage = {
+  team_id: "T123",
   event: { type: "message", channel: "C123", user: "U9", text: "what is the weather", ts: "171.1" },
 };
 
 describe("channel webhook", () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     vi.clearAllMocks();
     mocks.enqueueTask.mockResolvedValue("inbound_message_task");
   });
@@ -107,7 +133,7 @@ describe("channel webhook", () => {
   it("queues an inbound message for the owner of the bound channel", async () => {
     prepareServiceContext();
 
-    const response = await handleChannelWebhook(await signedSlackContext(slackMessage));
+    const response = await dispatch(await signedSlackContext(slackMessage));
 
     expect(await response.json()).toEqual({ success: true, taskId: "inbound_message_task" });
     expect(mocks.enqueueTask).toHaveBeenCalledWith(
@@ -117,6 +143,13 @@ describe("channel webhook", () => {
         task_data: {
           channel: "slack",
           bindingId: "binding-1",
+          thread: {
+            workspaceId: "T123",
+            externalId: "C123",
+            threadId: "171.1",
+            revision: 1,
+            bindingRevision: 1,
+          },
           message: {
             messageId: "171.1",
             from: "U9",
@@ -127,11 +160,34 @@ describe("channel webhook", () => {
     );
   });
 
+  it("does not queue work for a sender outside the binding allowlist", async () => {
+    prepareServiceContext({ ...slackBinding, allowed_sender_ids: '["U42"]' });
+
+    const response = await dispatch(await signedSlackContext(slackMessage));
+
+    expect(await response.json()).toEqual({ success: true, ignored: "unauthorised_sender" });
+    expect(mocks.enqueueTask).not.toHaveBeenCalled();
+  });
+
+  it("leaves an unmentioned inactive thread alone", async () => {
+    const repositories = prepareServiceContext({ ...slackBinding, reply_mode: "mentions" });
+
+    vi.mocked(repositories.channelThreads.admit).mockResolvedValueOnce(null);
+
+    const response = await dispatch(await signedSlackContext(slackMessage));
+
+    expect(repositories.channelThreads.admit).toHaveBeenCalledWith(
+      expect.objectContaining({ activate: false }),
+    );
+    expect(await response.json()).toEqual({ success: true, ignored: "inactive_thread" });
+    expect(mocks.enqueueTask).not.toHaveBeenCalled();
+  });
+
   it("refuses a Slack request signed with someone else's secret", async () => {
     prepareServiceContext();
 
     await expect(
-      handleChannelWebhook(await signedSlackContext(slackMessage, "someone-elses-secret")),
+      dispatch(await signedSlackContext(slackMessage, "someone-elses-secret")),
     ).rejects.toMatchObject({ type: ErrorType.AUTHENTICATION_ERROR });
     expect(mocks.enqueueTask).not.toHaveBeenCalled();
   });
@@ -150,7 +206,7 @@ describe("channel webhook", () => {
       },
     });
 
-    await expect(handleChannelWebhook(context)).rejects.toMatchObject({
+    await expect(dispatch(context)).rejects.toMatchObject({
       type: ErrorType.AUTHENTICATION_ERROR,
       message: "Slack request is too old to accept",
     });
@@ -160,7 +216,7 @@ describe("channel webhook", () => {
   it("answers Slack's url verification challenge without queueing work", async () => {
     prepareServiceContext();
 
-    const response = await handleChannelWebhook(
+    const response = await dispatch(
       await signedSlackContext({ type: "url_verification", challenge: "poly-challenge" }),
     );
 
@@ -171,14 +227,20 @@ describe("channel webhook", () => {
   it("ignores a message from a channel nobody has connected", async () => {
     prepareServiceContext(null);
 
-    const response = await handleChannelWebhook(await signedSlackContext(slackMessage));
+    const response = await dispatch(await signedSlackContext(slackMessage));
 
     expect(await response.json()).toEqual({ success: true, ignored: "unbound_channel" });
     expect(mocks.enqueueTask).not.toHaveBeenCalled();
   });
 
   it("refuses a Telegram request carrying the wrong secret token", async () => {
-    prepareServiceContext({ ...slackBinding, channel: "telegram", external_id: "5150" });
+    prepareServiceContext({
+      ...slackBinding,
+      channel: "telegram",
+      external_id: "5150",
+      workspace_id: "",
+      allowed_sender_ids: JSON.stringify(["99"]),
+    });
 
     const context = createChannelContext({
       channel: "telegram",
@@ -186,14 +248,20 @@ describe("channel webhook", () => {
       headers: { "x-telegram-bot-api-secret-token": "not-the-registered-token" },
     });
 
-    await expect(handleChannelWebhook(context)).rejects.toMatchObject({
+    await expect(dispatch(context)).rejects.toMatchObject({
       type: ErrorType.AUTHENTICATION_ERROR,
     });
     expect(mocks.enqueueTask).not.toHaveBeenCalled();
   });
 
   it("queues a Telegram message that carries the registered secret token", async () => {
-    prepareServiceContext({ ...slackBinding, channel: "telegram", external_id: "5150" });
+    prepareServiceContext({
+      ...slackBinding,
+      channel: "telegram",
+      external_id: "5150",
+      workspace_id: "",
+      allowed_sender_ids: JSON.stringify(["99"]),
+    });
 
     const context = createChannelContext({
       channel: "telegram",
@@ -203,13 +271,20 @@ describe("channel webhook", () => {
       headers: { "x-telegram-bot-api-secret-token": "telegram-webhook-secret" },
     });
 
-    await handleChannelWebhook(context);
+    await dispatch(context);
 
     expect(mocks.enqueueTask).toHaveBeenCalledWith(
       expect.objectContaining({
         task_data: {
           channel: "telegram",
           bindingId: "binding-1",
+          thread: {
+            workspaceId: "",
+            externalId: "5150",
+            threadId: "5150",
+            revision: 1,
+            bindingRevision: 1,
+          },
           message: { messageId: "7", from: "99", body: "hello" },
         },
       }),

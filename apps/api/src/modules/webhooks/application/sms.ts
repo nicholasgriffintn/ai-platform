@@ -9,7 +9,7 @@ import {
   isMessagingProviderId,
 } from "~/infrastructure/providers/capabilities/messaging";
 import { resolveStoredMessagingProvider } from "~/infrastructure/providers/capabilities/messaging/delivery";
-import { toInboundChannelMessage } from "~/modules/channels/application/inbound";
+import { toInboundChannelMessage } from "~/modules/channels/domain/messages";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 
 const logger = getLogger({ prefix: "services/webhooks/sms" });

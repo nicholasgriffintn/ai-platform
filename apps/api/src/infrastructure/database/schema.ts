@@ -736,10 +736,16 @@ export const channelBinding = sqliteTable(
   "channel_binding",
   {
     id: text().primaryKey(),
+    revision: integer().notNull().default(1),
     channel: text({ enum: ["sms", "slack", "telegram"] }).notNull(),
     scope_type: text({ enum: ["personal", "project"] }).notNull(),
     scope_id: text().notNull(),
     external_id: text().notNull(),
+    workspace_id: text().notNull().default(""),
+    allowed_sender_ids: text().notNull().default("[]"),
+    reply_mode: text({ enum: ["mentions", "all"] })
+      .notNull()
+      .default("mentions"),
     label: text(),
     teammate_id: text().references(() => teammates.id, {
       onDelete: "set null",
@@ -758,6 +764,7 @@ export const channelBinding = sqliteTable(
   (table) => ({
     channelExternalIdx: uniqueIndex("channel_binding_channel_external_idx").on(
       table.channel,
+      table.workspace_id,
       table.external_id,
     ),
     scopeIdx: index("channel_binding_scope_idx").on(table.scope_type, table.scope_id),
@@ -765,6 +772,30 @@ export const channelBinding = sqliteTable(
 );
 
 export type ChannelBindingRow = typeof channelBinding.$inferSelect;
+
+export const channelThread = sqliteTable(
+  "channel_thread",
+  {
+    binding_id: text()
+      .notNull()
+      .references(() => channelBinding.id, { onDelete: "cascade" }),
+    thread_id: text().notNull(),
+    revision: integer().notNull().default(1),
+    muted: integer({ mode: "boolean" }).notNull().default(false),
+    last_control_order: text().notNull().default(""),
+    updated_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    bindingThreadIdx: uniqueIndex("channel_thread_binding_thread_idx").on(
+      table.binding_id,
+      table.thread_id,
+    ),
+  }),
+);
+
+export type ChannelThreadRow = typeof channelThread.$inferSelect;
 
 export const outboundDelivery = sqliteTable(
   "outbound_delivery",

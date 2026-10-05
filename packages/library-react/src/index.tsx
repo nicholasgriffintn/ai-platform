@@ -257,4 +257,5 @@ export function useAnalytics(): SurfaceAnalytics {
 
 export * from "./hooks/useBrowserSession.js";
 export * from "./hooks/useEnterpriseIdentity.js";
+export * from "./hooks/useChannels.js";
 export * from "./hooks/useKnowledgeSyncs.js";
