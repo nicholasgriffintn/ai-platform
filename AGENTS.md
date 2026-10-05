@@ -32,7 +32,7 @@ Use [`polychat-setup`](.agents/skills/polychat-setup/SKILL.md) as setup/ops refe
 
 Add tests only when they protect observable behaviour, a meaningful invariant, or a real regression. Do not add catalogue field snapshots or trivial rendering assertions that merely restate the implementation.
 
-Run these before every commit:
+Run these before committing code changes. For deletion-only or documentation-only changes, verify references or formatting as appropriate; do not run the full checks solely to make a commit:
 
 ```sh
 pnpm typecheck

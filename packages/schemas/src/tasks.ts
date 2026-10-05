@@ -7,6 +7,7 @@ import {
   DELEGATION_RUN_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
 } from "./delegations.js";
+import { MEMORY_REFLECTION_TASK_TYPE } from "./memory-documents.js";
 import {
   MODEL_DATASET_PROCESS_TASK_TYPE,
   MODEL_DEPLOYMENT_SYNC_TASK_TYPE,
@@ -36,6 +37,7 @@ export const SOURCE_KNOWLEDGE_SYNC_TASK_TYPE = "source_knowledge_sync";
 
 export const TASK_TYPES = [
   "memory_synthesis",
+  MEMORY_REFLECTION_TASK_TYPE,
   "research_polling",
   "replicate_polling",
   "async_message_polling",

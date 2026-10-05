@@ -28,3 +28,7 @@ export function fetchApi(path: string, options: FetchApiOptions = {}): Promise<R
 export function fetchApiOrThrow(path: string, options: FetchApiOptions = {}): Promise<Response> {
   return webClient.fetchOrThrow(path, options);
 }
+
+export async function fetchApiData<T>(path: string, options: FetchApiOptions = {}): Promise<T> {
+  return webClient.read<T>(await webClient.fetchOrThrow(path, options));
+}

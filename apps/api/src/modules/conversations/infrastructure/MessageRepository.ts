@@ -550,6 +550,54 @@ export class MessageRepository extends BaseRepository {
     return Array.isArray(result) ? result : [];
   }
 
+  public async getMemoryReflectionInput(input: {
+    conversationId: string;
+    runId: string;
+    contextId: string;
+    userId: number;
+  }): Promise<Record<string, unknown> | null> {
+    const rows = await this.runQuery<Record<string, unknown>>(
+      `SELECT m.*, 1 AS reflection_source_trusted FROM message m
+      WHERE m.conversation_id = ? AND m.run_id = ? AND m.role = 'user'
+        AND EXISTS (SELECT 1 FROM conversation_run r WHERE r.id = m.run_id
+          AND r.conversation_id = m.conversation_id AND r.teammate_context_id = ?
+          AND r.initiator_user_id = ? AND r.trigger = 'user')
+      ORDER BY ${MESSAGE_ORDER_BY_DESC} LIMIT 1`,
+      [input.conversationId, input.runId, input.contextId, input.userId],
+    );
+
+    return rows[0] ?? null;
+  }
+
+  public async getMemoryReflectionMessages(input: {
+    conversationId: string;
+    contextId: string;
+    userId: number;
+    afterMessageId: string | null;
+    throughMessageId: string;
+  }): Promise<Record<string, unknown>[]> {
+    return this.runQuery<Record<string, unknown>>(
+      `WITH ordered AS (
+      SELECT id, ROW_NUMBER() OVER (ORDER BY ${MESSAGE_ORDER_BY}) AS position
+      FROM message WHERE conversation_id = ?
+    ) SELECT m.*,
+      CASE WHEN m.role = 'user' AND r.conversation_id = m.conversation_id
+        AND r.teammate_context_id = ? AND r.initiator_user_id = ? AND r.trigger = 'user'
+        THEN 1 ELSE 0 END AS reflection_source_trusted
+      FROM ordered o JOIN message m ON m.id = o.id LEFT JOIN conversation_run r ON r.id = m.run_id
+      WHERE o.position > COALESCE((SELECT position FROM ordered WHERE id = ?), 0)
+        AND o.position <= (SELECT position FROM ordered WHERE id = ?)
+      ORDER BY o.position LIMIT 64`,
+      [
+        input.conversationId,
+        input.contextId,
+        input.userId,
+        input.afterMessageId,
+        input.throughMessageId,
+      ],
+    );
+  }
+
   public async getConversationMessagesBefore(
     conversationId: string,
     limit: number,

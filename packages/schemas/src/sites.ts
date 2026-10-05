@@ -2,6 +2,11 @@ import z from "zod/v4";
 
 import { decisionAnswerSchema, decisionQuestionSchema } from "./decisions.js";
 import { modelTierSchema } from "./model-lineup.js";
+import {
+  siteDataBindingSchema,
+  siteDataIdentifierSchema,
+  siteSourceBindingSchema,
+} from "./site-data.js";
 
 export const SITES_CAPABILITY_ID = "featured-sites";
 export const SITE_OUTPUT_KIND = "site";
@@ -278,6 +283,10 @@ export const siteProjectSchema = z
     theme: siteThemeSchema,
     capabilities: z.array(siteCapabilitySchema),
     pages: z.record(z.string().regex(SITE_PAGE_ID_PATTERN), sitePageSchema),
+    dataBindings: z
+      .record(siteDataIdentifierSchema, siteDataBindingSchema)
+      .refine((value) => Object.keys(value).length <= 40)
+      .optional(),
   })
   .strict();
 export type SiteProject = z.infer<typeof siteProjectSchema>;
@@ -448,8 +457,10 @@ export type SiteElementTarget = z.infer<typeof siteElementTargetSchema>;
 export const siteGenerateRequestSchema = z
   .object({
     prompt: z.string().trim().min(1).max(SITE_PROMPT_MAX_LENGTH),
+    sourceIds: z.array(siteSourceBindingSchema.shape.sourceId).max(40).optional(),
     projectId: z.string().min(1).optional(),
     siteId: z.string().min(1).optional(),
+    expectedRevision: z.number().int().positive().optional(),
     target: siteElementTargetSchema.optional(),
     model: z.string().min(1).optional(),
     theme: siteThemeSchema.partial().optional(),
@@ -461,6 +472,7 @@ export const SITE_EDIT_MAX_PATCHES = 200;
 
 export const siteEditRequestSchema = z
   .object({
+    expectedRevision: z.number().int().positive().optional(),
     projectId: z.string().min(1).optional(),
     patches: z.array(sitePatchSchema).min(1).max(SITE_EDIT_MAX_PATCHES),
     summary: z.string().trim().min(1).max(200),

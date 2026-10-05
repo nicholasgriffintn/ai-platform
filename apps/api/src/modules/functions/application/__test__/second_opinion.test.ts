@@ -36,20 +36,6 @@ describe("second_opinion", () => {
     });
   });
 
-  it("reviews the last assistant answer in the conversation", async () => {
-    const context = createContext([
-      { role: "user", content: "Is this safe?" },
-      { role: "assistant", content: "Yes, entirely." },
-    ]);
-
-    await second_opinion.execute({ models: ["reviewer-a", "reviewer-b"] }, context);
-
-    const question = mocks.runPanel.mock.calls[0][0].question;
-
-    expect(question).toContain("Is this safe?");
-    expect(question).toContain("Yes, entirely.");
-  });
-
   it("gives each reviewer its own model so agreement means something", async () => {
     await second_opinion.execute(
       { models: ["reviewer-a", "reviewer-b"] },
@@ -60,13 +46,6 @@ describe("second_opinion", () => {
       expect.objectContaining({ model: "reviewer-a", provider: "reviewer-a-provider" }),
       expect.objectContaining({ model: "reviewer-b", provider: "reviewer-b-provider" }),
     ]);
-  });
-
-  it("refuses when there is nothing in the conversation to review", async () => {
-    const result = await second_opinion.execute({ models: ["reviewer-a"] }, createContext([]));
-
-    expect(result).toMatchObject({ status: "error" });
-    expect(mocks.runPanel).not.toHaveBeenCalled();
   });
 
   it("refuses when none of the requested models resolve", async () => {

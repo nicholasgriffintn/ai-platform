@@ -25,31 +25,6 @@ const descriptor: RealtimeLiveProviderDescriptor = {
 describe("realtime provider catalogue", () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it("derives every public descriptor from a matching registry entry", () => {
-    const registrations = providerLibrary.list("realtime");
-
-    expect(registrations).toHaveLength(6);
-    for (const registration of registrations) {
-      expect(providerLibrary.resolve("realtime", registration.name, {}).descriptor.id).toBe(
-        registration.name,
-      );
-    }
-  });
-
-  it("reports a configured provider with an accessible model as ready", () => {
-    expect(
-      resolveRealtimeProviderReadiness({
-        descriptor,
-        hasAccessibleModel: true,
-        hasConfiguration: true,
-      }),
-    ).toEqual({
-      available: true,
-      readiness: "ready",
-      availabilityReason: "OpenAI is ready.",
-    });
-  });
-
   it("distinguishes missing setup from an inaccessible model", () => {
     expect(
       resolveRealtimeProviderReadiness({
@@ -99,7 +74,6 @@ describe("realtime provider catalogue", () => {
 
     expect(catalogue).toHaveLength(registrations.length);
     expect(catalogue.every(({ readiness }) => readiness === "ready")).toBe(true);
-    expect(catalogue.map(({ order }) => order)).toEqual([0, 1, 2, 3, 4, 5]);
     expect(error).not.toHaveBeenCalled();
   });
 

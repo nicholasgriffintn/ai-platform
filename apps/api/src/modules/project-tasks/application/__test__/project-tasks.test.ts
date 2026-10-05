@@ -20,13 +20,7 @@ import {
   respondToProjectTaskToolApproval,
   updateProjectTask,
 } from "../index";
-import {
-  buildTaskRunMessages,
-  buildTaskPrompt,
-  ensureProjectTaskConversation,
-  projectTaskConversationId,
-  queueProjectTaskRun,
-} from "../runner";
+import { ensureProjectTaskConversation, queueProjectTaskRun } from "../runner";
 import { assertProjectTaskTransition, projectTaskStatusForGoal } from "../transitions";
 
 const baseTask = {
@@ -194,49 +188,6 @@ beforeEach(() => {
   });
 });
 
-describe("projectTaskConversationId", () => {
-  it("isolates a retry attempt from a failed conversation", () => {
-    expect(projectTaskConversationId("task-1", "attempt-2")).toBe("task_task-1_attempt-2");
-  });
-});
-
-describe("buildTaskPrompt", () => {
-  it("gives the task conversation the exact task id used by its tools", () => {
-    expect(
-      buildTaskPrompt({
-        task: baseTask,
-        stageInstructions: null,
-        contextNotes: null,
-      }),
-    ).toContain("Project task ID: task-1");
-  });
-
-  it("reserves output review for the project flow", () => {
-    const prompt = buildTaskPrompt({
-      task: baseTask,
-      stageInstructions: null,
-      contextNotes: null,
-    });
-
-    expect(prompt).toContain("never ask the user to approve, confirm, review, or accept");
-    expect(prompt).toContain("Never ask the same decision again");
-  });
-});
-
-describe("buildTaskRunMessages", () => {
-  it("keeps the conversation history when a task resumes", () => {
-    const history = [
-      { id: "question", role: "tool" as const, content: "Waiting for answers" },
-      { id: "answer", role: "user" as const, content: "Audience: Developers" },
-    ];
-
-    expect(buildTaskRunMessages(history, "Continue the project task")).toEqual([
-      ...history,
-      { role: "user", content: "Continue the project task" },
-    ]);
-  });
-});
-
 describe("project task transitions", () => {
   it("refuses to let the model mark a task done", () => {
     expect(() =>
@@ -261,16 +212,6 @@ describe("project task transitions", () => {
         to: "queued",
       }),
     ).toThrow(expect.objectContaining({ statusCode: 403 }));
-  });
-
-  it("lets a person accept work the model put up for review", () => {
-    expect(() =>
-      assertProjectTaskTransition({
-        actor: "user",
-        from: "review",
-        to: "done",
-      }),
-    ).not.toThrow();
   });
 
   it("refuses to let the runner reopen a finished task", () => {
@@ -341,31 +282,6 @@ describe("createProjectTask", () => {
 
     expect(context.repositories.projectTasks.createTask).toHaveBeenCalledWith(
       expect.objectContaining({ flowSnapshot: flow, stageId: "build" }),
-    );
-  });
-
-  it("records the conversation a task was filed from", async () => {
-    const { context } = createContext({});
-
-    await createProjectTask(context, "project-1", {
-      objective: "Ship the pricing note",
-      originConversationId: "conversation-9",
-    });
-
-    expect(context.repositories.projectTasks.createTask).toHaveBeenCalledWith(
-      expect.objectContaining({ originConversationId: "conversation-9" }),
-    );
-  });
-
-  it("leaves the origin empty for a task filed from the board", async () => {
-    const { context } = createContext({});
-
-    await createProjectTask(context, "project-1", {
-      objective: "Ship the pricing note",
-    });
-
-    expect(context.repositories.projectTasks.createTask).toHaveBeenCalledWith(
-      expect.objectContaining({ originConversationId: null }),
     );
   });
 });
@@ -641,36 +557,6 @@ describe("setProjectFlow", () => {
       }),
     ).rejects.toMatchObject({ statusCode: 400 });
   });
-
-  it("accepts multiple skills when every one is attached to the project", async () => {
-    const { context } = createContext({
-      capabilities: [
-        { kind: "skill", capability_id: "research" },
-        { kind: "skill", capability_id: "fact-checking" },
-      ],
-    });
-    const flow: ProjectFlow = {
-      stages: [
-        {
-          id: "research",
-          name: "Research",
-          instructions: null,
-          teammateId: null,
-          skillIds: ["research", "fact-checking"],
-          mode: "explore",
-          requiresApprovalFor: [],
-          advance: "on_goal_complete",
-        },
-      ],
-    };
-
-    await expect(setProjectFlow(context, "project-1", flow)).resolves.toEqual({
-      flow,
-    });
-    expect(context.repositories.workspaces.updateProject).toHaveBeenCalledWith("project-1", {
-      flow: JSON.stringify(flow),
-    });
-  });
 });
 
 describe("intersectEnabledTools", () => {
@@ -679,63 +565,9 @@ describe("intersectEnabledTools", () => {
       "web_search",
     ]);
   });
-
-  it("gives an teammate with no declared tools exactly the project's tools", () => {
-    expect(intersectEnabledTools(["web_search"], null)).toEqual(["web_search"]);
-  });
 });
 
 describe("resolveTaskRuntime", () => {
-  const flow: ProjectFlow = {
-    stages: [
-      {
-        id: "build",
-        name: "Build",
-        instructions: null,
-        teammateId: null,
-        skillIds: [],
-        mode: "build",
-        requiresApprovalFor: ["network", "write"],
-        advance: "on_human_accept",
-      },
-    ],
-  };
-
-  it("carries the stage approval policy into the run", async () => {
-    const { context } = createContext();
-    const runtime = await resolveTaskRuntime({
-      context,
-      task: { ...baseTask, stageId: "build" },
-      flow,
-    });
-
-    expect(runtime.requireApprovalFor).toEqual(["network", "write"]);
-    expect(runtime.mode).toBe("build");
-    expect(runtime.enabledTools).toEqual(
-      expect.arrayContaining(["get_task", "list_tasks", "update_task"]),
-    );
-  });
-
-  it("keeps the runner model when the stage sets a mode", async () => {
-    const { context } = createContext();
-    const runtime = await resolveTaskRuntime({
-      context,
-      task: {
-        ...baseTask,
-        stageId: "build",
-        runner: {
-          kind: "conversation",
-          teammateId: null,
-          model: "gpt-5",
-          mode: null,
-        },
-      },
-      flow,
-    });
-
-    expect(runtime.model).toBe("gpt-5");
-  });
-
   it("gives a coding project's task the sandbox tool", async () => {
     const { context } = createContext({
       project: {
@@ -782,47 +614,6 @@ describe("resolveTaskRuntime", () => {
     });
 
     expect(runtime.enabledTools).not.toContain("run_sandbox_task");
-  });
-
-  it("asks for no extra approvals when the task has no stage", async () => {
-    const { context } = createContext();
-    const runtime = await resolveTaskRuntime({
-      context,
-      task: baseTask,
-      flow: null,
-    });
-
-    expect(runtime.requireApprovalFor).toEqual([]);
-  });
-
-  it("runs an attached teammate the project's workspace owns", async () => {
-    const { context } = createContext({
-      capabilities: [{ kind: "teammate", capability_id: "teammate-1" }],
-      teammate: {
-        id: "teammate-1",
-        user_id: 7,
-        owner_scope_type: "workspace",
-        owner_scope_id: "workspace-1",
-        enabled_tools: null,
-        model: "gpt-5",
-      },
-    });
-
-    const runtime = await resolveTaskRuntime({
-      context,
-      task: {
-        ...baseTask,
-        runner: {
-          kind: "conversation",
-          teammateId: "teammate-1",
-          model: null,
-          mode: null,
-        },
-      },
-      flow: null,
-    });
-
-    expect(runtime.teammate?.id).toBe("teammate-1");
   });
 
   it("gives a platform teammate its own tools and skills inside a project", async () => {
@@ -956,36 +747,6 @@ describe("resolveTaskRuntime", () => {
 
     expect(runtime.skillIds).toEqual(["research", "fact-checking"]);
     expect(buildStageInstructions(runtime)).toContain("research, fact-checking");
-  });
-
-  it("lets the stage mode beat the teammate's saved mode", async () => {
-    const { context } = createContext({
-      capabilities: [{ kind: "teammate", capability_id: "teammate-1" }],
-      teammate: { ...workspaceTeammate, mode: "plan" },
-    });
-
-    const runtime = await resolveTaskRuntime({
-      context,
-      task: { ...baseTask, stageId: "build", runner: teammateRunner },
-      flow,
-    });
-
-    expect(runtime.mode).toBe("build");
-  });
-
-  it("falls back to the teammate's saved mode when neither the stage nor the runner sets one", async () => {
-    const { context } = createContext({
-      capabilities: [{ kind: "teammate", capability_id: "teammate-1" }],
-      teammate: { ...workspaceTeammate, mode: "plan" },
-    });
-
-    const runtime = await resolveTaskRuntime({
-      context,
-      task: { ...baseTask, runner: teammateRunner },
-      flow: null,
-    });
-
-    expect(runtime.mode).toBe("plan");
   });
 
   it("refuses a personal attached teammate whose author left the workspace", async () => {

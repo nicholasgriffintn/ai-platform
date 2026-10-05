@@ -1,5 +1,6 @@
 import {
   CONVERSATION_TITLE_TASK_TYPE,
+  MEMORY_REFLECTION_TASK_TYPE,
   SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
   SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
   DELEGATION_EXPIRY_TASK_TYPE,
@@ -39,7 +40,7 @@ import { DelegationRunHandler } from "./handlers/DelegationRunHandler";
 import { DelegationWakeHandler } from "./handlers/DelegationWakeHandler";
 import { InboundMessageHandler } from "./handlers/InboundMessageHandler";
 import { InfraReconciliationHandler } from "./handlers/InfraReconciliationHandler";
-import { memorySynthesis } from "./handlers/memory-synthesis";
+import { memorySynthesis, memoryReflection } from "./handlers/memory-synthesis";
 import {
   modelDatasetProcessing,
   modelDeploymentSync,
@@ -70,6 +71,7 @@ import { workflows } from "./workflows";
 import "./schedules";
 
 workflows.on("memory_synthesis", memorySynthesis);
+workflows.on(MEMORY_REFLECTION_TASK_TYPE, memoryReflection);
 workflows.on(SOURCE_KNOWLEDGE_INDEX_TASK_TYPE, sourceKnowledgeIndex);
 workflows.on(SOURCE_KNOWLEDGE_SYNC_TASK_TYPE, sourceKnowledgeSync);
 workflows.on(USAGE_ROLLUP_TASK_TYPE, usageRollup);

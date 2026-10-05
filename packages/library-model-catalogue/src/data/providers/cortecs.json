@@ -202,10 +202,10 @@
       "overrides": {
         "name": "DeepSeek V3.2",
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
-        "maxTokens": 163840,
+        "maxTokens": 65536,
         "lastUpdated": "December 1, 2025",
-        "costPer1kInputTokens": 0.000296,
-        "costPer1kOutputTokens": 0.000495,
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.001499,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -221,8 +221,7 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
-        "contextWindow": 1048576,
-        "maxTokens": 1048576,
+        "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.0017,
@@ -525,6 +524,8 @@
       "matchingModel": "kimi-k2.6",
       "overrides": {
         "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
+        "contextWindow": 256000,
+        "maxTokens": 256000,
         "modalities": {
           "input": [
             "text",
@@ -616,8 +617,8 @@
         "maxTokens": 196000,
         "speed": 4,
         "lastUpdated": "February 12, 2026",
-        "costPer1kInputTokens": 0.000296,
-        "costPer1kOutputTokens": 0.001186,
+        "costPer1kInputTokens": 0.000348,
+        "costPer1kOutputTokens": 0.00139,
         "supportsAttachments": false
       }
     },
@@ -726,8 +727,8 @@
         "contextComplexity": 4,
         "speed": 3,
         "lastUpdated": "July 21, 2025",
-        "costPer1kInputTokens": 0.000069,
-        "costPer1kOutputTokens": 0.000455,
+        "costPer1kInputTokens": 0.000199,
+        "costPer1kOutputTokens": 0.000598,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1166,7 +1167,8 @@
       "model": "qwen/qwen3-5-9b",
       "matchingModel": "qwen3.5-9b",
       "overrides": {
-        "maxTokens": 262144,
+        "contextWindow": 262000,
+        "maxTokens": 262000,
         "modalities": {
           "input": [
             "text"

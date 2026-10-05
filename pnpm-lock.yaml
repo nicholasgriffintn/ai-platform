@@ -280,10 +280,10 @@ importers:
     dependencies:
       '@hono/standard-validator':
         specifier: 0.4.0
-        version: 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.9)
+        version: 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.10)
       '@hono/zod-validator':
         specifier: 0.9.1
-        version: 0.9.1(hono@4.13.9)(zod@4.6.5)
+        version: 0.9.1(hono@4.13.10)(zod@4.6.5)
       '@ngriffin_uk/auth-core':
         specifier: ^0.5.1
         version: 0.5.1
@@ -394,7 +394,7 @@ importers:
         version: link:../../packages/utility-server
       '@scalar/hono-api-reference':
         specifier: 0.12.6
-        version: 0.12.6(hono@4.13.9)
+        version: 0.12.6(hono@4.13.10)
       '@sentry/cloudflare':
         specifier: 10.75.3
         version: 10.75.3(@cloudflare/workers-types@5.20260918.1)(wrangler@4.142.0(@cloudflare/workers-types@5.20260918.1)(@types/node@26.6.3))
@@ -411,11 +411,11 @@ importers:
         specifier: 0.45.3
         version: 0.45.3(@cloudflare/workers-types@5.20260918.1)(@opentelemetry/api@1.9.1)(better-sqlite3@13.0.3)
       hono:
-        specifier: 4.13.9
-        version: 4.13.9
+        specifier: 4.13.10
+        version: 4.13.10
       hono-openapi:
         specifier: 1.3.3
-        version: 1.3.3(hono@4.13.9)(valibot@1.5.0(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.6.5))(zod@4.6.5)
+        version: 1.3.3(hono@4.13.10)(valibot@1.5.0(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.6.5))(zod@4.6.5)
       hyparquet:
         specifier: 1.31.2
         version: 1.31.2
@@ -613,8 +613,8 @@ importers:
         specifier: 1.48.0
         version: 1.48.0(react@19.3.0)
       posthog-js:
-        specifier: 1.434.15
-        version: 1.434.15(@types/react@19.3.0)(react@19.3.0)
+        specifier: 1.434.17
+        version: 1.434.17(@types/react@19.3.0)(react@19.3.0)
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -646,8 +646,8 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       virtua:
-        specifier: 0.52.7
-        version: 0.52.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
+        specifier: 0.52.8
+        version: 0.52.8(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
       zustand:
         specifier: 5.0.15
         version: 5.0.15(@types/react@19.3.0)(react@19.3.0)
@@ -828,8 +828,8 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       virtua:
-        specifier: 0.52.7
-        version: 0.52.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
+        specifier: 0.52.8
+        version: 0.52.8(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -1607,8 +1607,8 @@ importers:
         specifier: 2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       virtua:
-        specifier: 0.52.7
-        version: 0.52.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
+        specifier: 0.52.8
+        version: 0.52.8(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
       zustand:
         specifier: '*'
         version: 5.0.15(@types/react@19.3.0)(react@19.3.0)
@@ -2583,8 +2583,8 @@ importers:
         specifier: 1.48.0
         version: 1.48.0(react@19.3.0)
       posthog-js:
-        specifier: 1.434.15
-        version: 1.434.15(@types/react@19.3.0)(react@19.3.0)
+        specifier: 1.434.17
+        version: 1.434.17(@types/react@19.3.0)(react@19.3.0)
       react-markdown:
         specifier: 10.1.0
         version: 10.1.0(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2)
@@ -2610,8 +2610,8 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       virtua:
-        specifier: 0.52.7
-        version: 0.52.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
+        specifier: 0.52.8
+        version: 0.52.8(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15)
       zustand:
         specifier: '*'
         version: 5.0.15(@types/react@19.3.0)(react@19.3.0)
@@ -8374,6 +8374,10 @@ packages:
     peerDependencies:
       hono: ^4.11.2
 
+  hono@4.13.10:
+    resolution: {integrity: sha512-dQuLsa5oO+47QVMVMaaD9cIv8ctmVtK1iRvwWngkfloFJMeFeuoUFDswIqZGxmGX3hrRzREgEArjkK9OgsQEhA==}
+    engines: {node: '>=16.9.0'}
+
   hono@4.13.9:
     resolution: {integrity: sha512-7dMkQmZoC4E6F7AtaQSPhlWAdnBti+j7rreMZl8QB4jFiEhP9TWbGWUMi8WYzBCgmgulxuvLQupKqo+Co6Omyg==}
     engines: {node: '>=16.9.0'}
@@ -9403,8 +9407,8 @@ packages:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-js@1.434.15:
-    resolution: {integrity: sha512-ZfBkNrQiFr1Q43G3dR0USzTRdfx+6gKPebyoWDmKnLUhG3yRgYjLH914J6ifEDRnH+RaGOx7rsWKxKcvaSJXHg==}
+  posthog-js@1.434.17:
+    resolution: {integrity: sha512-R5Tb+YrDnZLVtMKXASXklXpfPwzwJ6YJKvcdL/UWV8OHigLm+ZveXtSsz3zwfidMpmSXHI0g2PJkeArO51qnAA==}
     peerDependencies:
       '@types/react': '>=16.8.0'
       react: '>=16.8.0'
@@ -10287,8 +10291,8 @@ packages:
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
 
-  virtua@0.52.7:
-    resolution: {integrity: sha512-3xdhgKCbetu7Gez+DJfjmE+1zI7tsCN+07ZpUBhABDyqqT5r+fji6c0vmQCZlxI8o022d/LdIm2E/9T/LE9rPA==}
+  virtua@0.52.8:
+    resolution: {integrity: sha512-526sAxuz+9/SLuq4Y73mgJsSmKrDQBIU+k9novm40cRDQ2dXXyk9dsmwc2eq9/OTuU/oK0T/PevxqyzoOLL9Sw==}
     peerDependencies:
       '@angular/common': '>=20.0.0'
       '@angular/core': '>=20.0.0'
@@ -11681,18 +11685,18 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@hono/node-server@2.1.3(hono@4.13.9)':
+  '@hono/node-server@2.1.3(hono@4.13.10)':
     dependencies:
-      hono: 4.13.9
+      hono: 4.13.10
 
-  '@hono/standard-validator@0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.9)':
+  '@hono/standard-validator@0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.10)':
     dependencies:
       '@standard-schema/spec': 1.1.0
-      hono: 4.13.9
+      hono: 4.13.10
 
-  '@hono/zod-validator@0.9.1(hono@4.13.9)(zod@4.6.5)':
+  '@hono/zod-validator@0.9.1(hono@4.13.10)(zod@4.6.5)':
     dependencies:
-      hono: 4.13.9
+      hono: 4.13.10
       zod: 4.6.5
 
   '@humanfs/core@0.19.2':
@@ -12062,7 +12066,7 @@ snapshots:
 
   '@modelcontextprotocol/sdk@1.30.0(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5)':
     dependencies:
-      '@hono/node-server': 2.1.3(hono@4.13.9)
+      '@hono/node-server': 2.1.3(hono@4.13.10)
       ajv: 8.20.0
       ajv-formats: 3.0.1
       content-type: 1.0.5
@@ -12072,7 +12076,7 @@ snapshots:
       eventsource-parser: 3.1.1
       express: 5.2.1(supports-color@10.2.2)
       express-rate-limit: 8.7.0(express@5.2.1(supports-color@10.2.2))(supports-color@10.2.2)
-      hono: 4.13.9
+      hono: 4.13.10
       jose: 6.2.12
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -13173,10 +13177,10 @@ snapshots:
 
   '@scalar/helpers@0.15.0': {}
 
-  '@scalar/hono-api-reference@0.12.6(hono@4.13.9)':
+  '@scalar/hono-api-reference@0.12.6(hono@4.13.10)':
     dependencies:
       '@scalar/client-side-rendering': 0.4.5
-      hono: 4.13.9
+      hono: 4.13.10
 
   '@scalar/schemas@0.12.1':
     dependencies:
@@ -15479,14 +15483,14 @@ snapshots:
 
   highlight.js@11.11.2: {}
 
-  hono-openapi@1.3.3(hono@4.13.9)(valibot@1.5.0(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.6.5))(zod@4.6.5):
+  hono-openapi@1.3.3(hono@4.13.10)(valibot@1.5.0(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.6.5))(zod@4.6.5):
     dependencies:
-      '@hono/standard-validator': 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.9)
+      '@hono/standard-validator': 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.10)
       '@standard-community/standard-json': 0.3.6(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(valibot@1.5.0(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.6.5))(zod@4.6.5)
       '@standard-community/standard-openapi': 0.2.10(@standard-community/standard-json@0.3.6(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(valibot@1.5.0(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.6.5))(zod@4.6.5))(@standard-schema/spec@1.1.0)(openapi-types@12.1.3)(valibot@1.5.0(typescript@6.0.3))(zod@4.6.5)
       '@standard-schema/spec': 1.1.0
       '@types/json-schema': 7.0.15
-      hono: 4.13.9
+      hono: 4.13.10
       openapi-types: 12.1.3
     transitivePeerDependencies:
       - '@valibot/to-json-schema'
@@ -15498,6 +15502,8 @@ snapshots:
       - zod
       - zod-openapi
       - zod-to-json-schema
+
+  hono@4.13.10: {}
 
   hono@4.13.9: {}
 
@@ -16713,7 +16719,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.2
 
-  posthog-js@1.434.15(@types/react@19.3.0)(react@19.3.0):
+  posthog-js@1.434.17(@types/react@19.3.0)(react@19.3.0):
     dependencies:
       '@posthog/browser-common': 0.9.1
       '@posthog/core': 1.55.3
@@ -17724,7 +17730,7 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  virtua@0.52.7(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15):
+  virtua@0.52.8(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.15):
     optionalDependencies:
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)

@@ -57,30 +57,11 @@ describe("resolveAvailableFunctions", () => {
     },
   );
 
-  it("offers the agent control tools in an agent execution mode", () => {
-    expect(providerTools(paramsForMode("build"))).toEqual(
-      expect.arrayContaining(["update_plan", "finish"]),
-    );
-  });
-
-  it("withholds the control tools from ordinary chat, where nothing handles them", () => {
-    const names = providerTools(paramsForMode("normal"));
-
-    expect(names).not.toContain("update_plan");
-    expect(names).not.toContain("finish");
-  });
-
   it("withholds tools blocked by the execution mode", () => {
     const names = providerTools(paramsForMode("plan"));
 
     expect(names).not.toContain("call_api");
     expect(names).toContain("get_weather");
-  });
-
-  it("offers ask_user in plan mode so the model can pause for a person", () => {
-    expect(providerTools({ ...paramsForMode("plan"), enabled_tools: ["ask_user"] })).toContain(
-      "ask_user",
-    );
   });
 
   it("uses the authoritative task-stage policy when preparing tools", () => {

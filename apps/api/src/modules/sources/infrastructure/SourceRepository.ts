@@ -4,6 +4,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 
+import { sourceVisibilitySql } from "./source-visibility";
+
 export interface SourceRecord {
   id: string;
   created_by_user_id: number;
@@ -82,6 +84,51 @@ export interface SourceCollectionRecord {
 }
 
 export class SourceRepository extends BaseRepository {
+  async upsertRepositorySource(input: {
+    id: string;
+    userId: number;
+    projectId?: string;
+    title: string;
+    content: string;
+    metadata: Record<string, unknown>;
+  }): Promise<void> {
+    const result = await this.executeRun(
+      `INSERT INTO source (id, created_by_user_id, project_id, kind, title, status, content, metadata)
+      VALUES (?, ?, ?, 'repository', ?, 'available', ?, ?)
+      ON CONFLICT(id) DO UPDATE SET title = excluded.title, status = 'available', content = excluded.content,
+        metadata = excluded.metadata, updated_at = CURRENT_TIMESTAMP
+      WHERE source.created_by_user_id = excluded.created_by_user_id
+        AND source.project_id IS excluded.project_id AND source.kind = 'repository'`,
+      [
+        input.id,
+        input.userId,
+        input.projectId ?? null,
+        input.title,
+        input.content,
+        JSON.stringify(input.metadata),
+      ],
+    );
+
+    if (result.meta.changes === 0) {
+      throw new AssistantError("Repository source scope mismatch", ErrorType.CONFLICT_ERROR, 409);
+    }
+  }
+
+  async removeCreatedSources(
+    userId: number,
+    projectId: string | null,
+    ids: string[],
+  ): Promise<void> {
+    await this.selectInChunks(ids, async (page) => {
+      await this.executeRun(
+        `DELETE FROM source WHERE created_by_user_id = ? AND project_id IS ? AND id IN (${page.map(() => "?").join(", ")})`,
+        [userId, projectId, ...page],
+      );
+
+      return [];
+    });
+  }
+
   async createSource(input: CreateSourceRecord): Promise<SourceRecord> {
     const { source, created } = await this.createSourceWithOutcome(input);
 
@@ -155,7 +202,7 @@ export class SourceRepository extends BaseRepository {
   async getSourcesByIds(sourceIds: readonly string[]): Promise<SourceRecord[]> {
     return this.selectInChunks(sourceIds, (page) =>
       this.runQuery<SourceRecord>(
-        `SELECT * FROM source WHERE id IN (${page.map(() => "?").join(", ")})`,
+        `SELECT * FROM source WHERE id IN (${page.map(() => "?").join(", ")}) AND ${sourceVisibilitySql("source")}`,
         page,
       ),
     );
@@ -348,7 +395,7 @@ export class SourceRepository extends BaseRepository {
     return this.runQuery<SourceRecord>(
       `SELECT s.* FROM source s
 			 JOIN source_collection_member scm ON scm.source_id = s.id
-			 WHERE scm.collection_id = ?
+			 WHERE scm.collection_id = ? AND ${sourceVisibilitySql("s")}
 			 ORDER BY s.updated_at DESC, s.created_at DESC`,
       [collectionId],
     );
@@ -404,7 +451,11 @@ export class SourceRepository extends BaseRepository {
   private async selectOne(conditions: Record<string, unknown>): Promise<SourceRecord | null> {
     const { query, values } = this.buildSelectQuery("source", conditions);
 
-    return this.runQuery<SourceRecord>(query, values, true);
+    return this.runQuery<SourceRecord>(
+      `SELECT source.* FROM (${query}) source WHERE ${sourceVisibilitySql("source")}`,
+      values,
+      true,
+    );
   }
 
   private async selectMany(conditions: Record<string, unknown>): Promise<SourceRecord[]> {
@@ -412,7 +463,10 @@ export class SourceRepository extends BaseRepository {
       orderBy: "updated_at DESC, created_at DESC",
     });
 
-    return this.runQuery<SourceRecord>(query, values);
+    return this.runQuery<SourceRecord>(
+      `SELECT source.* FROM (${query}) source WHERE ${sourceVisibilitySql("source")} ORDER BY source.updated_at DESC, source.created_at DESC`,
+      values,
+    );
   }
 
   private async selectSummaries(
@@ -423,7 +477,10 @@ export class SourceRepository extends BaseRepository {
       orderBy: "updated_at DESC, created_at DESC",
     });
 
-    return this.runQuery<SourceSummaryRecord>(query, values);
+    return this.runQuery<SourceSummaryRecord>(
+      `SELECT ${SOURCE_SUMMARY_COLUMNS.join(", ")} FROM (${query}) source WHERE ${sourceVisibilitySql("source")} ORDER BY source.updated_at DESC, source.created_at DESC`,
+      values,
+    );
   }
 
   private async listCollections(
@@ -431,9 +488,10 @@ export class SourceRepository extends BaseRepository {
     values: unknown[],
   ): Promise<SourceCollectionRecord[]> {
     return this.runQuery<SourceCollectionRecord>(
-      `SELECT sc.*, COUNT(scm.source_id) AS source_count
+      `SELECT sc.*, COUNT(s.id) AS source_count
 			 FROM source_collection sc
 			 LEFT JOIN source_collection_member scm ON scm.collection_id = sc.id
+         LEFT JOIN source s ON s.id = scm.source_id AND ${sourceVisibilitySql("s")}
 			 WHERE ${where}
 			 GROUP BY sc.id
 			 ORDER BY sc.updated_at DESC, sc.created_at DESC`,

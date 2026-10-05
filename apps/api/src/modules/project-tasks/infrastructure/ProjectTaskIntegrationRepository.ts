@@ -19,7 +19,6 @@ export interface ExternalTaskImport {
   provider: string;
   account_id: string;
   external_id: string;
-  revision: string;
 }
 
 interface ReviewRow {
@@ -34,7 +33,6 @@ interface ReviewRow {
   policy_revision: string | null;
   publication_status: PullRequestReview["publicationStatus"];
   publication_body: string | null;
-  publication_completion_id: string | null;
   published_url: string | null;
   created_at: string;
 }
@@ -64,8 +62,8 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
 
   async recordImport(input: ExternalTaskImport): Promise<boolean> {
     const result = await this.executeRun(
-      `INSERT INTO project_task_external_import (id, workspace_id, project_id, owner_user_id, task_id, source_id, provider, account_id, external_id, revision)
-       SELECT ?, p.workspace_id, p.id, ?, t.id, s.id, ?, ?, ?, ?
+      `INSERT INTO project_task_external_import (id, workspace_id, project_id, owner_user_id, task_id, source_id, provider, account_id, external_id)
+       SELECT ?, p.workspace_id, p.id, ?, t.id, s.id, ?, ?, ?
        FROM project p JOIN project_task t ON t.project_id = p.id AND t.workspace_id = p.workspace_id
        JOIN source s ON s.project_id = p.id
        WHERE p.id = ? AND p.workspace_id = ? AND t.id = ? AND t.created_by_user_id = ? AND s.id = ?
@@ -76,7 +74,6 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
         input.provider,
         input.account_id,
         input.external_id,
-        input.revision,
         input.project_id,
         input.workspace_id,
         input.task_id,
@@ -259,7 +256,7 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
   ): Promise<boolean> {
     const result = await this.executeRun(
       `UPDATE project_task_review
-       SET publication_status = 'publishing', publication_completion_id = ?, publication_body = ?
+       SET publication_status = 'publishing', publication_body = ?
        WHERE id = ? AND project_id = ? AND publication_status = 'unpublished'
          AND EXISTS (
            SELECT 1 FROM project_task
@@ -268,7 +265,7 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
              AND project_task.status IN ('review', 'done')
              AND json_extract(project_task.completions, '$[#-1].id') = ?
          )`,
-      [completionId, body, id, projectId, completionId],
+      [body, id, projectId, completionId],
     );
 
     return result.meta.changes === 1;

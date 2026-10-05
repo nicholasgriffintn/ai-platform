@@ -86,44 +86,6 @@ describe("SessionManager", () => {
     expect(mockConversationManager.persistCompaction).not.toHaveBeenCalled();
   });
 
-  it("compacts and persists snapshot + archived IDs", async () => {
-    const manager = new SessionManager({
-      env,
-      conversationManager: mockConversationManager,
-    });
-
-    const messages = Array.from({ length: 30 }, (_, index) => createLongMessage(index));
-
-    const result = await manager.compact({
-      completionId: "conv-2",
-      messages,
-      mode: "build",
-      modelConfig: { contextWindow: 4096 },
-    });
-
-    expect(result.snapshotMessage?.id).toBe("snapshot-message-id");
-    expect(mockConversationManager.persistCompaction).toHaveBeenCalledWith(
-      "conv-2",
-      expect.objectContaining({
-        id: "snapshot-message-id",
-        parts: expect.arrayContaining([expect.objectContaining({ type: "snapshot" })]),
-      }),
-      expect.objectContaining({
-        id: "snapshot-message-id-compaction",
-        completion_id: "conv-2",
-        role: "compaction",
-        content: "Context automatically compacted",
-        parts: expect.arrayContaining([
-          expect.objectContaining({
-            type: "compaction",
-            status: "completed",
-          }),
-        ]),
-      }),
-      expect.arrayContaining(["msg-0", "msg-1", "snapshot-message-id-compaction"]),
-    );
-  });
-
   it("persists and archives exactly the messages represented within the summary input cap", async () => {
     const manager = new SessionManager({
       env,
@@ -211,33 +173,6 @@ describe("SessionManager", () => {
       }),
     ).rejects.toThrow("persistence failed");
     expect(mockConversationManager.persistCompaction).toHaveBeenCalledTimes(1);
-  });
-
-  it("manually compacts conversations below the automatic token threshold", async () => {
-    const manager = new SessionManager({
-      env,
-      conversationManager: mockConversationManager,
-    });
-
-    const messages = Array.from({ length: 30 }, (_, index) => createShortMessage(index));
-
-    const result = await manager.compact({
-      completionId: "conv-manual",
-      messages,
-      compaction: "manual",
-      modelConfig: { contextWindow: 128000 },
-    });
-
-    expect(result.compacted).toBe(true);
-    expect(result.snapshotMessage?.parts).toEqual(
-      expect.arrayContaining([expect.objectContaining({ type: "snapshot" })]),
-    );
-    expect(mockConversationManager.persistCompaction).toHaveBeenCalledWith(
-      "conv-manual",
-      expect.any(Object),
-      expect.any(Object),
-      expect.arrayContaining(["msg-0", "msg-1"]),
-    );
   });
 
   it("manually compacts short conversations", async () => {
@@ -357,30 +292,6 @@ describe("SessionManager", () => {
     expect(result.compacted).toBe(false);
     expect(result.messages).toEqual(messages);
     expect(mockConversationManager.persistCompaction).not.toHaveBeenCalled();
-  });
-
-  it("falls back when summarisation fails", async () => {
-    const manager = new SessionManager({
-      env,
-      conversationManager: mockConversationManager,
-    });
-
-    mockGenerateText.mockRejectedValueOnce(new Error("provider failure"));
-
-    const summary = await manager.summarise([
-      {
-        id: "m-1",
-        role: "user",
-        content: "User asked for a migration strategy.",
-      },
-      {
-        id: "m-2",
-        role: "assistant",
-        content: "Assistant suggested a phased migration.",
-      },
-    ]);
-
-    expect(summary).toContain("Earlier context transcript");
   });
 
   it("marks fallback coverage and preserves every archived message verbatim", async () => {

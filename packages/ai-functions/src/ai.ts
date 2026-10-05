@@ -32,7 +32,10 @@ export interface Ai {
   complete(request: CompletionRequest): Promise<CompletionResult>;
   stream(request: CompletionRequest): Promise<unknown>;
   generateText(request: CompletionRequest | string, scope?: CompletionRequest): Promise<string>;
-  generateObject<TObject>(request: StructuredRequest<TObject>): Promise<StructuredResult<TObject>>;
+  generateObject<TObject>(
+    request: StructuredRequest<TObject>,
+    onCompletion?: (result: CompletionResult) => Promise<void>,
+  ): Promise<StructuredResult<TObject>>;
 }
 
 export function buildCompletionMessages(request: CompletionRequest): Message[] {
@@ -183,12 +186,15 @@ export function createAi(runtime: ProviderRuntime): Ai {
 
       return (await run(merged as CompletionRequest)).text;
     },
-    generateObject: async (request) => {
+    generateObject: async (request, onCompletion) => {
       const { schema, name = "structured_output", ...completion } = request;
       const result = await run({
         ...completion,
         response_format: toJsonSchema(schema, name),
       });
+
+      await onCompletion?.(result);
+
       const parsed = parseAIResponseJson<unknown>(result.text);
 
       if (parsed.data === null) {

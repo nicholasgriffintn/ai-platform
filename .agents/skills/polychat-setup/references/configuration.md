@@ -29,9 +29,7 @@ Do not duplicate or inline real keys in docs.
 - **Embeddings:** use `EMBEDDING_SCOPE_SECRET` and keep credentials stable when vectors are populated.
 - **Connectors:** configure Composio keying, webhook signature, and callback URLs in the Composio guide.
 - **Coding / training workers:** keep API authority, GitHub App tokens, and worker tokens separate.
-- **Engineering intake:** apply migration `0059_project_task_integrations` before deploying the API. Keep `TASK_QUEUE` and the ordinary Work model/usage bindings configured. Provider adapters currently support GitHub and Linear issue imports and GitHub PR reviews; policies and review records share provider-neutral storage scoped by workspace, project and credential owner. The connected GitHub App needs repository contents and pull-request read access, pull-request write access for human-approved publication, and issue read access for issue imports.
-
-Configure a non-empty GitHub App webhook secret and subscribe the existing `/webhooks/github` callback to pull-request events for automatic reviews. Intake handles `opened`, `synchronize`, `reopened` and `ready_for_review`; it skips drafts and closed PRs. A missing secret rejects webhook processing, including comment commands. A PR `/review` comment uses the commit-bound Work path only when exactly one enabled policy for that repository belongs to the linked author; otherwise the response directs the author to select a project in Work. Repository-level issue commands retain their existing execution path.
+- **Engineering intake:** apply migration `0061_project_task_integrations` before deploying the API. Configure `TASK_QUEUE`, GitHub App issue and pull-request read permissions, and pull-request write permission for approved publication. Set a non-empty GitHub App webhook secret and subscribe `/webhooks/github` to pull-request events for automatic reviews.
 
 ## Data writes and settings
 

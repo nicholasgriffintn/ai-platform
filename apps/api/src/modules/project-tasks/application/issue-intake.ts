@@ -146,7 +146,6 @@ export async function importProjectIssue(
     provider: savedIssue.provider,
     account_id: savedIssue.accountId,
     external_id: savedIssue.externalId,
-    revision: savedIssue.revision,
   });
   const recorded = await context.repositories.projectTaskIntegrations.getImport(
     identity,

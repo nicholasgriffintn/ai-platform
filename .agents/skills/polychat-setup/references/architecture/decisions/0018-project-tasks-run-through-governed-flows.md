@@ -24,10 +24,6 @@ The same task-detail read returns a newest-first protocol version 1 `activity` p
 
 Use project flows for durable multi-agent sequencing. Team-agent fields remain retired. Delegation is defined separately in ADR 0040 and uses an ordinary child conversation and run; it does not create a second execution runtime. Personal Chat retains bounded `run_council` and `second_opinion` within the caller's turn.
 
-Capture approved issues and exact PR diffs as immutable project Sources and reuse the ordinary task runner. Keep provider operations in adapters and scope imports, reviews and multiple review policies by workspace, project and credential owner. Recheck issue revisions on import and bind review identity to the original connection, repository, commits and policy revision.
-
-Signed review events use the existing queue; admission and dispatch revalidate current policy and authority. Restrict diff reviews to task-read, question and goal-completion tools without widening their scope during chat preparation. Publish separately from task acceptance: atomically claim the latest completion and approved text, write against the captured commit, and reconcile uncertain responses through provider reads without repeating the write.
-
 ## Consequences
 
 One flow per project is deliberately limited, and former team groupings cannot be migrated automatically into ordered stages. Concurrency caps, token budgets and usage admission must bound unattended work.
