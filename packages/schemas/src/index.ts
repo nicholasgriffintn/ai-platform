@@ -200,3 +200,4 @@ export * from "./site-data.js";
 export * from "./urls.js";
 export * from "./enterprise-identity.js";
 export * from "./repository-knowledge.js";
+export * from "./native-mcp.js";

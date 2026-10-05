@@ -21,12 +21,12 @@ export function parseServerSentEventBuffer<T = Record<string, unknown>>(
   buffer: string,
   options: ServerSentEventParserOptions<T>,
 ): string {
-  const blocks = buffer.split(/\r?\n\r?\n/);
+  const blocks = buffer.split(/(?:\r\n|\r(?!\n)|(?<!\r)\n){2}/);
   const remainingBuffer = blocks.pop() || "";
 
   for (const block of blocks) {
     const dataLines = block
-      .split(/\r?\n/)
+      .split(/\r\n|\r|\n/)
       .map((line) => line.trim())
       .filter((line) => line.startsWith("data:"))
       .map((line) => line.slice(5).trimStart());

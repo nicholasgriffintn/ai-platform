@@ -32,3 +32,18 @@ const pashi = getPashiClient(env);
 The Composio clients read `COMPOSIO_API_KEY` and `COMPOSIO_USER_NAMESPACE` from a structural environment, the Pashi client reads `PASHI_API_KEY`, and GitHub App helpers read the matching `GITHUB_APP_*` and `APP_BASE_URL` fields, so the API passes its own `IEnv` without importing host types.
 
 The API keeps what is Polychat's: connection authority, approvals and replay, the private file bridge, run lifecycle, persistence and routes.
+
+## Native MCP protocol
+
+Use `McpProtocolClient` with a host-owned `McpRequestSender` and cancellation signal. Check endpoint consent, connection revision and user/project authority before sending each request; this package owns no endpoints, credentials or background connections.
+
+```ts
+const client = new McpProtocolClient(sendAuthorisedRequest, runAbortSignal);
+const catalogue = await client.discoverTools();
+```
+
+Support stateless MCP 2026-07-28 JSON and request-scoped SSE with a 64 KiB request limit, 512 KiB response limit and 30-second deadline. Require matching routing metadata and complete results. Send tool calls once and cancel response streams on interruption.
+
+Validate bounded JSON Schema without adding defaults or changing approved values. Reject unsupported recursive, external, dynamic or conditional schemas. Keep discovered tools disabled until reviewed; compare the schema digest before retaining an access policy.
+
+Leave sessions, sampling, elicitation, subscriptions and automatic resource downloads unsupported. The host keeps credentials, catalogue authority and write approvals.
