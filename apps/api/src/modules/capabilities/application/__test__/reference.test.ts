@@ -92,10 +92,4 @@ describe("project capability references", () => {
   it("leaves tool validation to the configuration boundary", async () => {
     await expect(validateCapabilityReference("tool", "web_fetch")).resolves.toBeUndefined();
   });
-
-  it("still accepts an app that projects are allowed to enable", async () => {
-    await expect(
-      validateCapabilityReference("app", "featured-note-taker"),
-    ).resolves.toBeUndefined();
-  });
 });

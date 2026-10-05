@@ -10,6 +10,8 @@ import {
 } from "~/modules/tools/application/modelToolConfiguration";
 import type { ProjectCapabilityRow } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
+import { resolveProjectRecipeConnectorScope } from "./projectRecipeConnectorScope";
+
 interface ResolvedProjectTools {
   enabledTools: string[];
   toolOptions?: ChatHostedToolSettings;
@@ -42,6 +44,8 @@ export function validateProjectToolConfiguration(
 
 export function resolveProjectTools(capabilities: ProjectCapabilityRow[]): ResolvedProjectTools {
   const callableToolIds = getCallableToolIds();
+
+  capabilities = capabilities.filter((capability) => !capability.excluded);
   const enabledTools = capabilities
     .filter(
       (capability) => capability.kind === "tool" && callableToolIds.has(capability.capability_id),
@@ -63,6 +67,10 @@ export function resolveProjectTools(capabilities: ProjectCapabilityRow[]): Resol
   }
 
   enabledTools.push(...configuredModelTools.configuredToolIds);
+
+  if (resolveProjectRecipeConnectorScope(capabilities).providers.length > 0) {
+    enabledTools.push("use_recipe_connector");
+  }
 
   return {
     enabledTools: [...new Set(enabledTools)],

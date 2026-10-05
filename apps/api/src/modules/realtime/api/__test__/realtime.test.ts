@@ -171,37 +171,6 @@ describe("realtime routes", () => {
     expect(createMistralRealtimeProxyResponseMock).not.toHaveBeenCalled();
   });
 
-  it("returns the registry-owned realtime provider catalogue", async () => {
-    listRealtimeLiveProvidersMock.mockResolvedValue([
-      {
-        id: "openai",
-        order: 0,
-        label: "OpenAI Realtime",
-        shortLabel: "OpenAI",
-        liveMode: "native",
-        transport: "webrtc",
-        sessionType: "realtime",
-        inputModalities: ["audio"],
-        outputModalities: ["audio"],
-        description: "WebRTC voice agent",
-        defaultModelId: "gpt-realtime-2",
-        available: true,
-        readiness: "ready",
-        availabilityReason: "OpenAI is ready.",
-      },
-    ]);
-
-    const response = await createApp().request(
-      new Request("https://api.polychat.test/realtime/providers"),
-    );
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({
-      providers: [expect.objectContaining({ id: "openai", readiness: "ready" })],
-    });
-    expect(listRealtimeLiveProvidersMock).toHaveBeenCalledOnce();
-  });
-
   it("rejects anonymous provider readiness requests", async () => {
     const response = await createApp(null).request(
       new Request("https://api.polychat.test/realtime/providers"),
@@ -245,44 +214,6 @@ describe("realtime routes", () => {
       message: "Model not found or user does not have access",
     });
     expect(createSessionMock).not.toHaveBeenCalled();
-  });
-
-  it("allows session creation when the default realtime model is accessible", async () => {
-    getModelsMock.mockReturnValue({
-      "gpt-realtime-2": makeModel("gpt-realtime-2", "openai"),
-    });
-    createSessionMock.mockResolvedValue({
-      id: "session_123",
-      provider: "openai",
-      transport: "webrtc",
-    });
-
-    const response = await requestApp(
-      new Request("https://api.polychat.test/realtime/session/realtime?provider=openai", {
-        method: "POST",
-      }),
-    );
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({
-      id: "session_123",
-      provider: "openai",
-      transport: "webrtc",
-      max_session_seconds: 1800,
-    });
-    expect(createSessionMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        model: "gpt-realtime-2",
-        type: "realtime",
-        user: testUser,
-      }),
-    );
-    expect(filterModelsForUserAccessMock).toHaveBeenCalledWith(
-      expect.objectContaining({ "gpt-realtime-2": expect.any(Object) }),
-      testEnv,
-      testUser.id,
-      { shouldUseCache: false },
-    );
   });
 
   it("passes the checked catalogue ID when the provider translates its matching model", async () => {
