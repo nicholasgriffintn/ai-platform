@@ -75,3 +75,11 @@ Use the deployment's default GitHub App only for personal installations owned by
 Reconnect existing GitHub installations after upgrading. Sealed connection records now require an explicit credential source; untagged records are unavailable. Changing the deployment's App ID never bypasses ownership checks for previously saved deployment credentials.
 
 Previously returned passages can remain in conversation history. Disconnection and repository changes prevent new retrieval; they do not erase material that was already public or deliberately shared.
+
+## Private MCP catalogue
+
+Register personal or workspace servers through `POST /apps/mcp`. Workspace owners and admins curate the workspace catalogue; each user connects their own encrypted credential with explicit endpoint consent and project sharing.
+
+Discover through `POST /apps/mcp/:serverId/discover`. New or changed tools stay disabled until a curator classifies them as read or write and enables the server. Configuration responses omit credentials; server policy changes invalidate previous connection revisions.
+
+Apply `0063_native_mcp` before deploying the catalogue API. Account settings and native tool execution follow in their own changes.
