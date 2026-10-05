@@ -1,0 +1,60 @@
+import {
+  createChannelBinding,
+  deleteChannelBinding,
+  listChannelBindings,
+  listChannelSenders,
+  revokeChannelSender,
+} from "@ngriffin_uk/polychat-library-client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { useAuthStatus } from "./useAuth.js";
+
+export function useChannelBindings(projectId?: string) {
+  const { user, isAuthenticated } = useAuthStatus();
+  const client = useQueryClient();
+  const key = ["channel-bindings", user?.id];
+  const bindings = useQuery({
+    queryKey: key,
+    queryFn: listChannelBindings,
+    enabled: isAuthenticated,
+  });
+  const create = useMutation({
+    mutationFn: createChannelBinding,
+    onSuccess: () => client.invalidateQueries({ queryKey: key }),
+  });
+  const disconnect = useMutation({
+    mutationFn: deleteChannelBinding,
+    onSuccess: () => client.invalidateQueries({ queryKey: key }),
+  });
+
+  return {
+    bindings,
+    create,
+    disconnect,
+    visibleBindings:
+      bindings.data?.bindings.filter((binding) =>
+        projectId
+          ? binding.scopeType === "project" && binding.scopeId === projectId
+          : binding.scopeType === "personal",
+      ) ?? [],
+  };
+}
+
+export function useChannelSenders(bindingId: string) {
+  const { user, isAuthenticated } = useAuthStatus();
+  const client = useQueryClient();
+  const key = ["channel-senders", user?.id, bindingId];
+  const senders = useQuery({
+    queryKey: key,
+    queryFn: () => listChannelSenders(bindingId),
+    enabled: isAuthenticated,
+    refetchInterval: 5000,
+  });
+  const revoke = useMutation({
+    mutationFn: (input: { id: string; revision: number }) =>
+      revokeChannelSender(bindingId, input.id, input.revision),
+    onSuccess: () => client.invalidateQueries({ queryKey: key }),
+  });
+
+  return { senders, revoke };
+}

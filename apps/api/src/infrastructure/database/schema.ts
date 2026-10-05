@@ -732,6 +732,51 @@ export const channelBinding = sqliteTable(
 
 export type ChannelBindingRow = typeof channelBinding.$inferSelect;
 
+export const channelSender = sqliteTable(
+  "channel_sender",
+  {
+    id: text().primaryKey(),
+    binding_id: text()
+      .notNull()
+      .references(() => channelBinding.id, { onDelete: "cascade" }),
+    sender_id: text().notNull(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    revision: integer().notNull().default(1),
+    revoked_at: text(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    identityIdx: uniqueIndex("channel_sender_identity_idx").on(table.binding_id, table.sender_id),
+    userIdx: index("channel_sender_user_idx").on(table.user_id),
+  }),
+);
+
+export type ChannelSenderRow = typeof channelSender.$inferSelect;
+
+export const channelPairingChallenge = sqliteTable(
+  "channel_pairing_challenge",
+  {
+    token_hash: text().primaryKey(),
+    binding_id: text()
+      .notNull()
+      .references(() => channelBinding.id, { onDelete: "cascade" }),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    expires_at: text().notNull(),
+  },
+  (table) => ({
+    ownerIdx: uniqueIndex("channel_pairing_challenge_owner_idx").on(
+      table.binding_id,
+      table.user_id,
+    ),
+  }),
+);
+
 export const outboundDelivery = sqliteTable(
   "outbound_delivery",
   {

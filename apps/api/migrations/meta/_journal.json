@@ -414,6 +414,13 @@
       "when": 1791147713206,
       "tag": "0058_source_knowledge",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "6",
+      "when": 1791160733916,
+      "tag": "0059_channel_sender_verification",
+      "breakpoints": true
     }
   ]
 }
