@@ -1,13 +1,6 @@
-import type { InboundChannelId } from "@ngriffin_uk/polychat-schemas";
+import type { ChannelIncomingMessage, InboundChannelId } from "@ngriffin_uk/polychat-schemas";
 
-export interface ChannelIncomingMessage {
-  kind: "message";
-  messageId: string;
-  externalId: string;
-  from: string;
-  body: string;
-  media?: { url: string; mimeType?: string }[];
-}
+export type { ChannelIncomingMessage } from "@ngriffin_uk/polychat-schemas";
 
 export interface ChannelControlResponse {
   kind: "control";
@@ -24,6 +17,7 @@ export interface ChannelVerification {
 export interface ChannelReply {
   externalId: string;
   body: string;
+  threadId: string;
 }
 
 export interface ChannelAdapter {
@@ -31,6 +25,6 @@ export interface ChannelAdapter {
   readonly label: string;
   readonly scopes: readonly ("personal" | "project")[];
   verify(request: Request, secret: string, rawBody: string): Promise<ChannelVerification>;
-  parse(rawBody: string): ChannelIncoming;
+  parse(rawBody: string, options?: { botUserId?: string }): ChannelIncoming;
   sendReply(reply: ChannelReply, secret: string): Promise<void>;
 }

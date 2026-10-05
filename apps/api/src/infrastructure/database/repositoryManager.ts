@@ -13,6 +13,7 @@ import { SessionRepository } from "~/modules/auth/infrastructure/SessionReposito
 import { WebAuthnRepository } from "~/modules/auth/infrastructure/WebAuthnRepository";
 import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
+import { ChannelThreadRepository } from "~/modules/channels/infrastructure/ChannelThreadRepository";
 import { BrowserSessionRepository } from "~/modules/computer-use/infrastructure/BrowserSessionRepository";
 import { ConversationHandleRepository } from "~/modules/conversations/infrastructure/ConversationHandleRepository";
 import { ConversationOrganisationRepository } from "~/modules/conversations/infrastructure/ConversationOrganisationRepository";
@@ -216,6 +217,10 @@ export class RepositoryManager {
 
   public get channelBindings(): ChannelBindingRepository {
     return this.resolve("channelBindings", (env) => new ChannelBindingRepository(env));
+  }
+
+  public get channelThreads(): ChannelThreadRepository {
+    return this.resolve("channelThreads", (env) => new ChannelThreadRepository(env));
   }
 
   public get memoryDocuments(): MemoryDocumentRepository {

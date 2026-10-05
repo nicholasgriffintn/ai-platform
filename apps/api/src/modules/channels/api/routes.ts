@@ -2,6 +2,7 @@ import {
   apiResponseSchema,
   channelBindingSchema,
   createChannelBindingSchema,
+  updateChannelBindingSchema,
   listChannelBindingsResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
@@ -13,6 +14,7 @@ import {
   createChannelBinding,
   deleteChannelBinding,
   listChannelBindings,
+  updateChannelBinding,
 } from "~/modules/channels/application/bindings";
 
 const app = new Hono();
@@ -41,6 +43,17 @@ addRoute(app, "post", "/bindings", {
   bodySchema: createChannelBindingSchema,
   responses: { 200: { description: "Binding", schema: channelBindingSchema } },
   handler: async ({ serviceContext, body }) => createChannelBinding(serviceContext, body),
+});
+
+addRoute(app, "patch", "/bindings/:bindingId", {
+  tags: ["channels"],
+  summary: "Update channel sender permissions and reply settings",
+  auth: true,
+  paramSchema: z.object({ bindingId: z.string().min(1) }),
+  bodySchema: updateChannelBindingSchema,
+  responses: { 200: { description: "Binding", schema: channelBindingSchema } },
+  handler: async ({ serviceContext, params, body }) =>
+    updateChannelBinding(serviceContext, params.bindingId, body),
 });
 
 addRoute(app, "delete", "/bindings/:bindingId", {

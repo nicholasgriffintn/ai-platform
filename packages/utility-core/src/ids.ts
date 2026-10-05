@@ -41,3 +41,13 @@ export function generatePrefixedId(prefix: string): string {
 
   return `${prefix}${generateId()}`;
 }
+
+export function toSortableDecimalIdentifier(value: string): string {
+  if (!/^\d{1,12}\.\d{1,6}$/.test(value)) {
+    throw new Error("Invalid decimal identifier");
+  }
+
+  const [whole, fraction] = value.split(".");
+
+  return `${whole.padStart(12, "0")}.${fraction.padEnd(6, "0")}`;
+}

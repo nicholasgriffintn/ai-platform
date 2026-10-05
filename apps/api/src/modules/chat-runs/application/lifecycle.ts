@@ -21,6 +21,7 @@ import {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { reconcileRecipeExecutionTask } from "~/modules/apps/application/recipes/task-reconciliation";
+import { isChannelRunAuthorityCurrent } from "~/modules/channels/application/run-authority";
 import type { AgentLoopExecutionResult } from "~/modules/chat/application/agent/agent-loop";
 import type { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { isThreadLeaseOwnershipLostError } from "~/modules/conversations/infrastructure/coordinator/client";
@@ -254,6 +255,13 @@ export class ChatRunLifecycle {
 
   async isCancellationRequested(): Promise<boolean> {
     const current = await this.repository.getById(this.run.id);
+
+    if (
+      this.serviceContext &&
+      !(await isChannelRunAuthorityCurrent(this.serviceContext, this.run))
+    ) {
+      return true;
+    }
 
     return (
       current?.attempt === this.run.attempt &&
