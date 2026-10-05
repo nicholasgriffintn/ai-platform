@@ -553,13 +553,6 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
           </div>
           {state.site && (
             <div className="flex flex-wrap items-center gap-1.5">
-              {!isBusy && !revisionPreview && (
-                <SiteBrowserChecks
-                  site={state.site}
-                  pageId={resolvedPageId ?? undefined}
-                  verification={verification}
-                />
-              )}
               <Button
                 variant={historyOpen ? "secondary" : "outline"}
                 size="sm"
@@ -595,6 +588,13 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                 >
                   Fill images
                 </Button>
+              )}
+              {!isBusy && !revisionPreview && (
+                <SiteBrowserChecks
+                  site={state.site}
+                  pageId={resolvedPageId ?? undefined}
+                  verification={verification}
+                />
               )}
               {projectId && (
                 <>
