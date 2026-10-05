@@ -18,8 +18,8 @@ import { conversationTypeSchema } from "./conversation-type.js";
 import { delegationContextSchema } from "./delegations.js";
 import { hasCompactionPart, messagePartsSchema } from "./message-parts.js";
 import { chatMessageSelectionSchema } from "./message-selection.js";
-import { metaAssistantRequestSchema } from "./meta-assistant.js";
 import { modelTierSchema } from "./model-lineup.js";
+import { polyRequestSchema } from "./poly.js";
 import { permissionModeSchema } from "./providers.js";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning.js";
 import { runProvenanceSchema } from "./run-provenance.js";
@@ -614,10 +614,10 @@ export const chatCompletionsRequestFieldsSchema = z.object({
     .optional()
     .describe("Trusted context for a run created by a delegation."),
   platform: z.string().min(1).optional().describe("Client platform sending the request."),
-  meta_assistant: metaAssistantRequestSchema
+  poly: polyRequestSchema
     .optional()
     .describe(
-      "Marks the request as the signed-in user's meta assistant conversation, which only receives product-operating tools, and carries the client's current UI context.",
+      "Marks the request as the signed-in user's Poly conversation, which only receives product-operating tools, and carries the client's current UI context.",
     ),
   options: chatRequestOptionsSchema
     .optional()

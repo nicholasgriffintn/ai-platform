@@ -1,4 +1,5 @@
 import type { AgentMode } from "./agent-modes.js";
+import { POLY_NAVIGATION_TOOL_NAMES } from "./poly.js";
 import type { TeammateKind } from "./teammate-roles.js";
 
 export const PLATFORM_TEAMMATE_ID_PREFIX = "platform-";
@@ -233,6 +234,55 @@ export const PLATFORM_TEAMMATES: readonly PlatformTeammate[] = [
   },
 ];
 
+export const POLY_TEAMMATE: PlatformTeammate = {
+  id: platformTeammateId("poly"),
+  slug: "poly",
+  name: "Poly",
+  category: "organisation",
+  summary: "Keeps one continuous thread with each person and works across Chat and Work for them.",
+  tools: [
+    ...POLY_NAVIGATION_TOOL_NAMES,
+    "delegate",
+    "set_goal",
+    "complete_goal",
+    "search_memories",
+    "store_memory",
+    "read_memory_document",
+    "web_search",
+    "research",
+    "decide",
+    "ask_user",
+    "request_approval",
+    "discover_capabilities",
+    "create_automation",
+    "load_skill",
+    "save_skill",
+    "propose_skill_revision",
+    "search_documents",
+    "get_document",
+    "write_document",
+    "create_note",
+    "get_note",
+    "get_task_status",
+    "list_saved_messages",
+  ],
+  skillIds: [],
+  mode: "chat",
+  kind: "colleague",
+  maxSteps: 24,
+};
+
+export const POLY_TEAMMATE_ID = POLY_TEAMMATE.id;
+
+export const SYNCED_PLATFORM_TEAMMATES: readonly PlatformTeammate[] = [
+  ...PLATFORM_TEAMMATES,
+  POLY_TEAMMATE,
+];
+
+export function isPolyTeammateId(id: string | null | undefined): boolean {
+  return id === POLY_TEAMMATE_ID;
+}
+
 export function isPlatformTeammateId(id: string): boolean {
   return id.startsWith(PLATFORM_TEAMMATE_ID_PREFIX);
 }
@@ -244,7 +294,7 @@ export function findPlatformTeammate(
     return undefined;
   }
 
-  return PLATFORM_TEAMMATES.find(
+  return SYNCED_PLATFORM_TEAMMATES.find(
     (teammate) => teammate.id === idOrSlug || teammate.slug === idOrSlug,
   );
 }

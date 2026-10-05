@@ -1,8 +1,8 @@
 import {
-  META_NAVIGATION_DATA_KEY,
-  type MetaAssistantUiContext,
-  type MetaNavigationTarget,
-  metaNavigationTargetSchema,
+  POLY_NAVIGATION_DATA_KEY,
+  type PolyUiContext,
+  type PolyNavigationTarget,
+  polyNavigationTargetSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { matchPath } from "react-router";
 
@@ -38,12 +38,12 @@ const RESERVED_CHAT_SEGMENTS = new Set([
   "tools",
 ]);
 
-export function buildMetaAssistantUiContext(
+export function buildPolyUiContext(
   pathname: string,
   fallbackConversationId?: string,
-): MetaAssistantUiContext {
+): PolyUiContext {
   const place = getActivePlace(pathname);
-  const context: MetaAssistantUiContext = {
+  const context: PolyUiContext = {
     route: pathname,
     mode: getProductMode(pathname),
     ...(place ? { place } : {}),
@@ -100,7 +100,7 @@ export function buildMetaAssistantUiContext(
   return context;
 }
 
-export function getMetaNavigationHref(target: MetaNavigationTarget): string {
+export function getPolyNavigationHref(target: PolyNavigationTarget): string {
   switch (target.kind) {
     case "conversation": {
       const conversationPath =
@@ -141,13 +141,13 @@ export function getMetaNavigationHref(target: MetaNavigationTarget): string {
   }
 }
 
-export function readMetaNavigationTarget(data: unknown): MetaNavigationTarget | null {
+export function readPolyNavigationTarget(data: unknown): PolyNavigationTarget | null {
   if (!data || typeof data !== "object") {
     return null;
   }
 
-  const parsed = metaNavigationTargetSchema.safeParse(
-    (data as Record<string, unknown>)[META_NAVIGATION_DATA_KEY],
+  const parsed = polyNavigationTargetSchema.safeParse(
+    (data as Record<string, unknown>)[POLY_NAVIGATION_DATA_KEY],
   );
 
   return parsed.success ? parsed.data : null;

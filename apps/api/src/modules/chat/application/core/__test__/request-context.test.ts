@@ -19,7 +19,7 @@ describe("chat request context helpers", () => {
         messages: [{ role: "user", content: "hello" }],
         approved_tools: ["sandbox"],
         denied_tools: ["create_task", "store_memory"],
-        meta_assistant: { ui_context: { mode: "work", projectId: "project-1" } },
+        poly: { ui_context: { mode: "work", projectId: "project-1" } },
         enabled_tools: ["sandbox", "discover_capabilities"],
         tools: [{ name: "sandbox", permissions: ["sandbox:write"] }],
         options: { sandbox: { enabled: true } },
@@ -47,7 +47,7 @@ describe("chat request context helpers", () => {
         mode: "build",
         approved_tools: ["sandbox"],
         denied_tools: ["create_task", "store_memory"],
-        meta_assistant: { ui_context: { mode: "work", projectId: "project-1" } },
+        poly: { ui_context: { mode: "work", projectId: "project-1" } },
         enabled_tools: ["sandbox", "discover_capabilities"],
         tool_permissions_map: {
           sandbox: ["sandbox:write"],

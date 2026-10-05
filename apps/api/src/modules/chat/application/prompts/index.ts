@@ -1,5 +1,4 @@
 import {
-  buildMetaAssistantPrompt,
   buildSandboxControllerPrompt,
   buildStandardChatPrompt,
   getPromptText,
@@ -105,15 +104,6 @@ export async function getSystemPrompt(options: SystemPromptOptions): Promise<str
   });
   const preferredLanguage = request.lang?.trim() || null;
 
-  if (request.meta_assistant) {
-    return trimTemplateWhitespace(
-      buildMetaAssistantPrompt({
-        userReference: userSettings?.nickname?.trim() || user?.name?.trim() || null,
-        uiContext: request.meta_assistant.ui_context,
-      }),
-    );
-  }
-
   if (request.options?.sandbox?.enabled) {
     return trimTemplateWhitespace(
       buildSandboxControllerPrompt({
@@ -185,6 +175,7 @@ export async function getSystemPrompt(options: SystemPromptOptions): Promise<str
         skillLoadTool: SKILL_LOAD_TOOL_NAME,
         userTraits: userSettings?.traits || null,
         userPreferences: userSettings?.preferences || null,
+        poly: request.poly ? { uiContext: request.poly.ui_context } : null,
       }),
     );
   } catch (error) {

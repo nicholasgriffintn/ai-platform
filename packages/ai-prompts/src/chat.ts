@@ -532,6 +532,7 @@ export interface StandardChatPromptOptions {
   userTraits?: string | null;
   userPreferences?: string | null;
   platform?: string | null;
+  poly?: PolyPromptOptions | null;
 }
 
 export function buildStandardChatPrompt({
@@ -553,6 +554,7 @@ export function buildStandardChatPrompt({
   userTraits,
   userPreferences,
   platform,
+  poly,
 }: StandardChatPromptOptions): string {
   const chatMode = mode || "standard";
   const isTeammate = isAgentMode(chatMode);
@@ -585,6 +587,7 @@ export function buildStandardChatPrompt({
       }),
     )
     .add(buildPersonaSection(persona))
+    .add(buildPolySection(poly))
     .add(buildResponseStyleSection(responseStyle))
     .add(buildFormattingSection({ isCoding }))
     .addIf(isCoding, buildCodingConductSection())
@@ -605,7 +608,7 @@ export function buildStandardChatPrompt({
     .build();
 }
 
-export const META_ASSISTANT_PLACE_LABELS: Readonly<Record<string, string>> = {
+export const POLY_PLACE_LABELS: Readonly<Record<string, string>> = {
   conversations: "Conversations",
   canvas: "Canvas",
   sites: "Sites",
@@ -617,12 +620,12 @@ export const META_ASSISTANT_PLACE_LABELS: Readonly<Record<string, string>> = {
   you: "Account settings",
 };
 
-export const META_ASSISTANT_MODE_LABELS: Readonly<Record<string, string>> = {
+export const POLY_MODE_LABELS: Readonly<Record<string, string>> = {
   chat: "Chat",
   work: "Work",
 };
 
-export interface MetaAssistantUiContextInput {
+export interface PolyUiContextInput {
   mode?: string | null;
   place?: string | null;
   route?: string | null;
@@ -633,18 +636,16 @@ export interface MetaAssistantUiContextInput {
   runId?: string | null;
 }
 
-function buildUiContextSection(uiContext?: MetaAssistantUiContextInput | null): string {
+function buildUiContextSection(uiContext?: PolyUiContextInput | null): string {
   if (!uiContext) {
     return "";
   }
 
   const lines = [
     "<ui_context>",
-    uiContext.mode
-      ? `<mode>${META_ASSISTANT_MODE_LABELS[uiContext.mode] ?? uiContext.mode}</mode>`
-      : null,
+    uiContext.mode ? `<mode>${POLY_MODE_LABELS[uiContext.mode] ?? uiContext.mode}</mode>` : null,
     uiContext.place
-      ? `<place>${META_ASSISTANT_PLACE_LABELS[uiContext.place] ?? uiContext.place}</place>`
+      ? `<place>${POLY_PLACE_LABELS[uiContext.place] ?? uiContext.place}</place>`
       : null,
     uiContext.route ? `<route>${escapeHtml(uiContext.route)}</route>` : null,
     uiContext.conversationId
@@ -656,32 +657,25 @@ function buildUiContextSection(uiContext?: MetaAssistantUiContextInput | null): 
     uiContext.projectId ? `<project_id>${escapeHtml(uiContext.projectId)}</project_id>` : null,
     uiContext.taskId ? `<task_id>${escapeHtml(uiContext.taskId)}</task_id>` : null,
     uiContext.runId ? `<run_id>${escapeHtml(uiContext.runId)}</run_id>` : null,
-    getPromptText("chat/meta-assistant/ui-context-note"),
+    getPromptText("chat/poly/ui-context-note"),
     "</ui_context>",
   ].filter((line): line is string => Boolean(line));
 
   return `${lines.join("\n")}\n`;
 }
 
-export interface MetaAssistantPromptOptions {
-  userReference?: string | null;
-  uiContext?: MetaAssistantUiContextInput | null;
+export interface PolyPromptOptions {
+  uiContext?: PolyUiContextInput | null;
 }
 
-export function buildMetaAssistantPrompt({
-  userReference,
-  uiContext,
-}: MetaAssistantPromptOptions): string {
-  return new PromptBuilder(
-    renderPrompt("chat/meta-assistant/role", {
-      userReference: userReference ? escapeHtml(userReference) : undefined,
-    }),
-  )
+function buildPolySection(poly?: PolyPromptOptions | null): string {
+  if (!poly) {
+    return "";
+  }
+
+  return new PromptBuilder(getPromptText("chat/poly/behaviour"))
     .addLine()
-    .add(getPromptText("chat/meta-assistant/behaviour"))
-    .addLine()
-    .add(buildUiContextSection(uiContext))
-    .add(buildSafetyStandardsSection())
+    .add(buildUiContextSection(poly.uiContext))
     .build();
 }
 

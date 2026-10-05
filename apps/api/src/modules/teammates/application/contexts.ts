@@ -3,13 +3,14 @@ import {
   isConnectorConnectionKindForAuth,
 } from "@ngriffin_uk/polychat-ai-integrations";
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
-import type {
-  MemoryDocument,
-  UpdateMemoryDocumentInput,
-  TeammateConnectionGrant,
-  TeammateConnectionGrantListResponse,
-  TeammateContext,
-  TeammateContextScope,
+import {
+  isPolyTeammateId,
+  type MemoryDocument,
+  type UpdateMemoryDocumentInput,
+  type TeammateConnectionGrant,
+  type TeammateConnectionGrantListResponse,
+  type TeammateContext,
+  type TeammateContextScope,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -88,6 +89,7 @@ export async function ensureTeammateContext(
       actorUserId: user.id,
       scope,
       homeConversationId,
+      homeConversationType: isPolyTeammateId(teammateId) ? "poly" : "chat",
       memoryDocumentId,
       memoryDocumentName: `teammate-${generateId().toLowerCase()}`,
     });

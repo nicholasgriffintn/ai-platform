@@ -97,7 +97,7 @@ export * from "./human-in-the-loop.js";
 export * from "./internal-service-auth.js";
 export * from "./memory-documents.js";
 export * from "./saved-messages.js";
-export * from "./meta-assistant.js";
+export * from "./poly.js";
 export * from "./thread-operations.js";
 export * from "./edit.js";
 export * from "./embeddings.js";
