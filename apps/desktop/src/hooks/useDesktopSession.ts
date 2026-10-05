@@ -10,7 +10,7 @@ import { getDesktopSignInMessage } from "../infrastructure/sign-in-message";
 const RENEWAL_EVENTS = ["focus", "online"] as const;
 const RETRY_AFTER_FAILURE_SECONDS = 0;
 
-export function useDesktopSession() {
+export function useDesktopSession(onIdentityChange: () => void) {
   const [isChecking, setChecking] = useState(true);
   const [isSigningIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +27,8 @@ export function useDesktopSession() {
     tokenExpiresAt.current = 0;
     apiKeyService.removeApiKey();
     clearAuthenticatedUserConfiguration();
-  }, [clearAuthenticatedUserConfiguration]);
+    onIdentityChange();
+  }, [clearAuthenticatedUserConfiguration, onIdentityChange]);
 
   const adoptToken = useCallback(async () => {
     const session = await tauriDesktopBackend.accessToken();
@@ -59,6 +60,10 @@ export function useDesktopSession() {
       await adoptToken();
       await authService.checkAuthStatus();
 
+      if (useChatStore.getState().user?.id !== authService.getUser()?.id) {
+        onIdentityChange();
+      }
+
       setAuthenticatedUserConfiguration({
         hasApiKey: true,
         user: authService.getUser(),
@@ -70,7 +75,7 @@ export function useDesktopSession() {
     } finally {
       setChecking(false);
     }
-  }, [adoptToken, forgetSession, setAuthenticatedUserConfiguration]);
+  }, [adoptToken, forgetSession, onIdentityChange, setAuthenticatedUserConfiguration]);
 
   useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect -- initial session load syncs with Tauri backend (external system); state settles on async completion
@@ -143,19 +148,28 @@ export function useDesktopSession() {
     forgetSession();
   }, [forgetSession]);
 
-  const signIn = useCallback(async () => {
-    setError(null);
-    setSigningIn(true);
+  const signIn = useCallback(
+    async (connectionId?: string, linkIdentity?: boolean) => {
+      setError(null);
+      setSigningIn(true);
 
-    try {
-      await tauriDesktopBackend.signIn();
-      await load();
-    } catch (cause) {
-      setError(getDesktopSignInMessage(cause));
-    } finally {
-      setSigningIn(false);
-    }
-  }, [load]);
+      try {
+        await tauriDesktopBackend.signIn(connectionId, linkIdentity);
+        await load();
+
+        return null;
+      } catch (cause) {
+        const message = getDesktopSignInMessage(cause);
+
+        setError(message);
+
+        return message;
+      } finally {
+        setSigningIn(false);
+      }
+    },
+    [load],
+  );
 
   return { isChecking, isSigningIn, error, signIn, signOut };
 }

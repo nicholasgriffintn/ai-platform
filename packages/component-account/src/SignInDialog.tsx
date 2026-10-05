@@ -21,7 +21,7 @@ export function SignInDialog({ open, onOpenChange, appName, children }: SignInDi
       <DialogContent>
         <DialogTitle className="sr-only">Sign in to {appName}</DialogTitle>
         <DialogDescription className="sr-only">
-          Sign in with GitHub, Passkey, Apple, or use a Magic Link to continue.
+          Sign in with GitHub, Passkey, Apple, a Magic Link, or your company identity to continue.
         </DialogDescription>
         <div className="space-y-6 p-6">
           {children}

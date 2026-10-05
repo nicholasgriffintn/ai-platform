@@ -4,6 +4,7 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { readCookieValue } from "@ngriffin_uk/polychat-utility-server/http";
 
 import {
   resolveServiceContext,
@@ -288,9 +289,7 @@ export async function exchangeNativeAuthCode({
 }
 
 export function extractSessionIdFromCookies(cookies: string): string | null {
-  const sessionMatch = cookies.match(/session=([^;]+)/);
-
-  return sessionMatch ? sessionMatch[1] : null;
+  return readCookieValue(cookies, "session") ?? null;
 }
 
 export function createLogoutCookie(): string {

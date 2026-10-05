@@ -7,6 +7,7 @@ import { RecipeComposioTriggerRepository } from "~/modules/apps/infrastructure/R
 import { AttentionRepository } from "~/modules/attention/infrastructure/AttentionRepository";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChallengeRepository";
+import { EnterpriseIdentityRepository } from "~/modules/auth/infrastructure/EnterpriseIdentityRepository";
 import { OAuthStateRepository } from "~/modules/auth/infrastructure/OAuthStateRepository";
 import { SessionRepository } from "~/modules/auth/infrastructure/SessionRepository";
 import { WebAuthnRepository } from "~/modules/auth/infrastructure/WebAuthnRepository";
@@ -231,6 +232,10 @@ export class RepositoryManager {
 
   public get oauthStates(): OAuthStateRepository {
     return this.resolve("oauthStates", (env) => new OAuthStateRepository(env));
+  }
+
+  public get enterpriseIdentities(): EnterpriseIdentityRepository {
+    return this.resolve("enterpriseIdentities", (env) => new EnterpriseIdentityRepository(env));
   }
 
   public get userSettings(): UserSettingsRepository {

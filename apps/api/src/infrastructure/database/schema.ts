@@ -428,6 +428,37 @@ export const workspace = sqliteTable(
 
 export type Workspace = typeof workspace.$inferSelect;
 
+export const enterpriseIdentityConnection = sqliteTable(
+  "enterprise_identity_connection",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    label: text().notNull(),
+    issuer: text().notNull(),
+    client_id: text().notNull(),
+    encrypted_secret: text().notNull(),
+    configuration: text().notNull(),
+    revision: integer().notNull().default(1),
+    enabled: integer({ mode: "boolean" }).notNull().default(true),
+    created_by: integer()
+      .notNull()
+      .references(() => user.id),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+    updated_at: text(),
+  },
+  (table) => ({
+    workspaceIdx: uniqueIndex("enterprise_identity_connection_workspace_idx").on(
+      table.workspace_id,
+    ),
+  }),
+);
+
+export type EnterpriseIdentityConnectionRow = typeof enterpriseIdentityConnection.$inferSelect;
+
 export const workspaceMember = sqliteTable(
   "workspace_member",
   {
@@ -438,6 +469,9 @@ export const workspaceMember = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     role: text({ enum: ["owner", "admin", "member"] }).notNull(),
+    managed_connection_id: text(),
+    managed_connection_revision: integer(),
+    identity_lease_expires_at: text(),
     joined_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
