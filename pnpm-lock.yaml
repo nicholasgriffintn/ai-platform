@@ -280,10 +280,10 @@ importers:
     dependencies:
       '@hono/standard-validator':
         specifier: 0.4.0
-        version: 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.9)
+        version: 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.10)
       '@hono/zod-validator':
         specifier: 0.9.1
-        version: 0.9.1(hono@4.13.9)(zod@4.6.5)
+        version: 0.9.1(hono@4.13.10)(zod@4.6.5)
       '@ngriffin_uk/auth-core':
         specifier: ^0.5.1
         version: 0.5.1
@@ -394,7 +394,7 @@ importers:
         version: link:../../packages/utility-server
       '@scalar/hono-api-reference':
         specifier: 0.12.6
-        version: 0.12.6(hono@4.13.9)
+        version: 0.12.6(hono@4.13.10)
       '@sentry/cloudflare':
         specifier: 10.75.3
         version: 10.75.3(@cloudflare/workers-types@5.20260918.1)(wrangler@4.142.0(@cloudflare/workers-types@5.20260918.1)(@types/node@26.6.3))
@@ -411,11 +411,11 @@ importers:
         specifier: 0.45.3
         version: 0.45.3(@cloudflare/workers-types@5.20260918.1)(@opentelemetry/api@1.9.1)(better-sqlite3@13.0.3)
       hono:
-        specifier: 4.13.9
-        version: 4.13.9
+        specifier: 4.13.10
+        version: 4.13.10
       hono-openapi:
         specifier: 1.3.3
-        version: 1.3.3(hono@4.13.9)(valibot@1.5.0(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.6.5))(zod@4.6.5)
+        version: 1.3.3(hono@4.13.10)(valibot@1.5.0(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.6.5))(zod@4.6.5)
       hyparquet:
         specifier: 1.31.2
         version: 1.31.2
@@ -8374,6 +8374,10 @@ packages:
     peerDependencies:
       hono: ^4.11.2
 
+  hono@4.13.10:
+    resolution: {integrity: sha512-dQuLsa5oO+47QVMVMaaD9cIv8ctmVtK1iRvwWngkfloFJMeFeuoUFDswIqZGxmGX3hrRzREgEArjkK9OgsQEhA==}
+    engines: {node: '>=16.9.0'}
+
   hono@4.13.9:
     resolution: {integrity: sha512-7dMkQmZoC4E6F7AtaQSPhlWAdnBti+j7rreMZl8QB4jFiEhP9TWbGWUMi8WYzBCgmgulxuvLQupKqo+Co6Omyg==}
     engines: {node: '>=16.9.0'}
@@ -11685,14 +11689,14 @@ snapshots:
     dependencies:
       hono: 4.13.9
 
-  '@hono/standard-validator@0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.9)':
+  '@hono/standard-validator@0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.10)':
     dependencies:
       '@standard-schema/spec': 1.1.0
-      hono: 4.13.9
+      hono: 4.13.10
 
-  '@hono/zod-validator@0.9.1(hono@4.13.9)(zod@4.6.5)':
+  '@hono/zod-validator@0.9.1(hono@4.13.10)(zod@4.6.5)':
     dependencies:
-      hono: 4.13.9
+      hono: 4.13.10
       zod: 4.6.5
 
   '@humanfs/core@0.19.2':
@@ -13173,10 +13177,10 @@ snapshots:
 
   '@scalar/helpers@0.15.0': {}
 
-  '@scalar/hono-api-reference@0.12.6(hono@4.13.9)':
+  '@scalar/hono-api-reference@0.12.6(hono@4.13.10)':
     dependencies:
       '@scalar/client-side-rendering': 0.4.5
-      hono: 4.13.9
+      hono: 4.13.10
 
   '@scalar/schemas@0.12.1':
     dependencies:
@@ -15479,14 +15483,14 @@ snapshots:
 
   highlight.js@11.11.2: {}
 
-  hono-openapi@1.3.3(hono@4.13.9)(valibot@1.5.0(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.6.5))(zod@4.6.5):
+  hono-openapi@1.3.3(hono@4.13.10)(valibot@1.5.0(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.6.5))(zod@4.6.5):
     dependencies:
-      '@hono/standard-validator': 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.9)
+      '@hono/standard-validator': 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.10)
       '@standard-community/standard-json': 0.3.6(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(valibot@1.5.0(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.6.5))(zod@4.6.5)
       '@standard-community/standard-openapi': 0.2.10(@standard-community/standard-json@0.3.6(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(valibot@1.5.0(typescript@6.0.3))(zod-to-json-schema@3.25.2(zod@4.6.5))(zod@4.6.5))(@standard-schema/spec@1.1.0)(openapi-types@12.1.3)(valibot@1.5.0(typescript@6.0.3))(zod@4.6.5)
       '@standard-schema/spec': 1.1.0
       '@types/json-schema': 7.0.15
-      hono: 4.13.9
+      hono: 4.13.10
       openapi-types: 12.1.3
     transitivePeerDependencies:
       - '@valibot/to-json-schema'
@@ -15498,6 +15502,8 @@ snapshots:
       - zod
       - zod-openapi
       - zod-to-json-schema
+
+  hono@4.13.10: {}
 
   hono@4.13.9: {}
 
