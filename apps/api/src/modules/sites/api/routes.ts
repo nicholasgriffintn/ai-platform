@@ -1,6 +1,8 @@
 import { generateSiteFiles } from "@ngriffin_uk/polychat-library-sites";
 import {
   errorResponseSchema,
+  siteConnectorSnapshotRequestSchema,
+  siteSourceRefreshRequestSchema,
   siteDataResponseSchema,
   siteIntegrationScopeSchema,
   listSitesQuerySchema,
@@ -25,6 +27,10 @@ import z from "zod/v4";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { requireAdmin } from "~/middleware/adminMiddleware";
 import { buildSiteInSandbox } from "~/modules/sites/application/build";
+import {
+  snapshotSiteConnector,
+  refreshSiteConnectorSource,
+} from "~/modules/sites/application/connector-data";
 import { editSite } from "~/modules/sites/application/edit";
 import { evaluateSitePrompts } from "~/modules/sites/application/evaluate";
 import { streamSiteGeneration } from "~/modules/sites/application/generate";
@@ -305,6 +311,30 @@ addRoute(app, "post", "/:id/data/read", {
   bodySchema: siteIntegrationScopeSchema,
   responses: { 200: { description: "Site data", schema: siteDataResponseSchema } },
   handler: ({ params, body, serviceContext }) => readSiteData(serviceContext, params.id, body),
+});
+
+addRoute(app, "post", "/:id/data/connectors", {
+  tags: ["sites"],
+  summary: "Read site data from a selected connector account",
+  auth: true,
+  paramSchema: siteParamsSchema,
+  bodySchema: siteConnectorSnapshotRequestSchema,
+  responses: { 200: { description: "Updated site", schema: siteResponseSchema } },
+  handler: async ({ params, body, serviceContext }) => ({
+    site: await snapshotSiteConnector(serviceContext, params.id, body),
+  }),
+});
+
+addRoute(app, "post", "/:id/data/refresh", {
+  tags: ["sites"],
+  summary: "Refresh a saved connector Source",
+  auth: true,
+  paramSchema: siteParamsSchema,
+  bodySchema: siteSourceRefreshRequestSchema,
+  responses: { 200: { description: "Updated site", schema: siteResponseSchema } },
+  handler: async ({ params, body, serviceContext }) => ({
+    site: await refreshSiteConnectorSource(serviceContext, params.id, body),
+  }),
 });
 
 export default app;

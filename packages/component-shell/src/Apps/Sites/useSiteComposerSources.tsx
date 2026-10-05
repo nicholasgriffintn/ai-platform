@@ -6,7 +6,7 @@ import { sitesService } from "@ngriffin_uk/polychat-library-client";
 import { SITES_QUERY_KEYS, useSources } from "@ngriffin_uk/polychat-library-react";
 import type { SiteRecord, SourceSummary } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { FileText } from "lucide-react";
+import { FileText, RefreshCw } from "lucide-react";
 import { useState } from "react";
 
 export function useSiteComposerSources({
@@ -78,7 +78,21 @@ export function useSiteComposerSources({
       handleSaved(saved);
     },
   });
-  const isPending = detach.isPending;
+  const refresh = useMutation({
+    mutationFn: (bindingId: string) => {
+      if (!site) {
+        throw new Error("Build the site before refreshing a saved source");
+      }
+
+      return sitesService.refreshDataSource(site.id, {
+        projectId,
+        expectedRevision: site.revision,
+        bindingId,
+      });
+    },
+    onSuccess: handleSaved,
+  });
+  const isPending = detach.isPending || refresh.isPending;
   const isDisabled = disabled || isPending;
   const connectedSources = [...connectedIds].map((id) => ({
     id,
@@ -90,7 +104,21 @@ export function useSiteComposerSources({
       id,
       label: source?.title ?? bindingId ?? "Connected source",
       onClear: isDisabled ? undefined : () => detach.mutate(id),
-      preview: <FileText className="h-3.5 w-3.5" aria-hidden="true" />,
+      preview:
+        source?.kind === "connector" && source.metadata.siteConnector && bindingId ? (
+          <button
+            type="button"
+            disabled={isDisabled}
+            aria-label={`Refresh ${source.title}`}
+            title={`Refresh ${source.title} from connector`}
+            onClick={() => refresh.mutate(bindingId)}
+            className="rounded-sm disabled:opacity-50"
+          >
+            <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+        ) : (
+          <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+        ),
     })),
     ...pendingSources.map((source) => ({
       id: source.id,
@@ -105,7 +133,7 @@ export function useSiteComposerSources({
   return {
     sourceIds: pendingSources.map((source) => source.id),
     isPending,
-    error: sources.error?.message ?? detach.error?.message,
+    error: sources.error?.message ?? detach.error?.message ?? refresh.error?.message,
     attachments: attachments.length ? (
       <div className="flex flex-wrap items-center gap-2 px-3 pt-3">
         <ComposerAttachmentChips attachments={attachments} />

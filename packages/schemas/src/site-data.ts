@@ -43,3 +43,35 @@ export const siteDataResponseSchema = z
 export type SiteDataBinding = z.infer<typeof siteDataBindingSchema>;
 export type SiteIntegrationScope = z.infer<typeof siteIntegrationScopeSchema>;
 export type SiteDataResponse = z.infer<typeof siteDataResponseSchema>;
+
+export const siteConnectorSnapshotRequestSchema = siteIntegrationScopeSchema
+  .extend({
+    bindingId: siteDataIdentifierSchema,
+    pageId: siteDataIdentifierSchema,
+    statePath: siteSourceBindingSchema.shape.statePath,
+    provider: z.string().min(1).max(100),
+    operation: z.string().min(1).max(200),
+    connectedAccountId: z.string().min(1).max(200),
+    params: z
+      .record(z.string(), z.unknown())
+      .refine(
+        (value) => JSON.stringify(value).length <= 32_000,
+        "Connector parameters are too large",
+      )
+      .default({}),
+    resultPath: z
+      .string()
+      .regex(/^\/[a-zA-Z0-9_\-/]{0,200}$/)
+      .default("/"),
+    fields: z
+      .record(siteDataFieldNameSchema, z.string().regex(/^\/[a-zA-Z0-9_\-/]{0,200}$/))
+      .refine((value) => Object.keys(value).length <= 40)
+      .default({}),
+  })
+  .strict();
+export const siteSourceRefreshRequestSchema = siteIntegrationScopeSchema
+  .extend({ bindingId: siteDataIdentifierSchema })
+  .strict();
+export type SiteSourceRefreshRequest = z.infer<typeof siteSourceRefreshRequestSchema>;
+
+export type SiteConnectorSnapshotRequest = z.infer<typeof siteConnectorSnapshotRequestSchema>;
