@@ -1,4 +1,5 @@
 export * from "./teammates.js";
+export * from "./embedding-evaluation.js";
 export * from "./teammate-contexts.js";
 export * from "./teammate-computers.js";
 export * from "./agent-modes.js";
