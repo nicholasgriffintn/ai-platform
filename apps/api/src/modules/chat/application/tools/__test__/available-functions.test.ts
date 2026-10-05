@@ -29,9 +29,9 @@ function paramsForMode(mode: string): AvailableFunctionsSource & { model: string
 
 describe("resolveAvailableFunctions", () => {
   it.each([
-    ["meta", "save_skill"],
-    ["meta", "analyse_article"],
-    ["meta", "process_recording"],
+    ["poly", "save_skill"],
+    ["poly", "analyse_article"],
+    ["poly", "process_recording"],
     ["chat", "find_places"],
   ] as const)(
     "does not smuggle %s-disallowed %s through supplied tools",

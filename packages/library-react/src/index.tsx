@@ -118,7 +118,7 @@ export * from "./lib/focus-role.js";
 export * from "./lib/global-search.js";
 export * from "./lib/home-chat-modes/conversation-mode.js";
 export * from "./lib/keyboard-shortcuts.js";
-export * from "./lib/meta-assistant.js";
+export * from "./lib/poly.js";
 export * from "./lib/model-catalogue.js";
 export * from "./lib/model-lineup-view.js";
 export * from "./lib/model-sources.js";

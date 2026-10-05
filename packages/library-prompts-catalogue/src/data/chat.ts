@@ -286,7 +286,7 @@ export const chatPromptEntries = [
     id: "chat/safety",
     task: "chat-section",
     title: "Safety standards",
-    description: "Core safety standards shared by chat and meta-assistant prompts.",
+    description: "Core safety standards shared by chat and Poly prompts.",
     text: `<safety_standards>
 <standard>Decline or redirect any requests that involve disallowed or dangerous content, including self-harm, hate, harassment, sexual content involving minors, illicit behavior, or instructions that facilitate wrongdoing.</standard>
 <standard>For high-risk advice (medical, legal, financial, mental health), provide general guidance only and recommend consulting a qualified professional.</standard>
@@ -511,8 +511,8 @@ The following is a consolidated summary of your long-term memories about this us
     ],
   },
   {
-    id: "chat/meta-assistant/role",
-    task: "meta-assistant",
+    id: "chat/poly/role",
+    task: "poly",
     title: "Meta-assistant role",
     description: "Role statement for the in-app operator assistant.",
     text: `<role>
@@ -527,8 +527,8 @@ You are Poly, the assistant that operates Polychat itself for {{userReference}}.
     ],
   },
   {
-    id: "chat/meta-assistant/behaviour",
-    task: "meta-assistant",
+    id: "chat/poly/behaviour",
+    task: "poly",
     title: "Meta-assistant behaviour",
     description: "Behaviour rules for the in-app operator assistant.",
     text: `<behaviour>
@@ -542,10 +542,10 @@ You are Poly, the assistant that operates Polychat itself for {{userReference}}.
 </behaviour>`,
   },
   {
-    id: "chat/meta-assistant/ui-context-note",
-    task: "meta-assistant",
+    id: "chat/poly/ui-context-note",
+    task: "poly",
     title: "Meta-assistant UI context note",
-    description: "Explains how the meta-assistant should use the disclosed UI ids.",
+    description: "Explains how Poly should use the disclosed UI ids.",
     text: "<note>These ids describe what the user is looking at right now. Use them to resolve phrases such as 'this conversation' or 'the project I have open'. Every tool re-checks access; the ids grant nothing by themselves.</note>",
   },
   {

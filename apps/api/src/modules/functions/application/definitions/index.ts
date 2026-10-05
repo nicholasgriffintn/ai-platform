@@ -27,11 +27,11 @@ import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
 import { search_memories, store_memory, read_memory_document } from "./memory";
 import { messageParent } from "./message-parent";
-import { metaToolDescriptors } from "./meta";
 import { create_music } from "./music";
 import { next_edit_completion } from "./next_edit";
 import { extract_text_from_document } from "./ocr";
 import { run_pashi_tools, search_pashi_tools } from "./pashi";
+import { polyNavigationToolDescriptors } from "./poly-navigation";
 import { process_recording } from "./process_recording";
 import { create_task, get_task, list_tasks, update_task } from "./projectTasks";
 import { propose_skill_revision } from "./propose_skill_revision";
@@ -132,7 +132,7 @@ const descriptors: FunctionToolDescriptor[] = [
   run_prediction,
   run_code,
   use_computer,
-  ...metaToolDescriptors,
+  ...polyNavigationToolDescriptors,
 ];
 
 export const functionToolDescriptors: FunctionToolDescriptor[] = descriptors.map((descriptor) => ({

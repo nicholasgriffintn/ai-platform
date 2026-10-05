@@ -8,7 +8,7 @@ import {
 import { isAgentExecutionMode } from "@ngriffin_uk/polychat-schemas";
 import { getCatalogueToolName } from "@ngriffin_uk/polychat-utility-server/tool-names";
 
-import { filterToolsForConversationType } from "~/modules/chat/application/policy/meta-assistant";
+import { filterToolsForConversationType } from "~/modules/chat/application/policy/poly";
 import { resolveEnabledFunctionToolNames } from "~/modules/functions/application/availability";
 import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
 import type { ChatCompletionParameters } from "~/types";

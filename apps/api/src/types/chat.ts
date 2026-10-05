@@ -11,7 +11,7 @@ import type {
   AgentMode,
   ComputeSite,
   ConversationType,
-  MetaAssistantRequest,
+  PolyRequest,
   PermissionMode,
   RunProvenance,
   ToolPermission,
@@ -50,7 +50,7 @@ export type {
 export interface IBody {
   completion_id: string;
   conversation_type?: ConversationType;
-  meta_assistant?: MetaAssistantRequest;
+  poly?: PolyRequest;
   input: ChatInput;
   attachments?: Attachment[];
   date: string;

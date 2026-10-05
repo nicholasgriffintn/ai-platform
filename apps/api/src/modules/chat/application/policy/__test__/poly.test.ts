@@ -1,17 +1,17 @@
-import { META_TOOL_NAMES } from "@ngriffin_uk/polychat-schemas";
+import { POLY_NAVIGATION_TOOL_NAMES } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it } from "vitest";
 
 import {
   filterToolsForConversationType,
-  getMetaAssistantToolNames,
-  resolveMetaAssistantScope,
-} from "~/modules/chat/application/policy/meta-assistant";
+  getPolyNavigationToolNames,
+  resolvePolyScope,
+} from "~/modules/chat/application/policy/poly";
 
 const tools = [
   { name: "web_search" },
   { name: "store_memory" },
-  ...META_TOOL_NAMES.map((name) => ({ name })),
+  ...POLY_NAVIGATION_TOOL_NAMES.map((name) => ({ name })),
 ];
 
 function repositories(stored: Record<string, unknown> | null) {
@@ -32,8 +32,8 @@ function options(overrides: Record<string, unknown>) {
 
 describe("filterToolsForConversationType", () => {
   it("gives the meta scope only the meta tools", () => {
-    expect(filterToolsForConversationType(tools, "meta").map((tool) => tool.name)).toEqual(
-      getMetaAssistantToolNames(),
+    expect(filterToolsForConversationType(tools, "poly").map((tool) => tool.name)).toEqual(
+      getPolyNavigationToolNames(),
     );
   });
 
@@ -46,23 +46,23 @@ describe("filterToolsForConversationType", () => {
   });
 });
 
-describe("resolveMetaAssistantScope", () => {
+describe("resolvePolyScope", () => {
   it("is null for ordinary conversations", async () => {
     await expect(
-      resolveMetaAssistantScope(options({}), repositories({ type: "chat", user_id: 7 })),
+      resolvePolyScope(options({}), repositories({ type: "chat", user_id: 7 })),
     ).resolves.toBeNull();
   });
 
-  it("resumes a stored meta conversation without the request marker", async () => {
+  it("resumes a stored Poly conversation without the request marker", async () => {
     await expect(
-      resolveMetaAssistantScope(options({}), repositories({ type: "meta", user_id: 7 })),
+      resolvePolyScope(options({}), repositories({ type: "poly", user_id: 7 })),
     ).resolves.toEqual({ uiContext: undefined });
   });
 
-  it("carries the client ui context for a new meta conversation", async () => {
+  it("carries the client ui context for a new Poly conversation", async () => {
     await expect(
-      resolveMetaAssistantScope(
-        options({ meta_assistant: { ui_context: { place: "work", projectId: "p1" } } }),
+      resolvePolyScope(
+        options({ poly: { ui_context: { place: "work", projectId: "p1" } } }),
         repositories(null),
       ),
     ).resolves.toEqual({ uiContext: { place: "work", projectId: "p1" } });
@@ -70,22 +70,16 @@ describe("resolveMetaAssistantScope", () => {
 
   it("refuses the marker on a conversation that is not meta", async () => {
     await expect(
-      resolveMetaAssistantScope(
-        options({ meta_assistant: {} }),
-        repositories({ type: "chat", user_id: 7 }),
-      ),
+      resolvePolyScope(options({ poly: {} }), repositories({ type: "chat", user_id: 7 })),
     ).rejects.toBeInstanceOf(AssistantError);
   });
 
-  it("refuses another user's meta conversation and anonymous callers", async () => {
+  it("refuses another user's Poly conversation and anonymous callers", async () => {
     await expect(
-      resolveMetaAssistantScope(options({}), repositories({ type: "meta", user_id: 9 })),
+      resolvePolyScope(options({}), repositories({ type: "poly", user_id: 9 })),
     ).rejects.toBeInstanceOf(AssistantError);
     await expect(
-      resolveMetaAssistantScope(
-        options({ meta_assistant: {}, context: { user: undefined } }),
-        repositories(null),
-      ),
+      resolvePolyScope(options({ poly: {}, context: { user: undefined } }), repositories(null)),
     ).rejects.toBeInstanceOf(AssistantError);
   });
 });

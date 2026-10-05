@@ -5,7 +5,7 @@ import {
   DELEGATION_DEFAULT_MAX_CREDIT_MICROS,
   DELEGATION_RUN_TASK_TYPE,
   isLiveDelegationState,
-  isMetaToolName,
+  isPolyNavigationToolName,
   permissionModeSchema,
   readToolIds,
   resolveDelegationCreditCeiling,
@@ -207,7 +207,7 @@ export const delegate: ApiToolDefinition = {
     }
 
     const parentTools = (request.request?.enabled_tools ?? []).filter(
-      (tool) => !isMetaToolName(tool),
+      (tool) => !isPolyNavigationToolName(tool),
     );
     const enabledTools = intersectEnabledTools(parentTools, readToolIds(teammate.enabled_tools));
     const delegationId = `delegation_${generateId()}`;

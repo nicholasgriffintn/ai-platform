@@ -9,7 +9,7 @@ import {
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   ArtifactWorkbenchProvider,
-  buildMetaAssistantUiContext,
+  buildPolyUiContext,
   type ChatSuggestion,
   ComposerDraftProvider,
   type ConversationScope,
@@ -26,11 +26,11 @@ import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
-import { useMetaAssistantNavigation } from "./useMetaAssistantNavigation.js";
+import { usePolyNavigation } from "./usePolyNavigation.js";
 
 const POLY_PET_PRESET_SLUG = "pip";
 
-const META_SUGGESTIONS: ChatSuggestion[] = [
+const POLY_SUGGESTIONS: ChatSuggestion[] = [
   {
     id: "meta-find",
     label: "Find the conversation where we planned the launch",
@@ -63,7 +63,7 @@ const META_SUGGESTIONS: ChatSuggestion[] = [
   },
 ];
 
-function MetaAssistantThread({
+function PolyThread({
   scope,
   onNavigate,
 }: {
@@ -76,11 +76,11 @@ function MetaAssistantThread({
   const { data: conversation } = useChat(scope.currentConversationId);
   const agentApprovals = useConversationAgentApprovals(scope.currentConversationId);
   const uiContext = useMemo(
-    () => buildMetaAssistantUiContext(pathname, openConversationId),
+    () => buildPolyUiContext(pathname, openConversationId),
     [openConversationId, pathname],
   );
 
-  useMetaAssistantNavigation(conversation, scope.currentConversationId, onNavigate);
+  usePolyNavigation(conversation, scope.currentConversationId, onNavigate);
 
   return (
     <ConversationScopeProvider scope={scope}>
@@ -90,11 +90,11 @@ function MetaAssistantThread({
             <ConversationThread
               modeConfig={{
                 agentApprovals,
-                requestOptions: { meta_assistant: { ui_context: uiContext } },
+                requestOptions: { poly: { ui_context: uiContext } },
                 welcomeTitle: "This is Poly.",
                 welcomeDescription:
                   "Ask it to find, open, tidy or summarise anything in Polychat. It operates the product; it does not do your outside work.",
-                welcomeSuggestions: META_SUGGESTIONS,
+                welcomeSuggestions: POLY_SUGGESTIONS,
                 welcomeCapabilitySuggestions: false,
                 inputPlaceholder: { newConversation: "Ask Poly…", followUp: "Ask Poly…" },
                 petPresetSlug: POLY_PET_PRESET_SLUG,
@@ -105,7 +105,7 @@ function MetaAssistantThread({
                 hideModelSelector: true,
                 hideVoiceControls: true,
                 toolSelectionLocked: true,
-                analyticsSource: "meta-assistant",
+                analyticsSource: "poly",
               }}
             />
           </div>
@@ -115,19 +115,19 @@ function MetaAssistantThread({
   );
 }
 
-export function MetaAssistantOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function PolyOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate();
   const { trackEvent } = useTrackEvent();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
-  const metaConversationId = useUIStore((state) => state.metaAssistantConversationId);
-  const setMetaConversationId = useUIStore((state) => state.setMetaAssistantConversationId);
+  const metaConversationId = useUIStore((state) => state.polyConversationId);
+  const setMetaConversationId = useUIStore((state) => state.setPolyConversationId);
   const scope = useLocalConversationScope(metaConversationId, setMetaConversationId);
   const canUsePoly = isAuthenticated;
   const handleNavigate = (href: string) => {
     trackEvent({
-      name: "meta_assistant_navigate",
+      name: "poly_navigate",
       category: "navigation",
-      label: "meta_assistant",
+      label: "poly",
       value: 1,
     });
     void navigate(href);
@@ -166,7 +166,7 @@ export function MetaAssistantOverlay({ open, onClose }: { open: boolean; onClose
             />
           </div>
         ) : (
-          <MetaAssistantThread scope={scope} onNavigate={handleNavigate} />
+          <PolyThread scope={scope} onNavigate={handleNavigate} />
         )}
       </DialogContent>
     </Dialog>

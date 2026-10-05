@@ -1,5 +1,5 @@
 import {
-  buildMetaAssistantPrompt,
+  buildPolyPrompt,
   buildSandboxControllerPrompt,
   buildStandardChatPrompt,
   getPromptText,
@@ -105,11 +105,11 @@ export async function getSystemPrompt(options: SystemPromptOptions): Promise<str
   });
   const preferredLanguage = request.lang?.trim() || null;
 
-  if (request.meta_assistant) {
+  if (request.poly) {
     return trimTemplateWhitespace(
-      buildMetaAssistantPrompt({
+      buildPolyPrompt({
         userReference: userSettings?.nickname?.trim() || user?.name?.trim() || null,
-        uiContext: request.meta_assistant.ui_context,
+        uiContext: request.poly.ui_context,
       }),
     );
   }

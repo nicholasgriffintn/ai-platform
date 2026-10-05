@@ -44,7 +44,7 @@ export * from "./Host/ShellDialogs.js";
 export * from "./Host/ShellHostContext.js";
 export * from "./Legal/PrivacyPage.js";
 export * from "./Legal/TermsPage.js";
-export * from "./MetaAssistant/MetaAssistantOverlay.js";
+export * from "./Poly/PolyOverlay.js";
 export * from "./Models/ModelsCatalogue.js";
 export * from "./Notifications/DeviceTaskNotificationSettings.js";
 export * from "./Notifications/WebPushTaskNotificationSettings.js";

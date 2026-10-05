@@ -1,59 +1,55 @@
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   type ConversationType,
-  isMetaToolName,
-  META_ASSISTANT_CONVERSATION_TYPE,
-  META_TOOL_NAMES,
-  type MetaAssistantUiContext,
+  isPolyNavigationToolName,
+  POLY_CONVERSATION_TYPE,
+  POLY_NAVIGATION_TOOL_NAMES,
+  type PolyUiContext,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import type { CoreChatOptions } from "~/types";
 
-export interface MetaAssistantScope {
-  uiContext?: MetaAssistantUiContext;
+export interface PolyScope {
+  uiContext?: PolyUiContext;
 }
 
-export function isMetaConversationType(type: ConversationType | undefined): boolean {
-  return type === META_ASSISTANT_CONVERSATION_TYPE;
+export function isPolyConversationType(type: ConversationType | undefined): boolean {
+  return type === POLY_CONVERSATION_TYPE;
 }
 
-export function getMetaAssistantToolNames(): string[] {
-  return [...META_TOOL_NAMES];
+export function getPolyNavigationToolNames(): string[] {
+  return [...POLY_NAVIGATION_TOOL_NAMES];
 }
 
 export function filterToolsForConversationType<T extends { name: string }>(
   tools: readonly T[],
   conversationType: ConversationType | undefined,
 ): T[] {
-  const isMeta = isMetaConversationType(conversationType);
+  const isMeta = isPolyConversationType(conversationType);
 
-  return tools.filter((tool) => isMetaToolName(tool.name) === isMeta);
+  return tools.filter((tool) => isPolyNavigationToolName(tool.name) === isMeta);
 }
 
-export async function resolveMetaAssistantScope(
-  options: Pick<CoreChatOptions, "completion_id" | "meta_assistant" | "context">,
+export async function resolvePolyScope(
+  options: Pick<CoreChatOptions, "completion_id" | "poly" | "context">,
   repositories: Pick<RepositoryManager, "conversations">,
-): Promise<MetaAssistantScope | null> {
-  const requested = options.meta_assistant;
+): Promise<PolyScope | null> {
+  const requested = options.poly;
   const user = options.context?.user;
   const stored = options.completion_id
     ? await repositories.conversations.getConversation(options.completion_id)
     : null;
   const storedType = typeof stored?.type === "string" ? stored.type : undefined;
-  const storedIsMeta = isMetaConversationType(storedType as ConversationType | undefined);
+  const storedIsMeta = isPolyConversationType(storedType as ConversationType | undefined);
 
   if (!requested && !storedIsMeta) {
     return null;
   }
 
   if (!user?.id) {
-    throw new AssistantError(
-      "The meta assistant needs a signed-in user",
-      ErrorType.AUTHENTICATION_ERROR,
-      401,
-    );
+    throw new AssistantError("Poly needs a signed-in user", ErrorType.AUTHENTICATION_ERROR, 401);
   }
 
   if (stored && !ownsResource(user.id, stored.user_id)) {
@@ -62,7 +58,7 @@ export async function resolveMetaAssistantScope(
 
   if (requested && stored && !storedIsMeta) {
     throw new AssistantError(
-      "This conversation is not a meta assistant conversation",
+      "This conversation is not a Poly conversation",
       ErrorType.PARAMS_ERROR,
       400,
     );

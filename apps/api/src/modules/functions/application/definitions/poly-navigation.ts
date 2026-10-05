@@ -1,10 +1,10 @@
-import { metaNavigationTargetSchema } from "@ngriffin_uk/polychat-schemas";
+import { polyNavigationTargetSchema } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
 import {
-  MAX_META_ATTENTION_LIMIT,
-  MAX_META_FIND_LIMIT,
-  MAX_META_READ_MESSAGES,
+  MAX_POLY_ATTENTION_LIMIT,
+  MAX_POLY_FIND_LIMIT,
+  MAX_POLY_READ_MESSAGES,
 } from "~/config/limits";
 
 import type { FunctionToolDescriptor } from "./types";
@@ -18,11 +18,11 @@ export const findPlacesInputSchema = z.object({
     .describe(
       "Words from a conversation title, project or workspace name. Omit to list recent conversations.",
     ),
-  limit: z.number().int().min(1).max(MAX_META_FIND_LIMIT).default(8).optional(),
+  limit: z.number().int().min(1).max(MAX_POLY_FIND_LIMIT).default(8).optional(),
 });
 
 export const openPlaceInputSchema = z.object({
-  target: metaNavigationTargetSchema.describe(
+  target: polyNavigationTargetSchema.describe(
     "Where to take the user: a conversation, project, workspace or one of the fixed places.",
   ),
 });
@@ -63,7 +63,7 @@ export const organiseConversationInputSchema = z
 
 export const readConversationInputSchema = z.object({
   conversationId: z.string().min(1),
-  maxMessages: z.number().int().min(1).max(MAX_META_READ_MESSAGES).default(30).optional(),
+  maxMessages: z.number().int().min(1).max(MAX_POLY_READ_MESSAGES).default(30).optional(),
 });
 
 export const find_places: FunctionToolDescriptor = {
@@ -160,7 +160,7 @@ export const listAttentionInputSchema = z.object({
     .optional()
     .describe("Narrow to one kind of waiting work."),
   projectId: z.string().min(1).optional().describe("Narrow to one project."),
-  limit: z.number().int().min(1).max(MAX_META_ATTENTION_LIMIT).default(10).optional(),
+  limit: z.number().int().min(1).max(MAX_POLY_ATTENTION_LIMIT).default(10).optional(),
 });
 
 export const start_conversation: FunctionToolDescriptor = {
@@ -205,7 +205,7 @@ export const list_attention: FunctionToolDescriptor = {
   inputSchema: listAttentionInputSchema,
 };
 
-export const metaToolDescriptors: FunctionToolDescriptor[] = [
+export const polyNavigationToolDescriptors: FunctionToolDescriptor[] = [
   find_places,
   open_place,
   organise_conversation,

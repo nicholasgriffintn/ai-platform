@@ -46,7 +46,7 @@ class ChatExecutionRequest {
       run_id: runId,
       conversation_type: prepared.conversationType ?? chatOptions.conversation_type,
       messages: toProviderMessages(
-        chatOptions.meta_assistant
+        chatOptions.poly
           ? messages.filter((message) => message.role !== "system" && message.role !== "developer")
           : messages,
       ),

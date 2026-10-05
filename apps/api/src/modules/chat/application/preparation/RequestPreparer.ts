@@ -26,10 +26,10 @@ import {
 } from "~/modules/apps/application/connectors";
 import { isRecipeExecutionRequest } from "~/modules/apps/application/recipes/toolContext";
 import {
-  getMetaAssistantToolNames,
-  type MetaAssistantScope,
-  resolveMetaAssistantScope,
-} from "~/modules/chat/application/policy/meta-assistant";
+  getPolyNavigationToolNames,
+  type PolyScope,
+  resolvePolyScope,
+} from "~/modules/chat/application/policy/poly";
 import { loadActiveGoal } from "~/modules/chat/application/preparation/goal";
 import {
   bindRunMemoryDocument,
@@ -139,7 +139,7 @@ interface RequestScope {
   database: Database;
   repositories: RepositoryManager;
   projectContext: ProjectChatContext | null;
-  metaAssistant: MetaAssistantScope | null;
+  poly: PolyScope | null;
   hasFixedProjectTaskTools: boolean;
   memoryScope: MemoryScope;
   isProUser: boolean;
@@ -155,17 +155,13 @@ export class RequestPreparer {
     const user = options.context?.user;
     const database = options.context?.database ?? new Database(this.env);
     const repositories = options.context?.repositories ?? database.repositories;
-    const metaAssistant = options.context
-      ? await resolveMetaAssistantScope(options, repositories)
-      : null;
+    const poly = options.context ? await resolvePolyScope(options, repositories) : null;
     const projectContext =
-      options.context && !metaAssistant
-        ? await resolveProjectChatContext(options.context, options)
-        : null;
-    const scopedOptions: CoreChatOptions = metaAssistant
+      options.context && !poly ? await resolveProjectChatContext(options.context, options) : null;
+    const scopedOptions: CoreChatOptions = poly
       ? {
           ...options,
-          conversation_type: "meta",
+          conversation_type: "poly",
           store: true,
           system_prompt: undefined,
           persona: undefined,
@@ -182,7 +178,7 @@ export class RequestPreparer {
       database,
       repositories,
       projectContext,
-      metaAssistant,
+      poly,
       hasFixedProjectTaskTools:
         scopedOptions.durable_execution?.kind === "project_task" &&
         scopedOptions.tool_selection_mode === "explicit",
@@ -226,8 +222,8 @@ export class RequestPreparer {
   }
 
   private resolveRequestTools(scope: RequestScope) {
-    if (scope.metaAssistant) {
-      return getMetaAssistantToolNames();
+    if (scope.poly) {
+      return getPolyNavigationToolNames();
     }
 
     return resolveRequestFunctionToolNames({
@@ -361,7 +357,7 @@ export class RequestPreparer {
         connectedConnectorProvidersPromise,
       ]);
 
-    const memoryPolicy = scope.metaAssistant
+    const memoryPolicy = scope.poly
       ? resolveMemoryPolicy({ user, userSettings, store: false })
       : resolveMemoryPolicy({ user, userSettings, store: scope.options.store });
     const primaryModel = primaryModelConfig.matchingModel;
@@ -446,7 +442,7 @@ export class RequestPreparer {
     const enabledTools = this.resolveRequestTools(scope);
     const hasFixedToolScope =
       isRecipeExecutionRequest(scope.options) ||
-      Boolean(scope.metaAssistant) ||
+      Boolean(scope.poly) ||
       scope.hasFixedProjectTaskTools;
     const skills: readonly SkillAvailability[] = hasFixedToolScope
       ? []

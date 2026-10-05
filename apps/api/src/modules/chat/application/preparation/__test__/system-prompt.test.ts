@@ -61,7 +61,7 @@ describe("buildSystemPrompt", () => {
   it.each([undefined, "Old Chat instructions"])(
     "refreshes Poly's current place despite a retained system prompt: %s",
     async (systemPrompt) => {
-      const metaAssistant = {
+      const poly = {
         ui_context: { mode: "work", projectId: "project-1", route: "/work/w1/projects/project-1" },
       };
       const result = await buildSystemPrompt(
@@ -69,7 +69,7 @@ describe("buildSystemPrompt", () => {
           options: {
             ...baseParams().options,
             system_prompt: systemPrompt,
-            meta_assistant: metaAssistant,
+            poly: poly,
           },
           sanitisedMessages: [{ role: "system", content: "<mode>Chat</mode>" }],
         }),
@@ -78,7 +78,7 @@ describe("buildSystemPrompt", () => {
       expect(result).toBe("generated prompt");
       expect(mocks.getSystemPrompt).toHaveBeenCalledWith(
         expect.objectContaining({
-          request: expect.objectContaining({ meta_assistant: metaAssistant }),
+          request: expect.objectContaining({ poly: poly }),
         }),
       );
     },

@@ -1,7 +1,4 @@
-import {
-  META_NAVIGATION_DATA_KEY,
-  type MetaAssistantUiContext,
-} from "@ngriffin_uk/polychat-schemas";
+import { POLY_NAVIGATION_DATA_KEY, type PolyUiContext } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
@@ -15,7 +12,7 @@ import {
   organise_conversation,
   read_conversation,
   start_conversation,
-} from "../meta";
+} from "../poly-navigation";
 
 vi.mock("~/modules/completions/application/updateChatCompletion", () => ({
   handleUpdateChatCompletion: vi.fn(async () => ({})),
@@ -91,10 +88,7 @@ const conversationRow = {
   type: "chat",
 };
 
-function createToolContext(
-  conversationType: string | undefined,
-  uiContext?: MetaAssistantUiContext,
-) {
+function createToolContext(conversationType: string | undefined, uiContext?: PolyUiContext) {
   const repositories = {
     conversations: {
       getConversation: vi.fn(async () => conversationRow),
@@ -132,7 +126,7 @@ function createToolContext(
       request: {
         completion_id: "meta-1",
         conversation_type: conversationType,
-        meta_assistant: { ui_context: uiContext },
+        poly: { ui_context: uiContext },
       },
     },
   } as never;
@@ -167,10 +161,10 @@ describe("meta tools", () => {
   it("returns a navigation target the client can follow after checking access", async () => {
     const result = await open_place.execute(
       { target: { kind: "conversation", conversationId: "conversation-1" } },
-      createToolContext("meta"),
+      createToolContext("poly"),
     );
 
-    expect(result.data[META_NAVIGATION_DATA_KEY]).toEqual({
+    expect(result.data[POLY_NAVIGATION_DATA_KEY]).toEqual({
       kind: "conversation",
       conversationId: "conversation-1",
     });
@@ -186,10 +180,10 @@ describe("meta tools", () => {
           workspaceId: "forged",
         },
       },
-      createToolContext("meta", { mode: "work", projectId: "project-1" }),
+      createToolContext("poly", { mode: "work", projectId: "project-1" }),
     );
 
-    expect(result.data[META_NAVIGATION_DATA_KEY]).toEqual({
+    expect(result.data[POLY_NAVIGATION_DATA_KEY]).toEqual({
       kind: "place",
       mode: "work",
       place: "files",
@@ -199,7 +193,7 @@ describe("meta tools", () => {
     await expect(
       open_place.execute(
         { target: { kind: "place", mode: "work", place: "files" } },
-        createToolContext("meta"),
+        createToolContext("poly"),
       ),
     ).rejects.toMatchObject({ statusCode: 400 });
     vi.mocked(requireProjectAccess).mockRejectedValueOnce(new Error("Membership revoked"));
@@ -213,7 +207,7 @@ describe("meta tools", () => {
             projectId: "project-1",
           },
         },
-        createToolContext("meta"),
+        createToolContext("poly"),
       ),
     ).rejects.toThrow("Membership revoked");
   });
@@ -221,7 +215,7 @@ describe("meta tools", () => {
   it("reads a bounded transcript of user and assistant turns only", async () => {
     const result = await read_conversation.execute(
       { conversationId: "conversation-1" },
-      createToolContext("meta"),
+      createToolContext("poly"),
     );
 
     expect(result.content).toContain("user: Plan the launch");
@@ -238,10 +232,10 @@ describe("meta tools", () => {
         openingMessage: "Draft the launch note",
         teammateId: "teammate-1",
       },
-      createToolContext("meta"),
+      createToolContext("poly"),
     );
 
-    expect(result.data[META_NAVIGATION_DATA_KEY]).toEqual(
+    expect(result.data[POLY_NAVIGATION_DATA_KEY]).toEqual(
       expect.objectContaining({
         kind: "conversation",
         projectId: "project-1",

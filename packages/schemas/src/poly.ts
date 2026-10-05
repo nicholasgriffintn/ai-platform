@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-export const META_ASSISTANT_CONVERSATION_TYPE = "meta";
+export const POLY_CONVERSATION_TYPE = "poly";
 
-export const META_NAVIGATION_DATA_KEY = "metaNavigation";
+export const POLY_NAVIGATION_DATA_KEY = "polyNavigation";
 
-export const metaAssistantModeSchema = z.enum(["chat", "work"]);
+export const polyModeSchema = z.enum(["chat", "work"]);
 
-export const metaAssistantPlaceSchema = z.enum([
+export const polyPlaceSchema = z.enum([
   "conversations",
   "canvas",
   "sites",
@@ -18,10 +18,10 @@ export const metaAssistantPlaceSchema = z.enum([
   "you",
 ]);
 
-export const metaAssistantUiContextSchema = z.object({
+export const polyUiContextSchema = z.object({
   route: z.string().max(512).optional(),
-  mode: metaAssistantModeSchema.optional(),
-  place: metaAssistantPlaceSchema.optional(),
+  mode: polyModeSchema.optional(),
+  place: polyPlaceSchema.optional(),
   conversationId: z.string().max(128).optional(),
   workspaceId: z.string().max(128).optional(),
   projectId: z.string().max(128).optional(),
@@ -29,11 +29,11 @@ export const metaAssistantUiContextSchema = z.object({
   runId: z.string().max(128).optional(),
 });
 
-export const metaAssistantRequestSchema = z.object({
-  ui_context: metaAssistantUiContextSchema.optional(),
+export const polyRequestSchema = z.object({
+  ui_context: polyUiContextSchema.optional(),
 });
 
-export const META_TOOL_NAMES = [
+export const POLY_NAVIGATION_TOOL_NAMES = [
   "find_places",
   "open_place",
   "organise_conversation",
@@ -43,13 +43,13 @@ export const META_TOOL_NAMES = [
   "list_attention",
 ] as const;
 
-const metaToolNameSet: ReadonlySet<string> = new Set(META_TOOL_NAMES);
+const polyNavigationToolNameSet: ReadonlySet<string> = new Set(POLY_NAVIGATION_TOOL_NAMES);
 
-export function isMetaToolName(name: string): name is MetaToolName {
-  return metaToolNameSet.has(name);
+export function isPolyNavigationToolName(name: string): name is PolyNavigationToolName {
+  return polyNavigationToolNameSet.has(name);
 }
 
-export const metaNavigationTargetSchema = z.discriminatedUnion("kind", [
+export const polyNavigationTargetSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("conversation"),
     conversationId: z.string(),
@@ -69,14 +69,14 @@ export const metaNavigationTargetSchema = z.discriminatedUnion("kind", [
   }),
   z.object({
     kind: z.literal("place"),
-    place: metaAssistantPlaceSchema,
-    mode: metaAssistantModeSchema.default("chat"),
+    place: polyPlaceSchema,
+    mode: polyModeSchema.default("chat"),
     workspaceId: z.string().optional(),
     projectId: z.string().optional(),
   }),
 ]);
 
-export const metaFoundConversationSchema = z.object({
+export const polyFoundConversationSchema = z.object({
   id: z.string(),
   title: z.string().nullable(),
   updatedAt: z.string().nullable(),
@@ -93,10 +93,10 @@ export const metaFoundConversationSchema = z.object({
     .nullable(),
 });
 
-export type MetaAssistantPlace = z.infer<typeof metaAssistantPlaceSchema>;
-export type MetaAssistantUiContext = z.infer<typeof metaAssistantUiContextSchema>;
-export type MetaAssistantRequest = z.infer<typeof metaAssistantRequestSchema>;
-export type MetaToolName = (typeof META_TOOL_NAMES)[number];
-export type MetaAssistantMode = z.infer<typeof metaAssistantModeSchema>;
-export type MetaNavigationTarget = z.infer<typeof metaNavigationTargetSchema>;
-export type MetaFoundConversation = z.infer<typeof metaFoundConversationSchema>;
+export type PolyPlace = z.infer<typeof polyPlaceSchema>;
+export type PolyUiContext = z.infer<typeof polyUiContextSchema>;
+export type PolyRequest = z.infer<typeof polyRequestSchema>;
+export type PolyNavigationToolName = (typeof POLY_NAVIGATION_TOOL_NAMES)[number];
+export type PolyMode = z.infer<typeof polyModeSchema>;
+export type PolyNavigationTarget = z.infer<typeof polyNavigationTargetSchema>;
+export type PolyFoundConversation = z.infer<typeof polyFoundConversationSchema>;

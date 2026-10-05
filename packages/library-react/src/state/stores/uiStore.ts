@@ -27,15 +27,15 @@ export interface UIStore {
   setShowLoginModal: (showLoginModal: boolean) => void;
   showKeyboardShortcuts: boolean;
   setShowKeyboardShortcuts: (showKeyboardShortcuts: boolean) => void;
-  showMetaAssistant: boolean;
-  setShowMetaAssistant: (showMetaAssistant: boolean) => void;
+  showPoly: boolean;
+  setShowPoly: (showPoly: boolean) => void;
   projectPicker: ProjectPickerDestination | null;
   openProjectPicker: (destination: ProjectPickerDestination) => void;
   closeProjectPicker: () => void;
   showModelSources: boolean;
   setShowModelSources: (showModelSources: boolean) => void;
-  metaAssistantConversationId: string | undefined;
-  setMetaAssistantConversationId: (conversationId: string | undefined) => void;
+  polyConversationId: string | undefined;
+  setPolyConversationId: (conversationId: string | undefined) => void;
   chatConversationListFilters: ConversationListFilters;
   setChatConversationListFilters: (filters: Partial<ConversationListFilters>) => void;
   resetChatConversationListFilters: () => void;
@@ -57,16 +57,15 @@ export const useUIStore = create<UIStore>()(
       setShowLoginModal: (showLoginModal) => set({ showLoginModal }),
       showKeyboardShortcuts: false,
       setShowKeyboardShortcuts: (showKeyboardShortcuts) => set({ showKeyboardShortcuts }),
-      showMetaAssistant: false,
-      setShowMetaAssistant: (showMetaAssistant) => set({ showMetaAssistant }),
+      showPoly: false,
+      setShowPoly: (showPoly) => set({ showPoly }),
       projectPicker: null,
       openProjectPicker: (destination) => set({ projectPicker: destination }),
       closeProjectPicker: () => set({ projectPicker: null }),
       showModelSources: false,
       setShowModelSources: (showModelSources) => set({ showModelSources }),
-      metaAssistantConversationId: undefined,
-      setMetaAssistantConversationId: (metaAssistantConversationId) =>
-        set({ metaAssistantConversationId }),
+      polyConversationId: undefined,
+      setPolyConversationId: (polyConversationId) => set({ polyConversationId }),
       chatConversationListFilters: DEFAULT_CONVERSATION_LIST_FILTERS,
       setChatConversationListFilters: (filters) =>
         set((state) => ({
@@ -89,7 +88,7 @@ export const useUIStore = create<UIStore>()(
           isMobile: _m,
           isMobileLoading: _l,
           sidebarVisible: _s,
-          showMetaAssistant: _a,
+          showPoly: _a,
           projectPicker: _p,
           showModelSources: _ms,
           chatConversationListFilters,
