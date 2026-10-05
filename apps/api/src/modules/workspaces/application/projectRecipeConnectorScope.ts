@@ -1,4 +1,10 @@
-import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
+import { isConnectorOperationSupported } from "@ngriffin_uk/polychat-ai-integrations";
+import {
+  connectorGrantSchema,
+  recipeConnectorProviderSchema,
+  type RecipeConnectorProvider,
+} from "@ngriffin_uk/polychat-schemas";
+import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { assistantRecipes, resolveRecipeId } from "~/modules/apps/application/recipes/catalog";
 import {
@@ -9,6 +15,7 @@ import {
 interface ProjectCapabilityReference {
   capability_id: string;
   kind: string;
+  configuration?: string | Record<string, unknown> | null;
   excluded?: number;
 }
 
@@ -43,6 +50,26 @@ export function resolveProjectRecipeConnectorScope(
   );
   const providers = new Set<RecipeConnectorProvider>();
   const operationsByProvider = new Map<RecipeConnectorProvider, Set<string>>();
+
+  for (const capability of capabilities) {
+    if (capability.kind !== "connector" || capability.excluded) {
+      continue;
+    }
+
+    const provider = recipeConnectorProviderSchema.safeParse(capability.capability_id);
+    const grant = connectorGrantSchema.safeParse(parseJsonRecord(capability.configuration));
+
+    if (
+      provider.success &&
+      grant.success &&
+      grant.data.operations.every((operation) =>
+        isConnectorOperationSupported(provider.data, operation),
+      )
+    ) {
+      providers.add(provider.data);
+      operationsByProvider.set(provider.data, new Set(grant.data.operations));
+    }
+  }
 
   for (const recipe of assistantRecipes) {
     if (!recipeIds.has(recipe.id)) {

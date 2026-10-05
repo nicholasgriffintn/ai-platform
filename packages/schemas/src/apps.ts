@@ -1253,6 +1253,15 @@ export const recipeConnectorManifestSchema = z.object({
   updatedAt: z.string().optional(),
   scopes: z.array(z.string()),
   toolCount: z.number().int().nonnegative(),
+  operations: z
+    .array(
+      z.object({
+        id: z.string(),
+        access: z.enum(["read", "write"]),
+        destructive: z.boolean(),
+      }),
+    )
+    .optional(),
   readToolCount: z.number().int().nonnegative(),
   writeToolCount: z.number().int().nonnegative(),
   operationAccess: assistantCapabilityOperationAccessSchema.optional(),
