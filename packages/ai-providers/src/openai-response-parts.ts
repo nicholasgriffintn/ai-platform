@@ -20,7 +20,6 @@ const HOSTED_TOOL_DEFINITIONS: Record<string, HostedToolDefinition> = {
     label: "Hosted shell",
     outputOnly: true,
   },
-  mcp_call: { name: "mcp", label: "MCP" },
   shell_call: {
     name: "hosted_shell",
     label: "Hosted shell",

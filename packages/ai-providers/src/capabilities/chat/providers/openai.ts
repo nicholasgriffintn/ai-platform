@@ -26,7 +26,6 @@ import {
 import { resolveRequestUser } from "../../../request-user.js";
 import type { ChatCompletionParameters, MessageContent } from "../../../types/index.js";
 import { safeParseJSON } from "../../../utils/helpers.js";
-import { resolveHostedMcpCredentials } from "../../../utils/mcpCredentials.js";
 import {
   buildOpenAIResponsesBody,
   shouldUseOpenAIResponsesApi,
@@ -457,12 +456,7 @@ export class OpenAIProvider extends BaseProvider {
         responseStreamingParams,
       );
 
-      return resolveHostedMcpCredentials(
-        responseBody,
-        this.runtime.host,
-        this.name,
-        params.context,
-      );
+      return responseBody;
     }
 
     return {

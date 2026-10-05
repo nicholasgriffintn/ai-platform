@@ -3,11 +3,7 @@ import {
   type ModelToolDefinition,
   type ModelToolConfiguration,
 } from "@ngriffin_uk/polychat-schemas";
-import {
-  generateId,
-  splitNonEmptyLines,
-  parseCommaSeparatedList,
-} from "@ngriffin_uk/polychat-utility-core";
+import { splitNonEmptyLines, parseCommaSeparatedList } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 
 import type { McpServerFieldValue } from "./McpServerFields";
@@ -31,11 +27,7 @@ export function useToolConfigurationForm(
       const saved = parseModelToolConfiguration(tool, storedConfiguration ?? {});
 
       setVectorStoreIds(saved && "vectorStoreIds" in saved ? saved.vectorStoreIds.join("\n") : "");
-      setServers(
-        saved && "servers" in saved
-          ? saved.servers.map((server) => ({ ...server, id: generateId() }))
-          : [{ id: generateId(), label: "", url: "" }],
-      );
+      setServers(saved && "servers" in saved ? saved.servers : []);
       setError(null);
     }
   }
@@ -52,18 +44,7 @@ export function useToolConfigurationForm(
 
       candidate = { vectorStoreIds: lines.flatMap(parseCommaSeparatedList) };
     } else {
-      const configuredServers = [];
-
-      for (const server of servers) {
-        configuredServers.push({
-          label: server.label,
-          url: server.url,
-          credentialConnectionId: server.credentialConnectionId,
-          allowedTools: server.allowedTools,
-        });
-      }
-
-      candidate = { servers: configuredServers };
+      candidate = { servers };
     }
 
     const configuration = parseModelToolConfiguration(tool, candidate);

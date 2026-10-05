@@ -4,6 +4,7 @@ import type { ZodType } from "zod/v4";
 import { getErrorMessage } from "./errors.js";
 
 export { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
+export { createBoundedJsonSchemaValidator } from "./json-schema.js";
 
 export function parseJsonRecord(value: unknown): Record<string, unknown> {
   const parsed = typeof value === "string" ? safeParseJson<unknown>(value) : value;

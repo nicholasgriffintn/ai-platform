@@ -24,6 +24,7 @@ import { ask_user, request_approval } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
+import { mcp } from "./mcp";
 import { search_memories, store_memory } from "./memory";
 import { messageParent } from "./message-parent";
 import { metaToolDescriptors } from "./meta";
@@ -68,6 +69,7 @@ export interface FunctionToolCatalogueOptions {
 }
 
 const descriptors: FunctionToolDescriptor[] = [
+  mcp,
   configure_knowledge_sync,
   get_weather,
   grade_writing,

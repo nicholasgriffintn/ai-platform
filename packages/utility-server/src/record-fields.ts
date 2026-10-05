@@ -1,5 +1,19 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
+export function readRecordPath(value: unknown, path: readonly string[]): unknown {
+  let current = value;
+
+  for (const key of path) {
+    if (!isRecord(current) || !Object.hasOwn(current, key)) {
+      return undefined;
+    }
+
+    current = current[key];
+  }
+
+  return current;
+}
+
 export function readRecordField(value: unknown, fieldName: string): unknown {
   if (!isRecord(value)) {
     return undefined;

@@ -20,6 +20,7 @@ import { hasCompactionPart, messagePartsSchema } from "./message-parts.js";
 import { chatMessageSelectionSchema } from "./message-selection.js";
 import { metaAssistantRequestSchema } from "./meta-assistant.js";
 import { modelTierSchema } from "./model-lineup.js";
+import { nativeMcpIdSchema } from "./native-mcp.js";
 import { permissionModeSchema } from "./providers.js";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning.js";
 import { runProvenanceSchema } from "./run-provenance.js";
@@ -50,10 +51,11 @@ export const chatHostedToolSettingsSchema = z
       .describe("Settings for the hosted code interpreter tool."),
     web_search: recordSchema.optional().describe("Settings for the hosted web search tool."),
     file_search: recordSchema.optional().describe("Settings for the hosted file search tool."),
-    mcp_servers: z
-      .array(recordSchema)
+    native_mcp_server_ids: z
+      .array(nativeMcpIdSchema)
+      .max(10)
       .optional()
-      .describe("Hosted MCP server definitions available to the request."),
+      .describe("Registered MCP servers selected for this request."),
     computer_use: recordSchema.optional().describe("Settings for hosted computer-use tools."),
     image_generation: z
       .object({

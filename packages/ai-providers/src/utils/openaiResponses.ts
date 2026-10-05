@@ -32,8 +32,6 @@ const OPENAI_HOSTED_TOOL_NAMES = new Set([
   "file_search",
   "hosted_shell",
   "image_generation",
-  "mcp",
-  "remote_mcp",
   "search_grounding",
   "shell",
   "tool_search",
@@ -52,8 +50,6 @@ function requestsSupportedHostedTool(
     (modelConfig.supportsCodeExecution &&
       enabledTools.some((tool) => tool === "code_execution" || tool === "code_interpreter")) ||
     (modelConfig.supportsFileSearch && enabledTools.includes("file_search")) ||
-    (modelConfig.supportsMcp &&
-      enabledTools.some((tool) => tool === "mcp" || tool === "remote_mcp")) ||
     (modelConfig.supportsComputerUse && enabledTools.includes("computer_use")) ||
     (modelConfig.supportsImageGenerationTool && enabledTools.includes("image_generation")) ||
     (modelConfig.supportsHostedShell &&

@@ -75,3 +75,17 @@ Use the deployment's default GitHub App only for personal installations owned by
 Reconnect existing GitHub installations after upgrading. Sealed connection records now require an explicit credential source; untagged records are unavailable. Changing the deployment's App ID never bypasses ownership checks for previously saved deployment credentials.
 
 Previously returned passages can remain in conversation history. Disconnection and repository changes prevent new retrieval; they do not erase material that was already public or deliberately shared.
+
+## Private MCP catalogue
+
+Keep server registration separate from account credentials. Personal catalogues belong to their owner; workspace members can view their workspace's catalogue, while current owners and admins manage its tool policies. Keep endpoints immutable and require public HTTPS without embedded credentials, query parameters or fragments.
+
+Use **Account → Connected tools** to register servers and save your own connection. Explicitly consent to sending credentials and tool parameters to the displayed endpoint. Select projects individually before sharing results with their members; reject projects outside the catalogue's workspace. Encrypt credentials with associated data binding the connection, user, server and endpoint, and never return them in catalogue responses.
+
+Increment connection authority whenever a catalogue changes. Fence registration, policy updates and connection writes with current workspace membership, Pro entitlement and configuration revisions. Allow a user to disconnect their own credential after losing workspace access.
+
+Apply `0062_native_mcp` and `0063_native_mcp_transition` before using the catalogue. Register and connect through `/apps/mcp`, refresh the catalogue with POST `/apps/mcp/:serverId/discover`, then explicitly enable each tool as read or write. Changed schemas return to disabled. The sender uses the owner's credential for the immutable endpoint, rejects redirects, bounds requests and responses, and checks live authority before sending and releasing results.
+
+Select registered server IDs in a teammate or capability configuration. The native `mcp` function lists reviewed schemas and executes an exact server, operation and schema digest. Writes reuse stored-action approval and its single-use execution receipt. Personal credentials never become workspace credentials, and project results require the connection owner's explicit project sharing selection. Provider-hosted MCP execution is removed.
+
+Reconnect existing servers through the catalogue after the transition. Preserve old teammate selections in `retired_mcp_servers` and old capability payloads under `retired_hosted_mcp_<record-id>` for administrative recovery. These records are not active configurations. Restart pending runs created with provider-hosted MCP settings.

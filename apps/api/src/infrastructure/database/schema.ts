@@ -2331,6 +2331,44 @@ export const composioConnectorSession = sqliteTable(
 
 export type ComposioConnectorSession = typeof composioConnectorSession.$inferSelect;
 
+export const nativeMcpServer = sqliteTable("native_mcp_server", {
+  id: text().primaryKey(),
+  created_by_user_id: integer()
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  workspace_id: text().references(() => workspace.id, { onDelete: "cascade" }),
+  label: text().notNull(),
+  endpoint: text().notNull(),
+  enabled: integer({ mode: "boolean" }).notNull().default(false),
+  revision: integer().notNull().default(1),
+  tools: text().notNull().default("[]"),
+  created_at: text()
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+});
+
+export const nativeMcpConnection = sqliteTable(
+  "native_mcp_connection",
+  {
+    id: text().primaryKey(),
+    server_id: text()
+      .notNull()
+      .references(() => nativeMcpServer.id, { onDelete: "cascade" }),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    revision: integer().notNull().default(1),
+    encrypted_credential: text().notNull(),
+    shared_projects: text().notNull().default("[]"),
+  },
+  (table) => ({
+    ownerServer: uniqueIndex("native_mcp_connection_owner_server_idx").on(
+      table.user_id,
+      table.server_id,
+    ),
+  }),
+);
+
 export const connectorOperationApproval = sqliteTable(
   "connector_operation_approval",
   {
@@ -2465,6 +2503,7 @@ export const teammates = sqliteTable(
     description: text().default("").notNull(),
     avatar_url: text(),
     servers: text({ mode: "json" }).notNull(),
+    retired_mcp_servers: text({ mode: "json" }),
     model: text(),
     temperature: text(),
     max_steps: integer(),

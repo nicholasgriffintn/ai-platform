@@ -11,7 +11,6 @@ describe("OpenAI Responses message parts", () => {
     ["file_search_call", "file_search"],
     ["shell_call", "hosted_shell"],
     ["tool_search_call", "tool_search"],
-    ["mcp_call", "mcp"],
     ["image_generation_call", "image_generation"],
     ["computer_call", "computer_use"],
   ])("maps %s to a visible %s result", (type, name) => {
