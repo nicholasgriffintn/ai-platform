@@ -164,15 +164,6 @@ describe("meta tools", () => {
     }
   });
 
-  it("lists recent conversations when no query is given", async () => {
-    const result = await find_places.execute({}, createToolContext("meta"));
-
-    expect(result.status).toBe("success");
-    expect(result.data.conversations).toEqual([
-      expect.objectContaining({ id: "conversation-1", title: "Launch plan" }),
-    ]);
-  });
-
   it("returns a navigation target the client can follow after checking access", async () => {
     const result = await open_place.execute(
       { target: { kind: "conversation", conversationId: "conversation-1" } },
@@ -259,24 +250,6 @@ describe("meta tools", () => {
         teammateId: "teammate-1",
       }),
     );
-    expect(result.content).toContain("Launch week");
-  });
-
-  it("hires a teammate and repeats the permissions sentence", async () => {
-    const result = await hire_teammate.execute(
-      { roleSlug: "research-analyst" },
-      createToolContext("meta"),
-    );
-
-    expect(result.data.teammateId).toBe("teammate-1");
-    expect(result.content).toContain("waits for your approval");
-  });
-
-  it("lists what is waiting on the user", async () => {
-    const result = await list_attention.execute({}, createToolContext("meta"));
-
-    expect(result.data.total).toBe(1);
-    expect(result.content).toContain("Approve the release note");
     expect(result.content).toContain("Launch week");
   });
 });

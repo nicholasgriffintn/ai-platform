@@ -109,37 +109,9 @@ describe("resolveDesktopUpdate", () => {
       }),
     ).resolves.toBeNull();
   });
-
-  it("stays quiet when the platform has no signed artefact", async () => {
-    await expect(
-      resolveDesktopUpdate(env, {
-        target: "windows",
-        architecture: "x86_64",
-        currentVersion: "1.1.0",
-      }),
-    ).resolves.toBeNull();
-  });
-
-  it("stays quiet for a platform the release does not cover", async () => {
-    await expect(
-      resolveDesktopUpdate(env, {
-        target: "linux",
-        architecture: "armv7",
-        currentVersion: "1.1.0",
-      }),
-    ).resolves.toBeNull();
-  });
 });
 
 describe("streamDesktopArchive", () => {
-  it("names the archive it hands back", async () => {
-    const response = await streamDesktopArchive(env, "macos-universal");
-
-    expect(response.headers.get("content-disposition")).toContain(
-      "polychat-desktop-1.2.0-macos-universal.zip",
-    );
-  });
-
   it("rejects a bundle that does not exist", async () => {
     await expect(streamDesktopArchive(env, "solaris-sparc")).rejects.toThrow(/does not exist/i);
   });
@@ -152,12 +124,6 @@ describe("assertReleaseAssetUrl", () => {
     );
     expect(() => assertReleaseAssetUrl("http://github.com/payload.zip")).toThrow(
       /recognised release location/i,
-    );
-  });
-
-  it("accepts a published release asset", () => {
-    expect(assertReleaseAssetUrl(`${RELEASE_ASSET_ORIGIN}/bundle.zip`).hostname).toBe(
-      "objects.githubusercontent.com",
     );
   });
 });

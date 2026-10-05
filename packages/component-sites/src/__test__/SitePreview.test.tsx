@@ -7,7 +7,6 @@ import {
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { dataPage } from "../../test/data-page.js";
 import { SiteRenderer } from "../SiteRenderer.js";
 
 describe("SitePreview", () => {
@@ -39,7 +38,16 @@ describe("SitePreview", () => {
     warn.mockRestore();
   });
   it("keeps Source text inside the initial JSON instead of creating executable markup", () => {
-    const project = validateSiteProject({ pages: { home: dataPage } }).project;
+    const project = validateSiteProject({
+      pages: {
+        home: {
+          path: "/",
+          title: "Tasks",
+          root: "page",
+          elements: { page: { type: "Page", props: {}, children: [] } },
+        },
+      },
+    }).project;
     const data = { tasks: [{ title: "</script><script id='injected'>alert(1)</script>" }] };
     const html = buildSiteFrameDocument({
       frameId: "frame",

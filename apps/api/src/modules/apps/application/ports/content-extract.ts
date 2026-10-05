@@ -3,7 +3,6 @@ export interface ContentExtractParams {
   extract_depth?: "basic" | "advanced";
   include_images?: boolean;
   should_vectorize?: boolean;
-  namespace?: string;
   provider?: "auto" | ContentExtractProvider;
   cloudflareFormat?: "markdown" | "content" | "json" | "links" | "scrape" | "snapshot";
   cloudflareJsonOptions?: Record<string, unknown>;

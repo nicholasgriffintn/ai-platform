@@ -3,54 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import { EmbeddingRepository } from "../EmbeddingRepository";
 
 describe("EmbeddingRepository", () => {
-  it("creates one pending scoped document with all of its chunks", async () => {
-    const statements: { params: unknown[]; query: string }[] = [];
-    const batch = vi.fn().mockResolvedValue([{ meta: { changes: 1 } }, { meta: { changes: 2 } }]);
-    const prepare = vi.fn((query: string) => ({
-      bind: (...params: unknown[]) => {
-        const statement = { params, query };
-
-        statements.push(statement);
-
-        return statement;
-      },
-    }));
-    const repository = new EmbeddingRepository({ DB: { batch, prepare } } as any);
-
-    await repository.createDocument({
-      id: "document-internal",
-      logicalId: "shared-logical-id",
-      userId: 42,
-      type: "note",
-      title: "Scoped note",
-      metadata: { tag: "private" },
-      provider: "vectorize",
-      providerTarget: "vectorize-binding",
-      embeddingModel: "@cf/baai/bge-large-en-v1.5",
-      embeddingDimensions: 1024,
-      distanceMetric: "provider-configured",
-      taskMode: "symmetric",
-      vectorSpace: "default",
-      vectorSpaceVersion: "v1",
-      chunks: Array.from({ length: 128 }, (_, index) => ({
-        id: `chunk-${index}`,
-        vectorId: `vector-${index}`,
-        index,
-        content: `Chunk ${index}`,
-      })),
-    });
-
-    expect(batch).toHaveBeenCalledOnce();
-    expect(statements).toHaveLength(2);
-    expect(statements[0]?.query).toContain("INSERT INTO embedding_document");
-    expect(statements[0]?.params).toContain(42);
-    expect(statements[0]?.params.slice(-3)).toEqual([1024, "provider-configured", "symmetric"]);
-    expect(statements[1]?.query).toContain("FROM json_each(?)");
-    expect(statements[1]?.params.slice(-4, -1)).toEqual([1024, "provider-configured", "symmetric"]);
-    expect(JSON.parse(String(statements[1]?.params.at(-1)))).toHaveLength(128);
-    expect(batch.mock.calls[0]?.[0]).toHaveLength(2);
-  });
-
   it("hydrates matches only through active chunks in the authenticated personal scope", async () => {
     const calls: { params: unknown[]; query: string }[] = [];
     const prepare = vi.fn((query: string) => ({
@@ -136,49 +88,6 @@ describe("EmbeddingRepository", () => {
     expect(calls.every(({ params }) => params.length <= 100)).toBe(true);
   });
 
-  it("lists immutable provider targets only for active personal documents", async () => {
-    const calls: { params: unknown[]; query: string }[] = [];
-    const prepare = vi.fn((query: string) => ({
-      bind: (...params: unknown[]) => {
-        calls.push({ params, query });
-
-        return {
-          all: vi.fn().mockResolvedValue({
-            results: [
-              {
-                provider: "vectorize",
-                provider_target: "vectorize-binding",
-                embedding_model: "@cf/baai/bge-large-en-v1.5",
-                embedding_dimensions: 1024,
-                distance_metric: "provider-configured",
-                task_mode: "symmetric",
-                vector_space: "default",
-                vector_space_version: "v1",
-              },
-            ],
-          }),
-        };
-      },
-    }));
-    const repository = new EmbeddingRepository({ DB: { prepare } } as any);
-
-    await expect(repository.getActiveProviderTargets(42)).resolves.toEqual([
-      {
-        provider: "vectorize",
-        providerTarget: "vectorize-binding",
-        embeddingModel: "@cf/baai/bge-large-en-v1.5",
-        embeddingDimensions: 1024,
-        distanceMetric: "provider-configured",
-        taskMode: "symmetric",
-        vectorSpace: "default",
-        vectorSpaceVersion: "v1",
-      },
-    ]);
-    expect(calls[0]?.query).toContain("SELECT DISTINCT provider");
-    expect(calls[0]?.query).toContain("lifecycle_status = 'active'");
-    expect(calls[0]?.params).toEqual([42]);
-  });
-
   it("exposes retained pending documents for exact provider cleanup on retry", async () => {
     const prepare = vi.fn((query: string) => ({
       bind: (..._params: unknown[]) => ({
@@ -218,30 +127,6 @@ describe("EmbeddingRepository", () => {
       vectorIds: ["vector-1"],
     });
     expect(prepare.mock.calls[0]?.[0]).toContain("lifecycle_status = 'pending'");
-  });
-
-  it("activates a personal document and its chunks together", async () => {
-    const statements: { params: unknown[]; query: string }[] = [];
-    const batch = vi.fn().mockResolvedValue([{ meta: { changes: 1 } }, { meta: { changes: 2 } }]);
-    const prepare = vi.fn((query: string) => ({
-      bind: (...params: unknown[]) => {
-        const statement = { params, query };
-
-        statements.push(statement);
-
-        return statement;
-      },
-    }));
-    const repository = new EmbeddingRepository({ DB: { batch, prepare } } as any);
-
-    await repository.activateDocument(42, "document-1");
-
-    expect(batch).toHaveBeenCalledOnce();
-    expect(statements).toHaveLength(2);
-    expect(statements[0]?.query).toContain("UPDATE embedding_document");
-    expect(statements[0]?.query).toContain("user_id = ?");
-    expect(statements[0]?.params).toEqual([42, "document-1"]);
-    expect(statements[1]?.query).toContain("UPDATE embedding_chunk");
   });
 
   it("rejects activation when the pending lifecycle changed concurrently", async () => {

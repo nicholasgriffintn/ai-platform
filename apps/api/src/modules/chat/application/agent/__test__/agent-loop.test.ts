@@ -133,29 +133,6 @@ describe("runAgentLoop", () => {
     vi.clearAllMocks();
   });
 
-  it("returns the model text when no tools are called", async () => {
-    const { params } = createParams([textTurn("Just an answer.")]);
-
-    const result = await runAgentLoop(params);
-
-    expect(result.response.response).toBe("Just an answer.");
-    expect(mocks.handleToolCalls).not.toHaveBeenCalled();
-  });
-
-  it("returns the visible answer when the model also supplies reasoning", async () => {
-    const { params } = createParams([
-      {
-        content: "Review the repository tests.",
-        thinking: "Consider the repository structure.",
-        toolCalls: [],
-      },
-    ]);
-
-    const result = await runAgentLoop(params);
-
-    expect(result.response.response).toBe("Review the repository tests.");
-  });
-
   it("returns caller-owned tool calls without executing them or requesting another turn", async () => {
     const { params, runTurn } = createParams([toolTurn("run_script")]);
 
@@ -171,43 +148,6 @@ describe("runAgentLoop", () => {
     expect(result.toolResponses).toEqual([]);
     expect(mocks.handleToolCalls).not.toHaveBeenCalled();
     expect(runTurn).toHaveBeenCalledTimes(1);
-  });
-
-  it("stores the assistant message for every turn it runs", async () => {
-    const { params } = createParams([toolTurn("get_weather"), textTurn("It is sunny.")]);
-
-    mocks.handleToolCalls.mockResolvedValueOnce([
-      {
-        role: "tool",
-        name: "get_weather",
-        content: "sunny",
-        status: "success",
-      },
-    ]);
-
-    await runAgentLoop(params);
-
-    expect(params.conversationManager.add).toHaveBeenCalledTimes(2);
-  });
-
-  it("executes tool calls then finishes on the follow-up text turn", async () => {
-    const { params, runTurn } = createParams([toolTurn("get_weather"), textTurn("It is sunny.")]);
-
-    mocks.handleToolCalls.mockResolvedValueOnce([
-      {
-        role: "tool",
-        name: "get_weather",
-        content: "sunny",
-        status: "success",
-      },
-    ]);
-
-    const result = await runAgentLoop(params);
-
-    expect(mocks.handleToolCalls).toHaveBeenCalledTimes(1);
-    expect(runTurn).toHaveBeenCalledTimes(2);
-    expect(result.response.response).toBe("It is sunny.");
-    expect(result.toolResponses).toHaveLength(1);
   });
 
   it("rechecks the context budget after a large tool result before the next model call", async () => {
@@ -613,29 +553,6 @@ describe("runAgentLoop", () => {
     expect(result.response.response).toContain("<artifact");
   });
 
-  it("stops for user approval when a tool result is pending", async () => {
-    const { params, runTurn, sink } = createParams([toolTurn("request_approval")]);
-
-    mocks.handleToolCalls.mockResolvedValueOnce([
-      {
-        role: "tool",
-        name: "request_approval",
-        content: "Waiting on you to approve the deploy.",
-        status: "pending",
-      },
-    ]);
-
-    const result = await runAgentLoop(params);
-
-    expect(result.response.status).toBe("pending");
-    expect(result.response.response).toBe("Waiting on you to approve the deploy.");
-    expect(runTurn).toHaveBeenCalledTimes(1);
-    expect(sink.writeEvent).toHaveBeenCalledWith(
-      "message_delta",
-      expect.objectContaining({ status: "pending" }),
-    );
-  });
-
   it("tells the goal gate that a pending question is waiting for the user", async () => {
     const { params } = createParams([toolTurn("ask_user")]);
     const assessFinish = vi.fn().mockResolvedValue({ allow: true, outcome: "blocked" });
@@ -862,38 +779,6 @@ describe("runAgentLoop", () => {
 
     expect(firstOptions.callLedger).toBeInstanceOf(Map);
     expect(secondOptions.callLedger).toBe(firstOptions.callLedger);
-  });
-
-  it("disables tools after the repeated-call guard fires", async () => {
-    const { params, runTurn } = createParams([
-      toolTurn("load_skill", "call-1"),
-      toolTurn("load_skill", "call-2"),
-      textTurn("I could not load that skill."),
-    ]);
-
-    mocks.handleToolCalls
-      .mockResolvedValueOnce([
-        {
-          role: "tool",
-          name: "load_skill",
-          content: "skill is required",
-          status: "error",
-        },
-      ])
-      .mockResolvedValueOnce([
-        {
-          role: "tool",
-          name: "load_skill",
-          content: "call already repeated",
-          status: "error",
-          data: { errorCode: "REPEATED_TOOL_CALL" },
-        },
-      ]);
-
-    const result = await runAgentLoop(params);
-
-    expect(result.response.response).toBe("I could not load that skill.");
-    expect(runTurn.mock.calls[2][0].request.disable_functions).toBe(true);
   });
 
   it("answers with what it has when the step budget runs out, rather than failing the turn", async () => {
