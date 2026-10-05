@@ -109,6 +109,19 @@ export function redactSensitiveTokens<T>(value: T, sensitiveValue?: string): T {
   return redactValue(value, new WeakSet(), sensitiveValue) as T;
 }
 
+export function hasSensitiveFieldNames(value: unknown): boolean {
+  if (Array.isArray(value)) {
+    return value.some(hasSensitiveFieldNames);
+  }
+
+  return (
+    isPlainObject(value) &&
+    Object.entries(value).some(
+      ([key, item]) => SENSITIVE_OBJECT_KEY_PATTERN.test(key) || hasSensitiveFieldNames(item),
+    )
+  );
+}
+
 export function redactSensitiveUrl(value: string): string {
   try {
     const url = new URL(value);

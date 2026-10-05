@@ -7,6 +7,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
+import { getStatePath } from "./state.js";
+
 export function normaliseSiteSourceRows(
   value: unknown,
 ): Record<string, string | number | boolean>[] {
@@ -115,5 +117,30 @@ export function getSitePageBoundState(
     Object.entries(project.dataBindings ?? {})
       .filter(([, binding]) => binding.pageId === pageId)
       .map(([id, binding]) => [binding.statePath, data[id] ?? []]),
+  );
+}
+
+export function projectSiteSourceRows(
+  value: unknown,
+  path: string,
+  fields: Record<string, string>,
+) {
+  const rows = getStatePath(value, path);
+
+  if (!Array.isArray(rows)) {
+    throw new Error("The selected connector result is not a list");
+  }
+
+  return normaliseSiteSourceRows(
+    Object.keys(fields).length > 0
+      ? rows.map((row) =>
+          Object.fromEntries(
+            Object.entries(fields).map(([name, fieldPath]) => [
+              name,
+              getStatePath(row, fieldPath) ?? null,
+            ]),
+          ),
+        )
+      : rows,
   );
 }

@@ -41,6 +41,16 @@ export function SiteDataSources({
     onSuccess: onSaved,
   });
 
+  const refresh = useMutation({
+    mutationFn: (bindingId: string) =>
+      sitesService.refreshDataSource(site.id, {
+        projectId: site.projectId ?? undefined,
+        expectedRevision: site.revision,
+        bindingId,
+      }),
+    onSuccess: onSaved,
+  });
+
   return (
     <details className="rounded-md border border-border p-3 text-xs">
       <summary className="cursor-pointer font-medium">Data sources</summary>
@@ -106,9 +116,31 @@ export function SiteDataSources({
         >
           Connect source
         </Button>
-        {(sources.error || attach.error) && (
+        {Object.entries(site.project.dataBindings ?? {})
+          .filter(
+            ([, binding]) =>
+              binding.kind === "source" &&
+              sources.data?.some(
+                (source) =>
+                  source.id === binding.sourceId &&
+                  source.kind === "connector" &&
+                  Boolean(source.metadata.siteConnector),
+              ),
+          )
+          .map(([id]) => (
+            <Button
+              key={id}
+              size="xs"
+              variant="ghost"
+              disabled={refresh.isPending}
+              onClick={() => refresh.mutate(id)}
+            >
+              Refresh {id} from connector
+            </Button>
+          ))}
+        {(sources.error || attach.error || refresh.error) && (
           <output role="alert" className="text-failure">
-            {sources.error?.message ?? attach.error?.message}
+            {sources.error?.message ?? attach.error?.message ?? refresh.error?.message}
           </output>
         )}
       </div>
