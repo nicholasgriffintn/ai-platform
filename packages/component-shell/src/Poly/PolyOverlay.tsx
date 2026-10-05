@@ -1,10 +1,10 @@
 import { ConversationThread } from "@ngriffin_uk/polychat-component-conversation";
 import {
-  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
+  EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
@@ -12,16 +12,15 @@ import {
   buildPolyUiContext,
   type ChatSuggestion,
   ComposerDraftProvider,
-  type ConversationScope,
   ConversationScopeProvider,
   useChat,
   useConversationAgentApprovals,
   useLocalComposerDraft,
   useLocalConversationScope,
+  usePolyHome,
   useTrackEvent,
-  useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
-import { Feather, SquarePen } from "lucide-react";
+import { Feather, Loader2 } from "lucide-react";
 import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
 
@@ -64,12 +63,13 @@ const POLY_SUGGESTIONS: ChatSuggestion[] = [
 ];
 
 function PolyThread({
-  scope,
+  conversationId,
   onNavigate,
 }: {
-  scope: ConversationScope;
+  conversationId: string;
   onNavigate: (href: string) => void;
 }) {
+  const scope = useLocalConversationScope(conversationId);
   const { pathname } = useLocation();
   const openConversationId = useChatStore((state) => state.currentConversationId);
   const draft = useLocalComposerDraft();
@@ -93,7 +93,7 @@ function PolyThread({
                 requestOptions: { poly: { ui_context: uiContext } },
                 welcomeTitle: "This is Poly.",
                 welcomeDescription:
-                  "Ask it to find, open, tidy or summarise anything in Polychat. It operates the product; it does not do your outside work.",
+                  "Ask it to find, open, tidy or summarise anything in Polychat. This conversation carries on, so pick up wherever you left off.",
                 welcomeSuggestions: POLY_SUGGESTIONS,
                 welcomeCapabilitySuggestions: false,
                 inputPlaceholder: { newConversation: "Ask Poly…", followUp: "Ask Poly…" },
@@ -115,14 +115,42 @@ function PolyThread({
   );
 }
 
+function PolyHomeThread({ onNavigate }: { onNavigate: (href: string) => void }) {
+  const home = usePolyHome(true);
+
+  if (home.isError) {
+    return (
+      <div className="p-6">
+        <EmptyState
+          title="Poly is not available right now"
+          message="Its conversation could not be opened. Close this and try again in a moment."
+        />
+      </div>
+    );
+  }
+
+  if (!home.data) {
+    return (
+      <div className="flex flex-1 items-center justify-center" role="status">
+        <Loader2 size={20} aria-hidden="true" className="animate-spin text-muted-foreground" />
+        <span className="sr-only">Opening Poly</span>
+      </div>
+    );
+  }
+
+  return (
+    <PolyThread
+      key={home.data.conversation_id}
+      conversationId={home.data.conversation_id}
+      onNavigate={onNavigate}
+    />
+  );
+}
+
 export function PolyOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate();
   const { trackEvent } = useTrackEvent();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
-  const metaConversationId = useUIStore((state) => state.polyConversationId);
-  const setMetaConversationId = useUIStore((state) => state.setPolyConversationId);
-  const scope = useLocalConversationScope(metaConversationId, setMetaConversationId);
-  const canUsePoly = isAuthenticated;
   const handleNavigate = (href: string) => {
     trackEvent({
       name: "poly_navigate",
@@ -141,22 +169,9 @@ export function PolyOverlay({ open, onClose }: { open: boolean; onClose: () => v
           <div className="min-w-0 flex-1">
             <DialogTitle className="text-sm font-semibold">Poly</DialogTitle>
             <DialogDescription className="truncate text-xs">
-              Your home base for everything in Polychat.
+              One conversation that carries on wherever you are in Polychat.
             </DialogDescription>
           </div>
-          {canUsePoly ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="shrink-0"
-              icon={<SquarePen size={15} />}
-              disabled={!scope.currentConversationId}
-              onClick={() => scope.clearCurrentConversation()}
-            >
-              New conversation
-            </Button>
-          ) : null}
         </div>
         {!isAuthenticated ? (
           <div className="p-6">
@@ -166,7 +181,7 @@ export function PolyOverlay({ open, onClose }: { open: boolean; onClose: () => v
             />
           </div>
         ) : (
-          <PolyThread scope={scope} onNavigate={handleNavigate} />
+          <PolyHomeThread onNavigate={handleNavigate} />
         )}
       </DialogContent>
     </Dialog>

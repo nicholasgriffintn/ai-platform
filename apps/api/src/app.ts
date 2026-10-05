@@ -25,6 +25,7 @@ import modelTraining from "~/modules/model-training/api/routes";
 import models from "~/modules/models/api/routes";
 import outputs from "~/modules/outputs/api/routes";
 import plans from "~/modules/plans/api/routes";
+import poly from "~/modules/poly/api/routes";
 import notifications from "~/modules/project-tasks/api/notifications";
 import realtime from "~/modules/realtime/api/routes";
 import savedMessages from "~/modules/saved-messages/api/routes";
@@ -82,6 +83,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/chat/saved-messages", savedMessages);
   app.route("/channels", channels);
   app.route("/teammates", teammates);
+  app.route("/poly", poly);
   app.route("/admin", admin);
   app.route("/webhooks", webhook);
   app.route("/model-platform", modelRegistry);

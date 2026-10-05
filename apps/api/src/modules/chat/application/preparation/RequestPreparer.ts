@@ -223,7 +223,7 @@ export class RequestPreparer {
 
   private resolveRequestTools(scope: RequestScope) {
     if (scope.poly) {
-      return getPolyNavigationToolNames();
+      return scope.poly.navigation ? getPolyNavigationToolNames() : [];
     }
 
     return resolveRequestFunctionToolNames({

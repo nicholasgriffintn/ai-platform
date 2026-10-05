@@ -8,7 +8,7 @@ import {
 import { isAgentExecutionMode } from "@ngriffin_uk/polychat-schemas";
 import { getCatalogueToolName } from "@ngriffin_uk/polychat-utility-server/tool-names";
 
-import { filterToolsForConversationType } from "~/modules/chat/application/policy/poly";
+import { filterToolsForPolyTurn } from "~/modules/chat/application/policy/poly";
 import { resolveEnabledFunctionToolNames } from "~/modules/functions/application/availability";
 import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
 import type { ChatCompletionParameters } from "~/types";
@@ -25,6 +25,7 @@ export type AvailableFunctionsSource = Pick<
   | "mode"
   | "tool_policy_mode"
   | "conversation_type"
+  | "trigger"
   | "require_approval_for"
   | "denied_tools"
   | "enforce_mode_tool_policy"
@@ -46,7 +47,10 @@ export function resolveAvailableFunctions(
     connectedConnectorProviders: params.connectedConnectorProviders,
     selectedConnectorProvider: params.options?.connector?.provider,
   });
-  const availableTools = filterToolsForConversationType(catalogueTools, params.conversation_type);
+  const availableTools = filterToolsForPolyTurn(catalogueTools, {
+    conversationType: params.conversation_type,
+    trigger: params.trigger,
+  });
   const allowed = availableTools
     .filter((func) => enabledTools.has(func.name))
     .filter(

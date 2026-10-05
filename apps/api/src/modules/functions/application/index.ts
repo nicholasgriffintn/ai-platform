@@ -7,7 +7,7 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { fromToolError } from "~/infrastructure/errors";
-import { filterToolsForConversationType } from "~/modules/chat/application/policy/poly";
+import { filterToolsForPolyTurn } from "~/modules/chat/application/policy/poly";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { PermissionChecker } from "~/modules/functions/application/permissions";
 import type { IFunctionResponse, IRequest } from "~/types";
@@ -194,8 +194,10 @@ export const handleFunctions = async ({
   emitToolResult?: (response: IFunctionResponse) => Promise<void> | void;
 }): Promise<IFunctionResponse> => {
   if (
-    filterToolsForConversationType([{ name: functionName }], request.request?.conversation_type)
-      .length === 0
+    filterToolsForPolyTurn([{ name: functionName }], {
+      conversationType: request.request?.conversation_type,
+      trigger: request.request?.trigger,
+    }).length === 0
   ) {
     throw new AssistantError(
       `Tool "${functionName}" is not allowed in this conversation`,

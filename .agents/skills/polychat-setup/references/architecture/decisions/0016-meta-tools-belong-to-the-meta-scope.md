@@ -1,6 +1,6 @@
 # ADR 0016: Keep meta tools in the meta scope
 
-Status: Implemented.
+Status: Superseded by [0072](0072-poly-is-a-platform-teammate-with-one-thread.md).
 
 ## Problem
 

@@ -55,6 +55,7 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
     actorUserId: number;
     scope: TeammateContextScope;
     homeConversationId: string;
+    homeConversationType: "chat" | "poly";
     memoryDocumentId: string;
     memoryDocumentName: string;
   }): Promise<TeammateContext> {
@@ -78,11 +79,12 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
       this.env.DB.prepare(
         `INSERT INTO conversation (
            id, user_id, type, title, project_id, permission_mode, created_at, updated_at
-         ) VALUES (?, ?, 'chat', (SELECT name FROM teammates WHERE id = ?), ?,
+         ) VALUES (?, ?, ?, (SELECT name FROM teammates WHERE id = ?), ?,
            'auto_accept_edits', datetime('now'), datetime('now'))`,
       ).bind(
         params.homeConversationId,
         params.actorUserId,
+        params.homeConversationType,
         params.teammateId,
         params.scope.type === "project" ? params.scope.id : null,
       ),
