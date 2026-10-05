@@ -345,10 +345,23 @@ public struct ChatContextSnapshot: Codable, Equatable {
     public let usage: ChatContextUsage
     public let messages: ChatContextMessageCounts
     public let sources: [ChatContextSource]
+    public let documents: [ChatContextDocument]?
     public let skills: [ChatContextSkill]
     public let approvals: [ChatContextApproval]?
     public let summary: ChatContextSummary?
     public let omissions: [ChatContextOmission]
+}
+
+public struct ChatContextDocument: Codable, Equatable, Identifiable {
+    public let id: String
+    public let name: String
+    public let kind: String
+    public let revision: Int
+    public let access: String
+    public let tier: String
+    public let status: String
+    public let reason: String?
+    public let contentTokens: Int?
 }
 
 public struct ChatContextApproval: Codable, Equatable, Identifiable {

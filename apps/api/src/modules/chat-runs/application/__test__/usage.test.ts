@@ -22,7 +22,7 @@ const run: ChatRun = {
   terminalReason: null,
   lastMessageId: null,
   context: {
-    protocolVersion: 1,
+    protocolVersion: 2,
     runId: "run-1",
     conversationId: "conversation-1",
     attempt: 2,

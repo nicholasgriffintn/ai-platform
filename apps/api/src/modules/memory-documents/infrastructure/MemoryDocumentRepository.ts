@@ -1,3 +1,4 @@
+import type { MemoryDocumentMetadata } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -12,7 +13,8 @@ export interface MemoryDocumentScopeKey {
   scopeId: string;
 }
 
-export interface CreateMemoryDocumentRecord extends MemoryDocumentScopeKey {
+export interface CreateMemoryDocumentRecord
+  extends MemoryDocumentScopeKey, Partial<MemoryDocumentMetadata> {
   kind?: "memory" | "conversation_brief" | "teammate_context";
   name: string;
   content: string;
@@ -20,7 +22,7 @@ export interface CreateMemoryDocumentRecord extends MemoryDocumentScopeKey {
   operationId?: string;
 }
 
-export interface AppendMemoryDocumentRevision {
+export interface AppendMemoryDocumentRevision extends Partial<MemoryDocumentMetadata> {
   documentId: string;
   content: string;
   changeNote?: string | null;
@@ -65,8 +67,8 @@ export class MemoryDocumentRepository extends BaseRepository {
     await this.executeBatch([
       this.env.DB.prepare(
         `INSERT INTO memory_document
-           (id, scope_type, scope_id, kind, name, content, revision, created_by)
-         VALUES (?, ?, ?, ?, ?, ?, 1, ?)`,
+           (id, scope_type, scope_id, kind, name, content, tier, summary, revision, created_by)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
       ).bind(
         id,
         record.scopeType,
@@ -74,13 +76,23 @@ export class MemoryDocumentRepository extends BaseRepository {
         record.kind ?? "memory",
         record.name,
         record.content,
+        record.tier ?? "core",
+        record.summary ?? "",
         record.createdByUserId,
       ),
       this.env.DB.prepare(
         `INSERT INTO memory_document_revision
-           (id, document_id, revision, content, change_note, created_by, operation_id)
-         VALUES (?, ?, 1, ?, 'Created', ?, ?)`,
-      ).bind(generateId(), id, record.content, record.createdByUserId, record.operationId ?? null),
+           (id, document_id, revision, content, tier, summary, change_note, created_by, operation_id)
+         VALUES (?, ?, 1, ?, ?, ?, 'Created', ?, ?)`,
+      ).bind(
+        generateId(),
+        id,
+        record.content,
+        record.tier ?? "core",
+        record.summary ?? "",
+        record.createdByUserId,
+        record.operationId ?? null,
+      ),
     ]);
 
     const created = await this.getDocumentById(id);
@@ -100,7 +112,7 @@ export class MemoryDocumentRepository extends BaseRepository {
     const results = await this.executeBatch([
       this.env.DB.prepare(
         `UPDATE memory_document
-         SET content = ?, revision = ?, updated_at = CURRENT_TIMESTAMP
+         SET content = ?, tier = COALESCE(?, tier), summary = COALESCE(?, summary), revision = ?, updated_at = CURRENT_TIMESTAMP
          WHERE id = ? AND revision = ? AND deleted_at IS NULL
            AND (? IS NULL OR NOT EXISTS (
              SELECT 1 FROM memory_document_revision
@@ -108,6 +120,8 @@ export class MemoryDocumentRepository extends BaseRepository {
            ))`,
       ).bind(
         input.content,
+        input.tier ?? null,
+        input.summary ?? null,
         nextRevision,
         input.documentId,
         input.expectedRevision,
@@ -117,17 +131,15 @@ export class MemoryDocumentRepository extends BaseRepository {
       ),
       this.env.DB.prepare(
         `INSERT INTO memory_document_revision
-           (id, document_id, revision, content, change_note, created_by, operation_id)
-         SELECT ?, ?, ?, ?, ?, ?, ?
-         WHERE changes() > 0`,
+           (id, document_id, revision, content, tier, summary, change_note, created_by, operation_id)
+         SELECT ?, id, revision, content, tier, summary, ?, ?, ?
+         FROM memory_document WHERE id = ? AND changes() > 0`,
       ).bind(
         generateId(),
-        input.documentId,
-        nextRevision,
-        input.content,
         input.changeNote ?? null,
         input.createdByUserId,
         operationId,
+        input.documentId,
       ),
     ]);
 

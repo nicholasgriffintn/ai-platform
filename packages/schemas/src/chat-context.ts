@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-export const CHAT_CONTEXT_PROTOCOL_VERSION = 1 as const;
+export const CHAT_CONTEXT_PROTOCOL_VERSION = 2 as const;
 
 export const chatContextUsageSchema = z.object({
   inputTokens: z.number().int().nonnegative(),
@@ -25,9 +25,14 @@ export const chatContextSkillSchema = z.object({
 
 export const chatContextDocumentSchema = z.object({
   id: z.string().min(1),
+  name: z.string(),
   kind: z.enum(["conversation_brief", "memory"]),
   revision: z.number().int().positive(),
   access: z.enum(["read", "read-write"]),
+  tier: z.enum(["core", "reference"]),
+  status: z.enum(["included", "deferred", "omitted"]),
+  reason: z.enum(["reference", "budget"]).nullable(),
+  contentTokens: z.number().int().nonnegative().nullable(),
 });
 
 export const chatContextApprovalSchema = z.object({

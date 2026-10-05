@@ -1,9 +1,8 @@
 import { buildGoalContractSection, renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import type { Goal, MemoryDocument, SkillAvailability } from "@ngriffin_uk/polychat-schemas";
+import type { Goal, SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import type { RunMemoryDocument } from "~/modules/chat/application/preparation/memory-scope";
 import { getSystemPrompt } from "~/modules/chat/application/prompts";
 import { buildMemoryPromptContext, type resolveMemoryPolicy } from "~/modules/chat/domain/memory";
 import type { ProjectChatContext } from "~/modules/workspaces/application/chatContext";
@@ -27,44 +26,6 @@ export interface BuildSystemPromptParams {
 
 function appendSection(prompt: string, section: string): string {
   return prompt ? `${prompt}\n\n${section}` : section;
-}
-
-export function appendConversationBriefContext(
-  systemPrompt: string,
-  document: MemoryDocument | null,
-): string {
-  if (!document) {
-    return systemPrompt;
-  }
-
-  return appendSection(
-    systemPrompt,
-    renderPrompt("chat/context/conversation-brief", {
-      documentId: document.id,
-      revision: document.revision,
-      content: document.content,
-    }),
-  );
-}
-
-export function appendBoundMemoryContext(
-  systemPrompt: string,
-  documents: readonly RunMemoryDocument[],
-): string {
-  if (documents.length === 0) {
-    return systemPrompt;
-  }
-
-  const sections = documents.map(({ access, document }) =>
-    renderPrompt("chat/context/memory-document", {
-      documentId: document.id,
-      access,
-      revision: document.revision,
-      content: document.content,
-    }),
-  );
-
-  return appendSection(systemPrompt, sections.join("\n\n"));
 }
 
 export function appendProjectInstructions(

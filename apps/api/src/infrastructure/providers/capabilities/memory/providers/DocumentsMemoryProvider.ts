@@ -1,11 +1,12 @@
-import { excerptMemoryDocument } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
+import { memorySearchPassage } from "~/modules/memory-documents/application/pages";
+import { requireRunMemoryDocument } from "~/modules/memory-documents/application/run-access";
 import type { MemoryDocumentScopeKey } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { publishConversationChanged } from "~/modules/sync/application/conversation-events";
-import { requireProjectTeammate } from "~/modules/teammates/application/access";
+import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv, IUser, IUserSettings, MemoryScope } from "~/types";
 
 import type {
@@ -76,6 +77,14 @@ export class DocumentsMemoryProvider implements MemoryProvider {
         );
       }
 
+      if (document.kind === "teammate_context") {
+        throw new AssistantError(
+          "Teammate memory requires source-backed maintenance",
+          ErrorType.PARAMS_ERROR,
+          400,
+        );
+      }
+
       const result = await this.appendEntry(document, entry, userId, undefined, input.operationId);
 
       if (memoryScope.conversationId) {
@@ -85,7 +94,7 @@ export class DocumentsMemoryProvider implements MemoryProvider {
       return result;
     }
 
-    const { scope } = this.requireScope();
+    const { scope } = await this.requireScope();
     const repository = context.repositories.memoryDocuments;
     const existing = await repository.getDocumentByName(scope, MEMORY_JOURNAL_DOCUMENT);
 
@@ -196,39 +205,21 @@ export class DocumentsMemoryProvider implements MemoryProvider {
           `${document.name}\n${document.content}`.toLowerCase().includes(trimmed),
         )
         .slice(0, limit)
-        .map((document) => ({
-          id: document.id,
-          text: `${document.name}\n${document.content}`,
-          score: 1,
-          metadata: {
-            name: document.name,
-            revision: document.revision,
-            excerpt: excerptMemoryDocument(document.content),
-          },
-        }));
+        .map((document) => memorySearchPassage(document, trimmed));
     }
 
-    const { scope } = this.requireScope();
+    const { scope } = await this.requireScope();
     const documents = await context.repositories.memoryDocuments.searchDocuments(
       scope,
       trimmed,
       limit,
     );
 
-    return documents.map((document) => ({
-      id: document.id,
-      text: `${document.name}\n${document.content}`,
-      score: 1,
-      metadata: {
-        name: document.name,
-        revision: document.revision,
-        excerpt: excerptMemoryDocument(document.content),
-      },
-    }));
+    return documents.map((document) => memorySearchPassage(document, trimmed));
   }
 
   async deleteMemory(memoryId: string): Promise<boolean> {
-    const { context } = this.requireScope();
+    const { context } = await this.requireScope();
     const memoryScope = this.config.memoryScope;
 
     if (memoryScope?.type === "bound") {
@@ -270,11 +261,11 @@ export class DocumentsMemoryProvider implements MemoryProvider {
     return `- ${input.text.trim()}${source}`;
   }
 
-  private requireScope(): {
+  private async requireScope(): Promise<{
     context: ServiceContext;
     scope: MemoryDocumentScopeKey;
     userId: number;
-  } {
+  }> {
     const { context, userId } = this.requireContext();
 
     const memoryScope = this.config.memoryScope;
@@ -282,6 +273,10 @@ export class DocumentsMemoryProvider implements MemoryProvider {
       memoryScope?.type === "project"
         ? { scopeType: "project", scopeId: memoryScope.projectId }
         : { scopeType: "personal", scopeId: String(userId) };
+
+    if (scope.scopeType === "project") {
+      await requireProjectAccess(context, scope.scopeId);
+    }
 
     return { context, scope, userId };
   }
@@ -308,35 +303,20 @@ export class DocumentsMemoryProvider implements MemoryProvider {
   ): Promise<boolean> {
     const context = this.requireContext().context;
 
-    if (!scope.teammateContext) {
-      return document.scope_type === scope.scopeType && document.scope_id === scope.scopeId;
+    try {
+      if (context.requireUser().id !== userId) {
+        return false;
+      }
+
+      await requireRunMemoryDocument(context, scope, document.id);
+
+      return true;
+    } catch (error) {
+      if (error instanceof AssistantError) {
+        return false;
+      }
+
+      throw error;
     }
-
-    const teammateContext = await context.repositories.teammateContexts.getById(
-      scope.teammateContext.id,
-    );
-
-    if (
-      !teammateContext ||
-      teammateContext.actorUserId !== userId ||
-      teammateContext.status !== "active" ||
-      teammateContext.scope.type !== scope.scopeType ||
-      teammateContext.scope.id !== scope.scopeId
-    ) {
-      return false;
-    }
-
-    if (teammateContext.scope.type === "project") {
-      await requireProjectTeammate(context, teammateContext.scope.id, teammateContext.teammateId);
-    }
-
-    const isBoundScopeDocument =
-      document.scope_type === scope.scopeType && document.scope_id === scope.scopeId;
-    const isPrivateContextDocument =
-      teammateContext.memoryDocumentId === document.id &&
-      document.scope_type === "personal" &&
-      document.scope_id === String(userId);
-
-    return isBoundScopeDocument || isPrivateContextDocument;
   }
 }

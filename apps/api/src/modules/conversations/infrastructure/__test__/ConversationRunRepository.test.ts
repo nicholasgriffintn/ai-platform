@@ -324,7 +324,7 @@ describe("ConversationRunRepository", () => {
   it("records context only for the exact active run attempt", async () => {
     const { bind, first, prepare, repository } = createRepository();
     const context = {
-      protocolVersion: 1 as const,
+      protocolVersion: 2 as const,
       runId: "run-1",
       conversationId: "conversation-1",
       attempt: 1,

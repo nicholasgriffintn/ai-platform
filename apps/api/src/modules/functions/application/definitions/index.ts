@@ -33,6 +33,7 @@ import { process_recording } from "./process_recording";
 import { create_task, get_task, list_tasks, update_task } from "./projectTasks";
 import { propose_skill_revision } from "./propose_skill_revision";
 import { create_qr_code } from "./qr";
+import { read_memory_document } from "./read_memory_document";
 import { configure_recipe } from "./recipes/configure_recipe";
 import { get_recipe } from "./recipes/get_recipe";
 import { trigger_recipe } from "./recipes/trigger_recipe";
@@ -86,6 +87,7 @@ const descriptors: FunctionToolDescriptor[] = [
   search_documents,
   extract_content,
   search_memories,
+  read_memory_document,
   store_memory,
   analyse_article,
   create_automation,

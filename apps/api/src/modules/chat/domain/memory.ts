@@ -5,6 +5,7 @@ import type { IUser, IUserSettings } from "~/types";
 
 export const MEMORY_SEARCH_TOOL_NAME = "search_memories";
 export const MEMORY_STORE_TOOL_NAME = "store_memory";
+export const MEMORY_READ_TOOL_NAME = "read_memory_document";
 
 type MemoryToolSettings =
   | Pick<IUserSettings, "memories_save_enabled" | "memories_chat_history_enabled">
@@ -39,7 +40,7 @@ export function resolveMemoryPolicy(params: {
   const canRetrieve = authorise("memory.retrieve", context).allowed;
   const canStore = authorise("memory.store", context).allowed;
   const toolNames = [
-    ...(canRetrieve ? [MEMORY_SEARCH_TOOL_NAME] : []),
+    ...(canRetrieve ? [MEMORY_SEARCH_TOOL_NAME, MEMORY_READ_TOOL_NAME] : []),
     ...(canStore ? [MEMORY_STORE_TOOL_NAME] : []),
   ];
 

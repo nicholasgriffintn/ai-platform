@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   MEMORY_SEARCH_TOOL_NAME,
   MEMORY_STORE_TOOL_NAME,
+  MEMORY_READ_TOOL_NAME,
   buildMemoryPromptContext,
   mergeEnabledMemoryToolNames,
   resolveMemoryPolicy,
@@ -44,7 +45,7 @@ describe("resolveMemoryPolicy", () => {
       enabled: true,
       canRetrieve: true,
       canStore: true,
-      toolNames: [MEMORY_SEARCH_TOOL_NAME, MEMORY_STORE_TOOL_NAME],
+      toolNames: [MEMORY_SEARCH_TOOL_NAME, MEMORY_READ_TOOL_NAME, MEMORY_STORE_TOOL_NAME],
     });
 
     expect(
@@ -79,7 +80,7 @@ describe("resolveMemoryPolicy", () => {
         },
         store: true,
       }).toolNames,
-    ).toEqual([MEMORY_SEARCH_TOOL_NAME]);
+    ).toEqual([MEMORY_SEARCH_TOOL_NAME, MEMORY_READ_TOOL_NAME]);
 
     expect(
       mergeEnabledMemoryToolNames({
@@ -91,7 +92,12 @@ describe("resolveMemoryPolicy", () => {
         },
         store: true,
       }),
-    ).toEqual(["web_search", MEMORY_SEARCH_TOOL_NAME, MEMORY_STORE_TOOL_NAME]);
+    ).toEqual([
+      "web_search",
+      MEMORY_SEARCH_TOOL_NAME,
+      MEMORY_READ_TOOL_NAME,
+      MEMORY_STORE_TOOL_NAME,
+    ]);
 
     expect(
       mergeEnabledMemoryToolNames({

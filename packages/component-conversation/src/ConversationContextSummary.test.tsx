@@ -8,7 +8,7 @@ describe("ConversationContextSummaryButton", () => {
     render(
       <ConversationContextSummaryButton
         context={{
-          protocolVersion: 1,
+          protocolVersion: 2,
           runId: "run-1",
           conversationId: "conversation-1",
           attempt: 1,

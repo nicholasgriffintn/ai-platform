@@ -9,6 +9,7 @@ import { REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG } from "@ngriffin_uk/polychat-l
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { deferred } from "../../test/deferred";
 import { REALTIME_SESSION_FINALIZATION_TIMEOUT_MS } from "../lib/realtime/live-session-controller.js";
 import { useRealtimeLiveSession } from "./useRealtimeLiveSession.js";
 
@@ -81,15 +82,6 @@ vi.mock("@ngriffin_uk/polychat-library-realtime/audio-levels", () => ({
   calculatePcm16Base64AudioLevel: vi.fn(() => 0),
   createMediaStreamAudioLevelMeter: vi.fn(() => ({ stop: vi.fn() })),
 }));
-
-function deferred<T>() {
-  let resolve!: (value: T) => void;
-  const promise = new Promise<T>((next) => {
-    resolve = next;
-  });
-
-  return { promise, resolve };
-}
 
 function fakeAudioStream() {
   const stop = vi.fn();

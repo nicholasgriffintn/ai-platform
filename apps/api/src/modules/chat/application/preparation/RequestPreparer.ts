@@ -43,11 +43,7 @@ import {
   resolveScopedSkillCatalog,
   resolveSkillScope,
 } from "~/modules/chat/application/preparation/skills";
-import {
-  appendBoundMemoryContext,
-  appendConversationBriefContext,
-  buildSystemPrompt,
-} from "~/modules/chat/application/preparation/system-prompt";
+import { buildSystemPrompt } from "~/modules/chat/application/preparation/system-prompt";
 import type { ValidationContext } from "~/modules/chat/application/validation/ValidationPipeline";
 import { mergeEnabledGoalToolNames } from "~/modules/chat/domain/goal-tools";
 import { mergeEnabledMemoryToolNames, resolveMemoryPolicy } from "~/modules/chat/domain/memory";
@@ -58,6 +54,10 @@ import {
   resolveRequestFunctionToolNames,
 } from "~/modules/functions/application/availability";
 import { getConversationBrief } from "~/modules/memory-documents/application/memory-documents";
+import {
+  projectRunMemory,
+  runMemoryTokenBudget,
+} from "~/modules/memory-documents/application/projection";
 import {
   buildSkillAvailabilityInput,
   listSkillAvailability,
@@ -492,35 +492,19 @@ export class RequestPreparer {
     }
 
     let systemPrompt = await systemPromptTask;
-    let contextDocuments: ChatContextDocument[] = briefDocument
-      ? [
-          {
-            id: briefDocument.id,
-            kind: "conversation_brief",
-            revision: briefDocument.revision,
-            access: "read-write",
-          },
-        ]
-      : [];
-    const runMemoryDocuments = await loadRunMemoryDocuments(effectiveMemoryScope, repositories);
-
-    systemPrompt = appendConversationBriefContext(systemPrompt, briefDocument);
-
-    const briefDocumentId = contextDocuments[0]?.id;
-    const additionalMemoryDocuments = runMemoryDocuments.filter(
-      ({ document }) => document.id !== briefDocumentId,
+    const runMemoryDocuments = await loadRunMemoryDocuments(
+      effectiveMemoryScope,
+      scope.options.context,
     );
+    const memoryProjection = projectRunMemory(
+      runMemoryDocuments,
+      runMemoryTokenBudget(primaryModelConfig.contextWindow, systemPrompt),
+    );
+    const contextDocuments = memoryProjection.documents;
 
-    systemPrompt = appendBoundMemoryContext(systemPrompt, additionalMemoryDocuments);
-    contextDocuments = [
-      ...contextDocuments,
-      ...additionalMemoryDocuments.map(({ access, document }) => ({
-        id: document.id,
-        kind: "memory" as const,
-        revision: document.revision,
-        access,
-      })),
-    ];
+    if (memoryProjection.section) {
+      systemPrompt = `${systemPrompt}\n\n${memoryProjection.section}`;
+    }
 
     const messages = await buildProviderContext({
       conversationManager,
@@ -546,11 +530,22 @@ export class RequestPreparer {
       permissionMode,
       isProUser: scope.isProUser,
       enabledTools: hasFixedToolScope
-        ? [...(enabledTools ?? [])]
+        ? [
+            ...new Set([
+              ...(enabledTools ?? []),
+              ...(runMemoryDocuments.length ? ["read_memory_document"] : []),
+            ]),
+          ]
         : mergeSkillSuggestedToolNames({
             enabledTools: mergeEnabledGoalToolNames({
               enabledTools: mergeEnabledMemoryToolNames({
-                enabledTools: mergeSkillLoadToolName({ enabledTools, skills }),
+                enabledTools: mergeSkillLoadToolName({
+                  enabledTools: [
+                    ...(enabledTools ?? []),
+                    ...(runMemoryDocuments.length ? ["read_memory_document"] : []),
+                  ],
+                  skills,
+                }),
                 user,
                 userSettings,
                 store: scope.options.store,

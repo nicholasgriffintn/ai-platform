@@ -13,6 +13,7 @@ import type {
   TeammateComputer,
   TeammateComputerAction,
   MemoryDocument,
+  MemoryReflectionStatus,
   UpdateMemoryDocumentInput,
   RecordTeammateFeedbackInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -154,9 +155,35 @@ export class TeammateService {
     return returnFetchedData<MemoryDocument>(response);
   }
 
+  async requestTeammateMemoryMaintenance(contextId: string): Promise<MemoryReflectionStatus> {
+    const response = await fetchApi(`/teammates/contexts/${contextId}/memory/maintenance`, {
+      method: "POST",
+      headers: await this.authHeaders("requestTeammateMemoryMaintenance"),
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to request memory maintenance");
+    }
+
+    return returnFetchedData<MemoryReflectionStatus>(response);
+  }
+
+  async getTeammateMemoryMaintenance(contextId: string): Promise<MemoryReflectionStatus> {
+    const response = await fetchApi(`/teammates/contexts/${contextId}/memory/maintenance`, {
+      method: "GET",
+      headers: await this.authHeaders("getTeammateMemoryMaintenance"),
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to load memory maintenance");
+    }
+
+    return returnFetchedData<MemoryReflectionStatus>(response);
+  }
+
   async updateTeammateContextMemory(
     contextId: string,
-    input: Pick<UpdateMemoryDocumentInput, "content" | "changeNote" | "expectedRevision">,
+    input: Omit<UpdateMemoryDocumentInput, "projectId">,
   ): Promise<MemoryDocument> {
     const response = await fetchApi(`/teammates/contexts/${contextId}/memory`, {
       method: "PUT",

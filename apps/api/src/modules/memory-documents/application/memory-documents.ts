@@ -49,6 +49,8 @@ export function formatMemoryDocument(row: MemoryDocumentRow): MemoryDocument {
     id: row.id,
     name: row.name,
     content: row.content,
+    tier: row.tier,
+    summary: row.summary,
     revision: row.revision,
     scopeType: row.scope_type,
     scopeId: row.scope_id,
@@ -140,6 +142,8 @@ export async function copyConversationBrief(
     kind: "conversation_brief",
     name: `conversation-brief-${generateId().replaceAll("-", "").toLowerCase()}`,
     content: source.document.content,
+    tier: source.document.tier,
+    summary: source.document.summary,
     createdByUserId: user.id,
   });
 
@@ -164,7 +168,7 @@ export async function copyConversationBrief(
 export async function updateConversationBrief(
   context: ServiceContext,
   conversationId: string,
-  input: Pick<UpdateMemoryDocumentInput, "content" | "changeNote" | "expectedRevision">,
+  input: Omit<UpdateMemoryDocumentInput, "projectId">,
 ): Promise<MemoryDocument> {
   const user = context.requireUser();
   const brief = await getConversationBrief(context, conversationId);
@@ -176,6 +180,8 @@ export async function updateConversationBrief(
   const updated = await context.repositories.memoryDocuments.appendRevision({
     documentId: brief.document.id,
     content: input.content,
+    tier: input.tier,
+    summary: input.summary,
     changeNote: input.changeNote ?? null,
     createdByUserId: user.id,
     expectedRevision: input.expectedRevision,
@@ -250,6 +256,8 @@ export async function createMemoryDocument(
     ...scope,
     name: input.name,
     content: input.content ?? "",
+    tier: input.tier,
+    summary: input.summary,
     createdByUserId: user.id,
   });
 
@@ -273,6 +281,8 @@ export async function updateMemoryDocument(
   const updated = await context.repositories.memoryDocuments.appendRevision({
     documentId: existing.id,
     content: input.content,
+    tier: input.tier,
+    summary: input.summary,
     changeNote: input.changeNote ?? null,
     createdByUserId: user.id,
     expectedRevision: input.expectedRevision,
@@ -325,6 +335,8 @@ export async function listMemoryDocumentRevisions(
       id: row.id,
       revision: row.revision,
       content: row.content,
+      tier: row.tier,
+      summary: row.summary,
       changeNote: row.change_note,
       createdAt: row.created_at,
     })),

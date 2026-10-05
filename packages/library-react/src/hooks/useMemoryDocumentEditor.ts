@@ -1,20 +1,25 @@
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
-import type { MemoryDocument } from "@ngriffin_uk/polychat-schemas";
+import type { MemoryDocument, MemoryDocumentMetadata } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type MemoryDocumentEditorSnapshot = Pick<MemoryDocument, "content" | "revision">;
+export type MemoryDocumentEditorSnapshot = Pick<
+  MemoryDocument,
+  "content" | "revision" | "tier" | "summary"
+>;
 export type MemoryDocumentEditorStatus = "idle" | "saving" | "conflict" | "error";
 
 export interface MemoryDocumentEditorState {
   base: MemoryDocumentEditorSnapshot | null;
   draft: string;
+  metadata: MemoryDocumentMetadata;
   submitted: MemoryDocumentEditorSnapshot | null;
   incoming: MemoryDocumentEditorSnapshot | null;
   status: MemoryDocumentEditorStatus;
   error: Error | null;
 }
 
-export interface SaveMemoryDocumentRevisionInput {
+export interface SaveMemoryDocumentRevisionInput extends MemoryDocumentMetadata {
   content: string;
   expectedRevision: number;
 }
@@ -26,7 +31,12 @@ export interface UseMemoryDocumentEditorOptions {
 }
 
 function snapshot(document: MemoryDocument): MemoryDocumentEditorSnapshot {
-  return { content: document.content, revision: document.revision };
+  return {
+    content: document.content,
+    revision: document.revision,
+    tier: document.tier,
+    summary: document.summary,
+  };
 }
 
 function initialState(document: MemoryDocument | undefined): MemoryDocumentEditorState {
@@ -35,15 +45,12 @@ function initialState(document: MemoryDocument | undefined): MemoryDocumentEdito
   return {
     base,
     draft: base?.content ?? "",
+    metadata: { tier: base?.tier ?? "core", summary: base?.summary ?? "" },
     submitted: null,
     incoming: null,
     status: "idle",
     error: null,
   };
-}
-
-function toError(error: unknown): Error {
-  return error instanceof Error ? error : new Error("Unable to save this memory document");
 }
 
 export function useMemoryDocumentEditor({
@@ -106,13 +113,18 @@ export function useMemoryDocumentEditor({
         return current;
       }
 
-      const isClean = current.draft === current.base?.content && current.submitted === null;
+      const isClean =
+        current.draft === current.base?.content &&
+        current.metadata.tier === current.base.tier &&
+        current.metadata.summary === current.base.summary &&
+        current.submitted === null;
 
       if (isClean) {
         return {
           ...current,
           base: nextSnapshot,
           draft: nextSnapshot.content,
+          metadata: { tier: nextSnapshot.tier, summary: nextSnapshot.summary },
           incoming: null,
           status: "idle",
           error: null,
@@ -138,6 +150,7 @@ export function useMemoryDocumentEditor({
     updateState((current) => ({
       ...current,
       draft: current.base?.content ?? "",
+      metadata: { tier: current.base?.tier ?? "core", summary: current.base?.summary ?? "" },
       status: current.incoming ? "conflict" : "idle",
       error: null,
     }));
@@ -153,6 +166,7 @@ export function useMemoryDocumentEditor({
         ...current,
         base: current.incoming,
         draft: current.incoming.content,
+        metadata: { tier: current.incoming.tier, summary: current.incoming.summary },
         submitted: null,
         incoming: null,
         status: "idle",
@@ -185,14 +199,20 @@ export function useMemoryDocumentEditor({
       inFlightRef.current ||
       !documentIdRef.current ||
       !current.base ||
-      current.draft === current.base.content
+      (current.draft === current.base.content &&
+        current.metadata.tier === current.base.tier &&
+        current.metadata.summary === current.base.summary)
     ) {
       return false;
     }
 
     const documentId = documentIdRef.current;
     const generation = requestGenerationRef.current;
-    const submitted = { content: current.draft, revision: current.base.revision };
+    const submitted = {
+      content: current.draft,
+      revision: current.base.revision,
+      ...current.metadata,
+    };
 
     inFlightRef.current = true;
     updateState((latest) => ({
@@ -205,6 +225,8 @@ export function useMemoryDocumentEditor({
     try {
       const saved = await saveDocumentRef.current({
         content: submitted.content,
+        tier: submitted.tier,
+        summary: submitted.summary,
         expectedRevision: submitted.revision,
       });
 
@@ -228,6 +250,10 @@ export function useMemoryDocumentEditor({
           ...latest,
           base: acknowledged,
           draft: latest.draft === submitted.content ? acknowledged.content : latest.draft,
+          metadata:
+            latest.metadata.tier === submitted.tier && latest.metadata.summary === submitted.summary
+              ? { tier: acknowledged.tier, summary: acknowledged.summary }
+              : latest.metadata,
           submitted: null,
           incoming,
           status: incoming ? "conflict" : "idle",
@@ -278,7 +304,7 @@ export function useMemoryDocumentEditor({
             ...latest,
             submitted: null,
             status: "error",
-            error: toError(loadError),
+            error: new Error(getErrorMessage(loadError, "Unable to save this memory document")),
           }));
         }
       } else {
@@ -286,7 +312,7 @@ export function useMemoryDocumentEditor({
           ...latest,
           submitted: null,
           status: "error",
-          error: toError(saveError),
+          error: new Error(getErrorMessage(saveError, "Unable to save this memory document")),
         }));
       }
 
@@ -300,7 +326,14 @@ export function useMemoryDocumentEditor({
 
   return {
     ...state,
-    isDirty: Boolean(state.base && state.draft !== state.base.content),
+    isDirty: Boolean(
+      state.base &&
+      (state.draft !== state.base.content ||
+        state.metadata.tier !== state.base.tier ||
+        state.metadata.summary !== state.base.summary),
+    ),
+    editMetadata: (metadata: MemoryDocumentMetadata) =>
+      updateState((current) => ({ ...current, metadata, error: null })),
     edit,
     discard,
     save,
