@@ -22,9 +22,11 @@ export default {
       return errorResponse(405, "Method not allowed");
     }
 
-    return url.pathname === "/computer/site-verify"
-      ? handleSiteVerification(request, env)
-      : handleComputerRequest(request, env);
+    if (url.pathname === "/computer/site-verify") {
+      return handleSiteVerification(request, env);
+    }
+
+    return handleComputerRequest(request, env);
   },
 };
 
