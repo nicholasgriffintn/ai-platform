@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ContentExtractResult } from "~/modules/apps/application/ports/content-extract";
-import { maybeStoreExtractedKnowledge } from "~/modules/apps/infrastructure/retrieval/content-extract/storage";
+import { maybeVectorizeExtractedContent } from "~/modules/apps/infrastructure/retrieval/content-extract/vectorize";
 import { search_documents } from "~/modules/functions/application/search_documents";
 import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
@@ -137,6 +137,11 @@ describe("native source knowledge", () => {
 
   it("keeps personal keyword search working when semantic credentials are unavailable", async () => {
     await addSource("tool-personal");
+    await database
+      .prepare(
+        "UPDATE source_search_document SET status = 'lexical' WHERE id = 'index-tool-personal'",
+      )
+      .run();
     await addSource("tool-foreign-personal", null, 2);
     await addSource("tool-foreign-project", "project-2");
     const env = databaseTestEnvironment(database);
@@ -156,31 +161,12 @@ describe("native source knowledge", () => {
         documents: expect.arrayContaining([expect.objectContaining({ sourceId: "tool-personal" })]),
       },
     });
-    expect(response.content).toContain("personal");
     expect(response.content).not.toContain("foreign-personal");
     expect(response.content).not.toContain("foreign-project");
   });
 
-  it("retains current keyword passages after a semantic index failure", async () => {
-    await addSource("keyword-only");
-    await database
-      .prepare(
-        "UPDATE source_search_document SET status = 'lexical' WHERE id = 'index-keyword-only'",
-      )
-      .run();
-    expect(
-      (await repository.lexical({ userId: 1 }, toFtsQuery("INC-4821") ?? "")).some(
-        (chunk) => chunk.sourceId === "keyword-only",
-      ),
-    ).toBe(true);
-  });
-
-  it("applies access changes independently of content and blocks revoked or deleted connections", async () => {
+  it("blocks revoked or deleted connections", async () => {
     await addSource("connected", null, 1, "connection");
-    await database
-      .prepare("UPDATE source SET metadata = '{\"permissionRevision\":2}' WHERE id = 'connected'")
-      .run();
-    expect((await repository.getSource("connected"))?.search_revision).toBe(1);
     await database
       .prepare("UPDATE provider_connection SET status = 'revoked' WHERE id = 'connection'")
       .run();
@@ -195,9 +181,10 @@ describe("native source knowledge", () => {
   it("excludes deleted sources immediately and retains vector IDs until cleanup succeeds", async () => {
     await database.prepare("INSERT INTO user VALUES (4, 'four@example.com')").run();
     await addSource("deleted", null, 4);
+    expect(await repository.hydrate({ userId: 4 }, ["vector-deleted"])).toHaveLength(1);
     await database.prepare("DELETE FROM source WHERE id = 'deleted'").run();
     await database.prepare("DELETE FROM user WHERE id = 4").run();
-    expect(await repository.hydrate({ userId: 1 }, ["vector-deleted"])).toEqual([]);
+    expect(await repository.hydrate({ userId: 4 }, ["vector-deleted"])).toEqual([]);
     expect((await repository.chunks("index-deleted")).map((chunk) => chunk.id)).toEqual([
       "vector-deleted",
     ]);
@@ -245,23 +232,10 @@ describe("persistent source sync", () => {
     ).rejects.toMatchObject({ statusCode: 409 });
     expect((await sources.getSource(input.id))?.project_id).toBe("project-1");
   });
-  it("limits partial-write rollback to the creating user and scope", async () => {
-    await addSource("rollback-personal");
-    await addSource("rollback-foreign", null, 2);
-    await addSource("rollback-project", "project-1");
-    const sources = new SourceRepository(databaseTestEnvironment(database));
-
-    await sources.removeCreatedSources(1, null, [
-      "rollback-personal",
-      "rollback-foreign",
-      "rollback-project",
-    ]);
-    expect(await sources.getSource("rollback-personal")).toBeNull();
-    expect(await sources.getSource("rollback-foreign")).not.toBeNull();
-    expect(await sources.getSource("rollback-project")).not.toBeNull();
-  });
-
   it("rolls back a partially saved extraction and hides database failure details", async () => {
+    await addSource("retained-personal");
+    await addSource("retained-foreign-personal", null, 2);
+    await addSource("retained-project", "project-1");
     await database
       .prepare(`CREATE TRIGGER reject_extraction BEFORE INSERT ON source
       WHEN new.content = 'private-provider-detail' BEGIN SELECT RAISE(ABORT, 'private-provider-detail'); END;`)
@@ -279,8 +253,8 @@ describe("persistent source sync", () => {
     const result: ContentExtractResult = { status: "success", data: { extracted } };
 
     try {
-      await maybeStoreExtractedKnowledge({
-        params: { urls: extracted.results.map((entry) => entry.url), storeKnowledge: true },
+      await maybeVectorizeExtractedContent({
+        params: { urls: extracted.results.map((entry) => entry.url), should_vectorize: true },
         req: { env, context, user: knowledgeTestUser, memoryScope: { type: "personal" } },
         provider: "cloudflare",
         extracted,
@@ -292,11 +266,23 @@ describe("persistent source sync", () => {
           .bind(...extracted.results.map((entry) => entry.url))
           .all(),
       ).toMatchObject({ results: [] });
-      expect(result.data.storedKnowledge).toEqual({
+      expect(
+        (
+          await database
+            .prepare(
+              "SELECT id FROM source WHERE id IN ('retained-personal', 'retained-foreign-personal', 'retained-project') ORDER BY id",
+            )
+            .all()
+        ).results,
+      ).toEqual([
+        { id: "retained-foreign-personal" },
+        { id: "retained-personal" },
+        { id: "retained-project" },
+      ]);
+      expect(result.data.vectorized).toEqual({
         success: false,
         error: "Unable to store extracted content",
       });
-      expect(JSON.stringify(result.data.storedKnowledge)).not.toContain("private-provider-detail");
     } finally {
       await database.prepare("DROP TRIGGER reject_extraction").run();
     }

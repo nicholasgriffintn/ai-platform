@@ -101,7 +101,7 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
               </div>
             }
           >
-            <ProjectKnowledgeSearch key={projectId ?? "personal"} projectId={projectId} />
+            {projectId ? <ProjectKnowledgeSearch projectId={projectId} /> : null}
             {projectId ? <KnowledgeSyncPanel projectId={projectId} /> : null}
             <SourceList
               sources={sources}

@@ -58,11 +58,3 @@ Use authorised Source/Output references or the `$assistantFile` marker. The brid
 Correlate Activity's run, completion, installation, local session handle and Composio log IDs. Keep arguments, result bodies and credentials out of Activity logs.
 
 Before rollback, pause triggers and confirm upstream state. Disable affected auth configs/tools, synchronise and review the catalogue, then deploy the selected version. Do not restore deleted legacy credentials or remove cleanup rows to hide failures. Verify read execution, approval/rejection/expiry, duplicate handling, private files and trigger pause/resume with a non-production account before expanding use.
-
-## Persistent knowledge sources
-
-Configure project knowledge through the existing recipe integration and `configure_knowledge_sync` tool. Declare authorised read operations and document mappings in the recipe. Require a workspace owner/admin to publish selected records from their owned connection; project members can search the resulting sources. Pause the sync or revoke its recipe capability or connection to exclude those records immediately.
-
-Apply the current migration set through the documented process when deployment is authorised. Keep `TASK_QUEUE`, the existing embedding bindings and the stable `EMBEDDING_SCOPE_SECRET` configured. The normal source scheduler indexes personal and project sources; it retains the keyword index when semantic indexing is unavailable and keeps original vector targets until cleanup succeeds.
-
-Index uploaded files through private-file access and the existing document conversion service. Limit extraction to 25 MiB and extracted text to 256 KiB; exclude images, audio and video. Repair extraction or provider failures and let the normal scheduler retry. Validate a deployed recipe's edit, archive, account revocation and publisher demotion before publishing a production corpus.

@@ -37,12 +37,12 @@ async function semanticTargetPassages(
   scope: KnowledgeScope,
   scopeTag: string,
   { target, userId }: { target: string; userId: number },
-): Promise<SourceSearchPassage[] | null> {
+): Promise<SourceSearchPassage[]> {
   try {
     const owner = await context.repositories.users.getUserById(userId);
 
     if (!owner) {
-      return null;
+      return [];
     }
 
     const settings = await createServiceContext({
@@ -51,7 +51,7 @@ async function semanticTargetPassages(
     }).getUserSettings();
 
     if (!settings) {
-      return null;
+      return [];
     }
 
     const decodedTarget = decodeEmbeddingRuntimeTarget(target);
@@ -90,7 +90,7 @@ async function semanticTargetPassages(
 
     return passages;
   } catch {
-    return null;
+    return [];
   }
 }
 
@@ -102,7 +102,7 @@ async function semanticPassages(
   const targets = await context.repositories.sourceSearch.getTargets(scope);
 
   if (targets.length > 8 || targets.length === 0) {
-    return { rankings: [], available: false };
+    return [];
   }
 
   let scopeTag: string;
@@ -112,15 +112,12 @@ async function semanticPassages(
       ? await getProjectEmbeddingScopeTag(context.env.EMBEDDING_SCOPE_SECRET, input.projectId)
       : await getPersonalEmbeddingScopeTag(context.env.EMBEDDING_SCOPE_SECRET, scope.userId);
   } catch {
-    return { rankings: [], available: false };
+    return [];
   }
 
   const searchTarget = semanticTargetPassages.bind(null, context, input, scope, scopeTag);
 
-  const results = await mapWithConcurrency(targets, 4, searchTarget);
-  const rankings = results.filter((result) => result !== null);
-
-  return { rankings, available: rankings.length === targets.length };
+  return mapWithConcurrency(targets, 4, searchTarget);
 }
 
 export async function searchProjectKnowledge(
@@ -137,8 +134,8 @@ export async function searchProjectKnowledge(
   ]);
 
   await requireKnowledgeScope(context, input.projectId);
-  const hasSemantic = semantic.rankings.some((ranking) => ranking.length > 0);
-  const candidates = fuseRankedResults([lexical, ...semantic.rankings], 30);
+  const hasSemantic = semantic.some((ranking) => ranking.length > 0);
+  const candidates = fuseRankedResults([lexical, ...semantic], 30);
   const current = await context.repositories.sourceSearch.hydrate(
     scope,
     candidates.map((passage) => passage.id),
@@ -191,7 +188,6 @@ export async function searchProjectKnowledge(
 
   return {
     status: "success",
-    semanticSearchAvailable: semantic.available,
     data: ranked
       .filter((passage) => authorisedIds.has(passage.chunkId))
       .slice(0, input.top_k ?? 10),

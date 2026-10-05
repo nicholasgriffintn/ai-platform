@@ -207,14 +207,6 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
     );
   }
 
-  storeExtraction(sourceId: string, revision: number, content: string): Promise<D1Result> {
-    return this.executeRun(
-      `UPDATE source AS s SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-        AND search_revision = ? AND content IS NULL AND status = 'available' AND ${sourceVisibilitySql("s")}`,
-      [content, sourceId, revision],
-    );
-  }
-
   maintenance(
     includeSemantic: boolean,
     includeCleanup: boolean,
@@ -223,8 +215,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
       `WITH candidates AS (SELECT s.id, s.created_by_user_id AS user_id, s.project_id FROM source s
        LEFT JOIN source_search_document d ON d.source_id = s.id AND d.source_revision = s.search_revision
        WHERE s.kind != 'memory' AND s.status = 'available' AND ${sourceVisibilitySql("s")}
-         AND (length(trim(s.content)) > 0 OR (s.kind = 'file' AND s.storage_key IS NOT NULL
-           AND s.mime_type NOT LIKE 'image/%' AND s.mime_type NOT LIKE 'audio/%' AND s.mime_type NOT LIKE 'video/%')) AND (d.id IS NULL OR (? = 1 AND d.status = 'lexical'))
+         AND length(trim(s.content)) > 0 AND (d.id IS NULL OR (? = 1 AND d.status = 'lexical'))
        UNION SELECT source_id AS id, user_id, project_id FROM source_search_document WHERE status = 'stale' AND ? = 1)
        SELECT c.id, (SELECT id FROM project WHERE id = c.project_id) AS project_id,
          COALESCE(

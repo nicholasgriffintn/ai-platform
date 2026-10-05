@@ -1,40 +1,128 @@
 import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
-import { projectKnowledgeSearchResponseSchema } from "@ngriffin_uk/polychat-schemas";
-import { isHttpUrl, isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { FileText } from "lucide-react";
 
-export function DocumentSearchView({ data }: { data: unknown }) {
-  const parsed = projectKnowledgeSearchResponseSchema.shape.data
-    .max(10)
-    .safeParse(isRecord(data) ? data.documents : undefined);
+interface RetrievedDocument {
+  id: string;
+  chunkId?: string;
+  type?: string;
+  title?: string;
+  score?: number;
+  rankingMethod?: "provider-score" | "reciprocal-rank-fusion" | "model-rerank";
+  reranking?: {
+    provider: string;
+    model: string;
+    score: number;
+  };
+  content: string;
+}
 
-  if (!parsed.success) {
-    return <p className="text-sm text-muted-foreground">Knowledge results unavailable.</p>;
+interface DocumentSearchData {
+  query?: string;
+  documents?: RetrievedDocument[];
+}
+
+const readDocument = (value: unknown): RetrievedDocument | null => {
+  if (!isRecord(value) || typeof value.id !== "string" || typeof value.content !== "string") {
+    return null;
   }
 
-  if (!parsed.data.length) {
-    return <p className="text-sm text-muted-foreground">No matching knowledge passages.</p>;
+  const reranking = isRecord(value.reranking) ? value.reranking : undefined;
+
+  return {
+    id: value.id,
+    content: value.content,
+    chunkId: typeof value.chunkId === "string" ? value.chunkId : undefined,
+    type: typeof value.type === "string" ? value.type : undefined,
+    title: typeof value.title === "string" ? value.title : undefined,
+    score:
+      typeof value.score === "number" && Number.isFinite(value.score) ? value.score : undefined,
+    rankingMethod:
+      value.rankingMethod === "provider-score" ||
+      value.rankingMethod === "reciprocal-rank-fusion" ||
+      value.rankingMethod === "model-rerank"
+        ? value.rankingMethod
+        : undefined,
+    reranking:
+      reranking &&
+      typeof reranking.provider === "string" &&
+      typeof reranking.model === "string" &&
+      typeof reranking.score === "number" &&
+      Number.isFinite(reranking.score)
+        ? {
+            provider: reranking.provider,
+            model: reranking.model,
+            score: reranking.score,
+          }
+        : undefined,
+  };
+};
+
+const readSearchData = (data: unknown): DocumentSearchData => {
+  if (!isRecord(data)) {
+    return {};
+  }
+
+  return {
+    query: typeof data.query === "string" ? data.query : undefined,
+    documents: Array.isArray(data.documents)
+      ? data.documents.map(readDocument).filter((document) => document !== null)
+      : [],
+  };
+};
+
+export function DocumentSearchView({ data }: { data: unknown }) {
+  const { query, documents = [] } = readSearchData(data);
+
+  if (documents.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        {query
+          ? `No passages matched “${query}” in your documents.`
+          : "No matching passages were found."}
+      </p>
+    );
   }
 
   return (
-    <div className="space-y-3" data-responsetype="document-search">
-      {parsed.data.map((document) => (
-        <article key={document.chunkId} className="rounded-md border border-border p-3">
-          <h3 className="text-sm font-medium">{document.title}</h3>
-          <MemoizedMarkdown className="mt-2 max-w-none text-sm">
-            {document.content}
-          </MemoizedMarkdown>
-          {document.provenance.externalUri && isHttpUrl(document.provenance.externalUri) ? (
-            <a
-              href={document.provenance.externalUri}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 inline-block text-xs underline"
-            >
-              Open source
-            </a>
-          ) : null}
-        </article>
-      ))}
+    <div className="space-y-2">
+      <p className="text-xs text-muted-foreground">
+        {documents.length} {documents.length === 1 ? "passage" : "passages"}
+        {query ? ` for “${query}”` : ""}
+      </p>
+      <ul className="space-y-2">
+        {documents.map((document, index) => (
+          <li
+            key={document.chunkId ?? `${document.id}:${index}`}
+            className="rounded-md border border-border p-3"
+          >
+            <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <FileText size={13} aria-hidden="true" />
+              <span className="truncate font-medium text-foreground">
+                {document.title || "Untitled"}
+              </span>
+              {document.type && <span>{document.type}</span>}
+              {typeof document.score === "number" &&
+                document.rankingMethod === "provider-score" && (
+                  <span className="tabular-nums">{Math.round(document.score * 100)}% match</span>
+                )}
+              {document.rankingMethod === "reciprocal-rank-fusion" && <span>combined ranking</span>}
+              {document.rankingMethod === "model-rerank" && (
+                <span
+                  title={
+                    document.reranking
+                      ? `${document.reranking.provider} · ${document.reranking.model}`
+                      : undefined
+                  }
+                >
+                  model-ranked
+                </span>
+              )}
+            </div>
+            <MemoizedMarkdown className="max-w-none text-sm">{document.content}</MemoizedMarkdown>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

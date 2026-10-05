@@ -52,11 +52,11 @@ export function useSourceCollections(projectId?: string) {
   });
 }
 
-export function useProjectKnowledgeSearch(projectId: string | undefined, query: string) {
+export function useProjectKnowledgeSearch(projectId: string, query: string) {
   return useQuery({
     queryKey: ["sources", "search", projectId, query],
     queryFn: () => searchProjectKnowledge({ projectId, query, top_k: 10 }),
-    enabled: Boolean(query.trim()),
+    enabled: Boolean(projectId && query.trim()),
     staleTime: 0,
   });
 }

@@ -3,7 +3,7 @@ import { useProjectKnowledgeSearch } from "@ngriffin_uk/polychat-library-react";
 import { isHttpUrl } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 
-export function ProjectKnowledgeSearch({ projectId }: { projectId?: string }) {
+export function ProjectKnowledgeSearch({ projectId }: { projectId: string }) {
   const [draft, setDraft] = useState("");
   const [query, setQuery] = useState("");
   const search = useProjectKnowledgeSearch(projectId, query);
@@ -27,7 +27,7 @@ export function ProjectKnowledgeSearch({ projectId }: { projectId?: string }) {
         }}
       >
         <FormInput
-          label={projectId ? "Search project knowledge" : "Search your knowledge"}
+          label="Search project knowledge"
           value={draft}
           maxLength={1000}
           onChange={(event) => setDraft(event.target.value)}
@@ -37,11 +37,6 @@ export function ProjectKnowledgeSearch({ projectId }: { projectId?: string }) {
           Search
         </Button>
       </form>
-      {query && search.isSuccess && !search.data.semanticSearchAvailable ? (
-        <p className="text-sm text-muted-foreground">
-          Showing keyword matches. Semantic search is unavailable.
-        </p>
-      ) : null}
       {search.error ? (
         <p role="alert" className="text-sm text-failure">
           {search.error.message}

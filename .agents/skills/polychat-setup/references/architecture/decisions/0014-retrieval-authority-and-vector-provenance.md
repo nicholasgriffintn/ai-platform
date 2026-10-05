@@ -20,14 +20,6 @@ Managed personal embeddings support Vectorize, S3 Vectors and DynamoDB Vectors. 
 
 Reserve documents as `pending`, expose only `active` records, and mark `delete_pending` before provider deletion. Remove D1 state only after confirmed cleanup and retain uncertain writes for reconciliation against their original target. Apply the same discipline to built-in memory, and quarantine ambiguous legacy ownership rather than guessing. Enforce content, metadata, batch and concurrency bounds at the shared schema and provider boundaries. Keep project memory in its authorised built-in scope; the personal embeddings API grants no project retrieval.
 
-Index personal and project knowledge through the existing source tables, FTS5 and scoped vectors. Hydrate current source revisions and permissions before reranking and again before returning passages. Keep keyword passages searchable when semantic indexing fails.
-
-Fence indexing with the existing task and document leases. Keep obsolete vector IDs and original provider targets until cleanup succeeds, including after source deletion; leave failed cleanup claims to expire before retrying.
-
-Save notes and extracted pages as Sources in the current conversation scope; use `storeKnowledge` and report `storedKnowledge` for extraction. Store terminal repository results in the scope recorded by Activity. Copy existing saved content once during migration, while keeping the explicit embedding API responsible for its own records; source search has no embedding fallback or compatibility link.
-
-Reuse recipe connector operations and `normaliseConnectorKnowledge` mappings for sync. Require the publisher's owned connection, enabled recipe capability and current workspace owner/admin role when publishing and committing content or checkpoints. Exclude shared records immediately when that authority is removed, the connection is revoked or the sync is paused.
-
 ## Consequences
 
 Historical targets increase retrieval and cleanup cost, and changing credentials can make old targets temporarily unavailable. D1 hydration and explicit lifecycle state cost more than trusting a vector match, but prevent stale or cross-scope results.

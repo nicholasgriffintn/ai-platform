@@ -57,7 +57,6 @@ export const projectKnowledgeSearchQuerySchema = z
 
 export const projectKnowledgeSearchResponseSchema = z.object({
   status: z.literal("success"),
-  semanticSearchAvailable: z.boolean(),
   data: z.array(
     z.object({
       id: z.string(),

@@ -100,7 +100,7 @@ export const contentExtractSchema = z.object({
   urls: z.array(z.url()).min(1).max(10),
   extract_depth: z.enum(["basic", "advanced"]).optional(),
   include_images: z.boolean().optional(),
-  storeKnowledge: z.boolean().optional(),
+  should_vectorize: z.boolean().optional(),
   provider: z.enum(["auto", "tavily", "cloudflare", "greenpt"]).optional(),
   cloudflareFormat: z
     .enum(["markdown", "content", "json", "links", "scrape", "snapshot"])

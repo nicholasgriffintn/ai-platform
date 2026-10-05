@@ -4,8 +4,8 @@ import { parsePublicHttpUrl } from "@ngriffin_uk/polychat-utility-server/http";
 import { extractWithCloudflare } from "~/modules/apps/infrastructure/retrieval/content-extract/cloudflare";
 import { extractWithGreenPt } from "~/modules/apps/infrastructure/retrieval/content-extract/greenpt";
 import { resolveContentExtractProvider } from "~/modules/apps/infrastructure/retrieval/content-extract/provider";
-import { maybeStoreExtractedKnowledge } from "~/modules/apps/infrastructure/retrieval/content-extract/storage";
 import { extractWithTavily } from "~/modules/apps/infrastructure/retrieval/content-extract/tavily";
+import { maybeVectorizeExtractedContent } from "~/modules/apps/infrastructure/retrieval/content-extract/vectorize";
 import type { IRequest } from "~/types";
 
 import type {
@@ -52,7 +52,7 @@ export const extractContent = async (
       },
     };
 
-    await maybeStoreExtractedKnowledge({
+    await maybeVectorizeExtractedContent({
       params: safeParams,
       req,
       provider,

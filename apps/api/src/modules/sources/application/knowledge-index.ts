@@ -15,7 +15,6 @@ import type { SearchableSource } from "~/modules/sources/infrastructure/SourceSe
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { IEnv } from "~/types";
 
-import { extractKnowledgeSource } from "./knowledge-extraction";
 import { cleanupStaleIndexes, insertSourceVectors } from "./knowledge-vectors";
 import { requireSourceAccess } from "./sources";
 
@@ -55,14 +54,6 @@ export async function indexProjectSource(
 ): Promise<void> {
   await assertOwned();
   await cleanupStaleIndexes(context, sourceId);
-  const initial = await context.repositories.sourceSearch.getSource(sourceId);
-
-  if (!initial || initial.status !== "available") {
-    return;
-  }
-
-  await requireSourceAccess(context, context.requireUser().id, sourceId);
-  await extractKnowledgeSource(context, sourceId);
   const source = await context.repositories.sourceSearch.getSource(sourceId);
 
   if (

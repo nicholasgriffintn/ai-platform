@@ -2,7 +2,7 @@ export interface ContentExtractParams {
   urls: string | string[];
   extract_depth?: "basic" | "advanced";
   include_images?: boolean;
-  storeKnowledge?: boolean;
+  should_vectorize?: boolean;
   provider?: "auto" | ContentExtractProvider;
   cloudflareFormat?: "markdown" | "content" | "json" | "links" | "scrape" | "snapshot";
   cloudflareJsonOptions?: Record<string, unknown>;
@@ -51,7 +51,7 @@ export interface ContentExtractResult {
   error?: string;
   data?: {
     extracted: ExtractedContentPayload;
-    storedKnowledge?: {
+    vectorized?: {
       success: boolean;
       error?: string;
     };

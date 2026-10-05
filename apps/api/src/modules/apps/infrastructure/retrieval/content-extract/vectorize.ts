@@ -14,7 +14,7 @@ import type { IRequest } from "~/types";
 
 const MAX_STORED_ENTRIES = 10;
 
-export async function maybeStoreExtractedKnowledge({
+export async function maybeVectorizeExtractedContent({
   params,
   req,
   provider,
@@ -27,7 +27,7 @@ export async function maybeStoreExtractedKnowledge({
   extracted: ExtractedContentPayload;
   result: ContentExtractResult;
 }): Promise<void> {
-  if (!params.storeKnowledge || extracted.results.length === 0) {
+  if (!params.should_vectorize || extracted.results.length === 0) {
     return;
   }
 
@@ -73,11 +73,11 @@ export async function maybeStoreExtractedKnowledge({
       throw error;
     }
 
-    result.data.storedKnowledge = {
+    result.data.vectorized = {
       success: true,
     };
   } catch {
-    result.data.storedKnowledge = {
+    result.data.vectorized = {
       success: false,
       error: "Unable to store extracted content",
     };
