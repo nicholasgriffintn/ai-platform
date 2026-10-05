@@ -256,3 +256,24 @@ export async function readHttpResponseBody(
     format: parsed === null ? "text" : "json",
   };
 }
+
+export function readCookieValue(header: string, name: string): string | undefined {
+  let value: string | undefined;
+
+  for (const entry of header.split(";")) {
+    const cookie = entry.trim();
+    const separator = cookie.indexOf("=");
+
+    if (separator < 1 || cookie.slice(0, separator) !== name) {
+      continue;
+    }
+
+    if (value !== undefined) {
+      return undefined;
+    }
+
+    value = cookie.slice(separator + 1);
+  }
+
+  return value;
+}

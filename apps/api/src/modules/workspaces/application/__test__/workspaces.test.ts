@@ -55,6 +55,8 @@ const owner: WorkspaceMemberRow = {
   avatar_url: null,
   role: "owner",
   joined_at: "2026-08-01T09:00:00.000Z",
+  managed_connection_id: null,
+  identity_lease_expires_at: null,
 };
 
 const project: ProjectRow = {

@@ -36,6 +36,7 @@ import { createAssistantGitHubAuth } from "~/modules/auth/application/sharedAuth
 import { getUserSettings } from "~/modules/auth/application/user";
 import type { AnonymousUser, User } from "~/types";
 
+import authEnterprise from "./enterprise";
 import authMagicLink from "./magic-link";
 import authWebauthn from "./webauthn";
 
@@ -413,5 +414,7 @@ addRoute(app, "post", "/native/exchange", {
 app.route("/webauthn", authWebauthn);
 
 app.route("/magic-link", authMagicLink);
+
+app.route("/enterprise", authEnterprise);
 
 export default app;

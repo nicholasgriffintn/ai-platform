@@ -4,11 +4,16 @@ import {
   type AuthProviderConfig,
   isWebAuthnSupported,
 } from "@ngriffin_uk/auth-react";
-import { AuthenticationStatusDialog, SignInDialog } from "@ngriffin_uk/polychat-component-account";
+import {
+  AuthenticationStatusDialog,
+  EnterpriseSignInForm,
+  SignInDialog,
+} from "@ngriffin_uk/polychat-component-account";
 import {
   API_BASE_URL,
   APPLE_SIGN_IN_CLIENT_ID,
   APP_NAME,
+  enterpriseIdentityUrls,
 } from "@ngriffin_uk/polychat-library-client";
 import {
   useTrackEvent,
@@ -143,6 +148,11 @@ export function LoginModal({ open, onOpenChange, onKeySubmit }: LoginModalProps)
       <AuthProvider config={config}>
         <AuthFlow />
       </AuthProvider>
+      <EnterpriseSignInForm
+        onSignIn={(id) => {
+          window.location.href = enterpriseIdentityUrls(id).signIn;
+        }}
+      />
     </SignInDialog>
   );
 }

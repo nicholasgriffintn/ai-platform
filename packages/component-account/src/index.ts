@@ -50,6 +50,8 @@ export * from "./Sandbox/SandboxConnectionDialog";
 export * from "./Sandbox/repositories";
 export * from "./Sources/SourceCollectionList";
 export * from "./SignInDialog";
+export * from "./EnterpriseIdentity/EnterpriseSignInForm.js";
+export * from "./EnterpriseIdentity/LinkedEnterpriseIdentities.js";
 export * from "./Sources/SourceListHeader";
 export * from "./Runtimes/RuntimeSettings";
 export * from "./Runtimes/runtime-candidates";
