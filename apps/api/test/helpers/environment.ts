@@ -2,10 +2,7 @@ import type { D1Database } from "@cloudflare/workers-types";
 
 import type { IEnv } from "~/types";
 
-export function databaseTestEnvironment(
-  database: D1Database,
-  options: { allowCacheAccess?: boolean } = {},
-): IEnv {
+export function databaseTestEnvironment(database: D1Database): IEnv {
   return {
     DB: database,
     get AI(): never {
@@ -17,11 +14,7 @@ export function databaseTestEnvironment(
     get VECTOR_DB(): never {
       throw new Error("Unexpected vector binding access");
     },
-    get CACHE() {
-      if (options.allowCacheAccess) {
-        return undefined;
-      }
-
+    get CACHE(): never {
       throw new Error("Unexpected cache binding access");
     },
     ASSETS_BUCKET: undefined,

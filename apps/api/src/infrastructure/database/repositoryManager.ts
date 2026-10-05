@@ -12,7 +12,6 @@ import { SessionRepository } from "~/modules/auth/infrastructure/SessionReposito
 import { WebAuthnRepository } from "~/modules/auth/infrastructure/WebAuthnRepository";
 import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
-import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
 import { BrowserSessionRepository } from "~/modules/computer-use/infrastructure/BrowserSessionRepository";
 import { ConversationHandleRepository } from "~/modules/conversations/infrastructure/ConversationHandleRepository";
 import { ConversationOrganisationRepository } from "~/modules/conversations/infrastructure/ConversationOrganisationRepository";
@@ -212,10 +211,6 @@ export class RepositoryManager {
 
   public get teammateFeedback(): TeammateFeedbackRepository {
     return this.resolve("teammateFeedback", (env) => new TeammateFeedbackRepository(env));
-  }
-
-  public get channelSenders(): ChannelSenderRepository {
-    return this.resolve("channelSenders", (env) => new ChannelSenderRepository(env));
   }
 
   public get channelBindings(): ChannelBindingRepository {

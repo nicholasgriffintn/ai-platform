@@ -14,7 +14,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Teammate } from "~/infrastructure/database/schema";
 import { parseRecipeInstallationRecord } from "~/modules/apps/application/recipes";
-import { requireChannelSenderMapping } from "~/modules/channels/application/access";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
@@ -234,13 +233,14 @@ export async function resolveTeammateInvocation(
     }
 
     case "channel": {
-      const { binding } = await requireChannelSenderMapping(context, {
-        bindingId: invocation.bindingId,
-        mappingId: invocation.senderMappingId,
-        revision: invocation.senderRevision,
-      });
+      const binding = await context.repositories.channelBindings.getById(invocation.bindingId);
 
-      if (!binding || !binding.enabled || !binding.teammate_id) {
+      if (
+        !binding ||
+        !binding.enabled ||
+        !binding.teammate_id ||
+        !ownsResource(user.id, binding.created_by)
+      ) {
         throw new AssistantError("Channel binding not found", ErrorType.NOT_FOUND, 404);
       }
 

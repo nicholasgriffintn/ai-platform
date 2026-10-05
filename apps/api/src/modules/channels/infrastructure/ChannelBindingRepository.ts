@@ -3,8 +3,6 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { ChannelBindingRow } from "~/infrastructure/database/schema";
 
-import { CHANNEL_ADMIN_GUARD, CHANNEL_MEMBER_GUARD } from "./channel-access";
-
 export interface CreateChannelBindingRecord {
   channel: "sms" | "slack" | "telegram";
   scopeType: "personal" | "project";
@@ -62,15 +60,14 @@ export class ChannelBindingRepository extends BaseRepository {
 
   public async listForUser(userId: number): Promise<ChannelBindingRow[]> {
     return this.runQuery<ChannelBindingRow>(
-      `SELECT * FROM channel_binding WHERE ${CHANNEL_MEMBER_GUARD} ORDER BY created_at DESC`,
-      [userId, userId],
+      "SELECT * FROM channel_binding WHERE created_by = ? ORDER BY created_at DESC",
+      [userId],
     );
   }
 
   public async delete(id: string, userId: number): Promise<void> {
-    await this.executeRun(`DELETE FROM channel_binding WHERE id = ? AND (${CHANNEL_ADMIN_GUARD})`, [
+    await this.executeRun("DELETE FROM channel_binding WHERE id = ? AND created_by = ?", [
       id,
-      userId,
       userId,
     ]);
   }
