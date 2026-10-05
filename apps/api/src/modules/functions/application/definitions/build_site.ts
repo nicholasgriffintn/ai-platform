@@ -1,9 +1,16 @@
-import { SITE_PROMPT_MAX_LENGTH } from "@ngriffin_uk/polychat-schemas";
+import { SITE_PROMPT_MAX_LENGTH, nativeRecordViewSchema } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
 import type { FunctionToolDescriptor } from "./types";
 
 export const buildSiteInputSchema = z.object({
+  recordViews: z
+    .array(nativeRecordViewSchema)
+    .max(12)
+    .optional()
+    .describe(
+      "For a new Site, explicitly bind tables discovered with read_records in this project's scope. Leave editable false unless the user asked for record editing. Use the supplied view IDs in Records components.",
+    ),
   brief: z
     .string()
     .trim()
@@ -31,6 +38,7 @@ export const build_site: FunctionToolDescriptor = {
     operation: input.siteId ? "update_site" : "create_site",
     brief: input.brief,
     siteId: input.siteId,
+    recordViews: input.recordViews,
   }),
   inputSchema: buildSiteInputSchema,
 };

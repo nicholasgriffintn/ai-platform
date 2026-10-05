@@ -46,6 +46,7 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { sseResponse } from "~/infrastructure/http/streaming";
+import { requireRecordViewBindings } from "~/modules/records/application/views";
 import type { IUser } from "~/types";
 
 import { attemptAutomaticSiteRepair } from "./automatic-repair";
@@ -97,6 +98,7 @@ function buildInitialDocument(request: SiteGenerateRequest, plan: SitePlan) {
     title: request.prompt.slice(0, 60).trim(),
     theme: plan.theme,
     capabilities: plan.capabilities,
+    ...(request.recordViews ? { recordViews: request.recordViews } : {}),
     pages: {},
   };
 }
@@ -107,10 +109,19 @@ async function prepareGeneration(
 ): Promise<PreparedGeneration> {
   const { context, user, request } = options;
 
+  if (request.recordViews) {
+    if (request.siteId) {
+      throw new AssistantError("Edit saved record bindings in Sites", ErrorType.PARAMS_ERROR, 400);
+    }
+
+    await requireRecordViewBindings(context, request.projectId ?? null, request.recordViews);
+  }
+
   if (request.siteId) {
     const existing = await getSite(
       { context, userId: user.id, projectId: request.projectId },
       request.siteId,
+      true,
     );
 
     if (
@@ -171,7 +182,7 @@ async function prepareGeneration(
               components,
               document: serialiseSiteProjectForPrompt(existing.project),
             }),
-      prompt: buildSiteRefineUserPrompt(request.prompt),
+      prompt: `${buildSiteRefineUserPrompt(request.prompt)}\n\nPreserve the saved recordViews bindings. Records components may reference only these view IDs: ${JSON.stringify(existing.project.recordViews ?? [])}`,
       document: structuredClone(existing.project) as unknown as Record<string, unknown>,
       cacheKey: `sites-refine-${target ? "element" : "site"}-${catalogueSubsetId(subset)}`,
     };
@@ -203,7 +214,7 @@ async function prepareGeneration(
       components: describeSiteCatalog(subset),
       guidance: overrides.guidance === false ? "" : buildSitePlanGuidance(plan),
     }),
-    prompt: buildSiteGenerateUserPrompt(request.prompt),
+    prompt: `${buildSiteGenerateUserPrompt(request.prompt)}\n\nUse Records components only with these provided recordViews binding IDs. Do not modify bindings, invent IDs or include private record values: ${JSON.stringify(request.recordViews ?? [])}`,
     document: buildInitialDocument(request, plan),
     cacheKey: `sites-generate-${catalogueSubsetId(subset)}`,
   };
@@ -528,14 +539,19 @@ export async function runSiteGeneration(
     if (options.persist !== false) {
       emit({ type: "phase", phase: "saving" });
       initialSite = prepared.existing
-        ? await updateSite(scope, prepared.existing.id, {
-            brief,
-            plan,
-            project: initial.project,
-            issues: initial.issues,
-            quality: null,
-            turn: initialTurn,
-          })
+        ? await updateSite(
+            scope,
+            prepared.existing.id,
+            {
+              brief,
+              plan,
+              project: initial.project,
+              issues: initial.issues,
+              quality: null,
+              turn: initialTurn,
+            },
+            prepared.existing.revision,
+          )
         : await createSite(scope, {
             brief,
             plan,

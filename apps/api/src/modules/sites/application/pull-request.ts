@@ -112,7 +112,11 @@ export async function openSitePullRequest({
   }
 
   const exportProject = validateSiteProject(document).project;
-  const { files } = generateSiteFiles(exportProject, request.target);
+  const { files } = generateSiteFiles(exportProject, request.target, {
+    apiBaseUrl: context.env.API_BASE_URL,
+    siteId: site.id,
+    siteRevision: site.revision,
+  });
   const repo = codingEnvironment.repository;
   const token = await resolveSandboxGitHubToken({
     context,

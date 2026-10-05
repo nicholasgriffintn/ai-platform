@@ -135,6 +135,10 @@ export async function runSiteGenerationPass({
   const apply = (pending: ReturnType<typeof reader.push>) => {
     for (const patch of pending) {
       try {
+        if (!/^\/(?:pages|theme|title|description|capabilities)(?:\/|$)/.test(patch.path)) {
+          throw new Error("Generation cannot change saved record bindings or replace the root");
+        }
+
         applySitePatch(document, patch);
         patches.push(patch);
         onPatch?.(patch);

@@ -35,7 +35,12 @@ export const build_site: ApiToolDefinition = {
     const { site, plan, issues } = await runSiteGeneration({
       context,
       user,
-      request: { prompt: args.brief, projectId, siteId: args.siteId },
+      request: {
+        prompt: args.brief,
+        projectId,
+        siteId: args.siteId,
+        recordViews: args.recordViews,
+      },
     });
     const pages = listSitePages(site.project);
     const summary = `${args.siteId ? "Updated" : "Built"} "${site.project.title}" (${plan.kind}, ${pages.length} ${pages.length === 1 ? "page" : "pages"}: ${pages.map(({ page }) => page.path).join(", ")}). It is shown inline and saved as site ${site.id}; pass siteId "${site.id}" to build_site to change it, or open it in Sites to refine, export or ship it.`;

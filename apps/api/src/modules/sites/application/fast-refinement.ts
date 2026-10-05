@@ -88,25 +88,30 @@ export async function applySelectedElementFastRefinement({
   emit({ type: "patch", patch: action.patch });
   emit({ type: "phase", phase: "saving" });
 
-  const site = await updateSite({ context, userId: user.id, projectId }, existing.id, {
-    brief: existing.brief,
-    plan,
-    project,
-    issues,
-    quality: null,
-    turn: {
-      id: completionId,
-      role: "user",
-      prompt,
-      createdAt: new Date().toISOString(),
+  const site = await updateSite(
+    { context, userId: user.id, projectId },
+    existing.id,
+    {
+      brief: existing.brief,
       plan,
-      intent: "tweak",
-      target,
-      provider: refinement.provider,
-      model: refinement.model,
-      trace: [refinement.trace],
+      project,
+      issues,
+      quality: null,
+      turn: {
+        id: completionId,
+        role: "user",
+        prompt,
+        createdAt: new Date().toISOString(),
+        plan,
+        intent: "tweak",
+        target,
+        provider: refinement.provider,
+        model: refinement.model,
+        trace: [refinement.trace],
+      },
     },
-  });
+    existing.revision,
+  );
 
   emit({ type: "saved", stage: "final", site });
   emit({ type: "done", issues, quality: null });

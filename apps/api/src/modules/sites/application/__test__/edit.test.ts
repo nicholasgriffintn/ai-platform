@@ -67,6 +67,7 @@ describe("editSite", () => {
       user,
       siteId: "site-1",
       request: {
+        expectedRevision: 3,
         summary: "Edited Hero",
         patches: [
           {
@@ -97,6 +98,7 @@ describe("editSite", () => {
         user,
         siteId: "site-1",
         request: {
+          expectedRevision: 3,
           summary: "Broken",
           patches: [{ op: "add", path: "/pages/home/elements/hero/props/headline/0", value: 1 }],
         },
@@ -108,7 +110,11 @@ describe("editSite", () => {
         context,
         user,
         siteId: "site-1",
-        request: { summary: "Wipe", patches: [{ op: "remove", path: "/pages" }] },
+        request: {
+          expectedRevision: 3,
+          summary: "Wipe",
+          patches: [{ op: "remove", path: "/pages" }],
+        },
       }),
     ).rejects.toThrow(/no pages/);
     expect(mocks.updateSite).not.toHaveBeenCalled();

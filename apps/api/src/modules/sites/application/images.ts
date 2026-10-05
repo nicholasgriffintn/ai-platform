@@ -53,7 +53,7 @@ export async function fillSiteImages({
   onProgress,
 }: FillSiteImagesOptions): Promise<SiteImagesResponse> {
   const scope = { context, userId: user.id, projectId };
-  const site = await getSite(scope, siteId);
+  const site = await getSite(scope, siteId, true);
   const slots = collectEmptySiteImageSlots(site.project, limit);
 
   if (slots.length === 0) {
@@ -125,18 +125,23 @@ export async function fillSiteImages({
   }
 
   const { project, issues } = validateSiteProject(document);
-  const saved = await updateSite(scope, siteId, {
-    brief: site.brief,
-    plan: site.plan,
-    project,
-    issues,
-    turn: {
-      id: `images-${generateId()}`,
-      role: "edit",
-      prompt: `Generated ${patches.length} ${patches.length === 1 ? "image" : "images"}`,
-      createdAt: new Date().toISOString(),
+  const saved = await updateSite(
+    scope,
+    siteId,
+    {
+      brief: site.brief,
+      plan: site.plan,
+      project,
+      issues,
+      turn: {
+        id: `images-${generateId()}`,
+        role: "edit",
+        prompt: `Generated ${patches.length} ${patches.length === 1 ? "image" : "images"}`,
+        createdAt: new Date().toISOString(),
+      },
     },
-  });
+    site.revision,
+  );
 
   return { site: saved, generated: patches.length, failed };
 }

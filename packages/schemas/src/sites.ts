@@ -477,6 +477,7 @@ export const SITE_EDIT_MAX_PATCHES = 200;
 export const siteEditRequestSchema = z
   .object({
     projectId: z.string().min(1).optional(),
+    expectedRevision: z.number().int().positive(),
     patches: z.array(sitePatchSchema).min(1).max(SITE_EDIT_MAX_PATCHES),
     summary: z.string().trim().min(1).max(200),
   })

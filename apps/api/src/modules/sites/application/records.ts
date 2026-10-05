@@ -2,11 +2,8 @@ import {
   listSitePages,
   SITE_OUTPUT_KIND,
   SITES_CAPABILITY_ID,
-  siteIssueSchema,
-  sitePlanSchema,
-  siteProjectSchema,
-  siteQualitySchema,
-  siteTurnSchema,
+  storedSiteOutputContentSchema,
+  type StoredSiteOutputContent,
   type SiteIssue,
   type SitePlan,
   type SiteProject,
@@ -17,26 +14,23 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
-import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { deleteOutput } from "~/modules/outputs/application";
+import {
+  requireConversationScope,
+  requireOutputRecordAccess,
+} from "~/modules/outputs/application/access";
 import { createOutputProvenance } from "~/modules/outputs/application/provenance";
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
+import { requireRecordViewBindings } from "~/modules/records/application/views";
+import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
-const storedSiteSchema = z.object({
-  brief: z.string().default(""),
-  plan: sitePlanSchema,
-  project: siteProjectSchema,
-  issues: z.array(siteIssueSchema).default([]),
-  quality: siteQualitySchema.nullable().default(null),
-  turns: z.array(siteTurnSchema).default([]),
-});
-
-export type StoredSite = z.infer<typeof storedSiteSchema>;
+export type StoredSite = StoredSiteOutputContent;
 
 function parseStoredSite(record: OutputRecord): StoredSite | null {
   const raw = typeof record.content === "string" ? safeParseJson(record.content) : record.content;
-  const parsed = storedSiteSchema.safeParse(raw);
+  const parsed = storedSiteOutputContentSchema.safeParse(raw);
 
   return parsed.success ? parsed.data : null;
 }
@@ -95,6 +89,7 @@ interface SiteScope {
 async function findSiteOutput(
   { context, userId, projectId }: SiteScope,
   siteId: string,
+  mutate = false,
 ): Promise<OutputRecord> {
   context.ensureDatabase();
 
@@ -106,11 +101,17 @@ async function findSiteOutput(
     throw new AssistantError("Site not found", ErrorType.NOT_FOUND, 404);
   }
 
+  await requireOutputRecordAccess(context, userId, record, mutate);
+
   return record;
 }
 
-export async function getSite(scope: SiteScope, siteId: string): Promise<SiteRecord> {
-  const record = await findSiteOutput(scope, siteId);
+export async function getSite(
+  scope: SiteScope,
+  siteId: string,
+  mutate = false,
+): Promise<SiteRecord> {
+  const record = await findSiteOutput(scope, siteId, mutate);
   const site = mapSiteRecord(record);
 
   if (!site) {
@@ -122,6 +123,9 @@ export async function getSite(scope: SiteScope, siteId: string): Promise<SiteRec
 
 export async function listSites(scope: SiteScope, limit = 50): Promise<SiteSummary[]> {
   scope.context.ensureDatabase();
+  if (scope.projectId) {
+    await requireProjectAccess(scope.context, scope.projectId);
+  }
 
   const records = scope.projectId
     ? await scope.context.repositories.outputs.listProjectOutputs(
@@ -143,9 +147,9 @@ export async function listSites(scope: SiteScope, limit = 50): Promise<SiteSumma
 }
 
 export async function deleteSite(scope: SiteScope, siteId: string): Promise<void> {
-  const record = await findSiteOutput(scope, siteId);
+  const record = await findSiteOutput(scope, siteId, true);
 
-  await scope.context.repositories.outputs.deleteOutput(record.id);
+  await deleteOutput(scope.context, scope.userId, record.id);
 }
 
 export interface SaveSiteInput {
@@ -160,6 +164,23 @@ export interface SaveSiteInput {
 
 export async function createSite(scope: SiteScope, input: SaveSiteInput): Promise<SiteRecord> {
   scope.context.ensureDatabase();
+  await requireRecordViewBindings(
+    scope.context,
+    scope.projectId ?? null,
+    input.project.recordViews ?? [],
+  );
+  if (scope.projectId) {
+    await requireProjectAccess(scope.context, scope.projectId);
+  }
+
+  if (input.conversationId) {
+    await requireConversationScope(
+      scope.context,
+      scope.userId,
+      input.conversationId,
+      scope.projectId,
+    );
+  }
 
   const stored: StoredSite = {
     brief: input.brief,
@@ -200,9 +221,25 @@ export async function updateSite(
   scope: SiteScope,
   siteId: string,
   input: SaveSiteInput,
+  expectedRevision: number,
 ): Promise<SiteRecord> {
-  const record = await findSiteOutput(scope, siteId);
+  const record = await findSiteOutput(scope, siteId, true);
+
+  if (record.revision !== expectedRevision) {
+    throw new AssistantError(
+      "The Site changed. Reload before saving.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
   const existing = parseStoredSite(record);
+
+  await requireRecordViewBindings(
+    scope.context,
+    record.project_id,
+    input.project.recordViews ?? [],
+  );
   const stored: StoredSite = {
     brief: existing?.brief ?? input.brief,
     plan: input.plan,
@@ -215,7 +252,7 @@ export async function updateSite(
     title: input.project.title,
     status: "ready",
     content: stored,
-    expectedRevision: record.revision,
+    expectedRevision,
     updatedByUserId: scope.userId,
   });
   const site = mapSiteRecord(updated);
@@ -233,7 +270,13 @@ export async function finaliseSiteGeneration(
   expectedRevision: number,
   input: SaveSiteInput,
 ): Promise<SiteRecord> {
-  const record = await findSiteOutput(scope, siteId);
+  const record = await findSiteOutput(scope, siteId, true);
+
+  await requireRecordViewBindings(
+    scope.context,
+    record.project_id,
+    input.project.recordViews ?? [],
+  );
   const existing = parseStoredSite(record);
 
   if (!existing) {

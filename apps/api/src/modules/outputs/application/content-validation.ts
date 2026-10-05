@@ -1,5 +1,6 @@
 import {
   documentOutputContentSchema,
+  storedSiteOutputContentSchema,
   nativeRecordDefinitionSchema,
   validateNativeRecordValues,
 } from "@ngriffin_uk/polychat-schemas";
@@ -15,6 +16,14 @@ export async function validateOutputBindings(
   projectId: string | null,
   content: Record<string, unknown>,
 ) {
+  if (kind === "site") {
+    await requireRecordViewBindings(
+      context,
+      projectId,
+      storedSiteOutputContentSchema.parse(content).project.recordViews ?? [],
+    );
+  }
+
   if (kind === "document") {
     await requireRecordViewBindings(
       context,
@@ -28,6 +37,10 @@ export function validateOutputContent(kind: string, content: Record<string, unkn
   try {
     if (kind === "document") {
       return documentOutputContentSchema.parse(content);
+    }
+
+    if (kind === "site") {
+      return storedSiteOutputContentSchema.parse(content);
     }
 
     if (kind === "records") {

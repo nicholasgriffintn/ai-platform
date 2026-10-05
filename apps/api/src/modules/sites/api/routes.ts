@@ -35,7 +35,11 @@ import {
   requireOptionalProjectCapabilityAccess,
 } from "~/modules/workspaces/application/access";
 
+import siteRecords from "./records";
+
 const app = new Hono();
+
+app.route("/", siteRecords);
 
 const siteParamsSchema = z.object({ id: z.string().min(1) });
 
@@ -205,7 +209,11 @@ addRoute(app, "get", "/:id/files", {
       params.id,
     );
 
-    const generated = generateSiteFiles(site.project, query.target);
+    const generated = generateSiteFiles(site.project, query.target, {
+      apiBaseUrl: serviceContext.env.API_BASE_URL,
+      siteId: site.id,
+      siteRevision: site.revision,
+    });
 
     return { target: generated.target, files: generated.files };
   },

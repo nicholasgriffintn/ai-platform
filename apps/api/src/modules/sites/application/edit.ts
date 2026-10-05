@@ -30,7 +30,16 @@ export async function editSite({
   request,
 }: EditSiteOptions): Promise<SiteRecord> {
   const scope = { context, userId: user.id, projectId: request.projectId };
-  const existing = await getSite(scope, siteId);
+  const existing = await getSite(scope, siteId, true);
+
+  if (existing.revision !== request.expectedRevision) {
+    throw new AssistantError(
+      "The Site changed. Reload before saving.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
   const document = structuredClone(existing.project) as unknown as Record<string, unknown>;
 
   for (const patch of request.patches) {
@@ -55,16 +64,21 @@ export async function editSite({
     );
   }
 
-  return updateSite(scope, siteId, {
-    brief: existing.brief,
-    plan: existing.plan,
-    project,
-    issues,
-    turn: {
-      id: `edit-${generateId()}`,
-      role: "edit",
-      prompt: request.summary,
-      createdAt: new Date().toISOString(),
+  return updateSite(
+    scope,
+    siteId,
+    {
+      brief: existing.brief,
+      plan: existing.plan,
+      project,
+      issues,
+      turn: {
+        id: `edit-${generateId()}`,
+        role: "edit",
+        prompt: request.summary,
+        createdAt: new Date().toISOString(),
+      },
     },
-  });
+    request.expectedRevision,
+  );
 }

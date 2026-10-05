@@ -64,7 +64,11 @@ export async function buildSiteInSandbox({
     applySitePatch(document, patch);
   }
 
-  const { files } = generateSiteFiles(validateSiteProject(document).project, target);
+  const { files } = generateSiteFiles(validateSiteProject(document).project, target, {
+    apiBaseUrl: context.env.API_BASE_URL,
+    siteId: site.id,
+    siteRevision: site.revision,
+  });
   const task = buildSiteSandboxTask({
     project: site.project,
     brief: site.brief,

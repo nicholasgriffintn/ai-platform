@@ -164,6 +164,7 @@ export function useSiteGeneration({
       trace: lastTurn?.trace ?? [],
     };
   });
+  const [hasUnsavedEdits, setHasUnsavedEdits] = useState(false);
   const documentRef = useRef<Record<string, unknown>>({});
   const projectRef = useRef<SiteProject | null>(initialSite?.project ?? null);
   const siteRef = useRef<SiteRecord | null>(initialSite ?? null);
@@ -290,7 +291,11 @@ export function useSiteGeneration({
       firstPreviewRecordedRef.current = refining;
 
       documentRef.current =
-        refining && projectRef.current ? structuredClone(projectRef.current) : {};
+        refining && projectRef.current
+          ? structuredClone(projectRef.current)
+          : request.recordViews
+            ? { recordViews: request.recordViews }
+            : {};
 
       setState((previous) => ({
         ...IDLE_STATE,
@@ -427,6 +432,10 @@ export function useSiteGeneration({
 
   const reset = useCallback(() => {
     cancel();
+    editSessionRef.current += 1;
+    pendingEditsRef.current = { patches: [], summaries: [] };
+    editRevisionRef.current = null;
+    setHasUnsavedEdits(false);
     documentRef.current = {};
     patchCountRef.current = 0;
     generationStartedAtRef.current = null;
@@ -439,33 +448,70 @@ export function useSiteGeneration({
     patches: [],
     summaries: [],
   });
+  const editRevisionRef = useRef<number | null>(null);
   const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const persistingEditsRef = useRef(false);
+  const editSessionRef = useRef(0);
 
-  const persistEdits = useCallback(async () => {
+  const persistEdits = useCallback<() => Promise<void>>(async () => {
     persistTimerRef.current = null;
+    if (persistingEditsRef.current) {
+      return;
+    }
 
-    const siteId = stateRef.current.site?.id;
+    const baseSite = stateRef.current.site;
     const pending = pendingEditsRef.current;
 
-    if (!siteId || pending.patches.length === 0) {
+    if (!baseSite || pending.patches.length === 0) {
       return;
     }
 
     pendingEditsRef.current = { patches: [], summaries: [] };
+    persistingEditsRef.current = true;
+    const session = editSessionRef.current;
+    const expectedRevision = editRevisionRef.current ?? baseSite.revision;
+    let succeeded = false;
 
     try {
-      const saved = await sitesService.edit(siteId, {
+      const saved = await sitesService.edit(baseSite.id, {
         projectId,
+        expectedRevision,
         patches: pending.patches,
         summary: [...new Set(pending.summaries)].join(", ").slice(0, 200),
       });
 
-      setState((previous) => ({ ...previous, site: saved, issues: saved.issues }));
+      if (editSessionRef.current !== session) {
+        return;
+      }
+
+      succeeded = true;
+      editRevisionRef.current = pendingEditsRef.current.patches.length ? saved.revision : null;
+      setHasUnsavedEdits(pendingEditsRef.current.patches.length > 0);
+
+      setState((previous) => ({ ...previous, site: saved, issues: saved.issues, error: null }));
       siteRef.current = saved;
       queryClient.setQueryData(SITES_QUERY_KEYS.detail(projectId, saved.id), saved);
       void queryClient.invalidateQueries({ queryKey: SITES_QUERY_KEYS.list(projectId) });
     } catch (error) {
+      if (editSessionRef.current !== session) {
+        return;
+      }
+
+      pendingEditsRef.current = {
+        patches: [...pending.patches, ...pendingEditsRef.current.patches],
+        summaries: [...pending.summaries, ...pendingEditsRef.current.summaries],
+      };
+      editRevisionRef.current = expectedRevision;
+      setHasUnsavedEdits(true);
       setState((previous) => ({ ...previous, error: getErrorMessage(error, "Edit not saved") }));
+    } finally {
+      persistingEditsRef.current = false;
+      if (
+        (succeeded || editSessionRef.current !== session) &&
+        pendingEditsRef.current.patches.length
+      ) {
+        persistTimerRef.current = setTimeout(() => void persistEdits(), 800);
+      }
     }
   }, [projectId, queryClient]);
 
@@ -473,6 +519,10 @@ export function useSiteGeneration({
     (patches: SitePatch[], summary: string) => {
       if (patches.length === 0 || !projectRef.current) {
         return;
+      }
+
+      if (pendingEditsRef.current.patches.length === 0 && !persistingEditsRef.current) {
+        editRevisionRef.current = stateRef.current.site?.revision ?? null;
       }
 
       if (Object.keys(documentRef.current).length === 0) {
@@ -494,6 +544,7 @@ export function useSiteGeneration({
       setState((previous) => ({ ...previous, project }));
 
       pendingEditsRef.current.patches.push(...patches);
+      setHasUnsavedEdits(true);
       pendingEditsRef.current.summaries.push(summary);
 
       if (persistTimerRef.current) {
@@ -520,7 +571,16 @@ export function useSiteGeneration({
       const lastTurn = site.turns.at(-1);
 
       cancel();
+      editSessionRef.current += 1;
       documentRef.current = structuredClone(site.project);
+      setHasUnsavedEdits(false);
+      pendingEditsRef.current = { patches: [], summaries: [] };
+      editRevisionRef.current = null;
+      if (persistTimerRef.current) {
+        clearTimeout(persistTimerRef.current);
+        persistTimerRef.current = null;
+      }
+
       projectRef.current = site.project;
       siteRef.current = site;
       patchCountRef.current = 0;
@@ -544,5 +604,15 @@ export function useSiteGeneration({
     [cancel],
   );
 
-  return { state, generate, edit, generateImages, load, cancel, reset };
+  return {
+    state,
+    generate,
+    edit,
+    retryEdits: persistEdits,
+    generateImages,
+    load,
+    cancel,
+    reset,
+    hasUnsavedEdits,
+  };
 }
