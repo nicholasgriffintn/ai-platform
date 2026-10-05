@@ -1,4 +1,8 @@
-import { DOCUMENT_READ_TOOL_NAME, type ReadDocumentInput } from "@ngriffin_uk/polychat-schemas";
+import {
+  DOCUMENT_READ_TOOL_NAME,
+  readDocumentRecordViews,
+  type ReadDocumentInput,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { requireDocument } from "~/modules/documents/application/access";
@@ -45,6 +49,7 @@ export const get_document: ApiToolDefinition = {
         revision: output.revision,
         body,
         comment,
+        recordViews: readDocumentRecordViews(output.content),
       },
     };
   },

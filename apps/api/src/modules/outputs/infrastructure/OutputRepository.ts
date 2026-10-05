@@ -73,6 +73,7 @@ export interface UpdateOutputRecord {
   updatedByUserId: number;
   operation?: Exclude<OutputRevisionOperation, "created">;
   restoredFromRevision?: number | null;
+  recordChangeCursor?: number;
 }
 
 export interface OutputAuditRecord {
@@ -226,6 +227,12 @@ export class OutputRepository extends BaseRepository {
 
   async getOutput(outputId: string): Promise<OutputRecord | null> {
     const output = await this.getOutputIncludingDeleting(outputId);
+
+    return output && !isOutputDeletionPending(output) ? output : null;
+  }
+
+  async getCurrentOutput(outputId: string): Promise<OutputRecord | null> {
+    const output = await this.selectOne({ id: outputId });
 
     return output && !isOutputDeletionPending(output) ? output : null;
   }
@@ -488,13 +495,14 @@ export class OutputRepository extends BaseRepository {
        ((project_id IS NULL AND created_by_user_id = ?) OR EXISTS
          (SELECT 1 FROM project JOIN workspace_member ON workspace_member.workspace_id = project.workspace_id
           WHERE project.id = output.project_id AND workspace_member.user_id = ?
-            AND (output.created_by_user_id = ? OR workspace_member.role IN ('owner', 'admin'))))`,
+            AND (output.created_by_user_id = ? OR workspace_member.role IN ('owner', 'admin'))))${input.recordChangeCursor === undefined ? "" : " AND (SELECT COALESCE(MAX(sequence), 0) FROM native_record_change WHERE table_id = ?) = ?"}`,
       [
         outputId,
         input.expectedRevision,
         input.updatedByUserId,
         input.updatedByUserId,
         input.updatedByUserId,
+        ...(input.recordChangeCursor === undefined ? [] : [outputId, input.recordChangeCursor]),
       ],
       { jsonFields: ["content"] },
     );

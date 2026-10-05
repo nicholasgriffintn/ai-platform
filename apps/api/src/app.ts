@@ -27,6 +27,7 @@ import outputs from "~/modules/outputs/api/routes";
 import plans from "~/modules/plans/api/routes";
 import notifications from "~/modules/project-tasks/api/notifications";
 import realtime from "~/modules/realtime/api/routes";
+import records from "~/modules/records/api/routes";
 import savedMessages from "~/modules/saved-messages/api/routes";
 import search from "~/modules/search/api/routes";
 import sites from "~/modules/sites/api/routes";
@@ -60,6 +61,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/models", models);
   app.route("/notifications", notifications);
   app.route("/outputs", outputs);
+  app.route("/records", records);
   app.route("/tasks", tasks);
   app.route("/templates", templates);
   app.route("/tools", tools);

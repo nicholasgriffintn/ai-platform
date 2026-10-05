@@ -3,6 +3,7 @@ import { useFormatDocument, useSaveDocumentRevision } from "@ngriffin_uk/polycha
 import {
   documentExportFilename,
   readDocumentMetadata,
+  readDocumentRecordViews,
   type Output,
 } from "@ngriffin_uk/polychat-schemas";
 import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
@@ -39,6 +40,7 @@ export function DocumentOutputWorkbench({ output, body }: { output: Output; body
                   body: nextBody,
                   expectedRevision,
                   metadata: readDocumentMetadata(output.content) ?? undefined,
+                  recordViews: readDocumentRecordViews(output.content),
                 });
               }
             : undefined

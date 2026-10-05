@@ -10,7 +10,11 @@ import {
   restoreOutputRevision,
   updateOutput,
 } from "@ngriffin_uk/polychat-library-client";
-import { buildDocumentContent, type DocumentMetadata } from "@ngriffin_uk/polychat-schemas";
+import {
+  buildDocumentContent,
+  type DocumentMetadata,
+  type NativeRecordView,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const OUTPUT_QUERY_KEYS = {
@@ -83,14 +87,16 @@ export function useSaveDocumentRevision() {
       body,
       expectedRevision,
       metadata,
+      recordViews,
     }: {
       outputId: string;
       body: string;
       expectedRevision: number;
       metadata?: DocumentMetadata;
+      recordViews: NativeRecordView[];
     }) =>
       updateOutput(outputId, {
-        content: buildDocumentContent(body, metadata),
+        content: buildDocumentContent(body, metadata, recordViews),
         expectedRevision,
       }),
     onSettled: (_output, _error, variables) =>

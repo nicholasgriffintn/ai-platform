@@ -35,42 +35,15 @@ import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { getOutputRestoreCapability } from "../domain/revision-policy";
 import { requireConversationScope, requireOutputAccess, requireOutputRecordAccess } from "./access";
+import {
+  validateOutputBindings,
+  validateOutputContent,
+  validateRecordDefinitionUpdate,
+} from "./content-validation";
 import { deleteOutputResources } from "./delete-resources";
+import { formatOutput } from "./format";
 
-function formatFile(record: OutputRecord): Output["file"] {
-  if (!record.storage_key || !record.mime_type) {
-    return null;
-  }
-
-  return {
-    key: record.storage_key,
-    mimeType: record.mime_type,
-    filename: record.filename,
-    byteSize: record.byte_size,
-  };
-}
-
-export function formatOutput(record: OutputRecord): Output {
-  return {
-    id: record.id,
-    createdByUserId: record.created_by_user_id,
-    projectId: record.project_id,
-    conversationId: record.conversation_id,
-    parentOutputId: record.parent_output_id,
-    capabilityId: record.capability_id,
-    groupId: record.group_id,
-    kind: record.kind,
-    title: record.title,
-    status: record.status,
-    sensitivity: record.sensitivity,
-    content: parseContent(record.content),
-    file: formatFile(record),
-    revision: record.revision,
-    provenance: parseOutputProvenance(record.provenance_json, record.created_at),
-    createdAt: record.created_at,
-    updatedAt: record.updated_at,
-  };
-}
+export { formatOutput } from "./format";
 
 export function formatSharedOutput(record: OutputRecord): SharedOutput {
   const output = formatOutput(record);
@@ -204,6 +177,9 @@ export async function createOutput(
   }
 
   const outputId = options.id ?? generateId();
+  const content = validateOutputContent(input.kind, input.content);
+
+  await validateOutputBindings(context, input.kind, input.projectId ?? null, content);
   const created = await context.repositories.outputs.createOutput(
     {
       id: outputId,
@@ -217,7 +193,7 @@ export async function createOutput(
       title: input.title,
       status: input.status,
       sensitivity: input.sensitivity,
-      content: input.content,
+      content,
       storageKey: input.file?.key,
       mimeType: input.file?.mimeType,
       filename: input.file?.filename,
@@ -321,10 +297,24 @@ export async function updateOutput(
     throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
   }
 
+  const content =
+    input.content === undefined ? undefined : validateOutputContent(existing.kind, input.content);
+
+  if (content !== undefined) {
+    await validateOutputBindings(context, existing.kind, existing.project_id, content);
+  }
+
+  const recordChangeCursor =
+    existing.kind === "records" && content !== undefined
+      ? await validateRecordDefinitionUpdate(context, outputId, content)
+      : undefined;
+
   const updated = await context.repositories.outputs.updateOutput(
     outputId,
     {
       ...input,
+      content,
+      recordChangeCursor,
       updatedByUserId: userId,
     },
     project
@@ -426,11 +416,15 @@ export async function restoreOutputRevision(
     throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
   }
 
+  const restoredContent = validateOutputContent(current.kind, parseContent(target.content));
+
+  await validateOutputBindings(context, current.kind, current.project_id, restoredContent);
+
   const restored = await context.repositories.outputs.updateOutput(
     outputId,
     {
       title: target.title,
-      content: parseContent(target.content),
+      content: restoredContent,
       expectedRevision: input.expectedRevision,
       updatedByUserId: userId,
       operation: "restored",

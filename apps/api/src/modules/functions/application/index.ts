@@ -43,6 +43,7 @@ import { search_memories, store_memory } from "./memory";
 import { messageParent } from "./message-parent";
 import { metaTools } from "./meta";
 import { create_music } from "./music";
+import { read_records, write_records } from "./native_records";
 import { next_edit_completion } from "./next_edit";
 import { extract_text_from_document } from "./ocr";
 import { run_pashi_tools, search_pashi_tools } from "./pashi";
@@ -90,6 +91,8 @@ const functionDefinitions: ApiToolDefinition[] = [
   web_search,
   write_document,
   get_document,
+  read_records,
+  write_records,
   create_qr_code,
   search_pashi_tools,
   run_pashi_tools,

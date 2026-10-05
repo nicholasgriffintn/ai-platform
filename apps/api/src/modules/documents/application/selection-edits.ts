@@ -3,6 +3,7 @@ import {
   documentOutputContentSchema,
   documentEditProposalSchema,
   readDocumentMetadata,
+  readDocumentRecordViews,
   type DocumentEditProposal,
   type ProposeDocumentEditInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -100,7 +101,11 @@ export async function applyDocumentEdit(
   const match = requireSelection(body, proposal.anchor);
   const edited = body.slice(0, match.start) + proposal.replacement + body.slice(match.end);
   const content = documentOutputContentSchema.parse(
-    buildDocumentContent(edited, readDocumentMetadata(output.content) ?? undefined),
+    buildDocumentContent(
+      edited,
+      readDocumentMetadata(output.content) ?? undefined,
+      readDocumentRecordViews(output.content),
+    ),
   );
 
   return updateOutput(context, userId, outputId, {

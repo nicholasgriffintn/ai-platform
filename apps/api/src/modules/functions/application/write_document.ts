@@ -37,6 +37,7 @@ export const write_document: ApiToolDefinition = {
     const saved = await writeDocument(context, user, {
       title: args.title,
       body: args.body,
+      recordViews: args.recordViews,
       capabilityId: DOCUMENT_CAPABILITY_ID,
       sourceType: "assistant",
       ...(args.outputId ? { outputId: args.outputId } : {}),

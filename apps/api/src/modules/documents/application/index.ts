@@ -3,6 +3,8 @@ import {
   documentOutputContentSchema,
   DOCUMENT_OUTPUT_KIND,
   readDocumentMetadata,
+  readDocumentRecordViews,
+  type NativeRecordView,
   type DocumentMetadata,
   type Output,
 } from "@ngriffin_uk/polychat-schemas";
@@ -36,6 +38,7 @@ export async function writeDocument(
     capabilityId?: string;
     sourceType?: DocumentMetadata["sourceType"];
     describe?: boolean;
+    recordViews?: NativeRecordView[];
   },
 ): Promise<Output> {
   const title = sanitiseInput(input.title);
@@ -69,7 +72,13 @@ export async function writeDocument(
     input.describe === false
       ? carried
       : await describeDocument({ context, user, title, body, existing: carried });
-  const content = documentOutputContentSchema.parse(buildDocumentContent(body, metadata));
+  const content = documentOutputContentSchema.parse(
+    buildDocumentContent(
+      body,
+      metadata,
+      input.recordViews ?? (existing ? readDocumentRecordViews(existing.output.content) : []),
+    ),
+  );
 
   if (existing) {
     return updateOutput(context, user.id, existing.output.id, {
@@ -125,7 +134,7 @@ export async function redescribeDocument(
   });
 
   await updateOutput(context, user.id, outputId, {
-    content: buildDocumentContent(body, metadata),
+    content: buildDocumentContent(body, metadata, readDocumentRecordViews(output.content)),
     expectedRevision: output.revision,
   });
 

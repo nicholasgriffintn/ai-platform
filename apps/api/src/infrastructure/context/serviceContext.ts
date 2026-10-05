@@ -47,6 +47,13 @@ export interface ServiceContext {
   originDeviceId?: string | null;
   executionRunId?: string;
   executionRunAttempt?: number;
+  projectTaskExecution?: {
+    taskId: string;
+    flowRevision: number;
+    waitId: string;
+    dispatchTaskId: string;
+    ownerToken: string;
+  };
   database: Database;
   repositories: RepositoryManager;
   requestCache: RequestCache;

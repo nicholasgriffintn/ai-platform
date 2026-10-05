@@ -1,6 +1,8 @@
 import { slugify } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
+import { nativeRecordViewSchema, type NativeRecordView } from "./native-records.js";
+
 export const DOCUMENT_OUTPUT_KIND = "document";
 export const DOCUMENT_WRITE_TOOL_NAME = "write_document";
 export const DOCUMENT_READ_TOOL_NAME = "get_document";
@@ -70,6 +72,7 @@ export const documentOutputContentSchema = z.object({
   format: z.literal("markdown"),
   body: z.string().max(DOCUMENT_MAX_BODY),
   metadata: documentMetadataSchema.optional(),
+  recordViews: z.array(nativeRecordViewSchema).max(12).default([]),
 });
 
 export const writeDocumentInputSchema = z
@@ -90,6 +93,7 @@ export const writeDocumentInputSchema = z
       .min(1)
       .optional()
       .describe("Revise this document instead of writing a new one. Omit to write a new one."),
+    recordViews: z.array(nativeRecordViewSchema).max(12).optional(),
     expectedRevision: z
       .number()
       .int()
@@ -155,6 +159,14 @@ export function readDocumentMetadata(
   return parsed.success ? (parsed.data.metadata ?? null) : null;
 }
 
+export function readDocumentRecordViews(
+  content: Record<string, unknown> | undefined,
+): NativeRecordView[] {
+  const parsed = documentOutputContentSchema.safeParse(content);
+
+  return parsed.success ? parsed.data.recordViews : [];
+}
+
 export function countDocumentWords(body: string): number {
   let words = 0;
   let inWord = false;
@@ -189,6 +201,7 @@ export function deriveDocumentStatistics(body: string): {
 export function buildDocumentContent(
   body: string,
   metadata?: DocumentMetadata,
+  recordViews: NativeRecordView[] = [],
 ): DocumentOutputContent {
   const statistics = deriveDocumentStatistics(body);
 
@@ -196,6 +209,7 @@ export function buildDocumentContent(
     format: "markdown",
     body,
     metadata: { ...metadata, ...statistics },
+    recordViews,
   };
 }
 

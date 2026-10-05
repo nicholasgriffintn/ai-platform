@@ -47,6 +47,7 @@ import { OutputRepository } from "~/modules/outputs/infrastructure/OutputReposit
 import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetRepository";
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
+import { NativeRecordRepository } from "~/modules/records/infrastructure/NativeRecordRepository";
 import { SavedMessageRepository } from "~/modules/saved-messages/infrastructure/SavedMessageRepository";
 import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
 import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
@@ -340,6 +341,10 @@ export class RepositoryManager {
 
   public get documentComments(): DocumentCommentRepository {
     return this.resolve("documentComments", (env) => new DocumentCommentRepository(env));
+  }
+
+  public get nativeRecords(): NativeRecordRepository {
+    return this.resolve("nativeRecords", (env) => new NativeRecordRepository(env));
   }
 
   public get outputs(): OutputRepository {
