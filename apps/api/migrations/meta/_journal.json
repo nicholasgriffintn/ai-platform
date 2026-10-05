@@ -428,6 +428,13 @@
       "when": 1791164480440,
       "tag": "0060_document_collaboration",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "6",
+      "when": 1791166238669,
+      "tag": "0061_native_records",
+      "breakpoints": true
     }
   ]
 }

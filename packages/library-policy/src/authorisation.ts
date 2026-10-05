@@ -28,6 +28,17 @@ const modelShape = {
   onDevice: boolean,
   platformEnabled: boolean,
 };
+const recordShape = {
+  actorId: string,
+  tableOwnerId: string,
+  rowOwnerId: string,
+  scope: string,
+  member: boolean,
+  role: string,
+  visibility: string,
+  editing: string,
+  active: boolean,
+};
 const toolShape = {
   toolName: string,
   toolType: string,
@@ -74,6 +85,8 @@ const actionShapes = {
   "workspace.access": { plan: string, member: boolean, role: string, allowedRoles: strings },
   "resource.read": resourceShape,
   "resource.write": resourceShape,
+  "records.read": recordShape,
+  "records.write": recordShape,
   "owner.access": { actorId: string, ownerId: string },
   "conversation.share": { actorId: string, ownerId: string, project: boolean },
   "conversation.public": { project: boolean, isPublic: boolean },

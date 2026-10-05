@@ -1,4 +1,14 @@
 export const scopePolicies = {
+  "scope.records.read": `permit(principal, action == Polychat::Action::"records.read", resource)
+    when { ["shared", "creator"].contains(context.visibility) && ["shared", "creator"].contains(context.editing) && !(context.visibility == "creator" && context.editing == "shared") &&
+     ((context.scope == "personal" && context.actorId == context.tableOwnerId) ||
+      (context.scope == "project" && context.member && ["owner", "admin", "member"].contains(context.role) &&
+       (context.visibility == "shared" || context.actorId == context.rowOwnerId || context.actorId == context.tableOwnerId || ["owner", "admin"].contains(context.role)))) };`,
+  "scope.records.write": `permit(principal, action == Polychat::Action::"records.write", resource)
+    when { context.active && ["shared", "creator"].contains(context.visibility) && ["shared", "creator"].contains(context.editing) && !(context.visibility == "creator" && context.editing == "shared") &&
+     ((context.scope == "personal" && context.actorId == context.tableOwnerId) ||
+      (context.scope == "project" && context.member && ["owner", "admin", "member"].contains(context.role) &&
+       (context.editing == "shared" || context.actorId == context.rowOwnerId || context.actorId == context.tableOwnerId || ["owner", "admin"].contains(context.role)))) };`,
   "scope.work": `permit(principal, action == Polychat::Action::"work.access", resource)
     when { context.plan == "pro" };`,
   "scope.workspace": `permit(principal, action == Polychat::Action::"workspace.access", resource)

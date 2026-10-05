@@ -1,6 +1,8 @@
 import type { AuthChallengeKind } from "@ngriffin_uk/auth-protocol";
 import type {
   DocumentAnchor,
+  NativeRecord,
+  NativeRecordValues,
   ProjectTaskConstraints,
   ProjectTaskCompletion,
   ProjectTaskContext,
@@ -3815,5 +3817,87 @@ export const documentComment = sqliteTable(
       sql`${table.source_revision} > 0`,
     ),
     revisionCheck: check("document_comment_revision_check", sql`${table.revision} > 0`),
+  }),
+);
+
+export const nativeRecord = sqliteTable(
+  "native_record",
+  {
+    id: text().primaryKey().notNull(),
+    table_id: text()
+      .notNull()
+      .references(() => output.id, { onDelete: "cascade" }),
+    created_by_user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    values_json: text({ mode: "json" }).$type<NativeRecordValues>().notNull(),
+    creation_hash: text().notNull(),
+    validated_table_revision: integer().notNull(),
+    revision: integer().default(1).notNull(),
+    created_at: text().notNull(),
+    updated_at: text(),
+    deleted_at: text(),
+  },
+  (table) => ({
+    tableIdx: index("native_record_table_idx").on(
+      table.table_id,
+      table.deleted_at,
+      table.created_at,
+      table.id,
+    ),
+    ownerIdx: index("native_record_owner_idx").on(
+      table.table_id,
+      table.created_by_user_id,
+      table.deleted_at,
+    ),
+    revisionCheck: check(
+      "native_record_revision_check",
+      sql`${table.revision} > 0 AND ${table.validated_table_revision} > 0`,
+    ),
+    valuesCheck: check(
+      "native_record_values_check",
+      sql`json_valid(${table.values_json}) AND json_type(${table.values_json}) = 'object' AND length(CAST(${table.values_json} AS BLOB)) <= 65536`,
+    ),
+  }),
+);
+
+export const nativeRecordChange = sqliteTable(
+  "native_record_change",
+  {
+    sequence: integer().primaryKey({ autoIncrement: true }),
+    table_id: text()
+      .notNull()
+      .references(() => output.id, { onDelete: "cascade" }),
+    record_id: text()
+      .notNull()
+      .references(() => nativeRecord.id, { onDelete: "cascade" }),
+    record_revision: integer().notNull(),
+    record_owner_user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    changed_by_user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    operation: text({ enum: ["created", "updated", "deleted"] }).notNull(),
+    trigger_eligible: integer({ mode: "boolean" }).default(true).notNull(),
+    record_json: text({ mode: "json" }).$type<NativeRecord>().notNull(),
+    created_at: text().notNull(),
+  },
+  (table) => ({
+    tableIdx: index("native_record_change_table_idx").on(table.table_id, table.sequence),
+    ownerIdx: index("native_record_change_owner_idx").on(
+      table.table_id,
+      table.record_owner_user_id,
+      table.sequence,
+    ),
+    revisionIdx: uniqueIndex("native_record_change_revision_idx").on(
+      table.table_id,
+      table.record_id,
+      table.record_revision,
+    ),
+    operationCheck: check(
+      "native_record_change_operation_check",
+      sql`${table.operation} IN ('created', 'updated', 'deleted')`,
+    ),
   }),
 );
