@@ -31,6 +31,8 @@ Use [`polychat-setup`](.agents/skills/polychat-setup/SKILL.md) as setup/ops refe
 
 ## Validation
 
+Do not add integration tests unless the user explicitly requests integration tests. Requests to build, fix, review or validate functionality do not authorise them. Do not add database runtimes, migration suites, service harnesses or fixtures solely to support integration tests, or move or rename integration tests to bypass this rule.
+
 Add tests only when they protect observable behaviour, a meaningful invariant, or a real regression. Do not add catalogue field snapshots or trivial rendering assertions that merely restate the implementation.
 
 Run these before every commit:
