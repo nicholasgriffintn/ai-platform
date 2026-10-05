@@ -1,6 +1,8 @@
 import { generateSiteFiles } from "@ngriffin_uk/polychat-library-sites";
 import {
   errorResponseSchema,
+  siteDataResponseSchema,
+  siteIntegrationScopeSchema,
   listSitesQuerySchema,
   siteBuildRequestSchema,
   siteBuildResponseSchema,
@@ -29,6 +31,7 @@ import { streamSiteGeneration } from "~/modules/sites/application/generate";
 import { streamSiteImages } from "~/modules/sites/application/images";
 import { openSitePullRequest } from "~/modules/sites/application/pull-request";
 import { deleteSite, getSite, listSites } from "~/modules/sites/application/records";
+import { readSiteData } from "~/modules/sites/application/runtime";
 import { readSharedSiteImage } from "~/modules/sites/application/shared-images";
 import {
   projectScopeQuerySchema,
@@ -292,6 +295,16 @@ addRoute(app, "post", "/evaluate", {
   },
   handler: ({ body, serviceContext, user }) =>
     evaluateSitePrompts({ context: serviceContext, user, request: body }),
+});
+
+addRoute(app, "post", "/:id/data/read", {
+  tags: ["sites"],
+  summary: "Read scoped site data",
+  auth: true,
+  paramSchema: siteParamsSchema,
+  bodySchema: siteIntegrationScopeSchema,
+  responses: { 200: { description: "Site data", schema: siteDataResponseSchema } },
+  handler: ({ params, body, serviceContext }) => readSiteData(serviceContext, params.id, body),
 });
 
 export default app;

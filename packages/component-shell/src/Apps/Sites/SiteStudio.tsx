@@ -20,6 +20,7 @@ import {
   useOpenSitePullRequest,
   useProject,
   useSiteGeneration,
+  useSiteData,
   useTrackEvent,
   SITES_QUERY_KEYS,
   type SiteGenerationState,
@@ -60,6 +61,7 @@ import { useAppChrome } from "../AppChrome.js";
 import { RecentSites } from "./RecentSites.js";
 import { SiteBuildPlaceholder } from "./SiteBuildPlaceholder.js";
 import { SiteConversationTurn } from "./SiteConversationTurn.js";
+import { SiteDataSources } from "./SiteDataSources.js";
 import { SiteHistory, type SiteRevisionPreview } from "./SiteHistory.js";
 import { SiteInspector } from "./SiteInspector.js";
 import { SitePlanSummary } from "./SitePlanSummary.js";
@@ -128,6 +130,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
     [exportTarget, project, view],
   );
   const isBusy = !["idle", "done", "error"].includes(state.status);
+  const siteData = useSiteData(state.site, !isBusy && !revisionPreview);
   const savedId = state.site?.id;
   const repairQuality = state.quality;
   const hasDecisionTrace =
@@ -334,6 +337,14 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
           </div>
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto px-4 py-4">
+          {state.site && !isBusy && !revisionPreview && (
+            <SiteDataSources site={state.site} onSaved={load} />
+          )}
+          {siteData.error && (
+            <output role="alert" className="text-failure">
+              {siteData.error.message}
+            </output>
+          )}
           {(state.site?.turns ?? []).map((turn) => (
             <SiteConversationTurn
               key={turn.id}
@@ -609,6 +620,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                   selectedKey={selectedKey}
                   onSelect={handleSelectElement}
                   className="flex-1"
+                  data={revisionPreview ? undefined : siteData.data?.bindings}
                 />
                 {historyOpen && state.site && (
                   <SiteHistory
