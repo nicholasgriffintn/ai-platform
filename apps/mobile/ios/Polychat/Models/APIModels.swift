@@ -200,7 +200,7 @@ public struct ChatRun: Codable, Equatable {
     public let conversationId: String
     public let projectId: String?
     public let projectTaskId: String?
-    public let stageId: String?
+    public let nodeId: String?
     public let initiatorUserId: Int
     public let status: String
     public let attempt: Int
@@ -222,7 +222,7 @@ public struct ChatRun: Codable, Equatable {
         conversationId: String,
         projectId: String?,
         projectTaskId: String?,
-        stageId: String? = nil,
+        nodeId: String? = nil,
         initiatorUserId: Int,
         status: String,
         attempt: Int,
@@ -243,7 +243,7 @@ public struct ChatRun: Codable, Equatable {
         self.conversationId = conversationId
         self.projectId = projectId
         self.projectTaskId = projectTaskId
-        self.stageId = stageId
+        self.nodeId = nodeId
         self.initiatorUserId = initiatorUserId
         self.status = status
         self.attempt = attempt

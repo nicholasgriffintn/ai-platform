@@ -7,6 +7,7 @@ struct WorkTaskView: View {
     @State private var control: ProjectTaskInteractionControl?
     @State private var isWorking = false
     @State private var error: String?
+    @StateObject private var flowHistory = ProjectFlowHistoryControl()
     let projectId: String
     let taskId: String
     let focusedInteractionId: String?
@@ -27,8 +28,20 @@ struct WorkTaskView: View {
                                     onResolveApproval: submitApproval,
                                     onRefresh: { Task { await load() } }
                                 )
-                            } else if detail.task.status == "review" {
-                                reviewView(detail.task)
+                            } else if let wait = detail.flowWait,
+                                      wait.kind == "human", wait.status == "pending",
+                                      let node = detail.task.flowSnapshot.nodes.first(where: { $0.id == wait.nodeId }),
+                                      node.type == "human_wait" {
+                                ProjectFlowReviewView(
+                                    node: node,
+                                    wait: wait,
+                                    canRespond: detail.canRespondToFlowWait,
+                                    isWorking: isWorking,
+                                    conversationId: detail.task.conversationId,
+                                    onOpenConversation: { id in dismiss(); onOpenConversation(id) },
+                                    onRespond: submitFlowResponse
+                                )
+                                .id("\(wait.id):\(wait.revision)")
                             } else {
                                 currentState(detail.task)
                             }
@@ -44,6 +57,15 @@ struct WorkTaskView: View {
                             }
 
                             ProjectTaskActivityTimelineView(timeline: detail.activity)
+                            ProjectFlowHistoryView(
+                                flow: detail.task.flowSnapshot,
+                                history: flowHistory.history,
+                                error: flowHistory.error,
+                                isLoading: flowHistory.isLoading,
+                                onLoadMore: {
+                                    Task { await flowHistory.load(apiClient: apiClient, projectId: projectId, taskId: taskId, reset: false) }
+                                }
+                            )
                         }
                         .padding()
                     }
@@ -91,31 +113,6 @@ struct WorkTaskView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func reviewView(_ task: ProjectTaskControlTask) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Label("Ready for review", systemImage: "doc.text.magnifyingglass")
-                .font(.headline)
-            Text("Review the conversation, then accept the current result when it is ready.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            if let conversationId = task.conversationId {
-                Button("Open conversation") {
-                    dismiss()
-                    onOpenConversation(conversationId)
-                }
-                .buttonStyle(.bordered)
-            }
-            Button("Accept result") {
-                perform {
-                    _ = try await apiClient.acceptProjectTask(projectId: projectId, taskId: taskId)
-                }
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(isWorking)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
     private func currentState(_ task: ProjectTaskControlTask) -> some View {
         ContentUnavailableView(
             task.status == "done" ? "Task completed" : "No response needed",
@@ -136,8 +133,16 @@ struct WorkTaskView: View {
             } else {
                 error = nil
             }
+            await flowHistory.load(apiClient: apiClient, projectId: projectId, taskId: taskId, reset: true)
         } catch {
             self.error = error.localizedDescription
+        }
+    }
+
+    private func submitFlowResponse(_ wait: ProjectFlowWait, _ input: ResolveProjectFlowWaitRequest) {
+        guard !isWorking else { return }
+        perform {
+            _ = try await apiClient.resolveProjectFlowWait(projectId: projectId, taskId: taskId, waitId: wait.id, input: input)
         }
     }
 

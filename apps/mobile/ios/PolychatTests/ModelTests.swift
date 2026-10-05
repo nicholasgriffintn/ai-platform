@@ -204,7 +204,7 @@ struct ModelTests {
             "conversationId": "conversation-1",
             "projectId": "project-1",
             "projectTaskId": "task-1",
-            "stageId": "build",
+            "nodeId": "build",
             "initiatorUserId": 1,
             "status": "running",
             "attempt": 1,
@@ -265,7 +265,7 @@ struct ModelTests {
         let run = try JSONDecoder().decode(ChatRun.self, from: data)
 
         #expect(run.context?.usage.source == "estimated")
-        #expect(run.stageId == "build")
+        #expect(run.nodeId == "build")
         #expect(run.context?.messages.omitted == 1)
         #expect(run.context?.provider == "provider-1")
         #expect(run.context?.approvals?.first?.toolName == "publish")
@@ -783,7 +783,7 @@ extension ModelTests {
             "conversationId": "conversation-1",
             "projectId": null,
             "projectTaskId": null,
-            "stageId": "build",
+            "nodeId": "build",
             "initiatorUserId": 7,
             "status": "running",
             "attempt": 2,
@@ -822,7 +822,7 @@ extension ModelTests {
         }
         """.utf8))
 
-        #expect(run.stageId == "build")
+        #expect(run.nodeId == "build")
         #expect(run.usage?.reservation?.creditMicros == 50_000)
         #expect(run.usage?.consumption.creditMicros == nil)
         #expect(run.usage?.settlement.status == "pending")
@@ -836,10 +836,10 @@ extension ModelTests {
             "protocolVersion": 1,
             "id": "task-1",
             "status": "active",
-            "stages": [
+            "nodes": [
                 {
                     "id": "task-1:build",
-                    "flowStageId": "build",
+                    "flowNodeId": "build",
                     "name": "Build",
                     "status": "failed",
                     "input": { "objective": "Ship", "acceptanceCriterionIds": [] },
@@ -871,7 +871,7 @@ extension ModelTests {
                 },
                 {
                     "id": "task-1:publish",
-                    "flowStageId": "publish",
+                    "flowNodeId": "publish",
                     "name": "Publish",
                     "status": "proposed",
                     "input": { "objective": "Ship", "acceptanceCriterionIds": [] },
@@ -886,9 +886,9 @@ extension ModelTests {
 
         let plan = try JSONDecoder().decode(ProjectTaskPlanEvidence.self, from: data)
 
-        #expect(plan.stages[0].attempts[0].runId == "run-1")
-        #expect(plan.stages[0].outputs[0].id == "output-1")
-        #expect(plan.stages[1].status == "proposed")
+        #expect(plan.nodes[0].attempts[0].runId == "run-1")
+        #expect(plan.nodes[0].outputs[0].id == "output-1")
+        #expect(plan.nodes[1].status == "proposed")
         #expect(plan.resume.supported == false)
     }
 

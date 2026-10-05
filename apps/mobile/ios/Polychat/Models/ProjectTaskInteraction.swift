@@ -65,6 +65,9 @@ struct ProjectTaskControlTask: Codable, Equatable {
     let blockedDetail: String?
     let conversationId: String?
     let runId: String?
+    let flowSnapshot: ProjectFlow
+    let flowExecution: ProjectFlowExecution
+    let flowRevision: Int
 }
 
 struct ProjectTaskDetailResponse: Codable, Equatable {
@@ -72,13 +75,15 @@ struct ProjectTaskDetailResponse: Codable, Equatable {
     let interaction: ProjectTaskInteraction?
     let activity: ProjectTaskActivityTimeline
     let plan: ProjectTaskPlanEvidence?
+    let flowWait: ProjectFlowWait?
+    let canRespondToFlowWait: Bool
 }
 
 struct ProjectTaskPlanEvidence: Codable, Equatable {
     let protocolVersion: Int
     let id: String
     let status: String
-    let stages: [ProjectTaskStageEvidence]
+    let nodes: [ProjectTaskNodeEvidence]
     let resume: ProjectTaskResumeCapability
 }
 
@@ -87,16 +92,16 @@ struct ProjectTaskResumeCapability: Codable, Equatable {
     let reason: String?
 }
 
-struct ProjectTaskStageEvidence: Codable, Equatable, Identifiable {
+struct ProjectTaskNodeEvidence: Codable, Equatable, Identifiable {
     let id: String
-    let flowStageId: String?
+    let flowNodeId: String?
     let name: String
     let status: String
-    let attempts: [ProjectTaskStageAttempt]
-    let outputs: [ProjectTaskStageOutput]
+    let attempts: [ProjectTaskNodeAttempt]
+    let outputs: [ProjectTaskNodeOutput]
 }
 
-struct ProjectTaskStageAttempt: Codable, Equatable, Identifiable {
+struct ProjectTaskNodeAttempt: Codable, Equatable, Identifiable {
     let id: String
     let runId: String
     let conversationId: String
@@ -104,11 +109,11 @@ struct ProjectTaskStageAttempt: Codable, Equatable, Identifiable {
     let status: String
     let terminalReason: String?
     let provenance: OutputProvenance
-    let outputs: [ProjectTaskStageOutput]
+    let outputs: [ProjectTaskNodeOutput]
     let usage: ChatRunUsage?
 }
 
-struct ProjectTaskStageOutput: Codable, Equatable, Identifiable {
+struct ProjectTaskNodeOutput: Codable, Equatable, Identifiable {
     let id: String
     let title: String
     let kind: String

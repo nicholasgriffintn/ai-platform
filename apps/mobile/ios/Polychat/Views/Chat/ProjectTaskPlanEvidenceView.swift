@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ProjectTaskPlanEvidenceView: View {
     let plan: ProjectTaskPlanEvidence
-    let onOpenRun: (ProjectTaskStageAttempt) -> Void
+    let onOpenRun: (ProjectTaskNodeAttempt) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -12,7 +12,7 @@ struct ProjectTaskPlanEvidenceView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            ForEach(plan.stages) { stage in
+            ForEach(plan.nodes) { stage in
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text(stage.name)

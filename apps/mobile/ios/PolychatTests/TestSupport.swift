@@ -138,7 +138,10 @@ func makeProjectTaskControlTask(
         blockedReason: blockedReason,
         blockedDetail: blockedDetail,
         conversationId: "conversation-1",
-        runId: "run-1"
+        runId: "run-1",
+        flowSnapshot: ProjectFlow(version: 1, entryNodeId: "work", nodes: [ProjectFlowNode(id: "work", name: "Work", type: "end", prompt: nil, fields: nil)], maxSteps: 256),
+        flowExecution: ProjectFlowExecution(epoch: 1, nodeId: "work", steps: 0, iterations: [:], values: [:], waitId: nil),
+        flowRevision: 1
     )
 }
 
@@ -192,7 +195,9 @@ func makeProjectTaskDetail(
             taskId: task.id,
             items: []
         ),
-        plan: nil
+        plan: nil,
+        flowWait: nil,
+        canRespondToFlowWait: false
     )
 }
 

@@ -77,7 +77,7 @@ struct TaskInboxView: View {
         notificationManager.requestedInboxItemId = nil
     }
 
-    private func openRun(_ attempt: ProjectTaskStageAttempt) {
+    private func openRun(_ attempt: ProjectTaskNodeAttempt) {
         Task {
             await conversationManager.loadConversationMessages(id: attempt.conversationId)
             dismiss()
@@ -152,7 +152,7 @@ private struct TaskInboxDetailView: View {
     @EnvironmentObject var notificationManager: TaskNotificationManager
     @EnvironmentObject var apiClient: APIClient
     let item: TaskInboxItem
-    let onOpenRun: (ProjectTaskStageAttempt) -> Void
+    let onOpenRun: (ProjectTaskNodeAttempt) -> Void
     @State private var detail: ProjectTaskDetailResponse?
     @State private var control: ProjectTaskInteractionControl?
     @State private var error: String?

@@ -323,11 +323,19 @@ final class APIClient: ObservableObject {
         try await send(path: "/apps/sandbox/runs/\(id)", method: "GET")
     }
 
-    func acceptProjectTask(projectId: String, taskId: String) async throws -> ProjectTaskResponse {
+    func resolveProjectFlowWait(projectId: String, taskId: String, waitId: String, input: ResolveProjectFlowWaitRequest) async throws -> ProjectTaskResponse {
         try await send(
-            path: "/projects/\(projectId)/tasks/\(taskId)/accept",
+            path: "/projects/\(projectId)/tasks/\(taskId)/waits/\(waitId)/response",
             method: "POST",
-            emptyBody: true
+            body: input
+        )
+    }
+
+    func fetchProjectFlowHistory(projectId: String, taskId: String, after: Int = 0) async throws -> ProjectFlowHistory {
+        try await send(
+            path: "/projects/\(projectId)/tasks/\(taskId)/flow-history",
+            method: "GET",
+            queryItems: [URLQueryItem(name: "after", value: String(after))]
         )
     }
 
