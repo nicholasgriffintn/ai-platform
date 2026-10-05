@@ -82,6 +82,8 @@ Register personal or workspace servers through `POST /apps/mcp`. Workspace owner
 
 Discover through `POST /apps/mcp/:serverId/discover`. New or changed tools stay disabled until a curator classifies them as read or write and enables the server. Configuration responses omit credentials; server policy changes invalidate previous connection revisions.
 
-Apply `0063_native_mcp` before deploying the catalogue API. Account settings and native tool execution follow in their own changes.
+Apply `0063_native_mcp` before deploying the catalogue API and `0064_native_mcp_transition` before native tool execution. The transition retains old teammate definitions in `retired_mcp_servers`, clears active URL-based definitions and retires hosted MCP capability configurations. Register and connect those servers again through the native catalogue.
 
 Manage the catalogue from **Account → MCP servers**. Workspace owners and admins register and curate workspace servers; users connect personal credentials, choose project sharing and disconnect their own connections. Saving a changed tool policy requires the current catalogue revision.
+
+Select registered server IDs in account capabilities or teammates. Native MCP uses models with function-tool support, personal connections and the existing stored-action approval/replay path for writes. Recheck catalogue, connection and scope revisions before requests and before releasing results; changed authority makes the action unavailable. Reject provider-hosted MCP definitions and never repeat uncertain writes automatically.

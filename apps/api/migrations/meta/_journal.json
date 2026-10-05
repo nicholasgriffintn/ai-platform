@@ -449,6 +449,13 @@
       "when": 1791189334716,
       "tag": "0063_native_mcp",
       "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "6",
+      "when": 1791189792228,
+      "tag": "0064_native_mcp_transition",
+      "breakpoints": true
     }
   ]
 }

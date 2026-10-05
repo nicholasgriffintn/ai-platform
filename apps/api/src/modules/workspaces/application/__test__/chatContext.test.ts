@@ -209,7 +209,7 @@ describe("project chat context", () => {
         kind: "tool",
         capability_id: "mcp",
         configuration: {
-          servers: [{ label: "docs", url: "https://mcp.example.com" }],
+          servers: [{ id: "registered-docs" }],
         },
       },
     ]);
@@ -222,13 +222,7 @@ describe("project chat context", () => {
     expect(result?.enabledTools).toContain("mcp");
     expect(result?.toolOptions).toEqual({
       file_search: { vector_store_ids: ["vs_project"] },
-      mcp_servers: [
-        {
-          require_approval: "always",
-          server_label: "docs",
-          server_url: "https://mcp.example.com/",
-        },
-      ],
+      native_mcp_server_ids: ["registered-docs"],
     });
   });
 

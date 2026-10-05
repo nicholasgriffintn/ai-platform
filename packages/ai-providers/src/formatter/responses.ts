@@ -1,4 +1,4 @@
-import { HOSTED_MCP_APPROVAL_TOOL_NAME, type ModelModalities } from "@ngriffin_uk/polychat-schemas";
+import type { ModelModalities } from "@ngriffin_uk/polychat-schemas";
 import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -669,29 +669,6 @@ export class ResponseFormatter {
             function: {
               name: item.name,
               arguments: item.arguments || "{}",
-            },
-          },
-        ];
-      }
-
-      if (
-        item?.type === "mcp_approval_request" &&
-        typeof item.id === "string" &&
-        typeof item.server_label === "string" &&
-        typeof item.name === "string"
-      ) {
-        return [
-          {
-            id: item.id,
-            type: "function",
-            function: {
-              name: HOSTED_MCP_APPROVAL_TOOL_NAME,
-              arguments: JSON.stringify({
-                approvalRequestId: item.id,
-                serverLabel: item.server_label,
-                toolName: item.name,
-                arguments: item.arguments,
-              }),
             },
           },
         ];

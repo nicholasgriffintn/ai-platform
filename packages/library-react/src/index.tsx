@@ -69,7 +69,6 @@ export * from "./hooks/useSharedConversation.js";
 export * from "./hooks/useSharedTeammates.js";
 export * from "./hooks/useSkills.js";
 export * from "./hooks/useSources.js";
-export * from "./hooks/useMcpConnections.js";
 export * from "./hooks/useStartNewChat.js";
 export * from "./hooks/useStableRandomSeed.js";
 export * from "./hooks/useSites.js";

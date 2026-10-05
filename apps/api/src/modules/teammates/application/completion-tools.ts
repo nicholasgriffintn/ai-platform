@@ -4,6 +4,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { Teammate } from "~/infrastructure/database/schema";
 import { request_approval, ask_user } from "~/modules/functions/application/human_in_the_loop";
+import { mcp } from "~/modules/functions/application/mcp";
 import { messageParent } from "~/modules/functions/application/message-parent";
 import { readTeammateSkillIds } from "~/modules/teammates/application/teammateResponse";
 import type { AssistantPersona, AssistantPersonaExample } from "~/types";
@@ -23,8 +24,8 @@ export type TeammateCompletionToolDefinition =
       parameters: Record<string, unknown>;
     };
 
-export function buildTeammateCompletionTools(): TeammateCompletionToolDefinition[] {
-  return CORE_TEAMMATE_TOOLS;
+export function buildTeammateCompletionTools(withMcp = false): TeammateCompletionToolDefinition[] {
+  return withMcp ? [...CORE_TEAMMATE_TOOLS, mcp] : CORE_TEAMMATE_TOOLS;
 }
 
 export function buildTeammatePersona(
