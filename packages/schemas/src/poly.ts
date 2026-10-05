@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { teammateAutonomyLevelSchema } from "./teammate-contexts.js";
+
 export const POLY_CONVERSATION_TYPE = "poly";
 
 export const POLY_NAVIGATION_DATA_KEY = "polyNavigation";
@@ -105,6 +107,7 @@ export const polyHomeSchema = z.object({
   teammate_id: z.string().min(1),
   context_id: z.string().min(1),
   conversation_id: z.string().min(1),
+  autonomy_level: teammateAutonomyLevelSchema,
 });
 
 export type PolyHome = z.infer<typeof polyHomeSchema>;

@@ -14,6 +14,7 @@ import type {
   PolyRequest,
   PermissionMode,
   RunProvenance,
+  TeammateAutonomyLevel,
   ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -75,6 +76,7 @@ export interface IBody {
   run_id?: string;
   run_attempt?: number;
   teammate_context_id?: string;
+  autonomy_level?: TeammateAutonomyLevel | null;
   [other: string]: any;
 }
 
@@ -94,6 +96,7 @@ export interface IRequest {
 export type ChatCompletionParameters = Omit<ProviderChatCompletionParameters, "env" | "context"> & {
   env: IEnv;
   context?: ServiceContext;
+  autonomy_level?: TeammateAutonomyLevel | null;
 };
 
 export type ChatCompletionParametersWithModel = ChatCompletionParameters;

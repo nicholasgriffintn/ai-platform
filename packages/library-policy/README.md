@@ -58,27 +58,27 @@ The built-in evaluator uses `Polychat::Actor`, `Polychat::Action` and `Polychat:
 
 ## Policy inventory
 
-| Area                            | Cedar decision                                                                                 | Owning boundary                                                        |
-| ------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Workspace and project access    | Pro entitlement, current membership and permitted roles                                        | Workspace access services and conversation repository                  |
-| Membership administration       | Owner/admin management of members and administrators                                           | Workspace member mutations and invitation visibility                   |
-| Personal resources              | Strict owner identity                                                                          | Conversation, run, app, connection, upload, source and output services |
-| Shared resources                | Member reads, owner/admin writes, author-owned member writes                                   | Output, source, collection and template access                         |
-| Public sharing                  | Personal-only sharing and explicit public state                                                | Conversation sharing service                                           |
-| Teammates                       | Personal ownership, workspace roles and immutable platform teammates                           | Teammate access and workspace defaults                                 |
-| Capabilities                    | Explicit grants, exclusions and management authority                                           | Capability resolver and workspace capability mutations                 |
-| Tools and approval modes        | Entitlement, denied tools, mode permissions and human approval                                 | Shared `PermissionChecker`                                             |
-| Model execution                 | Active state, subscription/free/BYOK/device eligibility and credential source                  | Shared model resolver                                                  |
-| Model governance                | Cedar predicates over version, evidence, route and dataset facts                               | Registry evaluation, enforcement, previews and dry runs                |
-| Model permissions and approvals | Action grants, independent approver, exact revision coverage, expiry and exceptions            | Model access, decision and standing services                           |
-| Model spend and promotion       | Budget hard stops, approval thresholds, warning states and alias approval gates                | Budget preflight, deployment/training admission and aliases            |
-| Delegation and execution        | Initiator, conversation access, attempt, cancellation and running state                        | Delegation controls and run effect authority                           |
-| Connector replay                | Bound owner/session/scope/operation, current connection revision and live grant state          | Connector approval and replay services                                 |
-| Sandbox credentials             | Granted operation, exact write refs and delivery target                                        | Credential broker                                                      |
-| Sandbox execution and network   | Command classifications, trust mode, read-only restrictions, host allowlist and attached tools | Sandbox command authority and shared outbound gateway                  |
-| Browser and computer use        | Creator/scope binding and takeover-sensitive input                                             | Browser session authority and teammate computer policy                 |
-| Platform services               | Admin role and authenticated service scopes                                                    | HTTP middleware                                                        |
-| Memory                          | Subscription, sign-in, configured storage and user consent                                     | Chat memory boundary                                                   |
+| Area                            | Cedar decision                                                                                          | Owning boundary                                                        |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Workspace and project access    | Pro entitlement, current membership and permitted roles                                                 | Workspace access services and conversation repository                  |
+| Membership administration       | Owner/admin management of members and administrators                                                    | Workspace member mutations and invitation visibility                   |
+| Personal resources              | Strict owner identity                                                                                   | Conversation, run, app, connection, upload, source and output services |
+| Shared resources                | Member reads, owner/admin writes, author-owned member writes                                            | Output, source, collection and template access                         |
+| Public sharing                  | Personal-only sharing and explicit public state                                                         | Conversation sharing service                                           |
+| Teammates                       | Personal ownership, workspace roles and immutable platform teammates                                    | Teammate access and workspace defaults                                 |
+| Capabilities                    | Explicit grants, exclusions and management authority                                                    | Capability resolver and workspace capability mutations                 |
+| Tools and approval modes        | Entitlement, denied tools, mode permissions, human approval, effect classes and teammate autonomy level | Shared `PermissionChecker`                                             |
+| Model execution                 | Active state, subscription/free/BYOK/device eligibility and credential source                           | Shared model resolver                                                  |
+| Model governance                | Cedar predicates over version, evidence, route and dataset facts                                        | Registry evaluation, enforcement, previews and dry runs                |
+| Model permissions and approvals | Action grants, independent approver, exact revision coverage, expiry and exceptions                     | Model access, decision and standing services                           |
+| Model spend and promotion       | Budget hard stops, approval thresholds, warning states and alias approval gates                         | Budget preflight, deployment/training admission and aliases            |
+| Delegation and execution        | Initiator, conversation access, attempt, cancellation and running state                                 | Delegation controls and run effect authority                           |
+| Connector replay                | Bound owner/session/scope/operation, current connection revision and live grant state                   | Connector approval and replay services                                 |
+| Sandbox credentials             | Granted operation, exact write refs and delivery target                                                 | Credential broker                                                      |
+| Sandbox execution and network   | Command classifications, trust mode, read-only restrictions, host allowlist and attached tools          | Sandbox command authority and shared outbound gateway                  |
+| Browser and computer use        | Creator/scope binding and takeover-sensitive input                                                      | Browser session authority and teammate computer policy                 |
+| Platform services               | Admin role and authenticated service scopes                                                             | HTTP middleware                                                        |
+| Memory                          | Subscription, sign-in, configured storage and user consent                                              | Chat memory boundary                                                   |
 
 Some checks remain mechanisms around authorisation. **Keep authentication proofs, URL and shell parsing, secret redaction, tenant filters, accounting reservations, atomic approval consumption and lease fencing in their owning implementation.** Cedar evaluates their resulting facts but cannot replace their cryptography or concurrency guarantees.
 

@@ -90,6 +90,7 @@ export async function ensureTeammateContext(
       scope,
       homeConversationId,
       homeConversationType: isPolyTeammateId(teammateId) ? "poly" : "chat",
+      autonomyLevel: isPolyTeammateId(teammateId) ? "assistant" : null,
       memoryDocumentId,
       memoryDocumentName: `teammate-${generateId().toLowerCase()}`,
     });

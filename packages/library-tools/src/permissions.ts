@@ -8,10 +8,12 @@ import {
   TOOL_PERMISSIONS,
   resolveAgentModeFromChatMode,
   type AgentMode,
+  type TeammateAutonomyLevel,
+  type ToolEffectClass,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { toolDenialReason } from "./permission-reason.js";
+import { toolApprovalReason, toolDenialReason } from "./permission-reason.js";
 
 export interface ToolAccessSubject {
   id?: number | string;
@@ -31,6 +33,8 @@ export interface PermissionCheckInput {
   toolPermissions?: string[];
   requireApprovalFor?: readonly ToolPermission[];
   deniedTools?: readonly string[];
+  effectClass?: ToolEffectClass;
+  autonomyLevel?: TeammateAutonomyLevel | null;
 }
 
 export interface RequestPermissionCheckInput extends PermissionCheckInput {
@@ -122,6 +126,8 @@ export class PermissionChecker {
       modeAllowedPermissions: config.allowedPermissions,
       requiredApprovalPermissions: [...(input.requireApprovalFor ?? [])],
       modeApprovalPermissions: config.requiresApprovalFor,
+      effectClass: input.effectClass ?? "",
+      autonomyLevel: input.autonomyLevel ?? "",
     };
     const decision = authorise("tool.use", context);
 
@@ -135,7 +141,8 @@ export class PermissionChecker {
       };
     }
 
-    const requiresApproval = !authorise("tool.unattended", context).allowed;
+    const unattended = authorise("tool.unattended", context);
+    const requiresApproval = !unattended.allowed;
     const approvalPermissions = permissions.filter(
       (permission) =>
         context.requiredApprovalPermissions.includes(permission) ||
@@ -146,7 +153,7 @@ export class PermissionChecker {
       allowed: true,
       requiresApproval,
       reason: requiresApproval
-        ? `Tool "${input.toolName}" requires approval in ${mode} mode (${approvalPermissions.join(", ")})`
+        ? toolApprovalReason(unattended.policyIds, context, mode, approvalPermissions)
         : undefined,
       mode,
       permissions,

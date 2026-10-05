@@ -1091,6 +1091,7 @@ export const teammateContext = sqliteTable(
     status: text({ enum: ["active", "paused", "archived"] })
       .notNull()
       .default("active"),
+    autonomy_level: text({ enum: ["observer", "assistant", "partner"] }),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),

@@ -13,6 +13,7 @@ import {
   teammateConnectionGrantSchema,
   teammateContextListResponseSchema,
   teammateContextSchema,
+  updateTeammateContextAutonomySchema,
   updateTeammateContextStatusSchema,
   upsertTeammateConnectionGrantSchema,
   teammateComputerActionResponseSchema,
@@ -55,6 +56,7 @@ import {
   resumeTeammateRun,
   getTeammateContextMemory,
   updateTeammateContextMemory,
+  updateTeammateContextAutonomy,
   updateTeammateContextStatus,
 } from "~/modules/teammates/application";
 import type { IEnv } from "~/types";
@@ -198,6 +200,17 @@ addRoute(app, "patch", "/contexts/:contextId", {
   responses: { 200: { description: "Context", schema: teammateContextSchema } },
   handler: async ({ serviceContext, params, body }) =>
     updateTeammateContextStatus(serviceContext, params.contextId, body.status),
+});
+
+addRoute(app, "patch", "/contexts/:contextId/autonomy", {
+  tags: ["teammates"],
+  summary: "Set how much a teammate context may do without asking",
+  auth: true,
+  paramSchema: z.object({ contextId: z.string().min(1) }),
+  bodySchema: updateTeammateContextAutonomySchema,
+  responses: { 200: { description: "Context", schema: teammateContextSchema } },
+  handler: async ({ serviceContext, params, body }) =>
+    updateTeammateContextAutonomy(serviceContext, params.contextId, body.autonomyLevel),
 });
 
 addRoute(app, "get", "/contexts/:contextId/connections", {

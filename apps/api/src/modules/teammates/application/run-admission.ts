@@ -278,7 +278,10 @@ export async function enqueueTeammateRun({
       ...(trigger ? { trigger } : {}),
       ...(durableExecution ? { durable_execution: durableExecution } : {}),
       ...(preparedInvocation?.resolution.context
-        ? { teammate_context_id: preparedInvocation.resolution.context.id }
+        ? {
+            teammate_context_id: preparedInvocation.resolution.context.id,
+            autonomy_level: preparedInvocation.resolution.context.autonomyLevel,
+          }
         : {}),
       ...(teammateComputer ? { computer_id: teammateComputer.id } : {}),
       ...(resolvedInvocation?.source === "delegation"

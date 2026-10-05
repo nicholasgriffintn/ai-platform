@@ -1,5 +1,6 @@
 import {
   teammateConnectionGrantSchema,
+  type TeammateAutonomyLevel,
   type TeammateConnectionGrant,
   type TeammateContext,
   type TeammateContextScope,
@@ -23,6 +24,7 @@ function formatContext(row: TeammateContextRow): TeammateContext {
     homeConversationId: row.home_conversation_id,
     memoryDocumentId: row.memory_document_id,
     status: row.status,
+    autonomyLevel: row.autonomy_level ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -56,6 +58,7 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
     scope: TeammateContextScope;
     homeConversationId: string;
     homeConversationType: "chat" | "poly";
+    autonomyLevel: TeammateAutonomyLevel | null;
     memoryDocumentId: string;
     memoryDocumentName: string;
   }): Promise<TeammateContext> {
@@ -91,8 +94,8 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
       this.env.DB.prepare(
         `INSERT INTO teammate_context (
            id, teammate_id, actor_user_id, scope_type, scope_id, home_conversation_id,
-           memory_document_id
-         ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+           memory_document_id, autonomy_level
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       ).bind(
         params.id,
         params.teammateId,
@@ -101,6 +104,7 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
         params.scope.id,
         params.homeConversationId,
         params.memoryDocumentId,
+        params.autonomyLevel,
       ),
     ];
 
@@ -201,6 +205,18 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
     );
 
     return rows.map(formatContext);
+  }
+
+  async updateAutonomyLevel(
+    id: string,
+    autonomyLevel: TeammateAutonomyLevel,
+  ): Promise<TeammateContext | null> {
+    await this.executeRun(
+      "UPDATE teammate_context SET autonomy_level = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [autonomyLevel, id],
+    );
+
+    return this.getById(id);
   }
 
   async updateStatus(

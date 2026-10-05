@@ -44,6 +44,7 @@ class ChatExecutionRequest {
       disable_functions: chatOptions.disable_functions,
       completion_id: chatOptions.completion_id,
       run_id: runId,
+      trigger: chatOptions.trigger,
       conversation_type: prepared.conversationType ?? chatOptions.conversation_type,
       messages: toProviderMessages(
         chatOptions.poly

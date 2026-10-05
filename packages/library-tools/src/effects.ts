@@ -19,20 +19,30 @@ export function resolveToolEffectClass<TInput>(
     return UNDECLARED_TOOL_EFFECT_CLASS;
   }
 
-  const declared =
-    typeof effects.effectClass === "function" ? effects.effectClass(input) : effects.effectClass;
-  const parsed = toolEffectClassSchema.safeParse(declared);
+  if (typeof effects.effectClass !== "function") {
+    return effects.effectClass;
+  }
 
-  return parsed.success ? parsed.data : UNDECLARED_TOOL_EFFECT_CLASS;
+  try {
+    const parsed = toolEffectClassSchema.safeParse(effects.effectClass(input));
+
+    return parsed.success ? parsed.data : UNDECLARED_TOOL_EFFECT_CLASS;
+  } catch {
+    return UNDECLARED_TOOL_EFFECT_CLASS;
+  }
 }
 
 export function resolveToolDestination<TInput>(
   effects: ToolEffects<TInput> | undefined,
   input: TInput,
 ): string | undefined {
-  const destination = effects?.destination?.(input)?.trim();
+  try {
+    const destination = effects?.destination?.(input)?.trim();
 
-  return destination ? destination : undefined;
+    return destination ? destination : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export function requireToolEffects<TInput>(

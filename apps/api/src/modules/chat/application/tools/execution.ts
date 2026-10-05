@@ -15,6 +15,7 @@ import {
   checkToolCallRepeat,
   type ToolCallLedger,
 } from "~/modules/chat/application/tools/call-ledger";
+import { resolveToolCallEffectClass } from "~/modules/chat/application/tools/effects";
 import {
   evaluateToolIntentGate,
   requiresToolIntentVerification,
@@ -173,6 +174,12 @@ export const handleToolCalls = async (
         requireApprovalFor: req.request?.require_approval_for,
         deniedTools: req.request?.denied_tools,
         enforceModePolicy: req.request?.enforce_mode_tool_policy,
+        effectClass: resolveToolCallEffectClass({
+          toolName: functionName,
+          effects: functionDefinition?.effects,
+          rawArguments: toolCall.function?.arguments ?? toolCall.arguments,
+        }),
+        autonomyLevel: req.request?.autonomy_level,
       });
 
       if (!permissionResult.allowed) {
