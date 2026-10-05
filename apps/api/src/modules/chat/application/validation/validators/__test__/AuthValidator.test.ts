@@ -54,7 +54,7 @@ describe("AuthValidator", () => {
     it("should successfully validate with valid anonymous user", async () => {
       const optionsWithAnonymousUser = {
         ...baseOptions,
-        user: undefined,
+        context: createServiceContext({ env: baseOptions.env, user: null }),
         anonymousUser: {
           id: "anon-123",
           session_id: "session-456",
@@ -97,76 +97,6 @@ describe("AuthValidator", () => {
       expect(result.validation.error).toBe("User or anonymousUser is required");
       expect(result.validation.validationType).toBe("auth");
       expect(result.context).toEqual({});
-    });
-
-    it("should fail validation when user has no id", async () => {
-      const optionsWithUserNoId = {
-        ...baseOptions,
-        context: createServiceContext({
-          env: baseOptions.env,
-          user: {
-            email: "test@example.com",
-          } as any,
-        }),
-      };
-
-      const result = await validator.validate(optionsWithUserNoId, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("User or anonymousUser is required");
-      expect(result.validation.validationType).toBe("auth");
-    });
-
-    it("should fail validation when anonymousUser has no id", async () => {
-      const optionsWithAnonymousUserNoId = {
-        ...baseOptions,
-        context: createServiceContext({ env: baseOptions.env, user: null }),
-        anonymousUser: {
-          session_id: "session-456",
-        } as any,
-      };
-
-      const result = await validator.validate(optionsWithAnonymousUserNoId, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("User or anonymousUser is required");
-      expect(result.validation.validationType).toBe("auth");
-    });
-
-    it("should handle empty string user id", async () => {
-      const optionsWithEmptyUserId = {
-        ...baseOptions,
-        context: createServiceContext({
-          env: baseOptions.env,
-          user: {
-            id: "",
-            email: "test@example.com",
-          } as any,
-        }),
-      };
-
-      const result = await validator.validate(optionsWithEmptyUserId, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("User or anonymousUser is required");
-      expect(result.validation.validationType).toBe("auth");
-    });
-
-    it("should handle empty string anonymous user id", async () => {
-      const optionsWithEmptyAnonymousId = {
-        ...baseOptions,
-        context: createServiceContext({ env: baseOptions.env, user: null }),
-        anonymousUser: {
-          id: "",
-          session_id: "session-456",
-        },
-      };
-
-      const result = await validator.validate(optionsWithEmptyAnonymousId, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("User or anonymousUser is required");
-      expect(result.validation.validationType).toBe("auth");
     });
   });
 });

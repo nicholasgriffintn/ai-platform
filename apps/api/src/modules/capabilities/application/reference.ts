@@ -1,3 +1,4 @@
+import { getConnectorProviderConfig } from "@ngriffin_uk/polychat-ai-integrations";
 import type { ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -12,6 +13,14 @@ export async function validateCapabilityReference(
   capabilityId: string,
   context?: ServiceContext,
 ): Promise<void> {
+  if (kind === "connector") {
+    if (!getConnectorProviderConfig(capabilityId)) {
+      throw new AssistantError("Unknown integration", ErrorType.NOT_FOUND, 404);
+    }
+
+    return;
+  }
+
   if (kind === "teammate") {
     const userId = context?.user?.id;
     const teammate =

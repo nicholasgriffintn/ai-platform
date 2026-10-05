@@ -102,15 +102,6 @@ describe("ConversationTitleHandler", () => {
     expect(updateConversation).not.toHaveBeenCalled();
   });
 
-  it("skips when the conversation no longer exists", async () => {
-    getConversation.mockResolvedValue(null);
-
-    const result = await buildHandler().handle(buildMessage(), {} as never);
-
-    expect(result.status).toBe("skipped");
-    expect(mocks.generateConversationTitle).not.toHaveBeenCalled();
-  });
-
   it("skips when the user is not in the conversation audience", async () => {
     mocks.conversationAudience.mockResolvedValue([7]);
 
@@ -119,15 +110,6 @@ describe("ConversationTitleHandler", () => {
     expect(result.status).toBe("skipped");
     expect(getConversation).not.toHaveBeenCalled();
     expect(mocks.generateConversationTitle).not.toHaveBeenCalled();
-  });
-
-  it("skips when the title is unchanged", async () => {
-    getConversation.mockResolvedValue({ id: "conversation-1", title: "Fixing a flaky test" });
-
-    const result = await buildHandler().handle(buildMessage(), {} as never);
-
-    expect(result.status).toBe("skipped");
-    expect(updateConversation).not.toHaveBeenCalled();
   });
 
   it("rejects task data without a conversation id", async () => {

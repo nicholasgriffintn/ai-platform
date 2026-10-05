@@ -1,12 +1,11 @@
+import { projectKnowledgeSearchQuerySchema } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
 import type { FunctionToolDescriptor } from "./types";
 
-export const searchDocumentsInputSchema = z.object({
-  query: z.string().trim().min(1).max(1000),
-  top_k: z.number().int().min(1).max(10).optional(),
-  type: z.string().max(100).optional(),
-});
+export const searchDocumentsInputSchema = projectKnowledgeSearchQuerySchema
+  .omit({ projectId: true })
+  .extend({ top_k: z.number().int().min(1).max(10).optional() });
 
 export const search_documents: FunctionToolDescriptor = {
   name: "search_documents",

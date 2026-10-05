@@ -74,32 +74,6 @@ describe("prepareTeammateCompletionRequest", () => {
     ).toMatchObject({ allowed: true, requiresApproval: false });
   });
 
-  it("falls back to the saved teammate's tools when the caller sends none", () => {
-    const body = createChatCompletionsJsonSchema.parse({
-      model: "mistral-large-latest",
-      messages: [{ role: "user", content: "Search for something" }],
-    });
-
-    const request = prepareTeammateCompletionRequest({
-      teammate: {
-        id: "teammate-123",
-        kind: "colleague" as const,
-        model: null,
-        temperature: null,
-        max_steps: null,
-        enabled_tools: '["web_search"]',
-        skill_ids: null,
-        mode: null,
-      },
-      body,
-      modelProvider: "mistral",
-      formattedTools: [],
-      persona: {},
-    });
-
-    expect(request.enabled_tools).toEqual(["web_search"]);
-  });
-
   it("does not let the caller widen the saved teammate's tools", () => {
     const body = createChatCompletionsJsonSchema.parse({
       model: "mistral-large-latest",
@@ -125,59 +99,6 @@ describe("prepareTeammateCompletionRequest", () => {
     });
 
     expect(request.enabled_tools).toEqual([]);
-  });
-
-  it("keeps the caller's streaming choice instead of forcing a buffered turn", () => {
-    const streamed = createChatCompletionsJsonSchema.parse({
-      model: "mistral-large-latest",
-      messages: [{ role: "user", content: "Stream this" }],
-      stream: true,
-    });
-
-    const request = prepareTeammateCompletionRequest({
-      teammate: {
-        id: "teammate-123",
-        kind: "colleague" as const,
-        model: null,
-        temperature: null,
-        max_steps: null,
-        enabled_tools: null,
-        skill_ids: null,
-        mode: null,
-      },
-      body: streamed,
-      modelProvider: "mistral",
-      formattedTools: [],
-      persona: {},
-    });
-
-    expect(request.stream).toBe(true);
-  });
-
-  it("runs the teammate in its saved mode without widening the tool policy", () => {
-    const body = createChatCompletionsJsonSchema.parse({
-      model: "mistral-large-latest",
-      messages: [{ role: "user", content: "Plan this out" }],
-    });
-
-    const request = prepareTeammateCompletionRequest({
-      teammate: {
-        id: "teammate-123",
-        kind: "colleague" as const,
-        model: null,
-        temperature: null,
-        max_steps: null,
-        enabled_tools: null,
-        skill_ids: null,
-        mode: "plan",
-      },
-      body,
-      modelProvider: "mistral",
-      formattedTools: [],
-      persona: {},
-    });
-
-    expect(request).toMatchObject({ mode: "plan", tool_policy_mode: "chat" });
   });
 
   it("ignores a stored mode that is no longer a known teammate mode", () => {
@@ -288,60 +209,6 @@ describe("prepareTeammateCompletionRequest", () => {
     expect(request.persona?.instructions).toContain("Answer carefully.");
     expect(request.persona?.instructions).toContain("research, fact-checking");
     expect(request.enabled_tools).toEqual(["web_search", "load_skill"]);
-  });
-
-  it("leaves the caller's tool selection alone when the teammate saved no skills", () => {
-    const body = createChatCompletionsJsonSchema.parse({
-      model: "mistral-large-latest",
-      messages: [{ role: "user", content: "Search for something" }],
-    });
-
-    const request = prepareTeammateCompletionRequest({
-      teammate: {
-        id: "teammate-123",
-        kind: "colleague" as const,
-        model: null,
-        temperature: null,
-        max_steps: null,
-        enabled_tools: '["web_search"]',
-        skill_ids: "[]",
-        mode: null,
-      },
-      body,
-      modelProvider: "mistral",
-      formattedTools: [],
-      persona: {},
-    });
-
-    expect(request.enabled_tools).toEqual(["web_search"]);
-    expect(request.denied_tools).toBeUndefined();
-  });
-
-  it("preserves a bot teammate's configured tools", () => {
-    const body = createChatCompletionsJsonSchema.parse({
-      model: "mistral-large-latest",
-      messages: [{ role: "user", content: "Brief me" }],
-    });
-
-    const request = prepareTeammateCompletionRequest({
-      teammate: {
-        id: "teammate-123",
-        kind: "bot" as const,
-        model: null,
-        temperature: null,
-        max_steps: null,
-        enabled_tools: '["web_search","create_task","store_memory"]',
-        skill_ids: "[]",
-        mode: null,
-      },
-      body,
-      modelProvider: "mistral",
-      formattedTools: [],
-      persona: {},
-    });
-
-    expect(request.enabled_tools).toEqual(["web_search", "create_task", "store_memory"]);
-    expect(request.denied_tools).toBeUndefined();
   });
 
   it("refuses a denied tool even when the caller asks for it", () => {

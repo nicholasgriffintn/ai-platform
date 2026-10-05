@@ -63,13 +63,13 @@ import { useAppChrome } from "../AppChrome.js";
 import { RecentSites } from "./RecentSites.js";
 import { SiteBuildPlaceholder } from "./SiteBuildPlaceholder.js";
 import { SiteConversationTurn } from "./SiteConversationTurn.js";
-import { SiteDataSources } from "./SiteDataSources.js";
 import { SiteHistory, type SiteRevisionPreview } from "./SiteHistory.js";
 import { SiteInspector } from "./SiteInspector.js";
 import { SitePlanSummary } from "./SitePlanSummary.js";
 import { SitePromptComposer } from "./SitePromptComposer.js";
 import { SiteSavedRecords } from "./SiteSavedRecords.js";
 import { SiteStarterPrompt } from "./SiteStarterPrompt.js";
+import { useSiteComposerSources } from "./useSiteComposerSources.js";
 
 const VIEWPORT_ICONS = { desktop: Monitor, tablet: Tablet, mobile: Smartphone } as const;
 const EXPORT_TARGET_LABELS: Record<SiteExportTarget, string> = {
@@ -136,6 +136,12 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   const siteData = useSiteData(state.site, !isBusy && !revisionPreview);
   const dataAction = useSiteDataAction(state.site);
   const storage = useSiteStorage(state.site);
+  const composerSources = useSiteComposerSources({
+    site: state.site,
+    projectId,
+    disabled: isBusy || Boolean(revisionPreview),
+    onSaved: load,
+  });
   const savedId = state.site?.id;
   const repairQuality = state.quality;
   const hasDecisionTrace =
@@ -210,6 +216,8 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
     void generate({
       prompt,
       siteId: state.site?.id,
+      expectedRevision: state.site?.revision,
+      sourceIds: composerSources.sourceIds,
       ...(state.site && selectedElement && resolvedPageId
         ? { target: { pageId: resolvedPageId, elementKey: selectedKey as string } }
         : {}),
@@ -311,7 +319,12 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
               watch it land section by section.
             </p>
           </div>
-          <SiteStarterPrompt onSubmit={handleSubmit} />
+          <SiteStarterPrompt
+            onSubmit={handleSubmit}
+            attachments={composerSources.attachments}
+            controls={composerSources.controls}
+            error={composerSources.error}
+          />
           <RecentSites basePath={basePath} projectId={projectId} className="max-w-5xl pt-8" />
         </div>
       </div>
@@ -343,15 +356,12 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto px-4 py-4">
           {state.site && !isBusy && !revisionPreview && (
-            <>
-              <SiteDataSources site={state.site} onSaved={load} />
-              <SiteSavedRecords
-                site={state.site}
-                data={siteData}
-                storage={storage}
-                disabled={isBusy}
-              />
-            </>
+            <SiteSavedRecords
+              site={state.site}
+              data={siteData}
+              storage={storage}
+              disabled={isBusy}
+            />
           )}
           {siteData.error && (
             <output role="alert" className="text-failure">
@@ -445,6 +455,10 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                   ? "Change something…"
                   : "Describe the site…"
             }
+            attachments={composerSources.attachments}
+            controls={composerSources.controls}
+            error={composerSources.error}
+            isDisabled={composerSources.isPending || Boolean(revisionPreview)}
             submitLabel={state.site ? "Refine" : "Build"}
             isBusy={isBusy}
             onSubmit={handleSubmit}

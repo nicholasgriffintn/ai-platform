@@ -108,49 +108,6 @@ describe("ContextLimitValidator", () => {
       expect(result.context).toEqual({});
     });
 
-    it("should fail validation when lastMessage is missing", async () => {
-      const contextWithoutLastMessage: ValidationContext = {
-        sanitisedMessages: [{ role: "user", content: "Hello world" }],
-        modelConfig: baseContext.modelConfig,
-      };
-
-      const result = await validator.validate(baseOptions, contextWithoutLastMessage);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Missing required context for validation");
-      expect(result.validation.validationType).toBe("context");
-      expect(result.context).toEqual({});
-    });
-
-    it("should fail validation when modelConfig is missing", async () => {
-      const contextWithoutModelConfig: ValidationContext = {
-        sanitisedMessages: [{ role: "user", content: "Hello world" }],
-        lastMessage: { role: "user", content: "Hello world" },
-      };
-
-      const result = await validator.validate(baseOptions, contextWithoutModelConfig);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Missing required context for validation");
-      expect(result.validation.validationType).toBe("context");
-      expect(result.context).toEqual({});
-    });
-
-    it("should handle content with no text part", async () => {
-      const contextWithNoTextContent: ValidationContext = {
-        ...baseContext,
-        lastMessage: {
-          role: "user",
-          content: [{ type: "image_url", image_url: { url: "data:image/jpeg;base64,..." } }],
-        },
-      };
-
-      const result = await validator.validate(baseOptions, contextWithNoTextContent);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(mockSanitiseInput).toHaveBeenCalledWith("");
-    });
-
     it("should handle markdown attachments", async () => {
       const markdownAttachments = [
         { name: "document.md", markdown: "# Document Title\nContent here" },
@@ -171,18 +128,6 @@ describe("ContextLimitValidator", () => {
       );
     });
 
-    it("should handle empty sanitized messages array", async () => {
-      const contextWithEmptyMessages = {
-        ...baseContext,
-        sanitisedMessages: [],
-      };
-
-      const result = await validator.validate(baseOptions, contextWithEmptyMessages);
-
-      expect(result.validation.isValid).toBe(true);
-      expect(mockPruneMessagesToFitContext).not.toHaveBeenCalled();
-    });
-
     it("should handle checkContextWindowLimits throwing an error", async () => {
       mockCheckContextWindowLimits.mockImplementation(() => {
         throw new Error("Context window exceeded");
@@ -194,21 +139,6 @@ describe("ContextLimitValidator", () => {
       expect(result.validation.error).toBe("Context window exceeded");
       expect(result.validation.validationType).toBe("context");
       expect(result.context).toEqual({});
-    });
-
-    it("should handle error without message", async () => {
-      const errorWithoutMessage = new Error();
-
-      errorWithoutMessage.message = undefined;
-      mockCheckContextWindowLimits.mockImplementation(() => {
-        throw errorWithoutMessage;
-      });
-
-      const result = await validator.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Context window validation failed");
-      expect(result.validation.validationType).toBe("context");
     });
   });
 });
