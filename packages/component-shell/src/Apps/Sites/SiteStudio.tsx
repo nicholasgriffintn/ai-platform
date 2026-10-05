@@ -21,6 +21,7 @@ import {
   useProject,
   useSiteGeneration,
   useSiteData,
+  useVerifySite,
   useTrackEvent,
   SITES_QUERY_KEYS,
   type SiteGenerationState,
@@ -59,6 +60,7 @@ import { toast } from "sonner";
 
 import { useAppChrome } from "../AppChrome.js";
 import { RecentSites } from "./RecentSites.js";
+import { SiteBrowserChecks } from "./SiteBrowserChecks.js";
 import { SiteBuildPlaceholder } from "./SiteBuildPlaceholder.js";
 import { SiteConversationTurn } from "./SiteConversationTurn.js";
 import { SiteHistory, type SiteRevisionPreview } from "./SiteHistory.js";
@@ -131,6 +133,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   );
   const isBusy = !["idle", "done", "error"].includes(state.status);
   const siteData = useSiteData(state.site, !isBusy && !revisionPreview);
+  const verification = useVerifySite(state.site);
   const composerSources = useSiteComposerSources({
     site: state.site,
     projectId,
@@ -585,6 +588,13 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                 >
                   Fill images
                 </Button>
+              )}
+              {!isBusy && !revisionPreview && (
+                <SiteBrowserChecks
+                  site={state.site}
+                  pageId={resolvedPageId ?? undefined}
+                  verification={verification}
+                />
               )}
               {projectId && (
                 <>

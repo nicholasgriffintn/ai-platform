@@ -30,7 +30,13 @@ class ElementBoundary extends Component<
   }
 
   render() {
-    return this.state.failed ? null : this.props.children;
+    return this.state.failed ? (
+      <output role="alert" data-site-render-error={this.props.elementKey}>
+        This part of the page could not load.
+      </output>
+    ) : (
+      this.props.children
+    );
   }
 }
 
