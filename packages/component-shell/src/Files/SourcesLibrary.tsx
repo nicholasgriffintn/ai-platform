@@ -15,6 +15,7 @@ import { API_BASE_URL } from "@ngriffin_uk/polychat-library-client";
 import { sourceKindSchema, type SourceKind } from "@ngriffin_uk/polychat-schemas";
 import { toast } from "sonner";
 
+import { ConnectedKnowledge } from "./ConnectedKnowledge.js";
 import { KnowledgeSyncPanel } from "./KnowledgeSyncPanel.js";
 import { MemorySynthesisPanel } from "./MemorySynthesisPanel.js";
 import { ProjectKnowledgeSearch } from "./ProjectKnowledgeSearch.js";
@@ -130,6 +131,8 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
           ) : null}
         </section>
       </div>
+
+      <ConnectedKnowledge projectId={projectId} />
 
       <FormDialog
         open={isCreateSourceOpen}

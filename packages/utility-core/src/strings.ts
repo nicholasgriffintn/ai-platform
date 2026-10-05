@@ -18,6 +18,10 @@ export function parseCommaSeparatedList(value: string): string[] {
     .filter(Boolean);
 }
 
+export function normaliseLowercaseList(values: readonly string[]): string[] {
+  return [...new Set(values.map((value) => value.trim().toLowerCase()).filter(Boolean))];
+}
+
 export function splitNonEmptyLines(value: string): string[] {
   return value
     .split(/\r?\n/u)
@@ -168,4 +172,12 @@ export function decodeXmlEntities(value: string): string {
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&amp;/g, "&");
+}
+
+export function containsControlCharacters(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const code = character.charCodeAt(0);
+
+    return code < 32 || code === 127;
+  });
 }

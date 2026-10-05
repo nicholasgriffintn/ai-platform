@@ -11,7 +11,7 @@ export const searchDocumentsInputSchema = z.object({
 export const search_documents: FunctionToolDescriptor = {
   name: "search_documents",
   description:
-    "Search documents and saved content in the current personal or project scope for relevant passages. Project searches include available project Sources and never search personal material. Ground answers in the returned passages and cite their source titles and revisions.",
+    "Search documents, saved content and authorised repository knowledge in the current personal or project scope. Project searches include available project Sources and never search personal material. Ground answers in the returned passages and cite their source titles and revisions.",
   type: "premium",
   permissions: ["read"],
   inputSchema: searchDocumentsInputSchema,

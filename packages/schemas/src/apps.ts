@@ -459,6 +459,7 @@ export const modelToolIdSchema = z.enum([
 ]);
 
 export const modelToolCapabilitySchema = z.enum([
+  "supportsToolCalls",
   "supportsCodeExecution",
   "supportsFileSearch",
   "supportsSearchGrounding",

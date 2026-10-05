@@ -25,6 +25,7 @@ import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/Ou
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import { InfraCostDailyRepository } from "~/modules/infra/infrastructure/InfraCostDailyRepository";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
+import { McpRegistryRepository } from "~/modules/mcp/infrastructure/McpRegistryRepository";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRepository";
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
@@ -51,6 +52,7 @@ import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/Pr
 import { SavedMessageRepository } from "~/modules/saved-messages/infrastructure/SavedMessageRepository";
 import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
 import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
+import { RepositoryKnowledgeSyncRepository } from "~/modules/sources/infrastructure/RepositoryKnowledgeSyncRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
@@ -390,6 +392,13 @@ export class RepositoryManager {
     return this.resolve("sources", (env) => new SourceRepository(env));
   }
 
+  public get repositoryKnowledgeSyncs(): RepositoryKnowledgeSyncRepository {
+    return this.resolve(
+      "repositoryKnowledgeSyncs",
+      (env) => new RepositoryKnowledgeSyncRepository(env),
+    );
+  }
+
   public get sourceSearch(): SourceSearchRepository {
     return this.resolve("sourceSearch", (env) => new SourceSearchRepository(env));
   }
@@ -464,5 +473,9 @@ export class RepositoryManager {
 
   public get workspaces(): WorkspaceRepository {
     return this.resolve("workspaces", (env) => new WorkspaceRepository(env));
+  }
+
+  public get mcpRegistry(): McpRegistryRepository {
+    return this.resolve("mcpRegistry", (env) => new McpRegistryRepository(env));
   }
 }

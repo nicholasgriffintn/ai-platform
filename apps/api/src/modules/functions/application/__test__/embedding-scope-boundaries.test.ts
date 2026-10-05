@@ -9,6 +9,9 @@ vi.mock("~/modules/apps/application/embeddings/delete", () => ({ deleteEmbedding
 vi.mock("~/modules/apps/application/embeddings/insert", () => ({ insertEmbedding }));
 vi.mock("~/modules/apps/application/embeddings/query", () => ({ queryEmbeddings }));
 vi.mock("~/modules/sources/application/knowledge-search", () => ({ searchProjectKnowledge }));
+vi.mock("~/modules/functions/application/connected-documents", () => ({
+  queryConnectedDocuments: vi.fn(async () => []),
+}));
 
 import type { ContentExtractResult } from "~/modules/apps/application/ports/content-extract";
 import { maybeVectorizeExtractedContent } from "~/modules/apps/infrastructure/retrieval/content-extract/vectorize";

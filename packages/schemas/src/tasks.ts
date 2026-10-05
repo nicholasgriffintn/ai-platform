@@ -18,6 +18,7 @@ import {
   MODEL_REGISTRY_EVAL_TASK_TYPE,
   MODEL_REGISTRY_INSPECT_TASK_TYPE,
 } from "./model-registry.js";
+import { KNOWLEDGE_SYNC_TASK_TYPE } from "./repository-knowledge.js";
 
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
@@ -34,6 +35,7 @@ export const SOURCE_KNOWLEDGE_INDEX_TASK_TYPE = "source_knowledge_index";
 export const SOURCE_KNOWLEDGE_SYNC_TASK_TYPE = "source_knowledge_sync";
 
 export const TASK_TYPES = [
+  KNOWLEDGE_SYNC_TASK_TYPE,
   "memory_synthesis",
   "research_polling",
   "replicate_polling",

@@ -18,6 +18,7 @@ import type { TeammateEditorChange, TeammateEditorProps } from "./types";
 export function TeammateEditor({
   teammate,
   models,
+  availableMcpServers,
   tools,
   skills,
   isLoadingCapabilities = false,
@@ -30,7 +31,6 @@ export function TeammateEditor({
   onSubmit,
   onCancel,
   onDelete,
-  mcpConnections,
 }: TeammateEditorProps) {
   const [value, setValue] = useState(() => createTeammateEditorValue(teammate, models));
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -89,7 +89,7 @@ export function TeammateEditor({
         value={value}
         disabled={disabled}
         onChange={change}
-        connections={mcpConnections}
+        availableServers={availableMcpServers}
       />
       <AccessSection
         ownerScopeType={teammate?.owner_scope_type ?? "user"}

@@ -1,9 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
 import { decryptGitHubConnectionPayload } from "../connection-crypto";
-import { GITHUB_CONNECTION_KIND } from "../connections";
+import { GITHUB_CONNECTION_KIND, getGitHubAppConnectionForUserInstallation } from "../connections";
 import {
   deleteGitHubConnectionForUser,
   upsertGitHubConnectionFromDefaultAppForUser,
@@ -33,10 +33,17 @@ function context(
   providerConnections: Record<string, unknown>,
   env: Record<string, string> = { JWT_SECRET },
 ): ServiceContext {
-  return { env, repositories: { providerConnections } } as unknown as ServiceContext;
+  return {
+    env,
+    repositories: {
+      providerConnections,
+      users: { getUserByGithubId: vi.fn().mockResolvedValue({ id: USER_ID }) },
+    },
+  } as unknown as ServiceContext;
 }
 
 describe("GitHub provider connections", () => {
+  afterEach(() => vi.unstubAllGlobals());
   it("upserts one encrypted provider connection per installation", async () => {
     const providerConnections = { upsertConnection: vi.fn().mockResolvedValue(undefined) };
 
@@ -102,8 +109,17 @@ describe("GitHub provider connections", () => {
     );
   });
 
-  it("loads default app credentials without persisting cleartext", async () => {
-    const providerConnections = { upsertConnection: vi.fn().mockResolvedValue(undefined) };
+  it("seals deployment credentials and rechecks ownership after the default app changes", async () => {
+    vi.stubGlobal("fetch", async () =>
+      Response.json({
+        id: 8080,
+        account: { id: 12345, type: "User" },
+      }),
+    );
+    const providerConnections = {
+      upsertConnection: vi.fn().mockResolvedValue(undefined),
+      getConnection: vi.fn(),
+    };
     const serviceContext = context(providerConnections, {
       JWT_SECRET,
       GITHUB_APP_ID: "env-app-id",
@@ -118,6 +134,61 @@ describe("GitHub provider connections", () => {
     const saved = providerConnections.upsertConnection.mock.calls[0][0];
 
     expect(JSON.stringify(saved)).not.toContain(PRIVATE_KEY);
+    providerConnections.getConnection.mockResolvedValue({
+      id: "saved-default-connection",
+      user_id: USER_ID,
+      provider: "github",
+      kind: GITHUB_CONNECTION_KIND,
+      external_id: "8080",
+      status: "connected",
+      encrypted_data: JSON.stringify(saved.encryptedData),
+      metadata: "{}",
+      created_at: new Date().toISOString(),
+      updated_at: null,
+    });
+    serviceContext.env.GITHUB_APP_ID = "rotated-default-app-id";
+    await getGitHubAppConnectionForUserInstallation(serviceContext, USER_ID, 8080);
+    vi.spyOn(serviceContext.repositories.users, "getUserByGithubId").mockResolvedValue(null);
+    await expect(
+      getGitHubAppConnectionForUserInstallation(serviceContext, USER_ID, 8080),
+    ).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("rejects installation IDs belonging to another account or an organisation before storing deployment credentials", async () => {
+    const providerConnections = { upsertConnection: vi.fn() };
+    const serviceContext = context(providerConnections, {
+      JWT_SECRET,
+      GITHUB_APP_ID: "env-app-id",
+      GITHUB_APP_PRIVATE_KEY: PRIVATE_KEY,
+    });
+    const ownerLookup = vi
+      .spyOn(serviceContext.repositories.users, "getUserByGithubId")
+      .mockResolvedValue(null);
+
+    vi.stubGlobal("fetch", async () =>
+      Response.json({
+        id: 8080,
+        account: { id: 54321, type: "User" },
+      }),
+    );
+    await expect(
+      upsertGitHubConnectionFromDefaultAppForUser(serviceContext, USER_ID, {
+        installationId: 8080,
+      }),
+    ).rejects.toMatchObject({ statusCode: 403 });
+    ownerLookup.mockRestore();
+    vi.stubGlobal("fetch", async () =>
+      Response.json({
+        id: 8080,
+        account: { id: 12345, type: "Organization" },
+      }),
+    );
+    await expect(
+      upsertGitHubConnectionFromDefaultAppForUser(serviceContext, USER_ID, {
+        installationId: 8080,
+      }),
+    ).rejects.toMatchObject({ statusCode: 403 });
+    expect(providerConnections.upsertConnection).not.toHaveBeenCalled();
   });
 
   it("requires an encryption secret", async () => {

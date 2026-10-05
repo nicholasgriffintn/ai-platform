@@ -44,7 +44,11 @@ import {
   updateSource,
 } from "~/modules/sources/application/sources";
 
+import knowledgeRoutes from "./knowledge";
+
 const app = new Hono();
+
+app.route("/knowledge", knowledgeRoutes);
 const sourceParams = z.object({ sourceId: z.string().min(1) });
 const collectionParams = z.object({ collectionId: z.string().min(1) });
 const projectQuery = z.object({ projectId: z.string().min(1).optional() });

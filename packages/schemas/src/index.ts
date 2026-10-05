@@ -198,3 +198,5 @@ export * from "./computer-use.js";
 export * from "./openai-agent-sessions.js";
 export * from "./urls.js";
 export * from "./enterprise-identity.js";
+export * from "./repository-knowledge.js";
+export * from "./native-mcp.js";

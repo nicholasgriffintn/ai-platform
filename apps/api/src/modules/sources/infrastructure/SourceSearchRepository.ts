@@ -41,11 +41,16 @@ const PASSAGE_COLUMNS = `c.id, s.id AS sourceId, d.source_revision AS sourceRevi
   CASE WHEN json_type(s.metadata, '$.upstreamRevision') IN ('integer', 'text') THEN json_extract(s.metadata, '$.upstreamRevision') ELSE NULL END AS upstreamRevision,
   CASE WHEN json_type(s.metadata, '$.lastSyncedAt') = 'text' THEN json_extract(s.metadata, '$.lastSyncedAt') ELSE NULL END AS lastSyncedAt`;
 const CURRENT_SOURCE = `s.id = d.source_id AND s.search_revision = d.source_revision
-  AND s.status = 'available' AND s.kind != 'memory'`;
+  AND s.status = 'available' AND s.kind != 'memory'
+  AND (s.provider IS NULL OR s.provider != 'github-knowledge')`;
 
 export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
   getSource(sourceId: string): Promise<SearchableSource | null> {
-    return this.runQuery<SearchableSource>("SELECT * FROM source WHERE id = ?", [sourceId], true);
+    return this.runQuery<SearchableSource>(
+      "SELECT * FROM source WHERE id = ? AND (provider IS NULL OR provider != 'github-knowledge')",
+      [sourceId],
+      true,
+    );
   }
 
   getDocument(sourceId: string, revision: number): Promise<SourceSearchDocument | null> {
@@ -62,7 +67,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
     target: EmbeddingRuntimeTarget,
   ): Promise<void> {
     const guard =
-      "EXISTS (SELECT 1 FROM source WHERE id = ? AND search_revision = ? AND status = 'available')";
+      "EXISTS (SELECT 1 FROM source WHERE id = ? AND search_revision = ? AND status = 'available' AND (provider IS NULL OR provider != 'github-knowledge'))";
 
     await this.env.DB.batch([
       this.env.DB.prepare(
@@ -202,6 +207,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
       `WITH candidates AS (SELECT s.id, s.created_by_user_id AS user_id, s.project_id FROM source s
        LEFT JOIN source_search_document d ON d.source_id = s.id AND d.source_revision = s.search_revision
        WHERE s.project_id IS NOT NULL AND s.kind != 'memory' AND s.status = 'available'
+         AND (s.provider IS NULL OR s.provider != 'github-knowledge')
          AND length(trim(s.content)) > 0 AND (d.id IS NULL OR (? = 1 AND d.status = 'lexical'))
        UNION SELECT source_id AS id, user_id, project_id FROM source_search_document WHERE status = 'stale' AND ? = 1)
        SELECT c.id, (SELECT id FROM project WHERE id = c.project_id) AS project_id,

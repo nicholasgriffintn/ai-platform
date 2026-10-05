@@ -1,5 +1,4 @@
 import { extractImpactPayload, extractUsagePayload } from "@ngriffin_uk/polychat-ai-telemetry";
-import { HOSTED_MCP_APPROVAL_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 import type { InferenceImpact } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
@@ -148,29 +147,6 @@ export class StreamingFormatter {
               function: {
                 name: item.name,
                 arguments: item.arguments || "{}",
-              },
-            },
-          ];
-        }
-
-        if (
-          item?.type === "mcp_approval_request" &&
-          typeof item.id === "string" &&
-          typeof item.server_label === "string" &&
-          typeof item.name === "string"
-        ) {
-          return [
-            {
-              id: item.id,
-              type: "function",
-              function: {
-                name: HOSTED_MCP_APPROVAL_TOOL_NAME,
-                arguments: JSON.stringify({
-                  approvalRequestId: item.id,
-                  serverLabel: item.server_label,
-                  toolName: item.name,
-                  arguments: item.arguments,
-                }),
               },
             },
           ];

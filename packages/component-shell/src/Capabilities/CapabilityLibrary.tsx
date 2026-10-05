@@ -13,7 +13,7 @@ import type {
   CatalogueItemKind,
   ProjectCapabilityKindGroup,
 } from "@ngriffin_uk/polychat-library-react";
-import { useMcpConnections } from "@ngriffin_uk/polychat-library-react";
+import { useMcpRegistry } from "@ngriffin_uk/polychat-library-react";
 import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
 import { SearchX } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
@@ -25,7 +25,6 @@ import { AttachTeammateDialog } from "./AttachTeammateDialog.js";
 import { CapabilityAddMenu } from "./CapabilityAddMenu.js";
 import { CapabilityGroups } from "./CapabilityGroups.js";
 import { HireTeammateDialog } from "./HireTeammateDialog.js";
-import { McpConnectionManager } from "./McpConnectionManager.js";
 import { SharedTeammatesDialog } from "./SharedTeammatesDialog.js";
 import { ShareTeammateDialog } from "./ShareTeammateDialog.js";
 import { useCapabilityAuthoring } from "./useCapabilityAuthoring.js";
@@ -46,7 +45,8 @@ export function CapabilityLibrary({
   children,
 }: CapabilityLibraryProps) {
   const controller = useCapabilityLibraryController(scope, { kinds, extraItems });
-  const mcpConnections = useMcpConnections(
+  const registry = useMcpRegistry(
+    controller.surface.workspaceId,
     controller.toolConfigurationDialog.tool?.configurationKind === "mcp",
   );
   const authoring = useCapabilityAuthoring({
@@ -165,8 +165,7 @@ export function CapabilityLibrary({
         onClose={controller.toolConfigurationDialog.close}
         onSubmit={controller.toolConfigurationDialog.submit}
         tool={controller.toolConfigurationDialog.tool}
-        mcpConnections={mcpConnections.query.data?.connections ?? []}
-        mcpConnectionManager={<McpConnectionManager connections={mcpConnections} />}
+        availableMcpServers={registry.query.data}
       />
       <AddSkillDialog
         open={authoring.addSkill.open}

@@ -428,6 +428,27 @@
       "when": 1791164857556,
       "tag": "0060_channel_threads",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "6",
+      "when": 1791165710377,
+      "tag": "0061_repository_knowledge",
+      "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "6",
+      "when": 1791166852639,
+      "tag": "0062_native_mcp",
+      "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "6",
+      "when": 1791166947309,
+      "tag": "0063_native_mcp_transition",
+      "breakpoints": true
     }
   ]
 }

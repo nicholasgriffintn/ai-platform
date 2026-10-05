@@ -36,3 +36,37 @@ export async function mapWithConcurrency<T, R>(
 
   return results;
 }
+
+export class OperationTimeoutError extends Error {
+  constructor() {
+    super("Operation timed out");
+    this.name = "OperationTimeoutError";
+  }
+}
+
+export async function withAbortTimeout<T>(
+  operation: (signal: AbortSignal) => Promise<T>,
+  timeoutMs: number,
+): Promise<T> {
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1) {
+    throw new RangeError("Timeout must be a positive safe integer");
+  }
+
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      reject(new OperationTimeoutError());
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([
+      Promise.resolve().then(() => operation(controller.signal)),
+      timeout,
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}

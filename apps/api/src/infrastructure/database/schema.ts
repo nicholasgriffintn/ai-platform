@@ -1845,6 +1845,60 @@ export const source = sqliteTable(
 
 export type Source = typeof source.$inferSelect;
 
+export const knowledgeSync = sqliteTable(
+  "knowledge_sync",
+  {
+    id: text().primaryKey(),
+    created_by_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    repository: text().notNull(),
+    branch: text().notNull(),
+    path: text().notNull().default(""),
+    installation_id: integer().notNull(),
+    status: text({ enum: ["idle", "syncing", "paused", "blocked", "failed"] })
+      .notNull()
+      .default("idle"),
+    revision: integer().notNull().default(1),
+    checkpoint: text(),
+    lease_token: text(),
+    lease_expires_at: integer(),
+    last_synced_at: text(),
+    last_commit: text(),
+    next_sync_at: integer().notNull(),
+    error_message: text(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    ownerIdx: index("knowledge_sync_owner_idx").on(table.created_by_user_id),
+    projectIdx: index("knowledge_sync_project_idx").on(table.project_id),
+    dueIdx: index("knowledge_sync_due_idx").on(table.status, table.next_sync_at),
+  }),
+);
+
+export const knowledgeSyncDocument = sqliteTable(
+  "knowledge_sync_document",
+  {
+    source_id: text()
+      .primaryKey()
+      .references(() => source.id, { onDelete: "cascade" }),
+    sync_id: text()
+      .notNull()
+      .references(() => knowledgeSync.id, { onDelete: "cascade" }),
+    path: text().notNull(),
+    blob_sha: text().notNull(),
+    commit_sha: text().notNull(),
+    seen_run_id: text().notNull(),
+    synced_at: text().notNull(),
+  },
+  (table) => ({
+    pathIdx: uniqueIndex("knowledge_sync_document_path_idx").on(table.sync_id, table.path),
+  }),
+);
+
 export const sourceSearchDocument = sqliteTable(
   "source_search_document",
   {
@@ -2277,6 +2331,44 @@ export const composioConnectorSession = sqliteTable(
 
 export type ComposioConnectorSession = typeof composioConnectorSession.$inferSelect;
 
+export const nativeMcpServer = sqliteTable("native_mcp_server", {
+  id: text().primaryKey(),
+  created_by_user_id: integer()
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  workspace_id: text().references(() => workspace.id, { onDelete: "cascade" }),
+  label: text().notNull(),
+  endpoint: text().notNull(),
+  enabled: integer({ mode: "boolean" }).notNull().default(false),
+  revision: integer().notNull().default(1),
+  tools: text().notNull().default("[]"),
+  created_at: text()
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+});
+
+export const nativeMcpConnection = sqliteTable(
+  "native_mcp_connection",
+  {
+    id: text().primaryKey(),
+    server_id: text()
+      .notNull()
+      .references(() => nativeMcpServer.id, { onDelete: "cascade" }),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    revision: integer().notNull().default(1),
+    encrypted_credential: text().notNull(),
+    shared_projects: text().notNull().default("[]"),
+  },
+  (table) => ({
+    ownerServer: uniqueIndex("native_mcp_connection_owner_server_idx").on(
+      table.user_id,
+      table.server_id,
+    ),
+  }),
+);
+
 export const connectorOperationApproval = sqliteTable(
   "connector_operation_approval",
   {
@@ -2411,6 +2503,7 @@ export const teammates = sqliteTable(
     description: text().default("").notNull(),
     avatar_url: text(),
     servers: text({ mode: "json" }).notNull(),
+    retired_mcp_servers: text({ mode: "json" }),
     model: text(),
     temperature: text(),
     max_steps: integer(),

@@ -3,6 +3,7 @@ import z from "zod/v4";
 import { recipeConnectorProviderSchema } from "./apps.js";
 import { channelRunAuthoritySchema, channelThreadReferenceSchema } from "./channels.js";
 import { delegationContinuationSchema, delegationMemoryBindingSchema } from "./delegations.js";
+import { nativeMcpIdSchema } from "./native-mcp.js";
 
 export const teammateContextScopeSchema = z.object({
   type: z.enum(["personal", "project"]),
@@ -115,8 +116,7 @@ export const teammateRunConfigurationSchema = z
     mcpServers: z
       .array(
         z.object({
-          label: z.string().min(1),
-          url: z.url(),
+          id: nativeMcpIdSchema,
         }),
       )
       .default([]),

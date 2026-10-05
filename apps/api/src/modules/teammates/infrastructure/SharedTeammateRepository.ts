@@ -371,6 +371,7 @@ export class SharedTeammateRepository extends BaseRepository {
       description: templateData.description,
       avatar_url: templateData.avatar_url,
       servers: JSON.stringify(templateData.servers),
+      retired_mcp_servers: null,
       model: templateData.model,
       temperature: templateData.temperature,
       max_steps: templateData.max_steps,

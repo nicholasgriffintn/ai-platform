@@ -10,6 +10,7 @@ import {
 } from "~/modules/model-governance/application/maintenance";
 import { scheduleKnowledgeIndexes } from "~/modules/sources/application/knowledge-index";
 import { scheduleKnowledgeSyncs } from "~/modules/sources/application/knowledge-sync-run";
+import { scheduleRepositoryKnowledgeSyncs } from "~/modules/sources/application/knowledge/maintenance";
 import { schedulePendingTaskNotificationDeliveries } from "~/modules/task-notifications/application/delivery";
 
 import {
@@ -23,6 +24,15 @@ import {
   scheduleTrainingQualityScoring,
 } from "./scheduledTasks";
 import { defineSchedule, workflows } from "./workflows";
+
+workflows.always(
+  defineSchedule({
+    name: "repository-knowledge-sync",
+    run: async ({ env }) => {
+      await scheduleRepositoryKnowledgeSyncs(env);
+    },
+  }),
+);
 
 workflows.always(
   defineSchedule({

@@ -11,9 +11,8 @@ import {
 import type {
   ModelToolConfiguration,
   ModelToolDefinition,
-  McpConnection,
+  NativeMcpServer,
 } from "@ngriffin_uk/polychat-schemas";
-import type { ReactNode } from "react";
 
 import { McpServerFields } from "./McpServerFields";
 import { useToolConfigurationForm } from "./useToolConfigurationForm";
@@ -24,8 +23,7 @@ interface ToolConfigurationDialogProps {
   onClose: () => void;
   onSubmit: (configuration: ModelToolConfiguration) => Promise<void>;
   tool: ModelToolDefinition | null;
-  mcpConnections?: McpConnection[];
-  mcpConnectionManager?: ReactNode;
+  availableMcpServers?: NativeMcpServer[];
 }
 
 export function ToolConfigurationDialog({
@@ -34,8 +32,7 @@ export function ToolConfigurationDialog({
   onClose,
   onSubmit,
   tool,
-  mcpConnections,
-  mcpConnectionManager,
+  availableMcpServers,
 }: ToolConfigurationDialogProps) {
   const { vectorStoreIds, setVectorStoreIds, servers, setServers, error, submit } =
     useToolConfigurationForm(tool, storedConfiguration, onSubmit);
@@ -66,11 +63,9 @@ export function ToolConfigurationDialog({
           <div className="space-y-4">
             <McpServerFields
               servers={servers}
-              minimumRows={1}
               onChange={setServers}
-              connections={mcpConnections}
+              availableServers={availableMcpServers}
             />
-            {mcpConnectionManager}
           </div>
         )}
 
