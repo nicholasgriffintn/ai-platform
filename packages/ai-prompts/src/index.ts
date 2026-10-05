@@ -30,7 +30,6 @@ export {
   buildGoalContractSection,
   buildInstructionPrecedence,
   buildMemorySummaryContext,
-  buildPolyPrompt,
   buildPersonaSection,
   buildResponseStyleSection,
   buildSandboxControllerPrompt,

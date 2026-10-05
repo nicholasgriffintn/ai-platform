@@ -31,31 +31,32 @@ const POLY_PET_PRESET_SLUG = "pip";
 
 const POLY_SUGGESTIONS: ChatSuggestion[] = [
   {
-    id: "meta-find",
+    id: "poly-find",
     label: "Find the conversation where we planned the launch",
     prompt: "Find the conversation where we planned the launch",
     category: "Find",
   },
   {
-    id: "meta-archive",
-    label: "Archive the conversation I have open",
-    prompt: "Archive the conversation I have open",
-    category: "Tidy",
-  },
-  {
-    id: "meta-recent",
+    id: "poly-recent",
     label: "What have I been working on this week?",
     prompt: "List my recent conversations and tell me what I have been working on this week",
     category: "Find",
   },
   {
-    id: "meta-summarise",
-    label: "Summarise the thread I have open",
-    prompt: "Summarise the conversation I have open",
-    category: "Read",
+    id: "poly-research",
+    label: "Research three venues for a team offsite in Lisbon",
+    prompt:
+      "Research three venues for a team offsite in Lisbon and write up the options as a document",
+    category: "Do",
   },
   {
-    id: "meta-attention",
+    id: "poly-remember",
+    label: "Remember that I prefer meetings before noon",
+    prompt: "Remember that I prefer meetings before noon",
+    category: "Remember",
+  },
+  {
+    id: "poly-attention",
     label: "Take me to what needs my attention",
     prompt: "Open Attention",
     category: "Open",
@@ -93,7 +94,7 @@ function PolyThread({
                 requestOptions: { poly: { ui_context: uiContext } },
                 welcomeTitle: "This is Poly.",
                 welcomeDescription:
-                  "Ask it to find, open, tidy or summarise anything in Polychat. This conversation carries on, so pick up wherever you left off.",
+                  "Ask it to find or tidy anything in Polychat, look things up, remember what matters, or hand longer work to a teammate. This conversation carries on, so pick up wherever you left off.",
                 welcomeSuggestions: POLY_SUGGESTIONS,
                 welcomeCapabilitySuggestions: false,
                 inputPlaceholder: { newConversation: "Ask Poly…", followUp: "Ask Poly…" },

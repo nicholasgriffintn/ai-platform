@@ -5,18 +5,11 @@ import {
   isPolyNavigationToolName,
   isPolyTeammateId,
   POLY_CONVERSATION_TYPE,
-  POLY_NAVIGATION_TOOL_NAMES,
-  type PolyUiContext,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import type { CoreChatOptions } from "~/types";
-
-export interface PolyScope {
-  uiContext?: PolyUiContext;
-  navigation: boolean;
-}
 
 export interface PolyTurn {
   conversationType: ConversationType | undefined;
@@ -31,10 +24,6 @@ export function isPolyNavigationTurn(turn: PolyTurn): boolean {
   return isPolyConversationType(turn.conversationType) && (turn.trigger ?? "user") === "user";
 }
 
-export function getPolyNavigationToolNames(): string[] {
-  return [...POLY_NAVIGATION_TOOL_NAMES];
-}
-
 export function filterToolsForPolyTurn<T extends { name: string }>(
   tools: readonly T[],
   turn: PolyTurn,
@@ -44,13 +33,10 @@ export function filterToolsForPolyTurn<T extends { name: string }>(
   return tools.filter((tool) => navigation || !isPolyNavigationToolName(tool.name));
 }
 
-export async function resolvePolyScope(
-  options: Pick<
-    CoreChatOptions,
-    "completion_id" | "poly" | "context" | "resolved_configuration" | "trigger"
-  >,
+export async function isAdmittedPolyRun(
+  options: Pick<CoreChatOptions, "completion_id" | "poly" | "context" | "resolved_configuration">,
   repositories: Pick<RepositoryManager, "conversations">,
-): Promise<PolyScope | null> {
+): Promise<boolean> {
   const requested = options.poly;
   const user = options.context?.user;
   const stored = options.completion_id
@@ -59,7 +45,7 @@ export async function resolvePolyScope(
   const storedIsPoly = stored?.type === POLY_CONVERSATION_TYPE;
 
   if (!requested && !storedIsPoly) {
-    return null;
+    return false;
   }
 
   if (!user?.id) {
@@ -84,11 +70,5 @@ export async function resolvePolyScope(
     throw new AssistantError("Poly conversations only run as Poly", ErrorType.FORBIDDEN, 403);
   }
 
-  return {
-    uiContext: requested?.ui_context,
-    navigation: isPolyNavigationTurn({
-      conversationType: POLY_CONVERSATION_TYPE,
-      trigger: options.trigger,
-    }),
-  };
+  return true;
 }

@@ -532,6 +532,7 @@ export interface StandardChatPromptOptions {
   userTraits?: string | null;
   userPreferences?: string | null;
   platform?: string | null;
+  poly?: PolyPromptOptions | null;
 }
 
 export function buildStandardChatPrompt({
@@ -553,6 +554,7 @@ export function buildStandardChatPrompt({
   userTraits,
   userPreferences,
   platform,
+  poly,
 }: StandardChatPromptOptions): string {
   const chatMode = mode || "standard";
   const isTeammate = isAgentMode(chatMode);
@@ -585,6 +587,7 @@ export function buildStandardChatPrompt({
       }),
     )
     .add(buildPersonaSection(persona))
+    .add(buildPolySection(poly))
     .add(buildResponseStyleSection(responseStyle))
     .add(buildFormattingSection({ isCoding }))
     .addIf(isCoding, buildCodingConductSection())
@@ -662,21 +665,17 @@ function buildUiContextSection(uiContext?: PolyUiContextInput | null): string {
 }
 
 export interface PolyPromptOptions {
-  userReference?: string | null;
   uiContext?: PolyUiContextInput | null;
 }
 
-export function buildPolyPrompt({ userReference, uiContext }: PolyPromptOptions): string {
-  return new PromptBuilder(
-    renderPrompt("chat/poly/role", {
-      userReference: userReference ? escapeHtml(userReference) : undefined,
-    }),
-  )
+function buildPolySection(poly?: PolyPromptOptions | null): string {
+  if (!poly) {
+    return "";
+  }
+
+  return new PromptBuilder(getPromptText("chat/poly/behaviour"))
     .addLine()
-    .add(getPromptText("chat/poly/behaviour"))
-    .addLine()
-    .add(buildUiContextSection(uiContext))
-    .add(buildSafetyStandardsSection())
+    .add(buildUiContextSection(poly.uiContext))
     .build();
 }
 

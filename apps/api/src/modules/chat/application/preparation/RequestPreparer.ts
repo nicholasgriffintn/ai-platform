@@ -25,11 +25,7 @@ import {
   listRecipeConnectors,
 } from "~/modules/apps/application/connectors";
 import { isRecipeExecutionRequest } from "~/modules/apps/application/recipes/toolContext";
-import {
-  getPolyNavigationToolNames,
-  type PolyScope,
-  resolvePolyScope,
-} from "~/modules/chat/application/policy/poly";
+import { isAdmittedPolyRun } from "~/modules/chat/application/policy/poly";
 import { loadActiveGoal } from "~/modules/chat/application/preparation/goal";
 import {
   bindRunMemoryDocument,
@@ -139,7 +135,6 @@ interface RequestScope {
   database: Database;
   repositories: RepositoryManager;
   projectContext: ProjectChatContext | null;
-  poly: PolyScope | null;
   hasFixedProjectTaskTools: boolean;
   memoryScope: MemoryScope;
   isProUser: boolean;
@@ -155,16 +150,16 @@ export class RequestPreparer {
     const user = options.context?.user;
     const database = options.context?.database ?? new Database(this.env);
     const repositories = options.context?.repositories ?? database.repositories;
-    const poly = options.context ? await resolvePolyScope(options, repositories) : null;
+    const poly = options.context ? await isAdmittedPolyRun(options, repositories) : false;
     const projectContext =
       options.context && !poly ? await resolveProjectChatContext(options.context, options) : null;
     const scopedOptions: CoreChatOptions = poly
       ? {
           ...options,
           conversation_type: "poly",
+          poly: options.poly ?? {},
           store: true,
           system_prompt: undefined,
-          persona: undefined,
           metadata: undefined,
         }
       : {
@@ -178,7 +173,6 @@ export class RequestPreparer {
       database,
       repositories,
       projectContext,
-      poly,
       hasFixedProjectTaskTools:
         scopedOptions.durable_execution?.kind === "project_task" &&
         scopedOptions.tool_selection_mode === "explicit",
@@ -222,10 +216,6 @@ export class RequestPreparer {
   }
 
   private resolveRequestTools(scope: RequestScope) {
-    if (scope.poly) {
-      return scope.poly.navigation ? getPolyNavigationToolNames() : [];
-    }
-
     return resolveRequestFunctionToolNames({
       projectTools:
         scope.projectContext && scope.hasFixedProjectTaskTools
@@ -357,9 +347,7 @@ export class RequestPreparer {
         connectedConnectorProvidersPromise,
       ]);
 
-    const memoryPolicy = scope.poly
-      ? resolveMemoryPolicy({ user, userSettings, store: false })
-      : resolveMemoryPolicy({ user, userSettings, store: scope.options.store });
+    const memoryPolicy = resolveMemoryPolicy({ user, userSettings, store: scope.options.store });
     const primaryModel = primaryModelConfig.matchingModel;
     const primaryProvider = primaryModelConfig.provider;
 
@@ -441,9 +429,7 @@ export class RequestPreparer {
     ]);
     const enabledTools = this.resolveRequestTools(scope);
     const hasFixedToolScope =
-      isRecipeExecutionRequest(scope.options) ||
-      Boolean(scope.poly) ||
-      scope.hasFixedProjectTaskTools;
+      isRecipeExecutionRequest(scope.options) || scope.hasFixedProjectTaskTools;
     const skills: readonly SkillAvailability[] = hasFixedToolScope
       ? []
       : await listSkillAvailability(
