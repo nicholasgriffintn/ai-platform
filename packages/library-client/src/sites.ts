@@ -4,7 +4,6 @@ import type {
   SiteConnectorSnapshotRequest,
   SiteSourceRefreshRequest,
   SiteDataResponse,
-  SiteDataRequest,
   SiteIntegrationScope,
   SiteBuildRequest,
   SiteBuildResponse,
@@ -39,29 +38,6 @@ export const sitesService = {
     });
 
     return returnFetchedData<SiteDataResponse>(response);
-  },
-  async dataAction(id: string, request: SiteDataRequest): Promise<SiteDataResponse> {
-    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/actions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: request,
-    });
-
-    return returnFetchedData<SiteDataResponse>(response);
-  },
-  async activateStorage(id: string, request: SiteIntegrationScope): Promise<void> {
-    await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/runtime`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: request,
-    });
-  },
-  async disableStorage(id: string, request: SiteIntegrationScope): Promise<void> {
-    await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/runtime/disable`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: request,
-    });
   },
   async snapshotDataSource(id: string, request: SiteConnectorSnapshotRequest): Promise<SiteRecord> {
     const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/data/connectors`, {

@@ -49,7 +49,6 @@ export type IEnv = {
   CLOUDFLARE_AI_SEARCH_INSTANCE?: string;
   SANDBOX_WORKER?: Fetcher;
   COMPUTER_WORKER?: Fetcher;
-  SITES_RUNTIME?: DurableObjectNamespace;
   LOADER?: WorkerLoader;
   FLAGS?: FlagshipBinding;
   SANDBOX_RUN_COORDINATOR?: DurableObjectNamespace;

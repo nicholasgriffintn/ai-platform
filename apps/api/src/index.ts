@@ -330,5 +330,3 @@ export {
   SandboxRunCoordinator,
   UserSyncCoordinator,
 };
-
-export { SiteRuntime } from "./modules/sites/infrastructure/runtime";

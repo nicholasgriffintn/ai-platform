@@ -438,7 +438,6 @@ export function validateSiteProject(raw: unknown): SiteValidationResult {
   return {
     project: {
       ...project,
-      ...(integrations.collections ? { collections: integrations.collections } : {}),
       ...(integrations.dataBindings ? { dataBindings: integrations.dataBindings } : {}),
     },
     issues: [...issues, ...integrations.issues],

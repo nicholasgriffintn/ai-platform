@@ -1,5 +1,4 @@
 import type { SiteComponentProps } from "@ngriffin_uk/polychat-library-sites";
-import { readFormFieldValues } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 
 import { cn } from "../class-names.js";
@@ -13,27 +12,34 @@ export function Form({
   submitLabel,
   layout = "stacked",
   onSubmit,
-}: SiteComponentProps<"Form"> & {
-  onSubmit?: (values: Record<string, unknown>) => void | boolean | Promise<void | boolean>;
-}) {
-  async function submit(form: HTMLFormElement) {
-    if (!onSubmit) {
-      return;
-    }
-
-    const success = await onSubmit(readFormFieldValues(form, fields));
-
-    if (success !== false) {
-      form.reset();
-    }
-  }
-
+}: SiteComponentProps<"Form"> & { onSubmit?: (values: Record<string, unknown>) => void }) {
   return (
     <form
       className="flex w-full max-w-xl flex-col gap-6"
       onSubmit={(event) => {
         event.preventDefault();
-        void submit(event.currentTarget);
+
+        if (!onSubmit) {
+          return;
+        }
+
+        const form = event.currentTarget;
+        const values = Object.fromEntries(
+          fields.map((field) => {
+            const control = form.elements.namedItem(field.name) as {
+              value?: string;
+              checked?: boolean;
+            } | null;
+
+            return [
+              field.name,
+              field.type === "checkbox" ? Boolean(control?.checked) : (control?.value ?? ""),
+            ];
+          }),
+        );
+
+        onSubmit(values);
+        form.reset();
       }}
     >
       {(title || description) && (

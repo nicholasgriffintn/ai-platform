@@ -7,7 +7,6 @@ import {
 } from "@ngriffin_uk/polychat-library-sites";
 import type {
   SiteDataResponse,
-  SiteDataAction,
   SiteBrowserEvidence,
   SiteBuildRequest,
   SiteBuildResponse,
@@ -35,8 +34,6 @@ import { runSiteImageGeneration } from "../lib/sites/site-image-generation.js";
 export const SITES_QUERY_KEYS = {
   root: ["sites"] as const,
   list: (projectId?: string) => [...SITES_QUERY_KEYS.root, projectId, "list"] as const,
-  data: (projectId?: string, id?: string, revision?: number) =>
-    [...SITES_QUERY_KEYS.detail(projectId, id), "data", revision] as const,
   detail: (projectId?: string, id?: string) =>
     [...SITES_QUERY_KEYS.root, projectId, "site", id] as const,
 };
@@ -63,7 +60,11 @@ export const useSite = (id?: string, projectId?: string) =>
 
 export const useSiteData = (site: SiteRecord | null, enabled = true) =>
   useQuery<SiteDataResponse>({
-    queryKey: SITES_QUERY_KEYS.data(site?.projectId ?? undefined, site?.id, site?.revision),
+    queryKey: [
+      ...SITES_QUERY_KEYS.detail(site?.projectId ?? undefined, site?.id),
+      "data",
+      site?.revision,
+    ],
     queryFn: () => {
       if (!site) {
         throw new Error("Save the site first");
@@ -74,63 +75,8 @@ export const useSiteData = (site: SiteRecord | null, enabled = true) =>
         expectedRevision: site.revision,
       });
     },
-    enabled:
-      enabled &&
-      Boolean(
-        site &&
-        (Object.keys(site.project.dataBindings ?? {}).length ||
-          Object.keys(site.project.collections ?? {}).length),
-      ),
+    enabled: enabled && Boolean(site && Object.keys(site.project.dataBindings ?? {}).length),
   });
-
-export const useSiteDataAction = (site: SiteRecord | null) => {
-  const client = useQueryClient();
-
-  return useMutation<SiteDataResponse, Error, SiteDataAction>({
-    mutationFn: async (operation) => {
-      if (!site) {
-        throw new Error("Save the site first");
-      }
-
-      const data = await sitesService.dataAction(site.id, {
-        projectId: site.projectId ?? undefined,
-        expectedRevision: site.revision,
-        operation,
-      });
-
-      client.setQueryData(
-        SITES_QUERY_KEYS.data(site.projectId ?? undefined, site.id, data.revision),
-        data,
-      );
-
-      return data;
-    },
-  });
-};
-
-export const useSiteStorage = (site: SiteRecord | null) => {
-  const client = useQueryClient();
-
-  return useMutation<void, Error, boolean>({
-    mutationFn: async (enabled) => {
-      if (!site) {
-        throw new Error("Save the site first");
-      }
-
-      const scope = { projectId: site.projectId ?? undefined, expectedRevision: site.revision };
-
-      if (enabled) {
-        await sitesService.activateStorage(site.id, scope);
-      } else {
-        await sitesService.disableStorage(site.id, scope);
-      }
-
-      await client.invalidateQueries({
-        queryKey: SITES_QUERY_KEYS.data(site.projectId ?? undefined, site.id, site.revision),
-      });
-    },
-  });
-};
 
 export const useVerifySite = (site: SiteRecord | null) => {
   const client = useQueryClient();

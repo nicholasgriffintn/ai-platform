@@ -9,7 +9,6 @@ import { isRecord, safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import { useEffect, useMemo, type MouseEvent } from "react";
 import { createRoot } from "react-dom/client";
 
-import { createSitePreviewActions } from "./preview-actions.js";
 import {
   isSitePreviewRenderMessage,
   SITE_PREVIEW_CHANNEL,
@@ -40,11 +39,9 @@ function post(message: SitePreviewRuntimeMessage): void {
 function RuntimePreview({
   frameId,
   payload,
-  actions,
 }: {
   frameId: string;
   payload: SitePreviewRenderPayload;
-  actions: ReturnType<typeof createSitePreviewActions>;
 }) {
   const page = payload.pageId ? payload.project.pages[payload.pageId] : null;
   const boundState = useMemo(
@@ -84,12 +81,7 @@ function RuntimePreview({
         onClickCapture={handleInspect}
       >
         {page && payload.pageId ? (
-          <SiteRenderer
-            key={payload.pageId}
-            page={page}
-            boundState={boundState}
-            onDataAction={actions.invoke}
-          />
+          <SiteRenderer key={payload.pageId} page={page} boundState={boundState} />
         ) : null}
       </div>
       <SiteSelectionOverlay
@@ -116,9 +108,6 @@ function boot(): void {
   document.head.append(expressionStyles);
 
   const root = createRoot(mount);
-  const actions = createSitePreviewActions(frameId);
-
-  window.addEventListener("pagehide", () => actions.dispose(), { once: true });
 
   const initial = safeParseJson<unknown>(
     document.getElementById("site-initial-document")?.textContent ?? "",
@@ -135,7 +124,6 @@ function boot(): void {
       root.render(
         <RuntimePreview
           frameId={frameId}
-          actions={actions}
           payload={{
             project: project.data,
             pageId: initial.pageId,
@@ -149,7 +137,6 @@ function boot(): void {
   }
 
   window.addEventListener("message", (event) => {
-    actions.handleMessage(event);
     if (event.source !== window.parent || !isSitePreviewRenderMessage(event.data)) {
       return;
     }
@@ -158,9 +145,7 @@ function boot(): void {
       return;
     }
 
-    root.render(
-      <RuntimePreview frameId={frameId} payload={event.data.payload} actions={actions} />,
-    );
+    root.render(<RuntimePreview frameId={frameId} payload={event.data.payload} />);
   });
 
   post({ channel: SITE_PREVIEW_CHANNEL, type: "ready", frameId });

@@ -6,8 +6,6 @@ import {
   siteConnectorSnapshotRequestSchema,
   siteSourceRefreshRequestSchema,
   siteDataResponseSchema,
-  siteDataRequestSchema,
-  siteRuntimeStatusSchema,
   siteIntegrationScopeSchema,
   listSitesQuerySchema,
   siteBuildRequestSchema,
@@ -42,12 +40,7 @@ import { streamSiteGeneration } from "~/modules/sites/application/generate";
 import { streamSiteImages } from "~/modules/sites/application/images";
 import { openSitePullRequest } from "~/modules/sites/application/pull-request";
 import { deleteSite, getSite, listSites } from "~/modules/sites/application/records";
-import {
-  activateSiteRuntime,
-  disableSiteRuntime,
-  executeSiteDataAction,
-  readSiteData,
-} from "~/modules/sites/application/runtime";
+import { readSiteData } from "~/modules/sites/application/runtime";
 import { readSharedSiteImage } from "~/modules/sites/application/shared-images";
 import {
   projectScopeQuerySchema,
@@ -347,36 +340,6 @@ addRoute(app, "post", "/:id/data/refresh", {
   }),
 });
 
-addRoute(app, "post", "/:id/data/actions", {
-  tags: ["sites"],
-  summary: "Update saved site records",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: siteDataRequestSchema,
-  responses: { 200: { description: "Site data", schema: siteDataResponseSchema } },
-  handler: ({ params, body, serviceContext }) =>
-    executeSiteDataAction(serviceContext, params.id, body),
-});
-addRoute(app, "post", "/:id/runtime", {
-  tags: ["sites"],
-  summary: "Enable saved records for this revision",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: siteIntegrationScopeSchema,
-  responses: { 200: { description: "Storage status", schema: siteRuntimeStatusSchema } },
-  handler: ({ params, body, serviceContext }) =>
-    activateSiteRuntime(serviceContext, params.id, body),
-});
-addRoute(app, "post", "/:id/runtime/disable", {
-  tags: ["sites"],
-  summary: "Disable saved records",
-  auth: true,
-  paramSchema: siteParamsSchema,
-  bodySchema: siteIntegrationScopeSchema,
-  responses: { 200: { description: "Storage status", schema: siteRuntimeStatusSchema } },
-  handler: ({ params, body, serviceContext }) =>
-    disableSiteRuntime(serviceContext, params.id, body),
-});
 addRoute(app, "post", "/:id/verify", {
   tags: ["sites"],
   summary: "Verify a site revision in desktop and mobile browsers",

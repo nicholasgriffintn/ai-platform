@@ -1,46 +1,13 @@
 import {
-  siteCollectionSchema,
   siteDataBindingSchema,
   siteDataFieldNameSchema,
   siteDataIdentifierSchema,
-  type SiteCollection,
-  type SiteCollectionRecord,
   type SiteIssue,
   type SiteProject,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { getStatePath } from "./state.js";
-
-export function validateSiteCollectionValues(
-  collection: SiteCollection,
-  values: SiteCollectionRecord["values"],
-): string | null {
-  for (const key of Object.keys(values)) {
-    if (!Object.hasOwn(collection.fields, key)) {
-      return `Unknown field: ${key}`;
-    }
-  }
-
-  for (const [key, field] of Object.entries(collection.fields)) {
-    const value = values[key];
-
-    if (value === undefined) {
-      if (field.required) {
-        return `Required field: ${key}`;
-      }
-    } else if (
-      typeof value !== field.type ||
-      (typeof value === "number" && !Number.isFinite(value))
-    ) {
-      return `Invalid ${field.type} field: ${key}`;
-    } else if (field.required && typeof value === "string" && !value.trim()) {
-      return `Required field: ${key}`;
-    }
-  }
-
-  return null;
-}
 
 export function normaliseSiteSourceRows(
   value: unknown,
@@ -85,30 +52,10 @@ export function normaliseSiteSourceRows(
 
 export function normaliseSiteIntegrations(raw: Record<string, unknown>, project: SiteProject) {
   const issues: SiteIssue[] = [];
-  const collections: NonNullable<SiteProject["collections"]> = {};
   const dataBindings: NonNullable<SiteProject["dataBindings"]> = {};
-
-  if (raw.collections !== undefined && !isRecord(raw.collections)) {
-    issues.push({ severity: "error", message: "Collections must be an object" });
-  }
 
   if (raw.dataBindings !== undefined && !isRecord(raw.dataBindings)) {
     issues.push({ severity: "error", message: "Data bindings must be an object" });
-  }
-
-  for (const [id, definition] of Object.entries(isRecord(raw.collections) ? raw.collections : {})) {
-    const parsed = siteCollectionSchema.safeParse(definition);
-
-    if (
-      !siteDataIdentifierSchema.safeParse(id).success ||
-      !parsed.success ||
-      Object.keys(collections).length >= 20
-    ) {
-      issues.push({ severity: "error", message: `Invalid collection: ${id}` });
-      continue;
-    }
-
-    collections[id] = parsed.data;
   }
 
   for (const [id, definition] of Object.entries(
@@ -127,13 +74,10 @@ export function normaliseSiteIntegrations(raw: Record<string, unknown>, project:
 
     const binding = parsed.data;
 
-    if (
-      !Object.hasOwn(project.pages, binding.pageId) ||
-      (binding.kind === "collection" && !Object.hasOwn(collections, binding.collectionId))
-    ) {
+    if (!Object.hasOwn(project.pages, binding.pageId)) {
       issues.push({
         severity: "error",
-        message: `Data binding ${id} references a missing page or collection`,
+        message: `Data binding ${id} references a missing page`,
       });
       continue;
     }
@@ -155,7 +99,6 @@ export function normaliseSiteIntegrations(raw: Record<string, unknown>, project:
   }
 
   return {
-    collections: raw.collections === undefined ? undefined : collections,
     dataBindings: raw.dataBindings === undefined ? undefined : dataBindings,
     issues,
   };

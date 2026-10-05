@@ -1,8 +1,4 @@
-import {
-  sitePreviewDataActionMessageSchema,
-  type SitePreviewDataActionMessage,
-  type SiteProject,
-} from "@ngriffin_uk/polychat-schemas";
+import type { SiteProject } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export const SITE_PREVIEW_CHANNEL = "polychat-site-preview";
@@ -45,10 +41,7 @@ export interface SitePreviewSelectMessage {
 export type SitePreviewRuntimeMessage =
   | SitePreviewReadyMessage
   | SitePreviewNavigateMessage
-  | SitePreviewSelectMessage
-  | SitePreviewDataActionMessage;
-
-export type { SitePreviewDataActionMessage };
+  | SitePreviewSelectMessage;
 
 export function isSitePreviewRenderMessage(value: unknown): value is SitePreviewRenderMessage {
   return (
@@ -76,10 +69,6 @@ export function isSitePreviewRuntimeMessage(value: unknown): value is SitePrevie
 
   if (value.type === "navigate") {
     return typeof value.path === "string";
-  }
-
-  if (value.type === "data-action") {
-    return sitePreviewDataActionMessageSchema.safeParse(value).success;
   }
 
   return value.type === "select" && (typeof value.key === "string" || value.key === null);

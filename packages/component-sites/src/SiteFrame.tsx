@@ -1,11 +1,9 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import { buildSiteGoogleFontsUrl } from "@ngriffin_uk/polychat-library-sites";
-import type { SiteDataAction } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useId, useMemo, useState } from "react";
 
 import SITE_PREVIEW_RUNTIME_URL from "../dist/preview-runtime.global.js?url";
 import { buildSiteFrameDocument } from "./frame-document.js";
-import { respondToSiteDataAction } from "./preview-actions.js";
 import {
   isSitePreviewRuntimeMessage,
   SITE_PREVIEW_CHANNEL,
@@ -22,7 +20,6 @@ export interface SiteFrameProps {
   className?: string;
   onNavigate?: (path: string) => void;
   onSelect?: (key: string | null) => void;
-  onDataAction?: (action: SiteDataAction) => Promise<unknown>;
 }
 
 export function SiteFrame({
@@ -32,7 +29,6 @@ export function SiteFrame({
   className,
   onNavigate,
   onSelect,
-  onDataAction,
 }: SiteFrameProps) {
   const reactId = useId();
   const frameId = `site-frame-${reactId.replaceAll(":", "")}`;
@@ -78,8 +74,6 @@ export function SiteFrame({
         sendRender();
       } else if (event.data.type === "navigate") {
         onNavigate?.(event.data.path);
-      } else if (event.data.type === "data-action") {
-        void respondToSiteDataAction(frame, event.data, onDataAction);
       } else {
         onSelect?.(event.data.key);
       }
@@ -89,7 +83,7 @@ export function SiteFrame({
     sendRender();
 
     return () => window.removeEventListener("message", handleMessage);
-  }, [frame, frameId, onNavigate, onSelect, onDataAction, payload]);
+  }, [frame, frameId, onNavigate, onSelect, payload]);
 
   return (
     <iframe

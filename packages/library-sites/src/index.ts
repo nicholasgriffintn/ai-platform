@@ -143,7 +143,6 @@ export {
 
 export {
   normaliseSiteSourceRows,
-  validateSiteCollectionValues,
   projectSiteSourceRows,
   normaliseSiteIntegrations,
   getSitePageBoundState,
