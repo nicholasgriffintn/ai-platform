@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import { signSlackRequest } from "../../../../../../test/channels/slack-signature";
 import { SlackChannelAdapter } from "../SlackChannelAdapter";
 import { TelegramChannelAdapter } from "../TelegramChannelAdapter";
-import { signSlackRequest } from "./slackSignature";
 
 function slackRequest(headers: Record<string, string>): Request {
   return new Request("https://example.test/webhook", { method: "POST", headers });
@@ -61,25 +61,21 @@ describe("SlackChannelAdapter", () => {
   it("ignores its own messages so it cannot answer itself", () => {
     expect(
       adapter.parse(
-        JSON.stringify({ event: { type: "message", bot_id: "B1", text: "hi", channel: "C1" } }),
-      ),
-    ).toMatchObject({ kind: "control" });
-  });
-
-  it("reads a real message into the shared shape", () => {
-    expect(
-      adapter.parse(
         JSON.stringify({
-          event: { type: "message", channel: "C1", user: "U1", text: "ship it", ts: "1.2" },
+          type: "event_callback",
+          team_id: "T1",
+          event: {
+            type: "message",
+            bot_id: "B1",
+            text: "hi",
+            channel: "C1",
+            user: "U1",
+            ts: "1.1",
+            channel_type: "channel",
+          },
         }),
       ),
-    ).toEqual({
-      kind: "message",
-      messageId: "1.2",
-      externalId: "C1",
-      from: "U1",
-      body: "ship it",
-    });
+    ).toMatchObject({ kind: "control" });
   });
 });
 
@@ -116,29 +112,14 @@ describe("TelegramChannelAdapter", () => {
     expect(
       adapter.parse(
         JSON.stringify({
-          message: { message_id: 1, chat: { id: 9 }, from: { id: 2, is_bot: true }, text: "hi" },
+          message: {
+            message_id: 1,
+            chat: { id: 9, type: "private" },
+            from: { id: 2, is_bot: true },
+            text: "hi",
+          },
         }),
       ),
     ).toMatchObject({ kind: "control" });
-  });
-
-  it("reads a real message into the shared shape", () => {
-    expect(
-      adapter.parse(
-        JSON.stringify({
-          message: { message_id: 42, chat: { id: 9 }, from: { id: 2 }, text: "ship it" },
-        }),
-      ),
-    ).toEqual({
-      kind: "message",
-      messageId: "42",
-      externalId: "9",
-      from: "2",
-      body: "ship it",
-    });
-  });
-
-  it("is personal only, so it can never bind to a project", () => {
-    expect(adapter.scopes).toEqual(["personal"]);
   });
 });

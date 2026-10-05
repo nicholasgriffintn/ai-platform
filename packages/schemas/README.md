@@ -2,6 +2,10 @@
 
 Shared Zod schemas for the Assistant application. This package provides reusable type definitions and validation schemas used across the web, API, and other applications in the workspace.
 
+## Channel senders
+
+Apply migration `0059_channel_sender_verification` before deploying. Reconnect existing Slack bindings with `workspaceId:channelId` and link each sender through a private bot message. Revocation blocks queued messages and pending replies; it does not undo completed work.
+
 ## Installation
 
 This package is part of the monorepo and should be installed via the workspace:
