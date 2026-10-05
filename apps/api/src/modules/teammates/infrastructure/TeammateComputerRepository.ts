@@ -3,6 +3,7 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { TeammateComputerRow } from "~/infrastructure/database/schema";
+import { teammateComputerColumns } from "~/infrastructure/database/teammate-computer-storage";
 import type { IEnv } from "~/types";
 
 export interface TeammateComputerRecord extends TeammateComputer {
@@ -40,7 +41,7 @@ function formatComputer(row: TeammateComputerRow): TeammateComputerRecord {
 export class TeammateComputerRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async getByContextId(contextId: string): Promise<TeammateComputerRecord | null> {
     const row = await this.runQuery<TeammateComputerRow>(
-      "SELECT * FROM teammate_computer WHERE context_id = ?",
+      `SELECT ${teammateComputerColumns} FROM teammate_context WHERE id = ? AND computer_id IS NOT NULL`,
       [contextId],
       true,
     );
@@ -50,9 +51,11 @@ export class TeammateComputerRepository extends BaseRepository<Pick<IEnv, "DB">>
 
   async ensure(contextId: string, provider: string): Promise<TeammateComputerRecord> {
     await this.runQuery<TeammateComputerRow>(
-      `INSERT OR IGNORE INTO teammate_computer (id, context_id, provider)
-       VALUES (?, ?, ?)`,
-      [`teammate_computer_${generateId()}`, contextId, provider],
+      `UPDATE teammate_context SET computer_id = ?, computer_provider = ?,
+       computer_status = 'stopped', computer_lease_fence = 0,
+       computer_created_at = CURRENT_TIMESTAMP, computer_updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND computer_id IS NULL`,
+      [`teammate_computer_${generateId()}`, provider, contextId],
       true,
     );
     const computer = await this.getByContextId(contextId);
@@ -73,13 +76,13 @@ export class TeammateComputerRepository extends BaseRepository<Pick<IEnv, "DB">>
     expectedFence?: number;
   }): Promise<TeammateComputerRecord | null> {
     const row = await this.runQuery<TeammateComputerRow>(
-      `UPDATE teammate_computer
-       SET status = ?,
-           provider_handle = CASE WHEN ? THEN ? ELSE provider_handle END,
-           checkpoint_reference = CASE WHEN ? THEN ? ELSE checkpoint_reference END,
-           last_error = ?, updated_at = CURRENT_TIMESTAMP
-       WHERE id = ? AND (? IS NULL OR lease_fence = ?)
-       RETURNING *`,
+      `UPDATE teammate_context
+       SET computer_status = ?,
+           computer_provider_handle = CASE WHEN ? THEN ? ELSE computer_provider_handle END,
+           computer_checkpoint_reference = CASE WHEN ? THEN ? ELSE computer_checkpoint_reference END,
+           computer_last_error = ?, computer_updated_at = CURRENT_TIMESTAMP
+       WHERE computer_id = ? AND (? IS NULL OR computer_lease_fence = ?)
+       RETURNING ${teammateComputerColumns}`,
       [
         params.status,
         params.providerHandle !== undefined,
@@ -99,15 +102,15 @@ export class TeammateComputerRepository extends BaseRepository<Pick<IEnv, "DB">>
 
   async claimProvisioning(id: string): Promise<TeammateComputerRecord | null> {
     const row = await this.runQuery<TeammateComputerRow>(
-      `UPDATE teammate_computer
-       SET status = 'provisioning', last_error = NULL, updated_at = CURRENT_TIMESTAMP
-       WHERE id = ?
+      `UPDATE teammate_context
+       SET computer_status = 'provisioning', computer_last_error = NULL, computer_updated_at = CURRENT_TIMESTAMP
+       WHERE computer_id = ?
          AND (
-           status IN ('stopped', 'error', 'destroyed')
-           OR (status = 'provisioning' AND updated_at <= datetime('now', '-5 minutes'))
+           computer_status IN ('stopped', 'error', 'destroyed')
+           OR (computer_status = 'provisioning' AND computer_updated_at <= datetime('now', '-5 minutes'))
          )
-         AND (lease_expires_at IS NULL OR lease_expires_at <= CURRENT_TIMESTAMP)
-       RETURNING *`,
+         AND (computer_lease_expires_at IS NULL OR computer_lease_expires_at <= CURRENT_TIMESTAMP)
+       RETURNING ${teammateComputerColumns}`,
       [id],
       true,
     );
@@ -123,18 +126,18 @@ export class TeammateComputerRepository extends BaseRepository<Pick<IEnv, "DB">>
     now: string;
   }): Promise<TeammateComputerRecord | null> {
     const row = await this.runQuery<TeammateComputerRow>(
-      `UPDATE teammate_computer
-       SET lease_kind = ?, lease_owner_id = ?, lease_expires_at = ?,
-           lease_fence = lease_fence + 1,
-           status = CASE
+      `UPDATE teammate_context
+       SET computer_lease_kind = ?, computer_lease_owner_id = ?, computer_lease_expires_at = ?,
+           computer_lease_fence = computer_lease_fence + 1,
+           computer_status = CASE
              WHEN ? = 'user' THEN 'takeover'
-             WHEN status = 'takeover' THEN 'ready'
-             ELSE status
+             WHEN computer_status = 'takeover' THEN 'ready'
+             ELSE computer_status
            END,
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = ? AND status != 'destroyed'
-         AND (lease_expires_at IS NULL OR lease_expires_at <= ? OR lease_owner_id = ?)
-       RETURNING *`,
+           computer_updated_at = CURRENT_TIMESTAMP
+       WHERE computer_id = ? AND computer_status != 'destroyed'
+         AND (computer_lease_expires_at IS NULL OR computer_lease_expires_at <= ? OR computer_lease_owner_id = ?)
+       RETURNING ${teammateComputerColumns}`,
       [
         params.kind,
         params.ownerId,
@@ -156,11 +159,11 @@ export class TeammateComputerRepository extends BaseRepository<Pick<IEnv, "DB">>
     expiresAt: string;
   }): Promise<TeammateComputerRecord | null> {
     const row = await this.runQuery<TeammateComputerRow>(
-      `UPDATE teammate_computer
-       SET lease_kind = 'user', lease_owner_id = ?, lease_expires_at = ?,
-           lease_fence = lease_fence + 1, updated_at = CURRENT_TIMESTAMP
-       WHERE id = ? AND status != 'destroyed'
-       RETURNING *`,
+      `UPDATE teammate_context
+       SET computer_lease_kind = 'user', computer_lease_owner_id = ?, computer_lease_expires_at = ?,
+           computer_lease_fence = computer_lease_fence + 1, computer_updated_at = CURRENT_TIMESTAMP
+       WHERE computer_id = ? AND computer_status != 'destroyed'
+       RETURNING ${teammateComputerColumns}`,
       [params.ownerId, params.expiresAt, params.id],
       true,
     );
@@ -174,12 +177,12 @@ export class TeammateComputerRepository extends BaseRepository<Pick<IEnv, "DB">>
     fence: number;
   }): Promise<TeammateComputerRecord | null> {
     const row = await this.runQuery<TeammateComputerRow>(
-      `UPDATE teammate_computer
-       SET lease_kind = NULL, lease_owner_id = NULL, lease_expires_at = NULL,
-           status = CASE WHEN status = 'takeover' THEN 'ready' ELSE status END,
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = ? AND lease_owner_id = ? AND lease_fence = ?
-       RETURNING *`,
+      `UPDATE teammate_context
+       SET computer_lease_kind = NULL, computer_lease_owner_id = NULL, computer_lease_expires_at = NULL,
+           computer_status = CASE WHEN computer_status = 'takeover' THEN 'ready' ELSE computer_status END,
+           computer_updated_at = CURRENT_TIMESTAMP
+       WHERE computer_id = ? AND computer_lease_owner_id = ? AND computer_lease_fence = ?
+       RETURNING ${teammateComputerColumns}`,
       [params.id, params.ownerId, params.fence],
       true,
     );

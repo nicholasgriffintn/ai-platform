@@ -28,8 +28,7 @@ import type { IEnv } from "~/types";
  */
 const INBOX_SOURCE = `FROM project_task pt
        JOIN project p ON p.id = pt.project_id
-       JOIN workspace_member member
-         ON member.workspace_id = pt.workspace_id AND member.user_id = ?
+       JOIN resource_grant member ON member.kind = 'membership' AND member.workspace_id = pt.workspace_id AND member.user_id = ?
        LEFT JOIN user_resource_state receipt
          ON receipt.user_id = ?
         AND receipt.task_id = pt.id
@@ -310,8 +309,7 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
            ${action === "read" ? "CURRENT_TIMESTAMP" : "NULL"},
            ${action === "dismiss" ? "CURRENT_TIMESTAMP" : "NULL"}
          FROM project_task pt
-         JOIN workspace_member member
-           ON member.workspace_id = pt.workspace_id AND member.user_id = ?
+         JOIN resource_grant member ON member.kind = 'membership' AND member.workspace_id = pt.workspace_id AND member.user_id = ?
          WHERE pt.id = ? AND pt.attention_version = ?
            AND (
              pt.status IN ('blocked', 'review')
@@ -407,8 +405,8 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
          task.assignee_user_id AS task_assignee_user_id,
          task.created_by_user_id AS task_created_by_user_id,
          EXISTS(
-           SELECT 1 FROM workspace_member member
-           WHERE member.workspace_id = task.workspace_id AND member.user_id = delivery.user_id
+           SELECT 1 FROM resource_grant member
+           WHERE member.kind = 'membership' AND member.workspace_id = task.workspace_id AND member.user_id = delivery.user_id
          ) AS has_workspace_access,
          COALESCE(json_extract(preference.task_notification_preferences, '$.enabled'), 1) AS preference_enabled,
          COALESCE(json_extract(preference.task_notification_preferences, '$.decisions'), 1) AS preference_decisions,

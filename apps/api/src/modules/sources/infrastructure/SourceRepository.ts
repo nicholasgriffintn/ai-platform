@@ -3,6 +3,11 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import {
+  sourceResourceSql,
+  sourceResourceColumns,
+  resourceScope,
+} from "~/infrastructure/database/resource-storage";
 
 import { sourceVisibilitySql } from "./source-visibility";
 
@@ -93,16 +98,17 @@ export class SourceRepository extends BaseRepository {
     metadata: Record<string, unknown>;
   }): Promise<void> {
     const result = await this.executeRun(
-      `INSERT INTO source (id, created_by_user_id, project_id, kind, title, status, content, metadata)
-      VALUES (?, ?, ?, 'repository', ?, 'available', ?, ?)
-      ON CONFLICT(id) DO UPDATE SET title = excluded.title, status = 'available', content = excluded.content,
+      `INSERT INTO resource AS source (resource_type, id, created_by_user_id, scope_type, scope_id, kind, title, status, content, metadata)
+      VALUES ('source', ?, ?, ?, ?, 'repository', ?, 'available', ?, ?)
+      ON CONFLICT(resource_type, id) DO UPDATE SET title = excluded.title, status = 'available', content = excluded.content,
         metadata = excluded.metadata, updated_at = CURRENT_TIMESTAMP
       WHERE source.created_by_user_id = excluded.created_by_user_id
         AND source.project_id IS excluded.project_id AND source.kind = 'repository'`,
       [
         input.id,
         input.userId,
-        input.projectId ?? null,
+        input.projectId ? "project" : "personal",
+        input.projectId ?? String(input.userId),
         input.title,
         input.content,
         JSON.stringify(input.metadata),
@@ -121,7 +127,7 @@ export class SourceRepository extends BaseRepository {
   ): Promise<void> {
     await this.selectInChunks(ids, async (page) => {
       await this.executeRun(
-        `DELETE FROM source WHERE created_by_user_id = ? AND project_id IS ? AND id IN (${page.map(() => "?").join(", ")})`,
+        `DELETE FROM resource WHERE resource_type = 'source' AND created_by_user_id = ? AND project_id IS ? AND id IN (${page.map(() => "?").join(", ")})`,
         [userId, projectId, ...page],
       );
 
@@ -143,11 +149,12 @@ export class SourceRepository extends BaseRepository {
     input: CreateSourceRecord,
   ): Promise<{ source: SourceRecord; created: boolean }> {
     const insert = this.buildInsertQuery(
-      "source",
+      "resource",
       {
+        resource_type: "source",
         id: input.id ?? generateId(),
         created_by_user_id: input.createdByUserId,
-        project_id: input.projectId ?? null,
+        ...resourceScope(input.createdByUserId, input.projectId),
         conversation_id: input.conversationId ?? null,
         connection_id: input.connectionId ?? null,
         kind: input.kind,
@@ -163,7 +170,7 @@ export class SourceRepository extends BaseRepository {
         filename: input.filename ?? null,
         byte_size: input.byteSize ?? null,
       },
-      { jsonFields: ["metadata"], returning: "*" },
+      { jsonFields: ["metadata"], returning: sourceResourceColumns },
     );
 
     if (!insert) {
@@ -172,7 +179,10 @@ export class SourceRepository extends BaseRepository {
 
     const source = await this.runQuery<SourceRecord>(
       input.id
-        ? insert.query.replace(" RETURNING ", " ON CONFLICT(id) DO NOTHING RETURNING ")
+        ? insert.query.replace(
+            " RETURNING ",
+            " ON CONFLICT(resource_type, id) DO NOTHING RETURNING ",
+          )
         : insert.query,
       insert.values,
       true,
@@ -202,7 +212,7 @@ export class SourceRepository extends BaseRepository {
   async getSourcesByIds(sourceIds: readonly string[]): Promise<SourceRecord[]> {
     return this.selectInChunks(sourceIds, (page) =>
       this.runQuery<SourceRecord>(
-        `SELECT * FROM source WHERE id IN (${page.map(() => "?").join(", ")}) AND ${sourceVisibilitySql("source")}`,
+        `SELECT * FROM ${sourceResourceSql} source WHERE id IN (${page.map(() => "?").join(", ")}) AND ${sourceVisibilitySql("source")}`,
         page,
       ),
     );
@@ -252,10 +262,10 @@ export class SourceRepository extends BaseRepository {
     },
   ): Promise<void> {
     const result = this.buildUpdateQuery(
-      "source",
+      "resource",
       updates,
       ["title", "status", "content", "metadata"],
-      "id = ?",
+      "resource_type = 'source' AND id = ?",
       [sourceId],
       { jsonFields: ["metadata"] },
     );
@@ -275,9 +285,9 @@ export class SourceRepository extends BaseRepository {
     }
 
     const result = await this.executeRun(
-      `UPDATE source
+      `UPDATE resource
           SET status = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ? AND status IN (${expectedStatuses.map(() => "?").join(", ")})`,
+        WHERE resource_type = 'source' AND id = ? AND status IN (${expectedStatuses.map(() => "?").join(", ")})`,
       [status, sourceId, ...expectedStatuses],
     );
 
@@ -302,7 +312,10 @@ export class SourceRepository extends BaseRepository {
   }
 
   async deleteSource(sourceId: string): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("source", { id: sourceId });
+    const { query, values } = this.buildDeleteQuery("resource", {
+      resource_type: "source",
+      id: sourceId,
+    });
 
     await this.executeRun(query, values);
   }
@@ -398,7 +411,7 @@ export class SourceRepository extends BaseRepository {
 
   async listCollectionSources(collectionId: string): Promise<SourceRecord[]> {
     return this.runQuery<SourceRecord>(
-      `SELECT s.* FROM source s
+      `SELECT s.* FROM ${sourceResourceSql} s
 			 JOIN resource_link scm ON scm.kind = 'source_collection' AND scm.source_id = s.id
 			 WHERE scm.collection_id = ? AND ${sourceVisibilitySql("s")}
 			 ORDER BY s.updated_at DESC, s.created_at DESC`,
@@ -458,7 +471,11 @@ export class SourceRepository extends BaseRepository {
   }
 
   private async selectOne(conditions: Record<string, unknown>): Promise<SourceRecord | null> {
-    const { query, values } = this.buildSelectQuery("source", conditions);
+    const { query, values } = this.buildSelectQuery(
+      "resource",
+      { ...conditions, resource_type: "source" },
+      { columns: sourceResourceColumns.split(", ") },
+    );
 
     return this.runQuery<SourceRecord>(
       `SELECT source.* FROM (${query}) source WHERE ${sourceVisibilitySql("source")}`,
@@ -468,9 +485,14 @@ export class SourceRepository extends BaseRepository {
   }
 
   private async selectMany(conditions: Record<string, unknown>): Promise<SourceRecord[]> {
-    const { query, values } = this.buildSelectQuery("source", conditions, {
-      orderBy: "updated_at DESC, created_at DESC",
-    });
+    const { query, values } = this.buildSelectQuery(
+      "resource",
+      { ...conditions, resource_type: "source" },
+      {
+        columns: sourceResourceColumns.split(", "),
+        orderBy: "updated_at DESC, created_at DESC",
+      },
+    );
 
     return this.runQuery<SourceRecord>(
       `SELECT source.* FROM (${query}) source WHERE ${sourceVisibilitySql("source")} ORDER BY source.updated_at DESC, source.created_at DESC`,
@@ -481,10 +503,14 @@ export class SourceRepository extends BaseRepository {
   private async selectSummaries(
     conditions: Record<string, unknown>,
   ): Promise<SourceSummaryRecord[]> {
-    const { query, values } = this.buildSelectQuery("source", conditions, {
-      columns: [...SOURCE_SUMMARY_COLUMNS],
-      orderBy: "updated_at DESC, created_at DESC",
-    });
+    const { query, values } = this.buildSelectQuery(
+      "resource",
+      { ...conditions, resource_type: "source" },
+      {
+        columns: [...SOURCE_SUMMARY_COLUMNS],
+        orderBy: "updated_at DESC, created_at DESC",
+      },
+    );
 
     return this.runQuery<SourceSummaryRecord>(
       `SELECT ${SOURCE_SUMMARY_COLUMNS.join(", ")} FROM (${query}) source WHERE ${sourceVisibilitySql("source")} ORDER BY source.updated_at DESC, source.created_at DESC`,
@@ -500,7 +526,7 @@ export class SourceRepository extends BaseRepository {
       `SELECT sc.*, COUNT(s.id) AS source_count
 			 FROM resource_collection sc
 			 LEFT JOIN resource_link scm ON scm.kind = 'source_collection' AND scm.collection_id = sc.id
-         LEFT JOIN source s ON s.id = scm.source_id AND ${sourceVisibilitySql("s")}
+         LEFT JOIN ${sourceResourceSql} s ON s.id = scm.source_id AND ${sourceVisibilitySql("s")}
 			 WHERE sc.collection_type = 'source' AND ${where}
 			 GROUP BY sc.id
 			 ORDER BY sc.updated_at DESC, sc.created_at DESC`,

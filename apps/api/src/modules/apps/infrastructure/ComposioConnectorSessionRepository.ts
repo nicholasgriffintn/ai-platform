@@ -85,8 +85,9 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
     expiresAt: string;
   }): Promise<ComposioConnectorSessionRecord> {
     const insert = this.buildInsertQuery(
-      "composio_connector_session",
+      "provider_session",
       {
+        session_type: "connector",
         id: generatePrefixedId("ccs_"),
         remote_session_id: input.remoteSessionId,
         kind: input.kind,
@@ -137,9 +138,9 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
     claimedAt: string;
   }): Promise<ComposioConnectorSessionRecord | null> {
     const result = await this.runQuery<ComposioConnectorSession>(
-      `UPDATE composio_connector_session
+      `UPDATE provider_session
 			 SET state = 'claimed', claimed_at = COALESCE(claimed_at, ?)
-			 WHERE id = ? AND user_id = ? AND provider = ? AND kind = 'tool'
+			 WHERE session_type = 'connector' AND id = ? AND user_id = ? AND provider = ? AND kind = 'tool'
 			   AND state IN ('active', 'claimed') AND expires_at > ?
 			   AND run_id = ? AND completion_id = ?
 			   AND recipe_id IS ? AND installation_id IS ?
@@ -171,20 +172,20 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
 
   async markCleanupPending(input: { id: string; cleanupAfter: string }): Promise<void> {
     await this.executeRun(
-      `UPDATE composio_connector_session
+      `UPDATE provider_session
 			 SET state = 'cleanup_pending', cleanup_attempts = cleanup_attempts + 1,
 			     cleanup_after = ?
-			 WHERE id = ?`,
+			 WHERE session_type = 'connector' AND id = ?`,
       [input.cleanupAfter, input.id],
     );
   }
 
   async markRunCleanupPending(input: { runId: string; cleanupAfter: string }): Promise<void> {
     await this.executeRun(
-      `UPDATE composio_connector_session
+      `UPDATE provider_session
        SET state = 'cleanup_pending', cleanup_attempts = cleanup_attempts + 1,
            cleanup_after = ?
-       WHERE run_id = ? AND state IN ('active', 'claimed')`,
+       WHERE session_type = 'connector' AND run_id = ? AND state IN ('active', 'claimed')`,
       [input.cleanupAfter, input.runId],
     );
   }
@@ -197,10 +198,10 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
     }
 
     await this.executeRun(
-      `UPDATE composio_connector_session
+      `UPDATE provider_session
        SET state = 'cleanup_pending', cleanup_attempts = cleanup_attempts + 1,
            cleanup_after = ?
-       WHERE teammate_context_id IN (${ids.map(() => "?").join(", ")})
+       WHERE session_type = 'connector' AND teammate_context_id IN (${ids.map(() => "?").join(", ")})
          AND state IN ('active', 'claimed')`,
       [cleanupAfter, ...ids],
     );
@@ -212,9 +213,9 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
     leaseUntil: string;
   }): Promise<ComposioConnectorSessionRecord | null> {
     const result = await this.runQuery<ComposioConnectorSession>(
-      `UPDATE composio_connector_session
+      `UPDATE provider_session
 			 SET state = 'cleanup_pending', cleanup_after = ?
-			 WHERE id = ?
+			 WHERE session_type = 'connector' AND id = ?
 			   AND (expires_at <= ? OR (state = 'cleanup_pending' AND cleanup_after <= ?))
 			 RETURNING *`,
       [input.leaseUntil, input.id, input.now, input.now],
@@ -225,12 +226,15 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.executeRun("DELETE FROM composio_connector_session WHERE id = ?", [id]);
+    await this.executeRun(
+      "DELETE FROM provider_session WHERE session_type = 'connector' AND id = ?",
+      [id],
+    );
   }
 
   async getById(id: string): Promise<ComposioConnectorSessionRecord | null> {
     const result = await this.runQuery<ComposioConnectorSession>(
-      "SELECT * FROM composio_connector_session WHERE id = ?",
+      "SELECT * FROM provider_session WHERE session_type = 'connector' AND id = ?",
       [id],
       true,
     );
@@ -244,9 +248,9 @@ export class ComposioConnectorSessionRepository extends BaseRepository {
   }): Promise<ComposioConnectorSessionRecord[]> {
     const limit = Math.max(1, Math.min(100, Math.floor(input.limit)));
     const results = await this.runQuery<ComposioConnectorSession>(
-      `SELECT * FROM composio_connector_session
-			 WHERE expires_at <= ?
-			    OR (state = 'cleanup_pending' AND cleanup_after IS NOT NULL AND cleanup_after <= ?)
+      `SELECT * FROM provider_session
+			 WHERE session_type = 'connector' AND (expires_at <= ?
+			    OR (state = 'cleanup_pending' AND cleanup_after IS NOT NULL AND cleanup_after <= ?))
 			 ORDER BY CASE
 			   WHEN state = 'cleanup_pending' THEN COALESCE(cleanup_after, expires_at)
 			   ELSE expires_at

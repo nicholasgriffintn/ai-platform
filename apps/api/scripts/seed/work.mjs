@@ -212,11 +212,12 @@ export async function workStatements({ serverKey, teammates }) {
       created_at: created,
       updated_at: at({ days: 2 }),
     }),
-    insert("workspace_member", {
+    insert("resource_grant", {
+      kind: "membership",
       workspace_id: WORKSPACE_ID,
       user_id: OWNER.id,
       role: "owner",
-      joined_at: created,
+      created_at: created,
     }),
   );
   audit(statements, "workspace.created", "workspace", WORKSPACE_ID, OWNER.id, created, {
@@ -227,11 +228,12 @@ export async function workStatements({ serverKey, teammates }) {
     const joinedAt = at({ days: 50 - (colleague.id % 5) });
 
     statements.push(
-      insert("workspace_member", {
+      insert("resource_grant", {
+        kind: "membership",
         workspace_id: WORKSPACE_ID,
         user_id: colleague.id,
         role: colleague.role,
-        joined_at: joinedAt,
+        created_at: joinedAt,
       }),
     );
     audit(
@@ -246,26 +248,28 @@ export async function workStatements({ serverKey, teammates }) {
   }
 
   statements.push(
-    insert("workspace_invitation", {
+    insert("resource_grant", {
+      kind: "invitation",
       id: seedId("invitation", "pending"),
       workspace_id: WORKSPACE_ID,
       email: "sam@northstar.example",
       role: "member",
       token_hash: sha256Hex("polychat-seed-invite-sam"),
       status: "pending",
-      invited_by: OWNER.id,
+      created_by_user_id: OWNER.id,
       expires_at: ahead({ days: 6 }),
       created_at: at({ days: 1 }),
       updated_at: at({ days: 1 }),
     }),
-    insert("workspace_invitation", {
+    insert("resource_grant", {
+      kind: "invitation",
       id: seedId("invitation", "revoked"),
       workspace_id: WORKSPACE_ID,
       email: "contractor@example.com",
       role: "member",
       token_hash: sha256Hex("polychat-seed-invite-contractor"),
       status: "revoked",
-      invited_by: OWNER.id,
+      created_by_user_id: OWNER.id,
       expires_at: at({ days: 10 }),
       created_at: at({ days: 20 }),
       updated_at: at({ days: 12 }),
@@ -534,14 +538,16 @@ export async function workStatements({ serverKey, teammates }) {
     const documentId = seedId("project-memory", name);
 
     statements.push(
-      insert("memory_document", {
+      insert("resource", {
+        resource_type: "memory",
+        kind: "memory",
         id: documentId,
         scope_type: "project",
         scope_id: LAUNCH_PROJECT_ID,
-        name,
+        title: name,
         content,
         revision: 1,
-        created_by: OWNER.id,
+        created_by_user_id: OWNER.id,
         created_at: at({ days: 20 }),
         updated_at: at({ days: 4 }),
       }),
@@ -845,10 +851,12 @@ export async function workStatements({ serverKey, teammates }) {
       const outputId = seedId("output", `${runId}-logs`);
 
       statements.push(
-        insert("output", {
+        insert("resource", {
+          resource_type: "output",
           id: outputId,
           created_by_user_id: run.userId ?? OWNER.id,
-          project_id: LAUNCH_PROJECT_ID,
+          scope_type: "project",
+          scope_id: LAUNCH_PROJECT_ID,
           conversation_id: run.conversationId,
           capability_id: "sandbox",
           group_id: runId,
@@ -1201,7 +1209,9 @@ Start with Free. Upgrade when you hit the allowance.`,
       read_at: at({ days: 1 }),
       dismissed_at: at({ days: 1 }),
     }),
-    insert("connector_operation_approval", {
+    insert("approval", {
+      kind: "connector",
+      arguments_json: JSON.stringify({ channel: "#autumn-launch", text: "Tests are green" }),
       id: seedId("approval", "slack-post"),
       user_id: OWNER.id,
       run_id: `${runningThread.runId}`,

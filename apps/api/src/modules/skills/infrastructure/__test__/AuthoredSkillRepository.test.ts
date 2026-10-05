@@ -59,44 +59,104 @@ beforeEach(() => {
     CREATE TABLE project (
       id text PRIMARY KEY NOT NULL
     );
-    CREATE TABLE authored_skill (
-      id text PRIMARY KEY NOT NULL,
-      scope_type text NOT NULL,
-      scope_id text NOT NULL,
-      name text NOT NULL,
-      created_by integer NOT NULL REFERENCES user(id),
-      draft_revision_id text NOT NULL,
-      stable_revision_id text NOT NULL,
-      state_version integer DEFAULT 1 NOT NULL,
-      archived_at text,
-      created_at text NOT NULL,
-      updated_at text NOT NULL,
-      CONSTRAINT authored_skill_scope_type_check
-        CHECK(scope_type IN ('personal', 'project')),
-      CONSTRAINT authored_skill_state_version_check CHECK(state_version >= 1)
-    );
-    CREATE UNIQUE INDEX authored_skill_scope_name_idx
-      ON authored_skill(scope_type, scope_id, name)
-      WHERE archived_at IS NULL;
-    CREATE TABLE memory_document (id TEXT PRIMARY KEY);
-    CREATE TABLE output (id TEXT PRIMARY KEY);
+    CREATE TABLE conversation (id TEXT PRIMARY KEY);
+    CREATE TABLE provider_connection (id TEXT PRIMARY KEY);
+CREATE TABLE "resource" (
+	"resource_type" text NOT NULL,
+	"id" text NOT NULL,
+	"created_by_user_id" integer NOT NULL,
+	"scope_type" text NOT NULL,
+	"scope_id" text NOT NULL,
+	"project_id" text GENERATED ALWAYS AS (CASE WHEN scope_type = 'project' THEN scope_id END) VIRTUAL,
+	"cascading_project_id" text GENERATED ALWAYS AS (CASE WHEN resource_type IN ('source', 'output') AND scope_type = 'project' THEN scope_id END) VIRTUAL,
+	"source_id" text GENERATED ALWAYS AS (CASE WHEN resource_type = 'source' THEN id END) VIRTUAL,
+	"output_id" text GENERATED ALWAYS AS (CASE WHEN resource_type = 'output' THEN id END) VIRTUAL,
+	"memory_id" text GENERATED ALWAYS AS (CASE WHEN resource_type = 'memory' THEN id END) VIRTUAL,
+	"skill_id" text GENERATED ALWAYS AS (CASE WHEN resource_type = 'skill' THEN id END) VIRTUAL,
+	"conversation_id" text,
+	"connection_id" text,
+	"kind" text,
+	"title" text,
+	"content" text,
+	"status" text,
+	"revision" integer DEFAULT 1,
+	"deleted_at" text,
+	"archived_at" text,
+	"storage_key" text,
+	"mime_type" text,
+	"filename" text,
+	"byte_size" integer,
+	"provider" text,
+	"external_uri" text,
+	"vector_id" text,
+	"search_revision" integer DEFAULT 1,
+	"metadata" text DEFAULT '{}',
+	"parent_output_id" text,
+	"capability_id" text,
+	"group_id" text,
+	"sensitivity" text,
+	"provenance_json" text,
+	"revision_created_by_user_id" integer,
+	"revision_created_at" text,
+	"revision_operation" text,
+	"restored_from_revision" integer,
+	"draft_revision_id" text,
+	"stable_revision_id" text,
+	"state_version" integer DEFAULT 1,
+	"namespace" text DEFAULT 'global',
+	"memory_ids" text,
+	"memory_count" integer DEFAULT 0,
+	"tokens_used" integer,
+	"is_active" integer DEFAULT true,
+	"superseded_by" text,
+	"created_at" text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	"updated_at" text DEFAULT (CURRENT_TIMESTAMP),
+	PRIMARY KEY("resource_type", "id"),
+	FOREIGN KEY ("created_by_user_id") REFERENCES "user"("id") ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY ("cascading_project_id") REFERENCES "project"("id") ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY ("conversation_id") REFERENCES "conversation"("id") ON UPDATE no action ON DELETE set null,
+	FOREIGN KEY ("connection_id") REFERENCES "provider_connection"("id") ON UPDATE no action ON DELETE set null,
+	FOREIGN KEY ("revision_created_by_user_id") REFERENCES "user"("id") ON UPDATE no action ON DELETE no action,
+	CONSTRAINT "resource_scope_check" CHECK(scope_type IN ('personal', 'project')),
+	CONSTRAINT "resource_shape_check" CHECK((resource_type = 'source' AND kind IS NOT NULL AND title IS NOT NULL AND status IS NOT NULL AND search_revision IS NOT NULL AND metadata IS NOT NULL) OR (resource_type = 'output' AND kind IS NOT NULL AND title IS NOT NULL AND capability_id IS NOT NULL AND status IS NOT NULL AND sensitivity IS NOT NULL AND content IS NOT NULL AND revision IS NOT NULL) OR (resource_type = 'memory' AND kind IS NOT NULL AND title IS NOT NULL AND content IS NOT NULL AND revision IS NOT NULL AND updated_at IS NOT NULL) OR (resource_type = 'skill' AND title IS NOT NULL AND draft_revision_id IS NOT NULL AND stable_revision_id IS NOT NULL AND state_version >= 1 AND updated_at IS NOT NULL) OR (resource_type = 'synthesis' AND content IS NOT NULL AND scope_type = 'personal'))
+);
+CREATE UNIQUE INDEX "resource_source_id_unique" ON "resource" ("source_id");
+CREATE UNIQUE INDEX "resource_output_id_unique" ON "resource" ("output_id");
+CREATE UNIQUE INDEX "resource_memory_id_unique" ON "resource" ("memory_id");
+CREATE UNIQUE INDEX "resource_skill_id_unique" ON "resource" ("skill_id");
+CREATE INDEX "resource_scope_idx" ON "resource" ("resource_type","scope_type","scope_id");
+CREATE INDEX "resource_creator_idx" ON "resource" ("resource_type","created_by_user_id");
+CREATE INDEX "resource_project_idx" ON "resource" ("resource_type","project_id");
+CREATE INDEX "resource_conversation_idx" ON "resource" ("resource_type","conversation_id");
+CREATE UNIQUE INDEX "resource_storage_idx" ON "resource" ("resource_type","storage_key") WHERE storage_key IS NOT NULL;
+CREATE UNIQUE INDEX "resource_memory_name_idx" ON "resource" ("scope_type","scope_id","title") WHERE resource_type = 'memory' AND deleted_at IS NULL;
+CREATE UNIQUE INDEX "resource_skill_name_idx" ON "resource" ("scope_type","scope_id","title") WHERE resource_type = 'skill' AND archived_at IS NULL;
+CREATE INDEX "resource_source_connection_idx" ON "resource" ("connection_id") WHERE resource_type = 'source';
+CREATE INDEX "resource_source_kind_idx" ON "resource" ("kind") WHERE resource_type = 'source';
+CREATE INDEX "resource_source_vector_idx" ON "resource" ("vector_id") WHERE resource_type = 'source';
+CREATE INDEX "resource_output_parent_idx" ON "resource" ("parent_output_id") WHERE resource_type = 'output';
+CREATE INDEX "resource_output_capability_idx" ON "resource" ("capability_id") WHERE resource_type = 'output';
+CREATE INDEX "resource_output_group_idx" ON "resource" ("group_id") WHERE resource_type = 'output';
+CREATE INDEX "resource_output_lookup_idx" ON "resource" ("created_by_user_id","capability_id","group_id","kind") WHERE resource_type = 'output';
+CREATE INDEX "resource_synthesis_owner_idx" ON "resource" ("created_by_user_id","created_at") WHERE resource_type = 'synthesis';
+CREATE INDEX "resource_synthesis_active_idx" ON "resource" ("created_by_user_id","namespace","is_active","created_at") WHERE resource_type = 'synthesis';
 CREATE TABLE "resource_revision" (
   "id" TEXT NOT NULL DEFAULT (lower(hex(randomblob(16)))),
-  "document_id" TEXT REFERENCES "memory_document"("id") ON DELETE CASCADE,
+  "document_id" TEXT REFERENCES "resource"("memory_id") ON DELETE CASCADE,
   "revision" INTEGER NOT NULL,
   "text_content" TEXT DEFAULT '',
   "change_note" TEXT,
   "created_by" INTEGER REFERENCES "user"("id") ON DELETE NO ACTION,
   "created_at" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "operation_id" TEXT,
-  "skill_id" TEXT REFERENCES "authored_skill"("id") ON DELETE CASCADE,
+  "skill_id" TEXT REFERENCES "resource"("skill_id") ON DELETE CASCADE,
   "description" TEXT,
   "digest" TEXT,
   "storage_key" TEXT,
   "size" INTEGER,
   "source_skill_id" TEXT,
   "source_revision_id" TEXT,
-  "output_id" TEXT REFERENCES "output"("id") ON DELETE CASCADE,
+  "output_id" TEXT REFERENCES "resource"("output_id") ON DELETE CASCADE,
   "title" TEXT,
   "status" TEXT,
   "sensitivity" TEXT,
@@ -117,6 +177,11 @@ CREATE UNIQUE INDEX "resource_revision_output_revision_idx" ON "resource_revisio
 CREATE UNIQUE INDEX "resource_revision_storage_key_idx" ON "resource_revision" ("storage_key") WHERE storage_key IS NOT NULL;
 
 CREATE TABLE scoped_configuration (
+  workspace_id TEXT,
+  owner_user_id INTEGER,
+  connection_id TEXT,
+  account_id TEXT,
+  revision TEXT,
   kind TEXT NOT NULL,
   id TEXT NOT NULL,
   user_id INTEGER REFERENCES user(id) ON DELETE CASCADE,
@@ -189,7 +254,9 @@ describe("AuthoredSkillRepository", () => {
     `);
 
     await expect(repository.create(personalSkill())).rejects.toThrow("grant unavailable");
-    expect(sqlite.prepare("SELECT count(*) AS count FROM authored_skill").get()).toEqual({
+    expect(
+      sqlite.prepare("SELECT count(*) AS count FROM resource WHERE resource_type = 'skill'").get(),
+    ).toEqual({
       count: 0,
     });
     expect(sqlite.prepare("SELECT count(*) AS count FROM resource_revision").get()).toEqual({
@@ -246,7 +313,9 @@ describe("AuthoredSkillRepository", () => {
         }),
       ),
     ).rejects.toThrow("audit unavailable");
-    expect(sqlite.prepare("SELECT count(*) AS count FROM authored_skill").get()).toEqual({
+    expect(
+      sqlite.prepare("SELECT count(*) AS count FROM resource WHERE resource_type = 'skill'").get(),
+    ).toEqual({
       count: 0,
     });
     expect(sqlite.prepare("SELECT count(*) AS count FROM resource_revision").get()).toEqual({
@@ -754,7 +823,7 @@ describe("AuthoredSkillRepository", () => {
     ).resolves.toEqual(first.revision);
 
     sqlite
-      .prepare("UPDATE authored_skill SET draft_revision_id = ? WHERE id = ?")
+      .prepare("UPDATE resource SET draft_revision_id = ? WHERE resource_type = 'skill' AND id = ?")
       .run(first.revision.id, second.skill.id);
 
     await expect(repository.getCurrentRevision(second.skill.id, "draft")).resolves.toBeNull();

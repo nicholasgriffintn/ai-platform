@@ -108,15 +108,16 @@ export class ApiKeyRepository extends BaseRepository {
 
     try {
       const insert = this.buildInsertQuery(
-        "user_api_keys",
+        "user_credential",
         {
-          id: apiKeyId,
+          kind: "api_key",
+          public_id: apiKeyId,
           user_id: userId,
           name: keyName,
-          api_key: encryptedKey,
-          hashed_key: hashedKey,
+          encrypted_value: encryptedKey,
+          token_hash: hashedKey,
         },
-        { returning: "id, name, created_at" },
+        { returning: "public_id AS id, name, created_at" },
       );
 
       if (!insert) {
@@ -137,7 +138,7 @@ export class ApiKeyRepository extends BaseRepository {
 
       return { plaintextKey, metadata };
     } catch (error: any) {
-      if (error.message?.includes("UNIQUE constraint failed: user_api_keys.hashed_key")) {
+      if (error.message?.includes("UNIQUE constraint failed: user_credential.token_hash")) {
         logger.error("API Key hash collision (rare):", { error });
         throw new AssistantError(
           "Failed to create API key due to a hash collision. Please try again.",
@@ -157,10 +158,10 @@ export class ApiKeyRepository extends BaseRepository {
 
     try {
       const { query, values } = this.buildSelectQuery(
-        "user_api_keys",
-        { user_id: userId },
+        "user_credential",
+        { kind: "api_key", user_id: userId },
         {
-          columns: ["id", "name", "created_at"],
+          columns: ["public_id AS id", "name", "created_at"],
           orderBy: "created_at DESC",
         },
       );
@@ -184,8 +185,9 @@ export class ApiKeyRepository extends BaseRepository {
     }
 
     try {
-      const { query, values } = this.buildDeleteQuery("user_api_keys", {
-        id: apiKeyId,
+      const { query, values } = this.buildDeleteQuery("user_credential", {
+        kind: "api_key",
+        public_id: apiKeyId,
         user_id: userId,
       });
 
@@ -208,7 +210,7 @@ export class ApiKeyRepository extends BaseRepository {
     try {
       const hashedKey = await this.hashApiKey(apiKey);
       const result = await this.runQuery<{ user_id: number }>(
-        "SELECT user_id FROM user_api_keys WHERE hashed_key = ?",
+        "SELECT user_id FROM user_credential WHERE kind = 'api_key' AND token_hash = ?",
         [hashedKey],
         true,
       );

@@ -75,8 +75,8 @@ export class ConnectorOperationApprovalRepository extends BaseRepository {
 
     const placeholders = uniqueRunIds.map(() => "?").join(", ");
     const rows = await this.runQuery<Pick<ConnectorOperationApproval, "run_id">>(
-      `SELECT DISTINCT run_id FROM connector_operation_approval
-       WHERE state = 'consumed' AND run_id IN (${placeholders})`,
+      `SELECT DISTINCT run_id FROM approval
+       WHERE kind = 'connector' AND state = 'consumed' AND run_id IN (${placeholders})`,
       uniqueRunIds,
     );
 
@@ -95,8 +95,8 @@ export class ConnectorOperationApprovalRepository extends BaseRepository {
 
     const placeholders = uniqueIds.map(() => "?").join(", ");
     const results = await this.runQuery<ConnectorOperationApproval>(
-      `SELECT * FROM connector_operation_approval
-			 WHERE user_id = ? AND id IN (${placeholders})`,
+      `SELECT * FROM approval
+			 WHERE kind = 'connector' AND user_id = ? AND id IN (${placeholders})`,
       [userId, ...uniqueIds],
     );
 
@@ -108,7 +108,7 @@ export class ConnectorOperationApprovalRepository extends BaseRepository {
     userId: number,
   ): Promise<ConnectorOperationApprovalRecord | null> {
     const result = await this.runQuery<ConnectorOperationApproval>(
-      "SELECT * FROM connector_operation_approval WHERE id = ? AND user_id = ?",
+      "SELECT * FROM approval WHERE kind = 'connector' AND id = ? AND user_id = ?",
       [id, userId],
       true,
     );
@@ -122,13 +122,13 @@ export class ConnectorOperationApprovalRepository extends BaseRepository {
   ): Promise<ConnectorOperationApprovalRecord | null> {
     const result = await this.runQuery<ConnectorOperationApproval>(
       `SELECT approval.*
-       FROM connector_operation_approval approval
+       FROM approval approval
        INNER JOIN conversation_run run
          ON run.id = approval.run_id
         AND run.attempt = approval.run_attempt
         AND run.conversation_id = approval.completion_id
         AND run.initiator_user_id = approval.user_id
-       WHERE approval.id = ?
+       WHERE approval.kind = 'connector' AND approval.id = ?
          AND approval.user_id = ?
          AND run.status = 'awaiting_approval'
          AND run.interaction_kind = 'approval'`,
@@ -159,8 +159,9 @@ export class ConnectorOperationApprovalRepository extends BaseRepository {
     expiresAt: string;
   }): Promise<ConnectorOperationApprovalRecord> {
     const insert = this.buildInsertQuery(
-      "connector_operation_approval",
+      "approval",
       {
+        kind: "connector",
         id: generatePrefixedId("coa_"),
         user_id: input.userId,
         run_id: input.runId,
@@ -208,15 +209,15 @@ export class ConnectorOperationApprovalRepository extends BaseRepository {
     resolvedAt: string;
   }): Promise<ConnectorOperationApprovalRecord | null> {
     const result = await this.runQuery<ConnectorOperationApproval>(
-      `UPDATE connector_operation_approval
+      `UPDATE approval
 			 SET state = ?, resolved_at = ?
-			 WHERE id = ? AND user_id = ? AND state = 'pending' AND expires_at > ?
+			 WHERE kind = 'connector' AND id = ? AND user_id = ? AND state = 'pending' AND expires_at > ?
          AND EXISTS (
            SELECT 1 FROM conversation_run run
-           WHERE run.id = connector_operation_approval.run_id
-             AND run.attempt = connector_operation_approval.run_attempt
-             AND run.conversation_id = connector_operation_approval.completion_id
-             AND run.initiator_user_id = connector_operation_approval.user_id
+           WHERE run.id = approval.run_id
+             AND run.attempt = approval.run_attempt
+             AND run.conversation_id = approval.completion_id
+             AND run.initiator_user_id = approval.user_id
              AND run.status = 'awaiting_approval'
              AND run.interaction_kind = 'approval'
          )
@@ -248,10 +249,10 @@ export class ConnectorOperationApprovalRepository extends BaseRepository {
     executionLeaseExpiresAt: string;
   }): Promise<ConnectorOperationApprovalRecord | null> {
     const result = await this.runQuery<ConnectorOperationApproval>(
-      `UPDATE connector_operation_approval
+      `UPDATE approval
        SET state = 'consumed', consumed_at = ?, execution_state = 'running',
            execution_token = ?, execution_lease_expires_at = ?, execution_result_json = NULL
-			 WHERE id = ? AND user_id = ? AND state = 'approved' AND expires_at > ?
+			 WHERE kind = 'connector' AND id = ? AND user_id = ? AND state = 'approved' AND expires_at > ?
 			   AND run_id = ? AND completion_id = ? AND provider = ? AND operation = ?
 			   AND connected_account_id = ? AND channel = ? AND argument_digest = ?
 			   AND authority_revision = ?
@@ -259,10 +260,10 @@ export class ConnectorOperationApprovalRepository extends BaseRepository {
 			   AND teammate_context_id IS ?
 			   AND EXISTS (
            SELECT 1 FROM conversation_run run
-           WHERE run.id = connector_operation_approval.run_id
-             AND run.attempt = connector_operation_approval.run_attempt
-             AND run.conversation_id = connector_operation_approval.completion_id
-             AND run.initiator_user_id = connector_operation_approval.user_id
+           WHERE run.id = approval.run_id
+             AND run.attempt = approval.run_attempt
+             AND run.conversation_id = approval.completion_id
+             AND run.initiator_user_id = approval.user_id
              AND run.status = 'awaiting_approval'
              AND run.interaction_kind = 'approval'
          )
@@ -300,10 +301,10 @@ export class ConnectorOperationApprovalRepository extends BaseRepository {
     result: Record<string, unknown>;
   }): Promise<ConnectorOperationApprovalRecord | null> {
     const result = await this.runQuery<ConnectorOperationApproval>(
-      `UPDATE connector_operation_approval
+      `UPDATE approval
        SET execution_state = 'completed', execution_result_json = ?,
            execution_lease_expires_at = NULL
-       WHERE id = ? AND user_id = ? AND state = 'consumed'
+       WHERE kind = 'connector' AND id = ? AND user_id = ? AND state = 'consumed'
          AND execution_state = 'running' AND execution_token = ?
        RETURNING *`,
       [JSON.stringify(input.result), input.id, input.userId, input.executionToken],
@@ -320,10 +321,10 @@ export class ConnectorOperationApprovalRepository extends BaseRepository {
     result: Record<string, unknown>;
   }): Promise<ConnectorOperationApprovalRecord | null> {
     const result = await this.runQuery<ConnectorOperationApproval>(
-      `UPDATE connector_operation_approval
+      `UPDATE approval
        SET execution_state = 'indeterminate', execution_result_json = ?,
            execution_lease_expires_at = NULL
-       WHERE id = ? AND user_id = ? AND state = 'consumed'
+       WHERE kind = 'connector' AND id = ? AND user_id = ? AND state = 'consumed'
          AND execution_result_json IS NULL
          AND (execution_state IS NULL OR execution_state = 'indeterminate'
            OR (execution_state = 'running' AND execution_lease_expires_at <= ?))
@@ -337,17 +338,17 @@ export class ConnectorOperationApprovalRepository extends BaseRepository {
 
   async deleteUnconsumedForRun(runId: string, runAttempt: number): Promise<void> {
     await this.executeRun(
-      `DELETE FROM connector_operation_approval
-       WHERE run_id = ? AND run_attempt = ? AND state IN ('pending', 'approved')`,
+      `DELETE FROM approval
+       WHERE kind = 'connector' AND run_id = ? AND run_attempt = ? AND state IN ('pending', 'approved')`,
       [runId, runAttempt],
     );
   }
 
   async deleteExpired(input: { pendingBefore: string; resolvedBefore: string }): Promise<number> {
     const result = await this.executeRun(
-      `DELETE FROM connector_operation_approval
-			 WHERE (state = 'pending' AND expires_at <= ?)
-			    OR (state != 'pending' AND expires_at <= ?)`,
+      `DELETE FROM approval
+			 WHERE kind = 'connector' AND ((state = 'pending' AND expires_at <= ?)
+			    OR (state != 'pending' AND expires_at <= ?))`,
       [input.pendingBefore, input.resolvedBefore],
     );
 

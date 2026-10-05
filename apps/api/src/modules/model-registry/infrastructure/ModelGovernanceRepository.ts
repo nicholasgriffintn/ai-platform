@@ -25,7 +25,7 @@ import {
   modelPolicyChanges,
   modelEvidenceValues,
 } from "~/infrastructure/database/model-storage";
-import { modelConfiguration, modelRecord, modelApproval } from "~/infrastructure/database/schema";
+import { modelConfiguration, modelRecord, approval } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
 export type { ModelEvidenceRecord } from "~/infrastructure/database/model-storage";
@@ -188,7 +188,7 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
     decidedBy?: number | null;
   }): Promise<ModelDecisionRecord> {
     const [record] = await this.database
-      .insert(modelApproval)
+      .insert(approval)
       .values(
         modelDecisionValues({
           id: generateId(),
@@ -214,10 +214,10 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
   async getDecision(workspaceId: string, decisionId: string): Promise<ModelDecisionRecord | null> {
     const [record] = await this.database
       .select(modelDecision)
-      .from(modelApproval)
+      .from(approval)
       .where(
         and(
-          eq(modelApproval.kind, "decision"),
+          eq(approval.kind, "decision"),
           and(eq(modelDecision.workspace_id, workspaceId), eq(modelDecision.id, decisionId)),
         ),
       )
@@ -243,10 +243,10 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
     const select = (versionIds?: string[]) =>
       this.database
         .select(modelDecision)
-        .from(modelApproval)
+        .from(approval)
         .where(
           and(
-            eq(modelApproval.kind, "decision"),
+            eq(approval.kind, "decision"),
             and(
               ...conditions,
               ...(versionIds ? [inArray(modelDecision.version_id, versionIds)] : []),
@@ -283,7 +283,7 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
     evidenceIds?: string[];
   }): Promise<ModelDecisionRecord | null> {
     const [record] = await this.database
-      .update(modelApproval)
+      .update(approval)
       .set(
         modelDecisionChanges({
           state: input.state,
@@ -296,7 +296,7 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
           ...(input.evidenceIds ? { evidence_ids: input.evidenceIds } : {}),
         }),
       )
-      .where(and(eq(modelApproval.kind, "decision"), eq(modelDecision.id, input.decisionId)))
+      .where(and(eq(approval.kind, "decision"), eq(modelDecision.id, input.decisionId)))
       .returning(modelDecision);
 
     return record ?? null;
@@ -304,11 +304,11 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
 
   async expireDecisions(now: string): Promise<ModelDecisionRecord[]> {
     return this.database
-      .update(modelApproval)
+      .update(approval)
       .set(modelDecisionChanges({ state: "expired" }))
       .where(
         and(
-          eq(modelApproval.kind, "decision"),
+          eq(approval.kind, "decision"),
           and(eq(modelDecision.state, "approved"), lte(modelDecision.expires_at, now)),
         ),
       )
@@ -321,10 +321,10 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
   ): Promise<ModelDecisionRecord[]> {
     return this.database
       .select(modelDecision)
-      .from(modelApproval)
+      .from(approval)
       .where(
         and(
-          eq(modelApproval.kind, "decision"),
+          eq(approval.kind, "decision"),
           and(
             eq(modelDecision.workspace_id, workspaceId),
             eq(modelDecision.state, "approved"),

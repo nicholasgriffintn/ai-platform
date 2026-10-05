@@ -7,6 +7,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { sql } from "drizzle-orm";
 
+import { modelRecord } from "../schema";
 import {
   storageJsonField,
   storageScalarField,
@@ -14,8 +15,7 @@ import {
   storageJsonPatch,
   type StorageChanges,
   type StorageRecord,
-} from "../model-storage-json";
-import { modelRecord } from "../schema";
+} from "../storage-json";
 
 export type ModelEvidenceRecord = StorageRecord<typeof modelEvidence>;
 

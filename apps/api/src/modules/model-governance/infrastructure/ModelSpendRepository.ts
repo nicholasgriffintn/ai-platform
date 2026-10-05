@@ -15,7 +15,7 @@ import {
   modelBudgetValues,
   modelBudgetChanges,
 } from "~/infrastructure/database/model-storage";
-import { modelConfiguration, modelApproval, modelRecord } from "~/infrastructure/database/schema";
+import { modelConfiguration, approval, modelRecord } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
 export type { ModelBudgetRecord } from "~/infrastructure/database/model-storage";
@@ -245,7 +245,7 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
     requestedBy: number;
   }): Promise<ModelSpendRequestRecord> {
     const [record] = await this.database
-      .insert(modelApproval)
+      .insert(approval)
       .values(
         modelSpendRequestValues({
           id: generateId(),
@@ -266,10 +266,10 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async getSpendRequest(workspaceId: string, id: string): Promise<ModelSpendRequestRecord | null> {
     const [record] = await this.database
       .select(modelSpendRequest)
-      .from(modelApproval)
+      .from(approval)
       .where(
         and(
-          eq(modelApproval.kind, "spend"),
+          eq(approval.kind, "spend"),
           and(eq(modelSpendRequest.workspace_id, workspaceId), eq(modelSpendRequest.id, id)),
         ),
       )
@@ -284,10 +284,10 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
   ): Promise<ModelSpendRequestRecord[]> {
     return this.database
       .select(modelSpendRequest)
-      .from(modelApproval)
+      .from(approval)
       .where(
         and(
-          eq(modelApproval.kind, "spend"),
+          eq(approval.kind, "spend"),
           and(
             eq(modelSpendRequest.workspace_id, workspaceId),
             inArray(modelSpendRequest.state, states),
@@ -304,7 +304,7 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
     decidedBy: number;
   }): Promise<ModelSpendRequestRecord | null> {
     const [record] = await this.database
-      .update(modelApproval)
+      .update(approval)
       .set(
         modelSpendRequestChanges({
           state: input.state,
@@ -314,7 +314,7 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
       )
       .where(
         and(
-          eq(modelApproval.kind, "spend"),
+          eq(approval.kind, "spend"),
           and(
             eq(modelSpendRequest.workspace_id, input.workspaceId),
             eq(modelSpendRequest.id, input.id),
@@ -334,7 +334,7 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
     subjectId: string | null;
   }): Promise<ModelSpendRequestRecord | null> {
     const [record] = await this.database
-      .update(modelApproval)
+      .update(approval)
       .set(
         modelSpendRequestChanges({
           state: input.state,
@@ -349,7 +349,7 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
       )
       .where(
         and(
-          eq(modelApproval.kind, "spend"),
+          eq(approval.kind, "spend"),
           and(
             eq(modelSpendRequest.workspace_id, input.workspaceId),
             eq(modelSpendRequest.id, input.id),

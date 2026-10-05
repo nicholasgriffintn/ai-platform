@@ -13,6 +13,7 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 
+import { WORKSPACE_INVITATION_COLUMNS } from "~/infrastructure/database/accessStorage";
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 
 const listedConversationTypesSql = LISTED_CONVERSATION_TYPES.map((type) => `'${type}'`).join(", ");
@@ -156,8 +157,8 @@ export class WorkspaceRepository extends BaseRepository {
         .bind(params.id, params.name, params.description, params.colour, params.userId),
       database
         .prepare(
-          `INSERT INTO workspace_member (workspace_id, user_id, role)
-					 VALUES (?, ?, 'owner')`,
+          `INSERT INTO resource_grant (kind, workspace_id, user_id, role)
+					 VALUES ('membership', ?, ?, 'owner')`,
         )
         .bind(params.id, params.userId),
     ]);
@@ -169,8 +170,8 @@ export class WorkspaceRepository extends BaseRepository {
 				COUNT(DISTINCT members.user_id) AS member_count,
 				COUNT(DISTINCT p.id) AS project_count
 			 FROM workspace w
-			 JOIN workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
-			 LEFT JOIN workspace_member members ON members.workspace_id = w.id
+			 JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = w.id AND wm.user_id = ?
+			 LEFT JOIN resource_grant members ON members.kind = 'membership' AND members.workspace_id = w.id
 			 LEFT JOIN project p ON p.workspace_id = w.id AND p.archived_at IS NULL
 			 GROUP BY w.id, wm.role
 			 ORDER BY w.updated_at DESC, w.created_at DESC`,
@@ -189,7 +190,7 @@ export class WorkspaceRepository extends BaseRepository {
     return this.runQuery<GlobalWorkspaceSearchRow>(
       `SELECT w.id, w.name, w.description, w.updated_at
 			 FROM workspace w
-			 JOIN workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
+			 JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = w.id AND wm.user_id = ?
 			 WHERE (? = '' OR w.name LIKE ? ESCAPE '\\' OR w.description LIKE ? ESCAPE '\\')
 			 ORDER BY COALESCE(w.updated_at, w.created_at) DESC, w.id DESC
 			 LIMIT ?`,
@@ -210,7 +211,7 @@ export class WorkspaceRepository extends BaseRepository {
 			        p.name, p.description, p.updated_at
 			 FROM project p
 			 JOIN workspace w ON w.id = p.workspace_id
-			 JOIN workspace_member wm ON wm.workspace_id = w.id AND wm.user_id = ?
+			 JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = w.id AND wm.user_id = ?
 			 WHERE p.archived_at IS NULL
 			   AND (? = '' OR p.name LIKE ? ESCAPE '\\' OR p.description LIKE ? ESCAPE '\\')
 			 ORDER BY COALESCE(p.updated_at, p.created_at) DESC, p.id DESC
@@ -228,7 +229,7 @@ export class WorkspaceRepository extends BaseRepository {
     userId: number,
   ): Promise<{ role: WorkspaceRole } | null> {
     return this.runQuery<{ role: WorkspaceRole }>(
-      "SELECT role FROM workspace_member WHERE workspace_id = ? AND user_id = ?",
+      "SELECT role FROM resource_grant WHERE kind = 'membership' AND workspace_id = ? AND user_id = ?",
       [workspaceId, userId],
       true,
     );
@@ -236,9 +237,9 @@ export class WorkspaceRepository extends BaseRepository {
 
   async listMembers(workspaceId: string): Promise<WorkspaceMemberRow[]> {
     return this.runQuery<WorkspaceMemberRow>(
-      `SELECT u.id AS user_id, u.name, u.email, u.avatar_url, wm.role, wm.joined_at
-			 FROM workspace_member wm
-			 JOIN user u ON u.id = wm.user_id
+      `SELECT u.id AS user_id, u.name, u.email, u.avatar_url, wm.role, wm.created_at AS joined_at
+			 FROM resource_grant wm
+			 JOIN user u ON wm.kind = 'membership' AND u.id = wm.user_id
 			 WHERE wm.workspace_id = ?
 			 ORDER BY CASE wm.role WHEN 'owner' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, u.name, u.email`,
       [workspaceId],
@@ -251,16 +252,16 @@ export class WorkspaceRepository extends BaseRepository {
     role: Exclude<WorkspaceRole, "owner">,
   ): Promise<void> {
     await this.executeRun(
-      "UPDATE workspace_member SET role = ? WHERE workspace_id = ? AND user_id = ?",
+      "UPDATE resource_grant SET role = ? WHERE kind = 'membership' AND workspace_id = ? AND user_id = ?",
       [role, workspaceId, userId],
     );
   }
 
   async removeMember(workspaceId: string, userId: number): Promise<void> {
-    await this.executeRun("DELETE FROM workspace_member WHERE workspace_id = ? AND user_id = ?", [
-      workspaceId,
-      userId,
-    ]);
+    await this.executeRun(
+      "DELETE FROM resource_grant WHERE kind = 'membership' AND workspace_id = ? AND user_id = ?",
+      [workspaceId, userId],
+    );
   }
 
   async transferOwnership(
@@ -269,11 +270,11 @@ export class WorkspaceRepository extends BaseRepository {
     newOwnerUserId: number,
   ): Promise<void> {
     const result = await this.executeRun(
-      `UPDATE workspace_member
+      `UPDATE resource_grant
 			 SET role = CASE WHEN user_id = ? THEN 'admin' ELSE 'owner' END
-			 WHERE workspace_id = ? AND user_id IN (?, ?)
-			 AND (SELECT role FROM workspace_member WHERE workspace_id = ? AND user_id = ?) = 'owner'
-			 AND (SELECT role FROM workspace_member WHERE workspace_id = ? AND user_id = ?) IN ('admin', 'member')`,
+			 WHERE kind = 'membership' AND workspace_id = ? AND user_id IN (?, ?)
+			 AND (SELECT role FROM resource_grant WHERE kind = 'membership' AND workspace_id = ? AND user_id = ?) = 'owner'
+			 AND (SELECT role FROM resource_grant WHERE kind = 'membership' AND workspace_id = ? AND user_id = ?) IN ('admin', 'member')`,
       [
         currentOwnerUserId,
         workspaceId,
@@ -323,9 +324,9 @@ export class WorkspaceRepository extends BaseRepository {
     await database.batch([
       database
         .prepare(
-          `UPDATE memory_document
+          `UPDATE resource
            SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-           WHERE deleted_at IS NULL AND (
+           WHERE resource_type = 'memory' AND deleted_at IS NULL AND (
              (scope_type = 'project' AND scope_id IN (${projectIds}))
              OR id IN (
                SELECT memory_document_id FROM teammate_context
@@ -389,20 +390,20 @@ export class WorkspaceRepository extends BaseRepository {
     expiresAt: string;
   }): Promise<WorkspaceInvitationRow | null> {
     return this.runQuery<WorkspaceInvitationRow>(
-      `INSERT INTO workspace_invitation
-				(id, workspace_id, email, role, token_hash, status, invited_by, expires_at)
-			 VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)
-			 ON CONFLICT(workspace_id, email) DO UPDATE SET
+      `INSERT INTO resource_grant
+				(kind, id, workspace_id, email, role, token_hash, status, created_by_user_id, expires_at)
+			 VALUES ('invitation', ?, ?, ?, ?, ?, 'pending', ?, ?)
+			 ON CONFLICT(workspace_id, email) WHERE kind = 'invitation' DO UPDATE SET
 				id = excluded.id,
 				role = excluded.role,
 				token_hash = excluded.token_hash,
 				status = 'pending',
-				invited_by = excluded.invited_by,
+				created_by_user_id = excluded.created_by_user_id,
 				accepted_by = NULL,
 				accepted_at = NULL,
 				expires_at = excluded.expires_at,
 				updated_at = CURRENT_TIMESTAMP
-			 RETURNING *`,
+			 RETURNING ${WORKSPACE_INVITATION_COLUMNS}`,
       [
         params.id,
         params.workspaceId,
@@ -418,14 +419,14 @@ export class WorkspaceRepository extends BaseRepository {
 
   async listInvitations(workspaceId: string): Promise<WorkspaceInvitationRow[]> {
     return this.runQuery<WorkspaceInvitationRow>(
-      "SELECT * FROM workspace_invitation WHERE workspace_id = ? ORDER BY created_at DESC",
+      `SELECT ${WORKSPACE_INVITATION_COLUMNS} FROM resource_grant WHERE kind = 'invitation' AND workspace_id = ? ORDER BY created_at DESC`,
       [workspaceId],
     );
   }
 
   async getInvitationByTokenHash(tokenHash: string): Promise<WorkspaceInvitationRow | null> {
     return this.runQuery<WorkspaceInvitationRow>(
-      "SELECT * FROM workspace_invitation WHERE token_hash = ?",
+      `SELECT ${WORKSPACE_INVITATION_COLUMNS} FROM resource_grant WHERE kind = 'invitation' AND token_hash = ?`,
       [tokenHash],
       true,
     );
@@ -441,19 +442,19 @@ export class WorkspaceRepository extends BaseRepository {
     const [acceptResult, membershipResult] = await database.batch([
       database
         .prepare(
-          `UPDATE workspace_invitation
+          `UPDATE resource_grant
 					 SET status = 'accepted', accepted_by = ?, accepted_at = CURRENT_TIMESTAMP,
 					     token_hash = 'consumed:' || id, updated_at = CURRENT_TIMESTAMP
-					 WHERE id = ? AND status = 'pending' AND token_hash = ?`,
+					 WHERE kind = 'invitation' AND id = ? AND status = 'pending' AND token_hash = ?`,
         )
         .bind(userId, invitation.id, invitation.token_hash),
       database
         .prepare(
-          `INSERT INTO workspace_member (workspace_id, user_id, role)
-					 SELECT workspace_id, ?, role
-					 FROM workspace_invitation
-					 WHERE id = ? AND status = 'accepted' AND accepted_by = ?
-					 ON CONFLICT(workspace_id, user_id) DO NOTHING`,
+          `INSERT INTO resource_grant (kind, workspace_id, user_id, role)
+					 SELECT 'membership', workspace_id, ?, role
+					 FROM resource_grant
+					 WHERE kind = 'invitation' AND id = ? AND status = 'accepted' AND accepted_by = ? AND changes() = 1
+					 ON CONFLICT(workspace_id, user_id) WHERE kind = 'membership' DO NOTHING`,
         )
         .bind(userId, invitation.id, userId),
     ]);
@@ -469,9 +470,9 @@ export class WorkspaceRepository extends BaseRepository {
 
   async revokeInvitation(workspaceId: string, invitationId: string): Promise<boolean> {
     const result = await this.executeRun(
-      `UPDATE workspace_invitation
+      `UPDATE resource_grant
 			 SET status = 'revoked', token_hash = 'revoked:' || id, updated_at = CURRENT_TIMESTAMP
-			 WHERE id = ? AND workspace_id = ? AND status = 'pending'`,
+			 WHERE kind = 'invitation' AND id = ? AND workspace_id = ? AND status = 'pending'`,
       [invitationId, workspaceId],
     );
 
@@ -942,7 +943,7 @@ export class WorkspaceRepository extends BaseRepository {
        FROM conversation c
        JOIN user access_user ON access_user.id = ?
        LEFT JOIN project p ON p.id = c.project_id
-       LEFT JOIN workspace_member wm ON wm.workspace_id = p.workspace_id AND wm.user_id = access_user.id
+       LEFT JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = p.workspace_id AND wm.user_id = access_user.id
        LEFT JOIN teammate_context tc ON tc.home_conversation_id = c.id
        WHERE c.id = ?`,
       [userId, conversationId],

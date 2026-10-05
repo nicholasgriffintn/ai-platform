@@ -280,9 +280,9 @@ export class TeammateRepository extends BaseRepository {
   public async deleteTeammate(teammateId: string): Promise<void> {
     await this.executeBatch([
       this.env.DB.prepare(
-        `UPDATE memory_document
+        `UPDATE resource
          SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-         WHERE id IN (
+         WHERE resource_type = 'memory' AND id IN (
            SELECT memory_document_id FROM teammate_context WHERE teammate_id = ?
          ) AND deleted_at IS NULL`,
       ).bind(teammateId),

@@ -40,6 +40,7 @@ export function ChannelConnectionForm({
         if (isPending) {
           return;
         }
+
         await form.submit();
         onClose();
       }}

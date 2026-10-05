@@ -7,7 +7,9 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
+import { REVIEW_POLICY_COLUMNS } from "~/infrastructure/database/accessStorage";
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import { sourceResourceSql } from "~/infrastructure/database/resource-storage";
 
 export interface ExternalTaskImport {
   id: string;
@@ -65,7 +67,7 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
       `INSERT INTO project_task_integration (kind, id, workspace_id, project_id, owner_user_id, task_id, source_id, provider, account_id, external_id)
        SELECT 'import', ?, p.workspace_id, p.id, ?, t.id, s.id, ?, ?, ?
        FROM project p JOIN project_task t ON t.project_id = p.id AND t.workspace_id = p.workspace_id
-       JOIN source s ON s.project_id = p.id
+       JOIN ${sourceResourceSql} s ON s.project_id = p.id
        WHERE p.id = ? AND p.workspace_id = ? AND t.id = ? AND t.created_by_user_id = ? AND s.id = ?
        ON CONFLICT(kind, id) DO NOTHING`,
       [
@@ -87,7 +89,7 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
 
   async getPolicy(id: string, projectId: string): Promise<ReviewPolicy | null> {
     const row = await this.runQuery<PolicyRow>(
-      "SELECT r.* FROM project_review_policy r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.id = ? AND r.project_id = ?",
+      `SELECT ${REVIEW_POLICY_COLUMNS} FROM scoped_configuration r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.kind = 'review_policy' AND r.id = ? AND r.project_id = ?`,
       [id, projectId],
       true,
     );
@@ -97,7 +99,7 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
 
   async listProjectPolicies(projectId: string): Promise<ReviewPolicy[]> {
     const rows = await this.runQuery<PolicyRow>(
-      "SELECT r.* FROM project_review_policy r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.project_id = ? ORDER BY r.provider, r.repository, r.owner_user_id",
+      `SELECT ${REVIEW_POLICY_COLUMNS} FROM scoped_configuration r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.kind = 'review_policy' AND r.project_id = ? ORDER BY r.target_kind, r.target_id, r.owner_user_id`,
       [projectId],
     );
 
@@ -106,18 +108,18 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
 
   async setPolicy(policy: ReviewPolicy): Promise<void> {
     const result = await this.executeRun(
-      `INSERT INTO project_review_policy (id, workspace_id, project_id, owner_user_id, provider, connection_id, account_id, repository, enabled, token_budget, revision)
-       SELECT ?, p.workspace_id, p.id, c.user_id, c.provider, c.id, ?, ?, ?, ?, ?
+      `INSERT INTO scoped_configuration (kind, id, workspace_id, project_id, owner_user_id, target_kind, connection_id, account_id, target_id, enabled, payload, revision)
+       SELECT 'review_policy', ?, p.workspace_id, p.id, c.user_id, c.provider, c.id, ?, ?, ?, json_object('token_budget', ?), ?
        FROM project p JOIN provider_connection c ON c.id = ? AND c.user_id = ? AND c.provider = ?
        WHERE p.id = ? AND p.workspace_id = ? AND (c.status = 'connected' OR ? = 0)
-       ON CONFLICT(id) DO UPDATE SET enabled = excluded.enabled, token_budget = excluded.token_budget, revision = excluded.revision
-       WHERE project_review_policy.workspace_id = excluded.workspace_id
-         AND project_review_policy.project_id = excluded.project_id
-         AND project_review_policy.owner_user_id = excluded.owner_user_id
-         AND project_review_policy.provider = excluded.provider
-         AND project_review_policy.connection_id = excluded.connection_id
-         AND project_review_policy.account_id = excluded.account_id
-         AND project_review_policy.repository = excluded.repository`,
+       ON CONFLICT(kind, id) DO UPDATE SET enabled = excluded.enabled, payload = excluded.payload, revision = excluded.revision
+       WHERE scoped_configuration.workspace_id = excluded.workspace_id
+         AND scoped_configuration.project_id = excluded.project_id
+         AND scoped_configuration.owner_user_id = excluded.owner_user_id
+         AND scoped_configuration.target_kind = excluded.target_kind
+         AND scoped_configuration.connection_id = excluded.connection_id
+         AND scoped_configuration.account_id = excluded.account_id
+         AND scoped_configuration.target_id = excluded.target_id`,
       [
         policy.id,
         policy.accountId,
@@ -149,10 +151,10 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
     repository: string,
   ): Promise<ReviewPolicy[]> {
     const rows = await this.runQuery<PolicyRow>(
-      `SELECT r.* FROM project_review_policy r
+      `SELECT ${REVIEW_POLICY_COLUMNS} FROM scoped_configuration r
        JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id
-       JOIN provider_connection c ON c.id = r.connection_id AND c.user_id = r.owner_user_id AND c.provider = r.provider
-       WHERE r.provider = ? AND r.account_id = ? AND r.repository = ? AND r.enabled = 1 AND c.status = 'connected'`,
+       JOIN provider_connection c ON c.id = r.connection_id AND c.user_id = r.owner_user_id AND c.provider = r.target_kind
+       WHERE r.kind = 'review_policy' AND r.target_kind = ? AND r.account_id = ? AND r.target_id = ? AND r.enabled = 1 AND c.status = 'connected'`,
       [provider, accountId, repository],
     );
 
@@ -228,7 +230,7 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
       `INSERT INTO project_task_integration (kind, id, workspace_id, project_id, owner_user_id, task_id, source_id, target, policy_id, policy_revision)
        SELECT 'review', ?, p.workspace_id, p.id, ?, t.id, s.id, ?, ?, ?
        FROM project p JOIN project_task t ON t.project_id = p.id AND t.workspace_id = p.workspace_id
-       JOIN source s ON s.project_id = p.id
+       JOIN ${sourceResourceSql} s ON s.project_id = p.id
        WHERE p.id = ? AND p.workspace_id = ? AND t.id = ? AND t.created_by_user_id = ? AND s.id = ?
        ON CONFLICT(kind, id) DO NOTHING`,
       [

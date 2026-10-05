@@ -7,6 +7,7 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import { outputResourceSql } from "~/infrastructure/database/resource-storage";
 
 interface DocumentCommentRow {
   id: string;
@@ -24,9 +25,9 @@ interface DocumentCommentRow {
   updated_at: string | null;
 }
 
-const COMMENT_READ_GUARD = `EXISTS (SELECT 1 FROM output WHERE output.id = document_comment.output_id
+const COMMENT_READ_GUARD = `EXISTS (SELECT 1 FROM ${outputResourceSql} output WHERE output.id = document_comment.output_id
   AND ((output.project_id IS NULL AND output.created_by_user_id = ?) OR EXISTS
-    (SELECT 1 FROM project JOIN workspace_member ON workspace_member.workspace_id = project.workspace_id
+    (SELECT 1 FROM project JOIN resource_grant workspace_member ON workspace_member.kind = 'membership' AND workspace_member.workspace_id = project.workspace_id
       WHERE project.id = output.project_id AND workspace_member.user_id = ?)))`;
 
 function formatComment(row: DocumentCommentRow): DocumentComment {
@@ -141,8 +142,8 @@ export class DocumentCommentRepository extends BaseRepository {
     const row = await this.runQuery<DocumentCommentRow>(
       `UPDATE document_comment SET resolved = ?, revision = revision + 1, updated_at = ?
        WHERE output_id = ? AND id = ? AND parent_id IS NULL AND revision = ? AND ${COMMENT_READ_GUARD}
-       AND (author_user_id = ? OR EXISTS (SELECT 1 FROM output JOIN project ON project.id = output.project_id
-         JOIN workspace_member ON workspace_member.workspace_id = project.workspace_id
+       AND (author_user_id = ? OR EXISTS (SELECT 1 FROM ${outputResourceSql} output JOIN project ON project.id = output.project_id
+         JOIN resource_grant workspace_member ON workspace_member.kind = 'membership' AND workspace_member.workspace_id = project.workspace_id
          WHERE output.id = document_comment.output_id AND workspace_member.user_id = ? AND workspace_member.role IN ('owner', 'admin')))
        RETURNING *`,
       [

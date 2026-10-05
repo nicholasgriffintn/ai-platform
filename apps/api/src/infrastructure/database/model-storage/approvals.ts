@@ -1,6 +1,7 @@
 import type { PolicyVerdict, SPEND_REQUEST_STATES } from "@ngriffin_uk/polychat-schemas";
 import { sql } from "drizzle-orm";
 
+import { approval } from "../schema";
 import {
   storageJsonField,
   storageScalarField,
@@ -9,8 +10,7 @@ import {
   storageJsonPatch,
   type StorageChanges,
   type StorageRecord,
-} from "../model-storage-json";
-import { modelApproval } from "../schema";
+} from "../storage-json";
 
 export type ModelDecisionRecord = StorageRecord<typeof modelDecision>;
 
@@ -37,22 +37,22 @@ type ModelDecisionInsert = Pick<
   >;
 
 export const modelDecision = {
-  id: sql<string>`${modelApproval.id}`,
-  workspace_id: sql<string>`${modelApproval.workspace_id}`,
-  project_id: sql<string | null>`${modelApproval.project_id}`,
-  version_id: sql<string>`${modelApproval.version_id}`,
-  route_id: sql<string | null>`${modelApproval.route_id}`,
-  state: sql<"pending" | "approved" | "rejected" | "revoked" | "expired">`${modelApproval.state}`,
-  verdict: storageJsonField<PolicyVerdict>(modelApproval.data, "verdict"),
-  evidence_ids: storageJsonField<string[]>(modelApproval.data, "evidence_ids"),
-  is_exception: storageBooleanField(modelApproval.data, "is_exception"),
-  conditions: storageScalarField<string | null>(modelApproval.data, "conditions"),
-  note: storageScalarField<string | null>(modelApproval.data, "note"),
-  requested_by: sql<number | null>`${modelApproval.requested_by}`,
-  decided_by: sql<number | null>`${modelApproval.decided_by}`,
-  decided_at: sql<string | null>`${modelApproval.decided_at}`,
-  expires_at: sql<string | null>`${modelApproval.expires_at}`,
-  created_at: sql<string>`${modelApproval.created_at}`,
+  id: sql<string>`${approval.id}`,
+  workspace_id: sql<string>`${approval.workspace_id}`,
+  project_id: sql<string | null>`${approval.project_id}`,
+  version_id: sql<string>`${approval.version_id}`,
+  route_id: sql<string | null>`${approval.route_id}`,
+  state: sql<"pending" | "approved" | "rejected" | "revoked" | "expired">`${approval.state}`,
+  verdict: storageJsonField<PolicyVerdict>(approval.data, "verdict"),
+  evidence_ids: storageJsonField<string[]>(approval.data, "evidence_ids"),
+  is_exception: storageBooleanField(approval.data, "is_exception"),
+  conditions: storageScalarField<string | null>(approval.data, "conditions"),
+  note: storageScalarField<string | null>(approval.data, "note"),
+  requested_by: sql<number | null>`${approval.requested_by}`,
+  decided_by: sql<number | null>`${approval.decided_by}`,
+  decided_at: sql<string | null>`${approval.decided_at}`,
+  expires_at: sql<string | null>`${approval.expires_at}`,
+  created_at: sql<string>`${approval.created_at}`,
 };
 
 export function modelDecisionValues(input: ModelDecisionInsert) {
@@ -92,7 +92,7 @@ export function modelDecisionChanges(input: StorageChanges<ModelDecisionRecord>)
     decided_at: input.decided_at,
     expires_at: input.expires_at,
     created_at: input.created_at,
-    data: storageJsonPatch(modelApproval.data, {
+    data: storageJsonPatch(approval.data, {
       verdict: input.verdict,
       evidence_ids: input.evidence_ids,
       is_exception: input.is_exception,
@@ -124,19 +124,19 @@ type ModelSpendRequestInsert = Pick<
   >;
 
 export const modelSpendRequest = {
-  id: sql<string>`${modelApproval.id}`,
-  workspace_id: sql<string>`${modelApproval.workspace_id}`,
-  project_id: sql<string | null>`${modelApproval.project_id}`,
-  subject_type: sql<"training_run" | "deployment">`${modelApproval.subject_type}`,
-  payload: storageJsonField<Record<string, unknown>>(modelApproval.data, "payload"),
-  estimate_usd: storageScalarField<number | null>(modelApproval.data, "estimate_usd"),
-  reason: storageScalarField<string | null>(modelApproval.data, "reason"),
-  state: sql<(typeof SPEND_REQUEST_STATES)[number]>`${modelApproval.state}`,
-  subject_id: sql<string | null>`${modelApproval.subject_id}`,
-  requested_by: sql<number | null>`${modelApproval.requested_by}`,
-  decided_by: sql<number | null>`${modelApproval.decided_by}`,
-  decided_at: sql<string | null>`${modelApproval.decided_at}`,
-  created_at: sql<string>`${modelApproval.created_at}`,
+  id: sql<string>`${approval.id}`,
+  workspace_id: sql<string>`${approval.workspace_id}`,
+  project_id: sql<string | null>`${approval.project_id}`,
+  subject_type: sql<"training_run" | "deployment">`${approval.subject_type}`,
+  payload: storageJsonField<Record<string, unknown>>(approval.data, "payload"),
+  estimate_usd: storageScalarField<number | null>(approval.data, "estimate_usd"),
+  reason: storageScalarField<string | null>(approval.data, "reason"),
+  state: sql<(typeof SPEND_REQUEST_STATES)[number]>`${approval.state}`,
+  subject_id: sql<string | null>`${approval.subject_id}`,
+  requested_by: sql<number | null>`${approval.requested_by}`,
+  decided_by: sql<number | null>`${approval.decided_by}`,
+  decided_at: sql<string | null>`${approval.decided_at}`,
+  created_at: sql<string>`${approval.created_at}`,
 };
 
 export function modelSpendRequestValues(input: ModelSpendRequestInsert) {
@@ -172,7 +172,7 @@ export function modelSpendRequestChanges(input: StorageChanges<ModelSpendRequest
     decided_by: input.decided_by,
     decided_at: input.decided_at,
     created_at: input.created_at,
-    data: storageJsonPatch(modelApproval.data, {
+    data: storageJsonPatch(approval.data, {
       payload: input.payload,
       estimate_usd: input.estimate_usd,
       reason: input.reason,

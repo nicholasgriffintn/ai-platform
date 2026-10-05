@@ -1408,9 +1408,12 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       created_at: at({ hours: 1, minutes: 59 }),
       updated_at: at({ hours: 1, minutes: 57 }),
     }),
-    insert("output", {
+    insert("resource", {
+      resource_type: "output",
       id: seedId("output", "backpressure-sources"),
       created_by_user_id: OWNER.id,
+      scope_type: "personal",
+      scope_id: String(OWNER.id),
       conversation_id: researcherChild.conversationId,
       capability_id: "documents",
       kind: "document",
@@ -1920,14 +1923,16 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
     const documentId = seedId("memory", name);
 
     statements.push(
-      insert("memory_document", {
+      insert("resource", {
+        resource_type: "memory",
+        kind: "memory",
         id: documentId,
         scope_type: "personal",
         scope_id: String(OWNER.id),
-        name,
+        title: name,
         content,
         revision: 1,
-        created_by: OWNER.id,
+        created_by_user_id: OWNER.id,
         created_at: at({ days: 10 }),
         updated_at: at({ days: 1 }),
       }),
@@ -1948,9 +1953,12 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
   const canvasId = seedId("output", "canvas-hero");
 
   statements.push(
-    insert("output", {
+    insert("resource", {
+      resource_type: "output",
       id: noteId,
       created_by_user_id: OWNER.id,
+      scope_type: "personal",
+      scope_id: String(OWNER.id),
       capability_id: "notes",
       kind: "note",
       title: "Release notes draft",
@@ -2003,9 +2011,12 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_by_user_id: OWNER.id,
       created_at: at({ days: 1 }),
     }),
-    insert("output", {
+    insert("resource", {
+      resource_type: "output",
       id: canvasId,
       created_by_user_id: OWNER.id,
+      scope_type: "personal",
+      scope_id: String(OWNER.id),
       conversation_id: seedId("chat", "media-done"),
       capability_id: "canvas",
       group_id: "black-forest-labs/flux-2-pro",
@@ -2051,9 +2062,12 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
   const collectionId = seedId("collection", "reading");
 
   statements.push(
-    insert("source", {
+    insert("resource", {
+      resource_type: "source",
       id: seedId("source", "d1-limits"),
       created_by_user_id: OWNER.id,
+      scope_type: "personal",
+      scope_id: String(OWNER.id),
       kind: "url",
       title: "Cloudflare D1 limits",
       status: "available",
@@ -2063,9 +2077,12 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 1, hours: 5 }),
       updated_at: at({ days: 1, hours: 5 }),
     }),
-    insert("source", {
+    insert("resource", {
+      resource_type: "source",
       id: seedId("source", "style-guide"),
       created_by_user_id: OWNER.id,
+      scope_type: "personal",
+      scope_id: String(OWNER.id),
       kind: "text",
       title: "House style guide",
       status: "available",
@@ -2075,9 +2092,12 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 30 }),
       updated_at: at({ days: 30 }),
     }),
-    insert("source", {
+    insert("resource", {
+      resource_type: "source",
       id: seedId("source", "failed-upload"),
       created_by_user_id: OWNER.id,
+      scope_type: "personal",
+      scope_id: String(OWNER.id),
       kind: "file",
       title: "quarterly-numbers.xlsx",
       status: "failed",

@@ -34,8 +34,8 @@ export class ChannelSenderRepository extends BaseRepository {
         JOIN channel_binding ON channel_binding.id = authentication_token.binding_id
         WHERE authentication_token.purpose = 'channel_pairing' AND token_hash = ? AND channel_binding.id = ? AND enabled = 1 AND julianday(expires_at) > julianday('now')
           AND ? = 1 AND ((channel_binding.scope_type = 'personal' AND channel_binding.scope_id = CAST(authentication_token.user_id AS TEXT))
-            OR (channel_binding.scope_type = 'project' AND EXISTS (SELECT 1 FROM project JOIN workspace_member
-              ON workspace_member.workspace_id = project.workspace_id WHERE project.id = channel_binding.scope_id
+            OR (channel_binding.scope_type = 'project' AND EXISTS (SELECT 1 FROM project JOIN resource_grant workspace_member
+              ON workspace_member.kind = 'membership' AND workspace_member.workspace_id = project.workspace_id WHERE project.id = channel_binding.scope_id
               AND workspace_member.user_id = authentication_token.user_id)))
         ON CONFLICT(binding_id, sender_id) DO UPDATE SET revision = channel_sender.revision + 1, revoked_at = NULL
           WHERE channel_sender.user_id = excluded.user_id`).bind(
@@ -87,8 +87,8 @@ export class ChannelSenderRepository extends BaseRepository {
       `SELECT channel_sender.* FROM channel_sender JOIN channel_binding ON channel_binding.id = binding_id
       WHERE binding_id = ? AND sender_id = ? AND revoked_at IS NULL AND enabled = 1
         AND ((channel_binding.scope_type = 'personal' AND ? = 1 AND channel_binding.scope_id = CAST(channel_sender.user_id AS TEXT))
-          OR (channel_binding.scope_type = 'project' AND EXISTS (SELECT 1 FROM project JOIN workspace_member
-            ON workspace_member.workspace_id = project.workspace_id WHERE project.id = channel_binding.scope_id AND workspace_member.user_id = channel_sender.user_id)))`,
+          OR (channel_binding.scope_type = 'project' AND EXISTS (SELECT 1 FROM project JOIN resource_grant workspace_member
+            ON workspace_member.kind = 'membership' AND workspace_member.workspace_id = project.workspace_id WHERE project.id = channel_binding.scope_id AND workspace_member.user_id = channel_sender.user_id)))`,
       [bindingId, senderId, isDirect ? 1 : 0],
       true,
     );

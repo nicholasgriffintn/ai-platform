@@ -1,4 +1,5 @@
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import { sourceResourceSql } from "~/infrastructure/database/resource-storage";
 import type { PendingEmbeddingDocument } from "~/modules/apps/application/embeddings/document";
 import type { EmbeddingRuntimeTarget, IEnv } from "~/types";
 
@@ -52,7 +53,11 @@ const CURRENT_SOURCE = `d.document_type = 'source' AND s.id = d.source_id AND s.
 
 export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
   getSource(sourceId: string): Promise<SearchableSource | null> {
-    return this.runQuery<SearchableSource>("SELECT * FROM source WHERE id = ?", [sourceId], true);
+    return this.runQuery<SearchableSource>(
+      `SELECT * FROM ${sourceResourceSql} source WHERE id = ?`,
+      [sourceId],
+      true,
+    );
   }
 
   getDocument(sourceId: string, revision: number): Promise<SourceSearchDocument | null> {
@@ -69,7 +74,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
     target: EmbeddingRuntimeTarget,
     userId: number,
   ): Promise<void> {
-    const guard = `EXISTS (SELECT 1 FROM source s WHERE id = ? AND search_revision = ?
+    const guard = `EXISTS (SELECT 1 FROM ${sourceResourceSql} s WHERE id = ? AND search_revision = ?
       AND status = 'available' AND ${sourceVisibilitySql("s")})`;
 
     await this.env.DB.batch([
@@ -128,7 +133,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
     const result = await this.executeRun(
       `UPDATE search_document AS d SET lease_expires_at = datetime('now', '+10 minutes')
        WHERE document_type = 'source' AND id = ? AND status = 'lexical' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP
-         AND EXISTS (SELECT 1 FROM source s WHERE ${CURRENT_SOURCE})`,
+         AND EXISTS (SELECT 1 FROM ${sourceResourceSql} s WHERE ${CURRENT_SOURCE})`,
       [documentId, token],
     );
 
@@ -139,7 +144,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
     const result = await this.executeRun(
       `UPDATE search_document AS d SET status = 'active'
        WHERE document_type = 'source' AND id = ? AND status = 'lexical' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP
-         AND EXISTS (SELECT 1 FROM source s WHERE ${CURRENT_SOURCE})`,
+         AND EXISTS (SELECT 1 FROM ${sourceResourceSql} s WHERE ${CURRENT_SOURCE})`,
       [documentId, token],
     );
 
@@ -152,7 +157,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
        FROM search_fts
        JOIN search_chunk c ON c.rowid = search_fts.rowid
        JOIN search_document d ON d.document_type = c.document_type AND d.id = c.document_id
-       JOIN source s ON ${CURRENT_SOURCE}
+       JOIN ${sourceResourceSql} s ON ${CURRENT_SOURCE}
        WHERE search_fts MATCH ? AND ${scope.projectId ? "s.project_id = ?" : "s.project_id IS NULL AND s.created_by_user_id = ?"}
          AND d.status IN ('lexical', 'active') AND (? IS NULL OR s.kind = ?)
        ORDER BY bm25(search_fts, 3.0, 1.0), c.id LIMIT 30`,
@@ -170,7 +175,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
       `SELECT ${PASSAGE_COLUMNS}
        FROM search_chunk c
        JOIN search_document d ON d.document_type = c.document_type AND d.id = c.document_id AND ${activeOnly ? "d.status = 'active'" : "d.status IN ('lexical', 'active')"}
-       JOIN source s ON ${CURRENT_SOURCE}
+       JOIN ${sourceResourceSql} s ON ${CURRENT_SOURCE}
        WHERE ${scope.projectId ? "s.project_id = ?" : "s.project_id IS NULL AND s.created_by_user_id = ?"} AND c.id IN (SELECT value FROM json_each(?))
          AND (? IS NULL OR s.kind = ?)`,
       [scope.projectId ?? scope.userId, JSON.stringify(vectorIds), type ?? null, type ?? null],
@@ -180,7 +185,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
   getTargets(scope: KnowledgeScope): Promise<{ target: string; userId: number }[]> {
     return this.runQuery<{ target: string; userId: number }>(
       `SELECT DISTINCT d.target, d.user_id AS userId FROM search_document d
-       JOIN source s ON ${CURRENT_SOURCE}
+       JOIN ${sourceResourceSql} s ON ${CURRENT_SOURCE}
        WHERE ${scope.projectId ? "s.project_id = ?" : "s.project_id IS NULL AND s.created_by_user_id = ?"} AND d.status = 'active' LIMIT 9`,
       [scope.projectId ?? scope.userId],
     );
@@ -212,16 +217,16 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
     includeCleanup: boolean,
   ): Promise<{ id: string; user_id: number | null; project_id: string | null }[]> {
     return this.runQuery(
-      `WITH candidates AS (SELECT s.id, s.created_by_user_id AS user_id, s.project_id FROM source s
+      `WITH candidates AS (SELECT s.id, s.created_by_user_id AS user_id, s.project_id FROM ${sourceResourceSql} s
        LEFT JOIN search_document d ON d.document_type = 'source' AND d.source_id = s.id AND d.source_revision = s.search_revision
        WHERE s.kind != 'memory' AND s.status = 'available' AND ${sourceVisibilitySql("s")}
          AND length(trim(s.content)) > 0 AND (d.id IS NULL OR (? = 1 AND d.status = 'lexical'))
        UNION SELECT source_id AS id, user_id, project_id FROM search_document WHERE document_type = 'source' AND status = 'stale' AND ? = 1)
        SELECT c.id, (SELECT id FROM project WHERE id = c.project_id) AS project_id,
          COALESCE(
-           (SELECT wm.user_id FROM workspace_member wm JOIN project p ON p.workspace_id = wm.workspace_id
+           (SELECT wm.user_id FROM resource_grant wm JOIN project p ON wm.kind = 'membership' AND p.workspace_id = wm.workspace_id
             WHERE p.id = c.project_id AND wm.user_id = c.user_id LIMIT 1),
-           (SELECT wm.user_id FROM workspace_member wm JOIN project p ON p.workspace_id = wm.workspace_id
+           (SELECT wm.user_id FROM resource_grant wm JOIN project p ON wm.kind = 'membership' AND p.workspace_id = wm.workspace_id
             WHERE p.id = c.project_id ORDER BY CASE WHEN wm.role = 'owner' THEN 1
               WHEN wm.role = 'admin' THEN 2 ELSE 3 END LIMIT 1),
            (SELECT id FROM user WHERE id = c.user_id)

@@ -513,13 +513,13 @@ export class ProjectTaskRepository extends BaseRepository {
          ${
            params.automaticReviewPolicyRevision
              ? `AND EXISTS (
-           SELECT 1 FROM project_review_policy p JOIN project_task_integration r ON r.kind = 'review' AND r.policy_id = p.id AND r.project_id = p.project_id AND r.workspace_id = p.workspace_id
-           WHERE r.task_id = project_task.id AND p.enabled = 1 AND p.revision = ? AND r.policy_revision = p.revision
+           SELECT 1 FROM scoped_configuration p JOIN project_task_integration r ON r.kind = 'review' AND r.policy_id = p.id AND r.project_id = p.project_id AND r.workspace_id = p.workspace_id
+           WHERE p.kind = 'review_policy' AND r.task_id = project_task.id AND p.enabled = 1 AND p.revision = ? AND r.policy_revision = p.revision
              AND p.owner_user_id = ? AND r.owner_user_id = p.owner_user_id AND r.workspace_id = project_task.workspace_id
              AND p.connection_id = json_extract(r.target, '$.connectionId')
-             AND p.provider = json_extract(r.target, '$.provider')
+             AND p.target_kind = json_extract(r.target, '$.provider')
              AND p.account_id = json_extract(r.target, '$.accountId')
-             AND p.repository = json_extract(r.target, '$.repository')
+             AND p.target_id = json_extract(r.target, '$.repository')
          )`
              : ""
          }

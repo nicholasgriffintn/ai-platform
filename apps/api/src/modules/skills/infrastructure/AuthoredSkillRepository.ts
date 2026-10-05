@@ -4,7 +4,7 @@ import { and, asc, eq, isNull, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import {
-  authoredSkill,
+  resource,
   resourceRevision,
   scopedConfiguration,
   workspaceAuditRecord,
@@ -100,12 +100,12 @@ function auditMetadata(
   return { ...audit.metadata, revisionId };
 }
 
-const mapSkill = (record: typeof authoredSkill.$inferSelect): AuthoredSkillRecord => ({
+const mapSkill = (record: typeof resource.$inferSelect): AuthoredSkillRecord => ({
   id: record.id,
   scopeType: record.scope_type,
   scopeId: record.scope_id,
-  name: record.name,
-  createdByUserId: record.created_by,
+  name: record.title,
+  createdByUserId: record.created_by_user_id,
   draftRevisionId: record.draft_revision_id,
   stableRevisionId: record.stable_revision_id,
   stateVersion: record.state_version,
@@ -166,13 +166,14 @@ export class AuthoredSkillRepository extends BaseRepository {
 
     try {
       const skillInsert = this.database
-        .insert(authoredSkill)
+        .insert(resource)
         .values({
           id,
           scope_type: input.scope.type,
           scope_id: String(input.scope.id),
-          name: input.name,
-          created_by: input.createdByUserId,
+          resource_type: "skill",
+          title: input.name,
+          created_by_user_id: input.createdByUserId,
           draft_revision_id: revisionId,
           stable_revision_id: revisionId,
           state_version: 1,
@@ -199,7 +200,7 @@ export class AuthoredSkillRepository extends BaseRepository {
           created_at: now,
         })
         .returning();
-      let skillRecord: typeof authoredSkill.$inferSelect | undefined;
+      let skillRecord: typeof resource.$inferSelect | undefined;
       let revisionRecord: typeof resourceRevision.$inferSelect | undefined;
 
       if (input.scope.type === "personal") {
@@ -310,7 +311,7 @@ export class AuthoredSkillRepository extends BaseRepository {
 
       if (
         message.includes("UNIQUE constraint failed") ||
-        message.includes("authored_skill_scope_name_idx")
+        message.includes("resource_skill_name_idx")
       ) {
         throw new AssistantError(
           `A skill named ${input.name} already exists in this scope`,
@@ -326,8 +327,8 @@ export class AuthoredSkillRepository extends BaseRepository {
   async getById(skillId: string): Promise<AuthoredSkillRecord | null> {
     const [record] = await this.database
       .select()
-      .from(authoredSkill)
-      .where(eq(authoredSkill.id, skillId))
+      .from(resource)
+      .where(and(eq(resource.resource_type, "skill"), eq(resource.id, skillId)))
       .limit(1);
 
     return record ? mapSkill(record) : null;
@@ -339,13 +340,16 @@ export class AuthoredSkillRepository extends BaseRepository {
   ): Promise<AuthoredSkillRecord | null> {
     const [record] = await this.database
       .select()
-      .from(authoredSkill)
+      .from(resource)
       .where(
         and(
-          eq(authoredSkill.scope_type, scope.type),
-          eq(authoredSkill.scope_id, String(scope.id)),
-          eq(authoredSkill.name, name),
-          isNull(authoredSkill.archived_at),
+          eq(resource.resource_type, "skill"),
+          and(
+            eq(resource.scope_type, scope.type),
+            eq(resource.scope_id, String(scope.id)),
+            eq(resource.title, name),
+            isNull(resource.archived_at),
+          ),
         ),
       )
       .limit(1);
@@ -356,15 +360,18 @@ export class AuthoredSkillRepository extends BaseRepository {
   async listByScope(scope: AuthoredSkillScope): Promise<AuthoredSkillRecord[]> {
     const records = await this.database
       .select()
-      .from(authoredSkill)
+      .from(resource)
       .where(
         and(
-          eq(authoredSkill.scope_type, scope.type),
-          eq(authoredSkill.scope_id, String(scope.id)),
-          isNull(authoredSkill.archived_at),
+          eq(resource.resource_type, "skill"),
+          and(
+            eq(resource.scope_type, scope.type),
+            eq(resource.scope_id, String(scope.id)),
+            isNull(resource.archived_at),
+          ),
         ),
       )
-      .orderBy(asc(authoredSkill.name));
+      .orderBy(asc(resource.title));
 
     return records.map(mapSkill);
   }
@@ -491,7 +498,7 @@ export class AuthoredSkillRepository extends BaseRepository {
 
     try {
       const updatedSkillInsert = this.database
-        .update(authoredSkill)
+        .update(resource)
         .set({
           draft_revision_id: revisionId,
           stable_revision_id: input.activate ? revisionId : current.stableRevisionId,
@@ -500,10 +507,13 @@ export class AuthoredSkillRepository extends BaseRepository {
         })
         .where(
           and(
-            eq(authoredSkill.id, input.skillId),
-            eq(authoredSkill.state_version, input.expectedStateVersion),
-            eq(authoredSkill.draft_revision_id, input.expectedDraftRevisionId),
-            isNull(authoredSkill.archived_at),
+            eq(resource.resource_type, "skill"),
+            and(
+              eq(resource.id, input.skillId),
+              eq(resource.state_version, input.expectedStateVersion),
+              eq(resource.draft_revision_id, input.expectedDraftRevisionId),
+              isNull(resource.archived_at),
+            ),
           ),
         )
         .returning();
@@ -520,7 +530,7 @@ export class AuthoredSkillRepository extends BaseRepository {
               created_by: sql<number>`${input.createdByUserId}`.as("created_by"),
               created_at: sql<string>`${now}`.as("created_at"),
               operation_id: sql<null>`NULL`.as("operation_id"),
-              skill_id: authoredSkill.id,
+              skill_id: resource.id,
               description: sql<string>`${input.description}`.as("description"),
               digest: sql<string>`${input.digest}`.as("digest"),
               storage_key: sql<string>`${input.storageKey}`.as("storage_key"),
@@ -542,18 +552,21 @@ export class AuthoredSkillRepository extends BaseRepository {
               restored_from_revision: sql<null>`NULL`.as("restored_from_revision"),
               resource_type: sql<"skill">`'skill'`.as("resource_type"),
             })
-            .from(authoredSkill)
+            .from(resource)
             .where(
               and(
-                eq(authoredSkill.id, input.skillId),
-                eq(authoredSkill.draft_revision_id, revisionId),
-                eq(authoredSkill.state_version, current.stateVersion + 1),
-                isNull(authoredSkill.archived_at),
+                eq(resource.resource_type, "skill"),
+                and(
+                  eq(resource.id, input.skillId),
+                  eq(resource.draft_revision_id, revisionId),
+                  eq(resource.state_version, current.stateVersion + 1),
+                  isNull(resource.archived_at),
+                ),
               ),
             ),
         )
         .returning();
-      let updatedRecords: (typeof authoredSkill.$inferSelect)[];
+      let updatedRecords: (typeof resource.$inferSelect)[];
       let revisionRecords: (typeof resourceRevision.$inferSelect)[];
 
       if (input.audit) {
@@ -580,13 +593,16 @@ export class AuthoredSkillRepository extends BaseRepository {
                   ),
                   created_at: sql<string>`${now}`.as("created_at"),
                 })
-                .from(authoredSkill)
+                .from(resource)
                 .where(
                   and(
-                    eq(authoredSkill.id, input.skillId),
-                    eq(authoredSkill.draft_revision_id, revisionId),
-                    eq(authoredSkill.state_version, current.stateVersion + 1),
-                    isNull(authoredSkill.archived_at),
+                    eq(resource.resource_type, "skill"),
+                    and(
+                      eq(resource.id, input.skillId),
+                      eq(resource.draft_revision_id, revisionId),
+                      eq(resource.state_version, current.stateVersion + 1),
+                      isNull(resource.archived_at),
+                    ),
                   ),
                 ),
             )
@@ -633,7 +649,7 @@ export class AuthoredSkillRepository extends BaseRepository {
   ): Promise<AuthoredSkillRecord | null> {
     const now = new Date().toISOString();
     const promotion = this.database
-      .update(authoredSkill)
+      .update(resource)
       .set({
         stable_revision_id: draftRevisionId,
         state_version: expectedStateVersion + 1,
@@ -641,15 +657,18 @@ export class AuthoredSkillRepository extends BaseRepository {
       })
       .where(
         and(
-          eq(authoredSkill.id, skillId),
-          eq(authoredSkill.draft_revision_id, draftRevisionId),
-          sql`${authoredSkill.stable_revision_id} <> ${draftRevisionId}`,
-          eq(authoredSkill.state_version, expectedStateVersion),
-          isNull(authoredSkill.archived_at),
+          eq(resource.resource_type, "skill"),
+          and(
+            eq(resource.id, skillId),
+            eq(resource.draft_revision_id, draftRevisionId),
+            sql`${resource.stable_revision_id} <> ${draftRevisionId}`,
+            eq(resource.state_version, expectedStateVersion),
+            isNull(resource.archived_at),
+          ),
         ),
       )
       .returning();
-    let promotedRecords: (typeof authoredSkill.$inferSelect)[];
+    let promotedRecords: (typeof resource.$inferSelect)[];
 
     if (audit) {
       const values = buildWorkspaceAuditRecordValues({
@@ -673,14 +692,17 @@ export class AuthoredSkillRepository extends BaseRepository {
                 ),
                 created_at: sql<string>`${now}`.as("created_at"),
               })
-              .from(authoredSkill)
+              .from(resource)
               .where(
                 and(
-                  eq(authoredSkill.id, skillId),
-                  eq(authoredSkill.draft_revision_id, draftRevisionId),
-                  sql`${authoredSkill.stable_revision_id} <> ${draftRevisionId}`,
-                  eq(authoredSkill.state_version, expectedStateVersion),
-                  isNull(authoredSkill.archived_at),
+                  eq(resource.resource_type, "skill"),
+                  and(
+                    eq(resource.id, skillId),
+                    eq(resource.draft_revision_id, draftRevisionId),
+                    sql`${resource.stable_revision_id} <> ${draftRevisionId}`,
+                    eq(resource.state_version, expectedStateVersion),
+                    isNull(resource.archived_at),
+                  ),
                 ),
               ),
           )
@@ -703,18 +725,22 @@ export class AuthoredSkillRepository extends BaseRepository {
     expectedStateVersion?: number,
   ): Promise<AuthoredSkillRecord | null> {
     const now = new Date().toISOString();
-    const conditions = [eq(authoredSkill.id, skillId), isNull(authoredSkill.archived_at)];
+    const conditions = [
+      eq(resource.resource_type, "skill"),
+      eq(resource.id, skillId),
+      isNull(resource.archived_at),
+    ];
 
     if (expectedStateVersion !== undefined) {
-      conditions.push(eq(authoredSkill.state_version, expectedStateVersion));
+      conditions.push(eq(resource.state_version, expectedStateVersion));
     }
 
     const [archived] = await this.database
-      .update(authoredSkill)
+      .update(resource)
       .set({
         archived_at: now,
         updated_at: now,
-        state_version: sql`${authoredSkill.state_version} + 1`,
+        state_version: sql`${resource.state_version} + 1`,
       })
       .where(and(...conditions))
       .returning();
@@ -728,17 +754,20 @@ export class AuthoredSkillRepository extends BaseRepository {
     expectedRevisionId: string,
   ): Promise<boolean> {
     const purged = await this.database
-      .delete(authoredSkill)
+      .delete(resource)
       .where(
         and(
-          eq(authoredSkill.id, skillId),
-          eq(authoredSkill.state_version, expectedStateVersion),
-          eq(authoredSkill.draft_revision_id, expectedRevisionId),
-          eq(authoredSkill.stable_revision_id, expectedRevisionId),
-          isNull(authoredSkill.archived_at),
+          eq(resource.resource_type, "skill"),
+          and(
+            eq(resource.id, skillId),
+            eq(resource.state_version, expectedStateVersion),
+            eq(resource.draft_revision_id, expectedRevisionId),
+            eq(resource.stable_revision_id, expectedRevisionId),
+            isNull(resource.archived_at),
+          ),
         ),
       )
-      .returning({ id: authoredSkill.id });
+      .returning({ id: resource.id });
 
     return purged.length > 0;
   }

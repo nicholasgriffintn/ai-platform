@@ -81,7 +81,9 @@ describe("OutputRepository", () => {
     );
 
     expect(revisionInsertIndex).toBeGreaterThan(-1);
-    expect(queries).toContainEqual(expect.stringContaining("WHERE id = ? AND revision = ?"));
+    expect(queries).toContainEqual(
+      expect.stringContaining("WHERE resource_type = 'output' AND id = ? AND revision = ?"),
+    );
     expect(bind.mock.calls[revisionInsertIndex]).toEqual([
       "output-1",
       2,

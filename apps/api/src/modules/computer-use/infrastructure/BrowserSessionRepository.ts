@@ -22,7 +22,7 @@ export interface BrowserSessionRecord {
 export class BrowserSessionRepository extends BaseRepository {
   async get(id: string): Promise<BrowserSessionRecord | null> {
     return this.runQuery<BrowserSessionRecord>(
-      "SELECT * FROM browser_session WHERE id = ?",
+      "SELECT * FROM provider_session WHERE session_type = 'browser' AND id = ?",
       [id],
       true,
     );
@@ -39,7 +39,7 @@ export class BrowserSessionRepository extends BaseRepository {
     >,
   ): Promise<BrowserSessionRecord> {
     await this.runQuery(
-      "INSERT OR IGNORE INTO browser_session (id, user_id, conversation_id, workspace_id, provider, credential_source, tool_call_id, model, input_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT OR IGNORE INTO provider_session (session_type, id, user_id, conversation_id, workspace_id, provider, credential_source, tool_call_id, model, input_hash) VALUES ('browser', ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         input.id,
         input.user_id,
@@ -53,7 +53,7 @@ export class BrowserSessionRepository extends BaseRepository {
       ],
     );
     const record = await this.runQuery<BrowserSessionRecord>(
-      "SELECT * FROM browser_session WHERE user_id = ? AND conversation_id = ? AND tool_call_id = ?",
+      "SELECT * FROM provider_session WHERE session_type = 'browser' AND user_id = ? AND conversation_id = ? AND tool_call_id = ?",
       [input.user_id, input.conversation_id, input.tool_call_id],
       true,
     );
@@ -67,14 +67,14 @@ export class BrowserSessionRepository extends BaseRepository {
 
   async bind(id: string, providerSessionId: string): Promise<void> {
     await this.runQuery(
-      "UPDATE browser_session SET provider_session_id = ? WHERE id = ? AND provider_session_id IS NULL AND destroyed_at IS NULL",
+      "UPDATE provider_session SET provider_session_id = ? WHERE session_type = 'browser' AND id = ? AND provider_session_id IS NULL AND destroyed_at IS NULL",
       [providerSessionId, id],
     );
   }
 
   async claimCreation(id: string): Promise<boolean> {
     const claimed = await this.runQuery<{ id: string }>(
-      "UPDATE browser_session SET creation_claimed = 1, creation_started_at = ? WHERE id = ? AND creation_claimed = 0 AND destroyed_at IS NULL RETURNING id",
+      "UPDATE provider_session SET creation_claimed = 1, creation_started_at = ? WHERE session_type = 'browser' AND id = ? AND creation_claimed = 0 AND destroyed_at IS NULL RETURNING id",
       [Date.now(), id],
       true,
     );
@@ -83,15 +83,18 @@ export class BrowserSessionRepository extends BaseRepository {
   }
 
   async setStartupError(id: string): Promise<void> {
-    await this.runQuery("UPDATE browser_session SET last_error = ? WHERE id = ?", [
-      "Browser startup could not be confirmed. Refresh to recover the same session before trying another task.",
-      id,
-    ]);
+    await this.runQuery(
+      "UPDATE provider_session SET last_error = ? WHERE session_type = 'browser' AND id = ?",
+      [
+        "Browser startup could not be confirmed. Refresh to recover the same session before trying another task.",
+        id,
+      ],
+    );
   }
 
   async markDestroyed(id: string): Promise<void> {
     await this.runQuery(
-      "UPDATE browser_session SET destroyed_at = CURRENT_TIMESTAMP WHERE id = ?",
+      "UPDATE provider_session SET destroyed_at = CURRENT_TIMESTAMP WHERE session_type = 'browser' AND id = ?",
       [id],
     );
   }

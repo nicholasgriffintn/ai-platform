@@ -2,6 +2,7 @@ import type { ConnectorKnowledgeDocument } from "@ngriffin_uk/polychat-ai-integr
 import type { KnowledgeSyncResource } from "@ngriffin_uk/polychat-schemas";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import { sourceResourceSql } from "~/infrastructure/database/resource-storage";
 import type { IEnv } from "~/types";
 
 export interface KnowledgeSyncRecord {
@@ -117,7 +118,7 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
       AND cursor = ? AND status = 'active' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP
       AND EXISTS (SELECT 1 FROM provider_connection pc WHERE pc.id = source_knowledge_sync.connection_id
         AND pc.user_id = source_knowledge_sync.user_id AND pc.status = 'connected')
-      AND EXISTS (SELECT 1 FROM project p JOIN workspace_member wm ON wm.workspace_id = p.workspace_id
+      AND EXISTS (SELECT 1 FROM project p JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = p.workspace_id
         WHERE p.id = source_knowledge_sync.project_id AND wm.user_id = source_knowledge_sync.user_id AND wm.role IN ('owner', 'admin'))
       AND EXISTS (SELECT 1 FROM scoped_configuration grant_row WHERE grant_row.kind = 'capability' AND grant_row.attached = 1 AND grant_row.project_id = source_knowledge_sync.project_id
         AND grant_row.target_kind = 'recipe' AND grant_row.target_id = source_knowledge_sync.recipe_id AND grant_row.excluded = 0))`;
@@ -125,10 +126,10 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
     const last = sync.cursor + 1 === resource.resourceCount;
     const results = await this.env.DB.batch([
       this.env.DB.prepare(
-        `INSERT INTO source (id, created_by_user_id, project_id, connection_id, kind, title, status,
+        `INSERT INTO resource AS source (resource_type, id, created_by_user_id, scope_type, scope_id, connection_id, kind, title, status,
           content, provider, external_uri, metadata)
-         SELECT ?, ?, ?, ?, 'connector', ?, ?, ?, ?, ?, ? WHERE ${fence}
-         ON CONFLICT(id) DO UPDATE SET title = excluded.title, content = excluded.content,
+         SELECT 'source', ?, ?, 'project', ?, ?, 'connector', ?, ?, ?, ?, ?, ? WHERE ${fence}
+         ON CONFLICT(resource_type, id) DO UPDATE SET title = excluded.title, content = excluded.content,
            status = excluded.status, external_uri = excluded.external_uri, metadata = excluded.metadata,
            updated_at = CURRENT_TIMESTAMP
          WHERE source.created_by_user_id = excluded.created_by_user_id
@@ -158,7 +159,7 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
            last_error = NULL, lease_expires_at = datetime('now', '+10 minutes')
          WHERE id = ? AND generation = ? AND cursor = ? AND lease_token = ?
            AND status = 'active' AND lease_expires_at >= CURRENT_TIMESTAMP
-           AND EXISTS (SELECT 1 FROM source WHERE id = ? AND project_id = ? AND created_by_user_id = ?
+           AND EXISTS (SELECT 1 FROM ${sourceResourceSql} source WHERE id = ? AND project_id = ? AND created_by_user_id = ?
              AND connection_id = ?) AND ${fence}`,
       ).bind(
         last ? 0 : sync.cursor + 1,
@@ -179,8 +180,8 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async markUnavailable(sync: KnowledgeSyncRecord, token: string, sourceId: string): Promise<void> {
     await this.executeRun(
-      `UPDATE source SET status = 'archived', updated_at = CURRENT_TIMESTAMP
-       WHERE id = ? AND project_id = ? AND created_by_user_id = ? AND connection_id = ?
+      `UPDATE resource SET status = 'archived', updated_at = CURRENT_TIMESTAMP
+       WHERE resource_type = 'source' AND id = ? AND project_id = ? AND created_by_user_id = ? AND connection_id = ?
          AND EXISTS (SELECT 1 FROM source_knowledge_sync WHERE id = ? AND generation = ?
            AND cursor = ? AND status = 'active' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP)`,
       [

@@ -61,9 +61,9 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
     const revisionId = generateId();
     const statements = [
       this.env.DB.prepare(
-        `INSERT INTO memory_document (
-           id, scope_type, scope_id, kind, name, content, revision, created_by
-         ) VALUES (?, 'personal', ?, 'teammate_context', ?, '', 1, ?)`,
+        `INSERT INTO resource (
+           resource_type, id, scope_type, scope_id, kind, title, content, revision, created_by_user_id
+         ) VALUES ('memory', ?, 'personal', ?, 'teammate_context', ?, '', 1, ?)`,
       ).bind(
         params.memoryDocumentId,
         String(params.actorUserId),

@@ -74,10 +74,13 @@ describe("WorkspaceRepository", () => {
       2,
     );
 
-    expect(statements[0]?.query).toContain("UPDATE workspace_invitation");
+    expect(statements[0]?.query).toContain("UPDATE resource_grant");
+    expect(statements[0]?.query).toContain("kind = 'invitation'");
     expect(statements[0]?.query).toContain("status = 'pending' AND token_hash = ?");
     expect(statements[0]?.params).toEqual([2, "invitation-1", "token-hash"]);
-    expect(statements[1]?.query).toContain("INSERT INTO workspace_member");
+    expect(statements[1]?.query).toContain("INSERT INTO resource_grant");
+    expect(statements[1]?.query).toContain("SELECT 'membership'");
+    expect(statements[1]?.query).toContain("AND changes() = 1");
     expect(statements[1]?.query).toContain("accepted_by = ?");
   });
 

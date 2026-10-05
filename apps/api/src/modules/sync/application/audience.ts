@@ -69,7 +69,7 @@ export async function workspaceAudience(
   }
 
   const result = await database
-    .prepare(`SELECT user_id FROM workspace_member WHERE workspace_id = ?`)
+    .prepare(`SELECT user_id FROM resource_grant WHERE kind = 'membership' AND workspace_id = ?`)
     .bind(workspaceId)
     .all<{ user_id: number }>();
 

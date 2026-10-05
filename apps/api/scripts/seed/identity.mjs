@@ -93,9 +93,10 @@ export async function identityStatements({ serverKey }) {
       },
       { replace: true },
     ),
-    insert("oauth_account", {
-      provider_id: "github",
-      provider_user_id: OWNER.githubId,
+    insert("user_credential", {
+      kind: "oauth",
+      provider: "github",
+      external_id: OWNER.githubId,
       user_id: OWNER.id,
     }),
     insert("session", {
@@ -139,12 +140,13 @@ export async function identityStatements({ serverKey }) {
       }),
     ),
     insert(
-      "user_api_keys",
+      "user_credential",
       Object.fromEntries([
-        ["id", seedId("apikey", "debug")],
+        ["kind", "api_key"],
+        ["public_id", seedId("apikey", "debug")],
         ["user_id", OWNER.id],
-        ["api_key", REVEAL_UNAVAILABLE],
-        ["hashed_key", sha256Hex(API_KEY)],
+        ["encrypted_value", REVEAL_UNAVAILABLE],
+        ["token_hash", sha256Hex(API_KEY)],
         ["name", "Seed debugging key"],
         ["created_at", at({ days: 30 })],
         ["updated_at", at({ days: 30 })],

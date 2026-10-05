@@ -1661,13 +1661,13 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
 									"INSERT OR IGNORE INTO workspace (id, name, description, created_by) VALUES (?, 'Release Workspace', 'Release validation workspace', ?)"
 								).bind(workspaceId, userId),
 								env.DB.prepare(
-									"INSERT OR IGNORE INTO workspace_member (workspace_id, user_id, role) VALUES (?, ?, 'owner')"
+									"INSERT OR IGNORE INTO resource_grant (kind, workspace_id, user_id, role) VALUES ('membership', ?, ?, 'owner')"
 								).bind(workspaceId, userId),
 								env.DB.prepare(
 									"INSERT OR IGNORE INTO project (id, workspace_id, name, description, instructions, created_by) VALUES (?, ?, 'Release Project', 'Release validation project', 'Use concise answers.', ?)"
 								).bind(projectId, workspaceId, userId),
 								env.DB.prepare(
-									"INSERT OR IGNORE INTO output (id, created_by_user_id, project_id, capability_id, kind, title, status, sensitivity, content) VALUES (?, ?, ?, 'release-validation', 'report', 'Release validation output', 'ready', 'internal', ?)"
+									"INSERT OR IGNORE INTO resource (resource_type, scope_type, id, created_by_user_id, scope_id, capability_id, kind, title, status, sensitivity, content) VALUES ('output', 'project', ?, ?, ?, 'release-validation', 'report', 'Release validation output', 'ready', 'internal', ?)"
 								).bind(
 									"e2e-output-" + identity,
 									userId,
@@ -1737,7 +1737,7 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
 							return Response.json({ error: "Invalid queued Workbench fixture" }, { status: 400 });
 						}
 						const membership = await env.DB.prepare(
-							"SELECT p.id FROM project p JOIN workspace_member wm ON wm.workspace_id = p.workspace_id WHERE p.id = ? AND wm.user_id = ?"
+							"SELECT p.id FROM project p JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = p.workspace_id WHERE p.id = ? AND wm.user_id = ?"
 						).bind(projectId, session.user_id).first();
 						if (!membership) {
 							return Response.json({ error: "Project membership required" }, { status: 403 });
@@ -2017,7 +2017,7 @@ async function seedPersonas(database, seedMaterial) {
           .run();
         await database
           .prepare(
-            "INSERT INTO workspace_member (workspace_id, user_id, role) VALUES (?, ?, 'owner')",
+            "INSERT INTO resource_grant (kind, workspace_id, user_id, role) VALUES ('membership', ?, ?, 'owner')",
           )
           .bind(workspaceId, userId)
           .run();
@@ -2029,7 +2029,7 @@ async function seedPersonas(database, seedMaterial) {
           .run();
         await database
           .prepare(
-            "INSERT INTO output (id, created_by_user_id, project_id, capability_id, kind, title, status, sensitivity, content) VALUES (?, ?, ?, 'release-validation', 'report', 'Release validation output', 'ready', 'internal', ?)",
+            "INSERT INTO resource (resource_type, scope_type, id, created_by_user_id, scope_id, capability_id, kind, title, status, sensitivity, content) VALUES ('output', 'project', ?, ?, ?, 'release-validation', 'report', 'Release validation output', 'ready', 'internal', ?)",
           )
           .bind(
             `e2e-output-${index}`,
@@ -2066,7 +2066,7 @@ async function seedPersonas(database, seedMaterial) {
             .run();
           await database
             .prepare(
-              "INSERT INTO output (id, created_by_user_id, project_id, capability_id, kind, title, status, sensitivity, content) VALUES ('e2e-public-output', ?, ?, 'release-validation', 'report', 'Public release output', 'ready', 'internal', ?)",
+              "INSERT INTO resource (resource_type, scope_type, id, created_by_user_id, scope_id, capability_id, kind, title, status, sensitivity, content) VALUES ('output', 'project', 'e2e-public-output', ?, ?, 'release-validation', 'report', 'Public release output', 'ready', 'internal', ?)",
             )
             .bind(userId, projectId, JSON.stringify("Public release output content"))
             .run();

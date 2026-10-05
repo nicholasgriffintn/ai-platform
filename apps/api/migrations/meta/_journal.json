@@ -505,6 +505,34 @@
       "when": 1791231766553,
       "tag": "0071_consolidate_resource_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "6",
+      "when": 1791233142165,
+      "tag": "0072_consolidate_access_configuration",
+      "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "6",
+      "when": 1791233142169,
+      "tag": "0073_consolidate_resource_headers",
+      "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "6",
+      "when": 1791233142173,
+      "tag": "0074_consolidate_execution_primitives",
+      "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "6",
+      "when": 1791233142177,
+      "tag": "0075_consolidate_user_credentials",
+      "breakpoints": true
     }
   ]
 }

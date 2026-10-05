@@ -570,8 +570,8 @@ export class ConversationRepository extends BaseRepository {
 			       c.project_id IS NOT NULL
 			       AND p.id IS NOT NULL
 			       AND EXISTS (
-			         SELECT 1 FROM workspace_member wm
-			         WHERE wm.workspace_id = p.workspace_id AND wm.user_id = ?
+			         SELECT 1 FROM resource_grant wm
+			         WHERE wm.kind = 'membership' AND wm.workspace_id = p.workspace_id AND wm.user_id = ?
 			       )
 			     )
 			   )

@@ -9,6 +9,10 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
+import {
+  sourceResourceSql,
+  synthesisResourceSql,
+} from "~/infrastructure/database/resource-storage";
 import { scheduleDueRecipeExecutions } from "~/modules/apps/application/recipes/scheduler";
 import { previousUtcDay } from "~/modules/infra/application/reconciliation";
 import { overageSyncHourIso } from "~/modules/subscription/application/stripeOverageSync";
@@ -126,11 +130,11 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
        INNER JOIN scoped_configuration us ON u.id = us.user_id AND us.kind = 'preferences'
        LEFT JOIN (
          SELECT user_id, MAX(created_at) AS created_at
-         FROM memory_syntheses
+         FROM ${synthesisResourceSql} memory_syntheses
          WHERE namespace = 'global' AND is_active = 1
          GROUP BY user_id
        ) ms ON ms.user_id = u.id
-       LEFT JOIN source s
+       LEFT JOIN ${sourceResourceSql} s
          ON s.created_by_user_id = u.id
         AND s.kind = 'memory'
         AND s.status != 'archived'

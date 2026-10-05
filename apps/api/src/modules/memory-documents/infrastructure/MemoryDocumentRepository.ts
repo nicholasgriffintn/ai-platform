@@ -2,6 +2,7 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import { memoryResourceSql } from "~/infrastructure/database/resource-storage";
 import type {
   MemoryDocumentRow,
   MemoryDocumentRevisionRow,
@@ -48,7 +49,7 @@ export interface CommitMemoryReflection {
 export class MemoryDocumentRepository extends BaseRepository {
   public async listDocuments(scope: MemoryDocumentScopeKey): Promise<MemoryDocumentRow[]> {
     return this.runQuery<MemoryDocumentRow>(
-      `SELECT * FROM memory_document
+      `SELECT * FROM ${memoryResourceSql} memory_document
        WHERE scope_type = ? AND scope_id = ? AND kind = 'memory' AND deleted_at IS NULL
        ORDER BY name ASC`,
       [scope.scopeType, scope.scopeId],
@@ -60,7 +61,7 @@ export class MemoryDocumentRepository extends BaseRepository {
     name: string,
   ): Promise<MemoryDocumentRow | null> {
     return this.runQuery<MemoryDocumentRow>(
-      `SELECT * FROM memory_document
+      `SELECT * FROM ${memoryResourceSql} memory_document
        WHERE scope_type = ? AND scope_id = ? AND kind = 'memory' AND name = ? AND deleted_at IS NULL`,
       [scope.scopeType, scope.scopeId, name],
       true,
@@ -69,7 +70,7 @@ export class MemoryDocumentRepository extends BaseRepository {
 
   public async getDocumentById(documentId: string): Promise<MemoryDocumentRow | null> {
     return this.runQuery<MemoryDocumentRow>(
-      "SELECT * FROM memory_document WHERE id = ? AND deleted_at IS NULL",
+      `SELECT * FROM ${memoryResourceSql} memory_document WHERE id = ? AND deleted_at IS NULL`,
       [documentId],
       true,
     );
@@ -80,9 +81,9 @@ export class MemoryDocumentRepository extends BaseRepository {
 
     await this.executeBatch([
       this.env.DB.prepare(
-        `INSERT INTO memory_document
-           (id, scope_type, scope_id, kind, name, content, revision, created_by)
-         VALUES (?, ?, ?, ?, ?, ?, 1, ?)`,
+        `INSERT INTO resource
+           (resource_type, id, scope_type, scope_id, kind, title, content, revision, created_by_user_id)
+         VALUES ('memory', ?, ?, ?, ?, ?, ?, 1, ?)`,
       ).bind(
         id,
         record.scopeType,
@@ -125,7 +126,7 @@ export class MemoryDocumentRepository extends BaseRepository {
 
   public async softDeleteDocument(documentId: string): Promise<void> {
     await this.executeRun(
-      "UPDATE memory_document SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND deleted_at IS NULL",
+      "UPDATE resource SET deleted_at = CURRENT_TIMESTAMP WHERE resource_type = 'memory' AND id = ? AND deleted_at IS NULL",
       [documentId],
     );
   }
@@ -145,7 +146,7 @@ export class MemoryDocumentRepository extends BaseRepository {
     limit: number,
   ): Promise<MemoryDocumentRow[]> {
     return this.runQuery<MemoryDocumentRow>(
-      `SELECT * FROM memory_document
+      `SELECT * FROM ${memoryResourceSql} memory_document
        WHERE scope_type = ? AND scope_id = ? AND kind = 'memory' AND deleted_at IS NULL
          AND (lower(name) LIKE ? OR lower(content) LIKE ?)
        ORDER BY updated_at DESC
@@ -179,7 +180,7 @@ export class MemoryDocumentRepository extends BaseRepository {
     await this.executeBatch([
       this.env.DB.prepare(`INSERT OR IGNORE INTO memory_reflection
         (record_kind, id, context_id, conversation_id, through_message_id, revision, status, evidence_json)
-        SELECT 'result', ?, ?, ?, ?, ?, ?, ? FROM memory_document d
+        SELECT 'result', ?, ?, ?, ?, ?, ?, ? FROM ${memoryResourceSql} d
         WHERE d.id = ? AND d.revision = ? AND d.deleted_at IS NULL
           AND (SELECT through_message_id AS message_id FROM memory_reflection WHERE record_kind = 'checkpoint' AND context_id = ? AND conversation_id = ?) IS ?
           AND EXISTS (SELECT 1 FROM teammate_context c WHERE c.id = ? AND c.status = 'active' AND c.actor_user_id = ? AND c.memory_document_id = d.id)
@@ -235,9 +236,9 @@ export class MemoryDocumentRepository extends BaseRepository {
 
     return [
       this.env.DB.prepare(
-        `UPDATE memory_document
+        `UPDATE resource
          SET content = ?, revision = ?, updated_at = CURRENT_TIMESTAMP
-         WHERE id = ? AND revision = ? AND deleted_at IS NULL
+         WHERE resource_type = 'memory' AND id = ? AND revision = ? AND deleted_at IS NULL
            AND (? IS NULL OR NOT EXISTS (
              SELECT 1 FROM resource_revision
              WHERE resource_type = 'memory' AND document_id = ? AND operation_id = ?
