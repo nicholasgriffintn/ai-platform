@@ -22,9 +22,9 @@ export class SavedMessageRepository extends BaseRepository {
     note?: string | null;
   }): Promise<void> {
     await this.executeRun(
-      `INSERT INTO message_user_state (id, user_id, conversation_id, message_id, note)
-       VALUES (?, ?, ?, ?, ?)
-       ON CONFLICT (user_id, message_id)
+      `INSERT INTO user_resource_state (resource_type, id, user_id, saved_conversation_id, message_id, note)
+       VALUES ('message', ?, ?, ?, ?, ?)
+       ON CONFLICT (user_id, message_id) WHERE message_id IS NOT NULL
        DO UPDATE SET note = excluded.note, saved_at = CURRENT_TIMESTAMP`,
       [generateId(), input.userId, input.conversationId, input.messageId, input.note ?? null],
     );
@@ -40,7 +40,7 @@ export class SavedMessageRepository extends BaseRepository {
   }
 
   public async unsave(userId: number, messageId: string): Promise<void> {
-    await this.executeRun("DELETE FROM message_user_state WHERE user_id = ? AND message_id = ?", [
+    await this.executeRun("DELETE FROM user_resource_state WHERE user_id = ? AND message_id = ?", [
       userId,
       messageId,
     ]);
@@ -56,11 +56,11 @@ export class SavedMessageRepository extends BaseRepository {
     }
 
     return this.runQuery<SavedMessageRow>(
-      `SELECT s.*, c.title AS conversation_title, m.content AS message_content
-       FROM message_user_state s
-       LEFT JOIN conversation c ON c.id = s.conversation_id
-       LEFT JOIN message m ON m.id = s.message_id AND m.conversation_id = s.conversation_id
-       WHERE s.user_id = ?
+      `SELECT s.*, s.saved_conversation_id AS conversation_id, c.title AS conversation_title, m.content AS message_content
+       FROM user_resource_state s
+       LEFT JOIN conversation c ON c.id = s.saved_conversation_id
+       LEFT JOIN message m ON m.id = s.message_id AND m.conversation_id = s.saved_conversation_id
+       WHERE s.resource_type = 'message' AND s.user_id = ?
        ORDER BY s.saved_at DESC
        LIMIT ?`,
       [userId, limit],
@@ -69,7 +69,7 @@ export class SavedMessageRepository extends BaseRepository {
 
   public async listSavedMessageIds(userId: number, conversationId: string): Promise<string[]> {
     const rows = await this.runQuery<{ message_id: string }>(
-      "SELECT message_id FROM message_user_state WHERE user_id = ? AND conversation_id = ?",
+      "SELECT message_id FROM user_resource_state WHERE resource_type = 'message' AND user_id = ? AND saved_conversation_id = ?",
       [userId, conversationId],
     );
 

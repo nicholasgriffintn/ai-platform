@@ -365,29 +365,35 @@ export async function workStatements({ serverKey, teammates }) {
   );
 
   statements.push(
-    insert("project_capability", {
+    insert("scoped_configuration", {
+      kind: "capability",
+      attached: true,
       id: seedId("capability", "release-bot"),
       project_id: LAUNCH_PROJECT_ID,
-      kind: "teammate",
-      capability_id: teammates.releaseBot,
+      target_kind: "teammate",
+      target_id: teammates.releaseBot,
       created_by: OWNER.id,
       created_at: at({ days: 30 }),
     }),
-    insert("project_capability", {
+    insert("scoped_configuration", {
+      kind: "capability",
+      attached: true,
       id: seedId("capability", "no-image-gen"),
       project_id: LAUNCH_PROJECT_ID,
-      kind: "tool",
-      capability_id: "image_generation",
+      target_kind: "tool",
+      target_id: "image_generation",
       excluded: true,
       created_by: OWNER.id,
       created_at: at({ days: 30 }),
     }),
-    insert("project_capability", {
+    insert("scoped_configuration", {
+      kind: "capability",
+      attached: true,
       id: seedId("capability", "github-recipe"),
       project_id: LAUNCH_PROJECT_ID,
-      kind: "recipe",
-      capability_id: "github-pull-request-review",
-      configuration: { reviewers: ["nicholasgriffintn"] },
+      target_kind: "recipe",
+      target_id: "github-pull-request-review",
+      payload: { reviewers: ["nicholasgriffintn"] },
       created_by: OWNER.id,
       created_at: at({ days: 20 }),
     }),
@@ -502,10 +508,11 @@ export async function workStatements({ serverKey, teammates }) {
       ["FEATURE_FLAGS", "quoted-selections,scheduled-runs"],
     ]) {
       statements.push(
-        insert("project_environment_variable", {
+        insert("scoped_configuration", {
+          kind: "environment",
           id: seedId("env", name.toLowerCase()),
           project_id: LAUNCH_PROJECT_ID,
-          name,
+          target_id: name,
           encrypted_value: await encryptWithServerKey(serverKey, value),
           created_at: at({ days: 12 }),
           updated_at: at({ days: 12 }),
@@ -538,11 +545,12 @@ export async function workStatements({ serverKey, teammates }) {
         created_at: at({ days: 20 }),
         updated_at: at({ days: 4 }),
       }),
-      insert("memory_document_revision", {
+      insert("resource_revision", {
+        resource_type: "memory",
         id: `${documentId}-r1`,
         document_id: documentId,
         revision: 1,
-        content,
+        text_content: content,
         change_note: "Seeded",
         created_by: OWNER.id,
         created_at: at({ days: 20 }),
@@ -553,10 +561,11 @@ export async function workStatements({ serverKey, teammates }) {
   const projectGroup = seedId("group", "launch-threads");
 
   statements.push(
-    insert("conversation_group", {
+    insert("resource_collection", {
+      collection_type: "conversation",
       id: projectGroup,
       project_id: LAUNCH_PROJECT_ID,
-      name: "Launch threads",
+      title: "Launch threads",
       normalised_name: "launch threads",
       created_by_user_id: OWNER.id,
       created_at: at({ days: 10 }),
@@ -638,12 +647,7 @@ export async function workStatements({ serverKey, teammates }) {
 
   statements.push(...runningThread.statements);
   statements.push(
-    insert("conversation_group_membership", {
-      conversation_id: runningThread.conversationId,
-      group_id: projectGroup,
-      assigned_by_user_id: OWNER.id,
-      created_at: at({ hours: 4 }),
-    }),
+    `UPDATE conversation SET group_id = ${sqlValue(projectGroup)}, group_assigned_by_user_id = ${sqlValue(OWNER.id)}, group_assigned_at = ${sqlValue(at({ hours: 4 }))} WHERE id = ${sqlValue(runningThread.conversationId)};`,
   );
 
   const doneTaskId = seedId("task", "unread-badge");
@@ -862,7 +866,8 @@ export async function workStatements({ serverKey, teammates }) {
           created_at: run.completedAt,
           updated_at: run.completedAt,
         }),
-        insert("output_revision", {
+        insert("resource_revision", {
+          resource_type: "output",
           output_id: outputId,
           revision: 1,
           title: "run.log",
@@ -932,7 +937,7 @@ export async function workStatements({ serverKey, teammates }) {
     },
     {
       id: seedId("task", "approve-schema"),
-      objective: "Approve the conversation_user_state migration",
+      objective: "Approve the user_resource_state migration",
       status: "blocked",
       blockedReason: "awaiting_approval",
       blockedDetail:
@@ -1180,14 +1185,16 @@ Start with Free. Upgrade when you hit the allowance.`,
       created_at: at({ hours: 5 }),
       updated_at: at({ hours: 5 }),
     }),
-    insert("task_inbox_receipt", {
+    insert("user_resource_state", {
+      resource_type: "task",
       user_id: OWNER.id,
       task_id: doneTaskId,
       task_version: 1,
       read_at: at({ days: 2, hours: 4 }),
       dismissed_at: null,
     }),
-    insert("task_inbox_receipt", {
+    insert("user_resource_state", {
+      resource_type: "task",
       user_id: OWNER.id,
       task_id: seedId("task", "flaky-e2e"),
       task_version: 1,

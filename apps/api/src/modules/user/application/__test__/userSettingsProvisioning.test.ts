@@ -7,63 +7,47 @@ import type { IEnv, IUser } from "~/types";
 
 import { updateUserSettings } from "../userOperations";
 
-const CREATE_USER_SETTINGS_TABLE = `CREATE TABLE user_settings (
-  id text PRIMARY KEY NOT NULL,
-  user_id integer NOT NULL,
-  nickname text,
-  job_role text,
-  traits text,
-  preferences text,
-  guardrails_enabled integer DEFAULT false,
-  guardrails_provider text DEFAULT 'llamaguard',
-  bedrock_guardrail_id text,
-  bedrock_guardrail_version text,
-  embedding_provider text DEFAULT 'vectorize',
-  bedrock_knowledge_base_id text,
-  bedrock_knowledge_base_custom_data_source_id text,
-  s3vectors_bucket_name text,
-  s3vectors_index_name text,
-  s3vectors_region text,
-  dynamodb_vectors_table_name text,
-  dynamodb_vectors_index_name text,
-  dynamodb_vectors_region text,
-  memories_save_enabled integer DEFAULT false,
-  memories_chat_history_enabled integer DEFAULT false,
-  temporary_chats_default integer DEFAULT false,
-  memory_provider text DEFAULT 'built-in',
-  transcription_provider text DEFAULT 'workers',
-  transcription_model text DEFAULT 'whisper',
-  speech_provider text DEFAULT 'melotts',
-  speech_model text DEFAULT '@cf/myshell-ai/melotts',
-  search_provider text,
-  sandbox_model text,
-  tracking_enabled integer DEFAULT true,
-  advertise_machines integer DEFAULT true,
-  public_key text,
-  private_key text,
-  created_at text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
-  updated_at text DEFAULT (CURRENT_TIMESTAMP),
-  pet_source text DEFAULT 'preset',
-  pet_id text DEFAULT 'pip',
-  pet_travel_enabled integer DEFAULT false,
-  pet_animation_enabled integer DEFAULT false,
-  pet_model_overrides text DEFAULT '{"families":{},"providers":{}}' NOT NULL,
-  default_model_tier text,
-  default_model_id text,
-  default_compute_site text,
-  onboarding_seen text DEFAULT '[]' NOT NULL,
-  last_model_selection text
-)`;
-
-const CREATE_PROVIDER_SETTINGS_TABLE = `CREATE TABLE provider_settings (
-  id text PRIMARY KEY NOT NULL,
-  provider_id text NOT NULL,
-  user_id integer NOT NULL,
-  api_key text,
-  enabled integer DEFAULT false,
-  created_at text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
-  updated_at text DEFAULT (CURRENT_TIMESTAMP)
-)`;
+const CREATE_SCOPED_CONFIGURATION_TABLE = `CREATE TABLE scoped_configuration (
+  kind TEXT NOT NULL,
+  id TEXT NOT NULL,
+  user_id INTEGER,
+  project_id TEXT,
+  scope_type TEXT GENERATED ALWAYS AS (CASE WHEN project_id IS NOT NULL THEN 'project' ELSE 'user' END),
+  scope_id TEXT GENERATED ALWAYS AS (COALESCE(project_id, CAST(user_id AS TEXT))),
+  target_kind TEXT NOT NULL DEFAULT '',
+  target_id TEXT,
+  payload TEXT NOT NULL DEFAULT '{}',
+  encrypted_value TEXT,
+  public_key TEXT,
+  enabled INTEGER,
+  attached INTEGER NOT NULL DEFAULT 0,
+  excluded INTEGER NOT NULL DEFAULT 0,
+  created_by INTEGER,
+  configuration_id TEXT,
+  configuration_created_at TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (kind, id),
+  CONSTRAINT scoped_configuration_scope_check CHECK ((user_id IS NOT NULL) != (project_id IS NOT NULL)),
+  CONSTRAINT scoped_configuration_kind_check CHECK (
+    (kind IN ('preferences', 'provider', 'model') AND user_id IS NOT NULL)
+    OR (kind = 'capability' AND target_id IS NOT NULL)
+    OR (kind = 'environment' AND project_id IS NOT NULL AND target_id IS NOT NULL AND encrypted_value IS NOT NULL)
+  ),
+  CONSTRAINT scoped_configuration_attachment_check CHECK (attached = 0 OR (kind = 'capability' AND project_id IS NOT NULL AND created_by IS NOT NULL))
+);
+--> statement-breakpoint
+CREATE INDEX scoped_configuration_user_target_idx ON scoped_configuration(user_id, kind, target_id);
+--> statement-breakpoint
+CREATE INDEX scoped_configuration_project_target_idx ON scoped_configuration(project_id, kind, target_kind, target_id);
+--> statement-breakpoint
+CREATE INDEX scoped_configuration_target_idx ON scoped_configuration(kind, target_kind, target_id);
+--> statement-breakpoint
+CREATE UNIQUE INDEX scoped_configuration_capability_idx ON scoped_configuration(scope_type, scope_id, target_kind, target_id) WHERE kind = 'capability';
+--> statement-breakpoint
+CREATE UNIQUE INDEX scoped_configuration_environment_idx ON scoped_configuration(project_id, target_id) WHERE kind = 'environment';
+--> statement-breakpoint
+`;
 
 function createFakeD1(sqlite: Database.Database) {
   function makeStatement(query: string, params: unknown[] = []) {
@@ -116,8 +100,7 @@ describe("user settings provisioning", () => {
     const sqlite = new Database(":memory:");
 
     try {
-      sqlite.exec(CREATE_USER_SETTINGS_TABLE);
-      sqlite.exec(CREATE_PROVIDER_SETTINGS_TABLE);
+      sqlite.exec(CREATE_SCOPED_CONFIGURATION_TABLE);
 
       const context = createTestContext(sqlite);
 
@@ -129,11 +112,15 @@ describe("user settings provisioning", () => {
       });
 
       const saved = await context.repositories.userSettings.getUserSettings(42);
-      const rows = sqlite.prepare("SELECT COUNT(*) AS count FROM user_settings").get() as {
+      const rows = sqlite
+        .prepare("SELECT COUNT(*) AS count FROM scoped_configuration WHERE kind = 'preferences'")
+        .get() as {
         count: number;
       };
       const provisioned = sqlite
-        .prepare("SELECT public_key, private_key FROM user_settings WHERE user_id = 42")
+        .prepare(
+          "SELECT public_key, encrypted_value AS private_key FROM scoped_configuration WHERE kind = 'preferences' AND user_id = 42",
+        )
         .get() as { public_key: string | null; private_key: string | null };
 
       expect(saved?.nickname).toBe("New nickname");
@@ -152,15 +139,16 @@ describe("user settings provisioning", () => {
     const sqlite = new Database(":memory:");
 
     try {
-      sqlite.exec(CREATE_USER_SETTINGS_TABLE);
-      sqlite.exec(CREATE_PROVIDER_SETTINGS_TABLE);
+      sqlite.exec(CREATE_SCOPED_CONFIGURATION_TABLE);
 
       const context = createTestContext(sqlite);
 
       await updateUserSettings(context, { nickname: "First" }, 42);
       await updateUserSettings(context, { nickname: "Second" }, 42);
 
-      const rows = sqlite.prepare("SELECT COUNT(*) AS count FROM user_settings").get() as {
+      const rows = sqlite
+        .prepare("SELECT COUNT(*) AS count FROM scoped_configuration WHERE kind = 'preferences'")
+        .get() as {
         count: number;
       };
       const saved = await context.repositories.userSettings.getUserSettings(42);
@@ -176,14 +164,15 @@ describe("user settings provisioning", () => {
     const sqlite = new Database(":memory:");
 
     try {
-      sqlite.exec(CREATE_USER_SETTINGS_TABLE);
-      sqlite.exec(CREATE_PROVIDER_SETTINGS_TABLE);
+      sqlite.exec(CREATE_SCOPED_CONFIGURATION_TABLE);
 
       const context = createTestContext(sqlite);
 
       await updateUserSettings(context, { last_model_selection: { modelId: "test-model" } }, 42);
 
-      const providers = sqlite.prepare("SELECT COUNT(*) AS count FROM provider_settings").get() as {
+      const providers = sqlite
+        .prepare("SELECT COUNT(*) AS count FROM scoped_configuration WHERE kind = 'provider'")
+        .get() as {
         count: number;
       };
 
@@ -196,8 +185,7 @@ describe("user settings provisioning", () => {
     const sqlite = new Database(":memory:");
 
     try {
-      sqlite.exec(CREATE_USER_SETTINGS_TABLE);
-      sqlite.exec(CREATE_PROVIDER_SETTINGS_TABLE);
+      sqlite.exec(CREATE_SCOPED_CONFIGURATION_TABLE);
       const context = createTestContext(sqlite);
 
       await updateUserSettings(

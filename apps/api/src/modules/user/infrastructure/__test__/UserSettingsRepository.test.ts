@@ -151,8 +151,9 @@ describe("UserSettingsRepository", () => {
       }),
     ).resolves.toBe(OVER_RSA_OAEP_LIMIT_PROVIDER_KEY);
     expect(rowScopedRunQuerySpy.mock.calls[1]?.[0]).toContain("id = ?");
-    expect(rowScopedRunQuerySpy.mock.calls[1]?.[0]).toContain("provider_id = ?");
+    expect(rowScopedRunQuerySpy.mock.calls[1]?.[0]).toContain("target_id = ?");
     expect(rowScopedRunQuerySpy.mock.calls[1]?.[1]).toEqual([
+      "provider",
       42,
       "provider-settings-row-id",
       "cortecs",
@@ -168,9 +169,9 @@ describe("UserSettingsRepository", () => {
     await repo.deleteProviderApiKey(42, "cartesia");
 
     expect(executeRunSpy).toHaveBeenCalledTimes(1);
-    expect(executeRunSpy.mock.calls[0]?.[0]).toContain("api_key = ?");
+    expect(executeRunSpy.mock.calls[0]?.[0]).toContain("encrypted_value = ?");
     expect(executeRunSpy.mock.calls[0]?.[0]).toContain("enabled = ?");
-    expect(executeRunSpy.mock.calls[0]?.[0]).toContain("provider_id = ?");
+    expect(executeRunSpy.mock.calls[0]?.[0]).toContain("target_id = ?");
     expect(executeRunSpy.mock.calls[0]?.[1]).toEqual([null, 0, 42, "cartesia"]);
   });
 
@@ -194,10 +195,19 @@ describe("UserSettingsRepository", () => {
       search_provider: undefined,
     });
 
-    expect(prepare).toHaveBeenCalledExactlyOnceWith(
-      "UPDATE user_settings SET nickname = ?, preferences = ?, tracking_enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?",
+    expect(prepare).toHaveBeenCalledTimes(2);
+    expect(prepare.mock.calls[1]?.[0]).toContain(
+      "payload = json_set(payload, ?, json(?), ?, json(?), ?, json(?))",
     );
-    expect(prepare.mock.results[0].value.bind).toHaveBeenCalledWith(null, "", 0, 42);
+    expect(prepare.mock.results[1].value.bind).toHaveBeenCalledWith(
+      "$.nickname",
+      "null",
+      "$.preferences",
+      '""',
+      "$.tracking_enabled",
+      "0",
+      42,
+    );
   });
 
   it("ignores empty and unsupported settings updates", async () => {

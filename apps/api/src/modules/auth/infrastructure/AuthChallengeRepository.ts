@@ -3,7 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { and, eq, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { authChallenge } from "~/infrastructure/database/schema";
+import { authenticationToken } from "~/infrastructure/database/schema";
 import {
   decryptAuthChallengePayload,
   encryptAuthChallengePayload,
@@ -18,7 +18,8 @@ export class AuthChallengeRepository extends BaseRepository implements Challenge
       );
     }
 
-    await this.database.insert(authChallenge).values({
+    await this.database.insert(authenticationToken).values({
+      purpose: "challenge",
       token_hash: record.tokenHash,
       provider: record.provider,
       kind: record.kind,
@@ -32,8 +33,13 @@ export class AuthChallengeRepository extends BaseRepository implements Challenge
   public async findByTokenHash(tokenHash: string): Promise<AuthChallengeRecord | null> {
     const [record] = await this.database
       .select()
-      .from(authChallenge)
-      .where(eq(authChallenge.token_hash, tokenHash))
+      .from(authenticationToken)
+      .where(
+        and(
+          eq(authenticationToken.purpose, "challenge"),
+          eq(authenticationToken.token_hash, tokenHash),
+        ),
+      )
       .limit(1);
 
     return record ? this.mapAuthChallenge(record) : null;
@@ -41,8 +47,13 @@ export class AuthChallengeRepository extends BaseRepository implements Challenge
 
   public async consumeByTokenHash(tokenHash: string): Promise<AuthChallengeRecord | null> {
     const [record] = await this.database
-      .delete(authChallenge)
-      .where(eq(authChallenge.token_hash, tokenHash))
+      .delete(authenticationToken)
+      .where(
+        and(
+          eq(authenticationToken.purpose, "challenge"),
+          eq(authenticationToken.token_hash, tokenHash),
+        ),
+      )
       .returning();
 
     return record ? this.mapAuthChallenge(record) : null;
@@ -50,23 +61,34 @@ export class AuthChallengeRepository extends BaseRepository implements Challenge
 
   public async incrementAttempts(tokenHash: string, expectedAttempts: number): Promise<boolean> {
     const updated = await this.database
-      .update(authChallenge)
-      .set({ attempts: sql`${authChallenge.attempts} + 1` })
+      .update(authenticationToken)
+      .set({ attempts: sql`${authenticationToken.attempts} + 1` })
       .where(
-        and(eq(authChallenge.token_hash, tokenHash), eq(authChallenge.attempts, expectedAttempts)),
+        and(
+          eq(authenticationToken.purpose, "challenge"),
+          eq(authenticationToken.token_hash, tokenHash),
+          eq(authenticationToken.attempts, expectedAttempts),
+        ),
       )
-      .returning({ tokenHash: authChallenge.token_hash });
+      .returning({ tokenHash: authenticationToken.token_hash });
 
     return updated.length === 1;
   }
 
   private async mapAuthChallenge(
-    record: typeof authChallenge.$inferSelect,
+    record: typeof authenticationToken.$inferSelect,
   ): Promise<AuthChallengeRecord> {
     if (!this.env.JWT_SECRET) {
       throw new AssistantError(
         "JWT_SECRET is required for challenge encryption",
         ErrorType.CONFIGURATION_ERROR,
+      );
+    }
+
+    if (!record.provider || !record.kind || !record.payload) {
+      throw new AssistantError(
+        "Stored authentication challenge is invalid",
+        ErrorType.INTERNAL_ERROR,
       );
     }
 

@@ -20,7 +20,7 @@ import {
 import type { IEnv } from "~/types";
 
 export type ModelAssetRecord = typeof modelAsset.$inferSelect;
-export type ModelVersionRecord = typeof modelAssetVersion.$inferSelect;
+export type ModelVersionRecord = Omit<typeof modelAssetVersion.$inferSelect, "dataset_profile">;
 export type ModelFileRecord = typeof modelAssetFile.$inferSelect;
 
 export interface CreateVersionInput {
@@ -32,6 +32,8 @@ export interface CreateVersionInput {
   createdBy: number | null;
   files: Array<{ path: string; size: number; sha256: string | null; format: WeightFormat | null }>;
 }
+
+const { dataset_profile: _datasetProfile, ...versionColumns } = getTableColumns(modelAssetVersion);
 
 const FILE_COLUMN_COUNT = Object.keys(getTableColumns(modelAssetFile)).length;
 
@@ -131,7 +133,7 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async findVersion(assetId: string, revision: string): Promise<ModelVersionRecord | null> {
     const [record] = await this.database
-      .select()
+      .select(versionColumns)
       .from(modelAssetVersion)
       .where(and(eq(modelAssetVersion.asset_id, assetId), eq(modelAssetVersion.revision, revision)))
       .limit(1);
@@ -152,7 +154,7 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
         attributes: input.attributes,
         created_by: input.createdBy,
       })
-      .returning();
+      .returning(versionColumns);
     const [[record]] = await this.database.batch([
       versionInsert,
       ...this.fileInserts(id, input.files),
@@ -163,7 +165,7 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async getVersion(workspaceId: string, versionId: string): Promise<ModelVersionRecord | null> {
     const [record] = await this.database
-      .select()
+      .select(versionColumns)
       .from(modelAssetVersion)
       .where(
         and(eq(modelAssetVersion.workspace_id, workspaceId), eq(modelAssetVersion.id, versionId)),
@@ -175,7 +177,7 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async getVersionById(versionId: string): Promise<ModelVersionRecord | null> {
     const [record] = await this.database
-      .select()
+      .select(versionColumns)
       .from(modelAssetVersion)
       .where(eq(modelAssetVersion.id, versionId))
       .limit(1);
@@ -196,7 +198,7 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async listVersions(workspaceId: string, versionIds?: string[]): Promise<ModelVersionRecord[]> {
     if (!versionIds) {
       return this.database
-        .select()
+        .select(versionColumns)
         .from(modelAssetVersion)
         .where(eq(modelAssetVersion.workspace_id, workspaceId))
         .orderBy(desc(modelAssetVersion.created_at));
@@ -204,7 +206,7 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
     const records = await this.selectInChunks(versionIds, (page) =>
       this.database
-        .select()
+        .select(versionColumns)
         .from(modelAssetVersion)
         .where(
           and(eq(modelAssetVersion.workspace_id, workspaceId), inArray(modelAssetVersion.id, page)),
@@ -216,7 +218,7 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async listAssetVersions(assetId: string): Promise<ModelVersionRecord[]> {
     return this.database
-      .select()
+      .select(versionColumns)
       .from(modelAssetVersion)
       .where(eq(modelAssetVersion.asset_id, assetId))
       .orderBy(desc(modelAssetVersion.created_at));
@@ -269,7 +271,7 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
           eq(modelAssetVersion.status, "failed"),
         ),
       )
-      .returning();
+      .returning(versionColumns);
 
     return version ?? null;
   }

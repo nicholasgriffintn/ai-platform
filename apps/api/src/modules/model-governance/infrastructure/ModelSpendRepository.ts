@@ -2,21 +2,35 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { modelBudget, modelCostEntry, modelSpendRequest } from "~/infrastructure/database/schema";
+import {
+  type ModelBudgetRecord,
+  modelBudget,
+  type ModelSpendRequestRecord,
+  modelSpendRequest,
+  modelSpendRequestChanges,
+  modelSpendRequestValues,
+  modelBudgetValues,
+  modelBudgetChanges,
+} from "~/infrastructure/database/model-storage";
+import {
+  modelCostEntry,
+  modelConfiguration,
+  modelApproval,
+} from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
-export type ModelBudgetRecord = typeof modelBudget.$inferSelect;
+export type { ModelBudgetRecord } from "~/infrastructure/database/model-storage";
 export type ModelCostEntryRecord = typeof modelCostEntry.$inferSelect;
-export type ModelSpendRequestRecord = typeof modelSpendRequest.$inferSelect;
+export type { ModelSpendRequestRecord } from "~/infrastructure/database/model-storage";
 
 export const WORKSPACE_BUDGET_SCOPE_KEY = "workspace";
 
 export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async listBudgets(workspaceId: string): Promise<ModelBudgetRecord[]> {
     return this.database
-      .select()
-      .from(modelBudget)
-      .where(eq(modelBudget.workspace_id, workspaceId));
+      .select(modelBudget)
+      .from(modelConfiguration)
+      .where(and(eq(modelConfiguration.kind, "budget"), eq(modelBudget.workspace_id, workspaceId)));
   }
 
   async saveBudget(input: {
@@ -40,26 +54,37 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
       updated_at: new Date().toISOString(),
     };
     const [record] = await this.database
-      .insert(modelBudget)
-      .values({
-        id: generateId(),
-        workspace_id: input.workspaceId,
-        scope_key: input.projectId ?? WORKSPACE_BUDGET_SCOPE_KEY,
-        ...values,
-      })
+      .insert(modelConfiguration)
+      .values(
+        modelBudgetValues({
+          id: generateId(),
+          workspace_id: input.workspaceId,
+          scope_key: input.projectId ?? WORKSPACE_BUDGET_SCOPE_KEY,
+          ...values,
+        }),
+      )
       .onConflictDoUpdate({
-        target: [modelBudget.workspace_id, modelBudget.scope_key],
-        set: values,
+        target: [
+          modelConfiguration.workspace_id,
+          modelConfiguration.kind,
+          modelConfiguration.scope_key,
+        ],
+        set: modelBudgetChanges(values),
       })
-      .returning();
+      .returning(modelBudget);
 
     return record;
   }
 
   async deleteBudget(workspaceId: string, scopeKey: string): Promise<void> {
     await this.database
-      .delete(modelBudget)
-      .where(and(eq(modelBudget.workspace_id, workspaceId), eq(modelBudget.scope_key, scopeKey)));
+      .delete(modelConfiguration)
+      .where(
+        and(
+          eq(modelConfiguration.kind, "budget"),
+          and(eq(modelBudget.workspace_id, workspaceId), eq(modelBudget.scope_key, scopeKey)),
+        ),
+      );
   }
 
   async addCost(input: {
@@ -147,7 +172,7 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
       this.env.DB.prepare(`INSERT INTO model_cost_entry
         (id, workspace_id, project_id, subject_type, subject_id, provider, usd, basis, period_start, period_end)
         SELECT ?, workspace_id, project_id, 'deployment', id, provider, ?, 'estimate', ?, ?
-        FROM model_deployment WHERE workspace_id = ? AND id = ? AND billed_until IS ? AND ? > 0`).bind(
+        FROM model_operation WHERE kind = 'deployment' AND workspace_id = ? AND id = ? AND billed_until IS ? AND ? > 0`).bind(
         generateId(),
         input.usd,
         input.periodStart,
@@ -157,8 +182,8 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
         input.expectedBilledUntil,
         input.usd,
       ),
-      this.env.DB.prepare(`UPDATE model_deployment SET billed_until = ?
-        WHERE workspace_id = ? AND id = ? AND billed_until IS ?`).bind(
+      this.env.DB.prepare(`UPDATE model_operation SET billed_until = ?
+        WHERE kind = 'deployment' AND workspace_id = ? AND id = ? AND billed_until IS ?`).bind(
         input.periodEnd,
         input.workspaceId,
         input.deploymentId,
@@ -201,27 +226,34 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
     requestedBy: number;
   }): Promise<ModelSpendRequestRecord> {
     const [record] = await this.database
-      .insert(modelSpendRequest)
-      .values({
-        id: generateId(),
-        workspace_id: input.workspaceId,
-        project_id: input.projectId,
-        subject_type: input.subjectType,
-        payload: input.payload,
-        estimate_usd: input.estimateUsd,
-        reason: input.reason,
-        requested_by: input.requestedBy,
-      })
-      .returning();
+      .insert(modelApproval)
+      .values(
+        modelSpendRequestValues({
+          id: generateId(),
+          workspace_id: input.workspaceId,
+          project_id: input.projectId,
+          subject_type: input.subjectType,
+          payload: input.payload,
+          estimate_usd: input.estimateUsd,
+          reason: input.reason,
+          requested_by: input.requestedBy,
+        }),
+      )
+      .returning(modelSpendRequest);
 
     return record;
   }
 
   async getSpendRequest(workspaceId: string, id: string): Promise<ModelSpendRequestRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelSpendRequest)
-      .where(and(eq(modelSpendRequest.workspace_id, workspaceId), eq(modelSpendRequest.id, id)))
+      .select(modelSpendRequest)
+      .from(modelApproval)
+      .where(
+        and(
+          eq(modelApproval.kind, "spend"),
+          and(eq(modelSpendRequest.workspace_id, workspaceId), eq(modelSpendRequest.id, id)),
+        ),
+      )
       .limit(1);
 
     return record ?? null;
@@ -232,12 +264,15 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
     states: Array<ModelSpendRequestRecord["state"]> = ["pending"],
   ): Promise<ModelSpendRequestRecord[]> {
     return this.database
-      .select()
-      .from(modelSpendRequest)
+      .select(modelSpendRequest)
+      .from(modelApproval)
       .where(
         and(
-          eq(modelSpendRequest.workspace_id, workspaceId),
-          inArray(modelSpendRequest.state, states),
+          eq(modelApproval.kind, "spend"),
+          and(
+            eq(modelSpendRequest.workspace_id, workspaceId),
+            inArray(modelSpendRequest.state, states),
+          ),
         ),
       )
       .orderBy(desc(modelSpendRequest.created_at));
@@ -250,20 +285,25 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
     decidedBy: number;
   }): Promise<ModelSpendRequestRecord | null> {
     const [record] = await this.database
-      .update(modelSpendRequest)
-      .set({
-        state: input.state,
-        decided_by: input.decidedBy,
-        decided_at: new Date().toISOString(),
-      })
+      .update(modelApproval)
+      .set(
+        modelSpendRequestChanges({
+          state: input.state,
+          decided_by: input.decidedBy,
+          decided_at: new Date().toISOString(),
+        }),
+      )
       .where(
         and(
-          eq(modelSpendRequest.workspace_id, input.workspaceId),
-          eq(modelSpendRequest.id, input.id),
-          eq(modelSpendRequest.state, "pending"),
+          eq(modelApproval.kind, "spend"),
+          and(
+            eq(modelSpendRequest.workspace_id, input.workspaceId),
+            eq(modelSpendRequest.id, input.id),
+            eq(modelSpendRequest.state, "pending"),
+          ),
         ),
       )
-      .returning();
+      .returning(modelSpendRequest);
 
     return record ?? null;
   }
@@ -275,25 +315,30 @@ export class ModelSpendRepository extends BaseRepository<Pick<IEnv, "DB">> {
     subjectId: string | null;
   }): Promise<ModelSpendRequestRecord | null> {
     const [record] = await this.database
-      .update(modelSpendRequest)
-      .set({
-        state: input.state,
-        subject_id: input.subjectId,
-        ...(input.state === "failed"
-          ? {
-              reason:
-                "Execution failed. Check the training runs or deployments before submitting a new request.",
-            }
-          : {}),
-      })
+      .update(modelApproval)
+      .set(
+        modelSpendRequestChanges({
+          state: input.state,
+          subject_id: input.subjectId,
+          ...(input.state === "failed"
+            ? {
+                reason:
+                  "Execution failed. Check the training runs or deployments before submitting a new request.",
+              }
+            : {}),
+        }),
+      )
       .where(
         and(
-          eq(modelSpendRequest.workspace_id, input.workspaceId),
-          eq(modelSpendRequest.id, input.id),
-          eq(modelSpendRequest.state, "executing"),
+          eq(modelApproval.kind, "spend"),
+          and(
+            eq(modelSpendRequest.workspace_id, input.workspaceId),
+            eq(modelSpendRequest.id, input.id),
+            eq(modelSpendRequest.state, "executing"),
+          ),
         ),
       )
-      .returning();
+      .returning(modelSpendRequest);
 
     return record ?? null;
   }

@@ -69,7 +69,7 @@ const CANDIDATES_QUERY = `
     JOIN project p ON p.id = pt.project_id AND p.archived_at IS NULL
     JOIN workspace w ON w.id = pt.workspace_id
     JOIN workspace_member viewer ON viewer.workspace_id = pt.workspace_id AND viewer.user_id = ?
-    LEFT JOIN conversation_user_state org
+    LEFT JOIN user_resource_state org
       ON org.conversation_id = pt.conversation_id AND org.user_id = ?
     JOIN user owner ON owner.id = COALESCE(pt.runner_identity_user_id, pt.assignee_user_id, pt.created_by_user_id)
     WHERE (
@@ -127,7 +127,7 @@ const CANDIDATES_QUERY = `
     JOIN project p ON p.id = ar.project_id AND p.archived_at IS NULL
     JOIN workspace w ON w.id = p.workspace_id
     JOIN workspace_member viewer ON viewer.workspace_id = p.workspace_id AND viewer.user_id = ?
-    LEFT JOIN conversation_user_state org
+    LEFT JOIN user_resource_state org
       ON org.conversation_id = ar.conversation_id AND org.user_id = ?
     JOIN user owner ON owner.id = ar.created_by_user_id
     WHERE ar.capability_id = ?
@@ -184,7 +184,7 @@ const CANDIDATES_QUERY = `
     JOIN project p ON p.id = parent.project_id AND p.archived_at IS NULL
     JOIN workspace w ON w.id = p.workspace_id
     JOIN workspace_member viewer ON viewer.workspace_id = p.workspace_id AND viewer.user_id = ?
-    LEFT JOIN conversation_user_state org
+    LEFT JOIN user_resource_state org
       ON org.conversation_id = d.parent_conversation_id AND org.user_id = ?
     JOIN user owner ON owner.id = parent.user_id
     WHERE (
@@ -224,7 +224,7 @@ const CANDIDATES_QUERY = `
     JOIN project p ON p.id = tc.scope_id AND p.archived_at IS NULL
     JOIN workspace w ON w.id = p.workspace_id
     JOIN workspace_member viewer ON viewer.workspace_id = p.workspace_id AND viewer.user_id = ?
-    LEFT JOIN conversation_user_state org
+    LEFT JOIN user_resource_state org
       ON org.conversation_id = tc.home_conversation_id AND org.user_id = ?
     JOIN user owner ON owner.id = tc.actor_user_id
     WHERE m.is_archived = 0

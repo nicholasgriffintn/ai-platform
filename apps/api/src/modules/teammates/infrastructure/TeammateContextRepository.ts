@@ -71,9 +71,9 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
         params.actorUserId,
       ),
       this.env.DB.prepare(
-        `INSERT INTO memory_document_revision (
-           id, document_id, revision, content, change_note, created_by
-         ) VALUES (?, ?, 1, '', 'Created', ?)`,
+        `INSERT INTO resource_revision (resource_type, 
+           id, document_id, revision, text_content, change_note, created_by
+         ) VALUES ('memory', ?, ?, 1, '', 'Created', ?)`,
       ).bind(revisionId, params.memoryDocumentId, params.actorUserId),
       this.env.DB.prepare(
         `INSERT INTO conversation (

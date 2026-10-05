@@ -30,7 +30,7 @@ const INBOX_SOURCE = `FROM project_task pt
        JOIN project p ON p.id = pt.project_id
        JOIN workspace_member member
          ON member.workspace_id = pt.workspace_id AND member.user_id = ?
-       LEFT JOIN task_inbox_receipt receipt
+       LEFT JOIN user_resource_state receipt
          ON receipt.user_id = ?
         AND receipt.task_id = pt.id
         AND receipt.task_version = pt.attention_version
@@ -144,8 +144,8 @@ function formatRegistration(row: RegistrationRow): TaskNotificationRegistration 
 export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" | "PRIVATE_KEY">> {
   async getPreferences(userId: number): Promise<TaskNotificationPreferences> {
     const row = await this.runQuery<PreferenceRow>(
-      `SELECT enabled, decisions, failures, completions, assignments
-       FROM task_notification_preference WHERE user_id = ?`,
+      `SELECT COALESCE(json_extract(task_notification_preferences, '$.enabled'), 1) AS enabled, COALESCE(json_extract(task_notification_preferences, '$.decisions'), 1) AS decisions, COALESCE(json_extract(task_notification_preferences, '$.failures'), 1) AS failures, COALESCE(json_extract(task_notification_preferences, '$.completions'), 1) AS completions, COALESCE(json_extract(task_notification_preferences, '$.assignments'), 1) AS assignments
+       FROM user WHERE id = ?`,
       [userId],
       true,
     );
@@ -157,30 +157,20 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
     userId: number,
     updates: Partial<TaskNotificationPreferences>,
   ): Promise<TaskNotificationPreferences> {
-    const current = await this.getPreferences(userId);
-    const next = { ...current, ...updates };
-
     await this.executeRun(
-      `INSERT INTO task_notification_preference
-         (user_id, enabled, decisions, failures, completions, assignments, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(user_id) DO UPDATE SET
-         enabled = excluded.enabled,
-         decisions = excluded.decisions,
-         failures = excluded.failures,
-         completions = excluded.completions,
-         assignments = excluded.assignments,
-         updated_at = CURRENT_TIMESTAMP`,
-      [userId, next.enabled, next.decisions, next.failures, next.completions, next.assignments],
+      `UPDATE user SET task_notification_preferences = json_patch(
+         COALESCE(task_notification_preferences, '{}'), json(?)
+       ) WHERE id = ?`,
+      [JSON.stringify({ ...updates, updated_at: new Date().toISOString() }), userId],
     );
 
-    return next;
+    return this.getPreferences(userId);
   }
 
   async listRegistrations(userId: number): Promise<TaskNotificationRegistration[]> {
     const rows = await this.runQuery<RegistrationRow>(
-      `SELECT * FROM task_notification_registration
-       WHERE user_id = ? ORDER BY updated_at DESC`,
+      `SELECT * FROM notification_endpoint
+       WHERE platform = 'web' AND user_id = ? ORDER BY updated_at DESC`,
       [userId],
     );
 
@@ -212,18 +202,18 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
     await database.batch([
       database
         .prepare(
-          `DELETE FROM task_notification_registration
+          `DELETE FROM notification_endpoint
            WHERE platform = ? AND endpoint_hash = ?
              AND NOT (user_id = ? AND installation_id = ?)`,
         )
         .bind(input.platform, endpointHash, userId, input.installationId),
       database
         .prepare(
-          `INSERT INTO task_notification_registration
+          `INSERT INTO notification_endpoint
              (id, user_id, installation_id, platform, endpoint_hash, destination_json, state,
               failure_code, created_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, 'registered', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-           ON CONFLICT(user_id, platform, installation_id) DO UPDATE SET
+           ON CONFLICT(user_id, platform, installation_id) WHERE platform = 'web' DO UPDATE SET
              endpoint_hash = excluded.endpoint_hash,
              destination_json = excluded.destination_json,
              state = 'registered',
@@ -241,7 +231,7 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
     ]);
 
     const row = await this.runQuery<RegistrationRow>(
-      `SELECT * FROM task_notification_registration
+      `SELECT * FROM notification_endpoint
        WHERE user_id = ? AND platform = ? AND installation_id = ?`,
       [userId, input.platform, input.installationId],
       true,
@@ -256,7 +246,7 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
 
   async removeRegistration(userId: number, installationId: string): Promise<void> {
     await this.executeRun(
-      "DELETE FROM task_notification_registration WHERE user_id = ? AND installation_id = ?",
+      "DELETE FROM notification_endpoint WHERE user_id = ? AND installation_id = ?",
       [userId, installationId],
     );
   }
@@ -314,9 +304,9 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
 
         const timestampColumn = action === "read" ? "read_at" : "dismissed_at";
         const result = await this.executeRun(
-          `INSERT INTO task_inbox_receipt
-           (user_id, task_id, task_version, read_at, dismissed_at)
-         SELECT ?, pt.id, pt.attention_version,
+          `INSERT INTO user_resource_state
+           (resource_type, user_id, task_id, task_version, read_at, dismissed_at)
+         SELECT 'task', ?, pt.id, pt.attention_version,
            ${action === "read" ? "CURRENT_TIMESTAMP" : "NULL"},
            ${action === "dismiss" ? "CURRENT_TIMESTAMP" : "NULL"}
          FROM project_task pt
@@ -328,7 +318,7 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
              OR (pt.status = 'backlog' AND pt.assignee_user_id = ?)
              OR (pt.status = 'done' AND (pt.created_by_user_id = ? OR pt.assignee_user_id = ?))
            )
-         ON CONFLICT(user_id, task_id, task_version) DO UPDATE SET
+         ON CONFLICT(user_id, task_id, task_version) WHERE task_id IS NOT NULL DO UPDATE SET
            ${timestampColumn} = CURRENT_TIMESTAMP`,
           [userId, userId, parsed.taskId, parsed.taskVersion, userId, userId, userId],
         );
@@ -350,11 +340,11 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
       [...new Set(userIds)].map(async (userId) => {
         const registrations = await this.runQuery<{ id: string }>(
           `SELECT registration.id
-         FROM task_notification_registration registration
-         LEFT JOIN task_notification_preference preference ON preference.user_id = registration.user_id
-         WHERE registration.user_id = ? AND registration.state = 'registered'
-           AND COALESCE(preference.enabled, 1) = 1
-           AND COALESCE(preference.${category}, 1) = 1`,
+         FROM notification_endpoint registration
+         LEFT JOIN user preference ON preference.id = registration.user_id
+         WHERE registration.platform = 'web' AND registration.user_id = ? AND registration.state = 'registered'
+           AND COALESCE(json_extract(preference.task_notification_preferences, '$.enabled'), 1) = 1
+           AND COALESCE(json_extract(preference.task_notification_preferences, '$.${category}'), 1) = 1`,
           [userId],
         );
 
@@ -363,10 +353,10 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
             const id = generateId();
             const dedupeKey = `${registration.id}:${createTaskInboxItemId(taskId, taskVersion)}`;
             const result = await this.executeRun(
-              `INSERT OR IGNORE INTO task_notification_delivery
-             (id, dedupe_key, registration_id, user_id, task_id, task_version, category, status,
+              `INSERT OR IGNORE INTO delivery
+             (delivery_type, id, dedupe_key, registration_id, user_id, task_id, task_version, category, status,
               attempts, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+           VALUES ('task', ?, ?, ?, ?, ?, ?, ?, 'pending', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
               [id, dedupeKey, registration.id, userId, taskId, taskVersion, category],
             );
 
@@ -420,16 +410,16 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
            SELECT 1 FROM workspace_member member
            WHERE member.workspace_id = task.workspace_id AND member.user_id = delivery.user_id
          ) AS has_workspace_access,
-         preference.enabled AS preference_enabled,
-         preference.decisions AS preference_decisions,
-         preference.failures AS preference_failures,
-         preference.completions AS preference_completions,
-         preference.assignments AS preference_assignments
-       FROM task_notification_delivery delivery
-       JOIN task_notification_registration registration ON registration.id = delivery.registration_id
+         COALESCE(json_extract(preference.task_notification_preferences, '$.enabled'), 1) AS preference_enabled,
+         COALESCE(json_extract(preference.task_notification_preferences, '$.decisions'), 1) AS preference_decisions,
+         COALESCE(json_extract(preference.task_notification_preferences, '$.failures'), 1) AS preference_failures,
+         COALESCE(json_extract(preference.task_notification_preferences, '$.completions'), 1) AS preference_completions,
+         COALESCE(json_extract(preference.task_notification_preferences, '$.assignments'), 1) AS preference_assignments
+       FROM delivery delivery
+       JOIN notification_endpoint registration ON registration.platform = 'web' AND registration.id = delivery.registration_id
        JOIN project_task task ON task.id = delivery.task_id
-       LEFT JOIN task_notification_preference preference ON preference.user_id = delivery.user_id
-       WHERE delivery.id = ?`,
+       LEFT JOIN user preference ON preference.id = delivery.user_id
+       WHERE delivery.delivery_type = 'task' AND delivery.id = ?`,
       [deliveryId],
       true,
     );
@@ -511,14 +501,14 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
     },
   ): Promise<void> {
     await this.executeRun(
-      `UPDATE task_notification_delivery SET
+      `UPDATE delivery SET
          status = ?,
          provider_message_id = ?,
          failure_code = ?,
          next_attempt_at = ?,
          attempts = attempts + ?,
          updated_at = CURRENT_TIMESTAMP
-       WHERE id = ?`,
+       WHERE delivery_type = 'task' AND id = ?`,
       [
         updates.status,
         updates.providerMessageId ?? null,
@@ -532,8 +522,8 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
 
   async listPendingDeliveryIds(limit = 100): Promise<string[]> {
     const rows = await this.runQuery<{ id: string }>(
-      `SELECT id FROM task_notification_delivery
-       WHERE status = 'pending'
+      `SELECT id FROM delivery
+       WHERE delivery_type = 'task' AND status = 'pending'
          AND (next_attempt_at IS NULL OR datetime(next_attempt_at) <= datetime('now'))
        ORDER BY created_at ASC LIMIT ?`,
       [limit],
@@ -544,9 +534,9 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
 
   async markRegistrationFailed(registrationId: string, failureCode: string): Promise<void> {
     await this.executeRun(
-      `UPDATE task_notification_registration
+      `UPDATE notification_endpoint
        SET state = 'failed', failure_code = ?, updated_at = CURRENT_TIMESTAMP
-       WHERE id = ?`,
+       WHERE platform = 'web' AND id = ?`,
       [failureCode, registrationId],
     );
   }

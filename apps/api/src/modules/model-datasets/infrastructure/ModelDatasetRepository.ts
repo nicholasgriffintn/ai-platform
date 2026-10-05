@@ -1,10 +1,13 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { modelDatasetProfile } from "~/infrastructure/database/schema";
+import { modelAssetVersion, type ModelDatasetProfileData } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
-export type ModelDatasetProfileRecord = typeof modelDatasetProfile.$inferSelect;
+export type ModelDatasetProfileRecord = ModelDatasetProfileData & {
+  version_id: string;
+  workspace_id: string;
+};
 
 export class ModelDatasetRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async create(input: {
@@ -17,53 +20,81 @@ export class ModelDatasetRepository extends BaseRepository<Pick<IEnv, "DB">> {
     sourceRef: string;
     request: Record<string, unknown>;
   }): Promise<ModelDatasetProfileRecord> {
+    const profile: ModelDatasetProfileData = {
+      status: "processing",
+      shape: input.shape,
+      mapping: input.mapping,
+      governance: input.governance,
+      collection_method: input.collectionMethod,
+      source_ref: input.sourceRef,
+      request: input.request,
+      stats: {},
+      failure_reason: null,
+      processed_at: null,
+      created_at: new Date().toISOString(),
+    };
     const [record] = await this.database
-      .insert(modelDatasetProfile)
-      .values({
-        version_id: input.versionId,
-        workspace_id: input.workspaceId,
-        shape: input.shape,
-        mapping: input.mapping,
-        governance: input.governance,
-        collection_method: input.collectionMethod,
-        source_ref: input.sourceRef,
-        request: input.request,
-      })
-      .returning();
+      .update(modelAssetVersion)
+      .set({ dataset_profile: profile })
+      .where(
+        and(
+          eq(modelAssetVersion.id, input.versionId),
+          eq(modelAssetVersion.workspace_id, input.workspaceId),
+          isNull(modelAssetVersion.dataset_profile),
+        ),
+      )
+      .returning({ id: modelAssetVersion.id });
 
-    return record;
+    if (!record) {
+      throw new Error(
+        "Dataset version is missing, belongs to another workspace, or already has a profile",
+      );
+    }
+
+    return { version_id: record.id, workspace_id: input.workspaceId, ...profile };
   }
 
   async get(versionId: string): Promise<ModelDatasetProfileRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelDatasetProfile)
-      .where(eq(modelDatasetProfile.version_id, versionId))
+      .select({
+        id: modelAssetVersion.id,
+        workspace_id: modelAssetVersion.workspace_id,
+        profile: modelAssetVersion.dataset_profile,
+      })
+      .from(modelAssetVersion)
+      .where(eq(modelAssetVersion.id, versionId))
       .limit(1);
 
-    return record ?? null;
+    return record?.profile
+      ? { version_id: record.id, workspace_id: record.workspace_id, ...record.profile }
+      : null;
   }
 
   async list(workspaceId: string, versionIds?: string[]): Promise<ModelDatasetProfileRecord[]> {
-    const conditions = [eq(modelDatasetProfile.workspace_id, workspaceId)];
+    const conditions = [
+      eq(modelAssetVersion.workspace_id, workspaceId),
+      isNotNull(modelAssetVersion.dataset_profile),
+    ];
+    const selection = {
+      id: modelAssetVersion.id,
+      workspace_id: modelAssetVersion.workspace_id,
+      profile: modelAssetVersion.dataset_profile,
+    };
+    const rows = versionIds
+      ? await this.selectInChunks(versionIds, (chunk) =>
+          this.database
+            .select(selection)
+            .from(modelAssetVersion)
+            .where(and(...conditions, inArray(modelAssetVersion.id, chunk))),
+        )
+      : await this.database
+          .select(selection)
+          .from(modelAssetVersion)
+          .where(and(...conditions));
 
-    if (versionIds) {
-      if (versionIds.length === 0) {
-        return [];
-      }
-
-      return this.selectInChunks(versionIds, (chunk) =>
-        this.database
-          .select()
-          .from(modelDatasetProfile)
-          .where(and(...conditions, inArray(modelDatasetProfile.version_id, chunk))),
-      );
-    }
-
-    return this.database
-      .select()
-      .from(modelDatasetProfile)
-      .where(and(...conditions));
+    return rows.flatMap((row) =>
+      row.profile ? [{ version_id: row.id, workspace_id: row.workspace_id, ...row.profile }] : [],
+    );
   }
 
   async update(
@@ -75,9 +106,22 @@ export class ModelDatasetRepository extends BaseRepository<Pick<IEnv, "DB">> {
       >
     >,
   ): Promise<void> {
+    const updates = Object.entries(changes).filter(([, value]) => value !== undefined);
+
+    if (updates.length === 0) {
+      return;
+    }
+
     await this.database
-      .update(modelDatasetProfile)
-      .set(changes)
-      .where(eq(modelDatasetProfile.version_id, versionId));
+      .update(modelAssetVersion)
+      .set({
+        dataset_profile: sql`json_set(${modelAssetVersion.dataset_profile}, ${sql.join(
+          updates.map(([key, value]) => sql`${`$.${key}`}, json(${JSON.stringify(value)})`),
+          sql`, `,
+        )})`,
+      })
+      .where(
+        and(eq(modelAssetVersion.id, versionId), isNotNull(modelAssetVersion.dataset_profile)),
+      );
   }
 }

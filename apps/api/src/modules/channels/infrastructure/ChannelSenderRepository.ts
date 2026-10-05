@@ -13,9 +13,9 @@ export class ChannelSenderRepository extends BaseRepository {
     expiresAt: string,
   ): Promise<boolean> {
     const result = await this.executeRun(
-      `INSERT INTO channel_pairing_challenge (token_hash, binding_id, user_id, expires_at)
-      SELECT ?, id, ?, ? FROM channel_binding WHERE id = ? AND enabled = 1 AND (${CHANNEL_MEMBER_GUARD})
-      ON CONFLICT(binding_id, user_id) DO UPDATE SET token_hash = excluded.token_hash, expires_at = excluded.expires_at`,
+      `INSERT INTO authentication_token (purpose, token_hash, binding_id, user_id, expires_at)
+      SELECT 'channel_pairing', ?, id, ?, ? FROM channel_binding WHERE id = ? AND enabled = 1 AND (${CHANNEL_MEMBER_GUARD})
+      ON CONFLICT(binding_id, user_id) WHERE purpose = 'channel_pairing' DO UPDATE SET token_hash = excluded.token_hash, expires_at = excluded.expires_at`,
       [tokenHash, userId, expiresAt, bindingId, userId, userId],
     );
 
@@ -30,13 +30,13 @@ export class ChannelSenderRepository extends BaseRepository {
   ): Promise<ChannelSenderRow | null> {
     const result = await this.env.DB.batch([
       this.env.DB.prepare(`INSERT INTO channel_sender (id, binding_id, sender_id, user_id)
-        SELECT ?, channel_binding.id, ?, channel_pairing_challenge.user_id FROM channel_pairing_challenge
-        JOIN channel_binding ON channel_binding.id = channel_pairing_challenge.binding_id
-        WHERE token_hash = ? AND channel_binding.id = ? AND enabled = 1 AND julianday(expires_at) > julianday('now')
-          AND ? = 1 AND ((channel_binding.scope_type = 'personal' AND channel_binding.scope_id = CAST(channel_pairing_challenge.user_id AS TEXT))
+        SELECT ?, channel_binding.id, ?, authentication_token.user_id FROM authentication_token
+        JOIN channel_binding ON channel_binding.id = authentication_token.binding_id
+        WHERE authentication_token.purpose = 'channel_pairing' AND token_hash = ? AND channel_binding.id = ? AND enabled = 1 AND julianday(expires_at) > julianday('now')
+          AND ? = 1 AND ((channel_binding.scope_type = 'personal' AND channel_binding.scope_id = CAST(authentication_token.user_id AS TEXT))
             OR (channel_binding.scope_type = 'project' AND EXISTS (SELECT 1 FROM project JOIN workspace_member
               ON workspace_member.workspace_id = project.workspace_id WHERE project.id = channel_binding.scope_id
-              AND workspace_member.user_id = channel_pairing_challenge.user_id)))
+              AND workspace_member.user_id = authentication_token.user_id)))
         ON CONFLICT(binding_id, sender_id) DO UPDATE SET revision = channel_sender.revision + 1, revoked_at = NULL
           WHERE channel_sender.user_id = excluded.user_id`).bind(
         generateId(),
@@ -46,7 +46,7 @@ export class ChannelSenderRepository extends BaseRepository {
         isDirect ? 1 : 0,
       ),
       this.env.DB.prepare(
-        "DELETE FROM channel_pairing_challenge WHERE token_hash = ? AND changes() = 1",
+        "DELETE FROM authentication_token WHERE authentication_token.purpose = 'channel_pairing' AND token_hash = ? AND changes() = 1",
       ).bind(tokenHash),
     ]);
 
@@ -55,8 +55,8 @@ export class ChannelSenderRepository extends BaseRepository {
 
   async challengeBinding(tokenHash: string): Promise<ChannelBindingRow | null> {
     return this.runQuery<ChannelBindingRow>(
-      `SELECT channel_binding.* FROM channel_binding JOIN channel_pairing_challenge
-      ON channel_pairing_challenge.binding_id = channel_binding.id WHERE token_hash = ? AND enabled = 1
+      `SELECT channel_binding.* FROM channel_binding JOIN authentication_token
+      ON authentication_token.binding_id = channel_binding.id WHERE authentication_token.purpose = 'channel_pairing' AND token_hash = ? AND enabled = 1
       AND julianday(expires_at) > julianday('now')`,
       [tokenHash],
       true,
@@ -64,9 +64,10 @@ export class ChannelSenderRepository extends BaseRepository {
   }
 
   async discardChallenge(tokenHash: string): Promise<void> {
-    await this.executeRun("DELETE FROM channel_pairing_challenge WHERE token_hash = ?", [
-      tokenHash,
-    ]);
+    await this.executeRun(
+      "DELETE FROM authentication_token WHERE authentication_token.purpose = 'channel_pairing' AND token_hash = ?",
+      [tokenHash],
+    );
   }
 
   async getBySender(bindingId: string, senderId: string): Promise<ChannelSenderRow | null> {

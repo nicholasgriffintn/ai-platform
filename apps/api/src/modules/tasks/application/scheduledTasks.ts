@@ -123,7 +123,7 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
     const result = await env.DB.prepare(
       `SELECT u.id AS id, COUNT(s.id) AS new_memory_count
        FROM user u
-       INNER JOIN user_settings us ON u.id = us.user_id
+       INNER JOIN scoped_configuration us ON u.id = us.user_id AND us.kind = 'preferences'
        LEFT JOIN (
          SELECT user_id, MAX(created_at) AS created_at
          FROM memory_syntheses
@@ -136,7 +136,7 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
         AND s.status != 'archived'
         AND COALESCE(json_extract(s.metadata, '$.namespace'), 'global') = 'global'
         AND (ms.created_at IS NULL OR s.created_at > ms.created_at)
-       WHERE us.memories_save_enabled = 1
+       WHERE json_extract(us.payload, '$.memories_save_enabled') = 1
        GROUP BY u.id`,
     ).all();
 

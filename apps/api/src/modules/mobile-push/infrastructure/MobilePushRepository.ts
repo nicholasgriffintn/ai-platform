@@ -17,10 +17,10 @@ export interface MobilePushDeviceRecord {
 export class MobilePushRepository extends BaseRepository {
   async register(userId: number, input: RegisterMobilePushDevice): Promise<void> {
     await this.executeRun(
-      `INSERT INTO mobile_push_device (
+      `INSERT INTO notification_endpoint (
          id, user_id, token, environment, app_bundle_id, last_registered_at, invalidated_at
        ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, NULL)
-       ON CONFLICT(token) DO UPDATE SET
+       ON CONFLICT(token) WHERE token IS NOT NULL DO UPDATE SET
          user_id = excluded.user_id,
          environment = excluded.environment,
          app_bundle_id = excluded.app_bundle_id,
@@ -31,16 +31,16 @@ export class MobilePushRepository extends BaseRepository {
   }
 
   async unregister(userId: number, token: string): Promise<void> {
-    await this.executeRun("DELETE FROM mobile_push_device WHERE user_id = ? AND token = ?", [
-      userId,
-      token.toLowerCase(),
-    ]);
+    await this.executeRun(
+      "DELETE FROM notification_endpoint WHERE platform = 'ios' AND user_id = ? AND token = ?",
+      [userId, token.toLowerCase()],
+    );
   }
 
   async listActiveForUser(userId: number): Promise<MobilePushDeviceRecord[]> {
     return this.runQuery<MobilePushDeviceRecord>(
-      `SELECT * FROM mobile_push_device
-       WHERE user_id = ? AND invalidated_at IS NULL
+      `SELECT * FROM notification_endpoint
+       WHERE platform = 'ios' AND user_id = ? AND invalidated_at IS NULL
        ORDER BY last_registered_at DESC`,
       [userId],
     );
@@ -48,11 +48,11 @@ export class MobilePushRepository extends BaseRepository {
 
   async claimDelivery(deliveryId: string, deviceId: string): Promise<boolean> {
     const result = await this.executeRun(
-      `INSERT INTO mobile_push_delivery (id, device_id, status)
-       VALUES (?, ?, 'sending')
-       ON CONFLICT(id) DO UPDATE SET status = 'sending', error_code = NULL,
+      `INSERT INTO delivery (delivery_type, id, device_id, status)
+       VALUES ('mobile', ?, ?, 'sending')
+       ON CONFLICT(delivery_type, id) DO UPDATE SET status = 'sending', error_code = NULL,
          updated_at = CURRENT_TIMESTAMP
-       WHERE mobile_push_delivery.status = 'failed'`,
+       WHERE delivery.delivery_type = 'mobile' AND delivery.status = 'failed'`,
       [deliveryId, deviceId],
     );
 
@@ -65,16 +65,16 @@ export class MobilePushRepository extends BaseRepository {
     errorCode?: string,
   ): Promise<void> {
     await this.executeRun(
-      `UPDATE mobile_push_delivery
+      `UPDATE delivery
        SET status = ?, error_code = ?, updated_at = CURRENT_TIMESTAMP
-       WHERE id = ?`,
+       WHERE delivery_type = 'mobile' AND id = ?`,
       [status, errorCode ?? null, deliveryId],
     );
   }
 
   async invalidateDevice(deviceId: string): Promise<void> {
     await this.executeRun(
-      "UPDATE mobile_push_device SET invalidated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      "UPDATE notification_endpoint SET invalidated_at = CURRENT_TIMESTAMP WHERE platform = 'ios' AND id = ?",
       [deviceId],
     );
   }

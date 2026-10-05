@@ -54,7 +54,7 @@ interface PolicyRow {
 export class ProjectTaskIntegrationRepository extends BaseRepository {
   async getImport(id: string, projectId: string): Promise<ExternalTaskImport | null> {
     return this.runQuery<ExternalTaskImport>(
-      "SELECT i.* FROM project_task_external_import i JOIN project p ON p.id = i.project_id AND p.workspace_id = i.workspace_id WHERE i.id = ? AND i.project_id = ?",
+      "SELECT i.* FROM project_task_integration i JOIN project p ON p.id = i.project_id AND p.workspace_id = i.workspace_id WHERE i.kind = 'import' AND i.id = ? AND i.project_id = ?",
       [id, projectId],
       true,
     );
@@ -62,12 +62,12 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
 
   async recordImport(input: ExternalTaskImport): Promise<boolean> {
     const result = await this.executeRun(
-      `INSERT INTO project_task_external_import (id, workspace_id, project_id, owner_user_id, task_id, source_id, provider, account_id, external_id)
-       SELECT ?, p.workspace_id, p.id, ?, t.id, s.id, ?, ?, ?
+      `INSERT INTO project_task_integration (kind, id, workspace_id, project_id, owner_user_id, task_id, source_id, provider, account_id, external_id)
+       SELECT 'import', ?, p.workspace_id, p.id, ?, t.id, s.id, ?, ?, ?
        FROM project p JOIN project_task t ON t.project_id = p.id AND t.workspace_id = p.workspace_id
        JOIN source s ON s.project_id = p.id
        WHERE p.id = ? AND p.workspace_id = ? AND t.id = ? AND t.created_by_user_id = ? AND s.id = ?
-       ON CONFLICT(id) DO NOTHING`,
+       ON CONFLICT(kind, id) DO NOTHING`,
       [
         input.id,
         input.owner_user_id,
@@ -87,7 +87,7 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
 
   async getPolicy(id: string, projectId: string): Promise<ReviewPolicy | null> {
     const row = await this.runQuery<PolicyRow>(
-      "SELECT r.* FROM project_review_policy r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.id = ? AND r.project_id = ?",
+      "SELECT r.* FROM project_review_policy r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.kind = 'review' AND r.id = ? AND r.project_id = ?",
       [id, projectId],
       true,
     );
@@ -177,7 +177,7 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
 
   async getReview(id: string, projectId: string): Promise<PullRequestReview | null> {
     const row = await this.runQuery<ReviewRow>(
-      "SELECT r.* FROM project_task_review r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.id = ? AND r.project_id = ?",
+      "SELECT r.* FROM project_task_integration r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.kind = 'review' AND r.id = ? AND r.project_id = ?",
       [id, projectId],
       true,
     );
@@ -187,7 +187,7 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
 
   async getReviewForTask(taskId: string, projectId: string): Promise<PullRequestReview | null> {
     const row = await this.runQuery<ReviewRow>(
-      "SELECT r.* FROM project_task_review r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.task_id = ? AND r.project_id = ?",
+      "SELECT r.* FROM project_task_integration r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.kind = 'review' AND r.task_id = ? AND r.project_id = ?",
       [taskId, projectId],
       true,
     );
@@ -197,7 +197,7 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
 
   async listReviews(projectId: string): Promise<PullRequestReview[]> {
     const rows = await this.runQuery<ReviewRow>(
-      "SELECT r.* FROM project_task_review r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.project_id = ? ORDER BY r.created_at DESC LIMIT 100",
+      "SELECT r.* FROM project_task_integration r JOIN project p ON p.id = r.project_id AND p.workspace_id = r.workspace_id WHERE r.kind = 'review' AND r.project_id = ? ORDER BY r.created_at DESC LIMIT 100",
       [projectId],
     );
 
@@ -225,12 +225,12 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
     review: Omit<PullRequestReview, "publicationStatus" | "publishedUrl" | "createdAt">,
   ): Promise<boolean> {
     const result = await this.executeRun(
-      `INSERT INTO project_task_review (id, workspace_id, project_id, owner_user_id, task_id, source_id, target, policy_id, policy_revision)
-       SELECT ?, p.workspace_id, p.id, ?, t.id, s.id, ?, ?, ?
+      `INSERT INTO project_task_integration (kind, id, workspace_id, project_id, owner_user_id, task_id, source_id, target, policy_id, policy_revision)
+       SELECT 'review', ?, p.workspace_id, p.id, ?, t.id, s.id, ?, ?, ?
        FROM project p JOIN project_task t ON t.project_id = p.id AND t.workspace_id = p.workspace_id
        JOIN source s ON s.project_id = p.id
        WHERE p.id = ? AND p.workspace_id = ? AND t.id = ? AND t.created_by_user_id = ? AND s.id = ?
-       ON CONFLICT(id) DO NOTHING`,
+       ON CONFLICT(kind, id) DO NOTHING`,
       [
         review.id,
         review.ownerUserId,
@@ -255,13 +255,13 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
     body: string,
   ): Promise<boolean> {
     const result = await this.executeRun(
-      `UPDATE project_task_review
+      `UPDATE project_task_integration
        SET publication_status = 'publishing', publication_body = ?
-       WHERE id = ? AND project_id = ? AND publication_status = 'unpublished'
+       WHERE kind = 'review' AND id = ? AND project_id = ? AND publication_status = 'unpublished'
          AND EXISTS (
            SELECT 1 FROM project_task
-           WHERE project_task.id = project_task_review.task_id AND project_task.project_id = project_task_review.project_id
-             AND project_task.workspace_id = project_task_review.workspace_id
+           WHERE project_task.id = project_task_integration.task_id AND project_task.project_id = project_task_integration.project_id
+             AND project_task.workspace_id = project_task_integration.workspace_id
              AND project_task.status IN ('review', 'done')
              AND json_extract(project_task.completions, '$[#-1].id') = ?
          )`,
@@ -273,21 +273,21 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
 
   async settlePublication(id: string, projectId: string, url: string | null): Promise<void> {
     await this.executeRun(
-      "UPDATE project_task_review SET publication_status = ?, published_url = ? WHERE id = ? AND project_id = ? AND publication_status IN ('publishing', 'unknown')",
+      "UPDATE project_task_integration SET publication_status = ?, published_url = ? WHERE kind = 'review' AND id = ? AND project_id = ? AND publication_status IN ('publishing', 'unknown')",
       [url ? "published" : "unknown", url, id, projectId],
     );
   }
 
   async releasePublication(id: string, projectId: string, body: string): Promise<void> {
     await this.executeRun(
-      "UPDATE project_task_review SET publication_status = 'unpublished', publication_body = NULL WHERE id = ? AND project_id = ? AND publication_status = 'publishing' AND publication_body = ?",
+      "UPDATE project_task_integration SET publication_status = 'unpublished', publication_body = NULL WHERE kind = 'review' AND id = ? AND project_id = ? AND publication_status = 'publishing' AND publication_body = ?",
       [id, projectId, body],
     );
   }
 
   async getPublicationBody(id: string, projectId: string): Promise<string | null> {
     const row = await this.runQuery<{ publication_body: string | null }>(
-      "SELECT publication_body FROM project_task_review WHERE id = ? AND project_id = ?",
+      "SELECT publication_body FROM project_task_integration WHERE kind = 'review' AND id = ? AND project_id = ?",
       [id, projectId],
       true,
     );

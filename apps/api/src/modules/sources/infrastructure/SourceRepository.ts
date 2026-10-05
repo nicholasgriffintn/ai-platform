@@ -289,10 +289,10 @@ export class SourceRepository extends BaseRepository {
     updates: { title?: string; description?: string | null },
   ): Promise<void> {
     const result = this.buildUpdateQuery(
-      "source_collection",
+      "resource_collection",
       updates,
       ["title", "description"],
-      "id = ?",
+      "collection_type = 'source' AND id = ?",
       [collectionId],
     );
 
@@ -315,8 +315,9 @@ export class SourceRepository extends BaseRepository {
     kind?: SourceCollectionKind;
   }): Promise<SourceCollectionRecord> {
     const insert = this.buildInsertQuery(
-      "source_collection",
+      "resource_collection",
       {
+        collection_type: "source",
         id: generateId(),
         created_by_user_id: input.createdByUserId,
         project_id: input.projectId ?? null,
@@ -353,13 +354,17 @@ export class SourceRepository extends BaseRepository {
   }
 
   async getCollection(collectionId: string): Promise<SourceCollectionRecord | null> {
-    const { query, values } = this.buildSelectQuery("source_collection", { id: collectionId });
+    const { query, values } = this.buildSelectQuery("resource_collection", {
+      collection_type: "source",
+      id: collectionId,
+    });
 
     return this.runQuery<SourceCollectionRecord>(query, values, true);
   }
 
   async getProjectContextCollection(projectId: string): Promise<SourceCollectionRecord | null> {
-    const { query, values } = this.buildSelectQuery("source_collection", {
+    const { query, values } = this.buildSelectQuery("resource_collection", {
+      collection_type: "source",
       project_id: projectId,
       kind: "context",
     });
@@ -374,7 +379,7 @@ export class SourceRepository extends BaseRepository {
     const id = `project-context:${params.projectId}`;
 
     await this.executeRun(
-      `INSERT OR IGNORE INTO source_collection
+      `INSERT OR IGNORE INTO resource_collection
 			 (id, created_by_user_id, project_id, title, description, kind)
 			 VALUES (?, ?, ?, 'Project context', 'Sources attached to new project conversations.', 'context')`,
       [id, params.createdByUserId, params.projectId],
@@ -443,7 +448,10 @@ export class SourceRepository extends BaseRepository {
   }
 
   async deleteCollection(collectionId: string): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("source_collection", { id: collectionId });
+    const { query, values } = this.buildDeleteQuery("resource_collection", {
+      collection_type: "source",
+      id: collectionId,
+    });
 
     await this.executeRun(query, values);
   }
@@ -489,10 +497,10 @@ export class SourceRepository extends BaseRepository {
   ): Promise<SourceCollectionRecord[]> {
     return this.runQuery<SourceCollectionRecord>(
       `SELECT sc.*, COUNT(s.id) AS source_count
-			 FROM source_collection sc
+			 FROM resource_collection sc
 			 LEFT JOIN source_collection_member scm ON scm.collection_id = sc.id
          LEFT JOIN source s ON s.id = scm.source_id AND ${sourceVisibilitySql("s")}
-			 WHERE ${where}
+			 WHERE sc.collection_type = 'source' AND ${where}
 			 GROUP BY sc.id
 			 ORDER BY sc.updated_at DESC, sc.created_at DESC`,
       values,

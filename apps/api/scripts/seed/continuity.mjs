@@ -23,11 +23,12 @@ function memoryDocument(statements, { id, scopeType, scopeId, kind, name, conten
       created_at: createdAt,
       updated_at: at({ hours: 1 }),
     }),
-    insert("memory_document_revision", {
+    insert("resource_revision", {
+      resource_type: "memory",
       id: `${id}-r1`,
       document_id: id,
       revision: 1,
-      content,
+      text_content: content,
       change_note: "Seeded",
       operation_id: `seed:${id}`,
       created_by: OWNER.id,

@@ -14,7 +14,12 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { decodeBase64 } from "hono/utils/encode";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { prepareUserSettingsUpdates } from "~/infrastructure/database/user-settings";
+import {
+  buildUserSettingsPatch,
+  type StoredUserSettings,
+  USER_SETTINGS_DEFAULTS,
+  userSettingsColumns,
+} from "~/infrastructure/database/user-settings";
 import {
   createMessagingCredentialEnvelope,
   getMessagingCredentialConfigurationValues,
@@ -177,14 +182,22 @@ export class UserSettingsRepository extends BaseRepository {
   public async createUserSettings(userId: number): Promise<void> {
     try {
       const { query, values } = this.buildSelectQuery(
-        "user_settings",
-        { user_id: userId },
-        { columns: ["id"] },
+        "scoped_configuration",
+        { kind: "preferences", user_id: userId },
+        { columns: ["id", "public_key", "encrypted_value"] },
       );
-      const existing = await this.runQuery<{ id: string }>(query, values, true);
+      const existing = await this.runQuery<{
+        id: string;
+        public_key: string | null;
+        encrypted_value: string | null;
+      }>(query, values, true);
 
-      if (existing) {
+      if (existing?.public_key && existing.encrypted_value) {
         return;
+      }
+
+      if (existing?.public_key || existing?.encrypted_value) {
+        throw new AssistantError("User credentials are incomplete", ErrorType.DATABASE_ERROR);
       }
 
       const keyPair = await crypto.subtle.generateKey(
@@ -205,22 +218,23 @@ export class UserSettingsRepository extends BaseRepository {
       const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
       const publicKeyString = JSON.stringify(publicKey);
 
-      const userSettingsId = generateId();
-
-      const insert = this.buildInsertQuery("user_settings", {
-        id: userSettingsId,
-        user_id: userId,
-        public_key: publicKeyString,
-        private_key: encryptedPrivateKeyString,
+      const payload = JSON.stringify({
+        ...USER_SETTINGS_DEFAULTS,
         guardrails_enabled: DEFAULT_GUARDRAILS_ENABLED ? 1 : 0,
         guardrails_provider: DEFAULT_GUARDRAILS_PROVIDER,
       });
 
-      if (!insert) {
-        throw new AssistantError("Failed to create user settings", ErrorType.UNKNOWN_ERROR);
-      }
-
-      await this.executeRun(insert.query, insert.values);
+      await this.executeBatch([
+        this.env.DB.prepare(
+          `INSERT INTO scoped_configuration (kind, id, user_id, payload, public_key, encrypted_value)
+           SELECT 'preferences', ?, ?, ?, ?, ?
+           WHERE NOT EXISTS (SELECT 1 FROM scoped_configuration WHERE kind = 'preferences' AND user_id = ?)`,
+        ).bind(generateId(), userId, payload, publicKeyString, encryptedPrivateKeyString, userId),
+        this.env.DB.prepare(
+          `UPDATE scoped_configuration SET public_key = ?, encrypted_value = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE kind = 'preferences' AND user_id = ? AND public_key IS NULL AND encrypted_value IS NULL`,
+        ).bind(publicKeyString, encryptedPrivateKeyString, userId),
+      ]);
     } catch {
       throw new AssistantError("Failed to create user settings", ErrorType.UNKNOWN_ERROR);
     }
@@ -230,75 +244,31 @@ export class UserSettingsRepository extends BaseRepository {
     userId: number,
     settings: Record<string, unknown>,
   ): Promise<void> {
-    const updates = prepareUserSettingsUpdates(settings);
+    const patch = buildUserSettingsPatch(settings);
 
-    const allowedFields = Object.keys(updates);
-
-    const result = this.buildUpdateQuery("user_settings", updates, allowedFields, "user_id = ?", [
-      userId,
-    ]);
-
-    if (!result) {
+    if (!patch) {
       return;
     }
 
-    const queryWithTimestamp = result.query.replace(
-      "updated_at = datetime('now')",
-      "updated_at = CURRENT_TIMESTAMP",
-    );
-
-    await this.executeRun(queryWithTimestamp, result.values);
+    await this.executeBatch([
+      this.env.DB.prepare(
+        `INSERT INTO scoped_configuration (kind, id, user_id, payload)
+         SELECT 'preferences', ?, ?, ?
+         WHERE NOT EXISTS (SELECT 1 FROM scoped_configuration WHERE kind = 'preferences' AND user_id = ?)`,
+      ).bind(generateId(), userId, JSON.stringify(USER_SETTINGS_DEFAULTS), userId),
+      this.env.DB.prepare(
+        `UPDATE scoped_configuration SET payload = ${patch.expression}, updated_at = CURRENT_TIMESTAMP
+         WHERE kind = 'preferences' AND user_id = ?`,
+      ).bind(...patch.values, userId),
+    ]);
   }
 
   public async getUserSettings(userId: number): Promise<IUserSettings | null> {
-    const columns = [
-      "id",
-      "nickname",
-      "job_role",
-      "traits",
-      "preferences",
-      "tracking_enabled",
-      "advertise_machines",
-      "guardrails_enabled",
-      "guardrails_provider",
-      "bedrock_guardrail_id",
-      "bedrock_guardrail_version",
-      "embedding_provider",
-      "bedrock_knowledge_base_id",
-      "bedrock_knowledge_base_custom_data_source_id",
-      "s3vectors_bucket_name",
-      "s3vectors_index_name",
-      "s3vectors_region",
-      "dynamodb_vectors_table_name",
-      "dynamodb_vectors_index_name",
-      "dynamodb_vectors_region",
-      "memories_save_enabled",
-      "memories_chat_history_enabled",
-      "temporary_chats_default",
-      "memory_provider",
-      "transcription_provider",
-      "transcription_model",
-      "speech_provider",
-      "speech_model",
-      "search_provider",
-      "sandbox_model",
-      "default_model_tier",
-      "default_model_id",
-      "default_compute_site",
-      "last_model_selection",
-      "pet_source",
-      "pet_id",
-      "pet_travel_enabled",
-      "pet_animation_enabled",
-      "pet_model_overrides",
-      "onboarding_seen",
-    ];
-    const { query, values } = this.buildSelectQuery(
-      "user_settings",
-      { user_id: userId },
-      { columns },
+    const result = await this.runQuery<StoredUserSettings>(
+      `SELECT ${userSettingsColumns().join(", ")} FROM scoped_configuration WHERE kind = 'preferences' AND user_id = ?`,
+      [userId],
+      true,
     );
-    const result = await this.runQuery<any>(query, values, true);
 
     if (!result) {
       return null;
@@ -332,14 +302,14 @@ export class UserSettingsRepository extends BaseRepository {
       ),
       onboarding_seen: onboardingSeen.success ? onboardingSeen.data : [],
       last_model_selection: lastModelSelection.success ? lastModelSelection.data : null,
-    } as IUserSettings;
+    };
   }
 
   public async getUserEnabledModels(userId: number): Promise<Record<string, unknown>[]> {
     const { query, values } = this.buildSelectQuery(
-      "model_settings",
-      { user_id: userId },
-      { columns: ["id", "model_id", "enabled"] },
+      "scoped_configuration",
+      { user_id: userId, kind: "model" },
+      { columns: ["id", "target_id AS model_id", "enabled"] },
     );
     const userModels = (await this.runQuery<{
       model_id: string;
@@ -386,9 +356,9 @@ export class UserSettingsRepository extends BaseRepository {
 
     try {
       const { query: providerQuery, values: providerValues } = this.buildSelectQuery(
-        "provider_settings",
-        { user_id: userId, provider_id: providerId },
-        { columns: ["id", "api_key"] },
+        "scoped_configuration",
+        { kind: "provider", user_id: userId, target_id: providerId },
+        { columns: ["id", "encrypted_value AS api_key"] },
       );
 
       const existingProviderSettings = await this.runQuery<{ id: string; api_key: string | null }>(
@@ -402,8 +372,8 @@ export class UserSettingsRepository extends BaseRepository {
       }
 
       const { query: publicKeyQuery, values: publicKeyValues } = this.buildSelectQuery(
-        "user_settings",
-        { user_id: userId },
+        "scoped_configuration",
+        { kind: "preferences", user_id: userId },
         { columns: ["public_key"] },
       );
       const result = await this.runQuery<{ public_key: string }>(
@@ -444,7 +414,7 @@ export class UserSettingsRepository extends BaseRepository {
               value:
                 (await this.decryptStoredProviderApiKey(userId, {
                   id: existingProviderSettings.id,
-                  provider_id: providerId,
+                  target_id: providerId,
                 })) ?? "",
             }).credentials
           : null;
@@ -463,13 +433,13 @@ export class UserSettingsRepository extends BaseRepository {
       const encryptedApiKey = await this.encryptProviderApiKey(keyToEncrypt, publicKey);
 
       const update = this.buildUpdateQuery(
-        "provider_settings",
+        "scoped_configuration",
         {
-          api_key: encryptedApiKey,
+          encrypted_value: encryptedApiKey,
           enabled: 1,
         },
-        ["api_key", "enabled"],
-        "user_id = ? AND id = ?",
+        ["encrypted_value", "enabled"],
+        "kind = 'provider' AND user_id = ? AND id = ?",
         [userId, existingProviderSettings.id],
       );
 
@@ -502,9 +472,9 @@ export class UserSettingsRepository extends BaseRepository {
     }
 
     const { query: settingsQuery, values: settingsValues } = this.buildSelectQuery(
-      "user_settings",
-      { user_id: userId },
-      { columns: ["private_key"] },
+      "scoped_configuration",
+      { kind: "preferences", user_id: userId },
+      { columns: ["encrypted_value AS private_key"] },
     );
     const userSettings = await this.runQuery<{ private_key: string }>(
       settingsQuery,
@@ -542,9 +512,9 @@ export class UserSettingsRepository extends BaseRepository {
     const privateKey = await this.getProviderDecryptionKey(userId);
 
     const { query: providerQuery, values: providerValues } = this.buildSelectQuery(
-      "provider_settings",
-      { user_id: userId, ...where },
-      { columns: ["api_key"] },
+      "scoped_configuration",
+      { kind: "provider", user_id: userId, ...where },
+      { columns: ["encrypted_value AS api_key"] },
     );
     const result = await this.runQuery<{ api_key: string }>(providerQuery, providerValues, true);
 
@@ -565,7 +535,7 @@ export class UserSettingsRepository extends BaseRepository {
     }
 
     try {
-      return await this.decryptStoredProviderApiKey(userId, { provider_id: providerId });
+      return await this.decryptStoredProviderApiKey(userId, { target_id: providerId });
     } catch (error) {
       if (error instanceof AssistantError) {
         throw error;
@@ -591,7 +561,7 @@ export class UserSettingsRepository extends BaseRepository {
     try {
       return await this.decryptStoredProviderApiKey(params.userId, {
         id: params.providerSettingsId,
-        provider_id: params.providerId,
+        target_id: params.providerId,
       });
     } catch (error) {
       if (error instanceof AssistantError) {
@@ -612,13 +582,13 @@ export class UserSettingsRepository extends BaseRepository {
     }
 
     const update = this.buildUpdateQuery(
-      "provider_settings",
+      "scoped_configuration",
       {
-        api_key: null,
+        encrypted_value: null,
         enabled: 0,
       },
-      ["api_key", "enabled"],
-      "user_id = ? AND provider_id = ?",
+      ["encrypted_value", "enabled"],
+      "kind = 'provider' AND user_id = ? AND target_id = ?",
       [userId, providerId],
     );
 
@@ -641,9 +611,9 @@ export class UserSettingsRepository extends BaseRepository {
     const providers = configurableProviderIds;
 
     const existingQuery = this.buildSelectQuery(
-      "provider_settings",
-      { user_id: userId },
-      { columns: ["provider_id"] },
+      "scoped_configuration",
+      { kind: "provider", user_id: userId },
+      { columns: ["target_id AS provider_id"] },
     );
     const existingRows = await this.runQuery<{ provider_id: string }>(
       existingQuery.query,
@@ -656,10 +626,11 @@ export class UserSettingsRepository extends BaseRepository {
     const inserts = providers
       .filter((provider) => !existingProviders.has(provider))
       .map((provider) =>
-        this.buildInsertQuery("provider_settings", {
+        this.buildInsertQuery("scoped_configuration", {
+          kind: "provider",
           id: generateId(),
           user_id: userId,
-          provider_id: provider,
+          target_id: provider,
           enabled: isProviderPlatformEnabled(provider, this.env) ? 1 : 0,
         }),
       )
@@ -682,9 +653,9 @@ export class UserSettingsRepository extends BaseRepository {
 
   public async getUserProviderSettings(userId: number): Promise<Record<string, unknown>[]> {
     const { query, values } = this.buildSelectQuery(
-      "provider_settings",
-      { user_id: userId },
-      { columns: ["id", "provider_id", "enabled", "api_key"] },
+      "scoped_configuration",
+      { kind: "provider", user_id: userId },
+      { columns: ["id", "target_id AS provider_id", "enabled", "encrypted_value AS api_key"] },
     );
 
     const result = await this.runQuery<{
@@ -701,7 +672,7 @@ export class UserSettingsRepository extends BaseRepository {
         if (provider.api_key && isMessagingProviderId(provider.provider_id)) {
           const decryptedValue = await this.decryptStoredProviderApiKey(userId, {
             id: provider.id,
-            provider_id: provider.provider_id,
+            target_id: provider.provider_id,
           });
 
           if (decryptedValue) {
@@ -739,9 +710,9 @@ export class UserSettingsRepository extends BaseRepository {
     missingProviderIds: string[];
   }> {
     const { query, values } = this.buildSelectQuery(
-      "provider_settings",
-      { user_id: userId },
-      { columns: ["provider_id"] },
+      "scoped_configuration",
+      { kind: "provider", user_id: userId },
+      { columns: ["target_id AS provider_id"] },
     );
     const storedProviders = await this.runQuery<{ provider_id: string }>(query, values);
     const storedProviderIds = new Set(storedProviders.map(({ provider_id }) => provider_id));
@@ -760,9 +731,9 @@ export class UserSettingsRepository extends BaseRepository {
     providerId: string;
   }): Promise<{ id: string; user_id: number; provider_id: string; enabled: number } | null> {
     const { query, values } = this.buildSelectQuery(
-      "provider_settings",
-      { id: params.providerSettingsId, provider_id: params.providerId },
-      { columns: ["id", "user_id", "provider_id", "enabled"] },
+      "scoped_configuration",
+      { kind: "provider", id: params.providerSettingsId, target_id: params.providerId },
+      { columns: ["id", "user_id", "target_id AS provider_id", "enabled"] },
     );
 
     return this.runQuery<{
@@ -779,9 +750,9 @@ export class UserSettingsRepository extends BaseRepository {
     }
 
     const { query, values } = this.buildSelectQuery(
-      "provider_settings",
-      { user_id: userId, provider_id: providerId },
-      { columns: ["api_key"] },
+      "scoped_configuration",
+      { kind: "provider", user_id: userId, target_id: providerId },
+      { columns: ["encrypted_value AS api_key"] },
     );
 
     const result = await this.runQuery<{ api_key: string | null }>(query, values, true);

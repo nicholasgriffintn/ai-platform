@@ -1641,7 +1641,7 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
 								"INSERT OR IGNORE INTO session (id, user_id, expires_at) VALUES (?, ?, ?)"
 							).bind(sessionId, userId, expiresAt),
 							env.DB.prepare(
-								"INSERT OR IGNORE INTO user_settings (id, user_id, nickname, public_key, private_key, onboarding_seen) VALUES (?, ?, ?, ?, ?, ?)"
+								"INSERT OR IGNORE INTO scoped_configuration (kind, id, user_id, payload, public_key, encrypted_value) SELECT 'preferences', ?, ?, json_object('nickname', nickname, 'onboarding_seen', json(onboarding)), public_key, encrypted_value FROM (SELECT ? AS nickname, ? AS public_key, ? AS encrypted_value, ? AS onboarding)"
 							).bind(
 								"e2e-settings-" + identity,
 								userId,
@@ -1651,7 +1651,7 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
 								JSON.stringify(onboardingSeen ?? ["model-sources:web"]),
 							),
 							env.DB.prepare(
-								"INSERT OR IGNORE INTO provider_settings (id, provider_id, user_id, enabled) VALUES (?, 'openai', ?, 0)"
+								"INSERT OR IGNORE INTO scoped_configuration (kind, id, target_id, user_id, enabled) VALUES ('provider', ?, 'openai', ?, 0)"
 							).bind("e2e-provider-" + identity, userId),
 						];
 
@@ -1987,7 +1987,7 @@ async function seedPersonas(database, seedMaterial) {
         .run();
       await database
         .prepare(
-          "INSERT INTO user_settings (id, user_id, nickname, public_key, private_key, onboarding_seen) VALUES (?, ?, ?, ?, ?, ?)",
+          "INSERT INTO scoped_configuration (kind, id, user_id, payload, public_key, encrypted_value) SELECT 'preferences', ?, ?, json_object('nickname', nickname, 'onboarding_seen', json(onboarding)), public_key, encrypted_value FROM (SELECT ? AS nickname, ? AS public_key, ? AS encrypted_value, ? AS onboarding)",
         )
         .bind(
           `e2e-settings-${persona}-${index}`,
@@ -2000,7 +2000,7 @@ async function seedPersonas(database, seedMaterial) {
         .run();
       await database
         .prepare(
-          "INSERT INTO provider_settings (id, provider_id, user_id, enabled) VALUES (?, 'openai', ?, 0)",
+          "INSERT INTO scoped_configuration (kind, id, target_id, user_id, enabled) VALUES ('provider', ?, 'openai', ?, 0)",
         )
         .bind(`e2e-provider-${persona}-${index}`, userId)
         .run();

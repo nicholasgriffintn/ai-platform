@@ -5,6 +5,17 @@ import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 
+const CAPABILITY_CONFIGURATION_COLUMNS = [
+  "COALESCE(configuration_id, id) AS id",
+  "scope_type",
+  "scope_id",
+  "target_kind AS capability_kind",
+  "target_id AS capability_id",
+  "payload AS configuration",
+  "COALESCE(configuration_created_at, created_at) AS created_at",
+  "updated_at",
+];
+
 export type CapabilityConfigurationScope =
   | { type: "user"; id: number }
   | { type: "project"; id: string };
@@ -41,11 +52,11 @@ export interface SaveCapabilityConfigurationParams {
 
 export interface CapabilityConfigurationInsertValues {
   id: string;
-  scope_type: CapabilityConfigurationScope["type"];
-  scope_id: string;
-  capability_kind: CapabilityConfigurationKind;
-  capability_id: string;
-  configuration: string;
+  user_id: number | null;
+  project_id: string | null;
+  target_kind: CapabilityConfigurationKind;
+  target_id: string;
+  payload: string;
 }
 
 export function buildCapabilityConfigurationValues(
@@ -53,49 +64,11 @@ export function buildCapabilityConfigurationValues(
 ): CapabilityConfigurationInsertValues {
   return {
     id: generateId(),
-    scope_type: params.scope.type,
-    scope_id: String(params.scope.id),
-    capability_kind: params.capabilityKind,
-    capability_id: params.capabilityId,
-    configuration: JSON.stringify(params.configuration),
-  };
-}
-
-interface CapabilityConfigurationUpsertCondition {
-  sql: string;
-  values: unknown[];
-}
-
-function createCapabilityConfigurationUpsert(
-  params: SaveCapabilityConfigurationParams,
-  condition?: CapabilityConfigurationUpsertCondition,
-): { query: string; values: unknown[] } {
-  const insert = buildCapabilityConfigurationValues(params);
-  const values: unknown[] = [
-    insert.id,
-    insert.scope_type,
-    insert.scope_id,
-    insert.capability_kind,
-    insert.capability_id,
-    insert.configuration,
-  ];
-  const insertSource = condition
-    ? `SELECT ?, ?, ?, ?, ?, ? WHERE ${condition.sql}`
-    : "VALUES (?, ?, ?, ?, ?, ?)";
-
-  if (condition) {
-    values.push(...condition.values);
-  }
-
-  return {
-    query: `INSERT INTO capability_configuration
-			(id, scope_type, scope_id, capability_kind, capability_id, configuration)
-		 ${insertSource}
-		 ON CONFLICT(scope_type, scope_id, capability_kind, capability_id) DO UPDATE SET
-			configuration = excluded.configuration,
-			updated_at = CURRENT_TIMESTAMP
-		 RETURNING *`,
-    values,
+    user_id: params.scope.type === "user" ? params.scope.id : null,
+    project_id: params.scope.type === "project" ? params.scope.id : null,
+    target_kind: params.capabilityKind,
+    target_id: params.capabilityId,
+    payload: JSON.stringify(params.configuration),
   };
 }
 
@@ -103,14 +76,28 @@ export function buildCapabilityConfigurationUpsert(params: SaveCapabilityConfigu
   query: string;
   values: unknown[];
 } {
-  return createCapabilityConfigurationUpsert(params);
-}
+  const insert = buildCapabilityConfigurationValues(params);
+  const values: unknown[] = [
+    insert.id,
+    insert.user_id,
+    insert.project_id,
+    insert.target_kind,
+    insert.target_id,
+    insert.payload,
+    insert.id,
+  ];
 
-export function buildConditionalCapabilityConfigurationUpsert(
-  params: SaveCapabilityConfigurationParams,
-  condition: CapabilityConfigurationUpsertCondition,
-): { query: string; values: unknown[] } {
-  return createCapabilityConfigurationUpsert(params, condition);
+  return {
+    query: `INSERT INTO scoped_configuration
+      (kind, id, user_id, project_id, target_kind, target_id, payload, configuration_id)
+      VALUES ('capability', ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(scope_type, scope_id, target_kind, target_id) WHERE kind = 'capability' DO UPDATE SET
+        payload = excluded.payload,
+        configuration_id = COALESCE(scoped_configuration.configuration_id, excluded.configuration_id),
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING ${CAPABILITY_CONFIGURATION_COLUMNS.join(", ")}`,
+    values,
+  };
 }
 
 function formatScope(row: CapabilityConfigurationRow): CapabilityConfigurationScope {
@@ -150,19 +137,12 @@ export class CapabilityConfigurationRepository extends BaseRepository {
     scope: CapabilityConfigurationScope,
     capabilityKind?: CapabilityConfigurationKind,
   ): Promise<CapabilityConfigurationRecord[]> {
-    const conditions: Record<string, unknown> = {
-      scope_type: scope.type,
-      scope_id: String(scope.id),
-    };
-
-    if (capabilityKind) {
-      conditions.capability_kind = capabilityKind;
-    }
-
-    const { query, values } = this.buildSelectQuery("capability_configuration", conditions, {
-      orderBy: "created_at ASC",
-    });
-    const rows = await this.runQuery<CapabilityConfigurationRow>(query, values);
+    const rows = await this.runQuery<CapabilityConfigurationRow>(
+      `SELECT ${CAPABILITY_CONFIGURATION_COLUMNS.join(", ")} FROM scoped_configuration
+       WHERE kind = 'capability' AND scope_type = ? AND scope_id = ?${capabilityKind ? " AND target_kind = ?" : ""}
+       ORDER BY created_at ASC`,
+      [scope.type, String(scope.id), ...(capabilityKind ? [capabilityKind] : [])],
+    );
 
     return rows.map(formatConfiguration);
   }

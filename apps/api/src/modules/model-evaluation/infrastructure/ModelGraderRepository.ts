@@ -2,10 +2,16 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { modelGrader } from "~/infrastructure/database/schema";
+import {
+  type ModelGraderRecord,
+  modelGrader,
+  modelGraderChanges,
+  modelGraderValues,
+} from "~/infrastructure/database/model-storage";
+import { modelConfiguration } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
-export type ModelGraderRecord = typeof modelGrader.$inferSelect;
+export type { ModelGraderRecord } from "~/infrastructure/database/model-storage";
 
 export class ModelGraderRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async create(input: {
@@ -18,27 +24,34 @@ export class ModelGraderRepository extends BaseRepository<Pick<IEnv, "DB">> {
     createdBy: number;
   }): Promise<ModelGraderRecord> {
     const [record] = await this.database
-      .insert(modelGrader)
-      .values({
-        id: generateId(),
-        workspace_id: input.workspaceId,
-        project_id: input.projectId,
-        name: input.name,
-        metric: input.metric,
-        description: input.description,
-        config: input.config,
-        created_by: input.createdBy,
-      })
-      .returning();
+      .insert(modelConfiguration)
+      .values(
+        modelGraderValues({
+          id: generateId(),
+          workspace_id: input.workspaceId,
+          project_id: input.projectId,
+          name: input.name,
+          metric: input.metric,
+          description: input.description,
+          config: input.config,
+          created_by: input.createdBy,
+        }),
+      )
+      .returning(modelGrader);
 
     return record;
   }
 
   async get(workspaceId: string, id: string): Promise<ModelGraderRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelGrader)
-      .where(and(eq(modelGrader.workspace_id, workspaceId), eq(modelGrader.id, id)))
+      .select(modelGrader)
+      .from(modelConfiguration)
+      .where(
+        and(
+          eq(modelConfiguration.kind, "grader"),
+          and(eq(modelGrader.workspace_id, workspaceId), eq(modelGrader.id, id)),
+        ),
+      )
       .limit(1);
 
     return record ?? null;
@@ -56,9 +69,9 @@ export class ModelGraderRepository extends BaseRepository<Pick<IEnv, "DB">> {
     }
 
     return this.database
-      .select()
-      .from(modelGrader)
-      .where(and(...conditions))
+      .select(modelGrader)
+      .from(modelConfiguration)
+      .where(and(eq(modelConfiguration.kind, "grader"), and(...conditions)))
       .orderBy(modelGrader.name);
   }
 
@@ -67,7 +80,10 @@ export class ModelGraderRepository extends BaseRepository<Pick<IEnv, "DB">> {
       return [];
     }
 
-    return this.database.select().from(modelGrader).where(inArray(modelGrader.id, ids));
+    return this.database
+      .select(modelGrader)
+      .from(modelConfiguration)
+      .where(and(eq(modelConfiguration.kind, "grader"), inArray(modelGrader.id, ids)));
   }
 
   async update(
@@ -75,17 +91,22 @@ export class ModelGraderRepository extends BaseRepository<Pick<IEnv, "DB">> {
     changes: Pick<ModelGraderRecord, "name" | "description" | "config" | "revision">,
   ): Promise<ModelGraderRecord> {
     const [record] = await this.database
-      .update(modelGrader)
-      .set({ ...changes, updated_at: new Date().toISOString() })
-      .where(eq(modelGrader.id, id))
-      .returning();
+      .update(modelConfiguration)
+      .set(modelGraderChanges({ ...changes, updated_at: new Date().toISOString() }))
+      .where(and(eq(modelConfiguration.kind, "grader"), eq(modelGrader.id, id)))
+      .returning(modelGrader);
 
     return record;
   }
 
   async delete(workspaceId: string, id: string): Promise<void> {
     await this.database
-      .delete(modelGrader)
-      .where(and(eq(modelGrader.workspace_id, workspaceId), eq(modelGrader.id, id)));
+      .delete(modelConfiguration)
+      .where(
+        and(
+          eq(modelConfiguration.kind, "grader"),
+          and(eq(modelGrader.workspace_id, workspaceId), eq(modelGrader.id, id)),
+        ),
+      );
   }
 }

@@ -3,11 +3,20 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { and, desc, eq, inArray, isNull, ne, or } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { modelEvalRun, modelEvalSuite, modelRoute } from "~/infrastructure/database/schema";
+import {
+  type ModelEvalSuiteRecord,
+  modelEvalSuite,
+  type ModelEvalRunRecord,
+  modelEvalRun,
+  modelEvalRunChanges,
+  modelEvalRunValues,
+  modelEvalSuiteValues,
+} from "~/infrastructure/database/model-storage";
+import { modelRoute, modelConfiguration, modelOperation } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
-export type ModelEvalSuiteRecord = typeof modelEvalSuite.$inferSelect;
-export type ModelEvalRunRecord = typeof modelEvalRun.$inferSelect;
+export type { ModelEvalSuiteRecord } from "~/infrastructure/database/model-storage";
+export type { ModelEvalRunRecord } from "~/infrastructure/database/model-storage";
 
 export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async createSuite(input: {
@@ -22,29 +31,36 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
     createdBy: number;
   }): Promise<ModelEvalSuiteRecord> {
     const [record] = await this.database
-      .insert(modelEvalSuite)
-      .values({
-        id: generateId(),
-        workspace_id: input.workspaceId,
-        project_id: input.projectId,
-        name: input.name,
-        description: input.description,
-        system_prompt: input.systemPrompt,
-        cases: input.cases,
-        grader_ids: input.graderIds,
-        replay_sample_size: input.replaySampleSize,
-        created_by: input.createdBy,
-      })
-      .returning();
+      .insert(modelConfiguration)
+      .values(
+        modelEvalSuiteValues({
+          id: generateId(),
+          workspace_id: input.workspaceId,
+          project_id: input.projectId,
+          name: input.name,
+          description: input.description,
+          system_prompt: input.systemPrompt,
+          cases: input.cases,
+          grader_ids: input.graderIds,
+          replay_sample_size: input.replaySampleSize,
+          created_by: input.createdBy,
+        }),
+      )
+      .returning(modelEvalSuite);
 
     return record;
   }
 
   async getSuite(workspaceId: string, suiteId: string): Promise<ModelEvalSuiteRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelEvalSuite)
-      .where(and(eq(modelEvalSuite.workspace_id, workspaceId), eq(modelEvalSuite.id, suiteId)))
+      .select(modelEvalSuite)
+      .from(modelConfiguration)
+      .where(
+        and(
+          eq(modelConfiguration.kind, "suite"),
+          and(eq(modelEvalSuite.workspace_id, workspaceId), eq(modelEvalSuite.id, suiteId)),
+        ),
+      )
       .limit(1);
 
     return record ?? null;
@@ -52,9 +68,9 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async getSuiteById(suiteId: string): Promise<ModelEvalSuiteRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelEvalSuite)
-      .where(eq(modelEvalSuite.id, suiteId))
+      .select(modelEvalSuite)
+      .from(modelConfiguration)
+      .where(and(eq(modelConfiguration.kind, "suite"), eq(modelEvalSuite.id, suiteId)))
       .limit(1);
 
     return record ?? null;
@@ -62,14 +78,17 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async listSuites(workspaceId: string, projectId?: string): Promise<ModelEvalSuiteRecord[]> {
     return this.database
-      .select()
-      .from(modelEvalSuite)
+      .select(modelEvalSuite)
+      .from(modelConfiguration)
       .where(
         and(
-          eq(modelEvalSuite.workspace_id, workspaceId),
-          projectId
-            ? or(eq(modelEvalSuite.project_id, projectId), isNull(modelEvalSuite.project_id))
-            : undefined,
+          eq(modelConfiguration.kind, "suite"),
+          and(
+            eq(modelEvalSuite.workspace_id, workspaceId),
+            projectId
+              ? or(eq(modelEvalSuite.project_id, projectId), isNull(modelEvalSuite.project_id))
+              : undefined,
+          ),
         ),
       )
       .orderBy(desc(modelEvalSuite.updated_at));
@@ -77,8 +96,13 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async deleteSuite(workspaceId: string, suiteId: string): Promise<void> {
     await this.database
-      .delete(modelEvalSuite)
-      .where(and(eq(modelEvalSuite.workspace_id, workspaceId), eq(modelEvalSuite.id, suiteId)));
+      .delete(modelConfiguration)
+      .where(
+        and(
+          eq(modelConfiguration.kind, "suite"),
+          and(eq(modelEvalSuite.workspace_id, workspaceId), eq(modelEvalSuite.id, suiteId)),
+        ),
+      );
   }
 
   async createRun(input: {
@@ -90,26 +114,28 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
     createdBy: number | null;
   }): Promise<ModelEvalRunRecord> {
     const [record] = await this.database
-      .insert(modelEvalRun)
-      .values({
-        id: generateId(),
-        suite_id: input.suiteId,
-        route_id: input.routeId,
-        version_id: input.versionId,
-        trigger: input.trigger,
-        cases_total: input.casesTotal,
-        created_by: input.createdBy,
-      })
-      .returning();
+      .insert(modelOperation)
+      .values(
+        modelEvalRunValues({
+          id: generateId(),
+          suite_id: input.suiteId,
+          route_id: input.routeId,
+          version_id: input.versionId,
+          trigger: input.trigger,
+          cases_total: input.casesTotal,
+          created_by: input.createdBy,
+        }),
+      )
+      .returning(modelEvalRun);
 
     return record;
   }
 
   async getRun(runId: string): Promise<ModelEvalRunRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelEvalRun)
-      .where(eq(modelEvalRun.id, runId))
+      .select(modelEvalRun)
+      .from(modelOperation)
+      .where(and(eq(modelOperation.kind, "evaluation"), eq(modelEvalRun.id, runId)))
       .limit(1);
 
     return record ?? null;
@@ -144,9 +170,9 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
     }
 
     return this.database
-      .select()
-      .from(modelEvalRun)
-      .where(and(...conditions))
+      .select(modelEvalRun)
+      .from(modelOperation)
+      .where(and(eq(modelOperation.kind, "evaluation"), and(...conditions)))
       .orderBy(desc(modelEvalRun.created_at))
       .limit(filters.limit ?? 200);
   }
@@ -154,13 +180,16 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async listReplayCandidates(): Promise<Array<{ suiteId: string; routeId: string }>> {
     return this.database
       .selectDistinct({ suiteId: modelEvalRun.suite_id, routeId: modelEvalRun.route_id })
-      .from(modelEvalRun)
+      .from(modelOperation)
       .innerJoin(modelRoute, eq(modelRoute.id, modelEvalRun.route_id))
       .where(
         and(
-          eq(modelEvalRun.status, "completed"),
-          ne(modelEvalRun.trigger, "replay"),
-          eq(modelRoute.status, "active"),
+          eq(modelOperation.kind, "evaluation"),
+          and(
+            eq(modelEvalRun.status, "completed"),
+            ne(modelEvalRun.trigger, "replay"),
+            eq(modelRoute.status, "active"),
+          ),
         ),
       );
   }
@@ -168,12 +197,15 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async latestRunAt(suiteId: string, routeId: string, trigger: "replay"): Promise<string | null> {
     const [record] = await this.database
       .select({ createdAt: modelEvalRun.created_at })
-      .from(modelEvalRun)
+      .from(modelOperation)
       .where(
         and(
-          eq(modelEvalRun.suite_id, suiteId),
-          eq(modelEvalRun.route_id, routeId),
-          eq(modelEvalRun.trigger, trigger),
+          eq(modelOperation.kind, "evaluation"),
+          and(
+            eq(modelEvalRun.suite_id, suiteId),
+            eq(modelEvalRun.route_id, routeId),
+            eq(modelEvalRun.trigger, trigger),
+          ),
         ),
       )
       .orderBy(desc(modelEvalRun.created_at))
@@ -196,7 +228,10 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
       >
     >,
   ): Promise<void> {
-    await this.database.update(modelEvalRun).set(updates).where(eq(modelEvalRun.id, runId));
+    await this.database
+      .update(modelOperation)
+      .set(modelEvalRunChanges(updates))
+      .where(and(eq(modelOperation.kind, "evaluation"), eq(modelEvalRun.id, runId)));
   }
 
   async updateRunScores(
@@ -214,13 +249,16 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async latestCompletedRun(suiteId: string, routeId: string): Promise<ModelEvalRunRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelEvalRun)
+      .select(modelEvalRun)
+      .from(modelOperation)
       .where(
         and(
-          eq(modelEvalRun.suite_id, suiteId),
-          eq(modelEvalRun.route_id, routeId),
-          eq(modelEvalRun.status, "completed"),
+          eq(modelOperation.kind, "evaluation"),
+          and(
+            eq(modelEvalRun.suite_id, suiteId),
+            eq(modelEvalRun.route_id, routeId),
+            eq(modelEvalRun.status, "completed"),
+          ),
         ),
       )
       .orderBy(desc(modelEvalRun.completed_at))

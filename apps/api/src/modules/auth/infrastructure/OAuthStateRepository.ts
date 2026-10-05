@@ -1,18 +1,21 @@
 import type { OAuthStateRecord, OAuthStateStore } from "@ngriffin_uk/auth-oauth2";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { oauthState } from "~/infrastructure/database/schema";
+import { authenticationToken } from "~/infrastructure/database/schema";
 
 export class OAuthStateRepository extends BaseRepository implements OAuthStateStore {
   public async create(record: OAuthStateRecord): Promise<void> {
-    await this.database.insert(oauthState).values({
-      state_hash: record.stateHash,
+    await this.database.insert(authenticationToken).values({
+      purpose: "oauth_state",
+      token_hash: record.stateHash,
       provider: record.provider,
-      code_verifier: record.codeVerifier ?? null,
-      nonce: record.nonce ?? null,
-      redirect_uri: record.redirectUri ?? null,
-      context: record.context ?? null,
+      oauth_data: {
+        codeVerifier: record.codeVerifier,
+        nonce: record.nonce,
+        redirectUri: record.redirectUri,
+        context: record.context,
+      },
       created_at: record.createdAt.toISOString(),
       expires_at: record.expiresAt.toISOString(),
     });
@@ -20,21 +23,23 @@ export class OAuthStateRepository extends BaseRepository implements OAuthStateSt
 
   public async consumeByStateHash(stateHash: string): Promise<OAuthStateRecord | null> {
     const [record] = await this.database
-      .delete(oauthState)
-      .where(eq(oauthState.state_hash, stateHash))
+      .delete(authenticationToken)
+      .where(
+        and(
+          eq(authenticationToken.purpose, "oauth_state"),
+          eq(authenticationToken.token_hash, stateHash),
+        ),
+      )
       .returning();
 
-    if (!record) {
+    if (!record?.provider || !record.oauth_data) {
       return null;
     }
 
     return {
-      stateHash: record.state_hash,
+      stateHash: record.token_hash,
       provider: record.provider,
-      ...(record.code_verifier ? { codeVerifier: record.code_verifier } : {}),
-      ...(record.nonce ? { nonce: record.nonce } : {}),
-      ...(record.redirect_uri ? { redirectUri: record.redirect_uri } : {}),
-      ...(record.context ? { context: record.context } : {}),
+      ...record.oauth_data,
       createdAt: new Date(record.created_at),
       expiresAt: new Date(record.expires_at),
     };

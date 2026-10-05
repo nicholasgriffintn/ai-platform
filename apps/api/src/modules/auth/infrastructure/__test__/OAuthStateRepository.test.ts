@@ -21,15 +21,21 @@ function createRepository(): OAuthStateRepository {
 beforeEach(() => {
   sqlite = new Database(":memory:");
   sqlite.exec(`
-    CREATE TABLE oauth_state (
-      state_hash text PRIMARY KEY NOT NULL,
+    CREATE TABLE authentication_token (
+      purpose text NOT NULL,
+      token_hash text NOT NULL,
       provider text NOT NULL,
-      code_verifier text,
-      nonce text,
-      redirect_uri text,
-      context text,
+      kind text,
+      session_id text,
+      binding_id text,
+      user_id integer,
+      consumed_at text,
+      payload text,
+      oauth_data text,
       created_at text NOT NULL,
-      expires_at text NOT NULL
+      expires_at text NOT NULL,
+      attempts integer DEFAULT 0 NOT NULL,
+      PRIMARY KEY (purpose, token_hash)
     );
   `);
 });
@@ -52,6 +58,12 @@ describe("OAuthStateRepository.consumeByStateHash", () => {
       expiresAt,
     });
 
+    sqlite
+      .prepare(`INSERT INTO authentication_token
+      (purpose, token_hash, provider, kind, payload, created_at, expires_at)
+      VALUES ('challenge', 'state-hash-1', 'github', 'otp', '{}', ?, ?)`)
+      .run(createdAt.toISOString(), expiresAt.toISOString());
+
     const first = await repository.consumeByStateHash("state-hash-1");
 
     expect(first).toMatchObject({
@@ -65,6 +77,11 @@ describe("OAuthStateRepository.consumeByStateHash", () => {
     const second = await repository.consumeByStateHash("state-hash-1");
 
     expect(second).toBeNull();
+    expect(
+      sqlite
+        .prepare("SELECT purpose FROM authentication_token WHERE token_hash = ?")
+        .get("state-hash-1"),
+    ).toEqual({ purpose: "challenge" });
   });
 
   it("returns null for a state hash that was never created", async () => {

@@ -3,31 +3,46 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { modelTrainingCheckpoint, modelTrainingRun } from "~/infrastructure/database/schema";
+import {
+  type ModelTrainingRunRecord,
+  modelTrainingRun,
+  type ModelTrainingCheckpointRecord,
+  modelTrainingCheckpoint,
+  modelTrainingCheckpointChanges,
+  modelTrainingCheckpointValues,
+  modelTrainingRunChanges,
+  modelTrainingRunValues,
+} from "~/infrastructure/database/model-storage";
+import { modelOperation, modelRecord } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
-export type ModelTrainingRunRecord = typeof modelTrainingRun.$inferSelect;
-export type ModelTrainingCheckpointRecord = typeof modelTrainingCheckpoint.$inferSelect;
+export type { ModelTrainingRunRecord } from "~/infrastructure/database/model-storage";
+export type { ModelTrainingCheckpointRecord } from "~/infrastructure/database/model-storage";
 
 export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
   async claimSubmission(id: string): Promise<ModelTrainingRunRecord | null> {
     const now = new Date().toISOString();
     const [record] = await this.database
-      .update(modelTrainingRun)
-      .set({
-        status: "preparing",
-        submission_started_at: now,
-        last_checked_at: now,
-      })
+      .update(modelOperation)
+      .set(
+        modelTrainingRunChanges({
+          status: "preparing",
+          submission_started_at: now,
+          last_checked_at: now,
+        }),
+      )
       .where(
         and(
-          eq(modelTrainingRun.id, id),
-          eq(modelTrainingRun.status, "queued"),
-          isNull(modelTrainingRun.provider_job_id),
-          isNull(modelTrainingRun.submission_started_at),
+          eq(modelOperation.kind, "training"),
+          and(
+            eq(modelTrainingRun.id, id),
+            eq(modelTrainingRun.status, "queued"),
+            isNull(modelTrainingRun.provider_job_id),
+            isNull(modelTrainingRun.submission_started_at),
+          ),
         ),
       )
-      .returning();
+      .returning(modelTrainingRun);
 
     return record ?? null;
   }
@@ -37,19 +52,24 @@ export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
     id: string,
   ): Promise<ModelTrainingRunRecord | null> {
     const [record] = await this.database
-      .update(modelTrainingRun)
-      .set({
-        status: sql`CASE WHEN ${modelTrainingRun.submission_started_at} IS NULL AND ${modelTrainingRun.provider_job_id} IS NULL AND ${modelTrainingRun.status} = 'queued' THEN 'cancelled' ELSE 'cancelling' END`,
-        failure_reason: "Cancellation requested by a workspace member",
-      })
+      .update(modelOperation)
+      .set(
+        modelTrainingRunChanges({
+          status: sql`CASE WHEN ${modelTrainingRun.submission_started_at} IS NULL AND ${modelTrainingRun.provider_job_id} IS NULL AND ${modelTrainingRun.status} = 'queued' THEN 'cancelled' ELSE 'cancelling' END`,
+          failure_reason: "Cancellation requested by a workspace member",
+        }),
+      )
       .where(
         and(
-          eq(modelTrainingRun.workspace_id, workspaceId),
-          eq(modelTrainingRun.id, id),
-          inArray(modelTrainingRun.status, [...ACTIVE_TRAINING_RUN_STATUSES]),
+          eq(modelOperation.kind, "training"),
+          and(
+            eq(modelTrainingRun.workspace_id, workspaceId),
+            eq(modelTrainingRun.id, id),
+            inArray(modelTrainingRun.status, [...ACTIVE_TRAINING_RUN_STATUSES]),
+          ),
         ),
       )
-      .returning();
+      .returning(modelTrainingRun);
 
     return record ?? null;
   }
@@ -71,17 +91,19 @@ export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
     >,
   ): Promise<ModelTrainingRunRecord | null> {
     const [record] = await this.database
-      .update(modelTrainingRun)
-      .set({
-        ...changes,
-        ...(changes.status && changes.status !== "cancelled"
-          ? {
-              status: sql`CASE WHEN ${modelTrainingRun.status} IN ('cancelling', 'cancelled') THEN ${modelTrainingRun.status} ELSE ${changes.status} END`,
-            }
-          : {}),
-      })
-      .where(eq(modelTrainingRun.id, id))
-      .returning();
+      .update(modelOperation)
+      .set(
+        modelTrainingRunChanges({
+          ...changes,
+          ...(changes.status && changes.status !== "cancelled"
+            ? {
+                status: sql`CASE WHEN ${modelTrainingRun.status} IN ('cancelling', 'cancelled') THEN ${modelTrainingRun.status} ELSE ${changes.status} END`,
+              }
+            : {}),
+        }),
+      )
+      .where(and(eq(modelOperation.kind, "training"), eq(modelTrainingRun.id, id)))
+      .returning(modelTrainingRun);
 
     return record ?? null;
   }
@@ -100,31 +122,38 @@ export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
     createdBy: number;
   }): Promise<ModelTrainingRunRecord> {
     const [record] = await this.database
-      .insert(modelTrainingRun)
-      .values({
-        id: generateId(),
-        workspace_id: input.workspaceId,
-        project_id: input.projectId,
-        spec: input.spec,
-        spec_hash: input.specHash,
-        provider: input.provider,
-        trainer: input.trainer,
-        output_repository: input.outputRepository,
-        dataset_version_ids: input.datasetVersionIds,
-        estimate: input.estimate,
-        compute: input.compute,
-        created_by: input.createdBy,
-      })
-      .returning();
+      .insert(modelOperation)
+      .values(
+        modelTrainingRunValues({
+          id: generateId(),
+          workspace_id: input.workspaceId,
+          project_id: input.projectId,
+          spec: input.spec,
+          spec_hash: input.specHash,
+          provider: input.provider,
+          trainer: input.trainer,
+          output_repository: input.outputRepository,
+          dataset_version_ids: input.datasetVersionIds,
+          estimate: input.estimate,
+          compute: input.compute,
+          created_by: input.createdBy,
+        }),
+      )
+      .returning(modelTrainingRun);
 
     return record;
   }
 
   async get(workspaceId: string, id: string): Promise<ModelTrainingRunRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelTrainingRun)
-      .where(and(eq(modelTrainingRun.workspace_id, workspaceId), eq(modelTrainingRun.id, id)))
+      .select(modelTrainingRun)
+      .from(modelOperation)
+      .where(
+        and(
+          eq(modelOperation.kind, "training"),
+          and(eq(modelTrainingRun.workspace_id, workspaceId), eq(modelTrainingRun.id, id)),
+        ),
+      )
       .limit(1);
 
     return record ?? null;
@@ -132,9 +161,9 @@ export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async getById(id: string): Promise<ModelTrainingRunRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelTrainingRun)
-      .where(eq(modelTrainingRun.id, id))
+      .select(modelTrainingRun)
+      .from(modelOperation)
+      .where(and(eq(modelOperation.kind, "training"), eq(modelTrainingRun.id, id)))
       .limit(1);
 
     return record ?? null;
@@ -156,18 +185,23 @@ export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
     }
 
     return this.database
-      .select()
-      .from(modelTrainingRun)
-      .where(and(...conditions))
+      .select(modelTrainingRun)
+      .from(modelOperation)
+      .where(and(eq(modelOperation.kind, "training"), and(...conditions)))
       .orderBy(desc(modelTrainingRun.created_at))
       .limit(200);
   }
 
   async listActive(limit = 100): Promise<ModelTrainingRunRecord[]> {
     return this.database
-      .select()
-      .from(modelTrainingRun)
-      .where(inArray(modelTrainingRun.status, [...ACTIVE_TRAINING_RUN_STATUSES]))
+      .select(modelTrainingRun)
+      .from(modelOperation)
+      .where(
+        and(
+          eq(modelOperation.kind, "training"),
+          inArray(modelTrainingRun.status, [...ACTIVE_TRAINING_RUN_STATUSES]),
+        ),
+      )
       .limit(limit);
   }
 
@@ -188,14 +222,17 @@ export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
       >
     >,
   ): Promise<void> {
-    await this.database.update(modelTrainingRun).set(changes).where(eq(modelTrainingRun.id, id));
+    await this.database
+      .update(modelOperation)
+      .set(modelTrainingRunChanges(changes))
+      .where(and(eq(modelOperation.kind, "training"), eq(modelTrainingRun.id, id)));
   }
 
   async listCheckpoints(runId: string): Promise<ModelTrainingCheckpointRecord[]> {
     return this.database
-      .select()
-      .from(modelTrainingCheckpoint)
-      .where(eq(modelTrainingCheckpoint.run_id, runId))
+      .select(modelTrainingCheckpoint)
+      .from(modelRecord)
+      .where(and(eq(modelRecord.kind, "checkpoint"), eq(modelTrainingCheckpoint.run_id, runId)))
       .orderBy(modelTrainingCheckpoint.step);
   }
 
@@ -206,27 +243,32 @@ export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
     metrics: Record<string, number>;
   }): Promise<ModelTrainingCheckpointRecord> {
     const [record] = await this.database
-      .insert(modelTrainingCheckpoint)
-      .values({
-        id: generateId(),
-        run_id: input.runId,
-        step: input.step,
-        provider_ref: input.providerRef,
-        metrics: input.metrics,
-      })
+      .insert(modelRecord)
+      .values(
+        modelTrainingCheckpointValues({
+          id: generateId(),
+          run_id: input.runId,
+          step: input.step,
+          provider_ref: input.providerRef,
+          metrics: input.metrics,
+        }),
+      )
       .onConflictDoUpdate({
-        target: [modelTrainingCheckpoint.run_id, modelTrainingCheckpoint.step],
-        set: { provider_ref: input.providerRef, metrics: input.metrics },
+        target: [modelRecord.operation_id, modelRecord.ordinal],
+        set: modelTrainingCheckpointChanges({
+          provider_ref: input.providerRef,
+          metrics: input.metrics,
+        }),
       })
-      .returning();
+      .returning(modelTrainingCheckpoint);
 
     return record;
   }
 
   async setCheckpointVersion(id: string, versionId: string): Promise<void> {
     await this.database
-      .update(modelTrainingCheckpoint)
-      .set({ version_id: versionId })
-      .where(eq(modelTrainingCheckpoint.id, id));
+      .update(modelRecord)
+      .set(modelTrainingCheckpointChanges({ version_id: versionId }))
+      .where(and(eq(modelRecord.kind, "checkpoint"), eq(modelTrainingCheckpoint.id, id)));
   }
 }

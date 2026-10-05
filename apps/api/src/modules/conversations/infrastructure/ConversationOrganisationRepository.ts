@@ -45,7 +45,7 @@ export class ConversationOrganisationRepository extends BaseRepository {
             AND state.snoozed_next_response_at IS NOT NULL
             AND julianday(response.created_at) > julianday(state.snoozed_next_response_at)
         ) AS next_response_arrived
-       FROM conversation_user_state state
+       FROM user_resource_state state
        WHERE state.conversation_id = ? AND state.user_id = ?`,
       [conversationId, userId],
       true,
@@ -65,18 +65,18 @@ export class ConversationOrganisationRepository extends BaseRepository {
     const snoozedNextResponseAt = params.snooze?.kind === "next_response" ? params.updatedAt : null;
 
     return this.runQuery<ConversationUserStateRow>(
-      `INSERT INTO conversation_user_state (
-         conversation_id, user_id, is_pinned, is_unread, snoozed_until,
+      `INSERT INTO user_resource_state (
+         resource_type, conversation_id, user_id, is_pinned, is_unread, snoozed_until,
          snoozed_next_response_at, revision, updated_at
-       ) VALUES (?, ?, ?, ?, ?, ?, 1, ?)
-       ON CONFLICT(conversation_id, user_id) DO UPDATE SET
+       ) VALUES ('conversation', ?, ?, ?, ?, ?, ?, 1, ?)
+       ON CONFLICT(conversation_id, user_id) WHERE conversation_id IS NOT NULL DO UPDATE SET
          is_pinned = excluded.is_pinned,
          is_unread = excluded.is_unread,
          snoozed_until = excluded.snoozed_until,
          snoozed_next_response_at = excluded.snoozed_next_response_at,
-         revision = conversation_user_state.revision + 1,
+         revision = user_resource_state.revision + 1,
          updated_at = excluded.updated_at
-       WHERE conversation_user_state.revision = ?
+       WHERE user_resource_state.revision = ?
        RETURNING *, 0 AS next_response_arrived`,
       [
         params.conversationId,
@@ -95,14 +95,14 @@ export class ConversationOrganisationRepository extends BaseRepository {
   async listGroups(userId: number, projectId: string | null): Promise<ConversationGroup[]> {
     const rows = projectId
       ? await this.runQuery<ConversationGroupRow>(
-          `SELECT * FROM conversation_group
-           WHERE project_id = ?
+          `SELECT *, title AS name FROM resource_collection
+           WHERE collection_type = 'conversation' AND project_id = ?
            ORDER BY normalised_name ASC, id ASC`,
           [projectId],
         )
       : await this.runQuery<ConversationGroupRow>(
-          `SELECT * FROM conversation_group
-           WHERE owner_user_id = ?
+          `SELECT *, title AS name FROM resource_collection
+           WHERE collection_type = 'conversation' AND owner_user_id = ?
            ORDER BY normalised_name ASC, id ASC`,
           [userId],
         );
@@ -118,10 +118,10 @@ export class ConversationOrganisationRepository extends BaseRepository {
     const scopeClause = projectId ? "grp.project_id = ?" : "grp.owner_user_id = ?";
     const scopeValue = projectId ?? userId;
     const row = await this.runQuery<ConversationGroupRow>(
-      `SELECT grp.*
-       FROM conversation_group grp
-       JOIN conversation_group_membership membership ON membership.group_id = grp.id
-       WHERE membership.conversation_id = ? AND ${scopeClause}`,
+      `SELECT grp.*, grp.title AS name
+       FROM resource_collection grp
+       JOIN conversation c ON c.group_id = grp.id
+       WHERE grp.collection_type = 'conversation' AND c.id = ? AND ${scopeClause}`,
       [conversationId, scopeValue],
       true,
     );
@@ -131,7 +131,7 @@ export class ConversationOrganisationRepository extends BaseRepository {
 
   async getGroup(groupId: string): Promise<ConversationGroupRow | null> {
     return this.runQuery<ConversationGroupRow>(
-      "SELECT * FROM conversation_group WHERE id = ?",
+      "SELECT *, title AS name FROM resource_collection WHERE collection_type = 'conversation' AND id = ?",
       [groupId],
       true,
     );
@@ -144,12 +144,12 @@ export class ConversationOrganisationRepository extends BaseRepository {
   }): Promise<ConversationGroupRow | null> {
     return params.projectId
       ? this.runQuery<ConversationGroupRow>(
-          "SELECT * FROM conversation_group WHERE project_id = ? AND normalised_name = ?",
+          "SELECT *, title AS name FROM resource_collection WHERE collection_type = 'conversation' AND project_id = ? AND normalised_name = ?",
           [params.projectId, params.normalisedName],
           true,
         )
       : this.runQuery<ConversationGroupRow>(
-          "SELECT * FROM conversation_group WHERE owner_user_id = ? AND normalised_name = ?",
+          "SELECT *, title AS name FROM resource_collection WHERE collection_type = 'conversation' AND owner_user_id = ? AND normalised_name = ?",
           [params.userId, params.normalisedName],
           true,
         );
@@ -161,10 +161,10 @@ export class ConversationOrganisationRepository extends BaseRepository {
     name: string;
   }): Promise<ConversationGroup> {
     const row = await this.runQuery<ConversationGroupRow>(
-      `INSERT OR IGNORE INTO conversation_group (
-         id, owner_user_id, project_id, name, normalised_name, created_by_user_id
-       ) VALUES (?, ?, ?, ?, ?, ?)
-       RETURNING *`,
+      `INSERT OR IGNORE INTO resource_collection (
+         collection_type, id, owner_user_id, project_id, title, normalised_name, created_by_user_id
+       ) VALUES ('conversation', ?, ?, ?, ?, ?, ?)
+       RETURNING *, title AS name`,
       [
         generateId(),
         params.projectId ? null : params.userId,
@@ -188,7 +188,14 @@ export class ConversationOrganisationRepository extends BaseRepository {
   }
 
   async deleteGroup(groupId: string): Promise<void> {
-    await this.executeRun("DELETE FROM conversation_group WHERE id = ?", [groupId]);
+    await this.env.DB.batch([
+      this.env.DB.prepare(
+        "UPDATE conversation SET group_id = NULL, group_assigned_by_user_id = NULL, group_assigned_at = NULL WHERE group_id = ?",
+      ).bind(groupId),
+      this.env.DB.prepare(
+        "DELETE FROM resource_collection WHERE collection_type = 'conversation' AND id = ?",
+      ).bind(groupId),
+    ]);
   }
 
   async setConversationGroup(params: {
@@ -196,23 +203,18 @@ export class ConversationOrganisationRepository extends BaseRepository {
     groupId: string | null;
     userId: number;
   }): Promise<void> {
-    if (params.groupId) {
-      await this.executeRun(
-        `INSERT INTO conversation_group_membership (
-           conversation_id, group_id, assigned_by_user_id
-         ) VALUES (?, ?, ?)
-         ON CONFLICT(conversation_id) DO UPDATE SET
-           group_id = excluded.group_id,
-           assigned_by_user_id = excluded.assigned_by_user_id,
-           created_at = CURRENT_TIMESTAMP`,
-        [params.conversationId, params.groupId, params.userId],
-      );
-
-      return;
-    }
-
-    await this.executeRun("DELETE FROM conversation_group_membership WHERE conversation_id = ?", [
-      params.conversationId,
-    ]);
+    await this.executeRun(
+      `UPDATE conversation SET group_id = ?, group_assigned_by_user_id = ?,
+         group_assigned_at = CASE WHEN ? IS NULL THEN NULL ELSE CURRENT_TIMESTAMP END
+       WHERE id = ? AND (? IS NULL OR EXISTS (SELECT 1 FROM resource_collection WHERE id = ? AND collection_type = 'conversation'))`,
+      [
+        params.groupId,
+        params.groupId ? params.userId : null,
+        params.groupId,
+        params.conversationId,
+        params.groupId,
+        params.groupId,
+      ],
+    );
   }
 }

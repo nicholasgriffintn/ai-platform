@@ -172,18 +172,20 @@ export class SessionRepository extends BaseRepository implements SessionStore {
     expiresAt,
   }: ConsumeNativeAuthCodeOptions): Promise<boolean> {
     await this.executeRun(
-      `DELETE FROM mobile_auth_exchange_code
-       WHERE datetime(expires_at) <= datetime('now')`,
+      `DELETE FROM authentication_token
+       WHERE purpose = 'native_exchange' AND datetime(expires_at) <= datetime('now')`,
     );
 
     const result = await this.executeRun(
-      `INSERT OR IGNORE INTO mobile_auth_exchange_code (
-         jti,
+      `INSERT OR IGNORE INTO authentication_token (
+         purpose,
+         token_hash,
          session_id,
          user_id,
-         expires_at
+         expires_at,
+         consumed_at
        )
-       VALUES (?, ?, ?, ?)`,
+       VALUES ('native_exchange', ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
       [jti, sessionId, userId, expiresAt.toISOString()],
     );
 

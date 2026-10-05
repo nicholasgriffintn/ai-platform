@@ -1,7 +1,6 @@
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import type { ProjectEnvironmentVariableRow } from "~/infrastructure/database/schema";
 import { openSecret, sealSecret } from "~/infrastructure/secret-envelope";
 
 export interface ProjectEnvironmentVariableMetadata {
@@ -12,9 +11,9 @@ export interface ProjectEnvironmentVariableMetadata {
 
 export class ProjectEnvironmentVariableRepository extends BaseRepository {
   async list(projectId: string): Promise<ProjectEnvironmentVariableMetadata[]> {
-    const rows = await this.runQuery<Pick<ProjectEnvironmentVariableRow, "name" | "updated_at">>(
-      `SELECT name, updated_at FROM project_environment_variable
-       WHERE project_id = ? ORDER BY name ASC`,
+    const rows = await this.runQuery<{ name: string; updated_at: string | null }>(
+      `SELECT target_id AS name, updated_at FROM scoped_configuration
+       WHERE kind = 'environment' AND project_id = ? ORDER BY target_id ASC`,
       [projectId],
     );
 
@@ -27,11 +26,9 @@ export class ProjectEnvironmentVariableRepository extends BaseRepository {
     }
 
     const placeholders = names.map(() => "?").join(", ");
-    const rows = await this.runQuery<
-      Pick<ProjectEnvironmentVariableRow, "name" | "encrypted_value">
-    >(
-      `SELECT name, encrypted_value FROM project_environment_variable
-       WHERE project_id = ? AND name IN (${placeholders})`,
+    const rows = await this.runQuery<{ name: string; encrypted_value: string }>(
+      `SELECT target_id AS name, encrypted_value FROM scoped_configuration
+       WHERE kind = 'environment' AND project_id = ? AND target_id IN (${placeholders})`,
       [projectId, ...names],
     );
     const values: Record<string, string> = {};
@@ -47,10 +44,10 @@ export class ProjectEnvironmentVariableRepository extends BaseRepository {
     const encryptedValue = await sealSecret(this.env, value);
 
     await this.executeRun(
-      `INSERT INTO project_environment_variable
-       (id, project_id, name, encrypted_value)
-       VALUES (?, ?, ?, ?)
-       ON CONFLICT(project_id, name) DO UPDATE SET
+      `INSERT INTO scoped_configuration
+       (kind, id, project_id, target_id, encrypted_value)
+       VALUES ('environment', ?, ?, ?, ?)
+       ON CONFLICT(project_id, target_id) WHERE kind = 'environment' DO UPDATE SET
          encrypted_value = excluded.encrypted_value,
          updated_at = CURRENT_TIMESTAMP`,
       [generateId(), projectId, name, encryptedValue],
@@ -59,7 +56,7 @@ export class ProjectEnvironmentVariableRepository extends BaseRepository {
 
   async clear(projectId: string, name: string): Promise<boolean> {
     const result = await this.executeRun(
-      "DELETE FROM project_environment_variable WHERE project_id = ? AND name = ?",
+      "DELETE FROM scoped_configuration WHERE kind = 'environment' AND project_id = ? AND target_id = ?",
       [projectId, name],
     );
 

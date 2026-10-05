@@ -23,7 +23,9 @@ describe("SessionRepository", () => {
 
     expect(consumed).toBe(true);
     expect(prepare).toHaveBeenCalledTimes(2);
-    expect(prepare.mock.calls[1][0]).toContain("INSERT OR IGNORE INTO mobile_auth_exchange_code");
+    expect(prepare.mock.calls[1][0]).toContain("INSERT OR IGNORE INTO authentication_token");
+    expect(prepare.mock.calls[0][0]).toContain("purpose = 'native_exchange'");
+    expect(prepare.mock.calls[1][0]).toContain("'native_exchange'");
     expect(bind.mock.calls[1]).toEqual(["code-jti", "session-1", 123, "2026-05-24T12:01:00.000Z"]);
   });
 

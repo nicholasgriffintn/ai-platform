@@ -504,10 +504,10 @@ export class OutputRepository extends BaseRepository {
     }
 
     const revisionInsert = this.env.DB.prepare(
-      `INSERT OR IGNORE INTO output_revision
-			 (output_id, revision, title, status, sensitivity, content, provenance_json,
+      `INSERT OR IGNORE INTO resource_revision
+			 (resource_type, output_id, revision, title, status, sensitivity, content, provenance_json,
 			  created_by_user_id, created_at, operation, restored_from_revision)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			 VALUES ('output', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).bind(
       outputId,
       existing.revision,
@@ -746,7 +746,7 @@ export class OutputRepository extends BaseRepository {
 
   async listRevisions(outputId: string): Promise<OutputRevisionRecord[]> {
     const { query, values } = this.buildSelectQuery(
-      "output_revision",
+      "resource_revision",
       { output_id: outputId },
       { orderBy: "revision DESC" },
     );
@@ -755,7 +755,7 @@ export class OutputRepository extends BaseRepository {
   }
 
   async getRevision(outputId: string, revision: number): Promise<OutputRevisionRecord | null> {
-    const { query, values } = this.buildSelectQuery("output_revision", {
+    const { query, values } = this.buildSelectQuery("resource_revision", {
       output_id: outputId,
       revision,
     });

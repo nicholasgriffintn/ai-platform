@@ -2,10 +2,16 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { and, desc, eq, inArray, isNull, ne } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { modelDeployment } from "~/infrastructure/database/schema";
+import {
+  type ModelDeploymentRecord,
+  modelDeployment,
+  modelDeploymentChanges,
+  modelDeploymentValues,
+} from "~/infrastructure/database/model-storage";
+import { modelOperation } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
-export type ModelDeploymentRecord = typeof modelDeployment.$inferSelect;
+export type { ModelDeploymentRecord } from "~/infrastructure/database/model-storage";
 
 const LIVE_STATUSES: Array<ModelDeploymentRecord["status"]> = [
   "pending",
@@ -27,34 +33,42 @@ export class ModelDeploymentRepository extends BaseRepository<Pick<IEnv, "DB">> 
     >,
   ): Promise<ModelDeploymentRecord | null> {
     const [record] = await this.database
-      .update(modelDeployment)
-      .set({
-        ...changes,
-        ...(changes.provider_ref !== previousRef ? { provisioning_started_at: null } : {}),
-        updated_at: new Date().toISOString(),
-      })
+      .update(modelOperation)
+      .set(
+        modelDeploymentChanges({
+          ...changes,
+          ...(changes.provider_ref !== previousRef ? { provisioning_started_at: null } : {}),
+          updated_at: new Date().toISOString(),
+        }),
+      )
       .where(
         and(
-          eq(modelDeployment.id, id),
-          previousRef === null
-            ? isNull(modelDeployment.provider_ref)
-            : eq(modelDeployment.provider_ref, previousRef),
+          eq(modelOperation.kind, "deployment"),
+          and(
+            eq(modelDeployment.id, id),
+            previousRef === null
+              ? isNull(modelDeployment.provider_ref)
+              : eq(modelDeployment.provider_ref, previousRef),
+          ),
         ),
       )
-      .returning();
+      .returning(modelDeployment);
 
     return record ?? this.getById(id);
   }
 
   async claimProvisioningContinuation(id: string, providerRef: string): Promise<boolean> {
     const [record] = await this.database
-      .update(modelDeployment)
-      .set({ provisioning_started_at: new Date().toISOString() })
+      .update(modelOperation)
+      .set(modelDeploymentChanges({ provisioning_started_at: new Date().toISOString() }))
       .where(
         and(
-          eq(modelDeployment.id, id),
-          eq(modelDeployment.provider_ref, providerRef),
-          isNull(modelDeployment.provisioning_started_at),
+          eq(modelOperation.kind, "deployment"),
+          and(
+            eq(modelDeployment.id, id),
+            eq(modelDeployment.provider_ref, providerRef),
+            isNull(modelDeployment.provisioning_started_at),
+          ),
         ),
       )
       .returning({ id: modelDeployment.id });
@@ -65,23 +79,28 @@ export class ModelDeploymentRepository extends BaseRepository<Pick<IEnv, "DB">> 
   async claimProvisioning(id: string): Promise<ModelDeploymentRecord | null> {
     const now = new Date().toISOString();
     const [record] = await this.database
-      .update(modelDeployment)
-      .set({
-        status: "provisioning",
-        provisioning_started_at: now,
-        last_checked_at: now,
-        updated_at: now,
-      })
+      .update(modelOperation)
+      .set(
+        modelDeploymentChanges({
+          status: "provisioning",
+          provisioning_started_at: now,
+          last_checked_at: now,
+          updated_at: now,
+        }),
+      )
       .where(
         and(
-          eq(modelDeployment.id, id),
-          eq(modelDeployment.status, "pending"),
-          eq(modelDeployment.desired_state, "running"),
-          isNull(modelDeployment.provider_ref),
-          isNull(modelDeployment.provisioning_started_at),
+          eq(modelOperation.kind, "deployment"),
+          and(
+            eq(modelDeployment.id, id),
+            eq(modelDeployment.status, "pending"),
+            eq(modelDeployment.desired_state, "running"),
+            isNull(modelDeployment.provider_ref),
+            isNull(modelDeployment.provisioning_started_at),
+          ),
         ),
       )
-      .returning();
+      .returning(modelDeployment);
 
     return record ?? null;
   }
@@ -100,31 +119,38 @@ export class ModelDeploymentRepository extends BaseRepository<Pick<IEnv, "DB">> 
     createdBy: number;
   }): Promise<ModelDeploymentRecord> {
     const [record] = await this.database
-      .insert(modelDeployment)
-      .values({
-        id: generateId(),
-        workspace_id: input.workspaceId,
-        project_id: input.projectId,
-        name: input.name,
-        version_id: input.versionId,
-        spec: input.spec,
-        spec_hash: input.specHash,
-        provider: input.provider,
-        host: input.host,
-        jurisdiction: input.jurisdiction,
-        weights_verified: input.weightsVerified,
-        created_by: input.createdBy,
-      })
-      .returning();
+      .insert(modelOperation)
+      .values(
+        modelDeploymentValues({
+          id: generateId(),
+          workspace_id: input.workspaceId,
+          project_id: input.projectId,
+          name: input.name,
+          version_id: input.versionId,
+          spec: input.spec,
+          spec_hash: input.specHash,
+          provider: input.provider,
+          host: input.host,
+          jurisdiction: input.jurisdiction,
+          weights_verified: input.weightsVerified,
+          created_by: input.createdBy,
+        }),
+      )
+      .returning(modelDeployment);
 
     return record;
   }
 
   async get(workspaceId: string, id: string): Promise<ModelDeploymentRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelDeployment)
-      .where(and(eq(modelDeployment.workspace_id, workspaceId), eq(modelDeployment.id, id)))
+      .select(modelDeployment)
+      .from(modelOperation)
+      .where(
+        and(
+          eq(modelOperation.kind, "deployment"),
+          and(eq(modelDeployment.workspace_id, workspaceId), eq(modelDeployment.id, id)),
+        ),
+      )
       .limit(1);
 
     return record ?? null;
@@ -132,9 +158,9 @@ export class ModelDeploymentRepository extends BaseRepository<Pick<IEnv, "DB">> 
 
   async getById(id: string): Promise<ModelDeploymentRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelDeployment)
-      .where(eq(modelDeployment.id, id))
+      .select(modelDeployment)
+      .from(modelOperation)
+      .where(and(eq(modelOperation.kind, "deployment"), eq(modelDeployment.id, id)))
       .limit(1);
 
     return record ?? null;
@@ -165,17 +191,19 @@ export class ModelDeploymentRepository extends BaseRepository<Pick<IEnv, "DB">> 
     }
 
     return this.database
-      .select()
-      .from(modelDeployment)
-      .where(and(...conditions))
+      .select(modelDeployment)
+      .from(modelOperation)
+      .where(and(eq(modelOperation.kind, "deployment"), and(...conditions)))
       .orderBy(desc(modelDeployment.created_at));
   }
 
   async listLive(limit = 200): Promise<ModelDeploymentRecord[]> {
     return this.database
-      .select()
-      .from(modelDeployment)
-      .where(inArray(modelDeployment.status, LIVE_STATUSES))
+      .select(modelDeployment)
+      .from(modelOperation)
+      .where(
+        and(eq(modelOperation.kind, "deployment"), inArray(modelDeployment.status, LIVE_STATUSES)),
+      )
       .limit(limit);
   }
 
@@ -199,8 +227,8 @@ export class ModelDeploymentRepository extends BaseRepository<Pick<IEnv, "DB">> 
     >,
   ): Promise<void> {
     await this.database
-      .update(modelDeployment)
-      .set({ ...changes, updated_at: new Date().toISOString() })
-      .where(eq(modelDeployment.id, id));
+      .update(modelOperation)
+      .set(modelDeploymentChanges({ ...changes, updated_at: new Date().toISOString() }))
+      .where(and(eq(modelOperation.kind, "deployment"), eq(modelDeployment.id, id)));
   }
 }

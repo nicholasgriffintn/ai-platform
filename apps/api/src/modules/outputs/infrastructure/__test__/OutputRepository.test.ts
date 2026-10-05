@@ -77,7 +77,7 @@ describe("OutputRepository", () => {
 
     const queries = prepare.mock.calls.map(([query]) => query);
     const revisionInsertIndex = queries.findIndex((query) =>
-      query.includes("INSERT OR IGNORE INTO output_revision"),
+      query.includes("INSERT OR IGNORE INTO resource_revision"),
     );
 
     expect(revisionInsertIndex).toBeGreaterThan(-1);

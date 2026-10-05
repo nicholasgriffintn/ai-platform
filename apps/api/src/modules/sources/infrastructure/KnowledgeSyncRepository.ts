@@ -119,8 +119,8 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
         AND pc.user_id = source_knowledge_sync.user_id AND pc.status = 'connected')
       AND EXISTS (SELECT 1 FROM project p JOIN workspace_member wm ON wm.workspace_id = p.workspace_id
         WHERE p.id = source_knowledge_sync.project_id AND wm.user_id = source_knowledge_sync.user_id AND wm.role IN ('owner', 'admin'))
-      AND EXISTS (SELECT 1 FROM project_capability grant_row WHERE grant_row.project_id = source_knowledge_sync.project_id
-        AND grant_row.kind = 'recipe' AND grant_row.capability_id = source_knowledge_sync.recipe_id AND grant_row.excluded = 0))`;
+      AND EXISTS (SELECT 1 FROM scoped_configuration grant_row WHERE grant_row.kind = 'capability' AND grant_row.attached = 1 AND grant_row.project_id = source_knowledge_sync.project_id
+        AND grant_row.target_kind = 'recipe' AND grant_row.target_id = source_knowledge_sync.recipe_id AND grant_row.excluded = 0))`;
     const fenceValues = [sync.id, sync.generation, sync.cursor, token];
     const last = sync.cursor + 1 === resource.resourceCount;
     const results = await this.env.DB.batch([

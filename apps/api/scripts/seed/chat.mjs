@@ -3,6 +3,7 @@ import {
   ahead,
   at,
   insert,
+  sqlValue,
   seedId,
   SEED_MODEL,
   SEED_MODEL_SMALL,
@@ -1426,7 +1427,8 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       revision_created_at: at({ minutes: 32 }),
       revision_operation: "created",
     }),
-    insert("output_revision", {
+    insert("resource_revision", {
+      resource_type: "output",
       output_id: seedId("output", "backpressure-sources"),
       revision: 1,
       title: "WebSocket back-pressure sources",
@@ -1557,20 +1559,16 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
   const cookingGroup = seedId("group", "cooking");
 
   statements.push(
-    insert("conversation_group", {
+    insert("resource_collection", {
+      collection_type: "conversation",
       id: cookingGroup,
       owner_user_id: OWNER.id,
-      name: "Cooking",
+      title: "Cooking",
       normalised_name: "cooking",
       created_by_user_id: OWNER.id,
       created_at: at({ days: 7 }),
     }),
-    insert("conversation_group_membership", {
-      conversation_id: plain.conversationId,
-      group_id: cookingGroup,
-      assigned_by_user_id: OWNER.id,
-      created_at: at({ days: 6 }),
-    }),
+    `UPDATE conversation SET group_id = ${sqlValue(cookingGroup)}, group_assigned_by_user_id = ${sqlValue(OWNER.id)}, group_assigned_at = ${sqlValue(at({ days: 6 }))} WHERE id = ${sqlValue(plain.conversationId)};`,
   );
 
   for (const [slug, title, createdAt, flags] of [
@@ -1611,12 +1609,7 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
     );
 
     statements.push(
-      insert("conversation_group_membership", {
-        conversation_id: built.conversationId,
-        group_id: cookingGroup,
-        assigned_by_user_id: OWNER.id,
-        created_at: createdAt,
-      }),
+      `UPDATE conversation SET group_id = ${sqlValue(cookingGroup)}, group_assigned_by_user_id = ${sqlValue(OWNER.id)}, group_assigned_at = ${sqlValue(createdAt)} WHERE id = ${sqlValue(built.conversationId)};`,
     );
   }
 
@@ -1722,10 +1715,11 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
   );
 
   statements.push(
-    insert("message_user_state", {
+    insert("user_resource_state", {
+      resource_type: "message",
       id: seedId("saved", "machine-reply"),
       user_id: OWNER.id,
-      conversation_id: saved.conversationId,
+      saved_conversation_id: saved.conversationId,
       message_id: saved.messageIds[5],
       note: "Good example of the machine relay working end to end.",
       saved_at: at({ days: 1, hours: 19 }),
@@ -1936,11 +1930,12 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
         created_at: at({ days: 10 }),
         updated_at: at({ days: 1 }),
       }),
-      insert("memory_document_revision", {
+      insert("resource_revision", {
+        resource_type: "memory",
         id: `${documentId}-r1`,
         document_id: documentId,
         revision: 1,
-        content,
+        text_content: content,
         change_note: "Seeded",
         created_by: OWNER.id,
         created_at: at({ days: 10 }),
@@ -1971,7 +1966,8 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       revision_created_at: at({ days: 1 }),
       revision_operation: "updated",
     }),
-    insert("output_revision", {
+    insert("resource_revision", {
+      resource_type: "output",
       output_id: noteId,
       revision: 1,
       title: "Release notes draft",
@@ -1982,7 +1978,8 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 4 }),
       operation: "created",
     }),
-    insert("output_revision", {
+    insert("resource_revision", {
+      resource_type: "output",
       output_id: noteId,
       revision: 2,
       title: "Release notes draft",
@@ -2035,7 +2032,8 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 1, hours: 9 }),
       updated_at: at({ days: 1, hours: 8, minutes: 58 }),
     }),
-    insert("output_revision", {
+    insert("resource_revision", {
+      resource_type: "output",
       output_id: canvasId,
       revision: 1,
       title: "Parrot on a laptop",
@@ -2088,7 +2086,8 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       created_at: at({ days: 2 }),
       updated_at: at({ days: 2 }),
     }),
-    insert("source_collection", {
+    insert("resource_collection", {
+      collection_type: "source",
       id: collectionId,
       created_by_user_id: OWNER.id,
       title: "Reading list",

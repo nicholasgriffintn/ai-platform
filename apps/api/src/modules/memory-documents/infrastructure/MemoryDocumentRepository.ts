@@ -93,9 +93,9 @@ export class MemoryDocumentRepository extends BaseRepository {
         record.createdByUserId,
       ),
       this.env.DB.prepare(
-        `INSERT INTO memory_document_revision
-           (id, document_id, revision, content, change_note, created_by, operation_id)
-         VALUES (?, ?, 1, ?, 'Created', ?, ?)`,
+        `INSERT INTO resource_revision
+           (resource_type, id, document_id, revision, text_content, change_note, created_by, operation_id)
+         VALUES ('memory', ?, ?, 1, ?, 'Created', ?, ?)`,
       ).bind(generateId(), id, record.content, record.createdByUserId, record.operationId ?? null),
     ]);
 
@@ -132,7 +132,7 @@ export class MemoryDocumentRepository extends BaseRepository {
 
   public async listRevisions(documentId: string): Promise<MemoryDocumentRevisionRow[]> {
     return this.runQuery<MemoryDocumentRevisionRow>(
-      `SELECT * FROM memory_document_revision
+      `SELECT *, text_content AS content FROM resource_revision
        WHERE document_id = ?
        ORDER BY revision DESC`,
       [documentId],
@@ -239,7 +239,7 @@ export class MemoryDocumentRepository extends BaseRepository {
          SET content = ?, revision = ?, updated_at = CURRENT_TIMESTAMP
          WHERE id = ? AND revision = ? AND deleted_at IS NULL
            AND (? IS NULL OR NOT EXISTS (
-             SELECT 1 FROM memory_document_revision
+             SELECT 1 FROM resource_revision
              WHERE document_id = ? AND operation_id = ?
            ))${reflectionOperationId ? " AND EXISTS (SELECT 1 FROM memory_reflection_result WHERE id = ? AND revision = ? AND status = 'applied')" : ""}`,
       ).bind(
@@ -253,9 +253,9 @@ export class MemoryDocumentRepository extends BaseRepository {
         ...(reflectionOperationId ? [reflectionOperationId, nextRevision] : []),
       ),
       this.env.DB.prepare(
-        `INSERT INTO memory_document_revision
-           (id, document_id, revision, content, change_note, created_by, operation_id)
-         SELECT ?, ?, ?, ?, ?, ?, ?
+        `INSERT INTO resource_revision
+           (resource_type, id, document_id, revision, text_content, change_note, created_by, operation_id)
+         SELECT 'memory', ?, ?, ?, ?, ?, ?, ?
          WHERE changes() > 0`,
       ).bind(
         generateId(),
@@ -271,7 +271,7 @@ export class MemoryDocumentRepository extends BaseRepository {
 
   private async hasOperation(documentId: string, operationId: string): Promise<boolean> {
     const row = await this.runQuery<{ present: number }>(
-      `SELECT 1 AS present FROM memory_document_revision
+      `SELECT 1 AS present FROM resource_revision
        WHERE document_id = ? AND operation_id = ?`,
       [documentId, operationId],
       true,

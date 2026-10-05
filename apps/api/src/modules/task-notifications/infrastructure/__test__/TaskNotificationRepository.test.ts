@@ -32,9 +32,7 @@ describe("TaskNotificationRepository registrations", () => {
             first: vi
               .fn()
               .mockResolvedValue(
-                query.includes("SELECT * FROM task_notification_registration")
-                  ? registration
-                  : null,
+                query.includes("SELECT * FROM notification_endpoint") ? registration : null,
               ),
           });
         },
@@ -66,7 +64,7 @@ describe("TaskNotificationRepository registrations", () => {
     });
 
     const inserts = statements.filter(({ query }) =>
-      query.includes("INSERT INTO task_notification_registration"),
+      query.includes("INSERT INTO notification_endpoint"),
     );
     const endpointHashes = inserts.map(({ values }) => values[4]);
     const latestEncrypted: unknown = JSON.parse(String(inserts[1].values[5]));

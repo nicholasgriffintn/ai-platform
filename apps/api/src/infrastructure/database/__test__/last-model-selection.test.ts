@@ -56,7 +56,7 @@ describe("last-used model persistence", () => {
 
       expect(Object.keys(updates)).toEqual(["last_model_selection"]);
       db.prepare("UPDATE user_settings SET last_model_selection = ? WHERE user_id = ?").run(
-        updates.last_model_selection,
+        JSON.stringify(updates.last_model_selection),
         42,
       );
       expect(db.prepare("SELECT * FROM user_settings WHERE user_id = 42").get()).toEqual({

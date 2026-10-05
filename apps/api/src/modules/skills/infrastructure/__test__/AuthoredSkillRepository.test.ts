@@ -78,52 +78,84 @@ beforeEach(() => {
     CREATE UNIQUE INDEX authored_skill_scope_name_idx
       ON authored_skill(scope_type, scope_id, name)
       WHERE archived_at IS NULL;
-    CREATE TABLE authored_skill_revision (
-      id text PRIMARY KEY NOT NULL,
-      skill_id text NOT NULL REFERENCES authored_skill(id) ON DELETE CASCADE,
-      revision integer NOT NULL,
-      description text NOT NULL,
-      change_note text,
-      digest text NOT NULL,
-      storage_key text NOT NULL UNIQUE,
-      size integer NOT NULL,
-      source_skill_id text,
-      source_revision_id text,
-      created_by integer NOT NULL REFERENCES user(id),
-      created_at text NOT NULL,
-      CONSTRAINT authored_skill_revision_number_check CHECK(revision >= 1),
-      CONSTRAINT authored_skill_revision_size_check CHECK(size >= 0),
-      CONSTRAINT authored_skill_revision_source_check CHECK(
-        (source_skill_id IS NULL AND source_revision_id IS NULL)
-          OR (source_skill_id IS NOT NULL AND source_revision_id IS NOT NULL)
-      )
-    );
-    CREATE UNIQUE INDEX authored_skill_revision_skill_revision_idx
-      ON authored_skill_revision(skill_id, revision);
-    CREATE TABLE capability_configuration (
-      id text PRIMARY KEY NOT NULL,
-      scope_type text DEFAULT 'user' NOT NULL,
-      scope_id text NOT NULL,
-      capability_kind text DEFAULT 'tool' NOT NULL,
-      capability_id text NOT NULL,
-      configuration text NOT NULL,
-      created_at text DEFAULT CURRENT_TIMESTAMP NOT NULL,
-      updated_at text
-    );
-    CREATE UNIQUE INDEX capability_configuration_scope_capability_idx
-      ON capability_configuration(scope_type, scope_id, capability_kind, capability_id);
-    CREATE TABLE project_capability (
-      id text PRIMARY KEY NOT NULL,
-      project_id text NOT NULL REFERENCES project(id) ON DELETE CASCADE,
-      kind text NOT NULL,
-      capability_id text NOT NULL,
-      excluded integer DEFAULT 0 NOT NULL,
-      configuration text DEFAULT '{}' NOT NULL,
-      created_by integer NOT NULL REFERENCES user(id),
-      created_at text DEFAULT CURRENT_TIMESTAMP NOT NULL
-    );
-    CREATE UNIQUE INDEX project_capability_project_kind_id_idx
-      ON project_capability(project_id, kind, capability_id);
+    CREATE TABLE memory_document (id TEXT PRIMARY KEY);
+    CREATE TABLE output (id TEXT PRIMARY KEY);
+CREATE TABLE "resource_revision" (
+  "id" TEXT NOT NULL DEFAULT (lower(hex(randomblob(16)))),
+  "document_id" TEXT REFERENCES "memory_document"("id") ON DELETE CASCADE,
+  "revision" INTEGER NOT NULL,
+  "text_content" TEXT DEFAULT '',
+  "change_note" TEXT,
+  "created_by" INTEGER REFERENCES "user"("id") ON DELETE NO ACTION,
+  "created_at" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "operation_id" TEXT,
+  "skill_id" TEXT REFERENCES "authored_skill"("id") ON DELETE CASCADE,
+  "description" TEXT,
+  "digest" TEXT,
+  "storage_key" TEXT,
+  "size" INTEGER,
+  "source_skill_id" TEXT,
+  "source_revision_id" TEXT,
+  "output_id" TEXT REFERENCES "output"("id") ON DELETE CASCADE,
+  "title" TEXT,
+  "status" TEXT,
+  "sensitivity" TEXT,
+  "content" TEXT,
+  "created_by_user_id" INTEGER REFERENCES "user"("id") ON DELETE NO ACTION,
+  "provenance_json" TEXT,
+  "operation" TEXT,
+  "restored_from_revision" INTEGER,
+  "resource_type" TEXT NOT NULL,
+  PRIMARY KEY ("resource_type", "id"),
+  CHECK ((resource_type = 'memory' AND document_id IS NOT NULL AND skill_id IS NULL AND output_id IS NULL AND text_content IS NOT NULL AND created_by IS NOT NULL) OR (resource_type = 'skill' AND skill_id IS NOT NULL AND document_id IS NULL AND output_id IS NULL AND description IS NOT NULL AND digest IS NOT NULL AND storage_key IS NOT NULL AND size IS NOT NULL AND size >= 0 AND revision >= 1 AND created_by IS NOT NULL) OR (resource_type = 'output' AND output_id IS NOT NULL AND document_id IS NULL AND skill_id IS NULL AND title IS NOT NULL AND status IN ('pending','ready','failed','archived') AND sensitivity IN ('personal','internal','confidential') AND content IS NOT NULL AND created_by_user_id IS NOT NULL)),
+  CHECK ((source_skill_id IS NULL AND source_revision_id IS NULL) OR (source_skill_id IS NOT NULL AND source_revision_id IS NOT NULL))
+);
+CREATE UNIQUE INDEX "resource_revision_memory_revision_idx" ON "resource_revision" ("document_id", "revision") WHERE document_id IS NOT NULL;
+CREATE UNIQUE INDEX "resource_revision_memory_operation_idx" ON "resource_revision" ("document_id", "operation_id") WHERE document_id IS NOT NULL AND operation_id IS NOT NULL;
+CREATE UNIQUE INDEX "resource_revision_skill_revision_idx" ON "resource_revision" ("skill_id", "revision") WHERE skill_id IS NOT NULL;
+CREATE UNIQUE INDEX "resource_revision_output_revision_idx" ON "resource_revision" ("output_id", "revision") WHERE output_id IS NOT NULL;
+CREATE UNIQUE INDEX "resource_revision_storage_key_idx" ON "resource_revision" ("storage_key") WHERE storage_key IS NOT NULL;
+
+CREATE TABLE scoped_configuration (
+  kind TEXT NOT NULL,
+  id TEXT NOT NULL,
+  user_id INTEGER REFERENCES user(id) ON DELETE CASCADE,
+  project_id TEXT REFERENCES project(id) ON DELETE CASCADE,
+  scope_type TEXT GENERATED ALWAYS AS (CASE WHEN project_id IS NOT NULL THEN 'project' ELSE 'user' END),
+  scope_id TEXT GENERATED ALWAYS AS (COALESCE(project_id, CAST(user_id AS TEXT))),
+  target_kind TEXT NOT NULL DEFAULT '',
+  target_id TEXT,
+  payload TEXT NOT NULL DEFAULT '{}',
+  encrypted_value TEXT,
+  public_key TEXT,
+  enabled INTEGER,
+  attached INTEGER NOT NULL DEFAULT 0,
+  excluded INTEGER NOT NULL DEFAULT 0,
+  created_by INTEGER REFERENCES user(id),
+  configuration_id TEXT,
+  configuration_created_at TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (kind, id),
+  CONSTRAINT scoped_configuration_scope_check CHECK ((user_id IS NOT NULL) != (project_id IS NOT NULL)),
+  CONSTRAINT scoped_configuration_kind_check CHECK (
+    (kind IN ('preferences', 'provider', 'model') AND user_id IS NOT NULL)
+    OR (kind = 'capability' AND target_id IS NOT NULL)
+    OR (kind = 'environment' AND project_id IS NOT NULL AND target_id IS NOT NULL AND encrypted_value IS NOT NULL)
+  ),
+  CONSTRAINT scoped_configuration_attachment_check CHECK (attached = 0 OR (kind = 'capability' AND project_id IS NOT NULL AND created_by IS NOT NULL))
+);
+--> statement-breakpoint
+CREATE INDEX scoped_configuration_user_target_idx ON scoped_configuration(user_id, kind, target_id);
+--> statement-breakpoint
+CREATE INDEX scoped_configuration_project_target_idx ON scoped_configuration(project_id, kind, target_kind, target_id);
+--> statement-breakpoint
+CREATE INDEX scoped_configuration_target_idx ON scoped_configuration(kind, target_kind, target_id);
+--> statement-breakpoint
+CREATE UNIQUE INDEX scoped_configuration_capability_idx ON scoped_configuration(scope_type, scope_id, target_kind, target_id) WHERE kind = 'capability';
+--> statement-breakpoint
+CREATE UNIQUE INDEX scoped_configuration_environment_idx ON scoped_configuration(project_id, target_id) WHERE kind = 'environment';
+--> statement-breakpoint
     CREATE TABLE workspace_audit_record (
       id text PRIMARY KEY NOT NULL,
       workspace_id text NOT NULL,
@@ -149,8 +181,8 @@ describe("AuthoredSkillRepository", () => {
 
     sqlite.exec(`
       CREATE TRIGGER reject_personal_skill_grant
-      BEFORE INSERT ON capability_configuration
-      WHEN NEW.scope_type = 'user' AND NEW.capability_kind = 'skill'
+      BEFORE INSERT ON scoped_configuration
+      WHEN NEW.kind = 'capability' AND NEW.scope_type = 'user' AND NEW.target_kind = 'skill'
       BEGIN
         SELECT RAISE(ABORT, 'grant unavailable');
       END;
@@ -160,7 +192,7 @@ describe("AuthoredSkillRepository", () => {
     expect(sqlite.prepare("SELECT count(*) AS count FROM authored_skill").get()).toEqual({
       count: 0,
     });
-    expect(sqlite.prepare("SELECT count(*) AS count FROM authored_skill_revision").get()).toEqual({
+    expect(sqlite.prepare("SELECT count(*) AS count FROM resource_revision").get()).toEqual({
       count: 0,
     });
   });
@@ -175,7 +207,11 @@ describe("AuthoredSkillRepository", () => {
       }),
     );
 
-    expect(sqlite.prepare("SELECT count(*) AS count FROM capability_configuration").get()).toEqual({
+    expect(
+      sqlite
+        .prepare("SELECT count(*) AS count FROM scoped_configuration WHERE kind = 'capability'")
+        .get(),
+    ).toEqual({
       count: 0,
     });
   });
@@ -213,13 +249,23 @@ describe("AuthoredSkillRepository", () => {
     expect(sqlite.prepare("SELECT count(*) AS count FROM authored_skill").get()).toEqual({
       count: 0,
     });
-    expect(sqlite.prepare("SELECT count(*) AS count FROM authored_skill_revision").get()).toEqual({
+    expect(sqlite.prepare("SELECT count(*) AS count FROM resource_revision").get()).toEqual({
       count: 0,
     });
-    expect(sqlite.prepare("SELECT count(*) AS count FROM project_capability").get()).toEqual({
+    expect(
+      sqlite
+        .prepare(
+          "SELECT count(*) AS count FROM scoped_configuration WHERE kind = 'capability' AND attached = 1",
+        )
+        .get(),
+    ).toEqual({
       count: 0,
     });
-    expect(sqlite.prepare("SELECT count(*) AS count FROM capability_configuration").get()).toEqual({
+    expect(
+      sqlite
+        .prepare("SELECT count(*) AS count FROM scoped_configuration WHERE kind = 'capability'")
+        .get(),
+    ).toEqual({
       count: 0,
     });
   });
@@ -234,7 +280,7 @@ describe("AuthoredSkillRepository", () => {
     expect(
       sqlite
         .prepare(
-          "SELECT scope_type, scope_id, capability_kind, capability_id, configuration FROM capability_configuration",
+          "SELECT scope_type, scope_id, target_kind AS capability_kind, target_id AS capability_id, payload AS configuration FROM scoped_configuration WHERE kind = 'capability'",
         )
         .get(),
     ).toEqual({
@@ -273,7 +319,13 @@ describe("AuthoredSkillRepository", () => {
     await expect(
       repository.listByScope({ type: "project", id: "project-1" }),
     ).resolves.toHaveLength(1);
-    expect(sqlite.prepare("SELECT * FROM project_capability").get()).toMatchObject({
+    expect(
+      sqlite
+        .prepare(
+          "SELECT project_id, target_kind AS kind, target_id AS capability_id, created_by FROM scoped_configuration WHERE kind = 'capability' AND attached = 1",
+        )
+        .get(),
+    ).toMatchObject({
       project_id: "project-1",
       kind: "skill",
       capability_id: "meeting-notes",
@@ -282,7 +334,7 @@ describe("AuthoredSkillRepository", () => {
     expect(
       sqlite
         .prepare(
-          "SELECT scope_type, scope_id, capability_kind, capability_id FROM capability_configuration WHERE scope_type = 'project'",
+          "SELECT scope_type, scope_id, target_kind AS capability_kind, target_id AS capability_id FROM scoped_configuration WHERE kind = 'capability' AND scope_type = 'project'",
         )
         .get(),
     ).toEqual({
@@ -636,7 +688,7 @@ describe("AuthoredSkillRepository", () => {
 
     sqlite.exec(`
       CREATE TRIGGER fail_appended_skill_revision
-      BEFORE INSERT ON authored_skill_revision
+      BEFORE INSERT ON resource_revision
       WHEN NEW.revision > 1
       BEGIN
         SELECT RAISE(ABORT, 'simulated revision failure');
@@ -664,7 +716,7 @@ describe("AuthoredSkillRepository", () => {
 
     sqlite.exec(`
       CREATE TRIGGER fail_initial_skill_revision
-      BEFORE INSERT ON authored_skill_revision
+      BEFORE INSERT ON resource_revision
       WHEN NEW.digest = 'sha256:fault'
       BEGIN
         SELECT RAISE(ABORT, 'simulated initial revision failure');

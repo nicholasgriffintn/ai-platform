@@ -17,8 +17,8 @@ export interface ApiKeyMetadata {
 export class ApiKeyRepository extends BaseRepository {
   private async getUserPublicKey(userId: number): Promise<CryptoKey> {
     const { query, values } = this.buildSelectQuery(
-      "user_settings",
-      { user_id: userId },
+      "scoped_configuration",
+      { kind: "preferences", user_id: userId },
       { columns: ["public_key"] },
     );
     const result = await this.runQuery<{ public_key: string }>(query, values, true);

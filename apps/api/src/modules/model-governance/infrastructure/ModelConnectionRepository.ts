@@ -3,7 +3,13 @@ import { parseRecordValue } from "@ngriffin_uk/polychat-utility-core";
 import { and, eq } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { workspaceProviderConnection } from "~/infrastructure/database/schema";
+import {
+  type WorkspaceProviderConnectionRecord,
+  workspaceProviderConnection,
+  workspaceProviderConnectionValues,
+  workspaceProviderConnectionChanges,
+} from "~/infrastructure/database/model-storage";
+import { modelConfiguration } from "~/infrastructure/database/schema";
 import { openSecret, sealSecret } from "~/infrastructure/secret-envelope";
 import type { IEnv } from "~/types";
 
@@ -26,9 +32,9 @@ export class ModelConnectionRepository extends BaseRepository<Pick<IEnv, "DB" | 
     }
 
     return this.database
-      .select()
-      .from(workspaceProviderConnection)
-      .where(and(...conditions));
+      .select(workspaceProviderConnection)
+      .from(modelConfiguration)
+      .where(and(eq(modelConfiguration.kind, "connection"), and(...conditions)));
   }
 
   private async openSecrets(envelope: string): Promise<Record<string, string>> {
@@ -41,9 +47,7 @@ export class ModelConnectionRepository extends BaseRepository<Pick<IEnv, "DB" | 
     );
   }
 
-  private async toRecord(
-    row: typeof workspaceProviderConnection.$inferSelect,
-  ): Promise<ModelConnectionRecord> {
+  private async toRecord(row: WorkspaceProviderConnectionRecord): Promise<ModelConnectionRecord> {
     return {
       provider: row.provider,
       account: row.account,
@@ -96,21 +100,34 @@ export class ModelConnectionRepository extends BaseRepository<Pick<IEnv, "DB" | 
     };
 
     await this.database
-      .insert(workspaceProviderConnection)
-      .values({ workspace_id: input.workspaceId, provider: input.provider, ...values })
+      .insert(modelConfiguration)
+      .values(
+        workspaceProviderConnectionValues({
+          workspace_id: input.workspaceId,
+          provider: input.provider,
+          ...values,
+        }),
+      )
       .onConflictDoUpdate({
-        target: [workspaceProviderConnection.workspace_id, workspaceProviderConnection.provider],
-        set: values,
+        target: [
+          modelConfiguration.workspace_id,
+          modelConfiguration.kind,
+          modelConfiguration.scope_key,
+        ],
+        set: workspaceProviderConnectionChanges(values),
       });
   }
 
   async deleteConnection(workspaceId: string, provider: ModelProviderId): Promise<boolean> {
     const deleted = await this.database
-      .delete(workspaceProviderConnection)
+      .delete(modelConfiguration)
       .where(
         and(
-          eq(workspaceProviderConnection.workspace_id, workspaceId),
-          eq(workspaceProviderConnection.provider, provider),
+          eq(modelConfiguration.kind, "connection"),
+          and(
+            eq(workspaceProviderConnection.workspace_id, workspaceId),
+            eq(workspaceProviderConnection.provider, provider),
+          ),
         ),
       )
       .returning({ provider: workspaceProviderConnection.provider });
@@ -121,7 +138,8 @@ export class ModelConnectionRepository extends BaseRepository<Pick<IEnv, "DB" | 
   async listConnectedWorkspaces(): Promise<string[]> {
     const rows = await this.database
       .selectDistinct({ workspaceId: workspaceProviderConnection.workspace_id })
-      .from(workspaceProviderConnection);
+      .from(modelConfiguration)
+      .where(eq(modelConfiguration.kind, "connection"));
 
     return rows.map((row) => row.workspaceId);
   }

@@ -12,16 +12,25 @@ import { and, desc, eq, getTableColumns, inArray, isNull, lte, or, sql } from "d
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import {
-  modelDecision,
-  modelEvidence,
+  type ModelPolicyRecord,
   modelPolicy,
-  modelPolicyRevision,
-} from "~/infrastructure/database/schema";
+  type ModelEvidenceRecord,
+  modelEvidence,
+  type ModelDecisionRecord,
+  modelDecision,
+  modelDecisionChanges,
+  modelDecisionValues,
+  modelPolicyRevisionValues,
+  modelPolicyValues,
+  modelPolicyChanges,
+  modelEvidenceValues,
+} from "~/infrastructure/database/model-storage";
+import { modelConfiguration, modelRecord, modelApproval } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
-export type ModelEvidenceRecord = typeof modelEvidence.$inferSelect;
-export type ModelPolicyRecord = typeof modelPolicy.$inferSelect;
-export type ModelDecisionRecord = typeof modelDecision.$inferSelect;
+export type { ModelEvidenceRecord } from "~/infrastructure/database/model-storage";
+export type { ModelPolicyRecord } from "~/infrastructure/database/model-storage";
+export type { ModelDecisionRecord } from "~/infrastructure/database/model-storage";
 
 export const WORKSPACE_POLICY_SCOPE_KEY = "workspace";
 const DECISION_LIST_LIMIT = 500;
@@ -45,24 +54,26 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
     const now = new Date().toISOString();
     const inserts = chunkArray(
       inputs,
-      BaseRepository.rowsPerInsert(Object.keys(getTableColumns(modelEvidence)).length),
+      BaseRepository.rowsPerInsert(Object.keys(getTableColumns(modelRecord)).length + 4),
     ).map((page) =>
       this.database
-        .insert(modelEvidence)
+        .insert(modelRecord)
         .values(
-          page.map((input) => ({
-            id: generateId(),
-            version_id: input.versionId,
-            route_id: input.routeId ?? null,
-            kind: input.kind,
-            source: input.source,
-            status: input.status,
-            summary: input.summary,
-            details: input.details ?? {},
-            observed_at: now,
-          })),
+          page.map((input) =>
+            modelEvidenceValues({
+              id: generateId(),
+              version_id: input.versionId,
+              route_id: input.routeId ?? null,
+              kind: input.kind,
+              source: input.source,
+              status: input.status,
+              summary: input.summary,
+              details: input.details ?? {},
+              observed_at: now,
+            }),
+          ),
         )
-        .returning(),
+        .returning(modelEvidence),
     );
     const [first, ...rest] = inserts;
 
@@ -71,7 +82,10 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
 
   async listEvidence(versionIds: string[]): Promise<ModelEvidenceRecord[]> {
     const records = await this.selectInChunks(versionIds, (page) =>
-      this.database.select().from(modelEvidence).where(inArray(modelEvidence.version_id, page)),
+      this.database
+        .select(modelEvidence)
+        .from(modelRecord)
+        .where(and(eq(modelRecord.kind, "evidence"), inArray(modelEvidence.version_id, page))),
     );
 
     return records.sort((left, right) => right.observed_at.localeCompare(left.observed_at));
@@ -79,9 +93,14 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
 
   async getPolicy(workspaceId: string, scopeKey: string): Promise<ModelPolicyRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelPolicy)
-      .where(and(eq(modelPolicy.workspace_id, workspaceId), eq(modelPolicy.scope_key, scopeKey)))
+      .select(modelPolicy)
+      .from(modelConfiguration)
+      .where(
+        and(
+          eq(modelConfiguration.kind, "policy"),
+          and(eq(modelPolicy.workspace_id, workspaceId), eq(modelPolicy.scope_key, scopeKey)),
+        ),
+      )
       .limit(1);
 
     return record ?? null;
@@ -89,9 +108,9 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
 
   async listPolicies(workspaceId: string): Promise<ModelPolicyRecord[]> {
     return this.database
-      .select()
-      .from(modelPolicy)
-      .where(eq(modelPolicy.workspace_id, workspaceId));
+      .select(modelPolicy)
+      .from(modelConfiguration)
+      .where(and(eq(modelConfiguration.kind, "policy"), eq(modelPolicy.workspace_id, workspaceId)));
   }
 
   async savePolicy(input: {
@@ -121,27 +140,35 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
       updated_at: now,
     };
     const write = existing
-      ? this.database.update(modelPolicy).set(values).where(eq(modelPolicy.id, id)).returning()
+      ? this.database
+          .update(modelConfiguration)
+          .set(modelPolicyChanges(values))
+          .where(and(eq(modelConfiguration.kind, "policy"), eq(modelPolicy.id, id)))
+          .returning(modelPolicy)
       : this.database
-          .insert(modelPolicy)
-          .values({
-            id,
-            workspace_id: input.workspaceId,
-            project_id: input.projectId,
-            scope_key: scopeKey,
-            ...values,
-          })
-          .returning();
+          .insert(modelConfiguration)
+          .values(
+            modelPolicyValues({
+              id,
+              workspace_id: input.workspaceId,
+              project_id: input.projectId,
+              scope_key: scopeKey,
+              ...values,
+            }),
+          )
+          .returning(modelPolicy);
     const [[record]] = await this.database.batch([
       write,
-      this.database.insert(modelPolicyRevision).values({
-        policy_id: id,
-        revision,
-        hash: input.hash,
-        rules: input.rules,
-        enforcement: input.enforcement,
-        created_by: input.updatedBy,
-      }),
+      this.database.insert(modelRecord).values(
+        modelPolicyRevisionValues({
+          policy_id: id,
+          revision,
+          hash: input.hash,
+          rules: input.rules,
+          enforcement: input.enforcement,
+          created_by: input.updatedBy,
+        }),
+      ),
     ]);
 
     return record;
@@ -161,32 +188,39 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
     decidedBy?: number | null;
   }): Promise<ModelDecisionRecord> {
     const [record] = await this.database
-      .insert(modelDecision)
-      .values({
-        id: generateId(),
-        workspace_id: input.workspaceId,
-        project_id: input.projectId,
-        version_id: input.versionId,
-        route_id: input.routeId,
-        state: input.state,
-        verdict: input.verdict,
-        evidence_ids: input.evidenceIds,
-        is_exception: input.isException,
-        note: input.note,
-        requested_by: input.requestedBy,
-        decided_by: input.decidedBy ?? null,
-        decided_at: input.state === "pending" ? null : new Date().toISOString(),
-      })
-      .returning();
+      .insert(modelApproval)
+      .values(
+        modelDecisionValues({
+          id: generateId(),
+          workspace_id: input.workspaceId,
+          project_id: input.projectId,
+          version_id: input.versionId,
+          route_id: input.routeId,
+          state: input.state,
+          verdict: input.verdict,
+          evidence_ids: input.evidenceIds,
+          is_exception: input.isException,
+          note: input.note,
+          requested_by: input.requestedBy,
+          decided_by: input.decidedBy ?? null,
+          decided_at: input.state === "pending" ? null : new Date().toISOString(),
+        }),
+      )
+      .returning(modelDecision);
 
     return record;
   }
 
   async getDecision(workspaceId: string, decisionId: string): Promise<ModelDecisionRecord | null> {
     const [record] = await this.database
-      .select()
-      .from(modelDecision)
-      .where(and(eq(modelDecision.workspace_id, workspaceId), eq(modelDecision.id, decisionId)))
+      .select(modelDecision)
+      .from(modelApproval)
+      .where(
+        and(
+          eq(modelApproval.kind, "decision"),
+          and(eq(modelDecision.workspace_id, workspaceId), eq(modelDecision.id, decisionId)),
+        ),
+      )
       .limit(1);
 
     return record ?? null;
@@ -208,12 +242,15 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
 
     const select = (versionIds?: string[]) =>
       this.database
-        .select()
-        .from(modelDecision)
+        .select(modelDecision)
+        .from(modelApproval)
         .where(
           and(
-            ...conditions,
-            ...(versionIds ? [inArray(modelDecision.version_id, versionIds)] : []),
+            eq(modelApproval.kind, "decision"),
+            and(
+              ...conditions,
+              ...(versionIds ? [inArray(modelDecision.version_id, versionIds)] : []),
+            ),
           ),
         )
         .orderBy(
@@ -246,29 +283,36 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
     evidenceIds?: string[];
   }): Promise<ModelDecisionRecord | null> {
     const [record] = await this.database
-      .update(modelDecision)
-      .set({
-        state: input.state,
-        decided_by: input.decidedBy,
-        decided_at: new Date().toISOString(),
-        note: input.note,
-        conditions: input.conditions,
-        expires_at: input.expiresAt,
-        ...(input.verdict ? { verdict: input.verdict } : {}),
-        ...(input.evidenceIds ? { evidence_ids: input.evidenceIds } : {}),
-      })
-      .where(eq(modelDecision.id, input.decisionId))
-      .returning();
+      .update(modelApproval)
+      .set(
+        modelDecisionChanges({
+          state: input.state,
+          decided_by: input.decidedBy,
+          decided_at: new Date().toISOString(),
+          note: input.note,
+          conditions: input.conditions,
+          expires_at: input.expiresAt,
+          ...(input.verdict ? { verdict: input.verdict } : {}),
+          ...(input.evidenceIds ? { evidence_ids: input.evidenceIds } : {}),
+        }),
+      )
+      .where(and(eq(modelApproval.kind, "decision"), eq(modelDecision.id, input.decisionId)))
+      .returning(modelDecision);
 
     return record ?? null;
   }
 
   async expireDecisions(now: string): Promise<ModelDecisionRecord[]> {
     return this.database
-      .update(modelDecision)
-      .set({ state: "expired" })
-      .where(and(eq(modelDecision.state, "approved"), lte(modelDecision.expires_at, now)))
-      .returning();
+      .update(modelApproval)
+      .set(modelDecisionChanges({ state: "expired" }))
+      .where(
+        and(
+          eq(modelApproval.kind, "decision"),
+          and(eq(modelDecision.state, "approved"), lte(modelDecision.expires_at, now)),
+        ),
+      )
+      .returning(modelDecision);
   }
 
   async findActiveApprovals(
@@ -276,15 +320,18 @@ export class ModelGovernanceRepository extends BaseRepository<Pick<IEnv, "DB">> 
     projectId: string | null,
   ): Promise<ModelDecisionRecord[]> {
     return this.database
-      .select()
-      .from(modelDecision)
+      .select(modelDecision)
+      .from(modelApproval)
       .where(
         and(
-          eq(modelDecision.workspace_id, workspaceId),
-          eq(modelDecision.state, "approved"),
-          projectId
-            ? or(eq(modelDecision.project_id, projectId), isNull(modelDecision.project_id))
-            : isNull(modelDecision.project_id),
+          eq(modelApproval.kind, "decision"),
+          and(
+            eq(modelDecision.workspace_id, workspaceId),
+            eq(modelDecision.state, "approved"),
+            projectId
+              ? or(eq(modelDecision.project_id, projectId), isNull(modelDecision.project_id))
+              : isNull(modelDecision.project_id),
+          ),
         ),
       );
   }

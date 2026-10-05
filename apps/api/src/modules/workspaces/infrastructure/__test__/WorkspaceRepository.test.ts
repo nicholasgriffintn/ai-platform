@@ -114,24 +114,11 @@ describe("WorkspaceRepository", () => {
     ).rejects.toMatchObject({ statusCode: 409 });
   });
 
-  it("stores a project capability and its configuration in one batch", async () => {
-    const statements: { query: string; params: unknown[] }[] = [];
-    const database = {
-      prepare: vi.fn((query: string) => ({
-        bind: (...params: unknown[]) => {
-          const statement = { query, params };
-
-          statements.push(statement);
-
-          return statement;
-        },
-      })),
-      batch: vi.fn(async () => [
-        { success: true, meta: { changes: 1 } },
-        { success: true, meta: { changes: 1 } },
-      ]),
-    };
-    const repository = new WorkspaceRepository({ DB: database } as any);
+  it("stores a project capability and its configuration in one guarded write", async () => {
+    const run = vi.fn(async () => ({ success: true, meta: { changes: 1 } }));
+    const bind = vi.fn(() => ({ run }));
+    const prepare = vi.fn((_query: string) => ({ bind }));
+    const repository = new WorkspaceRepository({ DB: { prepare } } as any);
 
     await repository.addProjectCapability({
       id: "association-1",
@@ -142,22 +129,19 @@ describe("WorkspaceRepository", () => {
       createdBy: 42,
     });
 
-    expect(database.batch).toHaveBeenCalledOnce();
-    expect(statements[0]?.query).toContain("INSERT INTO project_capability");
-    expect(statements[1]?.query).toContain("INSERT INTO capability_configuration");
-    expect(statements[1]?.query).toContain("WHERE EXISTS");
-    expect(statements[1]?.params).toEqual([
-      expect.any(String),
-      "project",
+    expect(run).toHaveBeenCalledOnce();
+    expect(prepare.mock.calls[0]?.[0]).toContain(
+      "scoped_configuration.created_by = excluded.created_by",
+    );
+    expect(bind).toHaveBeenCalledWith(
+      "association-1",
       "project-1",
       "tool",
       "file_search",
       JSON.stringify({ vectorStoreIds: ["vs_project"] }),
-      "project-1",
-      "tool",
-      "file_search",
       42,
-    ]);
+      0,
+    );
   });
 
   it("deletes project-scoped capability configuration with its workspace", async () => {
@@ -179,10 +163,10 @@ describe("WorkspaceRepository", () => {
     await repository.deleteWorkspace("workspace-1");
 
     const capabilityConfigurationDelete = statements.find(({ query }) =>
-      query.includes("DELETE FROM capability_configuration"),
+      query.includes("DELETE FROM scoped_configuration"),
     );
 
-    expect(capabilityConfigurationDelete?.query).toContain("scope_type = 'project'");
+    expect(capabilityConfigurationDelete?.query).toContain("project_id IN");
     expect(capabilityConfigurationDelete?.params).toEqual(["workspace-1"]);
     const usageUpdate = statements.find(({ query }) => query.includes("UPDATE usage_event"));
 

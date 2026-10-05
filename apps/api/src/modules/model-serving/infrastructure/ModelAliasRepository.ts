@@ -2,11 +2,16 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { modelAlias, modelAliasEvent } from "~/infrastructure/database/schema";
+import {
+  type ModelAliasEventRecord,
+  modelAliasEvent,
+  modelAliasEventValues,
+} from "~/infrastructure/database/model-storage";
+import { modelAlias, modelRecord } from "~/infrastructure/database/schema";
 import type { IEnv } from "~/types";
 
 export type ModelAliasRecord = typeof modelAlias.$inferSelect;
-export type ModelAliasEventRecord = typeof modelAliasEvent.$inferSelect;
+export type { ModelAliasEventRecord } from "~/infrastructure/database/model-storage";
 
 export const WORKSPACE_ALIAS_SCOPE_KEY = "workspace";
 
@@ -143,28 +148,30 @@ export class ModelAliasRepository extends BaseRepository<Pick<IEnv, "DB">> {
     actorUserId: number | null;
   }): Promise<ModelAliasEventRecord> {
     const [record] = await this.database
-      .insert(modelAliasEvent)
-      .values({
-        id: generateId(),
-        alias_id: input.aliasId,
-        kind: input.kind,
-        from_route_id: input.fromRouteId,
-        to_route_id: input.toRouteId,
-        reason: input.reason,
-        gate: input.gate,
-        actor_user_id: input.actorUserId,
-      })
-      .returning();
+      .insert(modelRecord)
+      .values(
+        modelAliasEventValues({
+          id: generateId(),
+          alias_id: input.aliasId,
+          kind: input.kind,
+          from_route_id: input.fromRouteId,
+          to_route_id: input.toRouteId,
+          reason: input.reason,
+          gate: input.gate,
+          actor_user_id: input.actorUserId,
+        }),
+      )
+      .returning(modelAliasEvent);
 
     return record;
   }
 
   async listEvents(aliasId: string): Promise<ModelAliasEventRecord[]> {
     return this.database
-      .select()
-      .from(modelAliasEvent)
-      .where(eq(modelAliasEvent.alias_id, aliasId))
-      .orderBy(desc(modelAliasEvent.created_at), desc(sql`${modelAliasEvent}.rowid`))
+      .select(modelAliasEvent)
+      .from(modelRecord)
+      .where(and(eq(modelRecord.kind, "alias_event"), eq(modelAliasEvent.alias_id, aliasId)))
+      .orderBy(desc(modelAliasEvent.created_at), desc(sql`${modelRecord}.rowid`))
       .limit(100);
   }
 }
