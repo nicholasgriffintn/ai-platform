@@ -23,8 +23,6 @@ const image = await ai.image({ prompt: "a parrot on a perch", env, user });
 
 `complete` returns the text alongside the provider's `id`, `logId`, `citations` and `usage` when it reports them, plus the `raw` response. `generateObject` requests a JSON schema response, asks for strict mode only when every property is required, and validates the parsed result against the Zod schema.
 
-Pass an async callback as the second argument to `generateObject` to record usage before JSON and schema validation, including for invalid responses.
-
 `defineFunctions` turns a map of `{ name: { input shape, output shape } }` into typed callables backed by `generateObject`. `template` gives a tagged template that renders into `generateText`. Media functions route to the provider named on the request, then to the host default for that category.
 
 ## Decisions

@@ -5,12 +5,10 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { store_memory } from "~/modules/functions/application/memory";
-import { queueTeammateMemoryCorrection } from "~/modules/memory-documents/application/capture";
 import {
-  enqueueMemoryReflection,
+  queueTeammateMemoryCorrection,
   reflectTeammateMemory,
 } from "~/modules/memory-documents/application/reflection";
-import { MemoryReflectionRepository } from "~/modules/memory-documents/infrastructure/MemoryReflectionRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskExecutionContext } from "~/modules/tasks/application/types";
 import type { MemoryScope } from "~/types";
@@ -50,13 +48,11 @@ const runtime = new Miniflare({
 });
 let database: D1Database;
 let context: ServiceContext;
-let reflections: MemoryReflectionRepository;
 const input: MemoryReflectionTaskData = {
   contextId: "context",
   conversationId: "conversation",
   afterMessageId: null,
   throughMessageId: "source",
-  reason: "maintenance",
 };
 const scope: MemoryScope = {
   type: "bound",
@@ -97,7 +93,6 @@ beforeAll(async () => {
   const env = databaseTestEnvironment(database);
 
   context = createServiceContext({ env, user: nativeMemoryUser });
-  reflections = new MemoryReflectionRepository(env);
 });
 beforeEach(async () => {
   vi.restoreAllMocks();
@@ -128,6 +123,10 @@ beforeEach(async () => {
     database.prepare("DELETE FROM message"),
     database.prepare("DELETE FROM tasks WHERE id != 'task'"),
     database.prepare(
+      "UPDATE tasks SET status = 'running', execution_owner_token = 'owner', execution_lease_expires_at = '2099-01-01T00:00:00.000Z' WHERE id = 'task'",
+    ),
+    database.prepare("UPDATE teammate_context SET status = 'active'"),
+    database.prepare(
       "UPDATE memory_document SET revision = 1, content = 'Deploy to Netlify. Keep concise answers.'",
     ),
     database.prepare(
@@ -145,24 +144,11 @@ describe("native memory maintenance", () => {
     prepareModel.mockRejectedValueOnce(new Error("No model configured"));
 
     expect(await reflectTeammateMemory(context, input, "task", execution)).toBe("no_change");
-    expect(await reflections.checkpoint("context", "conversation")).toBe("source");
+    expect(
+      await context.repositories.memoryDocuments.reflectionCheckpoint("context", "conversation"),
+    ).toBe("source");
     expect(model).not.toHaveBeenCalled();
     expect(await context.repositories.memoryDocuments.listRevisions("memory")).toHaveLength(1);
-  });
-  it("lets the owner retry a failed range and deduplicates repeated requests", async () => {
-    await database
-      .prepare("INSERT INTO tasks (id, status, task_data) VALUES ('failed', 'failed', ?)")
-      .bind(JSON.stringify(input))
-      .run();
-    const retry = await enqueueMemoryReflection(context, input);
-
-    expect(retry).not.toBe("failed");
-    expect(await enqueueMemoryReflection(context, input)).toBe(retry);
-    expect(
-      await database
-        .prepare("SELECT COUNT(*) AS count FROM tasks WHERE status = 'queued'")
-        .first<{ count: number }>(),
-    ).toEqual({ count: 1 });
   });
   it("corrects user evidence rather than the memory tool's invented text, once across redelivery", async () => {
     const response = await store_memory.execute(
@@ -200,7 +186,7 @@ describe("native memory maintenance", () => {
       )
       .bind(taskId)
       .run();
-    const correctionInput: MemoryReflectionTaskData = { ...input, reason: "correction" };
+    const correctionInput = input;
 
     expect(await reflectTeammateMemory(context, correctionInput, taskId, execution)).toBe(
       "applied",
@@ -209,7 +195,9 @@ describe("native memory maintenance", () => {
       content: "Deploy to Cloudflare. Keep concise answers.",
       revision: 2,
     });
-    expect(await reflections.checkpoint("context", "conversation")).toBe("source");
+    expect(
+      await context.repositories.memoryDocuments.reflectionCheckpoint("context", "conversation"),
+    ).toBe("source");
     await reflectTeammateMemory(context, correctionInput, taskId, {
       ...execution,
       deliveryAttempt: 2,
@@ -251,10 +239,12 @@ describe("native memory maintenance", () => {
 
       return correction;
     });
-    await expect(
-      reflectTeammateMemory(context, { ...input, reason: "correction" }, taskId, execution),
-    ).rejects.toMatchObject({ statusCode: 403 });
-    expect(await reflections.checkpoint("context", "conversation")).toBeNull();
+    await expect(reflectTeammateMemory(context, input, taskId, execution)).rejects.toMatchObject({
+      statusCode: 403,
+    });
+    expect(
+      await context.repositories.memoryDocuments.reflectionCheckpoint("context", "conversation"),
+    ).toBeNull();
     expect(await context.repositories.memoryDocuments.getDocumentById("memory")).toMatchObject({
       content: "Deploy to Netlify. Keep concise answers.",
       revision: 1,
@@ -275,7 +265,9 @@ describe("native memory maintenance", () => {
       await expect(reflectTeammateMemory(context, input, "task", execution)).rejects.toMatchObject({
         statusCode: 400,
       });
-      expect(await reflections.checkpoint("context", "conversation")).toBeNull();
+      expect(
+        await context.repositories.memoryDocuments.reflectionCheckpoint("context", "conversation"),
+      ).toBeNull();
       expect(await context.repositories.memoryDocuments.getDocumentById("memory")).toMatchObject({
         content: "Deploy to Netlify. Keep concise answers.",
         revision: 1,
@@ -294,7 +286,9 @@ describe("native memory maintenance", () => {
     await expect(reflectTeammateMemory(context, input, "task", execution)).rejects.toMatchObject({
       statusCode: 409,
     });
-    expect(await reflections.checkpoint("context", "conversation")).toBeNull();
+    expect(
+      await context.repositories.memoryDocuments.reflectionCheckpoint("context", "conversation"),
+    ).toBeNull();
     expect(await context.repositories.memoryDocuments.getDocumentById("memory")).toMatchObject({
       revision: 1,
     });
@@ -314,11 +308,55 @@ describe("native memory maintenance", () => {
     await expect(reflectTeammateMemory(context, input, "task", execution)).rejects.toMatchObject({
       statusCode: 409,
     });
-    expect(await reflections.checkpoint("context", "conversation")).toBeNull();
+    expect(
+      await context.repositories.memoryDocuments.reflectionCheckpoint("context", "conversation"),
+    ).toBeNull();
     await reflectTeammateMemory(context, input, "task", execution);
     expect(await context.repositories.memoryDocuments.getDocumentById("memory")).toMatchObject({
       content: "Deploy to Cloudflare. Keep concise answers. Keep deployment reviews.",
       revision: 3,
     });
   });
+  it.each(["assistant", "tool", "untrusted-user"])(
+    "ignores %s output as correction evidence",
+    async (sourceKind) => {
+      await database
+        .prepare("UPDATE message SET role = ?, run_id = NULL WHERE id = 'source'")
+        .bind(sourceKind === "untrusted-user" ? "user" : sourceKind)
+        .run();
+
+      expect(await reflectTeammateMemory(context, input, "task", execution)).toBe("no_change");
+      expect(model).not.toHaveBeenCalled();
+      expect(await context.repositories.memoryDocuments.getDocumentById("memory")).toMatchObject({
+        revision: 1,
+      });
+    },
+  );
+
+  it.each(["lease", "context"])(
+    "atomically rejects a revoked %s at commit without consuming evidence",
+    async (boundary) => {
+      model.mockImplementationOnce(async () => {
+        await database
+          .prepare(
+            boundary === "lease"
+              ? "UPDATE tasks SET execution_owner_token = 'another-worker' WHERE id = 'task'"
+              : "UPDATE teammate_context SET status = 'archived' WHERE id = 'context'",
+          )
+          .run();
+
+        return correction;
+      });
+
+      await expect(reflectTeammateMemory(context, input, "task", execution)).rejects.toMatchObject({
+        statusCode: 409,
+      });
+      expect(
+        await context.repositories.memoryDocuments.reflectionCheckpoint("context", "conversation"),
+      ).toBeNull();
+      expect(await context.repositories.memoryDocuments.getDocumentById("memory")).toMatchObject({
+        revision: 1,
+      });
+    },
+  );
 });

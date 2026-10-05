@@ -1,6 +1,11 @@
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
+import { readMemoryDocumentSchema } from "@ngriffin_uk/polychat-schemas";
 
-import { MEMORY_SEARCH_TOOL_NAME, MEMORY_STORE_TOOL_NAME } from "~/modules/chat/domain/memory";
+import {
+  MEMORY_READ_TOOL_NAME,
+  MEMORY_SEARCH_TOOL_NAME,
+  MEMORY_STORE_TOOL_NAME,
+} from "~/modules/chat/domain/memory";
 
 import type { FunctionToolDescriptor } from "./types";
 
@@ -60,4 +65,13 @@ export const store_memory: FunctionToolDescriptor = {
     category: input.category,
     documentId: input.document_id,
   }),
+};
+
+export const read_memory_document: FunctionToolDescriptor = {
+  name: MEMORY_READ_TOOL_NAME,
+  description:
+    "Read a bounded page of a memory document in this run's memory scope. Use the documentId and revision from the memory index or search_memories results, then nextOffset for further pages. Bound teammate and delegated runs can only read explicitly granted documents. If the revision changes, refresh the index or search before combining pages.",
+  inputSchema: readMemoryDocumentSchema,
+  type: "normal",
+  permissions: ["read"],
 };

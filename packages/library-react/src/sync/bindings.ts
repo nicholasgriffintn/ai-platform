@@ -20,7 +20,7 @@ import { PROJECT_WORKBENCH_PREVIEW_QUERY_KEY } from "../hooks/useProjectWorkbenc
 import { projectWorkbenchRunsQueryKey } from "../hooks/useProjectWorkbenchRuns.js";
 import { REPLICATE_QUERY_KEY } from "../hooks/useReplicate.js";
 import { TASK_QUERY_KEYS } from "../hooks/useTasks.js";
-import { teammateMemoryMaintenanceQueryPrefix } from "../hooks/useTeammateContextMemory.js";
+import { teammateContextMemoryQueryPrefix } from "../hooks/useTeammateContextMemory.js";
 
 export interface SyncBindingContext {
   queryClient: QueryClient;
@@ -97,7 +97,7 @@ export const SYNC_BINDINGS: SyncBinding[] = [
     type: "task.changed",
     apply: (context) => {
       invalidate(context, TASK_QUERY_KEYS.tasks);
-      invalidate(context, teammateMemoryMaintenanceQueryPrefix);
+      invalidate(context, teammateContextMemoryQueryPrefix);
     },
   },
   {

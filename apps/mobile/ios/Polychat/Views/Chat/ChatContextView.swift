@@ -11,7 +11,6 @@ struct ChatContextView: View {
                     usageSection
                     if context != nil {
                         sourcesSection
-                        documentsSection
                         approvalsSection
                         skillsSection
                         summarySection
@@ -109,21 +108,6 @@ struct ChatContextView: View {
                         .foregroundStyle(source.status == "included" ? Color.secondary : Color.orange)
                 }
                 .accessibilityElement(children: .combine)
-            }
-        }
-    }
-
-    private var documentsSection: some View {
-        let documents = context?.documents ?? []
-        return contextSection(title: "Memory documents", empty: "No memory documents.", isEmpty: documents.isEmpty) {
-            ForEach(documents) { document in
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("\(document.name) · \(document.tier) · \(document.status)")
-                        .font(.subheadline)
-                    Text("Revision \(document.revision) · \(document.contentTokens.map { "\($0) content tokens" } ?? "Token estimate unavailable")\(document.reason == "budget" ? " · exceeds memory budget" : "")")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
             }
         }
     }

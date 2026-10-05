@@ -43,7 +43,10 @@ import {
   resolveScopedSkillCatalog,
   resolveSkillScope,
 } from "~/modules/chat/application/preparation/skills";
-import { buildSystemPrompt } from "~/modules/chat/application/preparation/system-prompt";
+import {
+  buildSystemPrompt,
+  projectRunMemory,
+} from "~/modules/chat/application/preparation/system-prompt";
 import type { ValidationContext } from "~/modules/chat/application/validation/ValidationPipeline";
 import { mergeEnabledGoalToolNames } from "~/modules/chat/domain/goal-tools";
 import { mergeEnabledMemoryToolNames, resolveMemoryPolicy } from "~/modules/chat/domain/memory";
@@ -54,10 +57,6 @@ import {
   resolveRequestFunctionToolNames,
 } from "~/modules/functions/application/availability";
 import { getConversationBrief } from "~/modules/memory-documents/application/memory-documents";
-import {
-  projectRunMemory,
-  runMemoryTokenBudget,
-} from "~/modules/memory-documents/application/projection";
 import {
   buildSkillAvailabilityInput,
   listSkillAvailability,
@@ -499,7 +498,8 @@ export class RequestPreparer {
     );
     const memoryProjection = projectRunMemory(
       runMemoryDocuments,
-      runMemoryTokenBudget(primaryModelConfig.contextWindow, baseSystemPrompt),
+      primaryModelConfig.contextWindow,
+      baseSystemPrompt,
     );
     const contextDocuments = memoryProjection.documents;
     const systemPrompt = [baseSystemPrompt, memoryProjection.section].filter(Boolean).join("\n\n");

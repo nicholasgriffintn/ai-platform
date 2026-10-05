@@ -128,32 +128,6 @@ export function ContextDetailsPanel({
 
       {context ? (
         <>
-          {context.documents?.length ? (
-            <section className="border-b border-border px-4 py-3">
-              <h3 className="font-medium text-foreground">Memory documents</h3>
-              <ul className="mt-2 space-y-1.5">
-                {context.documents.map((document) => (
-                  <li key={document.id}>
-                    <span className="font-medium">{document.name}</span>
-                    <span>
-                      {" "}
-                      · {document.tier} · {document.status} · revision {document.revision}
-                    </span>
-                    <p>
-                      {document.contentTokens === null
-                        ? "Token estimate unavailable"
-                        : `${document.contentTokens.toLocaleString()} content tokens`}
-                      {document.reason === "budget"
-                        ? " · exceeds memory budget"
-                        : document.reason === "reference"
-                          ? " · available on demand"
-                          : ""}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
           <section className="border-b border-border px-4 py-3">
             <h3 className="font-medium text-foreground">Attached sources</h3>
             {context.sources.length > 0 ? (

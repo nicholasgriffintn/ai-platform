@@ -3,7 +3,7 @@ import {
   useMemoryDocumentEditor,
   type SaveMemoryDocumentRevisionInput,
 } from "@ngriffin_uk/polychat-library-react";
-import { MEMORY_DOCUMENT_MAX_SUMMARY, type MemoryDocument } from "@ngriffin_uk/polychat-schemas";
+import type { MemoryDocument } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 
 export function MemoryDocumentEditor({
@@ -26,40 +26,6 @@ export function MemoryDocumentEditor({
   return (
     <div className="space-y-2">
       <Label htmlFor={document ? `memory-${document.id}` : undefined}>{label}</Label>
-      <div className="space-y-2">
-        <Label htmlFor={`memory-tier-${document?.id}`}>When to load this memory</Label>
-        <select
-          id={`memory-tier-${document?.id}`}
-          className="w-full rounded-md border bg-background p-2 text-sm"
-          value={editor.metadata.tier}
-          disabled={isLoading || !document}
-          onChange={(event) =>
-            editor.editMetadata({
-              ...editor.metadata,
-              tier: event.target.value === "reference" ? "reference" : "core",
-            })
-          }
-        >
-          <option value="core">Core — keep in context when it fits</option>
-          <option value="reference">Reference — read when needed</option>
-        </select>
-        <Label htmlFor={`memory-summary-${document?.id}`}>Description for retrieval</Label>
-        <Textarea
-          id={`memory-summary-${document?.id}`}
-          rows={2}
-          maxLength={MEMORY_DOCUMENT_MAX_SUMMARY}
-          value={editor.metadata.summary}
-          disabled={isLoading || !document}
-          placeholder="Describe what this document helps with"
-          onChange={(event) =>
-            editor.editMetadata({ ...editor.metadata, summary: event.target.value })
-          }
-        />
-        <p className="text-xs text-muted-foreground">
-          Large core documents remain available on demand. Leave the description empty to use an
-          excerpt.
-        </p>
-      </div>
       <Textarea
         id={document ? `memory-${document.id}` : undefined}
         rows={12}
@@ -81,9 +47,6 @@ export function MemoryDocumentEditor({
             <pre className="max-h-40 overflow-auto text-xs whitespace-pre-wrap text-foreground">
               {editor.incoming.content || "Empty"}
             </pre>
-            <p className="text-xs text-muted-foreground">
-              {editor.incoming.tier} · {editor.incoming.summary || "Uses an excerpt"}
-            </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="secondary" size="sm" onClick={editor.useServer}>

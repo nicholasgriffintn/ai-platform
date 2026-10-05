@@ -1,4 +1,3 @@
-import type { MemoryDocumentMetadata } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -6,6 +5,7 @@ import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type {
   MemoryDocumentRow,
   MemoryDocumentRevisionRow,
+  MemoryReflectionResultRow,
 } from "~/infrastructure/database/schema";
 
 export interface MemoryDocumentScopeKey {
@@ -13,8 +13,7 @@ export interface MemoryDocumentScopeKey {
   scopeId: string;
 }
 
-export interface CreateMemoryDocumentRecord
-  extends MemoryDocumentScopeKey, Partial<MemoryDocumentMetadata> {
+export interface CreateMemoryDocumentRecord extends MemoryDocumentScopeKey {
   kind?: "memory" | "conversation_brief" | "teammate_context";
   name: string;
   content: string;
@@ -22,13 +21,28 @@ export interface CreateMemoryDocumentRecord
   operationId?: string;
 }
 
-export interface AppendMemoryDocumentRevision extends Partial<MemoryDocumentMetadata> {
+export interface AppendMemoryDocumentRevision {
   documentId: string;
   content: string;
   changeNote?: string | null;
   createdByUserId: number;
   expectedRevision: number;
   operationId?: string;
+}
+
+export interface CommitMemoryReflection {
+  operationId: string;
+  contextId: string;
+  conversationId: string;
+  afterMessageId: string | null;
+  throughMessageId: string;
+  base: MemoryDocumentRow;
+  content: string;
+  changeNote: string;
+  evidenceJson: string;
+  userId: number;
+  taskId: string;
+  ownerToken: string;
 }
 
 export class MemoryDocumentRepository extends BaseRepository {
@@ -67,8 +81,8 @@ export class MemoryDocumentRepository extends BaseRepository {
     await this.executeBatch([
       this.env.DB.prepare(
         `INSERT INTO memory_document
-           (id, scope_type, scope_id, kind, name, content, tier, summary, revision, created_by)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+           (id, scope_type, scope_id, kind, name, content, revision, created_by)
+         VALUES (?, ?, ?, ?, ?, ?, 1, ?)`,
       ).bind(
         id,
         record.scopeType,
@@ -76,23 +90,13 @@ export class MemoryDocumentRepository extends BaseRepository {
         record.kind ?? "memory",
         record.name,
         record.content,
-        record.tier ?? "core",
-        record.summary ?? "",
         record.createdByUserId,
       ),
       this.env.DB.prepare(
         `INSERT INTO memory_document_revision
-           (id, document_id, revision, content, tier, summary, change_note, created_by, operation_id)
-         VALUES (?, ?, 1, ?, ?, ?, 'Created', ?, ?)`,
-      ).bind(
-        generateId(),
-        id,
-        record.content,
-        record.tier ?? "core",
-        record.summary ?? "",
-        record.createdByUserId,
-        record.operationId ?? null,
-      ),
+           (id, document_id, revision, content, change_note, created_by, operation_id)
+         VALUES (?, ?, 1, ?, 'Created', ?, ?)`,
+      ).bind(generateId(), id, record.content, record.createdByUserId, record.operationId ?? null),
     ]);
 
     const created = await this.getDocumentById(id);
@@ -107,41 +111,8 @@ export class MemoryDocumentRepository extends BaseRepository {
   public async appendRevision(
     input: AppendMemoryDocumentRevision,
   ): Promise<MemoryDocumentRow | null> {
-    const nextRevision = input.expectedRevision + 1;
     const operationId = input.operationId ?? null;
-    const results = await this.executeBatch([
-      this.env.DB.prepare(
-        `UPDATE memory_document
-         SET content = ?, tier = COALESCE(?, tier), summary = COALESCE(?, summary), revision = ?, updated_at = CURRENT_TIMESTAMP
-         WHERE id = ? AND revision = ? AND deleted_at IS NULL
-           AND (? IS NULL OR NOT EXISTS (
-             SELECT 1 FROM memory_document_revision
-             WHERE document_id = ? AND operation_id = ?
-           ))`,
-      ).bind(
-        input.content,
-        input.tier ?? null,
-        input.summary ?? null,
-        nextRevision,
-        input.documentId,
-        input.expectedRevision,
-        operationId,
-        input.documentId,
-        operationId,
-      ),
-      this.env.DB.prepare(
-        `INSERT INTO memory_document_revision
-           (id, document_id, revision, content, tier, summary, change_note, created_by, operation_id)
-         SELECT ?, id, revision, content, tier, summary, ?, ?, ?
-         FROM memory_document WHERE id = ? AND changes() > 0`,
-      ).bind(
-        generateId(),
-        input.changeNote ?? null,
-        input.createdByUserId,
-        operationId,
-        input.documentId,
-      ),
-    ]);
+    const results = await this.executeBatch(this.revisionStatements(input));
 
     if (!results[0]?.meta?.changes) {
       if (!operationId || !(await this.hasOperation(input.documentId, operationId))) {
@@ -181,6 +152,121 @@ export class MemoryDocumentRepository extends BaseRepository {
        LIMIT ?`,
       [scope.scopeType, scope.scopeId, `%${query}%`, `%${query}%`, limit],
     );
+  }
+
+  async reflectionCheckpoint(contextId: string, conversationId: string): Promise<string | null> {
+    const row = await this.runQuery<{ message_id: string }>(
+      "SELECT message_id FROM memory_reflection_checkpoint WHERE context_id = ? AND conversation_id = ?",
+      [contextId, conversationId],
+      true,
+    );
+
+    return row?.message_id ?? null;
+  }
+
+  async reflectionOutcome(operationId: string): Promise<MemoryReflectionResultRow | null> {
+    return this.runQuery<MemoryReflectionResultRow>(
+      "SELECT * FROM memory_reflection_result WHERE id = ?",
+      [operationId],
+      true,
+    );
+  }
+
+  async commitReflection(input: CommitMemoryReflection): Promise<MemoryReflectionResultRow | null> {
+    const changed = input.content !== input.base.content;
+    const revision = input.base.revision + Number(changed);
+
+    await this.executeBatch([
+      this.env.DB.prepare(`INSERT OR IGNORE INTO memory_reflection_result
+        (id, context_id, conversation_id, through_message_id, revision, status, evidence_json)
+        SELECT ?, ?, ?, ?, ?, ?, ? FROM memory_document d
+        WHERE d.id = ? AND d.revision = ? AND d.deleted_at IS NULL
+          AND (SELECT message_id FROM memory_reflection_checkpoint WHERE context_id = ? AND conversation_id = ?) IS ?
+          AND EXISTS (SELECT 1 FROM teammate_context c WHERE c.id = ? AND c.status = 'active' AND c.actor_user_id = ? AND c.memory_document_id = d.id)
+          AND EXISTS (SELECT 1 FROM tasks t WHERE t.id = ? AND t.status = 'running' AND t.execution_owner_token = ? AND julianday(t.execution_lease_expires_at) > julianday('now'))`).bind(
+        input.operationId,
+        input.contextId,
+        input.conversationId,
+        input.throughMessageId,
+        revision,
+        changed ? "applied" : "no_change",
+        input.evidenceJson,
+        input.base.id,
+        input.base.revision,
+        input.contextId,
+        input.conversationId,
+        input.afterMessageId,
+        input.contextId,
+        input.userId,
+        input.taskId,
+        input.ownerToken,
+      ),
+      ...(changed
+        ? this.revisionStatements(
+            {
+              documentId: input.base.id,
+              expectedRevision: input.base.revision,
+              content: input.content,
+              changeNote: input.changeNote,
+              createdByUserId: input.userId,
+              operationId: input.operationId,
+            },
+            input.operationId,
+          )
+        : []),
+      this.env.DB.prepare(`INSERT INTO memory_reflection_checkpoint (id, context_id, conversation_id, message_id)
+        SELECT ?, context_id, conversation_id, through_message_id FROM memory_reflection_result WHERE id = ?
+          AND (SELECT message_id FROM memory_reflection_checkpoint WHERE context_id = ? AND conversation_id = ?) IS ?
+        ON CONFLICT(context_id, conversation_id) DO UPDATE SET message_id = excluded.message_id, updated_at = CURRENT_TIMESTAMP`).bind(
+        generateId(),
+        input.operationId,
+        input.contextId,
+        input.conversationId,
+        input.afterMessageId,
+      ),
+    ]);
+
+    return this.reflectionOutcome(input.operationId);
+  }
+
+  private revisionStatements(input: AppendMemoryDocumentRevision, reflectionOperationId?: string) {
+    const nextRevision = input.expectedRevision + 1;
+    const operationId = input.operationId ?? null;
+
+    return [
+      this.env.DB.prepare(
+        `UPDATE memory_document
+         SET content = ?, revision = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ? AND revision = ? AND deleted_at IS NULL
+           AND (? IS NULL OR NOT EXISTS (
+             SELECT 1 FROM memory_document_revision
+             WHERE document_id = ? AND operation_id = ?
+           ))${reflectionOperationId ? " AND EXISTS (SELECT 1 FROM memory_reflection_result WHERE id = ? AND revision = ? AND status = 'applied')" : ""}`,
+      ).bind(
+        input.content,
+        nextRevision,
+        input.documentId,
+        input.expectedRevision,
+        operationId,
+        input.documentId,
+        operationId,
+        ...(reflectionOperationId ? [reflectionOperationId, nextRevision] : []),
+      ),
+      this.env.DB.prepare(
+        `INSERT INTO memory_document_revision
+           (id, document_id, revision, content, change_note, created_by, operation_id)
+         SELECT ?, ?, ?, ?, ?, ?, ?
+         WHERE changes() > 0`,
+      ).bind(
+        generateId(),
+        input.documentId,
+        nextRevision,
+        input.content,
+        input.changeNote ?? null,
+        input.createdByUserId,
+        operationId,
+      ),
+    ];
   }
 
   private async hasOperation(documentId: string, operationId: string): Promise<boolean> {

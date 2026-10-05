@@ -1,18 +1,26 @@
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
-import { toolErrorResponse } from "@ngriffin_uk/polychat-utility-server/errors";
+import { readMemoryDocumentSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  AssistantError,
+  ErrorType,
+  toolErrorResponse,
+} from "@ngriffin_uk/polychat-utility-server/errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import {
+  MEMORY_READ_TOOL_NAME,
   MEMORY_SEARCH_TOOL_NAME,
   MEMORY_STORE_TOOL_NAME,
   resolveMemoryPolicy,
 } from "~/modules/chat/domain/memory";
-import { queueTeammateMemoryCorrection } from "~/modules/memory-documents/application/capture";
+import { readRunMemoryDocument } from "~/modules/memory-documents/application/pages";
+import { queueTeammateMemoryCorrection } from "~/modules/memory-documents/application/reflection";
 import { MemoryManager } from "~/modules/memory/application/manager";
 import type { IUserSettings } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import {
+  read_memory_document as read_memory_documentDescriptor,
   search_memories as search_memoriesDescriptor,
   store_memory as store_memoryDescriptor,
 } from "./definitions/memory";
@@ -175,5 +183,37 @@ export const store_memory: ApiToolDefinition = {
       content: "Memory stored.",
       data: { id },
     };
+  },
+};
+
+export const read_memory_document: ApiToolDefinition = {
+  ...read_memory_documentDescriptor,
+  execute: async (args, { request }) => {
+    if (!request.context || !request.memoryScope) {
+      throw new AssistantError(
+        "Memory document reads require a scoped run",
+        ErrorType.FORBIDDEN,
+        403,
+      );
+    }
+
+    if (
+      request.memoryScope.type !== "bound" &&
+      !resolveMemoryPolicy({
+        user: request.context.user,
+        userSettings: await request.context.getUserSettings(),
+        store: request.request?.store === true,
+      }).canRetrieve
+    ) {
+      throw new AssistantError("Memory retrieval is disabled", ErrorType.FORBIDDEN, 403);
+    }
+
+    const page = await readRunMemoryDocument(
+      request.context,
+      request.memoryScope,
+      readMemoryDocumentSchema.parse(args),
+    );
+
+    return { status: "success", name: MEMORY_READ_TOOL_NAME, content: page.content, data: page };
   },
 };

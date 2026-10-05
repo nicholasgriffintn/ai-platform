@@ -1,12 +1,6 @@
 import z from "zod/v4";
 
 export const MEMORY_DOCUMENT_MAX_CONTENT = 64 * 1024;
-export const MEMORY_DOCUMENT_MAX_SUMMARY = 500;
-export const memoryDocumentTierSchema = z.enum(["core", "reference"]);
-export const memoryDocumentMetadataSchema = z.object({
-  tier: memoryDocumentTierSchema,
-  summary: z.string().trim().max(MEMORY_DOCUMENT_MAX_SUMMARY),
-});
 
 export const memoryDocumentNameSchema = z
   .string()
@@ -23,7 +17,7 @@ export const memoryDocumentScopeSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("project"), projectId: z.string().min(1) }),
 ]);
 
-export const memoryDocumentSchema = memoryDocumentMetadataSchema.extend({
+export const memoryDocumentSchema = z.object({
   id: z.string(),
   name: memoryDocumentNameSchema,
   content: z.string(),
@@ -38,7 +32,7 @@ export const memoryDocumentSummarySchema = memoryDocumentSchema.omit({ content: 
   excerpt: z.string(),
 });
 
-export const memoryDocumentRevisionSchema = memoryDocumentMetadataSchema.extend({
+export const memoryDocumentRevisionSchema = z.object({
   id: z.string(),
   revision: z.number().int().positive(),
   content: z.string(),
@@ -46,13 +40,13 @@ export const memoryDocumentRevisionSchema = memoryDocumentMetadataSchema.extend(
   createdAt: z.string(),
 });
 
-export const createMemoryDocumentSchema = memoryDocumentMetadataSchema.extend({
+export const createMemoryDocumentSchema = z.object({
   name: memoryDocumentNameSchema,
   content: z.string().max(MEMORY_DOCUMENT_MAX_CONTENT).default(""),
   projectId: z.string().min(1).optional(),
 });
 
-export const updateMemoryDocumentSchema = memoryDocumentMetadataSchema.extend({
+export const updateMemoryDocumentSchema = z.object({
   content: z.string().max(MEMORY_DOCUMENT_MAX_CONTENT),
   changeNote: z.string().trim().min(1).max(500).optional(),
   expectedRevision: z.number().int().positive(),
@@ -77,7 +71,6 @@ export const conversationBriefResponseSchema = z.object({
 });
 
 export type MemoryDocument = z.infer<typeof memoryDocumentSchema>;
-export type MemoryDocumentMetadata = z.infer<typeof memoryDocumentMetadataSchema>;
 
 export const readMemoryDocumentSchema = z.object({
   documentId: z.string().min(1),
@@ -105,7 +98,6 @@ export const memoryReflectionTaskDataSchema = z.object({
   conversationId: z.string().min(1),
   throughMessageId: z.string().min(1),
   afterMessageId: z.string().nullable(),
-  reason: z.enum(["correction", "maintenance"]),
 });
 export type MemoryReflectionTaskData = z.infer<typeof memoryReflectionTaskDataSchema>;
 
@@ -131,12 +123,6 @@ export const memoryReflectionProposalSchema = z.object({
 });
 export type MemoryReflectionProposal = z.infer<typeof memoryReflectionProposalSchema>;
 
-export const memoryReflectionStatusSchema = z.object({
-  taskId: z.string().nullable(),
-  status: z.enum(["queued", "running", "completed", "failed", "cancelled", "idle"]),
-  error: z.string().nullable(),
-});
-export type MemoryReflectionStatus = z.infer<typeof memoryReflectionStatusSchema>;
 export type MemoryDocumentSummary = z.infer<typeof memoryDocumentSummarySchema>;
 export type MemoryDocumentRevision = z.infer<typeof memoryDocumentRevisionSchema>;
 export type MemoryDocumentScope = z.infer<typeof memoryDocumentScopeSchema>;

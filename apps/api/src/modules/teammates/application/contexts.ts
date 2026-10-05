@@ -182,15 +182,13 @@ export async function getTeammateContextMemory(
 export async function updateTeammateContextMemory(
   context: ServiceContext,
   contextId: string,
-  input: Omit<UpdateMemoryDocumentInput, "projectId">,
+  input: Pick<UpdateMemoryDocumentInput, "content" | "changeNote" | "expectedRevision">,
 ): Promise<MemoryDocument> {
   const user = context.requireUser();
   const document = await requireContextMemoryDocument(context, contextId);
   const updated = await context.repositories.memoryDocuments.appendRevision({
     documentId: document.id,
     content: input.content,
-    tier: input.tier,
-    summary: input.summary,
     changeNote: input.changeNote ?? null,
     createdByUserId: user.id,
     expectedRevision: input.expectedRevision,

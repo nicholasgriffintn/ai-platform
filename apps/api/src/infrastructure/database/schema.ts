@@ -615,10 +615,6 @@ export const memoryDocument = sqliteTable(
       .default("memory"),
     name: text().notNull(),
     content: text().default("").notNull(),
-    tier: text({ enum: ["core", "reference"] })
-      .notNull()
-      .default("core"),
-    summary: text().notNull().default(""),
     revision: integer().default(1).notNull(),
     created_by: integer()
       .notNull()
@@ -655,10 +651,6 @@ export const memoryDocumentRevision = sqliteTable(
       .references(() => memoryDocument.id, { onDelete: "cascade" }),
     revision: integer().notNull(),
     content: text().default("").notNull(),
-    tier: text({ enum: ["core", "reference"] })
-      .notNull()
-      .default("core"),
-    summary: text().notNull().default(""),
     change_note: text(),
     operation_id: text(),
     created_by: integer()

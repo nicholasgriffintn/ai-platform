@@ -70,7 +70,7 @@ describe("memory documents", () => {
     const context = createContext({ id: "document-1", revision: 1 });
 
     await expect(
-      createMemoryDocument(context, { name: "brief", content: "", tier: "core", summary: "" }),
+      createMemoryDocument(context, { name: "brief", content: "" }),
     ).rejects.toMatchObject({ statusCode: 409 });
   });
 
@@ -78,12 +78,7 @@ describe("memory documents", () => {
     const context = createContext({ id: "document-1", revision: 5 }, null);
 
     await expect(
-      updateMemoryDocument(context, "brief", {
-        content: "mine",
-        expectedRevision: 4,
-        tier: "core",
-        summary: "",
-      }),
+      updateMemoryDocument(context, "brief", { content: "mine", expectedRevision: 4 }),
     ).rejects.toMatchObject({ statusCode: 409 });
   });
 

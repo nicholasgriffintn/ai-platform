@@ -65,8 +65,6 @@ export function memoryDocumentFixture(
     name: "working-memory",
     kind: "teammate_context",
     content: "Prefer concise answers",
-    tier: "core",
-    summary: "Answer preferences",
     revision: 1,
     scope_type: "personal",
     scope_id: "1",

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "6151587b-6409-4b51-b666-3f1f57a59d5c",
+  "id": "027d1e14-0f9d-4539-bf10-d001df37c64c",
   "prevId": "12656603-aa37-49ac-91fa-f47d0d2b2400",
   "tables": {
     "activity_record": {
@@ -3669,22 +3669,6 @@
           "autoincrement": false,
           "default": "''"
         },
-        "tier": {
-          "name": "tier",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'core'"
-        },
-        "summary": {
-          "name": "summary",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "''"
-        },
         "revision": {
           "name": "revision",
           "type": "integer",
@@ -3783,22 +3767,6 @@
         },
         "content": {
           "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "''"
-        },
-        "tier": {
-          "name": "tier",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'core'"
-        },
-        "summary": {
-          "name": "summary",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

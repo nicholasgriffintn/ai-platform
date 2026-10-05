@@ -21,7 +21,6 @@ import {
   teammateComputerTakeoverInputSchema,
   teammateComputerTakeoverResponseSchema,
   memoryDocumentSchema,
-  memoryReflectionStatusSchema,
   updateMemoryDocumentSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
@@ -32,10 +31,6 @@ import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { validateCaptcha } from "~/middleware/captchaMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import {
-  getTeammateMemoryMaintenance,
-  requestTeammateMemoryMaintenance,
-} from "~/modules/memory-documents/application/reflection";
 import {
   getUserTeammates,
   getTeammateById,
@@ -237,30 +232,6 @@ addRoute(app, "put", "/contexts/:contextId/connections", {
 });
 
 const teammateContextIdParamSchema = z.object({ contextId: z.string().min(1) });
-
-addRoute(app, "post", "/contexts/:contextId/memory/maintenance", {
-  tags: ["teammates"],
-  summary: "Request maintenance of the owner's teammate memory",
-  auth: true,
-  paramSchema: teammateContextIdParamSchema,
-  responses: {
-    200: { description: "Memory maintenance", schema: memoryReflectionStatusSchema },
-  },
-  handler: async ({ serviceContext, params }) =>
-    requestTeammateMemoryMaintenance(serviceContext, params.contextId),
-});
-
-addRoute(app, "get", "/contexts/:contextId/memory/maintenance", {
-  tags: ["teammates"],
-  summary: "Get the owner's teammate memory maintenance status",
-  auth: true,
-  paramSchema: teammateContextIdParamSchema,
-  responses: {
-    200: { description: "Memory maintenance", schema: memoryReflectionStatusSchema },
-  },
-  handler: async ({ serviceContext, params }) =>
-    getTeammateMemoryMaintenance(serviceContext, params.contextId),
-});
 
 addRoute(app, "get", "/contexts/:contextId/memory", {
   tags: ["teammates"],

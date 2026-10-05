@@ -26,7 +26,6 @@ import type {
   TeammateComputer,
   TeammateComputerAction,
   MemoryDocument,
-  MemoryReflectionStatus,
   UpdateMemoryDocumentInput,
   RecordTeammateFeedbackInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -267,15 +266,9 @@ class ApiService {
   getTeammateContextMemory = (contextId: string): Promise<MemoryDocument> =>
     this.teammateService.getTeammateContextMemory(contextId);
 
-  requestTeammateMemoryMaintenance = (contextId: string): Promise<MemoryReflectionStatus> =>
-    this.teammateService.requestTeammateMemoryMaintenance(contextId);
-
-  getTeammateMemoryMaintenance = (contextId: string): Promise<MemoryReflectionStatus> =>
-    this.teammateService.getTeammateMemoryMaintenance(contextId);
-
   updateTeammateContextMemory = (
     contextId: string,
-    input: Omit<UpdateMemoryDocumentInput, "projectId">,
+    input: Pick<UpdateMemoryDocumentInput, "content" | "changeNote" | "expectedRevision">,
   ): Promise<MemoryDocument> => this.teammateService.updateTeammateContextMemory(contextId, input);
 
   getTeammateComputer = (contextId: string): Promise<TeammateComputer> =>

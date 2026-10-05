@@ -25,8 +25,6 @@ export function MemoryLibrary({ projectId }: { projectId?: string }) {
       await create.mutateAsync({
         name,
         content: "",
-        tier: "core",
-        summary: "",
         ...(projectId ? { projectId } : {}),
       });
       setOpenName(name);

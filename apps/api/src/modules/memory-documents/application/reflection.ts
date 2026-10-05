@@ -1,7 +1,6 @@
 import {
   MEMORY_REFLECTION_TASK_TYPE,
   type MemoryReflectionTaskData,
-  type MemoryReflectionStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -10,21 +9,23 @@ import { toStringValue } from "@ngriffin_uk/polychat-utility-server/strings";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveMemoryPolicy } from "~/modules/chat/domain/memory";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
-import { MemoryReflectionRepository } from "~/modules/memory-documents/infrastructure/MemoryReflectionRepository";
+import { gateMemoryClassification } from "~/modules/memory/application/gate";
 import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskExecutionContext } from "~/modules/tasks/application/types";
 import {
   getTeammateContextMemory,
   requireTeammateContext,
 } from "~/modules/teammates/application/contexts";
+import type { MemoryScope } from "~/types";
 
 import { generateMemoryReflection, prepareMemoryReflection } from "./reflection-generation";
-import { applyMemoryReflectionProposal } from "./reflection-proposal";
 import {
+  applyMemoryReflectionProposal,
   selectMemoryReflectionSources,
   assertMemoryReflectionSourcesUnchanged,
   hasMemoryReflectionSources,
-} from "./reflection-sources";
+} from "./reflection-proposal";
+import { requireRunMemoryDocument } from "./run-access";
 
 export async function requireMemoryReflectionConsent(context: ServiceContext) {
   const actor = context.requireUser();
@@ -65,12 +66,13 @@ export async function enqueueMemoryReflection(
   const user = context.requireUser();
   const teammate = await requireReflectionScope(context, input.contextId, input.conversationId);
 
-  if (input.reason === "correction") {
-    await requireMemoryReflectionConsent(context);
-  }
+  await requireMemoryReflectionConsent(context);
 
-  const repository = new MemoryReflectionRepository(context.env);
-  const afterMessageId = await repository.checkpoint(input.contextId, input.conversationId);
+  const repository = context.repositories.memoryDocuments;
+  const afterMessageId = await repository.reflectionCheckpoint(
+    input.contextId,
+    input.conversationId,
+  );
 
   if (afterMessageId === input.throughMessageId) {
     return null;
@@ -81,18 +83,8 @@ export async function enqueueMemoryReflection(
     conversationId: input.conversationId,
     throughMessageId: input.throughMessageId,
     afterMessageId,
-    reason: input.reason,
   };
-  const previous = await repository.latestSourceTask(data, user.id);
-  const retryOf =
-    input.reason === "maintenance" &&
-    (previous?.status === "failed" || previous?.status === "cancelled")
-      ? previous.id
-      : null;
-  const id =
-    previous && !retryOf
-      ? previous.id
-      : `memory_reflection_${await sha256Hex(JSON.stringify({ ...data, retryOf }))}`;
+  const id = `memory_reflection_${await sha256Hex(JSON.stringify(data))}`;
   const service = new TaskService(context.env, context.repositories.tasks);
 
   await service.enqueueTask({
@@ -106,57 +98,6 @@ export async function enqueueMemoryReflection(
   return id;
 }
 
-export async function requestTeammateMemoryMaintenance(context: ServiceContext, contextId: string) {
-  const teammate = await requireTeammateContext(context, contextId);
-  const recent = await context.repositories.messages.getConversationMessagesBefore(
-    teammate.homeConversationId,
-    1,
-  );
-  const last = recent[0];
-
-  if (!last || typeof last.id !== "string") {
-    return { taskId: null, status: "idle" as const, error: null };
-  }
-
-  const taskId = await enqueueMemoryReflection(context, {
-    contextId,
-    conversationId: teammate.homeConversationId,
-    throughMessageId: last.id,
-    reason: "maintenance",
-  });
-
-  return { taskId, status: taskId ? ("queued" as const) : ("idle" as const), error: null };
-}
-
-export async function getTeammateMemoryMaintenance(
-  context: ServiceContext,
-  contextId: string,
-): Promise<MemoryReflectionStatus> {
-  await requireTeammateContext(context, contextId);
-  const task = await new MemoryReflectionRepository(context.env).latestTask(
-    contextId,
-    context.requireUser().id,
-  );
-
-  if (!task) {
-    return { taskId: null, status: "idle", error: null };
-  }
-
-  const status = task.status === "pending" ? "queued" : task.status;
-
-  if (
-    status !== "queued" &&
-    status !== "running" &&
-    status !== "completed" &&
-    status !== "failed" &&
-    status !== "cancelled"
-  ) {
-    throw new Error("Unexpected memory maintenance task state");
-  }
-
-  return { taskId: task.id, status, error: task.error_message };
-}
-
 export async function reflectTeammateMemory(
   context: ServiceContext,
   input: MemoryReflectionTaskData,
@@ -165,12 +106,10 @@ export async function reflectTeammateMemory(
 ) {
   const user = context.requireUser();
   const teammate = await requireReflectionScope(context, input.contextId, input.conversationId);
-  const repository = new MemoryReflectionRepository(context.env);
-  const previous = await repository.outcome(taskId);
+  const repository = context.repositories.memoryDocuments;
+  const previous = await repository.reflectionOutcome(taskId);
 
-  if (input.reason === "correction") {
-    await requireMemoryReflectionConsent(context);
-  }
+  await requireMemoryReflectionConsent(context);
 
   if (previous) {
     if (previous.through_message_id !== input.throughMessageId) {
@@ -180,7 +119,10 @@ export async function reflectTeammateMemory(
     return previous.status;
   }
 
-  const afterMessageId = await repository.checkpoint(input.contextId, input.conversationId);
+  const afterMessageId = await repository.reflectionCheckpoint(
+    input.contextId,
+    input.conversationId,
+  );
   const rows = await context.repositories.messages.getMemoryReflectionMessages({
     ...input,
     afterMessageId,
@@ -224,9 +166,7 @@ export async function reflectTeammateMemory(
 
   await requireReflectionScope(context, input.contextId, input.conversationId);
 
-  if (input.reason === "correction") {
-    await requireMemoryReflectionConsent(context);
-  }
+  await requireMemoryReflectionConsent(context);
 
   assertMemoryReflectionSourcesUnchanged(
     sources,
@@ -240,7 +180,7 @@ export async function reflectTeammateMemory(
   );
 
   await execution.lease.assertOwned();
-  const result = await repository.commit({
+  const result = await repository.commitReflection({
     operationId: taskId,
     taskId,
     contextId: input.contextId,
@@ -268,4 +208,65 @@ export async function reflectTeammateMemory(
   }
 
   return result.status;
+}
+
+export async function queueTeammateMemoryCorrection(input: {
+  context: ServiceContext;
+  scope: MemoryScope;
+  conversationId: string;
+  runId: string;
+  classify: boolean;
+}) {
+  const { context, scope, conversationId, runId } = input;
+
+  if (scope.type !== "bound" || !scope.teammateContext) {
+    return null;
+  }
+
+  const user = context.requireUser();
+
+  await requireRunMemoryDocument(
+    context,
+    scope,
+    scope.teammateContext.memoryDocumentId,
+    "read-write",
+  );
+  await requireMemoryReflectionConsent(context);
+
+  const row = await context.repositories.messages.getMemoryReflectionInput({
+    conversationId,
+    runId,
+    contextId: scope.teammateContext.id,
+    userId: user.id,
+  });
+
+  if (!row) {
+    return null;
+  }
+
+  const { sources } = selectMemoryReflectionSources([row]);
+  const source = sources[0];
+
+  if (!source) {
+    return null;
+  }
+
+  if (input.classify) {
+    const gate = await gateMemoryClassification({
+      env: context.env,
+      user,
+      message: source.text,
+      completionId: conversationId,
+    });
+
+    if (!gate.proceed) {
+      return null;
+    }
+  }
+
+  return enqueueMemoryReflection(context, {
+    contextId: scope.teammateContext.id,
+    conversationId,
+    throughMessageId: source.id,
+  });
 }

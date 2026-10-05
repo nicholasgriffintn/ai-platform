@@ -6,7 +6,7 @@ import { hasToolCallNamed } from "@ngriffin_uk/polychat-utility-server/tool-call
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { MEMORY_STORE_TOOL_NAME, resolveMemoryPolicy } from "~/modules/chat/domain/memory";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
-import { queueTeammateMemoryCorrection } from "~/modules/memory-documents/application/capture";
+import { queueTeammateMemoryCorrection } from "~/modules/memory-documents/application/reflection";
 import { MemoryManager, type MemoryEvent } from "~/modules/memory/application/manager";
 import type { IEnv, IUserSettings, MemoryScope, Message, Platform, ToolCall } from "~/types";
 
