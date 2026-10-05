@@ -4,6 +4,7 @@ import { TaskDetail } from "@ngriffin_uk/polychat-component-workspaces";
 import {
   useProjectTask,
   useProjectTasks,
+  useCapabilityCatalog,
   getProjectConversationPath,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
@@ -13,7 +14,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { PageShell } from "../Shell/PageShell.js";
-import { useProjectTaskTeammates } from "./useProjectTaskTeammates.js";
+import { ProjectReviewPublicationControl } from "./ProjectReviewPublicationControl.js";
 import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectTaskDetail({
@@ -27,8 +28,9 @@ export function ProjectTaskDetail({
 }) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const navigate = useNavigate();
-  const { projectQuery, workspaceQuery } = useWorkData();
-  const teammates = useProjectTaskTeammates(projectQuery.data?.capabilities);
+  const { workspaceQuery } = useWorkData();
+  const capabilityCatalog = useCapabilityCatalog(projectId);
+  const teammates = capabilityCatalog.data?.teammates ?? [];
   const { tasks, flow, isLoading, error, start, accept, update, remove } =
     useProjectTasks(projectId);
   const detailQuery = useProjectTask(projectId, taskId);
@@ -102,6 +104,9 @@ export function ProjectTaskDetail({
       <PageShell.Content className="max-w-6xl">
         <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
         <PageShell.Header title={task.objective} />
+        {task.executionProfile === "diff_review" ? (
+          <ProjectReviewPublicationControl key={task.id} projectId={projectId} task={task} />
+        ) : null}
         <TaskDetail
           task={task}
           goal={goal}

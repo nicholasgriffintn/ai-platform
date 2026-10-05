@@ -9,7 +9,19 @@ describe("SlackChannelAdapter", () => {
   it("ignores its own messages so it cannot answer itself", () => {
     expect(
       adapter.parse(
-        JSON.stringify({ event: { type: "message", bot_id: "B1", text: "hi", channel: "C1" } }),
+        JSON.stringify({
+          type: "event_callback",
+          team_id: "T1",
+          event: {
+            type: "message",
+            bot_id: "B1",
+            text: "hi",
+            channel: "C1",
+            user: "U1",
+            ts: "1.1",
+            channel_type: "channel",
+          },
+        }),
       ),
     ).toMatchObject({ kind: "control" });
   });

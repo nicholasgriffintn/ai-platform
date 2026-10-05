@@ -128,6 +128,7 @@ export {
   type SiteRefineIntentAnswers,
   type SiteRefineTargetCandidate,
 } from "./quality.js";
+export { buildSiteBrowserRepairPrompt } from "./browser-verification.js";
 export {
   catalogueSubsetId,
   componentsForSiteKind,
@@ -143,6 +144,7 @@ export {
 
 export {
   normaliseSiteSourceRows,
+  validateSiteCollectionValues,
   projectSiteSourceRows,
   normaliseSiteIntegrations,
   getSitePageBoundState,

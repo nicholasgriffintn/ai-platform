@@ -128,6 +128,15 @@ class CdpConnection:
         finally:
             self.waiting.discard(request_id)
 
+    def call_function(self, object_id, declaration, *arguments):
+        result = self.command("Runtime.callFunctionOn", {
+            "objectId": object_id,
+            "functionDeclaration": declaration,
+            "arguments": [{"value": value} for value in arguments],
+            "returnByValue": True,
+        })
+        return result.get("result", {}).get("value")
+
 
 def evaluate_expression(ws_url, expression):
     connection = CdpConnection(ws_url)

@@ -403,6 +403,7 @@
       "matchingModel": "moonshotai/Kimi-K2.6",
       "overrides": {
         "name": "Kimi-K2.6",
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",

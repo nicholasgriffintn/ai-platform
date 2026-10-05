@@ -1,3 +1,4 @@
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { ChannelBinding, CreateChannelBindingInput } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -10,7 +11,9 @@ import {
 } from "~/modules/teammates/application/access";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
-function toBinding(row: ChannelBindingRow): ChannelBinding {
+import { requireChannelBindingAccess } from "./access";
+
+function toBinding(row: ChannelBindingRow, canManage: boolean): ChannelBinding {
   return {
     id: row.id,
     channel: row.channel,
@@ -22,6 +25,7 @@ function toBinding(row: ChannelBindingRow): ChannelBinding {
     interactionMode: row.interaction_mode,
     enabled: Number(row.enabled) === 1,
     createdAt: row.created_at,
+    canManage,
   };
 }
 
@@ -91,7 +95,7 @@ export async function createChannelBinding(
     throw new AssistantError("Could not connect that channel", ErrorType.DATABASE_ERROR);
   }
 
-  return toBinding(created);
+  return toBinding(created, true);
 }
 
 export async function listChannelBindings(
@@ -100,8 +104,19 @@ export async function listChannelBindings(
   context.ensureDatabase();
   const user = context.requireUser();
   const rows = await context.repositories.channelBindings.listForUser(user.id);
+  const accessibleRows = hasProEntitlement(user)
+    ? rows
+    : rows.filter((row) => row.scope_type === "personal");
 
-  return { bindings: rows.map(toBinding) };
+  const bindings = await Promise.all(
+    accessibleRows.map(async (row) => {
+      const { canManage } = await requireChannelBindingAccess(context, row.id);
+
+      return toBinding(row, canManage);
+    }),
+  );
+
+  return { bindings };
 }
 
 export async function deleteChannelBinding(
@@ -111,6 +126,7 @@ export async function deleteChannelBinding(
   context.ensureDatabase();
   const user = context.requireUser();
 
+  await requireChannelBindingAccess(context, bindingId, true);
   await context.repositories.channelBindings.delete(bindingId, user.id);
 }
 

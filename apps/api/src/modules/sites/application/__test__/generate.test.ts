@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
   finaliseSiteGeneration: vi.fn(),
   updateSite: vi.fn(),
   getSite: vi.fn(),
-  getSource: vi.fn(),
+  requireSourcesAccess: vi.fn(),
 }));
 
 vi.mock("~/infrastructure/ai", () => ({
@@ -27,7 +27,10 @@ vi.mock("~/modules/sites/application/records", () => ({
   getSite: mocks.getSite,
 }));
 
-vi.mock("~/modules/sources/application/sources", () => ({ getSource: mocks.getSource }));
+vi.mock("~/modules/sources/application/sources", () => ({
+  requireSourcesAccess: mocks.requireSourcesAccess,
+  formatSource: vi.fn(),
+}));
 
 import { streamSiteGeneration } from "~/modules/sites/application/generate";
 
@@ -116,6 +119,7 @@ const soundQualityDecision = {
 describe("streamSiteGeneration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.requireSourcesAccess.mockResolvedValue([]);
     mocks.tryDecide.mockResolvedValue(null);
     mocks.loadSiteGenerationModels.mockResolvedValue({});
     mocks.resolveSiteGenerationModel.mockResolvedValue({
@@ -155,12 +159,20 @@ describe("streamSiteGeneration", () => {
   });
 
   it("builds from an attached Source without copying its private rows into the model prompt", async () => {
-    mocks.getSource.mockResolvedValue({
-      id: "source-1",
-      projectId: null,
-      status: "available",
-      content: JSON.stringify([{ name: "Private customer", count: 2 }]),
-    });
+    mocks.requireSourcesAccess.mockImplementation(
+      async (_context, _userId, _sourceIds, validate) => {
+        const source = {
+          id: "source-1",
+          project_id: null,
+          status: "available",
+          content: JSON.stringify([{ name: "Private customer", count: 2 }]),
+        };
+
+        validate?.(source);
+
+        return [source];
+      },
+    );
     mocks.stream.mockResolvedValue(
       sseStreamOf([
         ...modelOutput,
@@ -198,11 +210,20 @@ describe("streamSiteGeneration", () => {
   });
 
   it("rejects an attached Source from another scope before sending a generation prompt", async () => {
-    mocks.getSource.mockResolvedValue({
-      projectId: "other-project",
-      status: "available",
-      content: "[]",
-    });
+    mocks.requireSourcesAccess.mockImplementation(
+      async (_context, _userId, _sourceIds, validate) => {
+        const source = {
+          id: "private-source",
+          project_id: "other-project",
+          status: "available",
+          content: "[]",
+        };
+
+        validate?.(source);
+
+        return [source];
+      },
+    );
 
     const events = await readEvents(
       await streamSiteGeneration({

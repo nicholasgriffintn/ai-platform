@@ -1,4 +1,5 @@
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 
@@ -48,6 +49,18 @@ export function buildWorkspaceAuditRecordValues(
 
 export class AuditRepository extends BaseRepository {
   async createRecord(input: CreateWorkspaceAuditRecordInput): Promise<void> {
+    const insert = this.recordInsert(input);
+
+    await this.executeRun(insert.query, insert.values);
+  }
+
+  prepareRecord(input: CreateWorkspaceAuditRecordInput): D1PreparedStatement {
+    const insert = this.recordInsert(input);
+
+    return this.env.DB.prepare(insert.query).bind(...insert.values);
+  }
+
+  private recordInsert(input: CreateWorkspaceAuditRecordInput) {
     const values = buildWorkspaceAuditRecordValues(input);
     const insert = this.buildInsertQuery(
       "workspace_audit_record",
@@ -55,9 +68,11 @@ export class AuditRepository extends BaseRepository {
       { jsonFields: ["metadata"] },
     );
 
-    if (insert) {
-      await this.executeRun(insert.query, insert.values);
+    if (!insert) {
+      throw new AssistantError("Failed to prepare audit record", ErrorType.INTERNAL_ERROR);
     }
+
+    return insert;
   }
 
   async listRecords(

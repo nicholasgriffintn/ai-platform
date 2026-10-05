@@ -65,17 +65,12 @@ export class DocumentsMemoryProvider implements MemoryProvider {
         );
       }
 
-      const document = await context.repositories.memoryDocuments.getDocumentById(
+      const { document } = await requireRunMemoryDocument(
+        context,
+        memoryScope,
         selected.documentId,
+        "read-write",
       );
-
-      if (!document || !(await this.documentMatchesBoundScope(document, memoryScope, userId))) {
-        throw new AssistantError(
-          "The writable memory document is no longer available",
-          ErrorType.FORBIDDEN,
-          403,
-        );
-      }
 
       if (document.kind === "teammate_context") {
         throw new AssistantError(
@@ -181,26 +176,27 @@ export class DocumentsMemoryProvider implements MemoryProvider {
 
     if (memoryScope?.type === "bound") {
       const documents = await Promise.all(
-        memoryScope.documents.map((binding) =>
-          context.repositories.memoryDocuments.getDocumentById(binding.documentId),
-        ),
+        memoryScope.documents.map(async (binding) => {
+          try {
+            const { document } = await requireRunMemoryDocument(
+              context,
+              memoryScope,
+              binding.documentId,
+            );
+
+            return document;
+          } catch (error) {
+            if (error instanceof AssistantError && [403, 404].includes(error.statusCode)) {
+              return null;
+            }
+
+            throw error;
+          }
+        }),
       );
-      const authorisedDocuments: MemoryDocumentRow[] = [];
 
-      for (const document of documents) {
-        if (
-          document &&
-          (await this.documentMatchesBoundScope(
-            document,
-            memoryScope,
-            this.requireContext().userId,
-          ))
-        ) {
-          authorisedDocuments.push(document);
-        }
-      }
-
-      return authorisedDocuments
+      return documents
+        .filter((document) => document !== null)
         .filter((document) =>
           `${document.name}\n${document.content}`.toLowerCase().includes(trimmed),
         )
@@ -219,7 +215,7 @@ export class DocumentsMemoryProvider implements MemoryProvider {
   }
 
   async deleteMemory(memoryId: string): Promise<boolean> {
-    const { context } = await this.requireScope();
+    const { context, scope } = await this.requireScope();
     const memoryScope = this.config.memoryScope;
 
     if (memoryScope?.type === "bound") {
@@ -231,22 +227,17 @@ export class DocumentsMemoryProvider implements MemoryProvider {
         );
       }
 
-      const binding = memoryScope.documents.find(
-        (candidate) => candidate.documentId === memoryId && candidate.access === "read-write",
-      );
-      const document = binding
-        ? await context.repositories.memoryDocuments.getDocumentById(memoryId)
-        : null;
+      await requireRunMemoryDocument(context, memoryScope, memoryId, "read-write");
+    } else {
+      const document = await context.repositories.memoryDocuments.getDocumentById(memoryId);
 
       if (
         !document ||
-        !(await this.documentMatchesBoundScope(document, memoryScope, this.requireContext().userId))
+        document.kind !== "memory" ||
+        document.scope_type !== scope.scopeType ||
+        document.scope_id !== scope.scopeId
       ) {
-        throw new AssistantError(
-          "The memory document is not writable in this run",
-          ErrorType.FORBIDDEN,
-          403,
-        );
+        throw new AssistantError("The memory document is unavailable", ErrorType.FORBIDDEN, 403);
       }
     }
 
@@ -285,7 +276,7 @@ export class DocumentsMemoryProvider implements MemoryProvider {
     const context = this.config.serviceContext;
     const userId = this.config.user?.id;
 
-    if (!context || !userId) {
+    if (!context || !userId || context.requireUser().id !== userId) {
       throw new AssistantError(
         "Document memories need a signed-in user",
         ErrorType.AUTHENTICATION_ERROR,
@@ -294,29 +285,5 @@ export class DocumentsMemoryProvider implements MemoryProvider {
     }
 
     return { context, userId };
-  }
-
-  private async documentMatchesBoundScope(
-    document: MemoryDocumentRow,
-    scope: Extract<MemoryScope, { type: "bound" }>,
-    userId: number,
-  ): Promise<boolean> {
-    const context = this.requireContext().context;
-
-    try {
-      if (context.requireUser().id !== userId) {
-        return false;
-      }
-
-      await requireRunMemoryDocument(context, scope, document.id);
-
-      return true;
-    } catch (error) {
-      if (error instanceof AssistantError) {
-        return false;
-      }
-
-      throw error;
-    }
   }
 }

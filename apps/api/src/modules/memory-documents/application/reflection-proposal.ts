@@ -9,6 +9,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
+import { sliceTextAtCodePointBoundaries } from "@ngriffin_uk/polychat-utility-server/strings";
 
 import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
 
@@ -17,6 +18,7 @@ export const MEMORY_REFLECTION_MAX_SOURCE_TOKENS = 6000;
 export interface MemoryReflectionSource {
   id: string;
   text: string;
+  truncated?: boolean;
 }
 
 export function applyMemoryReflectionProposal(
@@ -96,6 +98,23 @@ export function hasMemoryReflectionSources(rows: readonly Record<string, unknown
   return rows.some((row) => memoryReflectionSourceText(row) !== null);
 }
 
+function boundedMemoryReflectionSource(id: string, text: string, tokenBudget: number) {
+  const source: MemoryReflectionSource = { id, text };
+  let tokens = estimateTextTokens(JSON.stringify(source)) + 1;
+
+  while (tokens > tokenBudget && source.text.length > 0) {
+    source.truncated = true;
+    source.text = sliceTextAtCodePointBoundaries(
+      source.text,
+      0,
+      Math.floor(source.text.length * 0.75),
+    ).content;
+    tokens = estimateTextTokens(JSON.stringify(source)) + 1;
+  }
+
+  return source.text.trim() && tokens <= tokenBudget ? { source, tokens } : null;
+}
+
 export function selectMemoryReflectionSources(
   rows: readonly Record<string, unknown>[],
   tokenBudget = MEMORY_REFLECTION_MAX_SOURCE_TOKENS,
@@ -112,16 +131,15 @@ export function selectMemoryReflectionSources(
     const text = memoryReflectionSourceText(row);
 
     if (text !== null) {
-      const source = { id: row.id, text };
-      const tokens = estimateTextTokens(JSON.stringify(source)) + 1;
+      const bounded = boundedMemoryReflectionSource(row.id, text, tokenBudget);
 
-      if (tokens > tokenBudget) {
-        throw new AssistantError(
-          "A memory source exceeds the maintenance budget",
-          ErrorType.CONTEXT_WINDOW_EXCEEDED,
-          400,
-        );
+      if (!bounded) {
+        throughMessageId = row.id;
+
+        continue;
       }
+
+      const { source, tokens } = bounded;
 
       if (sourceTokens + tokens > tokenBudget) {
         break;

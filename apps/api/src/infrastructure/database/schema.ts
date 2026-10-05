@@ -1,5 +1,6 @@
 import type { AuthChallengeKind } from "@ngriffin_uk/auth-protocol";
 import type {
+  DocumentAnchor,
   ProjectTaskConstraints,
   ProjectTaskCompletion,
   ProjectTaskContext,
@@ -50,6 +51,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { sql } from "drizzle-orm";
 import {
+  type AnySQLiteColumn,
   check,
   index,
   integer,
@@ -773,6 +775,51 @@ export const channelBinding = sqliteTable(
 );
 
 export type ChannelBindingRow = typeof channelBinding.$inferSelect;
+
+export const channelSender = sqliteTable(
+  "channel_sender",
+  {
+    id: text().primaryKey(),
+    binding_id: text()
+      .notNull()
+      .references(() => channelBinding.id, { onDelete: "cascade" }),
+    sender_id: text().notNull(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    revision: integer().notNull().default(1),
+    revoked_at: text(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    identityIdx: uniqueIndex("channel_sender_identity_idx").on(table.binding_id, table.sender_id),
+    userIdx: index("channel_sender_user_idx").on(table.user_id),
+  }),
+);
+
+export type ChannelSenderRow = typeof channelSender.$inferSelect;
+
+export const channelPairingChallenge = sqliteTable(
+  "channel_pairing_challenge",
+  {
+    token_hash: text().primaryKey(),
+    binding_id: text()
+      .notNull()
+      .references(() => channelBinding.id, { onDelete: "cascade" }),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    expires_at: text().notNull(),
+  },
+  (table) => ({
+    ownerIdx: uniqueIndex("channel_pairing_challenge_owner_idx").on(
+      table.binding_id,
+      table.user_id,
+    ),
+  }),
+);
 
 export const outboundDelivery = sqliteTable(
   "outbound_delivery",
@@ -2784,6 +2831,7 @@ export const projectTask = sqliteTable(
       .notNull()
       .references(() => workspace.id, { onDelete: "cascade" }),
     objective: text().notNull(),
+    execution_profile: text({ enum: ["diff_review"] }),
     acceptance_criteria: text({ mode: "json" }).$type<ProjectTaskCriterion[]>(),
     expected_output: text(),
     context: text({ mode: "json" }).$type<ProjectTaskContext>(),
@@ -2867,6 +2915,126 @@ export const projectTask = sqliteTable(
 );
 
 export type ProjectTaskRow = typeof projectTask.$inferSelect;
+
+export const projectTaskExternalImport = sqliteTable(
+  "project_task_external_import",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text()
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    task_id: text()
+      .notNull()
+      .unique()
+      .references(() => projectTask.id, { onDelete: "cascade" }),
+    source_id: text()
+      .notNull()
+      .references(() => source.id),
+    owner_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    provider: text().notNull(),
+    account_id: text().notNull(),
+    external_id: text().notNull(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    identity: uniqueIndex("project_task_external_import_identity").on(
+      table.workspace_id,
+      table.project_id,
+      table.owner_user_id,
+      table.provider,
+      table.account_id,
+      table.external_id,
+    ),
+  }),
+);
+
+export const projectReviewPolicy = sqliteTable(
+  "project_review_policy",
+  {
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    id: text().primaryKey(),
+    project_id: text()
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    owner_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    connection_id: text()
+      .notNull()
+      .references(() => providerConnection.id, { onDelete: "cascade" }),
+    provider: text().notNull(),
+    account_id: text().notNull(),
+    repository: text().notNull(),
+    enabled: integer().notNull().default(0),
+    token_budget: integer().notNull(),
+    revision: text().notNull(),
+  },
+  (table) => ({
+    identity: uniqueIndex("project_review_policy_identity").on(
+      table.workspace_id,
+      table.project_id,
+      table.provider,
+      table.connection_id,
+      table.repository,
+    ),
+    repository: index("project_review_policy_repository").on(
+      table.provider,
+      table.account_id,
+      table.repository,
+      table.enabled,
+    ),
+  }),
+);
+
+export const projectTaskReview = sqliteTable(
+  "project_task_review",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    project_id: text()
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    task_id: text()
+      .notNull()
+      .unique()
+      .references(() => projectTask.id, { onDelete: "cascade" }),
+    source_id: text()
+      .notNull()
+      .references(() => source.id),
+    owner_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    target: text().notNull(),
+    policy_id: text(),
+    policy_revision: text(),
+    publication_status: text({ enum: ["unpublished", "publishing", "published", "unknown"] })
+      .notNull()
+      .default("unpublished"),
+    publication_body: text(),
+    published_url: text(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    project: index("project_task_review_project").on(table.project_id, table.created_at),
+    publicationStatus: check(
+      "project_task_review_publication_status",
+      sql`${table.publication_status} IN ('unpublished', 'publishing', 'published', 'unknown')`,
+    ),
+  }),
+);
 
 export const taskNotificationPreference = sqliteTable("task_notification_preference", {
   user_id: integer()
@@ -3778,5 +3946,38 @@ export const browserSession = sqliteTable(
       table.conversation_id,
       table.tool_call_id,
     ),
+  }),
+);
+
+export const documentComment = sqliteTable(
+  "document_comment",
+  {
+    id: text().primaryKey().notNull(),
+    output_id: text()
+      .notNull()
+      .references(() => output.id, { onDelete: "cascade" }),
+    parent_id: text().references((): AnySQLiteColumn => documentComment.id, {
+      onDelete: "cascade",
+    }),
+    anchor_json: text({ mode: "json" }).$type<DocumentAnchor>(),
+    source_revision: integer().notNull(),
+    body: text().notNull(),
+    author_user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    resolved: integer({ mode: "boolean" }).default(false).notNull(),
+    revision: integer().default(1).notNull(),
+    mentioned_teammate_id: text(),
+    task_id: text().references(() => projectTask.id, { onDelete: "set null" }),
+    created_at: text().notNull(),
+    updated_at: text(),
+  },
+  (table) => ({
+    outputIdx: index("document_comment_output_idx").on(table.output_id, table.created_at, table.id),
+    sourceRevisionCheck: check(
+      "document_comment_source_revision_check",
+      sql`${table.source_revision} > 0`,
+    ),
+    revisionCheck: check("document_comment_revision_check", sql`${table.revision} > 0`),
   }),
 );

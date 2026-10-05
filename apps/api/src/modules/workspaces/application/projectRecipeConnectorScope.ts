@@ -1,11 +1,7 @@
-import { isConnectorOperationSupported } from "@ngriffin_uk/polychat-ai-integrations";
-import {
-  connectorGrantSchema,
-  recipeConnectorProviderSchema,
-  type RecipeConnectorProvider,
-} from "@ngriffin_uk/polychat-schemas";
+import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
+import { parseProjectConnectorGrant } from "~/modules/apps/application/connectors/project-grants";
 import { assistantRecipes, resolveRecipeId } from "~/modules/apps/application/recipes/catalog";
 import {
   buildAllowedConnectorOperations,
@@ -56,18 +52,14 @@ export function resolveProjectRecipeConnectorScope(
       continue;
     }
 
-    const provider = recipeConnectorProviderSchema.safeParse(capability.capability_id);
-    const grant = connectorGrantSchema.safeParse(parseJsonRecord(capability.configuration));
+    const grant = parseProjectConnectorGrant(
+      capability.capability_id,
+      parseJsonRecord(capability.configuration),
+    );
 
-    if (
-      provider.success &&
-      grant.success &&
-      grant.data.operations.every((operation) =>
-        isConnectorOperationSupported(provider.data, operation),
-      )
-    ) {
-      providers.add(provider.data);
-      operationsByProvider.set(provider.data, new Set(grant.data.operations));
+    if (grant) {
+      providers.add(grant.provider);
+      operationsByProvider.set(grant.provider, new Set(grant.operations));
     }
   }
 

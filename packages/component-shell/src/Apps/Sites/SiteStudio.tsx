@@ -353,14 +353,6 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
           </div>
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto px-4 py-4">
-          {state.site && !isBusy && !revisionPreview && (
-            <SiteBrowserChecks
-              site={state.site}
-              pageId={resolvedPageId ?? undefined}
-              verification={verification}
-              disabled={isBusy}
-            />
-          )}
           {siteData.error && (
             <output role="alert" className="text-failure">
               {siteData.error.message}
@@ -561,6 +553,13 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
           </div>
           {state.site && (
             <div className="flex flex-wrap items-center gap-1.5">
+              {!isBusy && !revisionPreview && (
+                <SiteBrowserChecks
+                  site={state.site}
+                  pageId={resolvedPageId ?? undefined}
+                  verification={verification}
+                />
+              )}
               <Button
                 variant={historyOpen ? "secondary" : "outline"}
                 size="sm"

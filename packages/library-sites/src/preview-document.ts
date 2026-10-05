@@ -1,5 +1,4 @@
-import type { SiteProject } from "@ngriffin_uk/polychat-schemas";
-import { escapeHtml, serialiseJsonForHtml } from "@ngriffin_uk/polychat-utility-core";
+import { escapeHtml } from "@ngriffin_uk/polychat-utility-core";
 
 export interface BuildSiteFrameDocumentOptions {
   frameId: string;
@@ -7,25 +6,10 @@ export interface BuildSiteFrameDocumentOptions {
   fontUrl: string;
   runtimeUrl: string;
   stylesheetUrl: string;
-  initialProject?: SiteProject;
-  initialPageId?: string;
-  initialData?: Record<string, unknown>;
 }
 
 export function buildSiteFrameDocument(options: BuildSiteFrameDocumentOptions): string {
-  const {
-    frameId,
-    title,
-    fontUrl,
-    runtimeUrl,
-    stylesheetUrl,
-    initialProject,
-    initialPageId,
-    initialData,
-  } = options;
-  const initial = initialProject
-    ? `<script id="site-initial-document" type="application/json">${serialiseJsonForHtml({ project: initialProject, pageId: initialPageId ?? null, inspecting: false, selectedKey: null, data: initialData })}</script>`
-    : "";
+  const { frameId, title, fontUrl, runtimeUrl, stylesheetUrl } = options;
 
   return `<!doctype html>
 <html lang="en">
@@ -40,7 +24,6 @@ export function buildSiteFrameDocument(options: BuildSiteFrameDocumentOptions): 
   </head>
   <body data-site-preview data-site-frame-id="${escapeHtml(frameId)}">
     <div id="site-root"></div>
-    ${initial}
     <script src="${escapeHtml(runtimeUrl)}" defer></script>
   </body>
 </html>`;

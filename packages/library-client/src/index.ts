@@ -28,6 +28,7 @@ export * from "./outputs.js";
 export * from "./pets.js";
 export * from "./preview-origin.js";
 export * from "./project-tasks.js";
+export * from "./project-task-integrations.js";
 export * from "./realtime-service.js";
 export * from "./recipe-composio-triggers.js";
 export * from "./recipes.js";
@@ -75,3 +76,5 @@ export * from "./machine-runs.js";
 export { machineRunClient } from "./machine-run-service.js";
 
 export * from "./browser-sessions.js";
+export * from "./channels.js";
+export * from "./document-collaboration.js";

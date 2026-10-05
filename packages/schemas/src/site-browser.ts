@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { siteDataIdentifierSchema, siteIntegrationScopeSchema } from "./site-data.js";
+import { siteProjectSchema } from "./sites.js";
 
 export const siteBrowserViewportSchema = z.enum(["desktop", "mobile"]);
 export const siteBrowserDiagnosticSchema = z
@@ -35,17 +36,6 @@ export const siteBrowserVerificationRequestSchema = siteIntegrationScopeSchema
   .extend({
     pageId: siteDataIdentifierSchema.optional(),
     repair: z.boolean().default(false),
-    interactions: z
-      .array(
-        z
-          .object({
-            elementKey: siteDataIdentifierSchema,
-            expectVisible: siteDataIdentifierSchema.optional(),
-          })
-          .strict(),
-      )
-      .max(5)
-      .default([]),
   })
   .strict();
 
@@ -53,10 +43,13 @@ export const siteBrowserCaptureRequestSchema = z
   .object({
     resourceId: z.string().regex(/^site-probe-[a-zA-Z0-9-]{1,100}$/),
     document: z.string().min(1).max(1_000_000),
+    frameId: z.string().regex(/^site-check-[a-zA-Z0-9-]{1,100}$/),
+    project: siteProjectSchema,
+    pageId: siteDataIdentifierSchema,
+    data: z.record(siteDataIdentifierSchema, z.unknown()),
     viewport: siteBrowserViewportSchema,
     elementKeys: z.array(siteDataIdentifierSchema).max(100),
     allowedOrigins: z.array(z.url()).max(8),
-    interactions: siteBrowserVerificationRequestSchema.shape.interactions,
   })
   .strict();
 export const siteBrowserCaptureResultSchema = z

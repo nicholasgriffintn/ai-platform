@@ -48,7 +48,10 @@ import {
   projectRunMemory,
 } from "~/modules/chat/application/preparation/system-prompt";
 import type { ValidationContext } from "~/modules/chat/application/validation/ValidationPipeline";
-import { mergeEnabledGoalToolNames } from "~/modules/chat/domain/goal-tools";
+import {
+  GOAL_COMPLETE_TOOL_NAME,
+  mergeEnabledGoalToolNames,
+} from "~/modules/chat/domain/goal-tools";
 import { mergeEnabledMemoryToolNames, resolveMemoryPolicy } from "~/modules/chat/domain/memory";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import type { ConversationWriteFence } from "~/modules/conversations/domain/write-fence";
@@ -137,6 +140,7 @@ interface RequestScope {
   repositories: RepositoryManager;
   projectContext: ProjectChatContext | null;
   metaAssistant: MetaAssistantScope | null;
+  hasFixedProjectTaskTools: boolean;
   memoryScope: MemoryScope;
   isProUser: boolean;
   platform: Platform;
@@ -179,6 +183,9 @@ export class RequestPreparer {
       repositories,
       projectContext,
       metaAssistant,
+      hasFixedProjectTaskTools:
+        scopedOptions.durable_execution?.kind === "project_task" &&
+        scopedOptions.tool_selection_mode === "explicit",
       memoryScope: await resolveRunMemoryScope({
         options: scopedOptions,
         repositories,
@@ -224,7 +231,10 @@ export class RequestPreparer {
     }
 
     return resolveRequestFunctionToolNames({
-      projectTools: scope.projectContext?.enabledTools,
+      projectTools:
+        scope.projectContext && scope.hasFixedProjectTaskTools
+          ? [...scope.projectContext.enabledTools, GOAL_COMPLETE_TOOL_NAME]
+          : scope.projectContext?.enabledTools,
       requestedToolNames: scope.options.enabled_tools,
       grantedToolNames: resolvePlatformTeammateGrants(scope.options.resolved_configuration)?.tools,
       toolSelectionMode: scope.options.tool_selection_mode,
@@ -435,7 +445,9 @@ export class RequestPreparer {
     ]);
     const enabledTools = this.resolveRequestTools(scope);
     const hasFixedToolScope =
-      isRecipeExecutionRequest(scope.options) || Boolean(scope.metaAssistant);
+      isRecipeExecutionRequest(scope.options) ||
+      Boolean(scope.metaAssistant) ||
+      scope.hasFixedProjectTaskTools;
     const skills: readonly SkillAvailability[] = hasFixedToolScope
       ? []
       : await listSkillAvailability(

@@ -7,12 +7,10 @@ export function SiteBrowserChecks({
   site,
   pageId,
   verification,
-  disabled,
 }: {
   site: SiteRecord;
   pageId?: string;
   verification: ReturnType<typeof useVerifySite>;
-  disabled: boolean;
 }) {
   const controller = useRef<AbortController | null>(null);
 
@@ -22,7 +20,16 @@ export function SiteBrowserChecks({
     const next = new AbortController();
 
     controller.current = next;
-    verification.mutate({ pageId, repair, signal: next.signal });
+    verification.mutate(
+      { pageId, repair, signal: next.signal },
+      {
+        onSettled: () => {
+          if (controller.current === next) {
+            controller.current = null;
+          }
+        },
+      },
+    );
   };
 
   const latestEvidence = verification.data;
@@ -34,57 +41,56 @@ export function SiteBrowserChecks({
       : null;
 
   return (
-    <details className="rounded-md border border-border p-3 text-xs">
-      <summary className="cursor-pointer font-medium">Browser checks</summary>
-      <div className="mt-3 flex flex-col gap-3">
-        <div className="flex flex-wrap gap-2">
-          <Button
-            size="xs"
-            variant="outline"
-            disabled={disabled || verification.isPending}
-            onClick={() => verify(false)}
-          >
-            Check in browser
-          </Button>
-          {evidence?.status === "failed" && (
-            <Button
-              size="xs"
-              disabled={disabled || verification.isPending}
-              onClick={() => verify(true)}
-            >
-              Try one repair
-            </Button>
-          )}
-          {verification.isPending && (
-            <Button size="xs" variant="ghost" onClick={() => controller.current?.abort()}>
-              Cancel check
-            </Button>
-          )}
-        </div>
-        {evidence && (
-          <div>
-            <p>
-              {evidence.status === "passed"
-                ? "Desktop and mobile checks passed"
-                : evidence.status === "failed"
-                  ? "The browser found problems"
-                  : "Browser checks are unavailable"}
-            </p>
-            {evidence.checks.flatMap((check) =>
-              check.diagnostics.map((item, index) => (
-                <p key={`${check.viewport}-${index}`} className="mt-1 text-muted-foreground">
-                  {check.viewport}: {item.message}
+    <div className="flex flex-wrap items-center gap-1.5 text-xs">
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={verification.isPending}
+        isLoading={verification.isPending}
+        onClick={() => verify(false)}
+      >
+        Check browsers
+      </Button>
+      {evidence?.status === "failed" && (
+        <Button size="sm" disabled={verification.isPending} onClick={() => verify(true)}>
+          Repair and recheck
+        </Button>
+      )}
+      {verification.isPending && (
+        <Button size="sm" variant="ghost" onClick={() => controller.current?.abort()}>
+          Cancel
+        </Button>
+      )}
+      {evidence && (
+        <details>
+          <summary className="cursor-pointer text-muted-foreground">
+            {evidence.status === "passed"
+              ? "Desktop and mobile passed"
+              : evidence.status === "failed"
+                ? "Browser problems found"
+                : "Browser checks unavailable"}
+          </summary>
+          <div className="mt-2 max-w-xl space-y-2 rounded-md border border-border bg-surface p-2">
+            {evidence.checks.map((check) => (
+              <div key={`${check.pageId}-${check.viewport}`}>
+                <p className="font-medium capitalize">{check.viewport}</p>
+                <p className="whitespace-pre-line text-muted-foreground">
+                  {check.diagnostics.length > 0
+                    ? check.diagnostics.map((item) => item.message).join("\n")
+                    : check.status === "passed"
+                      ? "Passed"
+                      : "No diagnostics were returned"}
                 </p>
-              )),
-            )}
+              </div>
+            ))}
           </div>
-        )}
-        {verification.error && (
-          <output role="alert" className="text-failure">
-            {verification.error.message}
-          </output>
-        )}
-      </div>
-    </details>
+        </details>
+      )}
+      {verification.error && verification.error.name !== "AbortError" && (
+        <output role="alert" className="text-failure">
+          {verification.error.message}
+        </output>
+      )}
+    </div>
   );
 }

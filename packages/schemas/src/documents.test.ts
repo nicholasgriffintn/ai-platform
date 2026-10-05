@@ -6,6 +6,21 @@ describe("writeDocumentInputSchema", () => {
   it("refuses an empty body, so an empty document is never saved", () => {
     expect(writeDocumentInputSchema.safeParse({ title: "Brief", body: "" }).success).toBe(false);
   });
+
+  it("requires a captured revision when replacing an existing document", () => {
+    expect(
+      writeDocumentInputSchema.safeParse({ title: "Brief", body: "Revised", outputId: "document" })
+        .success,
+    ).toBe(false);
+    expect(
+      writeDocumentInputSchema.safeParse({
+        title: "Brief",
+        body: "Revised",
+        outputId: "document",
+        expectedRevision: 3,
+      }).success,
+    ).toBe(true);
+  });
 });
 
 describe("document statistics", () => {

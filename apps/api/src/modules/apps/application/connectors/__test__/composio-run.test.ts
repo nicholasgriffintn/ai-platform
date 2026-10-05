@@ -147,7 +147,7 @@ describe("Composio connector run lifecycle", () => {
         operationId: "GMAIL_FETCH_EMAILS",
         arguments: {},
         sessionId: "ccs_opaque",
-        scope: { completionId: "completion-1" },
+        scope: { conversationId: "completion-1", completionId: "completion-1" },
       }),
     ).resolves.toMatchObject({
       data: { file: { $assistantOutput: { id: "output_1" } } },
@@ -170,7 +170,7 @@ describe("Composio connector run lifecycle", () => {
       operationId: "GMAIL_FETCH_EMAILS",
       arguments: { attachment: { $assistantFile: { kind: "source", id: "src_1" } } },
       sessionId: "ccs_opaque",
-      scope: { completionId: "completion-1" },
+      scope: { conversationId: "completion-1", completionId: "completion-1" },
     });
 
     expect(mocks.resolveComposioFileReferences).toHaveBeenCalledWith(
@@ -193,7 +193,11 @@ describe("Composio connector run lifecycle", () => {
         connectedAccount: account,
         allowedOperationIds: ["GMAIL_FETCH_EMAILS"],
         useCase: "Find invoices",
-        scope: { completionId: "completion-1", recipeId: "gmail-recipe" },
+        scope: {
+          conversationId: "completion-1",
+          completionId: "completion-1",
+          recipeId: "gmail-recipe",
+        },
       }),
     ).resolves.toMatchObject({ sessionId: "ccs_opaque" });
 
@@ -206,7 +210,11 @@ describe("Composio connector run lifecycle", () => {
         connectedAccount: account,
         allowedOperationIds: ["GMAIL_FETCH_EMAILS"],
         useCase: "Find invoices",
-        scope: { completionId: "completion-1", recipeId: "gmail-recipe" },
+        scope: {
+          conversationId: "completion-1",
+          completionId: "completion-1",
+          recipeId: "gmail-recipe",
+        },
       }),
     ).rejects.toThrow("database unavailable");
     expect(mocks.deleteComposioToolSession).toHaveBeenCalledWith({
@@ -227,7 +235,11 @@ describe("Composio connector run lifecycle", () => {
         operationId: "GMAIL_FETCH_EMAILS",
         arguments: { query: "invoice" },
         sessionId: "ccs_opaque",
-        scope: { completionId: "completion-1", recipeId: "gmail-recipe" },
+        scope: {
+          conversationId: "completion-1",
+          completionId: "completion-1",
+          recipeId: "gmail-recipe",
+        },
       }),
     ).resolves.toMatchObject({ data: { messages: [] }, logId: "log_1" });
     expect(mocks.executeComposioSessionTool).toHaveBeenCalledWith(
@@ -274,7 +286,11 @@ describe("Composio connector run lifecycle", () => {
         operationId: "GMAIL_FETCH_EMAILS",
         arguments: { secret: "must-not-persist" },
         sessionId: "ccs_opaque",
-        scope: { completionId: "completion-1", recipeId: "gmail-recipe" },
+        scope: {
+          conversationId: "completion-1",
+          completionId: "completion-1",
+          recipeId: "gmail-recipe",
+        },
       }),
     ).rejects.toThrow("provider failed");
     const activityInput = mocks.createActivity.mock.calls[0]?.[0];
@@ -295,7 +311,11 @@ describe("Composio connector run lifecycle", () => {
       operationId: "GMAIL_FETCH_EMAILS",
       arguments: {},
       sessionId: "ccs_opaque",
-      scope: { completionId: "completion-1", recipeId: "gmail-recipe" },
+      scope: {
+        conversationId: "completion-1",
+        completionId: "completion-1",
+        recipeId: "gmail-recipe",
+      },
     });
     mocks.deleteComposioToolSession.mockRejectedValueOnce(new Error("temporary failure"));
 
@@ -319,7 +339,7 @@ describe("Composio connector run lifecycle", () => {
       operationId: "GMAIL_FETCH_EMAILS",
       arguments: {},
       sessionId: "ccs_opaque",
-      scope: { completionId: "completion-1" },
+      scope: { conversationId: "completion-1", completionId: "completion-1" },
     });
     mocks.deleteComposioToolSession.mockRejectedValueOnce(new Error("temporary failure"));
     mocks.markCleanupPending.mockRejectedValueOnce(new Error("database unavailable"));
@@ -341,6 +361,7 @@ describe("Composio connector run lifecycle", () => {
         operationId: "GMAIL_FETCH_EMAILS",
         requireSelectedAccount: true,
         scope: {
+          conversationId: "completion-1",
           completionId: "completion-1",
           installationId: "installation-1",
         },

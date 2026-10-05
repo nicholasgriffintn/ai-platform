@@ -1,7 +1,7 @@
 import {
   buildDocumentContent,
+  documentOutputContentSchema,
   DOCUMENT_OUTPUT_KIND,
-  readDocumentBody,
   readDocumentMetadata,
   type DocumentMetadata,
   type Output,
@@ -10,9 +10,10 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { createOutput, getOutput, updateOutput } from "~/modules/outputs/application";
+import { createOutput, updateOutput } from "~/modules/outputs/application";
 import type { IUser } from "~/types";
 
+import { requireDocument } from "./access";
 import { formatDocumentBody } from "./format";
 import { describeDocument } from "./metadata";
 
@@ -22,21 +23,6 @@ export { generateDocumentFromMedia } from "./from-media";
 
 export const DOCUMENT_DEFAULT_CAPABILITY_ID = "documents";
 
-async function requireDocument(
-  context: ServiceContext,
-  userId: number,
-  outputId: string,
-): Promise<{ output: Output; body: string }> {
-  const output = await getOutput(context, userId, outputId);
-  const body = readDocumentBody(output.content);
-
-  if (output.kind !== DOCUMENT_OUTPUT_KIND || body === null) {
-    throw new AssistantError("That result is not a document", ErrorType.PARAMS_ERROR, 400);
-  }
-
-  return { output, body };
-}
-
 export async function writeDocument(
   context: ServiceContext,
   user: IUser,
@@ -44,6 +30,7 @@ export async function writeDocument(
     title: string;
     body: string;
     outputId?: string;
+    expectedRevision?: number;
     projectId?: string;
     conversationId?: string;
     capabilityId?: string;
@@ -58,7 +45,22 @@ export async function writeDocument(
     throw new AssistantError("A document needs a title and a body", ErrorType.PARAMS_ERROR, 400);
   }
 
-  const existing = input.outputId ? await requireDocument(context, user.id, input.outputId) : null;
+  const existing = input.outputId
+    ? await requireDocument(context, user.id, input.outputId, true, input.projectId ?? null)
+    : null;
+
+  if (existing && input.expectedRevision === undefined) {
+    throw new AssistantError(
+      "Pass the revision you read before editing this document",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  if (existing && existing.output.revision !== input.expectedRevision) {
+    throw new AssistantError("Output has changed", ErrorType.CONFLICT_ERROR, 409);
+  }
+
   const carried: DocumentMetadata = {
     ...(existing ? (readDocumentMetadata(existing.output.content) ?? {}) : {}),
     ...(input.sourceType ? { sourceType: input.sourceType } : {}),
@@ -67,7 +69,7 @@ export async function writeDocument(
     input.describe === false
       ? carried
       : await describeDocument({ context, user, title, body, existing: carried });
-  const content = buildDocumentContent(body, metadata);
+  const content = documentOutputContentSchema.parse(buildDocumentContent(body, metadata));
 
   if (existing) {
     return updateOutput(context, user.id, existing.output.id, {
@@ -93,10 +95,13 @@ export async function formatDocument(
   user: IUser,
   outputId: string,
   prompt?: string,
-): Promise<{ body: string }> {
-  const { body } = await requireDocument(context, user.id, outputId);
+): Promise<{ body: string; sourceRevision: number }> {
+  const { output, body } = await requireDocument(context, user.id, outputId, true);
 
-  return { body: await formatDocumentBody({ context, user, body, prompt }) };
+  return {
+    body: await formatDocumentBody({ context, user, body, prompt }),
+    sourceRevision: output.revision,
+  };
 }
 
 export async function redescribeDocument(
@@ -105,7 +110,7 @@ export async function redescribeDocument(
   outputId: string,
   expectedRevision?: number,
 ): Promise<{ metadata: DocumentMetadata }> {
-  const { output, body } = await requireDocument(context, user.id, outputId);
+  const { output, body } = await requireDocument(context, user.id, outputId, true);
 
   if (expectedRevision !== undefined && expectedRevision !== output.revision) {
     throw new AssistantError("Output has changed", ErrorType.CONFLICT_ERROR, 409);

@@ -98,7 +98,6 @@ export const useVerifySite = (site: SiteRecord | null) => {
           expectedRevision: site.revision,
           pageId: request.pageId,
           repair: request.repair ?? false,
-          interactions: [],
         },
         request.signal,
       );
