@@ -100,3 +100,11 @@ export type PolyNavigationToolName = (typeof POLY_NAVIGATION_TOOL_NAMES)[number]
 export type PolyMode = z.infer<typeof polyModeSchema>;
 export type PolyNavigationTarget = z.infer<typeof polyNavigationTargetSchema>;
 export type PolyFoundConversation = z.infer<typeof polyFoundConversationSchema>;
+
+export const polyHomeSchema = z.object({
+  teammate_id: z.string().min(1),
+  context_id: z.string().min(1),
+  conversation_id: z.string().min(1),
+});
+
+export type PolyHome = z.infer<typeof polyHomeSchema>;

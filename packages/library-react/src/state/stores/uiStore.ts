@@ -34,8 +34,6 @@ export interface UIStore {
   closeProjectPicker: () => void;
   showModelSources: boolean;
   setShowModelSources: (showModelSources: boolean) => void;
-  polyConversationId: string | undefined;
-  setPolyConversationId: (conversationId: string | undefined) => void;
   chatConversationListFilters: ConversationListFilters;
   setChatConversationListFilters: (filters: Partial<ConversationListFilters>) => void;
   resetChatConversationListFilters: () => void;
@@ -64,8 +62,6 @@ export const useUIStore = create<UIStore>()(
       closeProjectPicker: () => set({ projectPicker: null }),
       showModelSources: false,
       setShowModelSources: (showModelSources) => set({ showModelSources }),
-      polyConversationId: undefined,
-      setPolyConversationId: (polyConversationId) => set({ polyConversationId }),
       chatConversationListFilters: DEFAULT_CONVERSATION_LIST_FILTERS,
       setChatConversationListFilters: (filters) =>
         set((state) => ({

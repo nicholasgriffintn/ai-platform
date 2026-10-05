@@ -2,6 +2,7 @@ import type { ExecutionContext } from "@cloudflare/workers-types";
 import { formatToolCalls } from "@ngriffin_uk/polychat-ai-providers";
 import { operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
 import {
+  isPolyTeammateId,
   PROJECT_TASK_INTERACTION_TOOL_IDS,
   teammateRunConfigurationSchema,
   readToolIds,
@@ -28,6 +29,7 @@ import { prepareTeammateCompletionRequest } from "./completion-request";
 import { buildTeammateCompletionTools, buildTeammatePersona } from "./completion-tools";
 import { prepareAdmittedTeammateContinuation, prepareTeammateRun } from "./execution";
 import { resolveTeammateMcpServers } from "./mcp-servers";
+import { requirePolyHomeRun } from "./poly-home";
 import { prepareTeammateRunResume } from "./run-resume";
 import { readTeammateSkillIds } from "./teammateResponse";
 
@@ -117,6 +119,11 @@ export async function enqueueTeammateRun({
   const teammate =
     preparedInvocation?.teammate ??
     (await requireTeammateAccess(serviceContext, teammateId, "read", user?.id));
+
+  if (isPolyTeammateId(teammateId)) {
+    requirePolyHomeRun(preparedInvocation?.resolution, body.completion_id);
+  }
+
   const liveMcpServers = resolveTeammateMcpServers(teammate.servers);
   const mcpServers = resumeConfiguration
     ? resumeConfiguration.mcpServers.filter((admitted) =>

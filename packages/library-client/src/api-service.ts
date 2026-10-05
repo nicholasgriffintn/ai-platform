@@ -7,6 +7,7 @@ import type {
 } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import type {
+  PolyHome,
   TeammateResponse,
   CreateTeammateInput,
   HireTeammateInput,
@@ -39,6 +40,7 @@ import {
   type StreamChatCompletionsParams,
 } from "./services/chat-service.js";
 import { MachineService } from "./services/machine-service.js";
+import { PolyService } from "./services/poly-service.js";
 import { ResearchService } from "./services/research-service.js";
 import { SubscriptionService } from "./services/subscription-service.js";
 import { TeammateService } from "./services/teammate-service.js";
@@ -56,6 +58,7 @@ class ApiService {
   private teammateService: TeammateService;
   private userService: UserService;
   private machineService: MachineService;
+  private polyService: PolyService;
   private subscriptionService: SubscriptionService;
   private uploadService: UploadService;
   private researchService: ResearchService;
@@ -66,6 +69,7 @@ class ApiService {
     this.teammateService = new TeammateService(getHeaders);
     this.userService = new UserService(getHeaders);
     this.machineService = new MachineService(getHeaders);
+    this.polyService = new PolyService(getHeaders);
     this.subscriptionService = new SubscriptionService();
     this.uploadService = new UploadService(getHeaders);
     this.researchService = new ResearchService(getHeaders);
@@ -224,6 +228,8 @@ class ApiService {
   } {
     return formatMessageContent(messageContent);
   }
+
+  openPolyHome = (): Promise<PolyHome> => this.polyService.openPolyHome();
 
   listTeammates = (): Promise<TeammateResponse[]> => {
     return this.teammateService.listTeammates();

@@ -29,17 +29,17 @@ function paramsForMode(mode: string): AvailableFunctionsSource & { model: string
 
 describe("resolveAvailableFunctions", () => {
   it.each([
-    ["poly", "save_skill"],
-    ["poly", "analyse_article"],
-    ["poly", "process_recording"],
-    ["chat", "find_places"],
+    ["poly", "schedule", "find_places"],
+    ["poly", "delegation", "open_place"],
+    ["chat", "user", "find_places"],
   ] as const)(
-    "does not smuggle %s-disallowed %s through supplied tools",
-    (conversationType, name) => {
+    "does not smuggle navigation into a %s conversation on a %s turn",
+    (conversationType, trigger, name) => {
       const names = providerTools({
         model: "gpt-5",
         mode: "normal",
         conversation_type: conversationType,
+        trigger,
         enabled_tools: [name],
         tools: [
           {
