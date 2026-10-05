@@ -197,10 +197,3 @@ export async function searchProjectKnowledge(
       .slice(0, input.top_k ?? 10),
   };
 }
-
-export async function listKnowledgeStatus(context: ServiceContext, projectId?: string) {
-  const scope = await requireKnowledgeScope(context, projectId);
-  const sources = await context.repositories.sourceSearch.listStatus(scope);
-
-  return { sources: sources.map((source) => ({ ...source, managed: source.managed === 1 })) };
-}

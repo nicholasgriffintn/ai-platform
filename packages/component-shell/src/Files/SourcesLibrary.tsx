@@ -12,10 +12,6 @@ import {
   Button,
 } from "@ngriffin_uk/polychat-component-ui";
 import { API_BASE_URL } from "@ngriffin_uk/polychat-library-client";
-import {
-  useKnowledgeIndexStatus,
-  useRetryKnowledgeIndex,
-} from "@ngriffin_uk/polychat-library-react";
 import { sourceKindSchema, type SourceKind } from "@ngriffin_uk/polychat-schemas";
 import { toast } from "sonner";
 
@@ -67,9 +63,6 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
     selectedCollection,
   } = useSourcesLibrary(projectId, createRequestKey);
 
-  const indexStatus = useKnowledgeIndexStatus(projectId);
-  const retryIndex = useRetryKnowledgeIndex();
-
   return (
     <>
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
@@ -111,8 +104,6 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
             <ProjectKnowledgeSearch key={projectId ?? "personal"} projectId={projectId} />
             {projectId ? <KnowledgeSyncPanel projectId={projectId} /> : null}
             <SourceList
-              indexStatuses={indexStatus.data}
-              onRetryIndex={(sourceId) => retryIndex.mutate(sourceId)}
               sources={sources}
               collections={collections}
               isLoading={isLoading}

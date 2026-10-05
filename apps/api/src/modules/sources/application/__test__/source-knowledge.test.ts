@@ -11,9 +11,11 @@ import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/Knowle
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 
-import { prepareKnowledgeDatabase } from "../../../../../test/fixtures/sources/database";
-import { addIndexedKnowledgeSource } from "../../../../../test/fixtures/sources/indexed-source";
-import { knowledgeTestUser } from "../../../../../test/fixtures/sources/users";
+import {
+  addIndexedKnowledgeSource,
+  knowledgeTestUser,
+  prepareKnowledgeDatabase,
+} from "../../../../../test/fixtures/sources";
 import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 
 const runtime = new Miniflare({
@@ -99,7 +101,9 @@ describe("native source knowledge", () => {
     expect(
       await repository.hydrate({ userId: 1 }, ["vector-foreign-personal", "vector-project"]),
     ).toEqual([]);
-    await repository.invalidate("project");
+    await database
+      .prepare("UPDATE source SET title = 'Updated incident' WHERE id = 'project'")
+      .run();
     await database.prepare("DELETE FROM workspace_member WHERE user_id = 2").run();
     expect(
       (await repository.maintenance(false, false)).find((source) => source.id === "project")
@@ -119,7 +123,6 @@ describe("native source knowledge", () => {
 
     expect((await repository.getSource("edited"))?.search_revision).toBe(2);
     expect(await repository.hydrate({ userId: 1 }, ["vector-edited"])).toEqual([]);
-    await repository.invalidate("edited");
     expect((await repository.stale("edited")).map((document) => document.id)).toContain(
       "index-edited",
     );
@@ -133,6 +136,9 @@ describe("native source knowledge", () => {
   });
 
   it("keeps personal keyword search working when semantic credentials are unavailable", async () => {
+    await addSource("tool-personal");
+    await addSource("tool-foreign-personal", null, 2);
+    await addSource("tool-foreign-project", "project-2");
     const env = databaseTestEnvironment(database);
     const context = createServiceContext({ env, user: knowledgeTestUser });
     const response = await search_documents.execute(
@@ -145,6 +151,11 @@ describe("native source knowledge", () => {
     );
 
     expect(response.status).toBe("success");
+    expect(response).toMatchObject({
+      data: {
+        documents: expect.arrayContaining([expect.objectContaining({ sourceId: "tool-personal" })]),
+      },
+    });
     expect(response.content).toContain("personal");
     expect(response.content).not.toContain("foreign-personal");
     expect(response.content).not.toContain("foreign-project");
@@ -162,24 +173,6 @@ describe("native source knowledge", () => {
         (chunk) => chunk.sourceId === "keyword-only",
       ),
     ).toBe(true);
-  });
-
-  it("exposes extraction failures so a source can be retried", async () => {
-    await database
-      .prepare(
-        "INSERT INTO source (id, created_by_user_id, title, kind, status, mime_type) VALUES ('extract-failure', 1, 'Report', 'file', 'available', 'application/pdf')",
-      )
-      .run();
-    await database
-      .prepare(
-        `INSERT INTO tasks (id, status, task_type, task_data) VALUES ('extract-failure-task', 'failed', 'source_knowledge_index', '{"sourceId":"extract-failure"}')`,
-      )
-      .run();
-    expect(
-      (await repository.listStatus({ userId: 1 })).find(
-        (source) => source.sourceId === "extract-failure",
-      )?.status,
-    ).toBe("failed");
   });
 
   it("applies access changes independently of content and blocks revoked or deleted connections", async () => {
@@ -212,7 +205,19 @@ describe("native source knowledge", () => {
       true,
     );
     await repository.claim("index-deleted", "cleanup", "stale");
-    await repository.removeStale("index-deleted", "cleanup");
+    expect(
+      (await repository.maintenance(false, true)).some((source) => source.id === "deleted"),
+    ).toBe(false);
+    await database
+      .prepare(
+        "UPDATE source_search_document SET lease_expires_at = datetime('now', '-1 minute') WHERE id = 'index-deleted'",
+      )
+      .run();
+    expect(
+      (await repository.maintenance(false, true)).some((source) => source.id === "deleted"),
+    ).toBe(true);
+    await repository.claim("index-deleted", "retry-cleanup", "stale");
+    await repository.removeStale("index-deleted", "retry-cleanup");
     expect(await repository.chunks("index-deleted")).toEqual([]);
   });
 });

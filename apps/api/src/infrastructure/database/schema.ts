@@ -1792,8 +1792,6 @@ export const sourceSearchDocument = sqliteTable(
       .notNull()
       .default("lexical"),
     target: text().notNull(),
-    cleanup_after: text(),
-    indexed_at: text(),
     lease_token: text(),
     lease_expires_at: text(),
     created_at: text()

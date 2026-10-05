@@ -3,13 +3,12 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { readPrivateFile } from "~/infrastructure/storage/read-resource";
 import { convertBlobToMarkdownViaCloudflare } from "~/modules/documents/application/convert";
-import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 
 export async function extractKnowledgeSource(
   context: ServiceContext,
   sourceId: string,
 ): Promise<void> {
-  const repository = new SourceSearchRepository(context.env);
+  const repository = context.repositories.sourceSearch;
   const source = await repository.getSource(sourceId);
 
   if (

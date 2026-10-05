@@ -29,46 +29,40 @@ export async function cleanupStaleIndexes(
   for (const document of stale) {
     const token = generateId();
 
-    await context.repositories.sourceSearch.deferCleanup(document.id);
-
     if (!(await context.repositories.sourceSearch.claim(document.id, token, "stale"))) {
       continue;
     }
 
-    try {
-      const target = decodeEmbeddingRuntimeTarget(document.target);
+    const target = decodeEmbeddingRuntimeTarget(document.target);
 
-      const user = await context.repositories.users.getUserById(document.user_id);
+    const user = await context.repositories.users.getUserById(document.user_id);
 
-      if (!user) {
-        continue;
-      }
-
-      const ownerContext = createServiceContext({ env: context.env, user });
-      const settings = await ownerContext.getUserSettings();
-
-      if (!settings) {
-        continue;
-      }
-
-      const runtime = getEmbeddingRuntimeForTarget(context.env, user, settings, target);
-      const chunks = await context.repositories.sourceSearch.chunks(document.id);
-
-      for (const ids of paginate(
-        chunks.map((chunk) => chunk.id),
-        100,
-      )) {
-        const result = await runtime.vectorStore.delete(ids);
-
-        if (result.status !== "success") {
-          throw new AssistantError("Source vector cleanup failed", ErrorType.PROVIDER_ERROR, 502);
-        }
-      }
-
-      await context.repositories.sourceSearch.removeStale(document.id, token);
-    } finally {
-      await context.repositories.sourceSearch.release(document.id, token);
+    if (!user) {
+      continue;
     }
+
+    const ownerContext = createServiceContext({ env: context.env, user });
+    const settings = await ownerContext.getUserSettings();
+
+    if (!settings) {
+      continue;
+    }
+
+    const runtime = getEmbeddingRuntimeForTarget(context.env, user, settings, target);
+    const chunks = await context.repositories.sourceSearch.chunks(document.id);
+
+    for (const ids of paginate(
+      chunks.map((chunk) => chunk.id),
+      100,
+    )) {
+      const result = await runtime.vectorStore.delete(ids);
+
+      if (result.status !== "success") {
+        throw new AssistantError("Source vector cleanup failed", ErrorType.PROVIDER_ERROR, 502);
+      }
+    }
+
+    await context.repositories.sourceSearch.removeStale(document.id, token);
   }
 }
 

@@ -5,7 +5,6 @@ import {
   FormSelect,
   textLinkClassName,
 } from "@ngriffin_uk/polychat-component-ui";
-import type { KnowledgeIndexStatus } from "@ngriffin_uk/polychat-schemas";
 import { formatDate } from "@ngriffin_uk/polychat-utility-core";
 import { Database, FileText, Link2, Trash2 } from "lucide-react";
 
@@ -16,6 +15,7 @@ export interface SourceSummary {
   createdAt: string;
   updatedAt?: string | null;
   file?: unknown;
+  metadata?: Record<string, unknown>;
 }
 
 export interface SourceCollectionSummary {
@@ -24,8 +24,6 @@ export interface SourceCollectionSummary {
 }
 
 export interface SourceListProps {
-  indexStatuses?: KnowledgeIndexStatus[];
-  onRetryIndex?: (sourceId: string) => void;
   sources?: SourceSummary[];
   collections?: SourceCollectionSummary[];
   isLoading?: boolean;
@@ -37,8 +35,6 @@ export interface SourceListProps {
 }
 
 export function SourceList({
-  indexStatuses,
-  onRetryIndex,
   sources,
   collections,
   isLoading = false,
@@ -86,24 +82,11 @@ export function SourceList({
             <p className="text-xs text-muted-foreground capitalize">
               {source.kind} · {formatDate(source.updatedAt ?? source.createdAt)}
             </p>
-            {indexStatuses?.find((index) => index.sourceId === source.id) ? (
-              <p className="text-xs text-muted-foreground">
-                Search: {indexStatuses.find((index) => index.sourceId === source.id)?.status}
-              </p>
-            ) : null}
           </div>
           {source.file && fileHref ? (
             <a href={fileHref(source)} className={textLinkClassName({ className: "shrink-0" })}>
               Open file
             </a>
-          ) : null}
-          {onRetryIndex &&
-          indexStatuses?.some(
-            (index) => index.sourceId === source.id && index.status === "failed",
-          ) ? (
-            <Button variant="secondary" onClick={() => onRetryIndex(source.id)}>
-              Retry indexing
-            </Button>
           ) : null}
           {onAddToCollection && collections?.length ? (
             <FormSelect
@@ -119,7 +102,7 @@ export function SourceList({
               className="max-w-40"
             />
           ) : null}
-          {!indexStatuses?.some((index) => index.sourceId === source.id && index.managed) ? (
+          {!(source.kind === "connector" && typeof source.metadata?.syncId === "string") ? (
             <Button
               variant="icon"
               size="icon"

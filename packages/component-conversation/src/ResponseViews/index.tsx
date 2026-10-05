@@ -7,13 +7,13 @@ import {
   UserQuestionView,
   WeatherView,
   WebSearchView,
-  KnowledgePassagesView,
 } from "@ngriffin_uk/polychat-component-content";
 import { delegationListResponseSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { ComputerObservationView } from "./ComputerObservationView.js";
 import { ComputerTakeoverView } from "./ComputerTakeoverView.js";
 import { createDelegationFollowUpInteraction, DelegationCard } from "./DelegationCard.js";
+import { DocumentSearchView } from "./DocumentSearchView.js";
 import { EvidenceAuditView } from "./EvidenceAuditView.js";
 import { ProjectTaskListView } from "./ProjectTaskListView.js";
 import { ResearchView } from "./ResearchView.js";
@@ -26,7 +26,7 @@ export {
   ComputerObservationView,
   DelegationCard,
   createDelegationFollowUpInteraction,
-  KnowledgePassagesView,
+  DocumentSearchView,
   EvidenceAuditView,
   ProjectTaskListView,
   ResearchView,
@@ -56,7 +56,7 @@ export const sharedResponseViews: CustomResponseViewRegistry = {
       onToolInteraction={onToolInteraction}
     />
   ),
-  document_search: ({ data }) => <KnowledgePassagesView data={data} />,
+  document_search: ({ data }) => <DocumentSearchView data={data} />,
   evidence_audit: ({ data }) => <EvidenceAuditView data={data} />,
   delegation_card: ({ data, onToolInteraction }) => {
     const parsed = delegationListResponseSchema.safeParse(data);

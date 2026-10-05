@@ -156,24 +156,3 @@ export async function indexSourceForUser(
 
   await indexProjectSource(createServiceContext({ env, user }), sourceId, assertOwned);
 }
-
-export async function retrySourceIndex(
-  context: ServiceContext,
-  sourceId: string,
-): Promise<{ queued: true }> {
-  const source = await requireSourceAccess(context, context.requireUser().id, sourceId, true);
-
-  if (source.kind === "memory") {
-    throw new AssistantError("Memory uses its own index", ErrorType.PARAMS_ERROR, 400);
-  }
-
-  await context.repositories.sourceSearch.invalidate(sourceId);
-  await new TaskService(context.env, context.repositories.tasks).enqueueTask({
-    task_type: SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
-    user_id: source.created_by_user_id,
-    project_id: source.project_id ?? undefined,
-    task_data: { sourceId },
-  });
-
-  return { queued: true };
-}

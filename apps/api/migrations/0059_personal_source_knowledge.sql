@@ -1,7 +1,3 @@
-ALTER TABLE source_search_document ADD cleanup_after TEXT;
---> statement-breakpoint
-ALTER TABLE source_search_document ADD indexed_at TEXT;
---> statement-breakpoint
 INSERT INTO source (id, created_by_user_id, kind, title, status, content, metadata, external_uri)
 SELECT 'knowledge_' || d.id, d.user_id,
   CASE WHEN d.type = 'webpage' THEN 'url' ELSE 'text' END,

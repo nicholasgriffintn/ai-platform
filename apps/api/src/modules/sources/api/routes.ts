@@ -1,7 +1,5 @@
 import {
   addCollectionSourcesSchema,
-  knowledgeStatusResponseSchema,
-  knowledgeIndexRetryResponseSchema,
   createSourceCollectionSchema,
   createSourceSchema,
   sourceCollectionListResponseSchema,
@@ -24,11 +22,7 @@ import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { getPrivateFileResponse, readPrivateFile } from "~/infrastructure/storage/read-resource";
-import { retrySourceIndex } from "~/modules/sources/application/knowledge-index";
-import {
-  listKnowledgeStatus,
-  searchProjectKnowledge,
-} from "~/modules/sources/application/knowledge-search";
+import { searchProjectKnowledge } from "~/modules/sources/application/knowledge-search";
 import {
   listKnowledgeSyncs,
   createKnowledgeSync,
@@ -95,26 +89,6 @@ addRoute(app, "get", "/search", {
     },
   },
   handler: ({ query, serviceContext }) => searchProjectKnowledge(serviceContext, query),
-});
-
-addRoute(app, "get", "/index-status", {
-  tags: ["sources"],
-  auth: true,
-  querySchema: projectQuery,
-  responses: {
-    200: { description: "Knowledge indexing status", schema: knowledgeStatusResponseSchema },
-  },
-  handler: ({ query, serviceContext }) => listKnowledgeStatus(serviceContext, query.projectId),
-});
-
-addRoute(app, "post", "/:sourceId/reindex", {
-  tags: ["sources"],
-  auth: true,
-  paramSchema: sourceParams,
-  responses: {
-    200: { description: "Indexing queued", schema: knowledgeIndexRetryResponseSchema },
-  },
-  handler: ({ params, serviceContext }) => retrySourceIndex(serviceContext, params.sourceId),
 });
 
 addRoute(app, "get", "/:sourceId/content", {

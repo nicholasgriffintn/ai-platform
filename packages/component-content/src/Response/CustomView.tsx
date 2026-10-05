@@ -4,7 +4,6 @@ import { GeneratedAudioView } from "./GeneratedAudioView";
 import { GeneratedImageView } from "./GeneratedImageView";
 import { GeneratedVideoView } from "./GeneratedVideoView";
 import { JsonView } from "./JsonView";
-import { KnowledgePassagesView } from "./KnowledgePassagesView";
 import { resolveResponsePresentation, stripPresentationMetadata } from "./presentation";
 import type { ToolInteractionHandler } from "./registry";
 import { useCustomResponseView } from "./registry";
@@ -33,10 +32,6 @@ export function CustomView({
 
   if (registeredView) {
     return registeredView({ data: customData, embedded, onToolInteraction, toolName });
-  }
-
-  if (renderer === "document_search" || customData?.renderer === "document_search") {
-    return <KnowledgePassagesView data={customData} />;
   }
 
   const presentation = resolveResponsePresentation(stripPresentationMetadata(customData), {

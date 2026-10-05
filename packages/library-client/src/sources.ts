@@ -1,6 +1,5 @@
 import type {
   CreateSourceCollectionInput,
-  KnowledgeIndexStatus,
   CreateSourceInput,
   Source,
   SourceCollection,
@@ -151,17 +150,4 @@ export async function setProjectContextSources(
       { method: "PUT", body: { sourceIds } },
     )
   ).sources;
-}
-
-export async function listKnowledgeIndexStatus(
-  projectId?: string,
-): Promise<KnowledgeIndexStatus[]> {
-  const suffix = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
-
-  return (await request<{ sources: KnowledgeIndexStatus[] }>(`/sources/index-status${suffix}`))
-    .sources;
-}
-
-export async function retryKnowledgeIndex(sourceId: string): Promise<void> {
-  await request(`/sources/${encodeURIComponent(sourceId)}/reindex`, { method: "POST" });
 }

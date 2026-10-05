@@ -1,5 +1,3 @@
-import type { KnowledgeIndexStatus } from "@ngriffin_uk/polychat-schemas";
-
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { PendingEmbeddingDocument } from "~/modules/apps/application/embeddings/document";
 import type { EmbeddingRuntimeTarget, IEnv } from "~/types";
@@ -139,7 +137,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   async activate(documentId: string, token: string): Promise<boolean> {
     const result = await this.executeRun(
-      `UPDATE source_search_document AS d SET status = 'active', indexed_at = CURRENT_TIMESTAMP
+      `UPDATE source_search_document AS d SET status = 'active'
        WHERE id = ? AND status = 'lexical' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP
          AND EXISTS (SELECT 1 FROM source s WHERE ${CURRENT_SOURCE})`,
       [documentId, token],
@@ -209,53 +207,11 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
     );
   }
 
-  async deferCleanup(documentId: string): Promise<void> {
-    await this.executeRun(
-      "UPDATE source_search_document SET cleanup_after = datetime('now', '+5 minutes') WHERE id = ?",
-      [documentId],
-    );
-  }
-
   storeExtraction(sourceId: string, revision: number, content: string): Promise<D1Result> {
     return this.executeRun(
       `UPDATE source AS s SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
         AND search_revision = ? AND content IS NULL AND status = 'available' AND ${sourceVisibilitySql("s")}`,
       [content, sourceId, revision],
-    );
-  }
-
-  async invalidate(sourceId: string): Promise<void> {
-    await this.env.DB.batch([
-      this.env.DB.prepare(
-        "UPDATE source SET search_revision = search_revision + 1 WHERE id = ?",
-      ).bind(sourceId),
-      this.env.DB.prepare(
-        "UPDATE source_search_document SET status = 'stale' WHERE source_id = ?",
-      ).bind(sourceId),
-    ]);
-  }
-
-  listStatus(
-    scope: KnowledgeScope,
-  ): Promise<Array<Omit<KnowledgeIndexStatus, "managed"> & { managed: number | null }>> {
-    return this.runQuery(
-      `SELECT s.id AS sourceId, d.indexed_at AS indexedAt,
-      json_type(s.metadata, '$.syncId') = 'text' AS managed,
-      CASE WHEN s.status <> 'available' THEN 'unavailable'
-        WHEN s.kind = 'file' AND (s.mime_type LIKE 'image/%' OR s.mime_type LIKE 'audio/%' OR s.mime_type LIKE 'video/%') THEN 'unavailable'
-        WHEN s.kind <> 'file' AND length(trim(COALESCE(s.content, ''))) = 0 THEN 'unavailable'
-        WHEN d.status = 'active' THEN 'available' WHEN t.status = 'failed' THEN 'failed'
-        WHEN d.status = 'lexical' AND t.status = 'completed' THEN 'available'
-        WHEN d.status = 'lexical' THEN 'indexing' ELSE 'pending' END AS status
-      FROM source s LEFT JOIN source_search_document d ON d.source_id = s.id AND d.source_revision = s.search_revision
-      LEFT JOIN tasks t ON t.id = (SELECT latest.id FROM tasks latest
-        WHERE latest.task_type = 'source_knowledge_index' AND json_extract(latest.task_data, '$.sourceId') = s.id
-          AND datetime(latest.created_at) >= datetime(COALESCE(s.updated_at, s.created_at))
-        ORDER BY latest.created_at DESC, latest.id DESC LIMIT 1)
-      WHERE s.kind <> 'memory' AND ${sourceVisibilitySql("s")}
-        AND ${scope.projectId ? "s.project_id = ?" : "s.project_id IS NULL AND s.created_by_user_id = ?"}
-      ORDER BY s.created_at DESC`,
-      [scope.projectId ?? scope.userId],
     );
   }
 
@@ -269,7 +225,7 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
        WHERE s.kind != 'memory' AND s.status = 'available' AND ${sourceVisibilitySql("s")}
          AND (length(trim(s.content)) > 0 OR (s.kind = 'file' AND s.storage_key IS NOT NULL
            AND s.mime_type NOT LIKE 'image/%' AND s.mime_type NOT LIKE 'audio/%' AND s.mime_type NOT LIKE 'video/%')) AND (d.id IS NULL OR (? = 1 AND d.status = 'lexical'))
-       UNION SELECT source_id AS id, user_id, project_id FROM source_search_document WHERE status = 'stale' AND ? = 1 AND (cleanup_after IS NULL OR cleanup_after <= CURRENT_TIMESTAMP))
+       UNION SELECT source_id AS id, user_id, project_id FROM source_search_document WHERE status = 'stale' AND ? = 1)
        SELECT c.id, (SELECT id FROM project WHERE id = c.project_id) AS project_id,
          COALESCE(
            (SELECT wm.user_id FROM workspace_member wm JOIN project p ON p.workspace_id = wm.workspace_id

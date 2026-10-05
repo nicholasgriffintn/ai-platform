@@ -14,37 +14,6 @@ import type { IRequest } from "~/types";
 
 const MAX_STORED_ENTRIES = 10;
 
-const getExtractionSource = (
-  provider: ContentExtractProvider,
-  params: ContentExtractParams,
-): string => {
-  if (provider === "cloudflare") {
-    return `cloudflare_${params.cloudflareCrawlOptions?.enabled ? "crawl" : (params.cloudflareFormat ?? "markdown")}`;
-  }
-
-  return provider === "greenpt" ? "greenpt_scrape" : "tavily_extract";
-};
-
-const createExtractedSource = ({
-  entry,
-  params,
-  provider,
-}: {
-  entry: ExtractedContentPayload["results"][number];
-  params: ContentExtractParams;
-  provider: ContentExtractProvider;
-}) =>
-  createSourceSchema.parse({
-    kind: "url",
-    title: entry.url.slice(0, 200),
-    content: entry.raw_content,
-    externalUri: entry.url,
-    metadata: {
-      url: entry.url,
-      source: getExtractionSource(provider, params),
-    },
-  });
-
 export async function maybeStoreExtractedKnowledge({
   params,
   req,
@@ -72,7 +41,14 @@ export async function maybeStoreExtractedKnowledge({
     }
 
     const requests = extracted.results.map((entry) =>
-      createExtractedSource({ entry, params, provider }),
+      createSourceSchema.parse({
+        kind: "url",
+        title: entry.url.slice(0, 200),
+        content: entry.raw_content,
+        externalUri: entry.url,
+        provider,
+        metadata: { url: entry.url },
+      }),
     );
     const context = resolveServiceContext(req);
     const user = context.requireUser();

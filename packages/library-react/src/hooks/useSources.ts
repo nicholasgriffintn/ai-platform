@@ -1,7 +1,5 @@
 import {
   addCollectionSources,
-  listKnowledgeIndexStatus,
-  retryKnowledgeIndex,
   createSource,
   createSourceCollection,
   deleteSource,
@@ -110,26 +108,4 @@ export function useSourceMutations() {
       onSuccess: invalidate,
     }),
   };
-}
-
-export function useKnowledgeIndexStatus(projectId?: string) {
-  return useQuery({
-    queryKey: ["sources", "index-status", projectId],
-    queryFn: () => listKnowledgeIndexStatus(projectId),
-    refetchInterval: (query) =>
-      query.state.data?.some(
-        (source) => source.status === "pending" || source.status === "indexing",
-      )
-        ? 5000
-        : false,
-  });
-}
-
-export function useRetryKnowledgeIndex() {
-  const client = useQueryClient();
-
-  return useMutation({
-    mutationFn: retryKnowledgeIndex,
-    onSuccess: () => client.invalidateQueries({ queryKey: SOURCE_QUERY_KEYS.all }),
-  });
 }

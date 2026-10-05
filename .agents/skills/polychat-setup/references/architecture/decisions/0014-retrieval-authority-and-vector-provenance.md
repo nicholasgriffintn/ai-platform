@@ -20,21 +20,13 @@ Managed personal embeddings support Vectorize, S3 Vectors and DynamoDB Vectors. 
 
 Reserve documents as `pending`, expose only `active` records, and mark `delete_pending` before provider deletion. Remove D1 state only after confirmed cleanup and retain uncertain writes for reconciliation against their original target. Apply the same discipline to built-in memory, and quarantine ambiguous legacy ownership rather than guessing. Enforce content, metadata, batch and concurrency bounds at the shared schema and provider boundaries. Keep project memory in its authorised built-in scope; the personal embeddings API grants no project retrieval.
 
-Index personal and project knowledge from the `source` domain through `source_search_document` and `source_search_chunk`. Combine D1 FTS5 keyword matches with scoped vectors using reciprocal-rank fusion, then hydrate current source revisions before reranking and again before returning passages. Transition note creation and document-search tools to sources; migrate existing active personal document content into sources without a legacy search fallback.
+Index personal and project knowledge through the existing source tables, FTS5 and scoped vectors. Hydrate current source revisions and permissions before reranking and again before returning passages. Keep keyword passages searchable when semantic indexing fails.
 
-Fence writes with task leases and source revisions. Keep obsolete index records and original provider targets until vector cleanup succeeds, including after the source row has been deleted. Reserve indexes before provider writes and reuse recorded chunk IDs during retries.
+Fence indexing with the existing task and document leases. Keep obsolete vector IDs and original provider targets until cleanup succeeds, including after source deletion; leave failed cleanup claims to expire before retrying.
 
-Keep prepared keyword passages searchable when vector indexing fails. Query vector targets only after activation; every keyword and vector match still requires current source revision and permission evidence.
+Save notes and extracted pages as Sources in the current conversation scope; use `storeKnowledge` and report `storedKnowledge` for extraction. Store terminal repository results in the scope recorded by Activity. Copy existing saved content once during migration, while keeping the explicit embedding API responsible for its own records; source search has no embedding fallback or compatibility link.
 
-Save extracted web content through `storeKnowledge` in the current conversation scope and report `storedKnowledge`. The scheduler indexes these native sources; callers cannot select a storage namespace. The previous vector-storage fields and note/document-search fallback are removed.
-
-Store completed repository runs as idempotent repository sources in the scope recorded by Activity. Backfill historical runs from trusted Activity records and quarantine ambiguous ownership instead of copying their former personal-vector scope.
-
-Copy existing saved content into Sources once during migration. Keep the explicit embedding API responsible for its own records and provider deletion. Do not link the source index to embedding records or use embeddings as a source-search fallback.
-
-Use the existing recipe connector operations and `normaliseConnectorKnowledge` mappings for knowledge sync. Keep provider-specific operations in recipe declarations and keep connection authority, checkpoints and publication in the sources module. Do not introduce a second connector registry, transport or sync framework.
-
-Bind project syncs to the publisher's owned connection, enabled recipe capability and current workspace owner/admin role. Publishing selected records intentionally shares them with the project. Deny retrieval immediately when that authority is removed, the connection is revoked or the sync is paused. Recheck these facts when committing a resource, alongside the existing generation, cursor and lease fence.
+Reuse recipe connector operations and `normaliseConnectorKnowledge` mappings for sync. Require the publisher's owned connection, enabled recipe capability and current workspace owner/admin role when publishing and committing content or checkpoints. Exclude shared records immediately when that authority is removed, the connection is revoked or the sync is paused.
 
 ## Consequences
 

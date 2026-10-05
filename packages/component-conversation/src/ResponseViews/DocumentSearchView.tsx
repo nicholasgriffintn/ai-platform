@@ -1,9 +1,8 @@
+import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 import { projectKnowledgeSearchResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import { isHttpUrl, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import { MemoizedMarkdown } from "../markdown";
-
-export function KnowledgePassagesView({ data }: { data: unknown }) {
+export function DocumentSearchView({ data }: { data: unknown }) {
   const parsed = projectKnowledgeSearchResponseSchema.shape.data
     .max(10)
     .safeParse(isRecord(data) ? data.documents : undefined);
