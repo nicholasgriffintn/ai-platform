@@ -1160,7 +1160,7 @@ export async function workStatements({ serverKey, teammates }) {
       run: {
         status: "succeeded",
         projectTaskId: seedId("task", "pricing-copy"),
-        nodeId: "review",
+        nodeId: "build",
       },
     },
     [
