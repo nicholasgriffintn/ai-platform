@@ -7,7 +7,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 export function TaskCreditSummary({ plan }: { plan: ProjectTaskPlanEvidence }) {
-  const attempts = plan.stages.flatMap((stage) => stage.attempts);
+  const attempts = plan.nodes.flatMap((stage) => stage.attempts);
   const reported = attempts.filter((attempt) => attempt.usage?.consumption.creditMicros != null);
 
   if (reported.length === 0) {
@@ -17,7 +17,7 @@ export function TaskCreditSummary({ plan }: { plan: ProjectTaskPlanEvidence }) {
   const { credits, band } = summariseCreditSpend(
     sumRunCreditMicros(reported.map((attempt) => attempt.usage)),
   );
-  const isRunning = plan.stages.some((stage) => stage.status === "executing");
+  const isRunning = plan.nodes.some((stage) => stage.status === "executing");
 
   return (
     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs text-muted-foreground">

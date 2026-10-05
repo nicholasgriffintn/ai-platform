@@ -1,6 +1,7 @@
 import { Button, EmptyState, Link, TextLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   projectTaskStatusLabels,
+  projectTaskNeedsAttention,
   type ProjectTask,
   type ProjectTaskStatus,
 } from "@ngriffin_uk/polychat-schemas";
@@ -8,7 +9,6 @@ import { AlertTriangle, ArrowRight, CheckCircle2, ListChecks, Loader2 } from "lu
 
 import { sortProjectTasks } from "./utils/project-tasks";
 
-const HIGHLIGHTED_STATUSES = new Set<ProjectTaskStatus>(["blocked", "review"]);
 const MAX_VISIBLE_TASKS = 4;
 
 function statusIcon(status: ProjectTaskStatus) {
@@ -45,7 +45,7 @@ export function ProjectTasksSummary({
   errorMessage,
 }: ProjectTasksSummaryProps) {
   const openTasks = tasks.filter((task) => task.status !== "done" && task.status !== "cancelled");
-  const needsAttention = openTasks.filter((task) => HIGHLIGHTED_STATUSES.has(task.status));
+  const needsAttention = openTasks.filter(projectTaskNeedsAttention);
   const visible = sortProjectTasks(openTasks).slice(0, MAX_VISIBLE_TASKS);
 
   return (
@@ -90,7 +90,9 @@ export function ProjectTasksSummary({
                     {task.objective}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {projectTaskStatusLabels[task.status]}
+                    {task.blockedReason === "awaiting_timer"
+                      ? "Waiting"
+                      : projectTaskStatusLabels[task.status]}
                     {task.blockedDetail ? ` · ${task.blockedDetail}` : ""}
                   </p>
                 </div>

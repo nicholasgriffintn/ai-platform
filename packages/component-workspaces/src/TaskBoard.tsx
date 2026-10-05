@@ -1,8 +1,10 @@
 import { Button, ButtonLink, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
 import {
   isProjectTaskAwaitingInput,
+  projectTaskNeedsAttention,
   isProjectTaskRetryable,
   projectTaskBlockedReasonLabels,
+  findProjectFlowNode,
   type ProjectFlow,
   type ProjectTask,
 } from "@ngriffin_uk/polychat-schemas";
@@ -19,8 +21,9 @@ import {
   SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
-import { Fragment, useState } from "react";
+import { useState } from "react";
 
+import { FLOW_NODE_LABELS, flowNodeConnections } from "./flow-node-presentation";
 import {
   DEFAULT_TASK_QUEUE_FILTERS,
   filterTaskQueue,
@@ -51,93 +54,43 @@ export interface TaskBoardProps {
   taskHref: (task: ProjectTask) => string;
   conversationHref: (task: ProjectTask) => string | null;
   onStartTask: (task: ProjectTask) => void;
-  onAcceptTask: (task: ProjectTask) => void;
   onCreateTask: () => void;
   onConfigureFlow: () => void;
   canCreateTask: boolean;
   canManageFlow: boolean;
 }
 
-function PipelineProgress({ task, flow }: { task: ProjectTask; flow: ProjectFlow | null }) {
-  if (!flow) {
-    return null;
-  }
-
-  const showsCurrentStage =
-    task.status === "queued" ||
-    task.status === "running" ||
-    task.status === "blocked" ||
-    task.status === "review";
-  const currentStageId = task.stageId ?? (showsCurrentStage ? flow.stages[0]?.id : null);
-  const currentIndex = flow.stages.findIndex((stage) => stage.id === currentStageId);
-  const isDone = task.status === "done";
+function PipelineProgress({ task }: { task: ProjectTask }) {
+  const node = findProjectFlowNode(task.flowSnapshot, task.flowExecution.nodeId);
 
   return (
-    <div className="flex min-w-0 items-center gap-1" aria-label="Pipeline progress">
-      {flow.stages.map((stage, index) => {
-        const isComplete =
-          isDone || (task.status !== "backlog" && currentIndex >= 0 && index < currentIndex);
-        const isCurrent = showsCurrentStage && index === currentIndex;
-
-        return (
-          <Fragment key={stage.id}>
-            {index > 0 ? (
-              <span
-                className={`h-px min-w-1 flex-1 ${
-                  isDone
-                    ? "bg-success"
-                    : isComplete || isCurrent
-                      ? "bg-active-work"
-                      : "bg-selection"
-                }`}
-              />
-            ) : null}
-            <span
-              title={stage.name}
-              aria-current={isCurrent ? "step" : undefined}
-              className={`h-2.5 w-2.5 shrink-0 rounded-full border ${
-                isComplete
-                  ? isDone
-                    ? "border-success bg-success"
-                    : "border-active-work bg-active-work"
-                  : isCurrent
-                    ? "border-active-work bg-surface ring-2 ring-active-work/45"
-                    : "border-border-strong bg-surface"
-              }`}
-            />
-          </Fragment>
-        );
-      })}
-    </div>
+    <p className="truncate text-xs text-muted-foreground">
+      {node?.name ?? "Ready"}
+      {task.completions.length ? ` · ${task.completions.length} deliverables` : ""}
+    </p>
   );
 }
 
 function TaskRow({
   task,
-  flow,
   members,
   teammates,
   href,
   conversationHref,
   isPending,
   onStart,
-  onAccept,
 }: {
   task: ProjectTask;
-  flow: ProjectFlow | null;
   members: TaskBoardMemberSummary[];
   teammates: TaskBoardTeammateSummary[];
   href: string;
   conversationHref: string | null;
   isPending: boolean;
   onStart: () => void;
-  onAccept: () => void;
 }) {
   const owner = members.find((member) => member.userId === task.assigneeUserId);
-  const stage =
-    flow?.stages.find((candidate) => candidate.id === task.stageId) ??
-    (task.status === "done" || task.status === "cancelled" ? null : flow?.stages[0]);
-  const teammateId = stage?.teammateId ?? task.runner?.teammateId;
+  const stage = findProjectFlowNode(task.flowSnapshot, task.flowExecution.nodeId);
+  const teammateId = (stage?.type === "agent" ? stage.teammateId : null) ?? task.runner?.teammateId;
   const teammate = teammates.find((candidate) => candidate.id === teammateId);
   const canRetry = isProjectTaskRetryable(task);
   const needsInput = isProjectTaskAwaitingInput(task);
@@ -147,7 +100,7 @@ function TaskRow({
     <article className="group grid gap-4 border-b border-border px-4 py-4 last:border-b-0 hover:bg-surface-elevated/70 lg:grid-cols-[minmax(0,1fr)_190px_130px] lg:items-center">
       <div className="min-w-0 space-y-2">
         <div className="flex flex-wrap items-center gap-2">
-          <TaskStatusBadge status={task.status} />
+          <TaskStatusBadge status={task.status} blockedReason={task.blockedReason} />
           {stage ? <span className="text-xs text-muted-foreground">{stage.name}</span> : null}
         </div>
         <Link
@@ -161,7 +114,7 @@ function TaskRow({
             {task.blockedDetail ?? projectTaskBlockedReasonLabels[task.blockedReason]}
           </p>
         ) : null}
-        <PipelineProgress task={task} flow={flow} />
+        <PipelineProgress task={task} />
       </div>
 
       <div className="space-y-1 text-xs text-muted-foreground">
@@ -174,9 +127,9 @@ function TaskRow({
 
       <div className="flex items-center gap-2 lg:justify-end">
         {task.status === "review" ? (
-          <Button variant="primary" size="sm" onClick={onAccept} disabled={isPending}>
-            Approve
-          </Button>
+          <ButtonLink variant="primary" size="sm" href={href}>
+            Review
+          </ButtonLink>
         ) : null}
         {task.status === "backlog" ? (
           <Button
@@ -257,7 +210,8 @@ function FlowStrip({
             <GitBranch size={15} /> Teammate pipeline
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Each completed stage either hands work to the next teammate or stops for review.
+            Teammates, record actions and decisions follow the configured paths. Reviews and delays
+            pause the flow.
           </p>
         </div>
         {canManage ? (
@@ -274,8 +228,10 @@ function FlowStrip({
 
       {flow ? (
         <ol className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-          {flow.stages.map((stage, index) => {
-            const teammate = teammates.find((candidate) => candidate.id === stage.teammateId);
+          {flow.nodes.map((stage, index) => {
+            const teammate = teammates.find(
+              (candidate) => candidate.id === (stage.type === "agent" ? stage.teammateId : null),
+            );
 
             return (
               <li
@@ -287,18 +243,23 @@ function FlowStrip({
                     {index + 1}
                   </span>
                   <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                    {stage.advance === "on_goal_complete" ? (
-                      <Sparkles size={11} />
-                    ) : (
-                      <Pause size={11} />
-                    )}
-                    {stage.advance === "on_goal_complete" ? "Auto hand-off" : "Human review"}
+                    {stage.type !== "human_wait" ? <Sparkles size={11} /> : <Pause size={11} />}
+                    {stage.type !== "human_wait" ? FLOW_NODE_LABELS[stage.type] : "Review"}
                   </span>
                 </div>
                 <p className="mt-3 truncate text-sm font-semibold">{stage.name}</p>
+                <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                  {flowNodeConnections(stage).map((connection) => (
+                    <p key={connection.label}>
+                      {connection.label}: {findProjectFlowNode(flow, connection.target)?.name}
+                    </p>
+                  ))}
+                </div>
                 <p className="mt-1 truncate text-xs text-muted-foreground">
-                  {teammate?.name ?? "Project default teammate"}
-                  {stage.mode ? ` · ${stage.mode}` : ""}
+                  {stage.type === "agent"
+                    ? (teammate?.name ?? "Project default teammate")
+                    : FLOW_NODE_LABELS[stage.type]}
+                  {stage.type === "agent" && stage.mode ? ` · ${stage.mode}` : ""}
                 </p>
               </li>
             );
@@ -309,7 +270,7 @@ function FlowStrip({
           <div>
             <p className="text-sm font-medium">No teammate pipeline configured</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Add stages to hand work between specialist teammates automatically.
+              Connect teammates, records and reviews to organise project work.
             </p>
           </div>
           {canManage ? (
@@ -332,7 +293,6 @@ export function TaskBoard({
   taskHref,
   conversationHref,
   onStartTask,
-  onAcceptTask,
   onCreateTask,
   onConfigureFlow,
   canCreateTask,
@@ -341,7 +301,7 @@ export function TaskBoard({
   const [filters, setFilters] = useState<TaskQueueFilters>(DEFAULT_TASK_QUEUE_FILTERS);
   const sortedTasks = sortProjectTasks(tasks);
   const running = tasks.filter((task) => task.status === "running" || task.status === "queued");
-  const attention = tasks.filter((task) => task.status === "blocked" || task.status === "review");
+  const attention = tasks.filter(projectTaskNeedsAttention);
   const completed = tasks.filter((task) => task.status === "done");
   const filteredTasks = filterTaskQueue(sortedTasks, filters);
 
@@ -401,14 +361,12 @@ export function TaskBoard({
               <TaskRow
                 key={task.id}
                 task={task}
-                flow={flow}
                 members={members}
                 teammates={teammates}
                 href={taskHref(task)}
                 conversationHref={conversationHref(task)}
                 isPending={pendingTaskIds.includes(task.id)}
                 onStart={() => onStartTask(task)}
-                onAccept={() => onAcceptTask(task)}
               />
             ))}
           </div>

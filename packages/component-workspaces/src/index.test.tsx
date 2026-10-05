@@ -1,14 +1,8 @@
-import {
-  type Goal,
-  type ProjectFlow,
-  type ProjectTask,
-  type ProjectTaskActivityTimeline,
-  type ProjectTaskPlanEvidence,
-  projectFlowSchema,
-} from "@ngriffin_uk/polychat-schemas";
+import { type Goal, createSequentialProjectFlow } from "@ngriffin_uk/polychat-schemas";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { flow, task, emptyActivity, emptyPlan } from "../test/project-task-fixtures";
 import {
   CreateTaskDialog,
   FlowEditorDialog,
@@ -27,91 +21,6 @@ describe("ProjectBriefCard", () => {
     expect(screen.getByText("No project instructions have been added.")).toBeTruthy();
   });
 });
-
-const flow: ProjectFlow = {
-  stages: [
-    {
-      id: "research",
-      name: "Research",
-      instructions: null,
-      teammateId: "teammate-research",
-      skillIds: [],
-      mode: "explore",
-      requiresApprovalFor: [],
-      advance: "on_goal_complete",
-    },
-    {
-      id: "publish",
-      name: "Publish",
-      instructions: null,
-      teammateId: "teammate-publish",
-      skillIds: [],
-      mode: "build",
-      requiresApprovalFor: ["write"],
-      advance: "on_human_accept",
-    },
-  ],
-};
-
-const task: ProjectTask = {
-  id: "task-1",
-  originConversationId: null,
-  projectId: "project-1",
-  workspaceId: "workspace-1",
-  objective: "Prepare the release note",
-  acceptanceCriteria: [],
-  expectedOutput: "A reviewed release note",
-  context: null,
-  constraints: null,
-  dependsOnTaskIds: [],
-  requireApprovalFor: [],
-  status: "queued",
-  source: "user",
-  blockedReason: null,
-  blockedDetail: null,
-  stageId: "research",
-  runner: null,
-  createdByUserId: 1,
-  assigneeUserId: null,
-  runnerIdentityUserId: 1,
-  conversationId: null,
-  goalId: null,
-  dispatchTaskId: null,
-  completions: [],
-  position: 1000,
-  tokenBudget: 20_000,
-  tokensSpent: 0,
-  createdAt: "2026-08-30T10:00:00.000Z",
-  updatedAt: null,
-  startedAt: null,
-  completedAt: null,
-};
-
-const emptyActivity: ProjectTaskActivityTimeline = {
-  protocolVersion: 1,
-  projectId: task.projectId,
-  taskId: task.id,
-  items: [],
-};
-
-const emptyPlan: ProjectTaskPlanEvidence = {
-  protocolVersion: 1,
-  id: task.id,
-  status: "active",
-  stages: [
-    {
-      id: `${task.id}:research`,
-      flowStageId: "research",
-      name: "Research",
-      status: "proposed",
-      input: { objective: task.objective, acceptanceCriterionIds: [] },
-      attempts: [],
-      completionIds: [],
-      outputs: [],
-    },
-  ],
-  resume: { supported: true, reason: null },
-};
 
 describe("ProjectTasksSummary", () => {
   it("prioritises blocked and review work and fills spare space with other open tasks", () => {
@@ -156,34 +65,6 @@ describe("ProjectTasksSummary", () => {
 });
 
 describe("TaskBoard", () => {
-  it("does not mark a pipeline stage as active before backlog work starts", () => {
-    render(
-      <TaskBoard
-        tasks={[{ ...task, status: "backlog", stageId: "research" }]}
-        flow={flow}
-        members={[]}
-        teammates={[]}
-        taskHref={() => "/tasks/task-1"}
-        conversationHref={() => null}
-        onStartTask={vi.fn()}
-        onAcceptTask={vi.fn()}
-        onCreateTask={vi.fn()}
-        onConfigureFlow={vi.fn()}
-        canCreateTask
-        canManageFlow
-      />,
-    );
-
-    const progress = screen.getByLabelText("Pipeline progress");
-
-    expect(progress.querySelector('[title="Research"]')?.className).not.toContain(
-      "border-active-work",
-    );
-    expect(
-      Array.from(progress.children).map((part) => part.getAttribute("title") ?? "connector"),
-    ).toEqual(["Research", "connector", "Publish"]);
-  });
-
   it("filters queued work by search, status, and pipeline stage", () => {
     render(
       <TaskBoard
@@ -195,14 +76,14 @@ describe("TaskBoard", () => {
             objective: "Publish the launch note",
             status: "blocked",
             blockedReason: "awaiting_input",
-            stageId: "publish",
+            nodeId: "publish",
           },
           {
             ...task,
             id: "task-done",
             objective: "Summarise the launch",
             status: "done",
-            stageId: "publish",
+            nodeId: "publish",
           },
         ]}
         flow={flow}
@@ -211,7 +92,6 @@ describe("TaskBoard", () => {
         taskHref={(item) => `/tasks/${item.id}`}
         conversationHref={() => null}
         onStartTask={vi.fn()}
-        onAcceptTask={vi.fn()}
         onCreateTask={vi.fn()}
         onConfigureFlow={vi.fn()}
         canCreateTask
@@ -235,7 +115,7 @@ describe("TaskBoard", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Filter work by status" }));
     fireEvent.click(screen.getByRole("menuitem", { name: "All statuses" }));
-    fireEvent.click(screen.getByRole("button", { name: "Filter work by stage" }));
+    fireEvent.click(screen.getByRole("button", { name: "Filter work by step" }));
     fireEvent.click(screen.getByRole("menuitem", { name: "Research" }));
     expect(screen.getByText("Write the launch spec")).toBeTruthy();
     expect(screen.queryByText("Publish the launch note")).toBeNull();
@@ -257,7 +137,6 @@ describe("TaskBoard", () => {
         taskHref={() => "/tasks/task-1"}
         conversationHref={() => null}
         onStartTask={onStartTask}
-        onAcceptTask={vi.fn()}
         onCreateTask={vi.fn()}
         onConfigureFlow={vi.fn()}
         canCreateTask
@@ -265,18 +144,12 @@ describe("TaskBoard", () => {
       />,
     );
 
-    expect(screen.getByText("Auto hand-off")).toBeTruthy();
-    expect(screen.getByText("Human review")).toBeTruthy();
     expect(screen.getAllByText("Researcher").length).toBeGreaterThan(0);
-    expect(
-      screen.getByLabelText("Pipeline progress").querySelector('[aria-current="step"]'),
-    ).not.toBeNull();
-
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(onStartTask).toHaveBeenCalledWith(task);
   });
 
-  it("offers acceptance without retry after an teammate succeeds", () => {
+  it("opens the saved review without offering a blind retry", () => {
     render(
       <TaskBoard
         tasks={[{ ...task, status: "review" }]}
@@ -286,7 +159,6 @@ describe("TaskBoard", () => {
         taskHref={() => "/tasks/task-1"}
         conversationHref={() => null}
         onStartTask={vi.fn()}
-        onAcceptTask={vi.fn()}
         onCreateTask={vi.fn()}
         onConfigureFlow={vi.fn()}
         canCreateTask
@@ -294,7 +166,7 @@ describe("TaskBoard", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: "Approve" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Review" }).getAttribute("href")).toBe("/tasks/task-1");
     expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
   });
 
@@ -316,7 +188,6 @@ describe("TaskBoard", () => {
         taskHref={() => "/tasks/task-1"}
         conversationHref={() => "/chat?completion_id=conversation-1"}
         onStartTask={vi.fn()}
-        onAcceptTask={vi.fn()}
         onCreateTask={vi.fn()}
         onConfigureFlow={vi.fn()}
         canCreateTask
@@ -372,7 +243,6 @@ describe("TaskDetail", () => {
         goal={completedGoal}
         activity={emptyActivity}
         plan={{ ...emptyPlan, status: "completed" }}
-        flow={flow}
         members={[]}
         teammates={[]}
         blockedBy={[]}
@@ -382,9 +252,10 @@ describe("TaskDetail", () => {
         runHref={() => "/chat?run_id=run-1"}
         outputHref={() => "/outputs/output-1"}
         onRun={vi.fn()}
-        onAccept={vi.fn()}
+        flowWait={null}
+        canRespondToFlowWait={false}
+        onRespondToWait={vi.fn(async () => true)}
         onCancel={vi.fn()}
-        onReopen={vi.fn()}
         onDelete={vi.fn()}
       />,
     );
@@ -394,7 +265,7 @@ describe("TaskDetail", () => {
     expect(screen.queryByRole("button", { name: "Reopen task" })).toBeNull();
     expect(
       screen.getByText(
-        "Executed plans keep their evidence. Create a new task to run the work again.",
+        "Create a new task to run this work again. Its evidence remains in the project.",
       ),
     ).toBeTruthy();
     expect(screen.getByLabelText(`Met: ${criterion}`)).toBeTruthy();
@@ -403,13 +274,28 @@ describe("TaskDetail", () => {
 });
 
 describe("FlowEditorDialog", () => {
-  it("focuses its heading and saves multiple skills on one stage", async () => {
+  it("focuses its heading and saves the selected skills in a connected flow", async () => {
     const onSave = vi.fn(async () => undefined);
 
     render(
       <FlowEditorDialog
         open
-        flow={{ stages: [flow.stages[0]] }}
+        flow={createSequentialProjectFlow([
+          {
+            id: "research",
+            name: "Research",
+            instructions: null,
+            teammateId: "teammate-research",
+            skillIds: [],
+            mode: "explore",
+            requiresApprovalFor: [],
+          },
+        ])}
+        members={[]}
+        recordTables={[]}
+        recordDefinitions={[]}
+        triggerStates={[]}
+        onSelectTable={vi.fn()}
         teammates={[{ id: "teammate-research", name: "Researcher" }]}
         skills={[
           { id: "source-research", name: "Source research" },
@@ -422,58 +308,22 @@ describe("FlowEditorDialog", () => {
       />,
     );
 
-    const heading = screen.getByRole("heading", { name: "Configure the teammate pipeline" });
+    const heading = screen.getByRole("heading", { name: "Configure the project flow" });
 
     await waitFor(() => expect(document.activeElement).toBe(heading));
     fireEvent.click(screen.getByRole("checkbox", { name: "Source research" }));
     fireEvent.click(screen.getByRole("checkbox", { name: "Fact checking" }));
-    fireEvent.click(screen.getByRole("button", { name: "Save pipeline" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save flow" }));
 
     await waitFor(() =>
-      expect(onSave).toHaveBeenCalledWith({
-        stages: [expect.objectContaining({ skillIds: ["source-research", "fact-checking"] })],
-      }),
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({
+          nodes: expect.arrayContaining([
+            expect.objectContaining({ skillIds: ["source-research", "fact-checking"] }),
+          ]),
+        }),
+      ),
     );
-  });
-
-  it("applies the suggested pipeline from the workflow selector and saves valid stages", async () => {
-    const onSave = vi.fn<(nextFlow: ProjectFlow) => Promise<void>>(async () => undefined);
-    const props = {
-      open: true,
-      teammates: [],
-      skills: [],
-      capabilitiesHref: "/projects/project-1/teammates",
-      createTeammateHref: "/work/workspace-1/projects/project-1/teammates/new",
-      onOpenChange: vi.fn(),
-      onSave,
-    };
-
-    render(<FlowEditorDialog {...props} flow={null} />);
-    fireEvent.click(screen.getByRole("button", { name: "Start from a workflow" }));
-    fireEvent.click(
-      screen.getByRole("menuitem", { name: "Suggested: research → plan → build → review" }),
-    );
-    expect(screen.getByRole("button", { name: "Start from a workflow" }).textContent).toContain(
-      "Suggested: research → plan → build → review",
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Save pipeline" }));
-
-    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
-
-    const saved = projectFlowSchema.parse(onSave.mock.calls[0]?.[0]);
-
-    expect(saved.stages.map((stage) => stage.name)).toEqual([
-      "Research",
-      "Plan",
-      "Build",
-      "Review",
-    ]);
-    expect(saved.stages.map((stage) => stage.advance)).toEqual([
-      "on_goal_complete",
-      "on_human_accept",
-      "on_goal_complete",
-      "on_human_accept",
-    ]);
   });
 });
 
@@ -505,7 +355,7 @@ describe("CreateTaskDialog", () => {
     fireEvent.click(button);
     fireEvent.submit(button.closest("form")!);
     expect(onSubmit).toHaveBeenCalledTimes(1);
-    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ stageId: "research" }), "save");
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ nodeId: "research" }), "save");
     finish();
     await waitFor(() =>
       expect(screen.getByRole("textbox", { name: "Objective" }).getAttribute("value")).toBe(""),
@@ -572,7 +422,7 @@ describe("CreateTaskDialog", () => {
         expect.objectContaining({
           objective: "Prepare the release note",
           expectedOutput: "A reviewed release note",
-          stageId: "research",
+          nodeId: "research",
         }),
         "run",
       ),

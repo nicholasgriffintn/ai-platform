@@ -2,31 +2,26 @@ import { Badge, Button, ButtonLink, TextLink } from "@ngriffin_uk/polychat-compo
 import type {
   Goal,
   GoalEvidenceStatus,
-  ProjectFlow,
   ProjectTask,
   ProjectTaskActivityTimeline,
   ProjectTaskPlanEvidence,
+  ProjectFlowWait,
+  ResolveProjectFlowWaitInput,
 } from "@ngriffin_uk/polychat-schemas";
 import {
   isProjectTaskAwaitingInput,
   isProjectTaskRetryable,
   isTerminalProjectTaskStatus,
   projectTaskBlockedReasonLabels,
+  findProjectFlowNode,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
-import {
-  AlertTriangle,
-  Check,
-  Circle,
-  MessageSquareText,
-  Play,
-  RotateCcw,
-  Trash2,
-} from "lucide-react";
+import { AlertTriangle, Check, Circle, MessageSquareText, Play, Trash2 } from "lucide-react";
 
 import { isTaskCriterionMet } from "./task-evidence";
 import { TaskActivityTimeline as TaskActivityTimelineView } from "./TaskActivityTimeline";
-import { TaskStageEvidence } from "./TaskStageEvidence";
+import { TaskFlowReview } from "./TaskFlowReview";
+import { TaskNodeEvidence } from "./TaskNodeEvidence";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 
 export interface TaskDetailProps {
@@ -34,7 +29,6 @@ export interface TaskDetailProps {
   goal: Goal | null;
   activity: ProjectTaskActivityTimeline;
   plan: ProjectTaskPlanEvidence;
-  flow: ProjectFlow | null;
   members: { userId: number; name: string | null }[];
   teammates: { id: string; name: string }[];
   blockedBy: ProjectTask[];
@@ -45,9 +39,11 @@ export interface TaskDetailProps {
   outputHref: (outputId: string) => string;
   isBusy?: boolean;
   onRun: () => void;
-  onAccept: () => void;
+  flowWait: ProjectFlowWait | null;
+  canRespondToFlowWait: boolean;
+  waitError?: string;
+  onRespondToWait: (wait: ProjectFlowWait, input: ResolveProjectFlowWaitInput) => Promise<boolean>;
   onCancel: () => void;
-  onReopen: () => void;
   onDelete: () => void;
   renderProgressSummary?: (summary: string) => React.ReactNode;
 }
@@ -92,7 +88,6 @@ export function TaskDetail({
   goal,
   activity,
   plan,
-  flow,
   members,
   teammates,
   blockedBy,
@@ -103,22 +98,25 @@ export function TaskDetail({
   outputHref,
   isBusy = false,
   onRun,
-  onAccept,
+  flowWait,
+  canRespondToFlowWait,
+  waitError,
+  onRespondToWait,
   onCancel,
-  onReopen,
   onDelete,
   renderProgressSummary,
 }: TaskDetailProps) {
   const owner = members.find((member) => member.userId === task.assigneeUserId);
-  const effectiveFlow = task.flowSnapshot ?? flow;
-  const stage = effectiveFlow?.stages.find((candidate) => candidate.id === task.stageId);
-  const teammateId = stage?.teammateId ?? task.runner?.teammateId;
+  const stage = findProjectFlowNode(task.flowSnapshot, task.flowExecution.nodeId);
+  const teammateId = (stage?.type === "agent" ? stage.teammateId : null) ?? task.runner?.teammateId;
   const teammate = teammates.find((candidate) => candidate.id === teammateId);
   const isFinished = isTerminalProjectTaskStatus(task.status);
   const hasExecutionEvidence = Boolean(
-    task.status === "done" || task.runId || task.completions.length > 0,
+    task.flowExecution.steps > 0 ||
+    task.status === "done" ||
+    task.runId ||
+    task.completions.length > 0,
   );
-  const canReopen = isFinished && !hasExecutionEvidence;
   const canRetry = isProjectTaskRetryable(task) && plan.resume.supported;
   const needsInput = isProjectTaskAwaitingInput(task);
   const evidence = goal?.evidence ?? [];
@@ -128,7 +126,7 @@ export function TaskDetail({
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
       <div className="min-w-0 space-y-6">
         <div className="flex flex-wrap items-center gap-2">
-          <TaskStatusBadge status={task.status} />
+          <TaskStatusBadge status={task.status} blockedReason={task.blockedReason} />
           {stage && <Badge variant="outline">{stage.name}</Badge>}
           {task.source === "model" && <Badge variant="outline">Drafted by assistant</Badge>}
         </div>
@@ -143,17 +141,16 @@ export function TaskDetail({
           </div>
         )}
 
+        <TaskFlowReview
+          task={task}
+          wait={flowWait}
+          canRespond={canRespondToFlowWait}
+          isBusy={isBusy}
+          errorMessage={waitError}
+          onRespond={onRespondToWait}
+        />
+
         <div className="flex flex-wrap items-center gap-2">
-          {task.status === "review" && (
-            <Button
-              variant="primary"
-              icon={<Check size={14} />}
-              onClick={onAccept}
-              disabled={isBusy}
-            >
-              Approve result
-            </Button>
-          )}
           {task.status === "backlog" && (
             <Button variant="primary" icon={<Play size={14} />} onClick={onRun} disabled={isBusy}>
               Run
@@ -258,7 +255,7 @@ export function TaskDetail({
           </section>
         ) : null}
 
-        <TaskStageEvidence plan={plan} runHref={runHref} outputHref={outputHref} />
+        <TaskNodeEvidence plan={plan} runHref={runHref} outputHref={outputHref} />
 
         <section className="space-y-3">
           <div className="flex items-baseline justify-between">
@@ -342,24 +339,11 @@ export function TaskDetail({
             <div className="space-y-3">
               <div>
                 <p className="text-xs text-muted-foreground">
-                  {canReopen
-                    ? "Reopen returns this untouched task to the backlog."
-                    : isFinished
-                      ? "Executed plans keep their evidence. Create a new task to run the work again."
-                      : "Cancel stops this task but keeps its conversation and history so it can be reopened."}
+                  {isFinished
+                    ? "Create a new task to run this work again. Its evidence remains in the project."
+                    : "Cancel stops this task and keeps its conversation and history."}
                 </p>
-                {canReopen ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    icon={<RotateCcw size={13} />}
-                    className="mt-2"
-                    onClick={onReopen}
-                    disabled={isBusy}
-                  >
-                    Reopen task
-                  </Button>
-                ) : (
+                {!isFinished && (
                   <Button
                     variant="outline"
                     size="sm"

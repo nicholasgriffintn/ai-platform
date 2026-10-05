@@ -1,4 +1,8 @@
-import type { ProjectTask, ProjectTaskStatus } from "@ngriffin_uk/polychat-schemas";
+import {
+  projectTaskNeedsAttention,
+  type ProjectTask,
+  type ProjectTaskStatus,
+} from "@ngriffin_uk/polychat-schemas";
 
 export type TaskQueueStatusFilter =
   | "all"
@@ -11,13 +15,13 @@ export type TaskQueueStatusFilter =
 export interface TaskQueueFilters {
   query: string;
   status: TaskQueueStatusFilter;
-  stageId: string | null;
+  nodeId: string | null;
 }
 
 export const DEFAULT_TASK_QUEUE_FILTERS: TaskQueueFilters = {
   query: "",
   status: "all",
-  stageId: null,
+  nodeId: null,
 };
 
 function matchesStatus(status: ProjectTaskStatus, filter: TaskQueueStatusFilter): boolean {
@@ -38,7 +42,7 @@ function matchesStatus(status: ProjectTaskStatus, filter: TaskQueueStatusFilter)
 }
 
 export function hasTaskQueueFilters(filters: TaskQueueFilters): boolean {
-  return Boolean(filters.query.trim()) || filters.status !== "all" || filters.stageId !== null;
+  return Boolean(filters.query.trim()) || filters.status !== "all" || filters.nodeId !== null;
 }
 
 export function filterTaskQueue(
@@ -48,11 +52,15 @@ export function filterTaskQueue(
   const query = filters.query.trim().toLocaleLowerCase();
 
   return tasks.filter((task) => {
-    if (!matchesStatus(task.status, filters.status)) {
+    if (
+      filters.status === "attention"
+        ? !projectTaskNeedsAttention(task)
+        : !matchesStatus(task.status, filters.status)
+    ) {
       return false;
     }
 
-    if (filters.stageId && task.stageId !== filters.stageId) {
+    if (filters.nodeId && task.nodeId !== filters.nodeId) {
       return false;
     }
 

@@ -62,14 +62,14 @@ export function TaskBoardFilters({
           />
           {flow ? (
             <FormSelect
-              aria-label="Filter work by stage"
+              aria-label="Filter work by step"
               className="min-w-36"
               fullWidth={false}
-              value={filters.stageId ?? ""}
-              onValueChange={(value) => onChange({ ...filters, stageId: value || null })}
+              value={filters.nodeId ?? ""}
+              onValueChange={(value) => onChange({ ...filters, nodeId: value || null })}
               options={[
-                { label: "All stages", value: "" },
-                ...flow.stages.map((stage) => ({ label: stage.name, value: stage.id })),
+                { label: "All steps", value: "" },
+                ...flow.nodes.map((node) => ({ label: node.name, value: node.id })),
               ]}
             />
           ) : null}

@@ -14,7 +14,7 @@ export function useProjectTaskBoardActions({
   onFlowSaved: () => void;
 }) {
   const tasks = useProjectTasks(projectId);
-  const { create, start, accept, saveFlow } = tasks;
+  const { create, start, saveFlow } = tasks;
 
   const runTask = async (task: ProjectTask) => {
     try {
@@ -22,16 +22,6 @@ export function useProjectTaskBoardActions({
       toast.success("Task queued");
     } catch (error) {
       toast.error(getErrorMessage(error, "Unable to run this task"));
-    }
-  };
-
-  const acceptTask = async (task: ProjectTask) => {
-    try {
-      const { task: accepted } = await accept.mutateAsync(task.id);
-
-      toast.success(accepted.status === "done" ? "Task accepted" : "Moved to the next stage");
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Unable to accept this task"));
     }
   };
 
@@ -61,11 +51,12 @@ export function useProjectTaskBoardActions({
     try {
       await saveFlow.mutateAsync(flow);
       onFlowSaved();
-      toast.success("Teammate pipeline saved");
+      toast.success("Project flow saved");
     } catch (error) {
-      toast.error(getErrorMessage(error, "Unable to save the teammate pipeline"));
+      toast.error(getErrorMessage(error, "Unable to save the project flow"));
+      throw error;
     }
   };
 
-  return { ...tasks, runTask, acceptTask, addTask, saveProjectFlow };
+  return { ...tasks, runTask, addTask, saveProjectFlow };
 }

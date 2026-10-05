@@ -2,12 +2,12 @@ import { Badge, TextLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   creditsFromCreditMicros,
   type ProjectTaskPlanEvidence,
-  type ProjectTaskStageEvidence,
+  type ProjectTaskNodeEvidence,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { TaskCreditSummary } from "./TaskCreditSummary";
 
-const STATUS_LABELS: Record<ProjectTaskStageEvidence["status"], string> = {
+const STATUS_LABELS: Record<ProjectTaskNodeEvidence["status"], string> = {
   proposed: "Proposed",
   executing: "Executing",
   completed: "Completed",
@@ -17,7 +17,7 @@ const STATUS_LABELS: Record<ProjectTaskStageEvidence["status"], string> = {
 };
 
 function statusVariant(
-  status: ProjectTaskStageEvidence["status"],
+  status: ProjectTaskNodeEvidence["status"],
 ): "success" | "warning" | "destructive" | "outline" {
   if (status === "completed") {
     return "success";
@@ -34,7 +34,7 @@ function statusVariant(
   return "outline";
 }
 
-export function TaskStageEvidence({
+export function TaskNodeEvidence({
   plan,
   runHref,
   outputHref,
@@ -55,14 +55,14 @@ export function TaskStageEvidence({
         </div>
       </div>
       <ol className="space-y-3">
-        {plan.stages.map((stage) => (
+        {plan.nodes.map((stage) => (
           <li key={stage.id} className="rounded-lg border border-border p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm font-medium capitalize">{stage.name}</p>
               <Badge variant={statusVariant(stage.status)}>{STATUS_LABELS[stage.status]}</Badge>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Stage {stage.flowStageId ?? "task"} · {stage.attempts.length} attempt
+              Stage {stage.flowNodeId ?? "task"} · {stage.attempts.length} attempt
               {stage.attempts.length === 1 ? "" : "s"}
             </p>
             {stage.attempts.length > 0 ? (

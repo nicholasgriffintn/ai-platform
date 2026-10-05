@@ -10,7 +10,7 @@ export interface TaskDraft {
   expectedOutput: string;
   contextNotes: string;
   assignee: string;
-  stageId: string;
+  nodeId: string;
   teammateId: string;
   showAdvanced: boolean;
   constraintNotes: string;
@@ -26,7 +26,7 @@ export function createTaskDraft(flow: ProjectFlow | null): TaskDraft {
     expectedOutput: "",
     contextNotes: "",
     assignee: "",
-    stageId: flow?.stages[0]?.id ?? "",
+    nodeId: flow?.entryNodeId ?? "",
     teammateId: "",
     showAdvanced: false,
     constraintNotes: "",
@@ -52,10 +52,10 @@ export function taskDraftInput(draft: TaskDraft): CreateProjectTaskInput {
     requireApprovalFor: draft.requireApprovalFor,
     assigneeUserId: draft.assignee ? Number(draft.assignee) : null,
     runner:
-      !draft.stageId && draft.teammateId
+      !draft.nodeId && draft.teammateId
         ? { kind: "conversation", teammateId: draft.teammateId, model: null, mode: null }
         : null,
-    stageId: draft.stageId || null,
+    nodeId: draft.nodeId || null,
     tokenBudget: draft.tokenBudget ? Number(draft.tokenBudget) : null,
   };
 }

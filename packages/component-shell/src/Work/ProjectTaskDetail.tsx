@@ -1,18 +1,16 @@
 import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 import { BackLink, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
-import { TaskDetail } from "@ngriffin_uk/polychat-component-workspaces";
+import { TaskDetail, TaskFlowHistory } from "@ngriffin_uk/polychat-component-workspaces";
 import {
   useProjectTask,
-  useProjectTasks,
+  useProjectFlowHistory,
   getProjectConversationPath,
 } from "@ngriffin_uk/polychat-library-react";
-import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
-import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { toast } from "sonner";
 
 import { PageShell } from "../Shell/PageShell.js";
+import { useProjectTaskDetailActions } from "./useProjectTaskDetailActions.js";
 import { useProjectTaskTeammates } from "./useProjectTaskTeammates.js";
 import { useWorkData } from "./WorkDataContext.js";
 
@@ -29,14 +27,17 @@ export function ProjectTaskDetail({
   const navigate = useNavigate();
   const { projectQuery, workspaceQuery } = useWorkData();
   const teammates = useProjectTaskTeammates(projectQuery.data?.capabilities);
-  const { tasks, flow, isLoading, error, start, accept, update, remove } =
-    useProjectTasks(projectId);
+  const basePath = `/work/${workspaceId}/projects/${projectId}`;
+  const actions = useProjectTaskDetailActions(projectId, taskId, () => {
+    void navigate(`${basePath}/tasks`, { replace: true });
+  });
+  const { tasks, isLoading, error, remove } = actions;
+  const history = useProjectFlowHistory(projectId, taskId);
   const detailQuery = useProjectTask(projectId, taskId);
   const task = detailQuery.data?.task ?? tasks.find((candidate) => candidate.id === taskId);
   const goal = detailQuery.data?.goal ?? null;
   const activity = detailQuery.data?.activity;
   const plan = detailQuery.data?.plan;
-  const basePath = `/work/${workspaceId}/projects/${projectId}`;
 
   if (isLoading || detailQuery.isLoading) {
     return (
@@ -58,45 +59,6 @@ export function ProjectTaskDetail({
     );
   }
 
-  const isBusy = start.isPending || accept.isPending || update.isPending || remove.isPending;
-  const run = async () => {
-    try {
-      await start.mutateAsync(task.id);
-      toast.success("Task queued");
-    } catch (mutationError) {
-      toast.error(getErrorMessage(mutationError, "Unable to run this task"));
-    }
-  };
-
-  const setStatus = async (status: ProjectTask["status"], message: string) => {
-    try {
-      await update.mutateAsync({ taskId: task.id, input: { status } });
-      toast.success(message);
-    } catch (mutationError) {
-      toast.error(getErrorMessage(mutationError, "Unable to update this task"));
-    }
-  };
-
-  const acceptTask = async () => {
-    try {
-      const { task: accepted } = await accept.mutateAsync(task.id);
-
-      toast.success(accepted.status === "done" ? "Task accepted" : "Moved to the next stage");
-    } catch (mutationError) {
-      toast.error(getErrorMessage(mutationError, "Unable to accept this task"));
-    }
-  };
-
-  const deleteTask = async () => {
-    try {
-      await remove.mutateAsync(task.id);
-      toast.success("Task deleted");
-      void navigate(`${basePath}/tasks`, { replace: true });
-    } catch (mutationError) {
-      toast.error(getErrorMessage(mutationError, "Unable to delete this task"));
-    }
-  };
-
   return (
     <>
       <PageShell.Content className="max-w-6xl">
@@ -107,7 +69,6 @@ export function ProjectTaskDetail({
           goal={goal}
           activity={activity}
           plan={plan}
-          flow={flow}
           members={workspaceQuery.data?.members ?? []}
           teammates={teammates}
           blockedBy={tasks.filter((candidate) => task.dependsOnTaskIds.includes(candidate.id))}
@@ -126,16 +87,30 @@ export function ProjectTaskDetail({
             `${basePath}/chat?completion_id=${encodeURIComponent(conversationId)}&run_id=${encodeURIComponent(runId)}`
           }
           outputHref={(outputId) => `${basePath}/outputs/${encodeURIComponent(outputId)}`}
-          isBusy={isBusy}
-          onRun={() => void run()}
-          onAccept={() => void acceptTask()}
-          onCancel={() => void setStatus("cancelled", "Task cancelled")}
-          onReopen={() => void setStatus("backlog", "Task reopened")}
+          isBusy={actions.isBusy}
+          onRun={() => void actions.run()}
+          flowWait={detailQuery.data?.flowWait ?? null}
+          canRespondToFlowWait={detailQuery.data?.canRespondToFlowWait ?? false}
+          waitError={actions.waitError}
+          onRespondToWait={actions.respond}
+          onCancel={() => void actions.cancel()}
           onDelete={() => setIsDeleteOpen(true)}
           renderProgressSummary={(summary) => (
             <MemoizedMarkdown className="max-w-none text-sm leading-6">{summary}</MemoizedMarkdown>
           )}
         />
+        <div className="mt-8">
+          <TaskFlowHistory
+            task={task}
+            events={history.data?.pages.flatMap((page) => page.events) ?? []}
+            hasMore={history.hasNextPage}
+            isLoading={history.isFetching}
+            errorMessage={history.error?.message}
+            onLoadMore={() => {
+              void history.fetchNextPage();
+            }}
+          />
+        </div>
       </PageShell.Content>
 
       <ConfirmationDialog
@@ -146,7 +121,7 @@ export function ProjectTaskDetail({
         confirmText="Delete task"
         variant="destructive"
         isLoading={remove.isPending}
-        onConfirm={deleteTask}
+        onConfirm={actions.deleteTask}
       />
     </>
   );

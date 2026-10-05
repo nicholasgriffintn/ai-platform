@@ -1,5 +1,9 @@
 import { Badge } from "@ngriffin_uk/polychat-component-ui";
-import { projectTaskStatusLabels, type ProjectTaskStatus } from "@ngriffin_uk/polychat-schemas";
+import {
+  projectTaskStatusLabels,
+  type ProjectTaskStatus,
+  type ProjectTaskBlockedReason,
+} from "@ngriffin_uk/polychat-schemas";
 import { AlertTriangle, Check, CheckCircle2, Circle, Clock3, Loader2 } from "lucide-react";
 
 const STATUS_VARIANT = {
@@ -36,11 +40,19 @@ function StatusIcon({ status }: { status: ProjectTaskStatus }) {
   return <Circle />;
 }
 
-export function TaskStatusBadge({ status }: { status: ProjectTaskStatus }) {
+export function TaskStatusBadge({
+  status,
+  blockedReason,
+}: {
+  status: ProjectTaskStatus;
+  blockedReason?: ProjectTaskBlockedReason | null;
+}) {
+  const isTimer = status === "blocked" && blockedReason === "awaiting_timer";
+
   return (
-    <Badge variant={STATUS_VARIANT[status]}>
-      <StatusIcon status={status} />
-      {projectTaskStatusLabels[status]}
+    <Badge variant={isTimer ? "info" : STATUS_VARIANT[status]}>
+      {isTimer ? <Clock3 /> : <StatusIcon status={status} />}
+      {isTimer ? "Waiting" : projectTaskStatusLabels[status]}
     </Badge>
   );
 }

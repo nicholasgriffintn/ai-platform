@@ -21,6 +21,7 @@ import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { useQueryDialog } from "../utils/useQueryDialog.js";
 import { ProjectHomeHeader } from "./ProjectHomeHeader.js";
+import { useProjectFlowResources } from "./useProjectFlowResources.js";
 import { useProjectTaskBoardActions } from "./useProjectTaskBoardActions.js";
 import { projectTaskSkills, useProjectTaskTeammates } from "./useProjectTaskTeammates.js";
 import { useWorkData } from "./WorkDataContext.js";
@@ -41,14 +42,13 @@ export function ProjectTaskBoard({
   const {
     tasks,
     flow,
+    triggerStates,
     isLoading,
     error,
     create,
     start,
-    accept,
     saveFlow,
     runTask,
-    acceptTask,
     addTask,
     saveProjectFlow,
   } = useProjectTaskBoardActions({
@@ -56,6 +56,7 @@ export function ProjectTaskBoard({
     onTaskCreated: () => setIsCreateOpen(false),
     onFlowSaved: () => setIsFlowOpen(false),
   });
+  const flowResources = useProjectFlowResources(projectId, flow, isFlowOpen);
 
   if (isAuthenticationError(error)) {
     return (
@@ -71,10 +72,8 @@ export function ProjectTaskBoard({
     userId: member.userId,
     name: member.name,
   }));
-  const pendingTaskIds = [
-    ...(start.isPending && typeof start.variables === "string" ? [start.variables] : []),
-    ...(accept.isPending && typeof accept.variables === "string" ? [accept.variables] : []),
-  ];
+  const pendingTaskIds =
+    start.isPending && typeof start.variables === "string" ? [start.variables] : [];
   const canManageFlow =
     workspaceQuery.data?.role === "owner" || workspaceQuery.data?.role === "admin";
   const basePath = `/work/${workspaceId}/projects/${projectId}`;
@@ -107,8 +106,8 @@ export function ProjectTaskBoard({
           }
         />
         <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
-          Route outcomes through specialist teammates, watch live work, and step in only when a
-          stage needs review or approval.
+          Route outcomes through specialist teammates, watch live work, and step in only when a step
+          needs review or approval.
         </p>
 
         {isLoading ? (
@@ -127,7 +126,6 @@ export function ProjectTaskBoard({
             taskHref={taskHref}
             conversationHref={conversationHref}
             onStartTask={(task) => void runTask(task)}
-            onAcceptTask={(task) => void acceptTask(task)}
             onCreateTask={() => setIsCreateOpen(true)}
             onConfigureFlow={() => setIsFlowOpen(true)}
             canCreateTask
@@ -151,8 +149,11 @@ export function ProjectTaskBoard({
       <FlowEditorDialog
         open={isFlowOpen}
         flow={flow}
+        triggerStates={triggerStates}
         teammates={teammates}
         skills={skills}
+        members={members}
+        {...flowResources}
         capabilitiesHref={`${basePath}/teammates`}
         createTeammateHref={getTeammateEditorPath(
           getProjectSurface(workspaceId, projectId),

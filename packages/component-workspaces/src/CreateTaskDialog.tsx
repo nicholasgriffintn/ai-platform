@@ -81,7 +81,7 @@ export function CreateTaskDialog({
     expectedOutput,
     contextNotes,
     assignee,
-    stageId,
+    nodeId,
     teammateId,
     showAdvanced,
     constraintNotes,
@@ -150,10 +150,10 @@ export function CreateTaskDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             {flow ? (
               <FormSelect
-                label="Start at stage"
-                value={stageId}
-                options={flow.stages.map((stage) => ({ value: stage.id, label: stage.name }))}
-                onValueChange={(value) => updateDraft({ stageId: value })}
+                label="Start at step"
+                value={nodeId}
+                options={flow.nodes.map((stage) => ({ value: stage.id, label: stage.name }))}
+                onValueChange={(value) => updateDraft({ nodeId: value })}
               />
             ) : (
               <FormSelect

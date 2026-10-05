@@ -10,9 +10,9 @@ export function useCreateTaskForm({
   isSubmitting,
 }: Pick<CreateTaskDialogProps, "flow" | "onSubmit" | "isSubmitting">) {
   const [draft, setDraft] = useState(() => createTaskDraft(flow));
-  const stageId = flow?.stages.some((stage) => stage.id === draft.stageId)
-    ? draft.stageId
-    : (flow?.stages[0]?.id ?? "");
+  const nodeId = flow?.nodes.some((node) => node.id === draft.nodeId)
+    ? draft.nodeId
+    : (flow?.entryNodeId ?? "");
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const submitting = useRef(false);
@@ -53,7 +53,7 @@ export function useCreateTaskForm({
     setIsSaving(true);
     setSubmissionError(null);
     try {
-      await onSubmit(taskDraftInput({ ...draft, stageId }), intent);
+      await onSubmit(taskDraftInput({ ...draft, nodeId }), intent);
       setDraft(createTaskDraft(flow));
     } catch (error) {
       setSubmissionError(getErrorMessage(error, "Unable to add this task"));
@@ -64,7 +64,7 @@ export function useCreateTaskForm({
   };
 
   return {
-    draft: { ...draft, stageId },
+    draft: { ...draft, nodeId },
     updateDraft,
     addCriterion,
     updateCriterion,

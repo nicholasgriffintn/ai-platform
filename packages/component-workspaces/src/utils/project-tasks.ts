@@ -15,7 +15,8 @@ export function sortProjectTasks(tasks: readonly ProjectTask[]): ProjectTask[] {
   return sortCopy(
     tasks,
     (left, right) =>
-      STATUS_ORDER[left.status] - STATUS_ORDER[right.status] ||
+      (left.blockedReason === "awaiting_timer" ? 3 : STATUS_ORDER[left.status]) -
+        (right.blockedReason === "awaiting_timer" ? 3 : STATUS_ORDER[right.status]) ||
       new Date(right.updatedAt ?? right.createdAt).getTime() -
         new Date(left.updatedAt ?? left.createdAt).getTime(),
   );
