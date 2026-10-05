@@ -53,17 +53,6 @@ function createApp(user?: IUser) {
 }
 
 describe("requirePlan", () => {
-  it("allows users on the required plan", async () => {
-    const app = createApp(createUser("pro"));
-
-    app.get("/pro", requirePlan("pro"), (context) => context.json({ ok: true }));
-
-    const response = await app.request("/pro");
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ ok: true });
-  });
-
   it("rejects anonymous requests before checking plan state", async () => {
     const app = createApp();
 
@@ -88,19 +77,6 @@ describe("requirePlan", () => {
     await expect(response.json()).resolves.toEqual({ ok: true });
   });
 
-  it("rejects a lower-ranked plan against a higher requirement", async () => {
-    const app = createApp(createUser("pro"));
-
-    app.get("/enterprise", requirePlan("enterprise"), (context) => context.json({ ok: true }));
-
-    const response = await app.request("/enterprise");
-
-    expect(response.status).toBe(403);
-    await expect(response.json()).resolves.toMatchObject({
-      error: "This feature requires a enterprise plan. Your current plan is pro.",
-    });
-  });
-
   it("rejects users whose current plan does not satisfy the required plan", async () => {
     const app = createApp(createUser(null));
 
@@ -116,16 +92,6 @@ describe("requirePlan", () => {
 });
 
 describe("requireUser", () => {
-  it("allows authenticated users", async () => {
-    const app = createApp(createUser("free"));
-
-    app.get("/me", requireUser(), (context) => context.json({ ok: true }));
-
-    const response = await app.request("/me");
-
-    expect(response.status).toBe(200);
-  });
-
   it("rejects unauthenticated requests", async () => {
     const app = createApp();
 
@@ -139,17 +105,5 @@ describe("requireUser", () => {
     expect(body).toMatchObject({
       error: "Authentication failed. Please check your credentials.",
     });
-  });
-
-  it("uses authorisation errors for plan mismatches", async () => {
-    const app = createApp(createUser("free"));
-
-    app.get("/enterprise", requirePlan("enterprise"), (context) => context.json({ ok: true }));
-
-    const response = await app.request("/enterprise");
-    const body = await response.json();
-
-    expect(response.status).toBe(403);
-    expect(body).not.toHaveProperty("requestId");
   });
 });

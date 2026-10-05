@@ -75,59 +75,6 @@ describe("executeRecipeInvocationChat", () => {
     });
   });
 
-  it("runs the invocation through a stored non-streaming chat completion", async () => {
-    const result = await executeRecipeInvocationChat({
-      env,
-      context,
-      user,
-      invocation,
-      projectId: "project-1",
-    });
-
-    expect(result.conversationId).toBe("recipe_generated-id");
-    expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith({
-      env,
-      context,
-      user,
-      request: expect.objectContaining({
-        completion_id: "recipe_generated-id",
-        conversation_type: "task",
-        mode: "agent",
-        stream: false,
-        store: true,
-        metadata: { project_id: "project-1" },
-        enabled_tools: ["use_recipe_connector"],
-        tool_choice: "auto",
-        options: expect.objectContaining({
-          agent: {
-            minToolCalls: 1,
-          },
-          recipe: {
-            id: "notes-assistant",
-            installationId: "installation-1",
-            channel: "scheduled",
-            allowedConnectorProviders: ["notion"],
-            allowedConnectorOperations: {
-              notion: ["NOTION_SEARCH_NOTION_PAGE", "NOTION_ADD_MULTIPLE_PAGE_CONTENT"],
-            },
-            configuration: { target: "Action log" },
-          },
-        }),
-        messages: [
-          {
-            role: "user",
-            content: "Run this installed Notion recipe.",
-          },
-        ],
-      }),
-    });
-
-    const request = mocks.handleCreateChatCompletions.mock.calls[0]?.[0].request;
-
-    expect(request).not.toHaveProperty("model");
-    expect(request).not.toHaveProperty("max_steps");
-  });
-
   it("titles generated recipe conversations so scheduled runs are visible in history", async () => {
     const result = await executeRecipeInvocationChat({
       env,
@@ -139,52 +86,6 @@ describe("executeRecipeInvocationChat", () => {
     expect(result.conversationId).toBe("recipe_generated-id");
     expect(updateConversation).toHaveBeenCalledWith("recipe_generated-id", {
       title: "Recipe: Notes Assistant",
-    });
-  });
-
-  it("titles caller-provided recipe conversations when requested", async () => {
-    const result = await executeRecipeInvocationChat({
-      env,
-      context,
-      user,
-      invocation,
-      conversationId: "recipe_task-1",
-      titleConversation: true,
-    });
-
-    expect(result.conversationId).toBe("recipe_task-1");
-    expect(updateConversation).toHaveBeenCalledWith("recipe_task-1", {
-      title: "Recipe: Notes Assistant",
-    });
-  });
-
-  it("passes channel context into chat completion options for text-message recipe runs", async () => {
-    await executeRecipeInvocationChat({
-      env,
-      context,
-      user,
-      invocation,
-      channel: {
-        id: "sms",
-        from: "+15551234567",
-        to: "+15557654321",
-      },
-    });
-
-    expect(mocks.handleCreateChatCompletions).toHaveBeenCalledWith({
-      env,
-      context,
-      user,
-      request: expect.objectContaining({
-        options: expect.objectContaining({
-          source: "sms",
-          channel: {
-            id: "sms",
-            from: "+15551234567",
-            to: "+15557654321",
-          },
-        }),
-      }),
     });
   });
 

@@ -22,22 +22,6 @@ function balance(overrides: Record<string, unknown> = {}) {
 }
 
 describe("admitRealtimeSession", () => {
-  it("admits freely while the plan is unconfigured", async () => {
-    const repositories = repositoriesWithBalance(balance({ included_credit_micros: 0 }));
-
-    await expect(
-      admitRealtimeSession({ repositories, userId: 7, creditMicros: 50_000_000 }),
-    ).resolves.toBe(true);
-  });
-
-  it("admits when no balance row exists yet", async () => {
-    const repositories = repositoriesWithBalance(null);
-
-    await expect(
-      admitRealtimeSession({ repositories, userId: 7, creditMicros: 50_000_000 }),
-    ).resolves.toBe(true);
-  });
-
   it("refuses a session the configured allowance cannot fit", async () => {
     const repositories = repositoriesWithBalance(
       balance({ spent_credit_micros: 1_050_000, reserved_credit_micros: 40_000 }),

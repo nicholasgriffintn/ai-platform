@@ -39,7 +39,7 @@ import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
-import { search_memories, store_memory } from "./memory";
+import { search_memories, store_memory, read_memory_document } from "./memory";
 import { messageParent } from "./message-parent";
 import { metaTools } from "./meta";
 import { create_music } from "./music";
@@ -98,6 +98,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   search_documents,
   extract_content,
   search_memories,
+  read_memory_document,
   store_memory,
   analyse_article,
   create_automation,

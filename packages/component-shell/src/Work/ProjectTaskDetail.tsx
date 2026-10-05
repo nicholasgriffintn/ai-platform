@@ -13,6 +13,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { PageShell } from "../Shell/PageShell.js";
+import { ProjectReviewPublicationControl } from "./ProjectReviewPublicationControl.js";
 import { useProjectTaskTeammates } from "./useProjectTaskTeammates.js";
 import { useWorkData } from "./WorkDataContext.js";
 
@@ -102,6 +103,9 @@ export function ProjectTaskDetail({
       <PageShell.Content className="max-w-6xl">
         <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
         <PageShell.Header title={task.objective} />
+        {task.executionProfile === "diff_review" ? (
+          <ProjectReviewPublicationControl key={task.id} projectId={projectId} task={task} />
+        ) : null}
         <TaskDetail
           task={task}
           goal={goal}

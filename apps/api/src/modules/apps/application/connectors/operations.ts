@@ -100,6 +100,7 @@ export async function discoverRecipeConnectorTools(params: {
     useCase: params.useCase,
     scope: {
       completionId: params.completionId,
+      conversationId: params.completionId,
       recipeId: params.recipeId,
       installationId: params.installationId,
       projectId: params.projectId,
@@ -159,7 +160,10 @@ export async function executeRecipeConnectorOperation(params: {
         operationId: operation.id,
         arguments: operationParams,
         sessionId: params.request.sessionId,
-        scope: params.scope ?? { completionId: params.context.connectorRunId },
+        scope: params.scope ?? {
+          completionId: params.context.connectorRunId,
+          conversationId: null,
+        },
       });
     } catch (error) {
       const normalised = normaliseConnectorOperationFailure({

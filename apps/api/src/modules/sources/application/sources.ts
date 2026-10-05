@@ -8,7 +8,7 @@ import type {
   UpdateSourceInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { safeParseJson, parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { isMemoryProviderId } from "~/infrastructure/providers/capabilities/memory/helpers";
@@ -122,12 +122,16 @@ export async function requireSourceAccess(
   return source;
 }
 
-async function requireSourcesAccess(
+export async function requireSourcesAccess(
   context: ServiceContext,
   userId: number,
-  sourceIds: string[],
+  sourceIds: readonly string[],
   validate?: (source: SourceRecord) => void,
 ): Promise<SourceRecord[]> {
+  if (sourceIds.length === 0) {
+    return [];
+  }
+
   const records = await context.repositories.sources.getSourcesByIds(sourceIds);
   const recordsById = new Map(records.map((record) => [record.id, record]));
   const verifiedProjects = new Set<string>();
@@ -201,6 +205,7 @@ export async function createSource(
   context: ServiceContext,
   userId: number,
   input: CreateSourceInput,
+  options: { id?: string } = {},
 ): Promise<Source> {
   if (input.projectId) {
     await requireProjectAccess(context, input.projectId);
@@ -230,7 +235,8 @@ export async function createSource(
     }
   }
 
-  const created = await context.repositories.sources.createSource({
+  const { source, created } = await context.repositories.sources.createSourceWithOutcome({
+    id: options.id,
     createdByUserId: userId,
     projectId: input.projectId,
     conversationId: input.conversationId,
@@ -249,17 +255,17 @@ export async function createSource(
     byteSize: input.file?.byteSize,
   });
 
-  if (created.project_id) {
-    await recordProjectAudit(context, created.project_id, {
+  if (created && source.project_id) {
+    await recordProjectAudit(context, source.project_id, {
       actorUserId: userId,
       action: "source.created",
       targetType: "source",
-      targetId: created.id,
-      metadata: { kind: created.kind },
+      targetId: source.id,
+      metadata: { kind: source.kind },
     });
   }
 
-  return formatSource(created);
+  return formatSource(source);
 }
 
 export async function getSource(context: ServiceContext, userId: number, sourceId: string) {
@@ -289,6 +295,25 @@ export async function updateSource(
   input: UpdateSourceInput,
 ): Promise<Source> {
   const existing = await requireSourceAccess(context, userId, sourceId, true);
+
+  if (parseJsonRecord(existing.metadata).immutableSnapshot === true) {
+    throw new AssistantError(
+      "Task snapshots are immutable. Import a new revision instead.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  if (
+    existing.kind === "connector" &&
+    safeParseJson<Record<string, unknown>>(existing.metadata)?.syncId
+  ) {
+    throw new AssistantError(
+      "Manage this document through its knowledge sync",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
 
   if (
     existing.kind === "memory" &&
@@ -326,6 +351,25 @@ export async function deleteSource(
   sourceId: string,
 ): Promise<void> {
   const source = await requireSourceAccess(context, userId, sourceId, true);
+
+  if (parseJsonRecord(source.metadata).immutableSnapshot === true) {
+    throw new AssistantError(
+      "This source is retained as task evidence",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  if (
+    source.kind === "connector" &&
+    safeParseJson<Record<string, unknown>>(source.metadata)?.syncId
+  ) {
+    throw new AssistantError(
+      "Pause its knowledge sync to exclude managed documents",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
 
   if (source.kind === "memory") {
     const metadata = safeParseJson<Record<string, unknown>>(source.metadata);

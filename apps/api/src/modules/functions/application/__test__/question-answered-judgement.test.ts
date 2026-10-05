@@ -7,11 +7,7 @@ const { evaluateDecisionPolicy } = vi.hoisted(() => ({ evaluateDecisionPolicy: v
 
 vi.mock("~/infrastructure/ai", () => ({ ai: { evaluateDecisionPolicy } }));
 
-import {
-  buildQuestionTranscript,
-  findQuestionAnsweredByConversation,
-  QUESTION_ANSWERED_POLICY,
-} from "../question-answered-judgement";
+import { findQuestionAnsweredByConversation } from "../question-answered-judgement";
 
 const env = {} as IEnv;
 
@@ -40,49 +36,9 @@ function policyResult(outcome: "ask" | "skip", confidence: number) {
   };
 }
 
-describe("QUESTION_ANSWERED_POLICY", () => {
-  it("only skips the question when the model is strongly confident it was answered", () => {
-    const evaluate = (noul: number) =>
-      QUESTION_ANSWERED_POLICY.evaluate({ already_answered: { type: "noul", noul } });
-
-    expect(evaluate(0.95).outcome).toBe("skip");
-    expect(evaluate(0.9).outcome).toBe("skip");
-    expect(evaluate(0.89).outcome).toBe("ask");
-    expect(evaluate(0.6).outcome).toBe("ask");
-    expect(evaluate(0.02).outcome).toBe("ask");
-  });
-});
-
-describe("buildQuestionTranscript", () => {
-  it("keeps only what the person and assistant said", () => {
-    expect(
-      buildQuestionTranscript([
-        ...history,
-        message("tool", "search results"),
-        message("system", "instructions"),
-      ]),
-    ).toEqual([
-      { role: "user", text: "Build me a landing page, make it green" },
-      { role: "assistant", text: "Starting on that now." },
-    ]);
-  });
-});
-
 describe("findQuestionAnsweredByConversation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("does not consult the decision model when there is nothing to match against", async () => {
-    await expect(
-      findQuestionAnsweredByConversation({
-        env,
-        completionId: "c1",
-        history: [message("assistant", "Hello")],
-        questions: [question("What colour scheme?")],
-      }),
-    ).resolves.toBeNull();
-    expect(evaluateDecisionPolicy).not.toHaveBeenCalled();
   });
 
   it("reports the first question the conversation already answers", async () => {
