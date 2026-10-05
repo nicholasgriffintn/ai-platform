@@ -11,7 +11,6 @@ export const INTERNAL_FUNCTION_TOOLS = new Set<string>([
   "search_pashi_tools",
   "trigger_recipe",
   "use_recipe_connector",
-  "use_mcp_integration",
 ]);
 
 /**

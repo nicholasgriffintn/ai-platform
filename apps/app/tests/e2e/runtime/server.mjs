@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { Miniflare } from "miniflare";
 
+import { splitMigrationStatements } from "../../../../../packages/utility-server/dist/sql.js";
 import { buildWorkerBundle } from "../support/worker-bundle.mjs";
 import { resolveMetaModelTool } from "./meta-model.mjs";
 import { resolveProjectTaskModelResponse } from "./project-task-model.mjs";
@@ -1897,11 +1898,9 @@ async function applyMigrations(database) {
     .sort();
 
   for (const migration of migrations) {
-    const statements = readFileSync(path.join(migrationsDirectory, migration), "utf8")
-      .replaceAll("--> statement-breakpoint", "")
-      .split(";")
-      .map((statement) => statement.trim())
-      .filter(Boolean);
+    const statements = splitMigrationStatements(
+      readFileSync(path.join(migrationsDirectory, migration), "utf8"),
+    );
 
     for (const statement of statements) {
       await database.prepare(statement).run();

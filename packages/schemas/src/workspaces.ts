@@ -16,6 +16,9 @@ import {
 } from "./sandbox-provider.js";
 
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
+export const connectorGrantSchema = z.object({
+  operations: z.array(z.string().trim().min(1).max(200)).min(1).max(500),
+});
 export const projectCapabilityKindSchema = z.enum([
   "app",
   "recipe",
@@ -23,7 +26,6 @@ export const projectCapabilityKindSchema = z.enum([
   "tool",
   "teammate",
   "connector",
-  "integration",
 ]);
 export const projectCodingPromptStrategySchema = z.enum([
   "auto",

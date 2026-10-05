@@ -229,38 +229,42 @@ export abstract class BaseProvider implements AIProvider {
       throw new AssistantError(`Model ${params.model} not found`, ErrorType.CONFIGURATION_ERROR);
     }
 
-    const storageService = this.runtime.host.storage.forEnv(params.env);
-    const assetsUrl = params.env.API_BASE_URL || "";
-
     return trackProviderMetrics(this.runtime.host, {
       provider: this.name,
       model,
-      operation: async () => {
-        const body = await this.getParameterMapping(params, storageService, assetsUrl);
-        const endpoint = await this.getEndpoint(params);
-
-        const data = await fetchAIResponse(
-          this.isOpenAiCompatible,
-          this.name,
-          endpoint,
-          headers,
-          body,
-          params.env,
-          this.getFetchOptions(params, modelConfig),
-        );
-
-        const isStreaming = detectStreaming(body, endpoint);
-
-        if (isStreaming) {
-          return data;
-        }
-
-        return await this.formatResponse(data, params, userId);
-      },
+      operation: this.performRequest.bind(this, params, modelConfig, headers, userId),
       settings: this.buildMetricsSettings(params),
       userId,
       completion_id: params.completion_id,
       request: params,
     });
+  }
+
+  private async performRequest(
+    params: ChatCompletionParameters,
+    modelConfig: ModelConfigItem,
+    headers: Record<string, string>,
+    userId?: number,
+  ): Promise<any> {
+    const storageService = this.runtime.host.storage.forEnv(params.env);
+    const assetsUrl = params.env.API_BASE_URL || "";
+    const body = await this.getParameterMapping(params, storageService, assetsUrl);
+    const endpoint = await this.getEndpoint(params);
+    const options = this.getFetchOptions(params, modelConfig);
+    const data = await fetchAIResponse(
+      this.isOpenAiCompatible,
+      this.name,
+      endpoint,
+      headers,
+      body,
+      params.env,
+      options,
+    );
+
+    if (detectStreaming(body, endpoint)) {
+      return data;
+    }
+
+    return this.formatResponse(data, params, userId);
   }
 }

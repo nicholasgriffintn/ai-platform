@@ -1,3 +1,7 @@
+import {
+  getConnectorProviderConfig,
+  isConnectorConnectionKindForAuth,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import type {
   MemoryDocument,
@@ -11,7 +15,6 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getTeammateGrantableConnection } from "~/modules/integrations/application/grantable-connections";
 import { formatMemoryDocument } from "~/modules/memory-documents/application/memory-documents";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
@@ -210,12 +213,28 @@ export async function listTeammateConnectionGrants(
   const records = await context.repositories.providerConnections.listConnections(
     teammateContext.actorUserId,
   );
-  const candidates = await Promise.all(
-    records.map((connection) =>
-      getTeammateGrantableConnection(context, teammateContext.scope, connection),
-    ),
-  );
-  const connections = candidates.flatMap((connection) => (connection ? [connection] : []));
+  const connections = records.flatMap((connection) => {
+    const provider = getConnectorProviderConfig(connection.provider);
+
+    if (
+      !provider ||
+      connection.status !== "connected" ||
+      !isConnectorConnectionKindForAuth(connection.kind, provider.auth.authType) ||
+      (provider.auth.authType === "composio" && !connection.external_id)
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        id: connection.id,
+        provider: provider.id,
+        providerName: provider.name,
+        accountId: connection.external_id || null,
+        allowedOperations: provider.operations.map((operation) => operation.id),
+      },
+    ];
+  });
 
   return {
     grants: await context.repositories.teammateContexts.listConnectionGrants(contextId),
@@ -234,7 +253,7 @@ export async function upsertTeammateConnectionGrant(
 ): Promise<TeammateConnectionGrant> {
   const user = context.requireUser();
 
-  const teammateContext = await requireTeammateContext(context, contextId);
+  await requireTeammateContext(context, contextId);
 
   const connection = await context.repositories.providerConnections.getConnectionById(
     input.connectionId,
@@ -248,9 +267,13 @@ export async function upsertTeammateConnectionGrant(
     throw new AssistantError("Connection not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const provider = await getTeammateGrantableConnection(context, teammateContext.scope, connection);
+  const provider = getConnectorProviderConfig(connection.provider);
 
-  if (!provider) {
+  if (
+    !provider ||
+    !isConnectorConnectionKindForAuth(connection.kind, provider.auth.authType) ||
+    (provider.auth.authType === "composio" && !connection.external_id)
+  ) {
     throw new AssistantError(
       "Connection cannot be granted to a teammate",
       ErrorType.PARAMS_ERROR,
@@ -263,7 +286,7 @@ export async function upsertTeammateConnectionGrant(
   ]
     .filter(Boolean)
     .sort();
-  const supportedOperations = new Set(provider.allowedOperations);
+  const supportedOperations = new Set(provider.operations.map((operation) => operation.id));
 
   if (allowedOperations.some((operation) => !supportedOperations.has(operation))) {
     throw new AssistantError(
@@ -289,7 +312,7 @@ export async function upsertTeammateConnectionGrant(
 
     if (competingConnections.some((candidate) => candidate?.provider === connection.provider)) {
       throw new AssistantError(
-        `Remove the existing ${provider.providerName} account grant before choosing another account`,
+        `Remove the existing ${provider.name} account grant before choosing another account`,
         ErrorType.CONFLICT_ERROR,
         409,
       );

@@ -6,13 +6,9 @@ import { getErrorMessage } from "./errors.js";
 export { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 
 export function parseJsonRecord(value: unknown): Record<string, unknown> {
-  return parseJsonRecordOrNull(value) ?? {};
-}
-
-export function parseJsonRecordOrNull(value: unknown): Record<string, unknown> | null {
   const parsed = typeof value === "string" ? safeParseJson<unknown>(value) : value;
 
-  return isRecord(parsed) ? parsed : null;
+  return isRecord(parsed) ? parsed : {};
 }
 
 export function parseJsonStringArray(value: string | null | undefined): string[] | undefined {

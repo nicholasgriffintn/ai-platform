@@ -23,7 +23,7 @@ export function resolveCapabilityCardState(
   const existing = context.capabilities.find(
     (capability) => capability.kind === itemKind && capability.capabilityId === item.capability.id,
   );
-  const requiresProjectAdmin = ["tool", "connector", "integration"].includes(itemKind);
+  const requiresProjectAdmin = ["tool", "connector"].includes(itemKind);
   const canManage =
     requiresProjectAdmin && context.canManageProject !== undefined
       ? context.canManageProject

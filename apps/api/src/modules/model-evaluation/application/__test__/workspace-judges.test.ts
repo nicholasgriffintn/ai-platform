@@ -6,13 +6,13 @@ import { loadRegistryScope, routeStanding } from "~/modules/model-registry/appli
 import { invokeDeployment } from "~/modules/model-serving/application/invocation";
 import type { IEnv } from "~/types";
 
-import { databaseTestEnvironment } from "../../../../../test/environment";
 import {
   testModelAlias,
   testModelDeployment,
   testModelRoute,
   testRegistryScope,
-} from "../../../../../test/model-platform";
+} from "../../../../../test/fixtures/model-platform";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 import { scoreWithGrader } from "../graders";
 
 vi.mock("~/modules/model-registry/application/scope", async (importOriginal) => ({

@@ -3,12 +3,8 @@ import type {
   AssistantRecipe,
   RecipeConnectorManifest,
   RecipeInstallation,
-  IntegrationDefinition,
 } from "@ngriffin_uk/polychat-schemas";
-import {
-  CAPABILITY_DISCOVERY_TOOL_NAME,
-  teammateRunConfigurationSchema,
-} from "@ngriffin_uk/polychat-schemas";
+import { CAPABILITY_DISCOVERY_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 
 import { listRecipeConnectors } from "~/modules/apps/application/connectors";
 import { listAssistantRecipes, listRecipeInstallations } from "~/modules/apps/application/recipes";
@@ -20,19 +16,17 @@ import { resolveEnabledFunctionToolNames } from "~/modules/functions/application
 import { listFunctionToolDefinitions } from "~/modules/functions/application/definitions";
 import { INTERNAL_FUNCTION_TOOLS } from "~/modules/functions/application/internal-tools";
 import { PermissionChecker } from "~/modules/functions/application/permissions";
-import {
-  listDiscoverableNativeIntegrations,
-  scopeNativeIntegrationDiscoveryToTeammate,
-} from "~/modules/integrations/application/catalogue";
 import { formatFunctionName } from "~/modules/tools/application/functions";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import { resolveProjectRecipeConnectorScope } from "~/modules/workspaces/application/projectRecipeConnectorScope";
 import { resolveProjectTools } from "~/modules/workspaces/application/projectTools";
 import type { IRequest } from "~/types";
 
 interface ProjectCapabilityReference {
   kind: string;
   capability_id: string;
-  excluded?: boolean | number;
+  configuration?: string | Record<string, unknown> | null;
+  excluded?: number;
 }
 
 const permissionChecker = new PermissionChecker();
@@ -50,15 +44,15 @@ export function scopeCapabilityDiscoverySourcesToProject(params: {
       .map((capability) => capability.capability_id),
   );
   const recipes = params.recipes.filter((recipe) => recipeIds.has(recipe.id));
-  const connectorIds = new Set([
-    ...params.references
-      .filter((reference) => reference.kind === "connector" && !reference.excluded)
-      .map((reference) => reference.capability_id),
+  const connectorIds = new Set<string>([
     ...recipes.flatMap((recipe) =>
       recipe.integrations
         .filter((integration) => integration.requiresConnection)
         .map((integration) => integration.providerId),
     ),
+    ...resolveProjectRecipeConnectorScope(
+      params.references.filter((capability) => capability.kind === "connector"),
+    ).providers,
   ]);
 
   return {
@@ -107,7 +101,6 @@ export async function loadCapabilityDiscoverySources(
   let recipes: AssistantRecipe[] = [];
   let connectors: RecipeConnectorManifest[] = [];
   let installations: RecipeInstallation[] = [];
-  let integrations: IntegrationDefinition[] = [];
 
   if (user?.id && context) {
     const projectId =
@@ -122,29 +115,6 @@ export async function loadCapabilityDiscoverySources(
       userId: user.id,
       requestUrl: request.app_url,
     });
-
-    if (hasProEntitlement(user)) {
-      integrations = await listDiscoverableNativeIntegrations(context, projectId);
-      if (request.request?.teammate_context_id) {
-        const configuration = teammateRunConfigurationSchema.safeParse(
-          request.request.resolved_configuration,
-        );
-
-        integrations =
-          request.request.resolved_configuration !== undefined && !configuration.success
-            ? []
-            : await scopeNativeIntegrationDiscoveryToTeammate({
-                context,
-                integrations,
-                projectId,
-                teammateContextId: request.request.teammate_context_id,
-                ...(configuration.success
-                  ? { admittedGrants: configuration.data.connectionGrants }
-                  : {}),
-              });
-      }
-    }
-
     const [recipeList, installationList] = await Promise.all([
       listAssistantRecipes({
         context,
@@ -186,7 +156,6 @@ export async function loadCapabilityDiscoverySources(
     connectors,
     enabledToolIds: resolveEnabledFunctionToolNames(request.request?.enabled_tools, user),
     installations,
-    integrations,
     isPro: hasProEntitlement(user),
     isSignedIn: Boolean(user?.id),
     ...(request.memoryScope?.type === "project"

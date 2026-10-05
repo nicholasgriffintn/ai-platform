@@ -6,10 +6,7 @@ import type {
   Readiness,
   RecipeConnectorManifest,
   RecipeInstallation,
-  IntegrationDefinition,
 } from "@ngriffin_uk/polychat-schemas";
-
-import { createNativeIntegrationDiscoveryItem } from "~/modules/integrations/application/discovery";
 
 export interface DiscoverableFunctionTool {
   id: string;
@@ -32,7 +29,6 @@ export interface CapabilityDiscoverySources {
   projectId?: string;
   recipes: readonly AssistantRecipe[];
   tools: readonly DiscoverableFunctionTool[];
-  integrations?: readonly IntegrationDefinition[];
 }
 
 const RECIPE_TRIGGER_TOOL_NAME = "trigger_recipe";
@@ -374,9 +370,6 @@ export function collectCapabilityItems(
   );
 
   return [
-    ...(sources.integrations ?? []).map((definition) =>
-      createNativeIntegrationDiscoveryItem(definition, sources),
-    ),
     ...sources.tools.map((tool) => createToolItem(tool, sources)),
     ...sources.recipes.map((recipe) =>
       createRecipeItem({

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d45a0551-f512-4b10-89c5-52e22ef7ea19",
+  "id": "12656603-aa37-49ac-91fa-f47d0d2b2400",
   "prevId": "a0045ea7-d3dd-4384-925b-2dca1db14b73",
   "tables": {
     "activity_record": {
@@ -3517,173 +3517,6 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
-    },
-    "integration_definition": {
-      "name": "integration_definition",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "workspace_id": {
-          "name": "workspace_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "''"
-        },
-        "revision": {
-          "name": "revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "revoked_at": {
-          "name": "revoked_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        }
-      },
-      "indexes": {
-        "integration_definition_owner_idx": {
-          "name": "integration_definition_owner_idx",
-          "columns": ["user_id", "workspace_id"],
-          "isUnique": false
-        },
-        "integration_definition_workspace_idx": {
-          "name": "integration_definition_workspace_idx",
-          "columns": ["workspace_id"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "integration_definition_user_id_user_id_fk": {
-          "name": "integration_definition_user_id_user_id_fk",
-          "tableFrom": "integration_definition",
-          "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "integration_definition_workspace_id_workspace_id_fk": {
-          "name": "integration_definition_workspace_id_workspace_id_fk",
-          "tableFrom": "integration_definition",
-          "tableTo": "workspace",
-          "columnsFrom": ["workspace_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {
-        "integration_definition_revision_check": {
-          "name": "integration_definition_revision_check",
-          "value": "\"integration_definition\".\"revision\" >= 1"
-        }
-      }
-    },
-    "integration_definition_revision": {
-      "name": "integration_definition_revision",
-      "columns": {
-        "definition_id": {
-          "name": "definition_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "revision": {
-          "name": "revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "snapshot": {
-          "name": "snapshot",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "integration_definition_revision_definition_id_integration_definition_id_fk": {
-          "name": "integration_definition_revision_definition_id_integration_definition_id_fk",
-          "tableFrom": "integration_definition_revision",
-          "tableTo": "integration_definition",
-          "columnsFrom": ["definition_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "integration_definition_revision_definition_id_revision_pk": {
-          "columns": ["definition_id", "revision"],
-          "name": "integration_definition_revision_definition_id_revision_pk"
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {
-        "integration_definition_revision_number_check": {
-          "name": "integration_definition_revision_number_check",
-          "value": "\"integration_definition_revision\".\"revision\" >= 1"
-        },
-        "integration_definition_revision_snapshot_check": {
-          "name": "integration_definition_revision_snapshot_check",
-          "value": "json_valid(\"integration_definition_revision\".\"snapshot\")"
-        }
-      }
     },
     "machine": {
       "name": "machine",
@@ -10105,6 +9938,14 @@
           "notNull": false,
           "autoincrement": false
         },
+        "search_revision": {
+          "name": "search_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
         "metadata": {
           "name": "metadata",
           "type": "text",
@@ -10397,6 +10238,347 @@
       },
       "uniqueConstraints": {},
       "checkConstraints": {}
+    },
+    "source_knowledge_sync": {
+      "name": "source_knowledge_sync",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "recipe_id": {
+          "name": "recipe_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "integration_id": {
+          "name": "integration_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resources": {
+          "name": "resources",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'active'"
+        },
+        "interval_minutes": {
+          "name": "interval_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 60
+        },
+        "cursor": {
+          "name": "cursor",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "generation": {
+          "name": "generation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "next_sync_at": {
+          "name": "next_sync_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "last_successful_at": {
+          "name": "last_successful_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "lease_token": {
+          "name": "lease_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "lease_expires_at": {
+          "name": "lease_expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "source_knowledge_sync_due_idx": {
+          "name": "source_knowledge_sync_due_idx",
+          "columns": ["status", "next_sync_at"],
+          "isUnique": false
+        },
+        "source_knowledge_sync_project_idx": {
+          "name": "source_knowledge_sync_project_idx",
+          "columns": ["project_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "source_knowledge_sync_user_id_user_id_fk": {
+          "name": "source_knowledge_sync_user_id_user_id_fk",
+          "tableFrom": "source_knowledge_sync",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "source_knowledge_sync_project_id_project_id_fk": {
+          "name": "source_knowledge_sync_project_id_project_id_fk",
+          "tableFrom": "source_knowledge_sync",
+          "tableTo": "project",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "source_knowledge_sync_connection_id_provider_connection_id_fk": {
+          "name": "source_knowledge_sync_connection_id_provider_connection_id_fk",
+          "tableFrom": "source_knowledge_sync",
+          "tableTo": "provider_connection",
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "source_search_chunk": {
+      "name": "source_search_chunk",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chunk_index": {
+          "name": "chunk_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "source_search_chunk_document_idx": {
+          "name": "source_search_chunk_document_idx",
+          "columns": ["document_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "source_search_chunk_document_id_source_search_document_id_fk": {
+          "name": "source_search_chunk_document_id_source_search_document_id_fk",
+          "tableFrom": "source_search_chunk",
+          "tableTo": "source_search_document",
+          "columnsFrom": ["document_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "source_search_document": {
+      "name": "source_search_document",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_revision": {
+          "name": "source_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'lexical'"
+        },
+        "target": {
+          "name": "target",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lease_token": {
+          "name": "lease_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "lease_expires_at": {
+          "name": "lease_expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "source_search_document_revision_idx": {
+          "name": "source_search_document_revision_idx",
+          "columns": ["source_id", "source_revision"],
+          "isUnique": true
+        },
+        "source_search_document_scope_idx": {
+          "name": "source_search_document_scope_idx",
+          "columns": ["project_id", "status"],
+          "isUnique": false
+        },
+        "source_search_document_status_idx": {
+          "name": "source_search_document_status_idx",
+          "columns": ["status"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "source_search_document_lifecycle_check": {
+          "name": "source_search_document_lifecycle_check",
+          "value": "\"source_search_document\".\"status\" IN ('lexical', 'active', 'stale')"
+        },
+        "source_search_document_revision_check": {
+          "name": "source_search_document_revision_check",
+          "value": "\"source_search_document\".\"source_revision\" > 0"
+        }
+      }
     },
     "task_executions": {
       "name": "task_executions",

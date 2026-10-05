@@ -550,7 +550,7 @@ describe("project capability ownership", () => {
     );
   });
 
-  it("keeps project tools restricted to project admins", async () => {
+  it("keeps project tools and connector grants restricted to project admins", async () => {
     const { context, repositories } = createHarness({
       user: { id: 3, email: "member@example.com" },
       role: "member",
@@ -563,7 +563,38 @@ describe("project capability ownership", () => {
         configuration: {},
       }),
     ).rejects.toMatchObject({ statusCode: 403 });
+    await expect(
+      addProjectCapability(context, PROJECT_ID, {
+        kind: "connector",
+        capabilityId: "devin",
+        configuration: { operations: ["list_sessions"] },
+      }),
+    ).rejects.toMatchObject({ statusCode: 403 });
     expect(repositories.addProjectCapability).not.toHaveBeenCalled();
+  });
+
+  it("rejects unsupported connector grants before saving exact actions", async () => {
+    const { context, repositories } = createHarness({ role: "admin" });
+
+    for (const operations of [[], ["*"], ["unsupported_action"]]) {
+      await expect(
+        addProjectCapability(context, PROJECT_ID, {
+          kind: "connector",
+          capabilityId: "devin",
+          configuration: { operations },
+        }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+    }
+
+    expect(repositories.addProjectCapability).not.toHaveBeenCalled();
+    await addProjectCapability(context, PROJECT_ID, {
+      kind: "connector",
+      capabilityId: "devin",
+      configuration: { operations: ["list_sessions", "list_sessions"] },
+    });
+    expect(repositories.addProjectCapability).toHaveBeenCalledWith(
+      expect.objectContaining({ configuration: { operations: ["list_sessions"] } }),
+    );
   });
 
   it("lets project admins update a tool attached by another admin", async () => {

@@ -18,9 +18,9 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { validateProjectConnectorGrant } from "~/modules/apps/application/connectors/project-grants";
 import { validateCapabilityReference } from "~/modules/capabilities/application/reference";
 import { getGitHubAppConnectionForUserInstallation } from "~/modules/github/application/connections";
-import { validateProjectIntegrationGrant } from "~/modules/integrations/application/grants";
 import { deleteOutput } from "~/modules/outputs/application";
 import { forgetWorkspaceAudience } from "~/modules/sync/application/audience";
 import { revokeTeammateContextResources } from "~/modules/teammates/application/computers";
@@ -619,7 +619,7 @@ export async function addProjectCapability(
   const { project, role } = await requireProjectAccess(context, projectId);
 
   if (
-    ["tool", "connector", "integration"].includes(input.kind) &&
+    ["tool", "connector"].includes(input.kind) &&
     !authorise("capability.manage", {
       kind: input.kind,
       role,
@@ -658,17 +658,12 @@ export async function addProjectCapability(
   }
 
   await validateCapabilityReference(input.kind, input.capabilityId, context);
-  const validatedConfiguration = await validateProjectIntegrationGrant({
-    context,
-    workspaceId: project.workspace_id,
-    kind: input.kind,
-    capabilityId: input.capabilityId,
-    configuration: input.configuration,
-  });
   const configuration =
     input.kind === "tool"
       ? validateProjectToolConfiguration(input.capabilityId, input.configuration)
-      : validatedConfiguration;
+      : input.kind === "connector"
+        ? validateProjectConnectorGrant(input.capabilityId, input.configuration)
+        : input.configuration;
   const capabilityRowId = existing?.id ?? generateId();
 
   await context.repositories.workspaces.addProjectCapability({
@@ -716,7 +711,7 @@ export async function removeProjectCapability(
     }).allowed
   ) {
     throw new AssistantError(
-      ["tool", "connector", "integration"].includes(capability.kind)
+      ["tool", "connector"].includes(capability.kind)
         ? "Only project admins can manage project tools and integrations"
         : "Only the member who attached this capability can manage it",
       ErrorType.FORBIDDEN,

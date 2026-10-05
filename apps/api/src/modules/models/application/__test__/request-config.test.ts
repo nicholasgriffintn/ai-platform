@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import type { IEnv } from "~/types";
 
-import { databaseTestEnvironment } from "../../../../../test/environment";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 import { resolveRequestModelConfig } from "../request-config";
 import { findModelConfig } from "../resolve";
 

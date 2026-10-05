@@ -41,7 +41,6 @@ export const TEAMMATE_LIBRARY_KINDS: readonly CatalogueItemKind[] = ["teammate"]
 
 export const PLUGIN_LIBRARY_KINDS: readonly CatalogueItemKind[] = [
   "connector",
-  "integration",
   "app",
   "skill",
   "tool",
@@ -150,7 +149,7 @@ export function useCapabilityLibraryController(
     for (const item of items) {
       const kind = getProjectCapabilityKind(item);
 
-      if (kind === "connector" || kind === "integration") {
+      if (kind === "connector") {
         const granted = scope.capabilities.some(
           (capability) =>
             capability.kind === kind &&

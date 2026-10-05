@@ -39,6 +39,7 @@ export * from "./shared-conversation.js";
 export * from "./sites.js";
 export * from "./skills.js";
 export * from "./sources.js";
+export * from "./mcp-connections.js";
 export * from "./task-notifications.js";
 export * from "./task-service.js";
 export * from "./task-tools.js";
@@ -74,4 +75,3 @@ export * from "./machine-runs.js";
 export { machineRunClient } from "./machine-run-service.js";
 
 export * from "./browser-sessions.js";
-export * from "./integrations.js";

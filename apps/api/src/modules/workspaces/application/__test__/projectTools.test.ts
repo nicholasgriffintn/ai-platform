@@ -5,7 +5,7 @@ import type { ProjectCapabilityRow } from "~/modules/workspaces/infrastructure/W
 import { resolveProjectTools, validateProjectToolConfiguration } from "../projectTools";
 
 describe("project tool configuration", () => {
-  it("enables connector execution only for valid live integration grants", () => {
+  it("enables connector execution only for valid live connector grants", () => {
     const capability: ProjectCapabilityRow = {
       id: "connector-grant",
       project_id: "project",

@@ -1,4 +1,4 @@
-import { NATIVE_MCP_TOOL_NAME, type ChatHostedToolSettings } from "@ngriffin_uk/polychat-schemas";
+import type { ChatHostedToolSettings } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { MODEL_TOOL_DEFINITIONS } from "~/modules/experiences/application/config";
@@ -70,10 +70,6 @@ export function resolveProjectTools(capabilities: ProjectCapabilityRow[]): Resol
 
   if (resolveProjectRecipeConnectorScope(capabilities).providers.length > 0) {
     enabledTools.push("use_recipe_connector");
-  }
-
-  if (capabilities.some((capability) => capability.kind === "integration")) {
-    enabledTools.push(NATIVE_MCP_TOOL_NAME);
   }
 
   return {

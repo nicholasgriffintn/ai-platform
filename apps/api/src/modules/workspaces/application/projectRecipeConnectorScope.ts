@@ -1,3 +1,4 @@
+import { isConnectorOperationSupported } from "@ngriffin_uk/polychat-ai-integrations";
 import {
   connectorGrantSchema,
   recipeConnectorProviderSchema,
@@ -58,7 +59,13 @@ export function resolveProjectRecipeConnectorScope(
     const provider = recipeConnectorProviderSchema.safeParse(capability.capability_id);
     const grant = connectorGrantSchema.safeParse(parseJsonRecord(capability.configuration));
 
-    if (provider.success && grant.success) {
+    if (
+      provider.success &&
+      grant.success &&
+      grant.data.operations.every((operation) =>
+        isConnectorOperationSupported(provider.data, operation),
+      )
+    ) {
       providers.add(provider.data);
       operationsByProvider.set(provider.data, new Set(grant.data.operations));
     }

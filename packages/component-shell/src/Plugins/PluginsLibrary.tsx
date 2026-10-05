@@ -10,10 +10,7 @@ import {
 } from "../Capabilities/useCapabilityLibraryController.js";
 import { ConnectorAccountsPanel } from "../Connectors/ConnectorAccountsPanel.js";
 import { ConnectorSetupDialogs } from "../Connectors/ConnectorSetupDialogs.js";
-import { NativeIntegrationGroup } from "../Integrations/NativeIntegrationGroup.js";
-import { NativeIntegrationsPanel } from "../Integrations/NativeIntegrationsPanel.js";
-import { ProjectConnectorGrantPanel } from "../Integrations/ProjectConnectorGrantPanel.js";
-import { useNativeIntegrationCatalogue } from "../Integrations/useNativeIntegrationCatalogue.js";
+import { ProjectConnectorGrantPanel } from "../Connectors/ProjectConnectorGrantPanel.js";
 import { PluginsConnectorGroup } from "./PluginsConnectorGroup.js";
 import { usePluginsController } from "./usePluginsController.js";
 
@@ -27,21 +24,8 @@ export function PluginsLibrary({
   navigation?: ReactNode;
 }) {
   const controller = usePluginsController();
-  const nativeIntegrations = useNativeIntegrationCatalogue(scope);
 
   const renderGroup = (group: ProjectCapabilityKindGroup): ReactNode => {
-    if (group.kind === "integration") {
-      return (
-        <NativeIntegrationGroup
-          group={group}
-          definitionsById={nativeIntegrations.definitionsById}
-          capabilities={scope.capabilities}
-          requiresProjectGrant={scope.requiresExplicitEnablement}
-          onSelect={nativeIntegrations.setSelectedId}
-        />
-      );
-    }
-
     if (group.kind !== "connector") {
       return null;
     }
@@ -60,7 +44,7 @@ export function PluginsLibrary({
     <CapabilityLibrary
       scope={scope}
       kinds={PLUGIN_LIBRARY_KINDS}
-      extraItems={[...controller.items, ...nativeIntegrations.items]}
+      extraItems={controller.items}
       renderGroup={renderGroup}
       navigation={navigation}
       title="Plugins"
@@ -70,7 +54,6 @@ export function PluginsLibrary({
           : "The apps, skills, tools and integrations Polychat can use on your behalf."
       }
     >
-      <NativeIntegrationsPanel scope={scope} controller={nativeIntegrations} />
       <ConnectorSetupDialogs controller={controller.connectorSetup} />
       <ConnectorDetailsModal
         connector={controller.selectedConnector}
@@ -94,7 +77,7 @@ export function PluginsLibrary({
               />
               {scope.requiresExplicitEnablement && (
                 <ProjectConnectorGrantPanel
-                  provider={controller.selectedConnector.id}
+                  connector={controller.selectedConnector}
                   scope={scope}
                 />
               )}

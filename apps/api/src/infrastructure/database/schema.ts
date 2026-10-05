@@ -950,7 +950,7 @@ export const projectCapability = sqliteTable(
       .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
     kind: text({
-      enum: ["app", "recipe", "skill", "tool", "teammate", "connector", "integration"],
+      enum: ["app", "recipe", "skill", "tool", "teammate"],
     }).notNull(),
     capability_id: text().notNull(),
     excluded: integer({ mode: "boolean" }).default(false).notNull(),
@@ -972,54 +972,6 @@ export const projectCapability = sqliteTable(
 );
 
 export type ProjectCapability = typeof projectCapability.$inferSelect;
-
-export const integrationDefinition = sqliteTable(
-  "integration_definition",
-  {
-    id: text().primaryKey().notNull(),
-    user_id: integer()
-      .notNull()
-      .references(() => user.id),
-    workspace_id: text().references(() => workspace.id, { onDelete: "cascade" }),
-    name: text().notNull(),
-    description: text().notNull().default(""),
-    revision: integer().notNull().default(1),
-    revoked_at: text(),
-    created_at: text()
-      .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
-  },
-  (table) => ({
-    ownerIdx: index("integration_definition_owner_idx").on(table.user_id, table.workspace_id),
-    workspaceIdx: index("integration_definition_workspace_idx").on(table.workspace_id),
-    revisionCheck: check("integration_definition_revision_check", sql`${table.revision} >= 1`),
-  }),
-);
-
-export const integrationDefinitionRevision = sqliteTable(
-  "integration_definition_revision",
-  {
-    definition_id: text()
-      .notNull()
-      .references(() => integrationDefinition.id, { onDelete: "cascade" }),
-    revision: integer().notNull(),
-    snapshot: text().notNull(),
-    created_at: text()
-      .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.definition_id, table.revision] }),
-    revisionCheck: check(
-      "integration_definition_revision_number_check",
-      sql`${table.revision} >= 1`,
-    ),
-    snapshotCheck: check(
-      "integration_definition_revision_snapshot_check",
-      sql`json_valid(${table.snapshot})`,
-    ),
-  }),
-);
 
 export const conversation = sqliteTable(
   "conversation",
@@ -1803,6 +1755,7 @@ export const source = sqliteTable(
     provider: text(),
     external_uri: text(),
     vector_id: text(),
+    search_revision: integer().notNull().default(1),
     metadata: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
     storage_key: text().unique(),
     mime_type: text(),
@@ -1826,6 +1779,95 @@ export const source = sqliteTable(
 );
 
 export type Source = typeof source.$inferSelect;
+
+export const sourceSearchDocument = sqliteTable(
+  "source_search_document",
+  {
+    id: text().primaryKey(),
+    source_id: text().notNull(),
+    source_revision: integer().notNull(),
+    user_id: integer().notNull(),
+    project_id: text(),
+    status: text({ enum: ["lexical", "active", "stale"] })
+      .notNull()
+      .default("lexical"),
+    target: text().notNull(),
+    lease_token: text(),
+    lease_expires_at: text(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    revisionIdx: uniqueIndex("source_search_document_revision_idx").on(
+      table.source_id,
+      table.source_revision,
+    ),
+    scopeIdx: index("source_search_document_scope_idx").on(table.project_id, table.status),
+    statusIdx: index("source_search_document_status_idx").on(table.status),
+    lifecycleCheck: check(
+      "source_search_document_lifecycle_check",
+      sql`${table.status} IN ('lexical', 'active', 'stale')`,
+    ),
+    revisionCheck: check(
+      "source_search_document_revision_check",
+      sql`${table.source_revision} > 0`,
+    ),
+  }),
+);
+
+export const sourceSearchChunk = sqliteTable(
+  "source_search_chunk",
+  {
+    id: text().primaryKey(),
+    document_id: text()
+      .notNull()
+      .references(() => sourceSearchDocument.id, { onDelete: "cascade" }),
+    chunk_index: integer().notNull(),
+    title: text().notNull(),
+    content: text().notNull(),
+  },
+  (table) => ({
+    documentIdx: index("source_search_chunk_document_idx").on(table.document_id),
+  }),
+);
+
+export const sourceKnowledgeSync = sqliteTable(
+  "source_knowledge_sync",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    project_id: text()
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    connection_id: text()
+      .notNull()
+      .references(() => providerConnection.id, { onDelete: "cascade" }),
+    recipe_id: text().notNull(),
+    integration_id: text().notNull(),
+    title: text().notNull(),
+    resources: text().notNull(),
+    status: text({ enum: ["active", "paused"] })
+      .notNull()
+      .default("active"),
+    interval_minutes: integer().notNull().default(60),
+    cursor: integer().notNull().default(0),
+    generation: integer().notNull().default(1),
+    next_sync_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+    last_successful_at: text(),
+    last_error: text(),
+    lease_token: text(),
+    lease_expires_at: text(),
+  },
+  (table) => ({
+    dueIdx: index("source_knowledge_sync_due_idx").on(table.status, table.next_sync_at),
+    projectIdx: index("source_knowledge_sync_project_idx").on(table.project_id),
+  }),
+);
 
 export const sourceCollection = sqliteTable(
   "source_collection",

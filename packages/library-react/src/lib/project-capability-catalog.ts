@@ -15,7 +15,6 @@ export interface ProjectCapabilityKindGroup {
 
 const KIND_LABELS: Record<CatalogueItemKind, string> = {
   connector: "Integrations",
-  integration: "Custom integrations",
   teammate: "Teammates",
   app: "Apps",
   recipe: "Automations",
@@ -23,18 +22,10 @@ const KIND_LABELS: Record<CatalogueItemKind, string> = {
   tool: "Tools",
 };
 
-const KIND_ORDER: CatalogueItemKind[] = [
-  "connector",
-  "integration",
-  "teammate",
-  "app",
-  "recipe",
-  "skill",
-  "tool",
-];
+const KIND_ORDER: CatalogueItemKind[] = ["connector", "teammate", "app", "recipe", "skill", "tool"];
 
 export function getProjectCapabilityKind(item: AssistantActionItem): ProjectCapabilityKind | null {
-  if (item.kind === "integration" || item.kind === "connector") {
+  if (item.kind === "connector") {
     return item.kind;
   }
 

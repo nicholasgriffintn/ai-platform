@@ -1,5 +1,7 @@
+import { isComposioConnectorSessionHandle } from "@ngriffin_uk/polychat-ai-integrations";
 import { mergeHumanInTheLoop } from "@ngriffin_uk/polychat-library-interactions";
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
+import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
 import {
   abortableDelay,
   canonicalJson,
@@ -7,7 +9,7 @@ import {
   generateId,
 } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { parseJsonRecordOrNull } from "@ngriffin_uk/polychat-utility-server/json";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ConnectorOperationApprovalRecord } from "~/modules/apps/infrastructure/ConnectorOperationApprovalRepository";
@@ -15,13 +17,11 @@ import { handleToolCalls } from "~/modules/chat/application/tools/execution";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import type { IUser, Message } from "~/types";
 
-import {
-  getConnectorApprovalReplayAdapter,
-  type ConnectorApprovalReplayAdapter,
-} from "./approval-replay-adapters";
+import { getRecipeConnectorAdapter } from "./connector-adapters";
 import type { StoredConnectorOperationCall } from "./connector-approval-authority";
 import { getConnectorArgumentDigest } from "./operation-approvals";
 
+const TOOL_NAME = "use_recipe_connector";
 const REPLAY_ERROR = "The stored connector action does not match the approved connector action";
 const CONCURRENT_RESULT_POLL_INTERVAL_MS = 50;
 const CONCURRENT_RESULT_TIMEOUT_MS = 1_000;
@@ -30,7 +30,7 @@ interface StoredToolCall {
   id: string;
   type: "function";
   function: {
-    name: string;
+    name: typeof TOOL_NAME;
     arguments: string;
   };
 }
@@ -68,7 +68,7 @@ function parseExecutionResult(
   if (
     !value ||
     value.role !== "tool" ||
-    value.name !== boundary.call.function.name ||
+    value.name !== TOOL_NAME ||
     typeof value.id !== "string" ||
     typeof value.content !== "string" ||
     typeof value.status !== "string" ||
@@ -79,7 +79,7 @@ function parseExecutionResult(
 
   return {
     role: "tool",
-    name: boundary.call.function.name,
+    name: TOOL_NAME,
     id: value.id,
     content: value.content,
     status: value.status,
@@ -98,7 +98,7 @@ function serialiseExecutionResult(message: Message): Record<string, unknown> {
 function buildIndeterminateResult(boundary: ReplayBoundary, approvalId: string): Message {
   return {
     role: "tool",
-    name: boundary.call.function.name,
+    name: TOOL_NAME,
     id: `connector_result_${approvalId}`,
     content:
       "The connector action may have completed, but its outcome could not be confirmed. It was not retried. Check the connected service before taking another action.",
@@ -140,11 +140,53 @@ function failCancelled(): never {
   );
 }
 
-function parseStoredToolCall(
-  value: unknown,
-  expectedId: string,
-  adapter: ConnectorApprovalReplayAdapter,
-): StoredToolCall | null {
+function parseStoredArguments(value: unknown): Record<string, unknown> | null {
+  if (isRecord(value)) {
+    return value;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const parsed = safeParseJson<unknown>(value);
+
+  return isRecord(parsed) ? parsed : null;
+}
+
+function parseConnectorCallArguments(value: unknown): StoredConnectorOperationCall | null {
+  const parsed = parseStoredArguments(value);
+
+  if (!parsed) {
+    return null;
+  }
+
+  const provider = recipeConnectorProviderSchema.safeParse(parsed.provider);
+  const adapter = provider.success ? getRecipeConnectorAdapter(provider.data) : undefined;
+  const sessionId = parsed.sessionId;
+
+  if (
+    !provider.success ||
+    !adapter ||
+    typeof parsed.operation !== "string" ||
+    !parsed.operation.trim() ||
+    (adapter.provider.auth.authType === "composio" &&
+      !isComposioConnectorSessionHandle(sessionId)) ||
+    (adapter.provider.auth.authType === "api_key" && sessionId !== undefined) ||
+    (parsed.params !== undefined && !isRecord(parsed.params))
+  ) {
+    return null;
+  }
+
+  return {
+    provider: provider.data,
+    operation: parsed.operation,
+    ...(typeof sessionId === "string" ? { sessionId } : {}),
+    ...(isRecord(parsed.params) ? { params: parsed.params } : {}),
+  };
+}
+
+function parseStoredToolCall(value: unknown, expectedId: string): StoredToolCall | null {
   if (!isRecord(value) || value.id !== expectedId || value.type !== "function") {
     return null;
   }
@@ -153,9 +195,9 @@ function parseStoredToolCall(
 
   if (
     !isRecord(fn) ||
-    fn.name !== adapter.toolName ||
+    fn.name !== TOOL_NAME ||
     typeof fn.arguments !== "string" ||
-    !adapter.parseCall(fn.arguments)
+    !parseConnectorCallArguments(fn.arguments)
   ) {
     return null;
   }
@@ -163,15 +205,11 @@ function parseStoredToolCall(
   return {
     id: expectedId,
     type: "function",
-    function: { name: adapter.toolName, arguments: fn.arguments },
+    function: { name: TOOL_NAME, arguments: fn.arguments },
   };
 }
 
-function findReplayBoundary(
-  messages: Message[],
-  approvalId: string,
-  adapter: ConnectorApprovalReplayAdapter,
-): ReplayBoundary {
+function findReplayBoundary(messages: Message[], approvalId: string): ReplayBoundary {
   let pendingIndex = -1;
 
   for (let index = messages.length - 1; index >= 0; index--) {
@@ -179,7 +217,7 @@ function findReplayBoundary(
 
     if (
       message.role === "tool" &&
-      message.name === adapter.toolName &&
+      message.name === TOOL_NAME &&
       message.status === "pending" &&
       message.data?.approvalRequired === true &&
       message.data?.approvalId === approvalId
@@ -209,7 +247,7 @@ function findReplayBoundary(
     }
 
     for (const item of candidate.tool_calls) {
-      call = parseStoredToolCall(item, pending.tool_call_id, adapter);
+      call = parseStoredToolCall(item, pending.tool_call_id);
       if (call) {
         break;
       }
@@ -224,13 +262,13 @@ function findReplayBoundary(
     failReplay();
   }
 
-  const callArguments = adapter.parseCall(call.function.arguments);
+  const callArguments = parseConnectorCallArguments(call.function.arguments);
 
   if (!callArguments) {
     failReplay();
   }
 
-  const pendingArguments = parseJsonRecordOrNull(pending.tool_call_arguments);
+  const pendingArguments = parseStoredArguments(pending.tool_call_arguments);
 
   if (pending.tool_call_arguments !== undefined && !pendingArguments) {
     failReplay();
@@ -255,7 +293,7 @@ function findTerminalResult(messages: Message[], boundary: ReplayBoundary): Mess
     .find(
       (message) =>
         message.role === "tool" &&
-        message.name === boundary.call.function.name &&
+        message.name === TOOL_NAME &&
         message.tool_call_id === boundary.toolCallId &&
         message.status !== "pending",
     );
@@ -335,12 +373,16 @@ export async function replayApprovedConnectorOperation(params: {
   signal?: AbortSignal;
 }): Promise<ApprovedConnectorReplay> {
   const { approval, context, conversationManager, user } = params;
-  const adapter = getConnectorApprovalReplayAdapter(approval.provider);
+  const parsedProvider = recipeConnectorProviderSchema.safeParse(approval.provider);
+  const adapter = parsedProvider.success
+    ? getRecipeConnectorAdapter(parsedProvider.data)
+    : undefined;
 
   if (
     context.user?.id !== user.id ||
     !ownsResource(user.id, approval.userId) ||
-    !adapter ||
+    !parsedProvider.success ||
+    adapter?.approval?.mode !== "stored-action" ||
     !approval.operation ||
     !approval.runId ||
     !approval.completionId ||
@@ -356,7 +398,7 @@ export async function replayApprovedConnectorOperation(params: {
   const messages = await conversationManager.getAllMessages(approval.completionId, {
     includeArchived: false,
   });
-  const boundary = findReplayBoundary(messages, approval.id, adapter);
+  const boundary = findReplayBoundary(messages, approval.id);
   const run = await context.repositories.conversationRuns.getById(approval.runId);
 
   if (
@@ -378,7 +420,7 @@ export async function replayApprovedConnectorOperation(params: {
       storedResult ??
       (await conversationManager.add(approval.completionId, {
         role: "tool",
-        name: boundary.call.function.name,
+        name: TOOL_NAME,
         content: "The user rejected this connector action.",
         status: "resolved",
         data: {
@@ -389,7 +431,7 @@ export async function replayApprovedConnectorOperation(params: {
             type: "approval",
             status: "resolved",
             interactionId: boundary.toolCallId,
-            toolName: boundary.call.function.name,
+            toolName: TOOL_NAME,
             resolution: "rejected",
             requires_user_action: false,
           }),
@@ -407,7 +449,7 @@ export async function replayApprovedConnectorOperation(params: {
   let authority;
 
   try {
-    authority = await adapter.resolveAuthority({
+    authority = await adapter.approval.resolveAuthority({
       approval,
       call: boundary.callArguments,
       context,
@@ -418,7 +460,7 @@ export async function replayApprovedConnectorOperation(params: {
   }
 
   const argumentDigest = await getConnectorArgumentDigest({
-    provider: approval.provider,
+    provider: parsedProvider.data,
     operation: approval.operation,
     arguments: authority.arguments,
   });
@@ -507,9 +549,9 @@ export async function replayApprovedConnectorOperation(params: {
         model: params.model,
         mode,
         date: new Date().toISOString().slice(0, 10),
-        approved_tools: [boundary.call.function.name],
+        approved_tools: [TOOL_NAME],
         connector_approval_id: approval.id,
-        tool_permissions_map: { [boundary.call.function.name]: ["network", "read"] },
+        tool_permissions_map: { [TOOL_NAME]: ["network", "read"] },
         options: authority.requestOptions,
         ...(authority.teammateContextId
           ? { teammate_context_id: authority.teammateContextId }

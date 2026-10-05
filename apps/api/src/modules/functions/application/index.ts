@@ -18,6 +18,7 @@ import { call_api } from "./api_call";
 import { apply_edit_completion } from "./apply_edit";
 import { audit_evidence } from "./audit_evidence";
 import { build_site } from "./build_site";
+import { configure_knowledge_sync } from "./configure_knowledge_sync";
 import { run_council, select_council_members } from "./council";
 import { create_automation } from "./create_automation";
 import { create_note } from "./create_note";
@@ -30,6 +31,7 @@ import { fill_in_middle_completion } from "./fill_in_middle";
 import { generate_pattern } from "./generate_pattern";
 import { get_note } from "./get_note";
 import { complete_goal, set_goal } from "./goal";
+import { grade_writing } from "./grade_writing";
 import { get_hacker_news_stories } from "./hacker_news";
 import { hostedMcpApproval } from "./hosted_mcp_approval";
 import { request_approval, ask_user } from "./human_in_the_loop";
@@ -63,7 +65,6 @@ import { second_opinion } from "./second_opinion";
 import { create_speech } from "./speech";
 import { get_task_status } from "./tasks";
 import { use_computer } from "./use_computer";
-import { use_mcp_integration } from "./use_mcp_integration";
 import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
@@ -73,7 +74,9 @@ import { write_document } from "./write_document";
 const permissionChecker = new PermissionChecker();
 
 const functionDefinitions: ApiToolDefinition[] = [
+  configure_knowledge_sync,
   get_weather,
+  grade_writing,
   decide,
   audit_evidence,
   build_site,
@@ -102,7 +105,6 @@ const functionDefinitions: ApiToolDefinition[] = [
   get_note,
   extract_text_from_document,
   use_recipe_connector,
-  use_mcp_integration,
   get_recipe,
   configure_recipe,
   trigger_recipe,

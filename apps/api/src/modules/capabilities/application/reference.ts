@@ -3,9 +3,8 @@ import type { ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getRecipeById } from "~/modules/apps/application/recipes";
+import { getRecipeById } from "~/modules/apps/application/recipes/catalog";
 import { getExperienceCatalog } from "~/modules/experiences/application/config";
-import { requireIntegrationDefinition } from "~/modules/integrations/application/access";
 import { getSkillDefinition } from "~/modules/skills/application";
 import { canAccessTeammate } from "~/modules/teammates/application/access";
 
@@ -14,16 +13,6 @@ export async function validateCapabilityReference(
   capabilityId: string,
   context?: ServiceContext,
 ): Promise<void> {
-  if (kind === "integration") {
-    if (!context) {
-      throw new AssistantError("Integration scope is required", ErrorType.FORBIDDEN, 403);
-    }
-
-    await requireIntegrationDefinition(context, capabilityId);
-
-    return;
-  }
-
   if (kind === "connector") {
     if (!getConnectorProviderConfig(capabilityId)) {
       throw new AssistantError("Unknown integration", ErrorType.NOT_FOUND, 404);

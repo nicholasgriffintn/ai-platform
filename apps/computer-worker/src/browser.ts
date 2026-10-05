@@ -229,22 +229,45 @@ async function readObservation(sandbox: ComputerSandbox): Promise<Record<string,
   };
 }
 
-async function readBrowserPage(sandbox: ComputerSandbox): Promise<Record<string, unknown>> {
+async function readPageScript(
+  sandbox: ComputerSandbox,
+  mode: "text" | "elements",
+): Promise<Record<string, unknown>> {
   const result = await sandbox
-    .exec("python3 /usr/local/bin/read-page", { timeout: 15_000 })
+    .exec(`python3 /usr/local/bin/read-page ${mode}`, { timeout: 15_000 })
     .catch(() => null);
 
   if (!result?.success) {
     throw new Error(result?.stderr || "Could not read the page");
   }
 
-  const parsed = JSON.parse(result.stdout) as { title?: string; text?: string; error?: string };
+  const parsed = JSON.parse(result.stdout) as Record<string, unknown>;
 
-  if (parsed.error) {
+  if (typeof parsed.error === "string") {
     throw new Error(parsed.error);
   }
 
-  return { title: parsed.title || "Hosted computer", text: parsed.text ?? "" };
+  return parsed;
+}
+
+async function readBrowserPage(sandbox: ComputerSandbox): Promise<Record<string, unknown>> {
+  const parsed = await readPageScript(sandbox, "text");
+
+  return {
+    title: typeof parsed.title === "string" && parsed.title ? parsed.title : "Hosted computer",
+    text: typeof parsed.text === "string" ? parsed.text : "",
+  };
+}
+
+async function readBrowserElements(sandbox: ComputerSandbox): Promise<Record<string, unknown>> {
+  const parsed = await readPageScript(sandbox, "elements");
+
+  return {
+    title: typeof parsed.title === "string" && parsed.title ? parsed.title : "Hosted computer",
+    url: typeof parsed.url === "string" ? parsed.url : "",
+    text: typeof parsed.text === "string" ? parsed.text : "",
+    elements: Array.isArray(parsed.elements) ? parsed.elements : [],
+  };
 }
 
 export async function inputComputer(
@@ -261,6 +284,10 @@ export async function inputComputer(
 
   if (input.type === "read") {
     return readBrowserPage(sandbox);
+  }
+
+  if (input.type === "elements") {
+    return readBrowserElements(sandbox);
   }
 
   let command: string;

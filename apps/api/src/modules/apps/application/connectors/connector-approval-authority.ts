@@ -1,10 +1,13 @@
-import type { RecipeChatRequestOptions } from "@ngriffin_uk/polychat-schemas";
+import type {
+  RecipeChatRequestOptions,
+  RecipeConnectorProvider,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ConnectorOperationApprovalRecord } from "~/modules/apps/infrastructure/ConnectorOperationApprovalRepository";
 
 export interface StoredConnectorOperationCall {
-  provider: string;
+  provider: RecipeConnectorProvider;
   operation: string;
   params?: Record<string, unknown>;
   sessionId?: string;

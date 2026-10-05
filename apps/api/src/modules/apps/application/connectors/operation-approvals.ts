@@ -1,6 +1,6 @@
 import { connectorOperationRequiresApproval } from "@ngriffin_uk/polychat-ai-integrations";
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
-import { recipeConnectorProviderSchema } from "@ngriffin_uk/polychat-schemas";
+import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import { canonicalJson, isDeadlinePassed } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -86,7 +86,7 @@ function toConnectorOperationApprovalView(
 }
 
 export async function getConnectorArgumentDigest(params: {
-  provider: string;
+  provider: RecipeConnectorProvider;
   operation: string;
   arguments: Record<string, unknown>;
 }): Promise<string> {
@@ -96,7 +96,7 @@ export async function getConnectorArgumentDigest(params: {
 export async function authoriseConnectorOperation(params: {
   context: ServiceContext;
   userId: number;
-  provider: string;
+  provider: RecipeConnectorProvider;
   operation: string;
   arguments: Record<string, unknown>;
   connectedAccountId?: string;
@@ -105,9 +105,7 @@ export async function authoriseConnectorOperation(params: {
   scope: ConnectorRunScope;
   approvalId?: string;
 }): Promise<ConnectorOperationApprovalDecision> {
-  const provider = recipeConnectorProviderSchema.safeParse(params.provider);
-
-  if (provider.success && !connectorOperationRequiresApproval(provider.data, params.operation)) {
+  if (!connectorOperationRequiresApproval(params.provider, params.operation)) {
     return { required: false, approved: true };
   }
 

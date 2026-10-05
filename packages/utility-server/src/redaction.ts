@@ -65,18 +65,9 @@ function redactString(value: string, sensitiveValue?: string): string {
     );
 }
 
-function redactValue(
-  value: unknown,
-  seen: WeakSet<object>,
-  sensitiveValue?: string,
-  knownSecretOnly = false,
-): unknown {
+function redactValue(value: unknown, seen: WeakSet<object>, sensitiveValue?: string): unknown {
   if (typeof value === "string") {
-    return knownSecretOnly
-      ? sensitiveValue
-        ? value.replaceAll(sensitiveValue, REDACTED)
-        : value
-      : redactString(value, sensitiveValue);
+    return redactString(value, sensitiveValue);
   }
 
   if (!value || typeof value !== "object") {
@@ -89,7 +80,7 @@ function redactValue(
 
   if (Array.isArray(value)) {
     seen.add(value);
-    const redacted = value.map((item) => redactValue(item, seen, sensitiveValue, knownSecretOnly));
+    const redacted = value.map((item) => redactValue(item, seen, sensitiveValue));
 
     seen.delete(value);
 
@@ -104,13 +95,9 @@ function redactValue(
   const redacted: Record<string, unknown> = {};
 
   for (const [key, item] of Object.entries(value)) {
-    const safeKey =
-      knownSecretOnly && sensitiveValue ? key.replaceAll(sensitiveValue, REDACTED) : key;
-
-    redacted[safeKey] =
-      !knownSecretOnly && SENSITIVE_OBJECT_KEY_PATTERN.test(key)
-        ? REDACTED
-        : redactValue(item, seen, sensitiveValue, knownSecretOnly);
+    redacted[key] = SENSITIVE_OBJECT_KEY_PATTERN.test(key)
+      ? REDACTED
+      : redactValue(item, seen, sensitiveValue);
   }
 
   seen.delete(value);
@@ -120,10 +107,6 @@ function redactValue(
 
 export function redactSensitiveTokens<T>(value: T, sensitiveValue?: string): T {
   return redactValue(value, new WeakSet(), sensitiveValue) as T;
-}
-
-export function redactKnownSecret(value: unknown, sensitiveValue?: string): unknown {
-  return redactValue(value, new WeakSet(), sensitiveValue, true);
 }
 
 export function redactSensitiveUrl(value: string): string {

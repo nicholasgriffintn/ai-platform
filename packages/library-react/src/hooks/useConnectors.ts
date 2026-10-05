@@ -2,7 +2,6 @@ import {
   disconnectRecipeConnector,
   listRecipeConnectorAccounts,
   listRecipeConnectors,
-  listConnectorGrantOperations,
   startRecipeConnector,
   storeRecipeConnectorApiKey,
   updateRecipeConnectorAccount,
@@ -79,17 +78,6 @@ export function useRecipeConnectorAccounts(provider: RecipeConnectorProvider) {
     queryFn: () => listRecipeConnectorAccounts(provider),
     enabled: isAuthenticated,
     staleTime: 30 * 1000,
-  });
-}
-
-export function useConnectorGrantOperations(provider: RecipeConnectorProvider) {
-  const canAccessProFeatures = useCanAccessProFeatures();
-
-  return useQuery({
-    queryKey: [...RECIPE_CONNECTORS_QUERY_KEY, provider, "operations"],
-    queryFn: () => listConnectorGrantOperations(provider),
-    enabled: canAccessProFeatures,
-    staleTime: 60_000,
   });
 }
 
