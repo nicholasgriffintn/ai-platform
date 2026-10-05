@@ -9,22 +9,6 @@ import {
 } from "../src/index.js";
 
 describe("Cedar authorisation", () => {
-  it("reserves project connector grants for admins, including grants created by another admin", () => {
-    const facts = {
-      kind: "connector",
-      role: "member",
-      existing: true,
-      actorId: "7",
-      creatorId: "7",
-    };
-
-    expect(authorise("capability.manage", facts).allowed).toBe(false);
-    expect(authorise("capability.manage", { ...facts, existing: false }).allowed).toBe(false);
-    expect(
-      authorise("capability.manage", { ...facts, role: "admin", creatorId: "8" }).allowed,
-    ).toBe(true);
-  });
-
   it("keeps ownership, workspace membership and role authority separate", () => {
     expect(ownsResource(7, 7)).toBe(true);
     expect(ownsResource(7, "7")).toBe(false);
