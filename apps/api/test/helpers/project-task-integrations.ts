@@ -4,9 +4,8 @@ import type { D1Database } from "@cloudflare/workers-types";
 import { Miniflare } from "miniflare";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import type { IUser } from "~/types";
+import type { IEnv, IUser } from "~/types";
 
-import { databaseTestEnvironment } from "./environment";
 import { applyMigrations } from "./migrations.mjs";
 
 export const integrationTestUser: IUser = {
@@ -56,7 +55,27 @@ export async function createIntegrationTestContext() {
       "INSERT INTO project (id, workspace_id, name, created_by) VALUES ('project-1', 'workspace-1', 'Product', 7)",
     )
     .run();
-  const env = databaseTestEnvironment(database);
+  const env: IEnv = {
+    DB: database,
+    get AI(): never {
+      throw new Error("Unexpected AI binding access");
+    },
+    get ANALYTICS(): never {
+      throw new Error("Unexpected analytics binding access");
+    },
+    get VECTOR_DB(): never {
+      throw new Error("Unexpected vector binding access");
+    },
+    get CACHE(): never {
+      throw new Error("Unexpected cache binding access");
+    },
+    ASSETS_BUCKET: undefined,
+    PRIVATE_ASSETS_BUCKET: undefined,
+    PRIVATE_ASSETS_BUCKET_NAME: "test-private-assets",
+    ACCOUNT_ID: "test-account",
+    ASSETS_BUCKET_ACCESS_KEY_ID: "",
+    ASSETS_BUCKET_SECRET_ACCESS_KEY: "",
+  };
 
   Object.defineProperty(env, "CACHE", { value: undefined });
   const context = createServiceContext({
