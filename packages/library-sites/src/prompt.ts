@@ -84,6 +84,9 @@ export function buildSitePlanGuidance(plan: SitePlan): string {
     lines.push(
       "The result needs interaction: seed page state, bind Input, Select, Switch and Tabs with $bindState, gate panels with visible, drive lists with repeat and Table rows from $state, and wire Buttons and Forms with on actions so filters, tabs and additions work.",
     );
+    lines.push(
+      "For shared records that must survive later visits, declare project.collections: a map of short ids to {label, fields: {fieldName: {type: 'string'|'number'|'boolean', required: boolean}}, maxRecords: 1000}. Bind each list with project.dataBindings: {bindingId: {kind: 'collection', collectionId, pageId, statePath: '/records'}}. Storage is enabled explicitly in Sites. Use createRecord with {collectionId, values}, updateRecord with {collectionId, recordId, expectedRecordRevision, values}, deleteRecord with {collectionId, recordId, expectedRecordRevision}, and refreshData. Persisted list items include id and revision. Use $form and $item expressions for values. Do not invent source ids or connector credentials. Keep transient filters in local page state.",
+    );
   }
 
   if (plan.theme.mode === "dark") {

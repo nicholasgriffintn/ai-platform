@@ -197,3 +197,28 @@ export type SiteCollection = z.infer<typeof siteCollectionSchema>;
 export type SiteCollectionRecord = z.infer<typeof siteCollectionRecordSchema>;
 export type SiteDataAction = z.infer<typeof siteDataActionSchema>;
 export type SiteDataRequest = z.infer<typeof siteDataRequestSchema>;
+
+const sitePreviewActionEnvelope = {
+  channel: z.literal("polychat-site-preview"),
+  frameId: z.string().min(1).max(200),
+  requestId: z.string().min(1).max(100),
+};
+
+export const sitePreviewDataActionMessageSchema = z
+  .object({
+    ...sitePreviewActionEnvelope,
+    type: z.literal("data-action"),
+    action: siteDataActionSchema,
+  })
+  .strict();
+
+export const sitePreviewDataResultMessageSchema = z
+  .object({
+    ...sitePreviewActionEnvelope,
+    type: z.literal("data-action-result"),
+    success: z.boolean(),
+    error: z.string().max(1000).optional(),
+  })
+  .strict();
+
+export type SitePreviewDataActionMessage = z.infer<typeof sitePreviewDataActionMessageSchema>;

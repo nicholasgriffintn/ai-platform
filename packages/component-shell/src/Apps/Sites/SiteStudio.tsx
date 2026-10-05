@@ -21,6 +21,8 @@ import {
   useProject,
   useSiteGeneration,
   useSiteData,
+  useSiteDataAction,
+  useSiteStorage,
   useTrackEvent,
   SITES_QUERY_KEYS,
   type SiteGenerationState,
@@ -66,6 +68,7 @@ import { SiteHistory, type SiteRevisionPreview } from "./SiteHistory.js";
 import { SiteInspector } from "./SiteInspector.js";
 import { SitePlanSummary } from "./SitePlanSummary.js";
 import { SitePromptComposer } from "./SitePromptComposer.js";
+import { SiteSavedRecords } from "./SiteSavedRecords.js";
 import { SiteStarterPrompt } from "./SiteStarterPrompt.js";
 
 const VIEWPORT_ICONS = { desktop: Monitor, tablet: Tablet, mobile: Smartphone } as const;
@@ -131,6 +134,8 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   );
   const isBusy = !["idle", "done", "error"].includes(state.status);
   const siteData = useSiteData(state.site, !isBusy && !revisionPreview);
+  const dataAction = useSiteDataAction(state.site);
+  const storage = useSiteStorage(state.site);
   const savedId = state.site?.id;
   const repairQuality = state.quality;
   const hasDecisionTrace =
@@ -338,7 +343,15 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto px-4 py-4">
           {state.site && !isBusy && !revisionPreview && (
-            <SiteDataSources site={state.site} onSaved={load} />
+            <>
+              <SiteDataSources site={state.site} onSaved={load} />
+              <SiteSavedRecords
+                site={state.site}
+                data={siteData}
+                storage={storage}
+                disabled={isBusy}
+              />
+            </>
           )}
           {siteData.error && (
             <output role="alert" className="text-failure">
@@ -621,6 +634,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                   onSelect={handleSelectElement}
                   className="flex-1"
                   data={revisionPreview ? undefined : siteData.data?.bindings}
+                  onDataAction={revisionPreview || isBusy ? undefined : dataAction.mutateAsync}
                 />
                 {historyOpen && state.site && (
                   <SiteHistory

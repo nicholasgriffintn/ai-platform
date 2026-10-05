@@ -7,7 +7,7 @@ import {
   siteElementStyleClasses,
   type SiteScope,
 } from "@ngriffin_uk/polychat-library-sites";
-import type { SiteElement, SitePage } from "@ngriffin_uk/polychat-schemas";
+import type { SiteDataAction, SiteElement, SitePage } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { Component, Fragment, useMemo, type ErrorInfo, type ReactNode } from "react";
 
@@ -44,7 +44,7 @@ function buildElementProps(
   runtime: SiteRenderRuntime,
 ): Record<string, unknown> {
   const { props, bindings } = resolveElementProps(element.props, scope);
-  const handlers: Record<string, (payload?: unknown) => void> = {};
+  const handlers: Record<string, (payload?: unknown) => void | Promise<boolean>> = {};
 
   const boundPath = Object.values(bindings)[0];
 
@@ -61,7 +61,7 @@ function buildElementProps(
     const previous = handlers[handlerName];
 
     handlers[handlerName] = (payload) => {
-      previous?.(payload);
+      void previous?.(payload);
 
       return runtime.dispatch(binding, {
         ...scope,
@@ -144,13 +144,30 @@ function renderElement(
 export function SiteRenderer({
   page,
   boundState,
+  onDataAction,
 }: {
   page: SitePage;
   boundState?: Record<string, unknown>;
+  onDataAction?: (action: SiteDataAction) => Promise<unknown>;
 }) {
   const navigation = useSiteNavigation();
-  const runtime = useSiteRuntime(page, boundState, navigation?.navigate);
-  const scope = useMemo<SiteScope>(() => ({ state: runtime.state }), [runtime.state]);
+  const { runtime, actionError } = useSiteRuntime(
+    page,
+    boundState,
+    onDataAction,
+    navigation?.navigate,
+  );
+  const state = runtime.state;
+  const scope = useMemo<SiteScope>(() => ({ state }), [state]);
 
-  return <>{renderElement(page, page.root, scope, runtime, new Set())}</>;
+  return (
+    <>
+      {actionError && (
+        <output role="alert" className="block p-3 text-sm text-failure">
+          {actionError}
+        </output>
+      )}
+      {renderElement(page, page.root, scope, runtime, new Set())}
+    </>
+  );
 }

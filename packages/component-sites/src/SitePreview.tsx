@@ -1,5 +1,9 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
-import { listSitePages, type SiteProject } from "@ngriffin_uk/polychat-schemas";
+import {
+  listSitePages,
+  type SiteDataAction,
+  type SiteProject,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
 import { SiteFrame } from "./SiteFrame.js";
@@ -14,7 +18,6 @@ export type SitePreviewViewport = keyof typeof SITE_PREVIEW_VIEWPORTS;
 
 export interface SitePreviewProps {
   project: SiteProject;
-  data?: Record<string, unknown>;
   pageId?: string;
   viewport?: SitePreviewViewport;
   onNavigate?: (pageId: string) => void;
@@ -22,6 +25,8 @@ export interface SitePreviewProps {
   selectedKey?: string | null;
   onSelect?: (key: string | null) => void;
   className?: string;
+  data?: Record<string, unknown>;
+  onDataAction?: (action: SiteDataAction) => Promise<unknown>;
 }
 
 export function resolveSitePageId(project: SiteProject, pageId?: string): string | null {
@@ -41,7 +46,6 @@ export function findSitePageIdByPath(project: SiteProject, path: string): string
 
 export function SitePreview({
   project,
-  data,
   pageId,
   viewport = "desktop",
   onNavigate,
@@ -49,6 +53,8 @@ export function SitePreview({
   selectedKey = null,
   onSelect,
   className,
+  data,
+  onDataAction,
 }: SitePreviewProps) {
   const resolvedPageId = resolveSitePageId(project, pageId);
   const payload = useMemo(
@@ -84,6 +90,7 @@ export function SitePreview({
           title={`${project.title} preview`}
           onNavigate={handleNavigate}
           onSelect={onSelect}
+          onDataAction={onDataAction}
         />
       </div>
     </div>

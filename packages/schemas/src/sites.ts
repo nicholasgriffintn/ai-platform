@@ -174,6 +174,10 @@ export const SITE_ACTIONS = [
   "pushState",
   "removeState",
   "navigate",
+  "refreshData",
+  "createRecord",
+  "updateRecord",
+  "deleteRecord",
 ] as const;
 export const siteActionNameSchema = z.enum(SITE_ACTIONS);
 export type SiteActionName = z.infer<typeof siteActionNameSchema>;

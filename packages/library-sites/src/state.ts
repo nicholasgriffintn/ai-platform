@@ -1,4 +1,10 @@
-import type { SiteActionBinding, SiteElement, SiteVisibility } from "@ngriffin_uk/polychat-schemas";
+import {
+  siteDataActionSchema,
+  type SiteDataAction,
+  type SiteActionBinding,
+  type SiteElement,
+  type SiteVisibility,
+} from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 export type SiteState = Record<string, unknown>;
@@ -367,6 +373,8 @@ export function repeatItemKey(item: unknown, index: number, key?: string): strin
 }
 
 export interface SiteActionResult {
+  effect?: SiteDataAction;
+  error?: string;
   state: SiteState;
   navigate?: string;
 }
@@ -382,6 +390,17 @@ export function runSiteAction(binding: SiteActionBinding, scope: SiteScope): Sit
   const statePath = readPath(params, "statePath");
 
   switch (binding.action) {
+    case "refreshData":
+    case "createRecord":
+    case "updateRecord":
+    case "deleteRecord": {
+      const effect = siteDataActionSchema.safeParse({ ...params, action: binding.action });
+
+      return effect.success
+        ? { state: scope.state, effect: effect.data }
+        : { state: scope.state, error: "The saved data action is invalid" };
+    }
+
     case "setState":
       return statePath
         ? { state: setStatePath(scope.state, statePath, params.value) }
