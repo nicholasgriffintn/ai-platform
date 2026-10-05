@@ -9,7 +9,9 @@ import {
 import type { SiteComponentType } from "../catalog.js";
 import { siteThemeClasses, SITE_EXPRESSION_CSS } from "../element-style.js";
 import { buildSiteGoogleFontsUrl, renderSiteThemeCss } from "../theme.js";
+import { renderSiteDataModule } from "./data.js";
 import { renderSiteStateModule } from "./expressions.js";
+import { renderFormValuesModule } from "./form-values.js";
 import { renderPageFile } from "./page.js";
 import {
   renderIconModule,
@@ -443,11 +445,16 @@ export function generateSiteFiles(
   const used = new Set<SiteComponentType>();
   const pageFiles: SiteFile[] = [];
   let usesState = false;
+  let usesData = false;
 
-  for (const { page } of pages) {
-    const rendered = renderPageFile(page, target);
+  for (const { id, page } of pages) {
+    const bindings = Object.fromEntries(
+      Object.entries(project.dataBindings ?? {}).filter(([, binding]) => binding.pageId === id),
+    );
+    const rendered = renderPageFile(page, target, bindings);
 
     usesState = usesState || rendered.usesState;
+    usesData = usesData || rendered.usesData;
     pageFiles.push({ path: rendered.path, content: rendered.content });
 
     for (const component of rendered.components) {
@@ -466,7 +473,13 @@ export function generateSiteFiles(
     { path: "tsconfig.json", content: `${JSON.stringify(tsconfig(target), null, 2)}\n` },
     ...frameworkFiles(project, target),
     ...pageFiles,
-    { path: sourcePath(target, "lib/utils.ts"), content: renderUtilsModule() },
+    { path: sourcePath(target, "lib/utils.ts"), content: renderUtilsModule(usesData) },
+    ...(used.has("Form")
+      ? [{ path: sourcePath(target, "lib/form-values.ts"), content: renderFormValuesModule() }]
+      : []),
+    ...(usesData
+      ? [{ path: sourcePath(target, "lib/site-data.ts"), content: renderSiteDataModule() }]
+      : []),
     ...(usesState
       ? [
           {
