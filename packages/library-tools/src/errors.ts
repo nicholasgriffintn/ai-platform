@@ -4,7 +4,8 @@ export type ToolErrorCode =
   | "unknown_tool"
   | "invalid_input"
   | "invalid_schema"
-  | "missing_permissions";
+  | "missing_permissions"
+  | "missing_effects";
 
 export interface ToolValidationIssue {
   path: string;

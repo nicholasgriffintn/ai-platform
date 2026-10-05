@@ -29,6 +29,7 @@ export const run_prediction: FunctionToolDescriptor = {
     "Run a model from Replicate's catalogue and keep the result in Files. Use it when a specific Replicate model does the job better than the built-in image, video or music tools. It runs on the user's own Replicate key and refuses when they have not configured one.",
   type: "byok",
   permissions: ["network", "write"],
+  effects: { effectClass: "draft" },
   intentEvidence: (input) => ({
     operation: "run_prediction",
     modelId: input.model_id,

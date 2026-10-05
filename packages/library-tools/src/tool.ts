@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { declareTool, type ToolDeclaration } from "./declaration.js";
+import type { ToolEffects } from "./effects.js";
 import { flattenObjectRootSchema } from "./json-schema.js";
 
 export interface ToolResult {
@@ -53,6 +54,7 @@ export interface ToolDefinition<
   maxIdenticalCalls?: number;
   companionTools?: readonly string[];
   intentEvidence?: (input: TInput) => unknown;
+  effects?: ToolEffects<TInput>;
 }
 
 export type ToolDescriptor<

@@ -1,6 +1,7 @@
 import {
   createToolCatalogue,
   isToolError,
+  requireToolEffects,
   validateToolInput,
   type ToolCatalogue,
 } from "@ngriffin_uk/polychat-library-tools";
@@ -145,7 +146,9 @@ const functionDefinitions: ApiToolDefinition[] = [
 export type RegisteredFunctionTool = ApiToolDefinition;
 
 export const functionToolCatalogue: ToolCatalogue<RegisteredFunctionTool> = createToolCatalogue(
-  functionDefinitions.filter((fn): fn is RegisteredFunctionTool => Boolean(fn)),
+  functionDefinitions
+    .filter((fn): fn is RegisteredFunctionTool => Boolean(fn))
+    .map((fn) => ({ ...fn, effects: requireToolEffects(fn.name, fn.effects) })),
 );
 
 export const listFunctionTools = (

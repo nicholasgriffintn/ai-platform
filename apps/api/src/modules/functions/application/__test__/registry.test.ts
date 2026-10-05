@@ -1,14 +1,55 @@
+import {
+  resolveToolDestination,
+  resolveToolEffectClass,
+} from "@ngriffin_uk/polychat-library-tools";
 import { CAPABILITY_DISCOVERY_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 import z from "zod/v4";
 
-import { expandFunctionToolNames, listFunctionTools } from "~/modules/functions/application";
+import {
+  expandFunctionToolNames,
+  listFunctionTools,
+  resolveFunctionTool,
+} from "~/modules/functions/application";
 import {
   resolveEnabledFunctionToolNames,
   resolveRequestFunctionToolNames,
 } from "~/modules/functions/application/availability";
 
 describe("functions tool registry", () => {
+  it("classifies external calls by what they change and where", () => {
+    const callApi = resolveFunctionTool("call_api");
+    const connector = resolveFunctionTool("use_recipe_connector");
+
+    expect(resolveToolEffectClass(callApi.effects, { url: "https://api.example.com/x" })).toBe(
+      "read",
+    );
+    expect(
+      resolveToolEffectClass(callApi.effects, {
+        url: "https://api.example.com/x",
+        method: "delete",
+      }),
+    ).toBe("destructive");
+    expect(
+      resolveToolEffectClass(callApi.effects, {
+        url: "https://api.example.com",
+        request_type: "graphql",
+      }),
+    ).toBe("write");
+    expect(resolveToolDestination(callApi.effects, { url: "https://api.example.com/x?y=1" })).toBe(
+      "https://api.example.com",
+    );
+    expect(
+      resolveToolEffectClass(connector.effects, { provider: "github", useCase: "find PRs" }),
+    ).toBe("read");
+    expect(
+      resolveToolEffectClass(connector.effects, {
+        provider: "github",
+        operation: "GITHUB_MERGE_PR",
+      }),
+    ).toBe("write");
+  });
+
   it("keeps Composio operations out of the global function registry", () => {
     const names = listFunctionTools().map((tool) => tool.name);
 

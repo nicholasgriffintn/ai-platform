@@ -9,5 +9,6 @@ export const load_skill: FunctionToolDescriptor = {
   type: "normal",
   maxIdenticalCalls: 1,
   permissions: ["read"],
+  effects: { effectClass: "read" },
   inputSchema: loadSkillInputSchema,
 };

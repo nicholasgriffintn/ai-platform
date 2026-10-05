@@ -8,6 +8,7 @@ export const get_hacker_news_stories: FunctionToolDescriptor = {
     "Retrieve the current top stories from the Hacker News front page as titles and links. Returns data only; interpret it yourself.",
   type: "normal",
   permissions: ["read"],
+  effects: { effectClass: "read" },
   inputSchema: z.object({
     count: z
       .number()

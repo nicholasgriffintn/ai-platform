@@ -1,4 +1,4 @@
-import { requireToolPermissions } from "@ngriffin_uk/polychat-library-tools";
+import { requireToolEffects, requireToolPermissions } from "@ngriffin_uk/polychat-library-tools";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
 import { analyse_article } from "./analyse_article";
@@ -138,6 +138,7 @@ const descriptors: FunctionToolDescriptor[] = [
 export const functionToolDescriptors: FunctionToolDescriptor[] = descriptors.map((descriptor) => ({
   ...descriptor,
   permissions: requireToolPermissions(descriptor.name, descriptor.permissions),
+  effects: requireToolEffects(descriptor.name, descriptor.effects),
 }));
 
 export function applyConnectorScope<T extends FunctionToolDescriptor>(

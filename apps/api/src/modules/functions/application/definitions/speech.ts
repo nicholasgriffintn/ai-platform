@@ -46,4 +46,5 @@ export const create_speech: FunctionToolDescriptor = {
   }),
   type: "byok",
   permissions: ["network"],
+  effects: { effectClass: "draft" },
 };

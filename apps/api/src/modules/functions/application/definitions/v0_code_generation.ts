@@ -26,4 +26,5 @@ export const v0_code_generation: FunctionToolDescriptor = {
   }),
   type: "byok",
   permissions: ["network"],
+  effects: { effectClass: "read" },
 };
