@@ -27,9 +27,9 @@ Do not duplicate or inline real keys in docs.
 ## Optional integrations
 
 - **Embeddings:** use `EMBEDDING_SCOPE_SECRET` and keep credentials stable when vectors are populated.
-- **Telemetry:** set `OTEL_EXPORTER_OTLP_ENDPOINT` to the public HTTPS collector base URL, including any tenant path. Store collector credentials in `OTEL_EXPORTER_OTLP_HEADERS` as percent-encoded header pairs; use `OTEL_SERVICE_NAME` for the resource name. Pass the Worker background context or explicitly flush telemetry before the host finishes. Native OTLP excludes conversation content and personal identity.
 - **Connectors:** configure Composio keying, webhook signature, and callback URLs in the Composio guide.
 - **Coding / training workers:** keep API authority, GitHub App tokens, and worker tokens separate.
+- **Engineering intake:** apply migration `0061_project_task_integrations` before deploying the API. Configure `TASK_QUEUE`, GitHub App issue and pull-request read permissions, and pull-request write permission for approved publication. Set a non-empty GitHub App webhook secret and subscribe `/webhooks/github` to pull-request events for automatic reviews.
 
 ## Data writes and settings
 

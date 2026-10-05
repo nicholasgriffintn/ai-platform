@@ -26,6 +26,7 @@ import z from "zod/v4";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { StorageService } from "~/infrastructure/storage";
 import { getPrivateFileResponse, readPrivateFile } from "~/infrastructure/storage/read-resource";
+import documentCollaboration from "~/modules/documents/api/collaboration";
 import { formatDocument, redescribeDocument } from "~/modules/documents/application";
 import {
   createOutput,
@@ -43,6 +44,8 @@ import {
 } from "~/modules/outputs/application";
 
 const app = new Hono();
+
+app.route("/", documentCollaboration);
 const outputParams = z.object({ outputId: z.string().min(1) });
 const outputRevisionParams = outputParams.extend({
   revision: z.coerce.number().int().positive(),

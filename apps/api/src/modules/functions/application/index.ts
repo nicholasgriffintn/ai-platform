@@ -29,6 +29,7 @@ import { discover_capabilities } from "./discover_capabilities";
 import { extract_content } from "./extract_content";
 import { fill_in_middle_completion } from "./fill_in_middle";
 import { generate_pattern } from "./generate_pattern";
+import { get_document } from "./get_document";
 import { get_note } from "./get_note";
 import { complete_goal, set_goal } from "./goal";
 import { grade_writing } from "./grade_writing";
@@ -38,7 +39,7 @@ import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
-import { search_memories, store_memory } from "./memory";
+import { search_memories, store_memory, read_memory_document } from "./memory";
 import { messageParent } from "./message-parent";
 import { metaTools } from "./meta";
 import { create_music } from "./music";
@@ -88,6 +89,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   apply_edit_completion,
   web_search,
   write_document,
+  get_document,
   create_qr_code,
   search_pashi_tools,
   run_pashi_tools,
@@ -96,6 +98,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   search_documents,
   extract_content,
   search_memories,
+  read_memory_document,
   store_memory,
   analyse_article,
   create_automation,

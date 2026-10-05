@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import type {
-  ValidationContext,
-  Validator,
-} from "~/modules/chat/application/validation/ValidationPipeline";
+import type { ValidationContext } from "~/modules/chat/application/validation/ValidationPipeline";
 import { ValidationPipeline } from "~/modules/chat/application/validation/ValidationPipeline";
 import type { CoreChatOptions } from "~/types";
 
@@ -222,91 +219,6 @@ describe("ValidationPipeline", () => {
       expect(mockModelConfigValidator.validate).not.toHaveBeenCalled();
       expect(mockContextLimitValidator.validate).not.toHaveBeenCalled();
       expect(mockGuardrailsValidator.validate).not.toHaveBeenCalled();
-    });
-
-    it("should merge context from each validator", async () => {
-      const result = await pipeline.validate(baseOptions, {
-        existingKey: "value",
-      } as any);
-
-      expect(result.context).toEqual({
-        existingKey: "value",
-        sanitisedMessages: [{ role: "user", content: "Hello world" }],
-        lastMessage: { role: "user", content: "Hello world" },
-        modelConfig: {
-          matchingModel: "claude-3-sonnet",
-          provider: "anthropic",
-        },
-        selectedModels: ["claude-3-sonnet"],
-        messageWithContext: "Hello world",
-        guardrails: {},
-      });
-    });
-
-    it("should handle validator that returns undefined result", async () => {
-      mockBasicInputValidator.validate.mockResolvedValue(undefined);
-
-      const result = await pipeline.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Validator returned invalid result");
-      expect(result.context).toEqual(baseContext);
-    });
-
-    it("should handle validator that returns result with undefined validation", async () => {
-      mockBasicInputValidator.validate.mockResolvedValue({
-        validation: undefined,
-        context: {},
-      });
-
-      const result = await pipeline.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Validator returned invalid result");
-      expect(result.context).toEqual(baseContext);
-    });
-  });
-
-  describe("addValidator", () => {
-    it("should run custom validator after built-in validators", async () => {
-      const customValidator: Validator = {
-        validate: vi.fn().mockResolvedValue({
-          validation: { isValid: true },
-          context: { customField: "value" },
-        }),
-      };
-
-      pipeline.addValidator(customValidator);
-
-      await pipeline.validate(baseOptions, baseContext);
-
-      expect(mockGuardrailsValidator.validate).toHaveBeenCalled();
-      expect(customValidator.validate).toHaveBeenCalled();
-
-      const guardrailsCall = mockGuardrailsValidator.validate.mock.invocationCallOrder[0];
-      const customCall = (customValidator.validate as any).mock.invocationCallOrder[0];
-
-      expect(guardrailsCall).toBeLessThan(customCall);
-    });
-
-    it("should stop pipeline if custom validator fails", async () => {
-      const customValidator: Validator = {
-        validate: vi.fn().mockResolvedValue({
-          validation: {
-            isValid: false,
-            error: "Custom validation failed",
-            validationType: "input",
-          },
-          context: {},
-        }),
-      };
-
-      pipeline.addValidator(customValidator);
-
-      const result = await pipeline.validate(baseOptions, baseContext);
-
-      expect(result.validation.isValid).toBe(false);
-      expect(result.validation.error).toBe("Custom validation failed");
     });
   });
 

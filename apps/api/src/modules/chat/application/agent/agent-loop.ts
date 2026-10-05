@@ -808,6 +808,7 @@ export async function runAgentLoop(
       captureRunMemories({
         env: params.env,
         completionId: params.completionId,
+        runId: params.runId,
         conversationManager: params.conversationManager,
         context: params.context,
         userSettings: params.userSettings,

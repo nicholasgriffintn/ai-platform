@@ -50,6 +50,7 @@ export * from "./hooks/usePets.js";
 export * from "./hooks/useProjectCapabilityCatalog.js";
 export * from "./hooks/useProjectConversationSources.js";
 export * from "./hooks/useProjectTasks.js";
+export * from "./hooks/useProjectTaskIntegrations.js";
 export * from "./hooks/useProjectWorkbenchControls.js";
 export * from "./hooks/useProjectWorkbenchEvidence.js";
 export * from "./hooks/useProjectWorkbenchPreferences.js";
@@ -257,3 +258,5 @@ export function useAnalytics(): SurfaceAnalytics {
 
 export * from "./hooks/useBrowserSession.js";
 export * from "./hooks/useKnowledgeSyncs.js";
+export * from "./hooks/useChannels.js";
+export * from "./hooks/useDocumentCollaboration.js";

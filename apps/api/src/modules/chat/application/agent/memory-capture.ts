@@ -1,3 +1,4 @@
+import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { hasToolCallNamed } from "@ngriffin_uk/polychat-utility-server/tool-calls";
@@ -5,6 +6,7 @@ import { hasToolCallNamed } from "@ngriffin_uk/polychat-utility-server/tool-call
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { MEMORY_STORE_TOOL_NAME, resolveMemoryPolicy } from "~/modules/chat/domain/memory";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
+import { queueTeammateMemoryCorrection } from "~/modules/memory-documents/application/reflection";
 import { MemoryManager, type MemoryEvent } from "~/modules/memory/application/manager";
 import type { IEnv, IUserSettings, MemoryScope, Message, Platform, ToolCall } from "~/types";
 
@@ -13,6 +15,7 @@ const logger = getLogger({ prefix: "services/chat/agent/memory-capture" });
 export interface CaptureRunMemoriesParams {
   env: IEnv;
   completionId: string;
+  runId?: string;
   conversationManager: ConversationManager;
   context?: ServiceContext;
   userSettings?: IUserSettings;
@@ -43,6 +46,22 @@ export async function captureRunMemories(params: CaptureRunMemoriesParams): Prom
   }
 
   try {
+    if (params.memoryScope.type === "bound" && params.memoryScope.teammateContext) {
+      if (!memoryPolicy.canStore || !params.context || !params.runId) {
+        return [];
+      }
+
+      await queueTeammateMemoryCorrection({
+        context: params.context,
+        scope: params.memoryScope,
+        conversationId: params.completionId,
+        runId: params.runId,
+        classify: true,
+      });
+
+      return [];
+    }
+
     const history = await params.conversationManager.get(params.completionId);
     const lastUser = getLastUser(history);
 
@@ -109,22 +128,10 @@ function getLastUser(
       continue;
     }
 
-    if (typeof message.content === "string") {
-      return { identity: message.id ?? `user-${index}`, text: message.content };
-    }
-
-    if (Array.isArray(message.content)) {
-      const text =
-        (
-          message.content.find((block) => (block as { type?: string }).type === "text") as
-            | { text?: string }
-            | undefined
-        )?.text ?? "";
-
-      return { identity: message.id ?? `user-${index}`, text };
-    }
-
-    return { identity: message.id ?? `user-${index}`, text: "" };
+    return {
+      identity: message.id ?? `user-${index}`,
+      text: extractTextFromMessageContent(message.content),
+    };
   }
 
   return null;

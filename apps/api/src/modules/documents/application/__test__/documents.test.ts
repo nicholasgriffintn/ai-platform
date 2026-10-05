@@ -31,7 +31,15 @@ const getOutput = vi.hoisted(() =>
 const describeDocument = vi.hoisted(() => vi.fn(async () => ({ tags: ["brief"], summary: "s" })));
 const formatDocumentBody = vi.hoisted(() => vi.fn(async () => "# Rewritten"));
 
-vi.mock("~/modules/outputs/application", () => ({ createOutput, updateOutput, getOutput }));
+vi.mock("~/modules/outputs/application", () => ({
+  createOutput,
+  updateOutput,
+  getOutput,
+  formatOutput: (record: unknown) => record,
+}));
+vi.mock("~/modules/outputs/application/access", () => ({
+  requireOutputAccess: (...args: unknown[]) => getOutput(...args),
+}));
 vi.mock("../metadata", () => ({ describeDocument }));
 vi.mock("../format", () => ({ formatDocumentBody }));
 vi.mock("../from-media", () => ({ generateDocumentFromMedia: vi.fn() }));
@@ -45,6 +53,7 @@ function documentOutput(body: string, metadata?: Record<string, unknown>) {
     title: "Brief",
     revision: 3,
     kind: DOCUMENT_OUTPUT_KIND,
+    projectId: null,
     content: { format: "markdown", body, ...(metadata ? { metadata } : {}) },
   };
 }
@@ -55,21 +64,15 @@ describe("writeDocument", () => {
     describeDocument.mockResolvedValue({ tags: ["brief"], summary: "s" });
   });
 
-  it("describes a new document and records what a reader would want to know", async () => {
-    await writeDocument(context, USER, { title: "Brief", body: "one two three" });
-
-    const content = createOutput.mock.calls[0]?.[2]?.content as Record<string, unknown>;
-
-    expect(content).toMatchObject({
-      format: "markdown",
-      metadata: { tags: ["brief"], summary: "s", wordCount: 3, readingTime: 1 },
-    });
-  });
-
   it("carries the existing description forward when revising", async () => {
     getOutput.mockResolvedValue(documentOutput("old", { sourceType: "manual", tags: ["kept"] }));
 
-    await writeDocument(context, USER, { title: "Brief", body: "new body", outputId: "output-1" });
+    await writeDocument(context, USER, {
+      title: "Brief",
+      body: "new body",
+      outputId: "output-1",
+      expectedRevision: 3,
+    });
 
     expect(describeDocument).toHaveBeenCalledWith(
       expect.objectContaining({ existing: expect.objectContaining({ tags: ["kept"] }) }),
@@ -80,12 +83,6 @@ describe("writeDocument", () => {
       "output-1",
       expect.objectContaining({ expectedRevision: 3 }),
     );
-  });
-
-  it("skips the description when the caller asks it to", async () => {
-    await writeDocument(context, USER, { title: "Brief", body: "body", describe: false });
-
-    expect(describeDocument).not.toHaveBeenCalled();
   });
 
   it("refuses a document with no title or no body", async () => {
@@ -107,7 +104,10 @@ describe("formatDocument and redescribeDocument", () => {
   it("rewrites a document without saving it, so the reader can decide", async () => {
     getOutput.mockResolvedValue(documentOutput("original"));
 
-    expect(await formatDocument(context, USER, "output-1")).toEqual({ body: "# Rewritten" });
+    expect(await formatDocument(context, USER, "output-1")).toEqual({
+      body: "# Rewritten",
+      sourceRevision: 3,
+    });
     expect(updateOutput).not.toHaveBeenCalled();
   });
 

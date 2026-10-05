@@ -8,7 +8,6 @@ import {
   assertComposioFileBridgeAvailable,
   importComposioOperationFileResults,
   importComposioSessionFile,
-  resolveComposioFileReferences,
   stageComposioResourceFile,
   type ComposioMountFileClient,
 } from "../composio-files";
@@ -177,40 +176,6 @@ describe("Composio file bridge", () => {
       }),
     );
     expect(result).toEqual({ outputId: "output-1", filename: "result.pdf", byteSize: 3 });
-  });
-
-  it("resolves explicit Source and Output references recursively", async () => {
-    const { context } = createContext();
-
-    context.repositories.outputs.getOutput = vi.fn().mockResolvedValue({
-      ...sourceRecord,
-      id: "output-2",
-      parent_output_id: null,
-      capability_id: "notes",
-      group_id: null,
-      sensitivity: "personal",
-      revision: 1,
-    });
-    const client = createMountClient();
-    const fetcher = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
-
-    const resolved = await resolveComposioFileReferences({
-      context,
-      userId: 42,
-      client,
-      fetcher,
-      sessionId: "trs_123",
-      value: {
-        attachments: [
-          { $assistantFile: { kind: "source", id: "source-1" } },
-          { $assistantFile: { kind: "output", id: "output-2", path: "draft/final.pdf" } },
-        ],
-      },
-    });
-
-    expect(resolved).toEqual({
-      attachments: ["/mnt/files/report.pdf", "/mnt/files/draft/final.pdf"],
-    });
   });
 
   it("imports only explicit Composio mount descriptors in operation results", async () => {

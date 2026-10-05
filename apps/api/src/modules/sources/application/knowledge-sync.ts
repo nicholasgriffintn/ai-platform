@@ -71,6 +71,7 @@ export async function requireKnowledgeSyncAuthority(
     }
   }
 
+  await requireProjectAccess(context, sync.project_id, ["owner", "admin"]);
   await requireProjectCapabilityAccess(context, sync.project_id, "recipe", recipe.id);
   const connection = await context.repositories.providerConnections.getConnectionById(
     sync.connection_id,

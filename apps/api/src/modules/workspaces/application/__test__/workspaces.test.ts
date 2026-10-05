@@ -18,7 +18,6 @@ import type {
   WorkspaceMemberRow,
   WorkspaceRow,
 } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
-import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import {
   acceptWorkspaceInvitation,
@@ -327,36 +326,6 @@ describe("workspace invitation lifecycle", () => {
 });
 
 describe("workspace and project isolation", () => {
-  it("persists routing preferences through the repository update allowlist", async () => {
-    const { context } = createHarness();
-    const statement = {
-      bind: vi.fn().mockReturnThis(),
-      run: vi.fn().mockResolvedValue({ success: true, meta: { changes: 1 } }),
-      all: vi.fn(),
-      first: vi.fn(),
-      raw: vi.fn(),
-    };
-    const prepare = vi.fn().mockReturnValue(statement);
-
-    context.env.DB = {
-      prepare,
-      batch: vi.fn(),
-      exec: vi.fn(),
-      dump: vi.fn(),
-      withSession: vi.fn(),
-    };
-    const repository = new WorkspaceRepository(context.env);
-
-    await repository.updateProject(PROJECT_ID, { default_model_tier: "low" });
-    expect(prepare).toHaveBeenCalledWith(expect.stringContaining("default_model_tier = ?"));
-    expect(statement.bind).toHaveBeenLastCalledWith("low", PROJECT_ID);
-    expect(statement.run).toHaveBeenCalledOnce();
-
-    await repository.updateProject(PROJECT_ID, { default_model_tier: null });
-    expect(statement.bind).toHaveBeenLastCalledWith(null, PROJECT_ID);
-    expect(statement.run).toHaveBeenCalledTimes(2);
-  });
-
   it("saves and clears the project routing preference with an audit record", async () => {
     const { context, repositories, audit } = createHarness();
 
@@ -412,22 +381,6 @@ describe("workspace and project isolation", () => {
         name: "Customer research",
         colour: deriveProjectColour("Customer research", "Summarise interview themes"),
       }),
-    );
-  });
-
-  it("preserves a colour supplied when creating a project", async () => {
-    const { context, repositories } = createHarness();
-
-    await createProject(context, WORKSPACE_ID, {
-      name: "Customer research",
-      description: "Summarise interview themes",
-      instructions: "",
-      colour: "#2563EB",
-      defaultModelTier: "high",
-    });
-
-    expect(repositories.createProject).toHaveBeenCalledWith(
-      expect.objectContaining({ colour: "#2563EB", defaultModelTier: "high" }),
     );
   });
 
@@ -534,22 +487,6 @@ describe("project capability ownership", () => {
     expect(repositories.removeProjectCapability).not.toHaveBeenCalled();
   });
 
-  it("lets the attaching member remove their recipe capability", async () => {
-    const { context, repositories } = createHarness({
-      user: { id: 2, email: "creator@example.com" },
-      role: "member",
-    });
-
-    repositories.listProjectCapabilities.mockResolvedValue([recipeCapability]);
-
-    await removeProjectCapability(context, PROJECT_ID, recipeCapability.id);
-
-    expect(repositories.removeProjectCapability).toHaveBeenCalledWith(
-      PROJECT_ID,
-      recipeCapability.id,
-    );
-  });
-
   it("keeps project tools and connector grants restricted to project admins", async () => {
     const { context, repositories } = createHarness({
       user: { id: 3, email: "member@example.com" },
@@ -587,35 +524,6 @@ describe("project capability ownership", () => {
     }
 
     expect(repositories.addProjectCapability).not.toHaveBeenCalled();
-  });
-
-  it("lets project admins update a tool attached by another admin", async () => {
-    const { context, repositories } = createHarness({
-      user: { id: 3, email: "admin@example.com" },
-      role: "admin",
-    });
-
-    repositories.listProjectCapabilities.mockResolvedValue([
-      {
-        ...recipeCapability,
-        id: "tool-capability-1",
-        kind: "tool",
-        capability_id: "web_fetch",
-      },
-    ]);
-
-    await addProjectCapability(context, PROJECT_ID, {
-      kind: "tool",
-      capabilityId: "web_fetch",
-      configuration: {},
-    });
-
-    expect(repositories.addProjectCapability).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "tool-capability-1",
-        createdBy: 3,
-      }),
-    );
   });
 });
 

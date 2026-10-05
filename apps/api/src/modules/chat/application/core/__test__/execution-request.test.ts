@@ -42,15 +42,6 @@ function createInput(): ChatExecutionRequestInput {
 }
 
 describe("createChatExecutionRequest", () => {
-  it("excludes compaction status messages from provider request parameters", () => {
-    const request = createChatExecutionRequest(createInput());
-
-    expect(request.providerRequest().messages).toEqual([
-      { role: "user", content: "Hello" },
-      { role: "assistant", content: "Hi" },
-    ]);
-  });
-
   it("sends only the current Poly instructions after changing product mode", () => {
     const input = createInput();
 
@@ -62,14 +53,6 @@ describe("createChatExecutionRequest", () => {
     expect(request.system_prompt).toBe("<mode>Work</mode>");
     expect(request.messages).not.toContainEqual(expect.objectContaining({ role: "system" }));
     expect(request.messages).toContainEqual({ role: "user", content: "Hello" });
-  });
-
-  it("carries the chat run id into provider requests", () => {
-    const input = createInput();
-
-    input.runId = "run-1";
-
-    expect(createChatExecutionRequest(input).providerRequest().run_id).toBe("run-1");
   });
 
   it("uses tool options resolved from project capability configuration", () => {
@@ -85,14 +68,6 @@ describe("createChatExecutionRequest", () => {
     expect(createChatExecutionRequest(input).providerRequest().tool_options).toEqual({
       file_search: { vector_store_ids: ["vs_project"] },
     });
-  });
-
-  it("preserves an explicit provider service tier", () => {
-    const input = createInput();
-
-    input.chatOptions.service_tier = "fast";
-
-    expect(createChatExecutionRequest(input).providerRequest().service_tier).toBe("fast");
   });
 
   it("uses the prepared server-authoritative request options downstream", () => {

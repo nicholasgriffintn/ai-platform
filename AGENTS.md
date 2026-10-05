@@ -7,7 +7,6 @@ Use [`polychat-setup`](.agents/skills/polychat-setup/SKILL.md) as setup/ops refe
 
 - Keep routes and page files orchestration-only. Move parsing, state machines, timers, retries, and durable logic into services, hooks, or shared libs.
 - Reuse shared helpers from `packages/utility-core` and `packages/utility-server`. Keep domain logic in its owning module; do not introduce API `lib` or `utils` catch-all directories.
-- Place API tests beside their owning code, following that module's existing layout. Keep only shared helpers in `apps/api/test/helpers` and fixtures in `apps/api/test/fixtures`; do not put test or spec files under `apps/api/test`.
 - Keep wire contracts in `packages/schemas` and validate against all consumers.
 - Keep API/package boundaries in place. Avoid coupling `component-*` packages to routers, stores, or API clients except `component-shell`.
 - Keep authority checks at I/O boundaries. Verify personal vs project scope, reversibility, and owner permissions on every boundary.
@@ -33,7 +32,13 @@ Use [`polychat-setup`](.agents/skills/polychat-setup/SKILL.md) as setup/ops refe
 
 Add tests only when they protect observable behaviour, a meaningful invariant, or a real regression. Do not add catalogue field snapshots or trivial rendering assertions that merely restate the implementation.
 
-Run these before every commit:
+Prefer unit tests for logic tests, do not over use them for cases where they are not useful such as the items listed above but also for ui, often unit tests are not really testing anything in these cases and just slow down development and CI.
+
+Do not add integration tests unless the user explicitly requests integration tests. Requests to build, fix, review or validate functionality do not authorise them. Do not add database runtimes, migration suites, service harnesses or fixtures solely to support integration tests, or move or rename integration tests to bypass this rule.
+
+Prefer using E2E tests to validate user journeys with direct api integrations vs integration tests or sloppy component unit tests but don't over do them, be cautious that adding new tests always slows down development and ci.
+
+Run these before committing code changes. For deletion-only or documentation-only changes, verify references or formatting as appropriate; do not run the full checks solely to make a commit:
 
 ```sh
 pnpm typecheck
