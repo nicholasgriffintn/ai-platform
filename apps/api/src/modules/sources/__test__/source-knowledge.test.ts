@@ -15,8 +15,8 @@ import {
   addIndexedKnowledgeSource,
   knowledgeTestUser,
   prepareKnowledgeDatabase,
-} from "../../../../../test/fixtures/sources";
-import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
+} from "../../../../test/fixtures/sources";
+import { databaseTestEnvironment } from "../../../../test/helpers/environment";
 
 const runtime = new Miniflare({
   modules: true,
