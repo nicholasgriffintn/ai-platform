@@ -1,4 +1,6 @@
 import type {
+  SiteBrowserEvidence,
+  SiteBrowserVerificationRequest,
   SiteConnectorSnapshotRequest,
   SiteSourceRefreshRequest,
   SiteDataResponse,
@@ -57,6 +59,21 @@ export const sitesService = {
     return (await returnFetchedData<SiteResponse>(response)).site;
   },
 
+  async verify(
+    id: string,
+    request: SiteBrowserVerificationRequest,
+    signal?: AbortSignal,
+  ): Promise<SiteBrowserEvidence> {
+    const response = await fetchApiOrThrow(`${SITES_BASE_PATH}/${id}/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: request,
+      timeoutMs: null,
+      signal,
+    });
+
+    return returnFetchedData<SiteBrowserEvidence>(response);
+  },
   async list(projectId?: string): Promise<SiteSummary[]> {
     const response = await fetchApiOrThrow(withProjectScope(SITES_BASE_PATH, projectId), {
       method: "GET",

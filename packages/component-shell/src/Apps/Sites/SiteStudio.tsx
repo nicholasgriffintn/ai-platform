@@ -21,6 +21,7 @@ import {
   useProject,
   useSiteGeneration,
   useSiteData,
+  useVerifySite,
   useTrackEvent,
   SITES_QUERY_KEYS,
   type SiteGenerationState,
@@ -59,6 +60,7 @@ import { toast } from "sonner";
 
 import { useAppChrome } from "../AppChrome.js";
 import { RecentSites } from "./RecentSites.js";
+import { SiteBrowserChecks } from "./SiteBrowserChecks.js";
 import { SiteBuildPlaceholder } from "./SiteBuildPlaceholder.js";
 import { SiteConversationTurn } from "./SiteConversationTurn.js";
 import { SiteHistory, type SiteRevisionPreview } from "./SiteHistory.js";
@@ -131,6 +133,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   );
   const isBusy = !["idle", "done", "error"].includes(state.status);
   const siteData = useSiteData(state.site, !isBusy && !revisionPreview);
+  const verification = useVerifySite(state.site);
   const composerSources = useSiteComposerSources({
     site: state.site,
     projectId,
@@ -350,6 +353,14 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
           </div>
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto px-4 py-4">
+          {state.site && !isBusy && !revisionPreview && (
+            <SiteBrowserChecks
+              site={state.site}
+              pageId={resolvedPageId ?? undefined}
+              verification={verification}
+              disabled={isBusy}
+            />
+          )}
           {siteData.error && (
             <output role="alert" className="text-failure">
               {siteData.error.message}

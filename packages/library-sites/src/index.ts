@@ -147,3 +147,4 @@ export {
   normaliseSiteIntegrations,
   getSitePageBoundState,
 } from "./data.js";
+export { buildSiteFrameDocument, type BuildSiteFrameDocumentOptions } from "./preview-document.js";

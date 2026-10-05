@@ -9,6 +9,8 @@ import { visualizer } from "rollup-plugin-visualizer";
 import type { Plugin } from "vite";
 import { defaultClientConditions, defaultServerConditions, defineConfig } from "vite";
 
+import { sitePreviewAssets } from "./plugins/site-preview-assets.ts";
+
 export default defineConfig(({ command }) => ({
   build: {
     chunkSizeWarningLimit: 6500,
@@ -40,6 +42,7 @@ export default defineConfig(({ command }) => ({
     },
   },
   plugins: [
+    sitePreviewAssets(),
     stubBrowserOnlyModules(),
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tailwindcss(),
