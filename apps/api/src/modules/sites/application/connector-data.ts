@@ -183,7 +183,7 @@ export async function snapshotSiteConnector(
     const result = await executeRecipeConnectorOperation({
       context,
       userId: user.id,
-      scope: { projectId: request.projectId, completionId },
+      scope: { projectId: request.projectId, completionId, conversationId: null },
       request: {
         provider,
         operation: operation.id,

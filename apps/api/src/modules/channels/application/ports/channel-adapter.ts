@@ -1,4 +1,4 @@
-import type { InboundChannelId } from "@ngriffin_uk/polychat-schemas";
+import type { ChannelMessageContext, InboundChannelId } from "@ngriffin_uk/polychat-schemas";
 
 export interface ChannelIncomingMessage {
   kind: "message";
@@ -6,6 +6,7 @@ export interface ChannelIncomingMessage {
   externalId: string;
   from: string;
   body: string;
+  context: ChannelMessageContext;
   media?: { url: string; mimeType?: string }[];
 }
 
@@ -24,6 +25,7 @@ export interface ChannelVerification {
 export interface ChannelReply {
   externalId: string;
   body: string;
+  threadId: string;
 }
 
 export interface ChannelAdapter {

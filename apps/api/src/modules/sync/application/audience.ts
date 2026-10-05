@@ -12,6 +12,7 @@ interface ConversationScope {
   projectId: string | null;
 }
 
+const workspaceMembersCache = new Map<string, CachedEntry<number[]>>();
 const projectWorkspaceCache = new Map<string, CachedEntry<string | null>>();
 const conversationScopeCache = new Map<string, CachedEntry<ConversationScope | null>>();
 
@@ -41,7 +42,12 @@ function writeCache<T>(cache: Map<string, CachedEntry<T>>, key: string, value: T
   return value;
 }
 
+export function forgetWorkspaceAudience(workspaceId: string): void {
+  workspaceMembersCache.delete(workspaceId);
+}
+
 export function clearAudienceCache(): void {
+  workspaceMembersCache.clear();
   projectWorkspaceCache.clear();
   conversationScopeCache.clear();
 }
@@ -56,12 +62,22 @@ export async function workspaceAudience(
     return [];
   }
 
+  const cached = readCache(workspaceMembersCache, workspaceId);
+
+  if (cached) {
+    return cached;
+  }
+
   const result = await database
-    .prepare(`SELECT user_id FROM active_workspace_member WHERE workspace_id = ?`)
+    .prepare(`SELECT user_id FROM workspace_member WHERE workspace_id = ?`)
     .bind(workspaceId)
     .all<{ user_id: number }>();
 
-  return (result.results ?? []).map((row) => row.user_id);
+  return writeCache(
+    workspaceMembersCache,
+    workspaceId,
+    (result.results ?? []).map((row) => row.user_id),
+  );
 }
 
 export async function projectAudience(

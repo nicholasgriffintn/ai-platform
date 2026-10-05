@@ -13,6 +13,7 @@ import { SessionRepository } from "~/modules/auth/infrastructure/SessionReposito
 import { WebAuthnRepository } from "~/modules/auth/infrastructure/WebAuthnRepository";
 import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
+import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
 import { BrowserSessionRepository } from "~/modules/computer-use/infrastructure/BrowserSessionRepository";
 import { ConversationHandleRepository } from "~/modules/conversations/infrastructure/ConversationHandleRepository";
 import { ConversationOrganisationRepository } from "~/modules/conversations/infrastructure/ConversationOrganisationRepository";
@@ -21,6 +22,7 @@ import { ConversationRunRepository } from "~/modules/conversations/infrastructur
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/OutboundDeliveryRepository";
+import { DocumentCommentRepository } from "~/modules/documents/infrastructure/DocumentCommentRepository";
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import { InfraCostDailyRepository } from "~/modules/infra/infrastructure/InfraCostDailyRepository";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
@@ -46,6 +48,7 @@ import { ModelTrainingRepository } from "~/modules/model-training/infrastructure
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetRepository";
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
+import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { SavedMessageRepository } from "~/modules/saved-messages/infrastructure/SavedMessageRepository";
 import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
@@ -179,6 +182,13 @@ export class RepositoryManager {
     return this.resolve("projectTasks", (env) => new ProjectTaskRepository(env));
   }
 
+  public get projectTaskIntegrations(): ProjectTaskIntegrationRepository {
+    return this.resolve(
+      "projectTaskIntegrations",
+      (env) => new ProjectTaskIntegrationRepository(env),
+    );
+  }
+
   public get projectEnvironmentVariables(): ProjectEnvironmentVariableRepository {
     return this.resolve(
       "projectEnvironmentVariables",
@@ -212,6 +222,10 @@ export class RepositoryManager {
 
   public get teammateFeedback(): TeammateFeedbackRepository {
     return this.resolve("teammateFeedback", (env) => new TeammateFeedbackRepository(env));
+  }
+
+  public get channelSenders(): ChannelSenderRepository {
+    return this.resolve("channelSenders", (env) => new ChannelSenderRepository(env));
   }
 
   public get channelBindings(): ChannelBindingRepository {
@@ -340,6 +354,10 @@ export class RepositoryManager {
 
   public get artificialAnalysis(): ArtificialAnalysisRepository {
     return this.resolve("artificialAnalysis", (env) => new ArtificialAnalysisRepository(env));
+  }
+
+  public get documentComments(): DocumentCommentRepository {
+    return this.resolve("documentComments", (env) => new DocumentCommentRepository(env));
   }
 
   public get outputs(): OutputRepository {

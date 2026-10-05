@@ -54,7 +54,7 @@ describe("connector operation approvals", () => {
       arguments: { recipient: "person@example.com" },
       connectedAccountId: "ca_gmail",
       channel: "web",
-      scope: { completionId: "completion_1", recipeId: "recipe_1" },
+      scope: { conversationId: "completion_1", completionId: "completion_1", recipeId: "recipe_1" },
     });
 
     expect(decision).toMatchObject({ required: true, approved: false });
@@ -86,7 +86,7 @@ describe("connector operation approvals", () => {
         arguments: { recipient: "different@example.com" },
         connectedAccountId: "ca_gmail",
         channel: "web",
-        scope: { completionId: "completion_1" },
+        scope: { conversationId: "completion_1", completionId: "completion_1" },
         approvalId: "coa_approved",
       }),
     ).rejects.toMatchObject({ statusCode: 403 });
@@ -102,7 +102,7 @@ describe("connector operation approvals", () => {
         operation: "GMAIL_SEND_EMAIL",
         arguments: { recipient: "person@example.com" },
         channel: "web",
-        scope: { completionId: "completion_1" },
+        scope: { conversationId: "completion_1", completionId: "completion_1" },
       }),
     ).rejects.toMatchObject({ statusCode: 403 });
     expect(mocks.create).not.toHaveBeenCalled();

@@ -14,8 +14,8 @@ export function WorkspaceIdentitySettings({ workspaceId }: { workspaceId: string
     <section className="mt-10 space-y-3">
       <h2 className="text-sm font-semibold">Enterprise sign-in</h2>
       <p className="text-sm text-muted-foreground">
-        Use your identity provider to grant workspace access by group. Managed access lasts up to 15
-        minutes between verified sign-ins; Work still requires each person's Pro entitlement.
+        Let people sign in with your company identity provider. Manage workspace membership and
+        roles separately in People & access.
       </p>
       <Card className="p-5 shadow-none">
         {query.isLoading ? (
@@ -56,7 +56,7 @@ export function WorkspaceIdentitySettings({ workspaceId }: { workspaceId: string
         open={confirmRemove}
         onOpenChange={setConfirmRemove}
         title="Disconnect identity provider"
-        description="This revokes every membership managed by this identity provider. Manual memberships remain available. Reconnecting creates a new identity connection."
+        description="This prevents new sign-ins through this provider. Existing sessions and workspace memberships remain available."
         confirmText="Disconnect"
         variant="destructive"
         isLoading={remove.isPending}

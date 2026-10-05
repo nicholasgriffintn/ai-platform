@@ -219,9 +219,9 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
        UNION SELECT source_id AS id, user_id, project_id FROM source_search_document WHERE status = 'stale' AND ? = 1)
        SELECT c.id, (SELECT id FROM project WHERE id = c.project_id) AS project_id,
          COALESCE(
-           (SELECT wm.user_id FROM active_workspace_member wm JOIN project p ON p.workspace_id = wm.workspace_id
+           (SELECT wm.user_id FROM workspace_member wm JOIN project p ON p.workspace_id = wm.workspace_id
             WHERE p.id = c.project_id AND wm.user_id = c.user_id LIMIT 1),
-           (SELECT wm.user_id FROM active_workspace_member wm JOIN project p ON p.workspace_id = wm.workspace_id
+           (SELECT wm.user_id FROM workspace_member wm JOIN project p ON p.workspace_id = wm.workspace_id
             WHERE p.id = c.project_id ORDER BY CASE WHEN wm.role = 'owner' THEN 1
               WHEN wm.role = 'admin' THEN 2 ELSE 3 END LIMIT 1),
            (SELECT id FROM user WHERE id = c.user_id)

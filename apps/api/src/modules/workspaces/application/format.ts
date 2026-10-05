@@ -49,10 +49,6 @@ export function formatWorkspaceMember(row: WorkspaceMemberRow): WorkspaceMember 
     avatarUrl: row.avatar_url,
     role: row.role,
     joinedAt: row.joined_at,
-    managedIdentity:
-      row.managed_connection_id && row.identity_lease_expires_at
-        ? { connectionId: row.managed_connection_id, expiresAt: row.identity_lease_expires_at }
-        : null,
   };
 }
 

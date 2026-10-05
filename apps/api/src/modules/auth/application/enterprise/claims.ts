@@ -11,27 +11,21 @@ const verifiedProfileSchema = z.object({
   email_verified: z.literal(true),
   name: z.string().max(200).optional(),
 });
-const groupsSchema = z.array(z.string().min(1).max(200)).max(1000);
 
 export function resolveOidcProfile(connection: OidcConnection, claims: JwtClaims | null) {
   const profile = verifiedProfileSchema.safeParse(claims);
-  const groups = groupsSchema.safeParse(claims?.[connection.groupsClaim]);
 
-  if (!profile.success || profile.data.iss !== connection.issuer || !groups.success) {
+  if (
+    !profile.success ||
+    profile.data.iss !== connection.issuer ||
+    profile.data.exp * 1000 <= Date.now()
+  ) {
     throw new AssistantError(
-      "The identity provider must supply a verified email and a complete group claim",
+      "The identity provider must supply a valid identity with a verified email",
       ErrorType.AUTHENTICATION_ERROR,
       401,
     );
   }
 
-  const matching = connection.roleMappings.filter((mapping) => groups.data.includes(mapping.group));
-  const role = matching.some((mapping) => mapping.role === "admin")
-    ? "admin"
-    : matching.length
-      ? "member"
-      : null;
-  const expiresAt = new Date(Math.min(profile.data.exp * 1000, Date.now() + 15 * 60 * 1000));
-
-  return { ...profile.data, role, expiresAt };
+  return profile.data;
 }

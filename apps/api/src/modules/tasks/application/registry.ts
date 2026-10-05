@@ -1,5 +1,6 @@
 import {
   CONVERSATION_TITLE_TASK_TYPE,
+  MEMORY_REFLECTION_TASK_TYPE,
   SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
   SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
   DELEGATION_EXPIRY_TASK_TYPE,
@@ -16,6 +17,7 @@ import {
   MODEL_UPLOAD_FINALISE_TASK_TYPE,
   OCR_BATCH_POLLING_TASK_TYPE,
   PROJECT_TASK_RUN_TASK_TYPE,
+  PROJECT_REVIEW_INTAKE_TASK_TYPE,
   REALTIME_RECONCILIATION_TASK_TYPE,
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
   STRIPE_USAGE_SYNC_TASK_TYPE,
@@ -25,6 +27,7 @@ import {
   USAGE_ROLLUP_TASK_TYPE,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { ProjectReviewIntakeHandler } from "~/modules/project-tasks/application/review-intake";
 import { TaskNotificationDeliveryHandler } from "~/modules/task-notifications/application/delivery";
 
 import { ArtificialAnalysisIngestHandler } from "./handlers/ArtificialAnalysisIngestHandler";
@@ -37,7 +40,7 @@ import { DelegationRunHandler } from "./handlers/DelegationRunHandler";
 import { DelegationWakeHandler } from "./handlers/DelegationWakeHandler";
 import { InboundMessageHandler } from "./handlers/InboundMessageHandler";
 import { InfraReconciliationHandler } from "./handlers/InfraReconciliationHandler";
-import { memorySynthesis } from "./handlers/memory-synthesis";
+import { memorySynthesis, memoryReflection } from "./handlers/memory-synthesis";
 import {
   modelDatasetProcessing,
   modelDeploymentSync,
@@ -68,6 +71,7 @@ import { workflows } from "./workflows";
 import "./schedules";
 
 workflows.on("memory_synthesis", memorySynthesis);
+workflows.on(MEMORY_REFLECTION_TASK_TYPE, memoryReflection);
 workflows.on(SOURCE_KNOWLEDGE_INDEX_TASK_TYPE, sourceKnowledgeIndex);
 workflows.on(SOURCE_KNOWLEDGE_SYNC_TASK_TYPE, sourceKnowledgeSync);
 workflows.on(USAGE_ROLLUP_TASK_TYPE, usageRollup);
@@ -89,6 +93,7 @@ workflows.register("artificial_analysis_ingest", new ArtificialAnalysisIngestHan
 workflows.register("artificial_analysis_scoring", new ArtificialAnalysisScoringHandler());
 workflows.register(SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler());
 workflows.register(PROJECT_TASK_RUN_TASK_TYPE, new ProjectTaskRunHandler());
+workflows.register(PROJECT_REVIEW_INTAKE_TASK_TYPE, new ProjectReviewIntakeHandler());
 workflows.register(DELEGATION_RUN_TASK_TYPE, new DelegationRunHandler());
 workflows.register(DELEGATION_MESSAGE_TASK_TYPE, new DelegationMessageHandler());
 workflows.register(DELEGATION_EXPIRY_TASK_TYPE, new DelegationExpiryHandler());

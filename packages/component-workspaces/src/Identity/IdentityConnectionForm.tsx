@@ -1,7 +1,6 @@
 import { Button, FormInput, FormSelect, FormTextarea } from "@ngriffin_uk/polychat-component-ui";
 import type { OidcConnection } from "@ngriffin_uk/polychat-schemas";
 
-import { IdentityGroupFields } from "./IdentityGroupFields.js";
 import {
   useIdentityConnectionForm,
   type IdentityConnectionChange,
@@ -92,7 +91,7 @@ export function IdentityConnectionForm({
           label="Workspace sign-in link"
           value={signInUrl}
           readOnly
-          description="Share this link with people in the mapped groups."
+          description="Share this link with people who use your company identity provider."
         />
       ) : null}
       <div className="grid gap-4 sm:grid-cols-2">
@@ -106,21 +105,7 @@ export function IdentityConnectionForm({
           ]}
           onValueChange={form.setSigningAlgorithm}
         />
-        <FormInput
-          label="Group claim key"
-          value={form.groupsClaim}
-          disabled={isSaving}
-          required
-          maxLength={200}
-          description="The exact claim containing the complete array of groups."
-          onChange={(event) => form.setGroupsClaim(event.target.value)}
-        />
       </div>
-      <IdentityGroupFields
-        mappings={form.roleMappings}
-        disabled={isSaving}
-        onChange={form.setRoleMappings}
-      />
       <details className="rounded-lg border border-border p-4">
         <summary className="cursor-pointer text-sm font-medium">
           Additional identity provider origins
@@ -146,8 +131,7 @@ export function IdentityConnectionForm({
         onValueChange={(value) => form.setEnabled(value === "enabled")}
       />
       <p className="text-xs text-muted-foreground">
-        Saving changes ends previous managed access. People must sign in again to refresh their
-        groups. Manual members and the workspace owner retain their access.
+        Workspace membership and roles are managed in People & access.
       </p>
       {form.error ? (
         <p role="alert" className="text-sm text-failure">
@@ -155,7 +139,7 @@ export function IdentityConnectionForm({
         </p>
       ) : null}
       <Button type="submit" variant="primary" isLoading={isSaving}>
-        {connection ? "Save and require fresh sign-in" : "Connect identity provider"}
+        {connection ? "Save identity settings" : "Connect identity provider"}
       </Button>
     </form>
   );

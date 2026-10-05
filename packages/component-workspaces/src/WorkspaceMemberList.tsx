@@ -8,7 +8,6 @@ export interface WorkspaceMemberSummary {
   email: string;
   name?: string | null;
   role: WorkspaceRole;
-  managedIdentity?: { connectionId: string; expiresAt: string } | null;
 }
 
 export interface WorkspaceInvitationSummary {
@@ -69,9 +68,6 @@ export function WorkspaceMemberList({
               {member.name && (
                 <p className="truncate text-xs text-muted-foreground">{member.email}</p>
               )}
-              {member.managedIdentity ? (
-                <p className="text-xs text-muted-foreground">Managed by company sign-in</p>
-              ) : null}
             </div>
             {isManageable ? (
               <FormSelect<"admin" | "member">

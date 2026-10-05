@@ -62,7 +62,6 @@ The built-in evaluator uses `Polychat::Actor`, `Polychat::Action` and `Polychat:
 | ------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | Workspace and project access    | Pro entitlement, current membership and permitted roles                                        | Workspace access services and conversation repository                  |
 | Membership administration       | Owner/admin management of members and administrators                                           | Workspace member mutations and invitation visibility                   |
-| Enterprise identity             | Verified subject, current connection revision, mapped role and unexpired lease                 | OIDC identity resolution and atomic membership provisioning            |
 | Personal resources              | Strict owner identity                                                                          | Conversation, run, app, connection, upload, source and output services |
 | Shared resources                | Member reads, owner/admin writes, author-owned member writes                                   | Output, source, collection and template access                         |
 | Public sharing                  | Personal-only sharing and explicit public state                                                | Conversation sharing service                                           |
