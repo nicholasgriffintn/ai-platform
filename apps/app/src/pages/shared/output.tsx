@@ -70,7 +70,7 @@ export default function SharedOutputPage() {
   if (sharedSite) {
     return (
       <PageShell title={output.title} displayNavBar={false}>
-        <SharedSite project={sharedSite} />
+        <SharedSite project={sharedSite} output={output} />
       </PageShell>
     );
   }

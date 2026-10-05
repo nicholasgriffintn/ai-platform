@@ -103,6 +103,7 @@ export const sharedOutputFileSchema = outputFileSchema.omit({ key: true });
 export const sharedOutputSchema = z
   .object({
     id: z.string().min(1),
+    revision: z.number().int().positive(),
     capabilityId: z.string().trim().min(1).max(160),
     kind: outputKindSchema,
     title: z.string().trim().min(1).max(200),

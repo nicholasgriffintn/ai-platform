@@ -13,6 +13,7 @@ import {
   ConfirmationDialog,
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
+import { API_BASE_URL } from "@ngriffin_uk/polychat-library-client";
 import {
   useBuildSite,
   useDeleteSite,
@@ -20,6 +21,7 @@ import {
   useOpenSitePullRequest,
   useProject,
   useSiteGeneration,
+  useSiteRecordOperations,
   useTrackEvent,
   SITES_QUERY_KEYS,
   type SiteGenerationState,
@@ -64,6 +66,7 @@ import { SiteHistory, type SiteRevisionPreview } from "./SiteHistory.js";
 import { SiteInspector } from "./SiteInspector.js";
 import { SitePlanSummary } from "./SitePlanSummary.js";
 import { SitePromptComposer } from "./SitePromptComposer.js";
+import { SiteRecordBindings } from "./SiteRecordBindings.js";
 import { SiteStarterPrompt } from "./SiteStarterPrompt.js";
 
 const VIEWPORT_ICONS = { desktop: Monitor, tablet: Tablet, mobile: Smartphone } as const;
@@ -97,10 +100,11 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   const navigate = useNavigate();
   const { trackEvent } = useTrackEvent();
   const chrome = useAppChrome();
-  const { state, generate, edit, generateImages, load, cancel } = useSiteGeneration({
-    projectId,
-    initialSite: site,
-  });
+  const { state, generate, edit, retryEdits, generateImages, load, cancel, hasUnsavedEdits } =
+    useSiteGeneration({
+      projectId,
+      initialSite: site,
+    });
   const deleteSite = useDeleteSite(projectId);
   const buildSite = useBuildSite();
   const openPullRequest = useOpenSitePullRequest();
@@ -124,11 +128,25 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   const selectedElement =
     selectedKey && activePage?.elements[selectedKey] ? activePage.elements[selectedKey] : null;
   const files = useMemo(
-    () => (project && view === "code" ? generateSiteFiles(project, exportTarget).files : []),
-    [exportTarget, project, view],
+    () =>
+      project && view === "code"
+        ? generateSiteFiles(
+            project,
+            exportTarget,
+            state.site
+              ? {
+                  apiBaseUrl: API_BASE_URL,
+                  siteId: state.site.id,
+                  siteRevision: state.site.revision,
+                }
+              : undefined,
+          ).files
+        : [],
+    [exportTarget, project, view, state.site],
   );
   const isBusy = !["idle", "done", "error"].includes(state.status);
   const savedId = state.site?.id;
+  const executeRecordOperation = useSiteRecordOperations(savedId ?? null);
   const repairQuality = state.quality;
   const hasDecisionTrace =
     (state.site?.turns.some((turn) => (turn.trace?.length ?? 0) > 0) ?? false) ||
@@ -168,10 +186,16 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   const loadedRevision = state.site?.revision;
 
   useEffect(() => {
-    if (site && loadedRevision !== undefined && site.revision > loadedRevision && !isBusy) {
+    if (
+      site &&
+      loadedRevision !== undefined &&
+      site.revision > loadedRevision &&
+      !isBusy &&
+      !hasUnsavedEdits
+    ) {
       load(site);
     }
-  }, [isBusy, load, loadedRevision, site]);
+  }, [hasUnsavedEdits, isBusy, load, loadedRevision, site]);
 
   const handleRestored = () => {
     setHistoryOpen(false);
@@ -202,8 +226,8 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
     void generate({
       prompt,
       siteId: state.site?.id,
-      ...(state.site && selectedElement && resolvedPageId
-        ? { target: { pageId: resolvedPageId, elementKey: selectedKey as string } }
+      ...(state.site && selectedElement && resolvedPageId && selectedKey
+        ? { target: { pageId: resolvedPageId, elementKey: selectedKey } }
         : {}),
     });
   };
@@ -594,6 +618,35 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
             </div>
           )}
         </div>
+        {hasUnsavedEdits && state.error && (
+          <div role="alert" className="flex flex-wrap items-center gap-3 border-b p-3 text-sm">
+            <span className="text-failure">{state.error} Your draft is retained.</span>
+            <Button size="sm" variant="outline" onClick={() => void retryEdits()}>
+              Retry save
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const saved = site ?? state.site;
+
+                if (saved) {
+                  load(saved);
+                }
+              }}
+            >
+              Discard draft
+            </Button>
+          </div>
+        )}
+        {state.site && (
+          <SiteRecordBindings
+            site={state.site}
+            pageId={resolvedPageId}
+            disabled={isBusy || Boolean(revisionPreview) || hasUnsavedEdits}
+            onSaved={load}
+          />
+        )}
         <div className="flex min-h-0 flex-1">
           {project ? (
             view === "code" ? (
@@ -602,6 +655,8 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
               <>
                 <SitePreview
                   project={project}
+                  siteRevision={revisionPreview ? undefined : state.site?.revision}
+                  onRecordOperation={revisionPreview || isBusy ? undefined : executeRecordOperation}
                   pageId={resolvedPageId ?? undefined}
                   viewport={viewport}
                   onNavigate={handleSelectPage}
@@ -623,11 +678,11 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                     }}
                   />
                 )}
-                {!historyOpen && selectedElement && activePage && resolvedPageId && (
+                {!historyOpen && selectedElement && activePage && resolvedPageId && selectedKey && (
                   <SiteInspector
                     pageId={resolvedPageId}
                     page={activePage}
-                    elementKey={selectedKey as string}
+                    elementKey={selectedKey}
                     onSelect={handleSelectElement}
                     onEdit={edit}
                   />

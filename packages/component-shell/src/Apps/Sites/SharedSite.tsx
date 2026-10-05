@@ -1,6 +1,7 @@
 import { resolveSitePageId, SitePreview } from "@ngriffin_uk/polychat-component-sites";
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import { API_BASE_URL } from "@ngriffin_uk/polychat-library-client";
+import { useSiteRecordOperations } from "@ngriffin_uk/polychat-library-react";
 import {
   applySitePatch,
   buildSiteImageRewritePatches,
@@ -29,7 +30,7 @@ export function readSharedSiteProject(output: SharedOutput, token: string): Site
     return null;
   }
 
-  const document = structuredClone(parsed.data) as unknown as Record<string, unknown>;
+  const document = { ...structuredClone(parsed.data) };
 
   for (const patch of buildSiteImageRewritePatches(parsed.data, (src) => {
     const match = PRIVATE_OUTPUT_PATTERN.exec(src);
@@ -44,8 +45,9 @@ export function readSharedSiteProject(output: SharedOutput, token: string): Site
   return validateSiteProject(document).project;
 }
 
-export function SharedSite({ project }: { project: SiteProject }) {
+export function SharedSite({ project, output }: { project: SiteProject; output: SharedOutput }) {
   const [pageId, setPageId] = useState<string | null>(null);
+  const executeRecordOperation = useSiteRecordOperations(output.id);
   const pages = listSitePages(project);
   const activePageId = resolveSitePageId(project, pageId ?? undefined);
 
@@ -76,6 +78,8 @@ export function SharedSite({ project }: { project: SiteProject }) {
       <div className="min-h-0 flex-1">
         <SitePreview
           project={project}
+          siteRevision={output.revision}
+          onRecordOperation={executeRecordOperation}
           pageId={activePageId ?? undefined}
           onNavigate={setPageId}
           className="bg-background"

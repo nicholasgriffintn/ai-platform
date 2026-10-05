@@ -260,3 +260,5 @@ export * from "./hooks/useKnowledgeSyncs.js";
 export * from "./hooks/useDocumentCollaboration.js";
 
 export * from "./hooks/useNativeRecords.js";
+
+export * from "./hooks/useSiteRecordOperations.js";

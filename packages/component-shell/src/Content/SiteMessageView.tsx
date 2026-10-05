@@ -1,6 +1,10 @@
 import { resolveSitePageId, SitePreview } from "@ngriffin_uk/polychat-component-sites";
 import { Badge, ButtonLink, cn } from "@ngriffin_uk/polychat-component-ui";
-import { getAppPath, getSurfaceFromPathname } from "@ngriffin_uk/polychat-library-react";
+import {
+  getAppPath,
+  getSurfaceFromPathname,
+  useSiteRecordOperations,
+} from "@ngriffin_uk/polychat-library-react";
 import { listSitePages, siteProjectSchema, type SiteProject } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { ExternalLink } from "lucide-react";
@@ -12,6 +16,7 @@ interface SiteMessageData {
   title: string;
   project: SiteProject;
   kind?: string;
+  revision: number | undefined;
 }
 
 function readSiteMessageData(data: unknown): SiteMessageData | null {
@@ -30,6 +35,10 @@ function readSiteMessageData(data: unknown): SiteMessageData | null {
     title: typeof data.title === "string" ? data.title : project.data.title,
     project: project.data,
     kind: isRecord(data.plan) && typeof data.plan.kind === "string" ? data.plan.kind : undefined,
+    revision:
+      typeof data.revision === "number" && Number.isInteger(data.revision) && data.revision > 0
+        ? data.revision
+        : undefined,
   };
 }
 
@@ -37,6 +46,7 @@ export function SiteMessageView({ data, embedded }: { data: unknown; embedded?: 
   const location = useLocation();
   const [pageId, setPageId] = useState<string | null>(null);
   const site = readSiteMessageData(data);
+  const executeRecordOperation = useSiteRecordOperations(site?.siteId ?? null);
 
   if (!site) {
     return null;
@@ -76,6 +86,8 @@ export function SiteMessageView({ data, embedded }: { data: unknown; embedded?: 
       <div className={cn("w-full", embedded ? "h-72" : "h-[32rem]")}>
         <SitePreview
           project={site.project}
+          siteRevision={site.revision}
+          onRecordOperation={executeRecordOperation}
           pageId={activePageId ?? undefined}
           onNavigate={setPageId}
         />

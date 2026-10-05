@@ -78,3 +78,5 @@ export * from "./browser-sessions.js";
 export * from "./document-collaboration.js";
 
 export * from "./native-records.js";
+
+export * from "./site-records.js";

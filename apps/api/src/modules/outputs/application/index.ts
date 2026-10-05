@@ -50,6 +50,7 @@ export function formatSharedOutput(record: OutputRecord): SharedOutput {
 
   return {
     id: output.id,
+    revision: output.revision,
     capabilityId: output.capabilityId,
     kind: output.kind,
     title: output.title,
