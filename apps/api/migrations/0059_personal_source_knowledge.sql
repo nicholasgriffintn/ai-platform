@@ -1,5 +1,3 @@
-ALTER TABLE source_search_document ADD legacy_document_id TEXT REFERENCES embedding_document(id) ON DELETE SET NULL;
---> statement-breakpoint
 ALTER TABLE source_search_document ADD cleanup_after TEXT;
 --> statement-breakpoint
 ALTER TABLE source_search_document ADD indexed_at TEXT;
@@ -37,24 +35,6 @@ WHERE r.latest = 1 AND json_extract(r.safe_data, '$.runId') = r.group_id
   AND json_extract(r.safe_data, '$.status') IN ('completed', 'failed')
   AND NOT EXISTS (SELECT 1 FROM runs other WHERE other.group_id = r.group_id
     AND (other.created_by_user_id <> r.created_by_user_id OR other.project_id IS NOT r.project_id));
---> statement-breakpoint
-INSERT INTO source_search_document (id, source_id, source_revision, user_id, project_id, status, target, legacy_document_id)
-SELECT 'retired_' || d.id, 'retired_' || d.id, 1, d.user_id, NULL, 'stale',
-  json_object('embeddingProvider', d.provider, 'providerTarget', d.provider_target, 'model', d.embedding_model,
-    'dimensions', d.embedding_dimensions, 'distanceMetric', d.distance_metric, 'taskMode', d.task_mode,
-    'vectorSpace', d.vector_space, 'vectorSpaceVersion', d.vector_space_version), d.id
-FROM embedding_document d WHERE d.scope_type = 'personal' AND d.lifecycle_status = 'active' AND d.type <> 'memory';
---> statement-breakpoint
-INSERT INTO source_search_chunk (id, document_id, chunk_index, title, content)
-SELECT c.vector_id, i.id, c.chunk_index, COALESCE(d.title, 'Saved content'), c.content
-FROM source_search_document i JOIN embedding_document d ON d.id = i.legacy_document_id
-JOIN embedding_chunk c ON c.document_id = d.id;
---> statement-breakpoint
-UPDATE embedding_chunk SET lifecycle_status = 'delete_pending'
-WHERE document_id IN (SELECT legacy_document_id FROM source_search_document WHERE legacy_document_id IS NOT NULL);
---> statement-breakpoint
-UPDATE embedding_document SET lifecycle_status = 'delete_pending'
-WHERE id IN (SELECT legacy_document_id FROM source_search_document WHERE legacy_document_id IS NOT NULL);
 --> statement-breakpoint
 DROP TRIGGER source_search_revision_update;
 --> statement-breakpoint

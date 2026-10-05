@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "eaeb0350-3003-4c40-a221-ff3d4f48864f",
+  "id": "55b0fa38-a121-4ff0-91d5-69ca56860956",
   "prevId": "12656603-aa37-49ac-91fa-f47d0d2b2400",
   "tables": {
     "activity_record": {
@@ -10526,13 +10526,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "legacy_document_id": {
-          "name": "legacy_document_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "cleanup_after": {
           "name": "cleanup_after",
           "type": "text",
@@ -10587,17 +10580,7 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {
-        "source_search_document_legacy_document_id_embedding_document_id_fk": {
-          "name": "source_search_document_legacy_document_id_embedding_document_id_fk",
-          "tableFrom": "source_search_document",
-          "tableTo": "embedding_document",
-          "columnsFrom": ["legacy_document_id"],
-          "columnsTo": ["id"],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {

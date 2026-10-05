@@ -30,7 +30,7 @@ Save extracted web content through `storeKnowledge` in the current conversation 
 
 Store completed repository runs as idempotent repository sources in the scope recorded by Activity. Backfill historical runs from trusted Activity records and quarantine ambiguous ownership instead of copying their former personal-vector scope.
 
-Retire the transferred personal embedding documents from retrieval immediately. Carry their original targets and vector IDs into cleanup receipts, then remove their old D1 records only after confirmed provider deletion. Keep quarantined or unavailable targets as evidence.
+Copy existing saved content into Sources once during migration. Keep the explicit embedding API responsible for its own records and provider deletion. Do not link the source index to embedding records or use embeddings as a source-search fallback.
 
 Use the existing recipe connector operations and `normaliseConnectorKnowledge` mappings for knowledge sync. Keep provider-specific operations in recipe declarations and keep connection authority, checkpoints and publication in the sources module. Do not introduce a second connector registry, transport or sync framework.
 

@@ -1792,7 +1792,6 @@ export const sourceSearchDocument = sqliteTable(
       .notNull()
       .default("lexical"),
     target: text().notNull(),
-    legacy_document_id: text().references(() => embeddingDocument.id, { onDelete: "set null" }),
     cleanup_after: text(),
     indexed_at: text(),
     lease_token: text(),

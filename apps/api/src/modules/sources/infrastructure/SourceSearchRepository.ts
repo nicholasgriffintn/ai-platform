@@ -24,7 +24,6 @@ export interface SourceSearchDocument {
   project_id: string | null;
   status: "lexical" | "active" | "stale";
   target: string;
-  legacy_document_id: string | null;
   lease_token: string | null;
   lease_expires_at: string | null;
 }
@@ -204,14 +203,10 @@ export class SourceSearchRepository extends BaseRepository<Pick<IEnv, "DB">> {
   }
 
   async removeStale(documentId: string, token: string): Promise<void> {
-    await this.env.DB.batch([
-      this.env.DB.prepare(`DELETE FROM embedding_document WHERE id = (
-        SELECT legacy_document_id FROM source_search_document WHERE id = ? AND status = 'stale' AND lease_token = ?
-      )`).bind(documentId, token),
-      this.env.DB.prepare(
-        "DELETE FROM source_search_document WHERE id = ? AND status = 'stale' AND lease_token = ?",
-      ).bind(documentId, token),
-    ]);
+    await this.executeRun(
+      "DELETE FROM source_search_document WHERE id = ? AND status = 'stale' AND lease_token = ?",
+      [documentId, token],
+    );
   }
 
   async deferCleanup(documentId: string): Promise<void> {

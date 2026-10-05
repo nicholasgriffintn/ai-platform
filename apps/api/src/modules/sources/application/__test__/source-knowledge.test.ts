@@ -43,36 +43,29 @@ function addSource(
 }
 
 describe("native source knowledge", () => {
-  it("transitions existing saved content into sources without a legacy search fallback", async () => {
+  it("copies saved content into sources without changing explicit embedding storage", async () => {
     const source = await database
       .prepare("SELECT content, created_by_user_id FROM source WHERE id = 'knowledge_saved-note'")
       .first();
 
     expect(source).toEqual({ content: "First\n\nSecond", created_by_user_id: 1 });
     expect(
-      await database
-        .prepare("SELECT lifecycle_status FROM embedding_document WHERE id = 'saved-note'")
-        .first("lifecycle_status"),
-    ).toBe("delete_pending");
-    expect((await repository.chunks("retired_saved-note")).map((chunk) => chunk.id).sort()).toEqual(
-      ["old-vector-first", "old-vector-second"],
-    );
+      (
+        await database
+          .prepare(
+            "SELECT content, lifecycle_status FROM embedding_chunk WHERE document_id = 'saved-note' ORDER BY chunk_index",
+          )
+          .all()
+      ).results,
+    ).toEqual([
+      { content: "First", lifecycle_status: "active" },
+      { content: "Second", lifecycle_status: "active" },
+    ]);
     expect(
       await database
         .prepare("SELECT project_id, kind FROM source WHERE id = 'sandbox-run-historical-run'")
         .first(),
     ).toEqual({ project_id: "project-1", kind: "repository" });
-    await repository.claim("retired_saved-note", "cleanup", "stale");
-    await repository.removeStale("retired_saved-note", "cleanup");
-    expect(
-      await database.prepare("SELECT id FROM embedding_document WHERE id = 'saved-note'").first(),
-    ).toBeNull();
-    expect(await repository.chunks("retired_saved-note")).toEqual([]);
-    expect(
-      await database
-        .prepare("SELECT content FROM source WHERE id = 'knowledge_saved-note'")
-        .first("content"),
-    ).toBe("First\n\nSecond");
   });
 
   it("finds exact identifiers while excluding foreign personal and project scopes", async () => {
