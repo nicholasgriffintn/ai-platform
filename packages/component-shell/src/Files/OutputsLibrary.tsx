@@ -1,7 +1,4 @@
-import {
-  ArtifactDocumentEditor,
-  DocumentMetadataPanel,
-} from "@ngriffin_uk/polychat-component-content";
+import { DocumentMetadataPanel } from "@ngriffin_uk/polychat-component-content";
 import { Card, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
   OutputCardGrid,
@@ -11,41 +8,30 @@ import {
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
-  useCreateOutputShare,
   useOutput,
   useOutputHistory,
   useOutputs,
   useOutputShares,
-  useRevokeOutputShare,
   useDescribeDocument,
-  useFormatDocument,
   useRestoreOutputRevision,
-  useSaveDocumentRevision,
   useRunnableTool,
 } from "@ngriffin_uk/polychat-library-react";
 import {
   DOCUMENT_OUTPUT_KIND,
-  documentExportFilename,
   readDocumentBody,
   readDocumentMetadata,
   deriveDocumentStatistics,
 } from "@ngriffin_uk/polychat-schemas";
-import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
 import { Puzzle } from "lucide-react";
-import { useRef, useState } from "react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { ResponseRenderer } from "../Content/ResponseRenderer.js";
+import { DocumentOutputWorkbench } from "./DocumentOutputWorkbench.js";
+import { useOutputSharing } from "./useOutputSharing.js";
 
 export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryProps) {
-  const [copiedOutputId, setCopiedOutputId] = useState<string | null>(null);
-  const [shareError, setShareError] = useState<{ outputId: string; message: string } | null>(null);
-  const mintedShareTokens = useRef(new Map<string, string>());
-  const createShare = useCreateOutputShare();
-  const revokeShare = useRevokeOutputShare();
+  const sharing = useOutputSharing();
   const restoreRevision = useRestoreOutputRevision();
-  const saveDocument = useSaveDocumentRevision();
-  const formatDocument = useFormatDocument();
   const describeDocument = useDescribeDocument();
   const outputId = subpath.split("/").find(Boolean);
   const { data: shares } = useOutputShares(outputId ?? null);
@@ -91,82 +77,27 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
       );
     }
 
-    const copyShareLink = async () => {
-      setShareError(null);
-      try {
-        let token = mintedShareTokens.current.get(output.id);
-
-        if (!token) {
-          ({ token } = await createShare.mutateAsync({ outputId: output.id }));
-          mintedShareTokens.current.set(output.id, token);
-        }
-
-        await navigator.clipboard.writeText(`${window.location.origin}/o/${token}`);
-        setCopiedOutputId(output.id);
-      } catch (shareFailure) {
-        setCopiedOutputId(null);
-        setShareError({
-          outputId: output.id,
-          message:
-            shareFailure instanceof Error ? shareFailure.message : "Could not copy the share link",
-        });
-      }
-    };
-
     return (
       <Card className="gap-5 p-6 shadow-none">
         <OutputDetailHeader
           capabilityId={output.capabilityId}
           title={output.title}
           provenance={output.provenance}
-          isSharing={createShare.isPending}
-          hasCopiedLink={copiedOutputId === output.id}
-          errorMessage={shareError?.outputId === output.id ? shareError.message : undefined}
-          onShare={() => void copyShareLink()}
+          isSharing={sharing.create.isPending}
+          hasCopiedLink={sharing.copiedOutputId === output.id}
+          errorMessage={sharing.error?.outputId === output.id ? sharing.error.message : undefined}
+          onShare={() => void sharing.copy(output.id)}
         />
         {documentBody === null ? (
           <ResponseRenderer app={producingTool ?? undefined} result={output.content} />
         ) : (
-          <div className="h-[560px] overflow-hidden rounded-lg border border-border">
-            <ArtifactDocumentEditor
-              artifact={{
-                identifier: output.id,
-                type: "text/markdown",
-                language: "markdown",
-                title: output.title,
-                content: documentBody,
-              }}
-              isSaving={saveDocument.isPending}
-              saveErrorMessage={saveDocument.error?.message}
-              onSave={async (body) => {
-                await saveDocument.mutateAsync({
-                  outputId: output.id,
-                  body,
-                  expectedRevision: output.revision,
-                  metadata: documentMetadata ?? undefined,
-                });
-              }}
-              isRewriting={formatDocument.isPending}
-              rewriteErrorMessage={formatDocument.error?.message}
-              onRewrite={async () =>
-                (await formatDocument.mutateAsync({ outputId: output.id })).body
-              }
-              onDownload={() =>
-                downloadTextFile(
-                  documentExportFilename(output.title),
-                  documentBody,
-                  "text/markdown",
-                )
-              }
-            />
-          </div>
+          <DocumentOutputWorkbench key={output.id} output={output} body={documentBody} />
         )}
         {documentBody !== null ? (
           <DocumentMetadataPanel
             metadata={{ ...documentMetadata, ...deriveDocumentStatistics(documentBody) }}
             canRegenerate
             isRegeneratingMetadata={describeDocument.isPending}
-            regenerationDisabled={saveDocument.isPending}
             onRegenerateMetadata={() =>
               describeDocument.mutate({ outputId: output.id, expectedRevision: output.revision })
             }
@@ -200,15 +131,10 @@ export function OutputsLibrary({ basePath, projectId, subpath }: OutputsLibraryP
         ) : null}
         <ShareLinkList
           shares={shares ?? []}
-          revokingShareId={revokeShare.isPending ? (revokeShare.variables?.shareId ?? null) : null}
-          onRevoke={(shareId) => {
-            mintedShareTokens.current.delete(output.id);
-            if (copiedOutputId === output.id) {
-              setCopiedOutputId(null);
-            }
-
-            revokeShare.mutate({ outputId: output.id, shareId });
-          }}
+          revokingShareId={
+            sharing.revoke.isPending ? (sharing.revoke.variables?.shareId ?? null) : null
+          }
+          onRevoke={(shareId) => sharing.revokeLink(output.id, shareId)}
         />
       </Card>
     );
