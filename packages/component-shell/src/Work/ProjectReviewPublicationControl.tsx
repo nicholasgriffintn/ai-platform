@@ -22,7 +22,7 @@ export function ProjectReviewPublicationControl({
   const state = useReviewPublication(projectId, task);
 
   if (!state.review) {
-    return state.error && task.executionProfile === "diff_review" ? (
+    return state.error ? (
       <p role="alert" className="mb-4 text-sm text-failure">
         {state.error}
       </p>

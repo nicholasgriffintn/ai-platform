@@ -11,9 +11,9 @@ import type { TaskHandler, TaskMessage, TaskResult } from "~/modules/tasks/appli
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv } from "~/types";
 
-import { startProjectTask } from "./index";
 import { reviewIdentity } from "./integration-identity";
-import { createPullRequestReview } from "./pull-request-review";
+import { startPullRequestReview } from "./pull-request-review";
+import { matchesReviewPolicy } from "./review-policy";
 
 export async function enqueueProjectReviewIntake(
   context: ServiceContext,
@@ -65,16 +65,7 @@ export class ProjectReviewIntakeHandler implements TaskHandler {
       data.projectId,
     );
 
-    if (
-      !policy?.enabled ||
-      policy.revision !== data.policyRevision ||
-      policy.ownerUserId !== user.id ||
-      policy.connectionId !== data.target.connectionId ||
-      policy.workspaceId !== data.workspaceId ||
-      policy.provider !== data.target.provider ||
-      policy.accountId !== data.target.accountId ||
-      policy.repository !== data.target.repository
-    ) {
+    if (!policy || !matchesReviewPolicy(policy, { ...data, ownerUserId: user.id })) {
       return { status: "skipped", message: "Automatic review policy changed" };
     }
 
@@ -85,31 +76,10 @@ export class ProjectReviewIntakeHandler implements TaskHandler {
         return { status: "skipped", message: "Review workspace changed" };
       }
 
-      const { review } = await createPullRequestReview(context, data.projectId, data.target, {
+      const { review } = await startPullRequestReview(context, data.projectId, data.target, {
         policy,
         expectedTarget: data.target,
-        tokenBudget: policy.tokenBudget,
       });
-      const task = await context.repositories.projectTasks.getTaskById(review.taskId);
-
-      if (
-        task &&
-        (task.status === "backlog" ||
-          (task.status === "blocked" && task.blockedReason === "dispatch_failed"))
-      ) {
-        const currentPolicy = await context.repositories.projectTaskIntegrations.getPolicy(
-          data.policyId,
-          data.projectId,
-        );
-
-        if (!currentPolicy?.enabled || currentPolicy.revision !== policy.revision) {
-          return { status: "skipped", message: "Automatic review was disabled before execution" };
-        }
-
-        await startProjectTask(context, data.projectId, task.id, {
-          automaticReviewPolicyRevision: policy.revision,
-        });
-      }
 
       return {
         status: "success",
@@ -117,6 +87,14 @@ export class ProjectReviewIntakeHandler implements TaskHandler {
         data: { reviewId: review.id },
       };
     } catch (error) {
+      if (
+        error instanceof AssistantError &&
+        error.statusCode === 409 &&
+        error.context?.reason === "review_policy_changed"
+      ) {
+        return { status: "skipped", message: "Automatic review was disabled before execution" };
+      }
+
       if (error instanceof AssistantError && [403, 404].includes(error.statusCode)) {
         return { status: "skipped", message: "Review authority is no longer available" };
       }

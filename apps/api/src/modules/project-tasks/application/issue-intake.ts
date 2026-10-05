@@ -17,7 +17,7 @@ import { getTaskIntegrationAdapter } from "../infrastructure/integrations";
 import { createProjectTask } from "./index";
 import { issueImportIdentity } from "./integration-identity";
 
-export async function readProjectIssue(
+async function readProjectIssue(
   context: ServiceContext,
   projectId: string,
   locator: IssueLocator,

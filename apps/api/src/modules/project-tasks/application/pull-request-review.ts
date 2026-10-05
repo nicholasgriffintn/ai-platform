@@ -13,8 +13,13 @@ import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import { connectTaskReview } from "../infrastructure/integrations";
 import { createProjectTask, startProjectTask } from "./index";
 import { reviewIdentity } from "./integration-identity";
-import { connectOwnedReview } from "./review-authority";
 import { retainReviewOutput } from "./review-output";
+import { connectOwnedReview, matchesReviewPolicy } from "./review-policy";
+
+interface ReviewOptions {
+  policy?: ReviewPolicy;
+  expectedTarget?: PullRequestReviewTarget;
+}
 
 export async function listProjectReviews(context: ServiceContext, projectId: string) {
   await requireProjectAccess(context, projectId);
@@ -37,18 +42,14 @@ export async function getProjectTaskReview(
     projectId,
   );
 
-  return { review: review?.projectId === projectId ? review : null };
+  return { review };
 }
 
-export async function createPullRequestReview(
+async function createPullRequestReview(
   context: ServiceContext,
   projectId: string,
   locator: PullRequestLocator,
-  options: {
-    policy?: ReviewPolicy;
-    expectedTarget?: PullRequestReviewTarget;
-    tokenBudget?: number;
-  } = {},
+  options: ReviewOptions,
 ) {
   const { project } = await requireProjectAccess(context, projectId);
   const client = await connectTaskReview(context, locator);
@@ -57,17 +58,15 @@ export async function createPullRequestReview(
     options.expectedTarget,
   );
 
-  if (
-    options.policy &&
-    (!options.policy.enabled ||
-      options.policy.projectId !== projectId ||
-      options.policy.workspaceId !== project.workspace_id ||
-      options.policy.ownerUserId !== context.requireUser().id ||
-      options.policy.connectionId !== captured.target.connectionId ||
-      options.policy.provider !== captured.target.provider ||
-      options.policy.accountId !== captured.target.accountId ||
-      options.policy.repository !== captured.target.repository)
-  ) {
+  const reviewScope = {
+    workspaceId: project.workspace_id,
+    projectId,
+    ownerUserId: context.requireUser().id,
+    target: captured.target,
+    policyRevision: options.policy?.revision ?? null,
+  };
+
+  if (options.policy && !matchesReviewPolicy(options.policy, reviewScope)) {
     throw new AssistantError(
       "Review policy does not authorise this target",
       ErrorType.CONFLICT_ERROR,
@@ -75,8 +74,7 @@ export async function createPullRequestReview(
     );
   }
 
-  const policyRevision = options.policy?.revision ?? null;
-  const id = await reviewIdentity(projectId, captured.target, policyRevision);
+  const id = await reviewIdentity(projectId, captured.target, reviewScope.policyRevision);
   const existing = await context.repositories.projectTaskIntegrations.getReview(id, projectId);
 
   if (existing) {
@@ -134,7 +132,7 @@ export async function createPullRequestReview(
       },
       runner: { kind: "conversation", teammateId: null, model: null, mode: "explore" },
       stageId: "review",
-      tokenBudget: options.tokenBudget ?? 20000,
+      tokenBudget: options.policy?.tokenBudget ?? 20000,
     },
     {
       id: `pr_task_${id}`,
@@ -158,15 +156,11 @@ export async function createPullRequestReview(
   );
 
   const created = await context.repositories.projectTaskIntegrations.recordReview({
+    ...reviewScope,
     id,
-    workspaceId: project.workspace_id,
-    projectId,
-    ownerUserId: context.requireUser().id,
     taskId: task.id,
     sourceId,
-    target: captured.target,
     policyId: options.policy?.id ?? null,
-    policyRevision,
   });
   const review = await context.repositories.projectTaskIntegrations.getReview(id, projectId);
 
@@ -181,27 +175,37 @@ export async function startPullRequestReview(
   context: ServiceContext,
   projectId: string,
   locator: PullRequestLocator,
+  options: ReviewOptions = {},
 ) {
-  const result = await createPullRequestReview(context, projectId, locator);
+  const result = await createPullRequestReview(context, projectId, locator, options);
   const task = await context.repositories.projectTasks.getTaskById(result.review.taskId);
+  const retryableReasons = options.policy ? ["dispatch_failed"] : ["dispatch_failed", "run_failed"];
+  const canRetry =
+    task?.status === "blocked" && retryableReasons.includes(task.blockedReason ?? "");
 
-  if (
-    task &&
-    (task.status === "backlog" ||
-      (task.status === "blocked" &&
-        ["dispatch_failed", "run_failed"].includes(task.blockedReason ?? "")))
-  ) {
-    await startProjectTask(context, projectId, task.id);
+  if (task && (task.status === "backlog" || canRetry)) {
+    if (options.policy) {
+      const policy = await context.repositories.projectTaskIntegrations.getPolicy(
+        options.policy.id,
+        projectId,
+      );
+
+      if (!policy || !matchesReviewPolicy(policy, result.review)) {
+        throw new AssistantError("Automatic review policy changed", ErrorType.CONFLICT_ERROR, 409, {
+          reason: "review_policy_changed",
+        });
+      }
+    }
+
+    await startProjectTask(context, projectId, task.id, {
+      automaticReviewPolicyRevision: options.policy?.revision,
+    });
   }
 
   return result;
 }
 
-export async function requireProjectReview(
-  context: ServiceContext,
-  projectId: string,
-  reviewId: string,
-) {
+async function requireProjectReview(context: ServiceContext, projectId: string, reviewId: string) {
   const { project } = await requireProjectAccess(context, projectId);
   const review = await context.repositories.projectTaskIntegrations.getReview(reviewId, projectId);
 
@@ -268,7 +272,7 @@ export async function publishPullRequestReview(
 
   await client.assertCurrentTarget(review.target);
 
-  await prepareReviewPublication(context, projectId, reviewId);
+  await retainReviewOutput(context, review, completion);
   const body = `${input.body}\n\nReviewed base ${review.target.baseSha}, head ${review.target.headSha}. Diff-only review from Polychat.\n<!-- polychat-review:${review.id} -->`;
   const claimed = await context.repositories.projectTaskIntegrations.claimPublication(
     review.id,
@@ -298,10 +302,8 @@ export async function publishPullRequestReview(
     throw error;
   }
 
-  const { project } = await requireProjectAccess(context, projectId);
-
   await context.repositories.audit.createRecord({
-    workspaceId: project.workspace_id,
+    workspaceId: review.workspaceId,
     actorUserId: context.requireUser().id,
     action: "project.review.published",
     targetType: "project_task",

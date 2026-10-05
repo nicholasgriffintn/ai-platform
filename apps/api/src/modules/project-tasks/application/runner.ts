@@ -50,8 +50,8 @@ import { createProjectTaskCompletion, projectTaskStatusAfterCompletedGoal } from
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { recoverPendingProjectTaskInteraction } from "./interaction-recovery";
 import { getPendingProjectTaskQuestions } from "./questions";
-import { assertReviewDispatchAuthority } from "./review-authority";
 import { retainTaskReviewCompletion } from "./review-output";
+import { assertReviewDispatchAuthority } from "./review-policy";
 import { buildProjectTaskContext } from "./source-context";
 import { projectTaskStatusForGoal } from "./transitions";
 

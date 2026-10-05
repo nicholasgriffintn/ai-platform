@@ -1,6 +1,9 @@
 import {
   reviewPolicyInputSchema,
   reviewPolicySchema,
+  type ProjectTask,
+  type PullRequestReview,
+  type ReviewPolicy,
   type ReviewPolicyInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
@@ -11,6 +14,26 @@ import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { connectTaskReview } from "../infrastructure/integrations";
 import { reviewPolicyIdentity } from "./integration-identity";
+
+export function matchesReviewPolicy(
+  policy: ReviewPolicy,
+  review: Pick<
+    PullRequestReview,
+    "workspaceId" | "projectId" | "ownerUserId" | "target" | "policyRevision"
+  >,
+): boolean {
+  return (
+    policy.enabled &&
+    policy.revision === review.policyRevision &&
+    policy.workspaceId === review.workspaceId &&
+    policy.projectId === review.projectId &&
+    policy.ownerUserId === review.ownerUserId &&
+    policy.connectionId === review.target.connectionId &&
+    policy.provider === review.target.provider &&
+    policy.accountId === review.target.accountId &&
+    policy.repository === review.target.repository
+  );
+}
 
 async function resolvePolicy(
   context: ServiceContext,
@@ -85,4 +108,66 @@ export async function setProjectReviewPolicy(
   });
 
   return { policy };
+}
+
+export async function connectOwnedReview(context: ServiceContext, review: PullRequestReview) {
+  if (review.ownerUserId !== context.requireUser().id) {
+    throw new AssistantError(
+      "Use the credential owner who created this review",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+
+  const client = await connectTaskReview(context, review.target);
+
+  if (client.connectionId !== review.target.connectionId) {
+    throw new AssistantError(
+      "The review's original connection is unavailable",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+
+  return client;
+}
+
+export async function assertReviewDispatchAuthority(
+  context: ServiceContext,
+  task: ProjectTask,
+): Promise<void> {
+  if (task.executionProfile !== "diff_review") {
+    return;
+  }
+
+  const review = await context.repositories.projectTaskIntegrations.getReviewForTask(
+    task.id,
+    task.projectId,
+  );
+
+  if (!review || review.workspaceId !== task.workspaceId) {
+    throw new AssistantError("The review target is unavailable", ErrorType.NOT_FOUND, 404);
+  }
+
+  if (review.policyId) {
+    await requireProjectAccess(context, task.projectId, ["owner", "admin"]);
+    const policy = await context.repositories.projectTaskIntegrations.getPolicy(
+      review.policyId,
+      task.projectId,
+    );
+
+    if (
+      !policy ||
+      policy.ownerUserId !== context.requireUser().id ||
+      !matchesReviewPolicy(policy, review)
+    ) {
+      throw new AssistantError(
+        "Automatic review authority changed. Start a new manual review if needed.",
+        ErrorType.CONFLICT_ERROR,
+        409,
+      );
+    }
+  }
+
+  await connectOwnedReview(context, review);
 }
