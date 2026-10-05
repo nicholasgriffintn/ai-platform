@@ -5,6 +5,8 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
 import { DocumentsMemoryProvider, MEMORY_JOURNAL_DOCUMENT } from "../DocumentsMemoryProvider";
 
+vi.mock("~/modules/workspaces/application/access", () => ({ requireProjectAccess: vi.fn() }));
+
 function createContext(existing: { id: string; content: string; revision: number } | null) {
   const memoryDocuments = {
     getDocumentByName: vi.fn(async () => existing),
@@ -105,7 +107,12 @@ describe("DocumentsMemoryProvider", () => {
 
     expect(results).toHaveLength(1);
     expect(results[0]?.text).toContain("Prefers British English");
-    expect(results[0]?.metadata?.excerpt).toBe("- Prefers British English");
+    expect(results[0]?.metadata).toMatchObject({
+      documentId: "document-1",
+      revision: 3,
+      offset: 0,
+      nextOffset: null,
+    });
   });
 
   it("returns nothing for an empty query rather than everything", async () => {

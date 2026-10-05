@@ -673,6 +673,48 @@ export const memoryDocumentRevision = sqliteTable(
 
 export type MemoryDocumentRevisionRow = typeof memoryDocumentRevision.$inferSelect;
 
+export const memoryReflectionCheckpoint = sqliteTable(
+  "memory_reflection_checkpoint",
+  {
+    id: text().primaryKey(),
+    context_id: text()
+      .notNull()
+      .references(() => teammateContext.id, { onDelete: "cascade" }),
+    conversation_id: text()
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    message_id: text().notNull(),
+    updated_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    contextConversationIdx: uniqueIndex("memory_reflection_checkpoint_context_conversation_idx").on(
+      table.context_id,
+      table.conversation_id,
+    ),
+  }),
+);
+
+export const memoryReflectionResult = sqliteTable("memory_reflection_result", {
+  id: text().primaryKey(),
+  context_id: text()
+    .notNull()
+    .references(() => teammateContext.id, { onDelete: "cascade" }),
+  conversation_id: text()
+    .notNull()
+    .references(() => conversation.id, { onDelete: "cascade" }),
+  through_message_id: text().notNull(),
+  revision: integer().notNull(),
+  status: text({ enum: ["applied", "no_change"] }).notNull(),
+  evidence_json: text().notNull(),
+  created_at: text()
+    .notNull()
+    .default(sql`(CURRENT_TIMESTAMP)`),
+});
+
+export type MemoryReflectionResultRow = typeof memoryReflectionResult.$inferSelect;
+
 export const messageUserState = sqliteTable(
   "message_user_state",
   {
@@ -2526,6 +2568,7 @@ export const tasks = sqliteTable(
     task_type: text({
       enum: [
         "memory_synthesis",
+        "memory_reflection",
         "research_polling",
         "replicate_polling",
         "async_message_polling",
