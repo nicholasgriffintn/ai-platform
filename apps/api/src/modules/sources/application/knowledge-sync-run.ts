@@ -7,6 +7,7 @@ import { createServiceContext, type ServiceContext } from "~/infrastructure/cont
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
 import { executeRecipeConnectorOperation } from "~/modules/apps/application/connectors/operations";
+import { publishResourceEvent } from "~/modules/sync/application/resource-events";
 import type { IEnv } from "~/types";
 
 import type { KnowledgeSyncRecord } from "../infrastructure/KnowledgeSyncRepository";
@@ -73,6 +74,11 @@ async function syncResources(context: ServiceContext, initial: KnowledgeSyncReco
       return;
     }
 
+    await publishResourceEvent(
+      context,
+      { kind: "project", projectId: sync.project_id },
+      "knowledge_sync.changed",
+    );
     const latest = await context.repositories.knowledgeSyncs.get(sync.id);
 
     if (!latest || latest.generation !== initial.generation) {
@@ -123,6 +129,11 @@ export async function runKnowledgeSync(env: IEnv, id: string, userId: number, ge
   } finally {
     try {
       await repositories.knowledgeSyncs.release(id, token, errorMessage, pause);
+      await publishResourceEvent(
+        context,
+        { kind: "project", projectId: sync.project_id },
+        "knowledge_sync.changed",
+      );
     } finally {
       await closeComposioConnectorRun(context);
     }

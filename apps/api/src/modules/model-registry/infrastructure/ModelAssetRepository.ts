@@ -25,6 +25,7 @@ import {
   modelConfiguration,
   modelRecord,
 } from "~/infrastructure/database/schema";
+import { publishModelPlatformChanged } from "~/modules/model-registry/application/sync-events";
 import type { IEnv } from "~/types";
 
 export type { ModelAssetRecord } from "~/infrastructure/database/model-storage";
@@ -119,6 +120,8 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
       .returning(modelAsset);
 
     if (record) {
+      await publishModelPlatformChanged(this.env, record?.workspace_id);
+
       return record;
     }
 
@@ -190,6 +193,8 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
       ...this.fileInserts(id, input.files),
     ]);
 
+    await publishModelPlatformChanged(this.env, record?.workspace_id);
+
     return record;
   }
 
@@ -258,10 +263,13 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
     versionId: string,
     updates: Partial<Pick<ModelVersionRecord, "status" | "attributes" | "failure_reason">>,
   ): Promise<void> {
-    await this.database
+    const [changed] = await this.database
       .update(modelAssetVersion)
       .set({ ...updates, updated_at: new Date().toISOString() })
-      .where(eq(modelAssetVersion.id, versionId));
+      .where(eq(modelAssetVersion.id, versionId))
+      .returning({ workspaceId: modelAssetVersion.workspace_id });
+
+    await publishModelPlatformChanged(this.env, changed?.workspaceId);
   }
 
   async finaliseRevision(
@@ -287,6 +295,9 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
         .where(and(eq(modelRecord.kind, "file"), eq(modelAssetFile.version_id, versionId))),
       ...this.fileInserts(versionId, input.files),
     ]);
+    const version = await this.getVersionById(versionId);
+
+    await publishModelPlatformChanged(this.env, version?.workspace_id);
   }
 
   async retryFailedVersion(
@@ -304,6 +315,8 @@ export class ModelAssetRepository extends BaseRepository<Pick<IEnv, "DB">> {
         ),
       )
       .returning(versionColumns);
+
+    await publishModelPlatformChanged(this.env, version?.workspace_id);
 
     return version ?? null;
   }

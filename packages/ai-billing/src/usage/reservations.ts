@@ -44,7 +44,7 @@ export async function holdUsageReservation(
       deltas: { reserved_credit_micros: creditMicros },
     });
 
-    runtime.publisher?.usageChanged(params.userId, period);
+    await runtime.publisher?.usageChanged(params.userId, period);
   }
 
   return created;
@@ -77,7 +77,7 @@ export async function finishUsageReservation(
     );
 
     if (finished) {
-      publisher?.usageChanged(finished.user_id, finished.period);
+      await publisher?.usageChanged(finished.user_id, finished.period);
     }
 
     return finished;
@@ -106,7 +106,7 @@ export async function finishUsageReservation(
       deltas: { reserved_credit_micros: -reservation.credit_micros },
     });
 
-    publisher?.usageChanged(reservation.user_id, reservation.period);
+    await publisher?.usageChanged(reservation.user_id, reservation.period);
   }
 
   return reservation;

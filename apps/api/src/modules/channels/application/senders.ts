@@ -6,6 +6,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
 import { requireChannelBindingAccess } from "./access";
 import type { ChannelIncomingMessage } from "./ports/channel-adapter";
+import { publishChannelSendersChanged } from "./sender-events";
 
 export async function issueChannelPairingChallenge(
   context: ServiceContext,
@@ -65,14 +66,18 @@ export async function consumeChannelPairingCommand(
     return false;
   }
 
-  return Boolean(
-    await context.repositories.channelSenders.consumeChallenge(
-      binding.id,
-      incoming.from,
-      true,
-      tokenHash,
-    ),
+  const sender = await context.repositories.channelSenders.consumeChallenge(
+    binding.id,
+    incoming.from,
+    true,
+    tokenHash,
   );
+
+  if (sender) {
+    await publishChannelSendersChanged(context, binding);
+  }
+
+  return Boolean(sender);
 }
 
 export async function listChannelSenders(
@@ -102,7 +107,8 @@ export async function revokeChannelSender(
   senderId: string,
   expectedRevision: number,
 ): Promise<void> {
-  await requireChannelBindingAccess(context, bindingId);
+  const { binding } = await requireChannelBindingAccess(context, bindingId);
+
   if (
     !(await context.repositories.channelSenders.revoke(
       bindingId,
@@ -113,4 +119,6 @@ export async function revokeChannelSender(
   ) {
     throw new AssistantError("Sender changed or cannot be revoked", ErrorType.CONFLICT_ERROR, 409);
   }
+
+  await publishChannelSendersChanged(context, binding);
 }

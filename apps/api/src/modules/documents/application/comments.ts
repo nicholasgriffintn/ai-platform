@@ -11,6 +11,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { requireDocument } from "./access";
+import { publishDocumentCommentsChanged } from "./comment-events";
 import { notifyCommentMention, prepareCommentMention } from "./comment-mentions";
 
 function assertCommentRetry(
@@ -80,6 +81,7 @@ export async function createDocumentComment(
 
   if (existing) {
     assertCommentRetry(existing, input, userId);
+    await publishDocumentCommentsChanged(context, output);
     await notifyCommentMention(context, existing);
 
     return existing;
@@ -156,6 +158,7 @@ export async function createDocumentComment(
     saved = retry;
   }
 
+  await publishDocumentCommentsChanged(context, output);
   await notifyCommentMention(context, saved);
 
   return saved;
@@ -194,11 +197,15 @@ export async function resolveDocumentThread(
     );
   }
 
-  return context.repositories.documentComments.resolve(
+  const resolved = await context.repositories.documentComments.resolve(
     outputId,
     commentId,
     input.expectedRevision,
     input.resolved,
     userId,
   );
+
+  await publishDocumentCommentsChanged(context, output);
+
+  return resolved;
 }

@@ -13,9 +13,11 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 import { OUTPUT_QUERY_KEYS } from "./useOutputs.js";
 
 export function useDocumentCollaboration(outputId: string) {
+  const liveOrPoll = useLiveOrPoll();
   const client = useQueryClient();
   const queryKey = ["outputs", "comments", outputId];
   const refresh = () => client.invalidateQueries({ queryKey });
@@ -24,7 +26,7 @@ export function useDocumentCollaboration(outputId: string) {
     queryFn: ({ pageParam }) => listDocumentComments(outputId, pageParam || undefined),
     initialPageParam: "",
     getNextPageParam: (page) => page.nextCursor ?? undefined,
-    refetchInterval: 15_000,
+    refetchInterval: (query) => liveOrPoll(query, 15_000, "document_comments.changed"),
   });
   const create = useMutation({
     mutationFn: (input: CreateDocumentCommentInput) => createDocumentComment(outputId, input),

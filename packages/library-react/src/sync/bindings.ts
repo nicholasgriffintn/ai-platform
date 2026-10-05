@@ -1,10 +1,10 @@
 import { CHATS_QUERY_KEY } from "@ngriffin_uk/polychat-library-client";
 import type { DeviceSyncEvent, DeviceSyncEventType } from "@ngriffin_uk/polychat-schemas";
+import { readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 import type { QueryClient } from "@tanstack/react-query";
 
 import { GOAL_QUERY_KEY } from "../chat/useGoal.js";
 import { MACHINES_QUERY_KEY } from "../chat/useMachines.js";
-import { USAGE_QUERY_KEYS } from "../chat/useUsage.js";
 import { removeConversationFromChatCaches } from "../conversation-cache.js";
 import {
   conversationDelegationsQueryKey,
@@ -17,10 +17,10 @@ import {
   TASK_ATTENTION_QUERY_KEY,
 } from "../hooks/useProjectTasks.js";
 import { PROJECT_WORKBENCH_PREVIEW_QUERY_KEY } from "../hooks/useProjectWorkbenchPreview.js";
-import { projectWorkbenchRunsQueryKey } from "../hooks/useProjectWorkbenchRuns.js";
 import { REPLICATE_QUERY_KEY } from "../hooks/useReplicate.js";
 import { TASK_QUERY_KEYS } from "../hooks/useTasks.js";
 import { teammateContextMemoryQueryPrefix } from "../hooks/useTeammateContextMemory.js";
+import { applyUsageChanged } from "./usage.js";
 
 export interface SyncBindingContext {
   queryClient: QueryClient;
@@ -33,28 +33,18 @@ export interface SyncBinding {
   apply: (context: SyncBindingContext, event: DeviceSyncEvent) => void;
 }
 
-function readString(event: DeviceSyncEvent, key: string): string | undefined {
-  const value = event.data[key];
-
-  return typeof value === "string" ? value : undefined;
-}
-
-function invalidate(context: SyncBindingContext, queryKey: readonly unknown[]): void {
-  context.invalidate(queryKey);
-}
-
 const refreshConversationDetail: SyncBinding["apply"] = (context, event) => {
-  const conversationId = readString(event, "conversationId");
+  const conversationId = readOptionalString(event.data.conversationId);
 
   if (conversationId) {
-    invalidate(context, [CHATS_QUERY_KEY, conversationId]);
-    invalidate(context, conversationBriefQueryKey(conversationId));
+    context.invalidate([CHATS_QUERY_KEY, conversationId]);
+    context.invalidate(conversationBriefQueryKey(conversationId));
   }
 };
 
 const refreshConversationAndList: SyncBinding["apply"] = (context, event) => {
   refreshConversationDetail(context, event);
-  invalidate(context, [CHATS_QUERY_KEY, "remote"]);
+  context.invalidate([CHATS_QUERY_KEY, "remote"]);
 };
 
 export const SYNC_BINDINGS: SyncBinding[] = [
@@ -64,12 +54,12 @@ export const SYNC_BINDINGS: SyncBinding[] = [
   { type: "message.changed", apply: refreshConversationDetail },
   {
     type: "conversation.unread_changed",
-    apply: (context) => invalidate(context, [CHATS_QUERY_KEY, "remote"]),
+    apply: (context) => context.invalidate([CHATS_QUERY_KEY, "remote"]),
   },
   {
     type: "conversation.deleted",
     apply: (context, event) => {
-      const conversationId = readString(event, "conversationId");
+      const conversationId = readOptionalString(event.data.conversationId);
 
       if (conversationId) {
         removeConversationFromChatCaches(
@@ -84,75 +74,174 @@ export const SYNC_BINDINGS: SyncBinding[] = [
   {
     type: "delegation.changed",
     apply: (context, event) => {
-      const conversationId = readString(event, "conversationId");
+      const conversationId = readOptionalString(event.data.conversationId);
 
       if (conversationId) {
-        invalidate(context, conversationDelegationsQueryKey(conversationId));
+        context.invalidate(conversationDelegationsQueryKey(conversationId));
       }
 
-      invalidate(context, conversationHandlesQueryKey);
+      context.invalidate(conversationHandlesQueryKey);
     },
   },
   {
     type: "task.changed",
     apply: (context) => {
-      invalidate(context, TASK_QUERY_KEYS.tasks);
-      invalidate(context, teammateContextMemoryQueryPrefix);
+      context.invalidate(TASK_QUERY_KEYS.tasks);
+      context.invalidate(["memory-synthesis"]);
+      context.invalidate(["memory-synthesis-history"]);
+      context.invalidate(teammateContextMemoryQueryPrefix);
     },
   },
   {
     type: "project_task.changed",
     apply: (context, event) => {
-      const projectId = readString(event, "projectId");
+      const projectId = readOptionalString(event.data.projectId);
 
       if (projectId) {
-        invalidate(context, projectTasksQueryKey(projectId));
-        invalidate(context, projectTaskDetailQueryPrefix(projectId));
+        context.invalidate(projectTasksQueryKey(projectId));
+        context.invalidate(projectTaskDetailQueryPrefix(projectId));
       }
 
-      invalidate(context, TASK_ATTENTION_QUERY_KEY);
+      context.invalidate(TASK_ATTENTION_QUERY_KEY);
     },
   },
   {
     type: "workbench_run.changed",
     apply: (context, event) => {
-      const projectId = readString(event, "projectId");
+      const projectId = readOptionalString(event.data.projectId);
 
       if (projectId) {
-        invalidate(
-          context,
-          projectWorkbenchRunsQueryKey(projectId, readString(event, "conversationId")),
-        );
+        context.invalidate(["project-workbench-runs", projectId]);
       }
 
-      invalidate(context, PROJECT_WORKBENCH_PREVIEW_QUERY_KEY);
+      context.invalidate(PROJECT_WORKBENCH_PREVIEW_QUERY_KEY);
     },
   },
   {
     type: "workbench_preview.changed",
-    apply: (context) => invalidate(context, PROJECT_WORKBENCH_PREVIEW_QUERY_KEY),
+    apply: (context) => context.invalidate(PROJECT_WORKBENCH_PREVIEW_QUERY_KEY),
   },
-  { type: "machine.changed", apply: (context) => invalidate(context, [MACHINES_QUERY_KEY]) },
-  { type: "usage.changed", apply: (context) => invalidate(context, USAGE_QUERY_KEYS.balance) },
+  { type: "machine.changed", apply: (context) => context.invalidate([MACHINES_QUERY_KEY]) },
+  { type: "usage.changed", apply: applyUsageChanged },
   {
-    type: "goal.changed",
+    type: "workspace_usage.changed",
     apply: (context, event) => {
-      const conversationId = readString(event, "conversationId");
+      const workspaceId = readOptionalString(event.data.workspaceId);
 
-      if (conversationId) {
-        invalidate(context, [GOAL_QUERY_KEY, conversationId]);
+      if (workspaceId) {
+        void context.queryClient.invalidateQueries({
+          queryKey: ["usage", "workspace", workspaceId],
+          refetchType: "none",
+        });
       }
     },
   },
-  { type: "research.changed", apply: (context) => invalidate(context, ["research-status"]) },
-  { type: "canvas.changed", apply: (context) => invalidate(context, ["canvas"]) },
-  { type: "replicate.changed", apply: (context) => invalidate(context, [REPLICATE_QUERY_KEY]) },
+  {
+    type: "model_platform.changed",
+    apply: (context, event) => {
+      const workspaceId = readOptionalString(event.data.workspaceId);
+
+      if (workspaceId) {
+        context.invalidate(["model-platform", workspaceId]);
+      }
+    },
+  },
+  {
+    type: "output.changed",
+    apply: (context) => {
+      context.invalidate(["outputs"]);
+      context.invalidate(["canvas"]);
+      context.invalidate([REPLICATE_QUERY_KEY]);
+    },
+  },
+  {
+    type: "document_comments.changed",
+    apply: (context, event) => {
+      const outputId = readOptionalString(event.data.outputId);
+
+      if (outputId) {
+        context.invalidate(["outputs", "comments", outputId]);
+      }
+    },
+  },
+  {
+    type: "knowledge_sync.changed",
+    apply: (context, event) => {
+      const projectId = readOptionalString(event.data.projectId);
+
+      if (projectId) {
+        context.invalidate(["knowledge-syncs", projectId]);
+        context.invalidate(["sources"]);
+      }
+    },
+  },
+  {
+    type: "project_review.changed",
+    apply: (context, event) => {
+      const projectId = readOptionalString(event.data.projectId);
+
+      if (projectId) {
+        context.invalidate(["project-pr-reviews", projectId]);
+        context.invalidate(["project-task-pr-review", projectId]);
+      }
+    },
+  },
+  {
+    type: "channel_senders.changed",
+    apply: (context) => context.invalidate(["channel-senders"]),
+  },
+  {
+    type: "goal.changed",
+    apply: (context, event) => {
+      const conversationId = readOptionalString(event.data.conversationId);
+
+      if (conversationId) {
+        context.invalidate([GOAL_QUERY_KEY, conversationId]);
+      }
+    },
+  },
+  { type: "research.changed", apply: (context) => context.invalidate(["research-status"]) },
+  { type: "canvas.changed", apply: (context) => context.invalidate(["canvas"]) },
+  { type: "replicate.changed", apply: (context) => context.invalidate([REPLICATE_QUERY_KEY]) },
   { type: "connector_approval.changed", apply: refreshConversationDetail },
-  { type: "attention.changed", apply: (context) => invalidate(context, TASK_ATTENTION_QUERY_KEY) },
+  { type: "attention.changed", apply: (context) => context.invalidate(TASK_ATTENTION_QUERY_KEY) },
 ];
 
 const BINDINGS_BY_TYPE = new Map(SYNC_BINDINGS.map((binding) => [binding.type, binding]));
 
 export function applySyncEvent(context: SyncBindingContext, event: DeviceSyncEvent): void {
   BINDINGS_BY_TYPE.get(event.type)?.apply(context, event);
+}
+
+export function invalidateSyncQueries(invalidateQuery: SyncBindingContext["invalidate"]): void {
+  for (const queryKey of [
+    [CHATS_QUERY_KEY],
+    ["conversation-brief"],
+    ["conversation-delegations"],
+    conversationHandlesQueryKey,
+    TASK_QUERY_KEYS.tasks,
+    ["memory-synthesis"],
+    ["memory-synthesis-history"],
+    teammateContextMemoryQueryPrefix,
+    ["project-tasks"],
+    ["project-task"],
+    TASK_ATTENTION_QUERY_KEY,
+    ["project-workbench-runs"],
+    PROJECT_WORKBENCH_PREVIEW_QUERY_KEY,
+    [MACHINES_QUERY_KEY],
+    ["usage"],
+    ["outputs"],
+    ["knowledge-syncs"],
+    ["sources"],
+    ["project-pr-reviews"],
+    ["project-task-pr-review"],
+    ["channel-senders"],
+    ["model-platform"],
+    [GOAL_QUERY_KEY],
+    ["research-status"],
+    ["canvas"],
+    [REPLICATE_QUERY_KEY],
+  ]) {
+    invalidateQuery(queryKey);
+  }
 }

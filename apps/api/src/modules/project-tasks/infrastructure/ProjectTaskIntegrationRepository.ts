@@ -10,6 +10,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { REVIEW_POLICY_COLUMNS } from "~/infrastructure/database/accessStorage";
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { sourceResourceSql } from "~/infrastructure/database/resource-storage";
+import { publishResourceEvent } from "~/modules/sync/application/resource-events";
 
 export interface ExternalTaskImport {
   id: string;
@@ -143,6 +144,12 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
         409,
       );
     }
+
+    await publishResourceEvent(
+      { env: this.env },
+      { kind: "project", projectId: policy.projectId },
+      "project_review.changed",
+    );
   }
 
   async listPolicies(
@@ -247,6 +254,14 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
       ],
     );
 
+    if (result.meta.changes === 1) {
+      await publishResourceEvent(
+        { env: this.env },
+        { kind: "project", projectId: review.projectId },
+        "project_review.changed",
+      );
+    }
+
     return result.meta.changes === 1;
   }
 
@@ -270,6 +285,14 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
       [body, id, projectId, completionId],
     );
 
+    if (result.meta.changes === 1) {
+      await publishResourceEvent(
+        { env: this.env },
+        { kind: "project", projectId: projectId },
+        "project_review.changed",
+      );
+    }
+
     return result.meta.changes === 1;
   }
 
@@ -278,12 +301,22 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
       "UPDATE project_task_integration SET publication_status = ?, published_url = ? WHERE kind = 'review' AND id = ? AND project_id = ? AND publication_status IN ('publishing', 'unknown')",
       [url ? "published" : "unknown", url, id, projectId],
     );
+    await publishResourceEvent(
+      { env: this.env },
+      { kind: "project", projectId: projectId },
+      "project_review.changed",
+    );
   }
 
   async releasePublication(id: string, projectId: string, body: string): Promise<void> {
     await this.executeRun(
       "UPDATE project_task_integration SET publication_status = 'unpublished', publication_body = NULL WHERE kind = 'review' AND id = ? AND project_id = ? AND publication_status = 'publishing' AND publication_body = ?",
       [id, projectId, body],
+    );
+    await publishResourceEvent(
+      { env: this.env },
+      { kind: "project", projectId: projectId },
+      "project_review.changed",
     );
   }
 

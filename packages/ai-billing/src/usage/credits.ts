@@ -194,7 +194,7 @@ export async function admitTurn(
       return { admitted: false, position };
     }
 
-    runtime.publisher?.usageChanged(durable.userId, position.period);
+    await runtime.publisher?.usageChanged(durable.userId, position.period);
 
     return {
       admitted: true,

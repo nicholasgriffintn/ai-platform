@@ -118,6 +118,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { skipToken, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
+
 const POLL_MS = 10_000;
 const SLOW_POLL_MS = 30_000;
 
@@ -209,33 +211,49 @@ function usePlatformMutation<TInput, TResult>(
 }
 
 export function useModelsOverview(workspaceId: string, projectId?: string) {
+  const liveOrPoll = useLiveOrPoll();
+
   return useQuery({
     queryKey: modelPlatformKeys.overview(workspaceId, projectId),
     queryFn: () => getModelsOverview(workspaceId, projectId),
     enabled: Boolean(workspaceId),
-    refetchInterval: (query) => {
-      const data = query.state.data;
+    refetchInterval: (query) =>
+      liveOrPoll(
+        query,
+        (currentQuery) => {
+          const data = currentQuery.state.data;
 
-      return data &&
-        (data.runs.some((run) => isActiveRun(run.status)) ||
-          data.deployments.some((deployment) => isTransitional(deployment.status)))
-        ? POLL_MS
-        : SLOW_POLL_MS;
-    },
+          return data &&
+            (data.runs.some((run) => isActiveRun(run.status)) ||
+              data.deployments.some((deployment) => isTransitional(deployment.status)))
+            ? POLL_MS
+            : SLOW_POLL_MS;
+        },
+        "model_platform.changed",
+        SLOW_POLL_MS,
+      ),
   });
 }
 
 export function useModelLibrary(workspaceId: string, kind?: ModelAssetKind, projectId?: string) {
+  const liveOrPoll = useLiveOrPoll();
+
   return useQuery({
     queryKey: modelPlatformKeys.library(workspaceId, kind, projectId),
     queryFn: () => listModelLibrary(workspaceId, { kind, projectId }),
     enabled: Boolean(workspaceId),
     refetchInterval: (query) =>
-      query.state.data?.some(
-        (entry) => entry.version.status === "importing" || entry.version.status === "inspecting",
-      )
-        ? POLL_MS
-        : false,
+      liveOrPoll(
+        query,
+        (currentQuery) =>
+          currentQuery.state.data?.some(
+            (entry) =>
+              entry.version.status === "importing" || entry.version.status === "inspecting",
+          )
+            ? POLL_MS
+            : false,
+        "model_platform.changed",
+      ),
   });
 }
 
@@ -254,42 +272,63 @@ export function useModelSourceSearch(
 }
 
 export function useModelVersion(workspaceId: string, versionId: string, projectId?: string) {
+  const liveOrPoll = useLiveOrPoll();
+
   return useQuery({
     queryKey: modelPlatformKeys.version(workspaceId, versionId, projectId),
     queryFn: () => getModelVersion(workspaceId, versionId, projectId),
     enabled: Boolean(workspaceId && versionId),
-    refetchInterval: (query) => {
-      const detail = query.state.data;
+    refetchInterval: (query) =>
+      liveOrPoll(
+        query,
+        (currentQuery) => {
+          const detail = currentQuery.state.data;
 
-      return detail &&
-        (detail.version.status === "importing" ||
-          detail.version.status === "inspecting" ||
-          detail.evalRuns.some((run) => run.status === "queued" || run.status === "running"))
-        ? POLL_MS
-        : false;
-    },
+          return detail &&
+            (detail.version.status === "importing" ||
+              detail.version.status === "inspecting" ||
+              detail.evalRuns.some((run) => run.status === "queued" || run.status === "running"))
+            ? POLL_MS
+            : false;
+        },
+        "model_platform.changed",
+      ),
   });
 }
 
 export function useDatasets(workspaceId: string, projectId?: string) {
+  const liveOrPoll = useLiveOrPoll();
+
   return useQuery({
     queryKey: modelPlatformKeys.datasets(workspaceId, projectId),
     queryFn: () => listDatasets(workspaceId, projectId),
     enabled: Boolean(workspaceId),
     refetchInterval: (query) =>
-      query.state.data?.some((dataset) => dataset.profile?.status === "processing")
-        ? POLL_MS
-        : false,
+      liveOrPoll(
+        query,
+        (currentQuery) =>
+          currentQuery.state.data?.some((dataset) => dataset.profile?.status === "processing")
+            ? POLL_MS
+            : false,
+        "model_platform.changed",
+      ),
   });
 }
 
 export function useDataset(workspaceId: string, versionId: string) {
+  const liveOrPoll = useLiveOrPoll();
+
   return useQuery({
     queryKey: modelPlatformKeys.dataset(workspaceId, versionId),
     queryFn: () => getDataset(workspaceId, versionId),
     enabled: Boolean(workspaceId && versionId),
     refetchInterval: (query) =>
-      query.state.data?.profile?.status === "processing" ? POLL_MS : false,
+      liveOrPoll(
+        query,
+        (currentQuery) =>
+          currentQuery.state.data?.profile?.status === "processing" ? POLL_MS : false,
+        "model_platform.changed",
+      ),
   });
 }
 
@@ -321,22 +360,38 @@ export function useUploadPreview(workspaceId: string, uploadId: string | undefin
 }
 
 export function useTrainingRuns(workspaceId: string, projectId?: string) {
+  const liveOrPoll = useLiveOrPoll();
+
   return useQuery({
     queryKey: modelPlatformKeys.runs(workspaceId, projectId),
     queryFn: () => listTrainingRuns(workspaceId, projectId),
     enabled: Boolean(workspaceId),
     refetchInterval: (query) =>
-      query.state.data?.some((run) => isActiveRun(run.status)) ? POLL_MS : false,
+      liveOrPoll(
+        query,
+        (currentQuery) =>
+          currentQuery.state.data?.some((run) => isActiveRun(run.status)) ? POLL_MS : false,
+        "model_platform.changed",
+        SLOW_POLL_MS,
+      ),
   });
 }
 
 export function useTrainingRun(workspaceId: string, runId: string) {
+  const liveOrPoll = useLiveOrPoll();
+
   return useQuery({
     queryKey: modelPlatformKeys.run(workspaceId, runId),
     queryFn: () => getTrainingRun(workspaceId, runId),
     enabled: Boolean(workspaceId && runId),
     refetchInterval: (query) =>
-      query.state.data && isActiveRun(query.state.data.status) ? POLL_MS : false,
+      liveOrPoll(
+        query,
+        (currentQuery) =>
+          currentQuery.state.data && isActiveRun(currentQuery.state.data.status) ? POLL_MS : false,
+        "model_platform.changed",
+        SLOW_POLL_MS,
+      ),
   });
 }
 
@@ -357,26 +412,42 @@ export function useDeploymentPlan(workspaceId: string, request: DeploymentPlanRe
 }
 
 export function useDeployments(workspaceId: string, projectId?: string) {
+  const liveOrPoll = useLiveOrPoll();
+
   return useQuery({
     queryKey: modelPlatformKeys.deployments(workspaceId, projectId),
     queryFn: () => listDeployments(workspaceId, projectId),
     enabled: Boolean(workspaceId),
     refetchInterval: (query) =>
-      query.state.data?.some((deployment) => isTransitional(deployment.status))
-        ? POLL_MS
-        : SLOW_POLL_MS,
+      liveOrPoll(
+        query,
+        (currentQuery) =>
+          currentQuery.state.data?.some((deployment) => isTransitional(deployment.status))
+            ? POLL_MS
+            : SLOW_POLL_MS,
+        "model_platform.changed",
+        SLOW_POLL_MS,
+      ),
   });
 }
 
 export function useDeployment(workspaceId: string, deploymentId: string) {
+  const liveOrPoll = useLiveOrPoll();
+
   return useQuery({
     queryKey: modelPlatformKeys.deployment(workspaceId, deploymentId),
     queryFn: () => getDeployment(workspaceId, deploymentId),
     enabled: Boolean(workspaceId && deploymentId),
     refetchInterval: (query) =>
-      query.state.data && isTransitional(query.state.data.deployment.status)
-        ? POLL_MS
-        : SLOW_POLL_MS,
+      liveOrPoll(
+        query,
+        (currentQuery) =>
+          currentQuery.state.data && isTransitional(currentQuery.state.data.deployment.status)
+            ? POLL_MS
+            : SLOW_POLL_MS,
+        "model_platform.changed",
+        SLOW_POLL_MS,
+      ),
   });
 }
 
@@ -437,14 +508,23 @@ export function useEvalSuites(workspaceId: string, projectId?: string) {
 }
 
 export function useEvalRuns(workspaceId: string, suiteId: string | undefined) {
+  const liveOrPoll = useLiveOrPoll();
+
   return useQuery({
     queryKey: modelPlatformKeys.evalRuns(workspaceId, suiteId ?? ""),
     queryFn: () => listEvalRuns(workspaceId, suiteId ?? ""),
     enabled: Boolean(workspaceId && suiteId),
     refetchInterval: (query) =>
-      query.state.data?.some((run) => run.status === "queued" || run.status === "running")
-        ? POLL_MS
-        : false,
+      liveOrPoll(
+        query,
+        (currentQuery) =>
+          currentQuery.state.data?.some(
+            (run) => run.status === "queued" || run.status === "running",
+          )
+            ? POLL_MS
+            : false,
+        "model_platform.changed",
+      ),
   });
 }
 
