@@ -79,22 +79,6 @@ export {
   type ComposioToolSearchResult,
 } from "./composio/client.js";
 export { type ComposioEnvironment, type ComposioHttpMethod } from "./composio/request.js";
-export { createKnowledgeProxyReader } from "./knowledge/proxy.js";
-export type {
-  KnowledgeRead,
-  KnowledgeReadMethod,
-  KnowledgeReadRequest,
-  KnowledgeReadScope,
-  KnowledgeConnectorCredentials,
-  KnowledgeConnectorAdapter,
-  KnowledgeConnectorSession,
-} from "./knowledge/types.js";
-export {
-  listDriveKnowledgePage,
-  getDriveKnowledgePermissions,
-  readDriveKnowledgeContent,
-  validateDriveKnowledgeVersion,
-} from "./knowledge/drive.js";
 export {
   deleteComposioTriggerInstance,
   getComposioTriggerType,
@@ -112,3 +96,4 @@ export {
   listConfiguredComposioToolkits,
   type ConfiguredComposioToolkit,
 } from "@ngriffin_uk/polychat-library-composio";
+export { normaliseConnectorKnowledge, type ConnectorKnowledgeDocument } from "./knowledge.js";

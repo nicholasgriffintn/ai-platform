@@ -12,7 +12,7 @@ import { resolveRequestProjectId } from "~/modules/functions/application/request
 import { createSource } from "~/modules/sources/application/sources";
 import type { IRequest } from "~/types";
 
-const MAX_VECTORIZED_ENTRIES = 10;
+const MAX_STORED_ENTRIES = 10;
 
 const getExtractionSource = (
   provider: ContentExtractProvider,
@@ -63,9 +63,9 @@ export async function maybeStoreExtractedKnowledge({
   }
 
   try {
-    if (extracted.results.length > MAX_VECTORIZED_ENTRIES) {
+    if (extracted.results.length > MAX_STORED_ENTRIES) {
       throw new AssistantError(
-        `At most ${MAX_VECTORIZED_ENTRIES} extracted entries can be stored`,
+        `At most ${MAX_STORED_ENTRIES} extracted entries can be stored`,
         ErrorType.PARAMS_ERROR,
         400,
       );

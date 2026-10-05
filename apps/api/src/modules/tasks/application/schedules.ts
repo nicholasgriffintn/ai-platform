@@ -8,8 +8,8 @@ import {
   runModelGovernanceMaintenance,
   scheduleModelPlatformReconciles,
 } from "~/modules/model-governance/application/maintenance";
-import { maintainKnowledgeIndexes } from "~/modules/sources/application/knowledge-maintenance";
-import { scheduleSourceSyncs } from "~/modules/sources/application/source-sync-worker";
+import { scheduleKnowledgeIndexes } from "~/modules/sources/application/knowledge-index";
+import { scheduleKnowledgeSyncs } from "~/modules/sources/application/knowledge-sync-run";
 import { schedulePendingTaskNotificationDeliveries } from "~/modules/task-notifications/application/delivery";
 
 import {
@@ -25,13 +25,20 @@ import {
 import { defineSchedule, workflows } from "./workflows";
 
 workflows.always(
-  defineSchedule({ name: "source-sync-maintenance", run: ({ env }) => scheduleSourceSyncs(env) }),
+  defineSchedule({
+    name: "source-knowledge-sync",
+    run: async ({ env }) => {
+      await scheduleKnowledgeSyncs(env);
+    },
+  }),
 );
 
 workflows.always(
   defineSchedule({
-    name: "source-index-maintenance",
-    run: ({ env }) => maintainKnowledgeIndexes(env),
+    name: "source-knowledge-index",
+    run: async ({ env }) => {
+      await scheduleKnowledgeIndexes(env);
+    },
   }),
 );
 

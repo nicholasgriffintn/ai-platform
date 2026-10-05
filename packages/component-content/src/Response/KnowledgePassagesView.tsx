@@ -1,11 +1,10 @@
-import { knowledgePassageSchema } from "@ngriffin_uk/polychat-schemas";
+import { projectKnowledgeSearchResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import { isHttpUrl, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { MemoizedMarkdown } from "../markdown";
 
 export function KnowledgePassagesView({ data }: { data: unknown }) {
-  const parsed = knowledgePassageSchema
-    .array()
+  const parsed = projectKnowledgeSearchResponseSchema.shape.data
     .max(10)
     .safeParse(isRecord(data) ? data.documents : undefined);
 
@@ -25,9 +24,9 @@ export function KnowledgePassagesView({ data }: { data: unknown }) {
           <MemoizedMarkdown className="mt-2 max-w-none text-sm">
             {document.content}
           </MemoizedMarkdown>
-          {document.sourceUrl && isHttpUrl(document.sourceUrl) ? (
+          {document.provenance.externalUri && isHttpUrl(document.provenance.externalUri) ? (
             <a
-              href={document.sourceUrl}
+              href={document.provenance.externalUri}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-2 inline-block text-xs underline"

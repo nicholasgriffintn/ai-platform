@@ -1,10 +1,7 @@
 import {
   addCollectionSourcesSchema,
-  createSourceSyncSchema,
-  sourceSyncListSchema,
-  knowledgeSearchSchema,
-  knowledgeSearchResponseSchema,
   knowledgeStatusResponseSchema,
+  knowledgeIndexRetryResponseSchema,
   createSourceCollectionSchema,
   createSourceSchema,
   sourceCollectionListResponseSchema,
@@ -13,25 +10,30 @@ import {
   sourceListQuerySchema,
   sourceListResponseSchema,
   sourceSchema,
+  projectKnowledgeSearchQuerySchema,
+  projectKnowledgeSearchResponseSchema,
   setProjectContextSourcesSchema,
   updateSourceSchema,
+  createKnowledgeSyncSchema,
+  knowledgeSyncListSchema,
+  knowledgeSyncSchema,
+  updateKnowledgeSyncSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { getPrivateFileResponse, readPrivateFile } from "~/infrastructure/storage/read-resource";
-import { retrySourceIndex } from "~/modules/sources/application/knowledge-indexing";
+import { retrySourceIndex } from "~/modules/sources/application/knowledge-index";
 import {
   listKnowledgeStatus,
-  searchKnowledge,
+  searchProjectKnowledge,
 } from "~/modules/sources/application/knowledge-search";
 import {
-  createSourceSync,
-  listSourceSyncs,
-  updateSourceSync,
-  deleteSourceSync,
-} from "~/modules/sources/application/source-sync";
+  listKnowledgeSyncs,
+  createKnowledgeSync,
+  controlKnowledgeSync,
+} from "~/modules/sources/application/knowledge-sync";
 import {
   addCollectionSources,
   createSource,
@@ -56,50 +58,43 @@ const requiredProjectQuery = z.object({ projectId: z.string().min(1) });
 const createSourceRequestSchema = createSourceSchema.omit({ file: true });
 const syncParams = z.object({ syncId: z.string().min(1) });
 
-addRoute(app, "get", "/syncs", {
+addRoute(app, "get", "/knowledge-syncs", {
   tags: ["sources"],
   auth: true,
-  querySchema: projectQuery,
-  responses: { 200: { description: "Source syncs", schema: sourceSyncListSchema } },
-  handler: ({ query, serviceContext }) => listSourceSyncs(serviceContext, query.projectId),
+  querySchema: requiredProjectQuery,
+  responses: { 200: { description: "Knowledge sync freshness", schema: knowledgeSyncListSchema } },
+  handler: ({ query, serviceContext }) => listKnowledgeSyncs(serviceContext, query.projectId),
 });
 
-addRoute(app, "post", "/syncs", {
+addRoute(app, "post", "/knowledge-syncs", {
   tags: ["sources"],
   auth: true,
-  bodySchema: createSourceSyncSchema,
-  responses: { 200: { description: "Created source sync", schema: sourceSyncListSchema } },
-  handler: ({ body, serviceContext }) => createSourceSync(serviceContext, body),
+  bodySchema: createKnowledgeSyncSchema,
+  responses: { 200: { description: "Saved knowledge sync", schema: knowledgeSyncSchema } },
+  handler: ({ body, serviceContext }) => createKnowledgeSync(serviceContext, body),
 });
 
-addRoute(app, "put", "/syncs/:syncId", {
+addRoute(app, "patch", "/knowledge-syncs/:syncId", {
   tags: ["sources"],
   auth: true,
   paramSchema: syncParams,
-  bodySchema: z.object({ enabled: z.boolean() }).strict(),
-  responses: { 200: { description: "Updated source sync", schema: sourceSyncListSchema } },
+  bodySchema: updateKnowledgeSyncSchema,
+  responses: { 200: { description: "Updated knowledge sync", schema: knowledgeSyncSchema } },
   handler: ({ params, body, serviceContext }) =>
-    updateSourceSync(serviceContext, params.syncId, body.enabled),
+    controlKnowledgeSync(serviceContext, params.syncId, body),
 });
 
-addRoute(app, "delete", "/syncs/:syncId", {
+addRoute(app, "get", "/search", {
   tags: ["sources"],
   auth: true,
-  paramSchema: syncParams,
+  querySchema: projectKnowledgeSearchQuerySchema,
   responses: {
-    200: { description: "Deleted source sync", schema: z.object({ deleted: z.literal(true) }) },
+    200: {
+      description: "Project knowledge passages",
+      schema: projectKnowledgeSearchResponseSchema,
+    },
   },
-  handler: ({ params, serviceContext }) => deleteSourceSync(serviceContext, params.syncId),
-});
-
-addRoute(app, "post", "/search", {
-  tags: ["sources"],
-  auth: true,
-  bodySchema: knowledgeSearchSchema,
-  responses: {
-    200: { description: "Authorised knowledge passages", schema: knowledgeSearchResponseSchema },
-  },
-  handler: ({ body, serviceContext }) => searchKnowledge(serviceContext, body),
+  handler: ({ query, serviceContext }) => searchProjectKnowledge(serviceContext, query),
 });
 
 addRoute(app, "get", "/index-status", {
@@ -117,7 +112,7 @@ addRoute(app, "post", "/:sourceId/reindex", {
   auth: true,
   paramSchema: sourceParams,
   responses: {
-    200: { description: "Indexing queued", schema: z.object({ queued: z.literal(true) }) },
+    200: { description: "Indexing queued", schema: knowledgeIndexRetryResponseSchema },
   },
   handler: ({ params, serviceContext }) => retrySourceIndex(serviceContext, params.sourceId),
 });

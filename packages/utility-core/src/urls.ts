@@ -58,23 +58,15 @@ export function isHttpUrl(value: string): boolean {
   return /^https?:\/\//iu.test(value);
 }
 
-export function readGoogleDriveFolderId(value: string): string | null {
-  const candidate = value.trim();
-
-  if (/^[A-Za-z0-9_-]{1,200}$/.test(candidate)) {
-    return candidate;
+export function resolveHttpUrl(value: unknown, base?: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
   }
 
   try {
-    const url = new URL(candidate);
+    const url = new URL(value, typeof base === "string" ? base : undefined);
 
-    if (url.origin !== "https://drive.google.com" || url.username || url.password) {
-      return null;
-    }
-
-    return (
-      url.pathname.match(/^\/drive\/(?:u\/\d+\/)?folders\/([A-Za-z0-9_-]{1,200})\/?$/)?.[1] ?? null
-    );
+    return isHttpUrl(url.href) && !url.username && !url.password ? url.href : null;
   } catch {
     return null;
   }

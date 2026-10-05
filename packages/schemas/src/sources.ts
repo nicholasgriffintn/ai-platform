@@ -46,6 +46,46 @@ export const sourceSchema = z
 
 export const sourceSummarySchema = sourceSchema.omit({ content: true });
 
+export const projectKnowledgeSearchQuerySchema = z
+  .object({
+    projectId: z.string().min(1).optional(),
+    query: z.string().trim().min(1).max(1000),
+    type: z.string().min(1).max(100).optional(),
+    top_k: z.coerce.number().int().min(1).max(30).optional(),
+  })
+  .strict();
+
+export const projectKnowledgeSearchResponseSchema = z.object({
+  status: z.literal("success"),
+  semanticSearchAvailable: z.boolean(),
+  data: z.array(
+    z.object({
+      id: z.string(),
+      sourceId: z.string(),
+      chunkId: z.string(),
+      chunkIndex: z.number().int().nonnegative(),
+      title: z.string(),
+      content: z.string(),
+      type: z.string(),
+      score: z.number(),
+      rankingMethod: z.string(),
+      provenance: z.object({
+        projectId: z.string().nullable(),
+        sourceRevision: z.number().int().positive(),
+        externalUri: z.string().nullable(),
+        updatedAt: z.string().nullable(),
+        upstreamRevision: z
+          .union([z.number().int().positive(), z.string().min(1).max(200)])
+          .nullable(),
+        lastSyncedAt: z.string().nullable(),
+      }),
+    }),
+  ),
+});
+
+export type ProjectKnowledgeSearchQuery = z.infer<typeof projectKnowledgeSearchQuerySchema>;
+export type ProjectKnowledgeSearchResponse = z.infer<typeof projectKnowledgeSearchResponseSchema>;
+
 export const createSourceSchema = z
   .object({
     projectId: z.string().min(1).nullable().optional(),
@@ -147,3 +187,22 @@ export type SourceCollection = z.infer<typeof sourceCollectionSchema>;
 export type SourceCollectionKind = z.infer<typeof sourceCollectionKindSchema>;
 export type CreateSourceCollectionInput = z.infer<typeof createSourceCollectionSchema>;
 export type ProviderConnectionSummary = z.infer<typeof providerConnectionSummarySchema>;
+
+export const knowledgeIndexStatusSchema = z
+  .object({
+    sourceId: z.string(),
+    status: z.enum(["pending", "indexing", "available", "failed", "unavailable"]),
+    indexedAt: z.string().nullable(),
+    managed: z.boolean(),
+  })
+  .strict();
+
+export const knowledgeStatusResponseSchema = z
+  .object({
+    sources: z.array(knowledgeIndexStatusSchema),
+  })
+  .strict();
+
+export const knowledgeIndexRetryResponseSchema = z.object({ queued: z.literal(true) }).strict();
+
+export type KnowledgeIndexStatus = z.infer<typeof knowledgeIndexStatusSchema>;

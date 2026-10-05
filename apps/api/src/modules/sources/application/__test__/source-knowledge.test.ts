@@ -1,17 +1,20 @@
 import type { D1Database } from "@cloudflare/workers-types";
+import { toFtsQuery } from "@ngriffin_uk/polychat-utility-server/search-ranking";
 import { Miniflare } from "miniflare";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import type { ContentExtractResult } from "~/modules/apps/application/ports/content-extract";
+import { maybeStoreExtractedKnowledge } from "~/modules/apps/infrastructure/retrieval/content-extract/storage";
 import { search_documents } from "~/modules/functions/application/search_documents";
-import { SourceIndexRepository } from "~/modules/sources/infrastructure/SourceIndexRepository";
+import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
-import { SourceSyncRepository } from "~/modules/sources/infrastructure/SourceSyncRepository";
+import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 
-import { databaseTestEnvironment } from "../../../../../test/environment";
 import { prepareKnowledgeDatabase } from "../../../../../test/fixtures/sources/database";
 import { addIndexedKnowledgeSource } from "../../../../../test/fixtures/sources/indexed-source";
 import { knowledgeTestUser } from "../../../../../test/fixtures/sources/users";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 
 const runtime = new Miniflare({
   modules: true,
@@ -20,12 +23,12 @@ const runtime = new Miniflare({
   d1Databases: ["DB"],
 });
 let database: D1Database;
-let repository: SourceIndexRepository;
+let repository: SourceSearchRepository;
 
 beforeAll(async () => {
   database = await runtime.getD1Database("DB");
   await prepareKnowledgeDatabase(database);
-  repository = new SourceIndexRepository(databaseTestEnvironment(database));
+  repository = new SourceSearchRepository(databaseTestEnvironment(database));
 });
 
 afterAll(() => runtime.dispose());
@@ -51,20 +54,20 @@ describe("native source knowledge", () => {
         .prepare("SELECT lifecycle_status FROM embedding_document WHERE id = 'saved-note'")
         .first("lifecycle_status"),
     ).toBe("delete_pending");
-    expect((await repository.getVectorIds("retired_saved-note")).sort()).toEqual([
-      "old-vector-first",
-      "old-vector-second",
-    ]);
+    expect((await repository.chunks("retired_saved-note")).map((chunk) => chunk.id).sort()).toEqual(
+      ["old-vector-first", "old-vector-second"],
+    );
     expect(
       await database
         .prepare("SELECT project_id, kind FROM source WHERE id = 'sandbox-run-historical-run'")
         .first(),
     ).toEqual({ project_id: "project-1", kind: "repository" });
-    await repository.remove("retired_saved-note");
+    await repository.claim("retired_saved-note", "cleanup", "stale");
+    await repository.removeStale("retired_saved-note", "cleanup");
     expect(
       await database.prepare("SELECT id FROM embedding_document WHERE id = 'saved-note'").first(),
     ).toBeNull();
-    expect(await repository.getVectorIds("retired_saved-note")).toEqual([]);
+    expect(await repository.chunks("retired_saved-note")).toEqual([]);
     expect(
       await database
         .prepare("SELECT content FROM source WHERE id = 'knowledge_saved-note'")
@@ -79,43 +82,60 @@ describe("native source knowledge", () => {
     await addSource("foreign-project", "project-2");
 
     expect(
-      (await repository.searchKeywords({ userId: 1 }, 'INC-4821 " OR *')).map(
-        (chunk) => chunk.source_id,
+      (await repository.lexical({ userId: 1 }, toFtsQuery('INC-4821 " OR *') ?? "")).map(
+        (chunk) => chunk.sourceId,
       ),
     ).toEqual(["personal"]);
     expect(
-      (await repository.searchKeywords({ userId: 1, projectId: "project-1" }, "INC-4821")).map(
-        (chunk) => chunk.source_id,
-      ),
+      (
+        await repository.lexical(
+          { userId: 1, projectId: "project-1" },
+          toFtsQuery("INC-4821") ?? "",
+        )
+      ).map((chunk) => chunk.sourceId),
     ).toEqual(["project"]);
+    const summaries = await new SourceRepository(
+      databaseTestEnvironment(database),
+    ).listPersonalSourceSummaries(1);
+
+    expect(summaries.some((source) => source.id === "personal")).toBe(true);
+    expect(summaries.every((source) => !("content" in source))).toBe(true);
+    expect(
+      summaries.some((source) => source.id === "foreign-personal" || source.id === "project"),
+    ).toBe(false);
     expect(
       await repository.hydrate({ userId: 1 }, ["vector-foreign-personal", "vector-project"]),
     ).toEqual([]);
+    await repository.invalidate("project");
+    await database.prepare("DELETE FROM workspace_member WHERE user_id = 2").run();
+    expect(
+      (await repository.maintenance(false, false)).find((source) => source.id === "project")
+        ?.user_id,
+    ).toBe(1);
   });
 
   it("fences stale revisions before activation and hydration", async () => {
     await addSource("edited");
     await database
+      .prepare("UPDATE source_search_document SET status = 'lexical' WHERE id = 'index-edited'")
+      .run();
+    await repository.claim("index-edited", "worker", "lexical");
+    await database
       .prepare("UPDATE source SET content = 'New release decision' WHERE id = 'edited'")
       .run();
 
-    expect(await repository.getSourceRevision("edited")).toBe(2);
+    expect((await repository.getSource("edited"))?.search_revision).toBe(2);
     expect(await repository.hydrate({ userId: 1 }, ["vector-edited"])).toEqual([]);
-    await repository.prepare({
-      id: "stale-index",
-      sourceId: "edited",
-      revision: 3,
-      userId: 1,
-      target: "{}",
-      title: "stale",
-      chunks: [{ id: "stale-chunk", vectorId: "stale-vector", index: 0, content: "stale" }],
-    });
-    expect(await repository.activate("stale-index")).toBe(false);
+    await repository.invalidate("edited");
+    expect((await repository.stale("edited")).map((document) => document.id)).toContain(
+      "index-edited",
+    );
+    expect(await repository.activate("index-edited", "worker")).toBe(false);
 
     await addSource("restored");
     await database.prepare("UPDATE source SET status = 'archived' WHERE id = 'restored'").run();
     await database.prepare("UPDATE source SET status = 'available' WHERE id = 'restored'").run();
-    expect(await repository.getSourceRevision("restored")).toBe(2);
+    expect((await repository.getSource("restored"))?.search_revision).toBe(3);
     expect(await repository.hydrate({ userId: 1 }, ["vector-restored"])).toEqual([]);
   });
 
@@ -141,12 +161,12 @@ describe("native source knowledge", () => {
     await addSource("keyword-only");
     await database
       .prepare(
-        "UPDATE source_index SET lifecycle_status = 'failed' WHERE id = 'index-keyword-only'",
+        "UPDATE source_search_document SET status = 'lexical' WHERE id = 'index-keyword-only'",
       )
       .run();
     expect(
-      (await repository.searchKeywords({ userId: 1 }, "INC-4821")).some(
-        (chunk) => chunk.source_id === "keyword-only",
+      (await repository.lexical({ userId: 1 }, toFtsQuery("INC-4821") ?? "")).some(
+        (chunk) => chunk.sourceId === "keyword-only",
       ),
     ).toBe(true);
   });
@@ -158,7 +178,9 @@ describe("native source knowledge", () => {
       )
       .run();
     await database
-      .prepare("INSERT INTO tasks VALUES ('source_index_extract-failure_1', 'failed')")
+      .prepare(
+        `INSERT INTO tasks (id, status, task_type, task_data) VALUES ('extract-failure-task', 'failed', 'source_knowledge_index', '{"sourceId":"extract-failure"}')`,
+      )
       .run();
     expect(
       (await repository.listStatus({ userId: 1 })).find(
@@ -172,7 +194,7 @@ describe("native source knowledge", () => {
     await database
       .prepare("UPDATE source SET metadata = '{\"permissionRevision\":2}' WHERE id = 'connected'")
       .run();
-    expect(await repository.getSourceRevision("connected")).toBe(1);
+    expect((await repository.getSource("connected"))?.search_revision).toBe(1);
     await database
       .prepare("UPDATE provider_connection SET status = 'revoked' WHERE id = 'connection'")
       .run();
@@ -190,12 +212,15 @@ describe("native source knowledge", () => {
     await database.prepare("DELETE FROM source WHERE id = 'deleted'").run();
     await database.prepare("DELETE FROM user WHERE id = 4").run();
     expect(await repository.hydrate({ userId: 1 }, ["vector-deleted"])).toEqual([]);
-    expect(await repository.getVectorIds("index-deleted")).toEqual(["vector-deleted"]);
-    expect((await repository.listObsolete()).some((index) => index.id === "index-deleted")).toBe(
+    expect((await repository.chunks("index-deleted")).map((chunk) => chunk.id)).toEqual([
+      "vector-deleted",
+    ]);
+    expect((await repository.stale("deleted")).some((index) => index.id === "index-deleted")).toBe(
       true,
     );
-    await repository.remove("index-deleted");
-    expect(await repository.getVectorIds("index-deleted")).toEqual([]);
+    await repository.claim("index-deleted", "cleanup", "stale");
+    await repository.removeStale("index-deleted", "cleanup");
+    expect(await repository.chunks("index-deleted")).toEqual([]);
   });
 });
 
@@ -237,160 +262,127 @@ describe("persistent source sync", () => {
     expect(await sources.getSource("rollback-foreign")).not.toBeNull();
     expect(await sources.getSource("rollback-project")).not.toBeNull();
   });
-  it("refreshes source access independently and denies new project audiences immediately", async () => {
+
+  it("rolls back a partially saved extraction and hides database failure details", async () => {
+    await database
+      .prepare(`CREATE TRIGGER reject_extraction BEFORE INSERT ON source
+      WHEN new.content = 'private-provider-detail' BEGIN SELECT RAISE(ABORT, 'private-provider-detail'); END;`)
+      .run();
+    const env = databaseTestEnvironment(database);
+    const context = createServiceContext({ env, user: knowledgeTestUser });
+    const extracted = {
+      results: [
+        { url: "https://rollback.test/one", raw_content: "First extracted page" },
+        { url: "https://rollback.test/two", raw_content: "private-provider-detail" },
+      ],
+      failed_results: [],
+      response_time: 1,
+    };
+    const result: ContentExtractResult = { status: "success", data: { extracted } };
+
+    try {
+      await maybeStoreExtractedKnowledge({
+        params: { urls: extracted.results.map((entry) => entry.url), storeKnowledge: true },
+        req: { env, context, user: knowledgeTestUser, memoryScope: { type: "personal" } },
+        provider: "cloudflare",
+        extracted,
+        result,
+      });
+      expect(
+        await database
+          .prepare("SELECT id FROM source WHERE external_uri IN (?, ?)")
+          .bind(...extracted.results.map((entry) => entry.url))
+          .all(),
+      ).toMatchObject({ results: [] });
+      expect(result.data.storedKnowledge).toEqual({
+        success: false,
+        error: "Unable to store extracted content",
+      });
+      expect(JSON.stringify(result.data.storedKnowledge)).not.toContain("private-provider-detail");
+    } finally {
+      await database.prepare("DROP TRIGGER reject_extraction").run();
+    }
+  });
+  it("excludes shared knowledge after pause, publisher demotion or connection revocation and fences stale sync writes", async () => {
     await database
       .prepare(
         "INSERT INTO provider_connection (id, status) VALUES ('sync-connection', 'connected')",
       )
       .run();
-    const syncs = new SourceSyncRepository(databaseTestEnvironment(database));
+    const syncs = new KnowledgeSyncRepository(databaseTestEnvironment(database));
     const sources = new SourceRepository(databaseTestEnvironment(database));
-    const sync = await syncs.create(
-      1,
-      {
-        provider: "googledrive",
-        projectId: "project-1",
-        accountId: "external",
-        rootId: "folder",
-        title: "Shared knowledge",
-      },
-      "sync-connection",
-    );
 
-    expect(
-      await syncs.begin(sync.id, "scan", { folders: ["folder"], folderIndex: 0, pageToken: null }),
-    ).toBe(true);
-    const input = {
-      sync,
-      runId: "scan",
-      page: 0,
-      upstreamId: "upstream",
-      version: "1",
-      title: "Release plan",
-      content: "Release plan INC-4821",
-      sourceUrl: "https://drive.google.com/file/d/upstream/view",
-    };
+    await database
+      .prepare(`INSERT INTO source_knowledge_sync
+      (id, user_id, project_id, connection_id, recipe_id, integration_id, title, resources)
+      VALUES ('sync', 1, 'project-1', 'sync-connection', 'knowledge', 'records', 'Shared knowledge', '[]')`)
+      .run();
+    const sync = await syncs.get("sync");
 
-    await syncs.storeDocument({
-      ...input,
-      permissions: {
-        public: false,
-        emails: ["one@example.com", "two@example.com"],
-        validUntil: null,
-      },
-    });
-    const source = await syncs.getSyncedSource(sync.id, "upstream");
-
-    expect(source).not.toBeNull();
-    if (!source) {
-      throw new Error("Expected synced source");
+    if (!sync) {
+      throw new Error("Sync fixture missing");
     }
 
-    expect(await sources.getSource(source.id)).not.toBeNull();
-    const revision = await repository.getSourceRevision(source.id);
-
-    await syncs.storeDocument({
-      ...input,
-      permissions: { public: false, emails: ["one@example.com"], validUntil: null },
-    });
-    expect(await repository.getSourceRevision(source.id)).toBe(revision);
-    expect(await sources.getSource(source.id)).toBeNull();
-
-    await syncs.storeDocument({
-      ...input,
-      permissions: {
-        public: false,
-        emails: ["one@example.com", "two@example.com"],
-        validUntil: null,
-      },
-    });
-    await database.prepare("INSERT INTO user VALUES (3, 'three@example.com')").run();
-    await database
-      .prepare("INSERT INTO workspace_member VALUES ('workspace-1', 3, 'member')")
-      .run();
-    expect(await sources.getSource(source.id)).toBeNull();
-    await database.prepare("DELETE FROM workspace_member WHERE user_id = 3").run();
-    expect(await sources.getSource(source.id)).not.toBeNull();
-
-    await syncs.setEnabled(sync.id, false);
-    expect(await sources.getSource(source.id)).toBeNull();
-    await syncs.storeDocument({
-      ...input,
-      permissions: { public: true, emails: [], validUntil: null },
-      content: "Stale writer",
-    });
-    expect((await syncs.getSyncedSource(sync.id, "upstream"))?.content).toBe(input.content);
-
-    await syncs.setEnabled(sync.id, true);
-    await syncs.begin(sync.id, "resumed", { folders: ["folder"], folderIndex: 0, pageToken: null });
-    await syncs.storeDocument({
-      ...input,
-      runId: "resumed",
-      permissions: { public: true, emails: [], validUntil: null },
-    });
-    await syncs.invalidatePermissions(sync.id, "upstream", "scan", 0);
-    await syncs.archiveDocument(sync.id, "upstream", "scan", 0);
-    await syncs.fail(sync.id, "scan", 0, "Stale failure");
-    expect(await sources.getSource(source.id)).not.toBeNull();
-    expect((await syncs.get(sync.id))?.status).toBe("syncing");
-    await syncs.storeDocument({
-      ...input,
-      runId: "resumed",
-      permissions: { public: true, emails: [], validUntil: "2000-01-01T00:00:00Z" },
-    });
-    expect(await sources.getSource(source.id)).toBeNull();
-    await syncs.remove(sync.id);
-    expect(await syncs.getSyncedSource(sync.id, "upstream")).toBeNull();
-  });
-
-  it("prunes only after a complete current scan and never accepts an obsolete checkpoint", async () => {
-    const syncs = new SourceSyncRepository(databaseTestEnvironment(database));
-    const sync = await syncs.create(
-      1,
-      {
-        provider: "googledrive",
-        accountId: "external",
-        rootId: "another-folder",
-        title: "Personal knowledge",
-      },
-      "sync-connection",
-    );
-
-    await syncs.begin(sync.id, "first", {
-      folders: ["another-folder"],
-      folderIndex: 0,
-      pageToken: null,
-    });
-    const document = {
-      sync,
-      page: 0,
-      upstreamId: "document",
-      version: "1",
-      title: "A note",
-      content: "Keep this note",
-      sourceUrl: "https://drive.google.com/file/d/document/view",
-      permissions: { public: false, emails: [], validUntil: null },
+    await syncs.claim(sync.id, sync.generation, "current");
+    const resource: Parameters<KnowledgeSyncRepository["commitResource"]>[2] = {
+      sourceId: "shared-document",
+      resourceId: "doc",
+      resourceCount: 1,
+      provider: "notion",
+      title: "Release plan",
+      content: "INC-4821 shared decision",
+      status: "available",
+      externalUri: null,
+      upstreamRevision: "1",
     };
 
-    await syncs.storeDocument({ ...document, runId: "first" });
-    await syncs.complete(sync.id, "first", 0);
-    await syncs.begin(sync.id, "second", {
-      folders: ["another-folder"],
-      folderIndex: 0,
-      pageToken: null,
-    });
-    await syncs.fail(sync.id, "second", 0, "Temporary failure");
-    expect((await syncs.getSyncedSource(sync.id, "document"))?.status).toBe("available");
-    await syncs.complete(sync.id, "first", 0);
-    expect((await syncs.getSyncedSource(sync.id, "document"))?.status).toBe("available");
+    expect(await syncs.commitResource(sync, "current", resource)).toBe(true);
+    expect(await sources.getSource(resource.sourceId)).not.toBeNull();
+    await syncs.control(sync.id, "pause");
+    expect(await sources.getSource(resource.sourceId)).toBeNull();
     expect(
-      await syncs.checkpoint(sync.id, "first", 0, {
-        folders: ["another-folder"],
-        folderIndex: 0,
-        pageToken: null,
+      await syncs.commitResource(sync, "current", { ...resource, content: "stale write" }),
+    ).toBe(false);
+    await syncs.control(sync.id, "resume");
+    const resumed = await syncs.get(sync.id);
+
+    if (!resumed) {
+      throw new Error("Resumed sync missing");
+    }
+
+    await syncs.claim(sync.id, resumed.generation, "resumed");
+    expect((await sources.getSource(resource.sourceId))?.content).toBe(resource.content);
+    await database
+      .prepare(
+        "UPDATE workspace_member SET role = 'member' WHERE user_id = 1 AND workspace_id = 'workspace-1'",
+      )
+      .run();
+    expect(await sources.getSource(resource.sourceId)).toBeNull();
+    expect(
+      await syncs.commitResource(resumed, "resumed", {
+        ...resource,
+        content: "unauthorised write",
       }),
     ).toBe(false);
-    await syncs.complete(sync.id, "second", 0);
-    expect((await syncs.getSyncedSource(sync.id, "document"))?.status).toBe("archived");
+    expect((await syncs.get(sync.id))?.generation).toBe(resumed.generation);
+    await database
+      .prepare(
+        "UPDATE workspace_member SET role = 'owner' WHERE user_id = 1 AND workspace_id = 'workspace-1'",
+      )
+      .run();
+    await database
+      .prepare("UPDATE project_capability SET excluded = 1 WHERE project_id = 'project-1'")
+      .run();
+    expect(await sources.getSource(resource.sourceId)).toBeNull();
+    await database
+      .prepare("UPDATE project_capability SET excluded = 0 WHERE project_id = 'project-1'")
+      .run();
+    await database
+      .prepare("UPDATE provider_connection SET status = 'revoked' WHERE id = 'sync-connection'")
+      .run();
+    expect(await sources.getSource(resource.sourceId)).toBeNull();
+    await database.prepare("DELETE FROM provider_connection WHERE id = 'sync-connection'").run();
+    expect(await sources.getSource(resource.sourceId)).toBeNull();
+    expect((await repository.getSource(resource.sourceId))?.status).toBe("archived");
   });
 });

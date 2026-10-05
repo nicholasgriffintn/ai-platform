@@ -3,14 +3,14 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { readPrivateFile } from "~/infrastructure/storage/read-resource";
 import { convertBlobToMarkdownViaCloudflare } from "~/modules/documents/application/convert";
-import { SourceIndexRepository } from "~/modules/sources/infrastructure/SourceIndexRepository";
+import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 
 export async function extractKnowledgeSource(
   context: ServiceContext,
   sourceId: string,
 ): Promise<void> {
-  const repository = new SourceIndexRepository(context.env);
-  const source = await repository.getSnapshot(sourceId);
+  const repository = new SourceSearchRepository(context.env);
+  const source = await repository.getSource(sourceId);
 
   if (
     !source ||
@@ -40,6 +40,11 @@ export async function extractKnowledgeSource(
     resourceId: sourceId,
     userId: context.requireUser().id,
   });
+
+  if (file.object.size > 25 * 1024 * 1024) {
+    throw new AssistantError("Source file exceeds extraction limits", ErrorType.PARAMS_ERROR, 413);
+  }
+
   const bytes = await file.object.arrayBuffer();
 
   if (bytes.byteLength > 25 * 1024 * 1024) {
@@ -64,5 +69,5 @@ export async function extractKnowledgeSource(
     );
   }
 
-  await repository.storeExtraction(sourceId, source.knowledge_revision, content);
+  await repository.storeExtraction(sourceId, source.search_revision, content);
 }

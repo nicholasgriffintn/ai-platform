@@ -1,7 +1,7 @@
-import { knowledgeSearchSchema } from "@ngriffin_uk/polychat-schemas";
+import { projectKnowledgeSearchQuerySchema } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
-import { searchKnowledge } from "~/modules/sources/application/knowledge-search";
+import { searchProjectKnowledge } from "~/modules/sources/application/knowledge-search";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { search_documents as search_documentsDescriptor } from "./definitions/search_documents";
@@ -12,16 +12,16 @@ export const search_documents: ApiToolDefinition = {
   execute: async (args, context) => {
     const request = context.request;
 
-    const response = await searchKnowledge(
+    const response = await searchProjectKnowledge(
       resolveServiceContext(request),
-      knowledgeSearchSchema.parse({
+      projectKnowledgeSearchQuerySchema.parse({
         query: args.query,
         type: args.type,
-        topK: args.top_k ?? 3,
+        top_k: args.top_k ?? 3,
         projectId: resolveRequestProjectId(request) ?? undefined,
       }),
     );
-    const documents = response.documents;
+    const documents = response.data;
 
     if (documents.length === 0) {
       return {

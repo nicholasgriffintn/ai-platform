@@ -1,7 +1,7 @@
-import { knowledgeSearchSchema } from "@ngriffin_uk/polychat-schemas";
+import { projectKnowledgeSearchQuerySchema } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
-import { searchKnowledge } from "~/modules/sources/application/knowledge-search";
+import { searchProjectKnowledge } from "~/modules/sources/application/knowledge-search";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { get_note as get_noteDescriptor } from "./definitions/get_note";
@@ -11,9 +11,9 @@ export const get_note: ApiToolDefinition = {
   ...get_noteDescriptor,
   execute: async (args, toolContext) => {
     const request = toolContext.request;
-    const response = await searchKnowledge(
+    const response = await searchProjectKnowledge(
       resolveServiceContext(request),
-      knowledgeSearchSchema.parse({
+      projectKnowledgeSearchQuerySchema.parse({
         query: args.query,
         type: "text",
         projectId: resolveRequestProjectId(request) ?? undefined,
@@ -24,7 +24,7 @@ export const get_note: ApiToolDefinition = {
       status: "success",
       name: "get_note",
       content: "Notes retrieved from the current knowledge sources",
-      data: { renderer: "document_search", query: args.query, documents: response.documents },
+      data: { renderer: "document_search", query: args.query, documents: response.data },
     };
   },
 };

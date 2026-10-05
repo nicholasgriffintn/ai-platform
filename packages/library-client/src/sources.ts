@@ -1,30 +1,19 @@
 import type {
   CreateSourceCollectionInput,
-  CreateSourceSyncInput,
-  SourceSync,
-  KnowledgeSearchInput,
-  KnowledgeSearchResponse,
   KnowledgeIndexStatus,
   CreateSourceInput,
   Source,
   SourceCollection,
   SourceKind,
   SourceSummary,
+  ProjectKnowledgeSearchQuery,
+  ProjectKnowledgeSearchResponse,
+  KnowledgeSync,
+  CreateKnowledgeSync,
+  UpdateKnowledgeSync,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { apiService } from "./api-service.js";
-import { fetchApiOrThrow } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
-
-async function request<T>(path: string, init: { method?: string; body?: object } = {}): Promise<T> {
-  const response = await fetchApiOrThrow(path, {
-    method: init.method ?? "GET",
-    headers: await apiService.getHeaders(),
-    body: init.body,
-  });
-
-  return returnFetchedData<T>(response);
-}
+import { fetchApiData as request } from "./fetch-wrapper.js";
 
 export async function listSources(
   filters: {
@@ -51,58 +40,54 @@ export async function getSource(sourceId: string): Promise<Source> {
   return request(`/sources/${encodeURIComponent(sourceId)}`);
 }
 
+export async function listKnowledgeSyncs(projectId: string): Promise<KnowledgeSync[]> {
+  return (
+    await request<{ syncs: KnowledgeSync[] }>(
+      `/sources/knowledge-syncs?projectId=${encodeURIComponent(projectId)}`,
+    )
+  ).syncs;
+}
+
+export async function createKnowledgeSync(input: CreateKnowledgeSync): Promise<KnowledgeSync> {
+  return request("/sources/knowledge-syncs", { method: "POST", body: input });
+}
+
+export async function controlKnowledgeSync(
+  id: string,
+  input: UpdateKnowledgeSync,
+): Promise<KnowledgeSync> {
+  return request(`/sources/knowledge-syncs/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: input,
+  });
+}
+
+export async function searchProjectKnowledge(
+  input: ProjectKnowledgeSearchQuery,
+): Promise<ProjectKnowledgeSearchResponse> {
+  const query = new URLSearchParams({ query: input.query });
+
+  if (input.projectId) {
+    query.set("projectId", input.projectId);
+  }
+
+  if (input.type) {
+    query.set("type", input.type);
+  }
+
+  if (input.top_k) {
+    query.set("top_k", String(input.top_k));
+  }
+
+  return request(`/sources/search?${query.toString()}`);
+}
+
 export async function createSource(input: CreateSourceInput): Promise<Source> {
   return request("/sources", { method: "POST", body: input });
 }
 
 export async function deleteSource(sourceId: string): Promise<void> {
   await request(`/sources/${encodeURIComponent(sourceId)}`, { method: "DELETE" });
-}
-
-export async function searchKnowledge(
-  input: KnowledgeSearchInput,
-): Promise<KnowledgeSearchResponse> {
-  return request("/sources/search", { method: "POST", body: input });
-}
-
-export async function listSourceSyncs(projectId?: string): Promise<SourceSync[]> {
-  const suffix = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
-
-  return (await request<{ syncs: SourceSync[] }>(`/sources/syncs${suffix}`)).syncs;
-}
-
-export async function createSourceSync(input: CreateSourceSyncInput): Promise<SourceSync[]> {
-  return (await request<{ syncs: SourceSync[] }>("/sources/syncs", { method: "POST", body: input }))
-    .syncs;
-}
-
-export async function updateSourceSync(input: {
-  syncId: string;
-  enabled: boolean;
-}): Promise<SourceSync[]> {
-  return (
-    await request<{ syncs: SourceSync[] }>(`/sources/syncs/${encodeURIComponent(input.syncId)}`, {
-      method: "PUT",
-      body: { enabled: input.enabled },
-    })
-  ).syncs;
-}
-
-export async function deleteSourceSync(syncId: string): Promise<void> {
-  await request(`/sources/syncs/${encodeURIComponent(syncId)}`, { method: "DELETE" });
-}
-
-export async function listKnowledgeIndexStatus(
-  projectId?: string,
-): Promise<KnowledgeIndexStatus[]> {
-  const suffix = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
-
-  return (await request<{ sources: KnowledgeIndexStatus[] }>(`/sources/index-status${suffix}`))
-    .sources;
-}
-
-export async function retryKnowledgeIndex(sourceId: string): Promise<void> {
-  await request(`/sources/${encodeURIComponent(sourceId)}/reindex`, { method: "POST" });
 }
 
 export async function listSourceCollections(projectId?: string): Promise<SourceCollection[]> {
@@ -166,4 +151,17 @@ export async function setProjectContextSources(
       { method: "PUT", body: { sourceIds } },
     )
   ).sources;
+}
+
+export async function listKnowledgeIndexStatus(
+  projectId?: string,
+): Promise<KnowledgeIndexStatus[]> {
+  const suffix = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+
+  return (await request<{ sources: KnowledgeIndexStatus[] }>(`/sources/index-status${suffix}`))
+    .sources;
+}
+
+export async function retryKnowledgeIndex(sourceId: string): Promise<void> {
+  await request(`/sources/${encodeURIComponent(sourceId)}/reindex`, { method: "POST" });
 }

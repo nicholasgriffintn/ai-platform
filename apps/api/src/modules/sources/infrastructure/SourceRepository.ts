@@ -445,6 +445,7 @@ export class SourceRepository extends BaseRepository {
     conditions: Record<string, unknown>,
   ): Promise<SourceSummaryRecord[]> {
     const { query, values } = this.buildSelectQuery("source", conditions, {
+      columns: [...SOURCE_SUMMARY_COLUMNS],
       orderBy: "updated_at DESC, created_at DESC",
     });
 

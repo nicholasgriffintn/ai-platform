@@ -1,5 +1,7 @@
 import {
   addCollectionSources,
+  listKnowledgeIndexStatus,
+  retryKnowledgeIndex,
   createSource,
   createSourceCollection,
   deleteSource,
@@ -9,6 +11,7 @@ import {
   listSources,
   listProjectContextSources,
   setProjectContextSources,
+  searchProjectKnowledge,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
   CreateSourceCollectionInput,
@@ -48,6 +51,15 @@ export function useSourceCollections(projectId?: string) {
   return useQuery({
     queryKey: SOURCE_QUERY_KEYS.collections(projectId),
     queryFn: () => listSourceCollections(projectId),
+  });
+}
+
+export function useProjectKnowledgeSearch(projectId: string | undefined, query: string) {
+  return useQuery({
+    queryKey: ["sources", "search", projectId, query],
+    queryFn: () => searchProjectKnowledge({ projectId, query, top_k: 10 }),
+    enabled: Boolean(query.trim()),
+    staleTime: 0,
   });
 }
 
@@ -98,4 +110,26 @@ export function useSourceMutations() {
       onSuccess: invalidate,
     }),
   };
+}
+
+export function useKnowledgeIndexStatus(projectId?: string) {
+  return useQuery({
+    queryKey: ["sources", "index-status", projectId],
+    queryFn: () => listKnowledgeIndexStatus(projectId),
+    refetchInterval: (query) =>
+      query.state.data?.some(
+        (source) => source.status === "pending" || source.status === "indexing",
+      )
+        ? 5000
+        : false,
+  });
+}
+
+export function useRetryKnowledgeIndex() {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: retryKnowledgeIndex,
+    onSuccess: () => client.invalidateQueries({ queryKey: SOURCE_QUERY_KEYS.all }),
+  });
 }

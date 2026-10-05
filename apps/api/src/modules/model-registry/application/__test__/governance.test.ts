@@ -19,7 +19,7 @@ import { ModelPermissionRepository } from "~/modules/model-governance/infrastruc
 import { ModelAliasRepository } from "~/modules/model-serving/infrastructure/ModelAliasRepository";
 import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
 
-import { applyTestMigration } from "../../../../../test/migrations";
+import { applyTestMigration } from "../../../../../test/helpers/migrations";
 import { ModelAssetRepository } from "../../infrastructure/ModelAssetRepository";
 import { ModelGovernanceRepository } from "../../infrastructure/ModelGovernanceRepository";
 import { ModelRouteRepository } from "../../infrastructure/ModelRouteRepository";

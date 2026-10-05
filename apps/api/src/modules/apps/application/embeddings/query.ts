@@ -1,4 +1,3 @@
-import { fuseRankedMatches } from "@ngriffin_uk/polychat-utility-core";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -24,6 +23,7 @@ import { parseQueryEmbeddingsRequest } from "./requests";
 const PROVIDER_QUERY_CONCURRENCY = 4;
 const MAX_QUERY_RESULTS = 15;
 const MAX_PROVIDER_TARGETS = 8;
+const RECIPROCAL_RANK_OFFSET = 60;
 
 interface QueryEmbeddingsRequest {
   request: unknown;
@@ -133,18 +133,27 @@ const queryStoredTargets = async (
     );
   }
 
+  const matchesByTargetAndVectorId = new Map<string, TargetedMatch>();
   const useRankFusion = successfulProviderResults.length > 1;
   const rankingMethod = useRankFusion ? "reciprocal-rank-fusion" : "provider-score";
-  const rankings: TargetedMatch[][] = successfulProviderResults.map(({ matches, target }) =>
-    [...matches]
-      .sort((left, right) => right.score - left.score)
-      .map((match) => ({ ...match, target })),
+
+  for (const { matches, target } of successfulProviderResults) {
+    const rankedTargetMatches = [...matches].sort((left, right) => right.score - left.score);
+
+    for (const [rank, match] of rankedTargetMatches.entries()) {
+      const key = `${targetKey(target)}:${match.id}`;
+      const existing = matchesByTargetAndVectorId.get(key);
+      const score = useRankFusion ? 1 / (RECIPROCAL_RANK_OFFSET + rank + 1) : match.score;
+
+      if (!existing || score > existing.score) {
+        matchesByTargetAndVectorId.set(key, { id: match.id, score, target });
+      }
+    }
+  }
+
+  const matches = [...matchesByTargetAndVectorId.values()].sort(
+    (left, right) => right.score - left.score,
   );
-  const fused = fuseRankedMatches(rankings, (match) => `${targetKey(match.target)}:${match.id}`);
-  const matches = fused.map(({ match, score }) => ({
-    ...match,
-    score: useRankFusion ? score : match.score,
-  }));
 
   if (matches.length === 0) {
     return { status: "success", data: [] };

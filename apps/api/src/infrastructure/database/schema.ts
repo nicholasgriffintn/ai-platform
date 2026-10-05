@@ -1752,16 +1752,10 @@ export const source = sqliteTable(
       .default("available")
       .notNull(),
     content: text(),
-    knowledge_revision: integer().default(1).notNull(),
-    sync_id: text().references(() => sourceSync.id, { onDelete: "set null" }),
-    upstream_id: text(),
-    upstream_version: text(),
-    seen_run_id: text(),
-    permission_grants: text(),
-    permissions_valid_until: text(),
     provider: text(),
     external_uri: text(),
     vector_id: text(),
+    search_revision: integer().notNull().default(1),
     metadata: text({ mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
     storage_key: text().unique(),
     mime_type: text(),
@@ -1780,93 +1774,101 @@ export const source = sqliteTable(
     conversationIdx: index("source_conversation_id_idx").on(table.conversation_id),
     connectionIdx: index("source_connection_id_idx").on(table.connection_id),
     kindIdx: index("source_kind_idx").on(table.kind),
-    upstreamIdx: uniqueIndex("source_sync_upstream_idx").on(table.sync_id, table.upstream_id),
     vectorIdx: index("source_vector_id_idx").on(table.vector_id),
   }),
 );
 
 export type Source = typeof source.$inferSelect;
 
-export const sourceSync = sqliteTable(
-  "source_sync",
-  {
-    id: text().primaryKey(),
-    created_by_user_id: integer()
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    project_id: text().references(() => project.id, { onDelete: "cascade" }),
-    connection_id: text()
-      .notNull()
-      .references(() => providerConnection.id, { onDelete: "cascade" }),
-    provider: text().notNull(),
-    root_id: text().notNull(),
-    title: text().notNull(),
-    enabled: integer().default(1).notNull(),
-    status: text().default("pending").notNull(),
-    checkpoint: text().default("{}").notNull(),
-    run_id: text(),
-    page: integer().default(0).notNull(),
-    last_synced_at: text(),
-    next_sync_at: text().default(sql`(CURRENT_TIMESTAMP)`),
-    last_error: text(),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-  },
-  (table) => ({
-    dueIdx: index("source_sync_due_idx").on(table.enabled, table.next_sync_at),
-    personalRootIdx: uniqueIndex("source_sync_personal_root_idx")
-      .on(table.connection_id, table.provider, table.root_id)
-      .where(sql`${table.project_id} IS NULL`),
-    rootIdx: uniqueIndex("source_sync_root_idx").on(
-      table.connection_id,
-      table.project_id,
-      table.provider,
-      table.root_id,
-    ),
-  }),
-);
-
-export const sourceIndex = sqliteTable(
-  "source_index",
+export const sourceSearchDocument = sqliteTable(
+  "source_search_document",
   {
     id: text().primaryKey(),
     source_id: text().notNull(),
-    revision: integer().notNull(),
-    created_by_user_id: integer().notNull(),
+    source_revision: integer().notNull(),
+    user_id: integer().notNull(),
+    project_id: text(),
+    status: text({ enum: ["lexical", "active", "stale"] })
+      .notNull()
+      .default("lexical"),
     target: text().notNull(),
-    lifecycle_status: text({ enum: ["pending", "active", "failed"] }).notNull(),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-    indexed_at: text(),
-    cleanup_after: text(),
     legacy_document_id: text().references(() => embeddingDocument.id, { onDelete: "set null" }),
+    cleanup_after: text(),
+    indexed_at: text(),
+    lease_token: text(),
+    lease_expires_at: text(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
   },
   (table) => ({
-    revisionIdx: uniqueIndex("source_index_revision_idx").on(table.source_id, table.revision),
-    sourceIdx: index("source_index_source_idx").on(
+    revisionIdx: uniqueIndex("source_search_document_revision_idx").on(
       table.source_id,
-      table.revision,
-      table.lifecycle_status,
+      table.source_revision,
+    ),
+    scopeIdx: index("source_search_document_scope_idx").on(table.project_id, table.status),
+    statusIdx: index("source_search_document_status_idx").on(table.status),
+    lifecycleCheck: check(
+      "source_search_document_lifecycle_check",
+      sql`${table.status} IN ('lexical', 'active', 'stale')`,
+    ),
+    revisionCheck: check(
+      "source_search_document_revision_check",
+      sql`${table.source_revision} > 0`,
     ),
   }),
 );
 
-export const sourceChunk = sqliteTable(
-  "source_chunk",
+export const sourceSearchChunk = sqliteTable(
+  "source_search_chunk",
   {
     id: text().primaryKey(),
-    index_id: text()
+    document_id: text()
       .notNull()
-      .references(() => sourceIndex.id, { onDelete: "cascade" }),
-    vector_id: text().notNull().unique(),
+      .references(() => sourceSearchDocument.id, { onDelete: "cascade" }),
     chunk_index: integer().notNull(),
     title: text().notNull(),
     content: text().notNull(),
   },
   (table) => ({
-    chunkIdx: uniqueIndex("source_chunk_index_idx").on(table.index_id, table.chunk_index),
+    documentIdx: index("source_search_chunk_document_idx").on(table.document_id),
+  }),
+);
+
+export const sourceKnowledgeSync = sqliteTable(
+  "source_knowledge_sync",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    project_id: text()
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    connection_id: text()
+      .notNull()
+      .references(() => providerConnection.id, { onDelete: "cascade" }),
+    recipe_id: text().notNull(),
+    integration_id: text().notNull(),
+    title: text().notNull(),
+    resources: text().notNull(),
+    status: text({ enum: ["active", "paused"] })
+      .notNull()
+      .default("active"),
+    interval_minutes: integer().notNull().default(60),
+    cursor: integer().notNull().default(0),
+    generation: integer().notNull().default(1),
+    next_sync_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+    last_successful_at: text(),
+    last_error: text(),
+    lease_token: text(),
+    lease_expires_at: text(),
+  },
+  (table) => ({
+    dueIdx: index("source_knowledge_sync_due_idx").on(table.status, table.next_sync_at),
+    projectIdx: index("source_knowledge_sync_project_idx").on(table.project_id),
   }),
 );
 
@@ -2526,8 +2528,6 @@ export const tasks = sqliteTable(
     id: text().primaryKey(),
     task_type: text({
       enum: [
-        "source_index",
-        "source_sync",
         "memory_synthesis",
         "research_polling",
         "replicate_polling",

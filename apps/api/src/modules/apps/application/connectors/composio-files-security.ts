@@ -80,6 +80,43 @@ export function requireComposioFileSize(byteSize: number | null | undefined): vo
   }
 }
 
+export function requireComposioPresignedUrl(value: string): string {
+  let parsed: URL;
+
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new AssistantError(
+      "Composio returned an invalid file URL",
+      ErrorType.EXTERNAL_API_ERROR,
+      502,
+    );
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+  const allowedHost =
+    hostname === "amazonaws.com" ||
+    hostname.endsWith(".amazonaws.com") ||
+    hostname === "r2.cloudflarestorage.com" ||
+    hostname.endsWith(".r2.cloudflarestorage.com");
+
+  if (
+    parsed.protocol !== "https:" ||
+    parsed.username ||
+    parsed.password ||
+    (parsed.port && parsed.port !== "443") ||
+    !allowedHost
+  ) {
+    throw new AssistantError(
+      "Composio returned an unsafe file URL",
+      ErrorType.EXTERNAL_API_ERROR,
+      502,
+    );
+  }
+
+  return parsed.toString();
+}
+
 export async function readBoundedResponseBody(
   response: Response,
   maxBytes = COMPOSIO_FILE_MAX_BYTES,

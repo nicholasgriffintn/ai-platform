@@ -1,7 +1,7 @@
 import {
   CONVERSATION_TITLE_TASK_TYPE,
-  SOURCE_INDEX_TASK_TYPE,
-  SOURCE_SYNC_TASK_TYPE,
+  SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
+  SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
   DELEGATION_EXPIRY_TASK_TYPE,
   DELEGATION_MESSAGE_TASK_TYPE,
   DELEGATION_RUN_TASK_TYPE,
@@ -57,8 +57,8 @@ import { recordingTranscriptionPolling } from "./handlers/recording-transcriptio
 import { replicatePolling } from "./handlers/replicate-polling";
 import { researchPolling } from "./handlers/research-polling";
 import { SandboxRunDispatchHandler } from "./handlers/SandboxRunDispatchHandler";
-import { sourceIndex } from "./handlers/source-index";
-import { sourceSync } from "./handlers/source-sync";
+import { sourceKnowledgeIndex } from "./handlers/source-knowledge";
+import { sourceKnowledgeSync } from "./handlers/source-sync";
 import { StripeUsageSyncHandler } from "./handlers/StripeUsageSyncHandler";
 import { TeammateContextCleanupHandler } from "./handlers/TeammateContextCleanupHandler";
 import { TeammateRunReconciliationHandler } from "./handlers/TeammateRunReconciliationHandler";
@@ -68,8 +68,8 @@ import { workflows } from "./workflows";
 import "./schedules";
 
 workflows.on("memory_synthesis", memorySynthesis);
-workflows.on(SOURCE_INDEX_TASK_TYPE, sourceIndex);
-workflows.on(SOURCE_SYNC_TASK_TYPE, sourceSync);
+workflows.on(SOURCE_KNOWLEDGE_INDEX_TASK_TYPE, sourceKnowledgeIndex);
+workflows.on(SOURCE_KNOWLEDGE_SYNC_TASK_TYPE, sourceKnowledgeSync);
 workflows.on(USAGE_ROLLUP_TASK_TYPE, usageRollup);
 workflows.on(MODEL_PLATFORM_RECONCILE_TASK_TYPE, modelPlatformReconcile);
 

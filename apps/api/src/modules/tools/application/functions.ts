@@ -31,6 +31,7 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   delegate: { renderer: "delegation_card", icon: "bot" },
   run_sandbox_task: { renderer: "sandbox_result", icon: "terminal" },
   run_code: { icon: "terminal", responseType: ToolResponseType.JSON },
+  grade_writing: { renderer: "editorial_grade", icon: "file-text" },
   decide: { icon: "sparkles", responseType: ToolResponseType.JSON },
   audit_evidence: { renderer: "evidence_audit", icon: "search" },
   build_site: {

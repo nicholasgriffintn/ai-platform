@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import type { D1Database } from "@cloudflare/workers-types";
 
-import { applyTestMigration } from "../../migrations";
+import { applyTestMigration } from "../../helpers/migrations";
 
 export async function prepareKnowledgeDatabase(database: D1Database): Promise<void> {
   await applyTestMigration(
@@ -17,7 +17,9 @@ export async function prepareKnowledgeDatabase(database: D1Database): Promise<vo
     CREATE TABLE provider_connection (id TEXT PRIMARY KEY, status TEXT, user_id INTEGER DEFAULT 1,
       provider TEXT DEFAULT 'googledrive', kind TEXT DEFAULT 'recipe_connector_account', external_id TEXT DEFAULT 'account',
       encrypted_data TEXT DEFAULT '{}', metadata TEXT DEFAULT '{}', created_at TEXT DEFAULT CURRENT_TIMESTAMP, updated_at TEXT);
-    CREATE TABLE tasks (id TEXT PRIMARY KEY, status TEXT);
+    CREATE TABLE project_capability (project_id TEXT, kind TEXT, capability_id TEXT, excluded INTEGER);
+    INSERT INTO project_capability VALUES ('project-1', 'recipe', 'knowledge', 0);
+    CREATE TABLE tasks (id TEXT PRIMARY KEY, status TEXT, task_type TEXT, task_data TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, execution_lease_expires_at TEXT);
     CREATE TABLE activity_record (id TEXT PRIMARY KEY, created_by_user_id INTEGER, project_id TEXT, capability_id TEXT, group_id TEXT, updated_at TEXT, data TEXT);
     INSERT INTO activity_record VALUES ('run-record', 1, 'project-1', 'sandbox_runs', 'historical-run', CURRENT_TIMESTAMP,
       '{"runId":"historical-run","status":"completed","repo":"owner/repo","task":"Deliver the feature","result":{"summary":"Completed safely"}}');
@@ -47,6 +49,9 @@ export async function prepareKnowledgeDatabase(database: D1Database): Promise<vo
   );
   await applyTestMigration(
     database,
-    await readFile(new URL("../../../migrations/0059_source_sync.sql", import.meta.url), "utf8"),
+    await readFile(
+      new URL("../../../migrations/0059_personal_source_knowledge.sql", import.meta.url),
+      "utf8",
+    ),
   );
 }

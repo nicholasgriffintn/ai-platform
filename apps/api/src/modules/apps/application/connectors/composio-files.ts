@@ -4,7 +4,6 @@ import {
 } from "@ngriffin_uk/polychat-ai-integrations";
 import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { requirePresignedStorageUrl } from "@ngriffin_uk/polychat-utility-server/http";
 
 import { COMPOSIO_FILE_MAX_BYTES, COMPOSIO_FILE_TRANSFER_TIMEOUT_MS } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -25,6 +24,7 @@ import {
   requireComposioFileMimeType,
   requireComposioFileSize,
   requireComposioMountPath,
+  requireComposioPresignedUrl,
 } from "./composio-files-security";
 
 export interface ComposioMountFileUrl {
@@ -133,7 +133,7 @@ export async function stageComposioResourceFile(params: {
     mountRelativePath,
     mimeType,
   });
-  const uploadUrl = requirePresignedStorageUrl(upload.url);
+  const uploadUrl = requireComposioPresignedUrl(upload.url);
   const response = await transfer(params.fetcher ?? fetch, uploadUrl, {
     method: "PUT",
     headers: { "Content-Type": mimeType },
@@ -184,7 +184,7 @@ export async function importComposioSessionFile(params: {
     mountId: params.mountId ?? "files",
     mountRelativePath,
   });
-  const downloadUrl = requirePresignedStorageUrl(download.url);
+  const downloadUrl = requireComposioPresignedUrl(download.url);
   const response = await transfer(params.fetcher ?? fetch, downloadUrl, { method: "GET" });
 
   if (!response.ok) {

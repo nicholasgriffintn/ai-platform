@@ -119,7 +119,7 @@ function parseStoredConnector(record: ProviderConnectionRecord | undefined): {
   return parsed as { encrypted?: EncryptedJsonPayload };
 }
 
-export async function readStoredToken(
+async function readStoredToken(
   context: ServiceContext,
   userId: number,
   providerId: RecipeConnectorProvider,
@@ -280,7 +280,6 @@ export async function listRecipeConnectors(params: {
       writeToolCount: provider.operations.filter((operation) => operation.access === "write")
         .length,
       operationAccess: getConnectorProviderOperationAccess(provider),
-      knowledge: provider.knowledge?.capability,
       authConfigs:
         provider.auth.authType === "composio"
           ? provider.auth.authConfigs.map((authConfig) => ({

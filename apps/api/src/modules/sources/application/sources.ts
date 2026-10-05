@@ -19,7 +19,6 @@ import type {
   SourceRecord,
   SourceSummaryRecord,
 } from "~/modules/sources/infrastructure/SourceRepository";
-import { SourceSyncRepository } from "~/modules/sources/infrastructure/SourceSyncRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 function formatFile(record: SourceRecord): Source["file"] {
@@ -293,10 +292,10 @@ export async function updateSource(
 
   if (
     existing.kind === "connector" &&
-    (await new SourceSyncRepository(context.env).isManagedSource(sourceId))
+    safeParseJson<Record<string, unknown>>(existing.metadata)?.syncId
   ) {
     throw new AssistantError(
-      "Manage this document through its folder sync",
+      "Manage this document through its knowledge sync",
       ErrorType.PARAMS_ERROR,
       400,
     );
@@ -341,10 +340,10 @@ export async function deleteSource(
 
   if (
     source.kind === "connector" &&
-    (await new SourceSyncRepository(context.env).isManagedSource(sourceId))
+    safeParseJson<Record<string, unknown>>(source.metadata)?.syncId
   ) {
     throw new AssistantError(
-      "Remove the folder sync to remove its managed documents",
+      "Pause its knowledge sync to exclude managed documents",
       ErrorType.PARAMS_ERROR,
       400,
     );

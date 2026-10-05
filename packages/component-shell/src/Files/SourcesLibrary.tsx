@@ -9,22 +9,20 @@ import {
   FormDialog,
   FormInput,
   Textarea,
+  Button,
 } from "@ngriffin_uk/polychat-component-ui";
 import { API_BASE_URL } from "@ngriffin_uk/polychat-library-client";
 import {
-  useSourceCollections,
-  useSourceMutations,
-  useSources,
   useKnowledgeIndexStatus,
   useRetryKnowledgeIndex,
 } from "@ngriffin_uk/polychat-library-react";
-import type { SourceKind } from "@ngriffin_uk/polychat-schemas";
-import { useState } from "react";
+import { sourceKindSchema, type SourceKind } from "@ngriffin_uk/polychat-schemas";
 import { toast } from "sonner";
 
-import { KnowledgeSearchPanel } from "./KnowledgeSearchPanel.js";
+import { KnowledgeSyncPanel } from "./KnowledgeSyncPanel.js";
 import { MemorySynthesisPanel } from "./MemorySynthesisPanel.js";
-import { SourceSyncPanel } from "./SourceSyncPanel.js";
+import { ProjectKnowledgeSearch } from "./ProjectKnowledgeSearch.js";
+import { useSourcesLibrary } from "./useSourcesLibrary.js";
 
 const sourceKinds: Array<{ value: "" | SourceKind; label: string }> = [
   { value: "", label: "All sources" },
@@ -42,44 +40,38 @@ interface SourcesLibraryProps {
 }
 
 export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryProps) {
-  const [kind, setKind] = useState<"" | SourceKind>("");
-  const [collectionId, setCollectionId] = useState<string | null>(null);
-  const [isCreateSourceOpen, setIsCreateSourceOpen] = useState(false);
-  const [isCreateCollectionOpen, setIsCreateCollectionOpen] = useState(false);
-  const [sourceIdToDelete, setSourceIdToDelete] = useState<string | null>(null);
-  const [collectionIdToDelete, setCollectionIdToDelete] = useState<string | null>(null);
-  const [sourceTitle, setSourceTitle] = useState("");
-  const [sourceContent, setSourceContent] = useState("");
-  const [collectionTitle, setCollectionTitle] = useState("");
   const {
-    data: sources,
+    kind,
+    setKind,
+    collectionId,
+    setCollectionId,
+    isCreateSourceOpen,
+    setIsCreateSourceOpen,
+    isCreateCollectionOpen,
+    setIsCreateCollectionOpen,
+    sourceIdToDelete,
+    setSourceIdToDelete,
+    collectionIdToDelete,
+    setCollectionIdToDelete,
+    sourceTitle,
+    setSourceTitle,
+    sourceContent,
+    setSourceContent,
+    collectionTitle,
+    setCollectionTitle,
+    sources,
     isLoading,
     error,
-  } = useSources({
-    projectId,
-    kind: collectionId ? undefined : kind || undefined,
-    collectionId,
-  });
-  const { data: sourceCollections } = useSourceCollections(projectId);
-  const collections = sourceCollections?.filter((collection) => collection.kind !== "context");
-  const mutations = useSourceMutations();
+    collections,
+    mutations,
+    selectedCollection,
+  } = useSourcesLibrary(projectId, createRequestKey);
+
   const indexStatus = useKnowledgeIndexStatus(projectId);
   const retryIndex = useRetryKnowledgeIndex();
-  const selectedCollection = collections?.find((collection) => collection.id === collectionId);
-  const [prevCreateRequestKey, setPrevCreateRequestKey] = useState(createRequestKey);
-
-  if (prevCreateRequestKey !== createRequestKey) {
-    setPrevCreateRequestKey(createRequestKey);
-
-    if (createRequestKey) {
-      setIsCreateSourceOpen(true);
-    }
-  }
 
   return (
     <>
-      <KnowledgeSearchPanel projectId={projectId} />
-      <SourceSyncPanel projectId={projectId} />
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
         <aside className="min-w-0">
           <SourceCollectionList
@@ -100,15 +92,24 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
                 : "Browse and manage available source material."
             }
             actions={
-              collectionId ? null : (
-                <SourceKindFilter
-                  kindOptions={sourceKinds}
-                  kind={kind}
-                  onKindChange={(value) => setKind(value as "" | SourceKind)}
-                />
-              )
+              <div className="flex items-center gap-2">
+                {projectId ? (
+                  <Button variant="secondary" onClick={() => setIsCreateSourceOpen(true)}>
+                    Add source
+                  </Button>
+                ) : null}
+                {collectionId ? null : (
+                  <SourceKindFilter
+                    kindOptions={sourceKinds}
+                    kind={kind}
+                    onKindChange={(value) => setKind(sourceKindSchema.safeParse(value).data ?? "")}
+                  />
+                )}
+              </div>
             }
           >
+            <ProjectKnowledgeSearch key={projectId ?? "personal"} projectId={projectId} />
+            {projectId ? <KnowledgeSyncPanel projectId={projectId} /> : null}
             <SourceList
               indexStatuses={indexStatus.data}
               onRetryIndex={(sourceId) => retryIndex.mutate(sourceId)}
@@ -139,50 +140,48 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
         </section>
       </div>
 
-      {!projectId ? (
-        <FormDialog
-          open={isCreateSourceOpen}
-          onOpenChange={setIsCreateSourceOpen}
-          title="Add source"
-          description="Add text that Polychat can use as source material."
-          submitText="Add source"
-          isLoading={mutations.createSource.isPending}
-          submitDisabled={!sourceTitle.trim() || !sourceContent.trim()}
-          onSubmit={async () => {
-            await mutations.createSource.mutateAsync({
-              projectId,
-              kind: "text",
-              title: sourceTitle.trim(),
-              content: sourceContent.trim(),
-              status: "available",
-              metadata: {},
-            });
-            setSourceTitle("");
-            setSourceContent("");
-            setIsCreateSourceOpen(false);
-            toast.success("Source added");
-          }}
-        >
-          <FormInput
-            label="Title"
-            value={sourceTitle}
-            onChange={(event) => setSourceTitle(event.target.value)}
+      <FormDialog
+        open={isCreateSourceOpen}
+        onOpenChange={setIsCreateSourceOpen}
+        title="Add source"
+        description="Add text that Polychat can use as source material."
+        submitText="Add source"
+        isLoading={mutations.createSource.isPending}
+        submitDisabled={!sourceTitle.trim() || !sourceContent.trim()}
+        onSubmit={async () => {
+          await mutations.createSource.mutateAsync({
+            projectId,
+            kind: "text",
+            title: sourceTitle.trim(),
+            content: sourceContent.trim(),
+            status: "available",
+            metadata: {},
+          });
+          setSourceTitle("");
+          setSourceContent("");
+          setIsCreateSourceOpen(false);
+          toast.success("Source added");
+        }}
+      >
+        <FormInput
+          label="Title"
+          value={sourceTitle}
+          onChange={(event) => setSourceTitle(event.target.value)}
+          required
+        />
+        <div className="space-y-1">
+          <label htmlFor="source-content" className="text-sm font-medium">
+            Content
+          </label>
+          <Textarea
+            id="source-content"
+            value={sourceContent}
+            onChange={(event) => setSourceContent(event.target.value)}
+            className="min-h-32"
             required
           />
-          <div className="space-y-1">
-            <label htmlFor="source-content" className="text-sm font-medium">
-              Content
-            </label>
-            <Textarea
-              id="source-content"
-              value={sourceContent}
-              onChange={(event) => setSourceContent(event.target.value)}
-              className="min-h-32"
-              required
-            />
-          </div>
-        </FormDialog>
-      ) : null}
+        </div>
+      </FormDialog>
 
       <FormDialog
         open={isCreateCollectionOpen}

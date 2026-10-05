@@ -3,7 +3,6 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
-import { enqueueSourceIndex } from "~/modules/sources/application/knowledge-indexing";
 import { createSource } from "~/modules/sources/application/sources";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -23,8 +22,6 @@ export const create_note: ApiToolDefinition = {
       metadata: isRecord(args.metadata) ? args.metadata : {},
     });
     const source = await createSource(context, context.requireUser().id, input);
-
-    await enqueueSourceIndex(context, source.id);
 
     return {
       status: "success",

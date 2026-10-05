@@ -20,7 +20,7 @@ Managed personal embeddings support Vectorize, S3 Vectors and DynamoDB Vectors. 
 
 Reserve documents as `pending`, expose only `active` records, and mark `delete_pending` before provider deletion. Remove D1 state only after confirmed cleanup and retain uncertain writes for reconciliation against their original target. Apply the same discipline to built-in memory, and quarantine ambiguous legacy ownership rather than guessing. Enforce content, metadata, batch and concurrency bounds at the shared schema and provider boundaries. Keep project memory in its authorised built-in scope; the personal embeddings API grants no project retrieval.
 
-Index personal and project knowledge from the `source` domain through `source_index` and `source_chunk`. Combine D1 FTS5 keyword matches with scoped vectors using reciprocal-rank fusion, then hydrate current source revisions before reranking and again before returning passages. Transition note creation and document-search tools to sources; migrate existing active personal document content into sources without a legacy search fallback.
+Index personal and project knowledge from the `source` domain through `source_search_document` and `source_search_chunk`. Combine D1 FTS5 keyword matches with scoped vectors using reciprocal-rank fusion, then hydrate current source revisions before reranking and again before returning passages. Transition note creation and document-search tools to sources; migrate existing active personal document content into sources without a legacy search fallback.
 
 Fence writes with task leases and source revisions. Keep obsolete index records and original provider targets until vector cleanup succeeds, including after the source row has been deleted. Reserve indexes before provider writes and reuse recorded chunk IDs during retries.
 
@@ -32,9 +32,9 @@ Store completed repository runs as idempotent repository sources in the scope re
 
 Retire the transferred personal embedding documents from retrieval immediately. Carry their original targets and vector IDs into cleanup receipts, then remove their old D1 records only after confirmed provider deletion. Keep quarantined or unavailable targets as evidence.
 
-Attach knowledge adapters to the existing connector provider registry. Keep root parsing, request scopes, traversal, version validation and upstream permission interpretation in each adapter. Use normalised document records and bounded opaque checkpoints in the shared worker and persistence; discover provider capabilities through the existing connector catalogue and derive the Sources form from them.
+Use the existing recipe connector operations and `normaliseConnectorKnowledge` mappings for knowledge sync. Keep provider-specific operations in recipe declarations and keep connection authority, checkpoints and publication in the sources module. Do not introduce a second connector registry, transport or sync framework.
 
-Bind each sync to its creator's owned connection through the existing connected-account or stored API-key paths. Keep personal sources private and bind project sources to their workspace membership and publishing authority. Persist a checkpoint after each successful page and prune absent documents only after a complete current scan. Refresh permission evidence independently of content changes; require every current workspace member's email to appear in verified individual grants, or require a public grant. Deny shared retrieval after a new member joins, the publishing admin loses authority, the connection is revoked, the sync is paused or the permission evidence expires.
+Bind project syncs to the publisher's owned connection, enabled recipe capability and current workspace owner/admin role. Publishing selected records intentionally shares them with the project. Deny retrieval immediately when that authority is removed, the connection is revoked or the sync is paused. Recheck these facts when committing a resource, alongside the existing generation, cursor and lease fence.
 
 ## Consequences
 

@@ -1,160 +1,178 @@
 import type {
-  KnowledgePassage,
-  KnowledgeSearchInput,
-  KnowledgeSearchResponse,
+  ProjectKnowledgeSearchQuery,
+  ProjectKnowledgeSearchResponse,
 } from "@ngriffin_uk/polychat-schemas";
-import { fuseRankedMatches } from "@ngriffin_uk/polychat-utility-core";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
+import { fuseRankedResults, toFtsQuery } from "@ngriffin_uk/polychat-utility-server/search-ranking";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
-import {
-  decodeEmbeddingRuntimeTarget,
-  getEmbeddingRuntimeForTarget,
-} from "~/infrastructure/providers/capabilities/embedding/helpers";
+import { getEmbeddingRuntimeForTarget } from "~/infrastructure/providers/capabilities/embedding/helpers";
+import { decodeEmbeddingRuntimeTarget } from "~/infrastructure/providers/capabilities/embedding/target";
 import {
   getPersonalEmbeddingScopeTag,
   getProjectEmbeddingScopeTag,
 } from "~/infrastructure/providers/capabilities/embedding/utils/scope";
 import { queryEmbeddingRuntime } from "~/modules/apps/application/embeddings/provider-query";
 import { rerankAuthorisedDocuments } from "~/modules/functions/application/document-reranking";
-import {
-  SourceIndexRepository,
-  type KnowledgeScope,
-} from "~/modules/sources/infrastructure/SourceIndexRepository";
+import type {
+  KnowledgeScope,
+  SourceSearchPassage,
+} from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 export async function requireKnowledgeScope(
   context: ServiceContext,
   projectId?: string,
 ): Promise<KnowledgeScope> {
-  const user = context.requireUser();
-
   if (projectId) {
     await requireProjectAccess(context, projectId);
   }
 
-  return { userId: user.id, projectId };
+  return { userId: context.requireUser().id, projectId };
 }
 
-async function searchVectors(
+async function semanticTargetPassages(
   context: ServiceContext,
+  input: ProjectKnowledgeSearchQuery,
   scope: KnowledgeScope,
-  input: KnowledgeSearchInput,
-) {
-  const repository = new SourceIndexRepository(context.env);
-  const targets = await repository.listTargets(scope);
+  scopeTag: string,
+  { target, userId }: { target: string; userId: number },
+): Promise<SourceSearchPassage[] | null> {
+  try {
+    const owner = await context.repositories.users.getUserById(userId);
 
-  if (!targets.length || targets.length > 8) {
-    return { rankings: [], available: false };
-  }
-
-  if (!context.env.EMBEDDING_SCOPE_SECRET) {
-    return { rankings: [], available: false };
-  }
-
-  const scopeTag = scope.projectId
-    ? await getProjectEmbeddingScopeTag(context.env.EMBEDDING_SCOPE_SECRET, scope.projectId)
-    : await getPersonalEmbeddingScopeTag(context.env.EMBEDDING_SCOPE_SECRET, scope.userId);
-  const results = await mapWithConcurrency(targets, 4, async (target) => {
-    try {
-      const owner = await context.repositories.users.getUserById(target.created_by_user_id);
-
-      if (!owner) {
-        return null;
-      }
-
-      const ownerContext = createServiceContext({ env: context.env, user: owner });
-      const settings = await ownerContext.getUserSettings();
-
-      if (!settings) {
-        return null;
-      }
-
-      const runtime = getEmbeddingRuntimeForTarget(
-        context.env,
-        owner,
-        settings,
-        decodeEmbeddingRuntimeTarget(target.target),
-      );
-      const result = await queryEmbeddingRuntime({
-        ...runtime,
-        query: input.query,
-        type: input.type,
-        scopeTag,
-      });
-
-      return { matches: result.matches, target };
-    } catch {
+    if (!owner) {
       return null;
     }
-  });
-  const successful = results.filter((result) => result !== null);
-  const hydrated = await repository.hydrate(
-    scope,
-    successful.flatMap((result) => result.matches.map((match) => match.id)),
-    input.type,
-  );
-  const byVectorId = new Map(hydrated.map((chunk) => [chunk.vector_id, chunk]));
 
-  return {
-    available: successful.length === targets.length,
-    rankings: successful.map(({ matches, target }) =>
-      [...matches]
-        .sort((left, right) => right.score - left.score)
-        .flatMap((match) => {
-          const chunk = byVectorId.get(match.id);
+    const settings = await createServiceContext({
+      env: context.env,
+      user: owner,
+    }).getUserSettings();
 
-          return chunk &&
-            chunk.target === target.target &&
-            chunk.created_by_user_id === target.created_by_user_id
-            ? [chunk]
-            : [];
-        }),
-    ),
-  };
+    if (!settings) {
+      return null;
+    }
+
+    const decodedTarget = decodeEmbeddingRuntimeTarget(target);
+    const runtime = getEmbeddingRuntimeForTarget(context.env, owner, settings, decodedTarget);
+    const result = await queryEmbeddingRuntime({
+      ...runtime,
+      query: input.query,
+      type: input.type,
+      scopeTag,
+    });
+    const matches = [...result.matches].sort((a, b) => b.score - a.score);
+    const ids: string[] = [];
+
+    for (const match of matches) {
+      ids.push(match.id);
+    }
+
+    const hydrated = await context.repositories.sourceSearch.hydrate(scope, ids, input.type, true);
+    const byId = new Map<string, SourceSearchPassage>();
+
+    for (const passage of hydrated) {
+      if (passage.target === target && passage.userId === userId) {
+        byId.set(passage.id, passage);
+      }
+    }
+
+    const passages: SourceSearchPassage[] = [];
+
+    for (const match of matches) {
+      const passage = byId.get(match.id);
+
+      if (passage) {
+        passages.push(passage);
+      }
+    }
+
+    return passages;
+  } catch {
+    return null;
+  }
 }
 
-export async function searchKnowledge(
+async function semanticPassages(
   context: ServiceContext,
-  input: KnowledgeSearchInput,
-): Promise<KnowledgeSearchResponse> {
+  input: ProjectKnowledgeSearchQuery,
+  scope: KnowledgeScope,
+) {
+  const targets = await context.repositories.sourceSearch.getTargets(scope);
+
+  if (targets.length > 8 || targets.length === 0) {
+    return { rankings: [], available: false };
+  }
+
+  let scopeTag: string;
+
+  try {
+    scopeTag = input.projectId
+      ? await getProjectEmbeddingScopeTag(context.env.EMBEDDING_SCOPE_SECRET, input.projectId)
+      : await getPersonalEmbeddingScopeTag(context.env.EMBEDDING_SCOPE_SECRET, scope.userId);
+  } catch {
+    return { rankings: [], available: false };
+  }
+
+  const searchTarget = semanticTargetPassages.bind(null, context, input, scope, scopeTag);
+
+  const results = await mapWithConcurrency(targets, 4, searchTarget);
+  const rankings = results.filter((result) => result !== null);
+
+  return { rankings, available: rankings.length === targets.length };
+}
+
+export async function searchProjectKnowledge(
+  context: ServiceContext,
+  input: ProjectKnowledgeSearchQuery,
+): Promise<ProjectKnowledgeSearchResponse> {
   const scope = await requireKnowledgeScope(context, input.projectId);
-  const repository = new SourceIndexRepository(context.env);
-  const [keywords, vectors] = await Promise.all([
-    repository.searchKeywords(scope, input.query, input.type),
-    searchVectors(context, scope, input),
+  const fts = toFtsQuery(input.query);
+  const [lexical, semantic] = await Promise.all([
+    fts
+      ? context.repositories.sourceSearch.lexical(scope, fts, input.type)
+      : Promise.resolve<SourceSearchPassage[]>([]),
+    semanticPassages(context, input, scope),
   ]);
-  const candidates = fuseRankedMatches(
-    [keywords, ...vectors.rankings],
-    (chunk) => chunk.vector_id,
-  ).slice(0, 30);
 
   await requireKnowledgeScope(context, input.projectId);
-  const current = await repository.hydrate(
+  const hasSemantic = semantic.rankings.some((ranking) => ranking.length > 0);
+  const candidates = fuseRankedResults([lexical, ...semantic.rankings], 30);
+  const current = await context.repositories.sourceSearch.hydrate(
     scope,
-    candidates.map(({ match }) => match.vector_id),
+    candidates.map((passage) => passage.id),
     input.type,
   );
-  const byVectorId = new Map(current.map((chunk) => [chunk.vector_id, chunk]));
-  const documents: KnowledgePassage[] = candidates.flatMap(({ match, score }) => {
-    const chunk = byVectorId.get(match.vector_id);
+  const currentById = new Map(current.map((passage) => [passage.id, passage]));
+  const documents = candidates.flatMap((candidate) => {
+    const passage = currentById.get(candidate.id);
 
-    return chunk
-      ? [
-          {
-            id: chunk.source_id,
-            chunkId: chunk.id,
-            chunkIndex: chunk.chunk_index,
-            title: chunk.title,
-            content: chunk.content,
-            type: chunk.kind,
-            score,
-            rankingMethod: "reciprocal-rank-fusion",
-            sourceUrl: chunk.external_uri,
-            updatedAt: chunk.updated_at,
-          },
-        ]
-      : [];
+    if (!passage) {
+      return [];
+    }
+
+    return [
+      {
+        id: passage.sourceId,
+        sourceId: passage.sourceId,
+        chunkId: passage.id,
+        chunkIndex: passage.chunkIndex,
+        title: passage.title,
+        content: passage.content,
+        type: passage.type,
+        score: candidate.score,
+        rankingMethod: hasSemantic ? "hybrid-reciprocal-rank-fusion" : "keyword-bm25",
+        provenance: {
+          projectId: input.projectId ?? null,
+          sourceRevision: passage.sourceRevision,
+          externalUri: passage.externalUri,
+          updatedAt: passage.updatedAt,
+          upstreamRevision: passage.upstreamRevision,
+          lastSyncedAt: passage.lastSyncedAt,
+        },
+      },
+    ];
   });
   const ranked = await rerankAuthorisedDocuments({
     env: context.env,
@@ -164,35 +182,25 @@ export async function searchKnowledge(
   });
 
   await requireKnowledgeScope(context, input.projectId);
-  const authorised = await repository.hydrate(
+  const authorised = await context.repositories.sourceSearch.hydrate(
     scope,
-    candidates.map(({ match }) => match.vector_id),
+    candidates.map((passage) => passage.id),
     input.type,
   );
-  const authorisedIds = new Set(authorised.map((chunk) => chunk.id));
+  const authorisedIds = new Set(authorised.map((passage) => passage.id));
 
   return {
-    documents: ranked
-      .filter((document) => authorisedIds.has(document.chunkId))
-      .slice(0, input.topK)
-      .map((document) => ({
-        id: document.id,
-        chunkId: document.chunkId,
-        chunkIndex: document.chunkIndex,
-        title: document.title,
-        content: document.content,
-        type: document.type,
-        score: document.score,
-        rankingMethod: document.rankingMethod,
-        sourceUrl: document.sourceUrl,
-        updatedAt: document.updatedAt,
-      })),
-    semanticSearchAvailable: vectors.available,
+    status: "success",
+    semanticSearchAvailable: semantic.available,
+    data: ranked
+      .filter((passage) => authorisedIds.has(passage.chunkId))
+      .slice(0, input.top_k ?? 10),
   };
 }
 
 export async function listKnowledgeStatus(context: ServiceContext, projectId?: string) {
   const scope = await requireKnowledgeScope(context, projectId);
+  const sources = await context.repositories.sourceSearch.listStatus(scope);
 
-  return { sources: await new SourceIndexRepository(context.env).listStatus(scope) };
+  return { sources: sources.map((source) => ({ ...source, managed: source.managed === 1 })) };
 }

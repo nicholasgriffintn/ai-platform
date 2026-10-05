@@ -20,9 +20,9 @@ import { ArtefactStore } from "~/modules/model-registry/infrastructure/ArtefactS
 import { applyHostState, hostFor } from "~/modules/model-serving/application/invocation";
 import { syncDeployment } from "~/modules/model-serving/application/sync";
 
-import { databaseTestEnvironment } from "../../../../../test/environment";
-import { testModelDeployment } from "../../../../../test/model-platform";
-import { initialiseModelPlatformDatabase } from "../../../../../test/model-platform-database";
+import { testModelDeployment } from "../../../../../test/fixtures/model-platform";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
+import { initialiseModelPlatformDatabase } from "../../../../../test/helpers/model-platform-database";
 import { syncTrainingRun } from "../sync";
 import { trainerFor } from "../trainer-context";
 
