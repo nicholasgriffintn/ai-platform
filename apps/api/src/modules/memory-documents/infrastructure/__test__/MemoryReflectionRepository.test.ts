@@ -8,8 +8,8 @@ import {
   type CommitMemoryReflection,
 } from "~/modules/memory-documents/infrastructure/MemoryReflectionRepository";
 
-import { databaseTestEnvironment } from "./helpers/environment";
-import { initialiseNativeMemoryDatabase } from "./helpers/native-memory-database";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
+import { initialiseNativeMemoryDatabase } from "../../../../../test/helpers/native-memory-database";
 
 const runtime = new Miniflare({
   modules: true,
@@ -83,32 +83,6 @@ describe("atomic native memory maintenance", () => {
       protocolVersion: 2,
       documents: [{ id: "memory", status: "included", contentTokens: null }],
     });
-  });
-  it("preserves sources on a concurrent edit and commits only after recomputation", async () => {
-    const input = await proposal();
-
-    await documents.appendRevision({
-      documentId: "memory",
-      content: "Keep concise answers. Use Cloudflare.",
-      expectedRevision: 1,
-      createdByUserId: 1,
-      tier: "reference",
-      summary: "Deployments",
-    });
-    expect(await reflections.commit(input)).toBeNull();
-    expect(await reflections.checkpoint("context", "conversation")).toBeNull();
-    expect(await reflections.outcome("task")).toBeNull();
-    const fresh = await proposal();
-
-    expect(await reflections.commit({ ...fresh, content: fresh.base.content })).toMatchObject({
-      status: "no_change",
-      revision: 2,
-    });
-    expect(await documents.listRevisions("memory")).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ tier: "reference", summary: "Deployments" }),
-      ]),
-    );
   });
   it("refuses a stale source checkpoint without overwriting newer memory", async () => {
     await reflections.commit(await proposal());

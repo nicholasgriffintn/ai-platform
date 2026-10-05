@@ -52,34 +52,30 @@ export function resolveMemoryPolicy(params: {
   };
 }
 
-export function getEnabledMemoryToolNames(params: {
-  user?: IUser | null;
-  userSettings?: MemoryToolSettings;
-  store?: boolean;
-}): string[] {
-  return resolveMemoryPolicy(params).toolNames;
-}
-
 export function mergeEnabledMemoryToolNames(params: {
   enabledTools?: readonly string[];
-  user?: IUser | null;
-  userSettings?: MemoryToolSettings;
-  store?: boolean;
+  policy: MemoryPolicy;
+  hasBoundDocuments: boolean;
+  fixedToolScope: boolean;
 }): string[] {
-  const enabledMemoryToolNames = getEnabledMemoryToolNames({
-    user: params.user,
-    userSettings: params.userSettings,
-    store: params.store,
-  });
+  const requestedTools = params.enabledTools ?? [];
+  const tools = params.fixedToolScope
+    ? [...requestedTools]
+    : [
+        ...requestedTools.filter(
+          (name) =>
+            name !== MEMORY_SEARCH_TOOL_NAME &&
+            name !== MEMORY_STORE_TOOL_NAME &&
+            name !== MEMORY_READ_TOOL_NAME,
+        ),
+        ...params.policy.toolNames,
+      ];
 
-  return Array.from(
-    new Set([
-      ...(params.enabledTools ?? []).filter(
-        (toolName) => toolName !== MEMORY_SEARCH_TOOL_NAME && toolName !== MEMORY_STORE_TOOL_NAME,
-      ),
-      ...enabledMemoryToolNames,
-    ]),
-  );
+  if (params.hasBoundDocuments) {
+    tools.push(MEMORY_READ_TOOL_NAME);
+  }
+
+  return Array.from(new Set(tools));
 }
 
 export function buildMemoryPromptContext({ synthesisText }: MemoryPromptContextInput): string {

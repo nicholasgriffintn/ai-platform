@@ -8,6 +8,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { toStringValue } from "@ngriffin_uk/polychat-utility-server/strings";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { resolveMemoryPolicy } from "~/modules/chat/domain/memory";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
 import { MemoryReflectionRepository } from "~/modules/memory-documents/infrastructure/MemoryReflectionRepository";
 import { TaskService } from "~/modules/tasks/application/TaskService";
@@ -17,7 +18,6 @@ import {
   requireTeammateContext,
 } from "~/modules/teammates/application/contexts";
 
-import { requireMemoryReflectionConsent } from "./reflection-consent";
 import { generateMemoryReflection, prepareMemoryReflection } from "./reflection-generation";
 import { applyMemoryReflectionProposal } from "./reflection-proposal";
 import {
@@ -25,6 +25,18 @@ import {
   assertMemoryReflectionSourcesUnchanged,
   hasMemoryReflectionSources,
 } from "./reflection-sources";
+
+export async function requireMemoryReflectionConsent(context: ServiceContext) {
+  const actor = context.requireUser();
+  const [user, userSettings] = await Promise.all([
+    context.repositories.users.getUserById(actor.id),
+    context.repositories.userSettings.getUserSettings(actor.id),
+  ]);
+
+  if (!resolveMemoryPolicy({ user, userSettings, store: true }).canStore) {
+    throw new AssistantError("Memory saving consent is unavailable", ErrorType.FORBIDDEN, 403);
+  }
+}
 
 async function requireReflectionScope(
   context: ServiceContext,

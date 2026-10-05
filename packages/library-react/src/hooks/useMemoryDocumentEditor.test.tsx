@@ -2,9 +2,9 @@ import type { MemoryDocument } from "@ngriffin_uk/polychat-schemas";
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { useMemoryDocumentEditor } from "../src/hooks/useMemoryDocumentEditor";
-import { deferred } from "./deferred";
-import { memoryDocumentFixture } from "./memory-documents";
+import { deferred } from "../lib/testing/deferred.js";
+import { memoryDocumentFixture } from "../lib/testing/memory-documents.js";
+import { useMemoryDocumentEditor } from "./useMemoryDocumentEditor.js";
 
 afterEach(cleanup);
 

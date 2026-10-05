@@ -15,9 +15,9 @@ import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskExecutionContext } from "~/modules/tasks/application/types";
 import type { MemoryScope } from "~/types";
 
-import { nativeMemoryUser, nativeMemorySettings } from "./fixtures/native-memory";
-import { databaseTestEnvironment } from "./helpers/environment";
-import { initialiseNativeMemoryDatabase } from "./helpers/native-memory-database";
+import { nativeMemoryUser, nativeMemorySettings } from "../../../../../test/fixtures/native-memory";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
+import { initialiseNativeMemoryDatabase } from "../../../../../test/helpers/native-memory-database";
 
 const model = vi.hoisted(() => vi.fn());
 const prepareModel = vi.hoisted(() => vi.fn());
@@ -260,6 +260,28 @@ describe("native memory maintenance", () => {
       revision: 1,
     });
   });
+
+  it.each([
+    { messageId: "foreign", quote: "Use Cloudflare now" },
+    { messageId: "source", quote: "Use AWS" },
+  ])(
+    "rejects invented source evidence without changing memory or consuming the range",
+    async (evidence) => {
+      model.mockResolvedValueOnce({
+        ...correction,
+        edits: [{ before: "Netlify", after: "Cloudflare", evidence: [evidence] }],
+      });
+
+      await expect(reflectTeammateMemory(context, input, "task", execution)).rejects.toMatchObject({
+        statusCode: 400,
+      });
+      expect(await reflections.checkpoint("context", "conversation")).toBeNull();
+      expect(await context.repositories.memoryDocuments.getDocumentById("memory")).toMatchObject({
+        content: "Deploy to Netlify. Keep concise answers.",
+        revision: 1,
+      });
+    },
+  );
 
   it("rejects an edit to the cited message while the model is running without consuming the source", async () => {
     model.mockImplementationOnce(async () => {

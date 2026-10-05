@@ -1,12 +1,20 @@
+import { estimateTextTokens } from "@ngriffin_uk/polychat-ai-providers";
 import { Miniflare } from "miniflare";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
-import { readRunMemoryDocument } from "~/modules/memory-documents/application/pages";
+import {
+  memoryDocumentPage,
+  memorySearchPassage,
+  readRunMemoryDocument,
+} from "~/modules/memory-documents/application/pages";
 import type { MemoryScope } from "~/types";
 
-import { memoryDocumentFixture, nativeMemoryUser } from "./fixtures/native-memory";
-import { databaseTestEnvironment } from "./helpers/environment";
+import {
+  memoryDocumentFixture,
+  nativeMemoryUser,
+} from "../../../../../test/fixtures/native-memory";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 
 const guards = vi.hoisted(() => ({ project: vi.fn(), teammate: vi.fn() }));
 
@@ -57,6 +65,37 @@ afterAll(async () => {
 });
 
 describe("run-bound memory reads", () => {
+  it("reconstructs stable pages without exceeding the token limit or splitting Unicode characters", () => {
+    const document = memoryDocumentFixture({
+      content: `${"İ".repeat(3999)}🚀${"x".repeat(3000)}needle${"y".repeat(7000)}`,
+    });
+
+    expect(memorySearchPassage(document, "needle").text).toContain("needle");
+    let offset = 0;
+    let restored = "";
+
+    do {
+      const page = memoryDocumentPage(document, offset);
+
+      expect(estimateTextTokens(page.content)).toBeLessThanOrEqual(2000);
+      expect(new TextDecoder().decode(new TextEncoder().encode(page.content))).toBe(page.content);
+      restored += page.content;
+      if (page.nextOffset === null) {
+        break;
+      }
+
+      expect(page.nextOffset).toBeGreaterThan(offset);
+      offset = page.nextOffset;
+    } while (offset < document.content.length);
+
+    expect(restored).toBe(document.content);
+    expect(memoryDocumentPage(document, 3999, 1)).toMatchObject({
+      content: "🚀",
+      nextOffset: 4001,
+    });
+    expect(() => memoryDocumentPage(document, document.content.length + 1)).toThrow();
+  });
+
   it("permits read-only grants and rejects IDs absent from this run", async () => {
     expect(
       await readRunMemoryDocument(context, scope, {

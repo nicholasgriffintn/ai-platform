@@ -85,12 +85,13 @@ describe("resolveMemoryPolicy", () => {
     expect(
       mergeEnabledMemoryToolNames({
         enabledTools: ["web_search", MEMORY_SEARCH_TOOL_NAME],
-        user: createUser("pro"),
-        userSettings: {
-          memories_save_enabled: true,
-          memories_chat_history_enabled: false,
-        },
-        store: true,
+        policy: resolveMemoryPolicy({
+          user: createUser("pro"),
+          userSettings: { memories_save_enabled: true, memories_chat_history_enabled: false },
+          store: true,
+        }),
+        hasBoundDocuments: false,
+        fixedToolScope: false,
       }),
     ).toEqual([
       "web_search",
@@ -101,15 +102,36 @@ describe("resolveMemoryPolicy", () => {
 
     expect(
       mergeEnabledMemoryToolNames({
-        enabledTools: ["web_search", MEMORY_SEARCH_TOOL_NAME, MEMORY_STORE_TOOL_NAME],
-        user: createUser("pro"),
-        userSettings: {
-          memories_save_enabled: true,
-          memories_chat_history_enabled: true,
-        },
-        store: false,
+        enabledTools: [
+          "web_search",
+          MEMORY_SEARCH_TOOL_NAME,
+          MEMORY_STORE_TOOL_NAME,
+          MEMORY_READ_TOOL_NAME,
+        ],
+        policy: resolveMemoryPolicy({
+          user: createUser("pro"),
+          userSettings: { memories_save_enabled: true, memories_chat_history_enabled: true },
+          store: false,
+        }),
+        hasBoundDocuments: false,
+        fixedToolScope: false,
       }),
     ).toEqual(["web_search"]);
+  });
+
+  it("exposes only document reads for a bound grant without general memory consent", () => {
+    const policy = resolveMemoryPolicy({ user: createUser("pro"), store: false });
+
+    for (const fixedToolScope of [true, false]) {
+      expect(
+        mergeEnabledMemoryToolNames({
+          enabledTools: ["web_search"],
+          policy,
+          hasBoundDocuments: true,
+          fixedToolScope,
+        }),
+      ).toEqual(["web_search", MEMORY_READ_TOOL_NAME]);
+    }
   });
 });
 

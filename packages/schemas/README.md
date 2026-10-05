@@ -20,26 +20,6 @@ const result = messageSchema.parse(data);
 type Message = z.infer<typeof messageSchema>;
 ```
 
-## Memory documents
-
-Apply migration `0059_native_memory` before deploying the new memory contracts. Send `tier` (`core` or `reference`) and a `summary` of at most 500 characters on every document creation and revision. Keep the content, placement and description in the same expected-revision write; history records all three.
-
-Keep core documents in context when they fit the memory budget. Expose references and oversized core documents through the bounded index and `read_memory_document`, using the document ID, revision and returned `nextOffset`. Restart at offset zero when a revision changes; never combine pages from different revisions.
-
-Read projection status in context protocol version 2. An `included` document has its content in the prompt, a `deferred` document is indexed for retrieval, and an `omitted` document does not fit even the index. The migration transitions stored snapshots to this contract and marks historical token estimates as unavailable.
-
-Request teammate memory maintenance with `POST /teammates/contexts/:contextId/memory/maintenance` and read its status with `GET` on the same path. Require the context owner's request. The **Tidy memory** control uses the configured auxiliary model and existing credit accounting to reconcile the memory with trusted user messages from that teammate's conversation.
-
-Use messages with an authorised user run as new evidence. Exclude automated turns, assistant and tool output, imported messages and history without run provenance.
-
-Capture durable teammate corrections after stored user turns when memory saving is enabled. Reuse the memory classification gate and task queue; recheck saving consent before enqueueing, processing and committing. Route the teammate's `store_memory` calls through the same worker using the actual user message as evidence rather than saving model-generated text. Keep journals and other granted documents on their existing storage path.
-
-Bound each source batch to 64 messages and 6,000 estimated tokens, and each model call to 2,048 output tokens and five estimated credits. Require exact source quotes for corrections, reject ambiguous replacements, and preserve unrelated content. Commit the revision and source checkpoint together under the current document revision, context owner and task lease; retry conflicts against current state without consuming evidence.
-
-Reserve space for the current memory, system instructions, encoded source metadata and output before selecting evidence. Reduce each batch to fit the configured model's context window. Advance ranges without usable user text without calling a model or creating a redundant revision.
-
-Record model usage before validating structured output. A malformed response still consumes provider resources; retain its usage accounting while rejecting the correction and leaving the source checkpoint unchanged.
-
 ## Model spend requests
 
 Use `SPEND_REQUEST_STATES` when displaying spend requests. Only `pending` requests accept approval or rejection. Approval first claims the request as `executing`, then records `approved` with its resource ID or `failed` if execution throws.

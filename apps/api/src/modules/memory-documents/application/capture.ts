@@ -2,8 +2,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { gateMemoryClassification } from "~/modules/memory/application/gate";
 import type { MemoryScope } from "~/types";
 
-import { enqueueMemoryReflection } from "./reflection";
-import { requireMemoryReflectionConsent } from "./reflection-consent";
+import { enqueueMemoryReflection, requireMemoryReflectionConsent } from "./reflection";
 import { selectMemoryReflectionSources } from "./reflection-sources";
 import { requireRunMemoryDocument } from "./run-access";
 
