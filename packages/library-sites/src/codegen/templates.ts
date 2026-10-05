@@ -1,4 +1,5 @@
 import type { SiteComponentType } from "../catalog.js";
+import { RECORD_COMPONENT_SOURCE } from "./record-runtime.js";
 
 const HEADER = `import type { ReactNode } from "react";
 
@@ -15,6 +16,7 @@ const layout = (body: string) => {
 };
 
 export const SITE_COMPONENT_TEMPLATES: Record<SiteComponentType, string> = {
+  Records: RECORD_COMPONENT_SOURCE,
   Page: layout(`export default function Page({ children }: { children?: ReactNode }) {
   return <main className="flex min-h-screen flex-col bg-background text-foreground">{children}</main>;
 }

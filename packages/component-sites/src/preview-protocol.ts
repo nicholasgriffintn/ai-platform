@@ -1,77 +1,59 @@
-import type { SiteProject } from "@ngriffin_uk/polychat-schemas";
+import {
+  siteProjectSchema,
+  siteRecordOperationSchema,
+  siteRecordOperationResponseSchema,
+} from "@ngriffin_uk/polychat-schemas";
+import z from "zod/v4";
 
 export const SITE_PREVIEW_CHANNEL = "polychat-site-preview";
 
-export interface SitePreviewRenderPayload {
-  project: SiteProject;
-  pageId: string | null;
-  inspecting: boolean;
-  selectedKey: string | null;
-}
+const envelope = { channel: z.literal(SITE_PREVIEW_CHANNEL), frameId: z.string().max(160) };
+const session = { ...envelope, sessionId: z.guid() };
 
-export interface SitePreviewRenderMessage {
-  channel: typeof SITE_PREVIEW_CHANNEL;
-  type: "render";
-  frameId: string;
-  payload: SitePreviewRenderPayload;
-}
+export const sitePreviewPayloadSchema = z
+  .object({
+    project: siteProjectSchema,
+    pageId: z.string().nullable(),
+    inspecting: z.boolean(),
+    selectedKey: z.string().nullable(),
+    siteRevision: z.number().int().positive().nullable(),
+  })
+  .strict();
+export type SitePreviewRenderPayload = z.infer<typeof sitePreviewPayloadSchema>;
 
-export interface SitePreviewReadyMessage {
-  channel: typeof SITE_PREVIEW_CHANNEL;
-  type: "ready";
-  frameId: string;
-}
+export const sitePreviewRenderMessageSchema = z
+  .object({
+    ...session,
+    type: z.literal("render"),
+    payload: sitePreviewPayloadSchema,
+  })
+  .strict();
+export type SitePreviewRenderMessage = z.infer<typeof sitePreviewRenderMessageSchema>;
 
-export interface SitePreviewNavigateMessage {
-  channel: typeof SITE_PREVIEW_CHANNEL;
-  type: "navigate";
-  frameId: string;
-  path: string;
-}
+export const sitePreviewRuntimeMessageSchema = z.discriminatedUnion("type", [
+  z.object({ ...envelope, type: z.literal("ready") }).strict(),
+  z.object({ ...session, type: z.literal("navigate"), path: z.string().max(2048) }).strict(),
+  z.object({ ...session, type: z.literal("select"), key: z.string().max(64).nullable() }).strict(),
+  z
+    .object({
+      ...session,
+      type: z.literal("records"),
+      requestId: z.guid(),
+      operation: siteRecordOperationSchema,
+    })
+    .strict(),
+]);
+export type SitePreviewRuntimeMessage = z.infer<typeof sitePreviewRuntimeMessageSchema>;
 
-export interface SitePreviewSelectMessage {
-  channel: typeof SITE_PREVIEW_CHANNEL;
-  type: "select";
-  frameId: string;
-  key: string | null;
-}
-
-export type SitePreviewRuntimeMessage =
-  | SitePreviewReadyMessage
-  | SitePreviewNavigateMessage
-  | SitePreviewSelectMessage;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-export function isSitePreviewRenderMessage(value: unknown): value is SitePreviewRenderMessage {
-  return (
-    isRecord(value) &&
-    value.channel === SITE_PREVIEW_CHANNEL &&
-    value.type === "render" &&
-    typeof value.frameId === "string" &&
-    isRecord(value.payload) &&
-    isRecord(value.payload.project)
-  );
-}
-
-export function isSitePreviewRuntimeMessage(value: unknown): value is SitePreviewRuntimeMessage {
-  if (
-    !isRecord(value) ||
-    value.channel !== SITE_PREVIEW_CHANNEL ||
-    typeof value.frameId !== "string"
-  ) {
-    return false;
-  }
-
-  if (value.type === "ready") {
-    return true;
-  }
-
-  if (value.type === "navigate") {
-    return typeof value.path === "string";
-  }
-
-  return value.type === "select" && (typeof value.key === "string" || value.key === null);
-}
+export const sitePreviewRecordResultSchema = z
+  .object({
+    ...session,
+    type: z.literal("record-result"),
+    requestId: z.guid(),
+    result: z.discriminatedUnion("ok", [
+      z.object({ ok: z.literal(true), response: siteRecordOperationResponseSchema }).strict(),
+      z.object({ ok: z.literal(false), error: z.string().max(500) }).strict(),
+    ]),
+  })
+  .strict();
+export type SitePreviewRecordResult = z.infer<typeof sitePreviewRecordResultSchema>;

@@ -139,3 +139,4 @@ export {
   validateSiteProject,
   type SiteValidationResult,
 } from "./validate.js";
+export { buildSiteRecordBindingPatches } from "./record-bindings.js";

@@ -85,6 +85,14 @@ function define<TProps extends z.ZodObject>(
 }
 
 export const SITE_CATALOG = {
+  Records: define({
+    category: "data",
+    description:
+      "A saved live record view. Use an existing recordViews binding ID. Each viewer must have access to the table; editable bindings support validated record forms.",
+    props: z.object({ viewId: z.string().min(1).max(40) }),
+    acceptsChildren: false,
+    example: { viewId: "project-tasks" },
+  }),
   Page: define({
     category: "layout",
     description:

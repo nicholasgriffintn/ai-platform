@@ -51,6 +51,7 @@ const APPLICATION: readonly SiteComponentType[] = [
   "Progress",
   "Chart",
   "Table",
+  "Records",
   "KeyValue",
   "EmptyState",
   "Form",

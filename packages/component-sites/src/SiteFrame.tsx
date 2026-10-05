@@ -1,15 +1,11 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import { buildSiteGoogleFontsUrl } from "@ngriffin_uk/polychat-library-sites";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 
 import SITE_PREVIEW_RUNTIME_URL from "../dist/preview-runtime.global.js?url";
 import { buildSiteFrameDocument } from "./frame-document.js";
-import {
-  isSitePreviewRuntimeMessage,
-  SITE_PREVIEW_CHANNEL,
-  type SitePreviewRenderMessage,
-  type SitePreviewRenderPayload,
-} from "./preview-protocol.js";
+import type { SitePreviewRenderPayload } from "./preview-protocol.js";
+import { useSiteFrameBridge, type SiteRecordExecutor } from "./useSiteFrameBridge.js";
 
 import SITE_PREVIEW_STYLESHEET_URL from "../dist/styles.css?url";
 
@@ -20,6 +16,7 @@ export interface SiteFrameProps {
   className?: string;
   onNavigate?: (path: string) => void;
   onSelect?: (key: string | null) => void;
+  onRecordOperation?: SiteRecordExecutor;
 }
 
 export function SiteFrame({
@@ -29,6 +26,7 @@ export function SiteFrame({
   className,
   onNavigate,
   onSelect,
+  onRecordOperation,
 }: SiteFrameProps) {
   const reactId = useId();
   const frameId = `site-frame-${reactId.replaceAll(":", "")}`;
@@ -45,45 +43,7 @@ export function SiteFrame({
     [frameId, payload.project.theme.font, title],
   );
 
-  useEffect(() => {
-    if (!frame?.contentWindow) {
-      return undefined;
-    }
-
-    const sendRender = () => {
-      const message: SitePreviewRenderMessage = {
-        channel: SITE_PREVIEW_CHANNEL,
-        type: "render",
-        frameId,
-        payload,
-      };
-
-      frame.contentWindow?.postMessage(message, "*");
-    };
-
-    const handleMessage = (event: MessageEvent) => {
-      if (
-        event.source !== frame.contentWindow ||
-        !isSitePreviewRuntimeMessage(event.data) ||
-        event.data.frameId !== frameId
-      ) {
-        return;
-      }
-
-      if (event.data.type === "ready") {
-        sendRender();
-      } else if (event.data.type === "navigate") {
-        onNavigate?.(event.data.path);
-      } else {
-        onSelect?.(event.data.key);
-      }
-    };
-
-    window.addEventListener("message", handleMessage);
-    sendRender();
-
-    return () => window.removeEventListener("message", handleMessage);
-  }, [frame, frameId, onNavigate, onSelect, payload]);
+  useSiteFrameBridge({ frame, frameId, payload, onNavigate, onSelect, onRecordOperation });
 
   return (
     <iframe

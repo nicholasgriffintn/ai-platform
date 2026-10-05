@@ -12,6 +12,14 @@ import { buildSiteGoogleFontsUrl, renderSiteThemeCss } from "../theme.js";
 import { renderSiteStateModule } from "./expressions.js";
 import { renderPageFile } from "./page.js";
 import {
+  RECORD_CONTRACTS_SOURCE,
+  RECORD_UTILS_SOURCE,
+  RECORD_HOOK_SOURCE,
+  RECORD_FORM_SOURCE,
+  renderSiteRecordTransport,
+  type SiteRecordExportRuntime,
+} from "./record-runtime.js";
+import {
   renderIconModule,
   renderLinkModule,
   renderUiModule,
@@ -438,6 +446,7 @@ export interface GeneratedSiteFiles {
 export function generateSiteFiles(
   project: SiteProject,
   target: SiteExportTarget = DEFAULT_SITE_EXPORT_TARGET,
+  recordRuntime?: SiteRecordExportRuntime,
 ): GeneratedSiteFiles {
   const pages = listSitePages(project);
   const used = new Set<SiteComponentType>();
@@ -479,6 +488,21 @@ export function generateSiteFiles(
     { path: sourcePath(target, "components/site/link.tsx"), content: renderLinkModule(target) },
     { path: sourcePath(target, "components/site/ui.tsx"), content: renderUiModule() },
     ...componentFiles,
+    ...(used.has("Records")
+      ? [
+          { path: sourcePath(target, "lib/record-contracts.ts"), content: RECORD_CONTRACTS_SOURCE },
+          { path: sourcePath(target, "lib/record-utils.ts"), content: RECORD_UTILS_SOURCE },
+          {
+            path: sourcePath(target, "lib/record-transport.ts"),
+            content: renderSiteRecordTransport(recordRuntime),
+          },
+          { path: sourcePath(target, "lib/use-site-records.ts"), content: RECORD_HOOK_SOURCE },
+          {
+            path: sourcePath(target, "components/site/RecordForm.tsx"),
+            content: RECORD_FORM_SOURCE,
+          },
+        ]
+      : []),
   ];
 
   return { target, files, components };

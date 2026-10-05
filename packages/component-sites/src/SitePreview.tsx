@@ -3,6 +3,7 @@ import { listSitePages, type SiteProject } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
 import { SiteFrame } from "./SiteFrame.js";
+import type { SiteRecordExecutor } from "./useSiteFrameBridge.js";
 
 export const SITE_PREVIEW_VIEWPORTS = {
   desktop: { label: "Desktop", width: "100%" },
@@ -21,6 +22,8 @@ export interface SitePreviewProps {
   selectedKey?: string | null;
   onSelect?: (key: string | null) => void;
   className?: string;
+  siteRevision?: number;
+  onRecordOperation?: SiteRecordExecutor;
 }
 
 export function resolveSitePageId(project: SiteProject, pageId?: string): string | null {
@@ -47,11 +50,19 @@ export function SitePreview({
   selectedKey = null,
   onSelect,
   className,
+  siteRevision,
+  onRecordOperation,
 }: SitePreviewProps) {
   const resolvedPageId = resolveSitePageId(project, pageId);
   const payload = useMemo(
-    () => ({ project, pageId: resolvedPageId, inspecting, selectedKey }),
-    [inspecting, project, resolvedPageId, selectedKey],
+    () => ({
+      project,
+      pageId: resolvedPageId,
+      inspecting,
+      selectedKey,
+      siteRevision: siteRevision ?? null,
+    }),
+    [inspecting, project, resolvedPageId, selectedKey, siteRevision],
   );
   const handleNavigate = (path: string) => {
     const target = findSitePageIdByPath(project, path);
@@ -82,6 +93,7 @@ export function SitePreview({
           title={`${project.title} preview`}
           onNavigate={handleNavigate}
           onSelect={onSelect}
+          onRecordOperation={onRecordOperation}
         />
       </div>
     </div>

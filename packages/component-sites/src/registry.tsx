@@ -7,12 +7,14 @@ import * as forms from "./components/forms.js";
 import * as layout from "./components/layout.js";
 import * as navigation from "./components/navigation.js";
 import * as sections from "./components/sections.js";
+import { Records } from "./Records.js";
 
 export type SiteRegistryComponent = ComponentType<
   Record<string, unknown> & { children?: ReactNode }
 >;
 
 const registry = {
+  Records,
   Page: layout.Page,
   Section: layout.Section,
   Stack: layout.Stack,

@@ -9,6 +9,7 @@ import {
   siteRepeatSchema,
   siteThemeSchema,
   siteVisibilitySchema,
+  siteProjectSchema,
   type SiteElement,
   type SiteCapability,
   type SiteIssue,
@@ -392,6 +393,12 @@ function normalisePage(pageId: string, raw: unknown, issues: SiteIssue[]): SiteP
 export function validateSiteProject(raw: unknown): SiteValidationResult {
   const issues: SiteIssue[] = [];
   const source = isRecord(raw) ? raw : {};
+  const recordViews = siteProjectSchema.shape.recordViews.safeParse(source.recordViews);
+
+  if (!recordViews.success) {
+    issues.push({ severity: "error", message: "The site has invalid record view bindings" });
+  }
+
   const parsedTheme = siteThemeSchema.safeParse(source.theme);
   const theme = parsedTheme.success
     ? parsedTheme.data
@@ -423,6 +430,21 @@ export function validateSiteProject(raw: unknown): SiteValidationResult {
     issues.push({ severity: "error", message: "The site has no pages" });
   }
 
+  const boundIds = new Set(recordViews.success ? recordViews.data?.map((view) => view.id) : []);
+
+  for (const [pageId, page] of Object.entries(pages)) {
+    for (const [elementKey, element] of Object.entries(page.elements)) {
+      if (element.type === "Records" && !boundIds.has(String(element.props.viewId))) {
+        issues.push({
+          severity: "error",
+          pageId,
+          elementKey,
+          message: "Live records require a saved record view binding",
+        });
+      }
+    }
+  }
+
   return {
     project: {
       title: readString(source.title, "Untitled"),
@@ -432,6 +454,7 @@ export function validateSiteProject(raw: unknown): SiteValidationResult {
       theme,
       capabilities: [...new Set(capabilities)],
       pages,
+      ...(recordViews.success && recordViews.data?.length ? { recordViews: recordViews.data } : {}),
     },
     issues,
   };

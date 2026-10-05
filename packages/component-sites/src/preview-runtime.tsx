@@ -8,11 +8,13 @@ import { useEffect, useMemo, type MouseEvent } from "react";
 import { createRoot } from "react-dom/client";
 
 import {
-  isSitePreviewRenderMessage,
+  sitePreviewRenderMessageSchema,
   SITE_PREVIEW_CHANNEL,
   type SitePreviewRenderPayload,
   type SitePreviewRuntimeMessage,
 } from "./preview-protocol.js";
+import { createSiteRecordClient } from "./record-client.js";
+import { SiteRecordProvider, type SiteRecordRuntime } from "./record-context.js";
 import { SiteRenderer } from "./SiteRenderer.js";
 import { readSiteSelectionFromEvent, SiteSelectionOverlay } from "./SiteSelection.js";
 import { SiteNavigationProvider } from "./ui.js";
@@ -36,18 +38,22 @@ function post(message: SitePreviewRuntimeMessage): void {
 
 function RuntimePreview({
   frameId,
+  sessionId,
   payload,
+  records,
 }: {
   frameId: string;
+  sessionId: string;
   payload: SitePreviewRenderPayload;
+  records: SiteRecordRuntime;
 }) {
   const page = payload.pageId ? payload.project.pages[payload.pageId] : null;
   const navigation = useMemo(
     () => ({
       navigate: (path: string) =>
-        post({ channel: SITE_PREVIEW_CHANNEL, type: "navigate", frameId, path }),
+        post({ channel: SITE_PREVIEW_CHANNEL, type: "navigate", frameId, sessionId, path }),
     }),
-    [frameId],
+    [frameId, sessionId],
   );
 
   useEffect(() => applyTheme(payload.project.theme), [payload.project.theme]);
@@ -63,24 +69,27 @@ function RuntimePreview({
       channel: SITE_PREVIEW_CHANNEL,
       type: "select",
       frameId,
+      sessionId,
       key: readSiteSelectionFromEvent(event),
     });
   };
 
   return (
     <SiteNavigationProvider value={navigation}>
-      <div
-        data-site-inspecting={payload.inspecting || undefined}
-        className={payload.inspecting ? "cursor-crosshair [&_a]:pointer-events-auto" : undefined}
-        onClickCapture={handleInspect}
-      >
-        {page && payload.pageId ? <SiteRenderer key={payload.pageId} page={page} /> : null}
-      </div>
-      <SiteSelectionOverlay
-        root={document.getElementById("site-root")}
-        selectedKey={payload.selectedKey}
-        active={payload.inspecting}
-      />
+      <SiteRecordProvider value={records}>
+        <div
+          data-site-inspecting={payload.inspecting || undefined}
+          className={payload.inspecting ? "cursor-crosshair [&_a]:pointer-events-auto" : undefined}
+          onClickCapture={handleInspect}
+        >
+          {page && payload.pageId ? <SiteRenderer key={payload.pageId} page={page} /> : null}
+        </div>
+        <SiteSelectionOverlay
+          root={document.getElementById("site-root")}
+          selectedKey={payload.selectedKey}
+          active={payload.inspecting}
+        />
+      </SiteRecordProvider>
     </SiteNavigationProvider>
   );
 }
@@ -100,18 +109,43 @@ function boot(): void {
   document.head.append(expressionStyles);
 
   const root = createRoot(mount);
+  let client: ReturnType<typeof createSiteRecordClient> | null = null;
+  let sessionId: string | null = null;
+  let records: SiteRecordRuntime | null = null;
 
   window.addEventListener("message", (event) => {
-    if (event.source !== window.parent || !isSitePreviewRenderMessage(event.data)) {
+    if (event.source !== window.parent) {
       return;
     }
 
-    if (event.data.frameId !== frameId) {
+    const parsed = sitePreviewRenderMessageSchema.safeParse(event.data);
+
+    if (!parsed.success || parsed.data.frameId !== frameId) {
       return;
     }
 
-    root.render(<RuntimePreview frameId={frameId} payload={event.data.payload} />);
+    const message = parsed.data;
+
+    if (message.sessionId !== sessionId) {
+      client?.dispose();
+      sessionId = message.sessionId;
+      client = createSiteRecordClient(frameId, sessionId);
+      records = { revision: message.payload.siteRevision, execute: client.execute };
+    }
+
+    if (records) {
+      root.render(
+        <RuntimePreview
+          key={message.sessionId}
+          frameId={frameId}
+          sessionId={message.sessionId}
+          records={records}
+          payload={message.payload}
+        />,
+      );
+    }
   });
+  window.addEventListener("pagehide", () => client?.dispose());
 
   post({ channel: SITE_PREVIEW_CHANNEL, type: "ready", frameId });
 }

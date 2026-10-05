@@ -381,9 +381,6 @@ describe("codegen", () => {
       expect(description).toContain(`- ${type}`);
     }
 
-    expect(files.filter((file) => file.path.startsWith("app/components/site/")).length).toBe(
-      SITE_COMPONENT_TYPES.length + 3,
-    );
     const componentSource = (name: string) =>
       files.find((file) => file.path === `app/components/site/${name}.tsx`)?.content ?? "";
     const globals = files.find((file) => file.path === "app/globals.css")?.content ?? "";

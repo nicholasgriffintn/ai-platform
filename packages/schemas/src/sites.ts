@@ -2,6 +2,7 @@ import z from "zod/v4";
 
 import { decisionAnswerSchema, decisionQuestionSchema } from "./decisions.js";
 import { modelTierSchema } from "./model-lineup.js";
+import { nativeRecordViewSchema } from "./native-records.js";
 
 export const SITES_CAPABILITY_ID = "featured-sites";
 export const SITE_OUTPUT_KIND = "site";
@@ -278,6 +279,7 @@ export const siteProjectSchema = z
     theme: siteThemeSchema,
     capabilities: z.array(siteCapabilitySchema),
     pages: z.record(z.string().regex(SITE_PAGE_ID_PATTERN), sitePageSchema),
+    recordViews: z.array(nativeRecordViewSchema).max(12).optional(),
   })
   .strict();
 export type SiteProject = z.infer<typeof siteProjectSchema>;
@@ -400,6 +402,18 @@ export const siteTurnSchema = z
   .strict();
 export type SiteTurn = z.infer<typeof siteTurnSchema>;
 
+export const storedSiteOutputContentSchema = z
+  .object({
+    brief: z.string().max(SITE_PROMPT_MAX_LENGTH).default(""),
+    plan: sitePlanSchema,
+    project: siteProjectSchema,
+    issues: z.array(siteIssueSchema).default([]),
+    quality: siteQualitySchema.nullable().default(null),
+    turns: z.array(siteTurnSchema).default([]),
+  })
+  .strict();
+export type StoredSiteOutputContent = z.infer<typeof storedSiteOutputContentSchema>;
+
 export const siteRecordSchema = z
   .object({
     id: z.string().min(1),
@@ -453,6 +467,7 @@ export const siteGenerateRequestSchema = z
     target: siteElementTargetSchema.optional(),
     model: z.string().min(1).optional(),
     theme: siteThemeSchema.partial().optional(),
+    recordViews: z.array(nativeRecordViewSchema).max(12).optional(),
   })
   .strict();
 export type SiteGenerateRequest = z.infer<typeof siteGenerateRequestSchema>;
