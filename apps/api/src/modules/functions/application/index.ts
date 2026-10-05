@@ -31,11 +31,11 @@ import { generate_pattern } from "./generate_pattern";
 import { get_note } from "./get_note";
 import { complete_goal, set_goal } from "./goal";
 import { get_hacker_news_stories } from "./hacker_news";
-import { hostedMcpApproval } from "./hosted_mcp_approval";
 import { request_approval, ask_user } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
+import { mcp } from "./mcp";
 import { search_memories, store_memory } from "./memory";
 import { messageParent } from "./message-parent";
 import { metaTools } from "./meta";
@@ -131,7 +131,7 @@ const functionDefinitions: ApiToolDefinition[] = [
   run_prediction,
   run_code,
   use_computer,
-  hostedMcpApproval,
+  mcp,
   ...metaTools,
 ];
 

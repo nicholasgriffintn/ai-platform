@@ -1,9 +1,5 @@
 import type { TeammateResponse, ModelConfig } from "@ngriffin_uk/polychat-schemas";
-import {
-  DEFAULT_TEAMMATE_KIND,
-  getMcpServerDefaultLabel,
-  normaliseToolIds,
-} from "@ngriffin_uk/polychat-schemas";
+import { DEFAULT_TEAMMATE_KIND, normaliseToolIds } from "@ngriffin_uk/polychat-schemas";
 import {
   generateId,
   getFiniteNumberOrFallback,
@@ -62,11 +58,7 @@ export function createTeammateEditorValue(
     maxSteps: maxSteps > 0 ? maxSteps : DEFAULT_TEAMMATE_MAX_STEPS,
     toolIds: teammate.enabled_tools ?? [],
     skillIds: teammate.skill_ids,
-    servers: teammate.servers.map((server) => ({
-      id: generateId(),
-      label: server.label ?? getMcpServerDefaultLabel(server.url),
-      url: server.url,
-    })),
+    servers: teammate.servers,
     workspaceDefault: teammate.workspace_default,
   };
 }
@@ -88,11 +80,7 @@ export function toTeammateFormData(value: TeammateEditorValue): TeammateFormData
     enabled_tools: normaliseToolIds(value.toolIds),
     skill_ids: value.skillIds,
     mode: value.mode,
-    servers: value.servers.map(({ label, url }) => ({
-      label: label.trim(),
-      url: url.trim(),
-      type: "sse",
-    })),
+    servers: value.servers,
     workspace_default: value.workspaceDefault,
   };
 }
@@ -104,22 +92,6 @@ export function validateTeammateEditorValue(value: TeammateEditorValue): string 
 
   if (value.examples.some((example) => !example.input.trim() || !example.output.trim())) {
     return "Every example needs both a prompt and a reply, or remove the empty ones.";
-  }
-
-  for (const server of value.servers) {
-    if (!server.label.trim() || !server.url.trim()) {
-      return "Every MCP server needs a label and URL, or remove the empty server.";
-    }
-
-    try {
-      const url = new URL(server.url);
-
-      if (url.protocol !== "https:" || url.username || url.password) {
-        return "MCP server URLs must use HTTPS without embedded credentials.";
-      }
-    } catch {
-      return "Enter a valid MCP server URL.";
-    }
   }
 
   return null;

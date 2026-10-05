@@ -20,6 +20,7 @@ import type { SourceKind } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { ConnectedKnowledge } from "./ConnectedKnowledge.js";
 import { MemorySynthesisPanel } from "./MemorySynthesisPanel.js";
 
 const sourceKinds: Array<{ value: "" | SourceKind; label: string }> = [
@@ -84,6 +85,9 @@ export function SourcesLibrary({ projectId, createRequestKey }: SourcesLibraryPr
         </aside>
 
         <section className="min-w-0">
+          <div className="mb-6">
+            <ConnectedKnowledge projectId={projectId} />
+          </div>
           <SettingsSection
             title={selectedCollection?.title ?? "All sources"}
             description={

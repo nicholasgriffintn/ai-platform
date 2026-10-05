@@ -14,7 +14,6 @@ import { generateDocumentFromMedia } from "~/modules/documents/application";
 
 import { create_note } from "../create_note";
 import { get_note } from "../get_note";
-import { search_documents } from "../search_documents";
 
 const projectRequest = {
   env: {},
@@ -26,14 +25,6 @@ const projectRequest = {
 describe("unsupported project embedding paths", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("rejects project document search before querying the personal index", async () => {
-    await expect(
-      search_documents.execute({ query: "project roadmap" }, { request: projectRequest } as any),
-    ).rejects.toMatchObject({ type: "CONFIGURATION_ERROR", statusCode: 501 });
-
-    expect(queryEmbeddings).not.toHaveBeenCalled();
   });
 
   it("rejects project note creation before inserting into the personal index", async () => {

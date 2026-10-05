@@ -1,8 +1,15 @@
-import type { ChannelBinding, CreateChannelBindingInput } from "@ngriffin_uk/polychat-schemas";
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
+import type {
+  ChannelBinding,
+  CreateChannelBindingInput,
+  UpdateChannelBindingInput,
+} from "@ngriffin_uk/polychat-schemas";
+import { createChannelBindingSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ChannelBindingRow } from "~/infrastructure/database/schema";
+import { toChannelBinding } from "~/modules/channels/domain/bindings";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import {
   requireProjectTeammate,
@@ -10,20 +17,7 @@ import {
 } from "~/modules/teammates/application/access";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
-function toBinding(row: ChannelBindingRow): ChannelBinding {
-  return {
-    id: row.id,
-    channel: row.channel,
-    scopeType: row.scope_type,
-    scopeId: row.scope_id,
-    externalId: row.external_id,
-    label: row.label,
-    teammateId: row.teammate_id,
-    interactionMode: row.interaction_mode,
-    enabled: Number(row.enabled) === 1,
-    createdAt: row.created_at,
-  };
-}
+import { validateSlackInstallation } from "./slack-installation";
 
 export async function createChannelBinding(
   context: ServiceContext,
@@ -31,6 +25,8 @@ export async function createChannelBinding(
 ): Promise<ChannelBinding> {
   context.ensureDatabase();
   const user = context.requireUser();
+
+  input = createChannelBindingSchema.parse(input);
   const adapter = getChannelAdapter(input.channel);
 
   if (!adapter) {
@@ -63,9 +59,10 @@ export async function createChannelBinding(
     }
   }
 
-  const existing = await context.repositories.channelBindings.getByExternalId(
+  const existing = await context.repositories.channelBindings.findByExternalId(
     input.channel,
     input.externalId,
+    input.workspaceId ?? "",
   );
 
   if (existing) {
@@ -76,11 +73,18 @@ export async function createChannelBinding(
     );
   }
 
+  if (input.channel === "slack") {
+    await validateSlackInstallation(context.env, input.workspaceId);
+  }
+
   const created = await context.repositories.channelBindings.create({
     channel: input.channel,
     scopeType,
     scopeId: input.projectId ?? String(user.id),
     externalId: input.externalId,
+    workspaceId: input.workspaceId ?? "",
+    allowedSenderIds: input.allowedSenderIds,
+    replyMode: input.replyMode ?? "mentions",
     label: input.label ?? null,
     teammateId: input.teammateId ?? null,
     interactionMode: input.interactionMode ?? "automated",
@@ -91,7 +95,7 @@ export async function createChannelBinding(
     throw new AssistantError("Could not connect that channel", ErrorType.DATABASE_ERROR);
   }
 
-  return toBinding(created);
+  return toChannelBinding(created);
 }
 
 export async function listChannelBindings(
@@ -101,7 +105,7 @@ export async function listChannelBindings(
   const user = context.requireUser();
   const rows = await context.repositories.channelBindings.listForUser(user.id);
 
-  return { bindings: rows.map(toBinding) };
+  return { bindings: rows.map(toChannelBinding) };
 }
 
 export async function deleteChannelBinding(
@@ -118,6 +122,48 @@ export async function resolveChannelBinding(
   context: ServiceContext,
   channel: string,
   externalId: string,
+  workspaceId: string,
 ): Promise<ChannelBindingRow | null> {
-  return context.repositories.channelBindings.getByExternalId(channel, externalId);
+  return context.repositories.channelBindings.findByExternalId(channel, externalId, workspaceId);
+}
+
+export async function updateChannelBinding(
+  context: ServiceContext,
+  id: string,
+  input: UpdateChannelBindingInput,
+): Promise<ChannelBinding> {
+  const user = context.requireUser();
+  const current = await context.repositories.channelBindings.getById(id);
+
+  if (!current || !ownsResource(user.id, current.created_by)) {
+    throw new AssistantError("Channel binding not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  if (current.scope_type === "project") {
+    await requireProjectAccess(context, current.scope_id, ["owner", "admin"]);
+  }
+
+  if (current.channel === "slack" && !current.workspace_id) {
+    throw new AssistantError(
+      "Recreate this channel with its workspace and sender permissions",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  const updated = await context.repositories.channelBindings.update({
+    id,
+    userId: user.id,
+    ...input,
+  });
+
+  if (!updated) {
+    throw new AssistantError(
+      "Channel settings changed. Reload and try again",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  return toChannelBinding(updated);
 }

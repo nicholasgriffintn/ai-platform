@@ -36,6 +36,7 @@ function createMockContext(overrides: any = {}): Context {
       ...overrides.env,
     },
     get: vi.fn(),
+    set: vi.fn(),
     ...overrides,
   };
 

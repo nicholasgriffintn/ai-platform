@@ -1,5 +1,6 @@
 import type { McpServerFieldValue } from "@ngriffin_uk/polychat-component-capabilities";
 import type {
+  NativeMcpServer,
   AgentMode,
   TeammateOwnerScopeType,
   TeammateResponse,
@@ -52,6 +53,7 @@ export interface TeammatePublishState {
 export interface TeammateEditorProps {
   teammate: TeammateResponse | null;
   models: ModelConfig;
+  availableMcpServers?: NativeMcpServer[];
   tools: Tool[];
   skills: SkillSummary[];
   isLoadingCapabilities?: boolean;

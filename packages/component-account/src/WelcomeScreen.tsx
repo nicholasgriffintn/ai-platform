@@ -14,6 +14,7 @@ export interface WelcomeScreenProps {
   error?: string | null;
   isSigningIn?: boolean;
   onSignIn: () => void;
+  alternativeSignIn?: ReactNode;
   strapline?: string;
   termsHref?: string;
   privacyHref?: string;
@@ -41,6 +42,7 @@ export function WelcomeScreen({
   error,
   isSigningIn = false,
   onSignIn,
+  alternativeSignIn,
   strapline = "Sign in to bring your models, teammates and conversations to this machine.",
   termsHref = "https://polychat.app/terms",
   privacyHref = "https://polychat.app/privacy",
@@ -78,6 +80,8 @@ export function WelcomeScreen({
       >
         Continue in your browser
       </Button>
+
+      {alternativeSignIn ? <div className="mt-4 w-full text-left">{alternativeSignIn}</div> : null}
 
       <p className="mt-6 text-sm text-muted-foreground">
         By continuing, you agree to our{" "}

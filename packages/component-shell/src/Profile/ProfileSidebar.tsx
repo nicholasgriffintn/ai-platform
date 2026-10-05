@@ -7,8 +7,10 @@ import { useSidebarPeekPanel } from "../Sidebar/SidebarPeekContext.js";
 import { ProfileAccountTab } from "./Tabs/ProfileAccountTab.js";
 import { ProfileApiKeysTab } from "./Tabs/ProfileApiKeysTab.js";
 import { ProfileBillingTab } from "./Tabs/ProfileBillingTab.js";
+import { ProfileChannelsTab } from "./Tabs/ProfileChannelsTab.js";
 import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab.js";
 import { ProfileHistoryTab } from "./Tabs/ProfileHistoryTab.js";
+import { ProfileMcpTab } from "./Tabs/ProfileMcpTab.js";
 import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab.js";
 import { ProfilePetsTab } from "./Tabs/ProfilePetsTab.js";
 import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab.js";
@@ -59,6 +61,8 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
     component: ProfileProvidersTab,
   },
   { id: "api-keys", label: "API keys", group: MODELS_GROUP, component: ProfileApiKeysTab },
+  { id: "channels", label: "Channels", group: ADVANCED_GROUP, component: ProfileChannelsTab },
+  { id: "mcp", label: "Connected tools", group: ADVANCED_GROUP, component: ProfileMcpTab },
   { id: "sandbox", label: "Sandbox", group: ADVANCED_GROUP, component: ProfileSandboxTab },
 ];
 

@@ -27,6 +27,7 @@ export type {
   ResolvedAiFeedback,
   TelemetryEnv,
   TelemetryEvent,
+  TelemetryExecutionContext,
   TelemetryIdentity,
   TelemetryIdentityInput,
   TelemetryLogLevel,
@@ -78,6 +79,8 @@ export * from "./sinks/dataset-layout.js";
 export { createBeaconSink } from "./sinks/beacon.js";
 export { createPostHogSink } from "./sinks/posthog.js";
 export * from "./otel.js";
+export * from "./otlp-http.js";
+export { getOtlpConfig, type OtlpConfig } from "./otlp-config.js";
 export * from "./usage/extract-usage.js";
 export * from "./usage/impact.js";
 export * from "./usage/token-usage.js";

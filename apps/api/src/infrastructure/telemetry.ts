@@ -1,4 +1,3 @@
-import type { ExecutionContext } from "@cloudflare/workers-types";
 import { createProviderMetrics, resolveAiGatewayId } from "@ngriffin_uk/polychat-ai-providers";
 import {
   createWorkerMetricsRecorder,
@@ -7,11 +6,15 @@ import {
   type Telemetry,
   type TelemetryEnv,
   type TelemetryIdentityInput,
+  type TelemetryExecutionContext,
 } from "@ngriffin_uk/polychat-ai-telemetry";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
-export function createTelemetry(env: TelemetryEnv, executionCtx?: ExecutionContext): Telemetry {
+export function createTelemetry(
+  env: TelemetryEnv,
+  executionCtx?: TelemetryExecutionContext,
+): Telemetry {
   return createWorkerTelemetry({
     env,
     executionCtx,
@@ -19,7 +22,10 @@ export function createTelemetry(env: TelemetryEnv, executionCtx?: ExecutionConte
   });
 }
 
-export function createMetrics(env: TelemetryEnv, executionCtx?: ExecutionContext): MetricsRecorder {
+export function createMetrics(
+  env: TelemetryEnv,
+  executionCtx?: TelemetryExecutionContext,
+): MetricsRecorder {
   return createWorkerMetricsRecorder({
     env,
     executionCtx,

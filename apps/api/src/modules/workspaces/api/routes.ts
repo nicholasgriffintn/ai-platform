@@ -40,7 +40,11 @@ import {
 } from "~/modules/workspaces/application";
 import { getWorkspaceUsageSummary } from "~/modules/workspaces/application/usage";
 
+import identityRoutes from "./identity";
+
 const app = new Hono();
+
+app.route("/", identityRoutes);
 const workspaceParams = z.object({ workspaceId: z.string().min(1) });
 const workspaceMemberParams = workspaceParams.extend({
   userId: z.coerce.number().int().positive(),

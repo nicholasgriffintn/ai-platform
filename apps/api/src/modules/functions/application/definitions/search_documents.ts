@@ -5,7 +5,7 @@ import type { FunctionToolDescriptor } from "./types";
 export const search_documents: FunctionToolDescriptor = {
   name: "search_documents",
   description:
-    "Search the user's own uploaded documents and saved content for passages relevant to a query. Returns the passages, not an answer; ground what you say in them and cite them by title. Use when the answer depends on the user's material rather than on general knowledge.",
+    "Search accessible synced repository knowledge and the user's own uploaded documents for relevant passages. Project conversations search their project knowledge. Repository search matches a phrase: use concise keywords. Ground answers in returned passages and cite their source URLs when available.",
   type: "premium",
   permissions: ["read"],
   inputSchema: z.object({
@@ -13,8 +13,8 @@ export const search_documents: FunctionToolDescriptor = {
       .string()
       .trim()
       .min(1)
-      .max(1000)
-      .describe("What to look for, phrased as the user would describe it rather than as keywords."),
+      .max(200)
+      .describe("A short search phrase. Use concise keywords for synced repository documents."),
     top_k: z
       .number()
       .int()
@@ -25,6 +25,6 @@ export const search_documents: FunctionToolDescriptor = {
     type: z
       .string()
       .optional()
-      .describe("Restrict the search to one content type, when the user named one."),
+      .describe("Restrict the search to one content type. Use repository for synced documents."),
   }),
 };

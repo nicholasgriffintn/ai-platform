@@ -407,6 +407,41 @@
       "when": 1791117561949,
       "tag": "0057_browser_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "6",
+      "when": 1791141671896,
+      "tag": "0058_channel_threads",
+      "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "6",
+      "when": 1791145075081,
+      "tag": "0059_enterprise_identity",
+      "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "6",
+      "when": 1791148488842,
+      "tag": "0060_knowledge_sync",
+      "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "6",
+      "when": 1791154112018,
+      "tag": "0061_native_mcp",
+      "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "6",
+      "when": 1791160181254,
+      "tag": "0062_native_mcp_transition",
+      "breakpoints": true
     }
   ]
 }

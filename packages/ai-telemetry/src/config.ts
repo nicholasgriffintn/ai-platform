@@ -2,6 +2,7 @@ import { readBooleanEnv, readEnvString } from "@ngriffin_uk/polychat-utility-ser
 import { normaliseHttpOrigin } from "@ngriffin_uk/polychat-utility-server/urls";
 
 import { BEACON_DEFAULT_ENDPOINT, POSTHOG_DEFAULT_HOST } from "./constants.js";
+import { getOtlpConfig } from "./otlp-config.js";
 import type { TelemetryEnv } from "./types.js";
 
 export type PostHogAnalyticsConfig = {
@@ -68,6 +69,7 @@ export function shouldCaptureAiObservability(env: TelemetryEnv): boolean {
 
   return (
     posthogEnabled ||
+    !!getOtlpConfig(env) ||
     !!getBeaconAnalyticsConfig(env) ||
     (!!env.ANALYTICS && typeof env.ANALYTICS.writeDataPoint === "function")
   );

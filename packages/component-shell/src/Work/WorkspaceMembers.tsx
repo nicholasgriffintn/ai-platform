@@ -18,6 +18,7 @@ import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { InviteMemberDialog } from "./InviteMemberDialog.js";
 import { useWorkData } from "./WorkDataContext.js";
+import { WorkspaceIdentitySettings } from "./WorkspaceIdentitySettings.js";
 
 export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
   const { workspaceQuery } = useWorkData();
@@ -26,6 +27,10 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);
   const [removeUserId, setRemoveUserId] = useState<number | null>(null);
   const [transferUserId, setTransferUserId] = useState<number | null>(null);
+  const [manualRoleOverride, setManualRoleOverride] = useState<{
+    userId: number;
+    role: "admin" | "member";
+  } | null>(null);
   const revokeInvitation = useRevokeWorkspaceInvitation();
   const memberMutations = useWorkspaceMemberMutations(workspaceId);
   const { user } = useAuthStatus();
@@ -86,7 +91,15 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
           members={workspace.members}
           viewerRole={workspace.role}
           viewerUserId={currentUserId}
-          onChangeRole={(userId, role) => memberMutations.updateRole.mutate({ userId, role })}
+          onChangeRole={(userId, role) => {
+            const member = workspace.members.find((item) => item.userId === userId);
+
+            if (member?.managedIdentity) {
+              setManualRoleOverride({ userId, role });
+            } else {
+              memberMutations.updateRole.mutate({ userId, role });
+            }
+          }}
           onRemove={setRemoveUserId}
           onTransferOwnership={setTransferUserId}
         />
@@ -100,12 +113,30 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
             onRevoke={(invitationId) => revokeInvitation.mutate({ workspaceId, invitationId })}
           />
         )}
+        {workspace.role === "owner" ? (
+          <WorkspaceIdentitySettings workspaceId={workspaceId} />
+        ) : null}
       </PageShell.Content>
       <InviteMemberDialog
         workspaceId={workspaceId}
         canInviteAdmin={workspace.role === "owner"}
         open={isInviteOpen}
         onOpenChange={setIsInviteOpen}
+      />
+      <ConfirmationDialog
+        open={manualRoleOverride !== null}
+        onOpenChange={(open) => !open && setManualRoleOverride(null)}
+        title="Grant manual workspace access"
+        description="Changing this role stops identity group management for this person. Their access will remain available until you remove them manually."
+        confirmText="Grant manual access"
+        isLoading={memberMutations.updateRole.isPending}
+        onConfirm={async () => {
+          if (manualRoleOverride) {
+            await memberMutations.updateRole.mutateAsync(manualRoleOverride);
+          }
+
+          setManualRoleOverride(null);
+        }}
       />
       <ConfirmationDialog
         open={isLeaveOpen}

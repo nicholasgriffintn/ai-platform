@@ -7,6 +7,7 @@ Read the relevant record before changing any durable boundary.
 - [0001: Keep implementation behind app and package boundaries](decisions/0001-app-and-package-boundaries.md)
 - [0002: Share one runtime across Chat and Work](decisions/0002-chat-and-work-share-one-runtime.md)
 - [0003: Use scoped resources and explicit authority](decisions/0003-scoped-resources-and-explicit-authority.md)
+- [0072: Lease identity-managed workspace access](decisions/0072-lease-identity-managed-workspace-access.md)
 - [0004: Render one shell with one user-facing vocabulary](decisions/0004-one-shell-and-one-vocabulary.md)
 - [0031: Run workspace tasks through Vite+](decisions/0031-run-workspace-tasks-through-vite-plus.md)
 - [0032: Ship shared packages as preserved modules](decisions/0032-ship-shared-packages-as-preserved-modules.md)
@@ -27,6 +28,7 @@ Read the relevant record before changing any durable boundary.
 - [0012: Share model definitions across provider offerings](decisions/0012-share-model-definitions-across-offerings.md)
 - [0013: Load skills on demand and version authored content](decisions/0013-load-skills-on-demand.md)
 - [0014: Keep retrieval authority in D1 and preserve vector provenance](decisions/0014-retrieval-authority-and-vector-provenance.md)
+- [0073: Scope repository knowledge before retrieval](decisions/0073-scope-repository-knowledge-before-retrieval.md)
 - [0015: Hire teammates from roles and call them teammates everywhere](decisions/0015-teammates-hired-from-roles.md)
 - [0016: Keep meta tools in the meta scope](decisions/0016-meta-tools-belong-to-the-meta-scope.md)
 - [0017: Bind connector execution to exact local authority](decisions/0017-bind-connector-execution-to-local-authority.md)
@@ -54,6 +56,8 @@ Read the relevant record before changing any durable boundary.
 - [0020: Derive attention from authoritative work state and revalidate every delivery](decisions/0020-derive-attention-and-revalidate-delivery.md)
 - [0021: Separate personal conversation state from project groups](decisions/0021-separate-conversation-state-from-project-groups.md)
 - [0022: Meter vendor units, admit against credits and settle once](decisions/0022-meter-vendor-units-and-settle-once.md)
+
+- [0071: Scope channel work to threads](decisions/0071-scope-channel-work-to-threads.md)
 
 ## Clients, runtime and lifecycle
 

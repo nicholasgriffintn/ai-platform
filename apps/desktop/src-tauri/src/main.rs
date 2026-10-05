@@ -7,6 +7,7 @@ mod diagnostics;
 mod discovery;
 mod egress;
 mod encoding;
+mod identity_sign_in;
 mod lines;
 mod link;
 mod links;
@@ -483,15 +484,17 @@ fn sign_out() -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn sign_in() -> Result<(), String> {
+async fn sign_in(connection_id: Option<String>, link_identity: Option<bool>) -> Result<(), String> {
     let state = new_client_state();
     let listener = link::LoopbackListener::bind(state.clone())?;
     let redirect_uri = listener.redirect_uri();
-    let authorise = format!(
-        "{API_BASE_URL}/auth/github?platform=desktop&redirect_uri={}&client_state={}",
-        encode_query_value(&redirect_uri),
-        encode_query_value(&state)
-    );
+    let authorise = identity_sign_in::authorisation_url(
+        API_BASE_URL,
+        &redirect_uri,
+        &state,
+        connection_id.as_deref(),
+        link_identity.unwrap_or(false),
+    )?;
 
     opener::open_browser(&authorise).map_err(|cause| cause.to_string())?;
 
@@ -554,10 +557,6 @@ fn sign_in_failure(status: u16, body: &str) -> String {
     } else {
         format!("Sign-in could not be completed: {detail}")
     }
-}
-
-fn encode_query_value(value: &str) -> String {
-    url::form_urlencoded::byte_serialize(value.as_bytes()).collect()
 }
 
 fn new_client_state() -> String {

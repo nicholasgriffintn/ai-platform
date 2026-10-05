@@ -1,4 +1,3 @@
-import type { ExecutionContext } from "@cloudflare/workers-types";
 import {
   extractUsagePayload,
   mergeStreamedTokenUsage,
@@ -6,6 +5,7 @@ import {
   type AiGenerationSignal,
   type TelemetryEnv,
   type TelemetryProperties,
+  type TelemetryExecutionContext,
 } from "@ngriffin_uk/polychat-ai-telemetry";
 import { isRecord, parseServerSentEventBuffer } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -35,7 +35,7 @@ export interface ProviderGenerationContext {
 export type CaptureAiGeneration = (
   input: AiGenerationSignal & {
     env?: TelemetryEnv;
-    executionCtx?: ExecutionContext;
+    executionCtx?: TelemetryExecutionContext;
   },
 ) => void;
 
@@ -102,7 +102,11 @@ function captureProviderGeneration(
 ): void {
   capture({
     ...baseSignal(context),
-    executionCtx: context.request?.executionCtx,
+    executionCtx:
+      context.request?.executionCtx ??
+      (context.request?.context?.waitUntil
+        ? { waitUntil: context.request.context.waitUntil }
+        : undefined),
     env: context.request?.env,
     output:
       outcome.output === undefined ? undefined : { role: "assistant", content: outcome.output },

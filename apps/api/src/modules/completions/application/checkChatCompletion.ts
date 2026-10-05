@@ -52,7 +52,7 @@ export const handleCheckChatCompletion = async (
   const roleToCheck = role || "user";
 
   const userSettings = await context.getUserSettings();
-  const guardrails = new Guardrails(context.env, user, userSettings);
+  const guardrails = new Guardrails(context.env, user, userSettings, context);
   const validation =
     roleToCheck === "user"
       ? await guardrails.validateInput(messageHistoryAsString, user.id, completion_id)

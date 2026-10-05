@@ -43,7 +43,6 @@ class OpenAIResponsesToolBuilder {
     this.addWebSearch();
     this.addCodeInterpreter();
     this.addFileSearch();
-    this.addMcp();
     this.addComputerUse();
     this.addImageGeneration();
     this.addHostedShell();
@@ -109,26 +108,6 @@ class OpenAIResponsesToolBuilder {
       max_num_results: fileSearchOptions.max_num_results,
       ranking_options: fileSearchOptions.ranking_options,
     });
-  }
-
-  private addMcp() {
-    const mcpTools = this.buildMcpTools();
-
-    if (
-      !this.modelConfig.supportsMcp ||
-      (!hasAnyEnabledTool(this.params.enabled_tools, "mcp", "remote_mcp") && mcpTools.length === 0)
-    ) {
-      return;
-    }
-
-    if (mcpTools.length === 0) {
-      throw new AssistantError(
-        "OpenAI MCP tools require tool_options.mcp_servers",
-        ErrorType.PARAMS_ERROR,
-      );
-    }
-
-    this.tools.push(...mcpTools);
   }
 
   private addComputerUse() {
@@ -224,51 +203,15 @@ class OpenAIResponsesToolBuilder {
     const rawTools = this.options.responses_tools;
 
     if (Array.isArray(rawTools)) {
+      if (rawTools.some((tool) => isRecord(tool) && tool.type === "mcp")) {
+        throw new AssistantError(
+          "Select registered MCP servers instead of hosted MCP tools",
+          ErrorType.PARAMS_ERROR,
+        );
+      }
+
       this.tools.push(...rawTools.filter((tool): tool is Record<string, any> => isRecord(tool)));
     }
-  }
-
-  private buildMcpTools(): Record<string, any>[] {
-    const serverConfigs = Array.isArray(this.options.mcp_servers) ? this.options.mcp_servers : [];
-
-    return serverConfigs.flatMap((serverConfig): Record<string, any>[] => {
-      if (!isRecord(serverConfig)) {
-        return [];
-      }
-
-      if (serverConfig.type === "mcp") {
-        return [serverConfig];
-      }
-
-      const serverLabel = serverConfig.server_label;
-      const serverUrl = serverConfig.server_url;
-      const connectorId = serverConfig.connector_id;
-
-      if (typeof serverLabel !== "string" || (!serverUrl && !connectorId)) {
-        return [];
-      }
-
-      return [
-        {
-          type: "mcp",
-          server_label: serverLabel,
-          ...(typeof serverUrl === "string" ? { server_url: serverUrl } : {}),
-          ...(typeof connectorId === "string" ? { connector_id: connectorId } : {}),
-          ...(serverConfig.headers ? { headers: serverConfig.headers } : {}),
-          ...(serverConfig.authorization ? { authorization: serverConfig.authorization } : {}),
-          ...(serverConfig.allowed_tools ? { allowed_tools: serverConfig.allowed_tools } : {}),
-          ...(serverConfig.require_approval !== undefined
-            ? { require_approval: serverConfig.require_approval }
-            : {}),
-          ...(typeof serverConfig.server_description === "string"
-            ? { server_description: serverConfig.server_description }
-            : {}),
-          ...(typeof serverConfig.defer_loading === "boolean"
-            ? { defer_loading: serverConfig.defer_loading }
-            : {}),
-        },
-      ];
-    });
   }
 
   private buildConfiguredToolSearchNamespaces(): Record<string, any>[] {

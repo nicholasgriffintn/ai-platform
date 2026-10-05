@@ -428,6 +428,37 @@ export const workspace = sqliteTable(
 
 export type Workspace = typeof workspace.$inferSelect;
 
+export const enterpriseIdentityConnection = sqliteTable(
+  "enterprise_identity_connection",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    label: text().notNull(),
+    issuer: text().notNull(),
+    client_id: text().notNull(),
+    encrypted_secret: text().notNull(),
+    configuration: text().notNull(),
+    revision: integer().notNull().default(1),
+    enabled: integer({ mode: "boolean" }).notNull().default(true),
+    created_by: integer()
+      .notNull()
+      .references(() => user.id),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+    updated_at: text(),
+  },
+  (table) => ({
+    workspaceIdx: uniqueIndex("enterprise_identity_connection_workspace_idx").on(
+      table.workspace_id,
+    ),
+  }),
+);
+
+export type EnterpriseIdentityConnectionRow = typeof enterpriseIdentityConnection.$inferSelect;
+
 export const workspaceMember = sqliteTable(
   "workspace_member",
   {
@@ -438,6 +469,11 @@ export const workspaceMember = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     role: text({ enum: ["owner", "admin", "member"] }).notNull(),
+    managed_connection_id: text().references(() => enterpriseIdentityConnection.id, {
+      onDelete: "cascade",
+    }),
+    managed_connection_revision: integer(),
+    identity_lease_expires_at: text(),
     joined_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
@@ -702,10 +738,16 @@ export const channelBinding = sqliteTable(
   "channel_binding",
   {
     id: text().primaryKey(),
+    revision: integer().notNull().default(1),
     channel: text({ enum: ["sms", "slack", "telegram"] }).notNull(),
     scope_type: text({ enum: ["personal", "project"] }).notNull(),
     scope_id: text().notNull(),
     external_id: text().notNull(),
+    workspace_id: text().notNull().default(""),
+    allowed_sender_ids: text().notNull().default("[]"),
+    reply_mode: text({ enum: ["mentions", "all"] })
+      .notNull()
+      .default("mentions"),
     label: text(),
     teammate_id: text().references(() => teammates.id, {
       onDelete: "set null",
@@ -724,6 +766,7 @@ export const channelBinding = sqliteTable(
   (table) => ({
     channelExternalIdx: uniqueIndex("channel_binding_channel_external_idx").on(
       table.channel,
+      table.workspace_id,
       table.external_id,
     ),
     scopeIdx: index("channel_binding_scope_idx").on(table.scope_type, table.scope_id),
@@ -731,6 +774,30 @@ export const channelBinding = sqliteTable(
 );
 
 export type ChannelBindingRow = typeof channelBinding.$inferSelect;
+
+export const channelThread = sqliteTable(
+  "channel_thread",
+  {
+    binding_id: text()
+      .notNull()
+      .references(() => channelBinding.id, { onDelete: "cascade" }),
+    thread_id: text().notNull(),
+    revision: integer().notNull().default(1),
+    muted: integer({ mode: "boolean" }).notNull().default(false),
+    last_control_order: text().notNull().default(""),
+    updated_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    bindingThreadIdx: uniqueIndex("channel_thread_binding_thread_idx").on(
+      table.binding_id,
+      table.thread_id,
+    ),
+  }),
+);
+
+export type ChannelThreadRow = typeof channelThread.$inferSelect;
 
 export const outboundDelivery = sqliteTable(
   "outbound_delivery",
@@ -1779,6 +1846,60 @@ export const source = sqliteTable(
 
 export type Source = typeof source.$inferSelect;
 
+export const knowledgeSync = sqliteTable(
+  "knowledge_sync",
+  {
+    id: text().primaryKey(),
+    created_by_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    repository: text().notNull(),
+    branch: text().notNull(),
+    path: text().notNull().default(""),
+    installation_id: integer().notNull(),
+    status: text({ enum: ["idle", "syncing", "paused", "blocked", "failed"] })
+      .notNull()
+      .default("idle"),
+    revision: integer().notNull().default(1),
+    checkpoint: text(),
+    lease_token: text(),
+    lease_expires_at: integer(),
+    last_synced_at: text(),
+    last_commit: text(),
+    next_sync_at: integer().notNull(),
+    error_message: text(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    ownerIdx: index("knowledge_sync_owner_idx").on(table.created_by_user_id),
+    projectIdx: index("knowledge_sync_project_idx").on(table.project_id),
+    dueIdx: index("knowledge_sync_due_idx").on(table.status, table.next_sync_at),
+  }),
+);
+
+export const knowledgeSyncDocument = sqliteTable(
+  "knowledge_sync_document",
+  {
+    source_id: text()
+      .primaryKey()
+      .references(() => source.id, { onDelete: "cascade" }),
+    sync_id: text()
+      .notNull()
+      .references(() => knowledgeSync.id, { onDelete: "cascade" }),
+    path: text().notNull(),
+    blob_sha: text().notNull(),
+    commit_sha: text().notNull(),
+    seen_run_id: text().notNull(),
+    synced_at: text().notNull(),
+  },
+  (table) => ({
+    pathIdx: uniqueIndex("knowledge_sync_document_path_idx").on(table.sync_id, table.path),
+  }),
+);
+
 export const sourceCollection = sqliteTable(
   "source_collection",
   {
@@ -2122,6 +2243,44 @@ export const composioConnectorSession = sqliteTable(
 
 export type ComposioConnectorSession = typeof composioConnectorSession.$inferSelect;
 
+export const nativeMcpServer = sqliteTable("native_mcp_server", {
+  id: text().primaryKey(),
+  created_by_user_id: integer()
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  workspace_id: text().references(() => workspace.id, { onDelete: "cascade" }),
+  label: text().notNull(),
+  endpoint: text().notNull(),
+  enabled: integer({ mode: "boolean" }).notNull().default(false),
+  revision: integer().notNull().default(1),
+  tools: text().notNull().default("[]"),
+  created_at: text()
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+});
+
+export const nativeMcpConnection = sqliteTable(
+  "native_mcp_connection",
+  {
+    id: text().primaryKey(),
+    server_id: text()
+      .notNull()
+      .references(() => nativeMcpServer.id, { onDelete: "cascade" }),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    revision: integer().notNull().default(1),
+    encrypted_credential: text().notNull(),
+    shared_projects: text().notNull().default("[]"),
+  },
+  (table) => ({
+    ownerServer: uniqueIndex("native_mcp_connection_owner_server_idx").on(
+      table.user_id,
+      table.server_id,
+    ),
+  }),
+);
+
 export const connectorOperationApproval = sqliteTable(
   "connector_operation_approval",
   {
@@ -2256,6 +2415,7 @@ export const teammates = sqliteTable(
     description: text().default("").notNull(),
     avatar_url: text(),
     servers: text({ mode: "json" }).notNull(),
+    retired_mcp_servers: text({ mode: "json" }),
     model: text(),
     temperature: text(),
     max_steps: integer(),

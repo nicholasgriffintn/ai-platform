@@ -120,9 +120,7 @@ export async function enqueueTeammateRun({
   const liveMcpServers = resolveTeammateMcpServers(teammate.servers);
   const mcpServers = resumeConfiguration
     ? resumeConfiguration.mcpServers.filter((admitted) =>
-        liveMcpServers.some(
-          (current) => current.label === admitted.label && current.url === admitted.url,
-        ),
+        liveMcpServers.some((current) => current.id === admitted.id),
       )
     : liveMcpServers;
   const liveConnectionGrants = preparedInvocation?.connectionGrants ?? [];
@@ -178,7 +176,7 @@ export async function enqueueTeammateRun({
       }
     : undefined;
 
-  const functionSchemas = buildTeammateCompletionTools();
+  const functionSchemas = buildTeammateCompletionTools(mcpServers.length > 0);
   const currentSkillIds = readTeammateSkillIds(teammate.skill_ids);
   const liveSkillIds = executionPolicy?.skillIds ?? currentSkillIds;
   const effectiveSkillIds = resumeConfiguration
@@ -187,6 +185,7 @@ export async function enqueueTeammateRun({
   const currentEnabledTools = [
     ...new Set([
       ...(readToolIds(teammate.enabled_tools) ?? []),
+      ...(mcpServers.length > 0 ? ["mcp"] : []),
       ...(resolvedInvocation?.source === "project_task" ? PROJECT_TASK_INTERACTION_TOOL_IDS : []),
     ]),
   ];
@@ -229,9 +228,9 @@ export async function enqueueTeammateRun({
     throw new AssistantError("Invalid model", ErrorType.PARAMS_ERROR);
   }
 
-  if (mcpServers.length > 0 && !modelDetails.supportsMcp) {
+  if (mcpServers.length > 0 && !modelDetails.supportsToolCalls) {
     throw new AssistantError(
-      "This teammate has MCP servers, but its selected model does not support hosted MCP tools",
+      "This teammate requires a model that supports function tools",
       ErrorType.PARAMS_ERROR,
       400,
     );
@@ -278,6 +277,15 @@ export async function enqueueTeammateRun({
         ? { delegation_id: resolvedInvocation.delegationId }
         : {}),
       resolved_configuration: {
+        ...(resolvedInvocation?.source === "channel"
+          ? {
+              channelDelivery: {
+                bindingId: resolvedInvocation.bindingId,
+                thread: resolvedInvocation.thread,
+                from: resolvedInvocation.from,
+              },
+            }
+          : {}),
         teammateId: teammate.id,
         behaviour: preparedInvocation?.resolution.behaviour ?? "colleague",
         ...(resolvedInvocation ? { invocation: resolvedInvocation } : {}),

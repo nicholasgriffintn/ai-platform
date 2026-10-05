@@ -13,6 +13,19 @@ export {
 } from "./github-app.js";
 export { normaliseConnectorOperationFailure } from "./outcomes.js";
 export {
+  McpProtocolClient,
+  NATIVE_MCP_PROTOCOL_VERSION,
+  type McpProtocolRequest,
+  type McpRequestSender,
+} from "./mcp/client.js";
+export { McpProtocolError } from "./mcp/errors.js";
+export {
+  getNativeMcpToolSchemaDigest,
+  validateNativeMcpTool,
+  type McpDiscoveredCatalogue,
+  type McpRejectedTool,
+} from "./mcp/catalogue.js";
+export {
   getPashiClient,
   PashiClient,
   PashiClientError,

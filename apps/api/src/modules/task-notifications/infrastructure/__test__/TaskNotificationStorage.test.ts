@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { Miniflare } from "miniflare";
 import { afterAll, beforeAll, expect, it } from "vitest";
 
+import { applyEnterpriseIdentityTestMigration } from "../../../../../test/migrations";
 import { TaskNotificationRepository } from "../TaskNotificationRepository";
 
 const runtime = new Miniflare({
@@ -37,9 +38,14 @@ beforeAll(async () => {
   await database.prepare("CREATE TABLE project (id TEXT PRIMARY KEY, name TEXT)").run();
   await database.prepare("INSERT INTO project VALUES ('project-1', 'Project')").run();
   await database
-    .prepare("CREATE TABLE workspace_member (workspace_id TEXT, user_id INTEGER)")
+    .prepare(
+      "CREATE TABLE workspace_member (workspace_id TEXT, user_id INTEGER, role TEXT DEFAULT 'member')",
+    )
     .run();
-  await database.prepare("INSERT INTO workspace_member VALUES ('workspace-1', 7)").run();
+  await database
+    .prepare("INSERT INTO workspace_member (workspace_id, user_id) VALUES ('workspace-1', 7)")
+    .run();
+  await applyEnterpriseIdentityTestMigration(database);
   for (const statement of migration.split("--> statement-breakpoint")) {
     if (/CREATE (?:TABLE|(?:UNIQUE )?INDEX) `task_(?:notification_|inbox_)/.test(statement)) {
       await database.prepare(statement).run();

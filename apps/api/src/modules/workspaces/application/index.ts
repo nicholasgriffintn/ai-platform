@@ -21,7 +21,6 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { validateCapabilityReference } from "~/modules/capabilities/application/reference";
 import { getGitHubAppConnectionForUserInstallation } from "~/modules/github/application/connections";
 import { deleteOutput } from "~/modules/outputs/application";
-import { forgetWorkspaceAudience } from "~/modules/sync/application/audience";
 import { revokeTeammateContextResources } from "~/modules/teammates/application/computers";
 import {
   archiveProjectTeammateContexts,
@@ -156,7 +155,7 @@ export async function updateWorkspaceMember(
     );
   }
 
-  await context.repositories.workspaces.updateMemberRole(workspaceId, memberUserId, role);
+  await context.repositories.workspaces.updateMemberRole(workspaceId, memberUserId, role, actor.id);
   await context.repositories.audit.createRecord({
     workspaceId,
     actorUserId: actor.id,
@@ -205,11 +204,8 @@ export async function removeWorkspaceMember(
     memberUserId,
   );
 
-  await mutateTeammateContextsWithCleanup(context, teammateContexts, async () => {
-    await context.repositories.teammateContexts.archiveForWorkspaceActor(workspaceId, memberUserId);
-    await context.repositories.workspaces.removeMember(workspaceId, memberUserId);
-  });
-  forgetWorkspaceAudience(workspaceId);
+  await context.repositories.workspaces.removeMember(workspaceId, memberUserId, actor.id);
+  await mutateTeammateContextsWithCleanup(context, teammateContexts, async () => undefined);
   await context.repositories.audit.createRecord({
     workspaceId,
     actorUserId: actor.id,
@@ -239,11 +235,8 @@ export async function leaveWorkspace(context: ServiceContext, workspaceId: strin
     user.id,
   );
 
-  await mutateTeammateContextsWithCleanup(context, teammateContexts, async () => {
-    await context.repositories.teammateContexts.archiveForWorkspaceActor(workspaceId, user.id);
-    await context.repositories.workspaces.removeMember(workspaceId, user.id);
-  });
-  forgetWorkspaceAudience(workspaceId);
+  await context.repositories.workspaces.removeMember(workspaceId, user.id, user.id);
+  await mutateTeammateContextsWithCleanup(context, teammateContexts, async () => undefined);
   await context.repositories.audit.createRecord({
     workspaceId,
     actorUserId: user.id,
@@ -441,7 +434,6 @@ export async function acceptWorkspaceInvitation(context: ServiceContext, token: 
   }
 
   await context.repositories.workspaces.acceptInvitation(invitation, user.id);
-  forgetWorkspaceAudience(invitation.workspace_id);
   await context.repositories.audit.createRecord({
     workspaceId: invitation.workspace_id,
     actorUserId: user.id,

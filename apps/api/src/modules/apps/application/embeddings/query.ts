@@ -107,6 +107,7 @@ const queryStoredTargets = async (
           authenticatedUser,
           userSettings,
           toRuntimeTarget(storedTarget),
+          serviceContext,
         );
 
         const result = await queryEmbeddingRuntime({

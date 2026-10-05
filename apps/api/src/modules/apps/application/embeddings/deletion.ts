@@ -63,7 +63,13 @@ export const deleteProviderDocuments = async ({
         return;
       }
 
-      const runtime = getEmbeddingRuntimeForTarget(context.env, user, userSettings, target);
+      const runtime = getEmbeddingRuntimeForTarget(
+        context.env,
+        user,
+        userSettings,
+        target,
+        context,
+      );
       const vectorIds = group.flatMap((document) => document.vectorIds);
 
       if (vectorIds.length === 0) {

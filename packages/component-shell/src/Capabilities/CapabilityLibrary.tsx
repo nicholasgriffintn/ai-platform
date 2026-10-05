@@ -9,6 +9,7 @@ import {
   EmptyState,
 } from "@ngriffin_uk/polychat-component-ui";
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
+import { useMcpRegistry } from "@ngriffin_uk/polychat-library-react";
 import type {
   CatalogueItemKind,
   ProjectCapabilityKindGroup,
@@ -44,6 +45,10 @@ export function CapabilityLibrary({
   children,
 }: CapabilityLibraryProps) {
   const controller = useCapabilityLibraryController(scope, { kinds, extraItems });
+  const registry = useMcpRegistry(
+    controller.surface.workspaceId,
+    Boolean(controller.currentUserId),
+  );
   const authoring = useCapabilityAuthoring({
     capabilities: controller.capabilities,
     currentUserId: controller.currentUserId,
@@ -155,6 +160,7 @@ export function CapabilityLibrary({
       </PageShell.Content>
 
       <ToolConfigurationDialog
+        availableMcpServers={registry.query.data}
         configuration={controller.toolConfigurationDialog.configuration}
         isLoading={controller.toolConfigurationDialog.isLoading}
         onClose={controller.toolConfigurationDialog.close}

@@ -3,6 +3,7 @@ import { SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX } from "@ngriffin_uk/polychat-sch
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { Context, Next } from "hono";
 
+import { getServiceContext } from "~/infrastructure/context/serviceContext";
 import { createMetrics } from "~/infrastructure/telemetry";
 
 const logger = getLogger({ prefix: "middleware/rateLimit" });
@@ -62,7 +63,7 @@ export async function rateLimit(context: Context, next: Next) {
 
   const routeName = pathname.split("/").pop() || "unknown";
 
-  createMetrics(context.env).trackUsageMetric(
+  createMetrics(context.env, getServiceContext(context)).trackUsageMetric(
     {
       userId,
       anonymousUserId,

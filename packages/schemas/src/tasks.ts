@@ -7,6 +7,7 @@ import {
   DELEGATION_RUN_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
 } from "./delegations.js";
+import { KNOWLEDGE_SYNC_TASK_TYPE } from "./knowledge-sync.js";
 import {
   MODEL_DATASET_PROCESS_TASK_TYPE,
   MODEL_DEPLOYMENT_SYNC_TASK_TYPE,
@@ -32,6 +33,7 @@ export const TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE = "teammate_context_cleanup";
 export const CONVERSATION_TITLE_TASK_TYPE = "conversation_title";
 
 export const TASK_TYPES = [
+  KNOWLEDGE_SYNC_TASK_TYPE,
   "memory_synthesis",
   "research_polling",
   "replicate_polling",

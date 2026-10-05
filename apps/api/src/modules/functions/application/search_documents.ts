@@ -1,8 +1,7 @@
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-
 import { queryEmbeddings } from "~/modules/apps/application/embeddings/query";
 import type { ApiToolDefinition } from "~/types/functions";
 
+import { queryConnectedDocuments } from "./connected-documents";
 import { search_documents as search_documentsDescriptor } from "./definitions/search_documents";
 import { rerankAuthorisedDocuments } from "./document-reranking";
 import { resolveRequestProjectId } from "./request-context";
@@ -12,32 +11,32 @@ export const search_documents: ApiToolDefinition = {
   execute: async (args, context) => {
     const request = context.request;
 
-    if (resolveRequestProjectId(request)) {
-      throw new AssistantError(
-        "Project document retrieval is not available yet",
-        ErrorType.CONFIGURATION_ERROR,
-        501,
-      );
-    }
+    const projectId = resolveRequestProjectId(request);
+    const connected =
+      !args.type || args.type === "repository"
+        ? await queryConnectedDocuments(request, args.query, 10)
+        : [];
 
-    const response = await queryEmbeddings({
-      context: request.context,
-      env: request.env,
-      user: request.user,
-      request: {
-        query: String(args.query),
-        type: args.type as string | undefined,
-      },
-    });
+    const response = projectId
+      ? { data: [] }
+      : await queryEmbeddings({
+          context: request.context,
+          env: request.env,
+          user: request.user,
+          request: {
+            query: args.query,
+            type: args.type,
+          },
+        });
     const reranked = await rerankAuthorisedDocuments({
       env: request.env,
       user: request.user,
       completionId: context.completionId,
       conversationId: request.request?.completion_id,
-      query: String(args.query),
-      documents: response.data,
+      query: args.query,
+      documents: [...connected, ...response.data],
     });
-    const documents = reranked.slice(0, (args.top_k as number | undefined) ?? 3);
+    const documents = reranked.slice(0, args.top_k ?? 3);
 
     if (documents.length === 0) {
       return {

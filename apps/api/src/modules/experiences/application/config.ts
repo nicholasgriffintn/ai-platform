@@ -185,10 +185,10 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
     configurationKind: "file_search",
   },
   {
-    capability: "supportsMcp",
+    capability: "supportsToolCalls",
     category: "Integrations",
     command: "mcp",
-    description: "Let supported models use configured remote MCP servers.",
+    description: "Use reviewed tools through your own connected MCP account.",
     id: "mcp",
     label: "MCP",
     requiresConfiguration: true,

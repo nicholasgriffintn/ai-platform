@@ -245,6 +245,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
         {
           env: params.env,
           executionCtx: params.executionCtx,
+          waitUntil: params.context.waitUntil,
           traceId: params.completionId,
           identity: resolveTelemetryIdentity(params.context),
         },

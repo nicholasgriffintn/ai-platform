@@ -34,6 +34,7 @@ export async function submitConversationFeedback(
   return handleChatCompletionFeedbackSubmission(
     {
       env: context.env,
+      waitUntil: context.waitUntil,
       user,
       anonymousUser: context.anonymousUser,
       messages,

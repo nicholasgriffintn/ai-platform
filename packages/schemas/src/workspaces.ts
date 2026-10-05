@@ -52,6 +52,7 @@ export const workspaceMemberSchema = z.object({
   avatarUrl: z.string().nullable(),
   role: workspaceRoleSchema,
   joinedAt: z.string(),
+  managedIdentity: z.object({ connectionId: z.string(), expiresAt: z.string() }).nullable(),
 });
 
 export const workspaceInvitationSchema = z.object({

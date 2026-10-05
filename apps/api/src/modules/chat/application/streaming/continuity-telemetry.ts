@@ -18,6 +18,7 @@ export type TurnContinuityOutcome = "completed" | "failed" | "cancelled" | "wait
 export interface RecordMetricContext {
   env: TelemetryEnv;
   executionCtx?: ExecutionContext;
+  waitUntil?: (work: Promise<unknown>) => void;
   traceId: string;
   identity?: TelemetryIdentityInput;
 }
@@ -105,7 +106,10 @@ function clampDuration(value: number): number {
 
 function recordContinuityMetric(context: RecordMetricContext, metric: MetricInput): void {
   try {
-    createMetrics(context.env, context.executionCtx).recordMetric({
+    createMetrics(
+      context.env,
+      context.executionCtx ?? (context.waitUntil ? { waitUntil: context.waitUntil } : undefined),
+    ).recordMetric({
       ...metric,
       ...(context.identity ? { identity: context.identity } : {}),
     });

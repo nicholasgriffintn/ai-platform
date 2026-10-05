@@ -1,36 +1,15 @@
 import z from "zod/v4";
 
 import { agentModeSchema } from "./agent-modes.js";
-import { mcpHttpsUrlSchema } from "./mcp.js";
+import { mcpToolServerConfigurationSchema } from "./mcp.js";
 import { skillIdSchema } from "./skills.js";
 import { teammateKindSchema } from "./teammate-roles.js";
 import { toolIdsSchema } from "./tool-ids.js";
 
 const teammateSkillIdsSchema = z.array(skillIdSchema);
 
-export const mcpServerSchema = z.object({
-  label: z.string().trim().min(1).max(80).optional().meta({
-    description: "Stable label for the MCP server",
-  }),
-  url: z.url().meta({
-    description: "The endpoint URL of the MCP server",
-  }),
-  type: z.enum(["sse", "stdio"]).prefault("sse").optional().meta({
-    description: "Transport type for MCP connection",
-  }),
-  command: z.string().optional().meta({
-    description: "Optional command for stdio transports",
-  }),
-  args: z.array(z.string()).optional().meta({
-    description: "Arguments for stdio transports",
-  }),
-});
-
-export const teammateMcpServerInputSchema = z.object({
-  label: z.string().trim().min(1).max(80).optional(),
-  url: mcpHttpsUrlSchema,
-  type: z.literal("sse").optional(),
-});
+export const mcpServerSchema = mcpToolServerConfigurationSchema;
+export const teammateMcpServerInputSchema = mcpServerSchema;
 
 export const fewShotExampleSchema = z.object({
   input: z.string().meta({ description: "Example input" }),

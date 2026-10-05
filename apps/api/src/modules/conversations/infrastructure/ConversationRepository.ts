@@ -573,7 +573,7 @@ export class ConversationRepository extends BaseRepository {
 			       c.project_id IS NOT NULL
 			       AND p.id IS NOT NULL
 			       AND EXISTS (
-			         SELECT 1 FROM workspace_member wm
+			         SELECT 1 FROM active_workspace_member wm
 			         WHERE wm.workspace_id = p.workspace_id AND wm.user_id = ?
 			       )
 			     )

@@ -8,6 +8,7 @@ import {
   runModelGovernanceMaintenance,
   scheduleModelPlatformReconciles,
 } from "~/modules/model-governance/application/maintenance";
+import { scheduleKnowledgeSyncs } from "~/modules/sources/application/knowledge/maintenance";
 import { schedulePendingTaskNotificationDeliveries } from "~/modules/task-notifications/application/delivery";
 
 import {
@@ -21,6 +22,13 @@ import {
   scheduleTrainingQualityScoring,
 } from "./scheduledTasks";
 import { defineSchedule, workflows } from "./workflows";
+
+workflows.always(
+  defineSchedule({
+    name: "knowledge-sync",
+    run: ({ env }) => scheduleKnowledgeSyncs(env),
+  }),
+);
 
 workflows.always(
   defineSchedule({

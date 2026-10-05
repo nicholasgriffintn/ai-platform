@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
+import { signSlackRequest } from "../../../../../../test/slack-signature";
 import { SlackChannelAdapter } from "../SlackChannelAdapter";
 import { TelegramChannelAdapter } from "../TelegramChannelAdapter";
-import { signSlackRequest } from "./slackSignature";
 
 function slackRequest(headers: Record<string, string>): Request {
   return new Request("https://example.test/webhook", { method: "POST", headers });
@@ -70,6 +70,7 @@ describe("SlackChannelAdapter", () => {
     expect(
       adapter.parse(
         JSON.stringify({
+          team_id: "T1",
           event: { type: "message", channel: "C1", user: "U1", text: "ship it", ts: "1.2" },
         }),
       ),
@@ -77,9 +78,56 @@ describe("SlackChannelAdapter", () => {
       kind: "message",
       messageId: "1.2",
       externalId: "C1",
+      workspaceId: "T1",
+      threadId: "1.2",
+      mentioned: false,
+      directMessage: false,
       from: "U1",
       body: "ship it",
     });
+  });
+  it("retains the root thread and recognises an app mention", () => {
+    expect(
+      adapter.parse(
+        JSON.stringify({
+          team_id: "T1",
+          event: {
+            type: "app_mention",
+            channel: "C1",
+            user: "U1",
+            text: "<@UBOT> explain",
+            ts: "2.2",
+            thread_ts: "1.2",
+          },
+        }),
+        { botUserId: "UBOT" },
+      ),
+    ).toMatchObject({ threadId: "1.2", mentioned: true, body: "explain" });
+  });
+
+  it("rejects a signed event without a workspace or sender identity", () => {
+    expect(
+      adapter.parse(
+        JSON.stringify({ event: { type: "message", channel: "C1", text: "hello", ts: "1.2" } }),
+      ),
+    ).toMatchObject({ kind: "control" });
+  });
+
+  it("posts a reply inside the original Slack thread", async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true })));
+
+    vi.stubGlobal("fetch", fetcher);
+
+    try {
+      await adapter.sendReply({ externalId: "C1", threadId: "1.2", body: "reply" }, "bot-token");
+      expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({
+        channel: "C1",
+        thread_ts: "1.2",
+        text: "reply",
+      });
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 
@@ -133,6 +181,10 @@ describe("TelegramChannelAdapter", () => {
       kind: "message",
       messageId: "42",
       externalId: "9",
+      workspaceId: "",
+      threadId: "9",
+      mentioned: false,
+      directMessage: true,
       from: "2",
       body: "ship it",
     });

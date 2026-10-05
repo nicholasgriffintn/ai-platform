@@ -39,7 +39,7 @@ export function experimentsFor(context: ServiceContext): Experiments {
   const experiments = createExperiments({
     provider: createFlagProvider(context.env),
     context: evaluationContextFor(context),
-    telemetry: createTelemetry(context.env, context.executionCtx),
+    telemetry: createTelemetry(context.env, context.executionCtx ?? context),
     onAssign: (assignment) => {
       context.experimentAssignments[assignment.key] = assignment.variant;
     },

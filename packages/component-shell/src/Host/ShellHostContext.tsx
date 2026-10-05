@@ -7,6 +7,7 @@ export interface ShellHost {
   webBaseUrl: string;
   openAssistant: () => void;
   openSignIn: () => void;
+  openEnterpriseSignIn?: (connectionId: string, link: boolean) => void;
   signOut: () => void;
   TaskNotificationSettings: ComponentType;
   HostDialogs?: ComponentType;

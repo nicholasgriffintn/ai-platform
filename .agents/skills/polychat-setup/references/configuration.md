@@ -28,6 +28,9 @@ Do not duplicate or inline real keys in docs.
 
 - **Embeddings:** use `EMBEDDING_SCOPE_SECRET` and keep credentials stable when vectors are populated.
 - **Connectors:** configure Composio keying, webhook signature, and callback URLs in the Composio guide.
+- **Channels:** configure `SLACK_SIGNING_SECRET`, `SLACK_BOT_TOKEN`, and `SLACK_BOT_USER_ID` for one Slack installation. Subscribe to `app_mention` and the applicable message events, including `message.im` for direct messages. Bind the exact Slack workspace and channel, choose an explicit sender allowlist, and use mention mode unless every allowed message should start a thread. Configure `TELEGRAM_WEBHOOK_SECRET` and `TELEGRAM_BOT_TOKEN` for personal Telegram bindings.
+- **Telemetry:** set `OTEL_EXPORTER_OTLP_ENDPOINT` to the public HTTPS collector base URL, including any tenant path. Store collector credentials in `OTEL_EXPORTER_OTLP_HEADERS` as percent-encoded header pairs; use `OTEL_SERVICE_NAME` for the resource name. Pass the Worker background context or explicitly flush telemetry before the host finishes. Native OTLP excludes conversation content and personal identity.
+- **Enterprise identity:** configure OIDC in workspace **People & access** after migration `0059_enterprise_identity`. Register the displayed callback with a confidential client using HTTP Basic authentication, S256 PKCE, RS256 or ES256 signatures, and explicit complete group claims. Add separate endpoint origins only when required by discovery. Keep `JWT_SECRET` stable for encrypted client credentials; refresh leased access through **Account → Company access**.
 - **Coding / training workers:** keep API authority, GitHub App tokens, and worker tokens separate.
 
 ## Data writes and settings

@@ -3,6 +3,7 @@ import type {
   GuardrailResult,
   GuardrailsProvider,
 } from "@ngriffin_uk/polychat-ai-providers";
+import type { TelemetryExecutionContext } from "@ngriffin_uk/polychat-ai-telemetry";
 import { DEFAULT_GUARDRAILS_PROVIDER } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -109,6 +110,7 @@ export class Guardrails {
     private readonly env: IEnv,
     private readonly user?: IUser,
     private readonly userSettings?: IUserSettings,
+    private readonly executionCtx?: TelemetryExecutionContext,
   ) {}
 
   private resolveProvider(): Promise<GuardrailsProvider | null> {
@@ -131,7 +133,7 @@ export class Guardrails {
     const result = await provider.validateContent(message, "INPUT");
 
     if (!result?.isValid && result?.violations?.length) {
-      createMetrics(this.env).trackGuardrailViolation(
+      createMetrics(this.env, this.executionCtx).trackGuardrailViolation(
         "input_violation",
         {
           provider: result.provider,
@@ -164,7 +166,7 @@ export class Guardrails {
     const result = await provider.validateContent(response, "OUTPUT");
 
     if (!result?.isValid && result?.violations?.length) {
-      createMetrics(this.env).trackGuardrailViolation(
+      createMetrics(this.env, this.executionCtx).trackGuardrailViolation(
         "output_violation",
         {
           provider: result.provider,

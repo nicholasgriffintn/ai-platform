@@ -1,5 +1,6 @@
 import {
   CONVERSATION_TITLE_TASK_TYPE,
+  KNOWLEDGE_SYNC_TASK_TYPE,
   DELEGATION_EXPIRY_TASK_TYPE,
   DELEGATION_MESSAGE_TASK_TYPE,
   DELEGATION_RUN_TASK_TYPE,
@@ -35,6 +36,7 @@ import { DelegationRunHandler } from "./handlers/DelegationRunHandler";
 import { DelegationWakeHandler } from "./handlers/DelegationWakeHandler";
 import { InboundMessageHandler } from "./handlers/InboundMessageHandler";
 import { InfraReconciliationHandler } from "./handlers/InfraReconciliationHandler";
+import { KnowledgeSyncHandler } from "./handlers/KnowledgeSyncHandler";
 import { memorySynthesis } from "./handlers/memory-synthesis";
 import {
   modelDatasetProcessing,
@@ -79,6 +81,7 @@ workflows.poll(MODEL_UPLOAD_FINALISE_TASK_TYPE, modelUploadFinalise);
 workflows.register("training_quality_scoring", new TrainingQualityHandler());
 workflows.register("recipe_execution", new RecipeExecutionHandler());
 workflows.register("inbound_message", new InboundMessageHandler());
+workflows.register(KNOWLEDGE_SYNC_TASK_TYPE, new KnowledgeSyncHandler());
 workflows.register("artificial_analysis_ingest", new ArtificialAnalysisIngestHandler());
 workflows.register("artificial_analysis_scoring", new ArtificialAnalysisScoringHandler());
 workflows.register(SANDBOX_RUN_DISPATCH_TASK_TYPE, new SandboxRunDispatchHandler());

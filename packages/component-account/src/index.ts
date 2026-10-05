@@ -50,8 +50,16 @@ export * from "./Sandbox/SandboxConnectionDialog";
 export * from "./Sandbox/repositories";
 export * from "./Sources/SourceCollectionList";
 export * from "./SignInDialog";
+export * from "./EnterpriseIdentity/EnterpriseSignInForm.js";
+export * from "./EnterpriseIdentity/LinkedEnterpriseIdentities.js";
 export * from "./Sources/SourceListHeader";
 export * from "./Runtimes/RuntimeSettings";
 export * from "./Runtimes/runtime-candidates";
 
 export * from "./Runtimes/AgentRuntimeSettings";
+export * from "./Channels/ChannelBindingsPanel";
+export { KnowledgeConnectionForm } from "./Sources/KnowledgeConnectionForm.js";
+export { KnowledgeConnectionList } from "./Sources/KnowledgeConnectionList.js";
+export { McpServerForm } from "./Mcp/McpServerForm.js";
+export { McpConnectionForm } from "./Mcp/McpConnectionForm.js";
+export { McpToolPolicy } from "./Mcp/McpToolPolicy.js";

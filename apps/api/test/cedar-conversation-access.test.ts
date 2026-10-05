@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { databaseTestEnvironment } from "./environment";
+import { applyEnterpriseIdentityTestMigration } from "./migrations";
 
 const runtime = new Miniflare({
   modules: true,
@@ -21,14 +22,15 @@ beforeAll(async () => {
     CREATE TABLE user (id INTEGER PRIMARY KEY, plan_id TEXT);
     CREATE TABLE conversation (id TEXT PRIMARY KEY, user_id INTEGER, project_id TEXT);
     CREATE TABLE project (id TEXT PRIMARY KEY, workspace_id TEXT);
-    CREATE TABLE workspace_member (workspace_id TEXT, user_id INTEGER);
+    CREATE TABLE workspace_member (workspace_id TEXT, user_id INTEGER, role TEXT DEFAULT 'member');
     CREATE TABLE teammate_context (home_conversation_id TEXT, actor_user_id INTEGER);
     INSERT INTO user VALUES (1, 'pro'), (2, 'pro'), (3, 'free');
     INSERT INTO project VALUES ('project-1', 'workspace-1'), ('project-2', 'workspace-2');
-    INSERT INTO workspace_member VALUES ('workspace-1', 1), ('workspace-1', 3), ('workspace-2', 2);
+    INSERT INTO workspace_member (workspace_id, user_id) VALUES ('workspace-1', 1), ('workspace-1', 3), ('workspace-2', 2);
     INSERT INTO conversation VALUES ('personal', 1, NULL), ('project', 2, 'project-1'), ('foreign', 1, 'project-2'), ('teammate', 2, 'project-1');
     INSERT INTO teammate_context VALUES ('teammate', 2);
   `);
+  await applyEnterpriseIdentityTestMigration(database);
   repository = new WorkspaceRepository(databaseTestEnvironment(database));
 });
 

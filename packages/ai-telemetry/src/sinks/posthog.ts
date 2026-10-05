@@ -1,4 +1,3 @@
-import type { ExecutionContext } from "@cloudflare/workers-types";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { omitNullishValues } from "@ngriffin_uk/polychat-utility-server/objects";
 import { PostHog } from "posthog-node";
@@ -6,12 +5,17 @@ import { PostHog } from "posthog-node";
 import { buildAiFeedbackProperties } from "../ai-feedback-properties.js";
 import { getPostHogAnalyticsConfig, getPostHogFeedbackConfig } from "../config.js";
 import { AI_FEEDBACK_EVENT_NAME, AI_OBSERVABILITY_EVENT_CATEGORY } from "../constants.js";
-import type { CreateWorkerTelemetryOptions, TelemetryEnv, TelemetrySink } from "../types.js";
+import type {
+  CreateWorkerTelemetryOptions,
+  TelemetryEnv,
+  TelemetryExecutionContext,
+  TelemetrySink,
+} from "../types.js";
 
 export function createPostHogSink(
   env: TelemetryEnv,
   createPostHogClient: CreateWorkerTelemetryOptions["createPostHogClient"] = createDefaultPostHogClient,
-  executionCtx?: ExecutionContext,
+  executionCtx?: TelemetryExecutionContext,
 ): TelemetrySink | null {
   const config = getPostHogAnalyticsConfig(env);
 
@@ -73,7 +77,7 @@ export function createPostHogSink(
   };
 }
 
-function schedulePostHogFlush(client: PostHog, executionCtx?: ExecutionContext): void {
+function schedulePostHogFlush(client: PostHog, executionCtx?: TelemetryExecutionContext): void {
   const flushPromise = client.flush();
   const guardedFlush = flushPromise.catch((err) => {
     console.error("[PostHog] flush failed:", err);

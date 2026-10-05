@@ -28,7 +28,7 @@ import type { IEnv } from "~/types";
  */
 const INBOX_SOURCE = `FROM project_task pt
        JOIN project p ON p.id = pt.project_id
-       JOIN workspace_member member
+       JOIN active_workspace_member member
          ON member.workspace_id = pt.workspace_id AND member.user_id = ?
        LEFT JOIN task_inbox_receipt receipt
          ON receipt.user_id = ?
@@ -320,7 +320,7 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
            ${action === "read" ? "CURRENT_TIMESTAMP" : "NULL"},
            ${action === "dismiss" ? "CURRENT_TIMESTAMP" : "NULL"}
          FROM project_task pt
-         JOIN workspace_member member
+         JOIN active_workspace_member member
            ON member.workspace_id = pt.workspace_id AND member.user_id = ?
          WHERE pt.id = ? AND pt.attention_version = ?
            AND (
@@ -417,7 +417,7 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
          task.assignee_user_id AS task_assignee_user_id,
          task.created_by_user_id AS task_created_by_user_id,
          EXISTS(
-           SELECT 1 FROM workspace_member member
+           SELECT 1 FROM active_workspace_member member
            WHERE member.workspace_id = task.workspace_id AND member.user_id = delivery.user_id
          ) AS has_workspace_access,
          preference.enabled AS preference_enabled,

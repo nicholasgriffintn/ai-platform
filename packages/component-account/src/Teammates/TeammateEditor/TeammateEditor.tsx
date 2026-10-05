@@ -18,6 +18,7 @@ import type { TeammateEditorChange, TeammateEditorProps } from "./types";
 export function TeammateEditor({
   teammate,
   models,
+  availableMcpServers,
   tools,
   skills,
   isLoadingCapabilities = false,
@@ -84,7 +85,12 @@ export function TeammateEditor({
         disabled={disabled}
         onChange={change}
       />
-      <ConnectionsSection value={value} disabled={disabled} onChange={change} />
+      <ConnectionsSection
+        value={value}
+        disabled={disabled}
+        onChange={change}
+        availableServers={availableMcpServers}
+      />
       <AccessSection
         ownerScopeType={teammate?.owner_scope_type ?? "user"}
         ownerLabel={ownerLabel}

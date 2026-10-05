@@ -1,28 +1,23 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { INBOUND_CHANNEL_IDS, type InboundChannelId } from "@ngriffin_uk/polychat-schemas";
-import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
+import { inboundChannelIdSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type { Context } from "hono";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import { toChannelBindingMessage } from "~/modules/channels/application/inbound";
+import { receiveChannelMessage } from "~/modules/channels/application/receive";
 import { getChannelSecrets } from "~/modules/channels/application/secrets";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
-import { TaskService } from "~/modules/tasks/application/TaskService";
 
 const logger = getLogger({ prefix: "services/webhooks/channels" });
 
-function isInboundChannelId(value: string): value is InboundChannelId {
-  return (INBOUND_CHANNEL_IDS as readonly string[]).includes(value);
-}
-
 export async function handleChannelWebhook(c: Context): Promise<Response> {
-  const channel = c.req.param("channel");
+  const parsedChannel = inboundChannelIdSchema.safeParse(c.req.param("channel"));
 
-  if (!channel || !isInboundChannelId(channel)) {
+  if (!parsedChannel.success) {
     throw new AssistantError("Unknown channel webhook", ErrorType.NOT_FOUND);
   }
 
+  const channel = parsedChannel.data;
   const adapter = getChannelAdapter(channel);
 
   if (!adapter) {
@@ -53,48 +48,13 @@ export async function handleChannelWebhook(c: Context): Promise<Response> {
     );
   }
 
-  const incoming = adapter.parse(rawBody);
+  const incoming = adapter.parse(rawBody, { botUserId: c.env.SLACK_BOT_USER_ID });
 
   if (incoming.kind === "control") {
     return c.json(incoming.response);
   }
 
   const context = createServiceContext({ env: c.env, requestId: c.get("requestId") });
-  const binding = await context.repositories.channelBindings.getByExternalId(
-    channel,
-    incoming.externalId,
-  );
 
-  if (!binding) {
-    logger.info("Ignored a message from a channel that is not connected", { channel });
-
-    return c.json({ success: true, ignored: "unbound_channel" });
-  }
-
-  const user = await context.repositories.users.getUserById(binding.created_by);
-
-  if (!user) {
-    throw new AssistantError("Channel binding owner not found", ErrorType.NOT_FOUND);
-  }
-
-  const digest = await sha256Hex([channel, binding.id, incoming.messageId].join(":"));
-  const taskService = new TaskService(c.env, context.repositories.tasks);
-  const taskId = await taskService.enqueueTask({
-    id: `inbound_message_${digest.slice(0, 40)}`,
-    task_type: "inbound_message",
-    user_id: user.id,
-    schedule_type: "immediate",
-    task_data: {
-      channel,
-      bindingId: binding.id,
-      message: toChannelBindingMessage(incoming),
-    },
-    metadata: {
-      source: "channel_webhook",
-      channel,
-      messageId: incoming.messageId,
-    },
-  });
-
-  return c.json({ success: true, taskId });
+  return c.json(await receiveChannelMessage(context, channel, incoming));
 }

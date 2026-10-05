@@ -24,6 +24,7 @@ const logger = getLogger({
 });
 
 export interface ChatFeedbackContext {
+  waitUntil?: (work: Promise<unknown>) => void;
   env: TelemetryEnv;
   user?: TelemetryIdentity["user"];
   anonymousUser?: TelemetryIdentity["anonymousUser"];
@@ -61,7 +62,12 @@ export const handleChatCompletionFeedbackSubmission = async (
   };
 
   try {
-    const feedbackTelemetry = telemetry ?? createTelemetry(context.env);
+    const feedbackTelemetry =
+      telemetry ??
+      createTelemetry(
+        context.env,
+        context.waitUntil ? { waitUntil: context.waitUntil } : undefined,
+      );
 
     await feedbackTelemetry.captureAiFeedback(signal);
   } catch (error) {

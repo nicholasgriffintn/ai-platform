@@ -20,6 +20,7 @@ export * from "./WorkspaceCards";
 export * from "./WorkspaceGovernance";
 export * from "./WorkspaceList";
 export * from "./WorkspaceMemberList";
+export * from "./Identity/IdentityConnectionForm.js";
 export * from "./WorkspaceOverviewActions";
 export * from "./ScheduledRecipeList";
 export * from "./InvitationAcceptView";

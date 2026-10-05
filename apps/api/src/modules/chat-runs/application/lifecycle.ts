@@ -21,6 +21,7 @@ import {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { reconcileRecipeExecutionTask } from "~/modules/apps/application/recipes/task-reconciliation";
+import { isChannelRunAuthorityCurrent } from "~/modules/channels/application/run-authority";
 import type { AgentLoopExecutionResult } from "~/modules/chat/application/agent/agent-loop";
 import type { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { isThreadLeaseOwnershipLostError } from "~/modules/conversations/infrastructure/coordinator/client";
@@ -255,6 +256,13 @@ export class ChatRunLifecycle {
   async isCancellationRequested(): Promise<boolean> {
     const current = await this.repository.getById(this.run.id);
 
+    if (
+      this.serviceContext &&
+      !(await isChannelRunAuthorityCurrent(this.serviceContext, this.run))
+    ) {
+      return true;
+    }
+
     return (
       current?.attempt === this.run.attempt &&
       (current.status === "cancelling" || current.status === "cancelled")
@@ -379,17 +387,21 @@ export class ChatRunLifecycle {
     await this.reconcile(result);
 
     if (transitioned.status === "cancelled" && transitioned.cancellationRequestedAt && this.env) {
-      recordChatRunOperationalMetric(this.env, {
-        signal: "cancellation_latency",
-        runId: transitioned.id,
-        attempt: transitioned.attempt,
-        outcome: "success",
-        value: Math.max(
-          0,
-          Date.parse(transitioned.updatedAt) - Date.parse(transitioned.cancellationRequestedAt),
-        ),
-        identity: { userId: this.receipt.run.initiatorUserId },
-      });
+      recordChatRunOperationalMetric(
+        this.env,
+        {
+          signal: "cancellation_latency",
+          runId: transitioned.id,
+          attempt: transitioned.attempt,
+          outcome: "success",
+          value: Math.max(
+            0,
+            Date.parse(transitioned.updatedAt) - Date.parse(transitioned.cancellationRequestedAt),
+          ),
+          identity: { userId: this.receipt.run.initiatorUserId },
+        },
+        this.serviceContext,
+      );
     }
 
     return transitioned;
@@ -412,13 +424,17 @@ export class ChatRunLifecycle {
       await this.reconcile();
 
       if (interrupted && this.env) {
-        recordChatRunOperationalMetric(this.env, {
-          signal: "ownership_loss",
-          runId: transitioned.id,
-          attempt: transitioned.attempt,
-          outcome: "interrupted",
-          identity: { userId: this.receipt.run.initiatorUserId },
-        });
+        recordChatRunOperationalMetric(
+          this.env,
+          {
+            signal: "ownership_loss",
+            runId: transitioned.id,
+            attempt: transitioned.attempt,
+            outcome: "interrupted",
+            identity: { userId: this.receipt.run.initiatorUserId },
+          },
+          this.serviceContext,
+        );
       }
     }
 
@@ -443,14 +459,18 @@ export async function findAcceptedChatRunCommand(
   const receipt = await scope.context.repositories.conversationRuns.findCommandReceipt(command);
 
   if (receipt) {
-    recordChatRunOperationalMetric(scope.context.env, {
-      signal: "duplicate_command",
-      runId: receipt.run.id,
-      attempt: receipt.run.attempt,
-      commandKind: receipt.kind,
-      outcome: "success",
-      identity: resolveTelemetryIdentity(scope.context),
-    });
+    recordChatRunOperationalMetric(
+      scope.context.env,
+      {
+        signal: "duplicate_command",
+        runId: receipt.run.id,
+        attempt: receipt.run.attempt,
+        commandKind: receipt.kind,
+        outcome: "success",
+        identity: resolveTelemetryIdentity(scope.context),
+      },
+      scope.context,
+    );
   }
 
   return receipt
@@ -476,14 +496,18 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
   );
 
   if (receipt.duplicate) {
-    recordChatRunOperationalMetric(scope.context.env, {
-      signal: "duplicate_command",
-      runId: receipt.run.id,
-      attempt: receipt.run.attempt,
-      commandKind: receipt.kind,
-      outcome: "success",
-      identity: resolveTelemetryIdentity(scope.context),
-    });
+    recordChatRunOperationalMetric(
+      scope.context.env,
+      {
+        signal: "duplicate_command",
+        runId: receipt.run.id,
+        attempt: receipt.run.attempt,
+        commandKind: receipt.kind,
+        outcome: "success",
+        identity: resolveTelemetryIdentity(scope.context),
+      },
+      scope.context,
+    );
   }
 
   if (!receipt.duplicate && receipt.run.status === "accepted") {

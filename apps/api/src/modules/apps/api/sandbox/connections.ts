@@ -15,7 +15,6 @@ import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import {
-  getGitHubAppConnectionForUserInstallation,
   listGitHubAppConnectionsForUser,
   listGitHubInstallationRepositoriesForUser,
 } from "~/modules/github/application/connections";
@@ -23,6 +22,7 @@ import {
   deleteGitHubConnectionForUser,
   upsertGitHubConnectionFromDefaultAppForUser,
   upsertGitHubConnectionForUser,
+  replaceGitHubConnectionRepositories,
 } from "~/modules/github/application/manage-connections";
 
 const installationParamsSchema = z.object({
@@ -150,19 +150,13 @@ export function registerSandboxConnectionRoutes(app: Hono): void {
     },
     handler: async ({ body, params, serviceContext, user }) => {
       const installationId = parseInstallationId(params.installationId);
-      const existingConnection = await getGitHubAppConnectionForUserInstallation(
+
+      await replaceGitHubConnectionRepositories(
         serviceContext,
         user.id,
         installationId,
+        body.repositories,
       );
-
-      await upsertGitHubConnectionForUser(serviceContext, user.id, {
-        installationId,
-        appId: existingConnection.appId,
-        privateKey: existingConnection.privateKey,
-        webhookSecret: existingConnection.webhookSecret,
-        repositories: body.repositories,
-      });
 
       return {
         success: true,

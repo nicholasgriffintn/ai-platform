@@ -1,72 +1,57 @@
-import { Button, FormInput } from "@ngriffin_uk/polychat-component-ui";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
-import { Plus, Trash2 } from "lucide-react";
+import type { NativeMcpServer } from "@ngriffin_uk/polychat-schemas";
 
 export interface McpServerFieldValue {
   id: string;
-  label: string;
-  url: string;
 }
-
 export interface McpServerFieldsProps {
   servers: McpServerFieldValue[];
+  availableServers?: NativeMcpServer[];
   disabled?: boolean;
-  minimumRows?: number;
   onChange: (servers: McpServerFieldValue[]) => void;
 }
 
 export function McpServerFields({
   servers,
+  availableServers = [],
   disabled = false,
-  minimumRows = 0,
   onChange,
 }: McpServerFieldsProps) {
-  const update = (id: string, patch: Partial<McpServerFieldValue>) => {
-    onChange(servers.map((server) => (server.id === id ? { ...server, ...patch } : server)));
-  };
-
   return (
     <div className="space-y-3">
-      {servers.map((server) => (
-        <div
-          key={server.id}
-          className="grid gap-2 rounded-lg border p-3 sm:grid-cols-[1fr_2fr_auto]"
-        >
-          <FormInput
-            label="Label"
-            value={server.label}
-            disabled={disabled}
-            onChange={(event) => update(server.id, { label: event.target.value })}
+      {availableServers.map((server) => (
+        <label key={server.id} className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            disabled={disabled || !server.enabled}
+            checked={servers.some((selected) => selected.id === server.id)}
+            onChange={(event) =>
+              onChange(
+                event.target.checked
+                  ? [...servers, { id: server.id }]
+                  : servers.filter((selected) => selected.id !== server.id),
+              )
+            }
           />
-          <FormInput
-            label="Server URL"
-            type="url"
-            value={server.url}
-            disabled={disabled}
-            onChange={(event) => update(server.id, { url: event.target.value })}
-          />
-          <Button
-            type="button"
-            aria-label={`Remove ${server.label || "MCP server"}`}
-            className="self-end"
-            variant="outline"
-            icon={<Trash2 className="h-4 w-4" />}
-            disabled={disabled || servers.length <= minimumRows}
-            onClick={() => onChange(servers.filter((item) => item.id !== server.id))}
-          />
-        </div>
+          {server.label}
+          {server.enabled ? "" : " (disabled)"}
+        </label>
       ))}
-      <Button
-        type="button"
-        variant="secondary"
-        icon={<Plus className="h-4 w-4" />}
-        disabled={disabled}
-        onClick={() => onChange([...servers, { id: generateId(), label: "", url: "" }])}
-      >
-        Add server
-      </Button>
+      {servers
+        .filter((selected) => !availableServers.some((server) => server.id === selected.id))
+        .map((selected) => (
+          <label key={selected.id} className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked
+              disabled={disabled}
+              onChange={() => onChange(servers.filter((server) => server.id !== selected.id))}
+            />
+            Unavailable server
+          </label>
+        ))}
       <p className="text-xs text-muted-foreground">
-        Use an HTTPS endpoint and do not put credentials in the URL.
+        Register and connect servers in your account’s Connected tools settings. Each person uses
+        their own credentials.
       </p>
     </div>
   );

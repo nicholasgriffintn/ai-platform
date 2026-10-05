@@ -49,7 +49,7 @@ export type DesktopDiagnostics = z.infer<typeof desktopDiagnosticsSchema>;
 
 export interface ConnectedDesktopBackend extends DesktopBackend {
   collectDiagnostics: () => Promise<DesktopDiagnostics>;
-  signIn: () => Promise<void>;
+  signIn: (connectionId?: string, linkIdentity?: boolean) => Promise<void>;
   signOut: () => Promise<void>;
   announceAttention: (scope: string, items: DesktopAnnouncement[]) => Promise<number>;
   setAttentionBadge: (count: number) => Promise<void>;
@@ -161,8 +161,11 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
   },
   collectDiagnostics: async () =>
     desktopDiagnosticsSchema.parse(await invoke("collect_diagnostics")),
-  signIn: async () => {
-    await invoke("sign_in");
+  signIn: async (connectionId, linkIdentity) => {
+    await invoke("sign_in", {
+      connectionId: connectionId ?? null,
+      linkIdentity: linkIdentity ?? false,
+    });
   },
   signOut: async () => {
     await invoke("sign_out");

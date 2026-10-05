@@ -1,10 +1,10 @@
-import type { ExecutionContext } from "@cloudflare/workers-types";
 import {
   createMetricsRecorder,
   getLogger,
   type MetricsRecorder,
   type Telemetry,
   type TelemetryEnv,
+  type TelemetryExecutionContext,
 } from "@ngriffin_uk/polychat-ai-telemetry";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -25,7 +25,7 @@ const CHAT_COMPLETION_SPAN_NAME = "chat_completion";
 
 export interface TelemetryScope {
   env?: ProviderEnv | TelemetryEnv;
-  executionCtx?: ExecutionContext;
+  executionCtx?: TelemetryExecutionContext;
 }
 
 export interface CreateProviderMetricsOptions {

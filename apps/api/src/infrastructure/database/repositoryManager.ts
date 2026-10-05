@@ -7,11 +7,13 @@ import { RecipeComposioTriggerRepository } from "~/modules/apps/infrastructure/R
 import { AttentionRepository } from "~/modules/attention/infrastructure/AttentionRepository";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChallengeRepository";
+import { EnterpriseIdentityRepository } from "~/modules/auth/infrastructure/EnterpriseIdentityRepository";
 import { OAuthStateRepository } from "~/modules/auth/infrastructure/OAuthStateRepository";
 import { SessionRepository } from "~/modules/auth/infrastructure/SessionRepository";
 import { WebAuthnRepository } from "~/modules/auth/infrastructure/WebAuthnRepository";
 import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
+import { ChannelThreadRepository } from "~/modules/channels/infrastructure/ChannelThreadRepository";
 import { BrowserSessionRepository } from "~/modules/computer-use/infrastructure/BrowserSessionRepository";
 import { ConversationHandleRepository } from "~/modules/conversations/infrastructure/ConversationHandleRepository";
 import { ConversationOrganisationRepository } from "~/modules/conversations/infrastructure/ConversationOrganisationRepository";
@@ -23,6 +25,7 @@ import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/Ou
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import { InfraCostDailyRepository } from "~/modules/infra/infrastructure/InfraCostDailyRepository";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
+import { McpRegistryRepository } from "~/modules/mcp/infrastructure/McpRegistryRepository";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { EmbeddingRepository } from "~/modules/memory/infrastructure/EmbeddingRepository";
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
@@ -48,6 +51,7 @@ import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { SavedMessageRepository } from "~/modules/saved-messages/infrastructure/SavedMessageRepository";
 import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
+import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
@@ -210,6 +214,10 @@ export class RepositoryManager {
     return this.resolve("teammateFeedback", (env) => new TeammateFeedbackRepository(env));
   }
 
+  public get channelThreads(): ChannelThreadRepository {
+    return this.resolve("channelThreads", (env) => new ChannelThreadRepository(env));
+  }
+
   public get channelBindings(): ChannelBindingRepository {
     return this.resolve("channelBindings", (env) => new ChannelBindingRepository(env));
   }
@@ -224,6 +232,10 @@ export class RepositoryManager {
 
   public get audit(): AuditRepository {
     return this.resolve("audit", (env) => new AuditRepository(env));
+  }
+
+  public get enterpriseIdentities(): EnterpriseIdentityRepository {
+    return this.resolve("enterpriseIdentities", (env) => new EnterpriseIdentityRepository(env));
   }
 
   public get oauthStates(): OAuthStateRepository {
@@ -377,6 +389,10 @@ export class RepositoryManager {
     return this.resolve("sources", (env) => new SourceRepository(env));
   }
 
+  public get knowledgeSyncs(): KnowledgeSyncRepository {
+    return this.resolve("knowledgeSyncs", (env) => new KnowledgeSyncRepository(env));
+  }
+
   public get tasks(): TaskRepository {
     return this.resolve("tasks", (env) => new TaskRepository(env));
   }
@@ -443,5 +459,9 @@ export class RepositoryManager {
 
   public get workspaces(): WorkspaceRepository {
     return this.resolve("workspaces", (env) => new WorkspaceRepository(env));
+  }
+
+  public get mcpRegistry(): McpRegistryRepository {
+    return this.resolve("mcpRegistry", (env) => new McpRegistryRepository(env));
   }
 }

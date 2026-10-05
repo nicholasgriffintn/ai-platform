@@ -46,6 +46,10 @@ vi.mock("~/modules/task-notifications/application/delivery", () => ({
   TaskNotificationDeliveryHandler: vi.fn(),
 }));
 
+vi.mock("~/modules/sources/application/knowledge/maintenance", () => ({
+  scheduleKnowledgeSyncs: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { SCHEDULES } from "~/config/schedules";
 
 import { workflows } from "../registry";

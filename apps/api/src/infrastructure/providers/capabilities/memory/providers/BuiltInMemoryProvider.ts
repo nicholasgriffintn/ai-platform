@@ -444,11 +444,17 @@ export class BuiltInMemoryProvider extends BaseMemoryProvider {
     userSettings?: IUserSettings,
   ): EmbeddingProvider {
     if (userSettings && this.user) {
-      return getEmbeddingProviderForTarget(this.env, this.user, userSettings, target);
+      return getEmbeddingProviderForTarget(
+        this.env,
+        this.user,
+        userSettings,
+        target,
+        this.config.serviceContext,
+      );
     }
 
     if (this.targetsEqual(target, DEFAULT_VECTORIZE_TARGET)) {
-      return getEmbeddingProvider(this.env, this.user);
+      return getEmbeddingProvider(this.env, this.user, undefined, this.config.serviceContext);
     }
 
     throw new AssistantError(

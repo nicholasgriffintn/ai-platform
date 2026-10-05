@@ -21,6 +21,8 @@ import type {
 } from "~/modules/sources/infrastructure/SourceRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
+import { filterReadableKnowledgeSources, requireKnowledgeSourceAccess } from "./knowledge/access";
+
 function formatFile(record: SourceRecord): Source["file"] {
   if (!record.storage_key || !record.mime_type) {
     return null;
@@ -98,6 +100,8 @@ export async function requireSourceAccess(
       throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
     }
 
+    await requireKnowledgeSourceAccess(context, userId, source, mutate);
+
     return source;
   }
 
@@ -118,6 +122,8 @@ export async function requireSourceAccess(
       403,
     );
   }
+
+  await requireKnowledgeSourceAccess(context, userId, source, mutate);
 
   return source;
 }
@@ -149,6 +155,7 @@ async function requireSourcesAccess(
       verifiedProjects.add(source.project_id);
     }
 
+    await requireKnowledgeSourceAccess(context, userId, source, false);
     validate?.(source);
     sources.push(source);
   }
@@ -202,6 +209,14 @@ export async function createSource(
   userId: number,
   input: CreateSourceInput,
 ): Promise<Source> {
+  if (input.provider === "github-knowledge") {
+    throw new AssistantError(
+      "Repository imports are managed by knowledge sync",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
   if (input.projectId) {
     await requireProjectAccess(context, input.projectId);
   }
@@ -279,7 +294,11 @@ export async function listSources(
       ))
     : await context.repositories.sources.listPersonalSourceSummaries(userId, filters.kind);
 
-  return { sources: records.map(formatSourceSummary) };
+  return {
+    sources: (await filterReadableKnowledgeSources(context, userId, records)).map(
+      formatSourceSummary,
+    ),
+  };
 }
 
 export async function updateSource(
@@ -410,8 +429,10 @@ export async function listCollectionSources(
 ): Promise<{ sources: SourceSummary[] }> {
   await requireCollectionAccess(context, userId, collectionId);
 
+  const records = await context.repositories.sources.listCollectionSources(collectionId);
+
   return {
-    sources: (await context.repositories.sources.listCollectionSources(collectionId)).map(
+    sources: (await filterReadableKnowledgeSources(context, userId, records)).map(
       formatSourceSummary,
     ),
   };
@@ -429,8 +450,10 @@ export async function listProjectContextSources(
     return { sources: [] };
   }
 
+  const records = await context.repositories.sources.listCollectionSources(collection.id);
+
   return {
-    sources: (await context.repositories.sources.listCollectionSources(collection.id)).map(
+    sources: (await filterReadableKnowledgeSources(context, userId, records)).map(
       formatSourceSummary,
     ),
   };
@@ -454,7 +477,11 @@ export async function listProjectConversationSources(
     }
   }
 
-  return { sources: [...availableSources.values()].map(formatSource) };
+  return {
+    sources: (
+      await filterReadableKnowledgeSources(context, userId, [...availableSources.values()])
+    ).map(formatSource),
+  };
 }
 
 export async function setProjectContextSources(

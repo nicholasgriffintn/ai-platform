@@ -12,8 +12,8 @@ import {
   type ModelToolConfiguration,
   parseModelToolConfiguration,
   type ModelToolDefinition,
+  type NativeMcpServer,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 
 import { McpServerFields, type McpServerFieldValue } from "./McpServerFields";
@@ -24,6 +24,7 @@ interface ToolConfigurationDialogProps {
   onClose: () => void;
   onSubmit: (configuration: ModelToolConfiguration) => Promise<void>;
   tool: ModelToolDefinition | null;
+  availableMcpServers?: NativeMcpServer[];
 }
 
 export function ToolConfigurationDialog({
@@ -32,6 +33,7 @@ export function ToolConfigurationDialog({
   onClose,
   onSubmit,
   tool,
+  availableMcpServers,
 }: ToolConfigurationDialogProps) {
   const [vectorStoreIds, setVectorStoreIds] = useState("");
   const [servers, setServers] = useState<McpServerFieldValue[]>([]);
@@ -51,11 +53,7 @@ export function ToolConfigurationDialog({
           ? configuration.vectorStoreIds.join("\n")
           : "",
       );
-      setServers(
-        configuration && "servers" in configuration
-          ? configuration.servers.map((server) => ({ ...server, id: generateId() }))
-          : [{ id: generateId(), label: "", url: "" }],
-      );
+      setServers(configuration && "servers" in configuration ? configuration.servers : []);
       setError(null);
     }
   }
@@ -74,10 +72,7 @@ export function ToolConfigurationDialog({
               .filter(Boolean),
           }
         : {
-            servers: servers.map(({ label, url }) => ({
-              label: label.trim(),
-              url: url.trim(),
-            })),
+            servers,
           };
     const configuration = parseModelToolConfiguration(tool, candidate);
 
@@ -90,7 +85,7 @@ export function ToolConfigurationDialog({
     try {
       await onSubmit(configuration);
     } catch {
-      // The owning scope exposes its API error beside the capability catalogue.
+      setError("The configuration could not be saved.");
     }
   };
 
@@ -117,7 +112,11 @@ export function ToolConfigurationDialog({
             <p className="text-xs text-muted-foreground">Enter one ID per line.</p>
           </div>
         ) : (
-          <McpServerFields servers={servers} minimumRows={1} onChange={setServers} />
+          <McpServerFields
+            servers={servers}
+            availableServers={availableMcpServers}
+            onChange={setServers}
+          />
         )}
 
         {error && (

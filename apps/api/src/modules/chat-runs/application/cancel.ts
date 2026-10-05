@@ -52,26 +52,34 @@ export async function handleCancelChatRun(
   });
 
   if (receipt.duplicate) {
-    recordChatRunOperationalMetric(context.env, {
-      signal: "duplicate_command",
-      runId: receipt.run.id,
-      attempt: receipt.run.attempt,
-      commandKind: "cancel",
-      outcome: "success",
-      identity: resolveTelemetryIdentity(context),
-    });
+    recordChatRunOperationalMetric(
+      context.env,
+      {
+        signal: "duplicate_command",
+        runId: receipt.run.id,
+        attempt: receipt.run.attempt,
+        commandKind: "cancel",
+        outcome: "success",
+        identity: resolveTelemetryIdentity(context),
+      },
+      context,
+    );
   } else if (receipt.run.status === "cancelled" && receipt.run.cancellationRequestedAt) {
-    recordChatRunOperationalMetric(context.env, {
-      signal: "cancellation_latency",
-      runId: receipt.run.id,
-      attempt: receipt.run.attempt,
-      outcome: "success",
-      value: Math.max(
-        0,
-        Date.parse(receipt.run.updatedAt) - Date.parse(receipt.run.cancellationRequestedAt),
-      ),
-      identity: resolveTelemetryIdentity(context),
-    });
+    recordChatRunOperationalMetric(
+      context.env,
+      {
+        signal: "cancellation_latency",
+        runId: receipt.run.id,
+        attempt: receipt.run.attempt,
+        outcome: "success",
+        value: Math.max(
+          0,
+          Date.parse(receipt.run.updatedAt) - Date.parse(receipt.run.cancellationRequestedAt),
+        ),
+        identity: resolveTelemetryIdentity(context),
+      },
+      context,
+    );
   }
 
   await cleanupCancelledChatRun(context, run);
@@ -80,6 +88,7 @@ export async function handleCancelChatRun(
     recordTurnCancellationRequested(
       {
         env: context.env,
+        waitUntil: context.waitUntil,
         traceId: run.conversationId,
         identity: resolveTelemetryIdentity(context),
       },

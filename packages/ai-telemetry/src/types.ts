@@ -2,6 +2,8 @@ import type { AnalyticsEngineDataset, ExecutionContext } from "@cloudflare/worke
 import type { AnalyticsEvent } from "@ngriffin_uk/polychat-schemas";
 import type { PostHog, PostHogOptions } from "posthog-node";
 
+export type TelemetryExecutionContext = Pick<ExecutionContext, "waitUntil">;
+
 export type TelemetryProperties = Record<string, unknown>;
 
 export type TelemetryPersonProperties = Record<
@@ -170,6 +172,9 @@ export type TelemetryEnv = {
   POSTHOG_AI_OBSERVABILITY_ENABLED?: string;
   POSTHOG_FEEDBACK_SURVEY_ID?: string;
   AI_OBSERVABILITY_ENABLED?: string;
+  OTEL_EXPORTER_OTLP_ENDPOINT?: string;
+  OTEL_EXPORTER_OTLP_HEADERS?: string;
+  OTEL_SERVICE_NAME?: string;
   BEACON_BACKEND_ENABLED?: string;
   BEACON_ENDPOINT?: string;
   BEACON_SITE_ID?: string;
@@ -190,7 +195,7 @@ export interface TelemetrySink {
 
 export type CreateWorkerTelemetryOptions = {
   env: TelemetryEnv;
-  executionCtx?: ExecutionContext;
+  executionCtx?: TelemetryExecutionContext;
   createPostHogClient?: (apiKey: string, options: PostHogOptions) => PostHog;
   fetcher?: BeaconFetcher;
   now?: () => number;

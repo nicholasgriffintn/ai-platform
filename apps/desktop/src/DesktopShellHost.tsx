@@ -37,10 +37,12 @@ const DESKTOP_MODEL_RUNTIME_CANDIDATES: Record<DesktopModelSourceVendor, Desktop
 export function DesktopShellHost({
   children,
   onSignIn,
+  onEnterpriseSignIn,
   onSignOut,
 }: {
   children: ReactNode;
   onSignIn: () => void;
+  onEnterpriseSignIn: (connectionId: string, link: boolean) => void;
   onSignOut: () => void;
 }) {
   const setShowMetaAssistant = useUIStore((state) => state.setShowMetaAssistant);
@@ -102,6 +104,7 @@ export function DesktopShellHost({
       webBaseUrl: WEB_APP_BASE_URL,
       openAssistant: () => setShowMetaAssistant(true),
       openSignIn: onSignIn,
+      openEnterpriseSignIn: onEnterpriseSignIn,
       signOut: onSignOut,
       TaskNotificationSettings: DeviceTaskNotificationSettings,
       HostDialogs: ShellDialogs,
@@ -109,7 +112,7 @@ export function DesktopShellHost({
       modelSourceRows,
       openProviderSettings: () => void navigate("/profile?tab=providers"),
     }),
-    [modelSourceRows, navigate, onSignIn, onSignOut, setShowMetaAssistant],
+    [modelSourceRows, navigate, onSignIn, onEnterpriseSignIn, onSignOut, setShowMetaAssistant],
   );
 
   return <ShellHostProvider host={host}>{children}</ShellHostProvider>;

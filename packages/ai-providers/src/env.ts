@@ -56,4 +56,5 @@ export interface ProviderRequestContext {
   user?: ProviderUser;
   anonymousUser?: { id: string } | null;
   experimentAssignments?: Readonly<Record<string, string>>;
+  waitUntil?: (work: Promise<unknown>) => void;
 }
