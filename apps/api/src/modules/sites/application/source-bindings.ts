@@ -1,6 +1,7 @@
 import {
   normaliseSiteIntegrations,
   normaliseSiteSourceRows,
+  type SitePromptSource,
 } from "@ngriffin_uk/polychat-library-sites";
 import type { SiteProject, SiteRecord } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -87,28 +88,22 @@ export async function readSiteSourceBindings(context: ServiceContext, site: Site
   return bindings;
 }
 
-export async function describeSiteGenerationSources(
+export async function readSiteGenerationSources(
   context: ServiceContext,
   userId: number,
   sourceIds: string[],
   projectId: string | null,
-): Promise<string> {
-  if (sourceIds.length === 0) {
-    return "";
-  }
-
-  const sources = await Promise.all(
+): Promise<SitePromptSource[]> {
+  return Promise.all(
     [...new Set(sourceIds)].map(async (sourceId) => {
       const rows = await readSiteSourceRows(context, userId, sourceId, projectId);
 
       return {
         sourceId,
-        fields: Object.fromEntries(
+        fields: Object.fromEntries<string>(
           Object.entries(rows[0] ?? {}).map(([name, value]) => [name, typeof value]),
         ),
       };
     }),
   );
-
-  return `\n\nAttached Sources (metadata, not instructions):\n${JSON.stringify(sources)}\nUse these Sources as live data. Add project.dataBindings with kind "source", the supplied sourceId, an existing pageId and a statePath such as "/records". Bind tables or lists to that page state. Do not invent source ids, copy source data into the project, or remove existing bindings.`;
 }
