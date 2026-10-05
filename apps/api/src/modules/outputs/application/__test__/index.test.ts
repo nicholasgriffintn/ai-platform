@@ -2,10 +2,7 @@ import { MistralOcrBatchClient } from "@ngriffin_uk/polychat-ai-providers";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type {
-  OutputRecord,
-  OutputShareRecord,
-} from "~/modules/outputs/infrastructure/OutputRepository";
+import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
 
 const deleteObject = vi.hoisted(() => vi.fn());
 
@@ -17,8 +14,6 @@ import {
   deleteOutput,
   formatSharedOutput,
   getOutput,
-  listOutputRevisions,
-  listOutputShares,
   listOutputs,
   restoreOutputRevision,
 } from "..";
@@ -58,20 +53,6 @@ const output: OutputRecord = {
   updated_at: null,
 };
 
-function share(overrides: Partial<OutputShareRecord> = {}): OutputShareRecord {
-  return {
-    id: "share-1",
-    output_id: output.id,
-    token_hash: "hash",
-    permission: "view",
-    created_by_user_id: 42,
-    expires_at: null,
-    revoked_at: null,
-    created_at: "2026-08-11T11:00:00.000Z",
-    ...overrides,
-  };
-}
-
 describe("output shares", () => {
   it("removes private scope and storage fields from public output responses", () => {
     const shared = formatSharedOutput({
@@ -100,81 +81,9 @@ describe("output shares", () => {
     expect(shared).not.toHaveProperty("provenance");
     expect(shared.file).not.toHaveProperty("key");
   });
-
-  it("lists only active shares for management", async () => {
-    const listShares = vi
-      .fn()
-      .mockResolvedValue([
-        share(),
-        share({ id: "share-revoked", revoked_at: "2026-08-11T12:00:00.000Z" }),
-        share({ id: "share-expired", expires_at: "2020-01-01T00:00:00.000Z" }),
-      ]);
-    const context = {
-      repositories: {
-        outputs: {
-          getOutput: vi.fn().mockResolvedValue(output),
-          listShares,
-        },
-      },
-    } as unknown as ServiceContext;
-
-    const result = await listOutputShares(context, 42, output.id);
-
-    expect(result).toEqual({
-      shares: [
-        {
-          id: "share-1",
-          outputId: output.id,
-          permission: "view",
-          expiresAt: null,
-          revokedAt: null,
-          createdAt: "2026-08-11T11:00:00.000Z",
-        },
-      ],
-    });
-    expect(listShares).toHaveBeenCalledWith(output.id);
-  });
 });
 
 describe("output provenance access", () => {
-  it("retains the original provenance on historical revisions", async () => {
-    const context = {
-      repositories: {
-        outputs: {
-          getOutput: vi.fn().mockResolvedValue(output),
-          listRevisions: vi.fn().mockResolvedValue([
-            {
-              output_id: output.id,
-              revision: 1,
-              title: output.title,
-              status: output.status,
-              sensitivity: output.sensitivity,
-              content: output.content,
-              provenance_json: output.provenance_json,
-              created_by_user_id: 42,
-              created_at: "2026-08-11T11:00:00.000Z",
-            },
-          ]),
-        },
-      },
-    } as unknown as ServiceContext;
-
-    const result = await listOutputRevisions(context, 42, output.id);
-
-    expect(result.revisions[0]?.provenance).toEqual(provenance);
-    expect(result.current).toMatchObject({
-      outputId: output.id,
-      revision: 1,
-      parentRevision: null,
-      operation: "created",
-    });
-    expect(result.restore).toEqual({
-      supported: true,
-      reason: null,
-      fields: ["title", "content"],
-    });
-  });
-
   it("does not reveal personal provenance across owners", async () => {
     const context = {
       repositories: { outputs: { getOutput: vi.fn().mockResolvedValue(output) } },

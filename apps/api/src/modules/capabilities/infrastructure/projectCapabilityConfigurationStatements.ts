@@ -13,7 +13,7 @@ export function buildOwnedProjectCapabilityConfigurationUpsert(
     sql: `EXISTS (
 			SELECT 1 FROM project_capability
 			WHERE project_id = ? AND kind = ? AND capability_id = ?
-				AND (kind = 'tool' OR created_by = ?)
+				AND (kind IN ('tool', 'connector') OR created_by = ?)
 		)`,
     values: [params.scope.id, params.capabilityKind, params.capabilityId, params.createdBy],
   });

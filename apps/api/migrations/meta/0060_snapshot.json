@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "1947aa60-aa0b-41c1-97dc-7b659bde7678",
-  "prevId": "dd496513-aafb-4d41-b243-ca8fa636ff15",
+  "id": "b84005e9-98cf-4d61-b7a3-29f94ebed068",
+  "prevId": "12656603-aa37-49ac-91fa-f47d0d2b2400",
   "tables": {
     "activity_record": {
       "name": "activity_record",
@@ -1122,160 +1122,6 @@
           "columnsFrom": ["created_by"],
           "columnsTo": ["id"],
           "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "channel_pairing_challenge": {
-      "name": "channel_pairing_challenge",
-      "columns": {
-        "token_hash": {
-          "name": "token_hash",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "binding_id": {
-          "name": "binding_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "channel_pairing_challenge_owner_idx": {
-          "name": "channel_pairing_challenge_owner_idx",
-          "columns": ["binding_id", "user_id"],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {
-        "channel_pairing_challenge_binding_id_channel_binding_id_fk": {
-          "name": "channel_pairing_challenge_binding_id_channel_binding_id_fk",
-          "tableFrom": "channel_pairing_challenge",
-          "tableTo": "channel_binding",
-          "columnsFrom": ["binding_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "channel_pairing_challenge_user_id_user_id_fk": {
-          "name": "channel_pairing_challenge_user_id_user_id_fk",
-          "tableFrom": "channel_pairing_challenge",
-          "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "channel_sender": {
-      "name": "channel_sender",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "binding_id": {
-          "name": "binding_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "sender_id": {
-          "name": "sender_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "revision": {
-          "name": "revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "revoked_at": {
-          "name": "revoked_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        }
-      },
-      "indexes": {
-        "channel_sender_identity_idx": {
-          "name": "channel_sender_identity_idx",
-          "columns": ["binding_id", "sender_id"],
-          "isUnique": true
-        },
-        "channel_sender_user_idx": {
-          "name": "channel_sender_user_idx",
-          "columns": ["user_id"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "channel_sender_binding_id_channel_binding_id_fk": {
-          "name": "channel_sender_binding_id_channel_binding_id_fk",
-          "tableFrom": "channel_sender",
-          "tableTo": "channel_binding",
-          "columnsFrom": ["binding_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "channel_sender_user_id_user_id_fk": {
-          "name": "channel_sender_user_id_user_id_fk",
-          "tableFrom": "channel_sender",
-          "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -2933,161 +2779,6 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "document_comment": {
-      "name": "document_comment",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "output_id": {
-          "name": "output_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "parent_id": {
-          "name": "parent_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "anchor_json": {
-          "name": "anchor_json",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "source_revision": {
-          "name": "source_revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "body": {
-          "name": "body",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "author_user_id": {
-          "name": "author_user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "resolved": {
-          "name": "resolved",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "revision": {
-          "name": "revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "mentioned_teammate_id": {
-          "name": "mentioned_teammate_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "task_id": {
-          "name": "task_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "document_comment_output_idx": {
-          "name": "document_comment_output_idx",
-          "columns": ["output_id", "created_at", "id"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "document_comment_output_id_output_id_fk": {
-          "name": "document_comment_output_id_output_id_fk",
-          "tableFrom": "document_comment",
-          "tableTo": "output",
-          "columnsFrom": ["output_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "document_comment_parent_id_document_comment_id_fk": {
-          "name": "document_comment_parent_id_document_comment_id_fk",
-          "tableFrom": "document_comment",
-          "tableTo": "document_comment",
-          "columnsFrom": ["parent_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "document_comment_author_user_id_user_id_fk": {
-          "name": "document_comment_author_user_id_user_id_fk",
-          "tableFrom": "document_comment",
-          "tableTo": "user",
-          "columnsFrom": ["author_user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "document_comment_task_id_project_task_id_fk": {
-          "name": "document_comment_task_id_project_task_id_fk",
-          "tableFrom": "document_comment",
-          "tableTo": "project_task",
-          "columnsFrom": ["task_id"],
-          "columnsTo": ["id"],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {
-        "document_comment_source_revision_check": {
-          "name": "document_comment_source_revision_check",
-          "value": "\"document_comment\".\"source_revision\" > 0"
-        },
-        "document_comment_revision_check": {
-          "name": "document_comment_revision_check",
-          "value": "\"document_comment\".\"revision\" > 0"
-        }
-      }
-    },
     "embedding": {
       "name": "embedding",
       "columns": {
@@ -4142,6 +3833,163 @@
           "columnsFrom": ["created_by"],
           "columnsTo": ["id"],
           "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "memory_reflection_checkpoint": {
+      "name": "memory_reflection_checkpoint",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "context_id": {
+          "name": "context_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "conversation_id": {
+          "name": "conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {
+        "memory_reflection_checkpoint_context_conversation_idx": {
+          "name": "memory_reflection_checkpoint_context_conversation_idx",
+          "columns": ["context_id", "conversation_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "memory_reflection_checkpoint_context_id_teammate_context_id_fk": {
+          "name": "memory_reflection_checkpoint_context_id_teammate_context_id_fk",
+          "tableFrom": "memory_reflection_checkpoint",
+          "tableTo": "teammate_context",
+          "columnsFrom": ["context_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "memory_reflection_checkpoint_conversation_id_conversation_id_fk": {
+          "name": "memory_reflection_checkpoint_conversation_id_conversation_id_fk",
+          "tableFrom": "memory_reflection_checkpoint",
+          "tableTo": "conversation",
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "memory_reflection_result": {
+      "name": "memory_reflection_result",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "context_id": {
+          "name": "context_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "conversation_id": {
+          "name": "conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "through_message_id": {
+          "name": "through_message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "evidence_json": {
+          "name": "evidence_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "memory_reflection_result_context_id_teammate_context_id_fk": {
+          "name": "memory_reflection_result_context_id_teammate_context_id_fk",
+          "tableFrom": "memory_reflection_result",
+          "tableTo": "teammate_context",
+          "columnsFrom": ["context_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "memory_reflection_result_conversation_id_conversation_id_fk": {
+          "name": "memory_reflection_result_conversation_id_conversation_id_fk",
+          "tableFrom": "memory_reflection_result",
+          "tableTo": "conversation",
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },

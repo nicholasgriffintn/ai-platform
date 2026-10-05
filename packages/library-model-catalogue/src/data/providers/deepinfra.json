@@ -316,7 +316,7 @@
         "reliability": 1,
         "speed": 2,
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.00015,
+        "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0004,
         "supportsAttachments": true,
         "artificialAnalysis": {

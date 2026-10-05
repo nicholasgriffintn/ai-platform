@@ -4,8 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { SaveMemoryDocumentRevisionInput } from "./useMemoryDocumentEditor.js";
 
+export const teammateContextMemoryQueryPrefix = ["teammate-context-memory"] as const;
 export const teammateContextMemoryQueryKey = (contextId: string) =>
-  ["teammate-context-memory", contextId] as const;
+  [...teammateContextMemoryQueryPrefix, contextId] as const;
 
 export function useTeammateContextMemory(contextId: string) {
   const queryClient = useQueryClient();

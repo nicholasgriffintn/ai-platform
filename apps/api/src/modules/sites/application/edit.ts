@@ -31,6 +31,11 @@ export async function editSite({
 }: EditSiteOptions): Promise<SiteRecord> {
   const scope = { context, userId: user.id, projectId: request.projectId };
   const existing = await getSite(scope, siteId);
+
+  if (request.expectedRevision !== undefined && existing.revision !== request.expectedRevision) {
+    throw new AssistantError("The site changed before the edit", ErrorType.CONFLICT_ERROR, 409);
+  }
+
   const document = structuredClone(existing.project) as unknown as Record<string, unknown>;
 
   for (const patch of request.patches) {
@@ -56,6 +61,7 @@ export async function editSite({
   }
 
   return updateSite(scope, siteId, {
+    expectedRevision: existing.revision,
     brief: existing.brief,
     plan: existing.plan,
     project,

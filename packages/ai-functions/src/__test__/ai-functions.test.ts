@@ -10,6 +10,7 @@ import z from "zod/v4";
 
 import { defineFunctions } from "../functions.js";
 import { createAiFunctions } from "../index.js";
+import type { CompletionResult } from "../types.js";
 
 const env = { API_BASE_URL: "https://api.test" };
 const user = { id: 7, plan_id: "pro" };
@@ -204,6 +205,30 @@ describe("createAiFunctions", () => {
       ai.classify({ env, model: "gpt-5", input: "hi", labels: ["greeting", "farewell"] }),
     ).rejects.toMatchObject({ type: "PROVIDER_ERROR" });
   });
+
+  it.each(["invalid-json", '{"count": "invalid"}'])(
+    "records usage before rejecting invalid structured output: %s",
+    async (response) => {
+      const usage = { input_tokens: 12, output_tokens: 3 };
+      const { runtime } = createRuntime(vi.fn<GetResponse>(async () => ({ response, usage })));
+      const account = vi
+        .fn<(result: CompletionResult) => Promise<void>>()
+        .mockResolvedValue(undefined);
+
+      await expect(
+        createAiFunctions(runtime).generateObject(
+          {
+            env,
+            model: "gpt-5",
+            prompt: "Return a count",
+            schema: z.object({ count: z.number() }),
+          },
+          account,
+        ),
+      ).rejects.toMatchObject({ type: "PROVIDER_ERROR" });
+      expect(account).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ usage }));
+    },
+  );
 
   it("builds typed functions from plain shapes", async () => {
     const getResponse = vi.fn<GetResponse>(async () => ({

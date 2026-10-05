@@ -418,15 +418,36 @@
     {
       "idx": 59,
       "version": "6",
-      "when": 1791160733916,
-      "tag": "0059_channel_sender_verification",
+      "when": 1791158019630,
+      "tag": "0059_personal_source_knowledge",
       "breakpoints": true
     },
     {
       "idx": 60,
       "version": "6",
-      "when": 1791164480440,
-      "tag": "0060_document_collaboration",
+      "when": 1791172217650,
+      "tag": "0060_native_memory",
+      "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "6",
+      "when": 1791218454331,
+      "tag": "0061_project_task_integrations",
+      "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "6",
+      "when": 1791218454332,
+      "tag": "0062_channel_sender_verification",
+      "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "6",
+      "when": 1791218454333,
+      "tag": "0063_document_collaboration",
       "breakpoints": true
     }
   ]

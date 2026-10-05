@@ -116,3 +116,7 @@ export function getErrorMessage(error: unknown, fallback = "Unknown error"): str
 
   return fallback;
 }
+
+export function toolErrorResponse(name: string, content: string) {
+  return { status: "error", name, content, data: {} };
+}
