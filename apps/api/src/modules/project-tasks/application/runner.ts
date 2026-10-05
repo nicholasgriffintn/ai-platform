@@ -11,7 +11,7 @@ import {
 } from "@ngriffin_uk/polychat-library-tasks";
 import {
   createChatCompletionsJsonSchema,
-  nextFlowStageId,
+  findProjectFlowNode,
   chatRunCommandReceiptResponseSchema,
   PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
   PROJECT_TASK_RUN_TASK_TYPE,
@@ -20,7 +20,7 @@ import {
   type ProjectTask,
   type ProjectTaskBlockedReason,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { canonicalJson, generateId } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
   ErrorType,
@@ -41,13 +41,14 @@ import { TaskService } from "~/modules/tasks/application/TaskService";
 import type { TaskExecutionLease } from "~/modules/tasks/application/types";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
-import { parseProjectFlow } from "~/modules/workspaces/application/format";
 import type { IEnv, Message } from "~/types";
 
 import { getPendingProjectTaskToolApproval } from "./approvals";
 import { reconcileTaskNotifications } from "./attention";
-import { createProjectTaskCompletion, projectTaskStatusAfterCompletedGoal } from "./completions";
-import { buildStageInstructions, resolveTaskRuntime } from "./flow";
+import { createProjectTaskCompletion } from "./completions";
+import { buildNodeInstructions, resolveTaskRuntime } from "./flow";
+import { completeDispatchedFlowWait, driveProjectFlow } from "./flow-execution";
+import { runProjectFlowFunction } from "./flow-functions";
 import { recoverPendingProjectTaskInteraction } from "./interaction-recovery";
 import { getPendingProjectTaskQuestions } from "./questions";
 import { projectTaskStatusForGoal } from "./transitions";
@@ -91,11 +92,27 @@ export async function queueProjectTaskRun(params: {
   context: ServiceContext;
   task: ProjectTask;
   runnerIdentityUserId: number;
-  stageId?: string | null;
+  nodeId?: string | null;
   approvedTools?: string[];
   interaction?: { toolName: string; response: Record<string, unknown> };
 }): Promise<ProjectTask> {
-  const { context, task, runnerIdentityUserId, stageId } = params;
+  const { context, task, runnerIdentityUserId, nodeId } = params;
+
+  const wait = task.flowExecution.waitId
+    ? await context.repositories.projectFlows.getWait(task.flowExecution.waitId)
+    : null;
+
+  if (
+    !wait ||
+    (wait.kind !== "agent" && wait.kind !== "function") ||
+    (nodeId && nodeId !== task.flowExecution.nodeId)
+  ) {
+    throw new AssistantError(
+      "This flow is not waiting for a runnable step",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
 
   if (!context.env.TASK_QUEUE) {
     throw new AssistantError(
@@ -107,9 +124,11 @@ export async function queueProjectTaskRun(params: {
 
   const dispatchTaskId = generateId();
   const conversationId =
-    task.blockedReason === "run_failed" && task.conversationId
-      ? projectTaskConversationId(task.id, dispatchTaskId)
-      : null;
+    wait.status === "pending"
+      ? projectTaskConversationId(task.id, wait.id)
+      : task.blockedReason === "run_failed" && task.conversationId
+        ? projectTaskConversationId(task.id, dispatchTaskId)
+        : null;
   const queued = await context.repositories.projectTasks.queueTaskForRun({
     taskId: task.id,
     projectId: task.projectId,
@@ -122,7 +141,11 @@ export async function queueProjectTaskRun(params: {
       mode: null,
     },
     tokenBudget: task.tokenBudget ?? PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
-    stageId,
+    nodeId,
+    flowRevision: task.flowRevision,
+    waitId: wait.id,
+    waitRevision: wait.revision,
+    newNode: wait.status === "pending",
   });
 
   if (!queued) {
@@ -150,6 +173,12 @@ export async function queueProjectTaskRun(params: {
       dispatchTaskId,
       detail: "The teammate run could not be added to the execution queue. Try again.",
     });
+    await context.repositories.projectFlows.recordDispatchFailure(
+      task.id,
+      dispatchTaskId,
+      runnerIdentityUserId,
+      getErrorMessage(error),
+    );
     throw error;
   }
 
@@ -218,7 +247,7 @@ export async function ensureProjectTaskConversation(params: {
 
 export function buildTaskPrompt(params: {
   task: ProjectTask;
-  stageInstructions: string | null;
+  nodeInstructions: string | null;
   contextNotes: string | null;
 }): string {
   const acceptanceCriteria = params.task.acceptanceCriteria
@@ -227,12 +256,15 @@ export function buildTaskPrompt(params: {
   const forbiddenTools = params.task.constraints?.forbiddenTools ?? [];
 
   return renderPrompt("apps/project-tasks/task-prompt", {
-    stageInstructions: params.stageInstructions || undefined,
+    nodeInstructions: params.nodeInstructions || undefined,
     taskId: params.task.id,
     objective: params.task.objective,
     expectedOutput: params.task.expectedOutput || undefined,
     acceptanceCriteria: acceptanceCriteria || undefined,
     contextNotes: params.contextNotes || undefined,
+    flowValues: Object.keys(params.task.flowExecution.values).length
+      ? canonicalJson(params.task.flowExecution.values)
+      : undefined,
     constraintsNotes: params.task.constraints?.notes || undefined,
     forbiddenTools: forbiddenTools.length > 0 ? forbiddenTools.join(", ") : undefined,
     modelDrafted: params.task.source === "model" ? "true" : undefined,
@@ -266,6 +298,13 @@ async function blockTask(
       blockedDetail: detail.slice(0, 500),
     },
   });
+  await context.repositories.projectFlows.recordDispatchFailure(
+    taskId,
+    dispatchTaskId,
+    context.requireUser().id,
+    detail,
+    { dispatchTaskId, ownerToken: executionLease.ownerToken },
+  );
 }
 
 async function updateOwnedProjectTask(params: {
@@ -435,6 +474,18 @@ export async function runProjectTaskDispatch(params: {
     return { status: "skipped", detail: "Task was not queued" };
   }
 
+  if (!claimed.flowExecution.waitId) {
+    return { status: "skipped", detail: "Task has no active wait" };
+  }
+
+  context.projectTaskExecution = {
+    taskId: claimed.id,
+    flowRevision: claimed.flowRevision,
+    waitId: claimed.flowExecution.waitId,
+    dispatchTaskId: params.dispatchTaskId,
+    ownerToken: params.executionLease.ownerToken,
+  };
+
   const project = await context.repositories.workspaces.getProject(projectId);
 
   if (!project) {
@@ -468,6 +519,41 @@ export async function runProjectTaskDispatch(params: {
     return { status: "blocked", detail: "Runner identity lost membership" };
   }
 
+  const flowNode = findProjectFlowNode(claimed.flowSnapshot, claimed.flowExecution.nodeId);
+
+  if (flowNode?.type === "function") {
+    try {
+      await params.executionLease.assertOwned();
+      await runProjectFlowFunction(context, claimed, {
+        dispatchTaskId: params.dispatchTaskId,
+        ownerToken: params.executionLease.ownerToken,
+      });
+
+      return { status: "completed" };
+    } catch (error) {
+      if (isTaskError(error)) {
+        throw error;
+      }
+
+      const detail = getErrorMessage(error);
+
+      await blockTask(
+        context,
+        taskId,
+        params.dispatchTaskId,
+        params.executionLease,
+        "run_failed",
+        detail,
+      );
+
+      return { status: "blocked", detail };
+    }
+  }
+
+  if (flowNode?.type !== "agent") {
+    return { status: "skipped", detail: "The flow node is not runnable" };
+  }
+
   if (claimed.tokenBudget !== null && claimed.tokensSpent >= claimed.tokenBudget) {
     await blockTask(
       context,
@@ -489,7 +575,7 @@ export async function runProjectTaskDispatch(params: {
     runtime = await resolveTaskRuntime({
       context,
       task: claimed,
-      flow: claimed.flowSnapshot ?? parseProjectFlow(project.flow),
+      flow: claimed.flowSnapshot,
     });
   } catch (error) {
     const detail = getErrorMessage(error);
@@ -617,7 +703,7 @@ export async function runProjectTaskDispatch(params: {
     kind: "project_task_run",
     status: "running",
     summary: claimed.objective.slice(0, 200),
-    data: { taskId, stageId: claimed.stageId, dispatchTaskId: params.dispatchTaskId },
+    data: { taskId, nodeId: claimed.nodeId, dispatchTaskId: params.dispatchTaskId },
   });
   let responseTokens = 0;
   let responseOutput = "";
@@ -648,7 +734,7 @@ export async function runProjectTaskDispatch(params: {
         dispatchTaskId: params.dispatchTaskId,
         objective: claimed.objective,
         projectId: claimed.projectId,
-        stageId: claimed.stageId,
+        nodeId: claimed.nodeId,
         taskId: claimed.id,
       },
       ...(resumableRunId ? { run_id: resumableRunId } : {}),
@@ -657,7 +743,7 @@ export async function runProjectTaskDispatch(params: {
         history,
         buildTaskPrompt({
           task: claimed,
-          stageInstructions: buildStageInstructions(runtime),
+          nodeInstructions: buildNodeInstructions(runtime),
           contextNotes: buildContextNotes(claimed),
         }),
       ),
@@ -842,7 +928,7 @@ export async function runProjectTaskDispatch(params: {
   const pendingApproval = await getPendingProjectTaskToolApproval(context, { conversationId });
   const projection = goal
     ? projectTaskStatusForGoal(goal)
-    : { status: "review" as const, blockedReason: null };
+    : { status: "blocked" as const, blockedReason: "run_failed" as const };
 
   if (projection.status === "blocked" && pendingQuestions) {
     projection.blockedReason = "awaiting_input";
@@ -853,15 +939,11 @@ export async function runProjectTaskDispatch(params: {
   }
 
   const tokensSpent = claimed.tokensSpent + Math.max(goal?.tokens_spent ?? 0, responseTokens);
-  const flow = claimed.flowSnapshot ?? parseProjectFlow(project.flow);
-  const nextStageId =
-    goal?.status === "completed" && runtime.stage?.advance === "on_goal_complete"
-      ? nextFlowStageId(flow, claimed.stageId)
-      : null;
   const completion =
     goal?.status === "completed"
       ? createProjectTaskCompletion({
-          stage: runtime.stage,
+          node: runtime.node,
+          humanReview: runtime.humanReview,
           conversationId,
           goal,
           run: completedRun,
@@ -876,29 +958,47 @@ export async function runProjectTaskDispatch(params: {
           output: responseOutput,
         })
       : null;
-  const nextStatus =
-    goal?.status === "completed"
-      ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId)
-      : projection.status;
+  let finalTask: ProjectTask;
 
-  await updateOwnedProjectTask({
-    context,
-    taskId,
-    dispatchTaskId: params.dispatchTaskId,
-    executionLease: params.executionLease,
-    updates: {
-      status: nextStatus,
-      blockedReason: projection.blockedReason,
-      blockedDetail: goal?.stopped_reason ?? null,
+  if (completion) {
+    const current = await context.repositories.projectTasks.getTaskById(taskId);
+
+    if (!current) {
+      throw ownershipLostError(params.dispatchTaskId);
+    }
+
+    const advanced = await completeDispatchedFlowWait({
+      context,
+      task: current,
+      owner: {
+        dispatchTaskId: params.dispatchTaskId,
+        ownerToken: params.executionLease.ownerToken,
+      },
+      values: runtime.node?.outputKey
+        ? { [runtime.node.outputKey]: responseOutput.slice(0, 10_000) }
+        : {},
+      completions: [...current.completions, completion],
       tokensSpent,
-      ...(completion ? { completions: [...claimed.completions, completion] } : {}),
-      ...(nextStatus === "done"
-        ? { completedAt: new Date().toISOString() }
-        : nextStatus === "review"
-          ? { completedAt: null }
-          : {}),
-    },
-  });
+    });
+
+    finalTask = await driveProjectFlow(context, advanced);
+  } else {
+    finalTask = await updateOwnedProjectTask({
+      context,
+      taskId,
+      dispatchTaskId: params.dispatchTaskId,
+      executionLease: params.executionLease,
+      updates: {
+        status: projection.status,
+        blockedReason: projection.blockedReason,
+        blockedDetail: goal?.stopped_reason ?? null,
+        tokensSpent,
+      },
+    });
+  }
+
+  const nextStatus = finalTask.status;
+
   await params.executionLease.assertOwned();
   await context.repositories.activities.updateActivity(activity.id, {
     status: nextStatus === "blocked" ? "waiting" : "succeeded",
@@ -920,7 +1020,7 @@ export async function runProjectTaskDispatch(params: {
   if (notificationKind) {
     await notifyMobileProjectTask({
       context,
-      task: { ...claimed, conversationId },
+      task: finalTask,
       notificationId: `project-task:${taskId}:${notificationKind}:${activity.id}`,
       kind: notificationKind,
       interactionId:
@@ -932,29 +1032,7 @@ export async function runProjectTaskDispatch(params: {
     });
   }
 
-  if (nextStageId) {
-    try {
-      await queueProjectTaskRun({
-        context,
-        task: {
-          ...claimed,
-          status: nextStatus,
-          tokensSpent,
-          completions: completion ? [...claimed.completions, completion] : claimed.completions,
-        },
-        runnerIdentityUserId,
-        stageId: nextStageId,
-      });
-    } catch (error) {
-      const detail = getErrorMessage(error);
-
-      logger.error("Project task stage dispatch failed", { taskId, nextStageId, error: detail });
-
-      return { status: "blocked", detail };
-    }
-  }
-
-  return projection.status === "blocked"
+  return nextStatus === "blocked"
     ? { status: "blocked", detail: goal?.stopped_reason ?? undefined }
     : { status: "completed" };
 }

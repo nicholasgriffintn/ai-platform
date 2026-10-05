@@ -1,8 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { isTerminalGoalStatus } from "@ngriffin_uk/polychat-library-goals";
 import {
-  isTerminalProjectTaskStatus,
-  nextFlowStageId,
   PROJECT_TASK_DEFAULT_CONCURRENCY,
   type CreateProjectTaskInput,
   type AnswerUserQuestionsInput,
@@ -32,14 +30,18 @@ import {
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import { parseProjectFlow } from "~/modules/workspaces/application/format";
 
+import { initialProjectFlowExecution } from "../domain/flow-machine";
 import { getProjectTaskActivity } from "./activity";
 import { getPendingProjectTaskToolApproval, resolveProjectTaskToolApproval } from "./approvals";
 import { reconcileTaskNotifications } from "./attention";
-import { approveLatestProjectTaskCompletion } from "./completions";
+import { canReviewProjectFlowWait } from "./flow-authority";
+import { driveProjectFlow, reloadFlowTask, recordProjectTaskResumeFailure } from "./flow-execution";
 import { getProjectTaskInteraction } from "./interactions";
 import { getProjectTaskPlanEvidence, getProjectTaskResumeCapability } from "./plan-evidence";
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "./questions";
+import { validateFlowRecordBindings } from "./record-triggers";
 import { queueProjectTaskRun } from "./runner";
+export { resolveHumanFlowWait } from "./flow-execution";
 import { assertProjectTaskTransition } from "./transitions";
 
 const POSITION_STEP = 1000;
@@ -129,13 +131,13 @@ async function assertAssigneeIsMember(
   }
 }
 
-function assertStageExists(flow: ProjectFlow | null, stageId: string | null | undefined): void {
-  if (stageId === null || stageId === undefined) {
+function assertNodeExists(flow: ProjectFlow | null, nodeId: string | null | undefined): void {
+  if (nodeId === null || nodeId === undefined) {
     return;
   }
 
-  if (!flow?.stages.some((stage) => stage.id === stageId)) {
-    throw new AssistantError("Unknown flow stage", ErrorType.PARAMS_ERROR, 400);
+  if (!flow?.nodes.some((node) => node.id === nodeId)) {
+    throw new AssistantError("Unknown flow step", ErrorType.PARAMS_ERROR, 400);
   }
 }
 
@@ -213,18 +215,34 @@ export async function listProjectTasks(
 }
 
 export async function getProjectTask(context: ServiceContext, projectId: string, taskId: string) {
-  const { project } = await requireProjectAccess(context, projectId);
+  const { role } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
-  const [goal, pendingQuestions, pendingApproval, interaction] = await Promise.all([
+  const [goal, pendingQuestions, pendingApproval, interaction, flowWait] = await Promise.all([
     task.goalId ? context.repositories.goals.getGoalById(task.goalId) : null,
     getPendingProjectTaskQuestions(context, task),
     getPendingProjectTaskToolApproval(context, task),
     getProjectTaskInteraction(context, task),
+    task.flowExecution.waitId
+      ? context.repositories.projectFlows.getWait(task.flowExecution.waitId)
+      : null,
   ]);
   const activity = await getProjectTaskActivity(context, task, goal, interaction);
-  const plan = await getProjectTaskPlanEvidence(context, task, parseProjectFlow(project.flow));
+  const plan = await getProjectTaskPlanEvidence(context, task);
 
-  return { task, goal, pendingQuestions, pendingApproval, interaction, activity, plan };
+  return {
+    task,
+    goal,
+    pendingQuestions,
+    pendingApproval,
+    interaction,
+    activity,
+    plan,
+    flowWait,
+    canRespondToFlowWait: Boolean(
+      flowWait?.status === "pending" &&
+      canReviewProjectFlowWait(context.requireUser().id, role, flowWait),
+    ),
+  };
 }
 
 export async function respondToProjectTaskQuestions(
@@ -246,15 +264,11 @@ export async function respondToProjectTaskQuestions(
       },
     });
   } catch (error) {
-    const blocked = await context.repositories.projectTasks.updateTask(taskId, {
-      status: "blocked",
-      blockedReason: "dispatch_failed",
-      blockedDetail:
-        `Your answers were saved, but the task could not resume: ${getErrorMessage(error)}`.slice(
-          0,
-          500,
-        ),
-    });
+    const blocked = await recordProjectTaskResumeFailure(
+      context,
+      task,
+      `Your answers were saved, but the task could not resume: ${getErrorMessage(error)}`,
+    );
 
     if (blocked) {
       await reconcileTaskNotifications(context, blocked);
@@ -303,15 +317,11 @@ export async function respondToProjectTaskToolApproval(
 
     return resumed;
   } catch (error) {
-    const blocked = await context.repositories.projectTasks.updateTask(taskId, {
-      status: "blocked",
-      blockedReason: "dispatch_failed",
-      blockedDetail:
-        `Your decision was saved, but the task could not resume: ${getErrorMessage(error)}`.slice(
-          0,
-          500,
-        ),
-    });
+    const blocked = await recordProjectTaskResumeFailure(
+      context,
+      task,
+      `Your decision was saved, but the task could not resume: ${getErrorMessage(error)}`,
+    );
 
     if (blocked) {
       await reconcileTaskNotifications(context, blocked);
@@ -332,7 +342,7 @@ export async function createProjectTask(
   const flow = parseProjectFlow(project.flow);
 
   await assertAssigneeIsMember(context, project.workspace_id, input.assigneeUserId);
-  assertStageExists(flow, input.stageId);
+  assertNodeExists(flow, input.nodeId);
   await assertDependenciesExist(context, projectId, null, input.dependsOnTaskIds);
 
   const maxPosition = await context.repositories.projectTasks.getMaxPosition(projectId);
@@ -351,7 +361,7 @@ export async function createProjectTask(
     createdByUserId: user.id,
     assigneeUserId: input.assigneeUserId ?? null,
     runner: input.runner ?? null,
-    stageId: input.stageId ?? flow?.stages[0]?.id ?? null,
+    nodeId: input.nodeId ?? flow?.entryNodeId ?? null,
     flowSnapshot: flow,
     tokenBudget: input.tokenBudget ?? null,
     position: maxPosition + POSITION_STEP,
@@ -381,7 +391,7 @@ export async function updateProjectTask(
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
-  const flow = task.flowSnapshot ?? parseProjectFlow(project.flow);
+  const flow = task.flowSnapshot;
   const actor = options.actor ?? "user";
 
   const planFields = [
@@ -393,11 +403,16 @@ export async function updateProjectTask(
     "dependsOnTaskIds",
     "requireApprovalFor",
     "runner",
-    "stageId",
+    "nodeId",
   ] as const;
   const changesPlan = planFields.some((field) => input[field] !== undefined);
 
-  if (changesPlan && task.status !== "backlog") {
+  if (
+    changesPlan &&
+    (task.status !== "backlog" ||
+      task.flowExecution.steps > 0 ||
+      task.runnerIdentityUserId !== null)
+  ) {
     throw new AssistantError(
       "Only a pending plan can be edited. Cancel this task and create a new task to change executed work.",
       ErrorType.CONFLICT_ERROR,
@@ -419,25 +434,85 @@ export async function updateProjectTask(
 
   if (input.status !== undefined) {
     assertProjectTaskTransition({ actor, from: task.status, to: input.status });
+    if (
+      input.status !== task.status &&
+      input.status !== "backlog" &&
+      input.status !== "cancelled"
+    ) {
+      throw new AssistantError(
+        "The flow controls execution, review and completion",
+        ErrorType.CONFLICT_ERROR,
+        409,
+      );
+    }
+
+    if (
+      input.status !== "cancelled" &&
+      input.status !== task.status &&
+      task.flowExecution.steps > 0
+    ) {
+      throw new AssistantError(
+        "Use the current flow wait to continue executed work",
+        ErrorType.CONFLICT_ERROR,
+        409,
+      );
+    }
   }
 
   await assertAssigneeIsMember(context, project.workspace_id, input.assigneeUserId);
-  assertStageExists(flow, input.stageId);
+  assertNodeExists(flow, input.nodeId);
   await assertDependenciesExist(context, projectId, taskId, input.dependsOnTaskIds);
 
-  const nextStatus = input.status ?? task.status;
-  const isFinishing = isTerminalProjectTaskStatus(nextStatus) && nextStatus !== task.status;
-  const updated = await context.repositories.projectTasks.updateTask(taskId, {
-    ...input,
-    acceptanceCriteria: withCriterionIds(input.acceptanceCriteria),
-    ...(input.status !== undefined && input.status !== "blocked"
-      ? { blockedReason: null, blockedDetail: null }
-      : {}),
-    ...(isFinishing ? { completedAt: new Date().toISOString() } : {}),
-  });
+  let updated: ProjectTask | null;
+
+  if (input.status === "cancelled" && task.status !== "cancelled") {
+    const committed = await context.repositories.projectFlows.transition({
+      task,
+      execution: { ...task.flowExecution, waitId: null },
+      actorUserId: user.id,
+      status: "cancelled",
+      kind: "cancelled",
+    });
+
+    if (!committed) {
+      throw new AssistantError(
+        "The task changed before it could be cancelled",
+        ErrorType.CONFLICT_ERROR,
+        409,
+      );
+    }
+
+    updated = await reloadFlowTask(context, taskId);
+  } else {
+    updated = await context.repositories.projectTasks.updateTask(
+      taskId,
+      {
+        ...input,
+        acceptanceCriteria: withCriterionIds(input.acceptanceCriteria),
+        ...(input.nodeId !== undefined
+          ? {
+              nodeId: input.nodeId ?? task.flowSnapshot.entryNodeId,
+              flowExecution: initialProjectFlowExecution(
+                task.flowSnapshot,
+                input.nodeId ?? task.flowSnapshot.entryNodeId,
+              ),
+            }
+          : {}),
+        ...(input.status !== undefined && input.status !== "blocked"
+          ? { blockedReason: null, blockedDetail: null }
+          : {}),
+      },
+      undefined,
+      changesPlan ? task.flowRevision : undefined,
+    );
+  }
 
   if (!updated) {
-    throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
+    throw new AssistantError(
+      "The task changed before the update was saved",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
   }
 
   if (input.status !== undefined && input.status !== task.status) {
@@ -473,7 +548,7 @@ export async function startProjectTask(
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
-  const flow = task.flowSnapshot ?? parseProjectFlow(project.flow);
+  const flow = task.flowSnapshot;
 
   if (task.status === "running" || (task.status === "queued" && task.dispatchTaskId)) {
     return { task };
@@ -481,7 +556,7 @@ export async function startProjectTask(
 
   if (task.status === "done" || task.status === "cancelled") {
     throw new AssistantError(
-      "This task is finished. Reopen it before running it again.",
+      "This task is finished. Create a new task to run the work again.",
       ErrorType.PARAMS_ERROR,
       400,
     );
@@ -495,7 +570,7 @@ export async function startProjectTask(
 
     if (!resume.supported) {
       throw new AssistantError(
-        resume.reason ?? "This stage cannot be retried safely",
+        resume.reason ?? "This step cannot be retried safely",
         ErrorType.CONFLICT_ERROR,
         409,
       );
@@ -513,14 +588,22 @@ export async function startProjectTask(
   const unmet = await resolveUnmetDependencies(context, task);
 
   if (unmet.length > 0) {
-    const blocked = await context.repositories.projectTasks.updateTask(taskId, {
+    const committed = await context.repositories.projectFlows.transition({
+      task,
+      execution: task.flowExecution,
+      actorUserId: context.requireUser().id,
+      kind: "failed",
       status: "blocked",
       blockedReason: "dependencies_unmet",
-      blockedDetail:
-        `Waiting on: ${unmet.map((dependency) => dependency.objective).join("; ")}`.slice(0, 500),
+      detail: `Waiting on: ${unmet.map((dependency) => dependency.objective).join("; ")}`.slice(
+        0,
+        500,
+      ),
     });
 
-    if (blocked) {
+    if (committed) {
+      const blocked = await reloadFlowTask(context, taskId);
+
       await reconcileTaskNotifications(context, blocked);
     }
 
@@ -543,14 +626,16 @@ export async function startProjectTask(
     );
   }
 
-  const queued = await queueProjectTaskRun({
-    context,
-    task,
-    runnerIdentityUserId: user.id,
-    stageId: task.stageId ?? flow?.stages[0]?.id ?? null,
-    approvedTools: options.approvedTools,
-    interaction: options.interaction,
-  });
+  const queued = !task.flowExecution.waitId
+    ? await driveProjectFlow(context, task)
+    : await queueProjectTaskRun({
+        context,
+        task,
+        runnerIdentityUserId: task.runnerIdentityUserId ?? user.id,
+        nodeId: task.nodeId ?? flow?.entryNodeId ?? null,
+        approvedTools: options.approvedTools,
+        interaction: options.interaction,
+      });
 
   await context.repositories.audit.createRecord({
     workspaceId: project.workspace_id,
@@ -558,69 +643,25 @@ export async function startProjectTask(
     action: "project.task.started",
     targetType: "project_task",
     targetId: taskId,
-    metadata: { projectId, stageId: queued.stageId },
+    metadata: { projectId, nodeId: queued.nodeId },
   });
 
   return { task: queued };
 }
 
-export async function acceptProjectTask(
+export async function getProjectTaskFlowHistory(
   context: ServiceContext,
   projectId: string,
   taskId: string,
+  after: number,
 ) {
-  const user = context.requireUser();
-  const { project } = await requireProjectAccess(context, projectId);
-  const task = await requireTask(context, projectId, taskId);
+  await requireProjectAccess(context, projectId);
+  await requireTask(context, projectId, taskId);
 
-  if (task.status !== "review") {
-    throw new AssistantError("Only a task in review can be accepted", ErrorType.PARAMS_ERROR, 400);
-  }
-
-  const flow = task.flowSnapshot ?? parseProjectFlow(project.flow);
-  const nextStage = nextFlowStageId(flow, task.stageId);
-  let updated: ProjectTask | null;
-
-  if (nextStage) {
-    const completions = approveLatestProjectTaskCompletion(task.completions, user.id);
-    const reviewed = await context.repositories.projectTasks.updateTask(taskId, { completions });
-
-    if (!reviewed) {
-      throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
-    }
-
-    updated = await queueProjectTaskRun({
-      context,
-      task: reviewed,
-      runnerIdentityUserId: user.id,
-      stageId: nextStage,
-    });
-  } else {
-    updated = await context.repositories.projectTasks.updateTask(taskId, {
-      status: "done",
-      blockedReason: null,
-      blockedDetail: null,
-      completions: approveLatestProjectTaskCompletion(task.completions, user.id),
-      completedAt: new Date().toISOString(),
-    });
-  }
-
-  if (!updated) {
-    throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
-  }
-
-  await context.repositories.audit.createRecord({
-    workspaceId: project.workspace_id,
-    actorUserId: user.id,
-    action: nextStage ? "project.task.stage_started" : "project.task.accepted",
-    targetType: "project_task",
-    targetId: taskId,
-    metadata: { projectId, stageId: nextStage ?? task.stageId },
+  return context.repositories.projectFlows.history(taskId, after, {
+    projectId,
+    actorUserId: context.requireUser().id,
   });
-
-  await reconcileTaskNotifications(context, updated);
-
-  return { task: updated };
 }
 
 export async function deleteProjectTask(
@@ -636,7 +677,7 @@ export async function deleteProjectTask(
     throw new AssistantError("Stop this task before deleting it", ErrorType.CONFLICT_ERROR, 409);
   }
 
-  if (task.runId || task.completions.length > 0) {
+  if (task.flowExecution.steps > 0 || task.runId || task.completions.length > 0) {
     throw new AssistantError(
       "Cancel this task to retain its execution evidence. Only an unstarted plan can be deleted.",
       ErrorType.CONFLICT_ERROR,
@@ -659,8 +700,21 @@ export async function deleteProjectTask(
 
 export async function getProjectFlow(context: ServiceContext, projectId: string) {
   const { project } = await requireProjectAccess(context, projectId);
+  const triggers = await context.repositories.projectRecordTriggers.list(projectId);
 
-  return { flow: parseProjectFlow(project.flow) };
+  return {
+    flow: parseProjectFlow(project.flow),
+    triggerStates: triggers.map((trigger) => ({
+      id: trigger.configuration.id,
+      tableId: trigger.tableId,
+      name: trigger.configuration.name,
+      cursor: trigger.cursor,
+      revision: trigger.revision,
+      enabled: trigger.enabled,
+      error: trigger.error,
+      updatedAt: trigger.updatedAt,
+    })),
+  };
 }
 
 export async function setProjectFlow(
@@ -672,6 +726,7 @@ export async function setProjectFlow(
   const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
 
   if (flow) {
+    await validateFlowRecordBindings(context, projectId, flow);
     const [capabilities, defaultTeammateIds] = await Promise.all([
       context.repositories.workspaces.listProjectCapabilities(projectId),
       listProjectDefaultTeammateIds(context, project.workspace_id),
@@ -679,8 +734,8 @@ export async function setProjectFlow(
     const availableTeammates = new Set(
       resolveProjectTeammateIds({ capabilities, defaultTeammateIds }),
     );
-    const missing = flow.stages
-      .map((stage) => stage.teammateId)
+    const missing = flow.nodes
+      .flatMap((node) => (node.type === "agent" ? [node.teammateId] : []))
       .filter(
         (teammateId): teammateId is string =>
           Boolean(teammateId) && !availableTeammates.has(teammateId),
@@ -701,8 +756,10 @@ export async function setProjectFlow(
     );
     const missingSkills = [
       ...new Set(
-        flow.stages.flatMap((stage) =>
-          stage.skillIds.filter((skillId) => !attachedSkills.has(skillId)),
+        flow.nodes.flatMap((node) =>
+          node.type === "agent"
+            ? node.skillIds.filter((skillId) => !attachedSkills.has(skillId))
+            : [],
         ),
       ),
     ];
@@ -716,19 +773,20 @@ export async function setProjectFlow(
     }
   }
 
-  await context.repositories.workspaces.updateProject(projectId, {
-    flow: flow ? JSON.stringify(flow) : null,
-  });
+  if (!(await context.repositories.projectRecordTriggers.saveFlow(projectId, user.id, flow))) {
+    throw new AssistantError("Project flow permissions changed", ErrorType.CONFLICT_ERROR, 409);
+  }
+
   await context.repositories.audit.createRecord({
     workspaceId: project.workspace_id,
     actorUserId: user.id,
     action: flow ? "project.flow.updated" : "project.flow.cleared",
     targetType: "project",
     targetId: projectId,
-    metadata: { stageCount: flow?.stages.length ?? 0 },
+    metadata: { nodeCount: flow?.nodes.length ?? 0 },
   });
 
-  return { flow };
+  return getProjectFlow(context, projectId);
 }
 
 export { listProjectTaskAttention } from "./attention";

@@ -1,4 +1,8 @@
 export const scopePolicies = {
+  "scope.task.flow.respond": `permit(principal, action == Polychat::Action::"task.flow.respond", resource)
+    when { context.member && ["owner", "admin", "member"].contains(context.role) &&
+      (["owner", "admin"].contains(context.role) || context.assigneeId == "" || context.actorId == context.assigneeId) };`,
+
   "scope.records.read": `permit(principal, action == Polychat::Action::"records.read", resource)
     when { ["shared", "creator"].contains(context.visibility) && ["shared", "creator"].contains(context.editing) && !(context.visibility == "creator" && context.editing == "shared") &&
      ((context.scope == "personal" && context.actorId == context.tableOwnerId) ||

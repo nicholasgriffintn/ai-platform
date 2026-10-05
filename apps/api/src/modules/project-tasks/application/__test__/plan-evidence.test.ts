@@ -1,84 +1,14 @@
-import type { ChatRun, ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import { createSequentialProjectFlow } from "@ngriffin_uk/polychat-schemas";
+import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import type { OutputRecord } from "~/modules/outputs/infrastructure/OutputRepository";
 
+import {
+  task,
+  projectTaskEvidenceRun as run,
+} from "../../../../../test/project-task-evidence-fixtures";
 import { buildProjectTaskPlanEvidence, getProjectTaskResumeCapability } from "../plan-evidence";
-
-const task = {
-  id: "task-1",
-  projectId: "project-1",
-  workspaceId: "workspace-1",
-  objective: "Ship the report",
-  acceptanceCriteria: [{ id: "criterion-1", text: "Report exists" }],
-  expectedOutput: null,
-  context: null,
-  constraints: null,
-  dependsOnTaskIds: [],
-  requireApprovalFor: [],
-  status: "blocked",
-  source: "user",
-  blockedReason: "run_failed",
-  blockedDetail: "Provider failed",
-  runId: "run-2",
-  dispatchTaskId: null,
-  stageId: "build",
-  flowSnapshot: null,
-  runner: null,
-  createdByUserId: 7,
-  assigneeUserId: null,
-  runnerIdentityUserId: 7,
-  conversationId: "conversation-run-2",
-  goalId: "goal-2",
-  completions: [
-    {
-      id: "completion-1",
-      stageId: "plan",
-      conversationId: "conversation-1",
-      goalId: "goal-1",
-      runId: "run-1",
-      output: "Plan ready",
-      evidence: [],
-      approval: {
-        mode: "automated",
-        status: "approved",
-        reviewedByUserId: null,
-        reviewedAt: "2026-09-05T10:01:00.000Z",
-      },
-      createdAt: "2026-09-05T10:01:00.000Z",
-    },
-  ],
-  position: 1000,
-  tokenBudget: 1000,
-  tokensSpent: 100,
-  createdAt: "2026-09-05T09:00:00.000Z",
-  updatedAt: "2026-09-05T10:01:00.000Z",
-  startedAt: "2026-09-05T10:00:00.000Z",
-  completedAt: null,
-} satisfies ProjectTask;
-
-function run(id: string, stageId: string, status: ChatRun["status"], attempt = 1): ChatRun {
-  return {
-    protocolVersion: 1,
-    id,
-    conversationId: `conversation-${id}`,
-    projectId: "project-1",
-    projectTaskId: "task-1",
-    stageId,
-    initiatorUserId: 7,
-    trigger: "user",
-    status,
-    attempt,
-    createdAt: "2026-09-05T10:00:00.000Z",
-    updatedAt: "2026-09-05T10:01:00.000Z",
-    startedAt: "2026-09-05T10:00:00.000Z",
-    completedAt: "2026-09-05T10:01:00.000Z",
-    terminalReason: status === "failed" ? "Provider failed" : null,
-    lastMessageId: null,
-    context: null,
-    retry: null,
-  };
-}
 
 describe("project task plan evidence", () => {
   it.each(["blocked", "cancelled"] as const)(
@@ -118,8 +48,8 @@ describe("project task plan evidence", () => {
       } satisfies OutputRecord;
       const evidence = buildProjectTaskPlanEvidence({
         task: { ...task, status },
-        flow: {
-          stages: [
+        flow: createSequentialProjectFlow(
+          [
             {
               id: "plan",
               name: "Plan",
@@ -128,7 +58,6 @@ describe("project task plan evidence", () => {
               skillIds: [],
               mode: null,
               requiresApprovalFor: [],
-              advance: "on_goal_complete",
             },
             {
               id: "build",
@@ -138,7 +67,6 @@ describe("project task plan evidence", () => {
               skillIds: [],
               mode: null,
               requiresApprovalFor: [],
-              advance: "on_human_accept",
             },
             {
               id: "publish",
@@ -148,25 +76,25 @@ describe("project task plan evidence", () => {
               skillIds: [],
               mode: null,
               requiresApprovalFor: [],
-              advance: "on_human_accept",
             },
           ],
-        },
+          ["build", "publish"],
+        ),
         runs: [run("run-1", "plan", "succeeded"), run("run-2", "build", "failed")],
         outputs: [output],
         unsafeRunIds: new Set(),
       });
 
-      expect(evidence.stages).toEqual(
+      expect(evidence.nodes).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ flowStageId: "plan", status: "completed" }),
+          expect.objectContaining({ flowNodeId: "plan", status: "completed" }),
           expect.objectContaining({
-            flowStageId: "build",
+            flowNodeId: "build",
             status: "failed",
             outputs: [expect.objectContaining({ id: "output-1" })],
           }),
           expect.objectContaining({
-            flowStageId: "publish",
+            flowNodeId: "publish",
             status: status === "cancelled" ? "abandoned" : "proposed",
             attempts: [],
           }),
@@ -197,7 +125,7 @@ describe("project task plan evidence", () => {
         ...task.completions,
         {
           id: "completion-2",
-          stageId: "build",
+          nodeId: "build",
           conversationId: "conversation-run-3",
           goalId: "goal-3",
           runId: "run-3",
@@ -208,6 +136,7 @@ describe("project task plan evidence", () => {
             mode: "automated",
             status: "approved",
             reviewedByUserId: null,
+            reviewWaitId: null,
             reviewedAt: "2026-09-05T10:05:00.000Z",
           },
           createdAt: "2026-09-05T10:05:00.000Z",
@@ -218,8 +147,8 @@ describe("project task plan evidence", () => {
 
     const evidence = buildProjectTaskPlanEvidence({
       task: resumedTask,
-      flow: {
-        stages: [
+      flow: createSequentialProjectFlow(
+        [
           {
             id: "build",
             name: "Build",
@@ -228,17 +157,17 @@ describe("project task plan evidence", () => {
             skillIds: [],
             mode: null,
             requiresApprovalFor: [],
-            advance: "on_goal_complete",
           },
         ],
-      },
+        [],
+      ),
       runs: [run("run-2", "build", "interrupted"), run("run-3", "build", "succeeded", 2)],
       outputs: [],
       unsafeRunIds: new Set(),
     });
 
-    expect(evidence.stages[0]).toMatchObject({
-      flowStageId: "build",
+    expect(evidence.nodes[0]).toMatchObject({
+      flowNodeId: "build",
       status: "completed",
       attempts: [
         { runId: "run-2", attempt: 1, status: "interrupted", completionIds: [] },

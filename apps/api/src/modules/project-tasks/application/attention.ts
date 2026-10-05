@@ -52,6 +52,10 @@ function attentionState(
   task: Pick<ProjectTask, "status" | "blockedReason">,
 ): TaskAttentionState | null {
   if (task.status === "blocked") {
+    if (task.blockedReason === "awaiting_timer") {
+      return null;
+    }
+
     if (task.blockedReason === "awaiting_input") {
       return { kind: "input", category: "decisions", requiresAction: true };
     }

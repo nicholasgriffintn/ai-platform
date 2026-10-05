@@ -1,11 +1,13 @@
 import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import {
-  findFlowStage,
+  findProjectFlowNode,
   readToolIds,
   PROJECT_TASK_INTERACTION_TOOL_IDS,
   PROJECT_TASK_TOOL_IDS,
+  DOCUMENT_READ_TOOL_NAME,
+  NATIVE_RECORD_READ_TOOL_NAME,
   type ProjectFlow,
-  type ProjectFlowStage,
+  type ProjectFlowAgentNode,
   type ProjectTask,
   type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
@@ -29,7 +31,7 @@ import { resolveProjectTools } from "~/modules/workspaces/application/projectToo
 const DEFAULT_TASK_MODE = "teammate";
 
 export interface ResolvedTaskRuntime {
-  stage: ProjectFlowStage | null;
+  node: ProjectFlowAgentNode | null;
   teammate: Teammate | null;
   model: string | null;
   mode: string;
@@ -37,6 +39,7 @@ export interface ResolvedTaskRuntime {
   skillIds: string[];
   requireApprovalFor: ToolPermission[];
   enforceModeToolPolicy: false;
+  humanReview: boolean;
 }
 
 export function withoutForbiddenTools(
@@ -53,10 +56,10 @@ export function withoutForbiddenTools(
 }
 
 function resolveRequestedSkillIds(
-  stage: ProjectFlowStage | null,
+  node: ProjectFlowAgentNode | null,
   teammate: Teammate | null,
 ): string[] {
-  return [...new Set([...(stage?.skillIds ?? []), ...toStringArray(teammate?.skill_ids)])];
+  return [...new Set([...(node?.skillIds ?? []), ...toStringArray(teammate?.skill_ids)])];
 }
 
 function resolveTeammateTools(projectTools: string[], teammate: Teammate | null): string[] {
@@ -85,13 +88,14 @@ export async function resolveTaskRuntime(params: {
   flow: ProjectFlow | null;
 }): Promise<ResolvedTaskRuntime> {
   const { context, task, flow } = params;
-  const stage = findFlowStage(flow, task.stageId);
+  const currentNode = findProjectFlowNode(flow, task.nodeId);
+  const node = currentNode?.type === "agent" ? currentNode : null;
   const capabilities = await context.repositories.workspaces.listProjectCapabilities(
     task.projectId,
   );
   const projectTools = resolveProjectTools(capabilities).enabledTools;
   const projectSkillIds = resolveProjectSkillGrants(capabilities);
-  const teammateId = stage?.teammateId ?? task.runner?.teammateId ?? null;
+  const teammateId = node?.teammateId ?? task.runner?.teammateId ?? null;
   const teammate = teammateId
     ? await requireProjectTeammate(context, task.projectId, teammateId)
     : null;
@@ -101,43 +105,46 @@ export async function resolveTaskRuntime(params: {
   const grantedSkillIds = resolveTeammateSkillIds(projectSkillIds, teammate);
 
   return {
-    stage,
+    node,
     teammate,
     model: task.runner?.model ?? teammate?.model ?? null,
-    mode: stage?.mode ?? task.runner?.mode ?? teammate?.mode ?? DEFAULT_TASK_MODE,
+    mode: node?.mode ?? task.runner?.mode ?? teammate?.mode ?? DEFAULT_TASK_MODE,
     enabledTools: withoutForbiddenTools(
       [
         ...new Set([
           ...configuredTools,
           ...PROJECT_TASK_TOOL_IDS,
+          DOCUMENT_READ_TOOL_NAME,
+          NATIVE_RECORD_READ_TOOL_NAME,
           ...PROJECT_TASK_INTERACTION_TOOL_IDS,
           ...codingTools,
         ]),
       ],
       task.constraints?.forbiddenTools,
     ),
-    skillIds: intersectGrantedIds(grantedSkillIds, resolveRequestedSkillIds(stage, teammate)),
+    skillIds: intersectGrantedIds(grantedSkillIds, resolveRequestedSkillIds(node, teammate)),
     requireApprovalFor: [
-      ...new Set([...(stage?.requiresApprovalFor ?? []), ...task.requireApprovalFor]),
+      ...new Set([...(node?.requiresApprovalFor ?? []), ...task.requireApprovalFor]),
     ],
     enforceModeToolPolicy: false,
+    humanReview: Boolean(node && findProjectFlowNode(flow, node.next)?.type === "human_wait"),
   };
 }
 
-export function buildStageInstructions(
-  runtime: Pick<ResolvedTaskRuntime, "stage" | "skillIds">,
+export function buildNodeInstructions(
+  runtime: Pick<ResolvedTaskRuntime, "node" | "skillIds"> & { humanReview?: boolean },
 ): string | null {
-  const { stage, skillIds } = runtime;
+  const { node, skillIds } = runtime;
 
-  if (!stage && skillIds.length === 0) {
+  if (!node && skillIds.length === 0) {
     return null;
   }
 
-  const instructions = renderPrompt("apps/project-tasks/stage-instructions", {
-    stageName: stage?.name,
-    stageInstructions: stage?.instructions || undefined,
+  const instructions = renderPrompt("apps/project-tasks/node-instructions", {
+    nodeName: node?.name,
+    nodeInstructions: node?.instructions || undefined,
     skillIds: skillIds.length > 0 ? skillIds.join(", ") : undefined,
-    humanReview: stage?.advance === "on_human_accept" ? "true" : undefined,
+    humanReview: runtime.humanReview ? "true" : undefined,
   }).trim();
 
   return instructions || null;

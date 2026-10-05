@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
+import { projectTaskFixture } from "../../../../../test/project-task-fixtures";
 import {
   listProjectTaskAttention,
   registerTaskNotification,
@@ -133,7 +134,7 @@ describe("task attention inbox", () => {
 
   it("makes a superseded deep link non-actionable after rechecking membership", async () => {
     const serviceContext = context();
-    const task: ProjectTask = {
+    const task: ProjectTask = projectTaskFixture({
       id: "task-1",
       projectId: "project-1",
       workspaceId: "workspace-1",
@@ -148,7 +149,7 @@ describe("task attention inbox", () => {
       source: "user",
       blockedReason: null,
       blockedDetail: null,
-      stageId: null,
+      nodeId: null,
       runner: null,
       createdByUserId: 7,
       assigneeUserId: null,
@@ -166,7 +167,7 @@ describe("task attention inbox", () => {
       startedAt: "2026-09-05T11:01:00.000Z",
       completedAt: null,
       attentionVersion: 4,
-    };
+    });
 
     vi.mocked(serviceContext.repositories.projectTasks.getTaskById).mockResolvedValue(task);
 

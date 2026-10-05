@@ -33,14 +33,14 @@ export function projectTaskStatusForGoal(goal: Pick<Goal, "status">): ProjectTas
 export const projectTaskStatusMachine = defineStatusMachine<ProjectTaskStatus, ProjectTaskActor>({
   terminal: TERMINAL_PROJECT_TASK_STATUSES,
   allowed: PROJECT_TASK_ACTOR_TRANSITIONS,
-  reopenBy: ["user"],
+  reopenBy: [],
   describeRefusal: ({ actor, from, to }) => {
     if (actor === "model" && to === "done") {
-      return "A task is accepted by a person, not by the assistant. Move it to review instead.";
+      return "The project flow owns task completion. Respond to its current review wait to continue.";
     }
 
-    if (TERMINAL_PROJECT_TASK_STATUSES.includes(from) && actor !== "user") {
-      return "This task is already finished and only a person can reopen it";
+    if (TERMINAL_PROJECT_TASK_STATUSES.includes(from)) {
+      return "This task is already finished. Create a new task to run the work again.";
     }
 
     return undefined;

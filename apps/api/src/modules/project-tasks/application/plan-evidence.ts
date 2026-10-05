@@ -5,7 +5,7 @@ import {
   type ProjectTask,
   type ProjectTaskPlanEvidence,
   type ProjectTaskResumeCapability,
-  type ProjectTaskStageEvidence,
+  type ProjectTaskNodeEvidence,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -25,8 +25,8 @@ const ACTIVE_RUN_STATUSES = new Set([
   "cancelling",
 ]);
 
-function stageEvidenceId(taskId: string, stageId: string | null): string {
-  return `${taskId}:${stageId ?? "task"}`;
+function stageEvidenceId(taskId: string, nodeId: string | null): string {
+  return `${taskId}:${nodeId ?? "task"}`;
 }
 
 export function getProjectTaskResumeCapability(
@@ -66,7 +66,7 @@ function stageStatus(params: {
   task: ProjectTask;
   attempts: ChatRun[];
   completionCount: number;
-}): ProjectTaskStageEvidence["status"] {
+}): ProjectTaskNodeEvidence["status"] {
   if (params.completionCount > 0) {
     return "completed";
   }
@@ -96,22 +96,22 @@ export function buildProjectTaskPlanEvidence(params: {
   unsafeRunIds: ReadonlySet<string>;
 }): ProjectTaskPlanEvidence {
   const { task, flow } = params;
-  const stageIds = new Set<string | null>();
+  const nodeIds = new Set<string | null>();
 
-  for (const stage of flow?.stages ?? []) {
-    stageIds.add(stage.id);
+  for (const stage of flow?.nodes ?? []) {
+    nodeIds.add(stage.id);
   }
 
   for (const completion of task.completions) {
-    stageIds.add(completion.stageId);
+    nodeIds.add(completion.nodeId);
   }
 
   for (const run of params.runs) {
-    stageIds.add(run.stageId ?? null);
+    nodeIds.add(run.nodeId ?? null);
   }
 
-  if (stageIds.size === 0) {
-    stageIds.add(task.stageId);
+  if (nodeIds.size === 0) {
+    nodeIds.add(task.nodeId);
   }
 
   const outputsByRun = new Map<string, OutputRecord[]>();
@@ -124,16 +124,16 @@ export function buildProjectTaskPlanEvidence(params: {
     }
   }
 
-  const stages = [...stageIds].map((stageId): ProjectTaskStageEvidence => {
-    const definition = flow?.stages.find((stage) => stage.id === stageId);
-    const attempts = params.runs.filter((run) => (run.stageId ?? null) === stageId);
-    const completions = task.completions.filter((completion) => completion.stageId === stageId);
+  const stages = [...nodeIds].map((nodeId): ProjectTaskNodeEvidence => {
+    const definition = flow?.nodes.find((stage) => stage.id === nodeId);
+    const attempts = params.runs.filter((run) => (run.nodeId ?? null) === nodeId);
+    const completions = task.completions.filter((completion) => completion.nodeId === nodeId);
     const stageOutputs = attempts.flatMap((run) => outputsByRun.get(run.id) ?? []);
 
     return {
-      id: stageEvidenceId(task.id, stageId),
-      flowStageId: stageId,
-      name: definition?.name ?? (stageId ? stageId.replace(/[-_]+/g, " ") : "Task"),
+      id: stageEvidenceId(task.id, nodeId),
+      flowNodeId: nodeId,
+      name: definition?.name ?? (nodeId ? nodeId.replace(/[-_]+/g, " ") : "Task"),
       status: stageStatus({ task, attempts, completionCount: completions.length }),
       input: {
         objective: task.objective,
@@ -179,7 +179,7 @@ export function buildProjectTaskPlanEvidence(params: {
     id: task.id,
     status:
       task.status === "done" ? "completed" : task.status === "cancelled" ? "abandoned" : "active",
-    stages,
+    nodes: stages,
     resume: getProjectTaskResumeCapability(task, params.unsafeRunIds),
   };
 }
@@ -187,7 +187,6 @@ export function buildProjectTaskPlanEvidence(params: {
 export async function getProjectTaskPlanEvidence(
   context: ServiceContext,
   task: ProjectTask,
-  currentFlow: ProjectFlow | null,
 ): Promise<ProjectTaskPlanEvidence> {
   const runRecords = await context.repositories.conversationRuns.listForProjectTask(
     task.projectId,
@@ -202,7 +201,7 @@ export async function getProjectTaskPlanEvidence(
 
   return buildProjectTaskPlanEvidence({
     task,
-    flow: task.flowSnapshot ?? currentFlow,
+    flow: task.flowSnapshot,
     runs,
     outputs,
     unsafeRunIds,

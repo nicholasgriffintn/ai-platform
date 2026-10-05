@@ -85,6 +85,7 @@ const actionShapes = {
   "workspace.access": { plan: string, member: boolean, role: string, allowedRoles: strings },
   "resource.read": resourceShape,
   "resource.write": resourceShape,
+  "task.flow.respond": { actorId: string, assigneeId: string, member: boolean, role: string },
   "records.read": recordShape,
   "records.write": recordShape,
   "owner.access": { actorId: string, ownerId: string },
