@@ -18,6 +18,8 @@ afterEach(() => {
 });
 
 it("refreshes at the scheduled margin and keeps renewing during a long idle session", async () => {
+  const { authService } = await import("./auth-service.js");
+
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-09-08T12:00:00Z"));
   let token = "";
@@ -29,8 +31,6 @@ it("refreshes at the scheduled margin and keeps renewing during a long idle sess
   mocks.fetch.mockImplementation(async () =>
     Response.json({ token: `token-${mocks.fetch.mock.calls.length}`, expires_in: 900 }),
   );
-  const { authService } = await import("./auth-service.js");
-
   expect(await authService.getToken()).toBe("token-1");
   await vi.advanceTimersByTimeAsync(12 * 60 * 1000);
   expect(mocks.fetch).toHaveBeenCalledTimes(2);

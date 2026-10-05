@@ -1,15 +1,13 @@
 import { readFile } from "node:fs/promises";
 
 import type { D1Database } from "@cloudflare/workers-types";
+import { splitMigrationStatements } from "@ngriffin_uk/polychat-utility-server/sql";
 
 import type { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import type { IUser } from "~/types";
 
-import { applyTestMigration } from "../helpers/migrations";
-
 export async function prepareKnowledgeDatabase(database: D1Database): Promise<void> {
-  await applyTestMigration(
-    database,
+  const migrations = [
     `
     CREATE TABLE user (id INTEGER PRIMARY KEY, email TEXT);
     INSERT INTO user VALUES (1, 'one@example.com'), (2, 'two@example.com');
@@ -39,18 +37,18 @@ export async function prepareKnowledgeDatabase(database: D1Database): Promise<vo
       VALUES ('saved-note', 1, 'personal', 'active', 'Previous note', 'note', '{}');
     INSERT INTO embedding_chunk VALUES ('old-second', 'old-vector-second', 'saved-note', 'active', 1, 'Second'), ('old-first', 'old-vector-first', 'saved-note', 'active', 0, 'First');
   `.replaceAll(";", ";--> statement-breakpoint"),
-  );
-  await applyTestMigration(
-    database,
     await readFile(new URL("../../migrations/0058_source_knowledge.sql", import.meta.url), "utf8"),
-  );
-  await applyTestMigration(
-    database,
     await readFile(
       new URL("../../migrations/0059_personal_source_knowledge.sql", import.meta.url),
       "utf8",
     ),
-  );
+  ];
+
+  for (const migration of migrations) {
+    await database.batch(
+      splitMigrationStatements(migration).map((statement) => database.prepare(statement)),
+    );
+  }
 }
 
 export async function addIndexedKnowledgeSource(

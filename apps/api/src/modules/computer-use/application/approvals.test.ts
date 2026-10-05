@@ -1,10 +1,10 @@
 import {
   browserApprovalResponseSchema,
   type BrowserApprovalResponse,
+  type BrowserApproval,
 } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { browserTestApproval } from "../../../../test/fixtures/computer-use";
 import { validateBrowserApprovalResponse } from "./approvals";
 
 const response: BrowserApprovalResponse = {
@@ -15,6 +15,25 @@ const response: BrowserApprovalResponse = {
     { field_id: "email", value: "tester@example.test" },
     { field_id: "password", value: "sensitive-test-value" },
   ],
+};
+
+const browserTestApproval: BrowserApproval = {
+  requestId: "request-login",
+  turnId: "turn-root",
+  request: {
+    type: "browser_authentication",
+    credential_origin: "https://example.test",
+    reason: "Read private issues",
+    fields: [
+      { id: "email", label: "Email", type: "email", required: true },
+      { id: "password", label: "Password", type: "password", required: true },
+      { id: "code", label: "Code", type: "text", required: true },
+    ],
+    options: [
+      { id: "password", label: "Password", field_ids: ["email", "password"] },
+      { id: "code", label: "Code", field_ids: ["code"] },
+    ],
+  },
 };
 
 describe("browser sign-in validation", () => {
