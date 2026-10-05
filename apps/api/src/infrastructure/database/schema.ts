@@ -1,5 +1,6 @@
 import type { AuthChallengeKind } from "@ngriffin_uk/auth-protocol";
 import type {
+  DocumentAnchor,
   ProjectTaskConstraints,
   ProjectTaskCompletion,
   ProjectTaskContext,
@@ -50,6 +51,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { sql } from "drizzle-orm";
 import {
+  type AnySQLiteColumn,
   check,
   index,
   integer,
@@ -3780,5 +3782,38 @@ export const browserSession = sqliteTable(
       table.conversation_id,
       table.tool_call_id,
     ),
+  }),
+);
+
+export const documentComment = sqliteTable(
+  "document_comment",
+  {
+    id: text().primaryKey().notNull(),
+    output_id: text()
+      .notNull()
+      .references(() => output.id, { onDelete: "cascade" }),
+    parent_id: text().references((): AnySQLiteColumn => documentComment.id, {
+      onDelete: "cascade",
+    }),
+    anchor_json: text({ mode: "json" }).$type<DocumentAnchor>(),
+    source_revision: integer().notNull(),
+    body: text().notNull(),
+    author_user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    resolved: integer({ mode: "boolean" }).default(false).notNull(),
+    revision: integer().default(1).notNull(),
+    mentioned_teammate_id: text(),
+    task_id: text().references(() => projectTask.id, { onDelete: "set null" }),
+    created_at: text().notNull(),
+    updated_at: text(),
+  },
+  (table) => ({
+    outputIdx: index("document_comment_output_idx").on(table.output_id, table.created_at, table.id),
+    sourceRevisionCheck: check(
+      "document_comment_source_revision_check",
+      sql`${table.source_revision} > 0`,
+    ),
+    revisionCheck: check("document_comment_revision_check", sql`${table.revision} > 0`),
   }),
 );
