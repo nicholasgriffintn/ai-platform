@@ -21,6 +21,12 @@ import type {
 } from "~/modules/sources/infrastructure/SourceRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
+import {
+  filterReadableKnowledgeSources,
+  listReadableCollectionSources,
+  requireKnowledgeSourceAccess,
+} from "./knowledge/access";
+
 function formatFile(record: SourceRecord): Source["file"] {
   if (!record.storage_key || !record.mime_type) {
     return null;
@@ -87,7 +93,9 @@ export async function requireSourceAccess(
   sourceId: string,
   mutate = false,
 ): Promise<SourceRecord> {
-  const source = await context.repositories.sources.getSource(sourceId);
+  const source =
+    (await context.repositories.sources.getSource(sourceId)) ??
+    (await context.repositories.repositoryKnowledgeSyncs.getSource(sourceId, userId));
 
   if (!source) {
     throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
@@ -97,6 +105,8 @@ export async function requireSourceAccess(
     if (!ownsResource(userId, source.created_by_user_id)) {
       throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
     }
+
+    await requireKnowledgeSourceAccess(context, userId, source, mutate);
 
     return source;
   }
@@ -119,6 +129,8 @@ export async function requireSourceAccess(
     );
   }
 
+  await requireKnowledgeSourceAccess(context, userId, source, mutate);
+
   return source;
 }
 
@@ -134,7 +146,9 @@ async function requireSourcesAccess(
   const sources: SourceRecord[] = [];
 
   for (const sourceId of sourceIds) {
-    const source = recordsById.get(sourceId);
+    const source =
+      recordsById.get(sourceId) ??
+      (await context.repositories.repositoryKnowledgeSyncs.getSource(sourceId, userId));
 
     if (!source) {
       throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
@@ -149,6 +163,7 @@ async function requireSourcesAccess(
       verifiedProjects.add(source.project_id);
     }
 
+    await requireKnowledgeSourceAccess(context, userId, source, false);
     validate?.(source);
     sources.push(source);
   }
@@ -202,6 +217,14 @@ export async function createSource(
   userId: number,
   input: CreateSourceInput,
 ): Promise<Source> {
+  if (input.provider === "github-knowledge") {
+    throw new AssistantError(
+      "Repository imports are managed by knowledge sync",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
   if (input.projectId) {
     await requireProjectAccess(context, input.projectId);
   }
@@ -279,7 +302,11 @@ export async function listSources(
       ))
     : await context.repositories.sources.listPersonalSourceSummaries(userId, filters.kind);
 
-  return { sources: records.map(formatSourceSummary) };
+  return {
+    sources: (await filterReadableKnowledgeSources(context, userId, records)).map(
+      formatSourceSummary,
+    ),
+  };
 }
 
 export async function updateSource(
@@ -432,11 +459,9 @@ export async function listCollectionSources(
 ): Promise<{ sources: SourceSummary[] }> {
   await requireCollectionAccess(context, userId, collectionId);
 
-  return {
-    sources: (await context.repositories.sources.listCollectionSources(collectionId)).map(
-      formatSourceSummary,
-    ),
-  };
+  const records = await listReadableCollectionSources(context, userId, collectionId);
+
+  return { sources: records.map(formatSourceSummary) };
 }
 
 export async function listProjectContextSources(
@@ -451,11 +476,9 @@ export async function listProjectContextSources(
     return { sources: [] };
   }
 
-  return {
-    sources: (await context.repositories.sources.listCollectionSources(collection.id)).map(
-      formatSourceSummary,
-    ),
-  };
+  const records = await listReadableCollectionSources(context, userId, collection.id);
+
+  return { sources: records.map(formatSourceSummary) };
 }
 
 export async function listProjectConversationSources(
@@ -466,7 +489,7 @@ export async function listProjectConversationSources(
   await requireProjectAccess(context, projectId);
   const collection = await context.repositories.sources.getProjectContextCollection(projectId);
   const contextSources = collection
-    ? await context.repositories.sources.listCollectionSources(collection.id)
+    ? await listReadableCollectionSources(context, userId, collection.id)
     : [];
   const availableSources = new Map<string, SourceRecord>();
 

@@ -4,7 +4,9 @@ import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
 import { searchProjectKnowledge } from "~/modules/sources/application/knowledge-search";
 import type { ApiToolDefinition } from "~/types/functions";
 
+import { queryConnectedDocuments } from "./connected-documents";
 import { search_documents as search_documentsDescriptor } from "./definitions/search_documents";
+import { rerankAuthorisedDocuments, type RerankableDocument } from "./document-reranking";
 import { resolveRequestProjectId } from "./request-context";
 
 export const search_documents: ApiToolDefinition = {
@@ -12,16 +14,29 @@ export const search_documents: ApiToolDefinition = {
   execute: async (args, context) => {
     const request = context.request;
 
-    const response = await searchProjectKnowledge(
-      resolveServiceContext(request),
-      projectKnowledgeSearchQuerySchema.parse({
-        query: args.query,
-        type: args.type,
-        top_k: args.top_k ?? 3,
-        projectId: resolveRequestProjectId(request) ?? undefined,
-      }),
-    );
-    const documents = response.data;
+    const input = projectKnowledgeSearchQuerySchema.parse({
+      query: args.query,
+      type: args.type,
+      top_k: args.top_k ?? 3,
+      projectId: resolveRequestProjectId(request) ?? undefined,
+    });
+    const [response, connected] = await Promise.all([
+      searchProjectKnowledge(resolveServiceContext(request), input),
+      queryConnectedDocuments(request, input.query, input.top_k ?? 3),
+    ]);
+    const documents =
+      connected.length === 0
+        ? response.data
+        : (
+            await rerankAuthorisedDocuments<RerankableDocument>({
+              env: request.env,
+              user: request.user,
+              completionId: context.completionId,
+              conversationId: request.request?.completion_id,
+              query: input.query,
+              documents: [...connected, ...response.data],
+            })
+          ).slice(0, input.top_k ?? 3);
 
     if (documents.length === 0) {
       return {

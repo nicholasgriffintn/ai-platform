@@ -1845,6 +1845,60 @@ export const source = sqliteTable(
 
 export type Source = typeof source.$inferSelect;
 
+export const knowledgeSync = sqliteTable(
+  "knowledge_sync",
+  {
+    id: text().primaryKey(),
+    created_by_user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    repository: text().notNull(),
+    branch: text().notNull(),
+    path: text().notNull().default(""),
+    installation_id: integer().notNull(),
+    status: text({ enum: ["idle", "syncing", "paused", "blocked", "failed"] })
+      .notNull()
+      .default("idle"),
+    revision: integer().notNull().default(1),
+    checkpoint: text(),
+    lease_token: text(),
+    lease_expires_at: integer(),
+    last_synced_at: text(),
+    last_commit: text(),
+    next_sync_at: integer().notNull(),
+    error_message: text(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    ownerIdx: index("knowledge_sync_owner_idx").on(table.created_by_user_id),
+    projectIdx: index("knowledge_sync_project_idx").on(table.project_id),
+    dueIdx: index("knowledge_sync_due_idx").on(table.status, table.next_sync_at),
+  }),
+);
+
+export const knowledgeSyncDocument = sqliteTable(
+  "knowledge_sync_document",
+  {
+    source_id: text()
+      .primaryKey()
+      .references(() => source.id, { onDelete: "cascade" }),
+    sync_id: text()
+      .notNull()
+      .references(() => knowledgeSync.id, { onDelete: "cascade" }),
+    path: text().notNull(),
+    blob_sha: text().notNull(),
+    commit_sha: text().notNull(),
+    seen_run_id: text().notNull(),
+    synced_at: text().notNull(),
+  },
+  (table) => ({
+    pathIdx: uniqueIndex("knowledge_sync_document_path_idx").on(table.sync_id, table.path),
+  }),
+);
+
 export const sourceSearchDocument = sqliteTable(
   "source_search_document",
   {

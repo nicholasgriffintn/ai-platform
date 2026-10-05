@@ -44,3 +44,34 @@ Create bindings with `POST /channels/bindings`; list them with `GET /channels/bi
 ```
 
 Apply migration `0061_channel_threads` before running the new API. It disables existing bindings; recreate them with explicit workspace and sender permissions. Old queued binding tasks without thread authority fail validation. No compatibility path infers access from the old channel-wide binding.
+
+## Connected repository knowledge
+
+Open **Sources → Connected knowledge** and select a repository from your existing GitHub App connection. Choose a branch and a documentation folder; leave the path empty for the root. Import Markdown, MDX, text, reStructuredText and AsciiDoc files up to 250 KB each. Symlinks, submodules, executable files and binary content stay outside the import.
+
+Keep private repositories in personal scope. Project imports require a public repository because project conversations and saved tool results are visible to project members. Recheck public visibility, current workspace membership and the current file SHA before returning a project document; recheck the owner's own GitHub connection for personal documents. A private repository never borrows another user's connection.
+
+Search from the source library or use the existing `search_documents` tool in a conversation. Connected knowledge uses bounded phrase matching and preserves commit-pinned source citations; personal uploaded documents retain their existing vector retrieval. Project document search uses its project knowledge and never queries the caller's personal index.
+
+Refresh every 15 minutes through the existing task scheduler. Walk non-recursive Git trees with a durable checkpoint, at most ten nodes per delivery and 10,000 queued/visited nodes per connection. Reject truncated trees rather than interpreting them as complete. Keep source IDs stable when content changes, and delete missing documents only after a complete scan.
+
+Pause to hide imported material and stop new work. Resume to restart a snapshot; disconnect to remove imported sources and their collection references. Configuration revisions, expiring worker leases and atomic membership predicates prevent an earlier worker from writing after pause, disconnection or loss of project management access. Revoked GitHub access blocks retrieval before the next background sync.
+
+Create and list imports with POST and GET `/sources/knowledge`; control them with PATCH `/sources/knowledge/:syncId` using the current `revision` and `sync`, `pause` or `resume`. Disconnect with DELETE and search with POST `/sources/knowledge/search`.
+
+```json
+{
+  "repository": "company/handbook",
+  "installationId": 12345,
+  "branch": "main",
+  "path": "docs"
+}
+```
+
+Apply migration `0062_repository_knowledge` before the API. The delete trigger removes sources before their sync records cascade, including workspace/project deletion. Collector HTTP reads have fixed GitHub origins, bounded bodies, a ten-second deadline and read-only repository tokens. Upstream outages or rate limits hide unverified content; restore access and resume a blocked import.
+
+Use the deployment's default GitHub App only for personal installations owned by the signed-in account's linked GitHub identity. Verify installation ownership before saving and whenever using stored deployment credentials. Organisation installations require caller-supplied App credentials until an organisation-authorised OAuth flow is available; installation IDs alone do not authorise deployment credentials.
+
+Reconnect existing GitHub installations after upgrading. Sealed connection records now require an explicit credential source; untagged records are unavailable. Changing the deployment's App ID never bypasses ownership checks for previously saved deployment credentials.
+
+Previously returned passages can remain in conversation history. Disconnection and repository changes prevent new retrieval; they do not erase material that was already public or deliberately shared.

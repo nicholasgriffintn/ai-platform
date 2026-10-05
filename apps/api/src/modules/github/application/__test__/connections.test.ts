@@ -38,6 +38,7 @@ async function createEncryptedRecord(params: {
     jwtSecret: params.jwtSecret ?? JWT_SECRET,
     userId: USER_ID,
     payload: {
+      credential_source: "user",
       app_id: "123456",
       private_key: "line1\\nline2",
       installation_id: params.installationId,

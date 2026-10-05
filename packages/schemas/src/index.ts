@@ -199,3 +199,4 @@ export * from "./openai-agent-sessions.js";
 export * from "./site-data.js";
 export * from "./urls.js";
 export * from "./enterprise-identity.js";
+export * from "./repository-knowledge.js";
