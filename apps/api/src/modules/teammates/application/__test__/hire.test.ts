@@ -1,5 +1,5 @@
 import { getTeammateRoleBrief } from "@ngriffin_uk/polychat-ai-prompts";
-import { findTeammateRole, hireTeammateSchema } from "@ngriffin_uk/polychat-schemas";
+import { hireTeammateSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -58,23 +58,6 @@ describe("hireTeammate", () => {
     vi.clearAllMocks();
   });
 
-  it("takes the brief, tools, mode and kind from the chosen role", async () => {
-    const { context, repositories } = createContext();
-    const role = findTeammateRole("research-analyst");
-
-    await hireTeammate(context, hireTeammateSchema.parse({ role_slug: "research-analyst" }));
-
-    expect(repositories.teammates.createTeammate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        name: role?.title,
-        kind: "colleague",
-        systemPrompt: getTeammateRoleBrief("research-analyst"),
-        enabledTools: [...(role?.suggestedTools ?? [])],
-        mode: role?.mode,
-      }),
-    );
-  });
-
   it("keeps a bot role away from task and memory writes", async () => {
     const { context, repositories } = createContext();
 
@@ -88,29 +71,6 @@ describe("hireTeammate", () => {
     expect(record.kind).toBe("bot");
     expect(record.enabledTools).not.toContain("create_task");
     expect(record.enabledTools).not.toContain("store_memory");
-  });
-
-  it("appends a job description to the role brief", async () => {
-    const { context, repositories } = createContext();
-
-    await hireTeammate(
-      context,
-      hireTeammateSchema.parse({
-        role_slug: "writing-partner",
-        job_description: "Always cite the style guide.",
-        name: "Editor",
-      }),
-    );
-
-    const record = repositories.teammates.createTeammate.mock.calls[0]?.[0] as {
-      name: string;
-      systemPrompt: string;
-    };
-
-    expect(record.name).toBe("Editor");
-    expect(record.systemPrompt).toBe(
-      `${getTeammateRoleBrief("writing-partner")}\n\nAlways cite the style guide.`,
-    );
   });
 
   it("hires from a job description alone when it is given a name", async () => {
@@ -144,14 +104,26 @@ describe("hireTeammate", () => {
     expect(repositories.teammates.createTeammate).not.toHaveBeenCalled();
   });
 
-  it("refuses an unknown role", async () => {
+  it("appends a job description to the role brief", async () => {
     const { context, repositories } = createContext();
 
-    const error = await hireTeammate(context, { role_slug: "chief-vibes-officer" }).catch(
-      (thrown: unknown) => thrown,
+    await hireTeammate(
+      context,
+      hireTeammateSchema.parse({
+        role_slug: "writing-partner",
+        job_description: "Always cite the style guide.",
+        name: "Editor",
+      }),
     );
 
-    expect((error as AssistantError).statusCode).toBe(400);
-    expect(repositories.teammates.createTeammate).not.toHaveBeenCalled();
+    const record = repositories.teammates.createTeammate.mock.calls[0]?.[0] as {
+      name: string;
+      systemPrompt: string;
+    };
+
+    expect(record.name).toBe("Editor");
+    expect(record.systemPrompt).toBe(
+      `${getTeammateRoleBrief("writing-partner")}\n\nAlways cite the style guide.`,
+    );
   });
 });

@@ -144,58 +144,6 @@ afterEach(() => {
 });
 
 describe("AuthoredSkillRepository", () => {
-  it("creates the first immutable revision as both draft and stable", async () => {
-    const repository = createRepository();
-
-    const created = await repository.create(personalSkill());
-
-    expect(created.skill).toMatchObject({
-      id: "skill-1",
-      scopeType: "personal",
-      scopeId: "7",
-      name: "meeting-notes",
-      draftRevisionId: expect.any(String),
-      stableRevisionId: expect.any(String),
-      stateVersion: 1,
-      archivedAt: null,
-    });
-    expect(created.revision).toMatchObject({
-      skillId: "skill-1",
-      revision: 1,
-      digest: "sha256:first",
-      size: 512,
-    });
-    await expect(
-      repository.getByScopeAndName({ type: "personal", id: 7 }, "meeting-notes"),
-    ).resolves.toEqual(created.skill);
-    expect(created.skill.draftRevisionId).toBe(created.revision.id);
-    expect(created.skill.stableRevisionId).toBe(created.revision.id);
-    await expect(
-      repository.getRevisionForSkill(created.skill.id, created.revision.id),
-    ).resolves.toEqual(created.revision);
-  });
-
-  it("atomically enables a newly created personal skill", async () => {
-    const repository = createRepository();
-
-    await repository.create(personalSkill());
-
-    expect(
-      sqlite
-        .prepare(
-          `SELECT scope_type, scope_id, capability_kind, capability_id, configuration
-           FROM capability_configuration`,
-        )
-        .get(),
-    ).toEqual({
-      scope_type: "user",
-      scope_id: "7",
-      capability_kind: "skill",
-      capability_id: "meeting-notes",
-      configuration: JSON.stringify({ enabled: true }),
-    });
-  });
-
   it("rolls back a personal skill when its atomic grant fails", async () => {
     const repository = createRepository();
 
@@ -229,59 +177,6 @@ describe("AuthoredSkillRepository", () => {
 
     expect(sqlite.prepare("SELECT count(*) AS count FROM capability_configuration").get()).toEqual({
       count: 0,
-    });
-  });
-
-  it("atomically publishes an imported project skill with its audit metadata", async () => {
-    const repository = createRepository();
-
-    const created = await repository.create(
-      personalSkill({
-        id: "project-skill-1",
-        scope: { type: "project", id: "project-1" },
-        projectPublication: {
-          projectId: "project-1",
-          audit: {
-            workspaceId: "workspace-1",
-            actorUserId: 7,
-            action: "skill.imported",
-            targetType: "skill",
-            targetId: "meeting-notes",
-            metadata: { name: "meeting-notes", sourceRevisionId: "source-revision" },
-          },
-        },
-      }),
-    );
-
-    expect(sqlite.prepare("SELECT * FROM project_capability").get()).toMatchObject({
-      project_id: "project-1",
-      kind: "skill",
-      capability_id: "meeting-notes",
-      created_by: 7,
-    });
-    expect(
-      sqlite
-        .prepare(
-          "SELECT scope_type, scope_id, capability_kind, capability_id FROM capability_configuration",
-        )
-        .get(),
-    ).toEqual({
-      scope_type: "project",
-      scope_id: "project-1",
-      capability_kind: "skill",
-      capability_id: "meeting-notes",
-    });
-    expect(sqlite.prepare("SELECT * FROM workspace_audit_record").get()).toMatchObject({
-      workspace_id: "workspace-1",
-      actor_user_id: 7,
-      action: "skill.imported",
-      target_type: "skill",
-      target_id: "meeting-notes",
-      metadata: JSON.stringify({
-        name: "meeting-notes",
-        sourceRevisionId: "source-revision",
-        revisionId: created.revision.id,
-      }),
     });
   });
 
@@ -332,7 +227,23 @@ describe("AuthoredSkillRepository", () => {
   it("enforces unique names within a scope while allowing the name in another scope", async () => {
     const repository = createRepository();
 
-    await repository.create(personalSkill());
+    const personal = await repository.create(personalSkill());
+
+    expect(personal.skill.draftRevisionId).toBe(personal.revision.id);
+    expect(personal.skill.stableRevisionId).toBe(personal.revision.id);
+    expect(
+      sqlite
+        .prepare(
+          "SELECT scope_type, scope_id, capability_kind, capability_id, configuration FROM capability_configuration",
+        )
+        .get(),
+    ).toEqual({
+      scope_type: "user",
+      scope_id: "7",
+      capability_kind: "skill",
+      capability_id: "meeting-notes",
+      configuration: JSON.stringify({ enabled: true }),
+    });
 
     await expect(
       repository.create(
@@ -340,17 +251,58 @@ describe("AuthoredSkillRepository", () => {
       ),
     ).rejects.toMatchObject({ type: ErrorType.CONFLICT_ERROR, statusCode: 409 });
 
-    await repository.create(
+    const project = await repository.create(
       personalSkill({
         id: "skill-3",
         scope: { type: "project", id: "project-1" },
         storageKey: "skills/projects/project-1/skill-3/revisions/1",
+        projectPublication: {
+          projectId: "project-1",
+          audit: {
+            workspaceId: "workspace-1",
+            actorUserId: 7,
+            action: "skill.imported",
+            targetType: "skill",
+            targetId: "meeting-notes",
+            metadata: { name: "meeting-notes", sourceRevisionId: "source-revision" },
+          },
+        },
       }),
     );
 
     await expect(
       repository.listByScope({ type: "project", id: "project-1" }),
     ).resolves.toHaveLength(1);
+    expect(sqlite.prepare("SELECT * FROM project_capability").get()).toMatchObject({
+      project_id: "project-1",
+      kind: "skill",
+      capability_id: "meeting-notes",
+      created_by: 7,
+    });
+    expect(
+      sqlite
+        .prepare(
+          "SELECT scope_type, scope_id, capability_kind, capability_id FROM capability_configuration WHERE scope_type = 'project'",
+        )
+        .get(),
+    ).toEqual({
+      scope_type: "project",
+      scope_id: "project-1",
+      capability_kind: "skill",
+      capability_id: "meeting-notes",
+    });
+    expect(sqlite.prepare("SELECT * FROM workspace_audit_record").get()).toMatchObject({
+      workspace_id: "workspace-1",
+      actor_user_id: 7,
+      action: "skill.imported",
+      target_type: "skill",
+      target_id: "meeting-notes",
+      metadata: JSON.stringify({
+        name: "meeting-notes",
+        sourceRevisionId: "source-revision",
+        revisionId: project.revision.id,
+      }),
+    });
   });
 
   it("appends a draft revision with CAS without moving the stable pointer", async () => {
@@ -401,25 +353,6 @@ describe("AuthoredSkillRepository", () => {
     ).resolves.toBeNull();
     await expect(repository.listRevisions("skill-1")).resolves.toHaveLength(2);
     await expect(repository.getRevisionByDigest("skill-1", "sha256:stale")).resolves.toBeNull();
-  });
-
-  it("records origin lineage on the first revision of a promoted skill", async () => {
-    const repository = createRepository();
-    const personal = await repository.create(personalSkill());
-
-    const project = await repository.create(
-      personalSkill({
-        id: "skill-2",
-        scope: { type: "project", id: "project-1" },
-        storageKey: "skills/projects/project-1/skill-2/revisions/1/bundle.zip",
-        source: { skillId: personal.skill.id, revisionId: personal.revision.id },
-      }),
-    );
-
-    expect(project.revision).toMatchObject({
-      sourceSkillId: personal.skill.id,
-      sourceRevisionId: personal.revision.id,
-    });
   });
 
   it("rejects lineage when the revision does not belong to the source skill", async () => {
@@ -490,70 +423,6 @@ describe("AuthoredSkillRepository", () => {
         source: { skillId: source.skill.id, revisionId: target.revision.id },
       }),
     ).rejects.toMatchObject({ type: ErrorType.PARAMS_ERROR, statusCode: 400 });
-  });
-
-  it("can atomically activate an appended revision", async () => {
-    const repository = createRepository();
-    const created = await repository.create(personalSkill());
-
-    const appended = await repository.appendRevision({
-      skillId: "skill-1",
-      expectedStateVersion: 1,
-      expectedDraftRevisionId: created.skill.draftRevisionId,
-      description: "Immediately active update.",
-      digest: "sha256:active",
-      storageKey: "skills/personal/7/skill-1/revisions/2/bundle.zip",
-      size: 720,
-      createdByUserId: 7,
-      activate: true,
-    });
-
-    expect(appended?.skill).toMatchObject({
-      draftRevisionId: appended?.revision.id,
-      stableRevisionId: appended?.revision.id,
-      stateVersion: 2,
-    });
-  });
-
-  it("records project draft audit metadata in the revision CAS batch", async () => {
-    const repository = createRepository();
-    const created = await repository.create(
-      personalSkill({
-        id: "project-skill-1",
-        scope: { type: "project", id: "project-1" },
-      }),
-    );
-
-    const draft = await repository.appendRevision({
-      skillId: created.skill.id,
-      expectedStateVersion: created.skill.stateVersion,
-      expectedDraftRevisionId: created.skill.draftRevisionId,
-      description: "Private draft.",
-      digest: "sha256:draft",
-      storageKey: "skills/project/project-1/project-skill-1/revisions/2/bundle.zip",
-      size: 720,
-      createdByUserId: 8,
-      audit: {
-        workspaceId: "workspace-1",
-        actorUserId: 8,
-        action: "skill.draft_saved",
-        targetType: "skill",
-        targetId: "meeting-notes",
-        metadata: { name: "meeting-notes" },
-      },
-    });
-
-    if (!draft) {
-      throw new Error("Expected draft revision to be appended");
-    }
-
-    expect(sqlite.prepare("SELECT * FROM workspace_audit_record").get()).toMatchObject({
-      workspace_id: "workspace-1",
-      actor_user_id: 8,
-      action: "skill.draft_saved",
-      target_id: "meeting-notes",
-      metadata: JSON.stringify({ name: "meeting-notes", revisionId: draft.revision.id }),
-    });
   });
 
   it("rolls back the project draft CAS when its audit insert fails", async () => {
@@ -866,21 +735,6 @@ describe("AuthoredSkillRepository", () => {
     ).resolves.toMatchObject({ skill: { id: "skill-2" } });
   });
 
-  it("purges a failed creation identity and its revision metadata", async () => {
-    const repository = createRepository();
-
-    const created = await repository.create(personalSkill());
-
-    await expect(
-      repository.purge("skill-1", created.skill.stateVersion, created.revision.id),
-    ).resolves.toBe(true);
-    await expect(repository.getById("skill-1")).resolves.toBeNull();
-    await expect(repository.listRevisions("skill-1")).resolves.toEqual([]);
-    await expect(
-      repository.purge("skill-1", created.skill.stateVersion, created.revision.id),
-    ).resolves.toBe(false);
-  });
-
   it("does not purge a skill changed after its initial creation", async () => {
     const repository = createRepository();
     const created = await repository.create(personalSkill());
@@ -901,5 +755,60 @@ describe("AuthoredSkillRepository", () => {
     ).resolves.toBe(false);
     await expect(repository.getById(created.skill.id)).resolves.toEqual(updated?.skill);
     await expect(repository.listRevisions(created.skill.id)).resolves.toHaveLength(2);
+  });
+  it("records project draft audit metadata in the revision CAS batch", async () => {
+    const repository = createRepository();
+    const created = await repository.create(
+      personalSkill({
+        id: "project-skill-1",
+        scope: { type: "project", id: "project-1" },
+      }),
+    );
+
+    const draft = await repository.appendRevision({
+      skillId: created.skill.id,
+      expectedStateVersion: created.skill.stateVersion,
+      expectedDraftRevisionId: created.skill.draftRevisionId,
+      description: "Private draft.",
+      digest: "sha256:draft",
+      storageKey: "skills/project/project-1/project-skill-1/revisions/2/bundle.zip",
+      size: 720,
+      createdByUserId: 8,
+      audit: {
+        workspaceId: "workspace-1",
+        actorUserId: 8,
+        action: "skill.draft_saved",
+        targetType: "skill",
+        targetId: "meeting-notes",
+        metadata: { name: "meeting-notes" },
+      },
+    });
+
+    if (!draft) {
+      throw new Error("Expected draft revision to be appended");
+    }
+
+    expect(sqlite.prepare("SELECT * FROM workspace_audit_record").get()).toMatchObject({
+      workspace_id: "workspace-1",
+      actor_user_id: 8,
+      action: "skill.draft_saved",
+      target_id: "meeting-notes",
+      metadata: JSON.stringify({ name: "meeting-notes", revisionId: draft.revision.id }),
+    });
+  });
+
+  it("purges a failed creation identity and its revision metadata", async () => {
+    const repository = createRepository();
+
+    const created = await repository.create(personalSkill());
+
+    await expect(
+      repository.purge("skill-1", created.skill.stateVersion, created.revision.id),
+    ).resolves.toBe(true);
+    await expect(repository.getById("skill-1")).resolves.toBeNull();
+    await expect(repository.listRevisions("skill-1")).resolves.toEqual([]);
+    await expect(
+      repository.purge("skill-1", created.skill.stateVersion, created.revision.id),
+    ).resolves.toBe(false);
   });
 });

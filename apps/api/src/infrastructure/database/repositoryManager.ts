@@ -46,6 +46,7 @@ import { ModelTrainingRepository } from "~/modules/model-training/infrastructure
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetRepository";
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
+import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { SavedMessageRepository } from "~/modules/saved-messages/infrastructure/SavedMessageRepository";
 import { AuthoredSkillRepository } from "~/modules/skills/infrastructure/AuthoredSkillRepository";
@@ -177,6 +178,13 @@ export class RepositoryManager {
 
   public get projectTasks(): ProjectTaskRepository {
     return this.resolve("projectTasks", (env) => new ProjectTaskRepository(env));
+  }
+
+  public get projectTaskIntegrations(): ProjectTaskIntegrationRepository {
+    return this.resolve(
+      "projectTaskIntegrations",
+      (env) => new ProjectTaskIntegrationRepository(env),
+    );
   }
 
   public get projectEnvironmentVariables(): ProjectEnvironmentVariableRepository {

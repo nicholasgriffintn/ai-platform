@@ -7,6 +7,7 @@ import {
   DELEGATION_RUN_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
 } from "./delegations.js";
+import { MEMORY_REFLECTION_TASK_TYPE } from "./memory-documents.js";
 import {
   MODEL_DATASET_PROCESS_TASK_TYPE,
   MODEL_DEPLOYMENT_SYNC_TASK_TYPE,
@@ -21,6 +22,7 @@ import {
 
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
+export const PROJECT_REVIEW_INTAKE_TASK_TYPE = "project_review_intake";
 export const OCR_BATCH_POLLING_TASK_TYPE = "ocr_batch_polling";
 export const USAGE_ROLLUP_TASK_TYPE = "usage_rollup";
 export const REALTIME_RECONCILIATION_TASK_TYPE = "realtime_reconciliation";
@@ -35,6 +37,7 @@ export const SOURCE_KNOWLEDGE_SYNC_TASK_TYPE = "source_knowledge_sync";
 
 export const TASK_TYPES = [
   "memory_synthesis",
+  MEMORY_REFLECTION_TASK_TYPE,
   "research_polling",
   "replicate_polling",
   "async_message_polling",
@@ -46,6 +49,7 @@ export const TASK_TYPES = [
   "artificial_analysis_scoring",
   SANDBOX_RUN_DISPATCH_TASK_TYPE,
   PROJECT_TASK_RUN_TASK_TYPE,
+  PROJECT_REVIEW_INTAKE_TASK_TYPE,
   DELEGATION_RUN_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
   DELEGATION_MESSAGE_TASK_TYPE,

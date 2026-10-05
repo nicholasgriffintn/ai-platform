@@ -13,7 +13,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import { parseJsonColumn } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { ProjectTaskRow } from "~/infrastructure/database/schema";
@@ -21,6 +21,7 @@ import { publishProjectEvent } from "~/modules/sync/application/conversation-eve
 
 export interface CreateProjectTaskParams {
   id?: string;
+  executionProfile?: "diff_review";
   projectId: string;
   workspaceId: string;
   objective: string;
@@ -74,20 +75,13 @@ export interface ListProjectTaskFilters {
   includeDone?: boolean;
 }
 
-function parseJsonColumn<T>(value: unknown, fallback: T): T {
-  if (value === null || value === undefined) {
-    return fallback;
-  }
-
-  return typeof value === "string" ? safeParseJson<T>(value) : (value as T);
-}
-
 function formatProjectTask(row: ProjectTaskRow): ProjectTask {
   return {
     id: row.id,
     projectId: row.project_id,
     workspaceId: row.workspace_id,
     objective: row.objective,
+    executionProfile: row.execution_profile,
     status: row.status,
     source: row.source,
     blockedReason: row.blocked_reason,
@@ -130,6 +124,7 @@ export class ProjectTaskRepository extends BaseRepository {
         project_id: params.projectId,
         workspace_id: params.workspaceId,
         objective: params.objective,
+        execution_profile: params.executionProfile ?? null,
         acceptance_criteria: params.acceptanceCriteria ?? [],
         expected_output: params.expectedOutput ?? null,
         context: params.context ?? null,
@@ -176,15 +171,33 @@ export class ProjectTaskRepository extends BaseRepository {
     return this.env.DB.prepare(insert.query).bind(...insert.values);
   }
 
-  async createTask(params: CreateProjectTaskParams): Promise<ProjectTask> {
+  async createTask(
+    params: CreateProjectTaskParams,
+  ): Promise<{ task: ProjectTask; created: boolean }> {
     const insert = this.buildTaskInsert(params);
-    const row = await this.runQuery<ProjectTaskRow>(insert.query, insert.values, true);
+    const row = await this.runQuery<ProjectTaskRow>(
+      params.id
+        ? insert.query.replace(" RETURNING ", " ON CONFLICT(id) DO NOTHING RETURNING ")
+        : insert.query,
+      insert.values,
+      true,
+    );
 
     if (!row) {
+      const existing = params.id ? await this.getTaskById(params.id) : null;
+
+      if (
+        existing &&
+        existing.projectId === params.projectId &&
+        existing.createdByUserId === params.createdByUserId
+      ) {
+        return { task: existing, created: false };
+      }
+
       throw new AssistantError("Failed to create the task", ErrorType.DATABASE_ERROR);
     }
 
-    return formatProjectTask(row);
+    return { task: formatProjectTask(row), created: true };
   }
 
   async getTaskById(taskId: string): Promise<ProjectTask | null> {
@@ -477,6 +490,9 @@ export class ProjectTaskRepository extends BaseRepository {
     runner: ProjectTaskRunner;
     tokenBudget: number;
     stageId?: string | null;
+    expectedStatus: ProjectTaskStatus;
+    expectedDispatchTaskId: string | null;
+    automaticReviewPolicyRevision?: string;
   }): Promise<ProjectTask | null> {
     const row = await this.runQuery<ProjectTaskRow>(
       `UPDATE project_task
@@ -492,7 +508,21 @@ export class ProjectTaskRepository extends BaseRepository {
            updated_at = CURRENT_TIMESTAMP
        WHERE id = ?
          AND project_id = ?
-         AND status IN ('backlog', 'queued', 'blocked', 'review', 'running')
+         AND status = ?
+         AND dispatch_task_id IS ?
+         ${
+           params.automaticReviewPolicyRevision
+             ? `AND EXISTS (
+           SELECT 1 FROM project_review_policy p JOIN project_task_review r ON r.policy_id = p.id AND r.project_id = p.project_id AND r.workspace_id = p.workspace_id
+           WHERE r.task_id = project_task.id AND p.enabled = 1 AND p.revision = ? AND r.policy_revision = p.revision
+             AND p.owner_user_id = ? AND r.owner_user_id = p.owner_user_id AND r.workspace_id = project_task.workspace_id
+             AND p.connection_id = json_extract(r.target, '$.connectionId')
+             AND p.provider = json_extract(r.target, '$.provider')
+             AND p.account_id = json_extract(r.target, '$.accountId')
+             AND p.repository = json_extract(r.target, '$.repository')
+         )`
+             : ""
+         }
        RETURNING *`,
       [
         params.runnerIdentityUserId,
@@ -502,6 +532,11 @@ export class ProjectTaskRepository extends BaseRepository {
         params.stageId ?? null,
         params.taskId,
         params.projectId,
+        params.expectedStatus,
+        params.expectedDispatchTaskId,
+        ...(params.automaticReviewPolicyRevision
+          ? [params.automaticReviewPolicyRevision, params.runnerIdentityUserId]
+          : []),
       ],
       true,
     );

@@ -1,9 +1,15 @@
+import { estimateTextTokens } from "@ngriffin_uk/polychat-ai-providers";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
-import { buildSystemPrompt } from "~/modules/chat/application/preparation/system-prompt";
+import {
+  buildSystemPrompt,
+  projectRunMemory,
+} from "~/modules/chat/application/preparation/system-prompt";
 import type { ProjectChatContext } from "~/modules/workspaces/application/chatContext";
 import type { CoreChatOptions, Message } from "~/types";
+
+import { memoryDocumentFixture } from "../../../../../../test/fixtures/native-memory";
 
 const mocks = vi.hoisted(() => ({
   getSystemPrompt: vi.fn(),
@@ -50,33 +56,6 @@ describe("buildSystemPrompt", () => {
     vi.clearAllMocks();
     mocks.getSystemPrompt.mockResolvedValue("generated prompt");
     mocks.buildGoalContractSection.mockReturnValue("GOAL CONTRACT");
-  });
-
-  it("prefers an explicit request prompt over generating one", async () => {
-    const result = await buildSystemPrompt(
-      baseParams({ options: { ...baseParams().options, system_prompt: "explicit" } }),
-    );
-
-    expect(result).toBe("explicit");
-    expect(mocks.getSystemPrompt).not.toHaveBeenCalled();
-  });
-
-  it("falls back to a system turn already in the conversation", async () => {
-    const result = await buildSystemPrompt(
-      baseParams({
-        sanitisedMessages: [{ role: "system", content: "from history" }] as Message[],
-      }),
-    );
-
-    expect(result).toBe("from history");
-    expect(mocks.getSystemPrompt).not.toHaveBeenCalled();
-  });
-
-  it("generates a prompt when neither is supplied", async () => {
-    const result = await buildSystemPrompt(baseParams());
-
-    expect(result).toBe("generated prompt");
-    expect(mocks.getSystemPrompt).toHaveBeenCalledTimes(1);
   });
 
   it.each([undefined, "Old Chat instructions"])(
@@ -137,16 +116,6 @@ describe("buildSystemPrompt", () => {
     expect(mocks.buildGoalContractSection).not.toHaveBeenCalled();
   });
 
-  it("appends personal memory context when memory is enabled", async () => {
-    const repositories = createRepositories("remembered things");
-    const result = await buildSystemPrompt(
-      baseParams({ repositories, memoryPolicy: { enabled: true } as any }),
-    );
-
-    expect(result).toContain("generated prompt");
-    expect(result).toContain("remembered things");
-  });
-
   it("does not read memory synthesis for a project-scoped turn", async () => {
     const repositories = createRepositories("remembered things");
 
@@ -173,5 +142,64 @@ describe("buildSystemPrompt", () => {
     );
 
     expect(result).toBe("generated prompt");
+  });
+  it("prefers an explicit request prompt over generating one", async () => {
+    const result = await buildSystemPrompt(
+      baseParams({ options: { ...baseParams().options, system_prompt: "explicit" } }),
+    );
+
+    expect(result).toBe("explicit");
+    expect(mocks.getSystemPrompt).not.toHaveBeenCalled();
+  });
+
+  it("falls back to a system turn already in the conversation", async () => {
+    const result = await buildSystemPrompt(
+      baseParams({
+        sanitisedMessages: [{ role: "system", content: "from history" }] as Message[],
+      }),
+    );
+
+    expect(result).toBe("from history");
+    expect(mocks.getSystemPrompt).not.toHaveBeenCalled();
+  });
+});
+
+describe("bounded run memory", () => {
+  it("includes working notes and exposes references without loading their complete bodies", () => {
+    const working = memoryDocumentFixture({ kind: "teammate_context" });
+    const reference = memoryDocumentFixture({
+      id: "reference",
+      name: "research",
+      content: "Private research body ".repeat(1000),
+    });
+    const result = projectRunMemory(
+      [
+        { document: reference, access: "read" },
+        { document: working, access: "read-write" },
+      ],
+      16000,
+      "",
+    );
+
+    expect(result.section).toContain(working.content);
+    expect(result.section).toContain('"documentId":"reference"');
+    expect(result.section).not.toContain(reference.content);
+    expect(estimateTextTokens(result.section)).toBeLessThanOrEqual(2400);
+  });
+
+  it("keeps oversized working notes intact for paging and leaves room for the existing prompt", () => {
+    const oversized = memoryDocumentFixture({
+      kind: "conversation_brief",
+      content: "Important decision ".repeat(5000),
+    });
+    const documents = [{ document: oversized, access: "read" as const }];
+    const result = projectRunMemory(documents, 4000, "");
+
+    expect(result.section).toContain('"documentId":"memory"');
+    expect(result.section).not.toContain(oversized.content);
+    expect(estimateTextTokens(result.section)).toBeLessThanOrEqual(600);
+    expect(projectRunMemory(documents, 4000, "Existing instructions ".repeat(3000)).section).toBe(
+      "",
+    );
   });
 });

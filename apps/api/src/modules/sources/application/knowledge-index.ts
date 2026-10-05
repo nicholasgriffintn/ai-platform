@@ -47,12 +47,17 @@ async function prepareSourceSearchDocument(
   };
 }
 
-export async function indexProjectSource(context: ServiceContext, sourceId: string): Promise<void> {
+export async function indexProjectSource(
+  context: ServiceContext,
+  sourceId: string,
+  assertOwned: () => Promise<void>,
+): Promise<void> {
+  await assertOwned();
   await cleanupStaleIndexes(context, sourceId);
   const source = await context.repositories.sourceSearch.getSource(sourceId);
 
   if (
-    !source?.project_id ||
+    !source ||
     source.kind === "memory" ||
     source.status !== "available" ||
     !source.content?.trim()
@@ -81,7 +86,12 @@ export async function indexProjectSource(context: ServiceContext, sourceId: stri
         vectorSpaceVersion: EMBEDDING_VECTOR_SPACE_VERSION,
       });
 
-  await context.repositories.sourceSearch.prepare(source, document, target);
+  await context.repositories.sourceSearch.prepare(
+    source,
+    document,
+    target,
+    context.requireUser().id,
+  );
   if (!context.env.AI || !context.env.VECTOR_DB) {
     return;
   }
@@ -93,7 +103,8 @@ export async function indexProjectSource(context: ServiceContext, sourceId: stri
   }
 
   try {
-    await insertSourceVectors(context, source, document, target, token);
+    await assertOwned();
+    await insertSourceVectors(context, source, document, target, token, assertOwned);
   } finally {
     await context.repositories.sourceSearch.release(document.documentId, token);
   }
@@ -103,7 +114,7 @@ export async function scheduleKnowledgeIndexes(env: IEnv): Promise<number> {
   const repositories = RepositoryManager.getInstance(env);
   const sources = await repositories.sourceSearch.maintenance(
     Boolean(env.AI && env.VECTOR_DB),
-    Boolean(env.VECTOR_DB),
+    true,
   );
   const tasks = new TaskService(env, repositories.tasks);
 
@@ -123,6 +134,7 @@ export async function indexSourceForUser(
   env: IEnv,
   userId: number | undefined,
   sourceId: string,
+  assertOwned: () => Promise<void>,
 ): Promise<void> {
   const repositories = RepositoryManager.getInstance(env);
   const user = userId ? await repositories.users.getUserById(userId) : null;
@@ -133,5 +145,5 @@ export async function indexSourceForUser(
     return;
   }
 
-  await indexProjectSource(createServiceContext({ env, user }), sourceId);
+  await indexProjectSource(createServiceContext({ env, user }), sourceId, assertOwned);
 }
