@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import z from "zod/v4";
 
 import type {
   ChannelAdapter,
@@ -38,40 +39,41 @@ export class TelegramChannelAdapter implements ChannelAdapter {
   }
 
   parse(rawBody: string): ChannelIncoming {
-    const payload = safeParseJson<Record<string, unknown>>(rawBody) ?? {};
-    const message = payload.message ?? payload.edited_message;
+    const payload = z
+      .object({
+        message: z.object({
+          message_id: z.number().int().nonnegative(),
+          text: z.string().trim().min(1).max(40_000),
+          chat: z.object({ id: z.number().int() }),
+          from: z.object({ id: z.number().int(), is_bot: z.literal(false).optional() }),
+        }),
+      })
+      .safeParse(safeParseJson<unknown>(rawBody));
 
-    if (!message || typeof message !== "object") {
-      return { kind: "control", response: { ok: true, ignored: "not_a_message" } };
+    if (!payload.success) {
+      return { kind: "control", response: { ok: true, ignored: "not_a_user_message" } };
     }
 
-    const typed = message as {
-      message_id?: number;
-      text?: string;
-      chat?: { id?: number };
-      from?: { id?: number; is_bot?: boolean };
-    };
-
-    if (typed.from?.is_bot) {
-      return { kind: "control", response: { ok: true, ignored: "bot_message" } };
-    }
-
-    if (!typed.chat?.id || typed.message_id === undefined || !typed.text?.trim()) {
-      return { kind: "control", response: { ok: true, ignored: "incomplete_message" } };
-    }
+    const { message } = payload.data;
 
     return {
       kind: "message",
-      messageId: String(typed.message_id),
-      externalId: String(typed.chat.id),
-      from: String(typed.from?.id ?? typed.chat.id),
-      body: typed.text,
+      messageId: String(message.message_id),
+      externalId: String(message.chat.id),
+      threadId: String(message.chat.id),
+      workspaceId: "",
+      mentioned: false,
+      directMessage: true,
+      from: String(message.from.id),
+      body: message.text,
     };
   }
 
   async sendReply(reply: ChannelReply, secret: string): Promise<void> {
     const response = await fetch(`https://api.telegram.org/bot${secret}/sendMessage`, {
       method: "POST",
+      redirect: "error",
+      signal: AbortSignal.timeout(10_000),
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ chat_id: reply.externalId, text: reply.body }),
     });

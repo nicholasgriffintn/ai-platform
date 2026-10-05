@@ -1,8 +1,12 @@
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Miniflare } from "miniflare";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import type { IEnv } from "~/types";
 
+import { channelTestBinding, channelTestUser } from "../../../../../test/fixtures/channels";
+import { databaseTestEnvironment } from "../../../../../test/helpers/environment";
 import { createChannelBinding } from "../bindings";
 
 const requireProjectAccess = vi.hoisted(() =>
@@ -10,37 +14,53 @@ const requireProjectAccess = vi.hoisted(() =>
 );
 const requireTeammateAccess = vi.hoisted(() => vi.fn(async () => ({ id: "teammate-1" })));
 
+vi.mock("../slack-installation", () => ({
+  validateSlackInstallation: vi.fn(async () => undefined),
+}));
+
 vi.mock("~/modules/workspaces/application/access", () => ({ requireProjectAccess }));
 vi.mock("~/modules/teammates/application/access", () => ({ requireTeammateAccess }));
 
 const USER_ID = 3;
 
-function createContext() {
-  const channelBindings = {
-    getByExternalId: vi.fn(async () => null),
-    create: vi.fn(async (record: Record<string, unknown>) => ({
-      id: "binding-1",
-      channel: record.channel,
-      scope_type: record.scopeType,
-      scope_id: record.scopeId,
-      external_id: record.externalId,
-      label: record.label,
-      teammate_id: record.teammateId,
-      created_by: USER_ID,
-      enabled: true,
-      created_at: "2026-09-01T00:00:00.000Z",
-    })),
-  };
+const runtime = new Miniflare({
+  modules: true,
+  script: "export default { fetch() { return new Response('test'); } }",
+  compatibilityDate: "2026-08-01",
+  d1Databases: ["DB"],
+});
+let env: IEnv;
 
-  return {
-    ensureDatabase: vi.fn(),
-    requireUser: () => ({ id: USER_ID }),
-    repositories: { channelBindings },
-  } as unknown as ServiceContext;
+beforeAll(async () => {
+  env = databaseTestEnvironment(await runtime.getD1Database("DB"));
+});
+afterAll(() => runtime.dispose());
+
+function createContext() {
+  const context = createServiceContext({ env, user: { ...channelTestUser, id: USER_ID } });
+
+  vi.spyOn(context.repositories.channelBindings, "findByExternalId").mockResolvedValue(null);
+  vi.spyOn(context.repositories.channelBindings, "create").mockImplementation(async (record) => ({
+    ...channelTestBinding,
+    channel: record.channel,
+    scope_type: record.scopeType,
+    scope_id: record.scopeId,
+    external_id: record.externalId,
+    workspace_id: record.workspaceId,
+    allowed_sender_ids: JSON.stringify(record.allowedSenderIds),
+    reply_mode: record.replyMode,
+    label: record.label,
+    teammate_id: record.teammateId,
+    interaction_mode: record.interactionMode,
+    created_by: USER_ID,
+  }));
+
+  return context;
 }
 
 describe("createChannelBinding", () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     vi.clearAllMocks();
     requireTeammateAccess.mockResolvedValue({ id: "teammate-1" });
   });
@@ -54,13 +74,12 @@ describe("createChannelBinding", () => {
       createChannelBinding(context, {
         channel: "slack",
         externalId: "C123",
+        workspaceId: "T123",
+        allowedSenderIds: ["U9"],
         teammateId: "someone-elses",
       }),
     ).rejects.toBeInstanceOf(AssistantError);
-    expect(
-      (context.repositories.channelBindings as unknown as { create: ReturnType<typeof vi.fn> })
-        .create,
-    ).not.toHaveBeenCalled();
+    expect(context.repositories.channelBindings.create).not.toHaveBeenCalled();
   });
 
   it("binds a teammate the caller can reach", async () => {
@@ -68,6 +87,8 @@ describe("createChannelBinding", () => {
     const binding = await createChannelBinding(context, {
       channel: "slack",
       externalId: "C123",
+      workspaceId: "T123",
+      allowedSenderIds: ["U9"],
       teammateId: "teammate-1",
     });
 
