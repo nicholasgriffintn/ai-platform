@@ -1,1 +1,0 @@
-ALTER TABLE `project` ADD `default_router_mode` text DEFAULT 'auto' NOT NULL;

@@ -2,7 +2,7 @@
 
 - **Change:** add DynamoDB Vectors as a personal embedding storage provider.
 - **Surfaces:** Providers, Embeddings (RAG), document search and built-in memory.
-- **Prerequisites:** apply migration `0056_dynamodb_vectors.sql`; provision the table/index; grant scoped IAM permissions; keep Workers AI and `EMBEDDING_SCOPE_SECRET` configured.
+- **Prerequisites:** apply the current database migrations; provision the table/index; grant scoped IAM permissions; keep Workers AI and `EMBEDDING_SCOPE_SECRET` configured.
 - **Risk if wrong:** writes or searches fail, recent vectors appear after an indexing delay, or historical cleanup remains pending after credential rotation.
 
 ## Verify

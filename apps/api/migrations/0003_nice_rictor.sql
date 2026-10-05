@@ -1,1 +1,0 @@
-ALTER TABLE `user_pet` ADD `layout_id` text DEFAULT 'polychat-v1' NOT NULL;

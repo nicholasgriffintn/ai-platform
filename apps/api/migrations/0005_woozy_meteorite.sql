@@ -1,1 +1,0 @@
-ALTER TABLE `user_settings` ADD `pet_model_overrides` text DEFAULT '{"families":{},"providers":{}}' NOT NULL;

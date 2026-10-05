@@ -98,9 +98,7 @@ export const user = sqliteTable("user", {
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   setup_at: text(),
   terms_accepted_at: text(),
-  plan_id: text()
-    .references(() => plans.id)
-    .default("free"),
+  plan_id: text().references(() => plans.id),
   message_count: integer("message_count").default(0),
   last_active_at: text("last_active_at"),
   stripe_customer_id: text(),
@@ -1502,9 +1500,7 @@ export const message = sqliteTable(
     conversation_id: text()
       .notNull()
       .references(() => conversation.id),
-    run_id: text().references(() => conversationRun.id, {
-      onDelete: "set null",
-    }),
+    run_id: text().references(() => conversationRun.id),
     parent_message_id: text(),
     is_archived: integer({ mode: "boolean" }).default(false),
     role: text({
@@ -1956,7 +1952,7 @@ export const template = sqliteTable(
     workspace_id: text().references(() => workspace.id, {
       onDelete: "cascade",
     }),
-    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id),
     kind: text({ enum: ["project", "recipe", "capability", "teammate_publication"] }).notNull(),
     capability_id: text(),
     publication_id: text(),
@@ -2368,7 +2364,7 @@ export const tasks = sqliteTable(
       .default("pending"),
     priority: integer().default(5),
     user_id: integer().references(() => user.id),
-    project_id: text().references(() => project.id, { onDelete: "cascade" }),
+    project_id: text().references(() => project.id),
     task_data: text(),
     schedule_type: text({
       enum: ["immediate", "scheduled", "recurring", "event_triggered"],
@@ -2553,14 +2549,10 @@ export const projectTask = sqliteTable(
     conversation_id: text().references(() => conversation.id, {
       onDelete: "set null",
     }),
-    origin_conversation_id: text().references(() => conversation.id, {
-      onDelete: "set null",
-    }),
+    origin_conversation_id: text().references(() => conversation.id),
     goal_id: text(),
     dispatch_task_id: text(),
-    run_id: text().references(() => conversationRun.id, {
-      onDelete: "set null",
-    }),
+    run_id: text().references(() => conversationRun.id),
     completions: text({ mode: "json" }).$type<ProjectTaskCompletion[]>(),
     position: real().default(0).notNull(),
     token_budget: integer(),
@@ -2880,7 +2872,7 @@ export const modelConfiguration = sqliteTable(
     }).onDelete("set null"),
     aliasRouteCheck: check(
       "model_configuration_alias_route_check",
-      sql`((${table.route_id} IS NULL AND ${table.route_kind} IS NULL) OR (${table.route_id} IS NOT NULL AND ${table.route_kind} IS NOT NULL AND ${table.route_kind} = 'route')) AND ((${table.canary_route_id} IS NULL AND ${table.canary_route_kind} IS NULL) OR (${table.canary_route_id} IS NOT NULL AND ${table.canary_route_kind} IS NOT NULL AND ${table.canary_route_kind} = 'route'))`,
+      sql`(${table.route_id} IS NULL OR ${table.route_kind} = 'route') AND (${table.canary_route_id} IS NULL OR ${table.canary_route_kind} = 'route')`,
     ),
     assetSourceIdx: uniqueIndex("model_configuration_asset_source_idx")
       .on(table.workspace_id, table.asset_type, table.source, table.source_ref)

@@ -1,1 +1,0 @@
-ALTER TABLE `user_pet` DROP COLUMN `layout_version`;
