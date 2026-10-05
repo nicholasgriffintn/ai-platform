@@ -7,6 +7,7 @@ import type {
   TeammateConnectionGrant,
   TeammateConnectionGrantListResponse,
   UpsertTeammateConnectionGrant,
+  TeammateAutonomyLevel,
   TeammateContext,
   TeammateContextScope,
   TeammateContextStatus,
@@ -104,6 +105,23 @@ export class TeammateService {
 
     if (!response.ok) {
       throw await createApiErrorFromResponse(response, "Failed to start teammate context");
+    }
+
+    return returnFetchedData<TeammateContext>(response);
+  }
+
+  async updateTeammateContextAutonomy(
+    contextId: string,
+    autonomyLevel: TeammateAutonomyLevel,
+  ): Promise<TeammateContext> {
+    const response = await fetchApi(`/teammates/contexts/${contextId}/autonomy`, {
+      method: "PATCH",
+      headers: await this.authHeaders("updateTeammateContextAutonomy"),
+      body: { autonomyLevel },
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to change what the teammate may do");
     }
 
     return returnFetchedData<TeammateContext>(response);

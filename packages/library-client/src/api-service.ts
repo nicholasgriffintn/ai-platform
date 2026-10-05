@@ -8,6 +8,7 @@ import type {
 import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import type {
   PolyHome,
+  TeammateAutonomyLevel,
   TeammateResponse,
   CreateTeammateInput,
   HireTeammateInput,
@@ -251,6 +252,12 @@ class ApiService {
     teammateId: string,
     scope: TeammateContextScope,
   ): Promise<TeammateContext> => this.teammateService.ensureTeammateContext(teammateId, scope);
+
+  updateTeammateContextAutonomy = (
+    contextId: string,
+    autonomyLevel: TeammateAutonomyLevel,
+  ): Promise<TeammateContext> =>
+    this.teammateService.updateTeammateContextAutonomy(contextId, autonomyLevel);
 
   updateTeammateContextStatus = (
     contextId: string,

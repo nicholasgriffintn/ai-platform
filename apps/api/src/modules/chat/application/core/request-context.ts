@@ -63,6 +63,8 @@ export function buildToolRequestContext(params: {
     request: {
       completion_id: chatOptions.completion_id,
       conversation_type: chatOptions.conversation_type,
+      trigger: chatOptions.trigger,
+      autonomy_level: chatOptions.autonomy_level,
       poly: chatOptions.poly,
       input,
       model,

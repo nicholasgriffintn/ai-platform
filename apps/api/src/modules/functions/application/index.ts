@@ -9,6 +9,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { fromToolError } from "~/infrastructure/errors";
 import { filterToolsForPolyTurn } from "~/modules/chat/application/policy/poly";
+import { resolveToolCallEffectClass } from "~/modules/chat/application/tools/effects";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { PermissionChecker } from "~/modules/functions/application/permissions";
 import type { IFunctionResponse, IRequest } from "~/types";
@@ -222,6 +223,12 @@ export const handleFunctions = async ({
     requireApprovalFor: request.request?.require_approval_for,
     deniedTools: request.request?.denied_tools,
     enforceModePolicy: request.request?.enforce_mode_tool_policy,
+    effectClass: resolveToolCallEffectClass({
+      toolName: functionName,
+      effects: foundFunction.effects,
+      rawArguments: args,
+    }),
+    autonomyLevel: request.request?.autonomy_level,
   });
 
   if (!permissionResult.allowed) {

@@ -14,5 +14,6 @@ export async function openPolyHome(context: ServiceContext): Promise<PolyHome> {
     teammate_id: POLY_TEAMMATE_ID,
     context_id: polyContext.id,
     conversation_id: polyContext.homeConversationId,
+    autonomy_level: polyContext.autonomyLevel ?? "assistant",
   };
 }

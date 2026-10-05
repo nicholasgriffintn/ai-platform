@@ -11,6 +11,16 @@ export const teammateContextScopeSchema = z.object({
 export const teammateContextStatusSchema = z.enum(["active", "paused", "archived"]);
 export type TeammateContextStatus = z.infer<typeof teammateContextStatusSchema>;
 
+export const TEAMMATE_AUTONOMY_LEVELS = ["observer", "assistant", "partner"] as const;
+
+export const teammateAutonomyLevelSchema = z
+  .enum(TEAMMATE_AUTONOMY_LEVELS)
+  .describe(
+    "How much the teammate may do without asking. observer only reads and drafts; assistant asks before writes; partner writes within its grants. Sends, spending, deletes, credentials and exports always ask.",
+  );
+
+export type TeammateAutonomyLevel = z.infer<typeof teammateAutonomyLevelSchema>;
+
 export const teammateContextSchema = z.object({
   id: z.string().min(1),
   teammateId: z.string().min(1),
@@ -19,6 +29,7 @@ export const teammateContextSchema = z.object({
   homeConversationId: z.string().min(1),
   memoryDocumentId: z.string().min(1),
   status: teammateContextStatusSchema,
+  autonomyLevel: teammateAutonomyLevelSchema.nullable(),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
 });
@@ -33,6 +44,10 @@ export const ensureTeammateContextSchema = z.object({
 
 export const updateTeammateContextStatusSchema = z.object({
   status: teammateContextStatusSchema,
+});
+
+export const updateTeammateContextAutonomySchema = z.object({
+  autonomyLevel: teammateAutonomyLevelSchema,
 });
 
 export const teammateConnectionGrantSchema = z.object({

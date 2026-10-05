@@ -25,6 +25,7 @@ import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PolyAutonomyMenu } from "./PolyAutonomyMenu.js";
 import { usePolyNavigation } from "./usePolyNavigation.js";
 
 const POLY_PET_PRESET_SLUG = "pip";
@@ -173,6 +174,7 @@ export function PolyOverlay({ open, onClose }: { open: boolean; onClose: () => v
               One conversation that carries on wherever you are in Polychat.
             </DialogDescription>
           </div>
+          {isAuthenticated ? <PolyAutonomyMenu /> : null}
         </div>
         {!isAuthenticated ? (
           <div className="p-6">

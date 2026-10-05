@@ -15,6 +15,13 @@
       "when": 1791235818096,
       "tag": "0001_poly_conversation_type",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791236864449,
+      "tag": "0002_teammate_autonomy_level",
+      "breakpoints": true
     }
   ]
 }
