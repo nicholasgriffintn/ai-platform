@@ -1,4 +1,5 @@
 import {
+  getStatePath,
   runSiteAction,
   setStatePath,
   type SiteScope,
@@ -20,22 +21,36 @@ export function useSiteRuntime(
 ) {
   const [state, setState] = useState<SiteState>(() => ({ ...page.state }));
   const stateRef = useRef(state);
+  const boundPathsRef = useRef<string[]>([]);
 
   useEffect(() => {
-    if (boundState) {
-      setState((previous) => {
-        let next = previous;
+    const bindings = boundState ?? {};
+    const previousPaths = boundPathsRef.current;
 
-        for (const [path, value] of Object.entries(boundState)) {
-          next = setStatePath(next, path, value);
-        }
+    boundPathsRef.current = Object.keys(bindings);
 
-        stateRef.current = next;
-
-        return next;
-      });
+    if (previousPaths.length === 0 && boundPathsRef.current.length === 0) {
+      return;
     }
-  }, [boundState]);
+
+    setState((previous) => {
+      let next = previous;
+
+      for (const path of previousPaths) {
+        if (!Object.hasOwn(bindings, path)) {
+          next = setStatePath(next, path, getStatePath(page.state, path));
+        }
+      }
+
+      for (const [path, value] of Object.entries(bindings)) {
+        next = setStatePath(next, path, value);
+      }
+
+      stateRef.current = next;
+
+      return next;
+    });
+  }, [boundState, page.state]);
 
   return useMemo<SiteRenderRuntime>(
     () => ({

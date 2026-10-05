@@ -24,7 +24,10 @@ function createContext(existing: { id: string; content: string; revision: number
   };
 
   return {
-    context: { repositories: { memoryDocuments } } as unknown as ServiceContext,
+    context: {
+      requireUser: () => ({ id: 7 }),
+      repositories: { memoryDocuments },
+    } as unknown as ServiceContext,
     memoryDocuments,
   };
 }

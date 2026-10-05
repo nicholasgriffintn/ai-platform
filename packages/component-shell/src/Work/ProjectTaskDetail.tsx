@@ -4,6 +4,7 @@ import { TaskDetail } from "@ngriffin_uk/polychat-component-workspaces";
 import {
   useProjectTask,
   useProjectTasks,
+  useCapabilityCatalog,
   getProjectConversationPath,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
@@ -14,7 +15,6 @@ import { toast } from "sonner";
 
 import { PageShell } from "../Shell/PageShell.js";
 import { ProjectReviewPublicationControl } from "./ProjectReviewPublicationControl.js";
-import { useProjectTaskTeammates } from "./useProjectTaskTeammates.js";
 import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectTaskDetail({
@@ -28,8 +28,9 @@ export function ProjectTaskDetail({
 }) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const navigate = useNavigate();
-  const { projectQuery, workspaceQuery } = useWorkData();
-  const teammates = useProjectTaskTeammates(projectQuery.data?.capabilities);
+  const { workspaceQuery } = useWorkData();
+  const capabilityCatalog = useCapabilityCatalog(projectId);
+  const teammates = capabilityCatalog.data?.teammates ?? [];
   const { tasks, flow, isLoading, error, start, accept, update, remove } =
     useProjectTasks(projectId);
   const detailQuery = useProjectTask(projectId, taskId);

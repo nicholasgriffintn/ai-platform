@@ -11,6 +11,7 @@ import { createSource } from "~/modules/sources/application/sources";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { connectTaskReview } from "../infrastructure/integrations";
+import type { ReviewPublicationResult } from "../infrastructure/integrations/types";
 import { createProjectTask, startProjectTask } from "./index";
 import { reviewIdentity } from "./integration-identity";
 import { retainReviewOutput } from "./review-output";
@@ -289,10 +290,10 @@ export async function publishPullRequestReview(
     );
   }
 
-  try {
-    const url = await client.publishReview(review.target, body);
+  let publication: ReviewPublicationResult;
 
-    await context.repositories.projectTaskIntegrations.settlePublication(review.id, projectId, url);
+  try {
+    publication = await client.publishReview(review.target, body);
   } catch (error) {
     await context.repositories.projectTaskIntegrations.settlePublication(
       review.id,
@@ -301,6 +302,21 @@ export async function publishPullRequestReview(
     );
     throw error;
   }
+
+  if (publication.status === "rejected") {
+    await context.repositories.projectTaskIntegrations.releasePublication(
+      review.id,
+      projectId,
+      body,
+    );
+    throw publication.error;
+  }
+
+  await context.repositories.projectTaskIntegrations.settlePublication(
+    review.id,
+    projectId,
+    publication.url,
+  );
 
   await context.repositories.audit.createRecord({
     workspaceId: review.workspaceId,

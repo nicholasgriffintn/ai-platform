@@ -83,7 +83,7 @@ export function ProjectSettings({
           members={workspace?.members ?? []}
         />
         <ProjectCodingEnvironmentCard embedded canManage={canManage} project={project} />
-        <ChannelConnections projectId={projectId} workspaceId={workspaceId} canManage={canManage} />
+        <ChannelConnections projectId={projectId} canManage={canManage} />
         <ProjectTeammatesCard
           embedded
           capabilityCount={project.capabilityCount}

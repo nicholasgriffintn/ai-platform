@@ -278,6 +278,13 @@ export class ProjectTaskIntegrationRepository extends BaseRepository {
     );
   }
 
+  async releasePublication(id: string, projectId: string, body: string): Promise<void> {
+    await this.executeRun(
+      "UPDATE project_task_review SET publication_status = 'unpublished', publication_body = NULL WHERE id = ? AND project_id = ? AND publication_status = 'publishing' AND publication_body = ?",
+      [id, projectId, body],
+    );
+  }
+
   async getPublicationBody(id: string, projectId: string): Promise<string | null> {
     const row = await this.runQuery<{ publication_body: string | null }>(
       "SELECT publication_body FROM project_task_review WHERE id = ? AND project_id = ?",

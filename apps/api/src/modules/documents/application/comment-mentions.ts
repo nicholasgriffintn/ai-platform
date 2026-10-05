@@ -1,5 +1,4 @@
 import type { DocumentComment } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -70,22 +69,19 @@ export async function prepareCommentMention(
       },
       position: position + 1000,
     }),
-    context.env.DB.prepare(
-      `INSERT INTO workspace_audit_record
-       (id, workspace_id, actor_user_id, action, target_type, target_id, metadata)
-       VALUES (?, ?, ?, 'project.task.created', 'project_task', ?, ?)`,
-    ).bind(
-      generateId(),
-      project.workspace_id,
-      comment.authorUserId,
-      comment.taskId,
-      JSON.stringify({
+    context.repositories.audit.prepareRecord({
+      workspaceId: project.workspace_id,
+      actorUserId: comment.authorUserId,
+      action: "project.task.created",
+      targetType: "project_task",
+      targetId: comment.taskId,
+      metadata: {
         projectId,
         source: "document_comment",
         outputId: comment.outputId,
         commentId: comment.id,
-      }),
-    ),
+      },
+    }),
   ];
 }
 

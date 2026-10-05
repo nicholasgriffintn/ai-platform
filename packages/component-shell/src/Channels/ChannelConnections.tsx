@@ -1,6 +1,7 @@
 import {
   useAuthStatus,
   useChannelBindings,
+  useCapabilityCatalog,
   useTeammates,
 } from "@ngriffin_uk/polychat-library-react";
 
@@ -9,21 +10,23 @@ import { ChannelConnectionForm } from "./ChannelConnectionForm.js";
 
 export function ChannelConnections({
   projectId,
-  workspaceId,
   canManage = true,
 }: {
   projectId?: string;
-  workspaceId?: string;
   canManage?: boolean;
 }) {
   const { bindings, create, disconnect, visibleBindings } = useChannelBindings(projectId);
   const { user } = useAuthStatus();
-  const { teammates } = useTeammates({ enabled: canManage });
-  const available = teammates.filter((teammate) =>
-    projectId
-      ? teammate.owner_scope_type === "workspace" && teammate.owner_scope_id === workspaceId
-      : teammate.owner_scope_type === "user" && teammate.owner_scope_id === String(user?.id),
-  );
+  const { teammates } = useTeammates({ enabled: canManage && !projectId });
+  const capabilityCatalog = useCapabilityCatalog(projectId, {
+    enabled: canManage && Boolean(projectId),
+  });
+  const available = projectId
+    ? (capabilityCatalog.data?.teammates ?? [])
+    : teammates.filter(
+        (teammate) =>
+          teammate.owner_scope_type === "user" && teammate.owner_scope_id === String(user?.id),
+      );
 
   return (
     <section className="space-y-4 p-4 sm:p-6" aria-label="Channels">

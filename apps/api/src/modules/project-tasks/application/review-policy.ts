@@ -1,3 +1,4 @@
+import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   reviewPolicyInputSchema,
   reviewPolicySchema,
@@ -111,7 +112,7 @@ export async function setProjectReviewPolicy(
 }
 
 export async function connectOwnedReview(context: ServiceContext, review: PullRequestReview) {
-  if (review.ownerUserId !== context.requireUser().id) {
+  if (!ownsResource(context.requireUser().id, review.ownerUserId)) {
     throw new AssistantError(
       "Use the credential owner who created this review",
       ErrorType.FORBIDDEN,

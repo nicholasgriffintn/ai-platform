@@ -21,6 +21,10 @@ export interface CapturedReview {
   readonly unavailableCount: number;
 }
 
+export type ReviewPublicationResult =
+  | { readonly status: "published"; readonly url: string }
+  | { readonly status: "rejected"; readonly error: Error };
+
 export interface TaskReviewClient {
   readonly connectionId: string;
   readonly canAutomate: boolean;
@@ -30,7 +34,7 @@ export interface TaskReviewClient {
     expectedTarget?: PullRequestReviewTarget,
   ): Promise<CapturedReview>;
   assertCurrentTarget(target: PullRequestReviewTarget): Promise<void>;
-  publishReview(target: PullRequestReviewTarget, body: string): Promise<string>;
+  publishReview(target: PullRequestReviewTarget, body: string): Promise<ReviewPublicationResult>;
   findPublication(target: PullRequestReviewTarget, body: string): Promise<string | null>;
 }
 

@@ -1,8 +1,12 @@
 import { DocumentDiscussion } from "@ngriffin_uk/polychat-component-content";
-import { getProjectBasePath, useProject, useWorkspace } from "@ngriffin_uk/polychat-library-react";
+import {
+  getProjectBasePath,
+  useCapabilityCatalog,
+  useProject,
+  useWorkspace,
+} from "@ngriffin_uk/polychat-library-react";
 import type { DocumentAnchor, Output } from "@ngriffin_uk/polychat-schemas";
 
-import { useProjectTaskTeammates } from "../Work/useProjectTaskTeammates.js";
 import type { useDocumentDiscussion } from "./useDocumentDiscussion.js";
 
 export function DocumentOutputDiscussion({
@@ -20,7 +24,9 @@ export function DocumentOutputDiscussion({
 }) {
   const project = useProject(output.projectId ?? undefined);
   const workspace = useWorkspace(project.data?.workspaceId);
-  const teammates = useProjectTaskTeammates(project.data?.capabilities);
+  const capabilityCatalog = useCapabilityCatalog(output.projectId ?? undefined, {
+    enabled: Boolean(output.projectId),
+  });
   const permissions = discussion.comments.data?.permissions;
 
   return (
@@ -30,7 +36,7 @@ export function DocumentOutputDiscussion({
       selection={selection}
       hasUnsavedChanges={hasUnsavedChanges}
       comments={discussion.comments.data?.comments ?? []}
-      teammates={output.projectId ? teammates : []}
+      teammates={output.projectId ? (capabilityCatalog.data?.teammates ?? []) : []}
       actorUserId={permissions?.actorUserId}
       authorNames={Object.fromEntries(
         (workspace.data?.members ?? []).map((member) => [

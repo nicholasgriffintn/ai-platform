@@ -1,3 +1,4 @@
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { ChannelBinding, CreateChannelBindingInput } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -103,9 +104,12 @@ export async function listChannelBindings(
   context.ensureDatabase();
   const user = context.requireUser();
   const rows = await context.repositories.channelBindings.listForUser(user.id);
+  const accessibleRows = hasProEntitlement(user)
+    ? rows
+    : rows.filter((row) => row.scope_type === "personal");
 
   const bindings = await Promise.all(
-    rows.map(async (row) => {
+    accessibleRows.map(async (row) => {
       const { canManage } = await requireChannelBindingAccess(context, row.id);
 
       return toBinding(row, canManage);

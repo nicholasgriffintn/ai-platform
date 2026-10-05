@@ -11,7 +11,7 @@ import { getGitHubAppInstallationToken } from "~/infrastructure/github";
 import { githubApiRequest } from "~/infrastructure/github/api-client";
 import { getGitHubTaskConnection } from "~/modules/github/application/connections";
 
-import type { TaskReviewClient } from "./integrations/types";
+import type { ReviewPublicationResult, TaskReviewClient } from "./integrations/types";
 
 const sha = gitCommitShaSchema;
 const repositorySchema = z.object({ id: z.number().int().positive(), full_name: z.string() });
@@ -235,15 +235,38 @@ export class GitHubTaskClient implements TaskReviewClient {
     }
   }
 
-  async publishReview(target: PullRequestReviewTarget, body: string): Promise<string> {
-    const response = await githubApiRequest({
-      url: `https://api.github.com/repos/${this.repository}/pulls/${target.pullRequestNumber}/reviews`,
-      method: "POST",
-      bearerToken: this.token,
-      body: { commit_id: target.headSha, event: "COMMENT", body },
-    });
+  async publishReview(
+    target: PullRequestReviewTarget,
+    body: string,
+  ): Promise<ReviewPublicationResult> {
+    let response: Response;
 
-    return z.object({ html_url: z.url() }).parse(await response.json()).html_url;
+    try {
+      response = await githubApiRequest({
+        url: `https://api.github.com/repos/${this.repository}/pulls/${target.pullRequestNumber}/reviews`,
+        method: "POST",
+        bearerToken: this.token,
+        body: { commit_id: target.headSha, event: "COMMENT", body },
+      });
+    } catch (error) {
+      if (
+        error instanceof AssistantError &&
+        error.type === ErrorType.EXTERNAL_API_ERROR &&
+        error.statusCode !== undefined &&
+        error.statusCode >= 400 &&
+        error.statusCode < 500 &&
+        error.statusCode !== 408
+      ) {
+        return { status: "rejected", error };
+      }
+
+      throw error;
+    }
+
+    return {
+      status: "published",
+      url: z.object({ html_url: z.url() }).parse(await response.json()).html_url,
+    };
   }
 
   async findPublication(

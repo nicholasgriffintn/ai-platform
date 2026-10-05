@@ -61,13 +61,12 @@ export async function refreshSiteConnectorSource(
     ...storedConfiguration,
     projectId: request.projectId,
     expectedRevision: request.expectedRevision,
+    bindingId: request.bindingId,
+    pageId: binding.pageId,
+    statePath: binding.statePath,
   });
 
-  if (
-    !ownsResource(context.requireUser().id, source.createdByUserId) ||
-    !configuration.success ||
-    configuration.data.bindingId !== request.bindingId
-  ) {
+  if (!ownsResource(context.requireUser().id, source.createdByUserId) || !configuration.success) {
     throw new AssistantError(
       "Only the connector account owner can refresh this source",
       ErrorType.FORBIDDEN,

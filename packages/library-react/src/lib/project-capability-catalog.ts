@@ -1,6 +1,26 @@
-import type { AssistantActionItem, ProjectCapabilityKind } from "@ngriffin_uk/polychat-schemas";
+import type {
+  AssistantActionItem,
+  ProjectCapability,
+  ProjectCapabilityKind,
+  SkillSummary,
+} from "@ngriffin_uk/polychat-schemas";
 
 export type CatalogueItemKind = ProjectCapabilityKind;
+
+export function projectTaskSkills(
+  capabilities: ProjectCapability[] | undefined,
+  skills: SkillSummary[] | undefined,
+) {
+  const attached = new Set(
+    (capabilities ?? [])
+      .filter((capability) => capability.kind === "skill" && !capability.excluded)
+      .map((capability) => capability.capabilityId),
+  );
+
+  return (skills ?? [])
+    .filter((skill) => attached.has(skill.id))
+    .map((skill) => ({ id: skill.id, name: skill.name }));
+}
 
 export interface ProjectCapabilityCategoryGroup {
   category: string;

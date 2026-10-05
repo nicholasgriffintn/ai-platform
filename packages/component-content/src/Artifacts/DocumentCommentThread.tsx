@@ -1,7 +1,8 @@
 import { Button, Textarea } from "@ngriffin_uk/polychat-component-ui";
 import type { DocumentComment } from "@ngriffin_uk/polychat-schemas";
 import { formatRelativeTime, locateTextAnchor } from "@ngriffin_uk/polychat-utility-core";
-import { useState } from "react";
+
+import { useDocumentCommentDraft } from "./useDocumentDiscussionDraft";
 
 interface DocumentCommentThreadProps {
   thread: DocumentComment;
@@ -28,7 +29,11 @@ export function DocumentCommentThread({
   onReply,
   taskHref,
 }: DocumentCommentThreadProps) {
-  const [reply, setReply] = useState("");
+  const {
+    body: reply,
+    setBody: setReply,
+    submitComment,
+  } = useDocumentCommentDraft((body) => onReply(body, thread.id));
   const anchorStatus = thread.anchor ? locateTextAnchor(documentBody, thread.anchor).status : null;
 
   return (
@@ -83,13 +88,7 @@ export function DocumentCommentThread({
         className="space-y-2"
         onSubmit={(event) => {
           event.preventDefault();
-          void onReply(reply, thread.id).then((saved) => {
-            if (saved) {
-              setReply("");
-            }
-
-            return saved;
-          });
+          void submitComment();
         }}
       >
         <Textarea

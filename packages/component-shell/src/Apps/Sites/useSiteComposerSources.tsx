@@ -25,16 +25,19 @@ export function useSiteComposerSources({
   const [selectedSources, setSelectedSources] = useState<SourceSummary[]>([]);
   const [previousProjectId, setPreviousProjectId] = useState(projectId);
 
-  if (previousProjectId !== projectId) {
-    setPreviousProjectId(projectId);
-    setSelectedSources([]);
-  }
-
   const connectedBindings = Object.entries(site?.project.dataBindings ?? {}).flatMap(
     ([id, binding]) => (binding.kind === "source" ? [{ id, binding }] : []),
   );
   const connectedIds = new Set(connectedBindings.map(({ binding }) => binding.sourceId));
   const pendingSources = selectedSources.filter((source) => !connectedIds.has(source.id));
+
+  if (previousProjectId !== projectId) {
+    setPreviousProjectId(projectId);
+    setSelectedSources([]);
+  } else if (pendingSources.length !== selectedSources.length) {
+    setSelectedSources(pendingSources);
+  }
+
   const attachedIds = new Set([...connectedIds, ...pendingSources.map((source) => source.id)]);
   const availableSources = (sources.data ?? []).filter(
     (source) =>

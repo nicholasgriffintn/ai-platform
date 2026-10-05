@@ -4,10 +4,10 @@ import type {
   DocumentComment,
   DocumentEditProposal,
 } from "@ngriffin_uk/polychat-schemas";
-import { useState } from "react";
 
 import { DocumentCommentThread } from "./DocumentCommentThread";
 import { DocumentEditReview } from "./DocumentEditReview";
+import { useDocumentDiscussionDraft } from "./useDocumentDiscussionDraft";
 
 export interface DocumentDiscussionProps {
   revision: number;
@@ -40,10 +40,20 @@ export interface DocumentDiscussionProps {
 }
 
 export function DocumentDiscussion(props: DocumentDiscussionProps) {
-  const [body, setBody] = useState("");
-  const [teammateId, setTeammateId] = useState("");
-  const [instructions, setInstructions] = useState("");
-  const [proposal, setProposal] = useState<DocumentEditProposal | null>(null);
+  const {
+    body,
+    setBody,
+    teammateId,
+    setTeammateId,
+    submitComment,
+    instructions,
+    setInstructions,
+    proposal,
+    proposeEdit,
+    applyEdit,
+    changeReplacement,
+    dismissProposal,
+  } = useDocumentDiscussionDraft(props);
   const disabled = props.hasUnsavedChanges || props.isSaving || props.isApplying;
   const selectionTooLarge = Boolean(props.selection && props.selection.quote.length > 20_000);
 
@@ -78,14 +88,7 @@ export function DocumentDiscussion(props: DocumentDiscussionProps) {
         className="space-y-2"
         onSubmit={(event) => {
           event.preventDefault();
-          void props.onComment(body, null, teammateId || null).then((saved) => {
-            if (saved) {
-              setBody("");
-              setTeammateId("");
-            }
-
-            return saved;
-          });
+          void submitComment();
         }}
       >
         <Textarea
@@ -127,13 +130,7 @@ export function DocumentDiscussion(props: DocumentDiscussionProps) {
           className="space-y-2 border-t border-border pt-3"
           onSubmit={(event) => {
             event.preventDefault();
-            void props.onPropose(instructions).then((suggested) => {
-              if (suggested) {
-                setProposal(suggested);
-              }
-
-              return suggested;
-            });
+            void proposeEdit();
           }}
         >
           <Textarea
@@ -161,19 +158,9 @@ export function DocumentDiscussion(props: DocumentDiscussionProps) {
           stale={proposal.sourceRevision !== props.revision}
           disabled={disabled || !props.canEditDocument}
           isApplying={props.isApplying}
-          onChange={(replacement) => setProposal(proposal ? { ...proposal, replacement } : null)}
-          onDismiss={() => setProposal(null)}
-          onApply={() => {
-            if (proposal) {
-              void props.onApply(proposal).then((applied) => {
-                if (applied) {
-                  setProposal(null);
-                }
-
-                return applied;
-              });
-            }
-          }}
+          onChange={changeReplacement}
+          onDismiss={dismissProposal}
+          onApply={() => void applyEdit()}
         />
       ) : null}
       {props.isLoading ? (
