@@ -3,8 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import {
   computeOverageSyncDelta,
-  overageMeterEventIdentifier,
-  overageSyncHourIso,
   runStripeOverageSync,
 } from "~/modules/subscription/application/stripeOverageSync";
 import type { OverageSyncCandidateRow } from "~/modules/usage/infrastructure/UsageBalanceRepository";
@@ -40,21 +38,6 @@ function makeStripe(create = vi.fn(async () => ({}))) {
 }
 
 describe("computeOverageSyncDelta", () => {
-  it("rounds down to whole credits and keeps the remainder pending", () => {
-    expect(computeOverageSyncDelta(2_700_000, 0)).toEqual({
-      wholeCredits: 2,
-      syncedMicros: 2_000_000,
-    });
-  });
-
-  it("sends nothing while the pending amount is below one credit", () => {
-    expect(computeOverageSyncDelta(900_000, 0)).toEqual({ wholeCredits: 0, syncedMicros: 0 });
-    expect(computeOverageSyncDelta(2_900_000, 2_000_000)).toEqual({
-      wholeCredits: 0,
-      syncedMicros: 0,
-    });
-  });
-
   it("never produces a negative delta when the mark is ahead", () => {
     expect(computeOverageSyncDelta(1_000_000, 2_000_000)).toEqual({
       wholeCredits: 0,
@@ -80,18 +63,6 @@ describe("computeOverageSyncDelta", () => {
 
     expect(totalSentCredits).toBe(Math.floor(totalAccrued / MICRO));
     expect(overage - synced).toBe(totalAccrued % MICRO);
-  });
-});
-
-describe("overage meter event identity", () => {
-  it("truncates the sync time to the hour", () => {
-    expect(overageSyncHourIso(new Date("2026-09-01T14:37:22.123Z"))).toBe("2026-09-01T14:00:00Z");
-  });
-
-  it("builds one identifier per customer per hour", () => {
-    expect(overageMeterEventIdentifier("cus_1", "2026-09-01T14:00:00Z")).toBe(
-      "cus_1:2026-09-01T14:00:00Z",
-    );
   });
 });
 

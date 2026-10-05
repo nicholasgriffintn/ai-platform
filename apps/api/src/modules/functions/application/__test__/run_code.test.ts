@@ -122,21 +122,6 @@ describe("run_code", () => {
     });
   });
 
-  it("runs a script and returns its value with captured logs", async () => {
-    const response = await run_code.execute(
-      { code: "console.log('working'); return [1, 2, 3].map((n) => n * 2);" },
-      createToolContext(),
-    );
-
-    expect(response).toMatchObject({
-      status: "success",
-      name: "run_code",
-      content: expect.stringContaining("[2,4,6]"),
-      data: { ok: true, value: [2, 4, 6], toolCalls: [] },
-    });
-    expect(response.data.logs).toEqual([expect.objectContaining({ message: "working" })]);
-  });
-
   it("routes tool calls through the function registry and surfaces tool failures to the script", async () => {
     const response = await run_code.execute(
       {

@@ -9,8 +9,8 @@ export const platformPolicies = {
     when { ["", "admin", "member"].contains(context.targetRole) && ["", "admin", "member"].contains(context.newRole) &&
       (context.actorRole == "owner" || (context.actorRole == "admin" && context.targetRole != "admin" && context.newRole != "admin")) };`,
   "platform.capability.manage": `permit(principal, action == Polychat::Action::"capability.manage", resource)
-    when { (context.kind == "tool" && ["owner", "admin"].contains(context.role)) ||
-      (context.kind != "tool" && (!context.existing || context.actorId == context.creatorId)) };`,
+    when { (["tool", "connector"].contains(context.kind) && ["owner", "admin"].contains(context.role)) ||
+      (!["tool", "connector"].contains(context.kind) && (!context.existing || context.actorId == context.creatorId)) };`,
   "platform.memory.retrieve": `permit(principal, action == Polychat::Action::"memory.retrieve", resource)
     when { context.plan == "pro" && context.signedIn && context.store && (context.saveEnabled || context.historyEnabled) };`,
   "platform.memory.store": `permit(principal, action == Polychat::Action::"memory.store", resource)

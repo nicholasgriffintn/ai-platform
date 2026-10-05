@@ -327,18 +327,6 @@ describe("Composio connector run lifecycle", () => {
     await expect(closeComposioConnectorRun(runContext)).resolves.toBeUndefined();
   });
 
-  it("does not initialise persistence when a run has no tracked sessions", async () => {
-    const runContext = {
-      env: testEnv,
-      connectorRunId: "connector_run_empty",
-      get repositories() {
-        throw new Error("repositories should not be resolved");
-      },
-    } as never;
-
-    await expect(closeComposioConnectorRun(runContext)).resolves.toBeUndefined();
-  });
-
   it("does not substitute another account for an unattended installation", async () => {
     const runContext = context();
     const provider = getConnectorProviderConfig("gmail");

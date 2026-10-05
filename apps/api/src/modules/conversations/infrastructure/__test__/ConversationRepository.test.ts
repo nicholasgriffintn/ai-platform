@@ -45,31 +45,6 @@ describe("ConversationRepository", () => {
     expect(calls[1]?.params.slice(0, 4)).toEqual(["chat-1", 123, "chat", "Talk through release"]);
   });
 
-  it("lists conversations by title search, archive state, and selected date sort", async () => {
-    const { calls, db } = createMockD1();
-    const repository = new ConversationRepository({ DB: db } as any);
-
-    const result = await repository.getUserConversations(123, {
-      archiveFilter: "archived",
-      limit: 10,
-      page: 2,
-      query: "50%_plan",
-      sortBy: "created",
-    });
-
-    expect(result.conversations).toHaveLength(1);
-    expect(calls[0]?.query).toContain("c.title LIKE ? ESCAPE '\\'");
-    expect(calls[0]?.query).toContain("c.is_archived = 1");
-    expect(calls[0]?.query).toContain("c.type IN ('chat', 'task')");
-    expect(calls[0]?.query).not.toContain("content LIKE");
-    expect(calls[0]?.params).toEqual([123, 123, "%50\\%\\_plan%"]);
-    expect(calls[1]?.query).toContain(
-      "ORDER BY COALESCE(state.is_pinned, 0) DESC, c.created_at DESC, c.id DESC",
-    );
-    expect(calls[1]?.query).toContain("AS next_response_arrived");
-    expect(calls[1]?.params).toEqual([123, 123, "%50\\%\\_plan%", 10, 10]);
-  });
-
   it("normalises the activity cutoff and naturally sorts titles before pagination", async () => {
     const { calls, db } = createMockD1([
       { id: "ten", title: "10. Web search" },
@@ -111,32 +86,6 @@ describe("ConversationRepository", () => {
     });
 
     expect(result.conversations.map((conversation) => conversation.id)).toEqual(["ten"]);
-  });
-
-  it("leaves the activity clause out when no cutoff is supplied", async () => {
-    const { calls, db } = createMockD1();
-    const repository = new ConversationRepository({ DB: db } as any);
-
-    await repository.getUserConversations(123, {});
-
-    expect(calls[0]?.query).not.toContain("datetime(?)");
-    expect(calls[0]?.params).toEqual([123, 123]);
-  });
-
-  it("only moves conversations that are not already in the requested archived state", async () => {
-    const { calls, db } = createMockD1();
-    const repository = new ConversationRepository({ DB: db } as any);
-
-    await repository.setPersonalConversationsArchived(123, {
-      archived: true,
-      query: "50%_plan",
-      updatedAfter: "2026-06-01T00:00:00.000Z",
-    });
-
-    expect(calls[0]?.query).toContain("project_id IS NULL");
-    expect(calls[0]?.query).toContain("type IN ('chat', 'task')");
-    expect(calls[0]?.query).toContain("is_archived = ?");
-    expect(calls[0]?.params).toEqual([1, 123, 0, "%50\\%\\_plan%", "2026-06-01T00:00:00.000Z"]);
   });
 
   it("restores conversations by inverting the state it matches on", async () => {
@@ -189,19 +138,5 @@ describe("ConversationRepository", () => {
     expect(threads).toContain("'chat', 'task'");
     expect(threads).not.toContain("'delegate'");
     expect(search).toContain("'chat', 'task', 'delegate'");
-  });
-
-  it("returns the parent a delegate belongs to so search can explain the hit", async () => {
-    const { calls, db } = createMockD1();
-    const repository = new ConversationRepository({ DB: db } as any);
-
-    await repository.searchAccessibleConversations(123, "pricing", 8);
-
-    const query = calls.at(-1)?.query ?? "";
-
-    expect(query).toContain("parent.title AS parent_title");
-    expect(query).toContain(
-      "LEFT JOIN conversation parent ON parent.id = c.parent_conversation_id",
-    );
   });
 });

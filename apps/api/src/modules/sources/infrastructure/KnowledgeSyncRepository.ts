@@ -114,7 +114,13 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
     resource: SyncedResource,
   ): Promise<boolean> {
     const fence = `EXISTS (SELECT 1 FROM source_knowledge_sync WHERE id = ? AND generation = ?
-      AND cursor = ? AND status = 'active' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP)`;
+      AND cursor = ? AND status = 'active' AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP
+      AND EXISTS (SELECT 1 FROM provider_connection pc WHERE pc.id = source_knowledge_sync.connection_id
+        AND pc.user_id = source_knowledge_sync.user_id AND pc.status = 'connected')
+      AND EXISTS (SELECT 1 FROM project p JOIN workspace_member wm ON wm.workspace_id = p.workspace_id
+        WHERE p.id = source_knowledge_sync.project_id AND wm.user_id = source_knowledge_sync.user_id AND wm.role IN ('owner', 'admin'))
+      AND EXISTS (SELECT 1 FROM project_capability grant_row WHERE grant_row.project_id = source_knowledge_sync.project_id
+        AND grant_row.kind = 'recipe' AND grant_row.capability_id = source_knowledge_sync.recipe_id AND grant_row.excluded = 0))`;
     const fenceValues = [sync.id, sync.generation, sync.cursor, token];
     const last = sync.cursor + 1 === resource.resourceCount;
     const results = await this.env.DB.batch([
@@ -153,7 +159,7 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
          WHERE id = ? AND generation = ? AND cursor = ? AND lease_token = ?
            AND status = 'active' AND lease_expires_at >= CURRENT_TIMESTAMP
            AND EXISTS (SELECT 1 FROM source WHERE id = ? AND project_id = ? AND created_by_user_id = ?
-             AND connection_id = ?)`,
+             AND connection_id = ?) AND ${fence}`,
       ).bind(
         last ? 0 : sync.cursor + 1,
         last ? 1 : 0,
@@ -164,6 +170,7 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
         sync.project_id,
         sync.user_id,
         sync.connection_id,
+        ...fenceValues,
       ),
     ]);
 
