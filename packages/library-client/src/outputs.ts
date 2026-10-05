@@ -97,14 +97,14 @@ export async function updateOutput(
 export async function formatOutputDocument(
   outputId: string,
   prompt?: string,
-): Promise<{ body: string }> {
+): Promise<{ body: string; sourceRevision: number }> {
   const response = await fetchApiOrThrow(`/outputs/${encodeURIComponent(outputId)}/format`, {
     method: "POST",
     headers: await getHeaders(),
     body: prompt ? { prompt } : {},
   });
 
-  return returnFetchedData<{ body: string }>(response);
+  return returnFetchedData<{ body: string; sourceRevision: number }>(response);
 }
 
 export async function describeOutputDocument(
