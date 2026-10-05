@@ -1,7 +1,6 @@
 import {
   normaliseSiteIntegrations,
   normaliseSiteSourceRows,
-  type SitePromptSource,
 } from "@ngriffin_uk/polychat-library-sites";
 import type { SiteProject, SiteRecord } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -86,24 +85,4 @@ export async function readSiteSourceBindings(context: ServiceContext, site: Site
   }
 
   return bindings;
-}
-
-export async function readSiteGenerationSources(
-  context: ServiceContext,
-  userId: number,
-  sourceIds: string[],
-  projectId: string | null,
-): Promise<SitePromptSource[]> {
-  return Promise.all(
-    [...new Set(sourceIds)].map(async (sourceId) => {
-      const rows = await readSiteSourceRows(context, userId, sourceId, projectId);
-
-      return {
-        sourceId,
-        fields: Object.fromEntries<string>(
-          Object.entries(rows[0] ?? {}).map(([name, value]) => [name, typeof value]),
-        ),
-      };
-    }),
-  );
 }

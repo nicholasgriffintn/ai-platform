@@ -6,7 +6,6 @@ import {
   siteCollectionSchema,
   siteDataBindingSchema,
   siteDataIdentifierSchema,
-  siteSourceBindingSchema,
 } from "./site-data.js";
 
 export const SITES_CAPABILITY_ID = "featured-sites";
@@ -462,7 +461,6 @@ export type SiteElementTarget = z.infer<typeof siteElementTargetSchema>;
 export const siteGenerateRequestSchema = z
   .object({
     prompt: z.string().trim().min(1).max(SITE_PROMPT_MAX_LENGTH),
-    sourceIds: z.array(siteSourceBindingSchema.shape.sourceId).max(40).optional(),
     projectId: z.string().min(1).optional(),
     siteId: z.string().min(1).optional(),
     expectedRevision: z.number().int().positive().optional(),
