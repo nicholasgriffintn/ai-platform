@@ -11,9 +11,9 @@ import {
   executeWebhookSandboxCommand,
   postWebhookSandboxResultComment,
 } from "~/modules/webhooks/application/github-task-execution";
-import { handleGithubWebhook } from "~/modules/webhooks/application/github-webhook";
 
-import { createIntegrationTestContext } from "./helpers/project-task-integrations";
+import { createIntegrationTestContext } from "../../../../../test/helpers/project-task-integrations";
+import { handleGithubWebhook } from "../github-webhook";
 
 vi.mock("~/modules/github/application/connections", () => ({
   getGitHubAppConnectionForInstallation: vi.fn(),

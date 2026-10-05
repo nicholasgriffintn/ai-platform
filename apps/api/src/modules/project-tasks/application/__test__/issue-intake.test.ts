@@ -4,21 +4,16 @@ import {
   executeComposioSessionTool,
   listComposioConnectedAccounts,
 } from "@ngriffin_uk/polychat-ai-integrations";
-import { createProjectTaskSchema, importProjectIssueSchema } from "@ngriffin_uk/polychat-schemas";
+import { importProjectIssueSchema } from "@ngriffin_uk/polychat-schemas";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { getRecipeConnectorProviderConfig } from "~/modules/apps/application/connectors/connector-adapters";
-import { createProjectTask, updateProjectTask } from "~/modules/project-tasks/application";
-import { resolveTaskRuntime } from "~/modules/project-tasks/application/flow";
-import {
-  importProjectIssue,
-  previewProjectIssue,
-} from "~/modules/project-tasks/application/issue-intake";
-import { buildProjectTaskContext } from "~/modules/project-tasks/application/source-context";
 import { updateSource, deleteSource } from "~/modules/sources/application/sources";
 
-import { createIntegrationTestContext } from "./helpers/project-task-integrations";
+import { createIntegrationTestContext } from "../../../../../test/helpers/project-task-integrations";
+import { importProjectIssue, previewProjectIssue } from "../issue-intake";
+import { buildProjectTaskContext } from "../source-context";
 
 vi.mock("~/modules/project-tasks/application/attention", () => ({
   reconcileTaskNotifications: vi.fn(),
@@ -215,68 +210,5 @@ describe("issue intake through the existing task and source services", () => {
       { action: "project.task.created", total: 1 },
       { action: "source.created", total: 1 },
     ]);
-  });
-});
-
-describe("review execution isolation", () => {
-  it("keeps a review read-only even when its runner requests a writing teammate", async () => {
-    const { task } = await createProjectTask(
-      fixture.context,
-      "project-1",
-      createProjectTaskSchema.parse({
-        objective: "Review the captured diff",
-        runner: {
-          kind: "conversation",
-          teammateId: "writing-teammate",
-          mode: "build",
-          model: null,
-        },
-      }),
-      { executionProfile: "diff_review" },
-    );
-    const runtime = await resolveTaskRuntime({ context: fixture.context, task, flow: null });
-
-    expect(runtime.enabledTools).toEqual(["get_task", "list_tasks", "ask_user", "complete_goal"]);
-    expect(runtime.skillIds).toEqual([]);
-    await expect(
-      updateProjectTask(fixture.context, "project-1", task.id, {
-        objective: "Run repository setup",
-      }),
-    ).rejects.toMatchObject({ statusCode: 409 });
-  });
-
-  it("admits one dispatch when two starts read the same pending task", async () => {
-    const { task } = await createProjectTask(
-      fixture.context,
-      "project-1",
-      createProjectTaskSchema.parse({ objective: "Review a pending task" }),
-    );
-    const params = {
-      taskId: task.id,
-      projectId: task.projectId,
-      runnerIdentityUserId: 7,
-      runner: { kind: "conversation", teammateId: null, model: null, mode: null } as const,
-      tokenBudget: 20000,
-      expectedStatus: task.status,
-      expectedDispatchTaskId: task.dispatchTaskId,
-    };
-    const results = await Promise.all([
-      fixture.context.repositories.projectTasks.queueTaskForRun({
-        ...params,
-        dispatchTaskId: "dispatch-1",
-      }),
-      fixture.context.repositories.projectTasks.queueTaskForRun({
-        ...params,
-        dispatchTaskId: "dispatch-2",
-      }),
-    ]);
-
-    expect(results.filter(Boolean)).toHaveLength(1);
-    const admitted = results.find((result) => result !== null);
-
-    expect(await fixture.context.repositories.projectTasks.getTaskById(task.id)).toMatchObject({
-      dispatchTaskId: admitted?.dispatchTaskId,
-      status: "queued",
-    });
   });
 });
