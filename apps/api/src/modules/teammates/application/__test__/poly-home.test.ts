@@ -12,6 +12,8 @@ const polyContext: TeammateContext = {
   homeConversationId: "teammate_home_poly",
   memoryDocumentId: "memory_poly",
   status: "active",
+  autonomyLevel: "assistant",
+  standingApprovals: [],
   createdAt: "2026-10-05T09:00:00.000Z",
   updatedAt: null,
 };

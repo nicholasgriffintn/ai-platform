@@ -17,6 +17,7 @@ import type {
   DatasetStats,
   ModelPlatformAction,
   ModelVersionAttributes,
+  TeammateStandingApproval,
   DATASET_COLLECTION_METHODS,
   DATASET_SHAPES,
 } from "@ngriffin_uk/polychat-schemas";
@@ -1092,6 +1093,10 @@ export const teammateContext = sqliteTable(
       .notNull()
       .default("active"),
     autonomy_level: text({ enum: ["observer", "assistant", "partner"] }),
+    standing_approvals: text({ mode: "json" })
+      .$type<TeammateStandingApproval[]>()
+      .default([])
+      .notNull(),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),

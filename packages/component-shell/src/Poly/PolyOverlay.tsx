@@ -18,6 +18,7 @@ import {
   useLocalComposerDraft,
   useLocalConversationScope,
   usePolyHome,
+  usePolyStandingApprovals,
   useTrackEvent,
 } from "@ngriffin_uk/polychat-library-react";
 import { Feather, Loader2 } from "lucide-react";
@@ -73,6 +74,7 @@ function PolyThread({
   onNavigate: (href: string) => void;
 }) {
   const scope = useLocalConversationScope(conversationId);
+  const standingApprovals = usePolyStandingApprovals();
   const { pathname } = useLocation();
   const openConversationId = useChatStore((state) => state.currentConversationId);
   const draft = useLocalComposerDraft();
@@ -109,6 +111,17 @@ function PolyThread({
                 hideVoiceControls: true,
                 toolSelectionLocked: true,
                 analyticsSource: "poly",
+                onToolInteraction: async (_toolName, action, data) => {
+                  if (
+                    action === "submitPrompt" &&
+                    data.standing === true &&
+                    typeof data.interactionId === "string"
+                  ) {
+                    await standingApprovals.grant.mutateAsync(data.interactionId);
+                  }
+
+                  return false;
+                },
               }}
             />
           </div>

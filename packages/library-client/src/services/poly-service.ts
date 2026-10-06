@@ -31,4 +31,32 @@ export class PolyService {
 
     return returnFetchedData<PolyAgenda>(response);
   }
+
+  async grantPolyStandingApproval(interactionId: string): Promise<PolyHome> {
+    const response = await fetchApi("/poly/standing-approvals", {
+      method: "POST",
+      headers: await this.getHeaders(),
+      body: { interaction_id: interactionId },
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Poly could not keep that approval");
+    }
+
+    return returnFetchedData<PolyHome>(response);
+  }
+
+  async revokePolyStandingApproval(toolName: string, destination: string): Promise<PolyHome> {
+    const response = await fetchApi("/poly/standing-approvals", {
+      method: "DELETE",
+      headers: await this.getHeaders(),
+      body: { tool_name: toolName, destination },
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Poly could not forget that approval");
+    }
+
+    return returnFetchedData<PolyHome>(response);
+  }
 }

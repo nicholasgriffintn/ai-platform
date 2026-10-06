@@ -21,7 +21,8 @@ export const toolPolicies = {
     when { context.autonomyLevel != "" &&
       ["external_send", "spend", "destructive", "credential", "data_export"].contains(context.effectClass) };`,
   "tool.autonomy.assistant": `forbid(principal, action == Polychat::Action::"tool.unattended", resource)
-    when { context.autonomyLevel == "assistant" && context.effectClass == "write" };`,
+    when { context.autonomyLevel == "assistant" && context.effectClass == "write" &&
+      !context.standingApproval };`,
   "tool.approval": `permit(principal, action == Polychat::Action::"tool.unattended", resource)
     when { context.toolName == "request_approval" ||
       (!context.permissions.containsAny(context.requiredApprovalPermissions) &&

@@ -235,6 +235,12 @@ class ApiService {
 
   readPolyAgenda = (): Promise<PolyAgenda> => this.polyService.readPolyAgenda();
 
+  grantPolyStandingApproval = (interactionId: string): Promise<PolyHome> =>
+    this.polyService.grantPolyStandingApproval(interactionId);
+
+  revokePolyStandingApproval = (toolName: string, destination: string): Promise<PolyHome> =>
+    this.polyService.revokePolyStandingApproval(toolName, destination);
+
   listTeammates = (): Promise<TeammateResponse[]> => {
     return this.teammateService.listTeammates();
   };

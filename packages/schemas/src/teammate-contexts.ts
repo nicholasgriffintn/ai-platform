@@ -1,3 +1,4 @@
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 import { recipeConnectorProviderSchema } from "./apps.js";
@@ -21,6 +22,28 @@ export const teammateAutonomyLevelSchema = z
 
 export type TeammateAutonomyLevel = z.infer<typeof teammateAutonomyLevelSchema>;
 
+export const TEAMMATE_STANDING_APPROVAL_DAYS = 30;
+
+export const STANDING_APPROVAL_OPTION = "Always allow here";
+
+export const teammateStandingApprovalSchema = z.object({
+  toolName: z.string().min(1),
+  destination: z.string().min(1),
+  grantedAt: z.iso.datetime(),
+  expiresAt: z.iso.datetime(),
+});
+
+export type TeammateStandingApproval = z.infer<typeof teammateStandingApprovalSchema>;
+
+const teammateStandingApprovalListSchema = z.array(teammateStandingApprovalSchema);
+
+export function parseTeammateStandingApprovals(value: unknown): TeammateStandingApproval[] {
+  const candidate: unknown = typeof value === "string" ? safeParseJson(value) : value;
+  const parsed = teammateStandingApprovalListSchema.safeParse(candidate);
+
+  return parsed.success ? parsed.data : [];
+}
+
 export const teammateContextSchema = z.object({
   id: z.string().min(1),
   teammateId: z.string().min(1),
@@ -30,6 +53,7 @@ export const teammateContextSchema = z.object({
   memoryDocumentId: z.string().min(1),
   status: teammateContextStatusSchema,
   autonomyLevel: teammateAutonomyLevelSchema.nullable(),
+  standingApprovals: z.array(teammateStandingApprovalSchema),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
 });

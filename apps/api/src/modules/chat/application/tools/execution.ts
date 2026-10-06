@@ -15,7 +15,12 @@ import {
   checkToolCallRepeat,
   type ToolCallLedger,
 } from "~/modules/chat/application/tools/call-ledger";
-import { resolveToolCallEffectClass } from "~/modules/chat/application/tools/effects";
+import {
+  hasStandingApproval,
+  isStandingApprovalEligible,
+  resolveToolCallDestination,
+  resolveToolCallEffectClass,
+} from "~/modules/chat/application/tools/effects";
 import {
   evaluateToolIntentGate,
   requiresToolIntentVerification,
@@ -164,6 +169,16 @@ export const handleToolCalls = async (
       const functionDefinition =
         functionName === "memory" ? null : resolveFunctionTool(functionName);
 
+      const rawToolArguments = toolCall.function?.arguments ?? toolCall.arguments;
+      const callEffectClass = resolveToolCallEffectClass({
+        toolName: functionName,
+        effects: functionDefinition?.effects,
+        rawArguments: rawToolArguments,
+      });
+      const callDestination = resolveToolCallDestination({
+        effects: functionDefinition?.effects,
+        rawArguments: rawToolArguments,
+      });
       const permissionResult = permissionChecker.checkRequestToolAccess({
         toolName: functionName,
         mode,
@@ -174,12 +189,14 @@ export const handleToolCalls = async (
         requireApprovalFor: req.request?.require_approval_for,
         deniedTools: req.request?.denied_tools,
         enforceModePolicy: req.request?.enforce_mode_tool_policy,
-        effectClass: resolveToolCallEffectClass({
-          toolName: functionName,
-          effects: functionDefinition?.effects,
-          rawArguments: toolCall.function?.arguments ?? toolCall.arguments,
-        }),
+        effectClass: callEffectClass,
         autonomyLevel: req.request?.autonomy_level,
+        standingApproval: hasStandingApproval({
+          approvals: req.request?.standing_approvals,
+          toolName: functionName,
+          destination: callDestination,
+          now: Date.now(),
+        }),
       });
 
       if (!permissionResult.allowed) {
@@ -295,6 +312,12 @@ export const handleToolCalls = async (
             toolCallId: toolCall.id,
             toolCallArguments: toolCall.arguments || toolCall.function?.arguments,
             reason: approvalReason,
+            standingEligible: isStandingApprovalEligible({
+              autonomyLevel: req.request?.autonomy_level,
+              conversationType: req.request?.conversation_type,
+              effectClass: callEffectClass,
+              destination: callDestination,
+            }),
             logId: modelResponseLogId || "",
             timestamp,
             model: req.request?.model || "unknown",
