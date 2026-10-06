@@ -1,10 +1,11 @@
 import { timingSafeEqual } from "@ngriffin_uk/polychat-utility-server/crypto";
 
-import type {
-  ChannelAdapter,
-  ChannelIncoming,
-  ChannelReply,
-  ChannelVerification,
+import {
+  CHANNEL_TOP_LEVEL_THREAD,
+  type ChannelAdapter,
+  type ChannelIncoming,
+  type ChannelReply,
+  type ChannelVerification,
 } from "~/modules/channels/application/ports/channel-adapter";
 
 import { parseTelegramMessage } from "./channel-payloads";
@@ -48,7 +49,9 @@ export class TelegramChannelAdapter implements ChannelAdapter {
       body: JSON.stringify({
         chat_id: reply.externalId,
         text: reply.body,
-        ...(reply.threadId !== "direct" ? { message_thread_id: Number(reply.threadId) } : {}),
+        ...(reply.threadId !== CHANNEL_TOP_LEVEL_THREAD
+          ? { message_thread_id: Number(reply.threadId) }
+          : {}),
       }),
     });
 

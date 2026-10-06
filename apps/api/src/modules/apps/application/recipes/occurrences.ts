@@ -10,6 +10,7 @@ import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ensureConversationBrief } from "~/modules/memory-documents/application/memory-documents";
+import { sendPolyNotificationToChannels } from "~/modules/poly/application/channel-delivery";
 import { admitRoutineHandoff } from "~/modules/poly/application/handoffs";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { CreateChatCompletionsResponse, IUser } from "~/types";
@@ -182,6 +183,16 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
     currentContext.homeConversationId,
     params.user.id,
   );
+
+  if (isPolyTeammateId(currentContext.teammateId)) {
+    await sendPolyNotificationToChannels({
+      context: params.context,
+      user: params.user,
+      polyContextId: currentContext.id,
+      notificationId: messageId,
+      body: `${heading}: ${params.recipeTitle}\n\n${summary}`,
+    });
+  }
 
   return "delivered";
 }
