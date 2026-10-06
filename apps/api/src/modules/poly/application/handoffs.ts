@@ -1,7 +1,16 @@
-import type { PolyHandoffDecision, PolyHandoffUrgency } from "@ngriffin_uk/polychat-schemas";
-import { generateId, truncateSingleLine } from "@ngriffin_uk/polychat-utility-core";
+import {
+  POLY_HANDOFF_CAPABILITY_ID,
+  polyHandoffDataSchema,
+  type PolyHandoffData,
+  type PolyHandoffDecision,
+  type PolyHandoffUrgency,
+} from "@ngriffin_uk/polychat-schemas";
+import { truncateSingleLine } from "@ngriffin_uk/polychat-utility-core";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import type { ActivityRecord } from "~/modules/activity/infrastructure/ActivityRepository";
 import { admitPolyNotification } from "~/modules/poly/domain/budgets";
 import type { IUser } from "~/types";
 
@@ -9,11 +18,12 @@ import { judgeRoutineResult } from "./handoff-judgement";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const STORED_SUMMARY_CHARS = 1_600;
+const HANDOFFS_PER_DAY_SCAN = 200;
 
 export interface RoutineHandoffInput {
   context: ServiceContext;
   user: IUser;
-  polyContextId: string;
+  polyConversationId: string;
   installationId: string;
   occurrenceId: string;
   phase: "attention" | "result";
@@ -21,6 +31,21 @@ export interface RoutineHandoffInput {
   summary: string;
   resultConversationId: string;
   failed: boolean;
+}
+
+export interface PolyHandoff {
+  id: string;
+  title: string;
+  createdAt: string;
+  data: PolyHandoffData;
+}
+
+export function readPolyHandoff(record: ActivityRecord): PolyHandoff | null {
+  const data = polyHandoffDataSchema.safeParse(safeParseJson(record.data));
+
+  return data.success
+    ? { id: record.id, title: record.summary, createdAt: record.created_at, data: data.data }
+    : null;
 }
 
 async function resolveUrgency(
@@ -46,40 +71,51 @@ async function resolveUrgency(
 export async function admitRoutineHandoff(
   input: RoutineHandoffInput,
 ): Promise<PolyHandoffDecision> {
-  const handoffs = input.context.repositories.polyHandoffs;
-  const fingerprint = `routine:${input.occurrenceId}:${input.phase}`;
-  const existing = await handoffs.getByFingerprint(input.polyContextId, fingerprint);
+  const activities = input.context.repositories.activities;
+  const groupId = `routine:${input.occurrenceId}:${input.phase}`;
+  const id = `poly_handoff_${(await sha256Hex(`${input.polyConversationId}:${groupId}`)).slice(0, 40)}`;
+  const existing = await activities.getActivityById(id);
+  const recorded = existing ? readPolyHandoff(existing) : null;
 
-  if (existing) {
-    return existing.decision;
+  if (recorded) {
+    return recorded.data.decision;
   }
 
   const now = Date.now();
   const { urgency, receipt } = await resolveUrgency(input);
-  const notifiedAt = await handoffs.listNotifiedSince(
-    input.polyContextId,
-    new Date(now - DAY_MS).toISOString(),
-  );
-  const admission = admitPolyNotification({
-    urgency,
-    notifiedAt: notifiedAt.map((at) => Date.parse(at)),
-    now,
+  const recent = await activities.listConversationActivitiesSince({
+    conversationId: input.polyConversationId,
+    capabilityId: POLY_HANDOFF_CAPABILITY_ID,
+    since: new Date(now - DAY_MS).toISOString(),
+    limit: HANDOFFS_PER_DAY_SCAN,
   });
-  const recorded = await handoffs.insertOnce({
-    id: `poly_handoff_${generateId()}`,
-    contextId: input.polyContextId,
+  const notifiedAt = recent
+    .map(readPolyHandoff)
+    .filter((handoff) => handoff?.data.decision === "notified")
+    .map((handoff) => Date.parse(handoff?.createdAt ?? ""));
+  const admission = admitPolyNotification({ urgency, notifiedAt, now });
+  const data: PolyHandoffData = {
     sourceKind: "routine",
     sourceId: input.installationId,
-    fingerprint,
-    title: truncateSingleLine(input.title, 200),
-    summary: input.summary.slice(0, STORED_SUMMARY_CHARS),
     resultConversationId: input.resultConversationId,
     urgency,
     decision: admission.admitted ? "notified" : "noted",
     reason: admission.reason,
-    admissionReceipt: receipt,
+    summary: input.summary.slice(0, STORED_SUMMARY_CHARS),
+    receipt,
+  };
+  const stored = await activities.recordActivityOnce({
+    id,
+    createdByUserId: input.user.id,
+    conversationId: input.polyConversationId,
+    capabilityId: POLY_HANDOFF_CAPABILITY_ID,
+    groupId,
+    kind: "routine",
+    status: "succeeded",
+    summary: truncateSingleLine(input.title, 200),
+    data,
     createdAt: new Date(now).toISOString(),
   });
 
-  return recorded.decision;
+  return readPolyHandoff(stored)?.data.decision ?? data.decision;
 }

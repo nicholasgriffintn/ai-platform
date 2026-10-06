@@ -1127,42 +1127,6 @@ export const teammateContext = sqliteTable(
 
 export type TeammateContextRow = Omit<typeof teammateContext.$inferSelect, `computer_${string}`>;
 
-export const polyHandoff = sqliteTable(
-  "poly_handoff",
-  {
-    id: text().primaryKey(),
-    context_id: text()
-      .notNull()
-      .references(() => teammateContext.id, { onDelete: "cascade" }),
-    source_kind: text({ enum: ["routine"] }).notNull(),
-    source_id: text().notNull(),
-    fingerprint: text().notNull(),
-    title: text().notNull(),
-    summary: text().notNull(),
-    result_conversation_id: text(),
-    urgency: text({ enum: ["critical", "high", "normal", "low"] }).notNull(),
-    decision: text({ enum: ["notified", "noted"] }).notNull(),
-    reason: text().notNull(),
-    admission_receipt_json: text({ mode: "json" }).$type<Record<string, unknown>>(),
-    created_at: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-  },
-  (table) => ({
-    fingerprintIdx: uniqueIndex("poly_handoff_context_fingerprint_idx").on(
-      table.context_id,
-      table.fingerprint,
-    ),
-    decisionIdx: index("poly_handoff_context_decision_idx").on(
-      table.context_id,
-      table.decision,
-      table.created_at,
-    ),
-  }),
-);
-
-export type PolyHandoffRow = typeof polyHandoff.$inferSelect;
-
 export interface TeammateConnectionGrantRow {
   id: string;
   context_id: string;

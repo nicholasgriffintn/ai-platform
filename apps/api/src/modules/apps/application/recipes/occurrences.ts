@@ -133,7 +133,7 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
     const decision = await admitRoutineHandoff({
       context: params.context,
       user: params.user,
-      polyContextId: currentContext.id,
+      polyConversationId: currentContext.homeConversationId,
       installationId: params.installationId,
       occurrenceId: params.occurrenceId,
       phase,

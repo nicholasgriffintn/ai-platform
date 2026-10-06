@@ -47,7 +47,6 @@ import { ModelTrainingRepository } from "~/modules/model-training/infrastructure
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { UserPetRepository } from "~/modules/pets/infrastructure/UserPetRepository";
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
-import { PolyHandoffRepository } from "~/modules/poly/infrastructure/PolyHandoffRepository";
 import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { SavedMessageRepository } from "~/modules/saved-messages/infrastructure/SavedMessageRepository";
@@ -289,10 +288,6 @@ export class RepositoryManager {
 
   public get conversationRuns(): ConversationRunRepository {
     return this.resolve("conversationRuns", (env) => new ConversationRunRepository(env));
-  }
-
-  public get polyHandoffs(): PolyHandoffRepository {
-    return this.resolve("polyHandoffs", (env) => new PolyHandoffRepository(env));
   }
 
   public get delegations(): DelegationRepository {
