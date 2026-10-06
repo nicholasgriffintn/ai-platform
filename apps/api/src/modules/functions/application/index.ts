@@ -9,7 +9,11 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { fromToolError } from "~/infrastructure/errors";
 import { filterToolsForPolyTurn } from "~/modules/chat/application/policy/poly";
-import { resolveToolCallEffectClass } from "~/modules/chat/application/tools/effects";
+import {
+  hasStandingApproval,
+  resolveToolCallDestination,
+  resolveToolCallEffectClass,
+} from "~/modules/chat/application/tools/effects";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { PermissionChecker } from "~/modules/functions/application/permissions";
 import type { IFunctionResponse, IRequest } from "~/types";
@@ -229,6 +233,15 @@ export const handleFunctions = async ({
       rawArguments: args,
     }),
     autonomyLevel: request.request?.autonomy_level,
+    standingApproval: hasStandingApproval({
+      approvals: request.request?.standing_approvals,
+      toolName: functionName,
+      destination: resolveToolCallDestination({
+        effects: foundFunction.effects,
+        rawArguments: args,
+      }),
+      now: Date.now(),
+    }),
   });
 
   if (!permissionResult.allowed) {

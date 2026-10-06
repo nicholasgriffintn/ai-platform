@@ -1,9 +1,11 @@
 import {
+  parseTeammateStandingApprovals,
   teammateConnectionGrantSchema,
   type TeammateAutonomyLevel,
   type TeammateConnectionGrant,
   type TeammateContext,
   type TeammateContextScope,
+  type TeammateStandingApproval,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
@@ -25,6 +27,7 @@ function formatContext(row: TeammateContextRow): TeammateContext {
     memoryDocumentId: row.memory_document_id,
     status: row.status,
     autonomyLevel: row.autonomy_level ?? null,
+    standingApprovals: parseTeammateStandingApprovals(row.standing_approvals),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -214,6 +217,18 @@ export class TeammateContextRepository extends BaseRepository<Pick<IEnv, "DB">> 
     await this.executeRun(
       "UPDATE teammate_context SET autonomy_level = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
       [autonomyLevel, id],
+    );
+
+    return this.getById(id);
+  }
+
+  async updateStandingApprovals(
+    id: string,
+    approvals: readonly TeammateStandingApproval[],
+  ): Promise<TeammateContext | null> {
+    await this.executeRun(
+      "UPDATE teammate_context SET standing_approvals = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [JSON.stringify(approvals), id],
     );
 
     return this.getById(id);

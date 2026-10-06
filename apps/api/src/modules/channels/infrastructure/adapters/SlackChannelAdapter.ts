@@ -2,11 +2,12 @@ import { slackChannelAddressSchema } from "@ngriffin_uk/polychat-schemas";
 import { timingSafeEqual, toHex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import type {
-  ChannelAdapter,
-  ChannelIncoming,
-  ChannelReply,
-  ChannelVerification,
+import {
+  CHANNEL_TOP_LEVEL_THREAD,
+  type ChannelAdapter,
+  type ChannelIncoming,
+  type ChannelReply,
+  type ChannelVerification,
 } from "~/modules/channels/application/ports/channel-adapter";
 
 import { parseSlackMessage } from "./channel-payloads";
@@ -82,7 +83,11 @@ export class SlackChannelAdapter implements ChannelAdapter {
         authorization: `Bearer ${secret}`,
         "content-type": "application/json; charset=utf-8",
       },
-      body: JSON.stringify({ channel: channelId, text: reply.body, thread_ts: reply.threadId }),
+      body: JSON.stringify({
+        channel: channelId,
+        text: reply.body,
+        ...(reply.threadId === CHANNEL_TOP_LEVEL_THREAD ? {} : { thread_ts: reply.threadId }),
+      }),
     });
 
     await requireSuccessfulChannelSend(response, "Slack");

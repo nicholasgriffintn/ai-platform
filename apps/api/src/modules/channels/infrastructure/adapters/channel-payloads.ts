@@ -1,7 +1,10 @@
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import z from "zod/v4";
 
-import type { ChannelIncoming } from "../../application/ports/channel-adapter";
+import {
+  CHANNEL_TOP_LEVEL_THREAD,
+  type ChannelIncoming,
+} from "../../application/ports/channel-adapter";
 
 const slackPayloadSchema = z.object({
   type: z.literal("event_callback"),
@@ -87,7 +90,9 @@ export function parseTelegramMessage(rawBody: string): ChannelIncoming {
     body: message.text,
     context: {
       externalId: String(message.chat.id),
-      threadId: message.message_thread_id ? String(message.message_thread_id) : "direct",
+      threadId: message.message_thread_id
+        ? String(message.message_thread_id)
+        : CHANNEL_TOP_LEVEL_THREAD,
       isDirect: message.chat.type === "private",
     },
   };

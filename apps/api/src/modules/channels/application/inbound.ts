@@ -5,6 +5,7 @@ import {
 import {
   createChatCompletionsJsonSchema,
   INBOUND_CHANNEL_IDS,
+  isPolyTeammateId,
   type InboundChannelId,
   channelMessageContextSchema,
   type ChannelMessageContext,
@@ -363,6 +364,7 @@ type ChannelDelivery =
       projectId?: string;
       bindingId?: string;
       teammateContextId?: string;
+      poly?: boolean;
       interactionMode: "direct" | "automated";
       validate(): Promise<void>;
       send(reply: ChannelReplyPayload): Promise<void>;
@@ -472,14 +474,12 @@ async function resolveBindingDelivery(params: {
     );
   }
 
-  const conversationId = await getChannelBindingConversationId({
-    channel: params.data.channel,
-    bindingId: binding.id,
-    externalId: binding.external_id,
-    userId: params.user.id,
-    senderId: sender.sender_id,
-    threadId: params.data.messageContext.threadId,
-  });
+  const isPoly = isPolyTeammateId(binding.teammate_id);
+
+  if (isPoly && binding.scope_type !== "personal") {
+    return { status: "channel_unavailable" };
+  }
+
   const teammateContext = binding.teammate_id
     ? await ensureActiveTeammateContext(
         params.context,
@@ -489,6 +489,17 @@ async function resolveBindingDelivery(params: {
           : { type: "personal", id: String(params.user.id) },
       )
     : null;
+  const conversationId =
+    isPoly && teammateContext
+      ? teammateContext.homeConversationId
+      : await getChannelBindingConversationId({
+          channel: params.data.channel,
+          bindingId: binding.id,
+          externalId: binding.external_id,
+          userId: params.user.id,
+          senderId: sender.sender_id,
+          threadId: params.data.messageContext.threadId,
+        });
   const validate = async () => {
     await requireChannelSenderMapping(params.context, {
       bindingId: binding.id,
@@ -545,6 +556,7 @@ async function resolveBindingDelivery(params: {
     conversationId,
     ...(binding.teammate_id ? { teammateId: binding.teammate_id } : {}),
     ...(teammateContext ? { teammateContextId: teammateContext.id } : {}),
+    poly: isPoly,
     bindingId: binding.id,
     interactionMode: binding.interaction_mode,
     validate,
@@ -661,7 +673,7 @@ export async function handleInboundChannelMessage(params: {
         mode: "agent",
         trigger: "channel",
         max_steps: profile.maxSteps,
-        enabled_tools: profile.tools,
+        ...(delivery.poly ? {} : { enabled_tools: profile.tools }),
         tool_choice: "auto",
         ...(delivery.projectId ? { metadata: { project_id: delivery.projectId } } : {}),
         messages: [

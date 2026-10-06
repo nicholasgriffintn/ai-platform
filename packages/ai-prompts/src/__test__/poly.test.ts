@@ -29,6 +29,32 @@ describe("Poly in the standard prompt", () => {
     expect(prompt).toContain("2026-10-05");
   });
 
+  it("lists the agenda as escaped data and leaves it out when there is nothing on it", () => {
+    const withAgenda = buildStandardChatPrompt({
+      ...base,
+      poly: {
+        agenda: {
+          needsYou: ["delegation: Book <venue> (awaiting approval)"],
+          workingOn: [],
+          done: ["goal: Ship notes (completed)"],
+          noted: ["routine: Inbox sweep (not urgent)"],
+        },
+      },
+    });
+    const empty = buildStandardChatPrompt({
+      ...base,
+      poly: { agenda: { needsYou: [], workingOn: [], done: [], noted: [] } },
+    });
+
+    expect(withAgenda).toContain(
+      "<needs_you>\n- delegation: Book &lt;venue&gt; (awaiting approval)",
+    );
+    expect(withAgenda).toContain("<done_this_week>");
+    expect(withAgenda).toContain("<noted_quietly>\n- routine: Inbox sweep (not urgent)");
+    expect(withAgenda).not.toContain("<working_on>");
+    expect(empty).not.toContain("<agenda>");
+  });
+
   it("leaves ordinary chats without the Poly section", () => {
     expect(buildStandardChatPrompt(base)).not.toContain("<poly>");
   });

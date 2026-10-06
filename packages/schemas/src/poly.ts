@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-import { teammateAutonomyLevelSchema } from "./teammate-contexts.js";
+import {
+  teammateAutonomyLevelSchema,
+  teammateStandingApprovalSchema,
+} from "./teammate-contexts.js";
 
 export const POLY_CONVERSATION_TYPE = "poly";
 
@@ -108,6 +111,58 @@ export const polyHomeSchema = z.object({
   context_id: z.string().min(1),
   conversation_id: z.string().min(1),
   autonomy_level: teammateAutonomyLevelSchema,
+  standing_approvals: z.array(teammateStandingApprovalSchema),
 });
 
 export type PolyHome = z.infer<typeof polyHomeSchema>;
+
+export const createPolyStandingApprovalSchema = z.object({
+  interaction_id: z.string().min(1),
+});
+
+export const revokePolyStandingApprovalSchema = z.object({
+  tool_name: z.string().min(1),
+  destination: z.string().min(1),
+});
+
+export const POLY_HANDOFF_URGENCIES = ["critical", "high", "normal", "low"] as const;
+
+export const polyHandoffUrgencySchema = z.enum(POLY_HANDOFF_URGENCIES);
+
+export const polyHandoffDecisionSchema = z.enum(["notified", "noted"]);
+
+export const POLY_HANDOFF_CAPABILITY_ID = "poly.handoffs";
+
+export const polyHandoffDataSchema = z.object({
+  sourceKind: z.literal("routine"),
+  sourceId: z.string().min(1),
+  resultConversationId: z.string().min(1).nullable(),
+  urgency: polyHandoffUrgencySchema,
+  decision: polyHandoffDecisionSchema,
+  reason: z.string().min(1),
+  summary: z.string(),
+  receipt: z.record(z.string(), z.unknown()).nullable(),
+});
+
+export type PolyHandoffUrgency = z.infer<typeof polyHandoffUrgencySchema>;
+export type PolyHandoffDecision = z.infer<typeof polyHandoffDecisionSchema>;
+export type PolyHandoffData = z.infer<typeof polyHandoffDataSchema>;
+
+export const polyAgendaItemSchema = z.object({
+  kind: z.enum(["delegation", "goal", "approval", "question", "routine"]),
+  id: z.string().min(1),
+  title: z.string(),
+  status: z.string(),
+  conversation_id: z.string().min(1),
+  updated_at: z.string().nullable(),
+});
+
+export const polyAgendaSchema = z.object({
+  needs_you: z.array(polyAgendaItemSchema),
+  working_on: z.array(polyAgendaItemSchema),
+  done: z.array(polyAgendaItemSchema),
+  noted: z.array(polyAgendaItemSchema),
+});
+
+export type PolyAgendaItem = z.infer<typeof polyAgendaItemSchema>;
+export type PolyAgenda = z.infer<typeof polyAgendaSchema>;

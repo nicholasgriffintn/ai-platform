@@ -1,5 +1,5 @@
 import { CHATS_QUERY_KEY } from "@ngriffin_uk/polychat-library-client";
-import type { DeviceSyncEvent, DeviceSyncEventType } from "@ngriffin_uk/polychat-schemas";
+import type { DeviceSyncEvent, DeviceSyncEventType, PolyHome } from "@ngriffin_uk/polychat-schemas";
 import { readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 import type { QueryClient } from "@tanstack/react-query";
 
@@ -11,6 +11,8 @@ import {
   conversationHandlesQueryKey,
 } from "../hooks/useDelegations.js";
 import { conversationBriefQueryKey } from "../hooks/useMemoryDocuments.js";
+import { POLY_AGENDA_QUERY_KEY } from "../hooks/usePolyAgenda.js";
+import { POLY_HOME_QUERY_KEY } from "../hooks/usePolyHome.js";
 import {
   projectTaskDetailQueryPrefix,
   projectTasksQueryKey,
@@ -42,6 +44,15 @@ const refreshConversationDetail: SyncBinding["apply"] = (context, event) => {
   }
 };
 
+const refreshPolyAgenda: SyncBinding["apply"] = (context, event) => {
+  const conversationId = readOptionalString(event.data.conversationId);
+  const home = context.queryClient.getQueryData<PolyHome>(POLY_HOME_QUERY_KEY);
+
+  if (conversationId && conversationId === home?.conversation_id) {
+    context.invalidate(POLY_AGENDA_QUERY_KEY);
+  }
+};
+
 const refreshConversationAndList: SyncBinding["apply"] = (context, event) => {
   refreshConversationDetail(context, event);
   context.invalidate([CHATS_QUERY_KEY, "remote"]);
@@ -49,7 +60,13 @@ const refreshConversationAndList: SyncBinding["apply"] = (context, event) => {
 
 export const SYNC_BINDINGS: SyncBinding[] = [
   { type: "conversation.changed", apply: refreshConversationAndList },
-  { type: "run.changed", apply: refreshConversationAndList },
+  {
+    type: "run.changed",
+    apply: (context, event) => {
+      refreshConversationAndList(context, event);
+      refreshPolyAgenda(context, event);
+    },
+  },
   { type: "run.event", apply: refreshConversationDetail },
   { type: "message.changed", apply: refreshConversationDetail },
   {
@@ -81,6 +98,7 @@ export const SYNC_BINDINGS: SyncBinding[] = [
       }
 
       context.invalidate(conversationHandlesQueryKey);
+      refreshPolyAgenda(context, event);
     },
   },
   {
@@ -198,6 +216,8 @@ export const SYNC_BINDINGS: SyncBinding[] = [
       if (conversationId) {
         context.invalidate([GOAL_QUERY_KEY, conversationId]);
       }
+
+      refreshPolyAgenda(context, event);
     },
   },
   { type: "research.changed", apply: (context) => context.invalidate(["research-status"]) },
@@ -238,6 +258,7 @@ export function invalidateSyncQueries(invalidateQuery: SyncBindingContext["inval
     ["channel-senders"],
     ["model-platform"],
     [GOAL_QUERY_KEY],
+    POLY_AGENDA_QUERY_KEY,
     ["research-status"],
     ["canvas"],
     [REPLICATE_QUERY_KEY],

@@ -33,3 +33,19 @@ export function useSetPolyAutonomy(home: PolyHome | undefined) {
     },
   });
 }
+
+export function usePolyStandingApprovals() {
+  const queryClient = useQueryClient();
+  const store = (home: PolyHome) => queryClient.setQueryData(POLY_HOME_QUERY_KEY, home);
+  const grant = useMutation({
+    mutationFn: (interactionId: string) => apiService.grantPolyStandingApproval(interactionId),
+    onSuccess: store,
+  });
+  const revoke = useMutation({
+    mutationFn: (approval: { toolName: string; destination: string }) =>
+      apiService.revokePolyStandingApproval(approval.toolName, approval.destination),
+    onSuccess: store,
+  });
+
+  return { grant, revoke };
+}

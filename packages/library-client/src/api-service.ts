@@ -7,6 +7,7 @@ import type {
 } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { formatMessageContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import type {
+  PolyAgenda,
   PolyHome,
   TeammateAutonomyLevel,
   TeammateResponse,
@@ -231,6 +232,14 @@ class ApiService {
   }
 
   openPolyHome = (): Promise<PolyHome> => this.polyService.openPolyHome();
+
+  readPolyAgenda = (): Promise<PolyAgenda> => this.polyService.readPolyAgenda();
+
+  grantPolyStandingApproval = (interactionId: string): Promise<PolyHome> =>
+    this.polyService.grantPolyStandingApproval(interactionId);
+
+  revokePolyStandingApproval = (toolName: string, destination: string): Promise<PolyHome> =>
+    this.polyService.revokePolyStandingApproval(toolName, destination);
 
   listTeammates = (): Promise<TeammateResponse[]> => {
     return this.teammateService.listTeammates();

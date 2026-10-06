@@ -52,6 +52,22 @@ describe("teammate autonomy", () => {
     },
   );
 
+  it("lets a standing approval lift the assistant's ask for writes but never the floor", () => {
+    const withStanding = (effectClass: ToolEffectClass) =>
+      checker.checkRequestToolAccess({
+        toolName: "call_api",
+        mode: "chat",
+        user: { id: 1, plan_id: "pro" },
+        toolPermissions: ["network", "write"],
+        effectClass,
+        autonomyLevel: "assistant",
+        standingApproval: true,
+      });
+
+    expect(withStanding("write")).toMatchObject({ allowed: true, requiresApproval: false });
+    expect(withStanding("destructive")).toMatchObject({ allowed: true, requiresApproval: true });
+  });
+
   it("still honours an approval the person gave for this call", () => {
     const result = checker.checkRequestToolAccess({
       toolName: "call_api",

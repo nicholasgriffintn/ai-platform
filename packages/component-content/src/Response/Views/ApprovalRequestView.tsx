@@ -1,4 +1,5 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { STANDING_APPROVAL_OPTION } from "@ngriffin_uk/polychat-schemas";
 import { AlertTriangle } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -40,7 +41,8 @@ export function ApprovalRequestView({
     submittingRef.current = true;
     setSubmission({ key: approval.key, option, status: "submitting" });
     const pendingTool = approval.approval;
-    const resolution = option.toLowerCase() === "approve" ? "approved" : "rejected";
+    const standing = option === STANDING_APPROVAL_OPTION;
+    const resolution = standing || option.toLowerCase() === "approve" ? "approved" : "rejected";
     const interactionInput = `${option}: ${approval.message ?? "the requested action"}`;
 
     try {
@@ -53,6 +55,7 @@ export function ApprovalRequestView({
               interactionId: pendingTool.interactionId,
               resolution,
               ...(resolution === "approved" ? { approvedToolName: pendingTool.toolName } : {}),
+              ...(standing ? { standing: true } : {}),
             }
           : {}),
       });

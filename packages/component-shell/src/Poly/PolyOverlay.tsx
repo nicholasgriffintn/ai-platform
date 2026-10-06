@@ -18,6 +18,7 @@ import {
   useLocalComposerDraft,
   useLocalConversationScope,
   usePolyHome,
+  usePolyStandingApprovals,
   useTrackEvent,
 } from "@ngriffin_uk/polychat-library-react";
 import { Feather, Loader2 } from "lucide-react";
@@ -25,6 +26,7 @@ import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PolyAgendaStrip } from "./PolyAgendaStrip.js";
 import { PolyAutonomyMenu } from "./PolyAutonomyMenu.js";
 import { usePolyNavigation } from "./usePolyNavigation.js";
 
@@ -72,6 +74,7 @@ function PolyThread({
   onNavigate: (href: string) => void;
 }) {
   const scope = useLocalConversationScope(conversationId);
+  const standingApprovals = usePolyStandingApprovals();
   const { pathname } = useLocation();
   const openConversationId = useChatStore((state) => state.currentConversationId);
   const draft = useLocalComposerDraft();
@@ -108,6 +111,17 @@ function PolyThread({
                 hideVoiceControls: true,
                 toolSelectionLocked: true,
                 analyticsSource: "poly",
+                onToolInteraction: async (_toolName, action, data) => {
+                  if (
+                    action === "submitPrompt" &&
+                    data.standing === true &&
+                    typeof data.interactionId === "string"
+                  ) {
+                    await standingApprovals.grant.mutateAsync(data.interactionId);
+                  }
+
+                  return false;
+                },
               }}
             />
           </div>
@@ -141,11 +155,14 @@ function PolyHomeThread({ onNavigate }: { onNavigate: (href: string) => void }) 
   }
 
   return (
-    <PolyThread
-      key={home.data.conversation_id}
-      conversationId={home.data.conversation_id}
-      onNavigate={onNavigate}
-    />
+    <>
+      <PolyAgendaStrip />
+      <PolyThread
+        key={home.data.conversation_id}
+        conversationId={home.data.conversation_id}
+        onNavigate={onNavigate}
+      />
+    </>
   );
 }
 

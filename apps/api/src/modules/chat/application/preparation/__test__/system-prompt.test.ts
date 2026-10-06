@@ -30,6 +30,7 @@ function createRepositories(synthesisText?: string) {
         .fn()
         .mockResolvedValue(synthesisText ? { synthesis_text: synthesisText } : null),
     },
+    teammateContexts: { getByIdentity: vi.fn().mockResolvedValue(null) },
   } as unknown as RepositoryManager;
 }
 

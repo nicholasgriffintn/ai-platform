@@ -12,6 +12,8 @@ const polyContext: TeammateContext = {
   homeConversationId: "teammate_home_poly",
   memoryDocumentId: "memory_poly",
   status: "active",
+  autonomyLevel: "assistant",
+  standingApprovals: [],
   createdAt: "2026-10-05T09:00:00.000Z",
   updatedAt: null,
 };
@@ -32,8 +34,22 @@ function resolution(
 }
 
 describe("requirePolyHomeRun", () => {
-  it("allows Poly in the person's own Poly thread", () => {
+  it("allows Poly in the person's own Poly thread, from the app or a bound channel", () => {
     expect(() => requirePolyHomeRun(resolution(), "teammate_home_poly")).not.toThrow();
+    expect(() =>
+      requirePolyHomeRun(
+        resolution({
+          invocation: {
+            source: "channel",
+            bindingId: "binding_telegram",
+            messageId: "message_1",
+            senderMappingId: "sender_1",
+            senderRevision: 1,
+          },
+        }),
+        "teammate_home_poly",
+      ),
+    ).not.toThrow();
   });
 
   it("keeps Poly out of every other conversation and invocation", () => {

@@ -35,6 +35,7 @@ export interface PermissionCheckInput {
   deniedTools?: readonly string[];
   effectClass?: ToolEffectClass;
   autonomyLevel?: TeammateAutonomyLevel | null;
+  standingApproval?: boolean;
 }
 
 export interface RequestPermissionCheckInput extends PermissionCheckInput {
@@ -128,6 +129,7 @@ export class PermissionChecker {
       modeApprovalPermissions: config.requiresApprovalFor,
       effectClass: input.effectClass ?? "",
       autonomyLevel: input.autonomyLevel ?? "",
+      standingApproval: input.standingApproval ?? false,
     };
     const decision = authorise("tool.use", context);
 

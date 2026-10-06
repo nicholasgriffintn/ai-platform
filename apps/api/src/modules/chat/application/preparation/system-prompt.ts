@@ -11,6 +11,8 @@ import {
 import type { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { getSystemPrompt } from "~/modules/chat/application/prompts";
 import { buildMemoryPromptContext, type resolveMemoryPolicy } from "~/modules/chat/domain/memory";
+import { toPolyAgendaPrompt } from "~/modules/poly/application/agenda";
+import { loadPolyAgenda } from "~/modules/poly/application/read-agenda";
 import type { ProjectChatContext } from "~/modules/workspaces/application/chatContext";
 import type { CoreChatOptions, MemoryScope, Message } from "~/types";
 
@@ -157,6 +159,11 @@ export async function buildSystemPrompt({
     return withMemory(systemPromptFromMessages.content);
   }
 
+  const polyAgenda =
+    options.poly && user?.id
+      ? toPolyAgendaPrompt(await loadPolyAgenda(repositories, user.id))
+      : null;
+
   const generatedPrompt = await getSystemPrompt({
     request: {
       completion_id,
@@ -178,6 +185,7 @@ export async function buildSystemPrompt({
     skills,
     memory: memoryPolicy,
     persona: options.persona,
+    polyAgenda,
   });
 
   return withMemory(generatedPrompt);
