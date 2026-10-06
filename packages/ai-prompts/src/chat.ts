@@ -668,6 +668,7 @@ export interface PolyAgendaPromptInput {
   needsYou: readonly string[];
   workingOn: readonly string[];
   done: readonly string[];
+  noted: readonly string[];
 }
 
 export interface PolyPromptOptions {
@@ -692,6 +693,7 @@ function buildAgendaSection(agenda?: PolyAgendaPromptInput | null): string {
     buildAgendaList("needs_you", agenda.needsYou),
     buildAgendaList("working_on", agenda.workingOn),
     buildAgendaList("done_this_week", agenda.done),
+    buildAgendaList("noted_quietly", agenda.noted),
   ].filter((list): list is string => Boolean(list));
 
   if (lists.length === 0) {

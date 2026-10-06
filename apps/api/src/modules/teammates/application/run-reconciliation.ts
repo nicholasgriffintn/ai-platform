@@ -312,7 +312,7 @@ async function reconcileRoutineRun(params: {
 
   const taskId = getRecipeExecutionTaskId(params.run.conversationId);
 
-  if (homeDelivery === "delivered" && params.run.status === "succeeded" && taskId) {
+  if (homeDelivery !== "skipped" && params.run.status === "succeeded" && taskId) {
     const task = await params.context.repositories.tasks.getTaskById(taskId);
     const taskData = recipeExecutionTaskDataSchema.safeParse(task?.task_data);
 

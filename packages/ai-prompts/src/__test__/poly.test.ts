@@ -37,18 +37,20 @@ describe("Poly in the standard prompt", () => {
           needsYou: ["delegation: Book <venue> (awaiting approval)"],
           workingOn: [],
           done: ["goal: Ship notes (completed)"],
+          noted: ["routine: Inbox sweep (not urgent)"],
         },
       },
     });
     const empty = buildStandardChatPrompt({
       ...base,
-      poly: { agenda: { needsYou: [], workingOn: [], done: [] } },
+      poly: { agenda: { needsYou: [], workingOn: [], done: [], noted: [] } },
     });
 
     expect(withAgenda).toContain(
       "<needs_you>\n- delegation: Book &lt;venue&gt; (awaiting approval)",
     );
     expect(withAgenda).toContain("<done_this_week>");
+    expect(withAgenda).toContain("<noted_quietly>\n- routine: Inbox sweep (not urgent)");
     expect(withAgenda).not.toContain("<working_on>");
     expect(empty).not.toContain("<agenda>");
   });

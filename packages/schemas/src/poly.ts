@@ -112,8 +112,17 @@ export const polyHomeSchema = z.object({
 
 export type PolyHome = z.infer<typeof polyHomeSchema>;
 
+export const POLY_HANDOFF_URGENCIES = ["critical", "high", "normal", "low"] as const;
+
+export const polyHandoffUrgencySchema = z.enum(POLY_HANDOFF_URGENCIES);
+
+export const polyHandoffDecisionSchema = z.enum(["notified", "noted"]);
+
+export type PolyHandoffUrgency = z.infer<typeof polyHandoffUrgencySchema>;
+export type PolyHandoffDecision = z.infer<typeof polyHandoffDecisionSchema>;
+
 export const polyAgendaItemSchema = z.object({
-  kind: z.enum(["delegation", "goal", "approval", "question"]),
+  kind: z.enum(["delegation", "goal", "approval", "question", "routine"]),
   id: z.string().min(1),
   title: z.string(),
   status: z.string(),
@@ -125,6 +134,7 @@ export const polyAgendaSchema = z.object({
   needs_you: z.array(polyAgendaItemSchema),
   working_on: z.array(polyAgendaItemSchema),
   done: z.array(polyAgendaItemSchema),
+  noted: z.array(polyAgendaItemSchema),
 });
 
 export type PolyAgendaItem = z.infer<typeof polyAgendaItemSchema>;

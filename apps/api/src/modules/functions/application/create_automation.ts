@@ -39,6 +39,9 @@ export const create_automation: ApiToolDefinition = {
       userId,
       channel: "web",
       ...(args.projectId ? { projectId: args.projectId } : {}),
+      ...(request.request?.teammate_context_id
+        ? { teammateContextId: request.request.teammate_context_id }
+        : {}),
       triggers: [
         {
           type: "schedule",

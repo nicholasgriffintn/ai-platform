@@ -5,12 +5,14 @@ import type { RepositoryManager } from "~/infrastructure/database/repositoryMana
 
 import { buildPolyAgenda } from "./agenda";
 
-const EMPTY_AGENDA: PolyAgenda = { needs_you: [], working_on: [], done: [] };
+const EMPTY_AGENDA: PolyAgenda = { needs_you: [], working_on: [], done: [], noted: [] };
+const NOTED_HORIZON_MS = 7 * 24 * 60 * 60 * 1000;
+const NOTED_LIMIT = 8;
 
 export async function loadPolyAgenda(
   repositories: Pick<
     RepositoryManager,
-    "teammateContexts" | "delegations" | "goals" | "conversationRuns"
+    "teammateContexts" | "delegations" | "goals" | "conversationRuns" | "polyHandoffs"
   >,
   userId: number,
 ): Promise<PolyAgenda> {
@@ -24,11 +26,17 @@ export async function loadPolyAgenda(
     return EMPTY_AGENDA;
   }
 
+  const now = Date.now();
   const conversationId = polyContext.homeConversationId;
-  const [delegations, goals, latestRun] = await Promise.all([
+  const [delegations, goals, latestRun, noted] = await Promise.all([
     repositories.delegations.listByParentConversationId(conversationId),
     repositories.goals.listGoals({ conversationId }, 1),
     repositories.conversationRuns.getLatestForConversation(conversationId),
+    repositories.polyHandoffs.listNotedSince(
+      polyContext.id,
+      new Date(now - NOTED_HORIZON_MS).toISOString(),
+      NOTED_LIMIT,
+    ),
   ]);
 
   return buildPolyAgenda({
@@ -36,7 +44,14 @@ export async function loadPolyAgenda(
     delegations,
     goal: goals[0] ?? null,
     latestRun,
-    now: Date.now(),
+    noted: noted.map((handoff) => ({
+      id: handoff.id,
+      title: handoff.title,
+      reason: handoff.reason,
+      resultConversationId: handoff.result_conversation_id,
+      createdAt: handoff.created_at,
+    })),
+    now,
   });
 }
 
