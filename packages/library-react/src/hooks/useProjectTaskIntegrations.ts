@@ -19,6 +19,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 import { OUTPUT_QUERY_KEYS } from "./useOutputs.js";
 import {
   projectTaskDetailQueryPrefix,
@@ -28,6 +29,7 @@ import {
 import { SOURCE_QUERY_KEYS } from "./useSources.js";
 
 export function useProjectTaskReview(projectId: string, taskId: string) {
+  const liveOrPoll = useLiveOrPoll();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isPro = useChatStore((state) => state.isPro);
 
@@ -35,12 +37,13 @@ export function useProjectTaskReview(projectId: string, taskId: string) {
     queryKey: ["project-task-pr-review", projectId, taskId],
     queryFn: () => getProjectTaskReview(projectId, taskId),
     enabled: Boolean(projectId && taskId) && isAuthenticated && isPro,
-    refetchInterval: 30000,
+    refetchInterval: (query) => liveOrPoll(query, 30_000, "project_review.changed"),
     refetchIntervalInBackground: false,
   });
 }
 
 export function useProjectReviews(projectId: string) {
+  const liveOrPoll = useLiveOrPoll();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isPro = useChatStore((state) => state.isPro);
 
@@ -48,7 +51,7 @@ export function useProjectReviews(projectId: string) {
     queryKey: ["project-pr-reviews", projectId],
     queryFn: () => listProjectReviews(projectId),
     enabled: Boolean(projectId) && isAuthenticated && isPro,
-    refetchInterval: 30000,
+    refetchInterval: (query) => liveOrPoll(query, 30_000, "project_review.changed"),
     refetchIntervalInBackground: false,
   });
 }

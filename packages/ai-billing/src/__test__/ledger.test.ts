@@ -110,6 +110,30 @@ describe("buildUsageEventRow", () => {
 });
 
 describe("applyUsageRollup", () => {
+  it("notifies workspace usage once per period across members, excluding replayed events", async () => {
+    const workspaceUsageChanged = vi.fn(async () => {});
+    const { runtime } = createFakeRuntime({
+      publisher: { usageChanged: vi.fn(), workspaceUsageChanged },
+      insert: (event) => event.idempotency_key !== "replayed",
+    });
+
+    await applyUsageRollup(runtime, [
+      buildUsageEventRow(draft({ workspaceId: "workspace-1" })),
+      buildUsageEventRow(
+        draft({
+          idempotencyKey: "member-2",
+          actor: userCreditActor(9),
+          workspaceId: "workspace-1",
+          byok: true,
+        }),
+      ),
+      buildUsageEventRow(draft({ idempotencyKey: "replayed", workspaceId: "workspace-2" })),
+      buildUsageEventRow(draft({ idempotencyKey: "personal" })),
+    ]);
+
+    expect(workspaceUsageChanged).toHaveBeenCalledExactlyOnceWith("workspace-1", "2026-08");
+  });
+
   it("counts only events atomically inserted with their balance projection", async () => {
     const { store, runtime } = createFakeRuntime({
       insert: (event) => event.unit === "input_tokens",
@@ -139,12 +163,13 @@ describe("applyUsageRollup", () => {
   });
 
   it("moves no credits when every event is a replay of one already recorded", async () => {
-    const { store, runtime } = createFakeRuntime({ insert: () => false });
+    const { store, runtime, publisher } = createFakeRuntime({ insert: () => false });
 
     const result = await applyUsageRollup(runtime, [buildUsageEventRow(draft())]);
 
     expect(result.inserted).toBe(0);
     expect(store.insertEventAndApplyBalance).toHaveBeenCalledOnce();
+    expect(publisher.usageChanged).not.toHaveBeenCalled();
   });
 
   it("drops events for accounts that no longer exist", async () => {
@@ -168,12 +193,15 @@ describe("applyUsageRollup", () => {
     );
   });
 
-  it("announces a balance change once per user, and not for zero-credit events", async () => {
+  it("announces ledger changes once per user and period, including zero-credit events", async () => {
     const { publisher, runtime } = createFakeRuntime();
 
     await applyUsageRollup(runtime, [
       buildUsageEventRow(draft()),
       buildUsageEventRow(draft({ idempotencyKey: "model:message-1:output_tokens" })),
+      buildUsageEventRow(
+        draft({ idempotencyKey: "model:byok", byok: true, occurredAt: "2026-09-01T00:00:00.000Z" }),
+      ),
       buildUsageEventRow(
         draft({
           idempotencyKey: "infra:request-1:d1_rows_read",
@@ -188,8 +216,10 @@ describe("applyUsageRollup", () => {
       ),
     ]);
 
-    expect(publisher.usageChanged).toHaveBeenCalledTimes(1);
+    expect(publisher.usageChanged).toHaveBeenCalledTimes(3);
     expect(publisher.usageChanged).toHaveBeenCalledWith(7, "2026-08");
+    expect(publisher.usageChanged).toHaveBeenCalledWith(7, "2026-09");
+    expect(publisher.usageChanged).toHaveBeenCalledWith(9, "2026-08");
   });
 });
 

@@ -8,13 +8,14 @@ import {
 } from "@ngriffin_uk/polychat-library-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { liveOrPoll } from "../sync/live-or-poll.js";
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 
 export const conversationDelegationsQueryKey = (conversationId: string) =>
   ["conversation-delegations", conversationId] as const;
 export const conversationHandlesQueryKey = ["conversation-handles"] as const;
 
 export function useDelegations(conversationId: string) {
+  const liveOrPoll = useLiveOrPoll();
   const isAwaitingRemoteConversation = useChatStore((state) =>
     Boolean(conversationId && state.locallyCreatedConversationIds[conversationId]),
   );

@@ -9,6 +9,7 @@ import {
   modelDeploymentValues,
 } from "~/infrastructure/database/model-storage";
 import { modelOperation } from "~/infrastructure/database/schema";
+import { publishModelPlatformChanged } from "~/modules/model-registry/application/sync-events";
 import type { IEnv } from "~/types";
 
 export type { ModelDeploymentRecord } from "~/infrastructure/database/model-storage";
@@ -53,6 +54,8 @@ export class ModelDeploymentRepository extends BaseRepository<Pick<IEnv, "DB">> 
         ),
       )
       .returning(modelDeployment);
+
+    await publishModelPlatformChanged(this.env, record?.workspace_id);
 
     return record ?? this.getById(id);
   }
@@ -102,6 +105,8 @@ export class ModelDeploymentRepository extends BaseRepository<Pick<IEnv, "DB">> 
       )
       .returning(modelDeployment);
 
+    await publishModelPlatformChanged(this.env, record?.workspace_id);
+
     return record ?? null;
   }
 
@@ -137,6 +142,8 @@ export class ModelDeploymentRepository extends BaseRepository<Pick<IEnv, "DB">> 
         }),
       )
       .returning(modelDeployment);
+
+    await publishModelPlatformChanged(this.env, record?.workspace_id);
 
     return record;
   }
@@ -226,9 +233,12 @@ export class ModelDeploymentRepository extends BaseRepository<Pick<IEnv, "DB">> 
       >
     >,
   ): Promise<void> {
-    await this.database
+    const [changed] = await this.database
       .update(modelOperation)
       .set(modelDeploymentChanges({ ...changes, updated_at: new Date().toISOString() }))
-      .where(and(eq(modelOperation.kind, "deployment"), eq(modelDeployment.id, id)));
+      .where(and(eq(modelOperation.kind, "deployment"), eq(modelDeployment.id, id)))
+      .returning({ workspaceId: modelDeployment.workspace_id });
+
+    await publishModelPlatformChanged(this.env, changed?.workspaceId);
   }
 }

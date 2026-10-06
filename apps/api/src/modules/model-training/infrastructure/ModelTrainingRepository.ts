@@ -14,6 +14,7 @@ import {
   modelTrainingRunValues,
 } from "~/infrastructure/database/model-storage";
 import { modelOperation, modelRecord } from "~/infrastructure/database/schema";
+import { publishModelPlatformChanged } from "~/modules/model-registry/application/sync-events";
 import type { IEnv } from "~/types";
 
 export type { ModelTrainingRunRecord } from "~/infrastructure/database/model-storage";
@@ -44,6 +45,8 @@ export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
       )
       .returning(modelTrainingRun);
 
+    await publishModelPlatformChanged(this.env, record?.workspace_id);
+
     return record ?? null;
   }
 
@@ -70,6 +73,8 @@ export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
         ),
       )
       .returning(modelTrainingRun);
+
+    await publishModelPlatformChanged(this.env, record?.workspace_id);
 
     return record ?? null;
   }
@@ -104,6 +109,8 @@ export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
       )
       .where(and(eq(modelOperation.kind, "training"), eq(modelTrainingRun.id, id)))
       .returning(modelTrainingRun);
+
+    await publishModelPlatformChanged(this.env, record?.workspace_id);
 
     return record ?? null;
   }
@@ -140,6 +147,8 @@ export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
         }),
       )
       .returning(modelTrainingRun);
+
+    await publishModelPlatformChanged(this.env, record?.workspace_id);
 
     return record;
   }
@@ -222,10 +231,13 @@ export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
       >
     >,
   ): Promise<void> {
-    await this.database
+    const [changed] = await this.database
       .update(modelOperation)
       .set(modelTrainingRunChanges(changes))
-      .where(and(eq(modelOperation.kind, "training"), eq(modelTrainingRun.id, id)));
+      .where(and(eq(modelOperation.kind, "training"), eq(modelTrainingRun.id, id)))
+      .returning({ workspaceId: modelTrainingRun.workspace_id });
+
+    await publishModelPlatformChanged(this.env, changed?.workspaceId);
   }
 
   async listCheckpoints(runId: string): Promise<ModelTrainingCheckpointRecord[]> {
@@ -262,13 +274,24 @@ export class ModelTrainingRepository extends BaseRepository<Pick<IEnv, "DB">> {
       })
       .returning(modelTrainingCheckpoint);
 
+    const run = await this.getById(input.runId);
+
+    await publishModelPlatformChanged(this.env, run?.workspace_id);
+
     return record;
   }
 
   async setCheckpointVersion(id: string, versionId: string): Promise<void> {
-    await this.database
+    const [checkpoint] = await this.database
       .update(modelRecord)
       .set(modelTrainingCheckpointChanges({ version_id: versionId }))
-      .where(and(eq(modelRecord.kind, "checkpoint"), eq(modelTrainingCheckpoint.id, id)));
+      .where(and(eq(modelRecord.kind, "checkpoint"), eq(modelTrainingCheckpoint.id, id)))
+      .returning(modelTrainingCheckpoint);
+
+    if (checkpoint) {
+      const run = await this.getById(checkpoint.run_id);
+
+      await publishModelPlatformChanged(this.env, run?.workspace_id);
+    }
   }
 }

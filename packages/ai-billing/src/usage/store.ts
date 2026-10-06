@@ -143,7 +143,8 @@ export interface UsageStore {
 }
 
 export interface UsageEventPublisher {
-  usageChanged(userId: number, period: string): void;
+  usageChanged(userId: number, period: string): Promise<void> | void;
+  workspaceUsageChanged?(workspaceId: string, period: string): Promise<void>;
 }
 
 export interface UsageRollupPayload extends Record<string, unknown> {

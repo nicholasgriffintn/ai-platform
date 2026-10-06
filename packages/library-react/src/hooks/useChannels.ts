@@ -10,6 +10,7 @@ import type { ChannelPairingChallenge } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 import { useAuthStatus } from "./useAuth.js";
 
 export function useChannelBindings(projectId?: string) {
@@ -44,6 +45,7 @@ export function useChannelBindings(projectId?: string) {
 }
 
 export function useChannelSenders(bindingId: string, linking = false) {
+  const liveOrPoll = useLiveOrPoll();
   const { user, isAuthenticated } = useAuthStatus();
   const client = useQueryClient();
   const key = ["channel-senders", user?.id, bindingId];
@@ -51,7 +53,8 @@ export function useChannelSenders(bindingId: string, linking = false) {
     queryKey: key,
     queryFn: () => listChannelSenders(bindingId),
     enabled: isAuthenticated,
-    refetchInterval: linking ? 5000 : false,
+    refetchInterval: (query) =>
+      liveOrPoll(query, linking ? 5_000 : false, "channel_senders.changed"),
   });
   const revoke = useMutation({
     mutationFn: (input: { id: string; revision: number }) =>

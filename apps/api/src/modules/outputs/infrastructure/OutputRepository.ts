@@ -20,7 +20,10 @@ import {
   createOutputProvenance,
   parseOutputProvenance,
 } from "~/modules/outputs/application/provenance";
+import { publishResourceEvent } from "~/modules/sync/application/resource-events";
 import type { IEnv } from "~/types";
+
+import { publishOutputChanged } from "../application/sync-events";
 
 export interface OutputRecord {
   id: string;
@@ -214,6 +217,8 @@ export class OutputRepository extends BaseRepository {
     if (!output) {
       throw new AssistantError("Failed to create output", ErrorType.DATABASE_ERROR);
     }
+
+    await publishOutputChanged({ env: this.env }, output);
 
     return output;
   }
@@ -568,10 +573,13 @@ export class OutputRepository extends BaseRepository {
       throw new AssistantError("Output update conflicted", ErrorType.CONFLICT_ERROR, 409);
     }
 
+    await publishOutputChanged({ env: this.env }, updated);
+
     return updated;
   }
 
   async deleteOutput(outputId: string): Promise<void> {
+    const output = await this.getOutputIncludingDeleting(outputId);
     const { query, values } = this.buildDeleteQuery("resource", {
       resource_type: "output",
       id: outputId,
@@ -579,6 +587,10 @@ export class OutputRepository extends BaseRepository {
 
     await this.executeRun(query, values);
     await this.cache?.delete(KVCache.createKey("output", outputId));
+
+    if (output) {
+      await publishOutputChanged({ env: this.env }, output);
+    }
   }
 
   async deleteOutputs(outputIds: string[], audit?: OutputAuditRecord): Promise<void> {
@@ -586,6 +598,7 @@ export class OutputRepository extends BaseRepository {
       return;
     }
 
+    const outputs = await this.getOutputsByIds(outputIds);
     const placeholders = outputIds.map(() => "?").join(", ");
     const deleteQuery = `DELETE FROM resource WHERE resource_type = 'output' AND id IN (${placeholders})`;
 
@@ -627,6 +640,7 @@ export class OutputRepository extends BaseRepository {
     await Promise.all(
       outputIds.map((outputId) => this.cache?.delete(KVCache.createKey("output", outputId))),
     );
+    await Promise.all(outputs.map((output) => publishOutputChanged({ env: this.env }, output)));
   }
 
   async deletePersonalOutputGroup(
@@ -645,6 +659,7 @@ export class OutputRepository extends BaseRepository {
     });
 
     await this.executeRun(query, values);
+    await publishResourceEvent({ env: this.env }, { kind: "personal", userId }, "output.changed");
   }
 
   async deleteProjectOutputGroup(
@@ -662,6 +677,7 @@ export class OutputRepository extends BaseRepository {
     });
 
     await this.executeRun(query, values);
+    await publishResourceEvent({ env: this.env }, { kind: "project", projectId }, "output.changed");
   }
 
   async attachSources(outputId: string, sourceIds: string[]): Promise<void> {

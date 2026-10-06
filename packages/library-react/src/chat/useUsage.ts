@@ -8,7 +8,7 @@ import {
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { getNextUsageEventsPageParam } from "../chat/usage-ledger.js";
-import { liveOrPoll } from "../sync/live-or-poll.js";
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 
 export const USAGE_QUERY_KEYS = {
   balance: ["usage", "balance"] as const,
@@ -36,6 +36,7 @@ export function getUsageBalanceRefreshInterval(
 }
 
 export function useUsageBalance(enabled = true) {
+  const liveOrPoll = useLiveOrPoll();
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
 
   return useQuery({
@@ -45,20 +46,21 @@ export function useUsageBalance(enabled = true) {
     staleTime: USAGE_STALE_TIME,
     gcTime: 30 * 60 * 1_000,
     refetchInterval: (query) =>
-      liveOrPoll(
-        query,
-        (currentQuery) => getUsageBalanceRefreshInterval(currentQuery.state.data?.resets_at),
-        "usage.changed",
+      Math.min(
+        getUsageBalanceRefreshInterval(query.state.data?.resets_at),
+        liveOrPoll(query, USAGE_STALE_TIME, "usage.changed") || Number.POSITIVE_INFINITY,
       ),
   });
 }
 
 export function useUsageSummary(options: { period?: string; enabled?: boolean } = {}) {
+  const liveOrPoll = useLiveOrPoll();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
 
   return useQuery({
     queryKey: ["usage", "summary", options.period ?? "current"],
     queryFn: () => getUsageSummary(options.period),
+    refetchInterval: (query) => liveOrPoll(query, USAGE_STALE_TIME, "usage.changed"),
     staleTime: USAGE_STALE_TIME,
     enabled: (options.enabled ?? true) && isAuthenticated,
   });
@@ -67,6 +69,7 @@ export function useUsageSummary(options: { period?: string; enabled?: boolean } 
 export function useUsageEvents(
   options: { period?: string; enabled?: boolean; source?: string } = {},
 ) {
+  const liveOrPoll = useLiveOrPoll();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
 
   return useInfiniteQuery({
@@ -80,17 +83,20 @@ export function useUsageEvents(
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: getNextUsageEventsPageParam,
+    refetchInterval: (query) => liveOrPoll(query, USAGE_STALE_TIME, "usage.changed"),
     staleTime: USAGE_STALE_TIME,
     enabled: (options.enabled ?? true) && isAuthenticated,
   });
 }
 
 export function useWorkspaceUsage(workspaceId: string, period: string, enabled: boolean) {
+  const liveOrPoll = useLiveOrPoll();
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
 
   return useQuery({
     queryKey: ["usage", "workspace", workspaceId, period],
     queryFn: () => getWorkspaceUsageSummary(workspaceId, period),
+    refetchInterval: (query) => liveOrPoll(query, USAGE_STALE_TIME, "workspace_usage.changed"),
     enabled: enabled && isAuthenticated,
     staleTime: USAGE_STALE_TIME,
   });

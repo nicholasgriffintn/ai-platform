@@ -2,14 +2,17 @@ import { listKnowledgeSyncs, controlKnowledgeSync } from "@ngriffin_uk/polychat-
 import type { UpdateKnowledgeSync } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 import { SOURCE_QUERY_KEYS } from "./useSources.js";
 
 export function useKnowledgeSyncs(projectId: string) {
+  const liveOrPoll = useLiveOrPoll();
+
   return useQuery({
     queryKey: ["knowledge-syncs", projectId],
     queryFn: () => listKnowledgeSyncs(projectId),
     enabled: Boolean(projectId),
-    refetchInterval: 60_000,
+    refetchInterval: (query) => liveOrPoll(query, 60_000, "knowledge_sync.changed"),
   });
 }
 

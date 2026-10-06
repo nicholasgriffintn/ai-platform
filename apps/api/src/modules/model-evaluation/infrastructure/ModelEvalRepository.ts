@@ -14,6 +14,7 @@ import {
   modelEvalSuiteValues,
 } from "~/infrastructure/database/model-storage";
 import { modelConfiguration, modelOperation } from "~/infrastructure/database/schema";
+import { publishModelPlatformChanged } from "~/modules/model-registry/application/sync-events";
 import type { IEnv } from "~/types";
 
 export type { ModelEvalSuiteRecord } from "~/infrastructure/database/model-storage";
@@ -129,6 +130,12 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
       )
       .returning(modelEvalRun);
 
+    if (record) {
+      const suite = await this.getSuiteById(record.suite_id);
+
+      await publishModelPlatformChanged(this.env, suite?.workspace_id);
+    }
+
     return record;
   }
 
@@ -232,10 +239,17 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
       >
     >,
   ): Promise<void> {
-    await this.database
+    const [record] = await this.database
       .update(modelOperation)
       .set(modelEvalRunChanges(updates))
-      .where(and(eq(modelOperation.kind, "evaluation"), eq(modelEvalRun.id, runId)));
+      .where(and(eq(modelOperation.kind, "evaluation"), eq(modelEvalRun.id, runId)))
+      .returning(modelEvalRun);
+
+    if (record) {
+      const suite = await this.getSuiteById(record.suite_id);
+
+      await publishModelPlatformChanged(this.env, suite?.workspace_id);
+    }
   }
 
   async updateRunScores(

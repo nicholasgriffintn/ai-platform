@@ -2,6 +2,7 @@ import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { modelAssetVersion, type ModelDatasetProfileData } from "~/infrastructure/database/schema";
+import { publishModelPlatformChanged } from "~/modules/model-registry/application/sync-events";
 import type { IEnv } from "~/types";
 
 export type ModelDatasetProfileRecord = ModelDatasetProfileData & {
@@ -50,6 +51,8 @@ export class ModelDatasetRepository extends BaseRepository<Pick<IEnv, "DB">> {
         "Dataset version is missing, belongs to another workspace, or already has a profile",
       );
     }
+
+    await publishModelPlatformChanged(this.env, input.workspaceId);
 
     return { version_id: record.id, workspace_id: input.workspaceId, ...profile };
   }
@@ -112,7 +115,7 @@ export class ModelDatasetRepository extends BaseRepository<Pick<IEnv, "DB">> {
       return;
     }
 
-    await this.database
+    const [changed] = await this.database
       .update(modelAssetVersion)
       .set({
         dataset_profile: sql`json_set(${modelAssetVersion.dataset_profile}, ${sql.join(
@@ -120,8 +123,9 @@ export class ModelDatasetRepository extends BaseRepository<Pick<IEnv, "DB">> {
           sql`, `,
         )})`,
       })
-      .where(
-        and(eq(modelAssetVersion.id, versionId), isNotNull(modelAssetVersion.dataset_profile)),
-      );
+      .where(and(eq(modelAssetVersion.id, versionId), isNotNull(modelAssetVersion.dataset_profile)))
+      .returning({ workspaceId: modelAssetVersion.workspace_id });
+
+    await publishModelPlatformChanged(this.env, changed?.workspaceId);
   }
 }

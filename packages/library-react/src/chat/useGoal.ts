@@ -3,7 +3,7 @@ import type { Goal } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
-import { liveOrPoll } from "../sync/live-or-poll.js";
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 
 export const GOAL_QUERY_KEY = "goal";
 const ACTIVE_GOAL_REFETCH_MS = 2_000;
@@ -16,6 +16,7 @@ export function useGoal(
   conversationId?: string,
   options?: { enabled?: boolean; refetchInterval?: number },
 ) {
+  const liveOrPoll = useLiveOrPoll();
   const queryClient = useQueryClient();
   const isPro = useChatStore((state) => state.isPro);
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
