@@ -95,6 +95,7 @@ interface RecipeListOptions {
 interface RecipeInstallOptions extends RecipeListOptions {
   channel: "web" | "ios" | "sms" | "slack" | "telegram";
   projectId?: string;
+  teammateContextId?: string;
   triggers?: RecipeInstallationTrigger[];
   configuration?: RecipeConfiguration;
 }
@@ -390,11 +391,36 @@ async function findRecipeInstallationRecord(params: {
   return null;
 }
 
+async function requireRoutineTarget(
+  context: ServiceContext,
+  teammateContextId: string,
+  projectId: string | null,
+): Promise<void> {
+  const teammateContext = await requireTeammateContext(context, teammateContextId);
+
+  if (teammateContext.scope.type === "project" && teammateContext.scope.id !== projectId) {
+    throw new AssistantError(
+      "The routine target must use the same project scope as its installation",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+
+  if (teammateContext.scope.type === "personal" && projectId) {
+    throw new AssistantError(
+      "A project routine cannot target a personal teammate context",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+}
+
 async function upsertRecipeInstallation(params: {
   context: ServiceContext;
   userId: number;
   recipe: AssistantRecipe;
   projectId?: string;
+  teammateContextId?: string;
   triggers?: RecipeInstallationTrigger[];
   configuration?: RecipeConfiguration;
 }): Promise<RecipeInstallation> {
@@ -433,6 +459,11 @@ async function upsertRecipeInstallation(params: {
     triggers,
     configuration,
   });
+
+  if (params.teammateContextId) {
+    await requireRoutineTarget(params.context, params.teammateContextId, params.projectId ?? null);
+  }
+
   const data: StoredRecipeInstallationData = {
     recipeId: params.recipe.id,
     status: "active",
@@ -443,7 +474,7 @@ async function upsertRecipeInstallation(params: {
       existingState: existingData?.scheduleState,
       activatedAt: now,
     }),
-    teammateContextId: existingData?.teammateContextId,
+    teammateContextId: params.teammateContextId ?? existingData?.teammateContextId,
   };
 
   if (existing) {
@@ -590,26 +621,11 @@ export async function updateRecipeInstallation(params: {
   };
 
   if (data.teammateContextId) {
-    const teammateContext = await requireTeammateContext(params.context, data.teammateContextId);
-
-    if (
-      teammateContext.scope.type === "project" &&
-      teammateContext.scope.id !== existing.record.project_id
-    ) {
-      throw new AssistantError(
-        "The routine target must use the same project scope as its installation",
-        ErrorType.FORBIDDEN,
-        403,
-      );
-    }
-
-    if (teammateContext.scope.type === "personal" && existing.record.project_id) {
-      throw new AssistantError(
-        "A project routine cannot target a personal teammate context",
-        ErrorType.FORBIDDEN,
-        403,
-      );
-    }
+    await requireRoutineTarget(
+      params.context,
+      data.teammateContextId,
+      existing.record.project_id ?? null,
+    );
   }
 
   if (recipe) {
@@ -723,6 +739,7 @@ export async function installAssistantRecipe(id: string, options: RecipeInstallO
     userId: options.userId,
     recipe,
     projectId: options.projectId,
+    teammateContextId: options.teammateContextId,
     triggers: options.triggers,
     configuration: options.configuration,
   });

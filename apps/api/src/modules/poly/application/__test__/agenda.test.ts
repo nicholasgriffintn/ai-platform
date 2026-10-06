@@ -83,6 +83,7 @@ describe("buildPolyAgenda", () => {
       ],
       goal: goal("active"),
       latestRun: run("awaiting_input"),
+      noted: [],
       now: NOW,
     });
 
@@ -104,6 +105,7 @@ describe("buildPolyAgenda", () => {
       delegations: [],
       goal: goal("stalled"),
       latestRun: run("succeeded"),
+      noted: [],
       now: NOW,
     });
     const completed = buildPolyAgenda({
@@ -111,11 +113,12 @@ describe("buildPolyAgenda", () => {
       delegations: [],
       goal: goal("completed"),
       latestRun: null,
+      noted: [],
       now: NOW,
     });
 
     expect(stalled.needs_you.map((item) => item.kind)).toEqual(["goal"]);
-    expect(completed).toEqual({ needs_you: [], working_on: [], done: [] });
+    expect(completed).toEqual({ needs_you: [], working_on: [], done: [], noted: [] });
   });
 
   it("caps each column so the agenda stays short", () => {
@@ -130,6 +133,7 @@ describe("buildPolyAgenda", () => {
       ),
       goal: null,
       latestRun: null,
+      noted: [],
       now: NOW,
     });
 

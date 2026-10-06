@@ -21,11 +21,20 @@ const DELEGATION_WORKING = new Set<Delegation["state"]>(["queued", "running"]);
 const DELEGATION_DONE = new Set<Delegation["state"]>(["done", "failed"]);
 const GOAL_NEEDS_YOU = new Set<Goal["status"]>(["blocked", "stalled", "limit_reached"]);
 
+export interface PolyNotedHandoff {
+  id: string;
+  title: string;
+  reason: string;
+  resultConversationId: string | null;
+  createdAt: string;
+}
+
 export interface PolyAgendaInput {
   conversationId: string;
   delegations: readonly Delegation[];
   goal: Goal | null;
   latestRun: ChatRun | null;
+  noted: readonly PolyNotedHandoff[];
   now: number;
 }
 
@@ -104,7 +113,21 @@ export function buildPolyAgenda(input: PolyAgendaInput): PolyAgenda {
     });
   }
 
-  return { needs_you: column(needsYou), working_on: column(workingOn), done: column(done) };
+  const noted = input.noted.map((handoff): PolyAgendaItem => ({
+    kind: "routine",
+    id: handoff.id,
+    title: truncateSingleLine(handoff.title, AGENDA_TITLE_LIMIT),
+    status: handoff.reason,
+    conversation_id: handoff.resultConversationId ?? input.conversationId,
+    updated_at: handoff.createdAt,
+  }));
+
+  return {
+    needs_you: column(needsYou),
+    working_on: column(workingOn),
+    done: column(done),
+    noted: column(noted),
+  };
 }
 
 function describeItem(item: PolyAgendaItem): string {
@@ -116,5 +139,6 @@ export function toPolyAgendaPrompt(agenda: PolyAgenda): PolyAgendaPromptInput {
     needsYou: agenda.needs_you.map(describeItem),
     workingOn: agenda.working_on.map(describeItem),
     done: agenda.done.map(describeItem),
+    noted: agenda.noted.map(describeItem),
   };
 }

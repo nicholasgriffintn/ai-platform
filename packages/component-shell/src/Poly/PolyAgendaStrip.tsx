@@ -7,6 +7,7 @@ const VISIBLE_ITEMS = 3;
 const TONE_CLASS_NAMES = {
   "human-action": "text-human-action",
   "active-work": "text-active-work",
+  muted: "text-muted-foreground",
 } as const;
 
 function AgendaGroup({
@@ -46,9 +47,9 @@ export function PolyAgendaStrip() {
     return null;
   }
 
-  const { needs_you: needsYou, working_on: workingOn } = agenda.data;
+  const { needs_you: needsYou, working_on: workingOn, noted } = agenda.data;
 
-  if (needsYou.length === 0 && workingOn.length === 0) {
+  if (needsYou.length === 0 && workingOn.length === 0 && noted.length === 0) {
     return null;
   }
 
@@ -56,6 +57,7 @@ export function PolyAgendaStrip() {
     <div className="flex flex-wrap gap-4 border-b border-border bg-surface-elevated px-4 py-2">
       <AgendaGroup label="Needs you" items={needsYou} tone="human-action" />
       <AgendaGroup label="Working on" items={workingOn} tone="active-work" />
+      <AgendaGroup label="Noted quietly" items={noted} tone="muted" />
     </div>
   );
 }
