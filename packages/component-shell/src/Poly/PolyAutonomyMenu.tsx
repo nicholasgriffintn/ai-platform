@@ -1,10 +1,16 @@
 import {
   Button,
   OptionsMenu,
+  OptionsMenuAction,
   OptionsMenuRadioGroup,
+  OptionsMenuSeparator,
   type OptionsMenuOption,
 } from "@ngriffin_uk/polychat-component-ui";
-import { usePolyHome, useSetPolyAutonomy } from "@ngriffin_uk/polychat-library-react";
+import {
+  usePolyHome,
+  usePolyStandingApprovals,
+  useSetPolyAutonomy,
+} from "@ngriffin_uk/polychat-library-react";
 import type { TeammateAutonomyLevel } from "@ngriffin_uk/polychat-schemas";
 import { ShieldCheck } from "lucide-react";
 
@@ -23,6 +29,7 @@ const AUTONOMY_LABELS: Readonly<Record<TeammateAutonomyLevel, string>> = {
 export function PolyAutonomyMenu() {
   const home = usePolyHome(true);
   const setAutonomy = useSetPolyAutonomy(home.data);
+  const { revoke } = usePolyStandingApprovals();
 
   if (!home.data) {
     return null;
@@ -50,6 +57,23 @@ export function PolyAutonomyMenu() {
         options={AUTONOMY_OPTIONS}
         onChange={(level) => setAutonomy.mutate(level)}
       />
+      {home.data.standing_approvals.length > 0 ? (
+        <>
+          <OptionsMenuSeparator />
+          {home.data.standing_approvals.map((approval) => (
+            <OptionsMenuAction
+              key={`${approval.toolName}:${approval.destination}`}
+              keepOpen
+              disabled={revoke.isPending}
+              onSelect={() => revoke.mutate(approval)}
+            >
+              <span className="min-w-0 truncate">
+                Stop allowing {approval.toolName} on {approval.destination}
+              </span>
+            </OptionsMenuAction>
+          ))}
+        </>
+      ) : null}
     </OptionsMenu>
   );
 }

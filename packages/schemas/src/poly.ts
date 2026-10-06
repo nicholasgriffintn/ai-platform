@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-import { teammateAutonomyLevelSchema } from "./teammate-contexts.js";
+import {
+  teammateAutonomyLevelSchema,
+  teammateStandingApprovalSchema,
+} from "./teammate-contexts.js";
 
 export const POLY_CONVERSATION_TYPE = "poly";
 
@@ -108,9 +111,19 @@ export const polyHomeSchema = z.object({
   context_id: z.string().min(1),
   conversation_id: z.string().min(1),
   autonomy_level: teammateAutonomyLevelSchema,
+  standing_approvals: z.array(teammateStandingApprovalSchema),
 });
 
 export type PolyHome = z.infer<typeof polyHomeSchema>;
+
+export const createPolyStandingApprovalSchema = z.object({
+  interaction_id: z.string().min(1),
+});
+
+export const revokePolyStandingApprovalSchema = z.object({
+  tool_name: z.string().min(1),
+  destination: z.string().min(1),
+});
 
 export const POLY_HANDOFF_URGENCIES = ["critical", "high", "normal", "low"] as const;
 

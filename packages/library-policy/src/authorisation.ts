@@ -44,6 +44,7 @@ const toolShape = {
   modeApprovalPermissions: strings,
   effectClass: string,
   autonomyLevel: string,
+  standingApproval: boolean,
 };
 
 const actionShapes = {

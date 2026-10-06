@@ -22,6 +22,13 @@
       "when": 1791236864449,
       "tag": "0002_teammate_autonomy_level",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1791289498175,
+      "tag": "0003_teammate_standing_approvals",
+      "breakpoints": true
     }
   ]
 }

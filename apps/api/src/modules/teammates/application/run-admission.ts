@@ -281,6 +281,7 @@ export async function enqueueTeammateRun({
         ? {
             teammate_context_id: preparedInvocation.resolution.context.id,
             autonomy_level: preparedInvocation.resolution.context.autonomyLevel,
+            standing_approvals: preparedInvocation.resolution.context.standingApprovals,
           }
         : {}),
       ...(teammateComputer ? { computer_id: teammateComputer.id } : {}),

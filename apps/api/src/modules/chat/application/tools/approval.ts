@@ -1,4 +1,5 @@
 import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
+import { STANDING_APPROVAL_OPTION } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { formatToolErrorResponse } from "~/modules/chat/application/tools/tool-responses";
@@ -13,6 +14,7 @@ export function createPendingToolApprovalMessage(params: {
   timestamp: number;
   model: string;
   platform: Platform;
+  standingEligible?: boolean;
 }): Message {
   const approvalError = formatToolErrorResponse(
     params.toolName,
@@ -29,13 +31,16 @@ export function createPendingToolApprovalMessage(params: {
       ...approvalError.data,
       renderer: "approval_request",
       message: params.reason,
-      options: ["Approve", "Reject"],
+      options: params.standingEligible
+        ? ["Approve", STANDING_APPROVAL_OPTION, "Reject"]
+        : ["Approve", "Reject"],
       approvalRequired: true,
       approval: {
         toolName: params.toolName,
         toolCallId: params.toolCallId,
         interactionId: params.toolCallId,
         reason: params.reason,
+        standingEligible: params.standingEligible === true,
       },
       humanInTheLoop: pendingApproval({
         interactionId: params.toolCallId,
