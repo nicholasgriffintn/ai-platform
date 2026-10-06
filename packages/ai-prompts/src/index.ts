@@ -50,6 +50,7 @@ export {
   type ChannelContextInput,
   type GoalInput,
   type GoalProgressEntryInput,
+  type PolyAgendaPromptInput,
   type PolyPromptOptions,
   type PolyUiContextInput,
   type PromptCapabilities,

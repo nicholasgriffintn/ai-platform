@@ -4,6 +4,7 @@ import {
   getPromptText,
   getTextToImageSystemPrompt,
   renderPrompt,
+  type PolyAgendaPromptInput,
   type PromptMemoryPolicy,
   type SandboxContextInput,
 } from "@ngriffin_uk/polychat-ai-prompts";
@@ -34,6 +35,7 @@ export interface SystemPromptOptions {
   skills?: readonly SkillAvailability[];
   memory?: PromptMemoryPolicy;
   persona?: AssistantPersona | null;
+  polyAgenda?: PolyAgendaPromptInput | null;
 }
 
 export type { PromptMemoryPolicy } from "@ngriffin_uk/polychat-ai-prompts";
@@ -175,7 +177,9 @@ export async function getSystemPrompt(options: SystemPromptOptions): Promise<str
         skillLoadTool: SKILL_LOAD_TOOL_NAME,
         userTraits: userSettings?.traits || null,
         userPreferences: userSettings?.preferences || null,
-        poly: request.poly ? { uiContext: request.poly.ui_context } : null,
+        poly: request.poly
+          ? { uiContext: request.poly.ui_context, agenda: options.polyAgenda }
+          : null,
       }),
     );
   } catch (error) {

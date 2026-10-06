@@ -111,3 +111,21 @@ export const polyHomeSchema = z.object({
 });
 
 export type PolyHome = z.infer<typeof polyHomeSchema>;
+
+export const polyAgendaItemSchema = z.object({
+  kind: z.enum(["delegation", "goal", "approval", "question"]),
+  id: z.string().min(1),
+  title: z.string(),
+  status: z.string(),
+  conversation_id: z.string().min(1),
+  updated_at: z.string().nullable(),
+});
+
+export const polyAgendaSchema = z.object({
+  needs_you: z.array(polyAgendaItemSchema),
+  working_on: z.array(polyAgendaItemSchema),
+  done: z.array(polyAgendaItemSchema),
+});
+
+export type PolyAgendaItem = z.infer<typeof polyAgendaItemSchema>;
+export type PolyAgenda = z.infer<typeof polyAgendaSchema>;

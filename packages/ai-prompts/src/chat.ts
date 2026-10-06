@@ -664,8 +664,41 @@ function buildUiContextSection(uiContext?: PolyUiContextInput | null): string {
   return `${lines.join("\n")}\n`;
 }
 
+export interface PolyAgendaPromptInput {
+  needsYou: readonly string[];
+  workingOn: readonly string[];
+  done: readonly string[];
+}
+
 export interface PolyPromptOptions {
   uiContext?: PolyUiContextInput | null;
+  agenda?: PolyAgendaPromptInput | null;
+}
+
+function buildAgendaList(tag: string, items: readonly string[]): string | null {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return [`<${tag}>`, ...items.map((item) => `- ${escapeHtml(item)}`), `</${tag}>`].join("\n");
+}
+
+function buildAgendaSection(agenda?: PolyAgendaPromptInput | null): string {
+  if (!agenda) {
+    return "";
+  }
+
+  const lists = [
+    buildAgendaList("needs_you", agenda.needsYou),
+    buildAgendaList("working_on", agenda.workingOn),
+    buildAgendaList("done_this_week", agenda.done),
+  ].filter((list): list is string => Boolean(list));
+
+  if (lists.length === 0) {
+    return "";
+  }
+
+  return `<agenda>\n${lists.join("\n")}\n${getPromptText("chat/poly/agenda-note")}\n</agenda>\n`;
 }
 
 function buildPolySection(poly?: PolyPromptOptions | null): string {
@@ -676,6 +709,7 @@ function buildPolySection(poly?: PolyPromptOptions | null): string {
   return new PromptBuilder(getPromptText("chat/poly/behaviour"))
     .addLine()
     .add(buildUiContextSection(poly.uiContext))
+    .add(buildAgendaSection(poly.agenda))
     .build();
 }
 

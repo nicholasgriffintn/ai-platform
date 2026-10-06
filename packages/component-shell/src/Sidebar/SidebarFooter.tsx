@@ -1,6 +1,7 @@
 import { SidebarFooter as ControlledSidebarFooter } from "@ngriffin_uk/polychat-component-navigation";
 import { cn } from "@ngriffin_uk/polychat-component-ui";
-import { useTrackEvent, useUIStore } from "@ngriffin_uk/polychat-library-react";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { usePolyPresence, useTrackEvent, useUIStore } from "@ngriffin_uk/polychat-library-react";
 import { Feather } from "lucide-react";
 
 import { useShellHost } from "../Host/ShellHostContext.js";
@@ -10,6 +11,9 @@ export function SidebarFooter() {
   const { trackEvent } = useTrackEvent();
   const { openAssistant } = useShellHost();
   const showPoly = useUIStore((state) => state.showPoly);
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const presence = usePolyPresence(isAuthenticated);
+  const hasActivity = Boolean(presence && (presence.needsYou > 0 || presence.workingOn > 0));
 
   return (
     <ControlledSidebarFooter>
@@ -34,7 +38,19 @@ export function SidebarFooter() {
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-selection text-foreground">
             <Feather className="h-4 w-4" aria-hidden="true" />
           </span>
-          <span className="min-w-0 truncate text-sm font-medium">Ask Poly</span>
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate text-sm font-medium">Ask Poly</span>
+            {presence && hasActivity ? (
+              <span
+                className={cn(
+                  "truncate text-xs",
+                  presence.needsYou > 0 ? "text-human-action" : "text-muted-foreground",
+                )}
+              >
+                {presence.status}
+              </span>
+            ) : null}
+          </span>
         </span>
         <kbd className="shrink-0 text-[10px] font-medium text-muted-foreground">⌘J</kbd>
       </button>

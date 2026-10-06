@@ -25,6 +25,7 @@ import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { PolyAgendaStrip } from "./PolyAgendaStrip.js";
 import { PolyAutonomyMenu } from "./PolyAutonomyMenu.js";
 import { usePolyNavigation } from "./usePolyNavigation.js";
 
@@ -141,11 +142,14 @@ function PolyHomeThread({ onNavigate }: { onNavigate: (href: string) => void }) 
   }
 
   return (
-    <PolyThread
-      key={home.data.conversation_id}
-      conversationId={home.data.conversation_id}
-      onNavigate={onNavigate}
-    />
+    <>
+      <PolyAgendaStrip />
+      <PolyThread
+        key={home.data.conversation_id}
+        conversationId={home.data.conversation_id}
+        onNavigate={onNavigate}
+      />
+    </>
   );
 }
 
