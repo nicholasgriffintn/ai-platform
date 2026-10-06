@@ -11,7 +11,8 @@ export function requirePolyHomeRun(
 
   if (
     !resolution ||
-    resolution.invocation.source !== "conversation" ||
+    (resolution.invocation.source !== "conversation" &&
+      resolution.invocation.source !== "channel") ||
     !home ||
     !isPolyTeammateId(home.teammateId) ||
     home.scope.type !== "personal" ||

@@ -22,6 +22,8 @@ export interface ChannelVerification {
   reason?: string;
 }
 
+export const CHANNEL_TOP_LEVEL_THREAD = "direct";
+
 export interface ChannelReply {
   externalId: string;
   body: string;
