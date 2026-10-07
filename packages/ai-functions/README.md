@@ -27,7 +27,7 @@ const image = await ai.image({ prompt: "a parrot on a perch", env, user });
 
 ## Decisions
 
-`decide` sends a state and a map of typed questions to the account's decision model (Jev, then Workers AI Clef Flash or Clef when `getAuxiliaryDecisionModel` resolves one) and returns answers typed by question id. `tryDecide` returns `null` instead of throwing when no decision model is available, which is how hot paths gate work without depending on provider availability. `choice`, `score` and `noul` build questions.
+`decide` sends a state and a map of typed questions to the account's decision model (Jev, then Workers AI Clef Flash or Clef, then OpenAI GPT-6 Luna when `getAuxiliaryDecisionModel` resolves one) and returns answers typed by question id. `tryDecide` returns `null` instead of throwing when no decision model is available, which is how hot paths gate work without depending on provider availability. `choice`, `score` and `noul` build questions.
 
 Pin Clef explicitly with `provider: "workers-ai"` and `model: "@cf/cloudflare/clef"`, or select `@cf/cloudflare/clef-flash` for latency-sensitive decisions. Workers AI needs the host's `AI` binding and uses the same text and structured-state questions as Jev. Embedded images and video are not exposed by this decision contract.
 

@@ -28,7 +28,7 @@ export async function decide({
 
   if (!target) {
     throw new AssistantError(
-      "No decision model is available for this account. Configure Workers AI or add a TypeSafe API key in settings.",
+      "No decision model is available for this account. Configure Workers AI or add a TypeSafe or OpenAI API key in settings.",
       ErrorType.CONFIGURATION_ERROR,
     );
   }
