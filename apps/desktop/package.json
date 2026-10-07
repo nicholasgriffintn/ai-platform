@@ -29,7 +29,7 @@
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@tanstack/react-query": "5.104.0",
-    "@tauri-apps/api": "2.12.0",
+    "@tauri-apps/api": "2.12.1",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router": "8.4.0",
