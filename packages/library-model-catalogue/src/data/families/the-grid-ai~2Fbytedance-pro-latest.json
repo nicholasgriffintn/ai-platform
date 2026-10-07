@@ -1,8 +1,8 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 128000,
-    "maxTokens": 65536,
+    "contextWindow": 262144,
+    "maxTokens": 131072,
     "modalities": {
       "input": [
         "text"
@@ -11,11 +11,11 @@
         "text"
       ]
     },
-    "releaseDate": "February 26, 2026",
+    "releaseDate": "July 6, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
+    "supportsTemperature": false,
     "reasoningConfig": {
       "supportedEffortLevels": [
         "low",
@@ -25,12 +25,12 @@
       "defaultEffort": "low"
     }
   },
-  "description": "The the grid ai/text standard family includes models that produce text.",
+  "description": "The the grid ai/bytedance pro latest family includes models that produce text.",
   "models": {
-    "text-standard": {
+    "bytedance-pro-latest": {
       "defaults": {
-        "name": "Text Standard",
-        "description": "Price-optimized models with low-latency, high-throughput and shorter maximum outputs. Any model that meets the contract spec can serve your request."
+        "name": "ByteDance Pro Latest",
+        "description": "Lab latest market for ByteDance Pro supply. You contract for the latest qualifying route, not a specific model."
       }
     }
   }

@@ -2744,6 +2744,26 @@
         "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false
       }
+    },
+    "global.zai.glm-5.3": {
+      "model": "glm/glm-5-3-global",
+      "matchingModel": "global.zai.glm-5.3",
+      "overrides": {
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.00168,
+        "costPer1kOutputTokens": 0.00528,
+        "supportsAttachments": false
+      }
+    },
+    "us.zai.glm-5.3": {
+      "model": "glm/glm-5-3-us",
+      "matchingModel": "us.zai.glm-5.3",
+      "overrides": {
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.001848,
+        "costPer1kOutputTokens": 0.005808,
+        "supportsAttachments": false
+      }
     }
   }
 }

@@ -1,6 +1,7 @@
 {
   "defaults": {
     "openWeights": true,
+    "contextWindow": 32768,
     "releaseDate": "July 15, 2025",
     "supportsToolCalls": true,
     "supportsAttachments": true,
@@ -12,7 +13,6 @@
       "defaults": {
         "name": "Voxtral Mini 3B 2507",
         "description": "Open audio-language model for speech transcription, audio understanding, and voice-driven tool use",
-        "contextWindow": 32768,
         "maxTokens": 4096,
         "modalities": {
           "input": [
@@ -72,7 +72,6 @@
       "defaults": {
         "name": "Voxtral Small 24B 2507",
         "description": "Open audio-language model for speech transcription, audio understanding, and voice-driven tool use",
-        "contextWindow": 32768,
         "supportsResponseFormat": true
       }
     },
@@ -80,7 +79,6 @@
       "defaults": {
         "name": "Voxtral Small",
         "description": "Instruct model with native audio input for speech understanding and tool use",
-        "contextWindow": 32000,
         "maxTokens": 32000,
         "modalities": {
           "input": [

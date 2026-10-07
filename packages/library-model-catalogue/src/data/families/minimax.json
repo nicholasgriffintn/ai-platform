@@ -123,7 +123,6 @@
     "minimax-h3": {
       "defaults": {
         "name": "MiniMax H3",
-        "openWeights": false,
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -136,7 +135,7 @@
             "video"
           ]
         },
-        "releaseDate": "July 30, 2026",
+        "releaseDate": "July 31, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": true
       }
@@ -166,9 +165,7 @@
       "defaults": {
         "name": "MiniMax Latest",
         "description": "MiniMax multimodal model for long-context coding, perception, and agent planning",
-        "contextWindow": 512000,
         "maxTokens": 512000,
-        "releaseDate": "June 12, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",

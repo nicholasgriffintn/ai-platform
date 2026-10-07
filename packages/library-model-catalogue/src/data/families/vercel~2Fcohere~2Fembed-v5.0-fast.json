@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 30, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The vercel/cohere/embed v5.0 fast family includes models that produce text.",
+  "models": {
+    "embed-5-fast": {
+      "defaults": {
+        "name": "Embed 5 Fast",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines"
+      }
+    }
+  }
+}

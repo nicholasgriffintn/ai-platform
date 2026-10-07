@@ -363,6 +363,7 @@
       "overrides": {
         "name": "GLM 5.1",
         "contextWindow": 202800,
+        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "April 1, 2026",
         "lastUpdated": "April 1, 2026",
@@ -815,6 +816,7 @@
       "model": "glm/glm-latest",
       "matchingModel": "accounts/fireworks/routers/glm-latest",
       "overrides": {
+        "openWeights": true,
         "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
         "contextWindow": 1048573,
         "maxTokens": 262144,
@@ -850,6 +852,8 @@
       "model": "minimax/minimax-latest",
       "matchingModel": "accounts/fireworks/routers/minimax-latest",
       "overrides": {
+        "contextWindow": 512000,
+        "releaseDate": "June 12, 2026",
         "lastUpdated": "September 15, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012

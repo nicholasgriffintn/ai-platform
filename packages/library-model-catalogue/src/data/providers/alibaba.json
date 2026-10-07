@@ -616,7 +616,6 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "qwen3.6-27b",
       "overrides": {
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",

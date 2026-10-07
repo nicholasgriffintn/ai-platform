@@ -1043,7 +1043,6 @@
       "defaults": {
         "name": "Claude Opus Latest",
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
-        "releaseDate": "April 21, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [

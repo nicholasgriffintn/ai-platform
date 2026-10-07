@@ -1,0 +1,65 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "releaseDate": "October 6, 2026",
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+  "models": {
+    "gemini-nano-banana-2-1": {
+      "defaults": {
+        "name": "Gemini Nano Banana 2.1",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "nano-banana-2-1": {
+      "defaults": {
+        "name": "Nano Banana 2.1",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 65536,
+        "maxTokens": 58982,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    }
+  }
+}

@@ -286,7 +286,8 @@
       "overrides": {
         "lastUpdated": "October 4, 2024",
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0001
+        "costPer1kOutputTokens": 0.0001,
+        "supportsAttachments": true
       },
       "unset": [
         "supportsResponseFormat"
@@ -341,7 +342,8 @@
       "overrides": {
         "lastUpdated": "October 4, 2024",
         "costPer1kInputTokens": 0.00004,
-        "costPer1kOutputTokens": 0.00004
+        "costPer1kOutputTokens": 0.00004,
+        "supportsAttachments": true
       },
       "unset": [
         "supportsResponseFormat"
@@ -352,7 +354,6 @@
       "matchingModel": "mistral/mistral-small",
       "overrides": {
         "name": "Mistral Small",
-        "contextWindow": 262144,
         "maxTokens": 4000,
         "strengths": [
           "vision",
@@ -2871,7 +2872,7 @@
         "speed": 4,
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.0009,
+        "costPer1kOutputTokens": 0.0008,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -5436,8 +5437,8 @@
         "contextWindow": 1000000,
         "maxTokens": 131072,
         "lastUpdated": "July 21, 2026",
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0002
+        "costPer1kInputTokens": 0.00009,
+        "costPer1kOutputTokens": 0.00018
       }
     },
     "poolside/laguna-s-2.1-free": {
@@ -5586,7 +5587,7 @@
       "model": "minimax/minimax-h3",
       "matchingModel": "minimax/minimax-h3",
       "overrides": {
-        "lastUpdated": "July 30, 2026",
+        "lastUpdated": "October 4, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": true
       },
@@ -7918,6 +7919,87 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": true
+      }
+    },
+    "bfl/flux-3-image": {
+      "model": "flux/flux-3-image",
+      "matchingModel": "bfl/flux-3-image",
+      "overrides": {
+        "lastUpdated": "October 5, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "cohere/embed-v5.0-fast": {
+      "model": "vercel/cohere/embed-v5.0-fast/embed-5-fast",
+      "matchingModel": "cohere/embed-v5.0-fast",
+      "overrides": {
+        "lastUpdated": "September 30, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "cohere/embed-v5.0-pro": {
+      "model": "vercel/cohere/embed-v5.0-pro/embed-5-pro",
+      "matchingModel": "cohere/embed-v5.0-pro",
+      "overrides": {
+        "lastUpdated": "September 30, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "google/gemini-nano-banana-2.1": {
+      "model": "nano-banana/gemini-nano-banana-2-1",
+      "matchingModel": "google/gemini-nano-banana-2.1",
+      "overrides": {
+        "lastUpdated": "October 6, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.0075,
+        "supportsToolCalls": false,
+        "supportsAttachments": true
+      }
+    },
+    "mistral/mistral-large-4": {
+      "model": "mistral-large/mistral-large-4",
+      "matchingModel": "mistral/mistral-large-4",
+      "overrides": {
+        "lastUpdated": "October 6, 2026",
+        "costPer1kInputTokens": 0.00068,
+        "costPer1kOutputTokens": 0.00209,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "topaz/proteus": {
+      "model": "vercel/topaz/proteus/proteus",
+      "matchingModel": "topaz/proteus",
+      "overrides": {
+        "lastUpdated": "October 6, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "topaz/starlight-precise-2.6": {
+      "model": "vercel/topaz/starlight-precise-2.6/starlight-precise-2-6",
+      "matchingModel": "topaz/starlight-precise-2.6",
+      "overrides": {
+        "lastUpdated": "October 6, 2026",
+        "supportsToolCalls": false
+      }
+    },
+    "topaz/wonder-3.5": {
+      "model": "vercel/topaz/wonder-3.5/wonder-3-5",
+      "matchingModel": "topaz/wonder-3.5",
+      "overrides": {
+        "lastUpdated": "October 6, 2026",
+        "supportsToolCalls": false
       }
     }
   }

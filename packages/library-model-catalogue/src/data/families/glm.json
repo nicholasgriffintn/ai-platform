@@ -391,7 +391,6 @@
       "defaults": {
         "name": "GLM-5.1",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],
@@ -859,6 +858,24 @@
         }
       }
     },
+    "glm-5-3-global": {
+      "defaults": {
+        "name": "GLM-5.3 (Global)",
+        "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "releaseDate": "August 14, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "glm-5-3-prime": {
       "defaults": {
         "name": "GLM 5.3 Prime",
@@ -875,6 +892,24 @@
             "max"
           ],
           "defaultEffort": "low"
+        }
+      }
+    },
+    "glm-5-3-us": {
+      "defaults": {
+        "name": "GLM-5.3 (US)",
+        "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "releaseDate": "August 14, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
         }
       }
     },
@@ -949,6 +984,7 @@
     "glm-latest": {
       "defaults": {
         "name": "GLM Latest",
+        "openWeights": false,
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "reasoningConfig": {
           "supportedEffortLevels": [
