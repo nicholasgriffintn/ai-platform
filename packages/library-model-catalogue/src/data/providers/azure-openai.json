@@ -980,7 +980,8 @@
       "overrides": {
         "lastUpdated": "November 18, 2025",
         "costPer1kInputTokens": 0.00014,
-        "costPer1kOutputTokens": 0
+        "costPer1kOutputTokens": 0,
+        "apiShape": "completions"
       },
       "unset": [
         "supportsTemperature"
@@ -1827,7 +1828,9 @@
         "status": "beta",
         "contextWindow": 200000,
         "maxTokens": 128000,
-        "lastUpdated": "August 12, 2026"
+        "lastUpdated": "August 12, 2026",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.006
       }
     },
     "gpt-6-astra": {

@@ -1,7 +1,6 @@
 {
   "defaults": {
     "supportsToolCalls": true,
-    "supportsAttachments": false,
     "supportsTemperature": true
   },
   "models": {
@@ -93,7 +92,6 @@
         "lastUpdated": "December 2, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
-        "supportsAttachments": true,
         "supportsFim": true
       }
     },
@@ -117,8 +115,7 @@
         "deprecated": true,
         "lastUpdated": "November 4, 2024",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.006,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.006
       }
     },
     "mistral-medium": {
@@ -143,8 +140,7 @@
         "knowledgeCutoffDate": "May 2025",
         "lastUpdated": "April 29, 2026",
         "costPer1kInputTokens": 0.0015,
-        "costPer1kOutputTokens": 0.0075,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.0075
       }
     },
     "codestral": {
@@ -192,8 +188,7 @@
         "deprecated": true,
         "lastUpdated": "September 1, 2024",
         "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.00015,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.00015
       },
       "unset": [
         "artificialAnalysis"
@@ -204,7 +199,6 @@
       "matchingModel": "mistral-small-latest",
       "overrides": {
         "name": "Mistral Small 4",
-        "contextWindow": 256000,
         "maxTokens": 256000,
         "card": "https://www.prompthub.us/models/mistral-small",
         "strengths": [
@@ -225,7 +219,6 @@
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -241,8 +234,7 @@
       "overrides": {
         "speed": 3,
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0002,
-        "supportsAttachments": true
+        "costPer1kOutputTokens": 0.0002
       }
     },
     "ministral-8b": {
@@ -280,7 +272,8 @@
           "creative",
           "multilingual",
           "vision",
-          "tool_use"
+          "tool_use",
+          "document"
         ],
         "contextComplexity": 4,
         "reliability": 1,
@@ -331,7 +324,6 @@
         "lastUpdated": "July 15, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0003,
-        "supportsAttachments": true,
         "supportsAudio": true
       }
     },
@@ -355,10 +347,7 @@
         "supportsAudio": true,
         "supportsRealtimeSession": true,
         "supportsTemperature": false
-      },
-      "unset": [
-        "supportsAttachments"
-      ]
+      }
     },
     "mistral-embed": {
       "model": "mistral-embed/mistral-embed",
@@ -382,7 +371,6 @@
       },
       "unset": [
         "supportsToolCalls",
-        "supportsAttachments",
         "supportsTemperature"
       ]
     },
@@ -412,7 +400,7 @@
       "matchingModel": "zai-glm-5-2",
       "overrides": {
         "status": "beta",
-        "contextWindow": 1000000,
+        "contextWindow": 1048576,
         "speed": 4,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
@@ -431,7 +419,6 @@
       "model": "glm/glm-5-3",
       "matchingModel": "zai-glm-5-3",
       "overrides": {
-        "contextWindow": 1000000,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044

@@ -3,7 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": false
   },
   "models": {
     "agent-prime": {
@@ -11,7 +11,8 @@
       "matchingModel": "agent-prime",
       "overrides": {
         "status": "beta",
-        "lastUpdated": "July 15, 2026"
+        "lastUpdated": "July 15, 2026",
+        "supportsTemperature": true
       }
     },
     "code-prime": {
@@ -19,7 +20,8 @@
       "matchingModel": "code-prime",
       "overrides": {
         "status": "beta",
-        "lastUpdated": "July 15, 2026"
+        "lastUpdated": "July 15, 2026",
+        "supportsTemperature": true
       }
     },
     "agent-max": {
@@ -28,8 +30,7 @@
       "overrides": {
         "status": "beta",
         "lastUpdated": "July 24, 2026",
-        "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsAttachments": true
       }
     },
     "agent-standard": {
@@ -37,7 +38,8 @@
       "matchingModel": "agent-standard",
       "overrides": {
         "status": "beta",
-        "lastUpdated": "July 15, 2026"
+        "lastUpdated": "July 15, 2026",
+        "supportsTemperature": true
       }
     },
     "code-max": {
@@ -46,8 +48,7 @@
       "overrides": {
         "status": "beta",
         "lastUpdated": "July 24, 2026",
-        "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsAttachments": true
       }
     },
     "code-standard": {
@@ -55,7 +56,8 @@
       "matchingModel": "code-standard",
       "overrides": {
         "status": "beta",
-        "lastUpdated": "July 15, 2026"
+        "lastUpdated": "July 15, 2026",
+        "supportsTemperature": true
       }
     },
     "text-max": {
@@ -63,22 +65,114 @@
       "matchingModel": "text-max",
       "overrides": {
         "lastUpdated": "July 24, 2026",
-        "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsAttachments": true
       }
     },
     "text-prime": {
       "model": "the-grid-ai/text-prime/text-prime",
       "matchingModel": "text-prime",
       "overrides": {
-        "lastUpdated": "July 15, 2026"
+        "lastUpdated": "July 15, 2026",
+        "supportsTemperature": true
       }
     },
     "text-standard": {
       "model": "the-grid-ai/text-standard/text-standard",
       "matchingModel": "text-standard",
       "overrides": {
-        "lastUpdated": "July 15, 2026"
+        "lastUpdated": "July 15, 2026",
+        "supportsTemperature": true
+      }
+    },
+    "bytedance-pro-latest": {
+      "model": "the-grid-ai/bytedance-pro-latest/bytedance-pro-latest",
+      "matchingModel": "bytedance-pro-latest",
+      "overrides": {
+        "lastUpdated": "July 6, 2026"
+      }
+    },
+    "claude-opus-latest": {
+      "model": "claude-opus/claude-opus-latest",
+      "matchingModel": "claude-opus-latest",
+      "overrides": {
+        "description": "Lab latest market for Claude Opus frontier supply. You contract for the latest qualifying route, not a specific model.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 6, 2026",
+        "lastUpdated": "July 30, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "deepseek-pro-latest": {
+      "model": "deepseek/deepseek-pro-latest",
+      "matchingModel": "deepseek-pro-latest",
+      "overrides": {
+        "description": "Lab latest market for DeepSeek Pro supply. You contract for the latest qualifying route, not a specific model.",
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "releaseDate": "July 6, 2026",
+        "lastUpdated": "July 6, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gemini-pro-latest": {
+      "model": "gemini/gemini-pro-latest",
+      "matchingModel": "gemini-pro-latest",
+      "overrides": {
+        "lastUpdated": "July 6, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "glm-latest": {
+      "model": "glm/glm-latest",
+      "matchingModel": "glm-latest",
+      "overrides": {
+        "description": "Lab latest market for GLM supply. You contract for the latest qualifying route, not a specific model.",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "releaseDate": "July 6, 2026",
+        "lastUpdated": "July 6, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gpt-sol-latest": {
+      "model": "gpt/gpt-sol-latest",
+      "matchingModel": "gpt-sol-latest",
+      "overrides": {
+        "lastUpdated": "July 6, 2026",
+        "supportsAttachments": true
+      }
+    },
+    "minimax-latest": {
+      "model": "minimax/minimax-latest",
+      "matchingModel": "minimax-latest",
+      "overrides": {
+        "openWeights": false,
+        "description": "Lab latest market for MiniMax supply. You contract for the latest qualifying route, not a specific model.",
+        "contextWindow": 1000000,
+        "releaseDate": "July 6, 2026",
+        "lastUpdated": "July 6, 2026"
       }
     }
   }

@@ -206,6 +206,7 @@
       "overrides": {
         "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
         "contextWindow": 200000,
+        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.0014,

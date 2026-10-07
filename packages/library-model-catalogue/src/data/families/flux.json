@@ -375,6 +375,16 @@
         "releaseDate": "August 4, 2026"
       }
     },
+    "flux-3-image": {
+      "defaults": {
+        "name": "FLUX 3 Image",
+        "openWeights": false,
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "releaseDate": "October 5, 2026"
+      }
+    },
     "flux-schnell": {
       "defaults": {
         "name": "Flux Schnell",

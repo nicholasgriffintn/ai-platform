@@ -249,6 +249,7 @@
     "mistral-small-latest": {
       "defaults": {
         "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
+        "contextWindow": 262144,
         "reliability": 1,
         "knowledgeCutoffDate": "June 2025",
         "artificialAnalysis": {

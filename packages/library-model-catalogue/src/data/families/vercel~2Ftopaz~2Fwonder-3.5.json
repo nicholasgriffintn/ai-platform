@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "releaseDate": "October 6, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The vercel/topaz/wonder 3.5 family includes models that produce image.",
+  "models": {
+    "wonder-3-5": {
+      "defaults": {
+        "name": "Wonder 3.5",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows"
+      }
+    }
+  }
+}

@@ -468,15 +468,6 @@
         "supportsTemperature": false
       }
     },
-    "space-bunny-free": {
-      "model": "opencode-go/space-bunny-free/space-bunny-free",
-      "matchingModel": "space-bunny-free",
-      "overrides": {
-        "lastUpdated": "September 23, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
-      }
-    },
     "longcat-2.5-preview-free": {
       "model": "longcat/longcat-2-5-preview-free",
       "matchingModel": "longcat-2.5-preview-free",
@@ -484,6 +475,15 @@
         "lastUpdated": "September 25, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
+      }
+    },
+    "space-bunny": {
+      "model": "opencode-go/space-bunny/space-bunny",
+      "matchingModel": "space-bunny",
+      "overrides": {
+        "lastUpdated": "September 23, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006
       }
     }
   }

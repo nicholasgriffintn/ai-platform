@@ -793,6 +793,35 @@
         "supportsToolCalls": false
       }
     },
+    "gemini-pro-latest": {
+      "defaults": {
+        "name": "Gemini Pro Latest",
+        "openWeights": false,
+        "description": "Lab latest market for Gemini Pro frontier supply. You contract for the latest qualifying route, not a specific model.",
+        "contextWindow": 1000000,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 6, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "gemini-robotics-er-1-6-preview": {
       "defaults": {
         "name": "Gemini Robotics-ER 1.6 Preview",

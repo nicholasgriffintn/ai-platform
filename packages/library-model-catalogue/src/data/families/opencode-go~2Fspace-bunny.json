@@ -29,11 +29,11 @@
       "defaultEffort": "low"
     }
   },
-  "description": "The opencode go/space bunny free family includes models that produce text.",
+  "description": "The opencode go/space bunny family includes models that produce text.",
   "models": {
-    "space-bunny-free": {
+    "space-bunny": {
       "defaults": {
-        "name": "Space Bunny Free",
+        "name": "Space Bunny",
         "description": "Anonymous preview reasoning model for coding, agentic tasks, tool use, and multimodal input"
       }
     }

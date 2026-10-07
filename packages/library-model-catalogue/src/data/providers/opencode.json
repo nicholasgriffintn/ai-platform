@@ -289,6 +289,7 @@
       "matchingModel": "glm-5.1",
       "overrides": {
         "contextWindow": 204800,
+        "maxTokens": 131072,
         "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "April 7, 2026",
@@ -1362,6 +1363,33 @@
           "supportedEffortLevels": [
             "none",
             "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "exo-free": {
+      "model": "opencode/exo-free/exo-free",
+      "matchingModel": "exo-free",
+      "overrides": {
+        "lastUpdated": "October 6, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
+      }
+    },
+    "mistral-large-4": {
+      "model": "mistral-large/mistral-large-4",
+      "matchingModel": "mistral-large-4",
+      "overrides": {
+        "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
+        "lastUpdated": "October 6, 2026",
+        "costPer1kInputTokens": 0.00068,
+        "costPer1kOutputTokens": 0.00209,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
           ],
           "defaultEffort": "none"
         }

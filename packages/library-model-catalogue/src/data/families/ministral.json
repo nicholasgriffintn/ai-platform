@@ -178,7 +178,7 @@
       "defaults": {
         "name": "Ministral 3B",
         "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
-        "contextWindow": 128000,
+        "contextWindow": 131072,
         "maxTokens": 128000,
         "modalities": {
           "input": [
@@ -189,15 +189,14 @@
           ]
         },
         "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "October 1, 2024",
-        "supportsAttachments": false
+        "releaseDate": "October 1, 2024"
       }
     },
     "ministral-8b-latest": {
       "defaults": {
         "name": "Ministral 8B",
         "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
-        "contextWindow": 128000,
+        "contextWindow": 262144,
         "maxTokens": 128000,
         "modalities": {
           "input": [
@@ -208,8 +207,7 @@
           ]
         },
         "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "October 1, 2024",
-        "supportsAttachments": false
+        "releaseDate": "October 1, 2024"
       }
     }
   }

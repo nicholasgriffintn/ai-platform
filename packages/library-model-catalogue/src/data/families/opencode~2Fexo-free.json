@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 6, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "high"
+      ],
+      "defaultEffort": "high"
+    }
+  },
+  "description": "The opencode/exo free family includes models that produce text.",
+  "models": {
+    "exo-free": {
+      "defaults": {
+        "name": "Exo Free",
+        "description": "Free-tier preview reasoning model with text and image input and tool use"
+      }
+    }
+  }
+}
