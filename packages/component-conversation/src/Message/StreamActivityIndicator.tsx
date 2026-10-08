@@ -32,7 +32,7 @@ export function StreamActivityIndicator({
           className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 animate-pulse rounded-full bg-active-work"
           aria-hidden="true"
         />
-        <span className="min-w-0">{turnActivity?.label ?? label}</span>
+        <span className="polychat-motion-shimmer min-w-0">{turnActivity?.label ?? label}</span>
       </div>
       {metrics.length > 0 && (
         <span aria-hidden="true" className="text-xs text-muted-foreground tabular-nums">

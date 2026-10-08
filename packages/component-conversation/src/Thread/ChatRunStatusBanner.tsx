@@ -14,7 +14,11 @@ export function ChatRunStatusBanner({ run }: { run: ChatRun }) {
 
   return (
     <output className="block w-full pb-2" aria-live="polite">
-      <div className={`rounded-lg border px-3 py-2 text-sm ${toneClasses[presentation.tone]}`}>
+      <div
+        className={`rounded-lg border px-3 py-2 text-sm ${toneClasses[presentation.tone]} ${
+          presentation.tone === "danger" ? "polychat-motion-ruffle" : ""
+        }`}
+      >
         <span className="font-medium">{presentation.label}</span>
         <span className="ml-2 break-words whitespace-normal opacity-80">{presentation.detail}</span>
       </div>

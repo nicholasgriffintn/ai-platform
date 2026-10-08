@@ -25,10 +25,11 @@ import {
   resolveToolResultPartDisplay,
 } from "@ngriffin_uk/polychat-library-chat/tool-results";
 import { useConversationScope } from "@ngriffin_uk/polychat-library-react";
-import { File, FileText, Loader2, Volume2 } from "lucide-react";
+import { File, FileText, Volume2 } from "lucide-react";
 import { Fragment, type ReactNode, memo, useMemo } from "react";
 
 import { CitationList } from "./CitationList.js";
+import { GenerationPendingCard } from "./GenerationPendingCard.js";
 import { ReasoningSection } from "./ReasoningSection.js";
 import { useResolvedToolCallIds } from "./ResolvedToolCalls.js";
 import { SearchGroundingSection } from "./SearchGroundingSection.js";
@@ -120,6 +121,7 @@ const renderTextContent = (
             ) : (
               <ArtifactCallout
                 key={`artifact-${identifier}-${i}`}
+                isGenerating={isGenerating && artifact.isOpen}
                 identifier={artifact.identifier}
                 type={artifact.type}
                 language={artifact.language}
@@ -677,14 +679,9 @@ export const MessageContent = memo((props: MessageContentProps) => {
 
   return (
     <div className="space-y-3">
-      {isPending && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>{progressHint || "Content generation in progress..."}</span>
-        </div>
-      )}
+      {isPending && <GenerationPendingCard label={progressHint} />}
       {isFailed && (
-        <div className="text-sm text-failure">
+        <div className="polychat-motion-ruffle text-sm text-failure">
           {failureHint || errorMessage || "Generation failed. Please try again."}
         </div>
       )}

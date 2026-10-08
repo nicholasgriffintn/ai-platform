@@ -1,4 +1,5 @@
-import { AppWindow, AlertTriangle, Loader2 } from "lucide-react";
+import { ProgressLine } from "@ngriffin_uk/polychat-component-ui";
+import { AppWindow, AlertTriangle } from "lucide-react";
 import { Suspense, lazy, useMemo, useState } from "react";
 
 import type { ArtifactProps } from "./artifact";
@@ -69,7 +70,7 @@ export function ArtifactInlinePreview({
       </div>
 
       {previewError && (
-        <div className="m-3 flex gap-2 rounded-md border border-failure/45 bg-failure/12 p-3 text-sm text-failure">
+        <div className="polychat-motion-ruffle m-3 flex gap-2 rounded-md border border-failure/45 bg-failure/12 p-3 text-sm text-failure">
           <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
           <pre className="min-w-0 text-xs whitespace-pre-wrap">{previewError}</pre>
         </div>
@@ -92,12 +93,9 @@ export function ArtifactInlinePreview({
             aria-label="Updating preview"
             className="absolute inset-0 z-10 flex items-center justify-center bg-surface backdrop-blur-[2px]"
           >
+            <ProgressLine label="Updating preview" className="absolute inset-x-0 top-0" />
             <div className="flex items-center gap-2 rounded-full border border-border/80 bg-surface px-3 py-1.5 text-sm text-muted-foreground shadow-sm">
-              <Loader2
-                className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none"
-                aria-hidden="true"
-              />
-              <span>Updating preview…</span>
+              <span className="polychat-motion-shimmer">Updating preview…</span>
             </div>
           </output>
         )}
