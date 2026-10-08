@@ -2,8 +2,10 @@ import { formattedMessageContent } from "./messages.js";
 
 const ARTIFACT_OPEN = "<artifact";
 const ARTIFACT_CLOSE = "</artifact>";
-const EDIT_MODE_ATTRIBUTE = /\s+mode="edit"/i;
-const EDIT_BLOCK = /<<<<<<< FIND\r?\n([\s\S]*?)\r?\n=======\r?\n([\s\S]*?)\r?\n?>>>>>>> REPLACE/g;
+const EDIT_MODE_ATTRIBUTE = /\smode="edit"/i;
+const FIND_MARKER = "<<<<<<< FIND\n";
+const SEPARATOR_MARKER = "\n=======\n";
+const REPLACE_MARKER = ">>>>>>> REPLACE";
 
 export interface ArtifactEdit {
   find: string;
@@ -13,10 +15,31 @@ export interface ArtifactEdit {
 export type ArtifactEditResult = { ok: true; content: string } | { ok: false; error: string };
 
 export function parseArtifactEdits(body: string): ArtifactEdit[] {
-  return [...body.matchAll(EDIT_BLOCK)].map((match) => ({
-    find: match[1] ?? "",
-    replace: match[2] ?? "",
-  }));
+  const text = body.replaceAll("\r\n", "\n");
+  const edits: ArtifactEdit[] = [];
+  let cursor = 0;
+
+  while (cursor < text.length) {
+    const start = text.indexOf(FIND_MARKER, cursor);
+    const separator =
+      start === -1 ? -1 : text.indexOf(SEPARATOR_MARKER, start + FIND_MARKER.length);
+    const end =
+      separator === -1 ? -1 : text.indexOf(REPLACE_MARKER, separator + SEPARATOR_MARKER.length);
+
+    if (start === -1 || separator === -1 || end === -1) {
+      break;
+    }
+
+    const replace = text.slice(separator + SEPARATOR_MARKER.length, end);
+
+    edits.push({
+      find: text.slice(start + FIND_MARKER.length, separator),
+      replace: replace.endsWith("\n") ? replace.slice(0, -1) : replace,
+    });
+    cursor = end + REPLACE_MARKER.length;
+  }
+
+  return edits;
 }
 
 function countOccurrences(text: string, search: string): number {

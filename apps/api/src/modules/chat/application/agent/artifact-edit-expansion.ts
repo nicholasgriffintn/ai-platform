@@ -9,12 +9,16 @@ import type { TurnOutput } from "~/modules/chat/application/agent/assistant-turn
 import type { Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/agent/artifact-edit-expansion" });
-const EDIT_MARKER = /<artifact\b[^>]*\smode="edit"/i;
+const EDIT_MARKER = 'mode="edit"';
+
+function mentionsArtifactEdit(text: string): boolean {
+  return text.toLowerCase().includes(EDIT_MARKER);
+}
 
 function hasArtifactEdits(turn: TurnOutput): boolean {
   return (
-    EDIT_MARKER.test(turn.content) ||
-    (turn.parts ?? []).some((part) => part.type === "text" && EDIT_MARKER.test(part.text))
+    mentionsArtifactEdit(turn.content) ||
+    (turn.parts ?? []).some((part) => part.type === "text" && mentionsArtifactEdit(part.text))
   );
 }
 

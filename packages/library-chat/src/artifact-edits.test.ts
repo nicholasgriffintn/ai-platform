@@ -20,6 +20,17 @@ describe("applyArtifactEdits", () => {
     ).toEqual({ ok: true, content: "# Plan\nShip on Friday\nOwner: Alex" });
   });
 
+  it("stays linear on an edit block that never closes", () => {
+    const started = Date.now();
+
+    expect(
+      applyArtifactEdits("text", `<<<<<<< FIND\n${"\n=======\n".repeat(50_000)}`),
+    ).toMatchObject({
+      ok: false,
+    });
+    expect(Date.now() - started).toBeLessThan(1_000);
+  });
+
   it("refuses an edit whose text is missing or ambiguous", () => {
     expect(applyArtifactEdits("a b", edit("c", "d"))).toMatchObject({ ok: false });
     expect(applyArtifactEdits("a a", edit("a", "b"))).toMatchObject({
