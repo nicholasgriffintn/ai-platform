@@ -12,6 +12,7 @@ export function useUserQuestionSubmission(
 ) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<UserQuestionAnswer[]>([]);
+  const [files, setFiles] = useState<Record<string, File[]>>({});
   const [otherAnswer, setOtherAnswer] = useState("");
   const [submission, setSubmission] = useState<{
     interactionId: string;
@@ -26,7 +27,7 @@ export function useUserQuestionSubmission(
   const isSubmitting = submissionStatus === "submitting";
   const isResolved = questionSet?.resolved || submissionStatus === "acknowledged";
   const currentQuestion = questionSet?.questions[currentIndex];
-  const answerCurrent = async (answer: string) => {
+  const answerCurrent = async (answer: string, attachedFiles: File[] = []) => {
     const trimmed = answer.trim();
 
     if (
@@ -45,7 +46,10 @@ export function useUserQuestionSubmission(
       { questionId: currentQuestion.id, answer: trimmed },
     ];
 
+    const nextFiles = { ...files, [currentQuestion.id]: attachedFiles };
+
     setAnswers(nextAnswers);
+    setFiles(nextFiles);
 
     if (currentIndex < questionSet.questions.length - 1) {
       setOtherAnswer("");
@@ -63,6 +67,7 @@ export function useUserQuestionSubmission(
         interactionId,
         answers: nextAnswers,
         input: formatQuestionAnswers(nextAnswers),
+        files: nextAnswers.flatMap((item) => nextFiles[item.questionId] ?? []),
       });
       setSubmission({ interactionId, status: "acknowledged" });
     } catch {
