@@ -1,11 +1,13 @@
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 import {
   nonEmptyToolCallsOrNull,
   serialiseToolCallArguments,
 } from "@ngriffin_uk/polychat-utility-server/tool-calls";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import { searchableConversationTypesSql } from "~/modules/conversations/infrastructure/conversation-type-sql";
 import { buildAppendRunEventStatements } from "~/modules/conversations/infrastructure/run-event-statements";
 import { publishMessageChanged } from "~/modules/sync/application/conversation-events";
 import type { Message } from "~/types";
@@ -57,6 +59,14 @@ interface StoredMessageWrite {
   role: string;
   content: string | Record<string, unknown>;
   data?: Partial<Message>;
+}
+
+export interface ConversationExcerptRow {
+  conversation_id: string;
+  title: string | null;
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
 }
 
 export class MessageRepository extends BaseRepository {
@@ -886,27 +896,46 @@ export class MessageRepository extends BaseRepository {
     return Array.isArray(result) ? result : [];
   }
 
-  public async searchMessages(
-    userId: number,
-    query: string,
-    limit = 25,
-    offset = 0,
-  ): Promise<Record<string, unknown>[]> {
-    const searchTerm = `%${query}%`;
+  public async searchConversationExcerpts(params: {
+    userId: number;
+    projectId: string | null;
+    terms: readonly string[];
+    excludeConversationId?: string;
+    limit: number;
+  }): Promise<ConversationExcerptRow[]> {
+    if (params.terms.length === 0) {
+      return [];
+    }
 
-    const result = await this.runQuery<Record<string, unknown>>(
-      `SELECT m.* 
+    const termClauses = params.terms.map(() => "m.content LIKE ? ESCAPE '\\'").join(" AND ");
+    const scopeClause = params.projectId
+      ? `c.project_id = ?
+         AND NOT EXISTS (
+           SELECT 1 FROM teammate_context tc
+           WHERE tc.home_conversation_id = c.id AND tc.actor_user_id != ?
+         )`
+      : "c.project_id IS NULL AND c.user_id = ?";
+    const scopeValues = params.projectId ? [params.projectId, params.userId] : [params.userId];
+
+    return this.runQuery<ConversationExcerptRow>(
+      `SELECT m.conversation_id, c.title, m.role, m.content, m.created_at
        FROM message m
        JOIN conversation c ON m.conversation_id = c.id
-	   WHERE c.user_id = ?
-	   AND c.project_id IS NULL
-       AND m.content LIKE ?
+       WHERE ${scopeClause}
+         AND c.is_archived = 0
+         AND c.type IN (${searchableConversationTypesSql})
+         AND c.id != ?
+         AND m.role IN ('user', 'assistant')
+         AND ${termClauses}
        ORDER BY m.created_at DESC
-       LIMIT ? OFFSET ?`,
-      [userId, searchTerm, limit, offset],
+       LIMIT ?`,
+      [
+        ...scopeValues,
+        params.excludeConversationId ?? "",
+        ...params.terms.map((term) => `%${escapeSqlLikePattern(term)}%`),
+        params.limit,
+      ],
     );
-
-    return Array.isArray(result) ? result : [];
   }
 
   public async getMessageById(messageId: string): Promise<{

@@ -3,31 +3,21 @@ import type {
   ConversationArchiveFilter,
   ConversationSortBy,
   ConversationType,
-  ListedConversationType,
   ModelTier,
   PermissionMode,
-  SearchableConversationType,
-} from "@ngriffin_uk/polychat-schemas";
-import {
-  LISTED_CONVERSATION_TYPES,
-  SEARCHABLE_CONVERSATION_TYPES,
 } from "@ngriffin_uk/polychat-schemas";
 import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { PaginationHelper } from "~/infrastructure/database/PaginationHelper";
+import {
+  listedConversationTypesSql,
+  searchableConversationTypesSql,
+} from "~/modules/conversations/infrastructure/conversation-type-sql";
 import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 
 export type { ConversationArchiveFilter, ConversationSortBy } from "@ngriffin_uk/polychat-schemas";
-
-const listedConversationTypesSql = LISTED_CONVERSATION_TYPES.map(
-  (type: ListedConversationType) => `'${type}'`,
-).join(", ");
-
-const searchableConversationTypesSql = SEARCHABLE_CONVERSATION_TYPES.map(
-  (type: SearchableConversationType) => `'${type}'`,
-).join(", ");
 
 export interface GetUserConversationsOptions {
   archiveFilter?: ConversationArchiveFilter;
