@@ -86,4 +86,42 @@ describe("TaskRepository", () => {
       expect.any(String),
     );
   });
+
+  it("returns parsed JSON columns from createTask instead of raw D1 strings", async () => {
+    const taskData = {
+      conversationId: "conversation-1",
+      message: { role: "user", content: "follow up" },
+      request: {},
+    };
+    const first = vi.fn().mockResolvedValue({
+      id: "queued_chat_1",
+      task_type: "queued_chat_message",
+      user_id: null,
+      project_id: null,
+      task_data: JSON.stringify(taskData),
+      schedule_type: "immediate",
+      scheduled_at: null,
+      cron_expression: null,
+      priority: 6,
+      metadata: null,
+      created_by: "user",
+      status: "suspended",
+      attempts: 0,
+      max_attempts: 3,
+    });
+    const bind = vi.fn().mockReturnValue({ first });
+    const prepare = vi.fn().mockReturnValue({ bind });
+    const repository = new TaskRepository({ DB: { prepare } } as any);
+
+    const created = await repository.createTask({
+      id: "queued_chat_1",
+      task_type: "queued_chat_message",
+      task_data: taskData,
+      priority: 6,
+      created_by: "user",
+      status: "suspended",
+    });
+
+    expect(created?.task_data).toEqual(taskData);
+  });
 });

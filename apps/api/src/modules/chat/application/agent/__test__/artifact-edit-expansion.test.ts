@@ -29,7 +29,7 @@ describe("expandTurnArtifactEdits", () => {
     const loadHistory = vi.fn();
 
     await expandTurnArtifactEdits({
-      turn: { content: earlier, toolCalls: [] } as never,
+      turn: { content: earlier, toolCalls: [] },
       loadHistory,
     });
 

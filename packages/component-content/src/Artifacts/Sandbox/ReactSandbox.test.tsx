@@ -10,10 +10,13 @@ function runTranspiled(code: string, transpiled: string): Record<string, unknown
     if (name === "react") {
       return {};
     }
+
     throw new Error(`unexpected import "${name}"`);
   };
+
   new Function("require", "module", "exports", transpiled)(require, module, module.exports);
   void code;
+
   return module.exports;
 }
 
@@ -89,6 +92,7 @@ describe("prepareReactArtifactDocument", () => {
     );
 
     const document = await prepareReactArtifactDocument(code, undefined);
+
     expect(document).toContain("exports.PomodoroTimer = PomodoroTimer");
     expect(document).toContain("as a named export");
   });
@@ -97,6 +101,7 @@ describe("prepareReactArtifactDocument", () => {
     function Default(): null {
       return null;
     }
+
     function Named(): null {
       return null;
     }
@@ -108,9 +113,11 @@ describe("prepareReactArtifactDocument", () => {
     function helper(): number {
       return 1;
     }
+
     function App(): null {
       return null;
     }
+
     function PomodoroTimer(): null {
       return null;
     }
