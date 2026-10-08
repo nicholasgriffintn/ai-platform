@@ -71,6 +71,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "November 6, 2025",
+        "supportsResponseFormat": true,
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 32.7,

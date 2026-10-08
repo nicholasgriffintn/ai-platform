@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "March 15, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The kilo/openrouter/bodybuilder family includes models that produce text.",
+  "models": {
+    "body-builder-beta": {
+      "defaults": {
+        "name": "Body Builder (beta)",
+        "description": "Preview model for early access evaluation, prototyping, and compatibility testing"
+      }
+    }
+  }
+}

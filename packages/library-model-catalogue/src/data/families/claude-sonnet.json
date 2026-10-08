@@ -20,6 +20,53 @@
   },
   "description": "The claude sonnet family includes models that produce text.",
   "models": {
+    "anthropic-claude-sonnet-4": {
+      "defaults": {
+        "name": "Anthropic: Claude Sonnet 4",
+        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "contextWindow": 200000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "May 22, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "anthropic-claude-sonnet-latest": {
+      "defaults": {
+        "name": "Anthropic: Claude Sonnet Latest",
+        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "knowledgeCutoffDate": "August 31, 2025",
+        "releaseDate": "April 27, 2026",
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "au-anthropic-claude-sonnet-4-6": {
       "defaults": {
         "name": "AU Anthropic Claude Sonnet 4.6",
@@ -623,6 +670,28 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
+        }
+      }
+    },
+    "stealth-claude-sonnet-4-6-20-off": {
+      "defaults": {
+        "name": "Stealth: Claude Sonnet 4.6 (20% off)",
+        "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
+        "maxTokens": 64000,
+        "releaseDate": "August 26, 2025",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
         }
       }
     }

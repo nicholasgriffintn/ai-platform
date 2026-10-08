@@ -283,14 +283,14 @@
           "document",
           "tool_use"
         ],
+        "isFeatured": true,
         "knowledgeCutoffDate": "July 2025",
         "lastUpdated": "November 19, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005,
         "hostedToolCosts": {
           "live_search": 0.025
-        },
-        "isFeatured": true
+        }
       },
       "unset": [
         "openWeights"
@@ -516,16 +516,7 @@
         "speed": 4,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.0025,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.0025
       }
     },
     "grok-imagine-image": {
@@ -558,10 +549,10 @@
       "model": "grok/grok-imagine-image-quality",
       "matchingModel": "grok-imagine-image-quality",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "April 3, 2026",
         "supportsToolCalls": false,
-        "supportsTemperature": false,
-        "isFeatured": true
+        "supportsTemperature": false
       }
     },
     "grok-imagine-video": {
@@ -577,11 +568,11 @@
           "creative"
         ],
         "contextComplexity": 3,
+        "isFeatured": true,
         "releaseDate": "January 28, 2026",
         "lastUpdated": "January 28, 2026",
         "supportsToolCalls": false,
-        "supportsTemperature": false,
-        "isFeatured": true
+        "supportsTemperature": false
       }
     },
     "grok-build-0.1": {
@@ -677,10 +668,10 @@
       "model": "grok/grok-4-7",
       "matchingModel": "grok-4.7",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "September 21, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.006,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.006
       }
     },
     "grok-imagine-video-1.5-lite": {
@@ -698,10 +689,10 @@
             "video"
           ]
         },
+        "isFeatured": true,
         "lastUpdated": "October 1, 2026",
         "supportsToolCalls": false,
-        "supportsTemperature": false,
-        "isFeatured": true
+        "supportsTemperature": false
       }
     }
   }

@@ -1,8 +1,8 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 1048576,
-    "maxTokens": 131072,
+    "contextWindow": 200000,
+    "maxTokens": 32768,
     "modalities": {
       "input": [
         "text",
@@ -12,26 +12,25 @@
         "text"
       ]
     },
-    "releaseDate": "October 1, 2026",
+    "releaseDate": "February 1, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [
-        "low",
-        "high",
-        "max"
+        "none",
+        "thinking"
       ],
-      "defaultEffort": "low"
+      "defaultEffort": "none"
     }
   },
-  "description": "The opencode/fledge alpha free family includes models that produce text.",
+  "description": "The kilo/openrouter/free family includes models that produce text.",
   "models": {
-    "fledge-alpha-free": {
+    "openrouter-free-models-router": {
       "defaults": {
-        "name": "Fledge Alpha Free",
-        "description": "Free-tier preview reasoning model with text and image input and tool use"
+        "name": "OpenRouter Free Models Router",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
       }
     }
   }

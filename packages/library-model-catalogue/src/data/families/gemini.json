@@ -852,6 +852,34 @@
         }
       }
     },
+    "google-gemini-2-5-pro-preview-06-05": {
+      "defaults": {
+        "name": "Google: Gemini 2.5 Pro Preview 06-05",
+        "openWeights": false,
+        "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "June 5, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
     "nano-banana-preview-gemini-2-5-flash-image-preview": {
       "defaults": {
         "name": "Nano Banana Preview (Gemini 2.5 Flash Image Preview)",

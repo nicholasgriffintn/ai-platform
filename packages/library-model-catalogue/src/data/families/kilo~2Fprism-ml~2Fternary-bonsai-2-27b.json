@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 18, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "medium",
+        "xhigh"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The kilo/prism ml/ternary bonsai 2 27b family includes models that produce text.",
+  "models": {
+    "prismml-ternary-bonsai-2-27b": {
+      "defaults": {
+        "name": "PrismML: Ternary Bonsai 2 27B",
+        "description": "Bonsai 2 27B is a 27B-parameter reasoning model from PrismML derived from Qwen3.8-27B. It supports coding, mathematics, tool calling, and image understanding with a 262K-token context window. Ternary compression shrinks..."
+      }
+    }
+  }
+}

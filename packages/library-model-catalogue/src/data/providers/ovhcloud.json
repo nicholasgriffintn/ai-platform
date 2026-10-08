@@ -203,6 +203,15 @@
         "name": "Qwen3.5-9B",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "releaseDate": "April 22, 2026",
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00012,
@@ -226,7 +235,17 @@
         "name": "Qwen3.6-27B",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 3,
+        "isFeatured": true,
         "releaseDate": "June 1, 2026",
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.00047,
@@ -241,8 +260,7 @@
             "high"
           ],
           "defaultEffort": "none"
-        },
-        "isFeatured": true
+        }
       }
     },
     "qwen3guard-gen-0.6b": {
@@ -297,6 +315,7 @@
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 262144,
         "maxTokens": 262144,
+        "isFeatured": true,
         "releaseDate": "September 2, 2026",
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00047,
@@ -311,8 +330,7 @@
             "high"
           ],
           "defaultEffort": "none"
-        },
-        "isFeatured": true
+        }
       }
     }
   }

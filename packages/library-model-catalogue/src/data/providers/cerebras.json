@@ -19,10 +19,10 @@
         ],
         "contextComplexity": 3,
         "speed": 5,
+        "isFeatured": true,
         "lastUpdated": "June 10, 2026",
         "costPer1kInputTokens": 0.00035,
-        "costPer1kOutputTokens": 0.00075,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.00075
       }
     },
     "qwen-3.8-27b": {
@@ -31,6 +31,7 @@
       "overrides": {
         "contextWindow": 131072,
         "maxTokens": 40960,
+        "isFeatured": true,
         "lastUpdated": "September 3, 2026",
         "costPer1kInputTokens": 0.00099,
         "costPer1kOutputTokens": 0.00149,
@@ -42,8 +43,7 @@
             "high"
           ],
           "defaultEffort": "none"
-        },
-        "isFeatured": true
+        }
       }
     }
   }

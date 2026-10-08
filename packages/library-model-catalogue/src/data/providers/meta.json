@@ -10,6 +10,7 @@
       "model": "muse/muse-spark-1-2",
       "matchingModel": "muse-spark-1.2",
       "overrides": {
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text"
@@ -71,21 +72,10 @@
       "overrides": {
         "description": "Muse Spark 1.3 is a multimodal reasoning model from Meta for long-running agentic, multi-agent, and coding workflows. It improves long-horizon agent collaboration, instruction following, and coding efficiency relative to Muse Spark 1.2.",
         "maxTokens": 131072,
+        "isFeatured": true,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.00425,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "minimal"
-        },
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.00425
       }
     },
     "muse-spark-1.3-contributor": {
@@ -94,10 +84,10 @@
       "overrides": {
         "description": "Muse Spark 1.3 is a multimodal reasoning model from Meta for long-running agentic, multi-agent, and coding workflows. It improves long-horizon agent collaboration, instruction following, and coding efficiency relative to Muse Spark 1.2.",
         "maxTokens": 131072,
+        "isFeatured": true,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0002,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.0002
       }
     }
   }

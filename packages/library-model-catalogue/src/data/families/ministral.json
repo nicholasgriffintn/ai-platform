@@ -1,6 +1,15 @@
 {
   "defaults": {
     "openWeights": true,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
     "releaseDate": "December 2, 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -51,16 +60,7 @@
         "name": "Ministral 3 14B 2512",
         "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
         "contextWindow": 262144,
-        "maxTokens": 209715,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        }
+        "maxTokens": 209715
       }
     },
     "ministral-3-3b": {
@@ -69,15 +69,6 @@
         "description": "Compact open vision-language model for edge deployment, instruction following, and tool use",
         "contextWindow": 256000,
         "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "tool_use",
@@ -98,16 +89,7 @@
         "name": "Ministral 3 3B 2512",
         "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
         "contextWindow": 131072,
-        "maxTokens": 104857,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        }
+        "maxTokens": 104857
       }
     },
     "ministral-3-8b": {
@@ -143,16 +125,7 @@
         "name": "Ministral 3 8B 2512",
         "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
         "contextWindow": 262144,
-        "maxTokens": 209715,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        }
+        "maxTokens": 209715
       }
     },
     "ministral-3b": {
@@ -208,6 +181,33 @@
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "October 1, 2024"
+      }
+    },
+    "mistral-ministral-3-14b-2512": {
+      "defaults": {
+        "name": "Mistral: Ministral 3 14B 2512",
+        "openWeights": false,
+        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "contextWindow": 262144,
+        "maxTokens": 209715
+      }
+    },
+    "mistral-ministral-3-3b-2512": {
+      "defaults": {
+        "name": "Mistral: Ministral 3 3B 2512",
+        "openWeights": false,
+        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "contextWindow": 131072,
+        "maxTokens": 104857
+      }
+    },
+    "mistral-ministral-3-8b-2512": {
+      "defaults": {
+        "name": "Mistral: Ministral 3 8B 2512",
+        "openWeights": false,
+        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
+        "contextWindow": 262144,
+        "maxTokens": 209715
       }
     }
   }

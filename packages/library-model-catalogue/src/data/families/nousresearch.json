@@ -1,6 +1,8 @@
 {
   "defaults": {
     "openWeights": true,
+    "contextWindow": 131072,
+    "maxTokens": 16384,
     "modalities": {
       "input": [
         "text"
@@ -9,6 +11,7 @@
         "text"
       ]
     },
+    "supportsToolCalls": false,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
     "supportsTemperature": true
@@ -29,22 +32,16 @@
       "defaults": {
         "name": "Hermes 3 405B Instruct",
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextWindow": 131072,
-        "maxTokens": 16384,
         "knowledgeCutoffDate": "December 31, 2023",
-        "releaseDate": "August 16, 2024",
-        "supportsToolCalls": false
+        "releaseDate": "August 16, 2024"
       }
     },
     "hermes-3-70b-instruct": {
       "defaults": {
         "name": "Hermes 3 70B Instruct",
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextWindow": 131072,
-        "maxTokens": 16384,
         "knowledgeCutoffDate": "December 31, 2023",
-        "releaseDate": "August 18, 2024",
-        "supportsToolCalls": false
+        "releaseDate": "August 18, 2024"
       }
     },
     "hermes-4-14b": {
@@ -59,6 +56,39 @@
           "supportedEffortLevels": [
             "none",
             "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nous-hermes-3-405b-instruct": {
+      "defaults": {
+        "name": "Nous: Hermes 3 405B Instruct",
+        "openWeights": false,
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "releaseDate": "August 16, 2024"
+      }
+    },
+    "nous-hermes-3-70b-instruct": {
+      "defaults": {
+        "name": "Nous: Hermes 3 70B Instruct",
+        "openWeights": false,
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "releaseDate": "August 18, 2024"
+      }
+    },
+    "nous-hermes-4-405b": {
+      "defaults": {
+        "name": "Nous: Hermes 4 405B",
+        "openWeights": false,
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "maxTokens": 117964,
+        "releaseDate": "August 26, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
           ],
           "defaultEffort": "none"
         }

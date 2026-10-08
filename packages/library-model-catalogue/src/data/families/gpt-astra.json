@@ -72,6 +72,23 @@
         },
         "releaseDate": "September 11, 2026"
       }
+    },
+    "openai-gpt-astra-latest": {
+      "defaults": {
+        "name": "OpenAI: GPT Astra Latest ($$$$)",
+        "description": "This model always redirects to the latest model in the OpenAI GPT Astra family.",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 11, 2026"
+      }
     }
   }
 }

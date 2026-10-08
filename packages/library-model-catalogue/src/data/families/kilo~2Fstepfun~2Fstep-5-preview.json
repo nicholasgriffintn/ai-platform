@@ -1,0 +1,39 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 64000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 16, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The kilo/stepfun/step 5 preview family includes models that produce text.",
+  "models": {
+    "step-5-preview": {
+      "defaults": {
+        "name": "Step 5 Preview",
+        "description": "Step 5 Preview is StepFun's flagship model for agentic work, built on a sparse Mixture-of-Experts architecture (27B active / 600B total parameters). It performs strongly in software engineering and professional..."
+      }
+    }
+  }
+}

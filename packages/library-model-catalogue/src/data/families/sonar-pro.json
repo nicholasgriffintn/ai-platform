@@ -18,6 +18,28 @@
   },
   "description": "Advanced Sonar search model for deeper research and cited synthesis",
   "models": {
+    "perplexity-sonar-pro": {
+      "defaults": {
+        "name": "Perplexity: Sonar Pro",
+        "description": "Advanced Sonar search model for deeper research and cited synthesis",
+        "releaseDate": "March 7, 2025",
+        "supportsResponseFormat": false
+      }
+    },
+    "perplexity-sonar-pro-search": {
+      "defaults": {
+        "name": "Perplexity: Sonar Pro Search",
+        "description": "Advanced Sonar search model for deeper research and cited synthesis",
+        "releaseDate": "October 30, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
     "sonar-pro": {
       "defaults": {
         "name": "Sonar Pro",

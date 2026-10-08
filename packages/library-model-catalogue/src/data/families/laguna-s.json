@@ -1,6 +1,5 @@
 {
   "defaults": {
-    "openWeights": true,
     "modalities": {
       "input": [
         "text"
@@ -13,31 +12,72 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": false,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "thinking"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "The laguna s family includes models that produce text.",
   "models": {
     "laguna-s-2-1": {
       "defaults": {
         "name": "Laguna S 2.1",
+        "openWeights": true,
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 1048576,
-        "maxTokens": 131072
+        "maxTokens": 131072,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "laguna-s-2-1-free": {
       "defaults": {
         "name": "Laguna S 2.1 (free)",
+        "openWeights": true,
         "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
         "contextWindow": 262144,
-        "maxTokens": 32768
+        "maxTokens": 32768,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "poolside-laguna-s-2-1-free": {
+      "defaults": {
+        "name": "Poolside: Laguna S 2.1 (free)",
+        "openWeights": false,
+        "description": "Laguna S 2.1 is the latest coding agent model from [Poolside](<https://poolside.ai/>). Laguna S 2.1 is a 118B total parameter model with 8B active parameters, scoring 70.2% on Terminal-Bench 2.1 and...",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "poolside-laguna-s-2-1-retires-oct-31": {
+      "defaults": {
+        "name": "Poolside: Laguna S 2.1 (retires Oct 31)",
+        "openWeights": false,
+        "description": "Laguna S 2.1 is the latest coding agent model from [Poolside](<https://poolside.ai/>). Laguna S 2.1 is a 118B total parameter model with 8B active parameters, scoring 70.2% on Terminal-Bench 2.1 and...",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

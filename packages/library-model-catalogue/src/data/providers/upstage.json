@@ -24,7 +24,10 @@
         "lastUpdated": "May 20, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00025
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "solar-pro3": {
       "model": "solar-pro/solar-pro3",
@@ -33,16 +36,19 @@
         "lastUpdated": "January 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00025
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "solar-pro4": {
       "model": "solar-pro/solar-pro-4",
       "matchingModel": "solar-pro4",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "August 6, 2026",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.0012
       }
     }
   }

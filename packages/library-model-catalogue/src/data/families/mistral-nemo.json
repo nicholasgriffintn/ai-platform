@@ -19,8 +19,7 @@
     "mistral-nemo": {
       "defaults": {
         "name": "Mistral Nemo",
-        "description": "Efficient Mistral-NVIDIA open model for multilingual chat and local deployment",
-        "releaseDate": "July 18, 2024"
+        "description": "Efficient Mistral-NVIDIA open model for multilingual chat and local deployment"
       }
     },
     "mistral-nemo-12b-instruct": {

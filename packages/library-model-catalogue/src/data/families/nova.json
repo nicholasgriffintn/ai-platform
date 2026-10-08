@@ -1,16 +1,44 @@
 {
   "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
     "supportsToolCalls": true,
     "supportsAttachments": true,
     "supportsTemperature": true
   },
   "description": "The nova family includes models that produce image, speech, text, video.",
   "models": {
+    "amazon-nova-2-lite": {
+      "defaults": {
+        "name": "Amazon: Nova 2 Lite",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 2, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "amazon-nova-2-sonic": {
       "defaults": {
         "name": "Amazon Nova 2 Sonic",
         "description": "Amazon Nova 2 Sonic accepts speech and produces speech, text.",
-        "contextWindow": 1000000,
         "maxTokens": 1000000,
         "modalities": {
           "input": [
@@ -39,6 +67,24 @@
           ]
         },
         "multimodal": true
+      }
+    },
+    "amazon-nova-premier-1-0": {
+      "defaults": {
+        "name": "Amazon: Nova Premier 1.0",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 31, 2025",
+        "supportsResponseFormat": false
       }
     },
     "amazon-nova-reel": {
@@ -86,7 +132,6 @@
     "lucidnova-rf1-100b": {
       "defaults": {
         "name": "LucidNova RF1 100B",
-        "openWeights": false,
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 120000,
         "maxTokens": 8000,
@@ -113,9 +158,7 @@
     "nova-2-lite": {
       "defaults": {
         "name": "Nova 2 Lite",
-        "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 1000000,
         "maxTokens": 65535,
         "releaseDate": "December 2, 2025"
       }
@@ -123,9 +166,7 @@
     "nova-2-lite-eu": {
       "defaults": {
         "name": "Nova 2 Lite (EU)",
-        "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 1000000,
         "maxTokens": 65535,
         "modalities": {
           "input": [
@@ -153,9 +194,7 @@
     "nova-2-lite-global": {
       "defaults": {
         "name": "Amazon Nova 2 Lite",
-        "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 1000000,
         "maxTokens": 65535,
         "modalities": {
           "input": [
@@ -190,9 +229,7 @@
     "nova-2-lite-jp": {
       "defaults": {
         "name": "Nova 2 Lite (JP)",
-        "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 1000000,
         "maxTokens": 65535,
         "modalities": {
           "input": [
@@ -220,9 +257,7 @@
     "nova-2-lite-us": {
       "defaults": {
         "name": "Nova 2 Lite (US)",
-        "openWeights": false,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 1000000,
         "maxTokens": 65535,
         "modalities": {
           "input": [
@@ -251,7 +286,6 @@
       "defaults": {
         "name": "Nova 2 Sonic",
         "description": "Nova 2 Sonic accepts speech and produces speech, text.",
-        "contextWindow": 1000000,
         "maxTokens": 64000,
         "modalities": {
           "input": [
@@ -303,7 +337,6 @@
     "nova-lite-v1": {
       "defaults": {
         "name": "Nova Lite V1",
-        "openWeights": false,
         "description": "Nova Lite is a fast, low-cost multimodal foundation model capable of reasoning over text, images, and video in 200+ languages.",
         "contextWindow": 300000,
         "maxTokens": 10000,
@@ -363,7 +396,6 @@
     "nova-micro-v1": {
       "defaults": {
         "name": "Nova Micro V1",
-        "openWeights": false,
         "description": "Nova Micro is a multilingual text-to-text foundation model with strong reasoning capabilities and broad language coverage across 200+ languages.",
         "contextWindow": 128000,
         "maxTokens": 10000,
@@ -392,7 +424,6 @@
       "defaults": {
         "name": "Nova Premier",
         "description": "Amazon Nova Premier is the most capable multimodal model in the Nova family with advanced reasoning capabilities.",
-        "contextWindow": 1000000,
         "modalities": {
           "input": [
             "text",
@@ -417,9 +448,7 @@
     "nova-premier-1-0": {
       "defaults": {
         "name": "Nova Premier 1.0",
-        "openWeights": false,
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
-        "contextWindow": 1000000,
         "maxTokens": 32000,
         "modalities": {
           "input": [

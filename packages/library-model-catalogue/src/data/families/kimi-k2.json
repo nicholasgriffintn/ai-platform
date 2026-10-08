@@ -125,7 +125,6 @@
       "defaults": {
         "name": "Kimi K2.5",
         "description": "Earlier Kimi frontier model for long-context agents, coding, and multimodal work",
-        "maxTokens": 262144,
         "contextComplexity": 4,
         "reliability": 1,
         "reasoningConfig": {
@@ -140,6 +139,36 @@
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "kimi-k2-5-eu": {
+      "defaults": {
+        "name": "Kimi K2.5 (EU)",
+        "description": "Earlier Kimi frontier model for long-context agents, coding, and multimodal work",
+        "contextWindow": 128000,
+        "maxTokens": 16000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "January 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
         }
       }
     },
@@ -438,6 +467,26 @@
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "September 5, 2025",
+        "supportsAttachments": false
+      }
+    },
+    "moonshotai-kimi-k2-0711": {
+      "defaults": {
+        "name": "MoonshotAI: Kimi K2 0711",
+        "openWeights": false,
+        "description": "Kimi model for long-context chat, coding, and agentic reasoning",
+        "contextWindow": 131072,
+        "maxTokens": 98304,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 11, 2025",
+        "supportsResponseFormat": false,
         "supportsAttachments": false
       }
     }

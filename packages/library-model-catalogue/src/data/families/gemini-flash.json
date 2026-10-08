@@ -28,6 +28,7 @@
           ]
         },
         "contextComplexity": 4,
+        "reliability": 4,
         "releaseDate": "June 17, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -35,6 +36,22 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1159,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 8
+            }
+          ]
         }
       }
     },
@@ -252,9 +269,31 @@
         "name": "Gemini 3.5 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "May 19, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 50.2,
           "codingIndex": 70.1,
@@ -345,6 +384,7 @@
         "name": "Gemini 3.7 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -406,6 +446,7 @@
         "name": "Gemini 3.8 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -503,15 +544,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "December 17, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 27.4,
           "codingIndex": null,
@@ -530,10 +562,11 @@
         "releaseDate": "August 13, 2026"
       }
     },
-    "nano-banana": {
+    "gemini-nano-banana-2-1": {
       "defaults": {
-        "description": "Nano Banana image model for fast generation, edits, and character-consistent assets",
-        "contextWindow": 32768,
+        "name": "Gemini Nano Banana 2.1",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 131072,
         "maxTokens": 32768,
         "modalities": {
           "input": [
@@ -545,6 +578,53 @@
             "image"
           ]
         },
+        "releaseDate": "October 6, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "google-gemini-flash-latest": {
+      "defaults": {
+        "name": "Google: Gemini Flash Latest",
+        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "nano-banana": {
+      "defaults": {
+        "description": "Nano Banana image model for fast generation, edits, and character-consistent assets",
+        "contextWindow": 32768,
         "strengths": [
           "vision",
           "document",
@@ -576,6 +656,7 @@
     },
     "nano-banana-2": {
       "defaults": {
+        "name": "Nano Banana 2",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 131072,
         "maxTokens": 32768,
@@ -608,22 +689,20 @@
         }
       }
     },
-    "nano-banana-2-preview": {
+    "nano-banana-2-1": {
       "defaults": {
-        "name": "Nano Banana 2 (Gemini 3.1 Flash Image Preview)",
+        "name": "Nano Banana 2.1",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 65536,
         "maxTokens": 58982,
-        "modalities": {
-          "input": [
-            "image",
-            "text"
-          ],
-          "output": [
-            "image",
-            "text"
-          ]
-        },
+        "releaseDate": "October 6, 2026"
+      }
+    },
+    "nano-banana-2-preview": {
+      "defaults": {
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 65536,
+        "maxTokens": 58982,
         "strengths": [
           "vision",
           "document",
@@ -634,13 +713,6 @@
         "reliability": 5,
         "releaseDate": "February 26, 2026",
         "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,

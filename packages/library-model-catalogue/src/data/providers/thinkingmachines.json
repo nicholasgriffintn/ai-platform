@@ -19,6 +19,7 @@
             "text"
           ]
         },
+        "isFeatured": true,
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.00187,
         "costPer1kOutputTokens": 0.00468,
@@ -31,18 +32,17 @@
             "max"
           ],
           "defaultEffort": "low"
-        },
-        "isFeatured": true
+        }
       }
     },
     "thinkingmachines/Inkling:peft:262144": {
       "model": "ling/inkling-256k",
       "matchingModel": "thinkingmachines/Inkling:peft:262144",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.00374,
-        "costPer1kOutputTokens": 0.00936,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.00936
       }
     }
   }

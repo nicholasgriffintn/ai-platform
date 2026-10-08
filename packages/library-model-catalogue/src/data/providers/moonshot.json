@@ -33,6 +33,7 @@
       "model": "kimi-k2/kimi-k2-5",
       "matchingModel": "kimi-k2.5",
       "overrides": {
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text"
@@ -157,11 +158,11 @@
           "coding"
         ],
         "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
-        "supportsTemperature": false,
-        "isFeatured": true
+        "supportsTemperature": false
       }
     },
     "kimi-k2.7-code-highspeed": {
@@ -189,11 +190,11 @@
             "text"
           ]
         },
+        "isFeatured": true,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
-        "supportsTemperature": false,
-        "isFeatured": true
+        "supportsTemperature": false
       }
     }
   }

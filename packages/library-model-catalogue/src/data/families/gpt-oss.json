@@ -184,9 +184,7 @@
     },
     "gpt-oss-safeguard-20b": {
       "defaults": {
-        "name": "gpt-oss-safeguard-20b",
         "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
-        "contextWindow": 128000,
         "modalities": {
           "input": [
             "text"

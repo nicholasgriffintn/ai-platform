@@ -1,5 +1,7 @@
 {
   "defaults": {
+    "openWeights": false,
+    "maxTokens": 262144,
     "modalities": {
       "input": [
         "text",
@@ -12,6 +14,7 @@
     "contextComplexity": 4,
     "reliability": 1,
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true
   },
@@ -20,7 +23,6 @@
     "mistral-large": {
       "defaults": {
         "name": "Mistral Large",
-        "openWeights": false,
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
         "contextWindow": 128000,
         "maxTokens": 102400,
@@ -39,7 +41,6 @@
         ],
         "knowledgeCutoffDate": "November 30, 2024",
         "releaseDate": "February 26, 2024",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 4.4,
           "codingIndex": null,
@@ -51,7 +52,6 @@
     "mistral-large-24-11": {
       "defaults": {
         "name": "Mistral Large 24.11",
-        "openWeights": false,
         "description": "Latest Mistral model with enhanced reasoning and multilingual capabilities.",
         "contextWindow": 128000,
         "maxTokens": 32768,
@@ -77,7 +77,6 @@
         "maxTokens": 256000,
         "knowledgeCutoffDate": "November 2024",
         "releaseDate": "December 2, 2025",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 15.9,
           "codingIndex": 20.1,
@@ -92,7 +91,6 @@
         "openWeights": true,
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
         "contextWindow": 262144,
-        "maxTokens": 262144,
         "releaseDate": "December 2, 2025"
       }
     },
@@ -102,7 +100,6 @@
         "openWeights": true,
         "description": "Mistral's largest general model for enterprise agents, coding, and multilingual reasoning",
         "contextWindow": 262144,
-        "maxTokens": 262144,
         "knowledgeCutoffDate": "November 2024",
         "releaseDate": "December 2, 2025"
       }
@@ -110,12 +107,8 @@
     "mistral-large-4": {
       "defaults": {
         "name": "Mistral Large 4",
-        "openWeights": false,
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
-        "contextWindow": 524288,
-        "maxTokens": 262144,
         "releaseDate": "October 6, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -128,12 +121,10 @@
     "mistral-large-4-eu": {
       "defaults": {
         "name": "Mistral Large 4 (EU)",
-        "openWeights": false,
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 524288,
         "maxTokens": 524288,
         "releaseDate": "October 6, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -152,7 +143,6 @@
         "openWeights": true,
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
         "contextWindow": 262144,
-        "maxTokens": 262144,
         "card": "https://www.prompthub.us/models/mistral-large",
         "strengths": [
           "chat",
@@ -171,6 +161,21 @@
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "mistral-mistral-large-4-50-off": {
+      "defaults": {
+        "name": "Mistral: Mistral Large 4 (50% off)",
+        "description": "Mistral Large 4 is a frontier multimodal (text and image input) model from Mistral AI built for reasoning, coding, and agentic workloads. It offers a 512K-token context window with up...",
+        "contextWindow": 1048576,
+        "releaseDate": "October 6, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
         }
       }
     }

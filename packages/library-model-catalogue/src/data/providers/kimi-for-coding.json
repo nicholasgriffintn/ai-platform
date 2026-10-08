@@ -11,10 +11,10 @@
       "matchingModel": "kimi-for-coding",
       "overrides": {
         "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "September 11, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0
       }
     },
     "k3": {
@@ -29,10 +29,10 @@
             "text"
           ]
         },
+        "isFeatured": true,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0
       }
     },
     "k3-256k": {

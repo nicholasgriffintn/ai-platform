@@ -28,6 +28,18 @@
         "supportsResponseFormat": false
       }
     },
+    "aionlabs-aion-rp-1-0-8b": {
+      "defaults": {
+        "name": "AionLabs: Aion-RP 1.0 (8B)",
+        "openWeights": false,
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 32768,
+        "maxTokens": 29491,
+        "releaseDate": "February 4, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
     "codellama-7b-instruct-solidity": {
       "defaults": {
         "name": "CodeLLaMa 7B Instruct Solidity",
@@ -166,7 +178,6 @@
       "defaults": {
         "name": "Llama 3.1 70B Instruct",
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextWindow": 128000,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "July 23, 2024"
       }
@@ -202,7 +213,8 @@
         "name": "Llama 3.1 8B Instruct",
         "description": "Compact open Llama model for lightweight chat, drafting, and self-hosting",
         "knowledgeCutoffDate": "December 2023",
-        "releaseDate": "July 23, 2024"
+        "releaseDate": "July 23, 2024",
+        "supportsResponseFormat": true
       }
     },
     "llama-3-1-8b-instruct-fp8": {
@@ -244,6 +256,7 @@
         "maxTokens": 16384,
         "knowledgeCutoffDate": "December 31, 2023",
         "releaseDate": "August 28, 2024",
+        "supportsToolCalls": false,
         "supportsResponseFormat": true
       }
     },
@@ -412,6 +425,7 @@
     },
     "llama-3-3-70b-instruct": {
       "defaults": {
+        "name": "Llama-3.3-70B-Instruct",
         "description": "Popular open Llama workhorse for multilingual chat, coding, and self-hosting",
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "December 6, 2024"
@@ -926,6 +940,30 @@
         "multimodal": true
       }
     },
+    "meta-llama-3-2-1b-instruct": {
+      "defaults": {
+        "name": "Meta: Llama 3.2 1B Instruct",
+        "openWeights": false,
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 60000,
+        "maxTokens": 54000,
+        "releaseDate": "September 25, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      }
+    },
+    "meta-llama-3-2-3b-instruct": {
+      "defaults": {
+        "name": "Meta: Llama 3.2 3B Instruct",
+        "openWeights": false,
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 131072,
+        "maxTokens": 117964,
+        "releaseDate": "September 25, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
+      }
+    },
     "meta-llama-3-2-90b-vision-instruct-turbo": {
       "defaults": {
         "name": "Meta Llama 3.2 90B Vision Instruct Turbo",
@@ -1010,6 +1048,70 @@
         "supportsToolCalls": false
       }
     },
+    "meta-llama-4-maverick": {
+      "defaults": {
+        "name": "Meta: Llama 4 Maverick",
+        "openWeights": false,
+        "description": "Open multimodal Llama model for strong reasoning and fast responses",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 5, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
+      }
+    },
+    "meta-llama-4-scout": {
+      "defaults": {
+        "name": "Meta: Llama 4 Scout",
+        "openWeights": false,
+        "description": "Open multimodal Llama model for long-context analysis and efficient agents",
+        "contextWindow": 327680,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 5, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
+      }
+    },
+    "meta-llama-guard-4-12b": {
+      "defaults": {
+        "name": "Meta: Llama Guard 4 12B",
+        "openWeights": false,
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "contextWindow": 163840,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 30, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": true
+      }
+    },
     "meta-llama-vision-free": {
       "defaults": {
         "name": "Meta Llama Vision Free",
@@ -1052,6 +1154,42 @@
         "releaseDate": "May 29, 2025",
         "supportsToolCalls": false,
         "supportsTemperature": false
+      }
+    },
+    "sao10k-llama-3-1-euryale-70b-v2-2": {
+      "defaults": {
+        "name": "Sao10K: Llama 3.1 Euryale 70B v2.2",
+        "openWeights": false,
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 131072,
+        "maxTokens": 16384,
+        "releaseDate": "August 28, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
+      }
+    },
+    "sao10k-llama-3-3-euryale-70b": {
+      "defaults": {
+        "name": "Sao10K: Llama 3.3 Euryale 70B",
+        "openWeights": false,
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 131072,
+        "maxTokens": 16384,
+        "releaseDate": "December 18, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
+      }
+    },
+    "sao10k-llama-3-8b-lunaris": {
+      "defaults": {
+        "name": "Sao10K: Llama 3 8B Lunaris",
+        "openWeights": false,
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+        "contextWindow": 8192,
+        "maxTokens": 7372,
+        "releaseDate": "August 13, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
       }
     }
   }

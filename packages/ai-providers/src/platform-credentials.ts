@@ -56,6 +56,7 @@ export const PROVIDER_PLATFORM_ENV_KEYS: Record<string, PlatformEnvKeyGroups> = 
   inference: single("INFERENCE_API_KEY"),
   "kimi-for-coding": single("KIMI_API_KEY"),
   "kimi-coding": single("KIMI_API_KEY"),
+  kilo: single("KILO_API_KEY"),
   lucidquery: single("LUCIDQUERY_API_KEY"),
   meta: single("META_MODEL_API_KEY"),
   minimax: single("MINIMAX_API_KEY"),

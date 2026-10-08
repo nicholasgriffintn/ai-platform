@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 8, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The vercel/callstack/apex family includes models that produce text.",
+  "models": {
+    "apex": {
+      "defaults": {
+        "name": "Apex",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
+      }
+    }
+  }
+}

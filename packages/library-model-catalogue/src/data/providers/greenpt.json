@@ -102,7 +102,9 @@
       "matchingModel": "glm-5.2",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "speed": 4,
+        "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.001254,
         "costPer1kOutputTokens": 0.005016,
@@ -115,8 +117,7 @@
             "high"
           ],
           "defaultEffort": "none"
-        },
-        "isFeatured": true
+        }
       }
     },
     "glm-5.2-caveman": {
@@ -361,6 +362,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003762,
         "costPer1kOutputTokens": 0.01881,
@@ -375,15 +377,13 @@
             "high"
           ],
           "defaultEffort": "none"
-        },
-        "isFeatured": true
+        }
       }
     },
     "llama-3.3-70b-instruct": {
       "model": "llama/llama-3-3-70b-instruct",
       "matchingModel": "llama-3.3-70b-instruct",
       "overrides": {
-        "name": "Llama-3.3-70B-Instruct",
         "contextWindow": 100000,
         "maxTokens": 16384,
         "lastUpdated": "December 6, 2024",
@@ -398,7 +398,6 @@
       "model": "minimax/minimax-m2-5",
       "matchingModel": "minimax-m2.5",
       "overrides": {
-        "name": "MiniMax-M2.5",
         "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "February 12, 2026",
@@ -459,9 +458,9 @@
         "supportsAttachments": true
       },
       "unset": [
+        "strengths",
         "reliability",
         "artificialAnalysis",
-        "strengths",
         "supportsResponseFormat"
       ]
     },
@@ -534,7 +533,6 @@
       "model": "qwen/qwen3-6-35b-a3b",
       "matchingModel": "qwen3.6-35b-a3b",
       "overrides": {
-        "name": "Qwen3.6 35B-A3B",
         "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
         "maxTokens": 32768,
         "modalities": {
@@ -584,6 +582,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.000255552,
         "costPer1kOutputTokens": 0.00127776,
@@ -597,8 +596,7 @@
             "high"
           ],
           "defaultEffort": "none"
-        },
-        "isFeatured": true
+        }
       }
     },
     "glm-5.3": {
@@ -606,6 +604,8 @@
       "matchingModel": "glm-5.3",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00127754,
         "costPer1kOutputTokens": 0.00511016,
@@ -618,8 +618,7 @@
             "high"
           ],
           "defaultEffort": "none"
-        },
-        "isFeatured": true
+        }
       }
     },
     "glm-5.3-flash": {

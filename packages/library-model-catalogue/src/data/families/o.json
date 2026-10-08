@@ -127,13 +127,6 @@
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 23.4,
           "codingIndex": 39.7,
@@ -148,6 +141,16 @@
         "description": "Deliberate o-series reasoner for hard math, coding, and multi-step analysis",
         "contextWindow": 200000,
         "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -300,6 +303,63 @@
           ]
         },
         "knowledgeCutoffDate": "June 30, 2024",
+        "releaseDate": "April 16, 2025",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "openai-o3-mini-high": {
+      "defaults": {
+        "name": "OpenAI: o3 Mini High",
+        "description": "O-series reasoning model for hard analysis, math, coding, and planning",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 12, 2025",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "openai-o4-mini-high": {
+      "defaults": {
+        "name": "OpenAI: o4 Mini High",
+        "description": "O-series reasoning model for hard analysis, math, coding, and planning",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "releaseDate": "April 16, 2025",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,

@@ -164,6 +164,14 @@
       "matchingModel": "codestral-2508",
       "overrides": {
         "maxTokens": 256000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "knowledgeCutoffDate": "March 2025",
         "lastUpdated": "July 30, 2025",
         "costPer1kInputTokens": 0.000368,
@@ -202,7 +210,6 @@
       "model": "deepseek/deepseek-v3-2",
       "matchingModel": "deepseek-v3.2",
       "overrides": {
-        "name": "DeepSeek V3.2",
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "maxTokens": 65536,
         "lastUpdated": "December 1, 2025",
@@ -223,7 +230,6 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
-        "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.0017,
@@ -315,6 +321,7 @@
       "model": "glm-air/glm-4-5-air",
       "matchingModel": "glm-4.5-air",
       "overrides": {
+        "name": "GLM 4.5 Air",
         "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "August 1, 2025",
@@ -331,6 +338,7 @@
       "model": "glm/glm-4-7",
       "matchingModel": "glm-4.7",
       "overrides": {
+        "name": "GLM 4.7",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 202752,
         "maxTokens": 202752,
@@ -498,6 +506,7 @@
       "matchingModel": "kimi-k2.5",
       "overrides": {
         "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -598,7 +607,6 @@
       "model": "minimax/minimax-m2-1",
       "matchingModel": "minimax-m2.1",
       "overrides": {
-        "name": "MiniMax-M2.1",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196000,
         "maxTokens": 196000,
@@ -613,7 +621,6 @@
       "model": "minimax/minimax-m2-5",
       "matchingModel": "minimax-m2.5",
       "overrides": {
-        "name": "MiniMax-M2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196000,
         "maxTokens": 196000,
@@ -674,7 +681,14 @@
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.000266,
         "costPer1kOutputTokens": 0.000799,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -709,7 +723,6 @@
         "contextWindow": 33000,
         "maxTokens": 33000,
         "knowledgeCutoffDate": "June 2024",
-        "releaseDate": "September 19, 2024",
         "lastUpdated": "September 19, 2024",
         "costPer1kInputTokens": 0.000062,
         "costPer1kOutputTokens": 0.000231,
@@ -813,6 +826,7 @@
       "model": "qwen/qwen3-next-80b-a3b-thinking",
       "matchingModel": "qwen3-next-80b-a3b-thinking",
       "overrides": {
+        "name": "Qwen3 Next 80B A3B Thinking",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 128000,
         "maxTokens": 128000,
@@ -895,6 +909,15 @@
       "overrides": {
         "contextWindow": 262000,
         "maxTokens": 262000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.000446,
@@ -938,6 +961,7 @@
           ]
         },
         "speed": 2,
+        "isFeatured": true,
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.005437,
         "costPer1kOutputTokens": 0.027186,
@@ -949,8 +973,7 @@
             "high"
           ],
           "defaultEffort": "low"
-        },
-        "isFeatured": true
+        }
       }
     },
     "gemini-3.5-flash": {
@@ -1073,7 +1096,6 @@
       "model": "glm/glm-5v-turbo",
       "matchingModel": "glm-5v-turbo",
       "overrides": {
-        "contextWindow": 202752,
         "maxTokens": 202752,
         "modalities": {
           "input": [
@@ -1226,6 +1248,7 @@
       "matchingModel": "mistral-small-2603",
       "overrides": {
         "name": "Mistral Small 2603",
+        "maxTokens": 256000,
         "speed": 4,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000156,
@@ -2447,6 +2470,7 @@
       "model": "claude-opus/claude-opus-5-5",
       "matchingModel": "claude-opus-5.5",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.004399,
         "costPer1kOutputTokens": 0.021998,
@@ -2458,14 +2482,14 @@
             "high"
           ],
           "defaultEffort": "low"
-        },
-        "isFeatured": true
+        }
       }
     },
     "gpt-6-luna": {
       "model": "gpt-luna/gpt-6-luna",
       "matchingModel": "gpt-6-luna",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0006,
@@ -2477,8 +2501,7 @@
             "high"
           ],
           "defaultEffort": "low"
-        },
-        "isFeatured": true
+        }
       }
     },
     "gpt-6-sol": {
@@ -2503,6 +2526,7 @@
       "model": "gpt-sol/gpt-6-1-sol",
       "matchingModel": "gpt-6.1-sol",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0.0024,
         "costPer1kOutputTokens": 0.011999,
@@ -2514,8 +2538,7 @@
             "high"
           ],
           "defaultEffort": "low"
-        },
-        "isFeatured": true
+        }
       }
     },
     "claude-sonnet-5.5": {
@@ -2545,6 +2568,24 @@
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.000765,
         "costPer1kOutputTokens": 0.002351
+      }
+    },
+    "claude-haiku-5.5": {
+      "model": "claude-haiku/claude-haiku-5-5",
+      "matchingModel": "claude-haiku-5.5",
+      "overrides": {
+        "lastUpdated": "October 7, 2026",
+        "costPer1kInputTokens": 0.000113,
+        "costPer1kOutputTokens": 0.000563,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

@@ -26,7 +26,10 @@
         "lastUpdated": "February 28, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "deepseek-reasoner": {
       "model": "deepseek-thinking/deepseek-reasoner",
@@ -84,11 +87,19 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 393216,
+        "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "costPer1kReasoningTokens": 0.0006,
-        "isFeatured": true
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

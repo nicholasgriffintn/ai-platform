@@ -27,6 +27,7 @@ import { HyperbolicProvider } from "../capabilities/chat/providers/hyperbolic.js
 import { IdeogramProvider } from "../capabilities/chat/providers/ideogram.js";
 import { InceptionProvider } from "../capabilities/chat/providers/inception.js";
 import { InferenceProvider } from "../capabilities/chat/providers/inference.js";
+import { KiloProvider } from "../capabilities/chat/providers/kilo.js";
 import { KimiForCodingProvider } from "../capabilities/chat/providers/kimi-for-coding.js";
 import { LucidQueryProvider } from "../capabilities/chat/providers/lucidquery.js";
 import { MetaProvider } from "../capabilities/chat/providers/meta.js";
@@ -362,6 +363,11 @@ function chatProviders(runtime: ProviderRuntime): AiProviderRegistration<AIProvi
       aliases: ["kimi-coding"],
       create: () => new KimiForCodingProvider(runtime),
       metadata: { vendor: "Moonshot AI", categories: ["chat"], tags: ["coding"] },
+    },
+    {
+      name: "kilo",
+      create: () => new KiloProvider(runtime),
+      metadata: { vendor: "Kilo", categories: ["chat"] },
     },
     {
       name: "thinkingmachines",

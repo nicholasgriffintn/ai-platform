@@ -155,12 +155,14 @@
       "model": "command-r/command-r7b",
       "matchingModel": "command-r7b-12-2024",
       "overrides": {
-        "name": "Command R7B",
         "isFree": true,
         "lastUpdated": "December 2, 2024",
         "costPer1kInputTokens": 0.0000375,
         "costPer1kOutputTokens": 0.00015
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "command-r7b-arabic-02-2025": {
       "model": "command-r/command-r7b-arabic",
@@ -187,11 +189,11 @@
       "model": "north/north-small-translate",
       "matchingModel": "north-small-translate-09-2026",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "September 9, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsToolCalls": false,
-        "isFeatured": true
+        "supportsToolCalls": false
       }
     },
     "tiny-aya-earth": {
@@ -212,10 +214,10 @@
       "model": "cohere/tiny-aya-global/tiny-aya-global",
       "matchingModel": "tiny-aya-global",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "February 17, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0
       }
     },
     "tiny-aya-water": {

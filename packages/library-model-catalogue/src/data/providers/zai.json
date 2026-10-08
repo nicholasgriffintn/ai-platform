@@ -9,6 +9,7 @@
       "model": "glm/glm-4-7",
       "matchingModel": "glm-4.7",
       "overrides": {
+        "name": "GLM 4.7",
         "contextWindow": 204800,
         "maxTokens": 131072,
         "strengths": [
@@ -46,7 +47,6 @@
       "matchingModel": "glm-4.5",
       "overrides": {
         "name": "GLM-4.5",
-        "maxTokens": 98304,
         "speed": 3,
         "lastUpdated": "July 28, 2025",
         "costPer1kInputTokens": 0.0006,
@@ -83,7 +83,6 @@
       "model": "glm/glm-4-5v",
       "matchingModel": "glm-4.5v",
       "overrides": {
-        "name": "GLM-4.5V",
         "contextWindow": 64000,
         "modalities": {
           "input": [
@@ -164,6 +163,7 @@
       "model": "glm-flash/glm-4-7-flash",
       "matchingModel": "glm-4.7-flash",
       "overrides": {
+        "contextWindow": 200000,
         "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "January 19, 2026",
@@ -218,7 +218,9 @@
       "matchingModel": "glm-5.2",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "speed": 4,
+        "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
@@ -228,8 +230,7 @@
             "max"
           ],
           "defaultEffort": "high"
-        },
-        "isFeatured": true
+        }
       }
     },
     "glm-5.3": {
@@ -237,10 +238,11 @@
       "matchingModel": "glm-5.3",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.0044
       }
     },
     "glm-5.3-flash": {
@@ -271,7 +273,6 @@
       "overrides": {
         "name": "GLM-5V-Turbo",
         "contextWindow": 200000,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -315,12 +316,12 @@
             "text"
           ]
         },
+        "isFeatured": true,
         "releaseDate": "September 18, 2026",
         "lastUpdated": "September 18, 2026",
         "costPer1kInputTokens": 0.00037,
         "costPer1kOutputTokens": 0.00125,
-        "supportsAttachments": true,
-        "isFeatured": true
+        "supportsAttachments": true
       }
     },
     "glm-4.6v-flash": {

@@ -59,7 +59,9 @@
       "matchingModel": "glm-5.2",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "speed": 4,
+        "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
@@ -74,8 +76,7 @@
             "max"
           ],
           "defaultEffort": "none"
-        },
-        "isFeatured": true
+        }
       }
     },
     "qvq-max": {
@@ -147,7 +148,6 @@
       "model": "qwen/qwen-plus",
       "matchingModel": "qwen-plus",
       "overrides": {
-        "name": "Qwen Plus",
         "lastUpdated": "September 11, 2025",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0012,
@@ -159,7 +159,10 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen-plus-character-ja": {
       "model": "qwen/qwen-plus-character-japanese",
@@ -238,7 +241,10 @@
         "lastUpdated": "September 2024",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0056
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen2-5-7b-instruct": {
       "model": "qwen/qwen2-5-7b-instruct",
@@ -309,11 +315,19 @@
       "matchingModel": "qwen3-235b-a22b",
       "overrides": {
         "contextWindow": 131072,
+        "maxTokens": 16384,
         "speed": 3,
         "lastUpdated": "April 2025",
         "costPer1kInputTokens": 0.0007,
         "costPer1kOutputTokens": 0.0028,
-        "costPer1kReasoningTokens": 0.0084
+        "costPer1kReasoningTokens": 0.0084,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "qwen3-32b": {
@@ -390,7 +404,10 @@
         "lastUpdated": "July 28, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0015
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3-livetranslate-flash-realtime": {
       "model": "qwen/qwen3-livetranslate-flash-realtime",
@@ -411,11 +428,13 @@
         "maxTokens": 32768,
         "contextComplexity": 3,
         "speed": 4,
-        "releaseDate": "September 2025",
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.002
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3-next-80b-a3b-thinking": {
       "model": "qwen/qwen3-next-80b-a3b-thinking",
@@ -497,7 +516,6 @@
       "model": "qwen/qwen3-5-122b-a10b",
       "matchingModel": "qwen3.5-122b-a10b",
       "overrides": {
-        "name": "Qwen3.5 122B-A10B",
         "modalities": {
           "input": [
             "text",
@@ -527,6 +545,18 @@
       "model": "qwen/qwen3-5-27b",
       "matchingModel": "qwen3.5-27b",
       "overrides": {
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 3,
         "lastUpdated": "February 23, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -646,7 +676,6 @@
       "model": "qwen/qwen3-6-35b-a3b",
       "matchingModel": "qwen3.6-35b-a3b",
       "overrides": {
-        "name": "Qwen3.6 35B-A3B",
         "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
         "maxTokens": 65536,
         "modalities": {
@@ -692,7 +721,10 @@
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.0013,
         "costPer1kOutputTokens": 0.0078
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3.6-plus": {
       "model": "qwen/qwen3-6-plus",
@@ -707,7 +739,10 @@
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "qwen3.7-max": {
       "model": "qwen/qwen3-7-max",
@@ -716,7 +751,14 @@
         "speed": 4,
         "lastUpdated": "May 21, 2026",
         "costPer1kInputTokens": 0.0025,
-        "costPer1kOutputTokens": 0.0075
+        "costPer1kOutputTokens": 0.0075,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -726,6 +768,16 @@
       "model": "qwen/qwen3-7-plus",
       "matchingModel": "qwen3.7-plus",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "video",
@@ -736,7 +788,14 @@
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0016,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "qwen3.8-flash": {
@@ -776,6 +835,7 @@
             "text"
           ]
         },
+        "isFeatured": true,
         "lastUpdated": "August 3, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
@@ -787,8 +847,7 @@
             "xhigh"
           ],
           "defaultEffort": "low"
-        },
-        "isFeatured": true
+        }
       }
     },
     "qwq-plus": {
@@ -805,12 +864,12 @@
       "matchingModel": "kimi-k3",
       "overrides": {
         "maxTokens": 1048576,
+        "isFeatured": true,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "supportsAttachments": true,
-        "supportsTemperature": false,
-        "isFeatured": true
+        "supportsTemperature": false
       }
     },
     "qwen3.5-flash": {
@@ -842,6 +901,7 @@
       "model": "qwen/qwen3-8-omni-flash",
       "matchingModel": "qwen3.8-omni-flash",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "September 17, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00047,
@@ -854,8 +914,7 @@
             "xhigh"
           ],
           "defaultEffort": "none"
-        },
-        "isFeatured": true
+        }
       }
     }
   }

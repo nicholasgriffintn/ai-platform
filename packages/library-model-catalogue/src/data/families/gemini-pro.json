@@ -5,14 +5,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "thinking"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "The gemini pro family includes models that produce audio, image, text.",
   "models": {
@@ -35,7 +28,14 @@
             "image"
           ]
         },
-        "releaseDate": "April 21, 2026"
+        "releaseDate": "April 21, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "deep-research-preview-apr-21-2026": {
@@ -57,7 +57,14 @@
             "image"
           ]
         },
-        "releaseDate": "April 21, 2026"
+        "releaseDate": "April 21, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "gemini-2-5-computer-use-preview-10-2025": {
@@ -75,7 +82,14 @@
             "text"
           ]
         },
-        "releaseDate": "October 7, 2025"
+        "releaseDate": "October 7, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "gemini-2-5-pro": {
@@ -84,21 +98,16 @@
         "description": "Google's proven reasoning model for coding, math, and multimodal analysis",
         "contextWindow": 1048576,
         "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "June 17, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 27,
           "codingIndex": null,
@@ -172,7 +181,14 @@
           ]
         },
         "knowledgeCutoffDate": "January 31, 2025",
-        "releaseDate": "May 7, 2025"
+        "releaseDate": "May 7, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "gemini-2-5-pro-tts": {
@@ -317,6 +333,13 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "November 18, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 39.6,
           "codingIndex": null,
@@ -353,6 +376,13 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "November 18, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 39.6,
           "codingIndex": null,
@@ -390,10 +420,40 @@
         }
       }
     },
+    "google-gemini-pro-latest": {
+      "defaults": {
+        "name": "Google: Gemini Pro Latest",
+        "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "audio",
+            "pdf",
+            "image",
+            "text",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "nano-banana-pro": {
       "defaults": {
         "name": "Nano Banana Pro",
         "description": "Nano Banana Pro for higher-fidelity image generation and design-heavy edits",
+        "contextWindow": 65536,
         "maxTokens": 32768,
         "modalities": {
           "input": [
@@ -429,20 +489,9 @@
     },
     "nano-banana-pro-preview": {
       "defaults": {
-        "name": "Nano Banana Pro (Gemini 3 Pro Image Preview)",
         "description": "Nano Banana Pro for higher-fidelity image generation and design-heavy edits",
         "contextWindow": 65536,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "image",
-            "text"
-          ],
-          "output": [
-            "image",
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",

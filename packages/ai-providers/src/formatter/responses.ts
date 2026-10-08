@@ -111,6 +111,7 @@ export class ResponseFormatter {
       standardcompute: openAI,
       "the-grid-ai": openAI,
       "kimi-for-coding": anthropic,
+      kilo: openAI,
       thinkingmachines: anthropic,
       replicate: replicate,
       fal: replicate,

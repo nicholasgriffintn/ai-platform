@@ -2,27 +2,45 @@
   "defaults": {
     "openWeights": true,
     "contextWindow": 1048576,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
     "knowledgeCutoffDate": "May 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
+    "supportsAttachments": true,
     "supportsTemperature": true
   },
   "description": "Official DeepSeek V4 Flash release with enhanced agentic capabilities and integrated DSpark speculative decoding",
   "models": {
+    "deepseek-deepseek-flash-latest": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek Flash Latest",
+        "openWeights": false,
+        "description": "This model always redirects to the latest model in the DeepSeek Flash family.",
+        "maxTokens": 943718,
+        "releaseDate": "September 14, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "deepseek-flash-latest": {
       "defaults": {
         "name": "DeepSeek Flash Latest",
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -38,25 +56,7 @@
         "name": "DeepSeek V4.1 Flash",
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
         "maxTokens": 384000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "September 10, 2026",
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "releaseDate": "September 10, 2026"
       }
     },
     "deepseek-v4-1-flash-eu": {
@@ -64,17 +64,7 @@
         "name": "DeepSeek V4.1 Flash (EU)",
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
         "maxTokens": 393216,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "September 10, 2026",
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -92,17 +82,7 @@
         "name": "DeepSeek V4.1 Flash Fast",
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "maxTokens": 1000000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "September 10, 2026",
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -118,7 +98,6 @@
       "defaults": {
         "name": "DeepSeek V4 Flash",
         "description": "Fast DeepSeek V4 lane for economical reasoning, coding, and long-context work",
-        "maxTokens": 384000,
         "modalities": {
           "input": [
             "text"
@@ -240,17 +219,7 @@
         "name": "DeepSeek V4 Flash Vision Exp",
         "description": "Experimental multimodal DeepSeek V4 Flash model for image understanding, coding, and agentic work",
         "maxTokens": 384000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "August 21, 2026",
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",

@@ -15,21 +15,34 @@
     "supportsToolCalls": false,
     "supportsResponseFormat": false,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "thinking"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "The sonar deep research family includes models that produce text.",
   "models": {
+    "perplexity-sonar-deep-research": {
+      "defaults": {
+        "name": "Perplexity: Sonar Deep Research",
+        "description": "Sonar search model for current answers, retrieval, and citation-backed chat",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "sonar-deep-research": {
       "defaults": {
         "name": "Sonar Deep Research",
-        "description": "Sonar search model for current answers, retrieval, and citation-backed chat"
+        "description": "Sonar search model for current answers, retrieval, and citation-backed chat",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

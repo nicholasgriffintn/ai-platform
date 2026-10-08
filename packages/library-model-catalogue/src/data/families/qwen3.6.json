@@ -2,7 +2,11 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 262144,
-    "supportsToolCalls": true
+    "maxTokens": 65536,
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "description": "The qwen3.6 family includes models that produce text.",
   "models": {
@@ -11,7 +15,6 @@
         "name": "Qwen3.6 Flash",
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 1000000,
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -24,8 +27,6 @@
         },
         "releaseDate": "April 27, 2026",
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -39,7 +40,6 @@
       "defaults": {
         "name": "Qwen3.6 Plus",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -60,8 +60,6 @@
         "reliability": 2,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 2, 2026",
-        "supportsAttachments": true,
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -74,6 +72,33 @@
           "codingIndex": 54.5,
           "agenticIndex": 27.6,
           "intelligenceIndexVersion": 4.1
+        }
+      }
+    },
+    "stealth-qwen3-6-plus-50-off": {
+      "defaults": {
+        "name": "Stealth: Qwen3.6 Plus (50% off)",
+        "description": "Your prompts and completions may be retained and used to train or improve the provider's services. This third-party-served variant of Qwen3.6 Plus is offered at 50% lower cost than standard Qwen3.6 Plus pricing and is not served by Alibaba or Kilo Code. Note: a surcharge applies to long-context workloads exceeding 256K input tokens.",
+        "contextWindow": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 26, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "minimal"
         }
       }
     },
@@ -91,7 +116,6 @@
           ]
         },
         "releaseDate": "July 13, 2026",
-        "supportsResponseFormat": false,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -119,7 +143,6 @@
           ]
         },
         "releaseDate": "July 13, 2026",
-        "supportsResponseFormat": false,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [

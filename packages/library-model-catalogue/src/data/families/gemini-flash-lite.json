@@ -28,15 +28,15 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
         "reliability": 3,
         "releaseDate": "June 17, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -155,6 +155,19 @@
       "defaults": {
         "name": "Gemini 3.1 Flash Lite",
         "description": "Low-latency Gemini model for high-volume multimodal and agent workloads",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "reliability": 1,
         "releaseDate": "May 7, 2026",
         "artificialAnalysis": {
@@ -242,18 +255,6 @@
         "name": "Gemini 3.1 Flash Lite Preview",
         "description": "Low-latency Gemini model for high-volume multimodal and agent workloads",
         "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -263,15 +264,6 @@
         ],
         "reliability": 1,
         "releaseDate": "March 3, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 25,
           "codingIndex": 34.7,
@@ -361,6 +353,7 @@
     },
     "nano-banana-2-lite": {
       "defaults": {
+        "name": "Nano Banana 2 Lite",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 65536,
         "releaseDate": "June 30, 2026",

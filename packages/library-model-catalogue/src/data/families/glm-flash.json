@@ -53,7 +53,6 @@
       "defaults": {
         "name": "GLM-4.7-Flash",
         "description": "Budget GLM lane for fast coding help, routing, and everyday automation",
-        "contextWindow": 200000,
         "modalities": {
           "input": [
             "text"
@@ -213,6 +212,34 @@
           ]
         },
         "releaseDate": "August 26, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "z-ai-glm-flash-latest": {
+      "defaults": {
+        "name": "Z.ai: GLM Flash Latest",
+        "openWeights": false,
+        "description": "This model always redirects to the latest model in the GLM Flash family.",
+        "contextWindow": 1048576,
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 27, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",

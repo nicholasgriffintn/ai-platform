@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 32768,
+    "maxTokens": 29491,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "March 10, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The kilo/thedrummer/skyfall 36b v2 family includes models that produce text.",
+  "models": {
+    "thedrummer-skyfall-36b-v2": {
+      "defaults": {
+        "name": "TheDrummer: Skyfall 36B V2",
+        "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads"
+      }
+    }
+  }
+}

@@ -317,12 +317,12 @@
       "model": "chutes/miromind-ai/MiroThinker-v1.5-235B/mirothinker-v1-5-235b",
       "matchingModel": "miromind-ai/MiroThinker-v1.5-235B",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
         "supportsToolCalls": false,
-        "supportsResponseFormat": false,
-        "isFeatured": true
+        "supportsResponseFormat": false
       }
     },
     "mistralai/Devstral-2-123B-Instruct-2512-TEE": {
@@ -420,8 +420,7 @@
         "costPer1kOutputTokens": 0.00024
       },
       "unset": [
-        "openWeights",
-        "reasoningConfig"
+        "openWeights"
       ]
     },
     "openai/gpt-oss-120b-TEE": {
@@ -462,7 +461,6 @@
       "model": "qwen/qwen2-5-72b-instruct",
       "matchingModel": "Qwen/Qwen2.5-72B-Instruct",
       "overrides": {
-        "contextWindow": 32768,
         "maxTokens": 32768,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
@@ -474,7 +472,6 @@
       "model": "qwen/qwen2-5-coder-32b-instruct",
       "matchingModel": "Qwen/Qwen2.5-Coder-32B-Instruct",
       "overrides": {
-        "name": "Qwen2.5 Coder 32B Instruct",
         "maxTokens": 32768,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
@@ -535,8 +532,7 @@
       },
       "unset": [
         "openWeights",
-        "knowledgeCutoffDate",
-        "reasoningConfig"
+        "knowledgeCutoffDate"
       ]
     },
     "Qwen/Qwen3-235B-A22B-Instruct-2507-TEE": {
@@ -949,8 +945,7 @@
         "costPer1kOutputTokens": 0.00029
       },
       "unset": [
-        "reliability",
-        "reasoningConfig"
+        "reliability"
       ]
     },
     "zai-org/GLM-5-TEE": {
@@ -1024,7 +1019,6 @@
         "supportsToolCalls": false
       },
       "unset": [
-        "reasoningConfig",
         "supportsResponseFormat"
       ]
     },
@@ -1032,11 +1026,11 @@
       "model": "kimi-k3/kimi-k3-tee",
       "matchingModel": "moonshotai/Kimi-K3-TEE",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "July 29, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
-        "supportsAttachments": true,
-        "isFeatured": true
+        "supportsAttachments": true
       }
     },
     "deepseek-ai/DeepSeek-V4-Flash-0731-TEE": {
@@ -1052,11 +1046,11 @@
       "model": "qwen/qwen3-8-27b-tee",
       "matchingModel": "Qwen/Qwen3.8-27B-TEE",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "August 16, 2026",
         "costPer1kInputTokens": 0.00024,
         "costPer1kOutputTokens": 0.0022,
-        "supportsAttachments": true,
-        "isFeatured": true
+        "supportsAttachments": true
       }
     }
   }

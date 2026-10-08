@@ -19,7 +19,8 @@
         "openWeights": true,
         "description": "DeepSeek's latest model optimized for coding, analysis, and mathematical tasks with strong reasoning capabilities.",
         "knowledgeCutoffDate": "September 2025",
-        "releaseDate": "December 1, 2025"
+        "releaseDate": "December 1, 2025",
+        "supportsResponseFormat": true
       }
     },
     "deepseek-chat-v3-1": {
@@ -33,6 +34,111 @@
           "supportedEffortLevels": [
             "none",
             "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-deepseek-pro-latest": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek Pro Latest",
+        "openWeights": false,
+        "description": "This model always redirects to the latest model in the DeepSeek Pro family.",
+        "contextWindow": 1048576,
+        "maxTokens": 393216,
+        "releaseDate": "September 14, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-deepseek-v3-0324": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V3 0324",
+        "openWeights": false,
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "contextWindow": 128000,
+        "maxTokens": 115200,
+        "releaseDate": "March 24, 2025",
+        "supportsResponseFormat": true
+      }
+    },
+    "deepseek-deepseek-v3-1": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V3.1",
+        "openWeights": false,
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "contextWindow": 163840,
+        "maxTokens": 32768,
+        "releaseDate": "August 21, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-deepseek-v3-1-terminus": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V3.1 Terminus",
+        "openWeights": false,
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "contextWindow": 163840,
+        "maxTokens": 147456,
+        "releaseDate": "September 22, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-deepseek-v3-2-exp": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V3.2 Exp",
+        "openWeights": false,
+        "description": "DeepSeek chat model for instruction following, coding, and analysis",
+        "contextWindow": 163840,
+        "maxTokens": 147456,
+        "releaseDate": "September 29, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-deepseek-v4-flash-latest": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V4 Flash Latest",
+        "openWeights": false,
+        "description": "This model always redirects to the latest model in the DeepSeek V4 Flash family.",
+        "contextWindow": 1048576,
+        "maxTokens": 943718,
+        "releaseDate": "August 1, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
           ],
           "defaultEffort": "none"
         }
@@ -450,6 +556,7 @@
     },
     "deepseek-v3-2": {
       "defaults": {
+        "name": "DeepSeek V3.2",
         "openWeights": true,
         "description": "Hybrid-reasoning DeepSeek model with thinking and non-thinking modes, sparse attention, and tool-use",
         "contextWindow": 163840,

@@ -10,10 +10,10 @@
       "model": "auto/standard-compute",
       "matchingModel": "standardcompute",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "August 24, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0
       }
     }
   }

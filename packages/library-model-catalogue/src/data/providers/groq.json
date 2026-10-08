@@ -453,8 +453,18 @@
       "overrides": {
         "contextWindow": 131072,
         "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "contextComplexity": 3,
         "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "April 22, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -470,8 +480,7 @@
             "default"
           ],
           "defaultEffort": "none"
-        },
-        "isFeatured": true
+        }
       }
     },
     "qwen/qwen3.8-27b": {
@@ -480,6 +489,7 @@
       "overrides": {
         "contextWindow": 131042,
         "maxTokens": 16384,
+        "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -498,8 +508,7 @@
             "high"
           ],
           "defaultEffort": "none"
-        },
-        "isFeatured": true
+        }
       }
     }
   }

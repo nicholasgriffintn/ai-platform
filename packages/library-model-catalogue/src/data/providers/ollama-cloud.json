@@ -126,8 +126,10 @@
       "matchingModel": "glm-5.2",
       "overrides": {
         "contextWindow": 976000,
+        "maxTokens": 131072,
         "contextComplexity": 4,
         "speed": 4,
+        "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
@@ -137,8 +139,7 @@
             "max"
           ],
           "defaultEffort": "high"
-        },
-        "isFeatured": true
+        }
       }
     },
     "glm-5.3-flash": {
@@ -169,6 +170,7 @@
       "overrides": {
         "name": "kimi-k2.5",
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -297,8 +299,7 @@
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsTemperature"
       ]
     },
     "minimax-m3": {
@@ -342,7 +343,8 @@
       "unset": [
         "contextComplexity",
         "reliability",
-        "supportsTemperature"
+        "supportsTemperature",
+        "supportsResponseFormat"
       ]
     },
     "nemotron-3-nano:30b": {
@@ -372,7 +374,14 @@
         "maxTokens": 128000,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.003
+        "costPer1kOutputTokens": 0.003,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "qwen3.5:397b": {
@@ -392,21 +401,30 @@
       "model": "glm/glm-5-3",
       "matchingModel": "glm-5.3",
       "overrides": {
+        "maxTokens": 131072,
+        "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.0044
       }
     },
     "deepseek-v4.1-flash": {
       "model": "deepseek-flash/deepseek-v4-1-flash",
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": true,
-        "isFeatured": true
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "mistral-large-4": {
@@ -415,11 +433,11 @@
       "overrides": {
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 1048576,
+        "isFeatured": true,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00136,
         "costPer1kOutputTokens": 0.00418,
-        "supportsAttachments": true,
-        "isFeatured": true
+        "supportsAttachments": true
       }
     }
   }

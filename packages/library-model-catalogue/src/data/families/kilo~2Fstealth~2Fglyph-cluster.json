@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 256000,
+    "maxTokens": 256000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "August 26, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The kilo/stealth/glyph cluster family includes models that produce text.",
+  "models": {
+    "stealth-glyph-cluster-free": {
+      "defaults": {
+        "name": "Stealth: Glyph Cluster (free)",
+        "description": "Your prompts and completions may be retained and used to train or improve the provider's services. Glyph Cluster is a reasoning model for coding and long-context analysis, served through Vercel AI Gateway during its stealth period at no cost. It supports function calling and streaming, takes text input only, and does not support structured outputs. Zero Data Retention is not available for this model."
+      }
+    }
+  }
+}

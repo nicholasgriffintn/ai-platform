@@ -8,10 +8,10 @@
       "model": "agi/agi-01-frontier",
       "matchingModel": "lucidquery-agi-01-frontier",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "June 16, 2026",
         "costPer1kInputTokens": 0.0045,
-        "costPer1kOutputTokens": 0.022,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.022
       },
       "unset": [
         "supportsResponseFormat"
@@ -39,10 +39,10 @@
       "model": "agi/agi-01-swift",
       "matchingModel": "lucidquery-agi-01-swift",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "June 16, 2026",
         "costPer1kInputTokens": 0.0025,
-        "costPer1kOutputTokens": 0.015,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.015
       },
       "unset": [
         "supportsResponseFormat"

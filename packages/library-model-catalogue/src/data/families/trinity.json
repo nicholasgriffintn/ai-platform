@@ -30,6 +30,7 @@
       "defaults": {
         "name": "Trinity Large Thinking",
         "description": "Reasoning-optimized 398B MoE agent model with extended thinking for long-horizon and multi-turn tool use",
+        "contextWindow": 262144,
         "maxTokens": 80000,
         "strengths": [
           "tool_use"
@@ -37,6 +38,7 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 1, 2026",
+        "supportsResponseFormat": false,
         "artificialAnalysis": {
           "intelligenceIndex": 24.5,
           "codingIndex": null,

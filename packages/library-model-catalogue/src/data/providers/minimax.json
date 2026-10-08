@@ -19,8 +19,7 @@
         "speed": 4,
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
-        "supportsResponseFormat": true
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "MiniMax-M2.7": {
@@ -29,6 +28,7 @@
       "overrides": {
         "name": "MiniMax M2.7",
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
+        "contextWindow": 204800,
         "maxTokens": 131072,
         "strengths": [
           "coding",
@@ -37,18 +37,17 @@
           "tool_use"
         ],
         "speed": 2,
+        "isFeatured": true,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
-        "isFeatured": true
+        "supportsResponseFormat": true
       }
     },
     "MiniMax-M2.1": {
       "model": "minimax/minimax-m2-1",
       "matchingModel": "MiniMax-M2.1",
       "overrides": {
-        "name": "MiniMax-M2.1",
-        "contextWindow": 204800,
         "speed": 4,
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -59,7 +58,6 @@
       "model": "minimax/minimax-m2-5",
       "matchingModel": "MiniMax-M2.5",
       "overrides": {
-        "name": "MiniMax-M2.5",
         "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "February 12, 2026",
@@ -82,10 +80,10 @@
       "overrides": {
         "contextWindow": 204800,
         "maxTokens": 131072,
+        "isFeatured": true,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.0024,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.0024
       }
     },
     "MiniMax-M3": {
@@ -95,11 +93,11 @@
         "contextWindow": 1000000,
         "contextComplexity": 5,
         "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "June 25, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
-        "supportsAttachments": true,
-        "isFeatured": true
+        "supportsAttachments": true
       },
       "unset": [
         "supportsResponseFormat"

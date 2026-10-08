@@ -1,11 +1,97 @@
 {
   "defaults": {
     "openWeights": false,
-    "supportsToolCalls": false,
     "supportsTemperature": true
   },
   "description": "The seed family includes models that produce image, text, video.",
   "models": {
+    "bytedance-seed-seed-1-6": {
+      "defaults": {
+        "name": "ByteDance Seed: Seed 1.6",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 23, 2025",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "bytedance-seed-seed-1-6-flash": {
+      "defaults": {
+        "name": "ByteDance Seed: Seed 1.6 Flash",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 23, 2025",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "bytedance-seed-seed-2-1-turbo": {
+      "defaults": {
+        "name": "ByteDance Seed: Seed 2.1 Turbo",
+        "description": "Seed 2.1 Turbo is a multimodal model from ByteDance Seed for coding and long-horizon agent workflows. It is suited for end-to-end software delivery, multi-step task execution, and understanding visual and...",
+        "contextWindow": 262144,
+        "maxTokens": 235929,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 12, 2026",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "seed-1-6": {
       "defaults": {
         "name": "Seed 1.6",
@@ -69,7 +155,6 @@
       "defaults": {
         "name": "Seed 2.0 Code",
         "description": "ByteDance Seed coding model for multimodal software engineering and long-running agents",
-        "contextWindow": 256000,
         "maxTokens": 131072,
         "modalities": {
           "input": [
@@ -89,7 +174,6 @@
     },
     "seed-2-0-lite": {
       "defaults": {
-        "name": "Seed-2.0-Lite",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 262144,
         "maxTokens": 131072,
@@ -106,23 +190,13 @@
         "releaseDate": "February 14, 2026",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "supportsAttachments": true
       }
     },
     "seed-2-0-mini": {
       "defaults": {
         "name": "Seed 2.0 Mini",
         "description": "Lightweight ByteDance Seed 2.0 model for low-latency multimodal reasoning and high-volume tasks",
-        "contextWindow": 256000,
         "modalities": {
           "input": [
             "text",
@@ -239,6 +313,7 @@
           ]
         },
         "releaseDate": "April 14, 2026",
+        "supportsToolCalls": false,
         "supportsAttachments": true
       }
     },
@@ -258,6 +333,7 @@
           ]
         },
         "releaseDate": "June 22, 2026",
+        "supportsToolCalls": false,
         "supportsAttachments": true
       }
     },
@@ -276,6 +352,7 @@
           ]
         },
         "releaseDate": "August 7, 2026",
+        "supportsToolCalls": false,
         "supportsAttachments": false
       }
     },
@@ -294,6 +371,7 @@
           ]
         },
         "releaseDate": "June 1, 2025",
+        "supportsToolCalls": false,
         "supportsAttachments": false
       }
     },
@@ -312,6 +390,7 @@
           ]
         },
         "releaseDate": "June 1, 2025",
+        "supportsToolCalls": false,
         "supportsAttachments": false
       }
     },
@@ -330,6 +409,7 @@
           ]
         },
         "releaseDate": "June 11, 2025",
+        "supportsToolCalls": false,
         "supportsAttachments": false
       }
     },
@@ -348,6 +428,7 @@
           ]
         },
         "releaseDate": "October 24, 2025",
+        "supportsToolCalls": false,
         "supportsAttachments": false
       }
     },
@@ -366,6 +447,7 @@
           ]
         },
         "releaseDate": "December 16, 2025",
+        "supportsToolCalls": false,
         "supportsAttachments": false
       }
     },
@@ -389,6 +471,7 @@
         ],
         "reliability": 4,
         "releaseDate": "September 9, 2025",
+        "supportsToolCalls": false,
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -413,6 +496,7 @@
         "name": "Seedream 4.5",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "reliability": 4,
+        "supportsToolCalls": false,
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -451,6 +535,7 @@
         ],
         "reliability": 3,
         "releaseDate": "February 13, 2026",
+        "supportsToolCalls": false,
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -485,6 +570,7 @@
           ]
         },
         "releaseDate": "July 11, 2026",
+        "supportsToolCalls": false,
         "supportsAttachments": false
       }
     }

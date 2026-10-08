@@ -18,6 +18,29 @@
   },
   "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
   "models": {
+    "anthropic-claude-haiku-latest": {
+      "defaults": {
+        "name": "Anthropic: Claude Haiku Latest",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "releaseDate": "April 27, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "claude-3-5-haiku": {
       "defaults": {
         "name": "Claude 3.5 Haiku",
@@ -212,14 +235,7 @@
         "maxTokens": 64000,
         "knowledgeCutoffDate": "February 28, 2025",
         "releaseDate": "October 15, 2025",
-        "supportsResponseFormat": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsResponseFormat": true
       }
     },
     "claude-haiku-4-5-latest-eu": {
@@ -316,18 +332,7 @@
         "maxTokens": 128000,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "October 7, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low",
-          "thinkingApi": "adaptive"
-        }
+        "supportsTemperature": false
       }
     },
     "claude-haiku-5-5-global": {

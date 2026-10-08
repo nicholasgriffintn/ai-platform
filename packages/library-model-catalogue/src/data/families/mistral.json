@@ -313,6 +313,27 @@
         }
       }
     },
+    "mistral-mixtral-8x22b-instruct": {
+      "defaults": {
+        "name": "Mistral: Mixtral 8x22B Instruct",
+        "openWeights": false,
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
+        "contextWindow": 65536,
+        "maxTokens": 52428,
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 17, 2024",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
+      }
+    },
     "mistral-moderation": {
       "defaults": {
         "name": "Mistral Moderation",
@@ -379,6 +400,27 @@
           "ocr",
           "vision"
         ]
+      }
+    },
+    "mistral-saba": {
+      "defaults": {
+        "name": "Mistral: Saba",
+        "openWeights": false,
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
+        "contextWindow": 32768,
+        "maxTokens": 26214,
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 17, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
       }
     },
     "mistral-small-24b-instruct-2501": {
@@ -644,6 +686,18 @@
         "releaseDate": "July 9, 2025",
         "supportsToolCalls": false,
         "supportsResponseFormat": true
+      }
+    },
+    "venice-uncensored": {
+      "defaults": {
+        "name": "Venice: Uncensored",
+        "openWeights": false,
+        "description": "Venice Uncensored Dolphin Mistral 24B Venice Edition is a fine-tuned variant of Mistral-Small-24B-Instruct-2501, developed by dphn.ai in collaboration with Venice.ai. This model is designed as an “uncensored” instruct-tuned LLM, preserving...",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "releaseDate": "July 9, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
       }
     },
     "voxtral-small-24b": {

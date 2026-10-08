@@ -73,6 +73,7 @@
         "contextComplexity": 4,
         "reliability": 3,
         "speed": 3,
+        "isFeatured": true,
         "releaseDate": "June 30, 2026",
         "lastUpdated": "June 30, 2026",
         "dataRetention": {
@@ -80,8 +81,7 @@
           "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
         },
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0
       }
     },
     "magistral-small": {
@@ -121,7 +121,10 @@
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
         "supportsFim": true
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "mistral-medium": {
       "model": "mistral-medium/mistral-medium-latest",
@@ -211,7 +214,10 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "ministral-14b": {
       "model": "mistral/ministral-14b-latest/ministral-14b",
@@ -417,14 +423,15 @@
       "model": "glm/glm-5-3",
       "matchingModel": "zai-glm-5-3",
       "overrides": {
+        "maxTokens": 131072,
+        "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "dataRetention": {
           "zeroRetention": "on_request",
           "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
         },
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.0044
       }
     }
   }

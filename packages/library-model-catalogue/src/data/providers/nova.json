@@ -10,12 +10,12 @@
       "matchingModel": "nova-2-lite-v1",
       "overrides": {
         "speed": 4,
+        "isFeatured": true,
         "lastUpdated": "December 1, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "costPer1kReasoningTokens": 0,
-        "supportsDocuments": true,
-        "isFeatured": true
+        "supportsDocuments": true
       },
       "unset": [
         "knowledgeCutoffDate",
@@ -27,12 +27,12 @@
       "matchingModel": "nova-2-pro-v1",
       "overrides": {
         "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "January 3, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "costPer1kReasoningTokens": 0,
-        "supportsDocuments": true,
-        "isFeatured": true
+        "supportsDocuments": true
       },
       "unset": [
         "knowledgeCutoffDate",
@@ -50,7 +50,8 @@
       "unset": [
         "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature"
+        "supportsTemperature",
+        "openWeights"
       ]
     },
     "nova-micro-v1": {
@@ -62,7 +63,10 @@
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00014,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "nova-lite-v1": {
       "model": "nova/nova-lite",
@@ -72,7 +76,10 @@
         "lastUpdated": "December 3, 2024",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00024
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "nova-pro-v1": {
       "model": "nova/nova-pro",
@@ -82,7 +89,10 @@
         "lastUpdated": "December 3, 2024",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0032
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "nova-sonic-v1": {
       "model": "nova/nova-sonic",
@@ -95,7 +105,9 @@
       "unset": [
         "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature"
+        "supportsTemperature",
+        "openWeights",
+        "contextWindow"
       ]
     },
     "nova-premier-v1": {
@@ -117,7 +129,10 @@
         "lastUpdated": "December 3, 2024",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.013
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     }
   }
 }

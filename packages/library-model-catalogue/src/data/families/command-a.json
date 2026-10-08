@@ -1,28 +1,35 @@
 {
   "defaults": {
     "openWeights": true,
-    "modalities": {
-      "input": [
-        "text"
-      ],
-      "output": [
-        "text"
-      ]
-    },
     "knowledgeCutoffDate": "June 1, 2024",
     "supportsToolCalls": true,
-    "supportsAttachments": false,
     "supportsTemperature": true
   },
   "description": "The command a family includes models that produce text.",
   "models": {
+    "cohere-command-a": {
+      "defaults": {
+        "openWeights": false,
+        "description": "Cohere command model for multilingual enterprise agents, tools, and chat",
+        "supportsResponseFormat": true
+      }
+    },
     "command-a": {
       "defaults": {
         "name": "Command A",
         "description": "Cohere command model for multilingual enterprise agents, tools, and chat",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "March 13, 2025",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 7.7,
           "codingIndex": null,
@@ -78,7 +85,16 @@
         "description": "Cohere reasoning model for multilingual enterprise agents, tools, and complex workflows",
         "contextWindow": 256000,
         "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "releaseDate": "August 21, 2025",
+        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -94,7 +110,16 @@
         "description": "Translation model for multilingual conversion, localization, and cross-language workflows",
         "contextWindow": 8000,
         "maxTokens": 8000,
-        "releaseDate": "August 28, 2025"
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 28, 2025",
+        "supportsAttachments": false
       }
     },
     "command-a-vision": {

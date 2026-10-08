@@ -208,7 +208,14 @@
         "supportsDocuments": true,
         "supportsTemperature": true,
         "supportsTokenCounting": true,
-        "restrictsCombinedTopPAndTemperature": true
+        "restrictsCombinedTopPAndTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsTopP",
@@ -543,6 +550,7 @@
       "model": "claude-opus/claude-opus-5-5",
       "matchingModel": "claude-opus-5-5",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -550,14 +558,14 @@
           "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
         },
         "costPer1kInputTokens": 0.004,
-        "costPer1kOutputTokens": 0.02,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.02
       }
     },
     "claude-sonnet-5-5": {
       "model": "claude-sonnet/claude-sonnet-5-5",
       "matchingModel": "claude-sonnet-5-5",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "September 28, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -565,14 +573,14 @@
           "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
         },
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.01
       }
     },
     "claude-haiku-5-5": {
       "model": "claude-haiku/claude-haiku-5-5",
       "matchingModel": "claude-haiku-5-5",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "October 7, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -580,8 +588,7 @@
           "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
         },
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0005,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.0005
       }
     }
   }

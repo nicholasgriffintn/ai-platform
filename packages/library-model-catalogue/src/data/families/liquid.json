@@ -13,6 +13,7 @@
     },
     "contextComplexity": 3,
     "reliability": 1,
+    "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
     "supportsTemperature": true
@@ -57,7 +58,6 @@
         ],
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "January 20, 2026",
-        "supportsToolCalls": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -80,13 +80,28 @@
         "contextWindow": 65536,
         "maxTokens": 8192,
         "releaseDate": "August 11, 2026",
-        "supportsToolCalls": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
             "thinking"
           ],
           "defaultEffort": "none"
+        }
+      }
+    },
+    "liquidai-lfm2-5-2-6b-free": {
+      "defaults": {
+        "name": "LiquidAI: LFM2.5-2.6B (free)",
+        "openWeights": false,
+        "description": "LFM2.5-2.6B is a compact reasoning model from Liquid AI. It is suited for agent workflows, data extraction, RAG, and long-context processing. Liquid advises against using it for agentic coding or...",
+        "contextWindow": 65536,
+        "maxTokens": 8192,
+        "releaseDate": "August 11, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
         }
       }
     }

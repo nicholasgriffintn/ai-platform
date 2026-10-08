@@ -1,88 +1,30 @@
 {
   "defaults": {
     "supportsToolCalls": true,
-    "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true
   },
   "models": {
-    "gemini-2.5-pro": {
-      "model": "gemini-pro/gemini-2-5-pro",
-      "matchingModel": "gemini-2.5-pro",
-      "overrides": {
-        "strengths": [
-          "reasoning",
-          "coding",
-          "analysis",
-          "multilingual",
-          "tool_use",
-          "vision",
-          "document",
-          "audio",
-          "video"
-        ],
-        "speed": 3,
-        "lastUpdated": "June 17, 2025",
-        "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.01
-      }
-    },
-    "gemini-2.5-flash": {
-      "model": "gemini-flash/gemini-2-5-flash",
-      "matchingModel": "gemini-2.5-flash",
-      "overrides": {
-        "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
-        "strengths": [
-          "summarization",
-          "coding",
-          "tool_use",
-          "vision",
-          "document",
-          "audio",
-          "video"
-        ],
-        "reliability": 1,
-        "speed": 5,
-        "lastUpdated": "June 17, 2025",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0025,
-        "artificialAnalysis": {
-          "intelligenceIndex": 14.1,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.1
-        }
-      }
-    },
     "gemini-2.5-flash-image": {
       "model": "gemini-flash/nano-banana",
       "matchingModel": "gemini-2.5-flash-image",
       "overrides": {
         "name": "Nano Banana",
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
         "lastUpdated": "August 26, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.03,
         "supportsToolCalls": false
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
-    "gemini-2.5-flash-lite": {
-      "model": "gemini-flash-lite/gemini-2-5-flash-lite",
-      "matchingModel": "gemini-2.5-flash-lite",
-      "overrides": {
-        "name": "Gemini 2.5 Flash-Lite",
-        "strengths": [
-          "audio",
-          "vision",
-          "document",
-          "video",
-          "tool_use"
-        ],
-        "lastUpdated": "June 17, 2025",
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0004
       },
       "unset": [
         "supportsResponseFormat"
@@ -115,7 +57,6 @@
         "supportsTemperature": false
       },
       "unset": [
-        "reasoningConfig",
         "supportsResponseFormat"
       ]
     },
@@ -123,17 +64,26 @@
       "model": "gemini-flash/gemini-3-flash-preview",
       "matchingModel": "gemini-3-flash-preview",
       "overrides": {
+        "status": "beta",
         "speed": 5,
         "lastUpdated": "December 17, 2025",
         "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.003
+        "costPer1kOutputTokens": 0.003,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "gemini-3-pro-image": {
       "model": "gemini-pro/nano-banana-pro",
       "matchingModel": "gemini-3-pro-image",
       "overrides": {
-        "contextWindow": 65536,
         "strengths": [
           "vision",
           "document",
@@ -143,7 +93,14 @@
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.12,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -153,7 +110,6 @@
       "model": "gemini-flash/nano-banana-2",
       "matchingModel": "gemini-3.1-flash-image",
       "overrides": {
-        "name": "Nano Banana 2",
         "modalities": {
           "input": [
             "text",
@@ -186,19 +142,6 @@
       "model": "gemini-flash-lite/gemini-3-1-flash-lite",
       "matchingModel": "gemini-3.1-flash-lite",
       "overrides": {
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "audio",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -207,6 +150,7 @@
           "tool_use"
         ],
         "speed": 4,
+        "isFeatured": true,
         "lastUpdated": "May 7, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0015,
@@ -218,14 +162,14 @@
             "high"
           ],
           "defaultEffort": "minimal"
-        },
-        "isFeatured": true
+        }
       }
     },
     "gemini-3.1-pro-preview": {
       "model": "gemini-pro/gemini-3-1-pro-preview",
       "matchingModel": "gemini-3.1-pro-preview",
       "overrides": {
+        "status": "beta",
         "speed": 3,
         "lastUpdated": "February 19, 2026",
         "costPer1kInputTokens": 0.002,
@@ -236,6 +180,7 @@
       "model": "gemini-pro/gemini-3-1-pro-preview-custom-tools",
       "matchingModel": "gemini-3.1-pro-preview-customtools",
       "overrides": {
+        "status": "beta",
         "lastUpdated": "February 19, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012
@@ -245,19 +190,6 @@
       "model": "gemini-flash/gemini-3-5-flash",
       "matchingModel": "gemini-3.5-flash",
       "overrides": {
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "audio",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "coding",
           "vision",
@@ -267,19 +199,10 @@
           "tool_use"
         ],
         "speed": 3,
+        "isFeatured": true,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,
-        "costPer1kOutputTokens": 0.009,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        },
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.009
       }
     },
     "gemini-3.5-flash-lite": {
@@ -295,22 +218,11 @@
         "contextComplexity"
       ]
     },
-    "gemini-3.6-flash": {
-      "model": "gemini-flash/gemini-3-6-flash",
-      "matchingModel": "gemini-3.6-flash",
-      "overrides": {
-        "maxTokens": 65536,
-        "lastUpdated": "July 21, 2026",
-        "costPer1kInputTokens": 0.00075,
-        "costPer1kOutputTokens": 0.00375
-      }
-    },
     "gemini-3.7-flash": {
       "model": "gemini-flash/gemini-3-7-flash",
       "matchingModel": "gemini-3.7-flash",
       "overrides": {
         "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
-        "maxTokens": 65536,
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
@@ -334,10 +246,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "gemini-flash-latest": {
       "model": "gemini-flash/gemini-flash-latest",
@@ -400,15 +309,69 @@
       "matchingModel": "gemini-3.8-flash",
       "overrides": {
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
-        "maxTokens": 65536,
+        "isFeatured": true,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
-        "costPer1kOutputTokens": 0.00375,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.00375
       },
       "unset": [
         "knowledgeCutoffDate"
       ]
+    },
+    "gemini-3.1-flash-lite-image": {
+      "model": "gemini-flash-lite/nano-banana-2-lite",
+      "matchingModel": "gemini-3.1-flash-lite-image",
+      "overrides": {
+        "description": "Fastest, most cost-efficient Gemini image model for high-volume 1K generation and editing",
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "lastUpdated": "June 30, 2026",
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.03
+      }
+    },
+    "gemini-nano-banana-2.1": {
+      "model": "gemini-flash/nano-banana-2-1",
+      "matchingModel": "gemini-nano-banana-2.1",
+      "overrides": {
+        "description": "Image model for prompt-driven generation, multi-turn editing, and visual design workflows",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "lastUpdated": "October 6, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.03,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
     }
   }
 }

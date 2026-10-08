@@ -39,7 +39,6 @@
   "models": {
     "glm-4-5-air": {
       "defaults": {
-        "name": "GLM 4.5 Air",
         "description": "Lighter GLM-4.5 variant for fast coding assistance and cheaper agents"
       }
     }

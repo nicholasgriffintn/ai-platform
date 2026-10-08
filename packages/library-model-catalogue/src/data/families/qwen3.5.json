@@ -1,7 +1,7 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 262144,
+    "contextWindow": 1000000,
     "maxTokens": 65536,
     "modalities": {
       "input": [
@@ -16,21 +16,57 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "thinking"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "The qwen3.5 family includes models that produce text.",
   "models": {
+    "qwen-qwen3-5-flash": {
+      "defaults": {
+        "name": "Qwen: Qwen3.5-Flash",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "releaseDate": "February 25, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen-qwen3-5-plus-2026-02-15": {
+      "defaults": {
+        "name": "Qwen: Qwen3.5 Plus 2026-02-15",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "releaseDate": "February 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen-qwen3-5-plus-2026-04-20": {
+      "defaults": {
+        "name": "Qwen: Qwen3.5 Plus 2026-04-20",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "releaseDate": "April 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "qwen3-5-2b": {
       "defaults": {
         "name": "qwen3.5-2b",
         "description": "Qwen3.5-2B is a compact yet capable model from Alibaba's Qwen3.5 series. It features a 262K token context window, support for 201 languages, thinking/reasoning mode, and tool calling for agentic workflows. A strong choice for prototyping, fine-tuning, and efficient multilingual deployments.",
+        "contextWindow": 262144,
         "maxTokens": 262144,
         "modalities": {
           "input": [
@@ -71,16 +107,30 @@
       "defaults": {
         "name": "Qwen3.5 Plus",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 262144,
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "February 16, 2026"
+        "releaseDate": "February 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "qwen3-5-plus-2026-04-20": {
       "defaults": {
         "name": "Qwen3.5 Plus 2026-04-20",
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "contextWindow": 1000000,
-        "releaseDate": "April 27, 2026"
+        "releaseDate": "April 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

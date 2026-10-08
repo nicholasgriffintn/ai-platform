@@ -11,14 +11,7 @@
     },
     "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "thinking"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "The nemotron family includes models that produce text.",
   "models": {
@@ -30,7 +23,14 @@
         "maxTokens": 16384,
         "knowledgeCutoffDate": "March 31, 2024",
         "releaseDate": "July 25, 2025",
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nemotron-3-5-content-safety": {
@@ -38,6 +38,7 @@
         "name": "Nemotron 3.5 Content Safety",
         "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
         "contextWindow": 131072,
+        "maxTokens": 117964,
         "modalities": {
           "input": [
             "text",
@@ -71,7 +72,14 @@
         "releaseDate": "June 4, 2026",
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nemotron-3-5-lightning-30b": {
@@ -81,7 +89,14 @@
         "contextWindow": 262144,
         "maxTokens": 131072,
         "releaseDate": "August 11, 2026",
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nemotron-3-5-lightning-30b-a3b": {
@@ -100,7 +115,14 @@
         "contextWindow": 1000000,
         "maxTokens": 32768,
         "releaseDate": "August 11, 2026",
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nemotron-3-5-lightning-free": {
@@ -110,7 +132,14 @@
         "contextWindow": 1000000,
         "maxTokens": 65536,
         "releaseDate": "August 11, 2026",
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nemotron-3-nano-30b": {
@@ -119,7 +148,14 @@
         "description": "Small Nemotron 3 MoE for efficient coding, math, and long-context agents",
         "contextWindow": 1048576,
         "maxTokens": 131072,
-        "releaseDate": "December 15, 2025"
+        "releaseDate": "December 15, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nemotron-3-nano-30b-a3b": {
@@ -127,13 +163,17 @@
         "name": "Nemotron 3 Nano 30B A3B",
         "description": "Small Nemotron 3 MoE for efficient coding, math, and long-context agents",
         "contextWindow": 262144,
-        "maxTokens": 262144,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
+        "maxTokens": 235929,
         "reliability": 1,
         "releaseDate": "December 15, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 7.4,
           "codingIndex": null,
@@ -150,7 +190,14 @@
         "maxTokens": 256000,
         "knowledgeCutoffDate": "November 2025",
         "releaseDate": "December 15, 2025",
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nemotron-3-nano-omni": {
@@ -271,7 +318,14 @@
         },
         "releaseDate": "April 28, 2026",
         "supportsResponseFormat": false,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nemotron-3-super": {
@@ -280,7 +334,14 @@
         "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
         "contextWindow": 262144,
         "maxTokens": 65536,
-        "releaseDate": "March 11, 2026"
+        "releaseDate": "March 11, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nemotron-3-super-120b": {
@@ -337,12 +398,14 @@
       "defaults": {
         "name": "Nemotron 3 Ultra 550B A55B",
         "description": "Largest Nemotron 3 model for maximum open-weight reasoning and agent accuracy",
+        "contextWindow": 262144,
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "June 4, 2026",
+        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 37.8,
           "codingIndex": 49.3,
@@ -429,7 +492,14 @@
         "knowledgeCutoffDate": "November 2025",
         "releaseDate": "October 28, 2025",
         "supportsResponseFormat": false,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nemotron-nano-9b-v2": {
@@ -446,6 +516,13 @@
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "August 18, 2025",
         "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 7.4,
           "codingIndex": null,
@@ -462,7 +539,14 @@
         "maxTokens": 128000,
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "August 18, 2025",
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nemotron-nano-v2-12b": {
@@ -484,7 +568,59 @@
         "releaseDate": "October 31, 2025",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nvidia-nemotron-3-5-content-safety-free": {
+      "defaults": {
+        "name": "NVIDIA: Nemotron 3.5 Content Safety (free)",
+        "description": "NVIDIA Nemotron 3.5 Content Safety is a compact 4B-parameter multimodal guardrail model from NVIDIA, fine-tuned from Google Gemma-3-4B. It moderates both inputs to and responses from LLMs and VLMs, accepting... **Terms of service** For NVIDIA free endpoints (Super/Ultra/etc): Trial use only - do not submit personal or confidential data. Your use is logged for security purposes and to improve NVIDIA products and services. The logged session data for improvement purposes is not linked to your identity or any persistent identifier. For more information about our data processing practices, see our [Privacy Policy](https://www.nvidia.com/en-us/about-nvidia/privacy-policy/). By interacting with this endpoint, you consent to our collection, recording, and use of such information and the [NVIDIA API Trial Terms of Service](https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf).",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "June 4, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nvidia-nemotron-3-5-lightning-free": {
+      "defaults": {
+        "name": "NVIDIA: Nemotron 3.5 Lightning (free)",
+        "description": "NVIDIA Nemotron 3.5 Lightning is an open mixture-of-experts model from NVIDIA, with 3B active parameters out of 30B total. It is suited for high-throughput agentic workloads and specialized tasks that... **Terms of service** For NVIDIA free endpoints (Super/Ultra/etc): Trial use only - do not submit personal or confidential data. Your use is logged for security purposes and to improve NVIDIA products and services. The logged session data for improvement purposes is not linked to your identity or any persistent identifier. For more information about our data processing practices, see our [Privacy Policy](https://www.nvidia.com/en-us/about-nvidia/privacy-policy/). By interacting with this endpoint, you consent to our collection, recording, and use of such information and the [NVIDIA API Trial Terms of Service](https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf).",
+        "contextWindow": 1000000,
+        "maxTokens": 65536,
+        "releaseDate": "August 11, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nvidia-nemotron-3-nano-30b-a3b": {
@@ -502,6 +638,13 @@
         "releaseDate": "January 12, 2026",
         "supportsResponseFormat": true,
         "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 7.4,
           "codingIndex": null,
@@ -529,7 +672,43 @@
         "maxTokens": 65536,
         "releaseDate": "April 29, 2026",
         "supportsResponseFormat": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nvidia-nemotron-3-nano-omni-free": {
+      "defaults": {
+        "name": "NVIDIA: Nemotron 3 Nano Omni (free)",
+        "description": "Open Nemotron omni model combining reasoning with text, vision, and audio",
+        "contextWindow": 256000,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 28, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nvidia-nemotron-3-super-120b-a12b": {
@@ -552,6 +731,24 @@
         }
       }
     },
+    "nvidia-nemotron-3-super-free": {
+      "defaults": {
+        "name": "NVIDIA: Nemotron 3 Super (free)",
+        "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
+        "contextWindow": 262144,
+        "maxTokens": 235929,
+        "releaseDate": "March 11, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "nvidia-nemotron-3-ultra": {
       "defaults": {
         "name": "nvidia-nemotron-3-ultra",
@@ -569,6 +766,24 @@
             "medium",
             "high",
             "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nvidia-nemotron-3-ultra-free": {
+      "defaults": {
+        "name": "NVIDIA: Nemotron 3 Ultra (free)",
+        "description": "NVIDIA Nemotron 3 Ultra is an open frontier-reasoning and orchestration model from NVIDIA, with 55B active parameters out of 550B total (MoE). Built on a hybrid Transformer-Mamba mixture-of-experts architecture, it... **Terms of service** For NVIDIA free endpoints (Super/Ultra/etc): Trial use only - do not submit personal or confidential data. Your use is logged for security purposes and to improve NVIDIA products and services. The logged session data for improvement purposes is not linked to your identity or any persistent identifier. For more information about our data processing practices, see our [Privacy Policy](https://www.nvidia.com/en-us/about-nvidia/privacy-policy/). By interacting with this endpoint, you consent to our collection, recording, and use of such information and the [NVIDIA API Trial Terms of Service](https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf).",
+        "contextWindow": 1000000,
+        "maxTokens": 65536,
+        "releaseDate": "June 4, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
           ],
           "defaultEffort": "none"
         }
@@ -599,6 +814,13 @@
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "October 28, 2025",
         "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 4.6,
           "codingIndex": null,
@@ -634,7 +856,14 @@
         "contextWindow": 262144,
         "maxTokens": 8192,
         "releaseDate": "December 15, 2025",
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "nvidia-nemotron-nano-9b-v2": {

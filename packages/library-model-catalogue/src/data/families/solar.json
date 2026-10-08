@@ -43,6 +43,20 @@
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
         "releaseDate": "August 10, 2026"
       }
+    },
+    "upstage-solar-mini-4": {
+      "defaults": {
+        "name": "Upstage: Solar Mini 4",
+        "description": "Solar Mini 4 is Upstage's compact, cost-efficient language model, a 35B-parameter mixture-of-experts with 3B active parameters and a 524K context window. It is built for agentic use cases where response...",
+        "releaseDate": "September 23, 2026"
+      }
+    },
+    "upstage-solar-pro-4": {
+      "defaults": {
+        "name": "Upstage: Solar Pro 4",
+        "description": "Solar Pro 4 is a large language model from Upstage. It is suited for agentic workflows, office productivity, document-intensive work, and coding.",
+        "releaseDate": "August 10, 2026"
+      }
     }
   }
 }

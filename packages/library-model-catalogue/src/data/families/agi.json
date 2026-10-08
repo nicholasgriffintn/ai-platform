@@ -12,10 +12,19 @@
         "text"
       ]
     },
+    "releaseDate": "September 8, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "none"
+    }
   },
   "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
   "models": {
@@ -63,20 +72,26 @@
         }
       }
     },
+    "nex-agi-nex-n2-5-mini": {
+      "defaults": {
+        "name": "Nex AGI: Nex-N2.5-Mini",
+        "openWeights": false,
+        "description": "Nex-N2.5 is an agentic model built to turn goals into working, verified outcomes. Its core strength is agentic coding within a visual feedback loop: it can explore codebases, implement multi-file...",
+        "supportsToolCalls": false
+      }
+    },
+    "nex-agi-nex-n2-5-pro": {
+      "defaults": {
+        "name": "Nex AGI: Nex-N2.5-Pro",
+        "openWeights": false,
+        "description": "Nex-N2.5 is an agentic model built to turn goals into working, verified outcomes. Its core strength is agentic coding within a visual feedback loop: it can explore codebases, implement multi-file..."
+      }
+    },
     "nex-n2-5-mini": {
       "defaults": {
         "name": "Nex-N2.5-Mini",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "releaseDate": "September 8, 2026",
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsToolCalls": false
       }
     },
     "nex-n2-5-mini-free": {
@@ -90,46 +105,19 @@
           "output": [
             "text"
           ]
-        },
-        "releaseDate": "September 8, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
         }
       }
     },
     "nex-n2-5-pro": {
       "defaults": {
         "name": "Nex-N2.5-Pro",
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "releaseDate": "September 8, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
       }
     },
     "nex-n2-5-pro-free": {
       "defaults": {
         "name": "Nex-N2.5-Pro (free)",
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "releaseDate": "September 8, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
       }
     },
     "nex-n2-mini": {

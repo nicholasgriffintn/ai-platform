@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 131072,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "July 7, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "high"
+      ],
+      "defaultEffort": "high"
+    }
+  },
+  "description": "The kilo/aion labs/aion 3.0 mini family includes models that produce text.",
+  "models": {
+    "aionlabs-aion-3-0-mini": {
+      "defaults": {
+        "name": "AionLabs: Aion-3.0-Mini",
+        "description": "Aion-3.0 Mini is a multi-model roleplaying and storytelling system from AionLabs, built on the DeepSeek family of models. It uses a collaborative generation process in which multiple specialized models each..."
+      }
+    }
+  }
+}

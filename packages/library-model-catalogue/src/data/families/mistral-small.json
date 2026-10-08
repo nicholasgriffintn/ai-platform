@@ -11,6 +11,7 @@
       ]
     },
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true
   },
@@ -44,6 +45,55 @@
         "releaseDate": "June 20, 2025"
       }
     },
+    "mistral-mistral-small-3": {
+      "defaults": {
+        "name": "Mistral: Mistral Small 3",
+        "openWeights": false,
+        "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
+        "contextWindow": 32768,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "January 30, 2025",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "mistral-mistral-small-3-1-24b": {
+      "defaults": {
+        "name": "Mistral: Mistral Small 3.1 24B",
+        "openWeights": false,
+        "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
+        "contextWindow": 128000,
+        "maxTokens": 102400,
+        "releaseDate": "March 17, 2025"
+      }
+    },
+    "mistral-mistral-small-3-2-24b": {
+      "defaults": {
+        "name": "Mistral: Mistral Small 3.2 24B",
+        "openWeights": false,
+        "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
+        "contextWindow": 256000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "June 20, 2025"
+      }
+    },
     "mistral-small-3": {
       "defaults": {
         "name": "Mistral Small 3",
@@ -63,7 +113,6 @@
         "knowledgeCutoffDate": "October 31, 2023",
         "releaseDate": "January 30, 2025",
         "supportsToolCalls": false,
-        "supportsResponseFormat": true,
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 6.9,
@@ -104,8 +153,7 @@
         "contextWindow": 128000,
         "maxTokens": 102400,
         "knowledgeCutoffDate": "October 31, 2023",
-        "releaseDate": "March 17, 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "March 17, 2025"
       }
     },
     "mistral-small-3-1-24b-instruct": {
@@ -124,8 +172,7 @@
         },
         "knowledgeCutoffDate": "June 2024",
         "releaseDate": "March 17, 2025",
-        "supportsResponseFormat": false,
-        "supportsAttachments": false
+        "supportsResponseFormat": false
       }
     },
     "mistral-small-3-2": {
@@ -167,8 +214,7 @@
           ]
         },
         "knowledgeCutoffDate": "October 31, 2023",
-        "releaseDate": "June 20, 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "June 20, 2025"
       }
     },
     "mistral-small-4": {
@@ -176,7 +222,6 @@
         "name": "Mistral Small 4",
         "description": "Fast Mistral production model for chat, extraction, and cost-sensitive agents",
         "contextWindow": 262144,
-        "maxTokens": 256000,
         "strengths": [
           "vision",
           "document",
@@ -186,7 +231,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "March 16, 2026",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 12.4,
           "codingIndex": null,
@@ -227,7 +271,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "March 16, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

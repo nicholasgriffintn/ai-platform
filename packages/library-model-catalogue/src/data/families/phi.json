@@ -18,6 +18,17 @@
   },
   "description": "The phi family includes models that produce text.",
   "models": {
+    "microsoft-phi-4": {
+      "defaults": {
+        "name": "Microsoft: Phi 4",
+        "openWeights": false,
+        "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads",
+        "contextWindow": 16384,
+        "maxTokens": 14745,
+        "releaseDate": "January 10, 2025",
+        "supportsResponseFormat": true
+      }
+    },
     "phi-3-5-mini-instruct": {
       "defaults": {
         "name": "Phi-3.5-mini-instruct",

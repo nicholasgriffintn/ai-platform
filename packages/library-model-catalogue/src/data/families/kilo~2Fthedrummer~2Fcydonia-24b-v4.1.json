@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 131072,
+    "maxTokens": 117964,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 27, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The kilo/thedrummer/cydonia 24b v4.1 family includes models that produce text.",
+  "models": {
+    "thedrummer-cydonia-24b-v4-1": {
+      "defaults": {
+        "name": "TheDrummer: Cydonia 24B V4.1",
+        "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads"
+      }
+    }
+  }
+}

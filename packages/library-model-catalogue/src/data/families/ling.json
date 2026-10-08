@@ -7,6 +7,134 @@
   },
   "description": "The ling family includes models that produce text, video.",
   "models": {
+    "inclusionai-ling-3-0-flash": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Flash",
+        "description": "*Ling-3.0-flash* is a *124B-parameter Mixture-of-Experts (MoE) model*, with approximately *5.1B parameters activated per token*. The model is designed with *token efficiency and production-scale agentic inference* as key priorities, enabling developers...",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 23, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "inclusionai-ling-3-0-flash-fin": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Flash Fin",
+        "description": "Ling 3.0 Flash Fin is a finance-focused mixture-of-experts model from InclusionAI, built on Ling 3.0 Flash with 5.1B active parameters out of 124B total. It is designed for real-world investment...",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 27, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "inclusionai-ling-3-0-flash-sante": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Flash Sante",
+        "description": "Ling 3.0 Flash Sante is a health and medicine-focused mixture-of-experts model from InclusionAI, built on Ling 3.0 Flash with 5.1B active parameters out of 124B total. It is designed for...",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 4, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "inclusionai-ling-3-0-flash-vl": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Flash VL",
+        "description": "Ling 3.0 Flash VL builds on Ling 3.0 Flash (124B total / 5.5B active MoE from InclusionAI), further strengthening its language capabilities while adding native visual perception and advanced visual...",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 10, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "inclusionai-ling-3-1-flash-new": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.1 Flash (new)",
+        "description": "Ling 3.1 Flash is a hybrid reasoning mixture-of-experts model from inclusionAI, with 25B active parameters out of 560B total.",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 2, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "inkling": {
       "defaults": {
         "name": "Inkling",
@@ -95,6 +223,16 @@
         "openWeights": true,
         "description": "Multimodal MoE reasoning model (276B total, 12B active) for text, image, and audio",
         "contextWindow": 524288,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "releaseDate": "July 30, 2026",
         "supportsAttachments": true
       }
@@ -427,8 +565,6 @@
       "defaults": {
         "name": "Ling 3.0 Flash Sante",
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "contextWindow": 256000,
-        "maxTokens": 32000,
         "modalities": {
           "input": [
             "text"
@@ -437,16 +573,7 @@
             "text"
           ]
         },
-        "releaseDate": "September 4, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
+        "releaseDate": "September 4, 2026"
       }
     },
     "ling-3-0-flash-sante-free": {
@@ -571,6 +698,39 @@
           ]
         },
         "releaseDate": "September 29, 2026"
+      }
+    },
+    "thinking-machines-inkling-small-free": {
+      "defaults": {
+        "name": "Thinking Machines: Inkling Small (free)",
+        "openWeights": true,
+        "description": "Inkling Small is an open-weight multimodal mixture-of-experts model from Thinking Machines Lab, with 12B active parameters out of 276B total. It is positioned as the smaller, more efficient member of...",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 30, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

@@ -421,6 +421,33 @@
           "defaultEffort": "low"
         }
       }
+    },
+    "openai-gpt-sol-latest": {
+      "defaults": {
+        "name": "OpenAI: GPT Sol Latest",
+        "description": "This model always redirects to the latest model in the OpenAI GPT Sol family.",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 11, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
     }
   }
 }

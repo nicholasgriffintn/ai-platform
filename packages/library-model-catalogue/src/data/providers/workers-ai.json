@@ -203,8 +203,8 @@
       "matchingModel": "@cf/black-forest-labs/flux-2-klein-4b",
       "overrides": {
         "speed": 4,
-        "inputFormat": "multipart",
-        "isFeatured": true
+        "isFeatured": true,
+        "inputFormat": "multipart"
       },
       "unset": [
         "supportsAttachments",
@@ -374,8 +374,7 @@
         "releaseDate": "November 12, 2024",
         "lastUpdated": "November 12, 2024",
         "costPer1kInputTokens": 0.00066,
-        "costPer1kOutputTokens": 0.001,
-        "supportsResponseFormat": false
+        "costPer1kOutputTokens": 0.001
       }
     },
     "@cf/meta/llama-guard-3-8b": {
@@ -443,7 +442,10 @@
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "smart-turn-v2": {
       "model": "workers-ai/@cf/pipecat-ai/smart-turn-v2/pipecat-smart-turn-v2",
@@ -587,7 +589,8 @@
       "overrides": {
         "lastUpdated": "March 17, 2025",
         "costPer1kInputTokens": 0.000351,
-        "costPer1kOutputTokens": 0.000555
+        "costPer1kOutputTokens": 0.000555,
+        "supportsAttachments": true
       }
     },
     "@cf/nvidia/nemotron-3-120b-a12b": {
@@ -744,6 +747,7 @@
         "maxTokens": 256000,
         "contextComplexity": 4,
         "speed": 4,
+        "isFeatured": true,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
@@ -754,8 +758,7 @@
             "max"
           ],
           "defaultEffort": "none"
-        },
-        "isFeatured": true
+        }
       }
     },
     "@cf/deepseek-ai/deepseek-v4-flash-0731": {
@@ -782,6 +785,7 @@
       "matchingModel": "@cf/deepseek-ai/deepseek-v4-pro-0813",
       "overrides": {
         "maxTokens": 1048576,
+        "isFeatured": true,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00132,
         "costPer1kOutputTokens": 0.00396,
@@ -793,8 +797,7 @@
             "max"
           ],
           "defaultEffort": "high"
-        },
-        "isFeatured": true
+        }
       },
       "unset": [
         "strengths",
@@ -829,10 +832,10 @@
         "name": "Glm 5.3",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "maxTokens": 1048576,
+        "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.0044
       }
     },
     "@cf/zai-org/glm-5.3-flash": {
@@ -869,9 +872,9 @@
           "video",
           "creative"
         ],
+        "isFeatured": true,
         "supportsAttachments": true,
-        "supportsTemperature": false,
-        "isFeatured": true
+        "supportsTemperature": false
       },
       "unset": [
         "openWeights"

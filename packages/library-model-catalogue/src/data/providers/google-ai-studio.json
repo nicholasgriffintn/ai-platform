@@ -174,6 +174,17 @@
       "matchingModel": "gemini-2.5-flash-image",
       "overrides": {
         "name": "Gemini 2.5 Flash Image",
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
         "isFree": true,
         "lastUpdated": "August 26, 2025",
         "dataRetention": {
@@ -239,7 +250,14 @@
         "supportsSearchGrounding": true,
         "supportsUrlContext": true,
         "supportsCodeExecution": true,
-        "supportsWebFetch": true
+        "supportsWebFetch": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "gemini-2.5-flash-lite-preview-06-17": {
@@ -358,6 +376,18 @@
       "model": "gemini-pro/gemini-2-5-pro",
       "matchingModel": "gemini-2.5-pro",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "isFree": true,
         "strengths": [
           "vision",
@@ -590,19 +620,6 @@
       "model": "gemini-flash-lite/gemini-3-1-flash-lite",
       "matchingModel": "gemini-3.1-flash-lite",
       "overrides": {
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "audio",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "isFree": true,
         "strengths": [
           "chat",
@@ -619,6 +636,7 @@
         ],
         "speed": 4,
         "multimodal": true,
+        "isFeatured": true,
         "lastUpdated": "May 7, 2026",
         "dataRetention": {
           "maxDays": 55,
@@ -636,8 +654,7 @@
             "high"
           ],
           "defaultEffort": "minimal"
-        },
-        "isFeatured": true
+        }
       }
     },
     "gemini-3.1-pro-preview": {
@@ -831,19 +848,6 @@
       "model": "gemini-flash/gemini-3-5-flash",
       "matchingModel": "gemini-3.5-flash",
       "overrides": {
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "audio",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "isFree": true,
         "strengths": [
           "coding",
@@ -863,6 +867,7 @@
         ],
         "speed": 3,
         "multimodal": true,
+        "isFeatured": true,
         "lastUpdated": "May 19, 2026",
         "dataRetention": {
           "maxDays": 55,
@@ -882,8 +887,7 @@
             "high"
           ],
           "defaultEffort": "medium"
-        },
-        "isFeatured": true
+        }
       }
     },
     "gemini-3-pro-image-preview": {
@@ -906,7 +910,14 @@
         },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.12,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       },
       "unset": [
         "supportsResponseFormat"
@@ -1079,7 +1090,6 @@
       "model": "gemini-pro/nano-banana-pro",
       "matchingModel": "gemini-3-pro-image",
       "overrides": {
-        "contextWindow": 65536,
         "strengths": [
           "vision",
           "document",
@@ -1110,7 +1120,6 @@
       "model": "gemini-flash/nano-banana-2",
       "matchingModel": "gemini-3.1-flash-image",
       "overrides": {
-        "name": "Nano Banana 2",
         "modalities": {
           "input": [
             "text",
@@ -1148,7 +1157,6 @@
       "model": "gemini-flash-lite/nano-banana-2-lite",
       "matchingModel": "gemini-3.1-flash-lite-image",
       "overrides": {
-        "name": "Nano Banana 2 Lite",
         "description": "Fastest, most cost-efficient Gemini image model for high-volume 1K generation and editing",
         "maxTokens": 4096,
         "modalities": {
@@ -1188,7 +1196,6 @@
         "supportsAttachments": false
       },
       "unset": [
-        "reasoningConfig",
         "supportsResponseFormat"
       ]
     },
@@ -1330,14 +1337,14 @@
       "model": "veo/veo-3-1-lite",
       "matchingModel": "veo-3.1-lite-generate-preview",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "March 31, 2026",
         "dataRetention": {
           "maxDays": 55,
           "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
         },
         "supportsToolCalls": false,
-        "supportsTemperature": false,
-        "isFeatured": true
+        "supportsTemperature": false
       }
     },
     "gemini-3.7-flash": {
@@ -1345,7 +1352,6 @@
       "matchingModel": "gemini-3.7-flash",
       "overrides": {
         "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
-        "maxTokens": 65536,
         "isFeatured": false,
         "lastUpdated": "August 13, 2026",
         "dataRetention": {
@@ -1365,15 +1371,14 @@
       "matchingModel": "gemini-3.8-flash",
       "overrides": {
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
-        "maxTokens": 65536,
+        "isFeatured": true,
         "lastUpdated": "September 2, 2026",
         "dataRetention": {
           "maxDays": 55,
           "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
         },
         "costPer1kInputTokens": 0.00075,
-        "costPer1kOutputTokens": 0.00375,
-        "isFeatured": true
+        "costPer1kOutputTokens": 0.00375
       },
       "unset": [
         "knowledgeCutoffDate"

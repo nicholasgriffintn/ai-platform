@@ -17,10 +17,38 @@
     "supportsToolCalls": true,
     "supportsAttachments": true,
     "supportsTemperature": false,
-    "supportsTopP": false
+    "supportsTopP": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "low",
+      "thinkingApi": "adaptive"
+    }
   },
   "description": "Claude model for creative writing, analysis, and controlled agent workflows",
   "models": {
+    "anthropic-claude-fable-latest": {
+      "defaults": {
+        "name": "Anthropic: Claude Fable Latest ($$$$)",
+        "description": "This model always redirects to the latest model in the Claude Fable family.",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "claude-fable-5": {
       "defaults": {
         "name": "Claude Fable 5",
@@ -34,6 +62,16 @@
         "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 59.9,
           "codingIndex": 76.5,
@@ -48,17 +86,7 @@
         "description": "Claude model for demanding reasoning and long-horizon agentic work",
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 1, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low",
-          "thinkingApi": "adaptive"
-        }
+        "supportsResponseFormat": true
       }
     },
     "claude-fable-5-1-eu": {
@@ -86,18 +114,7 @@
         "name": "Claude Fable 5.1 (Global)",
         "description": "Claude model for demanding reasoning and long-horizon agentic work",
         "knowledgeCutoffDate": "June 2026",
-        "releaseDate": "September 1, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low",
-          "thinkingApi": "adaptive"
-        }
+        "releaseDate": "September 1, 2026"
       }
     },
     "claude-fable-5-1-us": {
@@ -105,18 +122,7 @@
         "name": "Claude Fable 5.1 (US)",
         "description": "Claude model for demanding reasoning and long-horizon agentic work",
         "knowledgeCutoffDate": "June 2026",
-        "releaseDate": "September 1, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low",
-          "thinkingApi": "adaptive"
-        }
+        "releaseDate": "September 1, 2026"
       }
     },
     "claude-fable-5-eu": {
@@ -162,17 +168,6 @@
         "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low",
-          "thinkingApi": "adaptive"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 59.9,
           "codingIndex": 76.5,
@@ -203,17 +198,6 @@
         "contextComplexity": 5,
         "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low",
-          "thinkingApi": "adaptive"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 59.9,
           "codingIndex": 76.5,
@@ -226,18 +210,7 @@
       "defaults": {
         "name": "Claude Fable Latest",
         "description": "Claude model for creative writing, analysis, and controlled agent workflows",
-        "supportsResponseFormat": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low",
-          "thinkingApi": "adaptive"
-        }
+        "supportsResponseFormat": true
       }
     }
   }

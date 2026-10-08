@@ -1,16 +1,9 @@
 {
   "defaults": {
     "openWeights": false,
-    "modalities": {
-      "input": [
-        "text"
-      ],
-      "output": [
-        "text"
-      ]
-    },
+    "releaseDate": "January 1, 1970",
     "supportsToolCalls": true,
-    "supportsResponseFormat": true,
+    "supportsResponseFormat": false,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
@@ -29,6 +22,14 @@
         "description": "Automatic model router for matching prompts to suitable backends and budgets",
         "contextWindow": 32000,
         "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "coding"
         ],
@@ -39,6 +40,75 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false
+      }
+    },
+    "auto-balanced": {
+      "defaults": {
+        "name": "Auto Balanced",
+        "description": "Automatic model router for matching prompts to suitable backends and budgets",
+        "contextWindow": 1000000,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        }
+      }
+    },
+    "auto-efficient": {
+      "defaults": {
+        "name": "Auto Efficient",
+        "description": "Routes each request to the cheapest model that gets the job done, based on continuously benchmarked accuracy and cost.",
+        "contextWindow": 1000000,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        }
+      }
+    },
+    "auto-free": {
+      "defaults": {
+        "name": "Auto Free",
+        "description": "Automatic model router for matching prompts to suitable backends and budgets",
+        "contextWindow": 256000,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "supportsAttachments": false
+      }
+    },
+    "auto-frontier": {
+      "defaults": {
+        "name": "Auto Frontier",
+        "description": "Automatic model router for matching prompts to suitable backends and budgets",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        }
       }
     },
     "auto-router": {
@@ -67,7 +137,25 @@
         ],
         "contextComplexity": 4,
         "reliability": 4,
-        "releaseDate": "November 8, 2023"
+        "releaseDate": "November 8, 2023",
+        "supportsResponseFormat": true
+      }
+    },
+    "auto-small": {
+      "defaults": {
+        "name": "Auto Small",
+        "description": "Automatic model router for matching prompts to suitable backends and budgets",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        }
       }
     },
     "standard-compute": {
@@ -76,7 +164,16 @@
         "description": "Flat-rate smart-routing gateway: one model id, each request routed across a curated catalog of 1M-context models (DeepSeek, GLM, MiniMax, Qwen, GPT-5.6, Claude 5, Gemini 2.5, Kimi) or pinned to a user-selected model",
         "contextWindow": 1000000,
         "maxTokens": 24576,
-        "releaseDate": "March 1, 2026"
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "March 1, 2026",
+        "supportsResponseFormat": true
       }
     }
   }

@@ -88,8 +88,8 @@
       "model": "the-grid-ai/bytedance-pro-latest/bytedance-pro-latest",
       "matchingModel": "bytedance-pro-latest",
       "overrides": {
-        "lastUpdated": "July 6, 2026",
-        "isFeatured": true
+        "isFeatured": true,
+        "lastUpdated": "July 6, 2026"
       }
     },
     "claude-opus-latest": {
@@ -134,9 +134,9 @@
       "model": "gemini/gemini-pro-latest",
       "matchingModel": "gemini-pro-latest",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "July 6, 2026",
-        "supportsAttachments": true,
-        "isFeatured": true
+        "supportsAttachments": true
       }
     },
     "glm-latest": {
@@ -146,6 +146,7 @@
         "description": "Lab latest market for GLM supply. You contract for the latest qualifying route, not a specific model.",
         "contextWindow": 1000000,
         "maxTokens": 128000,
+        "isFeatured": true,
         "releaseDate": "July 6, 2026",
         "lastUpdated": "July 6, 2026",
         "reasoningConfig": {
@@ -155,8 +156,7 @@
             "high"
           ],
           "defaultEffort": "low"
-        },
-        "isFeatured": true
+        }
       }
     },
     "gpt-sol-latest": {

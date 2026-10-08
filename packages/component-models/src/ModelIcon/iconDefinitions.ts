@@ -181,4 +181,5 @@ export const PROVIDER_ICONS: Record<string, string> = {
   tavily: "tavily",
   "twilio-sms": "twilio",
   vectorize: "vectorize",
+  kilo: "kilo",
 };

@@ -662,6 +662,16 @@
         "name": "Grok 4.3",
         "description": "xAI's default Grok for chat, coding, agentic tools, and lower hallucination risk",
         "contextWindow": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -672,6 +682,15 @@
         "releaseDate": "April 17, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 24.8,
           "codingIndex": 35.2,
@@ -1496,6 +1515,95 @@
         "releaseDate": "July 29, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
+      }
+    },
+    "spacexai-grok-4-20": {
+      "defaults": {
+        "name": "SpaceXAI: Grok 4.20",
+        "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
+        "contextWindow": 2000000,
+        "maxTokens": 1800000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "March 31, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "spacexai-grok-4-20-multi-agent": {
+      "defaults": {
+        "name": "SpaceXAI: Grok 4.20 Multi-Agent",
+        "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
+        "contextWindow": 2000000,
+        "maxTokens": 1800000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "March 31, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "xai-grok-latest": {
+      "defaults": {
+        "name": "xAI: Grok Latest",
+        "description": "This model always redirects to the latest Grok model from xAI.",
+        "contextWindow": 500000,
+        "maxTokens": 450000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 8, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

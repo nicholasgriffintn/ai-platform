@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 200000,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "April 21, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The kilo/openrouter/pareto code family includes models that produce text.",
+  "models": {
+    "pareto-code-router": {
+      "defaults": {
+        "name": "Pareto Code Router",
+        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks"
+      }
+    }
+  }
+}

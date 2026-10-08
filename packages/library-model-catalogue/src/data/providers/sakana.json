@@ -27,6 +27,7 @@
             "text"
           ]
         },
+        "isFeatured": true,
         "lastUpdated": "June 15, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
@@ -36,8 +37,7 @@
             "xhigh"
           ],
           "defaultEffort": "high"
-        },
-        "isFeatured": true
+        }
       }
     },
     "sakana-namazu": {
@@ -45,6 +45,7 @@
       "matchingModel": "sakana-namazu",
       "overrides": {
         "description": "Japanese-specialized reasoning model based on Kimi K2.6 and tuned for Japanese language, culture, and business workflows",
+        "isFeatured": true,
         "lastUpdated": "August 3, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -55,8 +56,7 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "isFeatured": true
+        }
       },
       "unset": [
         "apiShape"

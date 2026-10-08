@@ -3,6 +3,16 @@
     "openWeights": false,
     "contextWindow": 1000000,
     "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
@@ -14,23 +24,23 @@
       "defaults": {
         "name": "Qwen 3.8 Max Prime",
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "releaseDate": "September 23, 2026"
+        "releaseDate": "September 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "qwen3-8-max": {
       "defaults": {
         "name": "Qwen3.8 Max",
         "description": "2.4-trillion-parameter multimodal flagship for coding, professional work, and long-horizon agentic workflows",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "August 3, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [

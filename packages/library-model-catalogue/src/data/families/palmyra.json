@@ -1,6 +1,7 @@
 {
   "defaults": {
     "openWeights": false,
+    "contextWindow": 1040000,
     "maxTokens": 8192,
     "modalities": {
       "input": [
@@ -42,16 +43,23 @@
     "palmyra-x5": {
       "defaults": {
         "name": "Palmyra X5",
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "contextWindow": 1040000
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
       }
     },
     "palmyra-x5-us": {
       "defaults": {
         "name": "Palmyra X5 (US)",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "contextWindow": 1040000,
         "releaseDate": "April 28, 2025"
+      }
+    },
+    "writer-palmyra-x5": {
+      "defaults": {
+        "name": "Writer: Palmyra X5",
+        "description": "General-purpose chat model for instruction following, writing, and analysis",
+        "releaseDate": "January 21, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
       }
     }
   }

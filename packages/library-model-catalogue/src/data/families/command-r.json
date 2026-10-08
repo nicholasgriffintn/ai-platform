@@ -37,8 +37,11 @@
     },
     "command-r7b": {
       "defaults": {
+        "name": "Command R7B",
         "description": "Cohere retrieval model for long-context chat and enterprise RAG workflows",
-        "releaseDate": "December 2, 2024"
+        "releaseDate": "December 2, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
       }
     },
     "command-r7b-arabic": {

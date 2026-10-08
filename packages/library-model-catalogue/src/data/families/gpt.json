@@ -54,6 +54,7 @@
           ]
         },
         "reliability": 1,
+        "knowledgeCutoffDate": "September 1, 2021",
         "releaseDate": "March 1, 2023",
         "supportsAttachments": false,
         "artificialAnalysis": {
@@ -103,6 +104,8 @@
       "defaults": {
         "name": "GPT-4",
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
+        "contextWindow": 8191,
+        "maxTokens": 4096,
         "modalities": {
           "input": [
             "text"
@@ -117,6 +120,7 @@
         "contextComplexity": 2,
         "reliability": 1,
         "knowledgeCutoffDate": "November 2023",
+        "releaseDate": "November 6, 2023",
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": 7,
@@ -235,15 +239,6 @@
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
         "contextWindow": 128000,
         "maxTokens": 4096,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -521,6 +516,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "November 13, 2025",
+        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1862,6 +1858,43 @@
         "supportsTemperature": false
       }
     },
+    "openai-gpt-3-5-turbo-16k": {
+      "defaults": {
+        "name": "OpenAI: GPT-3.5 Turbo 16k",
+        "description": "Compact GPT model for low-latency assistance and high-volume workloads",
+        "contextWindow": 16385,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 28, 2023"
+      }
+    },
+    "openai-gpt-3-5-turbo-instruct": {
+      "defaults": {
+        "name": "OpenAI: GPT-3.5 Turbo Instruct",
+        "description": "Compact GPT model for low-latency assistance and high-volume workloads",
+        "contextWindow": 4095,
+        "maxTokens": 3685,
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 28, 2023",
+        "supportsToolCalls": false
+      }
+    },
     "openai-gpt-4-5": {
       "defaults": {
         "name": "OpenAI GPT-4.5",
@@ -1963,6 +1996,294 @@
         "supportsToolCalls": false,
         "supportsTemperature": false,
         "supportsTopP": false
+      }
+    },
+    "openai-gpt-5-2-chat": {
+      "defaults": {
+        "name": "OpenAI: GPT-5.2 Chat",
+        "description": "Chat-tuned GPT model for conversational assistance, writing, and tool workflows",
+        "contextWindow": 128000,
+        "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "December 10, 2025",
+        "supportsTemperature": false
+      }
+    },
+    "openai-gpt-5-4-image-2": {
+      "defaults": {
+        "name": "OpenAI: GPT-5.4 Image 2",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 272000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "releaseDate": "April 21, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-5-image": {
+      "defaults": {
+        "name": "OpenAI: GPT-5 Image ($$$$)",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "releaseDate": "October 14, 2025",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "openai-gpt-5-image-mini": {
+      "defaults": {
+        "name": "OpenAI: GPT-5 Image Mini",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "releaseDate": "October 16, 2025",
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "openai-gpt-6-1-sol-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.1 Sol Pro",
+        "description": "GPT-6.1 Sol Pro is the same underlying model as [GPT-6.1 Sol](https://openrouter.ai/openai/gpt-6.1-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 29, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "openai-gpt-6-astra-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6 Astra Pro ($$$$)",
+        "description": "GPT-6 Astra Pro is the same underlying model as [GPT-6 Astra](https://openrouter.ai/openai/gpt-6-astra), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 4, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "openai-gpt-6-luna-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6 Luna Pro",
+        "description": "GPT-6 Luna Pro is the same underlying model as [GPT-6 Luna](https://openrouter.ai/openai/gpt-6-luna), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 22, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-6-sol-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6 Sol Pro",
+        "description": "GPT-6 Sol Pro is the same underlying model as [GPT-6 Sol](https://openrouter.ai/openai/gpt-6-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 22, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-audio": {
+      "defaults": {
+        "name": "OpenAI: GPT Audio",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "releaseDate": "January 19, 2026"
+      }
+    },
+    "openai-gpt-audio-mini": {
+      "defaults": {
+        "name": "OpenAI: GPT Audio Mini",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "releaseDate": "January 19, 2026"
+      }
+    },
+    "openai-gpt-chat-latest": {
+      "defaults": {
+        "name": "OpenAI: GPT Chat Latest",
+        "description": "Chat-tuned GPT model for conversational assistance, writing, and tool workflows",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "May 5, 2026",
+        "supportsTemperature": false
       }
     },
     "openai-gpt-latest": {

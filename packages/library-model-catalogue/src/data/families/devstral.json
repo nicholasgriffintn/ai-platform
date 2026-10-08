@@ -10,6 +10,7 @@
       ]
     },
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
@@ -43,8 +44,7 @@
         "contextWindow": 262144,
         "maxTokens": 8192,
         "knowledgeCutoffDate": "December 2025",
-        "releaseDate": "December 9, 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "December 9, 2025"
       }
     },
     "devstral-latest": {
@@ -53,8 +53,7 @@
         "description": "An enterprise grade text model, that excels at using tools to explore codebases, editing multiple files and power software engineering agents.",
         "contextWindow": 256000,
         "maxTokens": 256000,
-        "releaseDate": "May 27, 2026",
-        "supportsResponseFormat": true
+        "releaseDate": "May 27, 2026"
       }
     },
     "devstral-latest-eu": {
@@ -63,8 +62,7 @@
         "description": "An enterprise grade text model, that excels at using tools to explore codebases, editing multiple files and power software engineering agents.",
         "contextWindow": 256000,
         "maxTokens": 256000,
-        "releaseDate": "May 27, 2026",
-        "supportsResponseFormat": true
+        "releaseDate": "May 27, 2026"
       }
     },
     "devstral-small-1-1": {

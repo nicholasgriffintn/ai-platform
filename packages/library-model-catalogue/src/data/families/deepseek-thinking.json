@@ -40,6 +40,7 @@
       "defaults": {
         "name": "DeepSeek-R1",
         "description": "Classic open reasoning model for transparent math, coding, and deliberate problem solving",
+        "contextWindow": 64000,
         "maxTokens": 32768,
         "contextComplexity": 3,
         "knowledgeCutoffDate": "July 2024",
@@ -208,6 +209,7 @@
         "name": "DeepSeek V4 Pro",
         "description": "Open MoE flagship with million-token context for coding and long agent runs",
         "contextWindow": 1000000,
+        "maxTokens": 384000,
         "contextComplexity": 5,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "April 24, 2026",

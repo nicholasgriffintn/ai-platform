@@ -111,7 +111,8 @@
       "unset": [
         "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature"
+        "supportsTemperature",
+        "openWeights"
       ]
     },
     "nova-reel": {
@@ -128,7 +129,8 @@
       "unset": [
         "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature"
+        "supportsTemperature",
+        "openWeights"
       ]
     },
     "nova-2-sonic": {
@@ -143,7 +145,8 @@
       "unset": [
         "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature"
+        "supportsTemperature",
+        "openWeights"
       ]
     },
     "openai.gpt-oss-safeguard-120b": {
@@ -166,6 +169,7 @@
       "matchingModel": "openai.gpt-oss-safeguard-20b",
       "overrides": {
         "name": "GPT OSS Safeguard 20B",
+        "contextWindow": 128000,
         "maxTokens": 16384,
         "lastUpdated": "October 29, 2025",
         "dataRetention": {
@@ -191,7 +195,6 @@
         },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
-        "supportsResponseFormat": true,
         "supportsAttachments": false
       }
     },
@@ -209,7 +212,6 @@
         },
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025,
-        "supportsResponseFormat": true,
         "supportsAttachments": false
       }
     },
@@ -224,10 +226,7 @@
         },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0006
-      },
-      "unset": [
-        "reasoningConfig"
-      ]
+      }
     },
     "nvidia.nemotron-nano-9b-v2": {
       "model": "nemotron/nvidia-nemotron-nano-9b-v2",
@@ -246,10 +245,7 @@
         "costPer1kOutputTokens": 0.00023,
         "supportsResponseFormat": true,
         "supportsAttachments": false
-      },
-      "unset": [
-        "reasoningConfig"
-      ]
+      }
     },
     "anthropic.claude-sonnet-4.5": {
       "model": "claude-sonnet/claude-sonnet-4-5-us",
@@ -484,7 +480,10 @@
         "costPer1kOutputTokens": 0.0125,
         "supportsDocuments": true,
         "supportsPromptCaching": true
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "llama-3-2-90b-bedrock": {
       "model": "llama/llama-3-2-90b-instruct",
@@ -508,6 +507,7 @@
       "model": "llama/llama-3-1-70b-instruct",
       "matchingModel": "meta.llama3-1-70b-instruct-v1:0",
       "overrides": {
+        "contextWindow": 128000,
         "maxTokens": 4096,
         "strengths": [
           "analysis",
@@ -1211,7 +1211,10 @@
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00022,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "meta.llama3-2-11b-instruct-v1:0": {
       "model": "llama/llama-3-2-11b-instruct",
@@ -1643,7 +1646,6 @@
         },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0012,
-        "supportsResponseFormat": true,
         "supportsAttachments": false
       }
     },
@@ -2122,7 +2124,14 @@
         },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00065,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "qwen.qwen3-coder-next": {
@@ -2249,7 +2258,6 @@
       "model": "glm/glm-5",
       "matchingModel": "zai.glm-5",
       "overrides": {
-        "name": "GLM-5",
         "contextWindow": 202752,
         "speed": 3,
         "lastUpdated": "March 18, 2026",
@@ -2387,6 +2395,7 @@
             "text"
           ]
         },
+        "isFeatured": true,
         "lastUpdated": "June 9, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2394,19 +2403,7 @@
         },
         "costPer1kInputTokens": 0.011,
         "costPer1kOutputTokens": 0.055,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low",
-          "thinkingApi": "adaptive"
-        },
-        "isFeatured": true
+        "supportsTemperature": false
       }
     },
     "global.anthropic.claude-fable-5": {
@@ -2762,7 +2759,10 @@
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "global.anthropic.claude-fable-5-1": {
       "model": "claude-fable/claude-fable-5-1-global",
@@ -3242,6 +3242,7 @@
       "model": "claude-opus/claude-opus-5-5",
       "matchingModel": "anthropic.claude-opus-5-5",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3249,8 +3250,7 @@
         },
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
-        "supportsTemperature": false,
-        "isFeatured": true
+        "supportsTemperature": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -3481,6 +3481,7 @@
       "model": "gpt-sol/gpt-6-1-sol-us",
       "matchingModel": "us.openai.gpt-6.1-sol",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "September 29, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3488,8 +3489,7 @@
         },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
-        "supportsTemperature": false,
-        "isFeatured": true
+        "supportsTemperature": false
       }
     },
     "us.xai.grok-4.7": {
@@ -3619,6 +3619,7 @@
       "model": "claude-haiku/claude-haiku-5-5",
       "matchingModel": "anthropic.claude-haiku-5-5",
       "overrides": {
+        "isFeatured": true,
         "lastUpdated": "October 7, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3627,8 +3628,7 @@
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
         "supportsResponseFormat": false,
-        "supportsTemperature": false,
-        "isFeatured": true
+        "supportsTemperature": false
       }
     },
     "au.anthropic.claude-haiku-5-5": {
