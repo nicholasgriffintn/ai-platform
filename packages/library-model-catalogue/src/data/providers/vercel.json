@@ -2283,26 +2283,6 @@
         "supportsToolCalls": false
       }
     },
-    "vercel/v0-1.0-md": {
-      "model": "vercel/vercel/v0-1.0-md/v0-1-0-md",
-      "matchingModel": "vercel/v0-1.0-md",
-      "overrides": {
-        "lastUpdated": "May 22, 2025",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015,
-        "supportsAttachments": true
-      }
-    },
-    "vercel/v0-1.5-md": {
-      "model": "vercel/vercel/v0-1.5-md/v0-1-5-md",
-      "matchingModel": "vercel/v0-1.5-md",
-      "overrides": {
-        "lastUpdated": "June 9, 2025",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015,
-        "supportsAttachments": true
-      }
-    },
     "voyage/voyage-3-large": {
       "model": "voyage/voyage-3-large",
       "matchingModel": "voyage/voyage-3-large",
@@ -5650,19 +5630,6 @@
         "costPer1kOutputTokens": 0.006,
         "supportsAttachments": true
       }
-    },
-    "perplexity/pplx-embed-v1-0.6b": {
-      "model": "v0/embed-v1-0-6b",
-      "matchingModel": "perplexity/pplx-embed-v1-0.6b",
-      "overrides": {
-        "lastUpdated": "February 26, 2026",
-        "supportsToolCalls": false
-      },
-      "unset": [
-        "multimodal",
-        "supportsTemperature",
-        "reasoningConfig"
-      ]
     },
     "perplexity/pplx-embed-v1-4b": {
       "model": "vercel/perplexity/pplx-embed-v1-4b/embed-v1-4b",

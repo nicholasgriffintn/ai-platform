@@ -74,7 +74,6 @@ import { second_opinion } from "./second_opinion";
 import { create_speech } from "./speech";
 import { get_task_status } from "./tasks";
 import { use_computer } from "./use_computer";
-import { v0_code_generation } from "./v0_code_generation";
 import { create_video } from "./video";
 import { get_weather } from "./weather";
 import { web_search } from "./web_search";
@@ -129,7 +128,6 @@ const functionDefinitions: ApiToolDefinition[] = [
   update_task,
   capture_screenshot,
   create_speech,
-  v0_code_generation,
   discover_capabilities,
   set_goal,
   complete_goal,

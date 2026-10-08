@@ -99,7 +99,6 @@ export const PROVIDER_PLATFORM_ENV_KEYS: Record<string, PlatformEnvKeyGroups> = 
   jev: single("TYPESAFE_API_KEY"),
   together: single("TOGETHER_AI_API_KEY"),
   upstage: single("UPSTAGE_API_KEY"),
-  v0: single("V0_API_KEY"),
   vercel: single("VERCEL_AI_GATEWAY_API_KEY"),
   "vercel-gateway": single("VERCEL_AI_GATEWAY_API_KEY"),
   workers: EMPTY_GROUPS,
