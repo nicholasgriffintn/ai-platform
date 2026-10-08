@@ -2,6 +2,7 @@ import {
   createMcpConnection,
   deleteMcpConnection,
   listMcpConnections,
+  startMcpOAuthConnection,
   useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -21,5 +22,6 @@ export function useMcpConnections(enabled = true) {
     }),
     create: useMutation({ mutationFn: createMcpConnection, onSuccess: refresh, gcTime: 0 }),
     remove: useMutation({ mutationFn: deleteMcpConnection, onSuccess: refresh }),
+    startSignIn: useMutation({ mutationFn: startMcpOAuthConnection, gcTime: 0 }),
   };
 }

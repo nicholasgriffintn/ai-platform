@@ -12,12 +12,16 @@ import {
   mcpConnectionInputSchema,
   mcpConnectionSchema,
   mcpConnectionListSchema,
+  mcpOAuthCallbackQuerySchema,
+  mcpOAuthStartInputSchema,
+  mcpOAuthStartResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 import z from "zod/v4";
 
+import { getServiceContext } from "~/infrastructure/context/serviceContext";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { runFunctionWithOutput } from "~/modules/functions/application/run-with-output";
@@ -26,6 +30,11 @@ import {
   deleteMcpConnection,
   listMcpConnections,
 } from "~/modules/tools/application/mcp-connections";
+import {
+  completeMcpOAuthConnection,
+  mcpOAuthReturnUrl,
+  startMcpOAuthConnection,
+} from "~/modules/tools/application/mcp-oauth-connections";
 import {
   listModelToolConfigurations,
   saveModelToolConfiguration,
@@ -66,6 +75,40 @@ addRoute(app, "delete", "/mcp/connections/:connectionId", {
 });
 
 const routeLogger = createRouteLogger("tools");
+
+addRoute(app, "post", "/mcp/oauth/start", {
+  auth: true,
+  tags: ["tools"],
+  cache: "no-store",
+  summary: "Start signing in to an MCP server",
+  bodySchema: mcpOAuthStartInputSchema,
+  responses: {
+    200: { description: "Where to send the browser", schema: mcpOAuthStartResponseSchema },
+  },
+  handler: ({ serviceContext, body }) => startMcpOAuthConnection(serviceContext, body),
+});
+
+addRoute(app, "get", "/mcp/oauth/callback", {
+  tags: ["tools"],
+  cache: "no-store",
+  summary: "Finish signing in to an MCP server",
+  querySchema: mcpOAuthCallbackQuerySchema,
+  responses: { 302: { description: "Back to Polychat" } },
+  handler: ({ raw }) =>
+    (async (c: Context) => {
+      const query = mcpOAuthCallbackQuerySchema.parse(c.req.query());
+      const serviceContext = getServiceContext(c);
+      let connected = false;
+
+      try {
+        connected = (await completeMcpOAuthConnection(serviceContext, query)).connected;
+      } catch (error) {
+        routeLogger.warn("MCP sign-in could not be completed", { error });
+      }
+
+      return c.redirect(mcpOAuthReturnUrl(serviceContext, connected ? "connected" : "failed"));
+    })(raw),
+});
 
 app.use("/*", (c, next) => {
   routeLogger.info(`Processing tools route: ${c.req.path}`);

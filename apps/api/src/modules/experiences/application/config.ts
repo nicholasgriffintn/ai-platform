@@ -188,7 +188,8 @@ export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
     capability: "supportsMcp",
     category: "Integrations",
     command: "mcp",
-    description: "Let supported models use configured remote MCP servers.",
+    description:
+      "Let models use your configured remote MCP servers. OpenAI models can use OpenAI's hosted MCP tool, and every other model goes through Polychat's gateway.",
     id: "mcp",
     label: "MCP",
     requiresConfiguration: true,

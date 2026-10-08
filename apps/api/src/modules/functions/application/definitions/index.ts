@@ -25,6 +25,7 @@ import { ask_user, request_approval } from "./human_in_the_loop";
 import { create_image } from "./image";
 import { list_saved_messages } from "./list_saved_messages";
 import { load_skill } from "./load_skill";
+import { mcp_call_tool, mcp_list_tools } from "./mcp_gateway";
 import { search_memories, store_memory, read_memory_document } from "./memory";
 import { messageParent } from "./message-parent";
 import { create_music } from "./music";
@@ -94,6 +95,8 @@ const descriptors: FunctionToolDescriptor[] = [
   extract_content,
   search_memories,
   search_conversations,
+  mcp_list_tools,
+  mcp_call_tool,
   read_memory_document,
   store_memory,
   analyse_article,

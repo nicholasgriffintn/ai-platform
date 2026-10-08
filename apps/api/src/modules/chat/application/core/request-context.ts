@@ -83,6 +83,7 @@ export function buildToolRequestContext(params: {
       date: new Date().toISOString().slice(0, 10),
       approved_tools: chatOptions.approved_tools ?? [],
       enabled_tools: chatOptions.enabled_tools ?? [],
+      tool_options: chatOptions.tool_options,
       tool_permissions_map: buildToolPermissionsMap(chatOptions.tools),
       require_approval_for: chatOptions.require_approval_for,
       denied_tools: chatOptions.denied_tools,

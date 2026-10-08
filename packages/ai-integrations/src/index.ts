@@ -97,3 +97,22 @@ export {
   type ConfiguredComposioToolkit,
 } from "@ngriffin_uk/polychat-library-composio";
 export { normaliseConnectorKnowledge, type ConnectorKnowledgeDocument } from "./knowledge.js";
+export { MCP_PROTOCOL_VERSION, type McpTool, type McpToolCallResult } from "./mcp/contracts.js";
+export { McpRequestError, type McpFailureCode } from "./mcp/errors.js";
+export { McpHttpClient, type McpHttpClientOptions } from "./mcp/McpHttpClient.js";
+export { formatMcpToolResult, type FormattedMcpToolResult } from "./mcp/results.js";
+export { parseMcpServerUrl } from "./mcp/server-url.js";
+export {
+  buildMcpAuthorizationUrl,
+  exchangeMcpAuthorizationCode,
+  refreshMcpAccessToken,
+  registerMcpOAuthClient,
+} from "./mcp/oauth/client.js";
+export { discoverMcpAuthorization } from "./mcp/oauth/discovery.js";
+export {
+  type McpAuthorizationDiscovery,
+  type McpAuthorizationServer,
+  type McpOAuthClient,
+  type McpOAuthTokens,
+} from "./mcp/oauth/metadata.js";
+export { createPkcePair, type PkcePair } from "./mcp/oauth/pkce.js";
