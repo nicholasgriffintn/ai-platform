@@ -279,7 +279,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -302,7 +303,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -314,7 +316,18 @@
         "maxTokens": 128000,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "October 7, 2026",
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
+        }
       }
     },
     "claude-haiku-5-5-global": {
@@ -336,7 +349,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -359,7 +373,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -382,7 +397,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -404,7 +420,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     }

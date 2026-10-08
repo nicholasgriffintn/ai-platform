@@ -1,6 +1,7 @@
 import {
   resolveAdaptiveThinkingEffort,
   shouldEnableProviderThinking,
+  supportsAdaptiveThinkingEffort,
   usesAdaptiveThinkingApi,
   usesBudgetThinkingApi,
 } from "@ngriffin_uk/polychat-ai-models";
@@ -49,6 +50,20 @@ export function buildBedrockReasoningRequest(
         ...(effort ? { output_config: { effort } } : {}),
       },
     };
+  }
+
+  if (!usesBudgetThinkingApi(modelConfig) && supportsAdaptiveThinkingEffort(modelConfig)) {
+    const effort = resolveAdaptiveThinkingEffort(modelConfig, params.reasoning_effort);
+
+    if (effort) {
+      return {
+        allowsSampling: false,
+        additionalModelRequestFields: {
+          thinking: { type: "adaptive" },
+          output_config: { effort },
+        },
+      };
+    }
   }
 
   if (!usesBudgetThinkingApi(modelConfig)) {

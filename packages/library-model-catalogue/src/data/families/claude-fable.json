@@ -56,7 +56,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -75,7 +76,8 @@
             "high",
             "max"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "none",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -93,7 +95,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -111,7 +114,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -231,7 +235,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     }
