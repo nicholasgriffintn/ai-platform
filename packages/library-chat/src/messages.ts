@@ -515,6 +515,7 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
     language: string;
     title: string | undefined;
     display: "panel" | "inline" | undefined;
+    mode: "edit" | undefined;
     content: string;
     placeholder: string;
     isOpen: boolean;
@@ -614,6 +615,7 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
           ? displayAttribute
           : undefined;
 
+      const mode = getAttributeValue("mode")?.toLowerCase() === "edit" ? "edit" : undefined;
       const placeholder = `[[ARTIFACT:${identifier}]]`;
 
       artifactReplacements.push({ matched, placeholder });
@@ -624,6 +626,7 @@ export const formattedMessageContent = (role: Message["role"], originalContent: 
         language,
         title,
         display,
+        mode,
         content: artifactContent,
         placeholder,
         isOpen: isOpen,

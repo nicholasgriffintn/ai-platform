@@ -16,6 +16,7 @@ export * from "./Capabilities/useCapabilityLibraryController.js";
 export * from "./Chat/ChatSidebar.js";
 export * from "./Connectors/ConnectorApiKeyModal.js";
 export * from "./Connectors/ConnectorSetupDialogs.js";
+export * from "./Content/ArtifactDataProvider.js";
 export * from "./Content/CapabilityDiscoveryView.js";
 export * from "./Content/CopyButton.js";
 export * from "./Content/ResponseRenderer.js";

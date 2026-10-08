@@ -7,6 +7,7 @@ import { nonEmptyToolCallsOrNull } from "@ngriffin_uk/polychat-utility-server/to
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { Guardrails } from "~/infrastructure/providers/capabilities/guardrails";
+import { expandTurnArtifactEdits } from "~/modules/chat/application/agent/artifact-edit-expansion";
 import { formatAssistantMessage } from "~/modules/chat/application/messages/assistant-format";
 import { buildMessageParts } from "~/modules/chat/application/messages/parts";
 import type { ChatEventSink } from "~/modules/chat/application/streaming/emitter";
@@ -80,8 +81,14 @@ export async function finaliseAssistantTurn(
   const { turn, sink, env, model, completionId, context } = params;
 
   const guardrailResult = await validateOutput(params);
+  const editedTurn = guardrailResult.passed
+    ? await expandTurnArtifactEdits({
+        turn,
+        loadHistory: () => params.conversationManager.get(completionId),
+      })
+    : { turn, changed: false };
   const visibleTurn = guardrailResult.passed
-    ? turn
+    ? editedTurn.turn
     : {
         ...turn,
         content: "Response blocked by safety checks.",
@@ -190,7 +197,7 @@ export async function finaliseAssistantTurn(
     platform: message.platform,
     provenance: params.provenance,
     nonce: generateId(),
-    ...(guardrailResult.passed ? {} : { content: visibleTurn.content }),
+    ...(!guardrailResult.passed || editedTurn.changed ? { content: visibleTurn.content } : {}),
     post_processing: {
       guardrails: assistantMessage.guardrails,
     },

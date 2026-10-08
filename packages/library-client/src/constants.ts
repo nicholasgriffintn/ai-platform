@@ -121,6 +121,8 @@ const SCRIPT_SRC = [
   "https://appleid.cdn-apple.com",
   "https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/recharts/2.15.0/Recharts.min.js",
   "https://unpkg.com/react@18/umd/react.development.js",
   "https://unpkg.com/react-dom@18/umd/react-dom.development.js",
   "https://unpkg.com/@strudel/embed@latest",

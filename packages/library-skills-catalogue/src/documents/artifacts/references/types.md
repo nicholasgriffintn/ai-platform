@@ -33,10 +33,35 @@ Add `display="inline"` to render it directly in the chat thread as a preview, wi
 
 **`application/vnd.react`** — an interactive React component, when interaction is the point and plain HTML cannot express it.
 
-- React 19 and ReactDOM are available as globals. Import hooks normally: `import { useState } from "react"`.
-- **Nothing else is available.** No Tailwind, no lucide-react, no recharts, no shadcn/ui, no utility libraries. Style with inline styles, a `<style>` element, or a companion `text/css` artifact.
+- React 18 is available. Import hooks normally: `import { useState } from "react"`. TypeScript syntax is allowed and stripped.
+- `recharts` is available for charts: `import { LineChart, Line, XAxis, YAxis, Tooltip } from "recharts"`.
+- **Nothing else is available.** No Tailwind, no lucide-react, no shadcn/ui, no utility libraries. Any other import fails to render. Style with inline styles, a `<style>` element, or a companion `text/css` artifact.
 - The component takes no required props and must be the default export.
 - If any of that is a problem, write plain `text/html` instead — it is less machinery and fails less often.
+
+### Live data
+
+A React artifact can show live data from the user's connected tools instead of a snapshot. Use it when the artifact is a view the user will open again: a dashboard, a tracker, a list of open items. Never paste values you fetched earlier into the code when a live read would do; a pasted number is stale the next time the page opens.
+
+Declare every read at the very top of the artifact, before the code, in a `<bindings>` block holding a JSON array:
+
+```text
+<artifact identifier="devin-sessions" type="application/vnd.react" title="Devin sessions">
+<bindings>[{"id":"sessions","provider":"devin","operation":"list_sessions","args":{"organizationId":"org_123"},"label":"Open sessions"}]</bindings>
+import { usePolychatData } from "@polychat/data";
+
+export default function Sessions() {
+  const { data, error, loading, refetch } = usePolychatData("sessions");
+  ...
+}
+</artifact>
+```
+
+- `provider` and `operation` are a connected connector and one of its **read** operations, named exactly as `use_recipe_connector` names them. Operations that send, create, update or delete are refused.
+- `args` are the operation's arguments. Up to eight bindings per artifact.
+- `usePolychatData(id)` returns `{ data, error, loading, refetch }`. Always render a loading state and an error state, and write defensively against the response shape.
+- `refetch(args)` re-runs the read with new values for **arguments you declared**. It cannot add new arguments, and it should never run in an effect that fires every render.
+- Reads are cached for a minute and rate-limited per artifact. Live data only loads inside the conversation that made the artifact.
 
 **`text/css`** — a stylesheet companion to an HTML or React artifact in the same message. The two are combined when rendered. This is the one legitimate reason to emit two artifacts at once.
 

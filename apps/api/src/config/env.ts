@@ -4,6 +4,7 @@ import type {
   D1Database,
   KVNamespace,
   Queue,
+  RateLimit,
   Vectorize,
   SendEmail,
 } from "@cloudflare/workers-types";
@@ -183,8 +184,8 @@ export type IEnv = {
   SES_EMAIL_FROM?: string;
   HCAPTCHA_SECRET_KEY?: string;
   HCAPTCHA_SITE_KEY?: string;
-  FREE_RATE_LIMITER?: unknown;
-  PRO_RATE_LIMITER?: unknown;
+  FREE_RATE_LIMITER?: RateLimit;
+  PRO_RATE_LIMITER?: RateLimit;
   ENV?: string;
   EMBEDDINGS_OUTPUT_BUCKET_OWNER?: string;
   EMBEDDINGS_OUTPUT_BUCKET?: string;
