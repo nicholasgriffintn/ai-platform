@@ -1,5 +1,9 @@
 {
   "defaults": {
+    "dataRetention": {
+      "maxDays": 55,
+      "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
+    },
     "supportsToolCalls": true,
     "supportsAttachments": true,
     "supportsTemperature": true

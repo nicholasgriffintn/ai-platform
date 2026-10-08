@@ -20,6 +20,7 @@ import { Outlet, isRouteErrorResponse } from "react-router";
 
 import { AnalyticsBootstrap } from "~/components/Core/AnalyticsBootstrap";
 import { AppShell } from "~/components/Core/AppShell";
+import { ClientUpdateWatcher } from "~/components/Core/ClientUpdateWatcher";
 import { ServiceWorkerRegistration } from "~/components/Core/ServiceWorkerRegistration";
 import { WebShellHost } from "~/components/Core/WebShellHost";
 import { CaptchaProvider } from "~/components/HCaptcha/CaptchaProvider";
@@ -61,6 +62,7 @@ export default function Root() {
             <AnalyticsBootstrap />
             <Outlet />
             <ServiceWorkerRegistration />
+            <ClientUpdateWatcher />
             <ThemedToaster />
           </CaptchaProvider>
         </AppInitializer>

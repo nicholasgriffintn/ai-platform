@@ -1,5 +1,9 @@
 {
   "defaults": {
+    "dataRetention": {
+      "zeroRetention": "on_request",
+      "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+    },
     "supportsToolCalls": true,
     "supportsTemperature": true
   },
