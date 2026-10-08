@@ -34,6 +34,7 @@ import {
   EMPTY_MODEL_CONFIG,
   getAvailableModels,
   getModelByReference,
+  isPartialRunMessageId,
 } from "@ngriffin_uk/polychat-schemas";
 import type { ChatMessageSelection } from "@ngriffin_uk/polychat-schemas";
 import { Ghost, Loader2 } from "lucide-react";
@@ -301,6 +302,8 @@ export const MessageList = ({
                   goalMarker,
                   goalStarted,
                 }) => {
+                  const isPartialMessage = isPartialRunMessageId(message.id);
+
                   return (
                     <div key={message.id || `message-${index}`} className="pb-4">
                       {goalMarker ? (
@@ -310,7 +313,9 @@ export const MessageList = ({
                       ) : (
                         <ChatMessage
                           conversationId={currentConversationId}
-                          canSubmitFeedback={Boolean(conversation && !conversation.isLocalOnly)}
+                          canSubmitFeedback={
+                            Boolean(conversation && !conversation.isLocalOnly) && !isPartialMessage
+                          }
                           message={message}
                           isTemporary={isTemporary}
                           isGenerating={index === generatingAssistantMessageIndex}
@@ -323,9 +328,17 @@ export const MessageList = ({
                           onConnectorApproval={onConnectorApproval}
                           onArtifactOpen={onArtifactOpen}
                           isSharedView={isSharedView}
-                          onRetry={(messageId) => void retryMessage(messageId)}
+                          onRetry={
+                            isPartialMessage
+                              ? undefined
+                              : (messageId) => void retryMessage(messageId)
+                          }
                           isRetrying={streamStarted}
-                          onEdit={message.id ? () => startEditingMessage(message.id) : undefined}
+                          onEdit={
+                            message.id && !isPartialMessage
+                              ? () => startEditingMessage(message.id)
+                              : undefined
+                          }
                           isEditing={editingMessageId === message.id}
                           onSaveEdit={(newContent) => {
                             if (message.id) {
@@ -334,11 +347,11 @@ export const MessageList = ({
                             }
                           }}
                           onCancelEdit={stopEditingMessage}
-                          onStartThread={onStartThread}
+                          onStartThread={isPartialMessage ? undefined : onStartThread}
                           isStartingThread={isStartingThread}
                           isSaved={savedMessages.savedIds.has(message.id)}
                           onToggleSaved={
-                            currentConversationId
+                            currentConversationId && !isPartialMessage
                               ? (messageId, isSaved) =>
                                   savedMessages.toggle(currentConversationId, messageId, isSaved)
                               : undefined

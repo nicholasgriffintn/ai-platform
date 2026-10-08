@@ -550,6 +550,47 @@ describe("ChatOrchestrator", () => {
         });
       });
 
+      it("streams detached stored runs into run checkpoints instead of buffering silently", async () => {
+        const checkpointPartialContent = vi.fn(async () => true);
+
+        mockAcceptChatRun.mockResolvedValue({
+          receipt: { duplicate: false, run: { id: "run-1", attempt: 1 } },
+          run: { id: "run-1", attempt: 1 },
+          recordProvenance: vi.fn(async () => undefined),
+          recordContext: vi.fn(async () => undefined),
+          recordRetry: vi.fn(async () => undefined),
+          complete: vi.fn(async () => undefined),
+          fail: vi.fn(async () => undefined),
+          isCancellationRequested: vi.fn(async () => false),
+          checkpointPartialContent,
+        });
+        mockGetAIResponse.mockResolvedValue(new ReadableStream());
+        mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
+        mockConversationManager.add.mockResolvedValue(undefined);
+
+        const result = await orchestrator.process(mockOptions);
+
+        expect(mockGetAIResponse).toHaveBeenCalledWith(expect.objectContaining({ stream: true }));
+        expect(checkpointPartialContent).toHaveBeenCalledWith("Hello");
+        expect(result).toMatchObject({
+          response: expect.objectContaining({ response: "Hello" }),
+          runReceipt: expect.objectContaining({ duplicate: false }),
+        });
+      });
+
+      it("keeps buffering detached runs that have no run lifecycle", async () => {
+        mockGetAIResponse.mockResolvedValue({
+          response: "Buffered answer",
+          usage: { total_tokens: 10 },
+        });
+        mockGuardrails.validateOutput.mockResolvedValue({ isValid: true });
+        mockConversationManager.add.mockResolvedValue(undefined);
+
+        await orchestrator.process(mockOptions);
+
+        expect(mockGetAIResponse).toHaveBeenCalledWith(expect.objectContaining({ stream: false }));
+      });
+
       it("should preserve approved tools in multi-model streaming", async () => {
         const multiModelConfig = [{ model: "model-1" }, { model: "model-2" }];
 

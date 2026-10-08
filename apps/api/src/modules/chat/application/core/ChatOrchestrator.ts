@@ -13,6 +13,7 @@ import {
   findAcceptedChatRunCommand,
   type ChatRunLifecycle,
 } from "~/modules/chat-runs/application/lifecycle";
+import { createPartialCheckpointSink } from "~/modules/chat-runs/application/partial-checkpoint";
 import { runAgentLoop } from "~/modules/chat/application/agent/agent-loop";
 import { createGoalFinishGate } from "~/modules/chat/application/agent/goal-gate";
 import {
@@ -34,6 +35,7 @@ import {
   RequestPreparer,
   type PreparedRequest,
 } from "~/modules/chat/application/preparation/RequestPreparer";
+import { DISCARDING_EVENT_SINK } from "~/modules/chat/application/streaming/emitter";
 import { watchTurnCancellation } from "~/modules/chat/application/streaming/turn-cancellation";
 import { ValidationPipeline } from "~/modules/chat/application/validation/ValidationPipeline";
 import { applyTierReasoningEffort } from "~/modules/chat/domain/tier-reasoning";
@@ -404,7 +406,8 @@ export class ChatOrchestrator {
         preparedMessages.at(-1)?.id ?? `${chatOptions.completion_id}:${preparedMessages.length}`,
       conversationManager,
       toolRequestContext,
-      transport: stream ? createStreamingTurnTransport() : createBufferedTurnTransport(),
+      transport:
+        stream || runLifecycle ? createStreamingTurnTransport() : createBufferedTurnTransport(),
       maxSteps: resolveTurnStepBudget(chatOptions, currentMode, {
         hasActiveGoal: Boolean(prepared.activeGoal),
       }),
@@ -475,8 +478,18 @@ export class ChatOrchestrator {
         : undefined,
     });
 
+    const detachedProgressSink = runLifecycle
+      ? createPartialCheckpointSink(DISCARDING_EVENT_SINK, (content) =>
+          runLifecycle.checkpointPartialContent(content),
+        )
+      : undefined;
+
     try {
-      runResult = await runAgentLoop({ ...runParams, shouldStop: stopSignal.shouldStop });
+      runResult = await runAgentLoop({
+        ...runParams,
+        shouldStop: stopSignal.shouldStop,
+        ...(detachedProgressSink ? { sink: detachedProgressSink } : {}),
+      });
       await runLifecycle?.complete(runResult);
 
       try {

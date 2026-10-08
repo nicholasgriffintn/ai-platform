@@ -31,6 +31,7 @@ function createContext(run: ChatRun | null, userId = 7) {
       conversationRuns: {
         getById: vi.fn().mockResolvedValue(run),
         getEventCursor: vi.fn().mockResolvedValue(4),
+        getPartialContent: vi.fn().mockResolvedValue(null),
       },
       messages: {
         getRunMessages: vi.fn().mockResolvedValue([
@@ -121,5 +122,45 @@ describe("handleGetChatRun", () => {
     ).toBeLessThan(
       vi.mocked(context.repositories.conversationRuns.getById).mock.invocationCallOrder[0] ?? 0,
     );
+  });
+
+  it("surfaces checkpointed tokens as a transient message while the run is live", async () => {
+    const context = createContext(personalRun);
+
+    vi.mocked(context.repositories.conversationRuns.getPartialContent).mockResolvedValue(
+      "Hello stream",
+    );
+
+    await expect(handleGetChatRunSnapshot(context, personalRun.id)).resolves.toMatchObject({
+      messages: [
+        expect.objectContaining({ id: "assistant-1" }),
+        expect.objectContaining({
+          id: "partial:run-1",
+          role: "assistant",
+          content: "Hello stream",
+          status: "in_progress",
+          run_id: "run-1",
+        }),
+      ],
+    });
+  });
+
+  it("omits the transient message once the run settles or nothing is checkpointed", async () => {
+    const settledContext = createContext({ ...personalRun, status: "succeeded" });
+
+    vi.mocked(settledContext.repositories.conversationRuns.getPartialContent).mockResolvedValue(
+      "stale tokens",
+    );
+
+    await expect(handleGetChatRun(settledContext, personalRun.id)).resolves.toMatchObject({
+      messages: [expect.objectContaining({ id: "assistant-1" })],
+    });
+
+    const emptyContext = createContext(personalRun);
+
+    await expect(handleGetChatRun(emptyContext, personalRun.id)).resolves.toMatchObject({
+      messages: [expect.objectContaining({ id: "assistant-1" })],
+    });
+    expect(emptyContext.repositories.messages.getRunMessages).toHaveBeenCalledOnce();
   });
 });
