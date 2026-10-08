@@ -326,6 +326,7 @@
       "model": "pixtral/pixtral-12b",
       "matchingModel": "mistral/pixtral-12b",
       "overrides": {
+        "maxTokens": 128000,
         "lastUpdated": "September 1, 2024",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00015,
@@ -333,7 +334,8 @@
       },
       "unset": [
         "reliability",
-        "artificialAnalysis"
+        "artificialAnalysis",
+        "strengths"
       ]
     },
     "mistral/ministral-3b": {
@@ -706,10 +708,7 @@
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
         "supportsAttachments": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "anthropic/claude-opus-4": {
       "model": "claude-opus/claude-opus-4",
@@ -4962,10 +4961,7 @@
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.004,
         "supportsAttachments": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "quiverai/arrow-1.1": {
       "model": "o/arrow-1-1",
@@ -5030,10 +5026,7 @@
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00125,
         "supportsAttachments": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "alibaba/wan-v2.7-r2v": {
       "model": "o/wan-v2-7-reference-to-video",
@@ -8000,6 +7993,37 @@
       "overrides": {
         "lastUpdated": "October 6, 2026",
         "supportsToolCalls": false
+      }
+    },
+    "anthropic/claude-haiku-5.5": {
+      "model": "claude-haiku/claude-haiku-5-5",
+      "matchingModel": "anthropic/claude-haiku-5.5",
+      "overrides": {
+        "lastUpdated": "October 7, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "stealth/glyph-cluster": {
+      "model": "vercel/stealth/glyph-cluster/glyph-cluster",
+      "matchingModel": "stealth/glyph-cluster",
+      "overrides": {
+        "lastUpdated": "October 7, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
       }
     }
   }

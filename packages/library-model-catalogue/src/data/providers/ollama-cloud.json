@@ -405,6 +405,18 @@
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": true
       }
+    },
+    "mistral-large-4": {
+      "model": "mistral-large/mistral-large-4",
+      "matchingModel": "mistral-large-4",
+      "overrides": {
+        "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
+        "contextWindow": 1048576,
+        "lastUpdated": "October 6, 2026",
+        "costPer1kInputTokens": 0.00136,
+        "costPer1kOutputTokens": 0.00418,
+        "supportsAttachments": true
+      }
     }
   }
 }
