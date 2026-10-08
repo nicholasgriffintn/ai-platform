@@ -127,7 +127,8 @@
             "max"
           ],
           "defaultEffort": "high"
-        }
+        },
+        "isFeatured": true
       }
     },
     "gpt-oss-20b": {
@@ -173,7 +174,8 @@
         "lastUpdated": "March 15, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.003,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "isFeatured": true
       }
     },
     "qwen-image": {
@@ -193,7 +195,8 @@
         "lastUpdated": "March 1, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.002,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "isFeatured": true
       }
     },
     "qwen3-embedding-8b": {
@@ -283,7 +286,8 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     }
   }

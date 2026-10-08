@@ -38,7 +38,8 @@
         "knowledgeCutoffDate": "January 1, 2025",
         "lastUpdated": "February 24, 2026",
         "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.00075
+        "costPer1kOutputTokens": 0.00075,
+        "isFeatured": true
       }
     },
     "mercury-edit-2": {
@@ -67,7 +68,8 @@
             "high"
           ],
           "defaultEffort": "low"
-        }
+        },
+        "isFeatured": true
       }
     }
   }

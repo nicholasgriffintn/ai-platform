@@ -218,7 +218,8 @@
             "high"
           ],
           "defaultEffort": "minimal"
-        }
+        },
+        "isFeatured": true
       }
     },
     "gemini-3.1-pro-preview": {
@@ -277,7 +278,8 @@
             "high"
           ],
           "defaultEffort": "minimal"
-        }
+        },
+        "isFeatured": true
       }
     },
     "gemini-3.5-flash-lite": {
@@ -401,7 +403,8 @@
         "maxTokens": 65536,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
-        "costPer1kOutputTokens": 0.00375
+        "costPer1kOutputTokens": 0.00375,
+        "isFeatured": true
       },
       "unset": [
         "knowledgeCutoffDate"

@@ -196,7 +196,7 @@
         "reliability": 4,
         "speed": 5,
         "multimodal": true,
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "October 15, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -458,7 +458,7 @@
       "model": "claude-sonnet/claude-sonnet-5",
       "matchingModel": "claude-sonnet-5",
       "overrides": {
-        "isFeatured": true,
+        "isFeatured": false,
         "releaseDate": "June 29, 2026",
         "lastUpdated": "June 30, 2026",
         "dataRetention": {
@@ -491,7 +491,7 @@
       "model": "claude-opus/claude-opus-5",
       "matchingModel": "claude-opus-5",
       "overrides": {
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "July 24, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -550,7 +550,8 @@
           "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
         },
         "costPer1kInputTokens": 0.004,
-        "costPer1kOutputTokens": 0.02
+        "costPer1kOutputTokens": 0.02,
+        "isFeatured": true
       }
     },
     "claude-sonnet-5-5": {
@@ -564,7 +565,8 @@
           "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
         },
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01
+        "costPer1kOutputTokens": 0.01,
+        "isFeatured": true
       }
     },
     "claude-haiku-5-5": {
@@ -578,7 +580,8 @@
           "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
         },
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0005
+        "costPer1kOutputTokens": 0.0005,
+        "isFeatured": true
       }
     }
   }

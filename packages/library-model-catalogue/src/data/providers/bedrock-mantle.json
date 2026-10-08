@@ -182,7 +182,8 @@
           "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
         },
         "costPer1kInputTokens": 0.011,
-        "costPer1kOutputTokens": 0.055
+        "costPer1kOutputTokens": 0.055,
+        "isFeatured": true
       }
     },
     "google.gemma-4-26b-a4b": {
@@ -289,7 +290,8 @@
           "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
         },
         "costPer1kInputTokens": 0.00011,
-        "costPer1kOutputTokens": 0.00055
+        "costPer1kOutputTokens": 0.00055,
+        "isFeatured": true
       }
     },
     "openai.gpt-6-sol": {
@@ -315,7 +317,8 @@
           "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
         },
         "costPer1kInputTokens": 0.0022,
-        "costPer1kOutputTokens": 0.011
+        "costPer1kOutputTokens": 0.011,
+        "isFeatured": true
       }
     }
   }

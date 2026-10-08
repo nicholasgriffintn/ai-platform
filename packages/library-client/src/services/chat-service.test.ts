@@ -1049,6 +1049,35 @@ describe("ChatService streaming", () => {
     expect(body.max_steps).toBeUndefined();
   });
 
+  it("sends tools approved by an approval reply on an ordinary request", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      createSseResponse([data("[DONE]")]),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const service = new ChatService(async () => ({}));
+
+    await service.streamChatCompletions({
+      allowTools: true,
+      chatSettings: {},
+      completionId: "conversation-1",
+      endpoint: "/chat/completions",
+      messages: [{ role: "user", content: "Approve: store memory" } as Message],
+      mode: "chat",
+      model: "gpt-5",
+      onProgress: () => {},
+      onStateChange: () => {},
+      requestOptions: { approved_tools: ["store_memory"] },
+      signal: new AbortController().signal,
+    });
+
+    const [, request] = fetchMock.mock.calls[0];
+    const body = JSON.parse(String(request?.body));
+
+    expect(body.approved_tools).toEqual(["store_memory"]);
+  });
+
   it("drops invalid persisted chat compaction settings from chat requests", async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
       createSseResponse([data("[DONE]")]),

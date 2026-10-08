@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { type RefObject, useEffect, useState } from "react";
 
 import type { ArtifactProps } from "../artifact";
+import { ARTIFACT_SCRIPT_SOURCES } from "./reactArtifactDocument";
 
 export const SVG_SANDBOX_TEMPLATE = `
 <!DOCTYPE html>
@@ -87,7 +88,7 @@ export function useSandboxDocument({
 
 const ARTIFACT_SANDBOX_CSP = [
   "default-src 'none'",
-  "script-src 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",
+  `script-src 'unsafe-inline' ${Object.values(ARTIFACT_SCRIPT_SOURCES).join(" ")}`,
   "style-src 'unsafe-inline'",
   "img-src data: blob:",
   "font-src data:",
@@ -162,10 +163,12 @@ export function SandboxIframe({
   documentContent,
   iframeKey,
   setPreviewError,
+  iframeRef,
 }: {
   documentContent: string | null;
   iframeKey: number;
   setPreviewError: (error: string | null) => void;
+  iframeRef?: RefObject<HTMLIFrameElement | null>;
 }) {
   const handleIframeLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
     try {
@@ -184,6 +187,7 @@ export function SandboxIframe({
 
   return (
     <iframe
+      ref={iframeRef}
       key={iframeKey}
       srcDoc={hardenSandboxDocument(documentContent)}
       className="h-full w-full border-0"

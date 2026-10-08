@@ -2737,7 +2737,8 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "isFeatured": true
       },
       "unset": [
         "supportsResponseFormat"
@@ -6981,7 +6982,8 @@
             "max"
           ],
           "defaultEffort": "low"
-        }
+        },
+        "isFeatured": true
       }
     },
     "moonshotai/kimi-k2.7-code": {
@@ -7409,7 +7411,7 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 943718,
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.00065,
         "costPer1kOutputTokens": 0.015
@@ -7814,7 +7816,7 @@
             "text"
           ]
         },
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -7835,7 +7837,7 @@
       "matchingModel": "google/gemini-3.7-flash",
       "overrides": {
         "maxTokens": 65536,
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
@@ -8964,7 +8966,8 @@
         "lastUpdated": "September 28, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       }
     },
     "apodex/apodex-1.1-mini:free": {
@@ -8995,7 +8998,8 @@
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       }
     },
     "unbiased/pareto-26.10-preview": {
@@ -9052,7 +9056,8 @@
         "lastUpdated": "October 7, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       }
     }
   }

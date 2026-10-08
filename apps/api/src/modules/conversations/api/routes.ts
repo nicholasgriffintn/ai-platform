@@ -3,6 +3,7 @@ import { type Context, Hono, type Next } from "hono";
 import { allowRestrictedPaths } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 
+import { registerArtifactBindingRoutes } from "./artifact-bindings";
 import { registerConversationOrganisationRoutes } from "./chat-organisation";
 import { registerCompletionCreationRoutes } from "./completion-creation";
 import { registerConversationHistoryRoutes } from "./conversation-history";
@@ -25,6 +26,7 @@ registerCompletionCreationRoutes(app);
 registerStoredConversationRoutes(app);
 registerConversationRunRoutes(app);
 registerQueuedMessageRoutes(app);
+registerArtifactBindingRoutes(app);
 registerConversationHistoryRoutes(app);
 registerConversationGoalAndDelegationRoutes(app);
 registerConversationSafetyAndSharingRoutes(app);

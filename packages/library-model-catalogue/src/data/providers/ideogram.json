@@ -73,7 +73,8 @@
             }
           ],
           "reference": "https://developer.ideogram.ai/api-reference/api-reference/generate-v3"
-        }
+        },
+        "isFeatured": true
       }
     }
   }

@@ -289,7 +289,8 @@
         "costPer1kOutputTokens": 0.0005,
         "hostedToolCosts": {
           "live_search": 0.025
-        }
+        },
+        "isFeatured": true
       },
       "unset": [
         "openWeights"
@@ -559,7 +560,8 @@
       "overrides": {
         "lastUpdated": "April 3, 2026",
         "supportsToolCalls": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       }
     },
     "grok-imagine-video": {
@@ -578,7 +580,8 @@
         "releaseDate": "January 28, 2026",
         "lastUpdated": "January 28, 2026",
         "supportsToolCalls": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       }
     },
     "grok-build-0.1": {
@@ -643,7 +646,7 @@
             "text"
           ]
         },
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -676,7 +679,8 @@
       "overrides": {
         "lastUpdated": "September 21, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.006
+        "costPer1kOutputTokens": 0.006,
+        "isFeatured": true
       }
     },
     "grok-imagine-video-1.5-lite": {
@@ -696,7 +700,8 @@
         },
         "lastUpdated": "October 1, 2026",
         "supportsToolCalls": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       }
     }
   }

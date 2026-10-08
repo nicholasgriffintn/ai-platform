@@ -16,12 +16,9 @@ export function useQueuedFollowUps(
   const isAwaitingRemoteConversation = useChatStore((state) =>
     Boolean(conversationId && state.locallyCreatedConversationIds[conversationId]),
   );
-  const enabled =
-    Boolean(conversationId) &&
-    isAuthenticated &&
-    isHosted &&
-    !isAwaitingRemoteConversation &&
-    options.enabled !== false;
+  const canQueue =
+    Boolean(conversationId) && isAuthenticated && isHosted && options.enabled !== false;
+  const canList = canQueue && !isAwaitingRemoteConversation;
   const queryKey = queuedFollowUpsQueryKey(conversationId);
   const requireConversationId = () => {
     if (!conversationId) {
@@ -34,7 +31,7 @@ export function useQueuedFollowUps(
   const query = useQuery<QueuedChatMessage[]>({
     queryKey,
     queryFn: () => apiService.listQueuedChatMessages(requireConversationId()),
-    enabled,
+    enabled: canList,
     retry: false,
     staleTime: 10_000,
   });
@@ -65,7 +62,7 @@ export function useQueuedFollowUps(
   });
 
   return {
-    canQueue: enabled,
+    canQueue,
     queued: query.data ?? [],
     queue,
     remove,

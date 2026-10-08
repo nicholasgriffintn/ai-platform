@@ -449,7 +449,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
           "intelligenceIndex": 53.5,
@@ -827,7 +828,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -845,7 +847,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -871,7 +874,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -889,7 +893,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -907,7 +912,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -925,7 +931,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -997,7 +1004,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     },
@@ -1052,7 +1060,8 @@
             "xhigh",
             "max"
           ],
-          "defaultEffort": "low"
+          "defaultEffort": "low",
+          "thinkingApi": "adaptive"
         }
       }
     }

@@ -13,7 +13,8 @@
         "speed": 3,
         "lastUpdated": "September 11, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "costPer1kOutputTokens": 0,
+        "isFeatured": true
       }
     },
     "k3": {
@@ -30,7 +31,8 @@
         },
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "costPer1kOutputTokens": 0,
+        "isFeatured": true
       }
     },
     "k3-256k": {

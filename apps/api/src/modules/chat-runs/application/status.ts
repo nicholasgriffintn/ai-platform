@@ -1,6 +1,8 @@
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   CHAT_RUN_EVENT_PROTOCOL_VERSION,
+  isTerminalChatRunStatus,
+  partialRunMessageId,
   storedChatMessageResponseSchema,
   type ChatRun,
   type ChatRunCommandReceiptResponse,
@@ -11,9 +13,40 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import type { Message } from "~/types";
 
 import { reconcileInactiveChatRun } from "./recovery";
 import { hydrateChatRunUsage } from "./usage";
+
+async function withRunPartialMessage(
+  context: ServiceContext,
+  run: ChatRun,
+  messages: Message[],
+): Promise<Message[]> {
+  if (isTerminalChatRunStatus(run.status)) {
+    return messages;
+  }
+
+  const partial = await context.repositories.conversationRuns.getPartialContent(
+    run.id,
+    run.attempt,
+  );
+
+  if (!partial?.trim()) {
+    return messages;
+  }
+
+  const partialMessage: Message = {
+    id: partialRunMessageId(run.id),
+    role: "assistant",
+    content: partial,
+    status: "in_progress",
+    run_id: run.id,
+    timestamp: Date.now(),
+  };
+
+  return [...messages, partialMessage];
+}
 
 export async function requireChatRunAccess(
   context: ServiceContext,
@@ -42,7 +75,10 @@ export async function handleGetChatRun(context: ServiceContext, runId: string) {
   const messages = await context.repositories.messages.getRunMessages(run.conversationId, run.id);
   const [hydratedRun] = await hydrateChatRunUsage(context.repositories, [run]);
 
-  return { run: hydratedRun, messages: messages.map(formatStoredMessage) };
+  return {
+    run: hydratedRun,
+    messages: await withRunPartialMessage(context, run, messages.map(formatStoredMessage)),
+  };
 }
 
 export async function handleGetChatRunSnapshot(
@@ -56,14 +92,13 @@ export async function handleGetChatRunSnapshot(
   );
   const [run] = await hydrateChatRunUsage(context.repositories, [authoritativeRun]);
   const messages = await context.repositories.messages.getRunMessages(run.conversationId, run.id);
+  const withPartial = await withRunPartialMessage(context, run, messages.map(formatStoredMessage));
 
   return {
     protocolVersion: CHAT_RUN_EVENT_PROTOCOL_VERSION,
     cursor,
     run,
-    messages: messages.map((message) =>
-      storedChatMessageResponseSchema.parse(formatStoredMessage(message)),
-    ),
+    messages: withPartial.map((message) => storedChatMessageResponseSchema.parse(message)),
   };
 }
 

@@ -21,7 +21,8 @@
         "speed": 5,
         "lastUpdated": "June 10, 2026",
         "costPer1kInputTokens": 0.00035,
-        "costPer1kOutputTokens": 0.00075
+        "costPer1kOutputTokens": 0.00075,
+        "isFeatured": true
       }
     },
     "qwen-3.8-27b": {
@@ -41,7 +42,8 @@
             "high"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     }
   }

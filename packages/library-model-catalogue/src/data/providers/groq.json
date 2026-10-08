@@ -240,7 +240,7 @@
           "tool_use"
         ],
         "speed": 5,
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "October 21, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -328,7 +328,7 @@
       "matchingModel": "groq/compound",
       "overrides": {
         "isFree": true,
-        "isFeatured": true,
+        "isFeatured": false,
         "deprecated": true,
         "deprecationMessage": "Groq Compound is being retired. Use GPT OSS 120B instead.",
         "replacementModel": "groq-openai-gpt-oss-120b",
@@ -470,7 +470,8 @@
             "default"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     },
     "qwen/qwen3.8-27b": {
@@ -497,7 +498,8 @@
             "high"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     }
   }

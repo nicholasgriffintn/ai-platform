@@ -32,6 +32,7 @@ import type {
   UpdateMemoryDocumentInput,
   RecordTeammateFeedbackInput,
   EnqueueChatMessageRequest,
+  ArtifactBindingReadRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { useChatStore } from "./chatStore.js";
@@ -131,6 +132,9 @@ class ApiService {
 
   cancelChatRun = (runId: string, expectedAttempt: number, commandId?: string) =>
     this.chatService.cancelChatRun(runId, expectedAttempt, commandId);
+
+  readArtifactBinding = (conversationId: string, input: ArtifactBindingReadRequest) =>
+    this.chatService.readArtifactBinding(conversationId, input);
 
   listQueuedChatMessages = (conversationId: string) =>
     this.chatService.listQueuedChatMessages(conversationId);

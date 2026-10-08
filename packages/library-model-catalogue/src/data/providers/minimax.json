@@ -39,7 +39,8 @@
         "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012
+        "costPer1kOutputTokens": 0.0012,
+        "isFeatured": true
       }
     },
     "MiniMax-M2.1": {
@@ -83,7 +84,8 @@
         "maxTokens": 131072,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.0024
+        "costPer1kOutputTokens": 0.0024,
+        "isFeatured": true
       }
     },
     "MiniMax-M3": {
@@ -96,7 +98,8 @@
         "lastUpdated": "June 25, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "isFeatured": true
       },
       "unset": [
         "supportsResponseFormat"

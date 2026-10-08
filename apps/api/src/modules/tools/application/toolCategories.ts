@@ -26,7 +26,6 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "next_edit_completion",
     "run_code",
     "run_sandbox_task",
-    "v0_code_generation",
   ],
   Productivity: [
     "configure_recipe",

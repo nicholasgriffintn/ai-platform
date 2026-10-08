@@ -1,4 +1,10 @@
 import type { ArtifactProps } from "../artifact";
+
+export {
+  ArtifactBindingReaderProvider,
+  type ArtifactBindingReader,
+  type ArtifactBindingSource,
+} from "./artifactBindingBridge";
 import { HtmlSandbox } from "./HtmlSandbox";
 import { JavaScriptSandbox } from "./JavaScriptSandbox";
 import { ReactSandbox } from "./ReactSandbox";

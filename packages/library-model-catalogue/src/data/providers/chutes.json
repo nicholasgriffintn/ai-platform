@@ -321,7 +321,8 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
         "supportsToolCalls": false,
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "isFeatured": true
       }
     },
     "mistralai/Devstral-2-123B-Instruct-2512-TEE": {
@@ -1034,7 +1035,8 @@
         "lastUpdated": "July 29, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "isFeatured": true
       }
     },
     "deepseek-ai/DeepSeek-V4-Flash-0731-TEE": {
@@ -1053,7 +1055,8 @@
         "lastUpdated": "August 16, 2026",
         "costPer1kInputTokens": 0.00024,
         "costPer1kOutputTokens": 0.0022,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "isFeatured": true
       }
     }
   }

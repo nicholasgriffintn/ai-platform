@@ -203,7 +203,8 @@
       "matchingModel": "@cf/black-forest-labs/flux-2-klein-4b",
       "overrides": {
         "speed": 4,
-        "inputFormat": "multipart"
+        "inputFormat": "multipart",
+        "isFeatured": true
       },
       "unset": [
         "supportsAttachments",
@@ -719,7 +720,7 @@
           "tool_use"
         ],
         "speed": 3,
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -753,7 +754,8 @@
             "max"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     },
     "@cf/deepseek-ai/deepseek-v4-flash-0731": {
@@ -791,7 +793,8 @@
             "max"
           ],
           "defaultEffort": "high"
-        }
+        },
+        "isFeatured": true
       },
       "unset": [
         "strengths",
@@ -828,7 +831,8 @@
         "maxTokens": 1048576,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044
+        "costPer1kOutputTokens": 0.0044,
+        "isFeatured": true
       }
     },
     "@cf/zai-org/glm-5.3-flash": {
@@ -866,7 +870,8 @@
           "creative"
         ],
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       },
       "unset": [
         "openWeights"

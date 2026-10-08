@@ -24,6 +24,7 @@ import {
   isHiddenToolResultPart,
   resolveToolResultPartDisplay,
 } from "@ngriffin_uk/polychat-library-chat/tool-results";
+import { useConversationScope } from "@ngriffin_uk/polychat-library-react";
 import { File, FileText, Volume2 } from "lucide-react";
 import { Fragment, type ReactNode, memo, useMemo } from "react";
 
@@ -58,9 +59,13 @@ const renderTextContent = (
   ) => void,
   key?: string,
   isGenerating = false,
+  source?: ArtifactProps["source"],
 ): ReactNode => {
   const formatted = formattedMessageContent(role, textContent);
-  const { reasoning, artifacts } = formatted;
+  const { reasoning } = formatted;
+  const artifacts = source
+    ? formatted.artifacts.map((artifact) => ({ ...artifact, source }))
+    : formatted.artifacts;
   const content = processCustomXmlTags(formatted.content);
 
   const hasOpenReasoning = reasoning.some((item) => item.isOpen);
@@ -92,7 +97,19 @@ const renderTextContent = (
         const identifier = identifiers[i];
         const artifact = artifactMap.get(identifier);
 
-        if (artifact) {
+        if (artifact?.mode === "edit") {
+          renderedParts.push(
+            <p
+              key={`artifact-edit-${identifier}-${i}`}
+              className="text-sm text-muted-foreground"
+              role={isGenerating ? "status" : "alert"}
+            >
+              {isGenerating
+                ? `Updating ${artifact.title ?? identifier}…`
+                : `The changes to ${artifact.title ?? identifier} could not be applied. Ask for the full artifact instead.`}
+            </p>,
+          );
+        } else if (artifact) {
           renderedParts.push(
             isInlinePreviewArtifact(artifact) ? (
               <ArtifactInlinePreview
@@ -361,6 +378,15 @@ export const MessageContent = memo((props: MessageContentProps) => {
   const conversationResolvedToolCallIds = useResolvedToolCallIds();
   const { message, isGenerating = false, onArtifactOpen, onToolInteraction } = props;
   const previewIsGenerating = isGenerating || message.status === "in_progress";
+  const { currentConversationId } = useConversationScope();
+  const messageId = message.id;
+  const artifactSource = useMemo(
+    () =>
+      currentConversationId && messageId
+        ? { conversationId: currentConversationId, messageId }
+        : undefined,
+    [currentConversationId, messageId],
+  );
   const content = useMemo(() => {
     const handleArtifactOpen = (
       artifact: ArtifactProps,
@@ -428,6 +454,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
               handleArtifactOpen,
               "content-fallback",
               previewIsGenerating,
+              artifactSource,
             )}
           {messageParts.map((part, index) => {
             if (part.type === "text") {
@@ -440,6 +467,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
                 handleArtifactOpen,
                 `part-text-${index}`,
                 previewIsGenerating,
+                artifactSource,
               );
             }
 
@@ -510,6 +538,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
         handleArtifactOpen,
         undefined,
         previewIsGenerating,
+        artifactSource,
       )
     ) : Array.isArray(message.content) ? (
       <div className="space-y-4">
@@ -527,6 +556,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
               handleArtifactOpen,
               `text-${i}`,
               previewIsGenerating,
+              artifactSource,
             );
           }
 
@@ -625,6 +655,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
       </div>
     ) : null;
   }, [
+    artifactSource,
     conversationResolvedToolCallIds,
     message.role,
     message.content,

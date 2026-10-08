@@ -22,7 +22,8 @@
             }
           ],
           "reference": "https://fal.ai/models/fal-ai/qwen-image"
-        }
+        },
+        "isFeatured": true
       },
       "unset": [
         "supportsToolCalls",

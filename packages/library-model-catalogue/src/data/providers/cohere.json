@@ -190,7 +190,8 @@
         "lastUpdated": "September 9, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "isFeatured": true
       }
     },
     "tiny-aya-earth": {
@@ -213,7 +214,8 @@
       "overrides": {
         "lastUpdated": "February 17, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "costPer1kOutputTokens": 0,
+        "isFeatured": true
       }
     },
     "tiny-aya-water": {

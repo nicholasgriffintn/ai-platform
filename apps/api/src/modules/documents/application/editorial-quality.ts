@@ -4,12 +4,12 @@ import { normaliseDecisionScore } from "@ngriffin_uk/polychat-schemas";
 import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
+import { MAX_GRADED_CHARS } from "~/config/limits";
 import { ai } from "~/infrastructure/ai";
 import type { IEnv, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/documents/editorial-quality" });
 
-export const MAX_GRADED_CHARS = 48_000;
 const TRUNCATION_SUFFIX = "\n... (truncated)";
 
 export const EDITORIAL_DIMENSIONS = [

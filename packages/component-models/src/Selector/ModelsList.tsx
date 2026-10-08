@@ -12,6 +12,7 @@ import {
   AGENT_MODEL_GROUP_KEY,
   getSelectedModelProvider,
   groupModelsByProvider,
+  groupRegionalEntriesByProvider,
   limitModelGroups,
   modelGroupKey,
   partitionDeprecatedModelEntries,
@@ -159,6 +160,11 @@ export function ModelsList({
     () => selectedProviderEntry?.models ?? EMPTY_VISIBLE_MODELS,
     [selectedProviderEntry],
   );
+  const isFeaturedView = selectedProviderEntry?.key === FEATURED_MODEL_GROUP_KEY;
+  const featuredGroups = useMemo(
+    () => (isFeaturedView ? groupRegionalEntriesByProvider(visibleModels) : []),
+    [isFeaturedView, visibleModels],
+  );
   const { active: visibleActiveModels, deprecated: visibleDeprecatedModels } =
     partitionDeprecatedModelEntries(visibleModels);
   const selectedDeprecatedModel = selectedId
@@ -197,6 +203,21 @@ export function ModelsList({
     }
   }
 
+  const prevViewKeyRef = useRef(`${showAuto}:${isSearchActive}:${searchKey}`);
+
+  useEffect(() => {
+    const viewKey = `${showAuto}:${isSearchActive}:${searchKey}`;
+
+    if (prevViewKeyRef.current !== viewKey) {
+      prevViewKeyRef.current = viewKey;
+      const list = modelListRef.current;
+
+      if (list) {
+        list.scrollTop = 0;
+      }
+    }
+  }, [showAuto, isSearchActive, searchKey]);
+
   useEffect(() => {
     if (isSearchActive || !selectedId) {
       return;
@@ -215,6 +236,25 @@ export function ModelsList({
       scrollIntoContainerView(list, selectedModelOption, "center");
     }
   }, [isSearchActive, selectedId, visibleModels]);
+
+  const prevProviderRef = useRef(selectedProvider);
+  const prevSelectedIdRef = useRef(selectedId);
+
+  useEffect(() => {
+    const providerChanged = prevProviderRef.current !== selectedProvider;
+    const selectedChanged = prevSelectedIdRef.current !== selectedId;
+
+    prevProviderRef.current = selectedProvider;
+    prevSelectedIdRef.current = selectedId;
+
+    if (providerChanged && !selectedChanged) {
+      const list = modelListRef.current;
+
+      if (list) {
+        list.scrollTop = 0;
+      }
+    }
+  }, [selectedProvider, selectedId]);
 
   if (!providerEntries.length && !autoContent) {
     return (
@@ -363,6 +403,50 @@ export function ModelsList({
               ) : isSearchActive ? (
                 <div className="space-y-4">
                   {visibleSearchEntries.map((providerEntry) => {
+                    const { active: activeModels, deprecated: deprecatedModels } =
+                      partitionDeprecatedModelEntries(providerEntry.models);
+                    const showDeprecated = showDeprecatedByProvider[providerEntry.key] ?? false;
+
+                    return (
+                      <div key={providerEntry.key} className="space-y-1">
+                        <div className="flex items-center justify-between gap-2 px-1 py-1">
+                          <h5 className="text-xs font-semibold text-muted-foreground uppercase">
+                            {providerEntry.label}
+                          </h5>
+                          <span className="text-xs text-muted-foreground">
+                            {providerEntry.models.length}
+                          </span>
+                        </div>
+                        {activeModels.map(renderModelEntry)}
+                        {deprecatedModels.length > 0 && (
+                          <div className="pt-1">
+                            <button
+                              type="button"
+                              className="w-full rounded-md border border-border px-2 py-1 text-left text-xs text-muted-foreground hover:bg-surface-elevated"
+                              onClick={() =>
+                                setShowDeprecatedByProvider((prev) => ({
+                                  ...prev,
+                                  [providerEntry.key]: !showDeprecated,
+                                }))
+                              }
+                            >
+                              {showDeprecated ? "Hide" : "Show"} deprecated models (
+                              {deprecatedModels.length})
+                            </button>
+                            {showDeprecated && (
+                              <div className="mt-1 space-y-1">
+                                {deprecatedModels.map(renderModelEntry)}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : isFeaturedView ? (
+                <div className="space-y-4">
+                  {featuredGroups.map((providerEntry) => {
                     const { active: activeModels, deprecated: deprecatedModels } =
                       partitionDeprecatedModelEntries(providerEntry.models);
                     const showDeprecated = showDeprecatedByProvider[providerEntry.key] ?? false;

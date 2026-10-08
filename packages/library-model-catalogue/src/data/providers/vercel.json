@@ -2283,26 +2283,6 @@
         "supportsToolCalls": false
       }
     },
-    "vercel/v0-1.0-md": {
-      "model": "vercel/vercel/v0-1.0-md/v0-1-0-md",
-      "matchingModel": "vercel/v0-1.0-md",
-      "overrides": {
-        "lastUpdated": "May 22, 2025",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015,
-        "supportsAttachments": true
-      }
-    },
-    "vercel/v0-1.5-md": {
-      "model": "vercel/vercel/v0-1.5-md/v0-1-5-md",
-      "matchingModel": "vercel/v0-1.5-md",
-      "overrides": {
-        "lastUpdated": "June 9, 2025",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015,
-        "supportsAttachments": true
-      }
-    },
     "voyage/voyage-3-large": {
       "model": "voyage/voyage-3-large",
       "matchingModel": "voyage/voyage-3-large",
@@ -4304,7 +4284,8 @@
       "matchingModel": "bytedance/seedream-5.0-lite",
       "overrides": {
         "lastUpdated": "January 28, 2026",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "isFeatured": true
       }
     },
     "cohere/rerank-v3.5": {
@@ -4366,7 +4347,8 @@
           "creative"
         ],
         "lastUpdated": "June 8, 2026",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "isFeatured": true
       }
     },
     "klingai/kling-v2.5-turbo-i2v": {
@@ -4532,7 +4514,8 @@
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "isFeatured": true
       },
       "unset": [
         "contextComplexity"
@@ -4591,7 +4574,8 @@
       "matchingModel": "recraft/recraft-v4.1-utility-pro",
       "overrides": {
         "lastUpdated": "May 14, 2026",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "isFeatured": true
       }
     },
     "voyage/rerank-2.5": {
@@ -4623,7 +4607,8 @@
       "matchingModel": "xai/grok-imagine-video-1.5-preview",
       "overrides": {
         "lastUpdated": "May 30, 2026",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "isFeatured": true
       }
     },
     "anthropic/claude-fable-5": {
@@ -4651,7 +4636,8 @@
             "max"
           ],
           "defaultEffort": "low"
-        }
+        },
+        "isFeatured": true
       }
     },
     "moonshotai/kimi-k2": {
@@ -5644,19 +5630,6 @@
         "costPer1kOutputTokens": 0.006,
         "supportsAttachments": true
       }
-    },
-    "perplexity/pplx-embed-v1-0.6b": {
-      "model": "v0/embed-v1-0-6b",
-      "matchingModel": "perplexity/pplx-embed-v1-0.6b",
-      "overrides": {
-        "lastUpdated": "February 26, 2026",
-        "supportsToolCalls": false
-      },
-      "unset": [
-        "multimodal",
-        "supportsTemperature",
-        "reasoningConfig"
-      ]
     },
     "perplexity/pplx-embed-v1-4b": {
       "model": "vercel/perplexity/pplx-embed-v1-4b/embed-v1-4b",
@@ -7479,7 +7452,8 @@
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       },
       "unset": [
         "supportsResponseFormat"
@@ -7855,7 +7829,8 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       }
     },
     "openai/gpt-6.1-sol-fast": {
@@ -8014,7 +7989,8 @@
             "max"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     },
     "stealth/glyph-cluster": {

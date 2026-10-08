@@ -54,7 +54,6 @@ import { TheGridProvider } from "../capabilities/chat/providers/the-grid-ai.js";
 import { ThinkingMachinesProvider } from "../capabilities/chat/providers/thinkingmachines.js";
 import { TogetherAiProvider } from "../capabilities/chat/providers/together-ai.js";
 import { UpstageProvider } from "../capabilities/chat/providers/upstage.js";
-import { V0Provider } from "../capabilities/chat/providers/v0.js";
 import { VercelGatewayProvider } from "../capabilities/chat/providers/vercel.js";
 import { WorkersProvider } from "../capabilities/chat/providers/workers.js";
 import { ZaiProvider } from "../capabilities/chat/providers/zai.js";
@@ -228,11 +227,6 @@ function chatProviders(runtime: ProviderRuntime): AiProviderRegistration<AIProvi
       name: "upstage",
       create: () => new UpstageProvider(runtime),
       metadata: { vendor: "Upstage", categories: ["chat"] },
-    },
-    {
-      name: "v0",
-      create: () => new V0Provider(runtime),
-      metadata: { vendor: "Vercel", categories: ["chat"] },
     },
     {
       name: "vercel",

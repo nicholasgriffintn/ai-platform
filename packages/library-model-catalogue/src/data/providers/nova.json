@@ -14,7 +14,8 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "costPer1kReasoningTokens": 0,
-        "supportsDocuments": true
+        "supportsDocuments": true,
+        "isFeatured": true
       },
       "unset": [
         "knowledgeCutoffDate",
@@ -30,7 +31,8 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "costPer1kReasoningTokens": 0,
-        "supportsDocuments": true
+        "supportsDocuments": true,
+        "isFeatured": true
       },
       "unset": [
         "knowledgeCutoffDate",

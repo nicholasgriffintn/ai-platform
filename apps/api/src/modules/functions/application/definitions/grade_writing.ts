@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { MAX_GRADED_CHARS } from "~/modules/documents/application/editorial-quality";
+import { MAX_GRADED_CHARS } from "~/config/limits";
 
 import type { FunctionToolDescriptor } from "./types";
 

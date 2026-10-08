@@ -88,7 +88,8 @@
       "model": "the-grid-ai/bytedance-pro-latest/bytedance-pro-latest",
       "matchingModel": "bytedance-pro-latest",
       "overrides": {
-        "lastUpdated": "July 6, 2026"
+        "lastUpdated": "July 6, 2026",
+        "isFeatured": true
       }
     },
     "claude-opus-latest": {
@@ -134,7 +135,8 @@
       "matchingModel": "gemini-pro-latest",
       "overrides": {
         "lastUpdated": "July 6, 2026",
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "isFeatured": true
       }
     },
     "glm-latest": {
@@ -153,7 +155,8 @@
             "high"
           ],
           "defaultEffort": "low"
-        }
+        },
+        "isFeatured": true
       }
     },
     "gpt-sol-latest": {

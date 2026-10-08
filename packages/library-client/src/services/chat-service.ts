@@ -24,9 +24,12 @@ import {
   chatRunReplayResponseSchema,
   chatRunSnapshotResponseSchema,
   chatRunCommandReceiptSchema,
+  artifactBindingReadResponseSchema,
   conversationGroupSchema,
   queuedChatMessageSchema,
   queuedChatMessagesResponseSchema,
+  type ArtifactBindingReadRequest,
+  type ArtifactBindingReadResponse,
   type ChatCompletionResponseBody,
   type EnqueueChatMessageRequest,
   type QueuedChatMessage,
@@ -132,7 +135,7 @@ export interface StreamChatCompletionsParams {
   onProgress: StreamProgressHandler;
   onStateChange: (state: string, data?: any) => void;
   provider?: string;
-  requestOptions?: ChatRequestOptions;
+  requestOptions?: ChatRequestOptions & { approved_tools?: string[] };
   selectedTools?: string[];
   signal: AbortSignal;
   toolSelectionMode?: ToolSelectionMode;
@@ -686,6 +689,18 @@ export class ChatService {
     return parsed.run;
   }
 
+  async readArtifactBinding(
+    conversationId: string,
+    input: ArtifactBindingReadRequest,
+  ): Promise<ArtifactBindingReadResponse> {
+    const response = await fetchApiOrThrow(
+      `/chat/completions/${encodeURIComponent(conversationId)}/artifact-bindings/read`,
+      { method: "POST", headers: await this.getHeaders(), body: input },
+    );
+
+    return artifactBindingReadResponseSchema.parse(await returnFetchedData<unknown>(response));
+  }
+
   async listQueuedChatMessages(conversationId: string): Promise<QueuedChatMessage[]> {
     const response = await fetchApiOrThrow(
       `/chat/completions/${encodeURIComponent(conversationId)}/queued-messages`,
@@ -831,7 +846,11 @@ export class ChatService {
     const requestEnabledTools = sandboxOptions
       ? normaliseToolIds([...(selectedToolIds ?? []), ...getSandboxTaskToolNames()])
       : selectedToolIds;
-    const requestApprovedTools = sandboxOptions ? getSandboxTaskToolNames() : undefined;
+    const approvedToolIds = normaliseToolIds([
+      ...(sandboxOptions ? getSandboxTaskToolNames() : []),
+      ...(requestOptions?.approved_tools ?? []),
+    ]);
+    const requestApprovedTools = approvedToolIds.length > 0 ? approvedToolIds : undefined;
 
     const {
       enabledTools: settingsEnabledTools,

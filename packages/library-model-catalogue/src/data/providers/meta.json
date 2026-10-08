@@ -84,7 +84,8 @@
             "max"
           ],
           "defaultEffort": "minimal"
-        }
+        },
+        "isFeatured": true
       }
     },
     "muse-spark-1.3-contributor": {
@@ -95,7 +96,8 @@
         "maxTokens": 131072,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0002
+        "costPer1kOutputTokens": 0.0002,
+        "isFeatured": true
       }
     }
   }

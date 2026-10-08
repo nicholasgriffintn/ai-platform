@@ -228,7 +228,8 @@
             "max"
           ],
           "defaultEffort": "high"
-        }
+        },
+        "isFeatured": true
       }
     },
     "glm-5.3": {
@@ -238,7 +239,8 @@
         "contextWindow": 1000000,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044
+        "costPer1kOutputTokens": 0.0044,
+        "isFeatured": true
       }
     },
     "glm-5.3-flash": {
@@ -317,7 +319,8 @@
         "lastUpdated": "September 18, 2026",
         "costPer1kInputTokens": 0.00037,
         "costPer1kOutputTokens": 0.00125,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "isFeatured": true
       }
     },
     "glm-4.6v-flash": {

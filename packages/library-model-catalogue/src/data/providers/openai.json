@@ -2229,7 +2229,7 @@
       "model": "gpt-luna/gpt-5-6-luna",
       "matchingModel": "gpt-5.6-luna",
       "overrides": {
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -2289,7 +2289,7 @@
       "model": "gpt-sol/gpt-5-6-sol",
       "matchingModel": "gpt-5.6-sol",
       "overrides": {
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -2349,7 +2349,7 @@
       "model": "gpt-terra/gpt-5-6-terra",
       "matchingModel": "gpt-5.6-terra",
       "overrides": {
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -2559,7 +2559,8 @@
           "source": "https://developers.openai.com/api/docs/guides/your-data"
         },
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0005
+        "costPer1kOutputTokens": 0.0005,
+        "isFeatured": true
       }
     },
     "gpt-6-sol": {
@@ -2615,7 +2616,8 @@
           "source": "https://developers.openai.com/api/docs/guides/your-data"
         },
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01
+        "costPer1kOutputTokens": 0.01,
+        "isFeatured": true
       }
     }
   }

@@ -78,9 +78,13 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
     const task = await this.runQuery<Task>(insert.query, insert.values, true);
 
+    if (!task) {
+      return null;
+    }
+
     this.announce(task);
 
-    return task;
+    return this.parseTask(task);
   }
 
   public async createTaskIfAbsent(

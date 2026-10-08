@@ -636,7 +636,8 @@
             "high"
           ],
           "defaultEffort": "minimal"
-        }
+        },
+        "isFeatured": true
       }
     },
     "gemini-3.1-pro-preview": {
@@ -881,7 +882,8 @@
             "high"
           ],
           "defaultEffort": "medium"
-        }
+        },
+        "isFeatured": true
       }
     },
     "gemini-3-pro-image-preview": {
@@ -990,7 +992,7 @@
       "matchingModel": "gemini-3.5-flash-lite",
       "overrides": {
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "July 21, 2026",
         "dataRetention": {
           "maxDays": 55,
@@ -1128,7 +1130,7 @@
           "image",
           "creative"
         ],
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "May 28, 2026",
         "dataRetention": {
           "maxDays": 55,
@@ -1334,7 +1336,8 @@
           "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
         },
         "supportsToolCalls": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       }
     },
     "gemini-3.7-flash": {
@@ -1343,7 +1346,7 @@
       "overrides": {
         "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
         "maxTokens": 65536,
-        "isFeatured": true,
+        "isFeatured": false,
         "lastUpdated": "August 13, 2026",
         "dataRetention": {
           "maxDays": 55,
@@ -1369,7 +1372,8 @@
           "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
         },
         "costPer1kInputTokens": 0.00075,
-        "costPer1kOutputTokens": 0.00375
+        "costPer1kOutputTokens": 0.00375,
+        "isFeatured": true
       },
       "unset": [
         "knowledgeCutoffDate"

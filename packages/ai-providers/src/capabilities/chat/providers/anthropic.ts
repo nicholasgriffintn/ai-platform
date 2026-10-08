@@ -1,7 +1,9 @@
 import {
   resolveAdaptiveThinkingEffort,
   shouldEnableProviderThinking,
+  supportsAdaptiveThinkingEffort,
   usesAdaptiveThinkingApi,
+  usesBudgetThinkingApi,
 } from "@ngriffin_uk/polychat-ai-models";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -59,6 +61,21 @@ function buildAnthropicThinkingParameters(
       },
       omitSamplingParameters: true,
     };
+  }
+
+  if (!usesBudgetThinkingApi(modelConfig) && supportsAdaptiveThinkingEffort(modelConfig)) {
+    const effort = resolveAdaptiveThinkingEffort(modelConfig, params.reasoning_effort);
+
+    if (effort) {
+      return {
+        params: {
+          thinking: { type: "adaptive" },
+          output_config: { effort },
+          max_tokens: effectiveMaxTokens,
+        },
+        omitSamplingParameters: true,
+      };
+    }
   }
 
   return {

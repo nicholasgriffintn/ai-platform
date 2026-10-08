@@ -2168,7 +2168,8 @@
             }
           ],
           "reference": "https://replicate.com/google/nano-banana-pro"
-        }
+        },
+        "isFeatured": true
       },
       "unset": [
         "supportsAttachments",
@@ -2951,7 +2952,7 @@
           "audio",
           "document"
         ],
-        "isFeatured": true,
+        "isFeatured": false,
         "supportsAttachments": true,
         "inputSchema": {
           "fields": [
@@ -3121,7 +3122,8 @@
             }
           ],
           "reference": "https://replicate.com/alibaba/happyhorse-1.0"
-        }
+        },
+        "isFeatured": true
       }
     },
     "replicate-xai-grok-imagine-video": {
@@ -3353,7 +3355,8 @@
             }
           ],
           "reference": "https://replicate.com/runwayml/gen-4.5"
-        }
+        },
+        "isFeatured": true
       }
     },
     "replicate-kwaivgi-kling-v3-video": {
@@ -3849,7 +3852,8 @@
             }
           ],
           "reference": "https://replicate.com/openai/gpt-image-2"
-        }
+        },
+        "isFeatured": true
       },
       "unset": [
         "supportsToolCalls",
@@ -4140,7 +4144,8 @@
             }
           ],
           "reference": "https://replicate.com/bria/fibo"
-        }
+        },
+        "isFeatured": true
       }
     },
     "replicate-google-imagen-4": {

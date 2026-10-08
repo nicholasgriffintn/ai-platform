@@ -310,3 +310,39 @@ export function partitionDeprecatedModelEntries<T extends ModelGroupingItem>(
     deprecated: models.filter((entry) => entry.model.deprecated),
   };
 }
+
+export function groupRegionalEntriesByProvider<T extends ModelGroupingItem>(
+  entries: readonly RegionalModelListEntry<T>[],
+): ModelProviderListEntry<T>[] {
+  const grouped = new Map<string, RegionalModelListEntry<T>[]>();
+
+  for (const entry of entries) {
+    const key = modelGroupKey(entry.model);
+    const list = grouped.get(key) ?? [];
+
+    list.push(entry);
+    grouped.set(key, list);
+  }
+
+  return [...grouped.entries()]
+    .sort(([keyA], [keyB]) => {
+      if (keyA === AGENT_MODEL_GROUP_KEY) {
+        return -1;
+      }
+
+      if (keyB === AGENT_MODEL_GROUP_KEY) {
+        return 1;
+      }
+
+      return keyA.localeCompare(keyB);
+    })
+    .map(([key, groupEntries]) => ({
+      key,
+      label: key === AGENT_MODEL_GROUP_KEY ? "Agents" : titleCaseSlug(key),
+      models: [...groupEntries].sort((left, right) =>
+        getRegionalModelGroupingDisplayName(left.model).localeCompare(
+          getRegionalModelGroupingDisplayName(right.model),
+        ),
+      ),
+    }));
+}
