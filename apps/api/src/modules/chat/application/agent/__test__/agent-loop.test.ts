@@ -812,4 +812,38 @@ describe("runAgentLoop", () => {
 
     await expect(runAgentLoop(params)).rejects.toThrow("boom");
   });
+
+  it("retries a reply that came back empty before saving anything", async () => {
+    const { params, runTurn } = createParams([textTurn(""), textTurn("Here you go.")]);
+
+    const result = await runAgentLoop(params);
+
+    expect(result.response.response).toBe("Here you go.");
+    expect(runTurn).toHaveBeenCalledTimes(2);
+    expect(params.conversationManager.add).toHaveBeenCalledTimes(1);
+  });
+
+  it("asks for a tool-free answer when the retry is empty too", async () => {
+    const { params, runTurn } = createParams([
+      { content: "", toolCalls: [], usage: { input_tokens: 10, output_tokens: 0 } as never },
+      { content: "", toolCalls: [], usage: { input_tokens: 10, output_tokens: 0 } as never },
+      textTurn("Here is the answer from what we found."),
+    ]);
+
+    const result = await runAgentLoop(params);
+    const repairRequest = runTurn.mock.calls[2][0].request;
+
+    expect(result.response.response).toBe("Here is the answer from what we found.");
+    expect(repairRequest.disable_functions).toBe(true);
+    expect(repairRequest.messages.at(-1)).toMatchObject({ role: "user" });
+  });
+
+  it("says so plainly when every attempt comes back empty", async () => {
+    const { params, runTurn } = createParams([textTurn("")]);
+
+    const result = await runAgentLoop(params);
+
+    expect(runTurn).toHaveBeenCalledTimes(3);
+    expect(result.response.response).toContain("without writing a reply");
+  });
 });
