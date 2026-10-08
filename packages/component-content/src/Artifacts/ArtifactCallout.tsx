@@ -1,3 +1,4 @@
+import { ProgressLine } from "@ngriffin_uk/polychat-component-ui";
 import { Code2, Eye, FileText } from "lucide-react";
 import { memo, useMemo } from "react";
 
@@ -5,6 +6,7 @@ import type { ArtifactProps } from "./artifact";
 import { isCodeArtifact } from "./artifact-kinds";
 
 export interface ArtifactCalloutProps extends ArtifactProps {
+  isGenerating?: boolean;
   isCombinable?: boolean;
   combinableCount?: number;
   artifacts?: ArtifactProps[];
@@ -21,6 +23,7 @@ export const ArtifactCallout = memo(
     isCombinable,
     combinableCount,
     artifacts,
+    isGenerating = false,
   }: ArtifactCalloutProps) => {
     const handleClick = () => {
       if (onOpen) {
@@ -48,7 +51,7 @@ export const ArtifactCallout = memo(
     const icon = isCode ? <Code2 size={16} /> : <FileText size={16} />;
 
     return (
-      <div className="artifact-wrapper">
+      <div className="artifact-wrapper polychat-motion-enter">
         <button
           type="button"
           className={`artifact-container w-full border border-border text-left ${
@@ -64,14 +67,21 @@ export const ArtifactCallout = memo(
             <div className="mt-1 flex-shrink-0">{icon}</div>
             <div className="min-w-0 flex-grow">
               <span className="truncate text-sm font-medium">{title || "Artifact"}</span>
-              <p className="text-xs text-muted-foreground">
-                Click here to open the {isCode ? "code" : "file"}
+              <p
+                className={`text-xs text-muted-foreground ${isGenerating ? "polychat-motion-shimmer" : ""}`}
+              >
+                {isGenerating
+                  ? `Writing the ${isCode ? "code" : "file"}…`
+                  : `Click here to open the ${isCode ? "code" : "file"}`}
               </p>
             </div>
             {language && (
               <span className="mr-1 flex-shrink-0 text-xs text-muted-foreground">{language}</span>
             )}
           </div>
+          {isGenerating ? (
+            <ProgressLine label={`Writing ${title || "artifact"}`} className="mt-2" />
+          ) : null}
         </button>
 
         {isCombinable && combinableCount && combinableCount > 1 && (

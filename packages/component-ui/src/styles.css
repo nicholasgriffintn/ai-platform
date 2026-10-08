@@ -273,6 +273,176 @@
   animation-play-state: paused;
 }
 
+@property --polychat-glow-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes polychat-glow-orbit {
+  to {
+    --polychat-glow-angle: 360deg;
+  }
+}
+
+@keyframes polychat-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+@keyframes polychat-feather-sheen {
+  0% {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  60%,
+  100% {
+    transform: translateX(260%) skewX(-18deg);
+  }
+}
+
+.polychat-motion-glow {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.polychat-motion-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  padding: 1px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--polychat-glow-angle),
+    transparent 0deg,
+    color-mix(in oklch, var(--polychat-active-work) 85%, transparent) 50deg,
+    transparent 120deg,
+    transparent 360deg
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  animation: polychat-glow-orbit 5s linear infinite;
+  pointer-events: none;
+}
+
+.polychat-motion-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: inset 0 0 28px color-mix(in oklch, var(--polychat-active-work) 16%, transparent);
+  animation: polychat-glow-breathe 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.polychat-motion-sheen {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklch, var(--polychat-active-work) 10%, transparent),
+    transparent
+  );
+  animation: polychat-feather-sheen 3.2s var(--polychat-motion-ease-panel) infinite;
+  pointer-events: none;
+}
+
+@keyframes polychat-text-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
+}
+
+.polychat-motion-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--polychat-text-muted) 0%,
+    var(--polychat-text-muted) 40%,
+    var(--polychat-text) 50%,
+    var(--polychat-text-muted) 60%,
+    var(--polychat-text-muted) 100%
+  );
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: polychat-text-shimmer 2.4s linear infinite;
+}
+
+@keyframes polychat-progress-sweep {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(310%);
+  }
+}
+
+@keyframes polychat-progress-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.polychat-motion-progress {
+  position: relative;
+  display: block;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--polychat-active-work) 14%, transparent);
+}
+
+.polychat-motion-progress::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 35%;
+  border-radius: inherit;
+  background: var(--polychat-active-work);
+  animation: polychat-progress-sweep 1.2s var(--polychat-motion-ease-panel) infinite;
+}
+
+@keyframes polychat-ruffle {
+  0% {
+    transform: rotate(0deg) translateY(0);
+  }
+  30% {
+    transform: rotate(-1.6deg) translateY(-1px);
+  }
+  60% {
+    transform: rotate(1deg) translateY(0);
+  }
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+}
+
+.polychat-motion-ruffle {
+  transform-origin: 12% 50%;
+  animation: polychat-ruffle 520ms var(--polychat-motion-ease-panel) both;
+}
+
 /*
  * Decorative motion is opt-out for everyone at once rather than per animation.
  * Deliberately unlayered so it outranks the Tailwind `utilities` layer.
@@ -288,6 +458,30 @@
   .polychat-motion-micro,
   .polychat-motion-panel {
     transition-duration: 0.01ms !important;
+  }
+
+  .polychat-motion-sheen {
+    display: none;
+  }
+
+  .polychat-motion-shimmer {
+    animation: none !important;
+    background-image: none;
+    color: var(--polychat-text-muted);
+  }
+
+  .polychat-motion-glow::after {
+    animation: none !important;
+    opacity: 0.55;
+  }
+
+  .polychat-motion-progress::after {
+    width: 100%;
+    animation: polychat-progress-pulse 1.6s ease-in-out infinite !important;
+  }
+
+  .polychat-motion-ruffle {
+    animation: none !important;
   }
 
   *:not(.animate-spin):not(.animate-pulse):not([data-motion="essential"]),
