@@ -23,6 +23,7 @@ import {
   STRIPE_USAGE_SYNC_TASK_TYPE,
   TASK_NOTIFICATION_DELIVERY_TASK_TYPE,
   TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE,
+  QUEUED_CHAT_MESSAGE_TASK_TYPE,
   TEAMMATE_RUN_RECONCILIATION_TASK_TYPE,
   USAGE_ROLLUP_TASK_TYPE,
 } from "@ngriffin_uk/polychat-schemas";
@@ -54,6 +55,7 @@ import {
 } from "./handlers/ModelRegistryHandlers";
 import { OcrBatchPollingHandler } from "./handlers/OcrBatchPollingHandler";
 import { ProjectTaskRunHandler } from "./handlers/ProjectTaskRunHandler";
+import { QueuedChatMessageHandler } from "./handlers/QueuedChatMessageHandler";
 import { RealtimeReconciliationHandler } from "./handlers/RealtimeReconciliationHandler";
 import { RecipeExecutionHandler } from "./handlers/RecipeExecutionHandler";
 import { recordingTranscriptionPolling } from "./handlers/recording-transcription-polling";
@@ -106,6 +108,7 @@ workflows.register(TASK_NOTIFICATION_DELIVERY_TASK_TYPE, new TaskNotificationDel
 workflows.register(TEAMMATE_RUN_RECONCILIATION_TASK_TYPE, new TeammateRunReconciliationHandler());
 workflows.register(TEAMMATE_CONTEXT_CLEANUP_TASK_TYPE, new TeammateContextCleanupHandler());
 workflows.register(CONVERSATION_TITLE_TASK_TYPE, new ConversationTitleHandler());
+workflows.register(QUEUED_CHAT_MESSAGE_TASK_TYPE, new QueuedChatMessageHandler());
 workflows.register(MODEL_REGISTRY_INSPECT_TASK_TYPE, new ModelRegistryInspectHandler());
 workflows.register(MODEL_REGISTRY_EVAL_TASK_TYPE, new ModelRegistryEvalHandler());
 

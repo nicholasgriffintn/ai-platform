@@ -20,6 +20,7 @@ export interface CreateTaskParams {
   priority?: number;
   metadata?: Record<string, any>;
   created_by: "system" | "user";
+  status?: "pending" | "suspended";
 }
 
 export interface UpdateTaskParams {
@@ -64,7 +65,7 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
         priority: params.priority ?? 5,
         metadata: params.metadata ? JSON.stringify(params.metadata) : null,
         created_by: params.created_by,
-        status: "pending",
+        status: params.status ?? "pending",
         attempts: 0,
         max_attempts: 3,
       },
@@ -230,6 +231,88 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
         params.taskId,
         params.userId,
       ],
+      true,
+    );
+
+    this.announce(task);
+
+    return task ? this.parseTask(task) : null;
+  }
+
+  public async listSuspendedTasksForConversation(params: {
+    taskType: TaskType;
+    userId: number;
+    conversationId: string;
+    limit: number;
+  }): Promise<Task[]> {
+    const result = await this.runQuery<Task>(
+      `SELECT * FROM tasks
+       WHERE task_type = ? AND user_id = ? AND status = 'suspended'
+         AND json_extract(task_data, '$.conversationId') = ?
+       ORDER BY created_at ASC, id ASC
+       LIMIT ?`,
+      [params.taskType, params.userId, params.conversationId, params.limit],
+    );
+
+    return result.map((task) => this.parseTask(task));
+  }
+
+  public async listSuspendedTasksUpdatedBefore(params: {
+    taskType: TaskType;
+    updatedBefore: string;
+    limit: number;
+  }): Promise<Task[]> {
+    const result = await this.runQuery<Task>(
+      `SELECT * FROM tasks
+       WHERE task_type = ? AND status = 'suspended' AND datetime(updated_at) <= datetime(?)
+       ORDER BY created_at ASC, id ASC
+       LIMIT ?`,
+      [params.taskType, params.updatedBefore, params.limit],
+    );
+
+    return result.map((task) => this.parseTask(task));
+  }
+
+  public async cancelSuspendedTask(params: {
+    taskId: string;
+    taskType: TaskType;
+    userId: number;
+  }): Promise<boolean> {
+    const task = await this.runQuery<Task>(
+      `UPDATE tasks
+       SET status = 'cancelled', completed_at = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND task_type = ? AND user_id = ? AND status = 'suspended'
+       RETURNING *`,
+      [new Date().toISOString(), params.taskId, params.taskType, params.userId],
+      true,
+    );
+
+    this.announce(task);
+
+    return Boolean(task);
+  }
+
+  public async releaseNextSuspendedTaskForConversation(params: {
+    taskType: TaskType;
+    conversationId: string;
+  }): Promise<Task | null> {
+    const task = await this.runQuery<Task>(
+      `UPDATE tasks
+       SET status = 'pending', updated_at = CURRENT_TIMESTAMP
+       WHERE id = (
+         SELECT id FROM tasks
+         WHERE task_type = ? AND status = 'suspended'
+           AND json_extract(task_data, '$.conversationId') = ?
+         ORDER BY created_at ASC, id ASC
+         LIMIT 1
+       )
+       AND NOT EXISTS (
+         SELECT 1 FROM tasks
+         WHERE task_type = ? AND status IN ('pending', 'queued', 'running')
+           AND json_extract(task_data, '$.conversationId') = ?
+       )
+       RETURNING *`,
+      [params.taskType, params.conversationId, params.taskType, params.conversationId],
       true,
     );
 

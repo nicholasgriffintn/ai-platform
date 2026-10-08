@@ -72,6 +72,7 @@ describe("functions tool registry", () => {
       CAPABILITY_DISCOVERY_TOOL_NAME,
       "load_skill",
       "web_search",
+      "search_conversations",
     ]);
   });
 

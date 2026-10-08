@@ -38,6 +38,7 @@ import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatP
 import type { CoreChatOptions } from "~/types";
 
 import { buildChatRunCommandPayload } from "./command-payload";
+import { releaseQueuedFollowUpAfterRun } from "./follow-up-queue";
 import { readToolInteractionId } from "./interactions";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
 
@@ -205,6 +206,10 @@ export class ChatRunLifecycle {
 
     await publishRunChanged(publisher, run);
     await publishConversationChanged(publisher, run.conversationId, { runId: run.id });
+
+    if (this.serviceContext) {
+      await releaseQueuedFollowUpAfterRun(this.serviceContext, run);
+    }
   }
 
   private async reconcile(result?: AgentLoopExecutionResult): Promise<void> {
