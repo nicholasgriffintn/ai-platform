@@ -32,6 +32,11 @@
       "types": "./dist/run-activity.d.ts",
       "import": "./dist/run-activity.js"
     },
+    "./artifact-bindings": {
+      "polychat-source": "./src/artifact-bindings.ts",
+      "types": "./dist/artifact-bindings.d.ts",
+      "import": "./dist/artifact-bindings.js"
+    },
     "./attachments": {
       "polychat-source": "./src/attachments.ts",
       "types": "./dist/attachments.d.ts",

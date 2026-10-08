@@ -24,9 +24,12 @@ import {
   chatRunReplayResponseSchema,
   chatRunSnapshotResponseSchema,
   chatRunCommandReceiptSchema,
+  artifactBindingReadResponseSchema,
   conversationGroupSchema,
   queuedChatMessageSchema,
   queuedChatMessagesResponseSchema,
+  type ArtifactBindingReadRequest,
+  type ArtifactBindingReadResponse,
   type ChatCompletionResponseBody,
   type EnqueueChatMessageRequest,
   type QueuedChatMessage,
@@ -684,6 +687,18 @@ export class ChatService {
     );
 
     return parsed.run;
+  }
+
+  async readArtifactBinding(
+    conversationId: string,
+    input: ArtifactBindingReadRequest,
+  ): Promise<ArtifactBindingReadResponse> {
+    const response = await fetchApiOrThrow(
+      `/chat/completions/${encodeURIComponent(conversationId)}/artifact-bindings/read`,
+      { method: "POST", headers: await this.getHeaders(), body: input },
+    );
+
+    return artifactBindingReadResponseSchema.parse(await returnFetchedData<unknown>(response));
   }
 
   async listQueuedChatMessages(conversationId: string): Promise<QueuedChatMessage[]> {

@@ -53,6 +53,7 @@
     "@ngriffin_uk/polychat-ai-skills": "workspace:^",
     "@ngriffin_uk/polychat-ai-telemetry": "workspace:^",
     "@ngriffin_uk/polychat-ai-workflows": "workspace:^",
+    "@ngriffin_uk/polychat-library-chat": "workspace:^",
     "@ngriffin_uk/polychat-library-flags": "workspace:^",
     "@ngriffin_uk/polychat-library-goals": "workspace:^",
     "@ngriffin_uk/polychat-library-interactions": "workspace:^",

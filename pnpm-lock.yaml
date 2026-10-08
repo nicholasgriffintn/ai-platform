@@ -350,6 +350,9 @@ importers:
       '@ngriffin_uk/polychat-ai-workflows':
         specifier: workspace:^
         version: link:../../packages/ai-workflows
+      '@ngriffin_uk/polychat-library-chat':
+        specifier: workspace:^
+        version: link:../../packages/library-chat
       '@ngriffin_uk/polychat-library-flags':
         specifier: workspace:^
         version: link:../../packages/library-flags
@@ -453,9 +456,6 @@ importers:
 
   apps/app:
     dependencies:
-      '@babel/standalone':
-        specifier: 8.0.4
-        version: 8.0.4
       '@mlc-ai/web-llm':
         specifier: 0.2.85
         version: 0.2.85
@@ -691,9 +691,6 @@ importers:
       '@types/babel__core':
         specifier: 7.20.5
         version: 7.20.5
-      '@types/babel__standalone':
-        specifier: 7.1.9
-        version: 7.1.9
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.3
@@ -1464,9 +1461,6 @@ importers:
 
   packages/component-content:
     dependencies:
-      '@babel/standalone':
-        specifier: 8.0.4
-        version: 8.0.4
       '@ngriffin_uk/polychat-component-ui':
         specifier: workspace:^
         version: link:../component-ui
@@ -1497,6 +1491,9 @@ importers:
       sonner:
         specifier: 2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      sucrase:
+        specifier: 3.35.1
+        version: 3.35.1
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -1513,9 +1510,6 @@ importers:
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@types/babel__standalone':
-        specifier: 7.1.9
-        version: 7.1.9
       '@types/react':
         specifier: 'catalog:'
         version: 19.3.0
@@ -2456,9 +2450,6 @@ importers:
 
   packages/library-react:
     dependencies:
-      '@babel/standalone':
-        specifier: 8.0.4
-        version: 8.0.4
       '@mlc-ai/web-llm':
         specifier: '*'
         version: 0.2.85
@@ -3123,10 +3114,6 @@ packages:
   '@babel/runtime@7.29.7':
     resolution: {integrity: sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==}
     engines: {node: '>=6.9.0'}
-
-  '@babel/standalone@8.0.4':
-    resolution: {integrity: sha512-z8WgyJCfEl7qGAfJJksICOL5zQPpfwa6Yew+91Txf1k3xuDtlDdDe5GX2QdIhgx0HD7oYOCLoF8Y6CwNdawJwQ==}
-    engines: {node: ^22.18.0 || >=24.11.0}
 
   '@babel/template@7.29.7':
     resolution: {integrity: sha512-puq+Gf35oI24FeN11LkoUQFqv9uwNeWpxXZi/Ji3rRIoKAzKnxRaZ+Gkj0vKS9ZCiTESfng1N9LyOyXvo+m+Gg==}
@@ -6745,9 +6732,6 @@ packages:
 
   '@types/babel__generator@7.27.0':
     resolution: {integrity: sha512-ufFd2Xi92OAVPYsy+P4n7/U7e68fex0+Ee8gSG9KX7eo084CWiQ4sdxktvdl0bOPupXtVJPY19zk6EwWqUQ8lg==}
-
-  '@types/babel__standalone@7.1.9':
-    resolution: {integrity: sha512-IcCNPLqpevUD7UpV8QB0uwQPOyoOKACFf0YtYWRHcmxcakaje4Q7dbG2+jMqxw/I8Zk0NHvEps66WwS7z/UaaA==}
 
   '@types/babel__template@7.4.4':
     resolution: {integrity: sha512-h/NUaSyG5EyxBIp8YRxo4RMe2/qQgvyowRwVMzhYhBCONbW8PUsg4lkFMrhgZhUe5z3L3MiLDuvyJ/CaPa2A8A==}
@@ -10907,8 +10891,6 @@ snapshots:
 
   '@babel/runtime@7.29.7': {}
 
-  '@babel/standalone@8.0.4': {}
-
   '@babel/template@7.29.7':
     dependencies:
       '@babel/code-frame': 7.29.7
@@ -13819,15 +13801,6 @@ snapshots:
   '@types/babel__generator@7.27.0':
     dependencies:
       '@babel/types': 7.29.8
-
-  '@types/babel__standalone@7.1.9':
-    dependencies:
-      '@babel/parser': 7.29.9
-      '@babel/types': 7.29.8
-      '@types/babel__core': 7.20.5
-      '@types/babel__generator': 7.27.0
-      '@types/babel__template': 7.4.4
-      '@types/babel__traverse': 7.28.0
 
   '@types/babel__template@7.4.4':
     dependencies:

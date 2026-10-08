@@ -1,49 +1,63 @@
 import { describe, expect, it } from "vitest";
 
-import { transformComponentCode } from "./ReactSandbox";
+import { prepareReactArtifactDocument } from "./ReactSandbox";
 
-describe("React default export detection", () => {
-  it("names a default exported function declaration", async () => {
-    const { transpiledCode } = await transformComponentCode(
-      "export default function Widget() { return <p>hi</p>; }",
+describe("prepareReactArtifactDocument", () => {
+  it("compiles a default-exported component into the module wrapper", async () => {
+    const document = await prepareReactArtifactDocument(
+      'import { useState } from "react";\nexport default function Widget() { const [n] = useState(1); return <p>{n}</p>; }',
+      undefined,
     );
 
-    expect(transpiledCode).toContain("Widget");
-    expect(transpiledCode).not.toContain("export default function");
+    expect(document).toContain("React.createElement");
+    expect(document).toContain("exports.default = Widget");
+    expect(document).not.toContain("Recharts.min.js");
   });
 
-  it("names a plain default export", async () => {
-    const { transpiledCode } = await transformComponentCode(
-      "function Widget() { return <p>hi</p>; }\nexport default Widget;",
+  it("keeps dollar sequences in the component source intact", async () => {
+    const document = await prepareReactArtifactDocument(
+      'export default function Price() { return <p>{"$&$1 cost"}</p>; }',
+      undefined,
     );
 
-    expect(transpiledCode).toContain("Widget");
+    expect(document).toContain('"$&$1 cost"');
   });
 
-  it("stays linear on a declaration that never closes", async () => {
-    const started = Date.now();
-
-    await transformComponentCode(`export default function Widget(${"a,".repeat(50_000)}`).catch(
-      () => undefined,
+  it("loads Recharts only for components that import it", async () => {
+    const document = await prepareReactArtifactDocument(
+      'import { LineChart } from "recharts";\nexport default function Chart() { return <LineChart width={10} height={10} data={[]} />; }',
+      undefined,
     );
 
-    expect(Date.now() - started).toBeLessThan(2_000);
+    expect(document).toContain("prop-types.min.js");
+    expect(document).toContain("Recharts.min.js");
   });
-});
 
-describe("React artifact transformation", () => {
-  it("uses the React UMD global without requiring the JSX runtime module", async () => {
-    const { transpiledCode } = await transformComponentCode(`
-      import React from "react";
+  it("strips declared data sources before compiling", async () => {
+    const document = await prepareReactArtifactDocument(
+      '<bindings>[{"id":"issues","provider":"linear","operation":"LINEAR_LIST_ISSUES"}]</bindings>\nexport default function Issues() { return <p>Issues</p>; }',
+      undefined,
+    );
 
-      function Example() {
-        return <button>Rendered</button>;
-      }
+    expect(document).not.toContain("<bindings>");
+    expect(document).toContain("exports.default = Issues");
+  });
 
-      export default Example;
-    `);
+  it("shows an error instead of rendering when the data sources are malformed", async () => {
+    const document = await prepareReactArtifactDocument(
+      "<bindings>not json</bindings>\nexport default function Broken() { return null; }",
+      undefined,
+    );
 
-    expect(transpiledCode).toContain(".createElement");
-    expect(transpiledCode).not.toContain("react/jsx-runtime");
+    expect(document).toContain("data bindings could not be read");
+  });
+
+  it("cannot be closed early by a script tag inside the component", async () => {
+    const document = await prepareReactArtifactDocument(
+      'export default function Sneaky() { return <p>{"</script><script>alert(1)</script>"}</p>; }',
+      undefined,
+    );
+
+    expect(document).not.toContain("</script><script>alert(1)");
   });
 });

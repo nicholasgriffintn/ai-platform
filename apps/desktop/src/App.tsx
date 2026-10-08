@@ -1,6 +1,10 @@
 import { WelcomeScreen } from "@ngriffin_uk/polychat-component-account";
 import { CustomResponseViewProvider } from "@ngriffin_uk/polychat-component-content";
-import { AppErrorBoundary, customResponseViews } from "@ngriffin_uk/polychat-component-shell";
+import {
+  AppErrorBoundary,
+  ArtifactDataProvider,
+  customResponseViews,
+} from "@ngriffin_uk/polychat-component-shell";
 import { LinkProvider, ThemedToaster } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
@@ -30,7 +34,9 @@ function DesktopProviders({ children }: { children: ReactNode }) {
       <LinkProvider Link={RouterLink} NavLink={RouterNavLink}>
         <AnalyticsProvider analytics={analytics}>
           <CustomResponseViewProvider views={customResponseViews}>
-            <PolychatProvider>{children}</PolychatProvider>
+            <ArtifactDataProvider>
+              <PolychatProvider>{children}</PolychatProvider>
+            </ArtifactDataProvider>
           </CustomResponseViewProvider>
         </AnalyticsProvider>
       </LinkProvider>

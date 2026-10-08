@@ -168,8 +168,8 @@ const chunkGroups = [
     packages: ["@mlc-ai/web-llm"],
   },
   {
-    name: "babel-vendor",
-    packages: ["@babel/standalone"],
+    name: "sucrase-vendor",
+    packages: ["sucrase"],
   },
 ];
 

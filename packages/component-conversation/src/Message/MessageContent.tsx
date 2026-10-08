@@ -24,6 +24,7 @@ import {
   isHiddenToolResultPart,
   resolveToolResultPartDisplay,
 } from "@ngriffin_uk/polychat-library-chat/tool-results";
+import { useConversationScope } from "@ngriffin_uk/polychat-library-react";
 import { File, FileText, Loader2, Volume2 } from "lucide-react";
 import { Fragment, type ReactNode, memo, useMemo } from "react";
 
@@ -57,9 +58,13 @@ const renderTextContent = (
   ) => void,
   key?: string,
   isGenerating = false,
+  source?: ArtifactProps["source"],
 ): ReactNode => {
   const formatted = formattedMessageContent(role, textContent);
-  const { reasoning, artifacts } = formatted;
+  const { reasoning } = formatted;
+  const artifacts = source
+    ? formatted.artifacts.map((artifact) => ({ ...artifact, source }))
+    : formatted.artifacts;
   const content = processCustomXmlTags(formatted.content);
 
   const hasOpenReasoning = reasoning.some((item) => item.isOpen);
@@ -359,6 +364,15 @@ export const MessageContent = memo((props: MessageContentProps) => {
   const conversationResolvedToolCallIds = useResolvedToolCallIds();
   const { message, isGenerating = false, onArtifactOpen, onToolInteraction } = props;
   const previewIsGenerating = isGenerating || message.status === "in_progress";
+  const { currentConversationId } = useConversationScope();
+  const messageId = message.id;
+  const artifactSource = useMemo(
+    () =>
+      currentConversationId && messageId
+        ? { conversationId: currentConversationId, messageId }
+        : undefined,
+    [currentConversationId, messageId],
+  );
   const content = useMemo(() => {
     const handleArtifactOpen = (
       artifact: ArtifactProps,
@@ -426,6 +440,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
               handleArtifactOpen,
               "content-fallback",
               previewIsGenerating,
+              artifactSource,
             )}
           {messageParts.map((part, index) => {
             if (part.type === "text") {
@@ -438,6 +453,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
                 handleArtifactOpen,
                 `part-text-${index}`,
                 previewIsGenerating,
+                artifactSource,
               );
             }
 
@@ -508,6 +524,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
         handleArtifactOpen,
         undefined,
         previewIsGenerating,
+        artifactSource,
       )
     ) : Array.isArray(message.content) ? (
       <div className="space-y-4">
@@ -525,6 +542,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
               handleArtifactOpen,
               `text-${i}`,
               previewIsGenerating,
+              artifactSource,
             );
           }
 
@@ -623,6 +641,7 @@ export const MessageContent = memo((props: MessageContentProps) => {
       </div>
     ) : null;
   }, [
+    artifactSource,
     conversationResolvedToolCallIds,
     message.role,
     message.content,

@@ -1,5 +1,9 @@
 import { CustomResponseViewProvider } from "@ngriffin_uk/polychat-component-content";
-import { customResponseViews, ErrorPage } from "@ngriffin_uk/polychat-component-shell";
+import {
+  ArtifactDataProvider,
+  customResponseViews,
+  ErrorPage,
+} from "@ngriffin_uk/polychat-component-shell";
 import { LinkProvider, LoadingSpinner, ThemedToaster } from "@ngriffin_uk/polychat-component-ui";
 import { shouldShowDevTools } from "@ngriffin_uk/polychat-library-client";
 import {
@@ -35,9 +39,11 @@ function AppProviders({ children }: { children: React.ReactNode }) {
       <LinkProvider Link={RouterLink} NavLink={RouterNavLink}>
         <AnalyticsProvider analytics={analytics}>
           <CustomResponseViewProvider views={customResponseViews}>
-            <PolychatProvider>
-              <WebShellHost>{children}</WebShellHost>
-            </PolychatProvider>
+            <ArtifactDataProvider>
+              <PolychatProvider>
+                <WebShellHost>{children}</WebShellHost>
+              </PolychatProvider>
+            </ArtifactDataProvider>
           </CustomResponseViewProvider>
         </AnalyticsProvider>
       </LinkProvider>
