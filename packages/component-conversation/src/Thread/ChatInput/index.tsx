@@ -128,6 +128,8 @@ export interface ConversationRunSteering {
   placeholder: string;
   disabledReason?: string;
   isSubmitting?: boolean;
+  submitLabel?: string;
+  help?: string;
   onSubmit: (content: string) => Promise<void>;
 }
 
@@ -711,6 +713,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     const canUseDictation = canUseProComposerActions && !liveModeCommand?.isActive;
     const shouldRenderInputControls = hideTextInput && controls;
     const isSteering = Boolean(runSteering);
+    const submitLabel = isSteering
+      ? (runSteering?.submitLabel ?? "Send instruction")
+      : "Send message";
     const isSteeringBlocked = Boolean(runSteering?.disabledReason);
     const isInputDisabled = isSteering ? isSteeringBlocked : isLoading;
     const isStoppable =
@@ -799,7 +804,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
             hideTextInput
               ? undefined
               : isSteering
-                ? "Type an instruction and press Enter to send it. The run picks it up at the next safe boundary."
+                ? (runSteering?.help ??
+                  "Type an instruction and press Enter to send it. The run picks it up at the next safe boundary.")
                 : "Type your message and press Enter to send. Use Shift+Enter for a new line."
           }
           input={
@@ -906,13 +912,11 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                     onClick={() => void submitSelectedAttachments()}
                     disabled={isComposerSubmitDisabled}
                     className="cursor-pointer rounded-md bg-human-action p-2.5 text-human-action-foreground shadow-sm transition-colors hover:bg-human-action/90 disabled:cursor-not-allowed disabled:opacity-50"
-                    title={isSteering ? "Send instruction" : "Send message"}
-                    aria-label={isSteering ? "Send instruction" : "Send message"}
+                    title={submitLabel}
+                    aria-label={submitLabel}
                   >
                     <Send className="h-5 w-5" />
-                    <span className="sr-only">
-                      {isSteering ? "Send instruction" : "Send message"}
-                    </span>
+                    <span className="sr-only">{submitLabel}</span>
                   </Button>
                 )}
               </>

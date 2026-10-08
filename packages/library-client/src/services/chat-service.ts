@@ -25,7 +25,11 @@ import {
   chatRunSnapshotResponseSchema,
   chatRunCommandReceiptSchema,
   conversationGroupSchema,
+  queuedChatMessageSchema,
+  queuedChatMessagesResponseSchema,
   type ChatCompletionResponseBody,
+  type EnqueueChatMessageRequest,
+  type QueuedChatMessage,
   type ChatRun,
   type ChatRunCommandReceipt,
   type ChatRunSnapshotResponse,
@@ -680,6 +684,35 @@ export class ChatService {
     );
 
     return parsed.run;
+  }
+
+  async listQueuedChatMessages(conversationId: string): Promise<QueuedChatMessage[]> {
+    const response = await fetchApiOrThrow(
+      `/chat/completions/${encodeURIComponent(conversationId)}/queued-messages`,
+      { method: "GET", headers: await this.getHeaders() },
+    );
+
+    return queuedChatMessagesResponseSchema.parse(await returnFetchedData<unknown>(response))
+      .messages;
+  }
+
+  async queueChatMessage(
+    conversationId: string,
+    input: EnqueueChatMessageRequest,
+  ): Promise<QueuedChatMessage> {
+    const response = await fetchApiOrThrow(
+      `/chat/completions/${encodeURIComponent(conversationId)}/queued-messages`,
+      { method: "POST", headers: await this.getHeaders(), body: input },
+    );
+
+    return queuedChatMessageSchema.parse(await returnFetchedData<unknown>(response));
+  }
+
+  async removeQueuedChatMessage(conversationId: string, queuedId: string): Promise<void> {
+    await fetchApiOrThrow(
+      `/chat/completions/${encodeURIComponent(conversationId)}/queued-messages/${encodeURIComponent(queuedId)}`,
+      { method: "DELETE", headers: await this.getHeaders() },
+    );
   }
 
   async cancelChatRun(

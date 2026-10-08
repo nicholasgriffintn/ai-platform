@@ -10,6 +10,7 @@ export * from "./Thread/useAutoPlayResponses.js";
 export * from "./Thread/useAssistantActionSubmit.js";
 export * from "./Thread/useConversationLaunchModeConfig.js";
 export * from "./Thread/ChatInput/index.js";
+export * from "./Thread/ChatInput/QueuedFollowUps.js";
 export * from "./Thread/MessageList.js";
 export * from "./Thread/index.js";
 export type {

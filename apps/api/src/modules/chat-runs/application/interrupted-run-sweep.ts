@@ -5,6 +5,7 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import type { IEnv } from "~/types";
 
+import { releaseStrandedQueuedFollowUps } from "./follow-up-queue";
 import { reconcileInactiveChatRun } from "./recovery";
 
 const logger = getLogger({ prefix: "services/chat-runs/interrupted-run-sweep" });
@@ -33,6 +34,14 @@ export async function sweepInterruptedChatRuns(env: IEnv, now = new Date()): Pro
         error: getErrorMessage(error),
       });
     }
+  }
+
+  try {
+    await releaseStrandedQueuedFollowUps(context, now);
+  } catch (error) {
+    logger.warn("Could not release stranded queued follow-ups", {
+      error: getErrorMessage(error),
+    });
   }
 
   return settled;

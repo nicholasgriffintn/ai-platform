@@ -13,6 +13,7 @@ import { recordTurnCancellationRequested } from "~/modules/chat/application/stre
 import { cancelDelegationTree } from "~/modules/delegations/application/cancel-tree";
 
 import { cleanupCancelledChatRun } from "./cancellation-cleanup";
+import { releaseQueuedFollowUpAfterRun } from "./follow-up-queue";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
 import { requireChatRunAccess } from "./status";
 
@@ -88,6 +89,7 @@ export async function handleCancelChatRun(
   }
 
   await cancelDelegationTree(context, run.id);
+  await releaseQueuedFollowUpAfterRun(context, receipt.run);
 
   return { run: receipt };
 }

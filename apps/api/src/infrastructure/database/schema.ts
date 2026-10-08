@@ -2358,6 +2358,7 @@ export const tasks = sqliteTable(
         "delegation_message",
         "delegation_expiry",
         "teammate_run_reconciliation",
+        "queued_chat_message",
         "teammate_context_cleanup",
         "model_registry_inspect",
         "model_registry_eval",

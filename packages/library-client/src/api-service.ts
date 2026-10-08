@@ -31,6 +31,7 @@ import type {
   MemoryDocument,
   UpdateMemoryDocumentInput,
   RecordTeammateFeedbackInput,
+  EnqueueChatMessageRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { useChatStore } from "./chatStore.js";
@@ -130,6 +131,15 @@ class ApiService {
 
   cancelChatRun = (runId: string, expectedAttempt: number, commandId?: string) =>
     this.chatService.cancelChatRun(runId, expectedAttempt, commandId);
+
+  listQueuedChatMessages = (conversationId: string) =>
+    this.chatService.listQueuedChatMessages(conversationId);
+
+  queueChatMessage = (conversationId: string, input: EnqueueChatMessageRequest) =>
+    this.chatService.queueChatMessage(conversationId, input);
+
+  removeQueuedChatMessage = (conversationId: string, queuedId: string) =>
+    this.chatService.removeQueuedChatMessage(conversationId, queuedId);
 
   getConversationGoal = (completion_id: string) => {
     return this.chatService.getConversationGoal(completion_id);

@@ -24,6 +24,7 @@ import { useMemo, useState, lazy, Suspense } from "react";
 import { useParams } from "react-router";
 
 import { HomeDiscover } from "../Discover/HomeDiscover.js";
+import { useChatFollowUpQueue } from "./useChatFollowUpQueue.js";
 
 const DelegatePanel = lazy(() =>
   import("../Delegations/DelegatePanel.js").then((module) => ({
@@ -50,6 +51,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
   const { data: conversations, isLoading: areConversationsLoading } = useChats();
   const { currentConversationId } = useConversationScope();
   const agentApprovals = useConversationAgentApprovals(currentConversationId);
+  const followUpQueue = useChatFollowUpQueue(currentConversationId ?? undefined);
   const { mode: retentionMode } = useConversationRetention(modeConfig?.requestOptions);
   const isTemporary = !completionId && retentionMode.retention === "temporary";
   const welcomeSeed = useStableRandomSeed();
@@ -82,6 +84,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
     () => ({
       ...modeConfig,
       agentApprovals,
+      followUpQueue,
       onToolInteraction: async (toolName, action, data) => {
         if (toolName === "delegate" && data.action === "open") {
           if (typeof data.childConversationId === "string") {
@@ -104,7 +107,7 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
         return (await modeConfig?.onToolInteraction?.(toolName, action, data)) ?? false;
       },
     }),
-    [agentApprovals, cancelDelegations, modeConfig],
+    [agentApprovals, cancelDelegations, followUpQueue, modeConfig],
   );
 
   return (

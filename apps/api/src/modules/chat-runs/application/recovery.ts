@@ -9,6 +9,7 @@ import {
 } from "~/modules/sync/application/conversation-events";
 import { withoutOrigin } from "~/modules/sync/application/publish";
 
+import { releaseQueuedFollowUpAfterRun } from "./follow-up-queue";
 import { salvageInterruptedReply } from "./interrupted-reply";
 
 const logger = getLogger({ prefix: "services/chat-runs/recovery" });
@@ -66,6 +67,7 @@ export async function reconcileInactiveChatRun(
   if (transitioned) {
     await salvageInterruptedReply(context, transitioned, partial);
     await announceRecoveredRun(context, transitioned);
+    await releaseQueuedFollowUpAfterRun(context, transitioned);
 
     return transitioned;
   }
