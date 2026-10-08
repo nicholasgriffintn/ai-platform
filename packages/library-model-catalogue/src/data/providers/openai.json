@@ -2246,6 +2246,10 @@
       "model": "gpt-luna/gpt-6-luna",
       "matchingModel": "gpt-6-luna",
       "overrides": {
+        "modalities": {
+          "input": ["text", "image", "pdf"],
+          "output": ["text", "decision"]
+        },
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005

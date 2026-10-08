@@ -1,4 +1,8 @@
 import {
+  OPENAI_DECISION_PROVIDER_NAME,
+  OpenAIDecisionProvider,
+} from "../capabilities/decision/providers/openai.js";
+import {
   TYPESAFE_PROVIDER_NAME,
   TypeSafeDecisionProvider,
 } from "../capabilities/decision/providers/typesafe.js";
@@ -12,6 +16,21 @@ import { ensureEnv, ensureUser } from "./utils.js";
 
 function decisionProviders(runtime: ProviderRuntime): AiProviderRegistration<DecisionProvider>[] {
   return [
+    {
+      name: OPENAI_DECISION_PROVIDER_NAME,
+      lifecycle: "transient",
+      create: (context) =>
+        new OpenAIDecisionProvider(
+          ensureEnv(context),
+          ensureUser(context, { optional: true }),
+          runtime,
+        ),
+      metadata: {
+        vendor: "OpenAI",
+        categories: ["decision"],
+        tags: ["decisions", "calibrated"],
+      },
+    },
     {
       name: WORKERS_AI_DECISION_PROVIDER_NAME,
       aliases: ["workers"],

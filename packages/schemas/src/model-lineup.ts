@@ -444,6 +444,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
       { model: "jev-latest", provider: "typesafe" },
       { model: "@cf/cloudflare/clef-flash", provider: "workers-ai" },
       { model: "@cf/cloudflare/clef", provider: "workers-ai" },
+      { model: "gpt-6-luna", provider: "openai" },
     ],
   },
   {
