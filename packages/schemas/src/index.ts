@@ -73,6 +73,7 @@ export * from "./auth.js";
 export * from "./chat.js";
 export * from "./chat-context.js";
 export * from "./chat-retries.js";
+export * from "./chat-queue.js";
 export * from "./chat-runs.js";
 export * from "./delegations.js";
 export * from "./device-sync.js";

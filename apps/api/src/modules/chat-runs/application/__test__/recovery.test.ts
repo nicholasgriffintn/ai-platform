@@ -3,12 +3,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
-const { mockGetActiveThreadOperation, mockPublishConversationChanged, mockPublishRunChanged } =
-  vi.hoisted(() => ({
-    mockGetActiveThreadOperation: vi.fn(),
-    mockPublishConversationChanged: vi.fn(),
-    mockPublishRunChanged: vi.fn(),
-  }));
+const {
+  mockGetActiveThreadOperation,
+  mockPublishConversationChanged,
+  mockPublishRunChanged,
+  mockSalvageInterruptedReply,
+} = vi.hoisted(() => ({
+  mockGetActiveThreadOperation: vi.fn(),
+  mockPublishConversationChanged: vi.fn(),
+  mockPublishRunChanged: vi.fn(),
+  mockSalvageInterruptedReply: vi.fn(),
+}));
 
 vi.mock("~/modules/conversations/infrastructure/coordinator/client", () => ({
   getActiveThreadOperation: mockGetActiveThreadOperation,
@@ -17,6 +22,10 @@ vi.mock("~/modules/conversations/infrastructure/coordinator/client", () => ({
 vi.mock("~/modules/sync/application/conversation-events", () => ({
   publishConversationChanged: mockPublishConversationChanged,
   publishRunChanged: mockPublishRunChanged,
+}));
+
+vi.mock("../interrupted-reply", () => ({
+  salvageInterruptedReply: mockSalvageInterruptedReply,
 }));
 
 import { reconcileInactiveChatRun } from "../recovery";
@@ -39,7 +48,7 @@ const runningRun: ChatRun = {
   lastMessageId: null,
 };
 
-function createContext(transitionedRun: ChatRun): ServiceContext {
+function createContext(transitionedRun: ChatRun, partial: string | null = null): ServiceContext {
   return {
     env: { DB: {} },
     waitUntil: vi.fn(),
@@ -47,6 +56,7 @@ function createContext(transitionedRun: ChatRun): ServiceContext {
       conversationRuns: {
         transition: vi.fn().mockResolvedValue(transitionedRun),
         getById: vi.fn(),
+        getPartialContent: vi.fn().mockResolvedValue(partial),
       },
     },
   } as unknown as ServiceContext;
@@ -58,6 +68,7 @@ describe("reconcileInactiveChatRun", () => {
     mockGetActiveThreadOperation.mockResolvedValue(null);
     mockPublishRunChanged.mockResolvedValue(undefined);
     mockPublishConversationChanged.mockResolvedValue(undefined);
+    mockSalvageInterruptedReply.mockResolvedValue(true);
   });
 
   it("publishes the terminal state when execution ownership has ended", async () => {
@@ -81,5 +92,28 @@ describe("reconcileInactiveChatRun", () => {
       interruptedRun.conversationId,
       { runId: interruptedRun.id },
     );
+  });
+
+  it("keeps the streamed text when a dead run is settled", async () => {
+    const interruptedRun: ChatRun = { ...runningRun, status: "interrupted" };
+    const context = createContext(interruptedRun, "Half of the answer");
+
+    await reconcileInactiveChatRun(context, runningRun);
+
+    expect(mockSalvageInterruptedReply).toHaveBeenCalledWith(
+      context,
+      interruptedRun,
+      "Half of the answer",
+    );
+  });
+
+  it("leaves a run alone while its owner still holds the thread", async () => {
+    mockGetActiveThreadOperation.mockResolvedValue("user_message");
+    const context = createContext({ ...runningRun, status: "interrupted" }, "Partial");
+
+    await expect(reconcileInactiveChatRun(context, runningRun)).resolves.toBe(runningRun);
+
+    expect(context.repositories.conversationRuns.transition).not.toHaveBeenCalled();
+    expect(mockSalvageInterruptedReply).not.toHaveBeenCalled();
   });
 });

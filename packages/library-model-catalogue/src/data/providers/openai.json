@@ -1,5 +1,10 @@
 {
   "defaults": {
+    "dataRetention": {
+      "maxDays": 30,
+      "zeroRetention": "on_request",
+      "source": "https://developers.openai.com/api/docs/guides/your-data"
+    },
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,

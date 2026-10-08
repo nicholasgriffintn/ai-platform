@@ -8,6 +8,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { closeComposioConnectorRun } from "~/modules/apps/application/connectors/composio-run";
 import type { ChatRunLifecycle } from "~/modules/chat-runs/application/lifecycle";
+import { createPartialCheckpointSink } from "~/modules/chat-runs/application/partial-checkpoint";
 import { createChatRetryStatePublisher } from "~/modules/chat-runs/application/retry-state";
 import {
   runAgentLoop,
@@ -128,7 +129,11 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
 
       const result = await runAgentLoop({
         ...params,
-        sink: stream,
+        sink: runLifecycle
+          ? createPartialCheckpointSink(stream, (content) =>
+              runLifecycle.checkpointPartialContent(content),
+            )
+          : stream,
         shouldStop: stopSignal.shouldStop,
         onRetryState: createChatRetryStatePublisher({ sink: stream, runLifecycle }),
         emit: tracesAgentEvents

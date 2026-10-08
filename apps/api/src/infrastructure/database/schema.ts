@@ -1296,6 +1296,7 @@ export const conversationRun = sqliteTable(
     started_at: text(),
     completed_at: text(),
     cancellation_requested_at: text(),
+    partial_content: text(),
   },
   (table) => ({
     conversationUpdatedIdx: index("conversation_run_conversation_updated_idx").on(
@@ -1308,6 +1309,10 @@ export const conversationRun = sqliteTable(
     ),
     projectTaskIdx: index("conversation_run_project_task_idx").on(table.project_task_id),
     initiatorIdx: index("conversation_run_initiator_idx").on(table.initiator_user_id),
+    statusUpdatedIdx: index("conversation_run_status_updated_idx").on(
+      table.status,
+      table.updated_at,
+    ),
   }),
 );
 
@@ -2353,6 +2358,7 @@ export const tasks = sqliteTable(
         "delegation_message",
         "delegation_expiry",
         "teammate_run_reconciliation",
+        "queued_chat_message",
         "teammate_context_cleanup",
         "model_registry_inspect",
         "model_registry_eval",

@@ -194,6 +194,7 @@ export * from "./chat/useConversationStorage.js";
 export * from "./chat/useDeviceModels.js";
 export * from "./chat/useMachines.js";
 export * from "./chat/useGoal.js";
+export * from "./chat/useQueuedFollowUps.js";
 export * from "./chat/useLiveConversationMessages.js";
 export * from "./chat/useMessageOperations.js";
 export * from "./chat/useModels.js";

@@ -60,6 +60,7 @@ function createLifecycle() {
     updateContext: vi.fn(),
     updateRetry: vi.fn(),
     updateProvenance: vi.fn(),
+    checkpointPartialContent: vi.fn(),
   };
   const commandReceipt = receipt();
 

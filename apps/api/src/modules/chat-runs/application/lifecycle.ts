@@ -38,6 +38,7 @@ import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatP
 import type { CoreChatOptions } from "~/types";
 
 import { buildChatRunCommandPayload } from "./command-payload";
+import { releaseQueuedFollowUpAfterRun } from "./follow-up-queue";
 import { readToolInteractionId } from "./interactions";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
 
@@ -184,7 +185,12 @@ export class ChatRunLifecycle {
   constructor(
     private readonly repository: Pick<
       ConversationRunRepository,
-      "getById" | "updateContext" | "updateRetry" | "updateProvenance" | "transition"
+      | "getById"
+      | "updateContext"
+      | "updateRetry"
+      | "updateProvenance"
+      | "transition"
+      | "checkpointPartialContent"
     >,
     readonly receipt: ChatRunCommandReceipt,
     private readonly env?: CoreChatOptions["env"],
@@ -200,6 +206,10 @@ export class ChatRunLifecycle {
 
     await publishRunChanged(publisher, run);
     await publishConversationChanged(publisher, run.conversationId, { runId: run.id });
+
+    if (this.serviceContext) {
+      await releaseQueuedFollowUpAfterRun(this.serviceContext, run);
+    }
   }
 
   private async reconcile(result?: AgentLoopExecutionResult): Promise<void> {
@@ -305,6 +315,10 @@ export class ChatRunLifecycle {
     }
 
     return updated;
+  }
+
+  async checkpointPartialContent(content: string): Promise<boolean> {
+    return this.repository.checkpointPartialContent(this.run.id, this.run.attempt, content);
   }
 
   async recordProvenance(provenance: RunProvenance): Promise<ChatRun> {

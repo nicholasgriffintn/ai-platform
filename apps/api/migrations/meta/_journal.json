@@ -29,6 +29,13 @@
       "when": 1791289498175,
       "tag": "0003_teammate_standing_approvals",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1791420971788,
+      "tag": "0004_chat_run_recovery",
+      "breakpoints": true
     }
   ]
 }

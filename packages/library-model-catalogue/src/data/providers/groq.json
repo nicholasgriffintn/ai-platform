@@ -1,5 +1,10 @@
 {
   "defaults": {
+    "dataRetention": {
+      "maxDays": 30,
+      "zeroRetention": "account_setting",
+      "source": "https://console.groq.com/docs/your-data"
+    },
     "supportsToolCalls": true,
     "supportsAttachments": false,
     "supportsTemperature": true

@@ -9,3 +9,5 @@
   Strict-Transport-Security: max-age=31536000; includeSubDomains
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+/version.json
+  Cache-Control: no-store

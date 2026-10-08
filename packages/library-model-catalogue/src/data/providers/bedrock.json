@@ -1,5 +1,9 @@
 {
   "defaults": {
+    "dataRetention": {
+      "zeroRetention": "account_setting",
+      "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
+    },
     "supportsToolCalls": true,
     "supportsAttachments": true,
     "supportsTemperature": true

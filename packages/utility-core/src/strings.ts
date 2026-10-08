@@ -169,3 +169,25 @@ export function decodeXmlEntities(value: string): string {
     .replace(/&gt;/g, ">")
     .replace(/&amp;/g, "&");
 }
+
+export function excerptAround(text: string, terms: readonly string[], maxLength: number): string {
+  const compact = text.replace(/\s+/g, " ").trim();
+
+  if (compact.length <= maxLength) {
+    return compact;
+  }
+
+  const lowered = compact.toLowerCase();
+  const matchIndex = terms
+    .map((term) => lowered.indexOf(term.toLowerCase()))
+    .filter((index) => index >= 0)
+    .reduce((earliest, index) => Math.min(earliest, index), Number.POSITIVE_INFINITY);
+  const anchor = Number.isFinite(matchIndex) ? matchIndex : 0;
+  const start = Math.max(
+    0,
+    Math.min(anchor - Math.floor(maxLength / 3), compact.length - maxLength),
+  );
+  const end = start + maxLength;
+
+  return `${start > 0 ? "…" : ""}${compact.slice(start, end).trim()}${end < compact.length ? "…" : ""}`;
+}

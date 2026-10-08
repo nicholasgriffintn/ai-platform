@@ -42,6 +42,7 @@ import {
   getModelByReference,
   isImageGenerationOutputModel,
   isReadinessFresh,
+  isTerminalChatRunStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import type {
   ConversationModeMetadata,
@@ -50,6 +51,7 @@ import type {
   ChatMessageSelection,
   ModelSelectionChangeHandler,
   ModelSelectorScope,
+  QueuedChatMessage,
 } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import type {
@@ -72,6 +74,7 @@ import {
   type ChatInputHandle,
   type ConversationRunSteering,
 } from "./ChatInput/index.js";
+import { QueuedFollowUps } from "./ChatInput/QueuedFollowUps.js";
 import { ChatRunStatusBanner } from "./ChatRunStatusBanner.js";
 import { ChatSuggestions } from "./ChatSuggestions.js";
 import { ComposerBanner } from "./ComposerBanner/index.js";
@@ -82,6 +85,12 @@ import { useAutoPlayResponses } from "./useAutoPlayResponses.js";
 import { useGoalCommands } from "./useGoalCommands.js";
 
 const EMPTY_CONTEXT_ATTACHMENTS: AttachmentData[] = [];
+
+export interface ConversationFollowUpQueue {
+  messages: readonly QueuedChatMessage[];
+  onQueue: (content: string) => Promise<void>;
+  onRemove: (queuedId: string) => void;
+}
 
 export interface ThreadModeConfig {
   assistantActionRoutes?: {
@@ -137,6 +146,7 @@ export interface ThreadModeConfig {
   composerBanner?: ReactNode;
   agentApprovals?: ConversationAgentApprovals;
   runSteering?: ConversationRunSteering;
+  followUpQueue?: ConversationFollowUpQueue;
   onToolInteraction?: (
     toolName: string,
     action: Parameters<ToolInteractionHandler>[1],
@@ -233,6 +243,26 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
   const isStreamLoading = streamStarted;
   const isModelInitializing = useIsLoading("model-init");
+  const followUpQueue = storageMode.retention === "kept" ? modeConfig?.followUpQueue : undefined;
+  const latestRunStatus = currentConversation?.latest_run?.status;
+  const isReplyLive =
+    isStreamLoading || (latestRunStatus !== undefined && !isTerminalChatRunStatus(latestRunStatus));
+  const runSteering = useMemo<ConversationRunSteering | undefined>(() => {
+    if (modeConfig?.runSteering) {
+      return modeConfig.runSteering;
+    }
+
+    if (!followUpQueue || !isReplyLive) {
+      return undefined;
+    }
+
+    return {
+      placeholder: "Queue a follow-up for when this reply finishes",
+      submitLabel: "Queue message",
+      help: "Press Enter to queue it. It sends as soon as the reply finishes, even if you close this tab.",
+      onSubmit: followUpQueue.onQueue,
+    };
+  }, [followUpQueue, isReplyLive, modeConfig?.runSteering]);
 
   const messages = useMemo(
     () => currentConversation?.messages || [],
@@ -371,8 +401,6 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       if (!composerInput.trim() && !attachments?.length && !selectedAssistantAction?.item) {
         return false;
       }
-
-      const runSteering = modeConfig?.runSteering;
 
       if (runSteering) {
         const instruction = composerInput.trim();
@@ -617,6 +645,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       navigate,
       refetchModels,
       resolveAssistantActionSubmit,
+      runSteering,
       selectedAssistantAction,
       selectedModelConfig,
       sendMessage,
@@ -674,7 +703,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
 
   const handleKeyPress = useCallback(
     (e: KeyboardEvent) => {
-      if ((isStreamLoading && !modeConfig?.runSteering) || isModelInitializing) {
+      if ((isStreamLoading && !runSteering) || isModelInitializing) {
         return;
       }
 
@@ -705,7 +734,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
       isStreamLoading,
       isModelInitializing,
       handleSubmit,
-      modeConfig?.runSteering,
+      runSteering,
     ],
   );
 
@@ -951,6 +980,9 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
         ) : null}
         {modeConfig?.agentApprovals ? <AgentApprovalDock {...modeConfig.agentApprovals} /> : null}
         {modeConfig?.composerBanner}
+        {followUpQueue ? (
+          <QueuedFollowUps messages={followUpQueue.messages} onRemove={followUpQueue.onRemove} />
+        ) : null}
         <ChatInput
           goalState={goalState}
           ref={chatInputRef}
@@ -971,7 +1003,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
           modelScope={modeConfig?.modelScope}
           onModelChange={modeConfig?.onModelChange}
           activeRunStatus={currentConversation?.latest_run?.status}
-          runSteering={modeConfig?.runSteering}
+          runSteering={runSteering}
           hasConversationHistory={messages.length > 0}
           hideComposerActionMenu={modeConfig?.hideComposerActionMenu}
           allowedAssistantActionCapabilities={modeConfig?.allowedAssistantActionCapabilities}
