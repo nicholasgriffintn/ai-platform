@@ -157,6 +157,98 @@ describe("createCommonParameters", () => {
     ).toBe(16_384);
   });
 
+  it("clamps the required Workers AI output limit to the remaining context window", () => {
+    const messageText = "x".repeat(4_000);
+    const params: ChatCompletionParameters = {
+      model: "@cf/moonshotai/kimi-k2.7-code",
+      env: createTestEnv(),
+      messages: [{ role: "user", content: messageText }],
+    };
+    const model = {
+      matchingModel: params.model,
+      provider: "workers-ai",
+      maxTokens: 262_144,
+      contextWindow: 262_144,
+    };
+    const estimatedInput = Math.ceil(messageText.length / 4) + 4;
+
+    const body = createCommonParameters(params, model, "workers-ai");
+
+    expect(body.max_tokens).toBe(262_144 - estimatedInput);
+    expect(body.max_tokens + estimatedInput).toBeLessThanOrEqual(262_144);
+  });
+
+  it("clamps an explicit Workers AI output limit that would overflow the context window", () => {
+    const params: ChatCompletionParameters = {
+      model: "@cf/moonshotai/kimi-k2.7-code",
+      env: createTestEnv(),
+      messages: [{ role: "user", content: "y".repeat(4_000) }],
+      max_tokens: 262_144,
+    };
+    const model = {
+      matchingModel: params.model,
+      provider: "workers-ai",
+      maxTokens: 262_144,
+      contextWindow: 262_144,
+    };
+
+    expect(createCommonParameters(params, model, "workers-ai").max_tokens).toBe(
+      262_144 - (Math.ceil(4_000 / 4) + 4),
+    );
+  });
+
+  it("keeps an explicit output limit that already fits the remaining context", () => {
+    const params: ChatCompletionParameters = {
+      model: "@cf/moonshotai/kimi-k2.7-code",
+      env: createTestEnv(),
+      messages: [{ role: "user", content: "y".repeat(4_000) }],
+      max_tokens: 2_048,
+    };
+    const model = {
+      matchingModel: params.model,
+      provider: "workers-ai",
+      maxTokens: 262_144,
+      contextWindow: 262_144,
+    };
+
+    expect(createCommonParameters(params, model, "workers-ai").max_tokens).toBe(2_048);
+  });
+
+  it("floors the required output limit when the input already fills the context window", () => {
+    const params: ChatCompletionParameters = {
+      model: "@cf/moonshotai/kimi-k2.7-code",
+      env: createTestEnv(),
+      messages: [{ role: "user", content: "z".repeat(4_000) }],
+    };
+    const model = {
+      matchingModel: params.model,
+      provider: "workers-ai",
+      maxTokens: 262_144,
+      contextWindow: 100,
+    };
+
+    expect(createCommonParameters(params, model, "workers-ai").max_tokens).toBe(1);
+  });
+
+  it("clamps the required Anthropic output limit to the remaining context window", () => {
+    const messageText = "x".repeat(4_000);
+    const params: ChatCompletionParameters = {
+      model: "claude-test",
+      env: createTestEnv(),
+      messages: [{ role: "user", content: messageText }],
+    };
+    const model = {
+      matchingModel: params.model,
+      provider: "anthropic",
+      maxTokens: 64_000,
+      contextWindow: 65_000,
+    };
+
+    expect(createCommonParameters(params, model, "anthropic").max_tokens).toBe(
+      65_000 - (Math.ceil(messageText.length / 4) + 4),
+    );
+  });
+
   const hybridModel = {
     matchingModel: "mistral-small-latest",
     provider: "mistral",
