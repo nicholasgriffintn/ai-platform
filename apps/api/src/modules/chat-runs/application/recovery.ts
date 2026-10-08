@@ -9,6 +9,8 @@ import {
 } from "~/modules/sync/application/conversation-events";
 import { withoutOrigin } from "~/modules/sync/application/publish";
 
+import { salvageInterruptedReply } from "./interrupted-reply";
+
 const logger = getLogger({ prefix: "services/chat-runs/recovery" });
 
 async function announceRecoveredRun(context: ServiceContext, run: ChatRun): Promise<void> {
@@ -48,6 +50,10 @@ export async function reconcileInactiveChatRun(
   }
 
   const cancelled = run.status === "cancelling";
+  const partial = await context.repositories.conversationRuns.getPartialContent(
+    run.id,
+    run.attempt,
+  );
   const transitioned = await context.repositories.conversationRuns.transition({
     runId: run.id,
     attempt: run.attempt,
@@ -58,6 +64,7 @@ export async function reconcileInactiveChatRun(
   });
 
   if (transitioned) {
+    await salvageInterruptedReply(context, transitioned, partial);
     await announceRecoveredRun(context, transitioned);
 
     return transitioned;

@@ -263,6 +263,43 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     return row ? formatRun(row) : null;
   }
 
+  async checkpointPartialContent(
+    runId: string,
+    attempt: number,
+    content: string,
+  ): Promise<boolean> {
+    const result = await this.executeRun(
+      `UPDATE conversation_run
+       SET partial_content = ?
+       WHERE id = ? AND attempt = ? AND status = 'running'`,
+      [content, runId, attempt],
+    );
+
+    return (result.meta?.changes ?? 0) > 0;
+  }
+
+  async getPartialContent(runId: string, attempt: number): Promise<string | null> {
+    const row = await this.runQuery<{ partial_content: string | null }>(
+      "SELECT partial_content FROM conversation_run WHERE id = ? AND attempt = ?",
+      [runId, attempt],
+      true,
+    );
+
+    return row?.partial_content ?? null;
+  }
+
+  async listActiveRunsUpdatedBefore(updatedBefore: string, limit: number): Promise<ChatRun[]> {
+    const rows = await this.runQuery<ConversationRunRow>(
+      `SELECT * FROM conversation_run
+       WHERE status IN ('running', 'cancelling') AND updated_at < ?
+       ORDER BY updated_at ASC
+       LIMIT ?`,
+      [updatedBefore, limit],
+    );
+
+    return rows.map(formatRun);
+  }
+
   async updateProvenance(
     runId: string,
     attempt: number,
@@ -524,6 +561,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
        SET status = 'running', attempt = attempt + 1, updated_at = ?,
            started_at = COALESCE(started_at, ?), terminal_reason = NULL,
            context_json = NULL, retry_json = NULL, interaction_kind = NULL,
+           partial_content = NULL,
            resolved_configuration_json = ?,
            event_sequence = event_sequence + 1
        WHERE id = ? AND attempt = ? AND status = ?
@@ -799,6 +837,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
            last_message_id = COALESCE(?, last_message_id),
            interaction_kind = ?,
            retry_json = NULL,
+           partial_content = NULL,
            event_sequence = event_sequence + 1
        WHERE id = ? AND attempt = ? AND status = ?
        RETURNING *`,

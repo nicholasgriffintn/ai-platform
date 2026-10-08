@@ -184,7 +184,12 @@ export class ChatRunLifecycle {
   constructor(
     private readonly repository: Pick<
       ConversationRunRepository,
-      "getById" | "updateContext" | "updateRetry" | "updateProvenance" | "transition"
+      | "getById"
+      | "updateContext"
+      | "updateRetry"
+      | "updateProvenance"
+      | "transition"
+      | "checkpointPartialContent"
     >,
     readonly receipt: ChatRunCommandReceipt,
     private readonly env?: CoreChatOptions["env"],
@@ -305,6 +310,10 @@ export class ChatRunLifecycle {
     }
 
     return updated;
+  }
+
+  async checkpointPartialContent(content: string): Promise<boolean> {
+    return this.repository.checkpointPartialContent(this.run.id, this.run.attempt, content);
   }
 
   async recordProvenance(provenance: RunProvenance): Promise<ChatRun> {

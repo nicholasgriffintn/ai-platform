@@ -2,6 +2,7 @@ import { SCHEDULES } from "~/config/schedules";
 import { RepositoryManager } from "~/infrastructure/database/repositoryManager";
 import { reapComposioConnectorSessions } from "~/modules/apps/application/connectors/composio-cleanup";
 import { deleteExpiredConnectorOperationApprovals } from "~/modules/apps/application/connectors/connector-approval-cleanup";
+import { sweepInterruptedChatRuns } from "~/modules/chat-runs/application/interrupted-run-sweep";
 import { releaseExpiredChatRunReservations } from "~/modules/chat-runs/application/reservation-maintenance";
 import { evaluateServerFlag, taskFlags } from "~/modules/experiments/application";
 import {
@@ -66,6 +67,15 @@ workflows.always(
     name: "expired-chat-run-reservations",
     run: async ({ env }) => {
       await releaseExpiredChatRunReservations(env);
+    },
+  }),
+);
+
+workflows.always(
+  defineSchedule({
+    name: "interrupted-chat-runs",
+    run: async ({ env }) => {
+      await sweepInterruptedChatRuns(env);
     },
   }),
 );

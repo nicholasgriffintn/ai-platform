@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   reapComposioConnectorSessions: vi.fn(),
   deleteExpiredConnectorOperationApprovals: vi.fn(),
   releaseExpiredChatRunReservations: vi.fn(),
+  sweepInterruptedChatRuns: vi.fn(),
   schedulePendingTaskNotificationDeliveries: vi.fn(),
   scheduleKnowledgeSyncs: vi.fn(),
   scheduleKnowledgeIndexes: vi.fn(),
@@ -31,6 +32,10 @@ vi.mock("~/modules/apps/application/connectors/composio-cleanup", () => ({
 
 vi.mock("~/modules/apps/application/connectors/connector-approval-cleanup", () => ({
   deleteExpiredConnectorOperationApprovals: mocks.deleteExpiredConnectorOperationApprovals,
+}));
+
+vi.mock("~/modules/chat-runs/application/interrupted-run-sweep", () => ({
+  sweepInterruptedChatRuns: mocks.sweepInterruptedChatRuns,
 }));
 
 vi.mock("~/modules/chat-runs/application/reservation-maintenance", () => ({
