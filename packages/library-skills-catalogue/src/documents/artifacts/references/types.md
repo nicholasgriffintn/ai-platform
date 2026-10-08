@@ -36,7 +36,7 @@ Add `display="inline"` to render it directly in the chat thread as a preview, wi
 - React 18 is available. Import hooks normally: `import { useState } from "react"`. TypeScript syntax is allowed and stripped.
 - `recharts` is available for charts: `import { LineChart, Line, XAxis, YAxis, Tooltip } from "recharts"`.
 - **Nothing else is available.** No Tailwind, no lucide-react, no shadcn/ui, no utility libraries. Any other import fails to render. Style with inline styles, a `<style>` element, or a companion `text/css` artifact.
-- The component takes no required props and must be the default export.
+- The component takes no required props and should be the default export. A single named export is also rendered if there is no default export.
 - If any of that is a problem, write plain `text/html` instead — it is less machinery and fails less often.
 
 ### Live data

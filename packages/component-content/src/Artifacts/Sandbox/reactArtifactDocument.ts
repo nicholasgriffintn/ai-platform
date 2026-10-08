@@ -93,10 +93,54 @@ function require(name) {
 var module = { exports: {} };
 `;
 
+export function resolveArtifactComponent(exported: unknown): unknown {
+  function isRenderable(value: unknown): boolean {
+    return typeof value === "function" || (value !== null && typeof value === "object");
+  }
+
+  if (!exported) {
+    return null;
+  }
+
+  if (typeof exported === "function") {
+    return exported;
+  }
+
+  if (typeof exported === "object") {
+    const record = exported as Record<string, unknown>;
+
+    if (isRenderable(record.default)) {
+      return record.default;
+    }
+
+    const keys = Object.keys(record).filter((key) => key !== "__esModule" && key !== "default");
+    const preferred = ["App", "Main", "Root", "Component", "Default", "Index"];
+
+    for (const name of preferred) {
+      if (isRenderable(record[name])) {
+        return record[name];
+      }
+    }
+
+    for (const key of keys) {
+      if (/^[A-Z]/.test(key) && isRenderable(record[key])) {
+        return record[key];
+      }
+    }
+
+    for (const key of keys) {
+      if (isRenderable(record[key])) {
+        return record[key];
+      }
+    }
+  }
+
+  return null;
+}
+
 const RUNTIME_RENDER = `
-var exported = module.exports;
-var Component = exported && (exported.default || (typeof exported === "function" ? exported : null));
-if (typeof Component !== "function") throw new Error("The artifact must export a React component as its default export.");
+var Component = (${resolveArtifactComponent.toString()})(module.exports);
+if (!Component || (typeof Component !== "function" && (typeof Component !== "object" || Component === null))) throw new Error("The artifact must export a React component as its default export or as a named export.");
 ReactDOM.createRoot(root).render(React.createElement(Component));
 `;
 
