@@ -406,7 +406,7 @@ importers:
         version: 3.2.3
       agents:
         specifier: 0.24.0
-        version: 0.24.0(@babel/core@8.0.1)(@babel/runtime@7.29.7)(@modelcontextprotocol/client@2.0.0)(@modelcontextprotocol/sdk@1.30.0(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@modelcontextprotocol/server@2.0.0)(react@19.3.0)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(zod@4.6.5)
+        version: 0.24.0(@babel/core@8.0.6)(@babel/runtime@7.29.7)(@modelcontextprotocol/client@2.0.0)(@modelcontextprotocol/sdk@1.30.0(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@modelcontextprotocol/server@2.0.0)(react@19.3.0)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(zod@4.6.5)
       aws4fetch:
         specifier: 1.0.20
         version: 1.0.20
@@ -653,11 +653,11 @@ importers:
         version: 5.0.15(@types/react@19.3.0)(react@19.3.0)
     devDependencies:
       '@babel/core':
-        specifier: 8.0.1
-        version: 8.0.1
+        specifier: 8.0.6
+        version: 8.0.6
       '@babel/preset-typescript':
         specifier: 8.0.1
-        version: 8.0.1(@babel/core@8.0.1)
+        version: 8.0.1(@babel/core@8.0.6)
       '@cloudflare/vite-plugin':
         specifier: 1.62.0
         version: 1.62.0(@types/node@26.6.3)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(wrangler@4.143.0(@cloudflare/workers-types@5.20260918.1)(@types/node@26.6.3))
@@ -675,7 +675,7 @@ importers:
         version: 8.4.0(@react-router/serve@8.4.0(react-router@8.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(supports-color@10.2.2)(typescript@6.0.3))(react-router@8.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(supports-color@10.2.2)(typescript@6.0.3)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(wrangler@4.143.0(@cloudflare/workers-types@5.20260918.1)(@types/node@26.6.3))
       '@rolldown/plugin-babel':
         specifier: 0.2.4
-        version: 0.2.4(@babel/core@8.0.1)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
+        version: 0.2.4(@babel/core@8.0.6)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
       '@tailwindcss/typography':
         specifier: 0.5.20
         version: 0.5.20(tailwindcss@4.3.3)
@@ -702,7 +702,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       '@vitejs/plugin-react':
         specifier: 6.1.1
-        version: 6.1.1(@rolldown/plugin-babel@0.2.4(@babel/core@8.0.1)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
+        version: 6.1.1(@rolldown/plugin-babel@0.2.4(@babel/core@8.0.6)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
       babel-plugin-react-compiler:
         specifier: 1.0.0
         version: 1.0.0
@@ -854,7 +854,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       '@vitejs/plugin-react':
         specifier: 6.1.1
-        version: 6.1.1(@rolldown/plugin-babel@0.2.4(@babel/core@8.0.1)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
+        version: 6.1.1(@rolldown/plugin-babel@0.2.4(@babel/core@8.0.6)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
       tailwindcss:
         specifier: 4.3.3
         version: 4.3.3
@@ -2947,8 +2947,8 @@ packages:
     resolution: {integrity: sha512-RgHBCvtjbOK2gXSNBNIkNoEc9qoVEtau3hj8gEqKQuL3HZAibKarWFEI3Lfm6EYKkLalOh8eSrj9b+ch9H/VBA==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/core@8.0.1':
-    resolution: {integrity: sha512-5FgxM4dLQpMJHSiVATk8foW263dVHQHBVpXYiimNECVWG01f4nFyEbQixeT6Mwvg7TayREJ2gpKl3o2RoMdnqw==}
+  '@babel/core@8.0.6':
+    resolution: {integrity: sha512-5zwYt1V4ji3mXKKRIAkohSJ29WepxNwxQi+7y7P5AcVPh1dcxnZBU2cfxHnPwS+u9+lZnXPsv30TQaF2xg+Tfg==}
     engines: {node: ^22.18.0 || >=24.11.0}
 
   '@babel/generator@7.29.8':
@@ -10691,7 +10691,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/core@8.0.1':
+  '@babel/core@8.0.6':
     dependencies:
       '@babel/code-frame': 8.0.6
       '@babel/generator': 8.0.6
@@ -10708,7 +10708,7 @@ snapshots:
       import-meta-resolve: 4.2.0
       json5: 2.2.3
       obug: 2.2.1
-      semver: 7.8.5
+      verkit: 0.3.2
 
   '@babel/generator@7.29.8':
     dependencies:
@@ -10747,13 +10747,13 @@ snapshots:
       flru: 1.0.2
       verkit: 0.3.2
 
-  '@babel/helper-create-class-features-plugin@8.0.6(@babel/core@8.0.1)':
+  '@babel/helper-create-class-features-plugin@8.0.6(@babel/core@8.0.6)':
     dependencies:
-      '@babel/core': 8.0.1
+      '@babel/core': 8.0.6
       '@babel/helper-annotate-as-pure': 8.0.0
       '@babel/helper-member-expression-to-functions': 8.0.5
       '@babel/helper-optimise-call-expression': 8.0.0
-      '@babel/helper-replace-supers': 8.0.1(@babel/core@8.0.1)
+      '@babel/helper-replace-supers': 8.0.1(@babel/core@8.0.6)
       '@babel/helper-skip-transparent-expression-wrappers': 8.0.0
       '@babel/traverse': 8.0.6
       verkit: 0.3.2
@@ -10788,9 +10788,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/helper-module-transforms@8.0.6(@babel/core@8.0.1)':
+  '@babel/helper-module-transforms@8.0.6(@babel/core@8.0.6)':
     dependencies:
-      '@babel/core': 8.0.1
+      '@babel/core': 8.0.6
       '@babel/helper-module-imports': 8.0.0
       '@babel/helper-validator-identifier': 8.0.6
       '@babel/traverse': 8.0.6
@@ -10799,13 +10799,13 @@ snapshots:
     dependencies:
       '@babel/types': 8.0.6
 
-  '@babel/helper-plugin-utils@8.0.1(@babel/core@8.0.1)':
+  '@babel/helper-plugin-utils@8.0.1(@babel/core@8.0.6)':
     dependencies:
-      '@babel/core': 8.0.1
+      '@babel/core': 8.0.6
 
-  '@babel/helper-replace-supers@8.0.1(@babel/core@8.0.1)':
+  '@babel/helper-replace-supers@8.0.1(@babel/core@8.0.6)':
     dependencies:
-      '@babel/core': 8.0.1
+      '@babel/core': 8.0.6
       '@babel/helper-member-expression-to-functions': 8.0.5
       '@babel/helper-optimise-call-expression': 8.0.0
       '@babel/traverse': 8.0.6
@@ -10845,45 +10845,45 @@ snapshots:
     dependencies:
       '@babel/types': 8.0.6
 
-  '@babel/plugin-proposal-decorators@8.0.2(@babel/core@8.0.1)':
+  '@babel/plugin-proposal-decorators@8.0.2(@babel/core@8.0.6)':
     dependencies:
-      '@babel/core': 8.0.1
-      '@babel/helper-create-class-features-plugin': 8.0.6(@babel/core@8.0.1)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.1)
-      '@babel/plugin-syntax-decorators': 8.0.1(@babel/core@8.0.1)
+      '@babel/core': 8.0.6
+      '@babel/helper-create-class-features-plugin': 8.0.6(@babel/core@8.0.6)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.6)
+      '@babel/plugin-syntax-decorators': 8.0.1(@babel/core@8.0.6)
 
-  '@babel/plugin-syntax-decorators@8.0.1(@babel/core@8.0.1)':
+  '@babel/plugin-syntax-decorators@8.0.1(@babel/core@8.0.6)':
     dependencies:
-      '@babel/core': 8.0.1
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.1)
+      '@babel/core': 8.0.6
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.6)
 
-  '@babel/plugin-syntax-typescript@8.0.3(@babel/core@8.0.1)':
+  '@babel/plugin-syntax-typescript@8.0.3(@babel/core@8.0.6)':
     dependencies:
-      '@babel/core': 8.0.1
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.1)
+      '@babel/core': 8.0.6
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.6)
 
-  '@babel/plugin-transform-modules-commonjs@8.0.1(@babel/core@8.0.1)':
+  '@babel/plugin-transform-modules-commonjs@8.0.1(@babel/core@8.0.6)':
     dependencies:
-      '@babel/core': 8.0.1
-      '@babel/helper-module-transforms': 8.0.6(@babel/core@8.0.1)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.1)
+      '@babel/core': 8.0.6
+      '@babel/helper-module-transforms': 8.0.6(@babel/core@8.0.6)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.6)
 
-  '@babel/plugin-transform-typescript@8.0.6(@babel/core@8.0.1)':
+  '@babel/plugin-transform-typescript@8.0.6(@babel/core@8.0.6)':
     dependencies:
-      '@babel/core': 8.0.1
+      '@babel/core': 8.0.6
       '@babel/helper-annotate-as-pure': 8.0.0
-      '@babel/helper-create-class-features-plugin': 8.0.6(@babel/core@8.0.1)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.1)
+      '@babel/helper-create-class-features-plugin': 8.0.6(@babel/core@8.0.6)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.6)
       '@babel/helper-skip-transparent-expression-wrappers': 8.0.0
-      '@babel/plugin-syntax-typescript': 8.0.3(@babel/core@8.0.1)
+      '@babel/plugin-syntax-typescript': 8.0.3(@babel/core@8.0.6)
 
-  '@babel/preset-typescript@8.0.1(@babel/core@8.0.1)':
+  '@babel/preset-typescript@8.0.1(@babel/core@8.0.6)':
     dependencies:
-      '@babel/core': 8.0.1
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.1)
+      '@babel/core': 8.0.6
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.6)
       '@babel/helper-validator-option': 8.0.0
-      '@babel/plugin-transform-modules-commonjs': 8.0.1(@babel/core@8.0.1)
-      '@babel/plugin-transform-typescript': 8.0.6(@babel/core@8.0.1)
+      '@babel/plugin-transform-modules-commonjs': 8.0.1(@babel/core@8.0.6)
+      '@babel/plugin-transform-typescript': 8.0.6(@babel/core@8.0.6)
 
   '@babel/runtime-corejs3@7.29.7':
     dependencies:
@@ -13050,9 +13050,9 @@ snapshots:
   '@rolldown/binding-win32-x64-msvc@1.2.12':
     optional: true
 
-  '@rolldown/plugin-babel@0.2.4(@babel/core@8.0.1)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))':
+  '@rolldown/plugin-babel@0.2.4(@babel/core@8.0.6)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))':
     dependencies:
-      '@babel/core': 8.0.1
+      '@babel/core': 8.0.6
       picomatch: 4.0.7
       rolldown: 1.2.12
     optionalDependencies:
@@ -13888,12 +13888,12 @@ snapshots:
 
   '@ungap/structured-clone@1.4.0': {}
 
-  '@vitejs/plugin-react@6.1.1(@rolldown/plugin-babel@0.2.4(@babel/core@8.0.1)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))':
+  '@vitejs/plugin-react@6.1.1(@rolldown/plugin-babel@0.2.4(@babel/core@8.0.6)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
       vite: 8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)
     optionalDependencies:
-      '@rolldown/plugin-babel': 0.2.4(@babel/core@8.0.1)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
+      '@rolldown/plugin-babel': 0.2.4(@babel/core@8.0.6)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
       babel-plugin-react-compiler: 1.0.0
 
   '@vitest/browser-playwright@4.1.11(playwright@1.63.0)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(vitest@4.1.11)':
@@ -14284,14 +14284,14 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  agents@0.24.0(@babel/core@8.0.1)(@babel/runtime@7.29.7)(@modelcontextprotocol/client@2.0.0)(@modelcontextprotocol/sdk@1.30.0(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@modelcontextprotocol/server@2.0.0)(react@19.3.0)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(zod@4.6.5):
+  agents@0.24.0(@babel/core@8.0.6)(@babel/runtime@7.29.7)(@modelcontextprotocol/client@2.0.0)(@modelcontextprotocol/sdk@1.30.0(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5))(@modelcontextprotocol/server@2.0.0)(react@19.3.0)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(zod@4.6.5):
     dependencies:
-      '@babel/plugin-proposal-decorators': 8.0.2(@babel/core@8.0.1)
+      '@babel/plugin-proposal-decorators': 8.0.2(@babel/core@8.0.6)
       '@cfworker/json-schema': 4.1.1
       '@modelcontextprotocol/client': 2.0.0
       '@modelcontextprotocol/sdk': 1.30.0(@cfworker/json-schema@4.1.1)(supports-color@10.2.2)(zod@4.6.5)
       '@modelcontextprotocol/server': 2.0.0
-      '@rolldown/plugin-babel': 0.2.4(@babel/core@8.0.1)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
+      '@rolldown/plugin-babel': 0.2.4(@babel/core@8.0.6)(@babel/runtime@7.29.7)(rolldown@1.2.12)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
       capnweb: 0.12.0
       cron-schedule: 6.0.0
       esbuild: 0.28.2
