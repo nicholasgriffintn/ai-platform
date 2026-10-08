@@ -975,6 +975,22 @@ Respond with only a single number from 1-10 representing the quality score.`,
     text: `You have used every tool step available for this response. No further tool calls are possible. Answer the user now with what you already have, and say plainly what you could not finish.`,
   },
   {
+    id: "apps/agent-loop/empty-reply-repair",
+    task: "control-notice",
+    title: "Empty reply repair",
+    description:
+      "Asks for a written answer after the model finished a response without any visible text.",
+    text: `Your last response reached the user with no text at all. No further tool calls are possible. Write the reply to the user now from the conversation and any tool results above. If part of the request could not be finished, say plainly what was done and what remains.`,
+  },
+  {
+    id: "apps/agent-loop/empty-reply-fallback",
+    task: "control-notice",
+    title: "Empty reply fallback",
+    description:
+      "Shown to the user when the model returns no text after a retry and a repair pass.",
+    text: `The model finished without writing a reply, twice. Nothing was lost from the conversation. Send your message again, or pick another model if it keeps happening.`,
+  },
+  {
     id: "apps/agent-loop/goal-finalisation",
     task: "control-notice",
     title: "Goal finalisation",

@@ -37,6 +37,13 @@ import {
   type TurnOutput,
 } from "~/modules/chat/application/agent/assistant-turn";
 import { startConversationTitle } from "~/modules/chat/application/agent/conversation-title";
+import {
+  EMPTY_REPLY_FAILURE,
+  EMPTY_REPLY_FALLBACK,
+  EMPTY_REPLY_REPAIR_NOTICE,
+  isEmptyTurn,
+  nextEmptyReplyAttempt,
+} from "~/modules/chat/application/agent/empty-reply";
 import { captureRunMemories } from "~/modules/chat/application/agent/memory-capture";
 import { createAgentProviderIO } from "~/modules/chat/application/agent/provider-io";
 import type { ChatTurnTransport } from "~/modules/chat/application/agent/turn-transport";
@@ -486,27 +493,15 @@ export async function runAgentLoop(
       await writeTurnActivity(sink, { kind: "model_step_started", step });
 
       let turn: TurnOutput & { error?: unknown };
-
-      try {
-        turn = await params.transport.runTurn({
-          request: goalFinalisationNotice
-            ? {
-                ...params.requestParams,
-                messages: providerMessages,
-                enabled_tools: [...state.enabledToolNames],
-              }
-            : finalAnswerNotice
-              ? {
-                  ...params.requestParams,
-                  messages: providerMessages,
-                  disable_functions: true,
-                  enabled_tools: [...state.enabledToolNames],
-                }
-              : {
-                  ...params.requestParams,
-                  messages: providerMessages,
-                  enabled_tools: [...state.enabledToolNames],
-                },
+      const request = {
+        ...params.requestParams,
+        messages: providerMessages,
+        enabled_tools: [...state.enabledToolNames],
+        ...(finalAnswerNotice && !goalFinalisationNotice ? { disable_functions: true } : {}),
+      };
+      const requestModelTurn = (turnRequest: typeof request) =>
+        params.transport.runTurn({
+          request: turnRequest,
           sink,
           context: {
             ...transportContext,
@@ -517,6 +512,56 @@ export async function runAgentLoop(
             }),
           },
         });
+
+      try {
+        turn = await requestModelTurn(request);
+
+        let emptyReplyAttempts = 0;
+        let next = nextEmptyReplyAttempt(emptyReplyAttempts);
+
+        while (next && isEmptyTurn(turn) && !(await shouldStop())) {
+          logger.warn("Model returned an empty reply", {
+            failure: EMPTY_REPLY_FAILURE,
+            completionId: params.completionId,
+            model: params.model,
+            provider: params.provider,
+            step,
+            recovery: next,
+          });
+
+          const emptyTurn = turn;
+          const retried = await requestModelTurn(
+            next === "retry"
+              ? request
+              : {
+                  ...request,
+                  disable_functions: true,
+                  messages: providerIO.providerMessages([
+                    ...contextBudget.messages,
+                    {
+                      role: "user" as const,
+                      content: EMPTY_REPLY_REPAIR_NOTICE,
+                      data: { contextControl: true },
+                    },
+                  ]),
+                },
+          );
+
+          turn = {
+            ...retried,
+            usage: sumTokenUsage(emptyTurn.usage, retried.usage) ?? retried.usage,
+          };
+          emptyReplyAttempts += 1;
+          next = nextEmptyReplyAttempt(emptyReplyAttempts);
+        }
+
+        if (isEmptyTurn(turn)) {
+          if (params.transport.streams) {
+            await sink.writeEvent("content_block_delta", { content: EMPTY_REPLY_FALLBACK });
+          }
+
+          turn = { ...turn, content: EMPTY_REPLY_FALLBACK, status: "incomplete" };
+        }
       } catch (error) {
         if (isRetryCancelledError(error) || params.shouldStop?.()) {
           await writeTurnActivity(sink, {
