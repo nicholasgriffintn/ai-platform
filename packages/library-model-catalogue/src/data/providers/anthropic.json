@@ -1,5 +1,10 @@
 {
   "defaults": {
+    "dataRetention": {
+      "maxDays": 30,
+      "zeroRetention": "on_request",
+      "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+    },
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
