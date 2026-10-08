@@ -9,6 +9,7 @@ import { visualizer } from "rollup-plugin-visualizer";
 import type { Plugin } from "vite";
 import { defaultClientConditions, defaultServerConditions, defineConfig } from "vite";
 
+import { buildVersion } from "./plugins/build-version.ts";
 import { sitePreviewAssets } from "./plugins/site-preview-assets.ts";
 
 export default defineConfig(({ command }) => ({
@@ -42,6 +43,7 @@ export default defineConfig(({ command }) => ({
     },
   },
   plugins: [
+    buildVersion(),
     sitePreviewAssets(),
     stubBrowserOnlyModules(),
     cloudflare({ viteEnvironment: { name: "ssr" } }),
