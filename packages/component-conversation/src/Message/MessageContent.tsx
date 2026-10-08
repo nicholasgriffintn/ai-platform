@@ -75,7 +75,7 @@ const renderTextContent = (
   };
 
   if (artifacts && artifacts.length > 0) {
-    const artifactMap = new Map<string, ArtifactProps>();
+    const artifactMap = new Map<string, (typeof artifacts)[number]>();
 
     for (const artifact of artifacts) {
       artifactMap.set(artifact.identifier, artifact);
@@ -96,7 +96,19 @@ const renderTextContent = (
         const identifier = identifiers[i];
         const artifact = artifactMap.get(identifier);
 
-        if (artifact) {
+        if (artifact?.mode === "edit") {
+          renderedParts.push(
+            <p
+              key={`artifact-edit-${identifier}-${i}`}
+              className="text-sm text-muted-foreground"
+              role={isGenerating ? "status" : "alert"}
+            >
+              {isGenerating
+                ? `Updating ${artifact.title ?? identifier}…`
+                : `The changes to ${artifact.title ?? identifier} could not be applied. Ask for the full artifact instead.`}
+            </p>,
+          );
+        } else if (artifact) {
           renderedParts.push(
             isInlinePreviewArtifact(artifact) ? (
               <ArtifactInlinePreview
