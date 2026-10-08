@@ -37,6 +37,11 @@
       "types": "./dist/artifact-bindings.d.ts",
       "import": "./dist/artifact-bindings.js"
     },
+    "./artifact-edits": {
+      "polychat-source": "./src/artifact-edits.ts",
+      "types": "./dist/artifact-edits.d.ts",
+      "import": "./dist/artifact-edits.js"
+    },
     "./attachments": {
       "polychat-source": "./src/attachments.ts",
       "types": "./dist/attachments.d.ts",
