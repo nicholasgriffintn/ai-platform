@@ -1,10 +1,5 @@
 {
   "defaults": {
-    "dataRetention": {
-      "maxDays": 30,
-      "zeroRetention": "account_setting",
-      "source": "https://console.groq.com/docs/your-data"
-    },
     "supportsToolCalls": true,
     "supportsAttachments": false,
     "supportsTemperature": true
@@ -17,6 +12,11 @@
         "speed": 4,
         "deprecated": true,
         "lastUpdated": "January 20, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0003
       }
@@ -28,6 +28,11 @@
         "speed": 4,
         "deprecated": true,
         "lastUpdated": "January 20, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0004
       }
@@ -39,6 +44,11 @@
         "speed": 5,
         "deprecated": true,
         "lastUpdated": "April 18, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0006
       },
@@ -53,6 +63,11 @@
         "speed": 5,
         "deprecated": true,
         "lastUpdated": "April 18, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0003
       },
@@ -70,6 +85,11 @@
         "card": "https://www.prompthub.us/models/llama-3-3-70b",
         "speed": 5,
         "lastUpdated": "December 6, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.00059,
         "costPer1kOutputTokens": 0.00079
       }
@@ -97,6 +117,11 @@
         "isFeatured": false,
         "knowledgeCutoffDate": "August 2024",
         "lastUpdated": "April 5, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.00011,
         "costPer1kOutputTokens": 0.00034,
         "supportsAttachments": true
@@ -119,6 +144,11 @@
         "speed": 5,
         "knowledgeCutoffDate": "December 2023",
         "lastUpdated": "July 23, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.00008
       }
@@ -130,12 +160,14 @@
         "speed": 4,
         "deprecated": true,
         "lastUpdated": "December 11, 2023",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.00024,
         "costPer1kOutputTokens": 0.00024
-      },
-      "unset": [
-        "openWeights"
-      ]
+      }
     },
     "gemma-2-2b-it": {
       "model": "gemma/gemma-2-2b-it",
@@ -144,6 +176,11 @@
         "speed": 5,
         "deprecated": true,
         "lastUpdated": "June 27, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0001
       }
@@ -155,6 +192,11 @@
         "speed": 4,
         "deprecated": true,
         "lastUpdated": "June 27, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0002
       }
@@ -175,6 +217,11 @@
         "contextComplexity": 4,
         "speed": 5,
         "lastUpdated": "September 25, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003
       }
@@ -195,6 +242,11 @@
         "speed": 5,
         "isFeatured": true,
         "lastUpdated": "October 21, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
       }
@@ -210,6 +262,11 @@
         "knowledgeCutoffDate": "November 8, 2024",
         "releaseDate": "June 11, 2025",
         "lastUpdated": "June 12, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.00029,
         "costPer1kOutputTokens": 0.00059
       },
@@ -222,6 +279,11 @@
       "matchingModel": "allam-2-7b",
       "overrides": {
         "lastUpdated": "January 23, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
@@ -233,6 +295,11 @@
       "overrides": {
         "status": "beta",
         "lastUpdated": "December 16, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.04,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -245,6 +312,11 @@
       "overrides": {
         "status": "beta",
         "lastUpdated": "December 19, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -261,6 +333,11 @@
         "deprecationMessage": "Groq Compound is being retired. Use GPT OSS 120B instead.",
         "replacementModel": "groq-openai-gpt-oss-120b",
         "lastUpdated": "September 4, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
@@ -275,6 +352,11 @@
         "deprecationMessage": "Groq Compound Mini is being retired. Use GPT OSS 20B instead.",
         "replacementModel": "groq-openai-gpt-oss-20b",
         "lastUpdated": "September 4, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
@@ -286,6 +368,11 @@
       "overrides": {
         "status": "beta",
         "lastUpdated": "May 29, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.00003,
         "costPer1kOutputTokens": 0.00003,
         "supportsToolCalls": false,
@@ -298,6 +385,11 @@
       "overrides": {
         "status": "beta",
         "lastUpdated": "May 29, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00004,
         "supportsToolCalls": false,
@@ -311,6 +403,11 @@
         "status": "beta",
         "isFree": true,
         "lastUpdated": "June 29, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003
       }
@@ -325,6 +422,11 @@
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "September 1, 2023",
         "lastUpdated": "September 5, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
@@ -335,6 +437,11 @@
       "matchingModel": "whisper-large-v3-turbo",
       "overrides": {
         "lastUpdated": "October 1, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
@@ -349,6 +456,11 @@
         "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "April 22, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
         "supportsAttachments": true,
@@ -368,6 +480,11 @@
         "contextWindow": 131042,
         "maxTokens": 16384,
         "lastUpdated": "August 14, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "account_setting",
+          "source": "https://console.groq.com/docs/your-data"
+        },
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.004,
         "supportsAttachments": true,

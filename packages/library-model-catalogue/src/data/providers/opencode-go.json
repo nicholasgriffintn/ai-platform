@@ -485,6 +485,16 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
       }
+    },
+    "claude-haiku-5-5": {
+      "model": "claude-haiku/claude-haiku-5-5",
+      "matchingModel": "claude-haiku-5-5",
+      "overrides": {
+        "lastUpdated": "October 7, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsTemperature": false
+      }
     }
   }
 }

@@ -194,8 +194,8 @@
       "matchingModel": "qwen-vl-ocr",
       "overrides": {
         "lastUpdated": "April 13, 2025",
-        "costPer1kInputTokens": 0.00072,
-        "costPer1kOutputTokens": 0.00072,
+        "costPer1kInputTokens": 0.00007,
+        "costPer1kOutputTokens": 0.00016,
         "supportsToolCalls": false
       }
     },

@@ -160,9 +160,11 @@
       }
     },
     "codestral-2508": {
-      "model": "mistral/codestral-2508",
+      "model": "codestral/codestral-25-08",
       "matchingModel": "codestral-2508",
       "overrides": {
+        "maxTokens": 256000,
+        "knowledgeCutoffDate": "March 2025",
         "lastUpdated": "July 30, 2025",
         "costPer1kInputTokens": 0.000368,
         "costPer1kOutputTokens": 0.001103,
@@ -1557,11 +1559,6 @@
         "name": "Pixtral Large 2502",
         "description": "Pixtral Large (25.02) is a 124B open-weight multimodal model built on Mistral Large 2, offering advanced image understanding and strong performance across text and code tasks.",
         "maxTokens": 128000,
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "contextComplexity": 4,
         "speed": 3,
         "lastUpdated": "April 8, 2025",
@@ -2515,6 +2512,35 @@
           ],
           "defaultEffort": "low"
         }
+      }
+    },
+    "claude-sonnet-5.5": {
+      "model": "claude-sonnet/claude-sonnet-5-5",
+      "matchingModel": "claude-sonnet-5.5",
+      "overrides": {
+        "lastUpdated": "September 28, 2026",
+        "costPer1kInputTokens": 0.00225,
+        "costPer1kOutputTokens": 0.011249,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "mistral-large-4-0": {
+      "model": "mistral-large/mistral-large-4",
+      "matchingModel": "mistral-large-4-0",
+      "overrides": {
+        "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
+        "contextWindow": 1000000,
+        "lastUpdated": "October 6, 2026",
+        "costPer1kInputTokens": 0.000765,
+        "costPer1kOutputTokens": 0.002351
       }
     }
   }

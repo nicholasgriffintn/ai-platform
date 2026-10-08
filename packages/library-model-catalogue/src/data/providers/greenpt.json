@@ -459,6 +459,7 @@
       "unset": [
         "reliability",
         "artificialAnalysis",
+        "strengths",
         "supportsResponseFormat"
       ]
     },
