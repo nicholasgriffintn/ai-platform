@@ -49,6 +49,7 @@ import { run_prediction } from "./run_prediction";
 import { run_sandbox_task } from "./sandbox";
 import { save_skill } from "./save_skill";
 import { capture_screenshot } from "./screenshot";
+import { search_conversations } from "./search_conversations";
 import { search_documents } from "./search_documents";
 import { second_opinion } from "./second_opinion";
 import { create_speech } from "./speech";
@@ -92,6 +93,7 @@ const descriptors: FunctionToolDescriptor[] = [
   search_documents,
   extract_content,
   search_memories,
+  search_conversations,
   read_memory_document,
   store_memory,
   analyse_article,

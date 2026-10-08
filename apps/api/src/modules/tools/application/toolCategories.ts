@@ -33,6 +33,7 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "create_note",
     "get_note",
     "get_recipe",
+    "search_conversations",
     "search_memories",
     "store_memory",
     "trigger_recipe",
