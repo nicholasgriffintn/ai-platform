@@ -42,6 +42,7 @@ import {
   getModelByReference,
   isImageGenerationOutputModel,
   isReadinessFresh,
+  getModelInteractionCapabilities,
   isTerminalChatRunStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import type {
@@ -75,6 +76,7 @@ import {
   type ConversationRunSteering,
 } from "./ChatInput/index.js";
 import { QueuedFollowUps } from "./ChatInput/QueuedFollowUps.js";
+import { uploadComposerAttachment } from "./ChatInput/uploadAttachment.js";
 import { ChatRunStatusBanner } from "./ChatRunStatusBanner.js";
 import { ChatSuggestions } from "./ChatSuggestions.js";
 import { ComposerBanner } from "./ComposerBanner/index.js";
@@ -761,6 +763,34 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     [currentConversationId, trackFeatureUsage, setComposerInput],
   );
 
+  const uploadInteractionFiles = useCallback(
+    async (files: unknown): Promise<AttachmentData[]> => {
+      if (!Array.isArray(files)) {
+        return [];
+      }
+
+      const capabilities = getModelInteractionCapabilities(model ? apiModels?.[model] : undefined);
+      const results = await Promise.all(
+        files
+          .filter((file): file is File => file instanceof File)
+          .map((file) =>
+            uploadComposerAttachment(file, {
+              ...capabilities,
+              projectId: modeConfig?.requestOptions?.metadata?.project_id ?? undefined,
+            }),
+          ),
+      );
+      const failure = results.find((result) => "error" in result);
+
+      if (failure && "error" in failure) {
+        throw new Error(failure.error);
+      }
+
+      return results.flatMap((result) => ("attachment" in result ? [result.attachment] : []));
+    },
+    [apiModels, model, modeConfig?.requestOptions?.metadata?.project_id],
+  );
+
   const handleToolInteraction = useCallback<ToolInteractionHandler>(
     async (toolName, action, data) => {
       trackFeatureUsage("tool_interaction", {
@@ -792,7 +822,12 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
               }
             : interactionRequestOptions;
 
-          const response = await sendMessage(data.input, undefined, requestOptions);
+          const answerAttachments = await uploadInteractionFiles(data.files);
+          const response = await sendMessage(
+            data.input,
+            answerAttachments.length > 0 ? answerAttachments : undefined,
+            requestOptions,
+          );
 
           if (response.status === "error") {
             throw new Error(response.response || "The approval could not be submitted");
@@ -828,6 +863,7 @@ export const ConversationThread = ({ modeConfig }: ConversationThreadProps) => {
     [
       currentConversationId,
       trackFeatureUsage,
+      uploadInteractionFiles,
       setComposerInput,
       sendMessage,
       modeConfig?.requestOptions,

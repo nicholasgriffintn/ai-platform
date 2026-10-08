@@ -19,10 +19,15 @@ export const userQuestionSchema = z
     prompt: z.string().trim().min(1).max(500),
     options: z.array(userQuestionOptionSchema).max(USER_QUESTION_MAX_OPTIONS).default([]),
     allowOther: z.boolean().default(true),
+    requestsFile: z.boolean().optional(),
   })
-  .refine((question) => question.allowOther || question.options.length > 0, {
-    error: "A question must allow a written answer or provide at least one option",
-  });
+  .refine(
+    (question) =>
+      question.allowOther || question.options.length > 0 || question.requestsFile === true,
+    {
+      error: "A question must allow a written answer, offer an option or ask for a file",
+    },
+  );
 
 export const userQuestionsSchema = z
   .array(userQuestionSchema)
