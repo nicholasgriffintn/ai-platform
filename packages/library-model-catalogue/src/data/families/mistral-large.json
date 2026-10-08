@@ -115,7 +115,14 @@
         "contextWindow": 524288,
         "maxTokens": 262144,
         "releaseDate": "October 6, 2026",
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "mistral-large-4-eu": {
@@ -123,10 +130,20 @@
         "name": "Mistral Large 4 (EU)",
         "openWeights": false,
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
-        "contextWindow": 1000000,
-        "maxTokens": 1000000,
+        "contextWindow": 524288,
+        "maxTokens": 524288,
         "releaseDate": "October 6, 2026",
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "mistral-large-latest": {

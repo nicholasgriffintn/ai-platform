@@ -14,18 +14,6 @@
   },
   "description": "The mistral family includes models that produce moderation, text.",
   "models": {
-    "codestral-2508": {
-      "defaults": {
-        "name": "Codestral 2508",
-        "openWeights": true,
-        "description": "Mistral coding model for code completion, generation, and developer workflows",
-        "contextWindow": 256000,
-        "maxTokens": 256000,
-        "knowledgeCutoffDate": "March 2025",
-        "releaseDate": "July 30, 2025",
-        "supportsResponseFormat": true
-      }
-    },
     "devstral-2-123b-instruct-2512-tee": {
       "defaults": {
         "name": "Devstral 2 123B Instruct 2512 TEE",
@@ -154,24 +142,6 @@
         "maxTokens": 8192,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "February 13, 2025"
-      }
-    },
-    "mistral-7b": {
-      "defaults": {
-        "name": "Mistral 7B",
-        "openWeights": true,
-        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
-        "contextWindow": 8000,
-        "maxTokens": 8000,
-        "strengths": [
-          "chat",
-          "general_knowledge",
-          "multilingual"
-        ],
-        "contextComplexity": 2,
-        "reliability": 3,
-        "knowledgeCutoffDate": "December 2023",
-        "releaseDate": "September 27, 2023"
       }
     },
     "mistral-7b-instruct-free": {

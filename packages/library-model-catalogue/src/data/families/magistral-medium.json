@@ -11,6 +11,9 @@
         "text"
       ]
     },
+    "strengths": [
+      "tool_use"
+    ],
     "contextComplexity": 3,
     "reliability": 1,
     "knowledgeCutoffDate": "June 2025",
@@ -37,24 +40,7 @@
     "magistral-medium": {
       "defaults": {
         "name": "Magistral Medium",
-        "description": "Magistral Medium accepts text and produces text.",
-        "strengths": [
-          "tool_use"
-        ]
-      }
-    },
-    "magistral-medium-latest": {
-      "defaults": {
-        "name": "Magistral Medium",
-        "description": "Mistral reasoning model for transparent analysis, math, and complex decisions",
-        "strengths": [
-          "reasoning",
-          "analysis",
-          "multilingual",
-          "chat",
-          "general_knowledge",
-          "tool_use"
-        ]
+        "description": "Magistral Medium accepts text and produces text."
       }
     }
   }

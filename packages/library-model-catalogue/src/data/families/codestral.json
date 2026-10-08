@@ -25,24 +25,12 @@
         "releaseDate": "January 1, 2025"
       }
     },
-    "codestral-2508": {
+    "codestral-25-08": {
       "defaults": {
         "name": "Codestral 2508",
         "description": "Mistral coding model for code completion, generation, and developer workflows",
-        "maxTokens": 204800,
-        "modalities": {
-          "input": [
-            "text",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "March 31, 2025",
-        "releaseDate": "August 1, 2025",
-        "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "releaseDate": "July 30, 2025",
+        "supportsResponseFormat": true
       }
     },
     "codestral-latest": {
