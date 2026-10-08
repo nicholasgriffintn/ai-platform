@@ -241,7 +241,8 @@
             "high"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     },
     "qwen3guard-gen-0.6b": {
@@ -310,7 +311,8 @@
             "high"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     }
   }

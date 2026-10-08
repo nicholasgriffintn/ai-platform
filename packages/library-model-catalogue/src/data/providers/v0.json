@@ -21,7 +21,7 @@
       "matchingModel": "v0-1.5-md",
       "overrides": {
         "speed": 4,
-        "isFeatured": false,
+        "isFeatured": true,
         "lastUpdated": "June 9, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
@@ -32,7 +32,7 @@
       "matchingModel": "v0-1.5-lg",
       "overrides": {
         "speed": 3,
-        "isFeatured": false,
+        "isFeatured": true,
         "lastUpdated": "June 9, 2025",
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.075

@@ -22,7 +22,8 @@
         "contextWindow": 1048576,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
+        "costPer1kOutputTokens": 0,
+        "isFeatured": true
       }
     },
     "poolside/laguna-xs-2.1": {

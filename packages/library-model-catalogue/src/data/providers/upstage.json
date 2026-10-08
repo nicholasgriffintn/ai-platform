@@ -41,7 +41,8 @@
       "overrides": {
         "lastUpdated": "August 6, 2026",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012
+        "costPer1kOutputTokens": 0.0012,
+        "isFeatured": true
       }
     }
   }

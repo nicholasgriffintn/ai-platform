@@ -531,7 +531,8 @@
             "max"
           ],
           "defaultEffort": "high"
-        }
+        },
+        "isFeatured": true
       }
     },
     "thinkingmachines/Inkling": {
@@ -602,7 +603,8 @@
         "maxTokens": 262144,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044
+        "costPer1kOutputTokens": 0.0044,
+        "isFeatured": true
       }
     },
     "zai-org/GLM-5.3-Flash": {
@@ -634,7 +636,8 @@
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "isFeatured": true
       }
     },
     "deepseek-ai/DeepSeek-V4-Pro-0813": {
@@ -652,7 +655,8 @@
             "max"
           ],
           "defaultEffort": "low"
-        }
+        },
+        "isFeatured": true
       }
     }
   }

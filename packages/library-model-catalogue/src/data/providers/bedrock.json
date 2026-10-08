@@ -2405,7 +2405,8 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        }
+        },
+        "isFeatured": true
       }
     },
     "global.anthropic.claude-fable-5": {
@@ -3248,7 +3249,8 @@
         },
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       },
       "unset": [
         "supportsResponseFormat"
@@ -3486,7 +3488,8 @@
         },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       }
     },
     "us.xai.grok-4.7": {
@@ -3624,7 +3627,8 @@
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
         "supportsResponseFormat": false,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       }
     },
     "au.anthropic.claude-haiku-5-5": {

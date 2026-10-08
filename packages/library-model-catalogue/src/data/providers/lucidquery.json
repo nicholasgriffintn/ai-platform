@@ -10,7 +10,8 @@
       "overrides": {
         "lastUpdated": "June 16, 2026",
         "costPer1kInputTokens": 0.0045,
-        "costPer1kOutputTokens": 0.022
+        "costPer1kOutputTokens": 0.022,
+        "isFeatured": true
       },
       "unset": [
         "supportsResponseFormat"
@@ -40,7 +41,8 @@
       "overrides": {
         "lastUpdated": "June 16, 2026",
         "costPer1kInputTokens": 0.0025,
-        "costPer1kOutputTokens": 0.015
+        "costPer1kOutputTokens": 0.015,
+        "isFeatured": true
       },
       "unset": [
         "supportsResponseFormat"

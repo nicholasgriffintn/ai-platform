@@ -137,7 +137,8 @@
             "max"
           ],
           "defaultEffort": "high"
-        }
+        },
+        "isFeatured": true
       }
     },
     "glm-5.3-flash": {
@@ -393,7 +394,8 @@
       "overrides": {
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044
+        "costPer1kOutputTokens": 0.0044,
+        "isFeatured": true
       }
     },
     "deepseek-v4.1-flash": {
@@ -403,7 +405,8 @@
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "isFeatured": true
       }
     },
     "mistral-large-4": {
@@ -415,7 +418,8 @@
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00136,
         "costPer1kOutputTokens": 0.00418,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "isFeatured": true
       }
     }
   }

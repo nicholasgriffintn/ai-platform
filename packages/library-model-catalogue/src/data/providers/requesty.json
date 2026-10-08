@@ -913,7 +913,8 @@
             "max"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     },
     "claude-haiku-4-5": {
@@ -3981,7 +3982,8 @@
             "max"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     },
     "claude-sonnet-5-5": {
@@ -4041,7 +4043,8 @@
             "max"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     },
     "gpt-6.1-sol@eu": {
@@ -4120,7 +4123,8 @@
             "max"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       },
       "unset": [
         "supportsTopP"

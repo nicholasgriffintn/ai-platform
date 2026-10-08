@@ -579,7 +579,8 @@
             "xhigh"
           ],
           "defaultEffort": "low"
-        }
+        },
+        "isFeatured": true
       }
     },
     "MiniMaxAI/MiniMax-M3": {
@@ -1124,7 +1125,8 @@
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "isFeatured": true
       }
     },
     "XiaomiMiMo/MiMo-V2.6-Pro": {
@@ -1145,7 +1147,8 @@
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00043,
         "costPer1kOutputTokens": 0.00087,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "isFeatured": true
       }
     },
     "tencent/Hy4-preview": {
@@ -1155,7 +1158,8 @@
         "contextWindow": 1048576,
         "lastUpdated": "August 28, 2026",
         "costPer1kInputTokens": 0.000834,
-        "costPer1kOutputTokens": 0.002501
+        "costPer1kOutputTokens": 0.002501,
+        "isFeatured": true
       }
     }
   }

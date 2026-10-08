@@ -759,7 +759,8 @@
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "isFeatured": true
       }
     },
     "accounts/fireworks/models/mistral-large-3-fp8": {
@@ -790,7 +791,8 @@
       "overrides": {
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00132,
-        "costPer1kOutputTokens": 0.00396
+        "costPer1kOutputTokens": 0.00396,
+        "isFeatured": true
       }
     },
     "accounts/fireworks/routers/glm-fast-latest": {
@@ -876,7 +878,8 @@
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "isFeatured": true
       }
     }
   }

@@ -36,7 +36,8 @@
             "xhigh"
           ],
           "defaultEffort": "high"
-        }
+        },
+        "isFeatured": true
       }
     },
     "sakana-namazu": {
@@ -54,7 +55,8 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       },
       "unset": [
         "apiShape"

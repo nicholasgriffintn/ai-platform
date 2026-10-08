@@ -115,7 +115,8 @@
             "high"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     },
     "glm-5.2-caveman": {
@@ -374,7 +375,8 @@
             "high"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     },
     "llama-3.3-70b-instruct": {
@@ -595,7 +597,8 @@
             "high"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     },
     "glm-5.3": {
@@ -615,7 +618,8 @@
             "high"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     },
     "glm-5.3-flash": {

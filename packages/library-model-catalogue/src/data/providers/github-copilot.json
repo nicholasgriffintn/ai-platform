@@ -866,7 +866,8 @@
             "max"
           ],
           "defaultEffort": "low"
-        }
+        },
+        "isFeatured": true
       },
       "unset": [
         "supportsResponseFormat"
@@ -1144,7 +1145,8 @@
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       }
     },
     "gpt-6-luna": {
@@ -1184,7 +1186,8 @@
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       }
     },
     "claude-haiku-5.5": {
@@ -1194,7 +1197,8 @@
         "lastUpdated": "October 7, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "isFeatured": true
       }
     }
   }

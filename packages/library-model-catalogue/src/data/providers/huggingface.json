@@ -848,7 +848,8 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     },
     "Qwen/Qwen3.6-27B": {
@@ -1272,7 +1273,8 @@
             "max"
           ],
           "defaultEffort": "none"
-        }
+        },
+        "isFeatured": true
       }
     },
     "google/gemma-3-12b-it": {
@@ -1319,7 +1321,8 @@
         "contextWindow": 1000000,
         "lastUpdated": "August 28, 2026",
         "costPer1kInputTokens": 0.000834,
-        "costPer1kOutputTokens": 0.002501
+        "costPer1kOutputTokens": 0.002501,
+        "isFeatured": true
       }
     }
   }

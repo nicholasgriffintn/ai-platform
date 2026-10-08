@@ -9,7 +9,8 @@
       "model": "exa/exa/exa",
       "matchingModel": "exa",
       "overrides": {
-        "speed": 4
+        "speed": 4,
+        "isFeatured": true
       }
     },
     "exa-research": {
@@ -23,7 +24,8 @@
       "model": "exa/exa-research-pro/exa-research-pro",
       "matchingModel": "exa-research-pro",
       "overrides": {
-        "speed": 3
+        "speed": 3,
+        "isFeatured": true
       }
     }
   }

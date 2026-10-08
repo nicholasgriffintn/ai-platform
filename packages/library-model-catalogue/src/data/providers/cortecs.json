@@ -949,7 +949,8 @@
             "high"
           ],
           "defaultEffort": "low"
-        }
+        },
+        "isFeatured": true
       }
     },
     "gemini-3.5-flash": {
@@ -2457,7 +2458,8 @@
             "high"
           ],
           "defaultEffort": "low"
-        }
+        },
+        "isFeatured": true
       }
     },
     "gpt-6-luna": {
@@ -2475,7 +2477,8 @@
             "high"
           ],
           "defaultEffort": "low"
-        }
+        },
+        "isFeatured": true
       }
     },
     "gpt-6-sol": {
@@ -2511,7 +2514,8 @@
             "high"
           ],
           "defaultEffort": "low"
-        }
+        },
+        "isFeatured": true
       }
     },
     "claude-sonnet-5.5": {
