@@ -43,6 +43,7 @@ import {
   buildSystemPrompt,
   projectRunMemory,
 } from "~/modules/chat/application/preparation/system-prompt";
+import { resolveToolIntentRequest } from "~/modules/chat/application/tools/tool-intent";
 import type { ValidationContext } from "~/modules/chat/application/validation/ValidationPipeline";
 import {
   GOAL_COMPLETE_TOOL_NAME,
@@ -113,6 +114,7 @@ export interface PreparedRequest {
   messages: Message[];
   systemPrompt: string;
   messageWithContext: string;
+  toolIntentRequest: string;
   userSettings: IUserSettings | null;
   currentMode: ChatMode;
   conversationType?: ConversationType;
@@ -537,6 +539,12 @@ export class RequestPreparer {
       }),
     });
 
+    const completionId = scope.options.completion_id;
+    const toolIntentRequest =
+      shouldStoreMessages && completionId && scope.options.options?.toolInteraction
+        ? resolveToolIntentRequest(await conversationManager.get(completionId), messageWithContext)
+        : messageWithContext;
+
     const messages = await buildProviderContext({
       conversationManager,
       completionId: scope.options.completion_id,
@@ -555,6 +563,7 @@ export class RequestPreparer {
       messages,
       systemPrompt,
       messageWithContext,
+      toolIntentRequest,
       userSettings,
       currentMode: mode,
       conversationType: scope.options.conversation_type,

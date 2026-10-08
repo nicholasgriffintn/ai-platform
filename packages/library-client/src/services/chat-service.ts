@@ -135,7 +135,7 @@ export interface StreamChatCompletionsParams {
   onProgress: StreamProgressHandler;
   onStateChange: (state: string, data?: any) => void;
   provider?: string;
-  requestOptions?: ChatRequestOptions;
+  requestOptions?: ChatRequestOptions & { approved_tools?: string[] };
   selectedTools?: string[];
   signal: AbortSignal;
   toolSelectionMode?: ToolSelectionMode;
@@ -846,7 +846,11 @@ export class ChatService {
     const requestEnabledTools = sandboxOptions
       ? normaliseToolIds([...(selectedToolIds ?? []), ...getSandboxTaskToolNames()])
       : selectedToolIds;
-    const requestApprovedTools = sandboxOptions ? getSandboxTaskToolNames() : undefined;
+    const approvedToolIds = normaliseToolIds([
+      ...(sandboxOptions ? getSandboxTaskToolNames() : []),
+      ...(requestOptions?.approved_tools ?? []),
+    ]);
+    const requestApprovedTools = approvedToolIds.length > 0 ? approvedToolIds : undefined;
 
     const {
       enabledTools: settingsEnabledTools,
