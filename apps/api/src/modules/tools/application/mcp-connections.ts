@@ -1,7 +1,5 @@
-import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
   mcpConnectionInputSchema,
-  mcpConnectionSchema,
   mcpCredentialEndpointSchema,
   type McpConnectionInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -15,46 +13,16 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { ProviderConnectionRecord } from "~/modules/apps/infrastructure/ProviderConnectionRepository";
 
-const CONNECTION_KIND = "mcp_bearer";
-const connectionMetadataSchema = mcpConnectionSchema.omit({ id: true, createdAt: true });
-
-function publicMcpConnection(record: ProviderConnectionRecord) {
-  const metadata = connectionMetadataSchema.parse(safeParseJson(record.metadata));
-
-  return { ...metadata, id: record.id, createdAt: record.created_at };
-}
-
-function connectionKey(context: ServiceContext): string {
-  const secret = context.env.JWT_SECRET;
-
-  if (!secret || secret.length < 32) {
-    throw new AssistantError(
-      "MCP credential encryption is not configured",
-      ErrorType.CONFIGURATION_ERROR,
-      503,
-    );
-  }
-
-  return `${secret}:${context.requireUser().id}:mcp-connection`;
-}
-
-async function requireConnection(context: ServiceContext, connectionId: string) {
-  const connection = await context.repositories.providerConnections.getConnectionById(connectionId);
-
-  if (
-    !connection ||
-    connection.provider !== "mcp" ||
-    connection.kind !== CONNECTION_KIND ||
-    connection.status !== "connected" ||
-    !ownsResource(context.requireUser().id, connection.user_id)
-  ) {
-    throw new AssistantError("MCP connection is unavailable", ErrorType.NOT_FOUND, 404);
-  }
-
-  return connection;
-}
+import {
+  connectionKey,
+  MCP_CONNECTION_KINDS,
+  MCP_OAUTH_CONNECTION_KIND,
+  MCP_TOKEN_CONNECTION_KIND,
+  publicMcpConnection,
+  requireConnection,
+} from "./mcp-connection-records";
+import { resolveMcpOAuthAccessToken } from "./mcp-oauth-connections";
 
 export async function createMcpConnection(context: ServiceContext, input: McpConnectionInput) {
   input = mcpConnectionInputSchema.parse(input);
@@ -68,13 +36,14 @@ export async function createMcpConnection(context: ServiceContext, input: McpCon
   const record = await context.repositories.providerConnections.upsertConnection({
     userId: context.requireUser().id,
     provider: "mcp",
-    kind: CONNECTION_KIND,
+    kind: MCP_TOKEN_CONNECTION_KIND,
     externalId,
     encryptedData: encrypted,
     metadata: {
       label: input.label,
       url,
       credentialRecipient: input.credentialRecipient,
+      authMethod: "token",
       allowedTools: [...new Set(input.allowedTools)],
     },
   });
@@ -90,7 +59,7 @@ export async function listMcpConnections(context: ServiceContext) {
 
   return {
     connections: records
-      .filter((r) => r.kind === CONNECTION_KIND && r.status === "connected")
+      .filter((r) => MCP_CONNECTION_KINDS.has(r.kind) && r.status === "connected")
       .map(publicMcpConnection),
   };
 }
@@ -101,7 +70,7 @@ export async function deleteMcpConnection(context: ServiceContext, connectionId:
   await context.repositories.providerConnections.deleteConnection(
     record.user_id,
     "mcp",
-    CONNECTION_KIND,
+    record.kind,
     record.external_id,
   );
 
@@ -115,7 +84,10 @@ export async function resolveMcpCredential(
   const record = await requireConnection(context, input.connectionId);
   const connection = publicMcpConnection(record);
 
-  if (input.provider !== connection.credentialRecipient) {
+  if (
+    record.kind !== MCP_TOKEN_CONNECTION_KIND ||
+    input.provider !== connection.credentialRecipient
+  ) {
     throw new AssistantError(
       "This MCP connection is not approved for this model provider",
       ErrorType.FORBIDDEN,
@@ -169,4 +141,42 @@ export async function resolveMcpCredential(
   await requireConnection(context, input.connectionId);
 
   return { authorization: payload.token, allowedTools: [...new Set(allowedTools)] };
+}
+
+export async function resolveMcpGatewayAccess(
+  context: ServiceContext,
+  input: { connectionId: string; url: string; allowedTools?: string[] },
+): Promise<{ headers: Record<string, string>; allowedTools: string[] }> {
+  const record = await requireConnection(context, input.connectionId);
+
+  if (record.kind !== MCP_OAUTH_CONNECTION_KIND) {
+    const { authorization, allowedTools } = await resolveMcpCredential(context, {
+      connectionId: input.connectionId,
+      url: input.url,
+      provider: "polychat",
+      allowedTools: input.allowedTools,
+    });
+
+    return { headers: { Authorization: `Bearer ${authorization}` }, allowedTools };
+  }
+
+  const connection = publicMcpConnection(record);
+  const allowedTools = input.allowedTools ?? connection.allowedTools;
+
+  if (connection.url !== new URL(mcpCredentialEndpointSchema.parse(input.url)).toString()) {
+    throw new AssistantError(
+      "MCP connection does not match this endpoint",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+
+  if (allowedTools.some((tool) => !connection.allowedTools.includes(tool))) {
+    throw new AssistantError("MCP tool access exceeds this connection", ErrorType.FORBIDDEN, 403);
+  }
+
+  return {
+    headers: { Authorization: `Bearer ${await resolveMcpOAuthAccessToken(context, record)}` },
+    allowedTools: [...new Set(allowedTools)],
+  };
 }

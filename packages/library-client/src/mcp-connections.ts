@@ -1,4 +1,9 @@
-import type { McpConnection, McpConnectionInput } from "@ngriffin_uk/polychat-schemas";
+import {
+  mcpOAuthStartResponseSchema,
+  type McpConnection,
+  type McpConnectionInput,
+  type McpOAuthStartInput,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service.js";
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
@@ -27,4 +32,18 @@ export async function deleteMcpConnection(id: string): Promise<void> {
     method: "DELETE",
     headers: await apiService.getHeaders(),
   });
+}
+
+export async function startMcpOAuthConnection(
+  input: McpOAuthStartInput,
+): Promise<{ authorizationUrl: string }> {
+  return mcpOAuthStartResponseSchema.parse(
+    await returnFetchedData<unknown>(
+      await fetchApiOrThrow("/tools/mcp/oauth/start", {
+        method: "POST",
+        headers: await apiService.getHeaders(),
+        body: input,
+      }),
+    ),
+  );
 }

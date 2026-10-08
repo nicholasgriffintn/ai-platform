@@ -64,6 +64,11 @@ import {
 } from "~/modules/skills/application";
 import { resolvePlatformTeammateGrants } from "~/modules/teammates/application/platform-teammates";
 import {
+  mergeNativeMcpToolNames,
+  readMcpGatewayServers,
+  shouldUseNativeMcpGateway,
+} from "~/modules/tools/application/mcp-gateway-servers";
+import {
   getModelToolDefinition,
   mergePersonalModelToolOptions,
   resolveModelToolConfigurations,
@@ -520,6 +525,18 @@ export class RequestPreparer {
       });
     }
 
+    const toolOptions = this.resolveToolOptions(scope, savedToolConfigurations, enabledTools);
+
+    preparedTools = mergeNativeMcpToolNames({
+      enabledTools: preparedTools,
+      useNativeGateway: await shouldUseNativeMcpGateway({
+        context: scope.options.context,
+        enabledTools: preparedTools,
+        servers: readMcpGatewayServers(toolOptions?.mcp_servers),
+        supportsHostedMcp: primaryModelConfig.supportsMcp === true,
+      }),
+    });
+
     const messages = await buildProviderContext({
       conversationManager,
       completionId: scope.options.completion_id,
@@ -545,7 +562,7 @@ export class RequestPreparer {
       isProUser: scope.isProUser,
       enabledTools: preparedTools,
       activeGoal,
-      toolOptions: this.resolveToolOptions(scope, savedToolConfigurations, enabledTools),
+      toolOptions,
       requestOptions: scope.options.options,
       memoryScope: effectiveMemoryScope,
       connectedConnectorProviders,

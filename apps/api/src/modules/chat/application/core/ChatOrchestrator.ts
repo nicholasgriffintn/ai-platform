@@ -376,6 +376,7 @@ export class ChatOrchestrator {
         ...chatOptions,
         approved_tools,
         enabled_tools,
+        tool_options: prepared.toolOptions,
         conversation_type: prepared.conversationType ?? chatOptions.conversation_type,
         permission_mode: prepared.permissionMode ?? chatOptions.permission_mode,
         options: prepared.requestOptions,

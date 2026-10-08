@@ -40,9 +40,21 @@ export const mcpCredentialEndpointSchema = mcpHttpsUrlSchema.refine(
   { message: "Use a reachable HTTPS gateway without query credentials for authenticated MCP" },
 );
 
+export const MCP_CREDENTIAL_RECIPIENTS = ["openai", "polychat"] as const;
+
+export const mcpCredentialRecipientSchema = z
+  .enum(MCP_CREDENTIAL_RECIPIENTS)
+  .describe(
+    "Who receives the credential: OpenAI's hosted MCP tool, or Polychat's own MCP gateway, which works with any model.",
+  );
+
+export type McpCredentialRecipient = z.infer<typeof mcpCredentialRecipientSchema>;
+
+export const mcpConnectionAuthMethodSchema = z.enum(["token", "oauth"]);
+
 export const mcpConnectionInputSchema = z
   .object({
-    credentialRecipient: z.literal("openai"),
+    credentialRecipient: mcpCredentialRecipientSchema,
     label: z.string().trim().min(1).max(80),
     url: mcpCredentialEndpointSchema,
     token: z
@@ -57,7 +69,8 @@ export const mcpConnectionInputSchema = z
 
 export const mcpConnectionSchema = z
   .object({
-    credentialRecipient: z.literal("openai"),
+    credentialRecipient: mcpCredentialRecipientSchema,
+    authMethod: mcpConnectionAuthMethodSchema.default("token"),
     id: z.string(),
     label: z.string(),
     url: mcpCredentialEndpointSchema,
@@ -69,6 +82,24 @@ export const mcpConnectionSchema = z
 export const mcpConnectionListSchema = z.object({ connections: z.array(mcpConnectionSchema) });
 export type McpConnectionInput = z.infer<typeof mcpConnectionInputSchema>;
 export type McpConnection = z.infer<typeof mcpConnectionSchema>;
+
+export const mcpOAuthStartInputSchema = z
+  .object({
+    label: z.string().trim().min(1).max(80),
+    url: mcpCredentialEndpointSchema,
+    allowedTools: mcpAllowedToolsSchema,
+  })
+  .strict();
+
+export type McpOAuthStartInput = z.infer<typeof mcpOAuthStartInputSchema>;
+
+export const mcpOAuthStartResponseSchema = z.object({ authorizationUrl: z.url() });
+
+export const mcpOAuthCallbackQuerySchema = z.object({
+  state: z.string().min(1).max(200),
+  code: z.string().min(1).max(4096).optional(),
+  error: z.string().max(200).optional(),
+});
 
 export const mcpToolServerConfigurationSchema = z
   .object({
