@@ -72,6 +72,29 @@ export function resolveHttpUrl(value: unknown, base?: unknown): string | null {
   }
 }
 
+export function isCookieSameSite(pageUrl: string | undefined, apiUrl: string): boolean {
+  if (!pageUrl) {
+    return false;
+  }
+
+  try {
+    const page = new URL(pageUrl);
+    const api = new URL(apiUrl);
+
+    if (page.protocol !== api.protocol) {
+      return false;
+    }
+
+    return (
+      page.hostname === api.hostname ||
+      api.hostname.endsWith(`.${page.hostname}`) ||
+      page.hostname.endsWith(`.${api.hostname}`)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function encodePathSegments(path: string): string {
   return path.split("/").map(encodeURIComponent).join("/");
 }

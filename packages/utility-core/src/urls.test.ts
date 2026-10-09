@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { hasUrlExtension, normaliseSameOriginRoute, readUrlExtension, readUrlPath } from "./urls";
+import {
+  hasUrlExtension,
+  isCookieSameSite,
+  normaliseSameOriginRoute,
+  readUrlExtension,
+  readUrlPath,
+} from "./urls";
 
 const VIDEO = new Set(["mp4", "webm"]);
 
@@ -66,5 +72,19 @@ describe("hasUrlExtension", () => {
 
     expect(hasUrlExtension(hostile, VIDEO)).toBe(false);
     expect(performance.now() - startedAt).toBeLessThan(100);
+  });
+});
+
+describe("isCookieSameSite", () => {
+  it.each([
+    ["https://polychat.app", "https://api.polychat.app", true],
+    ["http://localhost:5173", "http://localhost:8787", true],
+    ["tauri://localhost", "https://api.polychat.app", false],
+    ["https://preview.pages.dev", "https://api.polychat.app", false],
+    ["http://polychat.app", "https://api.polychat.app", false],
+    ["https://notpolychat.app", "https://api.polychat.app", false],
+    [undefined, "https://api.polychat.app", false],
+  ])("treats %s calling %s as same-site: %s", (page, api, expected) => {
+    expect(isCookieSameSite(page, api)).toBe(expected);
   });
 });

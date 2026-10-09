@@ -29,6 +29,7 @@ import { infraMeteringMiddleware } from "./middleware/infraMetering";
 import { loggerMiddleware } from "./middleware/loggerMiddleware";
 import { rateLimit } from "./middleware/rateLimit";
 import { securityHeaders } from "./middleware/securityHeaders";
+import { serverTimingMiddleware } from "./middleware/serverTiming";
 import { SandboxRunCoordinator } from "./modules/apps/infrastructure/sandbox/run-coordinator/object";
 import { ConversationCoordinator } from "./modules/conversations/infrastructure/coordinator/object";
 import { MachineRunCoordinator } from "./modules/machines/infrastructure/run-coordinator";
@@ -86,6 +87,8 @@ app.use("*", (c, next) => {
 app.use(securityHeaders());
 
 app.use("*", loggerMiddleware);
+
+app.use("*", serverTimingMiddleware);
 
 app.use("*", infraMeteringMiddleware);
 

@@ -44,3 +44,16 @@ export function abortable<T>(promise: Promise<T>, signal?: AbortSignal): Promise
     promise.then(resolve, reject).finally(() => signal.removeEventListener("abort", abort));
   });
 }
+
+export function settleWithin<T, F>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  fallback: F,
+): Promise<T | F> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<F>((resolve) => {
+    timeoutId = setTimeout(() => resolve(fallback), timeoutMs);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timeoutId));
+}

@@ -1,4 +1,5 @@
 import { isAsyncInvocationPending } from "@ngriffin_uk/polychat-ai-providers";
+import { settleWithin } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { hydrateConnectorApprovalMessageState } from "~/modules/apps/application/connectors/approval-message-state";
@@ -11,6 +12,8 @@ import {
 import type { Message } from "~/types";
 
 import { handleAsyncInvocation } from "./async/handler";
+
+const ACTIVE_OPERATION_WAIT_MS = 250;
 
 interface GetChatCompletionOptions {
   refreshPending?: boolean;
@@ -89,6 +92,14 @@ async function loadConversationMessages(
   };
 }
 
+async function loadActiveOperation(context: ServiceContext, completionId: string) {
+  const status = getActiveThreadOperation({ env: context.env, conversationId: completionId });
+
+  context.waitUntil(status.catch(() => undefined));
+
+  return settleWithin(status, ACTIVE_OPERATION_WAIT_MS, undefined);
+}
+
 async function loadLatestRun(context: ServiceContext, completionId: string) {
   const latestRunRecord =
     await context.repositories.conversationRuns.getLatestForConversation(completionId);
@@ -120,7 +131,7 @@ export const handleGetChatCompletion = async (
   const conversation = await conversationManager.getConversationMetadata(completion_id);
   const [details, activeOperation, latestRun, family] = await Promise.all([
     loadConversationMessages(context, conversationManager, conversation, user, options),
-    getActiveThreadOperation({ env: context.env, conversationId: completion_id }),
+    loadActiveOperation(context, completion_id),
     loadLatestRun(context, completion_id),
     context.repositories.conversations.listConversationThreads(
       completion_id,

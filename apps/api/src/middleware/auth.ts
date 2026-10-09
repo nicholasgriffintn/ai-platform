@@ -6,6 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseBearerToken } from "@ngriffin_uk/polychat-utility-server/http";
+import { timeServerPhase } from "@ngriffin_uk/polychat-utility-server/server-timing";
 import type { Context, Next } from "hono";
 import { parse as parseCookieHeader } from "hono/utils/cookie";
 import { isbot } from "isbot";
@@ -135,7 +136,7 @@ export async function authMiddleware(context: Context, next: Next) {
   }
 
   if (authPromises.length > 0) {
-    const authResults = await Promise.allSettled(authPromises);
+    const authResults = await timeServerPhase("auth", () => Promise.allSettled(authPromises));
     const fulfilledResult = authResults.find(
       (result) => result.status === "fulfilled" && result.value !== null,
     );

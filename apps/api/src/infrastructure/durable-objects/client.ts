@@ -1,4 +1,5 @@
 import { addInfraUsage } from "@ngriffin_uk/polychat-ai-billing";
+import { timeServerPhase } from "@ngriffin_uk/polychat-utility-server/server-timing";
 
 export function getDurableObjectStub(
   namespace: DurableObjectNamespace | undefined,
@@ -18,18 +19,22 @@ export function postDurableObjectJson(
 ): Promise<Response> {
   addInfraUsage("do_requests", 1);
 
-  return stub.fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  });
+  return timeServerPhase("do", () =>
+    stub.fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    }),
+  );
 }
 
 export function readDurableObjectJson(stub: DurableObjectStub, url: string): Promise<Response> {
   addInfraUsage("do_requests", 1);
 
-  return stub.fetch(url, {
-    method: "GET",
-    headers: { Accept: "application/json" },
-  });
+  return timeServerPhase("do", () =>
+    stub.fetch(url, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    }),
+  );
 }
