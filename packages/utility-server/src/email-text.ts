@@ -4,11 +4,35 @@ const QUOTE_HEADER_PATTERNS = [
   /^_{10,}\s*$/,
 ];
 
+const FORWARD_SUBJECT_PATTERN = /^fwd?\s*:/i;
+const FORWARD_MARKER_PATTERNS = [
+  /^-{2,}\s*Forwarded message\s*-{2,}$/i,
+  /^Begin forwarded message:$/i,
+];
+
+function isQuoteHeader(line: string): boolean {
+  return QUOTE_HEADER_PATTERNS.some((pattern) => pattern.test(line.trim()));
+}
+
+export function isForwardedEmail(subject: string | undefined, text: string): boolean {
+  if (FORWARD_SUBJECT_PATTERN.test(subject?.trim() ?? "")) {
+    return true;
+  }
+
+  const lines = text.replace(/\r\n?/g, "\n").split("\n");
+  const firstForward = lines.findIndex((line) =>
+    FORWARD_MARKER_PATTERNS.some((pattern) => pattern.test(line.trim())),
+  );
+  const firstQuote = lines.findIndex(
+    (line) => isQuoteHeader(line) || line.trimStart().startsWith(">"),
+  );
+
+  return firstForward >= 0 && (firstQuote < 0 || firstForward < firstQuote);
+}
+
 export function stripQuotedEmailReply(text: string): string {
   const lines = text.replace(/\r\n?/g, "\n").split("\n");
-  const cutAt = lines.findIndex((line) =>
-    QUOTE_HEADER_PATTERNS.some((pattern) => pattern.test(line.trim())),
-  );
+  const cutAt = lines.findIndex(isQuoteHeader);
   const kept = (cutAt < 0 ? lines : lines.slice(0, cutAt)).filter(
     (line) => !line.trimStart().startsWith(">"),
   );

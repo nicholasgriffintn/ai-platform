@@ -4,16 +4,12 @@ import {
   type TxtResolver,
   verifyDkimSignatures,
 } from "@ngriffin_uk/polychat-utility-server/dkim";
-import {
-  parseMessageIds,
-  stripQuotedEmailReply,
-} from "@ngriffin_uk/polychat-utility-server/email-text";
-import { htmlToPlainText } from "@ngriffin_uk/polychat-utility-server/html-text";
+import { parseMessageIds } from "@ngriffin_uk/polychat-utility-server/email-text";
 import PostalMime, { addressParser, type Email } from "postal-mime";
 
 import type { ChannelIncomingMessage } from "../../application/ports/channel-adapter";
+import { readEmailContent } from "./email-content";
 
-const MAX_BODY_CHARACTERS = 20_000;
 const MAX_HEADER_ID_LENGTH = 998;
 const PAIRING_LINE_PATTERN = /^\/polychat-link [a-f0-9]{64}$/;
 const AUTOMATED_PRECEDENCE = new Set(["bulk", "junk", "list", "auto_reply"]);
@@ -78,12 +74,6 @@ function threadRoot(email: Email, messageId: string): string {
   return root && root.length <= MAX_HEADER_ID_LENGTH ? root : messageId;
 }
 
-function readableText(email: Email): string {
-  const text = email.text?.trim() ? email.text : htmlToPlainText(email.html ?? "");
-
-  return stripQuotedEmailReply(text).slice(0, MAX_BODY_CHARACTERS);
-}
-
 function pairingCommand(subject: string, text: string): string | null {
   const candidates = [subject, text.split("\n").find((line) => line.trim()) ?? ""];
 
@@ -133,7 +123,7 @@ export async function parseInboundEmail(
   }
 
   const subject = email.subject?.trim().slice(0, MAX_HEADER_ID_LENGTH) ?? "";
-  const text = readableText(email);
+  const text = await readEmailContent(email);
   const command = pairingCommand(subject, text);
   const body = command ?? (subject ? `Subject: ${subject}\n\n${text}` : text).trim();
 
