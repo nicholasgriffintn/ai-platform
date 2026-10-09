@@ -55,10 +55,13 @@ export function ReactSandbox({
   setPreviewError: (error: string | null) => void;
   iframeKey: number;
 }) {
-  const [documentContent, setDocumentContent] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [prevCode, setPrevCode] = useState(code);
-  const [prevCss, setPrevCss] = useState(css);
+  const content = code.content;
+  const cssContent = css?.content;
+  const [prepared, setPrepared] = useState<{
+    content: string;
+    css: string | undefined;
+    document: string;
+  } | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const conversationId = code.source?.conversationId;
   const messageId = code.source?.messageId;
@@ -72,34 +75,27 @@ export function ReactSandbox({
 
   useArtifactBindingBridge(iframeRef, bindingSource);
 
-  if (prevCode !== code || prevCss !== css) {
-    setPrevCode(code);
-    setPrevCss(css);
-    setIsLoading(true);
-  }
-
   useEffect(() => {
     let isMounted = true;
 
-    void prepareReactArtifactDocument(code.content, css?.content).then((doc) => {
+    void prepareReactArtifactDocument(content, cssContent).then((document) => {
       if (isMounted) {
-        setDocumentContent(doc);
-        setIsLoading(false);
+        setPrepared({ content, css: cssContent, document });
       }
     });
 
     return () => {
       isMounted = false;
     };
-  }, [code, css]);
+  }, [content, cssContent]);
 
-  if (isLoading) {
+  if (!prepared || prepared.content !== content || prepared.css !== cssContent) {
     return <LoadingIndicator />;
   }
 
   return (
     <SandboxIframe
-      documentContent={documentContent}
+      documentContent={prepared.document}
       iframeKey={iframeKey}
       setPreviewError={setPreviewError}
       iframeRef={iframeRef}

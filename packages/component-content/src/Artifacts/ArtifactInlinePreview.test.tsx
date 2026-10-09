@@ -31,4 +31,13 @@ describe("ArtifactInlinePreview", () => {
     );
     expect(screen.queryByRole("status", { name: "Updating preview" })).not.toBeInTheDocument();
   });
+
+  it("keeps the same preview frame when the message re-renders with an equal artifact", async () => {
+    const { rerender } = render(<ArtifactInlinePreview artifact={{ ...artifact }} />);
+    const frame = await screen.findByTitle("Code Preview");
+
+    rerender(<ArtifactInlinePreview artifact={{ ...artifact }} artifacts={[{ ...artifact }]} />);
+
+    expect(screen.getByTitle("Code Preview")).toBe(frame);
+  });
 });

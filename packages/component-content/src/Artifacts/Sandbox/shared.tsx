@@ -1,6 +1,5 @@
-import { type RefObject, useEffect, useState } from "react";
+import type { RefObject } from "react";
 
-import type { ArtifactProps } from "../artifact";
 import { ARTIFACT_SCRIPT_SOURCES } from "./reactArtifactDocument";
 
 export const SVG_SANDBOX_TEMPLATE = `
@@ -41,49 +40,14 @@ export const HTML_SANDBOX_TEMPLATE = SVG_SANDBOX_TEMPLATE.replace(
 </head>`,
 );
 
-export function useSandboxDocument({
-  code,
-  css,
-  template,
-}: {
-  code: ArtifactProps;
-  css?: ArtifactProps;
-  template: string;
-}) {
-  const [documentContent, setDocumentContent] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [prevCode, setPrevCode] = useState(code);
-  const [prevCss, setPrevCss] = useState(css);
-
-  if (prevCode !== code || prevCss !== css) {
-    setPrevCode(code);
-    setPrevCss(css);
-    setIsLoading(true);
-  }
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const prepareDocument = async () => {
-      let doc = template;
-
-      doc = doc.replace("<CSS_CODE_PLACEHOLDER>", css?.content ?? "");
-      doc = doc.replace("<CONTENT_PLACEHOLDER>", code.content);
-
-      if (isMounted) {
-        setDocumentContent(doc);
-        setIsLoading(false);
-      }
-    };
-
-    void prepareDocument();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [code, css, template]);
-
-  return { documentContent, isLoading };
+export function buildSandboxDocument(
+  template: string,
+  content: string,
+  css: string | undefined = "",
+): string {
+  return template
+    .replace("<CONTENT_PLACEHOLDER>", () => content)
+    .replace("<CSS_CODE_PLACEHOLDER>", () => css);
 }
 
 const ARTIFACT_SANDBOX_CSP = [
