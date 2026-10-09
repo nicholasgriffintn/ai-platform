@@ -162,12 +162,14 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
   public async requeueFailedTasksByType(
     taskType: TaskType,
     cutoff: Date,
+    maxRecoveries: number,
     limit = 100,
   ): Promise<Task[]> {
     const tasks = await this.runQuery<Task>(
       `UPDATE tasks
        SET status = 'queued',
            attempts = 0,
+           recovery_count = recovery_count + 1,
            completed_at = NULL,
            error_message = NULL,
            execution_owner_token = NULL,
@@ -177,12 +179,13 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
          SELECT id FROM tasks
          WHERE task_type = ?
            AND status = 'failed'
+           AND recovery_count < ?
            AND datetime(updated_at) <= datetime(?)
          ORDER BY updated_at ASC
          LIMIT ?
        )
        RETURNING *`,
-      [taskType, cutoff.toISOString(), limit],
+      [taskType, maxRecoveries, cutoff.toISOString(), limit],
     );
     const recovered = tasks?.map((task) => this.parseTask(task)) ?? [];
 

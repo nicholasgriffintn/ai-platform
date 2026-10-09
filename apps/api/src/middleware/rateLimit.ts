@@ -1,6 +1,8 @@
+import type { RateLimit } from "@cloudflare/workers-types";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { timeServerPhase } from "@ngriffin_uk/polychat-utility-server/server-timing";
 import type { Context, Next } from "hono";
 
 import { createMetrics } from "~/infrastructure/telemetry";
@@ -37,12 +39,10 @@ export async function rateLimit(context: Context, next: Next) {
         ? `unauthenticated-${anonymousUserId}`
         : `unauthenticated-${clientAddress}`;
 
-  const rateLimiter =
+  const rateLimiter: RateLimit =
     userId || isCredentialBroker ? context.env.PRO_RATE_LIMITER : context.env.FREE_RATE_LIMITER;
 
-  const result = await rateLimiter.limit({
-    key,
-  });
+  const result = await timeServerPhase("ratelimit", () => rateLimiter.limit({ key }));
 
   if (!result.success) {
     const errorMessage =

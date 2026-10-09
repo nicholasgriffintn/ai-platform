@@ -26,6 +26,7 @@ const MIN_NEW_MEMORIES_FOR_SYNTHESIS = 5;
 const SETTLED_TASK_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 const SETTLED_TASK_PURGE_LIMIT = 500;
 const DURABLE_DELIVERY_RECOVERY_DELAY_MS = 5 * 60 * 1000;
+const MAX_DURABLE_TASK_RECOVERIES = 3;
 const DURABLE_TASK_TYPES = [
   SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
   SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
@@ -40,7 +41,7 @@ export async function recoverFailedDurableTasks(env: IEnv, now = new Date()): Pr
   const recovered = (
     await Promise.all(
       DURABLE_TASK_TYPES.map((taskType) =>
-        repositories.tasks.requeueFailedTasksByType(taskType, cutoff),
+        repositories.tasks.requeueFailedTasksByType(taskType, cutoff, MAX_DURABLE_TASK_RECOVERIES),
       ),
     )
   ).flat();

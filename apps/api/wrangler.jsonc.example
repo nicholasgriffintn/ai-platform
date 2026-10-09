@@ -18,7 +18,7 @@
   "workers_dev": false,
   "preview_urls": false,
   "placement": {
-    "mode": "smart"
+    "region": "gcp:europe-southwest1"
   },
   "cache": {
     "enabled": false

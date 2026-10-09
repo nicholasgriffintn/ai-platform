@@ -11,6 +11,7 @@ import {
   type TaskHandlerRegistry,
 } from "@ngriffin_uk/polychat-library-tasks";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { isConfigurationError } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { evaluateServerFlag, isTaskFlagType, taskFlags } from "~/modules/experiments/application";
 import { TaskRepository } from "~/modules/tasks/infrastructure/TaskRepository";
@@ -169,6 +170,7 @@ export class TaskExecutor {
           const settlement = settleTaskFailure(error, {
             attempts: task.attempts || 0,
             maxAttempts: task.max_attempts || DEFAULT_TASK_MAX_ATTEMPTS,
+            retryable: !isConfigurationError(error),
           });
 
           if (settlement.status === "failed") {

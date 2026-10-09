@@ -2381,6 +2381,7 @@ export const tasks = sqliteTable(
     created_by: text({ enum: ["system", "user"] }).notNull(),
     attempts: integer().default(0),
     max_attempts: integer().default(3),
+    recovery_count: integer().notNull().default(0),
     last_attempted_at: text(),
     execution_owner_token: text(),
     execution_lease_expires_at: text(),

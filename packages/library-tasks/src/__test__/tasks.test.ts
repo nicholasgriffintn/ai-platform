@@ -14,6 +14,16 @@ describe("task outcomes", () => {
     expect(settleTaskSuccess({ status: "suspended" })).toEqual({ status: "suspended" });
   });
 
+  it("fails a non-retryable error on its first attempt", () => {
+    expect(
+      settleTaskFailure(new Error("secret missing"), {
+        attempts: 0,
+        maxAttempts: 3,
+        retryable: false,
+      }),
+    ).toEqual({ status: "failed", attempts: 1, error: "secret missing" });
+  });
+
   it("requeues failures with backoff until the attempt budget is spent", () => {
     const backoff = { baseDelayMs: 1000, maxDelayMs: 3000 };
 

@@ -19,6 +19,7 @@ import packageJson from "../package.json";
 import { registerApiRoutes } from "./app";
 import { API_LOCAL_HOST, API_PROD_HOST } from "./config/app";
 import { serviceContextMiddleware } from "./infrastructure/context/serviceContext";
+import { withRequestDatabase } from "./infrastructure/database/request-session";
 import { isAllowedOrigin } from "./infrastructure/http/origins";
 import { ResponseFactory } from "./infrastructure/http/ResponseFactory";
 import { addRoute } from "./infrastructure/http/routeBuilder";
@@ -311,7 +312,7 @@ const handler = {
       hasLoggedStart = true;
     }
 
-    return app.fetch(request, env, ctx);
+    return app.fetch(request, withRequestDatabase(env), ctx);
   },
   async scheduled(event: ScheduledController, env: IEnv): Promise<void> {
     await workflows.runCron(env, event);

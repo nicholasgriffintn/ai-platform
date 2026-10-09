@@ -50,6 +50,13 @@
       "when": 1791547477318,
       "tag": "0006_tasks_user_type_status_index",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1791566622535,
+      "tag": "0007_task_recovery_count",
+      "breakpoints": true
     }
   ]
 }
