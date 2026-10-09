@@ -1,4 +1,7 @@
-import { listConfigurableChatProviders } from "~/infrastructure/providers/capabilities/chat";
+import {
+  listChatProviders,
+  listConfigurableChatProviders,
+} from "~/infrastructure/providers/capabilities/chat";
 import {
   getDecisionProviderVendor,
   listConfigurableDecisionProviders,
@@ -24,12 +27,16 @@ export interface UserConfigurableProvider {
   }>;
 }
 
+function isChatProviderId(providerId: string): boolean {
+  return listChatProviders().includes(providerId);
+}
+
 export function listConfigurableUserProviderIds(): string[] {
   return Array.from(
     new Set([
       "dynamodb-vectors",
       ...listConfigurableChatProviders(),
-      ...listConfigurableDecisionProviders(),
+      ...listConfigurableDecisionProviders().filter((providerId) => !isChatProviderId(providerId)),
       ...listConfigurableMessagingProviders(),
     ]),
   ).sort();
@@ -59,7 +66,9 @@ export function getUserConfigurableProviderMetadata(providerId: string): UserCon
     }
   }
 
-  const decisionVendor = getDecisionProviderVendor(providerId);
+  const decisionVendor = isChatProviderId(providerId)
+    ? undefined
+    : getDecisionProviderVendor(providerId);
 
   if (decisionVendor) {
     return {
