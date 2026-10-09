@@ -27,6 +27,10 @@ body {
   white-space: pre-wrap;
 }`;
 
+export function isStylesheetImport(name: string): boolean {
+  return /\.css(?:[?#].*)?$/i.test(name);
+}
+
 const RUNTIME_PRELUDE = `
 var root = document.getElementById("root");
 function showError(message) {
@@ -86,8 +90,10 @@ var artifactModules = {
   recharts: window.Recharts,
   "@polychat/data": { usePolychatData: usePolychatData }
 };
+var isStylesheetImport = ${isStylesheetImport.toString()};
 function require(name) {
   if (Object.prototype.hasOwnProperty.call(artifactModules, name) && artifactModules[name]) return artifactModules[name];
+  if (isStylesheetImport(name)) return {};
   throw new Error('Artifacts cannot import "' + name + '". Use react, recharts or @polychat/data.');
 }
 var module = { exports: {} };

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { buildReactArtifactDocument, resolveArtifactComponent } from "./reactArtifactDocument";
 import { prepareReactArtifactDocument } from "./ReactSandbox";
@@ -20,7 +20,49 @@ function runTranspiled(code: string, transpiled: string): Record<string, unknown
   return module.exports;
 }
 
+function renderInRuntime(document: string) {
+  const inlineScript = [...document.matchAll(/<script>([\s\S]*?)<\/script>/g)].at(-1)?.[1] ?? "";
+  const render = vi.fn();
+
+  globalThis.document.body.innerHTML = '<div id="root"></div>';
+  vi.stubGlobal("React", { createElement: (component: unknown) => component });
+  vi.stubGlobal("ReactDOM", { createRoot: () => ({ render }) });
+  new Function(inlineScript)();
+
+  return {
+    rendered: render.mock.calls[0]?.[0] as unknown,
+    error: globalThis.document.querySelector(".error-container")?.textContent ?? null,
+  };
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  globalThis.document.body.innerHTML = "";
+});
+
 describe("prepareReactArtifactDocument", () => {
+  it("renders a component that imports its combined stylesheet", async () => {
+    const document = await prepareReactArtifactDocument(
+      'import "./HamsterWheel.css";\nimport styles from "./theme.module.css?inline";\nexport default function HamsterWheel() { return <div className={styles.wheel} />; }',
+      ".wheel { width: 10px; }",
+    );
+
+    const { rendered, error } = renderInRuntime(document);
+
+    expect(error).toBeNull();
+    expect(rendered).toEqual(expect.any(Function));
+    expect(document).toContain(".wheel { width: 10px; }");
+  });
+
+  it("still rejects imports it cannot provide", async () => {
+    const document = await prepareReactArtifactDocument(
+      'import _ from "lodash";\nexport default function Widget() { return _.noop(); }',
+      undefined,
+    );
+
+    expect(renderInRuntime(document).error).toContain('cannot import "lodash"');
+  });
+
   it("compiles a default-exported component into the module wrapper", async () => {
     const document = await prepareReactArtifactDocument(
       'import { useState } from "react";\nexport default function Widget() { const [n] = useState(1); return <p>{n}</p>; }',
